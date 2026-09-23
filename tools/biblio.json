@@ -1,5 +1,16 @@
 [
  {
+  "role": "regime",
+  "key": "Cotton2001",
+  "authors": "Peter Cotton",
+  "year": 2001,
+  "title": "An Analytic Approach to Ornstein-Uhlenbeck Processes with Fluctuating Parameters and Applications in the Modeling of Fixed Income Securities",
+  "venue": "PhD thesis, Stanford University",
+  "doi": "",
+  "url": "https://raw.githubusercontent.com/microprediction/home/main/papers/Cotton_2001_PhD_Thesis_An_Analytic_Approach_to_Ornstein-Uhlenbeck_Processes_with_Fluctuating_Parameters.pdf",
+  "annotation": "Treats Ornstein-Uhlenbeck short rates and hazard rates whose parameters are driven by a Markov chain. It reduces bond prices and survival probabilities to a linear system of ordinary differential equations and expands them for fast switching. The regime-switching pages on this site develop its second half."
+ },
+ {
   "role": "classics",
   "key": "BLP1978",
   "authors": "Alain Bensoussan, Jacques-Louis Lions, George Papanicolaou",
