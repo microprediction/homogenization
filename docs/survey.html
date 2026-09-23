@@ -17,7 +17,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -61,11 +61,11 @@
     <h1>One correction, many fields</h1>
     <p class="subtitle">A survey of fast random switching and its first correction, from option pricing to spectroscopy, gene expression and machine learning.</p>
 
-    <p class="lead">Many fields study a slow quantity driven by a fast hidden process. They reach the same two results.
-    The leading answer replaces the hidden process by its average. The first correction is an integrated correlation
-    of the fluctuations, a Green&ndash;Kubo integral. This page collects that literature, says what each field calls the
-    two results, and marks what this site adds. Every reference is on the <a href="./bibliography.html">bibliography</a>
-    page with a checked DOI.</p>
+    <p class="lead">Many fields study a slow quantity driven by a fast hidden process, and they reach the same two
+    results. The leading answer replaces the hidden process by its average. The first correction is an integrated
+    correlation of the fluctuations, a Green&ndash;Kubo integral.</p>
+    <p>The table gives the name each field uses for the two results. Every reference below is on the
+    <a href="./bibliography.html">bibliography</a> page with a checked DOI.</p>
 
     <h2>The common object</h2>
     <p>A hidden state $y_t$ moves fast, with stationary law $\pi$. A slow quantity evolves under an operator that
@@ -83,6 +83,7 @@
         <tr><td>option pricing</td><td>volatility factor or regime</td><td>option price</td><td>Black&ndash;Scholes at effective volatility</td><td>smile and skew terms</td></tr>
         <tr><td>term structure</td><td>regime of level and volatility</td><td>bond price</td><td>Vasicek with averaged parameters</td><td>three Green&ndash;Kubo numbers</td></tr>
         <tr><td>credit</td><td>common frailty or regime</td><td>joint survival</td><td>independent names</td><td>default dependence</td></tr>
+        <tr><td>turbulent transport</td><td>small-scale velocity</td><td>scalar or large-scale flow</td><td>transport by the mean flow</td><td>eddy diffusivity and eddy viscosity</td></tr>
         <tr><td>statistical physics</td><td>microscopic fluctuations</td><td>currents</td><td>no net transport</td><td>transport coefficients</td></tr>
         <tr><td>spectroscopy</td><td>hopping resonance frequency</td><td>line shape</td><td>a sharp line at the mean frequency</td><td>motional-narrowing width</td></tr>
         <tr><td>chromatography, dispersion</td><td>phase or streamline</td><td>solute band</td><td>drift at mean speed</td><td>effective dispersion</td></tr>
@@ -109,7 +110,7 @@
     <a href="./bibliography.html#Hersh1974">Hersh 1974</a>; <a href="./bibliography.html#Pinsky1991">Pinsky 1991</a>).
     Kurtz gave the operator-semigroup limit theorem for generators of the form $Q/\varepsilon + \mathcal L$
     (<a href="./bibliography.html#Kurtz1973">Kurtz 1973</a>; <a href="./bibliography.html#EthierKurtz1986">Ethier and Kurtz 1986</a>).
-    Every pricing equation on this site is a random evolution.</p>
+    Every pricing equation in the examples is a random evolution.</p>
     <p>Physicists reached the same correction through cumulant expansions. The second cumulant of a linear equation
     with random coefficients is a time-ordered product of the random operators, weighted by their correlation
     (<a href="./bibliography.html#Kubo1962">Kubo 1962</a>; <a href="./bibliography.html#vanKampen1974">van Kampen 1974</a>).
@@ -161,7 +162,8 @@
     <p>For bond prices and survival probabilities, the expansion in the switching rate goes back to
     <a href="./bibliography.html#Cotton2001">Cotton (2001)</a>. Its second half treats a Vasicek short rate or hazard
     rate with mean level and volatility switched by a two-state chain. It reduces the price to a linear system of
-    ordinary differential equations and expands it for fast switching. The
+    ordinary differential equations and expands it for fast switching.</p>
+    <p>The
     <a href="./regime-switching.html">regime-switching pages</a> develop it to all orders, and the
     <a href="./engine.html">engine</a> extends it to any finite chain and any exponential-affine model.</p>
     <p>For option prices, <a href="./bibliography.html#Yin2009">Yin (2009)</a> gives a full series in the switching rate
@@ -200,12 +202,43 @@
     <p>Reduced-form credit models treat default as the first event of a Cox process
     (<a href="./bibliography.html#Cox1955">Cox 1955</a>; <a href="./bibliography.html#Lando1998">Lando 1998</a>;
     <a href="./bibliography.html#DuffieSingleton1999">Duffie and Singleton 1999</a>). They are priced with affine
-    transforms (<a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton 2000</a>). Defaults cluster beyond
+    transforms (<a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton 2000</a>).</p>
+    <p>Defaults cluster beyond
     observable covariates. <a href="./bibliography.html#DuffieEcknerHorelSaita2009">Duffie, Eckner, Horel and Saita
     (2009)</a> model the clustering with a common latent frailty.</p>
     <p>With a fast frailty, the any-equation rule gives the joint survival of every set of names from one Green&ndash;Kubo
     matrix. The matrix has rank at most one less than the number of regimes. Which name defaults first is the race
     studied below, and there the antisymmetric part of the matrix becomes visible.</p>
+
+    <h2>Fluid dynamics and turbulence</h2>
+    <p>Turbulent transport was a main driver of the theory. <a href="./bibliography.html#Taylor1921">Taylor (1922)</a>
+    showed that a particle carried by a turbulent velocity spreads, at long times, with a diffusivity equal to the time
+    integral of its velocity autocorrelation. That is the first Green&ndash;Kubo formula, three decades before Green and
+    Kubo.</p>
+    <p>The probabilistic limit theorems grew up alongside. The martingale approach of
+    <a href="./bibliography.html#PSV1977">Papanicolaou, Stroock and Varadhan (1977)</a> appeared in the proceedings of a
+    turbulence conference. <a href="./bibliography.html#Kraichnan1968">Kraichnan (1968)</a> introduced the random velocity,
+    delta-correlated in time, in which the eddy diffusivity is exact.</p>
+    <p>For a passive scalar in a flow with small-scale structure, homogenization gives an effective diffusivity from a
+    cell problem:</p>
+    <ul>
+      <li>convection of microstructure (<a href="./bibliography.html#McLaughlinPapanicolaouPironneau1985">McLaughlin, Papanicolaou and Pironneau 1985</a>);</li>
+      <li>an integral representation and bounds (<a href="./bibliography.html#AvellanedaMajda1991">Avellaneda and Majda 1991</a>);</li>
+      <li>periodic cellular flows (<a href="./bibliography.html#FannjiangPapanicolaou1994">Fannjiang and Papanicolaou 1994</a>);</li>
+      <li>a review of the simplified models (<a href="./bibliography.html#MajdaKramer1999">Majda and Kramer 1999</a>).</li>
+    </ul>
+    <p>For the Navier&ndash;Stokes equations, multiscale expansion around a small-scale flow gives an eddy viscosity when
+    the flow is parity invariant (<a href="./bibliography.html#DubrulleFrisch1991">Dubrulle and Frisch 1991</a>). Without
+    parity invariance it gives a large-scale instability already at first order
+    (<a href="./bibliography.html#FrischSheSulem1987">Frisch, She and Sulem 1987</a>). The book of
+    <a href="./bibliography.html#Frisch1995">Frisch (1995)</a> places these results in turbulence theory.</p>
+    <p>The nonlinearity is the main difference from the linear pricing equations. In the Navier&ndash;Stokes equations the
+    fast modes are generated by the flow itself, and closing the equations for the slow modes is the closure
+    problem.</p>
+    <p>Climate models apply the same elimination of fast modes. <a href="./bibliography.html#Hasselmann1976">Hasselmann
+    (1976)</a> treated weather as noise driving slow climate variables.
+    <a href="./bibliography.html#MajdaTimofeyevVandenEijnden2001">Majda, Timofeyev and Vanden-Eijnden (2001)</a> derived
+    the reduced stochastic equations systematically by the diffusion approximation.</p>
 
     <h2>Statistical physics</h2>
     <p>Transport coefficients are integrated equilibrium correlations. This is the Green&ndash;Kubo formula
@@ -213,7 +246,8 @@
     matrix $K$ is named after it. Onsager showed that transport coefficients are symmetric under microscopic
     reversibility (<a href="./bibliography.html#Onsager1931">Onsager 1931</a>).</p>
     <p>For a fast chain the same argument makes $K$ symmetric when the chain satisfies detailed balance. The
-    antisymmetric part is therefore a measure of irreversibility. Kinetics uses it to detect a hidden driver that is
+    antisymmetric part is therefore a measure of irreversibility.</p>
+    <p>Kinetics uses it to detect a hidden driver that is
     out of equilibrium, from the order of arrivals (<a href="https://kinetics.microprediction.org/softmax-fast-mixing.pdf">Cotton, working draft</a>).
     The <a href="./any-equation.html">any-equation page</a> shows it shifting an effective variance.</p>
 
@@ -222,22 +256,22 @@
     speeds up. <a href="./bibliography.html#Anderson1954">Anderson (1954)</a> and
     <a href="./bibliography.html#Kubo1954">Kubo (1954)</a> explained this motional narrowing. The width of the narrowed
     line is the Green&ndash;Kubo integral of the frequency fluctuation.</p>
-    <p>Mathematically it is the linear system on this site with an imaginary forcing $i\omega(y)$. The two-state
+    <p>Mathematically it is the linear system of the regime-switching examples with an imaginary forcing $i\omega(y)$. The two-state
     eigenvalue on the <a href="./yield-curve.html">yield-curve page</a> is Anderson&apos;s two-site formula.</p>
     <p>Relaxation rates in magnetic resonance are spectral densities of fluctuating fields
     (<a href="./bibliography.html#BPP1948">Bloembergen, Purcell and Pound 1948</a>). Redfield theory treats spin
     operators that do not commute (<a href="./bibliography.html#Redfield1957">Redfield 1957</a>). The rates come from the
-    real parts of spectral densities, and the frequency shifts from their imaginary parts.
-    <a href="./bibliography.html#Blume1968">Blume (1968)</a> extended the stochastic line-shape model to fluctuating
+    real parts of spectral densities, and the frequency shifts from their imaginary parts.</p>
+    <p><a href="./bibliography.html#Blume1968">Blume (1968)</a> extended the stochastic line-shape model to fluctuating
     Hamiltonians that do not commute at different times.</p>
 
     <h2>Transport, chemistry and motors</h2>
     <p>Solute in a tube spreads faster than molecular diffusion alone, because different streamlines move at different
     speeds (<a href="./bibliography.html#Taylor1953">Taylor 1953</a>; <a href="./bibliography.html#Aris1956">Aris 1956</a>).
     In chromatography a molecule alternates between moving and stuck phases
-    (<a href="./bibliography.html#GiddingsEyring1955">Giddings and Eyring 1955</a>). Its band moves at the averaged
-    speed, and it spreads with the Green&ndash;Kubo integral of the velocity. This is the averaged law and first
-    correction for a switched drift.</p>
+    (<a href="./bibliography.html#GiddingsEyring1955">Giddings and Eyring 1955</a>). </p>
+    <p>The band moves at the averaged speed, and it spreads with the Green&ndash;Kubo integral of the velocity. This is
+    the averaged law and first correction for a switched drift.</p>
     <p>Reaction rates that fluctuate in time are called dynamical disorder
     (<a href="./bibliography.html#Zwanzig1990">Zwanzig 1990</a>). Reactions gated on and off by a random switch were
     studied by <a href="./bibliography.html#SzaboEtAl1982">Szabo, Shoup, Northrup and McCammon (1982)</a>. A boundary
@@ -252,17 +286,19 @@
     <p><a href="./bibliography.html#Bressloff2017">Bressloff (2017)</a> reviews stochastic switching across biology.</p>
     <p>In gene expression, a promoter switching between states modulates the rate of synthesis. This is the telegraph
     model (<a href="./bibliography.html#PeccoudYcart1995">Peccoud and Ycart 1995</a>). It is observed as bursting in
-    single-cell counts (<a href="./bibliography.html#RajEtAl2006">Raj et al. 2006</a>). The excess noise over Poisson is the
+    single-cell counts (<a href="./bibliography.html#RajEtAl2006">Raj et al. 2006</a>).</p>
+    <p>The excess noise over Poisson is the
     Green&ndash;Kubo term for the switched rate, as on the <a href="./counts.html">Poisson counts</a> page.
     <a href="./bibliography.html#Paulsson2004">Paulsson (2004)</a> analyses how time-averaging of fluctuating upstream
     signals controls noise in gene networks.</p>
     <p>A population growing in a random environment grows in expectation at the averaged rate plus the integrated
     covariance of the rate. <a href="./bibliography.html#LewontinCohen1969">Lewontin and Cohen (1969)</a> showed that the
-    expected and typical growth rates differ. <a href="./bibliography.html#Tuljapurkar1982">Tuljapurkar (1982)</a> gave
+    expected and typical growth rates differ.</p>
+    <p><a href="./bibliography.html#Tuljapurkar1982">Tuljapurkar (1982)</a> gave
     the small-noise formula for structured populations in correlated environments, with a
     <a href="./bibliography.html#Tuljapurkar1990">monograph in 1990</a>. For structured populations the projection
-    matrices do not commute, so the commutator term applies.
-    <a href="./bibliography.html#KussellLeibler2005">Kussell and Leibler (2005)</a> connect growth in a switching
+    matrices do not commute, so the commutator term applies.</p>
+    <p><a href="./bibliography.html#KussellLeibler2005">Kussell and Leibler (2005)</a> connect growth in a switching
     environment to information.</p>
     <p>Bacteria that run and tumble spread with an effective diffusion given by their integrated velocity correlation
     (<a href="./bibliography.html#OthmerDunbarAlt1988">Othmer, Dunbar and Alt 1988</a>;
@@ -300,14 +336,14 @@
     <a href="./bibliography.html#KushnerYin2003">Kushner and Yin 2003</a>). Convergence rates for data from an ergodic
     process depend on its mixing time (<a href="./bibliography.html#DuchiEtAl2012">Duchi, Agarwal, Johansson and Jordan 2012</a>).</p>
     <p>The order in which data is visited matters. Reshuffling beats independent sampling
-    (<a href="./bibliography.html#GurbuzbalabanOzdaglarParrilo2021">Gürbüzbalaban, Ozdaglar and Parrilo 2021</a>). In the
-    language of this site, per-example updates act like switched operators whose Hessians do not commute. The rule
-    then suggests that a structured data order would enter through the antisymmetric part of the correlation matrix.
-    We have not checked this.</p>
+    (<a href="./bibliography.html#GurbuzbalabanOzdaglarParrilo2021">Gürbüzbalaban, Ozdaglar and Parrilo 2021</a>). </p>
+    <p>Per-example updates act like switched operators whose Hessians do not commute. The rule then suggests that a
+    structured data order would enter through the antisymmetric part of the correlation matrix. This has not been
+    checked.</p>
 
-    <h2>What this site adds</h2>
-    <p>The averaged law, the Green&ndash;Kubo first correction, and its non-commuting form are classical. The site adds the
-    following. We have not found them in the literature above, and we would welcome pointers.</p>
+    <h2>Results beyond the classical theory</h2>
+    <p>The averaged law, the Green&ndash;Kubo first correction, and its non-commuting form are classical. The following
+    results do not appear in the literature above.</p>
     <ul>
       <li>The <a href="./engine.html">engine</a>, which extends the thesis expansion
         (<a href="./bibliography.html#Cotton2001">Cotton 2001</a>): every order of the expansion, including the initial layer, for any

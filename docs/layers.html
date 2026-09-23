@@ -17,7 +17,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -59,22 +59,22 @@
 
   <main>
     <h1>Initial layers</h1>
-    <p class="subtitle">Why the expansion needs a separate correction near the start, and why that correction is small.</p>
+    <p class="subtitle">Near the start the fast process has not yet mixed. A short correction on the fast clock repairs the expansion there.</p>
 
     <p class="lead">The expansion built from <a href="./solvability.html">solvability</a> describes the answer once the
     fast process has mixed. At the very start it has not mixed, and the expansion does not satisfy the starting
-    condition. A short correction on the fast time scale repairs this. This page explains why it is needed, how it
-    is computed, and how much it matters.</p>
+    condition. A short correction on the fast time scale repairs this.</p>
 
     <h2>The outer expansion is a quasi-steady state</h2>
     <p>Each term of the expansion is found by solving $Q w = f$. The solution describes the fast process after it
-    has settled into equilibrium with the slowly changing forcing $f(t)$. Borrowing a word from fluid mechanics, this
-    part is called the <em>outer</em> expansion. It is a function of the slow time $t$ only.</p>
+    has settled into equilibrium with the slowly changing forcing $f(t)$.</p>
+    <p>Borrowing a word from fluid mechanics, this part is called the <em>outer</em> expansion. It is a function of the
+    slow time $t$ only.</p>
     <p>Nothing forces the outer expansion to take the right value at $t = 0$. On the regime-switching page, for
     example, the ratio $\omega = (a_1 - a_2)/(a_1 + a_2)$ must start at zero, because both regimes start with the same
     payoff. The outer series gives, at second order,</p>
     $$\omega_{\text{outer}}(0) = -\frac{\varepsilon^2}{4}\,\tilde g'(0) \neq 0 .$$
-    <p>The outer expansion is simply not valid for the first moments, before the switch has had time to reach its
+    <p>The outer expansion is not valid for the first moments, before the switch has had time to reach its
     equilibrium with the forcing.</p>
 
     <h2>The layer lives on the fast clock</h2>
@@ -83,10 +83,10 @@
     $$w = w_{\text{outer}}(t) + \eta(\tau), \qquad \eta(0) = w(0) - w_{\text{outer}}(0).$$
     <p>Substituting into the equation for $w$ and keeping the fast dynamics gives, to leading order,</p>
     $$\frac{d\eta}{d\tau} = Q_0\,\eta ,$$
-    <p>where $Q_0 = \varepsilon Q$ is the generator on the fast clock. Since every direction orthogonal to the
-    stationary distribution decays under $Q_0$, the correction $\eta$ dies out exponentially in $\tau$. For the
-    two-state switch it decays like $e^{-2\tau} = e^{-2\lambda t}$, so it lives for a time of about $1/(2\lambda)$ in the
-    original units. This short interval is the <em>initial layer</em>.</p>
+    <p>where $Q_0 = \varepsilon Q$ is the generator on the fast clock. Every direction orthogonal to the stationary
+    distribution decays under $Q_0$, so the correction $\eta$ dies out exponentially in $\tau$.</p>
+    <p>For the two-state switch it decays like $e^{-2\tau} = e^{-2\lambda t}$, so it lives for a time of about
+    $1/(2\lambda)$ in the original units. This short interval is the <em>initial layer</em>.</p>
 
     <h2>Higher orders of the layer</h2>
     <p>At higher orders the layer feels the slow forcing too. The forcing is evaluated at $t = \varepsilon\tau$, which is
@@ -97,10 +97,10 @@
     expansion needs: products, derivatives, integrals from $0$ to $\tau$, and solving $d\eta/d\tau = Q_0\eta + f$. So
     the layer can be computed order by order in closed form, just like the outer series.</p>
 
-    <h2>How much the layer matters</h2>
-    <p>Most of the layer disappears after a few multiples of $1/\lambda$. Only one part survives. The quantity $s$,
-    the stationary average of the answer, is an integral over time, and the transient contributes a fixed amount to
-    that integral before it dies out. The result is a permanent shift in $\log s$.</p>
+    <h2>The size of the layer</h2>
+    <p>Most of the layer disappears after a few multiples of $1/\lambda$. Only one part survives.</p>
+    <p>The quantity $s$, the stationary average of the answer, is an integral over time. The transient contributes a
+    fixed amount to that integral before it dies out, which leaves a permanent shift in $\log s$.</p>
     <p>On the regime-switching page this shift first appears at order $\varepsilon^4$, where
     $\omega_2(0) = -\tilde g'(0)/4$ is the second outer term of the ratio at the start:</p>
     $$\Delta\log s = -\frac{\varepsilon^4}{4}\,\omega_2(0)\,\tilde g'(0) + O(\varepsilon^5).$$
@@ -109,12 +109,12 @@
     more outer terms does not reduce the error below the size of the missing shift. The
     <a href="./convergence.html">convergence demo</a> shows the orders that result when both are included.</p>
 
-    <h2>When the layer starts at order zero</h2>
+    <h2>Layers at order zero</h2>
     <p>If the payoff itself depends on the final state of the fast process, the mismatch is of order one. This
-    happens for an option on a bond whose price depends on the regime at expiry. The terminal vector is then an
-    indicator of one regime, which is far from the stationary mixture. The layer starts at order zero: to leading
-    order the indicator relaxes to the stationary weights like $e^{-2\lambda t}$, and the corrections follow as above.
-    The <a href="./bond-options.html">bond options</a> page uses this.</p>
+    happens for an option on a bond whose price depends on the regime at expiry.</p>
+    <p>The terminal vector is then an indicator of one regime, far from the stationary mixture. The layer starts at
+    order zero: to leading order the indicator relaxes to the stationary weights like $e^{-2\lambda t}$, and the
+    corrections follow as above. The <a href="./bond-options.html">bond options</a> example uses this.</p>
   </main>
 
   <footer>

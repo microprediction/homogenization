@@ -141,7 +141,7 @@ def three_regimes_page():
     <p class="muted">Parameters: $\kappa = 2$,
     $\theta = (0.20, 0.08, 0.02)$ and $\sigma^2 = (0.04, 0.01, 0.0025)$.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The zero-coupon bond price</p>
     $$u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$$
     <p>for
@@ -208,7 +208,7 @@ def credit_page():
     regimes, and $x_0 = (0.03, 0.03)$.</p>
     <p>The same algebra prices two-factor Gaussian short rates.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>Survival of each company and of both, to time $t = 3$,</p>
     $$S_c(t) = \mathbb{E}\Big[e^{-\int_0^t (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1),$$
     <p>and from them the correlation of the two default indicators,
@@ -275,7 +275,7 @@ def counts_page():
     <p class="muted">Parameters: $\ell = (8, 1)$ per unit time, the process starts in the busy regime, and $N_t$ counts the events up to
     $t = 1$.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The whole distribution $\Pr(N_t = k)$, $k = 0, 1, 2, \dots$, through the generating function</p>
     $$a_i(t) = \mathbb{E}\big[z^{N_t} \mid y_0 = i\big].$$
     <h2>Averaging</h2>
@@ -327,7 +327,7 @@ def cir_page():
     <p class="muted">Parameters: $\kappa = 1.5$,
     $\theta = (0.08, 0.02)$ and $\sigma = 0.15$.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The survival probability, or bond price,</p>
     $$u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big].$$
     <h2>Averaging</h2>
@@ -380,7 +380,7 @@ def jumps_page():
     <p class="muted">Parameters: $\kappa = 2$, $\theta = (0.05, 0.02)$, $\sigma = (0.02, 0.01)$, $\ell = (3, 0.2)$ and
     $m = 0.03$: the first regime is a stressed one, with frequent jumps.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The survival probability</p>
     $$u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big].$$
     <h2>Averaging</h2>
@@ -443,7 +443,7 @@ def heston_page():
     <p class="muted">Parameters: $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$,
     $S_0 = 100$, zero interest, one year to expiry, $\lambda = 10$, and a start in the turbulent regime.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>European call prices, through the characteristic function</p>
     $$\phi_i(u) = \mathbb{E}\big[e^{iu(X_T - X_0)} \mid v_0,\ y_0 = i\big]$$
     <p>and
@@ -499,7 +499,7 @@ def black_scholes_page():
     <p class="muted">Parameters: $\sigma = (0.30, 0.15)$, $r = 0.03$, $S_0 = 100$,
     $T = 1$, and the stock starts in the volatile regime.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>European call prices, through the characteristic function of the log return</p>
     $$\phi_i(u) = \mathbb{E}\big[e^{iu\log(S_T/S_0)} \mid y_0 = i\big]$$
     <p>and
@@ -554,7 +554,7 @@ def bond_options_page():
     <p class="muted">Parameters: $\kappa = 0.5$,
     $\theta = (0.05, 0.03)$, $\sigma = (0.015, 0.010)$, $x_0 = 0.04$, and the economy starts in regime 1.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The price of a call, expiring at $T = 1$ with strike $K$, on the zero-coupon bond maturing at $S = 4$:</p>
     $$C = \mathbb{E}\Big[e^{-\int_0^T x_r\,dr}\,\big(P(T, S) - K\big)^+\Big].$$
     <p>The bond price at expiry depends on the regime then: $P(T,S) = A_{y_T}\,e^{-b\,x_T}$ with
@@ -583,7 +583,7 @@ def bond_options_page():
 
     <h2>The expansion</h2>
     <p>With $\varepsilon = 1/\lambda$, write the terminal vector $e_j$ as its stationary part $\tfrac12\mathbf 1$ plus a
-    remainder. The stationary part is carried by the outer series exactly as when $a(0) = \mathbf 1$: to first order</p>
+    remainder. The stationary part is carried by the outer series as when $a(0) = \mathbf 1$: to first order</p>
     $$\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big),$$
     <p>with
     $\bar g$ and $\tilde g$ the regime average and half-difference of $g$. The remainder relaxes over the fast time

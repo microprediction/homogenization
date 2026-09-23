@@ -3,7 +3,7 @@
     <h1>The fast-switching engine</h1>
     <p class="subtitle">One recursion for every model whose state factors out of an exponential-affine formula.</p>
 
-    <p class="lead">Each example on this site has a slow process $x_t$, the rate, intensity, variance or count of
+    <p class="lead">Each example has a slow process $x_t$, the rate, intensity, variance or count of
     interest, and a fast process $y_t$ that it does not observe: a Markov chain with a finite number of regimes, or
     a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,</p>
     $$\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big].$$
@@ -52,7 +52,7 @@
     $\pi\cdot f = 0$,</p>
     $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
     <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
-    rate of $\int g$, exactly as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
+    rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
     is the memory of the starting regime.</p>
 
     <h3>Step 4: closed form</h3>

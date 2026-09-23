@@ -8,7 +8,7 @@
   "venue": "PhD thesis, Stanford University",
   "doi": "",
   "url": "https://raw.githubusercontent.com/microprediction/home/main/papers/Cotton_2001_PhD_Thesis_An_Analytic_Approach_to_Ornstein-Uhlenbeck_Processes_with_Fluctuating_Parameters.pdf",
-  "annotation": "Treats Ornstein-Uhlenbeck short rates and hazard rates whose parameters are driven by a Markov chain. It reduces bond prices and survival probabilities to a linear system of ordinary differential equations and expands them for fast switching. The regime-switching pages on this site develop its second half."
+  "annotation": "Treats Ornstein-Uhlenbeck short rates and hazard rates whose parameters are driven by a Markov chain. It reduces bond prices and survival probabilities to a linear system of ordinary differential equations and expands them for fast switching. Its second half is developed to all orders in the regime-switching pages."
  },
  {
   "role": "classics",
@@ -19,7 +19,7 @@
   "venue": "North-Holland, Studies in Mathematics and its Applications 5 (reprinted AMS Chelsea Publishing, 2011)",
   "doi": "10.1090/chel/374",
   "url": "https://doi.org/10.1090/chel/374",
-  "annotation": "The standard reference for two-scale expansions and correctors in elliptic and parabolic equations with rapidly varying coefficients, including the probabilistic treatment of diffusions in periodic and random media on which the site's corrector calculation is modelled; the DOI is for the 2011 AMS Chelsea reprint."
+  "annotation": "The standard reference for two-scale expansions and correctors in elliptic and parabolic equations with rapidly varying coefficients, including the probabilistic treatment of diffusions in periodic and random media on which the corrector calculation is modelled; the DOI is for the 2011 AMS Chelsea reprint."
  },
  {
   "role": "classics",
@@ -63,7 +63,7 @@
   "venue": "Springer, Texts in Applied Mathematics 53",
   "doi": "10.1007/978-0-387-73829-1",
   "url": "https://doi.org/10.1007/978-0-387-73829-1",
-  "annotation": "A textbook treatment of formal multiscale expansions for Markov chains, ODEs, SDEs and PDEs, including a chapter on averaging for Markov chains that matches the site's two-state switching setting."
+  "annotation": "A textbook treatment of formal multiscale expansions for Markov chains, ODEs, SDEs and PDEs, including a chapter on averaging for Markov chains that matches the two-state switching setting."
  },
  {
   "role": "classics",
@@ -74,7 +74,7 @@
   "venue": "Springer, Grundlehren der mathematischen Wissenschaften 260",
   "doi": "10.1007/978-1-4684-0176-9",
   "url": "https://doi.org/10.1007/978-1-4684-0176-9",
-  "annotation": "Develops the averaging principle and associated large deviations for systems with fast and slow components, which describe the leading-order behaviour and rare-event corrections beyond the site's power-series expansion in epsilon."
+  "annotation": "Develops the averaging principle and associated large deviations for systems with fast and slow components, which describe the leading-order behaviour and rare-event corrections beyond a power-series expansion in epsilon."
  },
  {
   "role": "classics",
@@ -107,7 +107,7 @@
   "venue": "Journal of Mathematical Analysis and Applications 238(2):516-539",
   "doi": "10.1006/jmaa.1998.6532",
   "url": "https://doi.org/10.1006/jmaa.1998.6532",
-  "annotation": "Obtains asymptotic expansions of the transition densities of diffusions whose coefficients are modulated by a rapidly switching Markov chain, the density-level analogue of the site's expansion for a Markov-modulated Ornstein-Uhlenbeck process."
+  "annotation": "Obtains asymptotic expansions of the transition densities of diffusions whose coefficients are modulated by a rapidly switching Markov chain, the density-level analogue of the expansion for a Markov-modulated Ornstein-Uhlenbeck process."
  },
  {
   "role": "classics",
@@ -118,7 +118,7 @@
   "venue": "Statistics and Probability Letters 86:74-79",
   "doi": "10.1016/j.spl.2013.12.013",
   "url": "https://doi.org/10.1016/j.spl.2013.12.013",
-  "annotation": "Proves that a diffusion whose drift and diffusion coefficients are modulated by a rapidly switching Markov chain converges weakly to the diffusion with averaged coefficients, which is the leading-order statement underlying the site's averaged Vasicek limit."
+  "annotation": "Proves that a diffusion whose drift and diffusion coefficients are modulated by a rapidly switching Markov chain converges weakly to the diffusion with averaged coefficients, which is the leading-order statement underlying the averaged Vasicek limit."
  },
  {
   "role": "classics",
@@ -129,7 +129,7 @@
   "venue": "Advances in Applied Probability 48(1):235-254",
   "doi": "10.1017/apr.2015.15",
   "url": "https://doi.org/10.1017/apr.2015.15",
-  "annotation": "Computes moments and Laplace-transform PDEs of an Ornstein-Uhlenbeck process with Markov-modulated parameters and proves functional central limit theorems when the modulating chain is accelerated, which is exactly the site's state process studied as a process rather than through its exponential functional."
+  "annotation": "Computes moments and Laplace-transform PDEs of an Ornstein-Uhlenbeck process with Markov-modulated parameters and proves functional central limit theorems when the modulating chain is accelerated, which is the regime-switching state process studied as a process rather than through its exponential functional."
  },
  {
   "role": "classics",
@@ -151,7 +151,7 @@
   "venue": "Cambridge University Press, ISBN 0-521-79163-4",
   "doi": "",
   "url": "https://www.cambridge.org/9780521791632",
-  "annotation": "Introduces fast mean-reverting stochastic volatility asymptotics in which prices are expanded around an effective constant-volatility model with a first-order correction, the template the site transfers to a fast regime chain."
+  "annotation": "Introduces fast mean-reverting stochastic volatility asymptotics in which prices are expanded around an effective constant-volatility model with a first-order correction, the template for the fast regime chain."
  },
  {
   "role": "finance",
@@ -162,7 +162,7 @@
   "venue": "Cambridge University Press",
   "doi": "10.1017/cbo9781139020534",
   "url": "https://doi.org/10.1017/cbo9781139020534",
-  "annotation": "Extends the fast and slow scale expansions to interest rate and credit models, including Vasicek and CIR bond prices and defaultable bonds with stochastic intensity. It is the closest book-length treatment of the problem on this site, with a diffusive fast factor instead of a Markov chain."
+  "annotation": "Extends the fast and slow scale expansions to interest rate and credit models, including Vasicek and CIR bond prices and defaultable bonds with stochastic intensity. It is the closest book-length treatment of the regime-switching problem, with a diffusive fast factor instead of a Markov chain."
  },
  {
   "role": "finance",
@@ -173,7 +173,7 @@
   "venue": "Mathematical Finance 14(2):173-200",
   "doi": "10.1111/j.0960-1627.2004.00188.x",
   "url": "https://doi.org/10.1111/j.0960-1627.2004.00188.x",
-  "annotation": "Derives the corrections to Vasicek and CIR bond prices when the volatility of the short rate is driven by a fast mean-reverting factor. The regime-switching expansion on this site is the same calculation with a two-state chain in place of the diffusion."
+  "annotation": "Derives the corrections to Vasicek and CIR bond prices when the volatility of the short rate is driven by a fast mean-reverting factor. The regime-switching expansion is the same calculation with a two-state chain in place of the diffusion."
  },
  {
   "role": "finance",
@@ -206,7 +206,7 @@
   "venue": "Advances in Econometrics 22 (Econometrics and Risk Management):215-242",
   "doi": "10.1016/s0731-9053(08)22009-8",
   "url": "https://doi.org/10.1016/s0731-9053(08)22009-8",
-  "annotation": "Computes fast and slow stochastic volatility corrections to Vasicek and CIR bond prices, again with a diffusive volatility factor where the site uses a two-state chain."
+  "annotation": "Computes fast and slow stochastic volatility corrections to Vasicek and CIR bond prices, again with a diffusive volatility factor where the regime-switching example uses a two-state chain."
  },
  {
   "role": "finance",
@@ -283,7 +283,7 @@
   "venue": "Quantitative Finance 2(6):454-458",
   "doi": "10.1088/1469-7688/2/6/304",
   "url": "https://doi.org/10.1088/1469-7688/2/6/304",
-  "annotation": "Takes a Vasicek short rate whose mean-reversion level is driven by a finite-state Markov chain and gives the bond price analytically through a fundamental matrix. It covers the model on this site in the case of equal volatilities."
+  "annotation": "Takes a Vasicek short rate whose mean-reversion level is driven by a finite-state Markov chain and gives the bond price analytically through a fundamental matrix. It covers the regime-switching Vasicek model in the case of equal volatilities."
  },
  {
   "role": "regime",
@@ -327,7 +327,7 @@
   "venue": "Applied Mathematical Finance 16(1):1-15",
   "doi": "10.1080/13504860802015744",
   "url": "https://doi.org/10.1080/13504860802015744",
-  "annotation": "Proves Markov-modulated exponential-affine bond price formulae for regime-switching Hull-White and CIR short rates, with coefficients given by fundamental matrix solutions of linear matrix differential equations, which contains the reduction used on this site as a special case."
+  "annotation": "Proves Markov-modulated exponential-affine bond price formulae for regime-switching Hull-White and CIR short rates, with coefficients given by fundamental matrix solutions of linear matrix differential equations, which contains the reduction used in the examples as a special case."
  },
  {
   "role": "regime",
@@ -360,7 +360,7 @@
   "venue": "Asymptotic Analysis 65(3-4):203-222",
   "doi": "10.3233/asy-2009-0953",
   "url": "https://doi.org/10.3233/asy-2009-0953",
-  "annotation": "Develops uniform asymptotic expansions, with averaged Black-Scholes leading term and full series, for European option prices when the regime chain switches fast, the closest published analogue of the site's expansion but for equity options rather than bond prices."
+  "annotation": "Develops uniform asymptotic expansions, with averaged Black-Scholes leading term and full series, for European option prices when the regime chain switches fast, the closest published analogue of the regime-switching expansion but for equity options rather than bond prices."
  },
  {
   "role": "regime",
@@ -404,7 +404,7 @@
   "venue": "Review of Derivatives Research 2(2-3):99-120",
   "doi": "10.1007/bf01531332",
   "url": "https://doi.org/10.1007/bf01531332",
-  "annotation": "Models default as the first jump of a Cox process so that survival probabilities take the form E[exp(-integral of the intensity)], the object the site computes for a regime-switching intensity."
+  "annotation": "Models default as the first jump of a Cox process so that survival probabilities take the form E[exp(-integral of the intensity)], the quantity computed for a regime-switching intensity."
  },
  {
   "role": "credit",
@@ -415,7 +415,7 @@
   "venue": "Review of Financial Studies 12(4):687-720",
   "doi": "10.1093/rfs/12.4.687",
   "url": "https://doi.org/10.1093/rfs/12.4.687",
-  "annotation": "Shows that defaultable bonds can be priced by discounting at a default-adjusted short rate, so the site's survival probability and bond price calculations are the same computation."
+  "annotation": "Shows that defaultable bonds can be priced by discounting at a default-adjusted short rate, so survival probabilities and bond prices are the same computation."
  },
  {
   "role": "credit",
@@ -459,7 +459,7 @@
   "venue": "Review of Financial Studies 6(2):327-343",
   "doi": "10.1093/rfs/6.2.327",
   "url": "",
-  "annotation": "Introduces the square-root stochastic variance model and its characteristic function; the Heston example on this site lets the long-run variance switch."
+  "annotation": "Introduces the square-root stochastic variance model and its characteristic function; the Heston example lets the long-run variance switch."
  },
  {
   "role": "examples",
@@ -503,7 +503,7 @@
   "venue": "Proceedings of the National Academy of Sciences 62(2):305-308",
   "doi": "10.1073/pnas.62.2.305",
   "url": "https://doi.org/10.1073/pnas.62.2.305",
-  "annotation": "Introduces random evolutions: operators switched by a Markov chain, whose expectations solve coupled systems of partial differential equations. This is the structure of every pricing equation on this site."
+  "annotation": "Introduces random evolutions: operators switched by a Markov chain, whose expectations solve coupled systems of partial differential equations. This is the structure of every pricing equation in the examples."
  },
  {
   "role": "survey_theory",
@@ -547,7 +547,7 @@
   "venue": "Physica 74(2):215-238",
   "doi": "10.1016/0031-8914(74)90121-9",
   "url": "https://doi.org/10.1016/0031-8914(74)90121-9",
-  "annotation": "A cumulant expansion for linear differential equations with random coefficients. Its second-order term is the time-ordered, correlation-weighted product of the random operators, the physicists' form of the first-order rule on this site."
+  "annotation": "A cumulant expansion for linear differential equations with random coefficients. Its second-order term is the time-ordered, correlation-weighted product of the random operators, the physicists' form of the first-order rule for switched operators."
  },
  {
   "role": "survey_theory",
@@ -1164,5 +1164,126 @@
   "doi": "10.1016/0022-2496(92)90050-h",
   "url": "https://doi.org/10.1016/0022-2496(92)90050-h",
   "annotation": "The horse-race random utility model for choices and response times, and its reading as competing risks."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "Taylor1921",
+  "authors": "Taylor, G. I.",
+  "year": 1922,
+  "title": "Diffusion by Continuous Movements",
+  "venue": "Proceedings of the London Mathematical Society s2-20(1):196-212",
+  "doi": "10.1112/plms/s2-20.1.196",
+  "url": "https://doi.org/10.1112/plms/s2-20.1.196",
+  "annotation": "Shows that a particle carried by a turbulent velocity spreads, at long times, with a diffusivity equal to the time integral of the velocity autocorrelation. This is the first Green-Kubo formula."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "Kraichnan1968",
+  "authors": "Kraichnan, R. H.",
+  "year": 1968,
+  "title": "Small-Scale Structure of a Scalar Field Convected by Turbulence",
+  "venue": "Physics of Fluids 11(5):945-953",
+  "doi": "10.1063/1.1692063",
+  "url": "https://doi.org/10.1063/1.1692063",
+  "annotation": "A scalar advected by a random velocity that is delta-correlated in time, the model in which the eddy diffusivity is exact."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "Hasselmann1976",
+  "authors": "Hasselmann, K.",
+  "year": 1976,
+  "title": "Stochastic climate models Part I. Theory",
+  "venue": "Tellus 28(6):473-485",
+  "doi": "10.1111/j.2153-3490.1976.tb00696.x",
+  "url": "https://doi.org/10.1111/j.2153-3490.1976.tb00696.x",
+  "annotation": "Slow climate variables driven by fast weather treated as a diffusion approximation, with the fast variables entering as noise."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "McLaughlinPapanicolaouPironneau1985",
+  "authors": "McLaughlin, D. W., Papanicolaou, G. C. and Pironneau, O. R.",
+  "year": 1985,
+  "title": "Convection of Microstructure and Related Problems",
+  "venue": "SIAM Journal on Applied Mathematics 45(5):780-797",
+  "doi": "10.1137/0145046",
+  "url": "https://doi.org/10.1137/0145046",
+  "annotation": "Homogenization of a flow with small-scale structure: the effective large-scale equations acquire an eddy term from a cell problem."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "FrischSheSulem1987",
+  "authors": "Frisch, U., She, Z. S. and Sulem, P. L.",
+  "year": 1987,
+  "title": "Large-scale flow driven by the anisotropic kinetic alpha effect",
+  "venue": "Physica D 28(3):382-392",
+  "doi": "10.1016/0167-2789(87)90026-1",
+  "url": "https://doi.org/10.1016/0167-2789(87)90026-1",
+  "annotation": "Multiscale expansion of the Navier-Stokes equations around a small-scale flow that lacks parity invariance, giving a large-scale instability at first order."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "AvellanedaMajda1991",
+  "authors": "Avellaneda, M. and Majda, A. J.",
+  "year": 1991,
+  "title": "An integral representation and bounds on the effective diffusivity in passive advection by laminar and turbulent flows",
+  "venue": "Communications in Mathematical Physics 138(2):339-391",
+  "doi": "10.1007/bf02099496",
+  "url": "https://doi.org/10.1007/bf02099496",
+  "annotation": "An integral representation and bounds for the effective diffusivity of a passive scalar in periodic and random flows."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "DubrulleFrisch1991",
+  "authors": "Dubrulle, B. and Frisch, U.",
+  "year": 1991,
+  "title": "Eddy viscosity of parity-invariant flow",
+  "venue": "Physical Review A 43(10):5355-5364",
+  "doi": "10.1103/physreva.43.5355",
+  "url": "https://doi.org/10.1103/physreva.43.5355",
+  "annotation": "Derives the eddy viscosity of the Navier-Stokes equations by multiscale expansion around a parity-invariant small-scale flow."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "FannjiangPapanicolaou1994",
+  "authors": "Fannjiang, A. and Papanicolaou, G.",
+  "year": 1994,
+  "title": "Convection Enhanced Diffusion for Periodic Flows",
+  "venue": "SIAM Journal on Applied Mathematics 54(2):333-408",
+  "doi": "10.1137/s0036139992236785",
+  "url": "https://doi.org/10.1137/s0036139992236785",
+  "annotation": "Effective diffusivity of a passive scalar in periodic cellular flows, and how it scales with the molecular diffusivity."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "Frisch1995",
+  "authors": "Frisch, U.",
+  "year": 1995,
+  "title": "Turbulence: The Legacy of A. N. Kolmogorov",
+  "venue": "Cambridge University Press",
+  "doi": "10.1017/cbo9781139170666",
+  "url": "https://doi.org/10.1017/cbo9781139170666",
+  "annotation": "A book on turbulence with chapters on multiscale methods, eddy viscosity and the closure problem."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "MajdaKramer1999",
+  "authors": "Majda, A. J. and Kramer, P. R.",
+  "year": 1999,
+  "title": "Simplified models for turbulent diffusion: Theory, numerical modelling, and physical phenomena",
+  "venue": "Physics Reports 314(4-5):237-574",
+  "doi": "10.1016/s0370-1573(98)00083-0",
+  "url": "https://doi.org/10.1016/s0370-1573(98)00083-0",
+  "annotation": "A review of turbulent diffusion in simplified random and periodic flows, including homogenization, eddy diffusivity and anomalous regimes."
+ },
+ {
+  "role": "survey_fluid",
+  "key": "MajdaTimofeyevVandenEijnden2001",
+  "authors": "Majda, A. J., Timofeyev, I. and Vanden-Eijnden, E.",
+  "year": 2001,
+  "title": "A mathematical framework for stochastic climate models",
+  "venue": "Communications on Pure and Applied Mathematics 54(8):891-974",
+  "doi": "10.1002/cpa.1014",
+  "url": "https://doi.org/10.1002/cpa.1014",
+  "annotation": "Eliminates fast modes of fluid and climate equations by the diffusion approximation, giving reduced stochastic equations for the slow modes."
  }
 ]

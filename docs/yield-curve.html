@@ -18,7 +18,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -62,19 +62,20 @@
     <p class="demo-nav"><a href="./engine.html">&larr; the fast-switching engine</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_three_numbers.py">certificate</a></span></p>
     <h1>Three numbers in a yield curve</h1>
-    <p class="subtitle">What a bond curve can and cannot reveal about fast hidden regimes in the short rate.</p>
+    <p class="subtitle">To first order a bond curve sees a fast hidden chain in the short rate only through three numbers.</p>
 
-    <p class="lead">Suppose the short rate is driven by hidden regimes that change often. The regimes could have any
-    number of states and any pattern of transitions. This page shows that, to first order in the switching time,
-    the yield curve sees only three numbers about them. Two quite different regime chains that share those three
-    numbers produce yield curves that agree to within a small fraction of a basis point.</p>
+    <p class="lead">Suppose the short rate is driven by hidden regimes that change often, with any number of states and
+    any pattern of transitions. To first order in the switching time, the yield curve sees only three numbers about
+    them.</p>
+    <p>Two quite different regime chains that share those three numbers produce yield curves that agree to within a
+    small fraction of a basis point.</p>
 
     <h2>The model</h2>
     <p>The short rate $r_t$ follows a Vasicek model whose mean level and volatility depend on a hidden state $y_t$:</p>
     $$dr_t = \kappa\,\big(\theta(y_t) - r_t\big)\,dt + \sigma(y_t)\,dW_t .$$
-    <p>The hidden state $y_t$ is a Markov chain on $n$ states with generator $Q$. It is the fast process. The rate
-    $r_t$ is the slow process: it reverts at rate $\kappa$, while the chain switches at rates much larger than
-    $\kappa$. The small parameter is the ratio of the two time scales.</p>
+    <p>The hidden state $y_t$ is a Markov chain on $n$ states with generator $Q$. It is the fast process.</p>
+    <p>The rate $r_t$ is the slow process: it reverts at rate $\kappa$, while the chain switches at rates much larger
+    than $\kappa$. The small parameter is the ratio of the two time scales.</p>
     <p>An observer who cannot see the regime prices a zero-coupon bond by drawing the regime from its stationary
     distribution $\pi$:</p>
     $$P(T) = \mathbb{E}\Big[\exp\Big(-\int_0^T r_s\,ds\Big)\ \Big|\ r_0 = x,\ y_0 \sim \pi\Big].$$
@@ -142,7 +143,7 @@
     numbers leave different fingerprints on the short and intermediate parts of the curve. At long maturities all
     four shapes flatten, and only their total is visible.</p>
 
-    <h2>Why the three numbers obey an inequality</h2>
+    <h2>The inequality</h2>
     <p>The symmetric part of $\mathcal K$ is a covariance. For two functions $f$ and $h$ of the regime, the
     running integrals of $f(y_t)$ and $h(y_t)$ over a long time $t$ satisfy</p>
     $$\operatorname{Cov}\Big(\int_0^t f(y_s)\,ds,\ \int_0^t h(y_s)\,ds\Big) \approx 2t\ \mathcal K_{\mathrm{sym}}(f, h).$$
@@ -158,7 +159,7 @@
     single pattern that is $+$ in one state and $-$ in the other, so $M$ has rank one. Equality in the fitted
     numbers is the signature of an effectively one-dimensional regime.</p>
 
-    <h2>What can actually be measured</h2>
+    <h2>Observable coefficients</h2>
     <p>The coefficient of $\int B^2$ is $\tfrac12\bar s + c_2$. A market that only sees bond prices cannot split this
     sum: extra average variance and extra regime variance look the same. What can be fitted are four
     coefficients,</p>
@@ -243,7 +244,7 @@
     end is simpler than the rest of the curve: it forgets the start, so there is no
     <a href="./layers.html">initial layer</a>, and the whole correction is one eigenvalue.</p>
 
-    <h2>What this says</h2>
+    <h2>Consequences</h2>
     <ul>
       <li>A yield curve does not reveal how many regimes there are. To first order it sees a $2\times2$ covariance
         matrix, whatever the size of the chain.</li>

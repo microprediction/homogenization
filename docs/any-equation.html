@@ -18,7 +18,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -64,20 +64,20 @@
     <h1>Fast regimes in any pricing equation</h1>
     <p class="subtitle">One first-order rule for every model whose parameters are switched by a fast hidden chain.</p>
 
-    <p class="lead">The examples on this site switch a volatility, a mean level, a hazard rate or a jump intensity. They
-    all follow one rule. To first order, a fast chain adds a second-order term to the pricing operator, weighted by a
-    Green&ndash;Kubo matrix of the switched parameters. This page derives the rule and explains its two parts. It then
-    checks the rule on option smiles, on the joint survival of many names, and on a model where the order of the
-    regimes matters.</p>
+    <p class="lead">The examples switch a volatility, a mean level, a hazard rate or a jump intensity, and they all follow
+    one rule. To first order, a fast chain adds a second-order term to the pricing operator, weighted by a
+    Green&ndash;Kubo matrix of the switched parameters.</p>
+    <p>The rule has a symmetric part and an antisymmetric part. It is checked below on option smiles, on the joint
+    survival of many names, and on a model where the order of the regimes matters.</p>
 
     <h2>The setting</h2>
     <p>A price $u(t, x)$ depends on time to maturity $t$ and on a slow state $x$, such as a log stock price or a short
     rate. With the parameters held fixed, it solves a pricing equation</p>
     $$\partial_t u = \mathcal L\,u,$$
-    <p>where $\mathcal L$ is the generator of the slow process, including any discounting. Now let some of the
-    parameters depend on a hidden state $y_t$. The hidden state is a Markov chain with generator $Q$ and stationary
-    law $\pi$, and it switches much faster than $x$ moves. Write the operator in regime $y$ as its average plus
-    fluctuations:</p>
+    <p>where $\mathcal L$ is the generator of the slow process, including any discounting.</p>
+    <p>Now let some of the parameters depend on a hidden state $y_t$. The hidden state is a Markov chain with
+    generator $Q$ and stationary law $\pi$, and it switches much faster than $x$ moves. Write the operator in
+    regime $y$ as its average plus fluctuations:</p>
     $$\mathcal L_y = \bar{\mathcal L} + \sum_k \phi_k(y)\,A_k .$$
     <p>Here $\phi_k(y)$ is the deviation of the $k$-th switched parameter from its $\pi$-average, and $A_k$ is the
     operator that the parameter multiplies. Most models in finance fit this form:</p>
@@ -107,17 +107,17 @@
     <p>Scale the chain as $Q = Q_0/\varepsilon$ and expand $u = u_0 + \varepsilon u_1 + \varepsilon^2 u_2 + \cdots$.
     Each order is handled with the two steps of the <a href="./solvability.html">solvability page</a>: impose the
     condition that makes the equation solvable, then solve it.</p>
-    <p><b>Order $\varepsilon^{-1}$.</b> Only the chain appears:</p>
+    <p><em>Order $\varepsilon^{-1}$.</em> Only the chain appears:</p>
     $$Q_0\,u_0 = 0 .$$
     <p>So $u_0$ is constant across regimes. The leading price does not depend on the hidden state.</p>
-    <p><b>Order $1$.</b> The equation for the first corrector is</p>
+    <p><em>Order $1$.</em> The equation for the first corrector is</p>
     $$Q_0\,u_1 = \partial_t u_0 - \bar{\mathcal L}\,u_0 - \sum_k \phi_k\,A_k\,u_0 .$$
     <p>Averaging under $\pi$ kills the left side and the fluctuations $\phi_k$. So a solution exists only if</p>
     $$\partial_t u_0 = \bar{\mathcal L}\,u_0 ,$$
     <p>which is the averaged model. The equation is then solved with the group inverse:</p>
     $$u_1 = \bar u_1 - \sum_k \big(Q_0^{\#}\phi_k\big)\,A_k\,u_0 .$$
     <p>The second term remembers the regime. It is large in a regime whose parameters sit above average and persist.</p>
-    <p><b>Order $\varepsilon$.</b> The solvability condition at the next order fixes the average $\bar u_1$. Averaging
+    <p><em>Order $\varepsilon$.</em> The solvability condition at the next order fixes the average $\bar u_1$. Averaging
     the equation under $\pi$ gives</p>
     $$\partial_t \bar u_1 = \bar{\mathcal L}\,\bar u_1 + \mathbb E_\pi\Big[\sum_j \phi_j\,A_j\,u_1\Big].$$
     <p>Substituting $u_1$ from the previous step turns the last term into</p>
@@ -129,20 +129,20 @@
     <div class="equation-card">
     $$\bar u \;\approx\; e^{t\bar{\mathcal L}} f \;+\; \int_0^t e^{(t-s)\bar{\mathcal L}}\,\Big(\sum_{j,k} K_{jk}\,A_j A_k\Big)\,e^{s\bar{\mathcal L}} f\,ds .$$
     </div>
-    <p>Here $f$ is the payoff. In words, the averaged operator gains the correction</p>
+    <p>Here $f$ is the payoff. The averaged operator gains the correction</p>
     $$\bar{\mathcal L} \;\longrightarrow\; \bar{\mathcal L} + \sum_{j,k} K_{jk}\,A_j A_k ,$$
     <p>which should be applied as a first-order perturbation, as in the formula above. Exponentiating the corrected
     operator is not always safe, because it can contain higher derivatives with the wrong sign for a diffusion.</p>
 
-    <h2>Two parts: covariance and order</h2>
+    <h2>Covariance and order</h2>
     <p>Split the matrix into its symmetric and antisymmetric parts, $K = K^{\mathrm{sym}} + K^{\mathrm{anti}}$. The
     correction splits the same way:</p>
     $$\sum_{j,k} K_{jk}\,A_j A_k \;=\; \sum_{j,k} K^{\mathrm{sym}}_{jk}\,A_j A_k \;+\; \sum_{j\lt k} K^{\mathrm{anti}}_{jk}\,\big[A_j, A_k\big].$$
     <ul>
-      <li><b>The symmetric part is a covariance.</b> $2t\,K^{\mathrm{sym}}$ is the long-run covariance matrix of the
+      <li><em>The symmetric part is a covariance.</em> $2t\,K^{\mathrm{sym}}$ is the long-run covariance matrix of the
         integrated parameters $\int_0^t \phi_k(y_s)\,ds$. It is positive semidefinite. This is the term the
         <a href="./idea.html">averaging page</a> explains as half the variance of a fluctuating integral.</li>
-      <li><b>The antisymmetric part is about order.</b> $K^{\mathrm{anti}}_{jk}$ compares parameter $j$ followed by
+      <li><em>The antisymmetric part is about order.</em> $K^{\mathrm{anti}}_{jk}$ compares parameter $j$ followed by
         parameter $k$ with the reverse order. It vanishes for a reversible chain, which looks the same run backwards
         in time. It survives when the chain cycles in a preferred direction.</li>
     </ul>
@@ -159,7 +159,7 @@
     are switched, only the covariance enters. That is why the <a href="./yield-curve.html">yield curve</a> sees a
     symmetric $2\times2$ matrix.</p>
 
-    <h2>Example: the smile from switching volatility</h2>
+    <h2>The smile from switching volatility</h2>
     <p>Switch the variance in Black&ndash;Scholes. With $x = \log S$ there is one operator,</p>
     $$A = \tfrac12\big(\partial_{xx} - \partial_x\big).$$
     <p>It is the derivative with respect to total variance $V = \sigma^2 t$: applied to a Black&ndash;Scholes price, it
@@ -193,7 +193,7 @@
     volatility point. With the chain four times faster, the largest price error falls from $1.2\times10^{-3}$ to
     $7\times10^{-5}$, sixteen times smaller, as a second-order remainder should.</p>
 
-    <h2>Example: many names from one matrix</h2>
+    <h2>Many names from one matrix</h2>
     <p>Give each of several firms a hazard rate $h_m(y)$ that depends on the common regime. The survival of a set $S$
     of names is</p>
     $$P_S(t) = \mathbb E\Big[\exp\Big(-\int_0^t \sum_{m\in S} h_m(y_s)\,ds\Big)\Big].$$
@@ -218,17 +218,17 @@
     survival of all fifteen subsets to within $3\times10^{-6}$. At forty times faster it matches within
     $2\times10^{-7}$.</p>
 
-    <h2>Example: when the order of the regimes matters</h2>
+    <h2>The order of the regimes</h2>
     <p>Now switch the reversion speed and the variance of a Vasicek short rate together. The two operators are</p>
     $$A_\kappa = (\theta - x)\,\partial_x, \qquad A_{\sigma^2} = \tfrac12\,\partial_{xx},$$
     <p>and they do not commute. A short calculation gives</p>
     $$\big[A_\kappa,\,A_{\sigma^2}\big] = \partial_{xx} .$$
-    <p>So the antisymmetric part of $K$ acts exactly like extra variance. The effective variance becomes</p>
+    <p>So the antisymmetric part of $K$ acts as extra variance. The effective variance becomes</p>
     $$\sigma^2_{\mathrm{eff}} = \bar\sigma^2 + 2\,K^{\mathrm{anti}}_{\kappa\sigma^2} + \big(\text{symmetric terms}\big).$$
     <p>The intuition is about sequence. If high volatility tends to be followed by fast reversion, shocks are
-    forgotten quickly and the rate is effectively calmer. If fast reversion comes first and high volatility is
-    followed by slow reversion, shocks linger. The averages and the covariances are the same in both cases. Only
-    the direction of the cycle differs.</p>
+    forgotten quickly and the rate is effectively calmer. If high volatility is followed by slow reversion, shocks
+    linger.</p>
+    <p>The averages and the covariances are the same in both cases. Only the direction of the cycle differs.</p>
     <p>The check uses a chain that cycles almost only one way, $1 \to 2 \to 3 \to 1$, at rate 2 per year, with a
     reverse rate of 0.1:</p>
     <p class="muted">speeds $\kappa = (0.3,\ 1.5,\ 3.0)$, variances $\sigma^2 = (0.0004,\ 0.0036,\ 0.0016)$, $\theta = 4\%$.</p>
@@ -249,7 +249,7 @@
     <p>The full rule is second order. Keeping only the covariance does worse than no correction at all, because
     here the order term is the larger of the two.</p>
 
-    <h2>How this relates to the rest of the site</h2>
+    <h2>Higher orders and special cases</h2>
     <ul>
       <li>The rule is first order for any pricing equation. When the model has an exponential-affine factor with a
         regime-free exponent, the <a href="./engine.html">engine</a> gives every order.</li>

@@ -17,7 +17,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -59,7 +59,7 @@
 
   <main>
     <h1>Regime-switching survival</h1>
-    <p class="subtitle">A worked example: a hazard rate whose mean level and volatility switch between two regimes.</p>
+    <p class="subtitle">A hazard rate whose mean level and volatility switch between two regimes, expanded to all orders in the inverse switching rate.</p>
 
     <p class="lead">
       The problem comes from the second half of my 2001 Stanford thesis. The hazard rate, or short
@@ -149,8 +149,8 @@
       regime has not yet had time to switch. Inside the layer the second-order bracket carries an
       extra transient of size $\varepsilon^2 e^{-2\lambda t}$.</p>
 
-    <h2>Where the formula comes from</h2>
-    <p>This section derives the first-order formula. The <a href="./idea.html">idea</a> page explains the same two
+    <h2>Derivation of the first-order formula</h2>
+    <p> The <a href="./idea.html">idea</a> page explains the same two
     corrections without calculus: one is half the variance of the fluctuating hazard, the other is the memory of the
     starting regime.</p>
 
@@ -169,7 +169,7 @@
     left is a pair of ordinary differential equations:</p>
     $$a_1' = g_1\,a_1 + \lambda\,(a_2 - a_1), \qquad a_2' = g_2\,a_2 + \lambda\,(a_1 - a_2), \qquad a_i(0) = 1,$$
     <p>with $g_i = -\kappa\theta_i B + \tfrac12\sigma_i^2B^2$. Solving this pair numerically gives the reference used
-    throughout the site.</p>
+    throughout the examples.</p>
 
     <h3>Mean and ratio</h3>
     <p>Write the two solutions through their mean and their normalized difference:</p>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>How averaging works · homogenization</title>
+  <title>Averaging by hand · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -17,7 +17,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -58,17 +58,17 @@
 </header>
 
   <main>
-    <h1>How averaging works</h1>
-    <p class="subtitle">The idea behind every page on this site, with one small example worked by hand.</p>
+    <h1>Averaging by hand</h1>
+    <p class="subtitle">A fast two-state switch worked by hand: the average, the variance of the fluctuations, and the memory of the start.</p>
 
-    <p class="lead">This page assumes no background in homogenization. It uses one small model to show what the
-    averaged answer is, why it is only approximately right, and where the first corrections come from. Each
-    correction turns out to have a plain meaning.</p>
+    <p class="lead">One small model shows what the averaged answer is, why it is only approximately right, and where the
+    first corrections come from. Each correction has a plain meaning.</p>
 
     <h2>A quantity driven by a fast switch</h2>
     <p>Suppose a quantity accumulates at a rate that depends on a hidden switch. The switch $y_t$ flips between two
-    states, 1 and 2, and it leaves each state at rate $\lambda$. While the switch is in state $i$, the quantity
-    grows at rate $g_i$. After time $t$ the accumulated amount is</p>
+    states, 1 and 2, and it leaves each state at rate $\lambda$.</p>
+    <p>While the switch is in state $i$, the quantity grows at rate $g_i$. After time $t$ the accumulated amount
+    is</p>
     $$I_t = \int_0^t g(y_s)\,ds .$$
     <p>Think of $g$ as a negative interest rate, or minus a default intensity. The quantity we want is the
     expectation of its exponential,</p>
@@ -86,7 +86,7 @@
     matter at order $1/\lambda$, and each has a simple explanation.</p>
 
     <h2>First correction: the integral fluctuates</h2>
-    <p>The integral $I_t$ is not exactly $\bar g\,t$. It is a sum of many short, nearly independent pieces, so by
+    <p>The integral $I_t$ is not equal to $\bar g\,t$. It is a sum of many short, nearly independent pieces, so by
     the central limit theorem it is approximately normal around $\bar g\,t$. For a normal variable,</p>
     $$\mathbb{E}\big[e^{I}\big] = e^{\mathbb{E}[I] + \frac12\operatorname{Var}(I)} .$$
     <p>So the fluctuations raise the answer by half the variance of the integral.</p>
@@ -108,7 +108,7 @@
     <p>Starting in state 2 shifts it by the same amount in the other direction. So the answer carries a factor</p>
     $$e^{\pm\tilde g/(2\lambda)} \approx 1 \pm \frac{\tilde g}{2\lambda} .$$
 
-    <h2>Putting the pieces together</h2>
+    <h2>The first-order formula</h2>
     <p>With $\varepsilon = 1/\lambda$, the two corrections combine into</p>
     $$a_i(t) \approx \exp\Big(\bar g\,t + \frac{\varepsilon}{2}\,\tilde g^{\,2}\,t\Big)\,\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\Big).$$
     <p>When the rates change over time, as they do in bond pricing, $g_i$ becomes a function $g_i(t)$ and the
@@ -118,7 +118,7 @@
     every example. The shared term is the variance of the fluctuations. The regime-dependent bracket is the
     memory of the starting state.</p>
 
-    <h2>Beyond first order</h2>
+    <h2>Higher orders</h2>
     <p>The heuristic above explains the first corrections, but it does not produce the higher ones. For those the
     expectation is written as the solution of a differential equation, and the equation is expanded in powers of
     $\varepsilon$. Two ideas make that expansion work.</p>

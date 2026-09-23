@@ -15,7 +15,7 @@ def engine_page():
     body = r'''    <h1>The fast-switching engine</h1>
     <p class="subtitle">One recursion for every model whose state factors out of an exponential-affine formula.</p>
 
-    <p class="lead">Each example on this site has a slow process $x_t$, the rate, intensity, variance or count of
+    <p class="lead">Each example has a slow process $x_t$, the rate, intensity, variance or count of
     interest, and a fast process $y_t$ that it does not observe: a Markov chain with a finite number of regimes, or
     a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,</p>
     $$\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big].$$
@@ -75,7 +75,7 @@ def engine_page():
     $\pi\cdot f = 0$,</p>
     $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
     <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
-    rate of $\int g$, exactly as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
+    rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
     is the memory of the starting regime.</p>
 
     <h3>Step 4: closed form</h3>
@@ -123,10 +123,10 @@ def fast_factor_page():
     body = r'''    <h1>A fast mean-reverting factor</h1>
     <p class="subtitle">The continuous version of regime switching, with correlation, derived term by term.</p>
 
-    <p class="lead">On most pages of this site a Markov chain switches the parameters of a rate. Here a continuous
-    factor does the same job: it moves the mean level and the volatility smoothly and quickly. This page derives
-    the correction terms one at a time, for a reader who has seen the <a href="./idea.html">idea of averaging</a>
-    and the <a href="./solvability.html">solvability condition</a> but nothing else.</p>
+    <p class="lead">In most of the examples a Markov chain switches the parameters of a rate. Here a continuous
+    factor does the same job: it moves the mean level and the volatility smoothly and quickly. The correction terms
+    follow one at a time from the <a href="./idea.html">idea of averaging</a> and the
+    <a href="./solvability.html">solvability condition</a>.</p>
 
     <h2>The model</h2>
     <p>The short rate $x_t$ reverts to a level, and diffuses with a volatility, that both depend on a hidden factor
@@ -143,7 +143,7 @@ def fast_factor_page():
     $$\theta(y) = \theta_0 + \theta_1\,y, \qquad \sigma(y) = \sigma_0 + \sigma_1\,y .$$
     <p class="muted">Parameters: $\kappa = 1$, $\theta_0 = 0.05$, $\theta_1 = 0.03$, $\sigma_0 = 0.25$, $\sigma_1 = 0.2$, $\rho = -0.7$.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The bond price for maturity $t$, starting from rate $x$ and factor value $y$:</p>
     $$u(t, x, y) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ Y_0 = y\big].$$
 
@@ -151,7 +151,7 @@ def fast_factor_page():
     <p>When the factor is infinitely fast, the rate sees only its stationary law. The limit is Vasicek&apos;s model with
     the averaged mean level and variance,</p>
     $$\bar\theta = \mathbb{E}[\theta(Y)] = \theta_0, \qquad \bar\sigma^2 = \mathbb{E}[\sigma(Y)^2] = \sigma_0^2 + \sigma_1^2,$$
-    <p>with the expectations taken under the standard normal law. The rest of the page computes what the average
+    <p>with the expectations taken under the standard normal law. The corrections below are what the average
     leaves out.</p>
 
     <h2>Step 1: the rate factors out</h2>
@@ -182,8 +182,9 @@ def fast_factor_page():
 
     <h2>Step 2: split off the average</h2>
     <p>Let $s(t) = \mathbb{E}[a(t,Y)]$ be the stationary average of $a$, and $v = a/s$ its shape, so that
-    $\mathbb{E}[v] = 1$. Take the stationary average of the equation for $a$. The term $\mathcal L a$ averages to zero,
-    because the standard normal law is stationary. Dividing by $s$ gives the slow equation:</p>
+    $\mathbb{E}[v] = 1$.</p>
+    <p>Take the stationary average of the equation for $a$. The term $\mathcal L a$ averages to zero, because the
+    standard normal law is stationary. Dividing by $s$ gives the slow equation:</p>
     $$\frac{s'}{s} = \frac1\delta\,\mathbb{E}\big[G_{-1}v\big] + \mathbb{E}\big[g\,v\big].$$
     <p>Subtracting $v$ times this from the equation for $a/s$ gives the equation for the shape:</p>
     $$\partial_t v = \frac{1}{\delta^2}\,\mathcal L v + \frac1\delta\Big(G_{-1}v - v\,\mathbb{E}[G_{-1}v]\Big) + \Big(g\,v - v\,\mathbb{E}[g\,v]\Big).$$
@@ -232,7 +233,7 @@ def fast_factor_page():
     <ul>
       <li>The first is the averaged Vasicek model.</li>
       <li>The second, of order $\sqrt\varepsilon$, exists only with correlation. Shocks to the rate and to the factor
-        move together, so the factor tends to be high exactly when the rate has risen. This is the correlation
+        move together, so the factor tends to be high when the rate has risen. This is the correlation
         correction of fast mean-reverting stochastic volatility.</li>
       <li>The third, of order $\varepsilon$, contains the fluctuation term $g_1^2 + g_2^2$. As on the
         <a href="./idea.html">idea</a> page, it is half the variance of the fluctuating integral of $g$, and it is
@@ -254,15 +255,15 @@ def fast_factor_page():
     $w_n$ involves only finitely many Hermite polynomials, and each is a combination of powers of
     $e^{-\kappa t}$. The computation is exact at every order; only the truncation of the series introduces error.</p>
     <p>The shape starts at $v(0,y) = 1$, and the outer terms respect this for a while: $g$ vanishes at $t = 0$ because
-    $B(0) = 0$, so $w_2(0) = w_3(0) = 0$. The first mismatch is at $w_4$, where the time derivative $w_2'$ enters. From
-    there an <a href="./layers.html">initial layer</a> in the fast time $t/\varepsilon$ restores the starting condition.
-    It is solved in the eigenbasis of $\mathcal L$, which here is the Hermite basis itself.</p>
+    $B(0) = 0$, so $w_2(0) = w_3(0) = 0$. The first mismatch is at $w_4$, where the time derivative $w_2'$ enters.</p>
+    <p>From there an <a href="./layers.html">initial layer</a> in the fast time $t/\varepsilon$ restores the starting
+    condition. It is solved in the eigenbasis of $\mathcal L$, which here is the Hermite basis itself.</p>
 
     <h2>Results</h2>
     <p>For linear $\theta$ and $\sigma$ the solution also has the form $a = e^{A + C_1y + C_2y^2}$, with $A$, $C_1$ and
-    $C_2$ solving three ordinary differential equations. Their numerical solution is the reference. The terms derived
-    above agree with the code to $10^{-17}$. The table gives the error in the bond factor at $t = 1$, $y = 0.3$, after
-    each order in $\sqrt\varepsilon$.</p>
+    $C_2$ solving three ordinary differential equations. Their numerical solution is the reference.</p>
+    <p>The terms derived above agree with the code to $10^{-17}$. The table gives the error in the bond factor at
+    $t = 1$, $y = 0.3$, after each order in $\sqrt\varepsilon$.</p>
 '''
     body += table(['epsilon'] + [f'order {o}' for o in range(7)], rows)
     body += r'''    <p>Each quartering of $\varepsilon$ halves $\sqrt\varepsilon$ and divides the order-$n$ error by about $2^{n+1}$,

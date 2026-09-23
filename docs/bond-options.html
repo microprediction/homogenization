@@ -17,7 +17,7 @@
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
-        <a href="./idea.html">How averaging works</a>
+        <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
         <a href="./any-equation.html">Any pricing equation</a>
@@ -69,7 +69,7 @@
     <p class="muted">Parameters: $\kappa = 0.5$,
     $\theta = (0.05, 0.03)$, $\sigma = (0.015, 0.010)$, $x_0 = 0.04$, and the economy starts in regime 1.</p>
 
-    <h2>What is computed</h2>
+    <h2>The quantity</h2>
     <p>The price of a call, expiring at $T = 1$ with strike $K$, on the zero-coupon bond maturing at $S = 4$:</p>
     $$C = \mathbb{E}\Big[e^{-\int_0^T x_r\,dr}\,\big(P(T, S) - K\big)^+\Big].$$
     <p>The bond price at expiry depends on the regime then: $P(T,S) = A_{y_T}\,e^{-b\,x_T}$ with
@@ -98,7 +98,7 @@
 
     <h2>The expansion</h2>
     <p>With $\varepsilon = 1/\lambda$, write the terminal vector $e_j$ as its stationary part $\tfrac12\mathbf 1$ plus a
-    remainder. The stationary part is carried by the outer series exactly as when $a(0) = \mathbf 1$: to first order</p>
+    remainder. The stationary part is carried by the outer series as when $a(0) = \mathbf 1$: to first order</p>
     $$\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big),$$
     <p>with
     $\bar g$ and $\tilde g$ the regime average and half-difference of $g$. The remainder relaxes over the fast time
