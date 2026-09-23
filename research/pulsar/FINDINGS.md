@@ -79,3 +79,25 @@ Reading now:
   Needs an alternating renewal with correlated dwells, or a phase-diffusion oscillator, whose K is set by the
   phase diffusion rate, not by the dwell spread.
 - B1540-06 and B1929+20: independent-dwell renewal gives too little. Amplitude or period wander adds K.
+
+## 2026-09-23: stage (Erlang ring) models fitted to the autocovariance (analysis/06_stage_fit.py)
+Fitting to the autocovariance, not to thresholded dwells. Thresholding a noisy series chops dwells and
+overstates their spread. k stages per regime give dwell cv 1/sqrt(k); K comes from the group inverse of the stage
+chain, checked against the renewal formula to 14 digits (scratch check, k = 1 to 30). Fits need multi-start
+(periodogram and dwell hints); the first runs landed in poor local minima.
+
+Percentile of observed six-block K among 400 simulated paths of the fitted model:
+- Ring alone is consistent (5-95) for 12 of 17.
+- Ring fails high for B0740-28, B0919+06, B1822-09, B1839+09, B1929+20. Adding a slow OU component brings
+  B0740-28 (94), B1839+09 (64), B1929+20 (63) in; B0919+06 is marginal (96); B1822-09 fails (99): it is spiky and
+  glitch-like, not a switcher.
+- B1828-11 now fits: ring k = 64, dwells 359 and 130 days, percentile 24. The threshold fit had too much dwell spread.
+- Compare the threshold-based Markov test: 8 of 17 strained.
+
+Selected k is never 1 (Markov). Lowest is 2 (B1822-09); most are 8 to 64, dwell cv 0.12 to 0.35.
+
+Caveat that may explain the large k: the series are Gaussian-process smoothed. Smoothing flattens the
+autocovariance near lag 0, and a large-k ring also has a flat top there. Need the GP kernel length used by
+Keith & Nitu, then fit the ring convolved with that kernel, or fit only lags beyond a few kernel lengths.
+OU time scales hitting the 5e4-day bound (B1903+07, B1907+00, J2043+2740) are not identified; those K_model
+values are meaningless, although the percentile test still simulates the fitted model.
