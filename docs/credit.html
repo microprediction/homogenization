@@ -78,11 +78,12 @@
     <p>The same algebra prices two-factor Gaussian short rates.</p>
 
     <h2>The quantity</h2>
-    <p>Survival of each company and of both, to time $t = 3$,</p>
-    $$S_c(t) = \mathbb{E}\Big[e^{-\int_0^t (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1),$$
-    <p>and from them the correlation of the two default indicators,
-    $(p_{12} - p_1p_2)/\sqrt{p_1(1-p_1)\,p_2(1-p_2)}$, with $p_1 = 1 - S_{(1,0)}$, $p_2 = 1 - S_{(0,1)}$ and
-    $p_{12} = 1 - S_{(1,0)} - S_{(0,1)} + S_{(1,1)}$.</p>
+    <p>The survival of each company and of both, to time $t = 3$:</p>
+    $$S_c(t) = \mathbb{E}\Big[e^{-\int_0^t (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1).$$
+    <p>The default probabilities follow from them:</p>
+    $$p_1 = 1 - S_{(1,0)}, \qquad p_2 = 1 - S_{(0,1)}, \qquad p_{12} = 1 - S_{(1,0)} - S_{(0,1)} + S_{(1,1)} .$$
+    <p>The correlation of the two default indicators is</p>
+    $$\operatorname{corr} = \frac{p_{12} - p_1 p_2}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} .$$
 
     <h2>Averaging</h2>
     <p>When the cycle turns infinitely fast each intensity is a Vasicek process with averaged parameters, and the two

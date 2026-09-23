@@ -96,16 +96,28 @@
     <p>because $\tilde g(0) = \kappa\tilde\theta D(0) = 0$.</p>
 
     <h3>Step 4: the result</h3>
+    <p>Every term, written out in the model&apos;s parameters:</p>
     <div class="equation-card">
     $$\begin{aligned}
-    \phi_{1,2}(u) \;=\; &\exp\Big(D(T)\,v_0 + \kappa\bar\theta\int_0^T D
-      + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\int_0^T D^2 - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2 D(T)^2\Big) \\
-    &\times\Big(1 \pm \frac{\varepsilon}{2}\,\kappa\tilde\theta\,D(T) \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta\,D'(T)\Big)
-      \;+\; O(\varepsilon^3).
+    \phi_{1,2}(u) = \;&\exp\Big(v_0\,D + \kappa\bar\theta\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\,I_2
+      - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2\,D^2\Big) \\
+    &\times\Big(1 \pm \frac{\varepsilon}{2}\,\kappa\tilde\theta\,D \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta\,D'\Big)
+      + O(\varepsilon^3),
+    \end{aligned}$$
+    $$\begin{aligned}
+    D &= \frac{b - d}{\xi^2}\,\frac{1 - E}{1 - \gamma E}, \\
+    D' &= -\tfrac12(u^2 + iu) - b\,D + \tfrac12\xi^2 D^2, \\
+    I_1 &= \frac{(b - d)\,T - 2L}{\xi^2}, \\
+    I_2 &= \Big(\frac{b - d}{\xi^2}\Big)^2\Big[\,T + \frac{\alpha L}{\gamma d} - \frac{\beta}{\gamma d}\Big(\frac{1}{1 - \gamma E} - \frac{1}{1 - \gamma}\Big)\Big], \\
+    L &= \log\frac{1 - \gamma E}{1 - \gamma}, \qquad E = e^{-dT}, \\
+    b &= \kappa - \rho\xi iu, \qquad d = \sqrt{b^2 + \xi^2(iu + u^2)}, \qquad \gamma = \frac{b - d}{b + d}, \\
+    \alpha &= \frac{\gamma^2 - 1}{\gamma}, \qquad \beta = 2\gamma - 2 - \alpha .
     \end{aligned}$$
     </div>
-    <p>The upper sign is for a start in regime 1. The initial layer adds a term of size $\varepsilon^2 e^{-2\lambda T}$ to the
-    bracket, which is below $10^{-10}$ here.</p>
+    <p>Here $D = D(T)$ is the coefficient of the starting variance in the log characteristic function, the same as in
+    Heston&apos;s model. $I_1$ and $I_2$ are the closed forms of $\int_0^T D$ and $\int_0^T D^2$. The upper sign is for a
+    start in regime 1. The initial layer adds a term of size $\varepsilon^2 e^{-2\lambda T}$ to the bracket, which is
+    below $10^{-10}$ here.</p>
 
     <h3>A worked example</h3>
     <p>With the parameters above, $\varepsilon = 0.1$, a start in the turbulent regime, and the Lewis frequency
@@ -116,13 +128,13 @@
       <tbody>
         <tr><td>$d$</td><td>2.16610 + 0.23489 i</td></tr>
         <tr><td>$\gamma$</td><td>&minus;0.010494 + 0.002354 i</td></tr>
-        <tr><td>$D(T)$, $D'(T)$</td><td>&minus;0.256566 + 0.020515 i, &nbsp; &minus;0.070925 + 0.017241 i</td></tr>
-        <tr><td>$\int_0^T D$, $\int_0^T D^2$</td><td>&minus;0.171410 + 0.009570 i, &nbsp; 0.034359 &minus; 0.004175 i</td></tr>
-        <tr><td>averaged exponent $\kappa\bar\theta\int D$</td><td>&minus;0.0188551 + 0.0010527 i</td></tr>
-        <tr><td>first-order exponent $\frac\varepsilon2\kappa^2\tilde\theta^2\int D^2$</td><td>8.418e-6 &minus; 1.023e-6 i</td></tr>
-        <tr><td>second-order exponent $-\frac{\varepsilon^2}8\kappa^2\tilde\theta^2 D(T)^2$</td><td>&minus;4.006e-7 + 6.45e-8 i</td></tr>
-        <tr><td>memory, first order $\frac\varepsilon2\kappa\tilde\theta D(T)$</td><td>&minus;8.980e-4 + 7.18e-5 i</td></tr>
-        <tr><td>memory, second order $-\frac{\varepsilon^2}4\kappa\tilde\theta D'(T)$</td><td>1.241e-5 &minus; 3.02e-6 i</td></tr>
+        <tr><td>$D$, $D'$</td><td>&minus;0.256566 + 0.020515 i, &nbsp; &minus;0.070925 + 0.017241 i</td></tr>
+        <tr><td>$I_1$, $I_2$</td><td>&minus;0.171410 + 0.009570 i, &nbsp; 0.034359 &minus; 0.004175 i</td></tr>
+        <tr><td>averaged exponent $\kappa\bar\theta I_1$</td><td>&minus;0.0188551 + 0.0010527 i</td></tr>
+        <tr><td>first-order exponent $\frac\varepsilon2\kappa^2\tilde\theta^2 I_2$</td><td>8.418e-6 &minus; 1.023e-6 i</td></tr>
+        <tr><td>second-order exponent $-\frac{\varepsilon^2}8\kappa^2\tilde\theta^2 D^2$</td><td>&minus;4.006e-7 + 6.45e-8 i</td></tr>
+        <tr><td>memory, first order $\frac\varepsilon2\kappa\tilde\theta D$</td><td>&minus;8.980e-4 + 7.18e-5 i</td></tr>
+        <tr><td>memory, second order $-\frac{\varepsilon^2}4\kappa\tilde\theta D'$</td><td>1.241e-5 &minus; 3.02e-6 i</td></tr>
       </tbody>
     </table>
     </div>
