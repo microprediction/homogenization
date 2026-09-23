@@ -3,10 +3,10 @@
     <p class="demo-nav"><a href="./regime-switching.html">&larr; regime-switching survival</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">certificate</a></span></p>
     <h1>Convergence orders</h1>
-    <p class="subtitle">How fast each order of the regime-switching expansion approaches the exact solution.</p>
+    <p class="subtitle">How fast each order of the regime-switching expansion approaches the numerical solution.</p>
 
     <p>Each line is the absolute error of an approximation to the survival probability at a fixed
-    maturity, against the exact solution, as the switching rate $\lambda$ runs from 1 to 1000. Both
+    maturity, against the numerical solution, as the switching rate $\lambda$ runs from 1 to 1000. Both
     axes are logarithmic, so an error of order $\lambda^{-n}$ is a straight line of slope $-n$.
     The parameters are those of the <a href="./survival.html">survival demo</a>.</p>
 
@@ -37,7 +37,7 @@
   (function () {
     var P = { kappa: 2, thetas: [0.15, 0.02], sigmas: [Math.sqrt(0.0555), Math.sqrt(0.0055)] }, x0 = 0.12, regime = 0;
     var C = { avg: '#9a9a9a', first: '#4a3aff', second: '#0f8b6e' };
-    var ch = new LineChart(document.getElementById('c'), { legend: 'leg', xlog: true, ylog: true, xlabel: 'switching rate λ (log scale)', ylabel: '|approximation − exact| (log scale)',
+    var ch = new LineChart(document.getElementById('c'), { legend: 'leg', xlog: true, ylog: true, xlabel: 'switching rate λ (log scale)', ylabel: '|approximation − numerical| (log scale)',
       xname: 'λ', xfmt: function (v) { return v < 10 ? v.toFixed(2) : v.toFixed(0); }, yfmt: function (v) { return v.toExponential(2); } });
     function slope(pts) { var a = pts[pts.length - 11], b = pts[pts.length - 1]; return (Math.log10(b[1]) - Math.log10(a[1])) / (Math.log10(b[0]) - Math.log10(a[0])); }
     function run() {

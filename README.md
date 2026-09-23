@@ -18,18 +18,18 @@ available to all orders:
 - the initial layer, which shifts log m from order ε⁴, is solved to all orders in the span of
   τᵏ exp(−2jτ), τ = λt.
 
-The exact solution (a two-state linear ODE, since κ does not switch; Elliott and Mamon 2002, Elliott
+The numerical solution of a two-state linear ODE (the reduction holds since κ does not switch; Elliott and Mamon 2002, Elliott
 and Siu 2009) is the reference. After n orders the error falls like ε^(n+1).
 
 ## Layout
 
 ```
 papers/regime-switching-survival/
-  exact.py                 exact solution (two-state linear ODE)
+  exact.py                 numerical solution of the two-state linear ODE
   expansion.py             the expansion to second order
   all_orders.py            the expansion to all orders, outer series plus initial layer
-  verify_expansion.py      Monte Carlo check of the exact solution; orders 1 to 3
-  verify_all_orders.py     orders 1 to 6 against a 30-digit exact solution
+  verify_expansion.py      Monte Carlo check of the numerical solution; orders 1 to 3
+  verify_all_orders.py     orders 1 to 6 against a 30-digit numerical solution
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

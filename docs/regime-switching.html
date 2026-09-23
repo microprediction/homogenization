@@ -104,7 +104,7 @@
     $\lambda \to \infty$.</p>
 
     <p>
-      The model also has an exact solution, which is what makes the expansion checkable. Because
+      The expansion can be checked against a numerical solution. Because
       $\kappa$ does not switch, $u_y(t,x) = a_y(t)\,e^{-B(t)x}$, where $a$ solves a two-dimensional
       linear ODE driven by $\bar g \pm \tilde g$ and the switching generator. This reduction is
       known: <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a> solve the
@@ -113,7 +113,7 @@
     </p>
 
     <p>
-      Against the exact solution, the error after zero, one and two orders falls like
+      Against the numerical solution, the error after zero, one and two orders falls like
       $\varepsilon$, $\varepsilon^2$ and $\varepsilon^3$. The
       <a href="./convergence.html">convergence demo</a> shows the three slopes, and
       <a href="./survival.html">the survival demo</a> shows the curves. The published fast-switching
@@ -148,11 +148,11 @@
       orders in the span of $\tau^k e^{-2j\tau}$, with $\tau = \lambda t$. With both series the
       error after $n$ orders falls like $\varepsilon^{n+1}$; the certificate
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_all_orders.py">verify_all_orders.py</a>
-      checks orders 1 to 6 against a 30-digit solution. The <a href="./survival.html">survival demo</a>
+      checks orders 1 to 6 against a 30-digit numerical solution. The <a href="./survival.html">survival demo</a>
       shows the terms adding up.
     </p>
 
-    <p class="next-steps">A note setting out the derivation and the exact solution is in preparation.
+    <p class="next-steps">A note setting out the derivation is in preparation.
     Comments and corrections are welcome through
     <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
   </main>

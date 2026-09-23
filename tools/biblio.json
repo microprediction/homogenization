@@ -272,7 +272,7 @@
   "venue": "Quantitative Finance 2(6):454-458",
   "doi": "10.1088/1469-7688/2/6/304",
   "url": "https://doi.org/10.1088/1469-7688/2/6/304",
-  "annotation": "Takes a Vasicek short rate whose mean-reversion level is driven by a finite-state Markov chain and gives the bond price analytically through a fundamental matrix. It is the exact solution of the model on this site in the case of equal volatilities."
+  "annotation": "Takes a Vasicek short rate whose mean-reversion level is driven by a finite-state Markov chain and gives the bond price analytically through a fundamental matrix. It covers the model on this site in the case of equal volatilities."
  },
  {
   "role": "regime",
@@ -316,7 +316,7 @@
   "venue": "Applied Mathematical Finance 16(1):1-15",
   "doi": "10.1080/13504860802015744",
   "url": "https://doi.org/10.1080/13504860802015744",
-  "annotation": "Proves Markov-modulated exponential-affine bond price formulae for regime-switching Hull-White and CIR short rates, with coefficients given by fundamental matrix solutions of linear matrix differential equations, which contains the site's exact reduction as a special case."
+  "annotation": "Proves Markov-modulated exponential-affine bond price formulae for regime-switching Hull-White and CIR short rates, with coefficients given by fundamental matrix solutions of linear matrix differential equations, which contains the reduction used on this site as a special case."
  },
  {
   "role": "regime",
