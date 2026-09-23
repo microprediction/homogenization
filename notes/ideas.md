@@ -12,8 +12,10 @@
 - Early epidemic phase: the linearized SIR/SEIR system is linear in the infected compartments, so a transmission rate
   switched by a fast environment (seasons, behaviour, policy regimes) gives exactly the engine's system
   a' = (Q + diag(beta_i - gamma)) a for expected prevalence. Expected growth rate = averaged rate plus the
-  Green-Kubo term K(beta, beta): fluctuation raises the mean growth, while the typical (almost sure) growth is lower,
-  the Lewontin-Cohen distinction already in the survey.
+  Green-Kubo term K(beta, beta) for SIR: fluctuation raises the mean growth, while the typical (almost sure) growth
+  is lower, the Lewontin-Cohen distinction already in the survey. Not so for SEIR with only beta switching: beta
+  multiplies a nilpotent operator, so the mean growth has no first-order correction (checked: the gap scales as
+  1/lam^2), while the almost-sure growth still drops. See notes/epidemics-research.md.
 - Multi-compartment (SEIR, age structure): the next-generation matrices do not commute, so the antisymmetric
   (cycle-direction) term should appear, e.g. whether high contact precedes or follows high susceptibility.
 - Case counts given a hidden regime are a Markov-modulated Poisson or branching process: the counts page and the
