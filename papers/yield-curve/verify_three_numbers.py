@@ -5,6 +5,8 @@
 3. A two-state chain gives c3^2 = 4 c2 c4 exactly.
 4. Two different three-state chains with the same averages and Green-Kubo matrix give yield curves
    that agree to first order and differ only at order |Q|^-2.
+5. The long yield: the eigenvalue series converges to the principal eigenvalue even for slow switching, and its
+   first two terms are the long-maturity limit of the three-number formula.
 """
 import math
 import numpy as np
@@ -94,6 +96,19 @@ def main():
         drift = abs(row[-1] - row[-2]) / abs(row[-1])
         ok &= drift < 0.05
         print(f"   T={T:5.1f}  diff x scale^2  " + "  ".join(f"{x: .4e}" for x in row) + f"   drift {drift:.3f}")
+
+    print("5. long end: eigenvalue series")
+    from long_end import eigen_series, long_yield
+    D = -THA + SA / (2 * KAPPA ** 2)
+    mu = eigen_series(QA, D, 60)
+    c2, c3, c4 = coefficients(QA, THA, SA, KAPPA)
+    lim = c2 / KAPPA ** 2 + c3 / KAPPA ** 3 + c4 / KAPPA ** 4
+    ok &= abs(mu[2] - lim) < 1e-15
+    print(f"   second term {mu[2]:.6e}  long-maturity limit of the formula {lim:.6e}")
+    for m in [0.05, 0.5, 5.0]:
+        err = abs(-sum(mu[k] * m ** (1 - k) for k in range(1, 61)) - long_yield(m * QA, THA, SA, KAPPA))
+        ok &= err < 1e-13
+        print(f"   scale {m:5}  error of 60-term series {err:.1e}")
 
     print("PASS" if ok else "FAIL")
 

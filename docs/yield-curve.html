@@ -200,6 +200,45 @@
     </div>
     <p>If the chains differed at first order, these scaled numbers would grow in proportion to $m$.</p>
 
+    <h2>The long end</h2>
+    <p>At long maturities $B$ settles at $1/\kappa$, so the forcing settles at</p>
+    $$g_{\infty,i} = -\theta_i + \frac{s_i}{2\kappa^2}.$$
+    <p>The linear system then has constant coefficients. Its solution grows like the exponential of the largest
+    eigenvalue $\Lambda$ of $Q + \operatorname{diag} g_\infty$, and the long yield is</p>
+    $$y_\infty = \lim_{T\to\infty} \Big(-\frac{\log P(T)}{T}\Big) = -\Lambda .$$
+    <p>With two regimes that each leave at rate $\lambda$, write $g_\infty = \bar g \pm \tilde g$. The matrix is
+    $2\times2$ and its largest eigenvalue is</p>
+    $$\Lambda = \bar g + \sqrt{\lambda^2 + \tilde g^{\,2}} - \lambda .$$
+    <p>Expanding the square root in powers of $\tilde g/\lambda$ gives</p>
+    $$\Lambda = \bar g + \frac{\tilde g^{\,2}}{2\lambda} - \frac{\tilde g^{\,4}}{8\lambda^3} + \frac{\tilde g^{\,6}}{16\lambda^5} - \cdots$$
+    <p>The second term is the Green&ndash;Kubo term from the <a href="./idea.html">averaging page</a>. The series
+    converges whenever $\lambda > |\tilde g|$, that is, whenever the switching rate exceeds half the gap between
+    the long-run rates of the two regimes. With rates a few percent apart, that means faster than once every few decades.</p>
+    <p>The same holds for a chain of any size. Scale the generator as $Q = Q_0/\varepsilon$ and write $D = g_\infty$.
+    The eigenvalue has a series whose terms come from the group inverse, starting from $v_0 = \mathbf 1$:</p>
+    $$\mu_k = \pi\cdot\big(D\,v_{k-1}\big), \qquad v_k = Q_0^{\#}\Big(\sum_{j=1}^{k-1}\mu_j\,v_{k-j} - D\,v_{k-1}\Big),$$
+    $$\Lambda = \sum_{k\ge1} \varepsilon^{\,k-1}\,\mu_k .$$
+    <p>The first term is the average and the second is the Green&ndash;Kubo term, which equals the long-maturity limit
+    of the three-number formula:</p>
+    $$\mu_2 = \frac{c_2}{\kappa^2} + \frac{c_3}{\kappa^3} + \frac{c_4}{\kappa^4}.$$
+    <p>The zero eigenvalue of $Q_0$ is simple, so $\Lambda$ is an analytic function of $\varepsilon$ near zero and the
+    series converges. For chain A the terms shrink by a factor of about $0.01\,\varepsilon$ each. The errors of the
+    partial sums, in basis points of long yield, are:</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>generator</th><th>long yield</th><th>1 term</th><th>2 terms</th><th>3 terms</th><th>5 terms</th><th>10 terms</th></tr></thead>
+      <tbody>
+        <tr><td style="text-transform:none">$Q_A/20$</td><td>339.55 bp</td><td>40</td><td>2</td><td>0.2</td><td>4e-3</td><td>5e-6</td></tr>
+        <tr><td style="text-transform:none">$Q_A/2$</td><td>372.15 bp</td><td>4</td><td>1e-2</td><td>2e-4</td><td>6e-8</td><td>3e-12</td></tr>
+        <tr><td style="text-transform:none">$2\,Q_A$</td><td>374.99 bp</td><td>0.9</td><td>9e-4</td><td>3e-6</td><td>6e-11</td><td>&lt; 1e-11</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $Q_A/20$ the regimes last seven to ten years on average, and the series still converges quickly. The long
+    end is simpler than the rest of the curve: it forgets the start, so there is no
+    <a href="./layers.html">initial layer</a>, and the whole correction is one eigenvalue.</p>
+
     <h2>What this says</h2>
     <ul>
       <li>A yield curve does not reveal how many regimes there are. To first order it sees a $2\times2$ covariance
@@ -209,6 +248,8 @@
       <li>The inequality $\beta_3^2 \le 4\beta_2\beta_4$ is a testable restriction on fitted curves.</li>
       <li>Separating chains that share the three numbers needs second-order effects or other instruments, such as
         options, which see the regime through the <a href="./bond-options.html">terminal state</a>.</li>
+      <li>The long yield is a principal eigenvalue. Its expansion in the switching time converges, even for regimes
+        that last many years.</li>
     </ul>
 
   <script src="./charts.js"></script>

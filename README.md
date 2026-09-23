@@ -41,7 +41,8 @@ papers/fast-switching/
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
-  verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains
+  long_end.py              the long yield as a principal eigenvalue; its convergent series in the switching time
+  verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
   make_data.py             writes docs/three-numbers.js for the yield-curve page
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
