@@ -1285,5 +1285,104 @@
   "doi": "10.1002/cpa.1014",
   "url": "https://doi.org/10.1002/cpa.1014",
   "annotation": "Eliminates fast modes of fluid and climate equations by the diffusion approximation, giving reduced stochastic equations for the slow modes."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "CarrascoHuPloberger2014",
+  "authors": "Carrasco, M., Hu, L. and Ploberger, W.",
+  "year": 2014,
+  "title": "Optimal Test for Markov Switching Parameters",
+  "venue": "Econometrica 82(2):765-784",
+  "doi": "10.3982/ecta8609",
+  "url": "https://doi.org/10.3982/ecta8609",
+  "annotation": "An information-matrix-type test for Markov switching that uses only the model under the null and is asymptotically equivalent to the likelihood ratio test."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "White1982",
+  "authors": "White, H.",
+  "year": 1982,
+  "title": "Maximum Likelihood Estimation of Misspecified Models",
+  "venue": "Econometrica 50(1):1-25",
+  "doi": "10.2307/1912526",
+  "url": "https://doi.org/10.2307/1912526",
+  "annotation": "Introduces the information-matrix test, based on the difference between the two forms of the information matrix."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Chesher1984",
+  "authors": "Chesher, A.",
+  "year": 1984,
+  "title": "Testing for Neglected Heterogeneity",
+  "venue": "Econometrica 52(4):865-872",
+  "doi": "10.2307/1911188",
+  "url": "https://doi.org/10.2307/1911188",
+  "annotation": "Shows that the score test for random coefficients is close to the information-matrix test."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Hansen1992",
+  "authors": "Hansen, B. E.",
+  "year": 1992,
+  "title": "The likelihood ratio test under nonstandard conditions: Testing the Markov switching model of GNP",
+  "venue": "Journal of Applied Econometrics 7(S1):S61-S82",
+  "doi": "10.1002/jae.3950070506",
+  "url": "https://doi.org/10.1002/jae.3950070506",
+  "annotation": "A bound for the likelihood ratio test of Markov switching when nuisance parameters are unidentified under the null."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Garcia1998",
+  "authors": "Garcia, R.",
+  "year": 1998,
+  "title": "Asymptotic Null Distribution of the Likelihood Ratio Test in Markov Switching Models",
+  "venue": "International Economic Review 39(3):763-788",
+  "doi": "10.2307/2527399",
+  "url": "https://doi.org/10.2307/2527399",
+  "annotation": "The asymptotic null distribution of the sup likelihood ratio test for Markov switching."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "ChoWhite2007",
+  "authors": "Cho, J. S. and White, H.",
+  "year": 2007,
+  "title": "Testing for Regime Switching",
+  "venue": "Econometrica 75(6):1671-1720",
+  "doi": "10.1111/j.1468-0262.2007.00809.x",
+  "url": "https://doi.org/10.1111/j.1468-0262.2007.00809.x",
+  "annotation": "Quasi-likelihood ratio tests for regime switching based on mixtures."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "JarqueBera1980",
+  "authors": "Jarque, C. M. and Bera, A. K.",
+  "year": 1980,
+  "title": "Efficient tests for normality, homoscedasticity and serial independence of regression residuals",
+  "venue": "Economics Letters 6(3):255-259",
+  "doi": "10.1016/0165-1765(80)90024-5",
+  "url": "https://doi.org/10.1016/0165-1765(80)90024-5",
+  "annotation": "The skewness and kurtosis test of normality of regression residuals."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Clark1973",
+  "authors": "Clark, P. K.",
+  "year": 1973,
+  "title": "A Subordinated Stochastic Process Model with Finite Variance for Speculative Prices",
+  "venue": "Econometrica 41(1):135-155",
+  "doi": "10.2307/1913889",
+  "url": "https://doi.org/10.2307/1913889",
+  "annotation": "Returns as a normal variance mixture subordinated to a random clock, with fat tails."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "AitSahalia2002",
+  "authors": "Aït-Sahalia, Y.",
+  "year": 2002,
+  "title": "Maximum Likelihood Estimation of Discretely Sampled Diffusions: A Closed-form Approximation Approach",
+  "venue": "Econometrica 70(1):223-262",
+  "doi": "10.1111/1468-0262.00274",
+  "url": "https://doi.org/10.1111/1468-0262.00274",
+  "annotation": "Closed-form Hermite expansions of the transition densities of diffusions for maximum likelihood estimation."
  }
 ]

@@ -1,0 +1,123 @@
+<!-- title: Likelihood · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./yield-curve.html">&larr; three numbers in a yield curve</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">certificate</a></span></p>
+    <h1>The likelihood of a switching short rate</h1>
+    <p class="subtitle">A short rate observed at discrete times, with a level and volatility switched by a hidden regime much faster than the sampling: the first-order likelihood, what it identifies, and the test for switching it implies.</p>
+
+    <h2>The model</h2>
+    <p>The short rate follows a Vasicek model whose mean level and variance depend on a hidden Markov chain $y_t$:</p>
+    $$dx_t = \kappa\,\big(\theta_{y_t} - x_t\big)\,dt + \sigma_{y_t}\,dW_t .$$
+    <p>The rate is observed every $\Delta$, giving $x_0, x_1, \dots, x_n$. The chain is not observed. It switches many
+    times between observations, so $\lambda\Delta \gg 1$ for switching rates $\lambda$. There are three time scales: the
+    regimes last about $1/\lambda$, observations come every $\Delta$, and the rate reverts over $1/\kappa$.</p>
+    <p class="muted">Parameters for the checks: $\kappa = 0.5$, $\theta = (0.08,\ 0.02)$, $\sigma^2 = (0.0009,\ 0.0001)$,
+    monthly observations $\Delta = 1/12$.</p>
+
+    <h2>The quantity</h2>
+    <p>The log-likelihood of the observations. Because the regimes at successive observations are independent up to
+    terms of order $e^{-2\lambda\Delta}$, it is a sum of transition densities:</p>
+    $$\ell = \sum_{k} \log p\big(x_{k+1} \mid x_k\big),$$
+    <p>with the regime drawn from its stationary law $\pi$ at the start of each interval and summed at the end.</p>
+
+    <h2>Averaging</h2>
+    <p>When the chain switches infinitely fast the rate is Vasicek with averaged parameters, observed as an AR(1):</p>
+    $$x_{k+1} = \bar\theta + (x_k - \bar\theta)\,e^{-\kappa\Delta} + \sqrt v\,Z_k, \qquad
+      v = \bar s\,\frac{1 - e^{-2\kappa\Delta}}{2\kappa}, \qquad Z_k \sim N(0, 1),$$
+    <p>with $\bar\theta = \pi\cdot\theta$ and $\bar s = \pi\cdot\sigma^2$. The transition density is the Gaussian
+    $f(x_{k+1})$ with mean $m_k = \bar\theta + (x_k - \bar\theta)e^{-\kappa\Delta}$ and variance $v$.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>The Laplace transform of the next observation is exponential-affine. Try
+    $\mathbb{E}\big[e^{-c\,x_{k+1}} \mid x_k,\ y\big] = e^{-B(\Delta)\,x_k}\,a_y(\Delta)$. With no discounting the
+    coefficient solves $B' = -\kappa B$ from $B(0) = c$, so</p>
+    $$B(t) = c\,e^{-\kappa t},$$
+    <p>the same in every regime. What remains is</p>
+    $$a' = \big(Q + \operatorname{diag} g\big)\,a, \qquad a(0) = \mathbf 1, \qquad
+      g_i(t) = -\kappa\,\theta_i\,B(t) + \tfrac12\,\sigma_i^2\,B(t)^2 .$$
+
+    <h2>The first-order likelihood</h2>
+    <p>Let $u = \theta - \bar\theta$ and $w = \sigma^2 - \bar s$ be the fluctuations of level and variance across
+    regimes. The first-order correction to $\log(\pi\cdot a)$ is the Green&ndash;Kubo integral of the fluctuating
+    forcing, as on the <a href="./yield-curve.html">yield-curve page</a>:</p>
+    $$\int_0^\Delta \mathcal K\big(\tilde g, \tilde g\big)\,dt, \qquad \tilde g = -\kappa\,u\,B + \tfrac12\,w\,B^2,
+      \qquad \mathcal K(f, h) = -\pi\cdot\big(f\,Q^{\#}h\big).$$
+    <p>Since $B = c\,e^{-\kappa t}$, this is a polynomial in $c$:</p>
+    $$\int_0^\Delta \mathcal K(\tilde g, \tilde g)\,dt = A_2\,c^2 + A_3\,c^3 + A_4\,c^4,$$
+    $$\begin{aligned}
+    A_2 &= \kappa^2\,\mathcal K(u, u)\,\frac{1 - e^{-2\kappa\Delta}}{2\kappa}, \\
+    A_3 &= -\kappa\,\mathcal K_{\mathrm{sym}}(u, w)\,\frac{1 - e^{-3\kappa\Delta}}{3\kappa}, \\
+    A_4 &= \tfrac14\,\mathcal K(w, w)\,\frac{1 - e^{-4\kappa\Delta}}{4\kappa}.
+    \end{aligned}$$
+    <p>A factor $c^n$ on the transform is the $n$-th derivative of the Gaussian density, and that derivative is a
+    Hermite polynomial times the density:</p>
+    $$f^{(n)}(x) = (-1)^n\,v^{-n/2}\,\mathrm{He}_n(z)\,f(x), \qquad z = \frac{x - m_k}{\sqrt v}.$$
+    <p>So the transition density and the log-likelihood are, to first order,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    p(x_{k+1} \mid x_k) &= f(x_{k+1})\Big(1 + \frac{A_2}{v}\,\mathrm{He}_2(z_k) - \frac{A_3}{v^{3/2}}\,\mathrm{He}_3(z_k)
+      + \frac{A_4}{v^2}\,\mathrm{He}_4(z_k)\Big), \\
+    \ell &= \sum_k \Big(\log f(x_{k+1}) + \frac{A_2}{v}\,\mathrm{He}_2(z_k) - \frac{A_3}{v^{3/2}}\,\mathrm{He}_3(z_k)
+      + \frac{A_4}{v^2}\,\mathrm{He}_4(z_k)\Big),
+    \end{aligned}$$
+    $$\mathrm{He}_2(z) = z^2 - 1, \qquad \mathrm{He}_3(z) = z^3 - 3z, \qquad \mathrm{He}_4(z) = z^4 - 6z^2 + 3 .$$
+    </div>
+    <p>The terms have plain meanings. $A_2$ widens the density, as extra variance would. $A_3$ skews it, through the
+    covariance between a regime&apos;s level and its volatility. $A_4$ fattens its tails, through the variance of the
+    volatility.</p>
+
+    <h2>What the likelihood identifies</h2>
+    <ul>
+      <li>To first order the chain enters only through the $2\times2$ Green&ndash;Kubo matrix of $(u, w)$, the same matrix
+        that the <a href="./yield-curve.html">yield curve</a> sees. Different chains with the same averages and matrix have
+        the same likelihood to first order.</li>
+      <li>The $\mathrm{He}_2$ term is indistinguishable from a larger variance: the data see $v + 2A_2$, which is
+        proportional to $\bar s + 2\kappa^2\mathcal K(u, u)$. The yield curve sees the same combination, so neither the
+        time series nor the cross section separates the average variance from the level&apos;s Green&ndash;Kubo term.</li>
+      <li>$A_3$ and $A_4$ are identified, and they give $\mathcal K_{\mathrm{sym}}(u, w)$ and $\mathcal K(w, w)$.</li>
+      <li>The matrix is positive semidefinite, so $A_3^2 \le 4A_2A_4$ by the Cauchy&ndash;Schwarz inequality applied to
+        $e^{-2\kappa t}$ and $e^{-4\kappa t}$.</li>
+    </ul>
+
+    <h2>The test for switching</h2>
+    <p>With no switching the matrix is zero. The scores for $A_3$ and $A_4$ at zero are sums of Hermite polynomials of
+    the AR(1) residuals, whose sample means are the residual skewness and excess kurtosis:</p>
+    $$\frac{\partial\ell}{\partial A_3} = -\frac{1}{v^{3/2}}\sum_k \mathrm{He}_3(z_k), \qquad
+      \frac{\partial\ell}{\partial A_4} = \frac{1}{v^2}\sum_k \mathrm{He}_4(z_k).$$
+    <p>Since $\mathbb{E}[\mathrm{He}_3^2] = 6$ and $\mathbb{E}[\mathrm{He}_4^2] = 24$ under the null, the score statistic is</p>
+    $$\mathrm{LM} = n\Big(\frac{\hat S^2}{6} + \frac{\hat K^2}{24}\Big),$$
+    <p>the <a href="./bibliography.html#JarqueBera1980">Jarque&ndash;Bera</a> statistic of the AR(1) residuals, with the kurtosis part one-sided because $A_4 \ge 0$.</p>
+    <p>This is an information-matrix-type test, of the family that
+    <a href="./bibliography.html#CarrascoHuPloberger2014">Carrasco, Hu and Ploberger (2014)</a> show to be optimal for
+    Markov switching, building on <a href="./bibliography.html#White1982">White (1982)</a> and
+    <a href="./bibliography.html#Chesher1984">Chesher (1984)</a>. What the continuous-time model adds is the structure of
+    the coefficients: they are Green&ndash;Kubo integrals with explicit time factors, bound by the inequality above.</p>
+    <p>Tests for switching are usually non-standard because the switching parameters are not identified under the
+    null (<a href="./bibliography.html#Hansen1992">Hansen 1992</a>; <a href="./bibliography.html#Garcia1998">Garcia
+    1998</a>; <a href="./bibliography.html#ChoWhite2007">Cho and White 2007</a>). In the fast-switching expansion the
+    parameters are the Green&ndash;Kubo entries, which are identified. The null is the zero matrix, a boundary point of
+    the positive semidefinite cone, so the test is one-sided.</p>
+    <p>Moment estimators follow from the same expansion:</p>
+    $$\hat A_3 = -\frac{\hat S\,v^{3/2}}{6}, \qquad \hat A_4 = \frac{\hat K\,v^2}{24} .$$
+
+    <h2>Checks</h2>
+    <p>The transition density against its exact value by Fourier inversion, as a share of the peak density:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate $\lambda$</th><th>regime changes per observation $\lambda\Delta$</th><th>Gaussian</th><th>first order</th></tr></thead><tbody><tr><td>20</td><td>1.7</td><td>14.37%</td><td>5.40%</td></tr><tr><td>40</td><td>3.3</td><td>7.64%</td><td>2.05%</td></tr><tr><td>80</td><td>6.7</td><td>3.67%</td><td>0.55%</td></tr></tbody></table></div>
+    <p>The first-order error falls by about four for each doubling of $\lambda$ once $\lambda\Delta$ is several units,
+    as a second-order remainder should. With fewer than two regime changes per observation the expansion is poor.</p>
+    <p>The two three-state chains of the <a href="./yield-curve.html">yield-curve page</a>, built to share averages and
+    Green&ndash;Kubo matrix, observed quarterly with $\kappa = 1$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>speed factor</th><th>chain A vs Gaussian</th><th>chain A vs chain B</th></tr></thead><tbody><tr><td>20</td><td>1.751%</td><td>0.1293%</td></tr><tr><td>40</td><td>0.876%</td><td>0.0320%</td></tr><tr><td>80</td><td>0.437%</td><td>0.0079%</td></tr></tbody></table></div>
+    <p>Their densities differ at second order, while each differs from the Gaussian at first order.</p>
+    <p>Moments of the AR(1) residuals from 200,000 exactly simulated monthly observations, against the first-order
+    predictions $-6A_3/v^{3/2}$, $24A_4/v^2$ and $1 + 2A_2/v$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>skewness</th><th>predicted</th><th>excess kurtosis</th><th>predicted</th><th>variance ratio</th><th>predicted</th></tr></thead><tbody><tr><td>60</td><td>+0.0821</td><td>+0.0930</td><td>0.3373</td><td>0.3842</td><td>1.0099</td><td>1.0075</td></tr><tr><td>120</td><td>+0.0361</td><td>+0.0465</td><td>0.1791</td><td>0.1921</td><td>1.0048</td><td>1.0037</td></tr><tr><td>240</td><td>+0.0249</td><td>+0.0232</td><td>0.0921</td><td>0.0961</td><td>1.0003</td><td>1.0019</td></tr></tbody></table></div>
+
+    <h2>Scope</h2>
+    <p>The expansion needs many regime changes between observations. When regimes last longer than the sampling
+    interval, the regimes at successive observations are correlated, the likelihood no longer factors, and the exact
+    likelihood needs the filter of <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>. A switching variance
+    alone gives the classic normal variance mixture of <a href="./bibliography.html#Clark1973">Clark (1973)</a>. For
+    closed-form likelihood expansions of diffusions without regimes see
+    <a href="./bibliography.html#AitSahalia2002">A&iuml;t-Sahalia (2002)</a>.</p>
+  </main>
