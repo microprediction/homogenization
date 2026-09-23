@@ -382,6 +382,100 @@ def bond_options():
     write('bond-options', html)
 
 
+
+def three_regimes():
+    from numpy.polynomial import polynomial as P
+    from fastswitch import ExpSum, numerical_a
+    k = 2.0
+    th, s2 = np.array([0.20, 0.08, 0.02]), np.array([0.04, 0.01, 0.0025])
+    base = np.array([[-3, 2, 1], [1, -2, 1], [0.5, 1.5, -2]], float)
+    T, sc = 1.0, 8
+    Q = sc * base
+    w_, vl = np.linalg.eig(Q.T)
+    pi = np.real(vl[:, np.argmin(abs(w_))]); pi /= pi.sum()
+    one = np.ones(3)
+    Qs = np.linalg.inv(Q - np.outer(one, pi)) + np.outer(one, pi)
+    u, v = th - pi @ th, s2 - pi @ s2
+    pad = lambda a, n: np.array([np.pad(r, (0, n - len(r))) for r in a])
+    def mul(a, b):
+        out = [P.polymul(a[i], b[i]) for i in range(3)]
+        return pad(out, max(len(o) for o in out))
+    gt = np.zeros((3, 3)); gt[:, 1] = -k * u; gt[:, 2] = 0.5 * v
+    w1 = -Qs @ gt
+    F1 = mul(gt, w1); F1 = F1 - np.outer(one, pi @ F1)
+    dw1 = [P.polymul(P.polyder(r), [1, -k]) for r in w1]
+    n = max(max(len(r) for r in dw1), F1.shape[1])
+    w2 = Qs @ (pad(dw1, n) - pad(F1, n))
+    d = np.trim_zeros(pi @ mul(gt, w2), 'b')
+    B = (1 - math.exp(-k * T)) / k
+    I = {j: I_k(j, T, k) for j in range(1, 8)}
+    K = lambda f, h: -pi @ (f * (Qs @ h))
+    c2, c3, c4 = k * k * K(u, u), -k * 0.5 * (K(u, v) + K(v, u)), K(v, v) / 4
+    avg = -k * (pi @ th) * I[1] + 0.5 * (pi @ s2) * I[2]
+    gk = c2 * I[2] + c3 * I[3] + c4 * I[4]
+    e2 = sum(c * I[j] for j, c in enumerate(d) if j > 0)
+    mem = k * B * (Qs @ u) - 0.5 * B * B * (Qs @ v)
+    w2T = np.array([P.polyval(B, r) for r in w2])
+    G = lambda a, b: ExpSum({0: -a + b / (2 * k * k), k: a - 2 * b / (2 * k * k), 2 * k: b / (2 * k * k)})
+    g = [G(th[i], s2[i]) for i in range(3)]
+    ex = np.array(numerical_a(T, Q, g, dps=25), float)
+    o0 = np.full(3, math.exp(avg)); o1 = np.exp(avg + gk) * (1 + mem); o2 = np.exp(avg + gk + e2) * (1 + mem + w2T)
+    eng = FastSwitch(Q, g, order=2).a(T, 2)
+    assert np.abs(o2 - eng).max() < 1e-12
+    mfmt = lambda M: r'\begin{pmatrix}' + r' \\ '.join(' & '.join(f'{x:.4f}' for x in row) for row in M) + r'\end{pmatrix}'
+    html = r"""
+    <h2>The bond price written out</h2>
+    <p>For a chain of any size the expansion is written with the group inverse $Q^{\#}$ of the generator and its
+    stationary law $\pi$. Let $u = \theta - \pi\cdot\theta$ and $v = \sigma^2 - \pi\cdot\sigma^2$ be the fluctuations of
+    level and variance across regimes, so the forcing splits as</p>
+    $$g_i = \bar g + \tilde g_i, \qquad \bar g = -\kappa\,(\pi\cdot\theta)\,B + \tfrac12(\pi\cdot\sigma^2)\,B^2, \qquad
+      \tilde g_i = -\kappa\,u_i\,B + \tfrac12\,v_i\,B^2 .$$
+    <h3>First order</h3>
+    <p>The first correction is the Green&ndash;Kubo integral. Since $\tilde g$ is linear in $u$ and $v$, it is a
+    combination of $I_2$, $I_3$ and $I_4$:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    u_i(T, x) = \;&\exp\Big(-B\,x - \kappa(\pi\cdot\theta)\,I_1 + \tfrac12(\pi\cdot\sigma^2)\,I_2 + c_2 I_2 + c_3 I_3 + c_4 I_4\Big) \\
+      &\times\Big(1 + \kappa B\,[Q^{\#}u]_i - \tfrac12 B^2\,[Q^{\#}v]_i\Big) + O(|Q|^{-2}),
+    \end{aligned}$$
+    $$\begin{aligned}
+    c_2 &= \kappa^2\,\mathcal K(u, u), \qquad c_3 = -\kappa\,\mathcal K_{\mathrm{sym}}(u, v), \qquad c_4 = \tfrac14\,\mathcal K(v, v), \\
+    \mathcal K(f, h) &= -\pi\cdot\big(f\,Q^{\#}h\big), \qquad \mathcal K_{\mathrm{sym}}(u, v) = \tfrac12\big(\mathcal K(u, v) + \mathcal K(v, u)\big), \\
+    I_k &= \int_0^T B^k = \frac{1}{\kappa^k}\Big(T + \sum_{j=1}^{k}\binom{k}{j}(-1)^j\,\frac{1 - e^{-j\kappa T}}{j\kappa}\Big),
+      \qquad B = \frac{1 - e^{-\kappa T}}{\kappa}.
+    \end{aligned}$$
+    </div>
+    <h3>Second order</h3>
+    <p>Because $B' = 1 - \kappa B$, every vector in the recursion is a polynomial in $B$:</p>
+    $$\begin{aligned}
+    w_1 &= -Q^{\#}\tilde g, \\
+    w_2 &= Q^{\#}\big(w_1' - \tilde g\circ w_1 + \pi\cdot(\tilde g\circ w_1)\,\mathbf 1\big), \qquad
+      w_1' = (1 - \kappa B)\,\partial_B w_1 .
+    \end{aligned}$$
+    <p>The second-order exponent is $\int_0^T \pi\cdot(\tilde g\circ w_2)$, a polynomial in $B$ integrated term by term, and
+    the bracket gains $w_2(T)$:</p>
+    <div class="equation-card">
+    $$u_i(T, x) = \exp\Big(\cdots + \sum_{k} d_k\,I_k\Big)\Big(1 + \kappa B\,[Q^{\#}u]_i - \tfrac12 B^2\,[Q^{\#}v]_i + [w_2(T)]_i\Big)
+      + O(|Q|^{-3}),$$
+    $$\pi\cdot(\tilde g\circ w_2) = \sum_k d_k\,B^k .$$
+    </div>
+    <h3>The numbers</h3>
+    <p>For the chain above multiplied by 8, at $T = 1$:</p>
+    $$\pi = (""" + ', '.join(f'{x:.4f}' for x in pi) + r"""), \qquad Q^{\#} = """ + mfmt(Qs) + r""" .$$
+""" + table([['$\\pi\\cdot\\theta$, $\\pi\\cdot\\sigma^2$', f'{pi@th:.6f}, {pi@s2:.6f}'],
+             ['$c_2$, $c_3$, $c_4$', f'{c2:.6g}, {c3:.6g}, {c4:.6g}'],
+             ['$B$; $I_1, \\dots, I_4$', f'{B:.6f}; ' + ', '.join(f'{I[j]:.6g}' for j in (1, 2, 3, 4))],
+             ['averaged exponent', f'{avg:.6f}'], ['Green&ndash;Kubo exponent $c_2I_2 + c_3I_3 + c_4I_4$', f'{gk:.6g}'],
+             ['$d_1, \\dots, d_6$', ', '.join(f'{x:.3g}' for x in d[1:])], ['second-order exponent $\\sum d_kI_k$', f'{e2:.4g}'],
+             ['memory $\\kappa B[Q^{\\#}u]_i - \\frac12B^2[Q^{\\#}v]_i$', ', '.join(f'{x:.6g}' for x in mem)],
+             ['$w_2(T)$', ', '.join(f'{x:.4g}' for x in w2T)]]) + \
+        table([[f'regime {i + 1}', f'{o0[i]:.8f}', f'{o1[i]:.8f}', f'{o2[i]:.8f}', f'{ex[i]:.8f}'] for i in range(3)],
+              head=('start', 'averaged', 'first order', 'second order', 'numerical')) + r"""    <p>The second-order formula agrees with the engine to rounding, and its error against the numerical solution is
+    """ + f'{np.abs(o2 - ex).max():.1e}' + r""".</p>
+"""
+    write('three-regimes', html)
+
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
-    jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options()
+    jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options(); three_regimes()

@@ -163,6 +163,7 @@ def three_regimes_page():
     $w$ applies $Q^{\#}$ once to terms already known, and an initial layer, solved in the eigenbasis of $Q$,
     restores $a(0) = \mathbf 1$. The <a href="./engine.html">engine</a> page gives the recursion in full.</p>
 
+<!-- include: explicit/three-regimes.html -->
     <h2>Results</h2>
     <p>The error in $a_1(1)$, starting in regime 1, after each order, against a 30-digit numerical solution:</p>
 '''

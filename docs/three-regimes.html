@@ -108,6 +108,50 @@
     $w$ applies $Q^{\#}$ once to terms already known, and an initial layer, solved in the eigenbasis of $Q$,
     restores $a(0) = \mathbf 1$. The <a href="./engine.html">engine</a> page gives the recursion in full.</p>
 
+
+    <h2>The bond price written out</h2>
+    <p>For a chain of any size the expansion is written with the group inverse $Q^{\#}$ of the generator and its
+    stationary law $\pi$. Let $u = \theta - \pi\cdot\theta$ and $v = \sigma^2 - \pi\cdot\sigma^2$ be the fluctuations of
+    level and variance across regimes, so the forcing splits as</p>
+    $$g_i = \bar g + \tilde g_i, \qquad \bar g = -\kappa\,(\pi\cdot\theta)\,B + \tfrac12(\pi\cdot\sigma^2)\,B^2, \qquad
+      \tilde g_i = -\kappa\,u_i\,B + \tfrac12\,v_i\,B^2 .$$
+    <h3>First order</h3>
+    <p>The first correction is the Green&ndash;Kubo integral. Since $\tilde g$ is linear in $u$ and $v$, it is a
+    combination of $I_2$, $I_3$ and $I_4$:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    u_i(T, x) = \;&\exp\Big(-B\,x - \kappa(\pi\cdot\theta)\,I_1 + \tfrac12(\pi\cdot\sigma^2)\,I_2 + c_2 I_2 + c_3 I_3 + c_4 I_4\Big) \\
+      &\times\Big(1 + \kappa B\,[Q^{\#}u]_i - \tfrac12 B^2\,[Q^{\#}v]_i\Big) + O(|Q|^{-2}),
+    \end{aligned}$$
+    $$\begin{aligned}
+    c_2 &= \kappa^2\,\mathcal K(u, u), \qquad c_3 = -\kappa\,\mathcal K_{\mathrm{sym}}(u, v), \qquad c_4 = \tfrac14\,\mathcal K(v, v), \\
+    \mathcal K(f, h) &= -\pi\cdot\big(f\,Q^{\#}h\big), \qquad \mathcal K_{\mathrm{sym}}(u, v) = \tfrac12\big(\mathcal K(u, v) + \mathcal K(v, u)\big), \\
+    I_k &= \int_0^T B^k = \frac{1}{\kappa^k}\Big(T + \sum_{j=1}^{k}\binom{k}{j}(-1)^j\,\frac{1 - e^{-j\kappa T}}{j\kappa}\Big),
+      \qquad B = \frac{1 - e^{-\kappa T}}{\kappa}.
+    \end{aligned}$$
+    </div>
+    <h3>Second order</h3>
+    <p>Because $B' = 1 - \kappa B$, every vector in the recursion is a polynomial in $B$:</p>
+    $$\begin{aligned}
+    w_1 &= -Q^{\#}\tilde g, \\
+    w_2 &= Q^{\#}\big(w_1' - \tilde g\circ w_1 + \pi\cdot(\tilde g\circ w_1)\,\mathbf 1\big), \qquad
+      w_1' = (1 - \kappa B)\,\partial_B w_1 .
+    \end{aligned}$$
+    <p>The second-order exponent is $\int_0^T \pi\cdot(\tilde g\circ w_2)$, a polynomial in $B$ integrated term by term, and
+    the bracket gains $w_2(T)$:</p>
+    <div class="equation-card">
+    $$u_i(T, x) = \exp\Big(\cdots + \sum_{k} d_k\,I_k\Big)\Big(1 + \kappa B\,[Q^{\#}u]_i - \tfrac12 B^2\,[Q^{\#}v]_i + [w_2(T)]_i\Big)
+      + O(|Q|^{-3}),$$
+    $$\pi\cdot(\tilde g\circ w_2) = \sum_k d_k\,B^k .$$
+    </div>
+    <h3>The numbers</h3>
+    <p>For the chain above multiplied by 8, at $T = 1$:</p>
+    $$\pi = (0.2083, 0.4583, 0.3333), \qquad Q^{\#} = \begin{pmatrix}-0.0265 & 0.0126 & 0.0139 \\ 0.0048 & -0.0187 & 0.0139 \\ 0.0100 & 0.0178 & -0.0278\end{pmatrix} .$$
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$\pi\cdot\theta$, $\pi\cdot\sigma^2$</td><td>0.085000, 0.013750</td></tr><tr><td>$c_2$, $c_3$, $c_4$</td><td>0.000630208, -6.48437e-05, 1.72119e-06</td></tr><tr><td>$B$; $I_1, \dots, I_4$</td><td>0.432332; 0.283834, 0.0951891, 0.0341266, 0.0126963</td></tr><tr><td>averaged exponent</td><td>-0.047597</td></tr><tr><td>Green&ndash;Kubo exponent $c_2I_2 + c_3I_3 + c_4I_4$</td><td>5.77979e-05</td></tr><tr><td>$d_1, \dots, d_6$</td><td>-2.42e-05, 5.21e-05, -9.29e-06, 6.11e-07, -2.24e-08, 4.49e-10</td></tr><tr><td>second-order exponent $\sum d_kI_k$</td><td>-2.223e-06</td></tr><tr><td>memory $\kappa B[Q^{\#}u]_i - \frac12B^2[Q^{\#}v]_i$</td><td>-0.0033837, -0.000228824, 0.00242945</td></tr><tr><td>$w_2(T)$</td><td>4.363e-05, 3.338e-06, -3.186e-05</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>start</th><th>averaged</th><th>first order</th><th>second order</th><th>numerical</th></tr></thead><tbody><tr><td>regime 1</td><td>0.95351767</td><td>0.95034618</td><td>0.95038566</td><td>0.95038809</td></tr><tr><td>regime 2</td><td>0.95351767</td><td>0.95335458</td><td>0.95335564</td><td>0.95335647</td></tr><tr><td>regime 3</td><td>0.95351767</td><td>0.95588943</td><td>0.95585693</td><td>0.95585386</td></tr></tbody></table></div>
+    <p>The second-order formula agrees with the engine to rounding, and its error against the numerical solution is
+    3.1e-06.</p>
+
     <h2>Results</h2>
     <p>The error in $a_1(1)$, starting in regime 1, after each order, against a 30-digit numerical solution:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>scale s</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>4</td><td>6.2e-3</td><td>1.8e-4</td><td>2.1e-5</td><td>3.7e-6</td><td>5.1e-7</td><td>1.0e-7</td><td>1.6e-8</td></tr><tr><td>8</td><td>3.1e-3</td><td>4.2e-5</td><td>2.4e-6</td><td>2.2e-7</td><td>1.4e-8</td><td>1.4e-9</td><td>1.1e-10</td></tr><tr><td>16</td><td>1.6e-3</td><td>1.0e-5</td><td>2.9e-7</td><td>1.3e-8</td><td>4.2e-10</td><td>2.2e-11</td><td>7.9e-13</td></tr></tbody></table></div>
