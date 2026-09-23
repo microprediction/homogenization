@@ -5,8 +5,9 @@
 
     <p class="lead">Each example on this site has a slow process $x_t$, the rate, intensity, variance or count of
     interest, and a fast process $y_t$ that it does not observe: a Markov chain with a finite number of regimes, or
-    a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,
-    $\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big]$. When the model is exponential-affine in $x$ and
+    a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,</p>
+    $$\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big].$$
+    <p>When the model is exponential-affine in $x$ and
     the coefficient of $x$ does not depend on the regime, the state factors out and what remains is a linear system
     in time only:</p>
     $$u_i(t,x) = e^{-B(t)\cdot x}\,a_i(t), \qquad a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \qquad a(0) = \text{the payoff in each regime}.$$
@@ -31,8 +32,9 @@
     so every $w_n$ is again such a sum and every term of $\log s$ integrates in closed form. Otherwise $g_i$ is held
     as a Chebyshev series.</p>
     <p>The outer series does not match the terminal vector. The initial layer $\eta = w - w_{\mathrm{outer}}$, in the fast
-    time $\tau = t/\varepsilon$, solves $d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$
-    with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
+    time $\tau = t/\varepsilon$, solves</p>
+    $$d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$$
+    <p>with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
     $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 

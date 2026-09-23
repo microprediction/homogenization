@@ -57,12 +57,16 @@
     <p>The regime is a continuous-time Markov chain with generator $s\,Q_1$,</p>
     $$Q_1 = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix},$$
     <p>so that from regime 1 it jumps to regime 2 at rate $2s$ and to regime 3 at rate $s$, and so on. The chain is
-    not reversible. There are two time scales: the rate reverts towards its current level over $1/\kappa$, and the
-    regime changes every $1/s$ or so. Switching is fast when $s \gg \kappa$. Here $\kappa = 2$,
+    not reversible.</p>
+    <p>There are two time scales: the rate reverts towards its current level over $1/\kappa$, and the
+    regime changes every $1/s$ or so. Switching is fast when $s \gg \kappa$.</p>
+    <p class="muted">Parameters: $\kappa = 2$,
     $\theta = (0.20, 0.08, 0.02)$ and $\sigma^2 = (0.04, 0.01, 0.0025)$.</p>
 
     <h2>What is computed</h2>
-    <p>The zero-coupon bond price $u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$ for
+    <p>The zero-coupon bond price</p>
+    $$u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$$
+    <p>for
     maturity $t$, which is also the survival probability when $x$ is a default intensity.</p>
 
     <h2>Averaging</h2>

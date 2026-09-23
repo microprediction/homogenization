@@ -53,11 +53,13 @@
     <p class="lead">
       The problem comes from the second half of my 2001 Stanford thesis. The hazard rate, or short
       rate, is an Ornstein&ndash;Uhlenbeck process whose mean level and volatility switch between two
-      regimes at rate $\lambda$. The quantity wanted is the survival probability, which is also a
+      regimes at rate $\lambda$.
+    </p>
+    <p>
+      The quantity wanted is the survival probability, which is also a
       zero-coupon bond price. When the regimes switch infinitely fast the answer is
       Vasicek&apos;s formula with the regime averages plugged in. The corrector adds terms in
-      $\varepsilon = 1/\lambda$.
-    </p>
+      $\varepsilon = 1/\lambda$.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 760 250" role="img" aria-label="Two regimes switching at rate lambda are replaced by one averaged Vasicek model plus a corrector in 1 over lambda">
@@ -97,9 +99,12 @@
 
 
     <h2>The expansion</h2>
-    <p>The hazard follows $dx_t = \kappa(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t$, where
-    $y_t \in \{1,2\}$ switches at rate $\lambda$ in each direction. The survival probability is
-    $u_y(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = y\big]$. Write</p>
+    <p>The hazard follows</p>
+    $$dx_t = \kappa(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t,$$
+    <p>where
+    $y_t \in \{1,2\}$ switches at rate $\lambda$ in each direction. The survival probability is</p>
+    $$u_y(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = y\big].$$
+    <p>Write</p>
     $$B(r) = \frac{1-e^{-\kappa r}}{\kappa}, \qquad \bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2},$$
     $$\bar g(r) = -\kappa\bar\theta B(r) + \tfrac12 \bar s B(r)^2, \qquad \tilde g(r) = -\kappa\tilde\theta B(r) + \tfrac12 \tilde s B(r)^2 .$$
     <p>With $\varepsilon = 1/\lambda$, and the upper sign when the process starts in regime 1,</p>
@@ -115,63 +120,51 @@
     maturity. The factor $1 \pm R$ depends on the starting regime, and it vanishes as
     $\lambda \to \infty$.</p>
 
-    <p>
-      The expansion can be checked against a numerical solution. Because
+    <p>The expansion can be checked against a numerical solution. Because
       $\kappa$ does not switch, $u_y(t,x) = a_y(t)\,e^{-B(t)x}$, where $a$ solves a two-dimensional
       linear ODE driven by $\bar g \pm \tilde g$ and the switching generator. This reduction is
       known: <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a> solve the
       case of a switching mean level, and <a href="./bibliography.html#ElliottSiu2009">Elliott and
-      Siu (2009)</a> give Markov-modulated exponential-affine bond prices in general.
-    </p>
+      Siu (2009)</a> give Markov-modulated exponential-affine bond prices in general.</p>
 
-    <p>
-      Against the numerical solution, the error after zero, one and two orders falls like
+    <p>Against the numerical solution, the error after zero, one and two orders falls like
       $\varepsilon$, $\varepsilon^2$ and $\varepsilon^3$. The
       <a href="./convergence.html">convergence demo</a> shows the three slopes, and
       <a href="./survival.html">the survival demo</a> shows the curves. The published fast-switching
       expansions treat option prices and transition densities, and a search of the literature did
-      not find the corrector for this bond price or survival probability.
-    </p>
+      not find the corrector for this bond price or survival probability.</p>
 
-    <p>
-      The formula holds away from an initial layer of width about $1/(2\lambda)$, in which the
+    <p>The formula holds away from an initial layer of width about $1/(2\lambda)$, in which the
       regime has not yet had time to switch. Inside the layer the second-order bracket carries an
-      extra transient of size $\varepsilon^2 e^{-2\lambda t}$.
-    </p>
+      extra transient of size $\varepsilon^2 e^{-2\lambda t}$.</p>
 
     <h2>All orders</h2>
-    <p>
-      The same calculation gives every term. Divide the difference $d = (a_1 - a_2)/2$ by the mean
+    <p>The same calculation gives every term. Divide the difference $d = (a_1 - a_2)/2$ by the mean
       $m = (a_1 + a_2)/2$. The ratio $\rho = d/m$ solves one scalar Riccati equation, and the mean
-      follows from it:
-    </p>
+      follows from it:</p>
     $$\rho' = \tilde g\,(1 - \rho^2) - 2\lambda\rho, \quad \rho(0) = 0, \qquad
       \log m(t) = \int_0^t (\bar g + \tilde g\,\rho), \qquad u_y = e^{-B(t)x}\, m\,(1 \pm \rho).$$
-    <p>
-      Expanding $\rho = \sum_n \varepsilon^n \rho_n$ gives $\rho_1 = \tilde g/2$ and
-      $\rho_{n+1} = -\tfrac12\big(\rho_n' + \tilde g \sum_{i+j=n} \rho_i\rho_j\big)$. Every
+    <p>Expanding $\rho = \sum_n \varepsilon^n \rho_n$ gives $\rho_1 = \tilde g/2$ and</p>
+    $$\rho_{n+1} = -\tfrac12\big(\rho_n' + \tilde g \sum_{i+j=n} \rho_i\rho_j\big).$$
+    <p>Every
       $\rho_n$ is a polynomial in $E = 1 - e^{-\kappa t}$, because $dE/dt = \kappa(1-E)$, so every
-      term of $\log m$ integrates in closed form.
-    </p>
-    <p>
-      The outer series does not start at $\rho(0) = 0$. The fast transient that corrects it decays
-      within about $1/(2\lambda)$ but leaves a permanent shift in $\log m$, which first appears at
-      order $\varepsilon^4$ as $-\varepsilon^4 \rho_2(0)\,\tilde g'(0)/4$. The layer is solved to all
-      orders in the span of $\tau^k e^{-2j\tau}$, with $\tau = \lambda t$. With both series the
-      error after $n$ orders falls like $\varepsilon^{n+1}$; the certificate
+      term of $\log m$ integrates in closed form.</p>
+    <p>The outer series does not start at $\rho(0) = 0$. The fast transient that corrects it decays
+      within about $1/(2\lambda)$, but it leaves a permanent shift in $\log m$:</p>
+    $$-\varepsilon^4\,\rho_2(0)\,\tilde g'(0)/4 + O(\varepsilon^5).$$
+    <p>The layer is solved to all orders in the span of $\tau^k e^{-2j\tau}$, with $\tau = \lambda t$. With both
+      series the error after $n$ orders falls like $\varepsilon^{n+1}$.</p>
+    <p>The certificate
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_all_orders.py">verify_all_orders.py</a>
       checks orders 1 to 6 against a 30-digit numerical solution. The <a href="./survival.html">survival demo</a>
-      shows the terms adding up.
-    </p>
+      shows the terms adding up.</p>
 
     <h2>Unequal switching rates</h2>
-    <p>
-      Let regime 1 switch to regime 2 at rate $\lambda_{12}$ and back at rate $\lambda_{21}$, with total
+    <p>Let regime 1 switch to regime 2 at rate $\lambda_{12}$ and back at rate $\lambda_{21}$, with total
       rate $\gamma = \lambda_{12} + \lambda_{21}$ and stationary probabilities $p = \lambda_{21}/\gamma$
       and $q = \lambda_{12}/\gamma$. Write $G_i = -\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$ and
       $D = G_1 - G_2$. In the coordinates $s = p\,a_1 + q\,a_2$ and $r = (a_1 - a_2)/s$ the generator
-      separates exactly, and
-    </p>
+      separates exactly, and</p>
     <div class="equation-card">
     $$\begin{aligned}
       r' &= D\,\big(1 + (q-p)\,r - pq\,r^2\big) - \gamma\,r, \qquad r(0) = 0, \\[4pt]
@@ -179,15 +172,14 @@
       u_1 &= e^{-B(t)x}\, s\,(1 + q\,r), \qquad u_2 = e^{-B(t)x}\, s\,(1 - p\,r).
     \end{aligned}$$
     </div>
-    <p>
-      With $\varepsilon = 1/\gamma$ the outer series has $r_1 = D$ and
-      $r_{n+1} = (q-p)\,D\,r_n - pq\,D\sum_{i+j=n} r_i r_j - r_n'$, again polynomials in $E$. The
-      initial layer decays like $e^{-\gamma t}$ and is solved to all orders in the same way. With
-      $p = q = \tfrac12$ and $\gamma = 2\lambda$ this is the symmetric case above. The certificate
+    <p>With $\varepsilon = 1/\gamma$ the outer series has $r_1 = D$ and</p>
+    $$r_{n+1} = (q-p)\,D\,r_n - pq\,D\sum_{i+j=n} r_i r_j - r_n',$$
+    <p>again polynomials in $E$. The initial layer decays like $e^{-\gamma t}$ and is solved to all orders in the
+      same way. With $p = q = \tfrac12$ and $\gamma = 2\lambda$ this is the symmetric case above.</p>
+    <p>The certificate
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_general_orders.py">verify_general_orders.py</a>
-      checks orders 1 to 6 at $p = 0.3$ against a 30-digit numerical solution, and the
-      <a href="https://github.com/microprediction/homogenize">homogenize</a> package implements both cases.
-    </p>
+      checks orders 1 to 6 at $p = 0.3$ against a 30-digit numerical solution. The
+      <a href="https://github.com/microprediction/homogenize">homogenize</a> package implements both cases.</p>
 
     <p class="next-steps">A note setting out the derivation is in preparation.
     Comments and corrections are welcome through

@@ -54,7 +54,8 @@
     <p>The short rate $x_t$ is an Ornstein&ndash;Uhlenbeck process whose mean level and volatility are set by a hidden
     regime $y_t \in \{1, 2\}$ that switches at rate $\lambda$ in each direction:</p>
     $$dx_t = \kappa\,(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t .$$
-    <p>The rate reverts over $1/\kappa$ and the regime changes every $1/\lambda$. Here $\kappa = 0.5$,
+    <p>The rate reverts over $1/\kappa$ and the regime changes every $1/\lambda$.</p>
+    <p class="muted">Parameters: $\kappa = 0.5$,
     $\theta = (0.05, 0.03)$, $\sigma = (0.015, 0.010)$, $x_0 = 0.04$, and the economy starts in regime 1.</p>
 
     <h2>What is computed</h2>
@@ -68,19 +69,24 @@
     and the option has Jamshidian&apos;s closed-form price.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>In regime $j$ the call pays when $x_T < x_j^* = \log(A_j/K)/b$, so the price combines the quantities
-    $\mathbb{E}\big[e^{-\int_0^T x_r\,dr - c\,x_T}\,\mathbf 1\{x_T < x_j^*,\ y_T = j\}\big]$ for $c = b$ and $c = 0$. Each
+    <p>In regime $j$ the call pays when $x_T < x_j^* = \log(A_j/K)/b$, so the price combines the quantities</p>
+    $$\mathbb{E}\big[e^{-\int_0^T x_r\,dr - c\,x_T}\,\mathbf 1\{x_T < x_j^*,\ y_T = j\}\big]$$
+    <p>for $c = b$ and $c = 0$. Each
     follows by Gil-Pelaez inversion from the same expectation without the indicator on $x_T$ and with $c$ replaced
-    by $c - iu$. For a terminal exponent $c$ the coefficient of $x$ is
-    $\tilde B(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa$, which does not depend on the regime, so</p>
+    by $c - iu$. For a terminal exponent $c$ the coefficient of $x$ is</p>
+    $$\tilde B(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa,$$
+    <p>which does not depend on the regime, so</p>
     $$\mathbb{E}\big[e^{-\int_0^t x_r\,dr - c\,x_t}\,\mathbf 1\{y_t = j\} \mid y_0 = i\big] = e^{-\tilde B(t)x_0}\,a_i(t), \qquad a' = (Q + \operatorname{diag} g)\,a, \quad a(0) = e_j,$$
-    <p>with $g_i = -\kappa\theta_i\tilde B + \tfrac12\sigma_i^2\tilde B^2$. The terminal vector is now the indicator
+    <p>with</p>
+    $$g_i = -\kappa\theta_i\tilde B + \tfrac12\sigma_i^2\tilde B^2.$$
+    <p>The terminal vector is now the indicator
     $e_j$ of the regime at expiry rather than $\mathbf 1$.</p>
 
     <h2>The expansion</h2>
     <p>With $\varepsilon = 1/\lambda$, write the terminal vector $e_j$ as its stationary part $\tfrac12\mathbf 1$ plus a
-    remainder. The stationary part is carried by the outer series exactly as when $a(0) = \mathbf 1$: to first order
-    $\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big)$, with
+    remainder. The stationary part is carried by the outer series exactly as when $a(0) = \mathbf 1$: to first order</p>
+    $$\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big),$$
+    <p>with
     $\bar g$ and $\tilde g$ the regime average and half-difference of $g$. The remainder relaxes over the fast time
     $t/\varepsilon$ like $e^{-2\lambda t}$, so the initial layer now starts at order zero; it is solved order by order
     with the same recursion, described on the <a href="./engine.html">engine</a> page. The expansion needs

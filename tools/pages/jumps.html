@@ -7,14 +7,15 @@
     <p>A default intensity $x_t$ mean-reverts, diffuses, and jumps upward. The jumps arrive at a rate set by a hidden
     regime $y_t \in \{1, 2\}$, as do the mean level and volatility:</p>
     $$dx_t = \kappa\,(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t + dJ_t .$$
-    <p>While $y_t = i$, $J$ jumps at rate $\ell_i$ by exponentially distributed amounts with mean $m$. The regime
-    switches at rate $\lambda$ in each direction. The intensity reverts over $1/\kappa$ and the regime changes every
-    $1/\lambda$. Here $\kappa = 2$, $\theta = (0.05, 0.02)$, $\sigma = (0.02, 0.01)$, $\ell = (3, 0.2)$ and
+    <p>While $y_t = i$, $J$ jumps at rate $\ell_i$ by exponentially distributed amounts with mean $m$.</p>
+    <p>The regime switches at rate $\lambda$ in each direction. The intensity reverts over $1/\kappa$ and the regime changes every
+    $1/\lambda$.</p>
+    <p class="muted">Parameters: $\kappa = 2$, $\theta = (0.05, 0.02)$, $\sigma = (0.02, 0.01)$, $\ell = (3, 0.2)$ and
     $m = 0.03$: the first regime is a stressed one, with frequent jumps.</p>
 
     <h2>What is computed</h2>
-    <p>The survival probability $u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$.</p>
-
+    <p>The survival probability</p>
+    $$u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big].$$
     <h2>Averaging</h2>
     <p>When the regime switches infinitely fast the limit is a Vasicek intensity with averaged mean and variance,
     plus jumps at the average rate $\bar\ell = \tfrac12(\ell_1 + \ell_2)$.</p>
@@ -28,16 +29,18 @@
     <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
     $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i$ is the function above. To first order,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model. The term
-    $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$; the bracket carries the
-    starting regime and fades as $\lambda$ grows.</p>
+    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
+    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
+    the starting regime and fades as $\lambda$ grows.</p>
     <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
     $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
     $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and
-    $\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big)$. This series does not meet
+    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
+    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
+    <p>This series does not meet
     $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes. The jump term is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
+    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>The jump term is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
 
     <h2>Results</h2>
     <p>The error in $a_1(3)$ after each order, against a numerical solution:</p>

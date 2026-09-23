@@ -8,15 +8,16 @@
     $y_t \in \{1, 2\}$:</p>
     $$dS_t = r\,S_t\,dt + \sigma_{y_t}\,S_t\,dW_t .$$
     <p>The regime switches at rate $\lambda$ in each direction. The option lives for $T$ and the regime changes every
-    $1/\lambda$, so switching is fast when $\lambda T \gg 1$. Here $\sigma = (0.30, 0.15)$, $r = 0.03$, $S_0 = 100$,
+    $1/\lambda$, so switching is fast when $\lambda T \gg 1$.</p>
+    <p class="muted">Parameters: $\sigma = (0.30, 0.15)$, $r = 0.03$, $S_0 = 100$,
     $T = 1$, and the stock starts in the volatile regime.</p>
 
     <h2>What is computed</h2>
-    <p>European call prices, through the characteristic function of the log return
-    $\phi_i(u) = \mathbb{E}\big[e^{iu\log(S_T/S_0)} \mid y_0 = i\big]$ and
-    <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>
-    $C = S_0 - \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}$.</p>
-
+    <p>European call prices, through the characteristic function of the log return</p>
+    $$\phi_i(u) = \mathbb{E}\big[e^{iu\log(S_T/S_0)} \mid y_0 = i\big]$$
+    <p>and
+    <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a></p>
+    $$C = S_0 - \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}.$$
     <h2>Averaging</h2>
     <p>When the regime switches infinitely fast the limit is Black&ndash;Scholes with the average variance
     $\bar\sigma^2 = \tfrac12(\sigma_1^2 + \sigma_2^2)$.</p>
@@ -29,16 +30,18 @@
     <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
     $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2)$. To first order,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model. The term
-    $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$; the bracket carries the
-    starting regime and fades as $\lambda$ grows.</p>
+    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
+    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
+    the starting regime and fades as $\lambda$ grows.</p>
     <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
     $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
     $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and
-    $\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big)$. This series does not meet
+    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
+    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
+    <p>This series does not meet
     $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes. The expansion needs $|\tilde g|/\lambda$ to be small, and $\tilde g$ grows like $u^2$. The Fourier integral is
+    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>The expansion needs $|\tilde g|/\lambda$ to be small, and $\tilde g$ grows like $u^2$. The Fourier integral is
     therefore stopped at the frequency where the averaged characteristic function falls below $e^{-40}$; beyond it
     the integrand is negligible and the expansion would not apply.</p>
 

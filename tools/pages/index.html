@@ -14,18 +14,18 @@
     <p class="lead">
       Many models carry a slow quantity of interest and a fast one that nobody observes: a regime
       that switches, a volatility that mean-reverts quickly, a coefficient that oscillates on a
-      small spatial scale. The first step is always the same. Replace the fast variable by its
-      average. Homogenization treats that averaged model as the leading term and computes the next
-      one, the <em>corrector</em>, as a series in the ratio of the two scales.
+      small spatial scale.
     </p>
+    <p>
+      The first step is always the same. Replace the fast variable by its
+      average. Homogenization treats that averaged model as the leading term and computes the next
+      one, the <em>corrector</em>, as a series in the ratio of the two scales.</p>
 
     <h2>The mechanism</h2>
-    <p>
-      Let the fast variable have generator $\mathcal{L}_0/\varepsilon$ and the slow variable
-      generator $\mathcal{L}_1$, so that an expectation $u^\varepsilon$ solves
-      $\partial_t u^\varepsilon = \varepsilon^{-1}\mathcal{L}_0 u^\varepsilon + \mathcal{L}_1 u^\varepsilon$.
-      Expand $u^\varepsilon = u_0 + \varepsilon u_1 + \dots$ and match powers of $\varepsilon$.
-    </p>
+    <p>Let the fast variable have generator $\mathcal{L}_0/\varepsilon$ and the slow variable
+      generator $\mathcal{L}_1$, so that an expectation $u^\varepsilon$ solves</p>
+    $$\partial_t u^\varepsilon = \varepsilon^{-1}\mathcal{L}_0 u^\varepsilon + \mathcal{L}_1 u^\varepsilon.$$
+    <p>Expand $u^\varepsilon = u_0 + \varepsilon u_1 + \dots$ and match powers of $\varepsilon$.</p>
     <ul>
       <li>At order $\varepsilon^{-1}$, $\mathcal{L}_0 u_0 = 0$, so $u_0$ does not depend on the fast variable.</li>
       <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. This has a solution only
@@ -34,11 +34,10 @@
       <li>The solution $u_1$ of that Poisson equation is the corrector. It depends on the fast
         variable, and it is where the average&apos;s error lives.</li>
     </ul>
-    <p>
-      The same steps apply with a diffusive scaling, $\varepsilon^{-2}\mathcal{L}_0 + \varepsilon^{-1}\mathcal{L}_{\mathrm{mix}} + \mathcal{L}_1$,
-      which is the setting of periodic media and of fast mean-reverting volatility. The averaged
-      coefficient is then not always the plain average.
-    </p>
+    <p>The same steps apply with a diffusive scaling,</p>
+    $$\varepsilon^{-2}\mathcal{L}_0 + \varepsilon^{-1}\mathcal{L}_{\mathrm{mix}} + \mathcal{L}_1,$$
+    <p>which is the setting of periodic media and of fast mean-reverting volatility. The averaged
+      coefficient is then not always the plain average.</p>
 
     <h2>Examples</h2>
     <div class="examples">
@@ -93,13 +92,11 @@
       </div>
     </div>
 
-    <p>
-      The regime-switching example is worked out in full, and the same recursion covers the affine models
+    <p>The regime-switching example is worked out in full, and the same recursion covers the affine models
       listed under Examples, each checked against a numerical solution and a simulation. The others link to
       where they are developed. The
       <a href="./bibliography.html">bibliography</a> and <a href="./map.html">literature map</a>
-      currently cover the regime-switching example and the classical theory.
-    </p>
+      currently cover the regime-switching example and the classical theory.</p>
 
     <h2>Cite</h2>
     <blockquote>

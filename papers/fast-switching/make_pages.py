@@ -17,8 +17,9 @@ def engine_page():
 
     <p class="lead">Each example on this site has a slow process $x_t$, the rate, intensity, variance or count of
     interest, and a fast process $y_t$ that it does not observe: a Markov chain with a finite number of regimes, or
-    a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,
-    $\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big]$. When the model is exponential-affine in $x$ and
+    a fast mean-reverting diffusion. The quantity wanted is a Feynman&ndash;Kac expectation,</p>
+    $$\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t, y_t)\big].$$
+    <p>When the model is exponential-affine in $x$ and
     the coefficient of $x$ does not depend on the regime, the state factors out and what remains is a linear system
     in time only:</p>
     $$u_i(t,x) = e^{-B(t)\cdot x}\,a_i(t), \qquad a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \qquad a(0) = \text{the payoff in each regime}.$$
@@ -54,8 +55,9 @@ def engine_page():
     so every $w_n$ is again such a sum and every term of $\log s$ integrates in closed form. Otherwise $g_i$ is held
     as a Chebyshev series.</p>
     <p>The outer series does not match the terminal vector. The initial layer $\eta = w - w_{\mathrm{outer}}$, in the fast
-    time $\tau = t/\varepsilon$, solves $d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$
-    with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
+    time $\tau = t/\varepsilon$, solves</p>
+    $$d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$$
+    <p>with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
     $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 
@@ -97,13 +99,15 @@ def fast_factor_page():
     $$dx_t = \kappa\,\big(\theta(Y_t) - x_t\big)\,dt + \sigma(Y_t)\,dW_t, \qquad dY_t = -\frac{1}{\varepsilon}\,Y_t\,dt + \sqrt{\frac{2}{\varepsilon}}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
     <p>The factor is an Ornstein&ndash;Uhlenbeck process whose stationary law is standard normal. It forgets its
     starting point over a time of order $\varepsilon$, while the rate reverts over $1/\kappa$, so $\varepsilon \ll 1/\kappa$
-    separates the two time scales. The correlation $\rho$ couples the shocks to the rate and to the factor. This is
-    the setting of fast mean-reverting stochastic volatility for interest rates. Here $\kappa = 1$,
+    separates the two time scales.</p>
+    <p>The correlation $\rho$ couples the shocks to the rate and to the factor. This is
+    the setting of fast mean-reverting stochastic volatility for interest rates.</p>
+    <p class="muted">Parameters: $\kappa = 1$,
     $\theta(y) = 0.05 + 0.03y$, $\sigma(y) = 0.25 + 0.2y$ and $\rho = -0.7$.</p>
 
     <h2>What is computed</h2>
-    <p>The bond price $u(t, x, y) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ Y_0 = y\big]$.</p>
-
+    <p>The bond price</p>
+    $$u(t, x, y) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ Y_0 = y\big].$$
     <h2>Averaging</h2>
     <p>When the factor is infinitely fast the rate sees only its stationary law, and the limit is Vasicek&apos;s model
     with mean level $\mathbb{E}[\theta(Y)]$ and variance $\mathbb{E}[\sigma(Y)^2]$, the expectations taken under the
@@ -116,8 +120,9 @@ def fast_factor_page():
     $$\mathcal L = -y\,\partial_y + \partial_{yy}, \qquad G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y, \qquad G_0 = -\kappa\theta(y)B(t) + \tfrac12\sigma(y)^2B(t)^2 .$$
     <p>Write $a(t,\cdot)$ in Hermite coordinates, $a = \sum_n c_n(t)\,\mathrm{He}_n(y)$, with the probabilists&apos; Hermite
     polynomials $\mathrm{He}_0 = 1$, $\mathrm{He}_1 = y$, $\mathrm{He}_2 = y^2 - 1$, and so on. They are orthogonal under
-    the standard normal law, $\mathcal L\,\mathrm{He}_n = -n\,\mathrm{He}_n$, $y\,\mathrm{He}_n = \mathrm{He}_{n+1} + n\,\mathrm{He}_{n-1}$ and
-    $\partial_y\mathrm{He}_n = n\,\mathrm{He}_{n-1}$. In these coordinates $\mathcal L$ is $\operatorname{diag}(0, -1, -2, \dots)$, the
+    the standard normal law,</p>
+    $$\mathcal L\,\mathrm{He}_n = -n\,\mathrm{He}_n, \qquad y\,\mathrm{He}_n = \mathrm{He}_{n+1} + n\,\mathrm{He}_{n-1}, \qquad \partial_y\mathrm{He}_n = n\,\mathrm{He}_{n-1}.$$
+    <p>In these coordinates $\mathcal L$ is $\operatorname{diag}(0, -1, -2, \dots)$, the
     constant function is the unit vector $e_0$, and the stationary expectation reads off $c_0$. The system is a chain
     with states $0, 1, 2, \dots$ and decay rates $0, 1, 2, \dots$, coupled by the banded matrices $G_{-1}$ and $G_0$.</p>
 
