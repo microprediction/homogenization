@@ -69,6 +69,7 @@ for src in sorted((ROOT / "tools" / "pages").glob("*.html")):
     m = re.match(r"<!-- title: (.*?)( \| math)?( \| extra: (.*?))? -->\n", text)
     title, math, extra = m.group(1), bool(m.group(2)), m.group(4) or ""
     body = text[m.end():]
+    body = re.sub(r"<!-- include: (\S+) -->", lambda mm: (ROOT / "tools" / "pages" / mm.group(1)).read_text(), body)
     head = ('<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n'
             '  <meta name="viewport" content="width=device-width,initial-scale=1" />\n'
             f"  <title>{title}</title>\n  <link rel=\"stylesheet\" href=\"./style.css\" />\n")

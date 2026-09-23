@@ -84,7 +84,7 @@
     <h2>Reduction to a linear system</h2>
     <p>By the Feynman&ndash;Kac formula the prices $u_i(t,x)$, one for each starting regime, solve the coupled
     equations</p>
-    $$\partial_t u_i = \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i + \ell_i\,\mathbb{E}\big[u_i(t, x + J) - u_i(t, x)\big] + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    $$\begin{aligned}\partial_t u_i = \;&\kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i \\ &+ \ell_i\,\mathbb{E}\big[u_i(t, x + J) - u_i(t, x)\big] + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.\end{aligned}$$
     <p>The last term is the regime switching: it couples the equation for regime $i$ to the others at the switching
     rates. Try the Vasicek form $u_i = e^{-B(t)x}a_i(t)$. Then $\partial_x u_i = -B\,u_i$ and $\partial_{xx}u_i = B^2u_i$, and
     after dividing by $e^{-Bx}$ the terms proportional to $x$ are</p>
@@ -132,6 +132,43 @@
     $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
     <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
     <p>The jump term is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
+
+
+    <h2>The survival probability in closed form</h2>
+    <p>Specializing the expansion to this model, every integral can be evaluated. With the upper sign for a start in
+    the stressed regime, the survival probability to second order is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 + \bar\ell\,(J_1 - T)
+      + \frac{\varepsilon}{2}\,A - \frac{\varepsilon^2}{8}\,G^2\Big) \\
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,G'\Big) + O(\varepsilon^3),
+    \end{aligned}$$
+    $$\begin{aligned}
+    A \;=\; &\kappa^2\tilde\theta^2 I_2 \;-\; \kappa\tilde\theta\,\tilde s\,I_3 \;+\; \tfrac14\tilde s^2 I_4
+      \;+\; \tilde\ell^{\,2}\,(J_2 - 2J_1 + T) \\
+      &-\; 2\kappa\tilde\theta\tilde\ell\,\Big(\frac{T - J_1}{m} - I_1\Big)
+      \;+\; \tilde s\,\tilde\ell\,\Big(\frac{1}{m}\Big(I_1 - \frac{T - J_1}{m}\Big) - I_2\Big),
+    \end{aligned}$$
+    $$\begin{aligned}
+    G &= -\kappa\tilde\theta\,B + \tfrac12\tilde s\,B^2 + \tilde\ell\,\Big(\frac{1}{1 + mB} - 1\Big), \\
+    G' &= \Big(-\kappa\tilde\theta + \tilde s\,B - \frac{\tilde\ell\,m}{(1 + mB)^2}\Big)E, \\
+    B &= \frac{1 - E}{\kappa}, \qquad E = e^{-\kappa T}, \\
+    I_1 &= \frac{1}{\kappa}\Big(T - \frac{1 - E}{\kappa}\Big), \\
+    I_2 &= \frac{1}{\kappa^2}\Big(T - \frac{2(1 - E)}{\kappa} + \frac{1 - E^2}{2\kappa}\Big), \\
+    I_3 &= \frac{1}{\kappa^3}\Big(T - \frac{3(1 - E)}{\kappa} + \frac{3(1 - E^2)}{2\kappa} - \frac{1 - E^3}{3\kappa}\Big), \\
+    I_4 &= \frac{1}{\kappa^4}\Big(T - \frac{4(1 - E)}{\kappa} + \frac{3(1 - E^2)}{\kappa} - \frac{4(1 - E^3)}{3\kappa} + \frac{1 - E^4}{4\kappa}\Big), \\
+    J_1 &= \frac{\kappa}{\kappa + m}\Big(T + \frac1\kappa\log\Big(1 + \frac m\kappa(1 - E)\Big)\Big), \\
+    J_2 &= \frac{\kappa}{\kappa + m}\Big(J_1 - \frac1\kappa\Big(\frac{1}{1 + \frac m\kappa(1 - E)} - 1\Big)\Big).
+    \end{aligned}$$
+    </div>
+    <p>The bars and tildes are half-sums and half-differences across the two regimes:</p>
+    $$\bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2},
+      \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .$$
+    <p>The first factor, without the $\varepsilon$ terms, is the survival probability of the averaged model. The terms
+    in $A$ are the Green&ndash;Kubo correction, and the bracket is the memory of the starting regime.</p>
+    <p>At the parameters above, with $T = 3$, $x = 0$ and $\lambda = 10$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$E$, $B$</td><td>0.002479, 0.498761</td></tr><tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>1.25062, 0.563119, 0.260881, 0.122705</td></tr><tr><td>$J_1$, $J_2$</td><td>2.962981, 2.926456</td></tr><tr><td>averaged exponent</td><td>-0.146703</td></tr><tr><td>$A$</td><td>0.00286993</td></tr><tr><td>$G$, $G'$</td><td>-0.0355833, -0.000175238</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>survival</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>0.86355045</td><td>1.4e-03</td></tr><tr><td>first order</td><td>0.86213776</td><td>1.1e-06</td></tr><tr><td>second order</td><td>0.86213677</td><td>7.8e-08</td></tr><tr><td>numerical solution</td><td>0.86213670</td><td></td></tr></tbody></table></div>
 
     <h2>Results</h2>
     <p>The error in $a_1(3)$ after each order, against a numerical solution:</p>

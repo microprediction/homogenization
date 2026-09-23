@@ -301,6 +301,7 @@ def counts_page():
     <p>which adds $t(\ell_1 - \ell_2)^2/(4\lambda)$ to the
     variance.''')
     body += r'''
+<!-- include: explicit/counts.html -->
     <h2>Results</h2>
     <p>Moments of $N_1$, starting in the busy regime, from the numerical solution:</p>
 '''
@@ -352,6 +353,7 @@ def cir_page():
     body += two_state_expansion(r'$g_i = -\kappa\theta_i B$, so that $\tilde g = -\kappa\tilde\theta B$ with $\tilde\theta = \tfrac12(\theta_1 - \theta_2)$',
                                 r''' $B$ is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.''')
     body += r'''
+<!-- include: explicit/cir.html -->
     <h2>Results</h2>
     <p>The error in $a_1(3)$ after each order, against a numerical solution:</p>
 '''
@@ -401,6 +403,7 @@ def jumps_page():
     body += two_state_expansion(r'$g_i$ is the function above',
                                 r''' The jump term is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.''')
     body += r'''
+<!-- include: explicit/jumps.html -->
     <h2>Results</h2>
     <p>The error in $a_1(3)$ after each order, against a numerical solution:</p>
 '''
@@ -608,6 +611,7 @@ def black_scholes_page():
     therefore stopped at the frequency where the averaged characteristic function falls below $e^{-40}$; beyond it
     the integrand is negligible and the expansion would not apply.''')
     body += r'''
+<!-- include: explicit/black-scholes.html -->
     <h2>Results</h2>
     <p>Call prices from the numerical characteristic function, and the error after each order:</p>
 '''

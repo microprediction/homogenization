@@ -1,0 +1,23 @@
+
+    <h2>The generating function in closed form</h2>
+    <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb{E}\big[z^{N_T}\big]_{1,2} \;=\; &e^{(\bar g - \lambda)T}\Big(\cosh sT + \frac{\lambda \pm \tilde g}{s}\,\sinh sT\Big),
+      \qquad s = \sqrt{\lambda^2 + \tilde g^2}, \\[4pt]
+    \;=\; &\exp\Big(\bar g\,T + \frac{\varepsilon}{2}\,\tilde g^2\,T - \frac{\varepsilon^2}{4}\,\tilde g^2\big(1 - e^{-2\lambda T}\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\,\big(1 - e^{-2\lambda T}\big)\Big) + O(\varepsilon^3).
+    \end{aligned}$$
+    </div>
+    <p>with</p>
+    $$\bar g = (z - 1)\,\bar\ell, \qquad \tilde g = (z - 1)\,\tilde\ell, \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .$$
+    <p>Differentiating the expansion at $z = 1$ gives the mean and variance of the count to second order. With
+    $L = 1 - e^{-2\lambda T}$,</p>
+    $$\mathbb{E}[N_T] = \bar\ell\,T \pm \frac{\varepsilon}{2}\,\tilde\ell\,L,$$
+    $$\operatorname{Var}[N_T] = \bar\ell\,T + \varepsilon\,\tilde\ell^{\,2}\,T \pm \frac{\varepsilon}{2}\,\tilde\ell\,L
+      - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
+    <p>The variance exceeds the mean by $\varepsilon\tilde\ell^2T$, the Green&ndash;Kubo overdispersion. At
+    $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th></th><th>first order</th><th>second order</th><th>exact</th></tr></thead><tbody><tr><td>mean</td><td>4.67500</td><td>4.67500</td><td>4.67500</td></tr><tr><td>variance</td><td>5.90000</td><td>5.80812</td><td>5.80812</td></tr></tbody></table></div>
+    <p>The distribution itself follows by evaluating the exact generating function at the 64 roots of unity, as
+    described above.</p>

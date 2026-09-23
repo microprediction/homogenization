@@ -1,0 +1,26 @@
+
+    <h2>The survival probability written out</h2>
+    <p>Every integral in $\log M$ is a combination of $\int_0^T B^k$, and $B$ is a polynomial in $E = e^{-\kappa T}$. The
+    integrals are therefore elementary, and the survival probability to second order is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 - \frac{\varepsilon^2}{8}\,G^2 \\
+      &\qquad + \frac{\varepsilon}{2}\big(\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2 I_4\big)\Big) \\
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\big(\tilde s\,B - \kappa\tilde\theta\big)E\Big)
+      + O(\varepsilon^3),
+    \end{aligned}$$
+    $$\begin{aligned}
+    G &= -\kappa\tilde\theta\,B + \tfrac12\tilde s\,B^2, \qquad B = \frac{1 - E}{\kappa}, \qquad E = e^{-\kappa T}, \\
+    I_1 &= \frac{1}{\kappa}\Big(T - \frac{1 - E}{\kappa}\Big), \\
+    I_2 &= \frac{1}{\kappa^2}\Big(T - \frac{2(1 - E)}{\kappa} + \frac{1 - E^2}{2\kappa}\Big), \\
+    I_3 &= \frac{1}{\kappa^3}\Big(T - \frac{3(1 - E)}{\kappa} + \frac{3(1 - E^2)}{2\kappa} - \frac{1 - E^3}{3\kappa}\Big), \\
+    I_4 &= \frac{1}{\kappa^4}\Big(T - \frac{4(1 - E)}{\kappa} + \frac{3(1 - E^2)}{\kappa} - \frac{4(1 - E^3)}{3\kappa} + \frac{1 - E^4}{4\kappa}\Big).
+    \end{aligned}$$
+    </div>
+    <p>This is Vasicek&apos;s survival probability with averaged parameters, multiplied by an explicit correction. The
+    $\varepsilon$ term in the exponent is the Green&ndash;Kubo correction, and the bracket is the memory of the starting
+    regime.</p>
+    <p>At the parameters of the <a href="./survival.html">survival demo</a>, $\kappa = 2$, $\theta = (0.15,\ 0.02)$,
+    $\sigma^2 = (0.0555,\ 0.0055)$, $x = 0.12$, with $T = 4$, $\lambda = 20$ and a start in regime 1:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$E$, $B$</td><td>0.000335463, 0.499832</td></tr><tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>1.75008, 0.812584, 0.38548, 0.184938</td></tr><tr><td>averaged exponent $-\kappa\bar\theta I_1 + \frac12\bar s I_2$</td><td>-0.285122</td></tr><tr><td>correction $\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\tilde s I_3 + \frac14\tilde s^2 I_4$</td><td>0.0125088</td></tr><tr><td>$G$</td><td>-0.0618553</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>survival</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>0.70814796</td><td>8.7e-04</td></tr><tr><td>first order</td><td>0.70727403</td><td>8.7e-07</td></tr><tr><td>second order</td><td>0.70727321</td><td>3.8e-08</td></tr><tr><td>numerical solution</td><td>0.70727317</td><td></td></tr></tbody></table></div>

@@ -128,6 +128,27 @@
     therefore stopped at the frequency where the averaged characteristic function falls below $e^{-40}$; beyond it
     the integrand is negligible and the expansion would not apply.</p>
 
+
+    <h2>The characteristic function in closed form</h2>
+    <p>The forcing is constant, so the two-state system can be solved exactly. The characteristic function of the log
+    return is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_{1,2} \;=\; &e^{(\bar g - \lambda)T}\Big(\cosh sT + \frac{\lambda \pm \tilde g}{s}\,\sinh sT\Big),
+      \qquad s = \sqrt{\lambda^2 + \tilde g^2}, \\[4pt]
+    \;=\; &\exp\Big(\bar g\,T + \frac{\varepsilon}{2}\,\tilde g^2\,T - \frac{\varepsilon^2}{4}\,\tilde g^2\big(1 - e^{-2\lambda T}\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\,\big(1 - e^{-2\lambda T}\big)\Big) + O(\varepsilon^3).
+    \end{aligned}$$
+    </div>
+    <p>with</p>
+    $$\bar g = iu\big(r - \tfrac12\bar s\big) - \tfrac12 u^2\,\bar s, \qquad
+      \tilde g = -\tfrac12\big(iu + u^2\big)\,\tilde s, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2} .$$
+    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Black&ndash;Scholes with the
+    averaged variance, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$ and the memory of the starting
+    regime. The upper sign is for a start in the volatile regime.</p>
+    <p>At $\lambda = 25$, $T = 1$ and the Lewis frequency $u = 1 - i/2$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>$\bar g$, $\tilde g$</td><td>-0.0201562 + 0.03i, -0.0210937</td></tr><tr><td>averaged Black&ndash;Scholes</td><td>0.97960454 + 0.029396956i</td><td>4.0e-04</td></tr><tr><td>first order</td><td>0.97919998 + 0.029384816i</td><td>1.7e-07</td></tr><tr><td>second order</td><td>0.97919981 + 0.02938481i</td><td>7.2e-11</td></tr><tr><td>exact</td><td>0.97919981 + 0.02938481i</td><td></td></tr></tbody></table></div>
+
     <h2>Results</h2>
     <p>Call prices from the numerical characteristic function, and the error after each order:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th></tr></thead><tbody><tr><td>25</td><td>90</td><td>16.600838</td><td>3.6e-2</td><td>1.8e-4</td><td>1.2e-6</td><td>2.3e-8</td><td>1.1e-8</td></tr><tr><td>25</td><td>110</td><td>6.790125</td><td>4.1e-2</td><td>3.2e-4</td><td>1.7e-6</td><td>3.9e-7</td><td>1.6e-8</td></tr><tr><td>50</td><td>90</td><td>16.582886</td><td>1.8e-2</td><td>4.6e-5</td><td>1.3e-7</td><td>2.3e-9</td><td>2.7e-10</td></tr><tr><td>50</td><td>110</td><td>6.769676</td><td>2.0e-2</td><td>7.9e-5</td><td>2.3e-7</td><td>2.3e-8</td><td>5.4e-10</td></tr><tr><td>100</td><td>90</td><td>16.573958</td><td>8.9e-3</td><td>1.2e-5</td><td>1.6e-8</td><td>1.6e-10</td><td>8.7e-12</td></tr><tr><td>100</td><td>110</td><td>6.759528</td><td>1.0e-2</td><td>2.0e-5</td><td>2.9e-8</td><td>1.4e-9</td><td>1.6e-11</td></tr></tbody></table></div>
