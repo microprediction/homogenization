@@ -126,3 +126,21 @@ def fast_factor_exact(t, y, eps, kappa, theta0, theta1, sig0, sig1, rho):
                 (-2 * C2 + 4 * C2 * C2) / eps + 0.5 * sig1 ** 2 * b * b + 2 * c * sig1 * C2]
     z = solve_ivp(f, (0, t), [0, 0, 0], method='Radau', rtol=3e-14, atol=1e-18).y[:, -1]
     return math.exp(z[0] + z[1] * y + z[2] * y * y)
+
+
+# ---------------------------------------------------------------- Black-Scholes with a switching volatility
+def bs_switching(u, r, sigmas):
+    """dX = (r - sigma_y^2 / 2) dt + sigma_y dW for X = log S. E[exp(i u (X_T - X_0)) | y_0 = i] = a_i(T) with
+    constant g_i = i u (r - sigma_i^2 / 2) - u^2 sigma_i^2 / 2."""
+    cs = [1j * u * (r - s * s / 2) - u * u * s * s / 2 for s in sigmas]
+    return [ExpSum({0: c}) for c in cs], [(lambda c: (lambda t: c))(c) for c in cs]
+
+
+# ---------------------------------------------------------------- Vasicek with a terminal exponential payoff
+def vasicek_terminal(kappa, thetas, sigmas, c):
+    """E[exp(-int_0^t x - c x_t) 1{y_t = j} | x_0, y_0 = i] = exp(-Bc(t) x_0) a_i(t) with a(0) = e_j,
+    Bc(t) = c exp(-kappa t) + (1 - exp(-kappa t)) / kappa, g_i = -kappa theta_i Bc + sigma_i^2 Bc^2 / 2."""
+    Bc = ExpSum({0: 1 / kappa, kappa: c - 1 / kappa})
+    g = [Bc.scale(-kappa * th) + (Bc * Bc).scale(0.5 * s * s) for th, s in zip(thetas, sigmas)]
+    gfuncs = [(lambda gi: (lambda t: gi.value(t)))(gi) for gi in g]
+    return g, gfuncs, Bc

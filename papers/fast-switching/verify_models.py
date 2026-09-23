@@ -115,6 +115,18 @@ def main():
         r = orders(lambda: heston_switching_theta(u, 2.0, [0.09, 0.02], 0.4, -0.6, 1.0)[:2], 1.0, 10.0)
         check(f"Heston orders u={u}", all(abs(r[i] - (i + 1)) < 0.5 for i in range(3)), " ".join(f"{a:.2f}" for a in r))
 
+    # options: Black-Scholes with a switching volatility, and a call on a zero-coupon bond
+    from options import bs_call, zcb_call
+    for l in (50.0, 100.0):
+        Ql = [[-l, l], [l, -l]]
+        num = bs_call(100, 110, 1.0, 0.03, [0.30, 0.15], Ql, 0)
+        err = abs(bs_call(100, 110, 1.0, 0.03, [0.30, 0.15], Ql, 0, order=4) - num)
+        check(f"Black-Scholes call lam={l:g}", err < 1e-8, f"numerical {num:.6f}, order-4 error {err:.1e}")
+    Ql = [[-50.0, 50.0], [50.0, -50.0]]
+    num = zcb_call(1.0, 4.0, 0.90, 0.04, 0, 0.5, [0.05, 0.03], [0.015, 0.010], Ql)
+    err = abs(zcb_call(1.0, 4.0, 0.90, 0.04, 0, 0.5, [0.05, 0.03], [0.015, 0.010], Ql, order=4) - num)
+    check("bond call lam=50", err < 1e-10, f"numerical {num:.8f}, order-4 error {err:.1e}")
+
     print("PASS" if OK else "FAIL")
     return 0 if OK else 1
 

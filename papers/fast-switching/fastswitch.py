@@ -147,8 +147,9 @@ def _vpoly(n):
 
 # ------------------------------------------------------------------ the engine
 class FastSwitch:
-    def __init__(self, Q, g, order=6):
-        """Q: generator (rows sum to zero). g: list of ExpSum, one per state. eps = 1 / (-trace(Q) / n)."""
+    def __init__(self, Q, g, order=6, a0=None):
+        """Q: generator (rows sum to zero). g: list of ExpSum, one per state. eps = 1 / (-trace(Q) / n).
+        a0: terminal vector a(0) (default all ones); a regime-dependent payoff enters here."""
         Q = np.asarray(Q, float)
         n = self.n = Q.shape[0]
         self.eps = eps = n / -np.trace(Q)
@@ -160,6 +161,9 @@ class FastSwitch:
         self.Qs = Qs = np.linalg.inv(Q0 - np.outer(one, pi)) + np.outer(one, pi)  # group inverse
         self.g, self.N = g, order
         N = order
+        a0 = np.ones(n) if a0 is None else np.asarray(a0, complex)
+        self.s0 = s0 = complex(pi @ a0)
+        w_init = a0 / s0 - 1  # pi . w_init = 0
         zero = self._zero = g[0].scale(0.0)
         self.gbar = gbar = sum((g[i].scale(pi[i]) for i in range(n)), zero)
 
@@ -198,12 +202,15 @@ class FastSwitch:
             return [0] * a + [c]
 
         eta = [_vpoly(n) for _ in range(N + 1)]
+        # order 0 of the layer: the terminal vector relaxing, eta_0 = exp(Q0 tau) w_init
+        y00 = Vi @ w_init
+        eta[0] = [sum((ExpPoly({(0, lam[jj]): y00[jj] * V[i, jj]}) for jj in range(n) if abs(lam[jj]) > 1e-10), ExpPoly()) for i in range(n)]
         for m in range(1, N + 1):
             f = _vpoly(n)
             # eps * [ g*eta - eta*gbar - eta*pi(g*w_o) - (1 + w_o) pi(g*eta) - eta pi(g*eta) ] at eps^m
             for a in range(0, m):
                 j = m - 1 - a
-                if j < 1:
+                if j < 0:
                     continue
                 # pi(g*eta_j) at Taylor order a
                 pge = sum((eta[j][k].times_poly(poly(a, pi[k] * gT[k][a])) for k in range(n)), ExpPoly())
@@ -213,7 +220,7 @@ class FastSwitch:
                 for b in range(1, m):
                     for c in range(0, m):
                         j = m - 1 - a - b - c
-                        if j < 1:
+                        if j < 0:
                             continue
                         pgw = sum(pi[k] * gT[k][a] * WT[b][k][c] for k in range(n))  # coefficient of tau^(a+c)
                         pge = sum((eta[j][k].times_poly(poly(a, pi[k] * gT[k][a])) for k in range(n)), ExpPoly())
@@ -221,9 +228,9 @@ class FastSwitch:
                             f[i] = f[i] + eta[j][i].times_poly(poly(a + c, -pgw))
                             f[i] = f[i] + pge.times_poly(poly(c, -WT[b][i][c]))
             for a in range(0, m):
-                for j1 in range(1, m):
+                for j1 in range(0, m):
                     j2 = m - 1 - a - j1
-                    if j2 < 1:
+                    if j2 < 0:
                         continue
                     pge = sum((eta[j2][k].times_poly(poly(a, pi[k] * gT[k][a])) for k in range(n)), ExpPoly())
                     for i in range(n):
@@ -240,7 +247,8 @@ class FastSwitch:
                     ye.append(ExpPoly.solve(lam[j], fe[j], y0[j]))
             eta[m] = [sum((ye[j].scale(V[i, j]) for j in range(n)), ExpPoly()) for i in range(n)]
         self.eta = eta
-        self.is_complex = any(np.iscomplexobj(np.asarray(gt)) and np.any(np.abs(np.imag(gt)) > 0) for gt in gT)
+        self.is_complex = any(np.iscomplexobj(np.asarray(gt)) and np.any(np.abs(np.imag(gt)) > 0) for gt in gT) \
+            or bool(np.any(np.abs(np.imag(a0)) > 0))
 
     def a(self, t, order=None):
         """The vector a(t) through eps^order (complex when g is complex)."""
@@ -249,22 +257,22 @@ class FastSwitch:
         log_s = self.gbar.integral(t) + sum(e ** m * self.log_terms[m].integral(t) for m in range(1, N + 1))
         # layer contribution to log s: eps int_0^T pi(g(eps tau) * eta(tau)) dtau
         for a in range(0, N + 1):
-            for j in range(1, N + 1):
+            for j in range(0, N + 1):
                 if 1 + a + j <= N:
                     integrand = sum((self.eta[j][k].times_poly([0] * a + [pi[k] * self.gT[k][a]]) for k in range(n)), ExpPoly())
                     log_s = log_s + e ** (1 + a + j) * integrand.integral(T)
         w = np.array([sum(e ** m * self.w[m][i].value(t) for m in range(1, N + 1)) for i in range(n)], complex)
-        w += np.array([sum(e ** m * self.eta[m][i].value(T) for m in range(1, N + 1)) for i in range(n)], complex)
-        out = cmath.exp(log_s) * (1 + w)
+        w += np.array([sum(e ** m * self.eta[m][i].value(T) for m in range(0, N + 1)) for i in range(n)], complex)
+        out = self.s0 * cmath.exp(log_s) * (1 + w)
         return out if self.is_complex else out.real
 
-def numerical_a(t, Q, g, dps=30):
-    """a(t) for a' = (Q + diag g(t)) a, a(0) = 1, by mpmath's Taylor-series ODE solver."""
+def numerical_a(t, Q, g, dps=30, a0=None):
+    """a(t) for a' = (Q + diag g(t)) a, a(0) = a0 (default 1), by mpmath's Taylor-series ODE solver."""
     import mpmath as mp
     mp.mp.dps = dps
     Qm = mp.matrix(np.asarray(Q, float).tolist())
     n = Qm.rows
-    terms = [[(mp.mpf(a), mp.mpf(c)) for a, c in gi.t.items()] for gi in g]
+    terms = [[(mp.mpf(a), mp.mpc(complex(c))) for a, c in gi.t.items()] for gi in g]
 
     def f(r, a):
         out = []
@@ -272,7 +280,9 @@ def numerical_a(t, Q, g, dps=30):
             gi = sum(c * mp.e ** (-al * r) for al, c in terms[i])
             out.append(gi * a[i] + sum(Qm[i, j] * a[j] for j in range(n)))
         return out
-    return mp.odefun(f, 0, [1] * n)(mp.mpf(t))
+    start = [1] * n if a0 is None else [mp.mpc(complex(v)) for v in a0]
+    out = [complex(v) for v in mp.odefun(f, 0, start)(mp.mpf(t))]
+    return out if any(v.imag for v in out) else [v.real for v in out]
 
 
 # ------------------------------------------------------------------ smooth functions that are not exponential sums
@@ -333,19 +343,21 @@ class Cheb:
         return out
 
 
-def numerical_a_callable(t, Q, gfuncs, rtol=1e-12):
+def numerical_a_callable(t, Q, gfuncs, rtol=1e-12, a0=None):
     """a(t) for a' = (Q + diag g(t)) a with g given as callables (scipy DOP853, complex allowed)."""
     from scipy.integrate import solve_ivp
     Q = np.asarray(Q, float)
     n = Q.shape[0]
     probe = np.array([f(0.3) for f in gfuncs])
-    cplx = np.iscomplexobj(probe) and np.any(probe.imag != 0)
+    a0 = np.ones(len(gfuncs)) if a0 is None else np.asarray(a0)
+    cplx = (np.iscomplexobj(probe) and np.any(probe.imag != 0)) or (np.iscomplexobj(a0) and np.any(a0.imag != 0))
 
     def rhs(r, y):
         a = y[:n] + 1j * y[n:] if cplx else y
         d = np.array([f(r) for f in gfuncs]) * a + Q @ a
         return np.concatenate([d.real, d.imag]) if cplx else d
-    y0 = np.concatenate([np.ones(n), np.zeros(n)]) if cplx else np.ones(n)
+    a0c = a0.astype(complex)
+    y0 = np.concatenate([a0c.real, a0c.imag]) if cplx else a0.astype(float)
     sol = solve_ivp(rhs, (0, t), y0, method='DOP853', rtol=rtol, atol=1e-14)
     y = sol.y[:, -1]
     return y[:n] + 1j * y[n:] if cplx else y
