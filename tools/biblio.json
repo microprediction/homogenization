@@ -1670,5 +1670,71 @@
   "doi": "10.1287/mnsc.1100.1181",
   "url": "https://doi.org/10.1287/mnsc.1100.1181",
   "annotation": "Finds certainty-equivalent losses above two percent a year from ignoring regime switching in stock returns."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "Kramer2006",
+  "authors": "Kramer, M. and Lyne, A. G. and O'Brien, J. T. and Jordan, C. A. and Lorimer, D. R.",
+  "year": 2006,
+  "title": "A Periodically Active Pulsar Giving Insight into Magnetospheric Physics",
+  "venue": "Science 312(5773):549-551",
+  "doi": "10.1126/science.1124060",
+  "url": "https://doi.org/10.1126/science.1124060",
+  "annotation": "Shows that PSR B1931+24 switches its radio emission on for 5 to 10 days and off for 25 to 35 days, and spins down about 50% faster when on."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "Lyne2010",
+  "authors": "Lyne, A. and Hobbs, G. and Kramer, M. and Stairs, I. and Stappers, B.",
+  "year": 2010,
+  "title": "Switched Magnetospheric Regulation of Pulsar Spin-Down",
+  "venue": "Science 329(5990):408-412",
+  "doi": "10.1126/science.1186683",
+  "url": "https://doi.org/10.1126/science.1186683",
+  "annotation": "Shows that timing noise in many pulsars comes from abrupt, often quasi-periodic switching between two spin-down rates, correlated with changes in pulse shape."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "Boynton1972",
+  "authors": "Boynton, P. E. and Groth, E. J. and Hutchinson, D. P. and Nanos, G. P. and Partridge, R. B. and Wilkinson, D. T.",
+  "year": 1972,
+  "title": "Optical Timing of the Crab Pulsar, NP 0532",
+  "venue": "The Astrophysical Journal 175:217",
+  "doi": "10.1086/151550",
+  "url": "https://doi.org/10.1086/151550",
+  "annotation": "Models the timing noise of the Crab pulsar as random walks in phase, frequency or spin-down rate and finds a random walk in frequency."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "CordesHelfand1980",
+  "authors": "Cordes, J. M. and Helfand, D. J.",
+  "year": 1980,
+  "title": "Pulsar timing. III - Timing noise of 50 pulsars",
+  "venue": "The Astrophysical Journal 239:640",
+  "doi": "10.1086/158150",
+  "url": "https://doi.org/10.1086/158150",
+  "annotation": "Characterizes the timing noise of 50 pulsars in terms of random walks in phase, frequency and spin-down rate."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "HobbsLyneKramer2010",
+  "authors": "Hobbs, G. and Lyne, A. G. and Kramer, M.",
+  "year": 2010,
+  "title": "An analysis of the timing irregularities for 366 pulsars",
+  "venue": "Monthly Notices of the Royal Astronomical Society 402(2):1027-1048",
+  "doi": "10.1111/j.1365-2966.2009.15938.x",
+  "url": "https://doi.org/10.1111/j.1365-2966.2009.15938.x",
+  "annotation": "Analyses the long-term timing irregularities of 366 pulsars observed at Jodrell Bank."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "vanHaasterenLevin2012",
+  "authors": "van Haasteren, R. and Levin, Y.",
+  "year": 2012,
+  "title": "Understanding and analysing time-correlated stochastic signals in pulsar timing",
+  "venue": "Monthly Notices of the Royal Astronomical Society 428(2):1147-1159",
+  "doi": "10.1093/mnras/sts097",
+  "url": "https://doi.org/10.1093/mnras/sts097",
+  "annotation": "Treats red timing noise as a Gaussian process and shows how to analyse it together with the timing-model fit."
  }
 ]

@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pulsar spin-down switching · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Science</span><span class="drop">
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Literature</span><span class="drop">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; fast regimes in any pricing equation</a> <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/pulsars/verify_pulsars.py">certificate</a></span></p>
+    <h1>Pulsar spin-down switching</h1>
+    <p class="subtitle">A pulsar whose spin-down rate jumps between two values: the timing noise it produces, its Green&ndash;Kubo strength, the exact two-state formulas, and what timing data can and cannot tell apart.</p>
+
+    <h2>The model</h2>
+    <p>A pulsar rotates at frequency $\nu(t)$ and slows down. Its spin-down rate $\dot\nu$ is not constant: it
+    switches abruptly between two values, set by the state of the magnetosphere. PSR B1931+24 spins down about 50%
+    faster when its radio emission is on than when it is off
+    (<a href="./bibliography.html#Kramer2006">Kramer et al. 2006</a>), and many pulsars switch between two spin-down
+    rates that differ by about a percent (<a href="./bibliography.html#Lyne2010">Lyne et al. 2010</a>).</p>
+    <p>Model the state as a hidden Markov chain $y_t \in \{1, 2\}$ that leaves state 1 at rate $a$ and state 2 at rate
+    $b$. The rates may differ, so the pulsar can spend most of its time in one state. The spin-down rate is
+    $\dot\nu_{y_t}$, and frequency and phase (in cycles) are its integrals:</p>
+    $$\nu(t) = \nu(0) + \int_0^t \dot\nu_{y_s}\,ds, \qquad \phi(t) = \phi(0) + \int_0^t \nu(s)\,ds .$$
+    <p>The chain starts from its stationary law, since an observer does not know the state when timing begins.</p>
+    <p>There are two time scales. The state persists for $1/a$ or $1/b$, from days to years.</p>
+    <p>The pulsar is timed over
+    a span $T$ of years. The expansion parameter is $1/(\gamma T)$ with $\gamma = a + b$.</p>
+    <p class="muted">Parameters (PSR B1931+24, from Kramer et al. 2006): $\nu = 1.2289688$ Hz,
+    $\dot\nu_{\mathrm{on}} = -16.3\times10^{-15}$ Hz/s, $\dot\nu_{\mathrm{off}} = -10.8\times10^{-15}$ Hz/s,
+    on phases of 5 to 10 days, off phases of 25 to 35 days; mean durations $1/a = 7.5$ days and $1/b = 30$ days.</p>
+
+    <h2>The quantity</h2>
+    <p>Write $\pi = (\pi_1, \pi_2)$ for the stationary law and $\bar{\dot\nu} = \pi_1\dot\nu_1 + \pi_2\dot\nu_2$ for the
+    averaged spin-down rate. Removing it leaves the fluctuation of the rate,</p>
+    $$g(y) = \dot\nu_y - \bar{\dot\nu}, \qquad g_1 = \pi_2\Delta, \qquad g_2 = -\pi_1\Delta, \qquad \Delta = \dot\nu_1 - \dot\nu_2 .$$
+    <p>The frequency residual and the phase residual after the averaged spin-down are</p>
+    $$X(T) = \int_0^T g(y_s)\,ds, \qquad \Phi(T) = \int_0^T X(t)\,dt = \int_0^T (T - s)\,g(y_s)\,ds .$$
+    <p>The timing residual in seconds is $\Phi/\nu$. We want the mean, the variance and the full distribution of
+    $X$ and $\Phi$, the power spectrum of the timing residual, and the residual left after the usual timing fit.</p>
+
+    <h2>Averaging</h2>
+    <p>When the state switches infinitely fast, the pulsar spins down at the constant rate $\bar{\dot\nu}$. Both
+    residuals have mean zero, and the averaged model predicts no timing noise.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Let $Q$ be the generator of the chain and $G = \operatorname{diag}(g_1, g_2)$. Condition on the state over the
+    first instant. The characteristic function of $X$ started in state $i$, $a_i(T) = \mathbb{E}_i\,e^{iuX(T)}$, then
+    solves</p>
+    $$a' = \big(Q + iu\,G\big)\,a, \qquad a(0) = \mathbf 1, \qquad \mathbb{E}\,e^{iuX(T)} = \pi\cdot a(T).$$
+    <p>This is the <a href="./engine.html">engine&apos;s</a> linear system with an imaginary, constant forcing. The
+    phase weights the rate at time $s$ by $T - s$, and the same argument gives a forcing that grows with time:</p>
+    $$a' = \big(Q + iu\,t\,G\big)\,a, \qquad a(0) = \mathbf 1, \qquad \mathbb{E}\,e^{iu\Phi(T)} = \pi\cdot a(T).$$
+    <p>The first instant carries the largest weight, $T$, which is why the forcing at time $t$ is $iu\,t\,G$.</p>
+
+    <h2>The first-order rule</h2>
+    <p>The variance of an integral is the double integral of the covariance. For a stationary rate with covariance
+    $C(\tau) = \operatorname{Cov}\big(\dot\nu_{y_0}, \dot\nu_{y_\tau}\big)$,</p>
+    $$\operatorname{Var} X(T) = 2\int_0^T (T - \tau)\,C(\tau)\,d\tau .$$
+    <p>When $T$ is long against the correlation time, the factor $T - \tau$ is close to $T$ wherever $C$ is not
+    negligible. Each spell in a state adds a nearly independent kick to the frequency, so the kicks add like a
+    random walk:</p>
+    $$\operatorname{Var} X(T) \approx 2KT, \qquad K = \int_0^\infty C(\tau)\,d\tau = -\pi\cdot\big(g\;Q^{\#}g\big).$$
+    <p>$K$ is the Green&ndash;Kubo integral of the spin-down rate, and $Q^{\#}$ is the group inverse of the generator,
+    as on the <a href="./any-equation.html">general page</a>. The neglected part,
+    $-2\int_0^\infty \tau\,C(\tau)\,d\tau$, is a constant: the <a href="./layers.html">initial layer</a>.</p>
+    <p>The phase integrates the frequency again. Its variance is</p>
+    $$\operatorname{Var} \Phi(T) = 2\int_0^T C(\tau)\,\Big(\frac{(T - \tau)^3}{3} + \frac{\tau\,(T - \tau)^2}{2}\Big)\,d\tau
+      \approx \frac23\,K\,T^3 .$$
+    <p>To first order the frequency residual is a random walk and the phase residual is its integral. Both are
+    Gaussian, with the characteristic functions</p>
+    $$\mathbb{E}\,e^{iuX(T)} \approx e^{-u^2 KT}, \qquad \mathbb{E}\,e^{iu\Phi(T)} \approx e^{-u^2 KT^3/3} .$$
+    <p>The rates, the switching times and the asymmetry of the chain enter only through $\bar{\dot\nu}$ and $K$.</p>
+
+    <h2>The two-state results written out</h2>
+    <p>For two states the covariance is a single exponential, $C(\tau) = \pi_1\pi_2\Delta^2 e^{-\gamma\tau}$, and every
+    integral above can be done. The variances are exact for all $T$:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \operatorname{Var} X(T) &= 2K\Big(T - \frac{1 - e^{-\gamma T}}{\gamma}\Big), \\
+    \operatorname{Var} \Phi(T) &= 2K\Big(\frac{T^3}{3} - \frac{T^2}{2\gamma} + \frac{1 - e^{-\gamma T}}{\gamma^3} - \frac{T\,e^{-\gamma T}}{\gamma^2}\Big),
+    \end{aligned}$$
+    $$\begin{aligned}
+    K &= \frac{\pi_1\pi_2\,\Delta^2}{\gamma}, \\
+    \gamma &= a + b, \\
+    \pi_1 &= b/\gamma, \qquad \pi_2 = a/\gamma, \\
+    \Delta &= \dot\nu_1 - \dot\nu_2 .
+    \end{aligned}$$
+    </div>
+    <p>The layer constant of the frequency variance is $-2K/\gamma$. In the phase variance the first correction to
+    the Green&ndash;Kubo form is the $T^2$ term, $-KT^2/\gamma$, and the constant is $2K/\gamma^3$.</p>
+    <p>The characteristic function of the frequency residual follows from the $2\times2$ matrix exponential. Since
+    $\pi\cdot g = 0$, the term in $\pi\cdot(Q + sG)\mathbf 1$ drops out, and with $s = iu$</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb{E}\,e^{sX(T)} &= e^{(s\Sigma - \gamma)T/2}\,\Big(\cosh DT + \frac{\gamma - s\Sigma}{2D}\,\sinh DT\Big), \\
+    \lambda(s) &= \tfrac12\,(s\Sigma - \gamma) + D,
+    \end{aligned}$$
+    $$\begin{aligned}
+    D &= \tfrac12\sqrt{\gamma^2 - 2\gamma\,s\,\Sigma + s^2\Delta^2}, \\
+    \Sigma &= (\pi_2 - \pi_1)\,\Delta .
+    \end{aligned}$$
+    </div>
+    <p>The expression is even in $D$, so the branch of the square root does not matter. For large $T$ the
+    logarithm of the characteristic function is $\lambda(s)\,T$ plus a constant, where $\lambda(s)$ is the largest
+    eigenvalue of $Q + sG$. Its Taylor coefficients are the cumulant rates:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \lambda(s) &= K s^2 + \lambda_3 s^3 + \lambda_4 s^4 + \cdots, \\
+    \kappa_3\big(X(T)\big) &\approx 6\,\lambda_3\,T, \qquad \kappa_3\big(\Phi(T)\big) \approx \tfrac32\,\lambda_3\,T^4, \\
+    \operatorname{skew} X(T) &\approx \frac{3\,(\pi_2 - \pi_1)\operatorname{sgn}\Delta}{\sqrt{2\pi_1\pi_2}\,\sqrt{\gamma T}},
+    \end{aligned}$$
+    $$\begin{aligned}
+    \lambda_3 &= \frac{\pi_1\pi_2\,(\pi_2 - \pi_1)\,\Delta^3}{\gamma^2}, \\
+    \lambda_4 &= \frac{\pi_1\pi_2\,(1 - 5\pi_1\pi_2)\,\Delta^4}{\gamma^3} .
+    \end{aligned}$$
+    </div>
+    <p>The skewness is a second-order effect: it falls like $(\gamma T)^{-1/2}$ relative to the Gaussian. It vanishes
+    when the two states are equally occupied. With unequal occupation the rare state produces bursts of extra
+    frequency change, and the residual leans towards them.</p>
+    <p>The phase weights the rate by $T - s$, which varies slowly on the switching time. To leading order each
+    stretch contributes its own growth rate:</p>
+    $$\log\mathbb{E}\,e^{s\Phi(T)} \approx \int_0^T \lambda(s\,t)\,dt .$$
+    <p>This gives the phase variance $\tfrac23KT^3$ and the third cumulant above.</p>
+
+    <h2>The power spectrum</h2>
+    <p>The spin-down rate is a random telegraph signal. Its spectrum is a Lorentzian, and the phase spectrum divides
+    it by $(2\pi f)^4$ because phase is the double integral of the rate:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    S_{\dot\nu}(f) &= \frac{2\pi_1\pi_2\,\Delta^2\,\gamma}{\gamma^2 + (2\pi f)^2}, \\
+    S_{\phi}(f) &= \frac{S_{\dot\nu}(f)}{(2\pi f)^4}, \qquad S_{r}(f) = \frac{S_{\phi}(f)}{\nu^2} .
+    \end{aligned}$$
+    </div>
+    <p>The spectra are two-sided, per unit frequency, and $S_r$ is the spectrum of the timing residual in seconds.
+    Below the corner frequency $\gamma/2\pi$ the rate spectrum is flat at $S_{\dot\nu}(0) = 2K$, and the timing
+    residual has the $f^{-4}$ spectrum of a random walk in frequency. Above the corner it steepens to $f^{-6}$.</p>
+
+    <h2>After a timing fit</h2>
+    <p>Timing analyses fit phase, frequency and spin-down to the arrival times, so a quadratic in $t$ is removed and
+    $\bar{\dot\nu}$ need not be known. At first order $\Phi$ is an integrated random walk with covariance</p>
+    $$\operatorname{Cov}\big(\Phi(t), \Phi(t')\big) = 2K\int_0^{\min(t, t')} (t - r)(t' - r)\,dr .$$
+    <p>Project it onto quadratics on $[0, T]$ and average the square of what is left over the span:</p>
+    <div class="equation-card">
+    $$\frac1T\,\mathbb{E}\int_0^T r(t)^2\,dt = 2K\,T^3\Big(\frac1{12} - \frac{209}{2520}\Big) = \frac{2K\,T^3}{2520} .$$
+    </div>
+    <p>Here $r$ is the phase residual after the fit. Before the fit the same average is $KT^3/6$, so the fit removes
+    all but $1/210$ of the mean-square phase wander. The root-mean-square timing residual after the fit, in
+    seconds, is</p>
+    $$r_{\mathrm{rms}} = \frac1\nu\sqrt{\frac{2K\,T^3}{2520}} .$$
+
+    <h2>What timing data identify</h2>
+    <p>The two-state chain has four parameters: $\dot\nu_1$, $\dot\nu_2$, $a$ and $b$. To first order timing data see two
+    numbers, the averaged spin-down $\bar{\dot\nu}$ and the Green&ndash;Kubo integral $K$. Any two chains that share
+    them give the same variance, the same Gaussian law and the same low-frequency spectrum.</p>
+    <p>For example, keep the switching time of B1931+24 and make the two states equally likely, with the rates
+    moved so that the average and $K$ are unchanged. Both chains have $1/\gamma = 6$ days,
+    $\bar{\dot\nu} = -11.90\times10^{-15}$ Hz/s and $K = 2.51\times10^{-24}$ Hz$^2$/s. The frequency and timing residuals are
+    identical in variance, and only the skewness differs:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>chain</th><th style="text-transform:none">$\dot\nu_1$, $\dot\nu_2$ ($10^{-15}$ Hz/s)</th><th style="text-transform:none">$\pi_1$</th><th>sd frequency, 1000 days</th><th>sd timing, 1000 days</th><th>skewness</th></tr></thead><tbody><tr><td>B1931+24 idealized</td><td>&minus;16.3, &minus;10.8</td><td>0.2</td><td>20.76 nHz</td><td>0.841 s</td><td>&minus;0.25</td></tr><tr><td>equal occupancy</td><td>&minus;14.1, &minus;9.7</td><td>0.5</td><td>20.76 nHz</td><td>0.841 s</td><td>0.00</td></tr></tbody></table></div>
+    <p>Here the variances agree at every order, because they depend only on $K$ and $\gamma$ and the two chains
+    share both. In general the
+    second-order terms separate the parameters. The $T^2$ term of the phase variance gives $\gamma$.</p>
+    <p>The third
+    cumulant gives $\Sigma = (\pi_2 - \pi_1)\Delta$. Then $\Delta^2 = \Sigma^2 + 4K\gamma$ closes the system. These
+    corrections are smaller by $(\gamma T)^{-1/2}$ and $(\gamma T)^{-1}$, so over spans of many switching times they
+    are hard to measure.</p>
+
+    <h2>Quasi-periodic switching</h2>
+    <p>Real switching is often close to periodic. The on and off phases of B1931+24 last 5 to 10 and 25 to 35 days,
+    far less variable than exponential durations with the same means.</p>
+    <p>The frequency then wanders much less, and
+    $K$ must come from an alternating renewal process. With durations of mean $m_1$, $m_2$ and standard deviations
+    $s_1$, $s_2$, the occupation-time central limit theorem gives</p>
+    <div class="equation-card">
+    $$K = \frac{\Delta^2\,\big(m_2^2\,s_1^2 + m_1^2\,s_2^2\big)}{2\,(m_1 + m_2)^3} .$$
+    </div>
+    <p>Exponential durations, $s_i = m_i$, give back $\pi_1\pi_2\Delta^2/\gamma$. Strictly periodic switching,
+    $s_1 = s_2 = 0$, gives $K = 0$: the frequency residual stays bounded and there is no random walk.</p>
+    <p>The same answer comes from the Markov machinery. Replace each phase by a chain of $k$ exponential stages, an
+    Erlang duration with standard deviation $m/\sqrt k$. The Green&ndash;Kubo formula $-\pi\cdot(g\,Q^{\#}g)$ on the
+    resulting cyclic chain reproduces the renewal formula exactly.</p>
+    <p>For B1931+24 with uniform durations on 5 to 10 and 25 to 35 days, $K = 5.81\times10^{-26}$ Hz$^2$/s, about 43 times
+    smaller than the Markov value. Timing noise scales as $\sqrt K$, so the quasi-periodic residuals are about 6.6 times
+    smaller than the Markov ones.</p>
+
+    <h2>Worked example: PSR B1931+24</h2>
+    <p>Kramer et al. (2006) give $\nu = 1.2289688061$ Hz, $\dot\nu_{\mathrm{on}} = -16.3(4)\times10^{-15}$ Hz/s,
+    $\dot\nu_{\mathrm{off}} = -10.8(2)\times10^{-15}$ Hz/s, an active duty cycle of 19(5)%, on phases of 5 to 10 days
+    and off phases of 25 to 35 days. Take state 1 as on, with mean durations 7.5 and 30 days. Then</p>
+    $$\begin{aligned}
+    \pi_{\mathrm{on}} &= 0.2, \qquad \frac1\gamma = 6\ \text{days}, \\
+    \Delta &= -5.5\times10^{-15}\ \text{Hz/s}, \qquad \bar{\dot\nu} = -11.90\times10^{-15}\ \text{Hz/s},
+    \end{aligned}$$
+    $$K = \frac{0.2\times0.8\times(5.5\times10^{-15})^2}{1/(6\ \text{days})} = 2.51\times10^{-24}\ \text{Hz}^2/\text{s} .$$
+    <p>The averaged rate is within the duty-cycle uncertainty of the published long-term value,
+    $-12.2488\times10^{-15}$ Hz/s. Over spans of months to years:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th>sd of frequency residual</th><th>Green&ndash;Kubo</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>rms after quadratic fit</th><th>same, quasi-periodic</th><th>skewness</th></tr></thead><tbody><tr><td>100 days</td><td>6.38 nHz</td><td>6.58 nHz</td><td>0.026 s</td><td>0.027 s</td><td>0.9 ms</td><td>0.1 ms</td><td>&minus;0.86</td></tr><tr><td>300 days</td><td>11.29 nHz</td><td>11.40 nHz</td><td>0.137 s</td><td>0.139 s</td><td>4.8 ms</td><td>0.7 ms</td><td>&minus;0.46</td></tr><tr><td>1000 days</td><td>20.76 nHz</td><td>20.82 nHz</td><td>0.841 s</td><td>0.845 s</td><td>29.2 ms</td><td>4.4 ms</td><td>&minus;0.25</td></tr><tr><td>3000 days</td><td>36.03 nHz</td><td>36.07 nHz</td><td>4.385 s</td><td>4.392 s</td><td>151.5 ms</td><td>23.1 ms</td><td>&minus;0.14</td></tr></tbody></table></div>
+    <p>The frequency residual grows like $\sqrt T$ and the timing residual like $T^{3/2}$. The Green&ndash;Kubo column
+    is within about 3% of the exact value at 100 days and 0.3% at 1000 days. The quadratic fit absorbs most of the wander, leaving
+    milliseconds to a fraction of a second.</p>
+    <p>The quasi-periodic column uses the renewal $K$ and is the more
+    realistic of the two. The skewness is negative because the rare on state spins the pulsar down faster.</p>
+    <p>Lyne et al. (2010) list slower switchers. For PSR B1828&minus;11 they give $\nu = 2.469$ Hz,
+    $\dot\nu = -365.68\times10^{-15}$ Hz/s, a peak-to-peak change of 0.71% in $\dot\nu$ and a fluctuation frequency of
+    0.73 per year, a cycle of about 500 days.</p>
+    <p>The split of the cycle between the two states is not in their table;
+    take one third in the faster state as an illustration, with mean durations 167 and 334 days, so
+    $\dot\nu = (-367.41,\ -364.81)\times10^{-15}$ Hz/s and $1/\gamma = 111$ days. Then $K = 1.44\times10^{-23}$ Hz$^2$/s, and:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>span</th><th style="text-transform:none">$\gamma T$</th><th>sd of frequency residual</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>rms after quadratic fit</th><th>skewness</th></tr></thead><tbody><tr><td>5 years</td><td>16</td><td>65 nHz</td><td>2.4 s</td><td>2.5 s</td><td>86 ms</td><td>&minus;0.41</td></tr><tr><td>10 years</td><td>33</td><td>94 nHz</td><td>6.9 s</td><td>7.0 s</td><td>243 ms</td><td>&minus;0.27</td></tr><tr><td>20 years</td><td>66</td><td>134 nHz</td><td>19.7 s</td><td>19.9 s</td><td>686 ms</td><td>&minus;0.19</td></tr></tbody></table></div>
+    <p>Here a switching time of months meets a timing span of years, and $\gamma T$ is between 16 and 66. Lyne et
+    al. find a narrow periodic peak in the spin-down spectrum of B1828&minus;11, so the Markov figures overstate its random-walk
+    component in the same way as for B1931+24.</p>
+
+    <h2>Checks</h2>
+    <p>All checks use the B1931+24 parameters, with the span $T$ standing in for the speed of switching. The
+    frequency variance against the matrix exponential of the Van Loan block generator, which gives the double
+    integral exactly (values in nHz$^2$):</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th style="text-transform:none">$\gamma T$</th><th>matrix exponential</th><th>closed form, relative difference</th><th style="text-transform:none">Green&ndash;Kubo $2KT$, relative error</th></tr></thead><tbody><tr><td>30 days</td><td>5.0</td><td>10.423085</td><td>5e-16</td><td>+24.79%</td></tr><tr><td>100 days</td><td>16.7</td><td>40.755099</td><td>1e-15</td><td>+6.38%</td></tr><tr><td>300 days</td><td>50.0</td><td>127.468074</td><td>2e-16</td><td>+2.04%</td></tr><tr><td>1000 days</td><td>166.7</td><td>430.963488</td><td>6e-15</td><td>+0.60%</td></tr><tr><td>3000 days</td><td>500.0</td><td>1298.093241</td><td>7e-16</td><td>+0.20%</td></tr></tbody></table></div>
+    <p>The closed form agrees to rounding. The Green&ndash;Kubo error is $1/(\gamma T)$, a first-order remainder: it
+    falls threefold with each threefold increase in $T$.</p>
+    <p>The phase variance against a numerical solution of the moment equations, whose second moment is
+    $\pi\cdot m_2(T)$ (values in nHz$^2$ day$^2$):</p>
+    $$m_1' = Q\,m_1 + t\,g, \qquad m_2' = Q\,m_2 + 2t\,g\,m_1, \qquad m_1(0) = m_2(0) = 0 .$$
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th style="text-transform:none">$\gamma T$</th><th>numerical ODE</th><th>closed form, relative difference</th><th style="text-transform:none">$T^3$ term, relative error</th><th style="text-transform:none">$T^3$ and $T^2$ terms, relative error</th></tr></thead><tbody><tr><td>30 days</td><td>5.0</td><td>2.821323e+03</td><td>2e-16</td><td>+3.83e-01</td><td>-3.19e-02</td></tr><tr><td>100 days</td><td>16.7</td><td>1.316083e+05</td><td>0e+00</td><td>+9.81e-02</td><td>-7.12e-04</td></tr><tr><td>300 days</td><td>50.0</td><td>3.785115e+06</td><td>4e-16</td><td>+3.09e-02</td><td>-2.47e-05</td></tr><tr><td>1000 days</td><td>166.7</td><td>1.432210e+08</td><td>0e+00</td><td>+9.08e-03</td><td>-6.54e-07</td></tr><tr><td>3000 days</td><td>500.0</td><td>3.890378e+09</td><td>2e-16</td><td>+3.01e-03</td><td>-2.41e-08</td></tr></tbody></table></div>
+    <p>The $T^3$ term alone has relative error $3/(2\gamma T)$. Adding the $T^2$ term leaves $-3/(\gamma T)^3$, as
+    the closed form predicts.</p>
+    <p>The characteristic function of the standardized frequency residual, largest error over $0 \le u \le 4$,
+    against the matrix exponential of $T(Q + iuG)$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\gamma T$</th><th>skewness</th><th>closed form vs matrix exponential</th><th style="text-transform:none">Gaussian, variance $2KT$</th><th>with layer constant and skewness</th></tr></thead><tbody><tr><td>25</td><td>-0.677</td><td>2e-15</td><td>0.1344</td><td>0.04466</td></tr><tr><td>100</td><td>-0.323</td><td>6e-15</td><td>0.0627</td><td>0.00761</td></tr><tr><td>400</td><td>-0.160</td><td>3e-14</td><td>0.0309</td><td>0.00174</td></tr><tr><td>1600</td><td>-0.080</td><td>1e-13</td><td>0.0154</td><td>0.00043</td></tr></tbody></table></div>
+    <p>The Gaussian error halves each time $\gamma T$ quadruples, as the skewness does. With the layer constant in the
+    variance and the third cumulant $6\lambda_3T$, the error falls fourfold, a second-order remainder.</p>
+    <p>The characteristic function of the standardized phase residual, against a numerical solution of the engine
+    system $a' = (Q + iu\,t\,G)\,a$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\gamma T$</th><th>skewness</th><th style="text-transform:none">Gaussian, variance $\tfrac23KT^3$</th><th>two-term variance and skewness</th></tr></thead><tbody><tr><td>25</td><td>-0.907</td><td>0.1777</td><td>0.10051</td></tr><tr><td>100</td><td>-0.423</td><td>0.0826</td><td>0.01493</td></tr><tr><td>400</td><td>-0.208</td><td>0.0403</td><td>0.00321</td></tr></tbody></table></div>
+    <p>The same orders hold. The largest-eigenvalue expansion is checked directly too: finite differences of the
+    eigenvalue of $Q + sG$ give $\lambda_2$ and $\lambda_3$ to five and four digits, and the group inverse gives the
+    same $K$.</p>
+    <p>Monte Carlo with no time discretization: the switching times are drawn exactly, and on each path $X$ and $\Phi$
+    are integrated in closed form between switches, 400,000 paths per span (units as above):</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th style="text-transform:none">Var $X$, Monte Carlo</th><th>closed form</th><th style="text-transform:none">Var $\Phi$, Monte Carlo</th><th>closed form</th><th style="text-transform:none">skewness of $X$, Monte Carlo</th><th>first order</th></tr></thead><tbody><tr><td>100 days</td><td>40.69 &plusmn; 0.09</td><td>40.76</td><td>1.3173e+05 &plusmn; 2.9e+02</td><td>1.3161e+05</td><td>-0.747</td><td>-0.855</td></tr><tr><td>300 days</td><td>127.34 &plusmn; 0.28</td><td>127.47</td><td>3.7780e+06 &plusmn; 8.4e+03</td><td>3.7851e+06</td><td>-0.441</td><td>-0.464</td></tr><tr><td>1000 days</td><td>432.01 &plusmn; 0.97</td><td>430.96</td><td>1.4324e+08 &plusmn; 3.2e+05</td><td>1.4322e+08</td><td>-0.246</td><td>-0.249</td></tr></tbody></table></div>
+    <p>The mean-square phase residual after a least-squares quadratic fit to 1001 equally spaced samples, from
+    4,000 exact paths, against the first-order formula:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th>Monte Carlo</th><th style="text-transform:none">$2KT^3/2520$</th><th>ratio</th></tr></thead><tbody><tr><td>300 days</td><td>4.4149e+03 &plusmn; 7.7e+01</td><td>4.6453e+03</td><td>0.950</td></tr><tr><td>1000 days</td><td>1.7382e+05 &plusmn; 2.9e+03</td><td>1.7205e+05</td><td>1.010</td></tr><tr><td>3000 days</td><td>4.5907e+06 &plusmn; 7.0e+04</td><td>4.6453e+06</td><td>0.988</td></tr></tbody></table></div>
+    <p>The rate spectrum computed as the numerical Fourier transform of the matrix-exponential covariance
+    $\pi\cdot\big(g\,e^{\tau Q}g\big)$ matches the Lorentzian to eight digits at every frequency tested. For quasi-periodic
+    switching, the Erlang chain with $k = (27, 108)$ stages reproduces the renewal $K$ to rounding. A Monte
+    Carlo of 20,000 paths with uniform durations over 20,000 days gives $\operatorname{Var}X/2T = 0.00503 &plusmn; 0.00005$ against the
+    renewal value 0.00502 (nHz$^2$/day).</p>
+
+    <h2>Prior art</h2>
+    <p>That timing noise comes from switching between spin-down rates is the finding of
+    <a href="./bibliography.html#Kramer2006">Kramer et al. (2006)</a> for B1931+24 and of
+    <a href="./bibliography.html#Lyne2010">Lyne et al. (2010)</a> for many pulsars. Lyne et al. simulated it directly:
+    two rates with dithered switching times, integrated twice, sampled, with a quadratic removed. Nothing here
+    claims that observation.</p>
+    <p>The random walk in frequency, with its $f^{-4}$ residual spectrum, is one of the classical timing-noise
+    models of <a href="./bibliography.html#Boynton1972">Boynton et al. (1972)</a> and
+    <a href="./bibliography.html#CordesHelfand1980">Cordes and Helfand (1980)</a>.
+    <a href="./bibliography.html#HobbsLyneKramer2010">Hobbs, Lyne and Kramer (2010)</a> analyse timing
+    irregularities across hundreds of pulsars, and
+    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a> treat timing noise as a
+    Gaussian process with a red spectrum. The telegraph covariance, its Lorentzian spectrum and the central limit theorem for
+    occupation times of alternating renewal processes are classical.</p>
+    <p>The fast-switching reading adds the following to these facts. The strength of the random walk is a
+    Green&ndash;Kubo integral, as in <a href="./bibliography.html#Green1954">Green (1954)</a> and
+    <a href="./bibliography.html#Kubo1957">Kubo (1957)</a>. The two-state variances, characteristic function and
+    cumulant rates are written out for finite spans, with the layer constant.</p>
+    <p>The post-fit residual has a closed
+    first-order form. To first order the timing data identify $\bar{\dot\nu}$ and $K$, not the individual rates and
+    switching times, and quasi-periodic switching enters only through a smaller $K$.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
