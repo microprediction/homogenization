@@ -33,12 +33,14 @@ HEADER = """<header class="site-header">
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Literature</span><span class="drop">
         <a href="./survey.html">Survey</a>
         <a href="./papers.html">Papers</a>
         <a href="./bibliography.html">Bibliography</a>
         <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
       </span></span>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>

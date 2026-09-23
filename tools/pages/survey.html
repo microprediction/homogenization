@@ -95,10 +95,15 @@
       <li>portfolio choice (<a href="./bibliography.html#FouqueSircarZariphopoulou2017">Fouque, Sircar and Zariphopoulou 2017</a>).</li>
     </ul>
     <p>The book <a href="./bibliography.html#FPSS2011">Fouque, Papanicolaou, Sircar and Sølna (2011)</a> collects equity,
-    interest rate and credit. The uncorrelated case goes back to the mixing formula of
+    interest rate and credit.</p>
+    <p>The uncorrelated case goes back to the mixing formula of
     <a href="./bibliography.html#HullWhite1987">Hull and White (1987)</a>: average Black&ndash;Scholes over integrated
     variance. To second order in the variance of integrated variance, that formula is the smile on the
-    <a href="./any-equation.html">any-equation page</a>.</p>
+    <a href="./any-equation.html">any-equation page</a>. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and
+    Papanicolaou (1999)</a> derive this first-order smile for any fast ergodic driver, including a Markov chain.</p>
+    <p>These drivers are one-dimensional diffusions or enter only through a variance, so the Green&ndash;Kubo matrix is
+    symmetric. A chain that cycles in one direction adds an antisymmetric part, which moves the Heston smile when the
+    variance level and the vol-of-vol switch together (<a href="./cycle-smile.html">cycle direction in the smile</a>).</p>
 
     <h2>Finance: regime switching</h2>
     <p>For bond prices and survival probabilities, the expansion in the switching rate goes back to
@@ -293,6 +298,8 @@
       <li>The <a href="./yield-curve.html">three numbers in a yield curve</a>. To first order the curve sees a fast chain
         of any size only through a positive semidefinite $2\times2$ matrix. Different chains sharing it cannot be told
         apart, and the long end has a convergent eigenvalue series.</li>
+      <li>The direction of a regime cycle in the <a href="./cycle-smile.html">Heston smile</a>, through the antisymmetric
+        part of the Green&ndash;Kubo matrix.</li>
       <li>The <a href="./any-equation.html">commutator effect</a> in pricing. When a chain switches the reversion speed
         and the volatility of a short rate, the direction of its cycle moves the effective variance.</li>
       <li>The <a href="./fast-factor.html">fast-factor series</a> to all orders with correlation, and the regime-switching

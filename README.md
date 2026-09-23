@@ -47,6 +47,9 @@ papers/yield-curve/
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
   verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit
+papers/smile/
+  cycle_smile.py           Heston with switched level and vol-of-vol on a finite-difference grid; the first-order rule
+  verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

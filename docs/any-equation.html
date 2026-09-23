@@ -40,12 +40,14 @@
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Literature</span><span class="drop">
         <a href="./survey.html">Survey</a>
         <a href="./papers.html">Papers</a>
         <a href="./bibliography.html">Bibliography</a>
         <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
       </span></span>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
@@ -169,6 +171,11 @@
     <p>This is a volga term, the convexity of the price in variance. It is positive in the wings and negative near
     the money, so no single volatility can absorb it: it is a smile. It is the first-order form of the mixing
     formula of Hull and White, with the variance of integrated variance equal to $2t\,K$.</p>
+    <p>This smile is known. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>
+    derive it for any fast ergodic volatility driver, and <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
+    Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order. The check below confirms the
+    rule reproduces it. A <a href="./cycle-smile.html">Heston example</a> shows the antisymmetric part moving the
+    smile.</p>
     <p>The check uses three regimes with volatilities of 10%, 30% and 20%. The chain is twice the irreversible
     three-state generator</p>
     $$Q_A = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix},$$

@@ -1,0 +1,98 @@
+<!-- title: Cycle direction in the smile · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; fast regimes in any pricing equation</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">certificate</a></span></p>
+    <h1>The direction of a regime cycle in the Heston smile</h1>
+    <p class="subtitle">A chain that cycles through regimes in one direction moves the smile, although its averages and covariances do not depend on the direction.</p>
+
+    <h2>The smile from fast volatility</h2>
+    <p>When volatility fluctuates fast and independently of the stock, the option price is Black&ndash;Scholes averaged
+    over integrated variance (<a href="./bibliography.html#HullWhite1987">Hull and White 1987</a>). Expanding that
+    average around the mean variance gives a smile at first order in the fluctuation time scale.</p>
+    <p><a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>, section 3.3, derive it
+    for any stationary ergodic volatility driver, a Markov chain included. The implied volatility is quadratic in
+    log-moneyness, with a curvature set by the variance of integrated variance.
+    <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
+    expansion to second order with correlation and a terminal layer.</p>
+    <p>In that work the fast driver is a one-dimensional diffusion or a generic ergodic process whose correlation
+    function enters through a variance. A one-dimensional diffusion is reversible, so its Green&ndash;Kubo matrix is
+    symmetric. The antisymmetric part, which measures the direction of a cycle, does not appear.</p>
+
+    <h2>The model</h2>
+    <p>The log price $X_t$ and the variance $v_t$ follow Heston&apos;s model with zero correlation. The variance level
+    and the vol-of-vol depend on a hidden regime $y_t$:</p>
+    $$dX_t = -\tfrac12 v_t\,dt + \sqrt{v_t}\,dW_t, \qquad dv_t = \kappa\,\big(\theta_{y_t} - v_t\big)\,dt + \xi_{y_t}\sqrt{v_t}\,dZ_t .$$
+    <p>The regime is a three-state chain that cycles mostly one way, $1 \to 2 \to 3 \to 1$. The reverse chain has the
+    same stationary law and the same symmetric Green&ndash;Kubo matrix. The variance reverts over $1/\kappa$, half a
+    year, while the regimes last a few weeks.</p>
+    <p class="muted">Parameters: $\kappa = 2$; levels $\theta = (0.02,\ 0.10,\ 0.05)$; vol-of-vol $\xi = (0.2,\ 0.4,\ 1.0)$;
+    $v_0 = 0.04$; $S_0 = 100$; zero interest; one year to expiry. Forward rate 2 and reverse rate 0.1 per year along the
+    cycle, multiplied by a speed factor $m$.</p>
+
+    <h2>The quantity</h2>
+    <p>European call prices and their Black&ndash;Scholes implied volatilities, for a regime drawn from its stationary
+    law. The prices come from the characteristic function of the return,</p>
+    $$\phi(u) = \mathbb{E}\big[e^{iu(X_T - X_0)} \mid v_0\big],$$
+    <p>through <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>:</p>
+    $$C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}.$$
+
+    <h2>Averaging</h2>
+    <p>When the chain switches infinitely fast, the limit is Heston&apos;s model with the stationary averages
+    $\bar\theta$ and $\bar\xi^2$.</p>
+
+    <h2>The first-order rule</h2>
+    <p>After the Fourier transform in $x$, the switched parameters $\theta$ and $\xi^2$ multiply two operators in the
+    variance:</p>
+    $$A_\theta = \kappa\,\partial_v, \qquad A_{\xi^2} = \tfrac12\,v\,\partial_{vv} .$$
+    <p>They do not commute:</p>
+    $$\big[A_\theta,\,A_{\xi^2}\big] f = \tfrac{\kappa}{2}\big(\partial_v(v f'') - v f'''\big) = \tfrac{\kappa}{2}\,f'' .$$
+    <p>By the <a href="./any-equation.html">first-order rule</a>, the averaged operator gains</p>
+    $$\sum_{j,k} K^{\mathrm{sym}}_{jk}\,A_j A_k \;+\; K^{\mathrm{anti}}_{\theta\xi^2}\,\tfrac{\kappa}{2}\,\partial_{vv},
+      \qquad K^{\mathrm{anti}}_{\theta\xi^2} = \tfrac12\big(K_{\theta\xi^2} - K_{\xi^2\theta}\big).$$
+    <p>The last term adds a constant diffusion to the variance. Its sign flips when the cycle is reversed, and the
+    symmetric terms do not change.</p>
+    <p>The intuition is a lag. The variance follows its level with a delay of about $1/\kappa$.</p>
+    <p>When high vol-of-vol tends to follow a high level, it arrives while the variance is high and shakes it harder.
+    When high vol-of-vol comes first, it acts on a low variance.</p>
+
+    <h2>Method</h2>
+    <p>For each Fourier frequency the coupled equations for the three regimes are solved on one finite-difference grid
+    in $v$, which gives the numerical solution. The rule is applied on the same grid, as a first-order Duhamel
+    correction to the averaged operator, so both share the discretisation error.</p>
+
+    <h2>Results</h2>
+    <p>Implied volatilities in percent, with the chain four times faster than the base rates. Each regime then lasts
+    about six weeks.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>strike</th><th>forward, numerical</th><th>forward, rule</th><th>reverse, numerical</th><th>reverse, rule</th><th>averaged Heston</th></tr></thead>
+      <tbody>
+        <tr><td>70</td><td>24.11</td><td>24.09</td><td>24.01</td><td>23.91</td><td>24.15</td></tr>
+        <tr><td>85</td><td>21.68</td><td>21.66</td><td>21.71</td><td>21.70</td><td>21.70</td></tr>
+        <tr><td>100</td><td>20.79</td><td>20.81</td><td>20.90</td><td>21.03</td><td>20.78</td></tr>
+        <tr><td>115</td><td>21.47</td><td>21.45</td><td>21.51</td><td>21.52</td><td>21.48</td></tr>
+        <tr><td>130</td><td>22.84</td><td>22.81</td><td>22.79</td><td>22.71</td><td>22.88</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The forward cycle has the deeper smile: lower at the money, higher in the wings. The difference is about a
+    tenth of a volatility point. The rule gets its sign and shape, and overstates it at this speed.</p>
+    <p>As the chain speeds up, the largest implied-volatility error across strikes, in volatility points, is:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">SPEED $m$</th><th>averaged</th><th>symmetric part only</th><th>full rule</th><th>forward minus reverse at the money</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>0.039</td><td>0.136</td><td>0.031</td><td>&minus;0.114</td></tr>
+        <tr><td>8</td><td>0.024</td><td>0.064</td><td>0.009</td><td>&minus;0.077</td></tr>
+        <tr><td>16</td><td>0.014</td><td>0.030</td><td>0.003</td><td>&minus;0.046</td></tr>
+        <tr><td>32</td><td>0.008</td><td>0.015</td><td>0.0007</td><td>&minus;0.025</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The full rule's error falls by about four for each doubling, as a second-order remainder should. The effect of
+    the direction falls by about two, as a first-order effect should, and at the fastest speed the rule reproduces it
+    within about 20% at every strike.</p>
+    <p>Keeping only the symmetric part is worse than no correction. In the forward direction the symmetric and
+    antisymmetric parts of the correction largely cancel, so either one alone misses by more than the average
+    does.</p>
+  </main>
