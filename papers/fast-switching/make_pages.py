@@ -27,7 +27,7 @@ def engine_page():
 '''
     body += table(['Model', 'Switching parameters', 'Time function'], [
         ['<a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a>', 'mean level, volatility', r'$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$'],
-        ['<a href="./credit.html">Gaussian factors, two-name credit</a>', 'means, volatilities, correlations', r'$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$'],
+        ['Gaussian factors (<a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">certificate</a>); <a href="./credit.html">two-name credit</a> with CIR names', 'means, volatilities, correlations', r'$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$'],
         ['<a href="./cir.html">CIR</a>', 'mean level', r'$-\kappa\theta_i B_{\mathrm{CIR}}$'],
         ['<a href="./jumps.html">Vasicek with jumps</a>', 'mean, volatility, jump intensity', r'$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$'],
         ['<a href="./counts.html">Poisson counts</a>', 'arrival rate', r'$(z-1)\,\ell_i$'],
@@ -327,7 +327,7 @@ def fast_factor_page():
 if __name__ == '__main__':
     engine_page()
     three_regimes_page()
-    credit_page()
+    # credit_page() is superseded by the hand-written tools/pages/credit.html (CIR names)
     counts_page()
     cir_page()
     jumps_page()

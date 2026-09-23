@@ -25,7 +25,7 @@ HEADER = """<header class="site-header">
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
         <a href="./three-regimes.html">Three regimes</a>
-        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>

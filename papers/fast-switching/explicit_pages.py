@@ -476,6 +476,83 @@ def three_regimes():
     write('three-regimes', html)
 
 
+
+def credit():
+    kap, sig, T = 2.0, 0.2, 3.0
+    th = np.array([[0.8, 0.005], [0.6, 0.005]])          # name j, regime i
+    x0 = np.array([0.05, 0.05])
+    B, I1, I2 = cir_B(T, kap, sig), cir_int_B(T, kap, sig), cir_int_B2(T, kap, sig)
+    C = [np.array([1, 0]), np.array([0, 1]), np.array([1, 1])]
+
+    def surv_num(lam, c):
+        gf = [(lambda i: (lambda s: -kap * (c @ th[:, i]) * cir_B(s, kap, sig)))(i) for i in range(2)]
+        a = numerical_a_callable(T, sym(lam), gf, rtol=1e-12)
+        return math.exp(-B * (c @ x0)) * 0.5 * (a[0] + a[1])
+
+    def surv_exp(lam, c, order):
+        eps = 1 / lam
+        tb, tt = (c @ th).mean(), ((c @ th)[0] - (c @ th)[1]) / 2
+        L = -B * (c @ x0) - kap * tb * I1
+        if order >= 1:
+            L += eps / 2 * (kap * tt) ** 2 * I2
+        if order >= 2:
+            L -= eps ** 2 / 8 * (kap * tt * B) ** 2
+        return math.exp(L)
+
+    corr = lambda S1, S2, S12: (S12 - S1 * S2) / math.sqrt((1 - S1) * S1 * (1 - S2) * S2)
+    rows = []
+    for lam in (1.0, 2.0, 4.0, 8.0):
+        sn = [surv_num(lam, c) for c in C]
+        vals = [corr(*[surv_exp(lam, c, o) for c in C]) for o in (0, 1, 2)]
+        rows.append([f'{lam:g}', f'{1 - sn[0]:.3f}, {1 - sn[1]:.3f}', f'{corr(*sn):.4f}'] + [f'{v:.4f}' for v in vals])
+    lam = 2.0
+    sn = [surv_num(lam, c) for c in C]
+    se = [surv_exp(lam, c, 2) for c in C]
+    tt1, tt2 = (th[0, 0] - th[0, 1]) / 2, (th[1, 0] - th[1, 1]) / 2
+    dep2 = 1 / lam * kap ** 2 * tt1 * tt2 * I2 - (1 / lam) ** 2 / 4 * kap ** 2 * tt1 * tt2 * B * B
+    html = r"""
+    <h2>The survival probabilities written out</h2>
+    <p>Given the regime path the two intensities are independent CIR processes, and each has the same coefficient
+    $B$. For a stationary start the memory terms cancel, and the survival of any set of names is the CIR formula with
+    the levels added:</p>
+    <div class="equation-card">
+    $$S_c(T) = \exp\Big(-B\,(c\cdot x_0) - \kappa\,\bar\theta_c\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta_c^2\,I_2
+      - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta_c^2\,B^2\Big) + O(\varepsilon^3),$$
+    $$\begin{aligned}
+    \bar\theta_c &= c_1\bar\theta_1 + c_2\bar\theta_2, \qquad \tilde\theta_c = c_1\tilde\theta_1 + c_2\tilde\theta_2,
+      \qquad \bar\theta_j, \tilde\theta_j = \frac{\theta_{j,1} \pm \theta_{j,2}}{2}, \\
+    B &= \frac{2(e^{hT} - 1)}{(h + \kappa)(e^{hT} - 1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}, \\
+    I_1 &= \frac{2}{\sigma^2}\Big(\log\big((h + \kappa)(e^{hT} - 1) + 2h\big) - \log 2h - \frac{(\kappa + h)\,T}{2}\Big), \\
+    I_2 &= \frac{4}{h}\Big(\frac{hT}{(h - \kappa)^2} + \frac{a_2}{h + \kappa}\log\frac{(h + \kappa)e^{hT} + h - \kappa}{2h} \\
+      &\qquad\quad - \frac{a_3}{h + \kappa}\Big(\frac{1}{(h + \kappa)e^{hT} + h - \kappa} - \frac{1}{2h}\Big)\Big), \\
+    a_2 &= \frac{1}{h + \kappa} - \frac{h + \kappa}{(h - \kappa)^2}, \qquad a_3 = -2 - \frac{2(h + \kappa)}{h - \kappa} - a_2\,(h - \kappa).
+    \end{aligned}$$
+    </div>
+    <p>Since $\tilde\theta_{(1,1)}^2 - \tilde\theta_1^2 - \tilde\theta_2^2 = 2\tilde\theta_1\tilde\theta_2$, the joint
+    survival exceeds the product of the marginals by</p>
+    <div class="equation-card">
+    $$\log\frac{S_{(1,1)}(T)}{S_{(1,0)}(T)\,S_{(0,1)}(T)} = \varepsilon\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,I_2
+      - \frac{\varepsilon^2}{4}\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,B^2 + O(\varepsilon^3).$$
+    </div>
+    <p>This is the whole of the dependence. The averaged model has none, and the first term is the Green&ndash;Kubo
+    covariance of the two hazards.</p>
+    <p>At $\lambda = 2$, so that each regime lasts about half a year:</p>
+""" + table([['$B$, $I_1$, $I_2$', f'{B:.6f}, {I1:.6f}, {I2:.6f}'],
+             ['$\\tilde\\theta_1$, $\\tilde\\theta_2$', f'{tt1:.4f}, {tt2:.4f}'],
+             ['dependence $\\log(S_{12}/S_1S_2)$, second order', f'{dep2:.6f}'],
+             ['dependence, numerical', f'{math.log(sn[2] / (sn[0] * sn[1])):.6f}'],
+             ['$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, second order', ', '.join(f'{x:.6f}' for x in se)],
+             ['$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, numerical', ', '.join(f'{x:.6f}' for x in sn)]]) + r"""
+    <h2>Results</h2>
+    <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
+    model gives exactly zero at every switching rate.</p>
+""" + table(rows, head=('switching rate', 'default probabilities', 'numerical', 'averaged', 'first order', 'second order')) + r"""    <p>Slower switching gives stronger dependence and a less accurate expansion. With regimes lasting a year the
+    correlation is 0.18 and the second-order formula overstates it. With regimes lasting three months it is 0.05 and
+    the formula is within 0.001.</p>
+"""
+    return html
+
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options(); three_regimes()

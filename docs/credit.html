@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Two factors and two-name credit · homogenization</title>
+  <title>Two-name credit · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -31,7 +31,7 @@
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
         <a href="./three-regimes.html">Three regimes</a>
-        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
@@ -61,87 +61,78 @@
 </header>
 
   <main>
-    <h1>Two factors and two-name credit</h1>
-    <p class="subtitle">Default dependence created by a common hidden regime, and where it enters the expansion.</p>
+    <h1>Two-name credit</h1>
+    <p class="subtitle">Two companies whose default intensities share a hidden credit cycle, and the default correlation the cycle creates.</p>
 
     <h2>The model</h2>
-    <p>Two companies have default intensities $x_1$ and $x_2$. Each follows its own Ornstein&ndash;Uhlenbeck process,
-    driven by independent Brownian motions, but both take their parameters from one hidden regime
-    $y_t \in \{1, 2\}$, a credit cycle:</p>
-    $$dx_{j} = \kappa_j\,(\theta_{j,y_t} - x_j)\,dt + \sigma_{j,y_t}\,dW_j, \qquad j = 1, 2 .$$
-    <p>The regime switches at rate $\lambda$ in each direction.</p>
-    <p>There are two time scales: each intensity reverts
-    over $1/\kappa_j$, and the cycle turns every $1/\lambda$.</p>
-    <p class="muted">Parameters: $\kappa = (1, 1.5)$, the first company has
-    $\theta_1 = (0.06, 0.01)$, the second $\theta_2 = (0.05, 0.015)$, both have $\sigma = (0.02, 0.005)$ in the two
-    regimes, and $x_0 = (0.03, 0.03)$.</p>
-    <p>The same algebra prices two-factor Gaussian short rates.</p>
+    <p>Two companies have default intensities $x_1$ and $x_2$. Each follows its own square-root (CIR) process, driven by
+    independent Brownian motions, but both take their long-run level from one hidden regime $y_t \in \{1, 2\}$, a
+    credit cycle:</p>
+    $$dx_{j} = \kappa\,\big(\theta_{j,\,y_t} - x_j\big)\,dt + \sigma\sqrt{x_j}\,dW_j, \qquad j = 1, 2 .$$
+    <p>The intensities stay positive, so they are genuine default intensities. Regime 1 is a crisis and regime 2 is
+    normal times. The cycle switches at rate $\lambda$ in each direction and starts from its stationary law, since
+    an observer cannot see it.</p>
+    <p>There are two time scales: each intensity reverts over $1/\kappa$, and the cycle turns every $1/\lambda$.</p>
+    <p class="muted">Parameters: $\kappa = 2$, $\sigma = 0.2$; the first company has $\theta_1 = (0.8,\ 0.005)$, the
+    second $\theta_2 = (0.6,\ 0.005)$; $x_0 = (0.05,\ 0.05)$; horizon $T = 3$.</p>
 
     <h2>The quantity</h2>
-    <p>The survival of each company and of both, to time $t = 3$:</p>
-    $$S_c(t) = \mathbb{E}\Big[e^{-\int_0^t (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1).$$
+    <p>The survival of each company and of both:</p>
+    $$S_c(T) = \mathbb{E}\Big[e^{-\int_0^T (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1).$$
     <p>The default probabilities follow from them:</p>
     $$p_1 = 1 - S_{(1,0)}, \qquad p_2 = 1 - S_{(0,1)}, \qquad p_{12} = 1 - S_{(1,0)} - S_{(0,1)} + S_{(1,1)} .$$
     <p>The correlation of the two default indicators is</p>
-    $$\operatorname{corr} = \frac{p_{12} - p_1 p_2}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} .$$
+    $$\operatorname{corr} = \frac{p_{12} - p_1 p_2}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} = \frac{S_{(1,1)} - S_{(1,0)}S_{(0,1)}}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} .$$
 
     <h2>Averaging</h2>
-    <p>When the cycle turns infinitely fast each intensity is a Vasicek process with averaged parameters, and the two
-    are independent. The averaged model has no default correlation at all.</p>
+    <p>When the cycle switches infinitely fast, each intensity is a CIR process with the averaged level, and the two
+    are independent. The averaged model has no default dependence at all.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>The prices solve a Feynman&ndash;Kac equation in $x_1$, $x_2$ and the regime, with the potential
-    $c_1x_1 + c_2x_2$. Try one Vasicek factor per intensity, $S_c = e^{-B_1x_1 - B_2x_2}\,a(t)$. The terms in $x_j$ cancel
-    when $B_j' = c_j - \kappa_jB_j$, which gives</p>
-    $$B_j(t) = c_j\,\frac{1 - e^{-\kappa_j t}}{\kappa_j}.$$
-    <p>Neither $B_j$ depends on the regime, because the mean-reversion speeds do not switch. What remains is</p>
-    $$a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i = \sum_j\big(-\kappa_j\theta_{j,i}B_j + \tfrac12\sigma_{j,i}^2B_j^2\big).$$
-    <h2>The expansion</h2>
-    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
-    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
-    <p>where $g$ is the function above for the chosen $c$. The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
-    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+    <p>Conditional on the regime path the two intensities are independent CIR processes. Try
+    $u_i = e^{-B(t)(c\cdot x)}a_i(t)$. The Riccati equation for $B$,</p>
+    $$B' = 1 - \kappa B - \tfrac12\sigma^2B^2, \qquad B(0) = 0,$$
+    <p>involves $\kappa$ and $\sigma$, which are shared, so one $B$ serves both companies and both regimes. What
+    remains is $a' = (Q + \operatorname{diag} g)a$ with</p>
+    $$g_i(t) = -\kappa\,\big(c_1\theta_{1,i} + c_2\theta_{2,i}\big)\,B(t) .$$
+    <p>This is the <a href="./cir.html">CIR example</a> with the levels of the chosen companies added, and its
+    expansion applies directly.</p>
 
-    <h3>First order</h3>
-    <p>To first order in $\varepsilon$,</p>
-    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
-    <a href="./idea.html">idea</a> page.</p>
-    <ul>
-      <li>$e^{\int\bar g}$ is the averaged model.</li>
-      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
-        both starting regimes, and it grows with $t$.</li>
-      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
-        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
-    </ul>
-
-    <h3>Every order</h3>
-    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
-    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
-    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
-    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
-    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
-    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
-    matching powers gives</p>
-    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
-    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
-    restoring term can be inverted, which here is a division by $2\lambda$.</p>
-    <p>The series does not satisfy $\omega(0) = 0$. An <a href="./layers.html">initial layer</a> of width about
-    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
-    <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
-    <p>For two names the first-order term gives the dependence directly. The function $g$ for $c = (1,1)$ is the
-    sum of the single-name functions, so $\tilde g_{(1,1)} = \tilde g_1 + \tilde g_2$ and</p>
-    $$\log\frac{S_{(1,1)}}{S_{(1,0)}\,S_{(0,1)}} = \frac{1}{\lambda}\int_0^t \tilde g_1(r)\,\tilde g_2(r)\,dr + O(\lambda^{-2}),$$
-    <p>where $\tilde g_j$ is company $j$&apos;s regime half-difference. It is positive when the cycle moves both
-    companies the same way.</p>
+    <h2>The survival probabilities written out</h2>
+    <p>Given the regime path the two intensities are independent CIR processes, and each has the same coefficient
+    $B$. For a stationary start the memory terms cancel, and the survival of any set of names is the CIR formula with
+    the levels added:</p>
+    <div class="equation-card">
+    $$S_c(T) = \exp\Big(-B\,(c\cdot x_0) - \kappa\,\bar\theta_c\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta_c^2\,I_2
+      - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta_c^2\,B^2\Big) + O(\varepsilon^3),$$
+    $$\begin{aligned}
+    \bar\theta_c &= c_1\bar\theta_1 + c_2\bar\theta_2, \qquad \tilde\theta_c = c_1\tilde\theta_1 + c_2\tilde\theta_2,
+      \qquad \bar\theta_j, \tilde\theta_j = \frac{\theta_{j,1} \pm \theta_{j,2}}{2}, \\
+    B &= \frac{2(e^{hT} - 1)}{(h + \kappa)(e^{hT} - 1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}, \\
+    I_1 &= \frac{2}{\sigma^2}\Big(\log\big((h + \kappa)(e^{hT} - 1) + 2h\big) - \log 2h - \frac{(\kappa + h)\,T}{2}\Big), \\
+    I_2 &= \frac{4}{h}\Big(\frac{hT}{(h - \kappa)^2} + \frac{a_2}{h + \kappa}\log\frac{(h + \kappa)e^{hT} + h - \kappa}{2h} \\
+      &\qquad\quad - \frac{a_3}{h + \kappa}\Big(\frac{1}{(h + \kappa)e^{hT} + h - \kappa} - \frac{1}{2h}\Big)\Big), \\
+    a_2 &= \frac{1}{h + \kappa} - \frac{h + \kappa}{(h - \kappa)^2}, \qquad a_3 = -2 - \frac{2(h + \kappa)}{h - \kappa} - a_2\,(h - \kappa).
+    \end{aligned}$$
+    </div>
+    <p>Since $\tilde\theta_{(1,1)}^2 - \tilde\theta_1^2 - \tilde\theta_2^2 = 2\tilde\theta_1\tilde\theta_2$, the joint
+    survival exceeds the product of the marginals by</p>
+    <div class="equation-card">
+    $$\log\frac{S_{(1,1)}(T)}{S_{(1,0)}(T)\,S_{(0,1)}(T)} = \varepsilon\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,I_2
+      - \frac{\varepsilon^2}{4}\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,B^2 + O(\varepsilon^3).$$
+    </div>
+    <p>This is the whole of the dependence. The averaged model has none, and the first term is the Green&ndash;Kubo
+    covariance of the two hazards.</p>
+    <p>At $\lambda = 2$, so that each regime lasts about half a year:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$B$, $I_1$, $I_2$</td><td>0.496357, 1.246232, 0.558945</td></tr><tr><td>$\tilde\theta_1$, $\tilde\theta_2$</td><td>0.3975, 0.2975</td></tr><tr><td>dependence $\log(S_{12}/S_1S_2)$, second order</td><td>0.124914</td></tr><tr><td>dependence, numerical</td><td>0.117901</td></tr><tr><td>$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, second order</td><td>0.388841, 0.480925, 0.211884</td></tr><tr><td>$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, numerical</td><td>0.387984, 0.480400, 0.209711</td></tr></tbody></table></div>
 
     <h2>Results</h2>
-    <p>The correlation of the default indicators, numerically and after each order:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th></tr></thead><tbody><tr><td>2</td><td>0.003086</td><td>0</td><td>0.003360</td><td>0.003130</td><td>0.003066</td><td>0.003092</td></tr><tr><td>4</td><td>0.001718</td><td>0</td><td>0.001785</td><td>0.001725</td><td>0.001717</td><td>0.001718</td></tr><tr><td>8</td><td>0.000903</td><td>0</td><td>0.000919</td><td>0.000904</td><td>0.000903</td><td>0.000903</td></tr></tbody></table></div>
-    <p>Order 0 is exactly zero, and order 1 already has most of the dependence. A Monte Carlo simulation of the
-    switching model agrees with the numerical survival probabilities; see
-    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>.</p>
+    <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
+    model gives exactly zero at every switching rate.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>default probabilities</th><th>numerical</th><th>averaged</th><th>first order</th><th>second order</th></tr></thead><tbody><tr><td>1</td><td>0.587, 0.502</td><td>0.1827</td><td>0.0000</td><td>0.2647</td><td>0.2256</td></tr><tr><td>2</td><td>0.612, 0.520</td><td>0.0958</td><td>0.0000</td><td>0.1092</td><td>0.1022</td></tr><tr><td>4</td><td>0.627, 0.530</td><td>0.0474</td><td>0.0000</td><td>0.0498</td><td>0.0483</td></tr><tr><td>8</td><td>0.634, 0.535</td><td>0.0233</td><td>0.0000</td><td>0.0238</td><td>0.0234</td></tr></tbody></table></div>
+    <p>Slower switching gives stronger dependence and a less accurate expansion. With regimes lasting a year the
+    correlation is 0.18 and the second-order formula overstates it. With regimes lasting three months it is 0.05 and
+    the formula is within 0.001.</p>
   </main>
 
   <footer>
