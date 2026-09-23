@@ -22,3 +22,12 @@
   questions, as in the survey's turbulence section).
 - Prior art to find and verify: basic reproduction number in random or periodic environments, epidemics in
   Markov-switching environments, stochastic SIS/SIR with telegraph noise.
+
+## Regime-switching correlation (noted 2026-09-23)
+- In multi-asset Black-Scholes a switched correlation multiplies sigma_1 sigma_2 d^2/dx1dx2. That operator commutes with
+  the other constant-coefficient operators, so only the symmetric Green-Kubo part enters, and the first correction is
+  K_rho,rho (d^2/dx1dx2)^2 plus cross terms with switched variances: a correlation smile in spread and basket options.
+- In affine models (two-factor Gaussian rates, the gaussian_factors code) switched correlations keep B regime-free, so
+  the engine covers them to all orders.
+- Portfolio side: the Merton or mean-variance weights under switching correlation; prior art on correlation risk and
+  Wishart covariance models to check. Folded into the portfolio research memo.
