@@ -15,7 +15,7 @@
     <div class="widget">
       <div class="controls">
         <label for="lam">switching rate &lambda;</label>
-        <input type="range" id="lam" min="0" max="2" step="0.01" value="0.5" />
+        <input type="range" id="lam" min="0" max="2" step="0.01" value="1.3" />
         <span class="val" id="lamVal"></span>
       </div>
       <div class="controls">
@@ -36,18 +36,17 @@
       <div class="table-wrap"><table class="impl" id="tab"></table></div>
     </div>
 
-    <p>The upper chart shows the partial sums settling onto the numerical solution. The lower
-    chart shows the absolute error of each partial sum on a log scale; the notches are where an
-    error changes sign. Over the orders the error falls by about a factor of $\lambda$ per term,
-    though not every single term, until it reaches the $10^{-12}$ accuracy of the in-browser ODE
-    solver. The table lists each term at one maturity. The expansion is asymptotic, so at small
-    $\lambda$ the terms stop shrinking and further orders no longer help. A term that failed to
-    shrink as $\lambda$ grows would refute the expansion.</p>
+    <p>The upper chart shows the partial sums settling onto the numerical solution. The lower chart
+    shows the absolute error of each partial sum on a log scale; the notches are where an error changes
+    sign. At the default $\lambda \approx 20$ each added term cuts the error by a factor of 10 to 20, down to
+    about $10^{-12}$. The gain per term shrinks as switching slows: near $\lambda = 3$ it is only a factor of
+    two or three, and the errors of successive orders alternate in sign, because the expansion is asymptotic
+    rather than convergent. A term that failed to shrink as $\lambda$ grows would refute the expansion.</p>
 
     <p class="muted">The numerical solution integrates the two-state linear ODE by fourth-order
     Runge&ndash;Kutta in your browser. The partial sums are computed from the recursion in
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/all_orders.py">all_orders.py</a>,
-    ported to JavaScript, and agree with the Python to $10^{-16}$.</p>
+    ported to JavaScript, and agree with the Python to $10^{-16}$. The numerical solution agrees with a 30-digit solution to about $10^{-12}$.</p>
 
   <script src="./survival.js"></script>
   <script src="./allorders.js"></script>

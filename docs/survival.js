@@ -20,7 +20,7 @@
     }
     // Exact: u_y = a_y(t) exp(-B x), a' = diag(-k th_y B + sig_y^2 B^2 / 2) a + Q a, a(0) = 1.
     function exactA(t, n) {
-      n = n || Math.max(400, Math.ceil(t * Math.max(40, 8 * lam)));
+      n = n || Math.max(800, Math.ceil(t * Math.max(200, 20 * lam)));
       var h = t / n, a0 = 1, a1 = 1, th0 = p.thetas[0], th1 = p.thetas[1];
       function f(r, x0, x1) {
         var b = B(r);
@@ -41,7 +41,7 @@
     function exact(t, x, y) { return exactA(t)[y] * Math.exp(-B(t) * x); }
     // Exact curve on ts = [0, dt, 2dt, ...] in one RK4 pass (sub-steps per grid interval).
     function exactCurve(tmax, npts, x, y) {
-      var dt = tmax / (npts - 1), sub = Math.max(8, Math.ceil(dt * Math.max(40, 8 * lam))), h = dt / sub;
+      var dt = tmax / (npts - 1), sub = Math.max(16, Math.ceil(dt * Math.max(200, 20 * lam))), h = dt / sub;
       var a0 = 1, a1 = 1, th0 = p.thetas[0], th1 = p.thetas[1], out = [[0, Math.exp(0)]];
       function f(r, x0, x1) {
         var b = B(r);
