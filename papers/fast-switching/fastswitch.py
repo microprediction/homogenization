@@ -291,8 +291,13 @@ class Cheb:
         if np.iscomplexobj(ys):
             re = Chebyshev.fit(xs, ys.real, deg, domain=[0, T])
             im = Chebyshev.fit(xs, ys.imag, deg, domain=[0, T])
-            return cls(Chebyshev(re.coef + 1j * im.coef, domain=[0, T]))
-        return cls(Chebyshev.fit(xs, ys, deg, domain=[0, T]))
+            series = Chebyshev(re.coef + 1j * im.coef, domain=[0, T])
+        else:
+            series = Chebyshev.fit(xs, ys, deg, domain=[0, T])
+        # drop the noise-level tail: high Taylor derivatives at 0 amplify it by roughly deg^(2k)
+        c = series.coef
+        keep = np.nonzero(np.abs(c) > 1e-14 * np.abs(c).max())[0]
+        return cls(series.truncate(int(keep[-1]) + 1 if len(keep) else 1))
 
     def _wrap(self, s):
         if len(s.coef) > self.MAXDEG + 1:
