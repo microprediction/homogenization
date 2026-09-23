@@ -31,3 +31,9 @@
   the engine covers them to all orders.
 - Portfolio side: the Merton or mean-variance weights under switching correlation; prior art on correlation risk and
   Wishart covariance models to check. Folded into the portfolio research memo.
+- Correlation is correlated with direction (correlations rise in down markets). Two routes into the framework:
+  (1) co-switching: one regime carries both low drift and high correlation, so the Green-Kubo cross entry K_mu,rho
+  couples d/dx with sigma1 sigma2 d^2/dx1dx2, a first-order third-derivative term that skews the correlation smile;
+  relevant under the physical measure (allocation), since risk-neutral drift is r; K_v,rho adds more if volatility
+  co-switches. (2) leverage-type: correlation is a fast factor whose shocks correlate with price shocks, an
+  order-sqrt(eps) correction as on the fast-factor page, relevant to option-implied correlation skew.
