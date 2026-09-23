@@ -671,17 +671,7 @@ def bond_options_page():
     <p>The terminal vector is now the indicator
     $e_j$ of the regime at expiry rather than $\mathbf 1$.</p>
 
-    <h2>The expansion</h2>
-    <p>With $\varepsilon = 1/\lambda$, write the terminal vector $e_j$ as its stationary part $\tfrac12\mathbf 1$ plus a
-    remainder. The stationary part is carried by the outer series as when $a(0) = \mathbf 1$: to first order</p>
-    $$\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big),$$
-    <p>with
-    $\bar g$ and $\tilde g$ the regime average and half-difference of $g$. The remainder relaxes over the fast time
-    $t/\varepsilon$ like $e^{-2\lambda t}$, so the initial layer now starts at order zero; it is solved order by order
-    with the same recursion, described on the <a href="./engine.html">engine</a> page. The expansion needs
-    $|\tilde g|/\lambda$ small at the frequencies $u$ that matter, and the Gil-Pelaez integrals stop at eight
-    standard deviations of $x_T$ in frequency.</p>
-
+<!-- include: explicit/bond-options.html -->
     <h2>Results</h2>
     <p>Call prices from the numerical solution, and the error after each order:</p>
 '''

@@ -99,16 +99,76 @@
     <p>The terminal vector is now the indicator
     $e_j$ of the regime at expiry rather than $\mathbf 1$.</p>
 
+
     <h2>The expansion</h2>
-    <p>With $\varepsilon = 1/\lambda$, write the terminal vector $e_j$ as its stationary part $\tfrac12\mathbf 1$ plus a
-    remainder. The stationary part is carried by the outer series as when $a(0) = \mathbf 1$: to first order</p>
-    $$\exp\big(\int\bar g + \tfrac\varepsilon2\int\tilde g^2\big)\big(1 \pm \tfrac\varepsilon2\tilde g\big),$$
-    <p>with
-    $\bar g$ and $\tilde g$ the regime average and half-difference of $g$. The remainder relaxes over the fast time
-    $t/\varepsilon$ like $e^{-2\lambda t}$, so the initial layer now starts at order zero; it is solved order by order
-    with the same recursion, described on the <a href="./engine.html">engine</a> page. The expansion needs
-    $|\tilde g|/\lambda$ small at the frequencies $u$ that matter, and the Gil-Pelaez integrals stop at eight
-    standard deviations of $x_T$ in frequency.</p>
+    <p>With $\varepsilon = 1/\lambda$, split the terminal vector into its stationary part and a remainder:</p>
+    $$e_j = \tfrac12\,\mathbf 1 + \tfrac12\,s_j\begin{pmatrix}1\\-1\end{pmatrix}, \qquad s_1 = +1,\quad s_2 = -1 .$$
+    <p>The stationary part is carried by the outer series exactly as for a bond. The remainder relaxes like
+    $e^{-2\lambda t}$, but on the way it leaves a first-order imprint through $\tilde g(0)$, which is not zero here
+    because $\tilde B(0) = c$. To first order, with the upper sign for a start in regime 1,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb{E}\big[e^{-\int_0^T x_r\,dr - c\,x_T}\,\mathbf 1\{y_T = j\}\big]
+      \;=\; &\tfrac12\,e^{-\tilde B(T)\,x_0}\,\exp\Big(\int_0^T \bar g + \frac{\varepsilon}{2}\int_0^T \tilde g^{\,2}\Big) \\
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(T) + s_j\,\frac{\varepsilon}{2}\,\tilde g(0)\Big)
+      + O(\varepsilon^2) + O(e^{-2\lambda T}).
+    \end{aligned}$$
+    </div>
+    <p>The term in $\tilde g(T)$ is the memory of the regime at the start. The term in $\tilde g(0)$ is its mirror image:
+    the memory of the regime at expiry, which decides the bond price the option is written on.</p>
+    <p>The expansion needs $|\tilde g|/\lambda$ to be small at the frequencies $u$ that matter. The Gil-Pelaez
+    integrals therefore stop at eight standard deviations of $x_T$ in frequency.</p>
+
+    <h2>The option price in closed form</h2>
+    <p>Every integral above is elementary, and to first order the option price reduces to Gaussian integrals.</p>
+    <h3>Step 1: the averaged model</h3>
+    <p>Under the averaged model&apos;s $T$-forward measure the rate at expiry is Gaussian,
+    $x_T \sim N(\mu, v)$, with</p>
+    $$\begin{aligned}
+    \mu &= E\,x_0 + \kappa\bar\theta\,B - \bar s\,M_{1,1}, \qquad v = \bar s\,M_{2,0}, \\
+    \bar P(0, T) &= \exp\big(-B\,x_0 - \kappa\bar\theta\,M_{0,1} + \tfrac12\bar s\,M_{0,2}\big), \\
+    E &= e^{-\kappa T}, \qquad B = \frac{1 - E}{\kappa},
+    \end{aligned}$$
+    <p>where the building blocks are</p>
+    $$M_{k,m} = \int_0^T e^{-k\kappa t}\,B(t)^m\,dt = \frac{1}{\kappa^m}\sum_{l=0}^{m}\binom{m}{l}(-1)^l\,\Phi_{k+l},
+      \qquad \Phi_0 = T,\quad \Phi_n = \frac{1 - e^{-n\kappa T}}{n\kappa}.$$
+    <h3>Step 2: the correction polynomial</h3>
+    <p>Because $\tilde B(t) = c\,e^{-\kappa t} + B(t)$, every correction term is a polynomial in $c$. The first-order
+    factor is</p>
+    $$\begin{aligned}
+    \Pi_j(c) \;=\; &\tfrac12\Big(\kappa^2\tilde\theta^2\,J_2(c) - \kappa\tilde\theta\,\tilde s\,J_3(c) + \tfrac14\tilde s^2 J_4(c)\Big) \\
+      &\pm \tfrac12\Big(-\kappa\tilde\theta\,(B + Ec) + \tfrac12\tilde s\,(B + Ec)^2\Big)
+      + \tfrac12\,s_j\Big(-\kappa\tilde\theta\,c + \tfrac12\tilde s\,c^2\Big),
+    \end{aligned}$$
+    $$J_n(c) = \int_0^T \tilde B(t)^n\,dt = \sum_{k=0}^{n}\binom{n}{k}\,M_{k,\,n-k}\;c^k .$$
+    <p>Write $\Pi_j(c) = \sum_{k=0}^{4}\pi_{jk}\,c^k$. A factor $c^k$ on the transform is the $k$-th derivative of the
+    Gaussian density of $x_T$.</p>
+    <h3>Step 3: the bond at expiry</h3>
+    <p>In regime $j$ the bond price at expiry is $A_j e^{-b x_T}$, with $b = (1 - e^{-\kappa\tau})/\kappa$ and
+    $\tau = S - T$. The regime-switching bond formula gives</p>
+    $$A_{1,2} = \exp\Big(-\kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2
+      + \frac{\varepsilon}{2}\big(\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2 I_4\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\big(-\kappa\tilde\theta\,b + \tfrac12\tilde s\,b^2\big)\Big),$$
+    <p>with $I_k = M_{0,k}$ evaluated at maturity $\tau$ in place of $T$.</p>
+    <h3>Step 4: the price</h3>
+    <div class="equation-card">
+    $$C \;=\; \bar P(0, T)\sum_{j = 1}^{2}\tfrac12\Big(R_0(A_j) + \varepsilon\sum_{k=0}^{4}(-1)^k\,\pi_{jk}\,R_k(A_j)\Big) + O(\varepsilon^2),$$
+    $$\begin{aligned}
+    R_0(A) &= A\,e^{-b\mu + \frac12 b^2 v}\,\Phi(z^* + b\sqrt v) - K\,\Phi(z^*), \\
+    R_k(A) &= v^{-k/2}\Big(A\,e^{-b\mu + \frac12 b^2 v}\sum_{i=0}^{k}\binom{k}{i}\big(-b\sqrt v\big)^{k-i} H_i\big(z^* + b\sqrt v\big)
+      - K\,H_k(z^*)\Big), \\
+    z^* &= \frac{\log(A/K)/b - \mu}{\sqrt v}, \qquad H_0 = \Phi, \qquad H_i(w) = -\mathrm{He}_{i-1}(w)\,\varphi(w) \ \ (i \ge 1).
+    \end{aligned}$$
+    </div>
+    <p>Here $\mathrm{He}_n$ are the Hermite polynomials $1, w, w^2 - 1, \dots$, and $\Phi$ and $\varphi$ are the standard
+    normal distribution and density. $R_0$ is Jamshidian&apos;s formula, so with $\varepsilon = 0$ this is the averaged
+    model&apos;s option price. The $\varepsilon$ terms are the new correction.</p>
+    <p>At the parameters above with $\lambda = 20$ and a start in regime 1, the correction coefficients $\pi_{jk}$ are:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th></th><th>$c^0$</th><th>$c^1$</th><th>$c^2$</th><th>$c^3$</th><th>$c^4$</th></tr></thead><tbody><tr><td>expiry in regime 1</td><td>-0.001955</td><td>-0.003994</td><td>2.917e-05</td><td>-8.059e-08</td><td>2.111e-10</td></tr><tr><td>expiry in regime 2</td><td>-0.001955</td><td>0.001006</td><td>-2.082e-06</td><td>-8.059e-08</td><td>2.111e-10</td></tr></tbody></table></div>
+    <p>The resulting prices against the numerical solution:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>averaged (Jamshidian)</th><th>error</th><th>closed form, first order</th><th>error</th></tr></thead><tbody><tr><td>0.86</td><td>0.02630239</td><td>0.02638714</td><td>8.5e-05</td><td>0.02630380</td><td>1.4e-06</td></tr><tr><td>0.88</td><td>0.00955489</td><td>0.00958709</td><td>3.2e-05</td><td>0.00955623</td><td>1.3e-06</td></tr><tr><td>0.9</td><td>0.00135217</td><td>0.00135934</td><td>7.2e-06</td><td>0.00135215</td><td>1.9e-08</td></tr></tbody></table></div>
+    <p>Each doubling of $\lambda$ divides the first-order error by about four, as a second-order remainder should. The
+    engine&apos;s higher orders, in the table below, continue the series.</p>
 
     <h2>Results</h2>
     <p>Call prices from the numerical solution, and the error after each order:</p>

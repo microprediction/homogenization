@@ -291,6 +291,97 @@ def counts():
     write('counts', html)
 
 
+
+
+def bond_options():
+    from bond_option_explicit import call, pieces
+    from options import zcb_call
+    kappa, th, sig, x0, T, S, lam = 0.5, [0.05, 0.03], [0.015, 0.010], 0.04, 1.0, 4.0, 20.0
+    Q = sym(lam)
+    p = pieces(kappa, th, sig, x0, T, S, lam)
+    rows = []
+    for K in (0.86, 0.88, 0.90):
+        num = zcb_call(T, S, K, x0, 0, kappa, th, sig, Q)
+        c0 = call(kappa, th, sig, x0, T, S, K, lam, order=0)
+        c1 = call(kappa, th, sig, x0, T, S, K, lam, order=1)
+        rows.append([f'{K}', f'{num:.8f}', f'{c0:.8f}', f'{abs(c0 - num):.1e}', f'{c1:.8f}', f'{abs(c1 - num):.1e}'])
+    from bond_option_explicit import polyadd, scale
+    pis = []
+    for j, sj in ((0, 1), (1, -1)):
+        Pi = polyadd(scale(p['intg2'], 0.5), scale(p['gtT'], 0.5), scale(p['gt0'], 0.5 * sj))
+        pis.append([f'expiry in regime {j + 1}'] + [f'{x:.4g}' for x in Pi])
+    html = r'''
+    <h2>The expansion</h2>
+    <p>With $\varepsilon = 1/\lambda$, split the terminal vector into its stationary part and a remainder:</p>
+    $$e_j = \tfrac12\,\mathbf 1 + \tfrac12\,s_j\begin{pmatrix}1\\-1\end{pmatrix}, \qquad s_1 = +1,\quad s_2 = -1 .$$
+    <p>The stationary part is carried by the outer series exactly as for a bond. The remainder relaxes like
+    $e^{-2\lambda t}$, but on the way it leaves a first-order imprint through $\tilde g(0)$, which is not zero here
+    because $\tilde B(0) = c$. To first order, with the upper sign for a start in regime 1,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb{E}\big[e^{-\int_0^T x_r\,dr - c\,x_T}\,\mathbf 1\{y_T = j\}\big]
+      \;=\; &\tfrac12\,e^{-\tilde B(T)\,x_0}\,\exp\Big(\int_0^T \bar g + \frac{\varepsilon}{2}\int_0^T \tilde g^{\,2}\Big) \\
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(T) + s_j\,\frac{\varepsilon}{2}\,\tilde g(0)\Big)
+      + O(\varepsilon^2) + O(e^{-2\lambda T}).
+    \end{aligned}$$
+    </div>
+    <p>The term in $\tilde g(T)$ is the memory of the regime at the start. The term in $\tilde g(0)$ is its mirror image:
+    the memory of the regime at expiry, which decides the bond price the option is written on.</p>
+    <p>The expansion needs $|\tilde g|/\lambda$ to be small at the frequencies $u$ that matter. The Gil-Pelaez
+    integrals therefore stop at eight standard deviations of $x_T$ in frequency.</p>
+
+    <h2>The option price in closed form</h2>
+    <p>Every integral above is elementary, and to first order the option price reduces to Gaussian integrals.</p>
+    <h3>Step 1: the averaged model</h3>
+    <p>Under the averaged model&apos;s $T$-forward measure the rate at expiry is Gaussian,
+    $x_T \sim N(\mu, v)$, with</p>
+    $$\begin{aligned}
+    \mu &= E\,x_0 + \kappa\bar\theta\,B - \bar s\,M_{1,1}, \qquad v = \bar s\,M_{2,0}, \\
+    \bar P(0, T) &= \exp\big(-B\,x_0 - \kappa\bar\theta\,M_{0,1} + \tfrac12\bar s\,M_{0,2}\big), \\
+    E &= e^{-\kappa T}, \qquad B = \frac{1 - E}{\kappa},
+    \end{aligned}$$
+    <p>where the building blocks are</p>
+    $$M_{k,m} = \int_0^T e^{-k\kappa t}\,B(t)^m\,dt = \frac{1}{\kappa^m}\sum_{l=0}^{m}\binom{m}{l}(-1)^l\,\Phi_{k+l},
+      \qquad \Phi_0 = T,\quad \Phi_n = \frac{1 - e^{-n\kappa T}}{n\kappa}.$$
+    <h3>Step 2: the correction polynomial</h3>
+    <p>Because $\tilde B(t) = c\,e^{-\kappa t} + B(t)$, every correction term is a polynomial in $c$. The first-order
+    factor is</p>
+    $$\begin{aligned}
+    \Pi_j(c) \;=\; &\tfrac12\Big(\kappa^2\tilde\theta^2\,J_2(c) - \kappa\tilde\theta\,\tilde s\,J_3(c) + \tfrac14\tilde s^2 J_4(c)\Big) \\
+      &\pm \tfrac12\Big(-\kappa\tilde\theta\,(B + Ec) + \tfrac12\tilde s\,(B + Ec)^2\Big)
+      + \tfrac12\,s_j\Big(-\kappa\tilde\theta\,c + \tfrac12\tilde s\,c^2\Big),
+    \end{aligned}$$
+    $$J_n(c) = \int_0^T \tilde B(t)^n\,dt = \sum_{k=0}^{n}\binom{n}{k}\,M_{k,\,n-k}\;c^k .$$
+    <p>Write $\Pi_j(c) = \sum_{k=0}^{4}\pi_{jk}\,c^k$. A factor $c^k$ on the transform is the $k$-th derivative of the
+    Gaussian density of $x_T$.</p>
+    <h3>Step 3: the bond at expiry</h3>
+    <p>In regime $j$ the bond price at expiry is $A_j e^{-b x_T}$, with $b = (1 - e^{-\kappa\tau})/\kappa$ and
+    $\tau = S - T$. The regime-switching bond formula gives</p>
+    $$A_{1,2} = \exp\Big(-\kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2
+      + \frac{\varepsilon}{2}\big(\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2 I_4\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\big(-\kappa\tilde\theta\,b + \tfrac12\tilde s\,b^2\big)\Big),$$
+    <p>with $I_k = M_{0,k}$ evaluated at maturity $\tau$ in place of $T$.</p>
+    <h3>Step 4: the price</h3>
+    <div class="equation-card">
+    $$C \;=\; \bar P(0, T)\sum_{j = 1}^{2}\tfrac12\Big(R_0(A_j) + \varepsilon\sum_{k=0}^{4}(-1)^k\,\pi_{jk}\,R_k(A_j)\Big) + O(\varepsilon^2),$$
+    $$\begin{aligned}
+    R_0(A) &= A\,e^{-b\mu + \frac12 b^2 v}\,\Phi(z^* + b\sqrt v) - K\,\Phi(z^*), \\
+    R_k(A) &= v^{-k/2}\Big(A\,e^{-b\mu + \frac12 b^2 v}\sum_{i=0}^{k}\binom{k}{i}\big(-b\sqrt v\big)^{k-i} H_i\big(z^* + b\sqrt v\big)
+      - K\,H_k(z^*)\Big), \\
+    z^* &= \frac{\log(A/K)/b - \mu}{\sqrt v}, \qquad H_0 = \Phi, \qquad H_i(w) = -\mathrm{He}_{i-1}(w)\,\varphi(w) \ \ (i \ge 1).
+    \end{aligned}$$
+    </div>
+    <p>Here $\mathrm{He}_n$ are the Hermite polynomials $1, w, w^2 - 1, \dots$, and $\Phi$ and $\varphi$ are the standard
+    normal distribution and density. $R_0$ is Jamshidian&apos;s formula, so with $\varepsilon = 0$ this is the averaged
+    model&apos;s option price. The $\varepsilon$ terms are the new correction.</p>
+    <p>At the parameters above with $\lambda = 20$ and a start in regime 1, the correction coefficients $\pi_{jk}$ are:</p>
+''' + table(pis, head=('', '$c^0$', '$c^1$', '$c^2$', '$c^3$', '$c^4$')) + r'''    <p>The resulting prices against the numerical solution:</p>
+''' + table(rows, head=('strike', 'numerical', 'averaged (Jamshidian)', 'error', 'closed form, first order', 'error')) + r'''    <p>Each doubling of $\lambda$ divides the first-order error by about four, as a second-order remainder should. The
+    engine&apos;s higher orders, in the table below, continue the series.</p>
+'''
+    write('bond-options', html)
+
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
-    jumps(); regime_switching(); cir(); black_scholes(); counts()
+    jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options()
