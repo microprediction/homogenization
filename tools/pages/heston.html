@@ -1,0 +1,20 @@
+<!-- title: Heston with a switching long-run variance · homogenization | math -->
+  <main>
+    <h1>Heston with a switching long-run variance</h1>
+    <p class="subtitle">Option prices by Fourier inversion, with the characteristic function expanded in $1/\lambda$.</p>
+    <p>The log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
+    $dv = \kappa(\theta_y - v)\,dt + \xi\sqrt v\,dZ$, with correlation $\rho$. The characteristic function is
+    $\mathbb{E}[e^{iuX_T}] = e^{iuX_0 + D(T)v_0}\,a_i(T)$, where $D$ is Heston&apos;s Riccati solution, which does
+    not involve $\theta$. The regime enters only through</p>
+    $$g_i(t) = \kappa\,\theta_i\,D(t), \qquad D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}},$$
+    <p>with $d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)}$ and $\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d)$.
+    Call prices follow from Lewis&apos;s formula,
+    $C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}$.</p>
+    <p>Here $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$, $S_0 = 100$, one year to
+    expiry, a symmetric chain switching at $\lambda = 10$, and a start in the high-variance regime. The table gives
+    call prices from the numerical characteristic function and after each order.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th></tr></thead><tbody><tr><td>80</td><td>22.13369</td><td>22.06371</td><td>22.13501</td><td>22.13388</td><td>22.13369</td></tr><tr><td>90</td><td>14.47902</td><td>14.38309</td><td>14.47998</td><td>14.47922</td><td>14.47903</td></tr><tr><td>100</td><td>8.40280</td><td>8.29383</td><td>8.40317</td><td>8.40289</td><td>8.40281</td></tr><tr><td>110</td><td>4.22012</td><td>4.11250</td><td>4.22051</td><td>4.22017</td><td>4.22012</td></tr><tr><td>120</td><td>1.82993</td><td>1.73643</td><td>1.83091</td><td>1.83003</td><td>1.82992</td></tr></tbody></table></div>
+    <p>A Monte Carlo simulation of the switching model, with 200,000 paths, gives 22.13, 8.41 and 1.83 at strikes 80,
+    100 and 120, each within its standard error of the numerical prices. The same construction applies to any
+    affine stochastic volatility model in which only the long-run level switches.</p>
+  </main>

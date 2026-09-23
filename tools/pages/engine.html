@@ -1,0 +1,42 @@
+<!-- title: The fast-switching engine · homogenization | math -->
+  <main>
+    <h1>The fast-switching engine</h1>
+    <p class="subtitle">One recursion for every model whose state factors out of an exponential-affine formula.</p>
+
+    <p class="lead">Many expectations of the form $\mathbb{E}\big[e^{-\int_0^t c\cdot x_r\,dr}\,\phi(x_t)\big]$ are
+    exponential-affine in the state $x$, with coefficients that solve ODEs. When a finite Markov chain $y_t$
+    modulates the model but leaves the state-dependent coefficient unchanged, the state factors out and what
+    remains is a linear system in time only:</p>
+    $$u_i(t,x) = e^{-B(t)\cdot x}\,a_i(t), \qquad a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \qquad a(0) = \mathbf 1 .$$
+    <p>The model enters only through the functions $g_i(t)$, one per regime. The table lists them for the
+    examples on this site.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>Model</th><th>Switching parameters</th><th>Time function</th></tr></thead><tbody><tr><td><a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a></td><td>mean level, volatility</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$</td></tr><tr><td><a href="./credit.html">Gaussian factors, two-name credit</a></td><td>means, volatilities, correlations</td><td>$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$</td></tr><tr><td><a href="./cir.html">CIR</a></td><td>mean level</td><td>$-\kappa\theta_i B_{\mathrm{CIR}}$</td></tr><tr><td><a href="./jumps.html">Vasicek with jumps</a></td><td>mean, volatility, jump intensity</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$</td></tr><tr><td><a href="./counts.html">Poisson counts</a></td><td>arrival rate</td><td>$(z-1)\,\ell_i$</td></tr><tr><td><a href="./heston.html">Heston</a></td><td>long-run variance</td><td>$\kappa\theta_i D(t)$, complex</td></tr></tbody></table></div>
+
+    <h2>The recursion</h2>
+    <p>Write the generator as $Q = Q_0/\varepsilon$ with $\varepsilon$ the mean holding time, let $\pi$ be the
+    stationary distribution, and set $s = \pi\cdot a$ and $w = a/s - \mathbf 1$, so that $\pi\cdot w = 0$. Then</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \frac{s'}{s} &= \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g, \\[4pt]
+      \varepsilon\,w' &= Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).
+    \end{aligned}$$
+    </div>
+    <p>The outer series $w = \sum_{n\ge1}\varepsilon^n w_n$ follows from $w_n = Q_0^{\#}\big(w_{n-1}' - F_{n-1}\big)$,
+    where $Q_0^{\#}$ is the group inverse of $Q_0$ and $F_{n-1}$ collects the terms of $F$ of that order. Each
+    step is solvable because $\pi$ annihilates the right-hand side. When every $g_i$ is a sum of exponentials
+    $e^{-\alpha t}$ the class is closed under products and derivatives, so every $w_n$ is again such a sum and
+    every term of $\log s$ integrates in closed form. Otherwise $g_i$ is held as a Chebyshev series.</p>
+    <p>The outer series does not satisfy $w(0) = 0$. The initial layer $\eta = w - w_{\mathrm{outer}}$, in the fast
+    time $\tau = t/\varepsilon$, solves $d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$
+    with $\eta(0) = -w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
+    $\tau^k e^{\mu\tau}$, and it contributes to $\log s$ from order $\varepsilon^2$ or later. The result is
+    $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$ orders.</p>
+
+    <h2>Code and checks</h2>
+    <ul>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch.py">fastswitch.py</a>: the engine, for any finite chain, real or complex coefficients.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a>: the $g_i$ for each model, with the state-dependent factor.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: each model&apos;s reduction against Monte Carlo of the switching model, and each expansion&apos;s convergence.</li>
+    </ul>
+  </main>

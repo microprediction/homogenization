@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Three regimes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>Three regimes</h1>
+    <p class="subtitle">Vasicek with a mean level and volatility that move among three regimes.</p>
+    <p>The short rate follows $dx = \kappa(\theta_{y} - x)\,dt + \sigma_y\,dW$ with $\kappa = 2$,
+    $\theta = (0.20, 0.08, 0.02)$ and $\sigma^2 = (0.04, 0.01, 0.0025)$. The chain need not be reversible. Here
+    its generator is $s\,Q_1$ with</p>
+    $$Q_1 = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix},$$
+    <p>whose stationary distribution is $\pi = (0.208, 0.458, 0.333)$. The averaged
+    model is Vasicek&apos;s with the $\pi$-weighted mean level and variance. The table gives the error in the bond
+    price $a_1(1)$, starting in the first regime, after each order, against a 30-digit numerical solution.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>scale</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>4</td><td>6.2e-3</td><td>1.8e-4</td><td>2.1e-5</td><td>3.7e-6</td><td>5.1e-7</td><td>1.0e-7</td><td>1.6e-8</td></tr><tr><td>8</td><td>3.1e-3</td><td>4.2e-5</td><td>2.4e-6</td><td>2.2e-7</td><td>1.4e-8</td><td>1.4e-9</td><td>1.1e-10</td></tr><tr><td>16</td><td>1.6e-3</td><td>1.0e-5</td><td>2.9e-7</td><td>1.3e-8</td><td>4.2e-10</td><td>2.2e-11</td><td>7.9e-13</td></tr></tbody></table></div>
+    <p>Each doubling of the switching rates divides the order-$n$ error by about $2^{n+1}$. For $n$ regimes the
+    recursion is unchanged: the two-state ratio becomes a vector $w$, and each order applies the group inverse
+    of the generator once. See <a href="./engine.html">the engine</a>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

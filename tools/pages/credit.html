@@ -1,0 +1,21 @@
+<!-- title: Two factors and two-name credit · homogenization | math -->
+  <main>
+    <h1>Two factors and two-name credit</h1>
+    <p class="subtitle">Default dependence created by a common regime, and where it enters the expansion.</p>
+    <p>Two default intensities follow independent Ornstein&ndash;Uhlenbeck processes,
+    $dx_j = \kappa_j(\theta_{j,y} - x_j)\,dt + \sigma_{j,y}\,dW_j$, whose mean levels and volatilities switch with a
+    common two-state regime. The same reduction prices any positive combination $c_1x_1 + c_2x_2$, which covers
+    two-factor Gaussian short rates as well. Survival of each name and of both names is</p>
+    $$S_{c}(t) = \mathbb{E}\Big[e^{-\int_0^t (c_1 x_1 + c_2 x_2)}\Big] = e^{-c_1B_1x_1 - c_2B_2x_2}\,a_{c}(t),$$
+    <p>with $c = (1,0)$, $(0,1)$ and $(1,1)$. Here $\kappa = (1, 1.5)$, $\theta_1 = (0.06, 0.01)$,
+    $\theta_2 = (0.05, 0.015)$, $\sigma = (0.02, 0.005)$ for both names, $x_0 = (0.03, 0.03)$ and $t = 3$.</p>
+    <p>The table gives the correlation of the two default indicators, numerically and after each order. The
+    averaged model has independent names, so order 0 gives zero. The dependence appears at order $1/\lambda$.
+    For a symmetric chain the first-order term is</p>
+    $$\log\frac{S_{(1,1)}}{S_{(1,0)}\,S_{(0,1)}} = \frac{1}{\lambda}\int_0^t \tilde g_1(r)\,\tilde g_2(r)\,dr + O(\lambda^{-2}),$$
+    <p>where $\tilde g_j = -\kappa_j\tilde\theta_j B_j + \tfrac12\tilde s_j B_j^2$ is each name&apos;s regime
+    half-difference. It is positive when the regimes move both names the same way.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th></tr></thead><tbody><tr><td>2</td><td>0.003086</td><td>0</td><td>0.003360</td><td>0.003130</td><td>0.003066</td><td>0.003092</td></tr><tr><td>4</td><td>0.001718</td><td>0</td><td>0.001785</td><td>0.001725</td><td>0.001717</td><td>0.001718</td></tr><tr><td>8</td><td>0.000903</td><td>0</td><td>0.000919</td><td>0.000904</td><td>0.000903</td><td>0.000903</td></tr></tbody></table></div>
+    <p>The reduction was checked against Monte Carlo of the switching model in
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>.</p>
+  </main>
