@@ -1,0 +1,73 @@
+<!-- title: QuantLib models · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./engine.html">&larr; the fast-switching engine</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_quantlib_models.py">certificate</a></span></p>
+    <h1>Fast regimes in QuantLib&apos;s models</h1>
+    <p class="subtitle">Which of QuantLib&apos;s models and processes take regime-switching parameters, and which method handles each.</p>
+
+    <p class="lead">Any model in <a href="https://github.com/lballabio/QuantLib">QuantLib</a> can have some of its
+    parameters driven by a fast hidden chain. How far the expansion reaches depends on where the switched parameters
+    enter the pricing equation.</p>
+
+    <h2>The test</h2>
+    <p>Many QuantLib models are exponential-affine: a price or characteristic function has the form</p>
+    $$u_i(t, x) = e^{-B(t)\cdot x}\,a_i(t),$$
+    <p>where $B$ solves a Riccati equation. If the switched parameters do not appear in that Riccati equation, $B$ is
+    the same in every regime. The regime then enters only through a forcing $g_i(t)$, and</p>
+    $$a' = \big(Q + \operatorname{diag} g\big)\,a .$$
+    <p>The <a href="./engine.html">engine</a> expands this to all orders, with the initial layer.</p>
+    <p>When the switched parameters do enter the Riccati equation, or the model is not affine, the
+    <a href="./any-equation.html">first-order rule</a> still applies to any Markov pricing equation. It adds the
+    Green&ndash;Kubo term $\sum_{jk} K_{jk} A_j A_k$ to the averaged operator.</p>
+
+    <h2>The catalogue</h2>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>QuantLib model or process</th><th>switch, all orders</th><th>switch, first order</th><th>checked here</th></tr></thead>
+      <tbody>
+        <tr><td>BlackScholesProcess, GeometricBrownianMotionProcess</td><td>volatility, rate, dividend</td><td></td><td><a href="./black-scholes.html">Black&ndash;Scholes</a></td></tr>
+        <tr><td>Merton76Process (JumpDiffusionEngine)</td><td>volatility, jump intensity, jump law</td><td></td><td>certificate</td></tr>
+        <tr><td>VarianceGammaProcess</td><td>$\sigma$, $\nu$, $\theta$</td><td></td><td>certificate</td></tr>
+        <tr><td>HestonModel, PiecewiseTimeDependentHestonModel</td><td>variance level $\theta$</td><td>$\kappa$, $\xi$, $\rho$</td><td><a href="./heston.html">Heston</a>; <a href="./cycle-smile.html">$\theta$ and $\xi$</a></td></tr>
+        <tr><td>BatesModel</td><td>variance level, jump intensity, jump law</td><td>$\kappa$, $\xi$, $\rho$</td><td>certificate</td></tr>
+        <tr><td>Vasicek, HullWhite</td><td>mean level, volatility</td><td>reversion speed</td><td><a href="./regime-switching.html">regime switching</a>; <a href="./any-equation.html">speed and volatility</a></td></tr>
+        <tr><td>CoxIngersollRoss, ExtendedCoxIngersollRoss</td><td>mean level</td><td>volatility, reversion speed</td><td><a href="./cir.html">CIR</a></td></tr>
+        <tr><td>G2 (two-factor Gaussian)</td><td>both volatilities, correlation, level</td><td>reversion speeds</td><td><a href="./credit.html">two factors</a></td></tr>
+        <tr><td>GSR, Gaussian1dModel</td><td>volatility, level</td><td>reversion</td><td></td></tr>
+        <tr><td>HestonHullWhite, H1HW, BSM&ndash;Hull&ndash;White</td><td>variance level, rate level, volatilities</td><td>reversion speeds, vol-of-vol</td><td></td></tr>
+        <tr><td>ExtendedOrnsteinUhlenbeckProcess, ExtOUWithJumpsProcess, KlugeExtOUProcess</td><td>level, volatility, jump intensity</td><td>reversion speed</td><td><a href="./jumps.html">jumps</a></td></tr>
+        <tr><td>BlackKarasinski</td><td></td><td>all parameters</td><td></td></tr>
+        <tr><td>CEV, SABR (AnalyticCEVEngine, FdSABRVanillaEngine)</td><td></td><td>all parameters</td><td></td></tr>
+        <tr><td>Local volatility, HestonSLV, normal and square-root CLV models</td><td></td><td>all parameters</td><td></td></tr>
+        <tr><td>GemanRoncoroniProcess</td><td></td><td>all parameters</td><td></td></tr>
+        <tr><td>LIBOR market models</td><td></td><td>all parameters, in high dimension</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Three families lie outside the framework. Rough Heston is not Markov. GJR-GARCH is a discrete-time model, which
+    would need the discrete-time analogue of the expansion. The credit loss models (Gaussian large-pool and other
+    latent-factor models) are static one-period factor models; dynamic credit with switching hazards is on the
+    <a href="./credit.html">credit page</a>.</p>
+
+    <h2>Products</h2>
+    <ul>
+      <li>European options priced through characteristic functions use the engine directly, as on the
+        <a href="./black-scholes.html">Black&ndash;Scholes</a> and <a href="./heston.html">Heston</a> pages.</li>
+      <li>Bond options and swaptions in affine short-rate models need the regime at expiry, which starts the
+        <a href="./layers.html">initial layer</a> at order zero, as on the <a href="./bond-options.html">bond options</a>
+        page.</li>
+      <li>Asian and lookback options add a state variable. The pricing equation stays Markov, so the first-order rule
+        applies to the enlarged generator.</li>
+      <li>Barrier and American options add a boundary or a free boundary. The rule applies to the operator, and the
+        boundary adds layers that are not treated here.</li>
+    </ul>
+
+    <h2>The new checks</h2>
+    <p>Merton&apos;s jump diffusion, variance gamma and Bates are Lévy or affine with constant or regime-free Riccati
+    parts. For each, the regime-dependent forcing is the switched part of the characteristic exponent:</p>
+    $$g_i = \psi_i(u) \quad\text{(Merton, variance gamma)}, \qquad g_i(t) = \kappa\,\theta_i\,D(t) + \lambda_i\,\big(\phi_J(u) - 1 - iu\bar k\big) \quad\text{(Bates)},$$
+    <p>where $\psi_i$ is the Lévy exponent in regime $i$, $D$ the Heston Riccati solution, $\phi_J$ the jump
+    characteristic function and $\bar k$ the mean jump size. The certificate compares the expansion with the
+    numerical solution as the switching speeds up. Every order converges at its expected rate, from one to five,
+    until the error reaches rounding.</p>
+  </main>
