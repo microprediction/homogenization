@@ -1,0 +1,146 @@
+[
+ {
+  "key": "LevermorePomraningSanzoWong1986",
+  "authors": "Levermore, C. D. and Pomraning, G. C. and Sanzo, D. L. and Wong, J.",
+  "year": 1986,
+  "title": "Linear transport theory in a random medium",
+  "venue": "Journal of Mathematical Physics 27, 2526-2536",
+  "doi": "10.1063/1.527320",
+  "annotation": "Derives a formally exact equation for transport through a purely absorbing random mixture and solves it for two materials with Markov statistics, giving the two-exponential transmission law."
+ },
+ {
+  "key": "LevermoreWongPomraning1988",
+  "authors": "Levermore, C. D. and Wong, J. and Pomraning, G. C.",
+  "year": 1988,
+  "title": "Renewal theory for transport processes in binary statistical mixtures",
+  "venue": "Journal of Mathematical Physics 29, 995-1004",
+  "doi": "10.1063/1.527997",
+  "annotation": "Treats purely absorbing binary mixtures with arbitrary chord-length distributions by renewal theory and obtains effective cross sections and sources for a standard transport equation."
+ },
+ {
+  "key": "MalvagiLevermorePomraning1989",
+  "authors": "Malvagi, F. and Levermore, C. D. and Pomraning, G. C.",
+  "year": 1989,
+  "title": "Asymptotic limits of a statistical transport description",
+  "venue": "Transport Theory and Statistical Physics 18, 287-311",
+  "doi": "10.1080/00411458908204690",
+  "annotation": "Studies limits of the two-equation stochastic transport model, including fluid packets small compared with the mean free path, where the model reduces to a single transport equation."
+ },
+ {
+  "key": "Pomraning1991",
+  "authors": "Pomraning, G. C.",
+  "year": 1991,
+  "title": "Linear Kinetic Theory and Particle Transport in Stochastic Mixtures",
+  "venue": "World Scientific",
+  "doi": "10.1142/1549",
+  "annotation": "The monograph on particle transport through random mixtures of immiscible materials, including the Levermore-Pomraning model."
+ },
+ {
+  "key": "SuPomraning1994",
+  "authors": "Su, B. and Pomraning, G. C.",
+  "year": 1994,
+  "title": "Limiting correlation length solutions in stochastic radiative transfer",
+  "venue": "Journal of Quantitative Spectroscopy and Radiative Transfer 51, 893-912",
+  "doi": "10.1016/0022-4073(94)90019-1",
+  "annotation": "Constructs solutions of stochastic radiative transfer in the limits of small and large correlation length, with scattering, in rod geometry."
+ },
+ {
+  "key": "Pomraning1996",
+  "authors": "Pomraning, G. C.",
+  "year": 1996,
+  "title": "Small correlation length solutions for planar symmetry beam transport in a stochastic medium",
+  "venue": "Annals of Nuclear Energy 23, 843-861",
+  "doi": "10.1016/0306-4549(95)00080-1",
+  "annotation": "Gives small-correlation-length solutions for beam transport through a planar stochastic medium."
+ },
+ {
+  "key": "KiedrowskiVu2025",
+  "authors": "Kiedrowski, B. C. and Vu, E. H.",
+  "year": 2025,
+  "title": "Transit-Length Distribution for Particle Transport in Binary Markovian Mixed Media",
+  "venue": "SSRN preprint",
+  "doi": "10.2139/ssrn.5200776",
+  "annotation": "Maps transport in a binary Markovian mixture to the telegraph process and derives the distribution of distance travelled in each material, with a Gaussian form for well-mixed media."
+ },
+ {
+  "key": "AdamsLarsenPomraning1989",
+  "authors": "Adams, M. L. and Larsen, E. W. and Pomraning, G. C.",
+  "year": 1989,
+  "title": "Benchmark results for particle transport in a binary Markov statistical medium",
+  "venue": "Journal of Quantitative Spectroscopy and Radiative Transfer 42, 253-266",
+  "doi": "10.1016/0022-4073(89)90072-1",
+  "annotation": "Sets out the standard planar benchmark problems for transport in binary Markovian mixtures."
+ },
+ {
+  "key": "Brantley2011",
+  "authors": "Brantley, P. S.",
+  "year": 2011,
+  "title": "A benchmark comparison of Monte Carlo particle transport algorithms for binary stochastic mixtures",
+  "venue": "Journal of Quantitative Spectroscopy and Radiative Transfer 112, 599-618",
+  "doi": "10.1016/j.jqsrt.2010.06.007",
+  "annotation": "Compares Monte Carlo algorithms, including chord-length sampling, on the binary-mixture benchmark suite."
+ },
+ {
+  "key": "LarmierEtAl2017",
+  "authors": "Larmier, C. and Hugot, F.-X. and Malvagi, F. and Mazzolo, A. and Zoia, A.",
+  "year": 2017,
+  "title": "Benchmark solutions for transport in d-dimensional Markov binary mixtures",
+  "venue": "Journal of Quantitative Spectroscopy and Radiative Transfer 189, 133-148",
+  "doi": "10.1016/j.jqsrt.2016.11.015",
+  "annotation": "Computes benchmark solutions for transport through binary mixtures generated as coloured Poisson tessellations in one, two and three dimensions."
+ },
+ {
+  "key": "Titov1990",
+  "authors": "Titov, G. A.",
+  "year": 1990,
+  "title": "Statistical Description of Radiation Transfer in Clouds",
+  "venue": "Journal of the Atmospheric Sciences 47, 24-38",
+  "doi": "10.1175/1520-0469(1990)047<0024:SDORTI>2.0.CO;2",
+  "annotation": "Describes radiation transfer in broken cloud fields modelled with Poisson point processes whose inputs are cloud fraction and mean cloud size."
+ },
+ {
+  "key": "MalvagiByrnePomraningSomerville1993",
+  "authors": "Malvagi, F. and Byrne, R. N. and Pomraning, G. C. and Somerville, R. C. J.",
+  "year": 1993,
+  "title": "Stochastic Radiative Transfer in Partially Cloudy Atmosphere",
+  "venue": "Journal of the Atmospheric Sciences 50, 2146-2158",
+  "doi": "10.1175/1520-0469(1993)050<2146:SRTIPC>2.0.CO;2",
+  "annotation": "Shows that Titov's integral Markovian cloud model is a special case of a low-order differential model of the Levermore-Pomraning type and recommends the latter for climate models."
+ },
+ {
+  "key": "NattaPanagia1984",
+  "authors": "Natta, A. and Panagia, N.",
+  "year": 1984,
+  "title": "Extinction in inhomogeneous clouds",
+  "venue": "The Astrophysical Journal 287, 228",
+  "doi": "10.1086/162681",
+  "annotation": "Derives analytic expressions for the extinction produced by clumpy dust layers."
+ },
+ {
+  "key": "HobsonScheuer1993",
+  "authors": "Hobson, M. P. and Scheuer, P. A. G.",
+  "year": 1993,
+  "title": "Radiative transfer in a clumpy medium - I. Analytical Markov-process solution for an N-phase slab",
+  "venue": "Monthly Notices of the Royal Astronomical Society 264, 145-160",
+  "doi": "10.1093/mnras/264.1.145",
+  "annotation": "Solves radiative transfer through a slab whose material along a ray is an N-phase Markov process, with absorption and isotropic scattering."
+ },
+ {
+  "key": "Kostinski2001",
+  "authors": "Kostinski, A. B.",
+  "year": 2001,
+  "title": "On the extinction of radiation by a homogeneous but spatially correlated random medium",
+  "venue": "Journal of the Optical Society of America A 18, 1929",
+  "doi": "10.1364/JOSAA.18.001929",
+  "annotation": "Shows that a statistically homogeneous but spatially correlated medium attenuates radiation more slowly than the exponential law."
+ },
+ {
+  "key": "VasquesLarsen2014",
+  "authors": "Vasques, R. and Larsen, E. W.",
+  "year": 2014,
+  "title": "Non-classical particle transport with angular-dependent path-length distributions. II: Application to pebble bed reactor cores",
+  "venue": "Annals of Nuclear Energy 70, 301-311",
+  "doi": "10.1016/j.anucene.2013.12.020",
+  "annotation": "Applies transport with non-exponential, direction-dependent path-length distributions to pebble-bed reactor cores."
+ }
+]

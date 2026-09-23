@@ -1,0 +1,272 @@
+<!-- title: Light through clumpy media · homogenization | math | extra: demos.css -->
+  <main>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; fast regimes in any pricing equation</a> <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/clumpy-media/verify_clumpy_media.py">certificate</a></span></p>
+    <h1>Light through clumpy media</h1>
+    <p class="subtitle">A beam crossing a medium that alternates between materials: how much more light gets through than the averaged medium lets through, to every order in the correlation length.</p>
+
+    <h2>The model</h2>
+    <p>A beam crosses a slab of thickness $L$ made of two materials, A and B. They absorb at rates $\Sigma_A$ and
+    $\Sigma_B$ per unit length and do not scatter. Along the beam the material alternates, and the chord lengths
+    through A and B are exponential with means $\lambda_A$ and $\lambda_B$.</p>
+    <p>The material seen at path length $s$ is then a two-state Markov chain $y_s$, with path length playing the role
+    of time. Its generator is</p>
+    $$Q = \begin{pmatrix} -1/\lambda_A & 1/\lambda_A \\ 1/\lambda_B & -1/\lambda_B \end{pmatrix}.$$
+    <p>Its stationary law is the pair of volume fractions:</p>
+    $$p_A = \frac{\lambda_A}{\lambda_A + \lambda_B}, \qquad p_B = \frac{\lambda_B}{\lambda_A + \lambda_B}.$$
+    <p>The chain forgets its starting material over the correlation length</p>
+    $$\lambda_c = \frac{\lambda_A\lambda_B}{\lambda_A + \lambda_B},$$
+    <p>since the nonzero eigenvalue of $Q$ is $-1/\lambda_c$.</p>
+    <p>The same chain appears in three dimensions. Cut space with isotropic random (Poisson) planes and give each
+    cell material A with probability $p_A$, independently. Any straight line then meets the planes at the points of
+    a Poisson process, and each new cell draws a fresh material.</p>
+    <p>Along every line this is the chain above, with
+    $\lambda_A = \lambda_c/p_B$ and $\lambda_B = \lambda_c/p_A$. It is the standard benchmark geometry
+    (<a href="./bibliography.html#LarmierEtAl2017">Larmier et al. 2017</a>).</p>
+    <p>Physical examples are broken cloud fields, cloud and clear air
+    (<a href="./bibliography.html#Titov1990">Titov 1990</a>), clumpy interstellar dust
+    (<a href="./bibliography.html#NattaPanagia1984">Natta and Panagia 1984</a>;
+    <a href="./bibliography.html#HobsonScheuer1993">Hobson and Scheuer 1993</a>), and pebble-bed reactor cores,
+    where the chord lengths are not exactly exponential
+    (<a href="./bibliography.html#VasquesLarsen2014">Vasques and Larsen 2014</a>).</p>
+    <p>There are three length scales: the correlation length $\lambda_c$, the mean free path $1/\langle\Sigma\rangle$,
+    and the slab thickness $L$. The expansion is in $\lambda_c$ against the other two.</p>
+    <p class="muted">Parameters for the worked example: dense clumps $\Sigma_A = 5$ filling $p_A = 10\%$ of a thin gas
+    $\Sigma_B = 0.05$; slab $L = 10$; correlation lengths $\lambda_c$ from $0.16$ down to $0.01$, in the same units of
+    length.</p>
+
+    <h2>The quantity</h2>
+    <p>The mean transmission of the slab, averaged over realizations of the medium:</p>
+    $$T(L) = \mathbb{E}\Big[\exp\Big(-\int_0^L \Sigma(y_s)\,ds\Big)\Big],$$
+    <p>with the entry material drawn from the volume fractions. Write $\tau = \int_0^L \Sigma(y_s)\,ds$ for the optical
+    depth along one ray.</p>
+    <p>This is the <a href="./regime-switching.html">regime-switching survival problem</a> with path length in place of
+    time, forcing $g_i = -\Sigma_i$, and no slow variable.</p>
+
+    <h2>Averaging</h2>
+    <p>When the materials alternate infinitely fast, each ray sees the volume-averaged opacity. This is the
+    atomic-mix model:</p>
+    $$T(L) \approx e^{-\langle\Sigma\rangle L}, \qquad \langle\Sigma\rangle = p_A\Sigma_A + p_B\Sigma_B .$$
+    <p>By Jensen&apos;s inequality $\mathbb{E}\,e^{-\tau} \ge e^{-\mathbb{E}\tau}$, so atomic mix never overstates
+    transmission. Rays that happen to pass mostly through the thin material carry most of the light.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Let $a_i(L)$ be the transmission of a ray that enters in material $i$. Conditioning on the first short
+    stretch of path gives</p>
+    $$a' = \big(Q - \operatorname{diag}\Sigma\big)\,a, \qquad a(0) = \mathbf 1, \qquad T(L) = \pi\cdot a(L),$$
+    <p>with $\pi = (p_A, p_B)$. So the answer is a matrix exponential:</p>
+    $$T(L) = \pi\cdot e^{(Q - \operatorname{diag}\Sigma)L}\,\mathbf 1 .$$
+    <p>For two materials its eigenvalues give the classical two-exponential law
+    (<a href="./bibliography.html#LevermorePomraningSanzoWong1986">Levermore, Pomraning, Sanzo and Wong 1986</a>):</p>
+    <div class="equation-card">
+    $$T(L) = \frac{(\tilde S - r_-)\,e^{-r_- L} + (r_+ - \tilde S)\,e^{-r_+ L}}{r_+ - r_-},$$
+    $$\begin{aligned}
+    r_\pm &= \tfrac12\Big(\langle\Sigma\rangle + \tilde S \pm \sqrt{(\tilde S - \langle\Sigma\rangle)^2 + 4\beta}\Big), \\
+    \tilde S &= p_B\Sigma_A + p_A\Sigma_B + \frac{1}{\lambda_c}, \\
+    \beta &= p_Ap_B\,(\Sigma_A - \Sigma_B)^2 .
+    \end{aligned}$$
+    </div>
+    <p>The slow rate $r_-$ governs thick slabs. The fast rate $r_+$ is about $1/\lambda_c$, and its term dies within a
+    few correlation lengths of the entry face.</p>
+
+    <h2>The first-order rule</h2>
+    <p>The derivation is the <a href="./engine.html">engine&apos;s</a>, written for this problem. It gives the answer as
+    integrals of the opacity&apos;s covariance along the ray, which is what carries over to any number of
+    materials.</p>
+
+    <h3>Step 1: separate the mean from the shape</h3>
+    <p>Split the vector of conditional transmissions into its average and its shape:</p>
+    $$s = \pi\cdot a, \qquad w = \frac{a}{s} - \mathbf 1, \qquad \pi\cdot w = 0 .$$
+    <p>Multiply the linear system on the left by $\pi$. The switching term drops out because $\pi Q = 0$:</p>
+    $$\frac{s'}{s} = -\langle\Sigma\rangle - \pi\cdot\big(\tilde\Sigma\,w\big), \qquad \tilde\Sigma = \Sigma - \langle\Sigma\rangle\mathbf 1 .$$
+    <p>The first term is atomic mix. The second couples the opacity to the shape: it is nonzero when rays that start
+    in dense material are, as a group, dimmer than the rest.</p>
+
+    <h3>Step 2: the shape relaxes quickly</h3>
+    <p>The shape obeys</p>
+    $$w' = Q\,w - \tilde\Sigma\,(\mathbf 1 + w) + \pi\cdot(\tilde\Sigma\,w)\,(\mathbf 1 + w).$$
+    <p>The term $Q\,w$ is of size $1/\lambda_c$ and dominates. To leading order $Q\,w = \tilde\Sigma$, and the solution
+    with $\pi\cdot w = 0$ uses the group inverse $Q^{\#}$:</p>
+    $$w \approx Q^{\#}\tilde\Sigma = -\int_0^\infty e^{Qs}\,\tilde\Sigma\,ds .$$
+    <p>Component $i$ is minus the extra optical depth a ray collects by starting in material $i$, before the chain
+    forgets where it started.</p>
+
+    <h3>Step 3: the Green&ndash;Kubo term</h3>
+    <p>Put the shape back into the equation for $s$:</p>
+    $$\frac{s'}{s} \approx -\langle\Sigma\rangle + K, \qquad
+      K = -\pi\cdot\big(\tilde\Sigma\,Q^{\#}\tilde\Sigma\big) = \int_0^\infty \operatorname{Cov}_\pi\big(\Sigma(y_0),\,\Sigma(y_s)\big)\,ds .$$
+    <p>$K$ is a Green&ndash;Kubo integral (<a href="./bibliography.html#Kubo1957">Kubo 1957</a>) of the opacity
+    autocovariance along the ray. It raises transmission. For two materials the covariance is a single exponential,</p>
+    $$\operatorname{Cov}_\pi\big(\Sigma(y_0),\,\Sigma(y_s)\big) = p_Ap_B\,(\Sigma_A - \Sigma_B)^2\,e^{-s/\lambda_c},$$
+    <p>so the first-order rule is</p>
+    $$T(L) \approx \exp\Big(-\big(\langle\Sigma\rangle - p_Ap_B\,(\Sigma_A - \Sigma_B)^2\,\lambda_c\big)\,L\Big).$$
+
+    <h3>Step 4: second order and the entry layer</h3>
+    <p>One more pass through Step 2 gives the next term of the shape:</p>
+    $$w \approx Q^{\#}\tilde\Sigma + Q^{\#}\big(\tilde\Sigma\,Q^{\#}\tilde\Sigma\big).$$
+    <p>Its contribution to the decay rate is</p>
+    $$M_3 = \pi\cdot\Big(\tilde\Sigma\,Q^{\#}\big(\tilde\Sigma\,Q^{\#}\tilde\Sigma\big)\Big)
+      = \int_0^\infty\!\!\int_0^\infty \mathbb{E}_\pi\big[\tilde\Sigma(y_0)\,\tilde\Sigma(y_s)\,\tilde\Sigma(y_{s+u})\big]\,ds\,du,$$
+    <p>a triple correlation. For two materials it equals $\lambda_c^2\,\mathbb{E}_\pi\tilde\Sigma^3$: zero when
+    the materials fill equal volumes, and otherwise of the sign of the skew of the opacity.</p>
+    <p>The shape above does not match the entry condition $a(0) = \mathbf 1$, which requires $w(0) = 0$: a ray
+    enters in whichever material it enters, with no history. The <a href="./layers.html">initial layer</a>
+    removes the mismatch within a few correlation lengths,</p>
+    $$\eta(s) = -e^{Qs}\,Q^{\#}\tilde\Sigma ,$$
+    <p>and leaves a permanent constant in $\log T$:</p>
+    $$-\int_0^\infty \pi\cdot\big(\tilde\Sigma\,\eta(s)\big)\,ds = -C_1, \qquad
+      C_1 = \pi\cdot\big(\tilde\Sigma\,Q^{\#}Q^{\#}\tilde\Sigma\big) = \int_0^\infty s\,\operatorname{Cov}_\pi\big(\Sigma(y_0),\,\Sigma(y_s)\big)\,ds .$$
+
+    <h3>The same terms as cumulants</h3>
+    <p>The three corrections are the first cumulants of the optical depth. Since $\log\mathbb{E}\,e^{-\tau}$ is the
+    cumulant series of $\tau$,</p>
+    $$\log T = -\mathbb{E}\tau + \tfrac12\operatorname{Var}\tau - \tfrac16\,\kappa_3(\tau) + \cdots$$
+    <p>For a slab many correlation lengths thick, the variance and third cumulant of $\tau$ are</p>
+    $$\operatorname{Var}\tau = 2\int_0^L (L - s)\,\operatorname{Cov}_\pi\big(\Sigma(y_0),\,\Sigma(y_s)\big)\,ds = 2KL - 2C_1, \qquad \kappa_3(\tau) \approx 6M_3L .$$
+    <p>So $K$ is half the variance of optical depth per unit length, and $C_1$ is the variance missing because the
+    first correlation length of the ray has no past. Each higher cumulant is one power of $\lambda_c$ smaller.</p>
+
+    <h2>Transmission written out</h2>
+    <p>For two materials every term evaluates in the chord lengths and cross sections. Through second order:</p>
+    <div class="equation-card">
+    $$\log T(L) = -\big(\langle\Sigma\rangle - K + M_3\big)\,L - C_1 + O(\lambda_c^3),$$
+    $$\begin{aligned}
+    \langle\Sigma\rangle &= p_A\Sigma_A + p_B\Sigma_B, \\
+    K &= p_Ap_B\,(\Sigma_A - \Sigma_B)^2\,\lambda_c, \\
+    M_3 &= p_Ap_B\,(p_B - p_A)\,(\Sigma_A - \Sigma_B)^3\,\lambda_c^2, \\
+    C_1 &= p_Ap_B\,(\Sigma_A - \Sigma_B)^2\,\lambda_c^2, \\
+    p_A &= \frac{\lambda_A}{\lambda_A + \lambda_B}, \\
+    p_B &= \frac{\lambda_B}{\lambda_A + \lambda_B}, \\
+    \lambda_c &= \frac{\lambda_A\lambda_B}{\lambda_A + \lambda_B} .
+    \end{aligned}$$
+    </div>
+    <p>The neglected terms are of order $\lambda_c^3L$ and $\lambda_c^3$, plus terms of size $e^{-L/\lambda_c}$ from
+    the fast exponential. The decay rate
+    $\langle\Sigma\rangle - K + M_3$ is the start of the Taylor series of the slow rate $r_-$ in the exact law, and
+    $-C_1$ is the start of the series of the log of its weight.</p>
+    <p>For broken cloud with extinction $\Sigma$, cloud fraction $c$ and clear air that does not extinguish
+    ($\Sigma_A = \Sigma$, $\Sigma_B = 0$, $p_A = c$), the result reads</p>
+    <div class="equation-card">
+    $$\log T(L) = -\Big(c\,\Sigma - c(1 - c)\,\Sigma^2\lambda_c + c(1 - c)(1 - 2c)\,\Sigma^3\lambda_c^2\Big)\,L - c(1 - c)\,\Sigma^2\lambda_c^2 + O(\lambda_c^3).$$
+    </div>
+
+    <h3>Where the series converges</h3>
+    <p>The exact slow rate $r_-$ is an analytic function of $\lambda_c$ at fixed volume fractions. It fails to be
+    analytic only where the square root in the exact law vanishes. Multiplying the discriminant by $\lambda_c^2$
+    gives</p>
+    $$\big(1 + (p_B - p_A)(\Sigma_A - \Sigma_B)\,\lambda_c\big)^2 + 4p_Ap_B\,(\Sigma_A - \Sigma_B)^2\,\lambda_c^2 = 0 .$$
+    <p>Its two complex roots have product $1/(\Sigma_A - \Sigma_B)^2$ and equal modulus, because
+    $(p_B - p_A)^2 + 4p_Ap_B = 1$. So the series in $\lambda_c$, taken to all orders, converges exactly when</p>
+    <div class="equation-card">
+    $$\lambda_c\,\lvert\Sigma_A - \Sigma_B\rvert < 1 .$$
+    </div>
+    <p>The correlation length must be shorter than the mean free path set by the contrast between the materials. The
+    volume fractions do not enter.</p>
+
+    <h2>Any number of materials</h2>
+    <p>Nothing in Steps 1 to 4 used two materials. For a chain with any number of materials, generator $Q$ and volume
+    fractions $\pi$, the same result holds with matrix coefficients:</p>
+    <div class="equation-card">
+    $$\log T(L) = -\big(\langle\Sigma\rangle - K + M_3\big)\,L - C_1 + O(\lambda_c^3),$$
+    $$\begin{aligned}
+    \langle\Sigma\rangle &= \pi\cdot\Sigma, \\
+    \tilde\Sigma &= \Sigma - \langle\Sigma\rangle\mathbf 1, \\
+    Q^{\#} &= \big(Q - \mathbf 1\pi\big)^{-1} + \mathbf 1\pi, \\
+    K &= -\pi\cdot\big(\tilde\Sigma\,Q^{\#}\tilde\Sigma\big), \\
+    M_3 &= \pi\cdot\Big(\tilde\Sigma\,Q^{\#}\big(\tilde\Sigma\,Q^{\#}\tilde\Sigma\big)\Big), \\
+    C_1 &= \pi\cdot\big(\tilde\Sigma\,Q^{\#}Q^{\#}\tilde\Sigma\big).
+    \end{aligned}$$
+    </div>
+    <p>Products of vectors are taken entry by entry. $K$ is the one-entry case of the Green&ndash;Kubo matrix on the
+    <a href="./any-equation.html">any-equation page</a>, with a single switched parameter, the opacity, multiplying
+    the operator $-1$.</p>
+    <p>For a Poisson tessellation whose cells take material $i$ with probability $\pi_i$, the generator is
+    $Q = (\mathbf 1\pi - I)/\lambda_c$ and $Q^{\#}\tilde\Sigma = -\lambda_c\tilde\Sigma$. Every coefficient is then a
+    moment of the opacity over the volume fractions:</p>
+    <div class="equation-card">
+    $$\log T(L) = -\Big(\langle\Sigma\rangle - \lambda_c\,\mathbb{E}_\pi\tilde\Sigma^2 + \lambda_c^2\,\mathbb{E}_\pi\tilde\Sigma^3\Big)\,L - \lambda_c^2\,\mathbb{E}_\pi\tilde\Sigma^2 + O(\lambda_c^3).$$
+    </div>
+    <p>Structured media are not of this form. The check below uses cores nested inside envelopes inside a thin gas,
+    so that a ray passes gas, envelope, core, envelope, gas and never goes from gas straight into a core:</p>
+    $$Q = \frac{1}{\ell}\begin{pmatrix} -1/17 & 1/17 & 0 \\ 1/2 & -1 & 1/2 \\ 0 & 1 & -1 \end{pmatrix}, \qquad \Sigma = (0.05,\ 1,\ 10), \qquad \pi = (0.85,\ 0.10,\ 0.05).$$
+    <p>Envelopes and cores have mean chord $\ell$, and an envelope is left towards the core or the gas with equal
+    probability.</p>
+
+    <h2>Every order</h2>
+    <p>With constant opacities the <a href="./engine.html">engine</a> returns every term of the outer series as a
+    constant. Its output through order $n$ has the form</p>
+    $$\log T(L) = -\Sigma_{\mathrm{eff}}^{(n)}\,L - C^{(n)} + O(\lambda_c^{n+1}),$$
+    <p>where $\Sigma_{\mathrm{eff}}^{(n)}$ and $C^{(n)}$ are the Taylor polynomials, of degree $n$ in $\lambda_c$, of
+    the slow decay rate and of the log of its weight. The first three terms are the result box above. For any
+    number of materials the engine computes the rest in the same way.</p>
+
+    <h2>Dense clumps in thin gas</h2>
+    <p>Clumps with $\Sigma_A = 5$ fill 10% of a gas with $\Sigma_B = 0.05$, arranged as a coloured Poisson tessellation,
+    across a slab of thickness $L = 10$. Atomic mix gives optical depth $5.45$ and transmission $0.0043$ at every
+    correlation length. The clump chord is $\lambda_A = \lambda_c/0.9$.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda_c$</th><th style="text-transform:none">clump chord depth $\Sigma_A\lambda_A$</th><th>atomic mix</th><th>order 1</th><th>order 2</th><th>order 4</th><th>order 8</th><th>matrix exponential</th><th>gain over atomic mix</th></tr></thead><tbody><tr><td>0.16</td><td>0.89</td><td>0.00430</td><td>0.14637</td><td>0.01479</td><td>0.03009</td><td>0.03645</td><td>0.03494</td><td>8.13</td></tr><tr><td>0.08</td><td>0.44</td><td>0.00430</td><td>0.02508</td><td>0.01414</td><td>0.01602</td><td>0.01610</td><td>0.01610</td><td>3.75</td></tr><tr><td>0.04</td><td>0.22</td><td>0.00430</td><td>0.01038</td><td>0.00899</td><td>0.00916</td><td>0.00916</td><td>0.00916</td><td>2.13</td></tr><tr><td>0.02</td><td>0.11</td><td>0.00430</td><td>0.00668</td><td>0.00644</td><td>0.00646</td><td>0.00646</td><td>0.00646</td><td>1.50</td></tr><tr><td>0.01</td><td>0.06</td><td>0.00430</td><td>0.00536</td><td>0.00531</td><td>0.00531</td><td>0.00531</td><td>0.00531</td><td>1.24</td></tr></tbody></table></div>
+    <p>At $\lambda_c = 0.08$ a clump is crossed with optical depth $0.44$, yet the slab passes 3.7 times the light
+    that atomic mix predicts. At $\lambda_c = 0.16$ the factor is 8. The Green&ndash;Kubo term alone overshoots there,
+    and higher orders are needed; the series converges slowly because $\lambda_c\lvert\Sigma_A - \Sigma_B\rvert = 0.79$ is
+    close to 1.</p>
+    <p>The closed form at $\lambda_c = 0.04$, term by term:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$\langle\Sigma\rangle L$</td><td>5.450000</td></tr><tr><td>$KL$</td><td>0.882090</td></tr><tr><td>$M_3L$</td><td>0.139723</td></tr><tr><td>$C_1$</td><td>0.003528</td></tr><tr><td>$\log T$, second order: $-\langle\Sigma\rangle L + KL - M_3L - C_1$</td><td>-4.711161</td></tr><tr><td>$\log T$, matrix exponential</td><td>-4.693131</td></tr><tr><td>$T$, second order and matrix exponential</td><td>0.008994, 0.009158</td></tr></tbody></table></div>
+
+    <h2>Checks</h2>
+    <p>The two-exponential law agrees with the matrix exponential to $1\times10^{-15}$ on four parameter sets. The
+    closed-form coefficients for two materials, for the $N$-colour tessellation and for broken cloud agree with the
+    matrix expressions of the $N$-material box to $5\times10^{-15}$ relative, and the closed-form $\log T$ at orders 0, 1
+    and 2 agrees with the engine to $1\times10^{-15}$. The first three cumulants of the optical depth, computed from its
+    moments by a block matrix exponential, agree with $\langle\Sigma\rangle L$, $2KL - 2C_1$ and a growth of
+    $6M_3$ per unit length to $6\times10^{-11}$ relative.</p>
+    <p>Errors in $\log T$ for the worked example, against the matrix exponential, as the correlation length halves:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda_c$</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 6</th><th>order 8</th></tr></thead><tbody><tr><td>0.16</td><td>2.1</td><td>1.4</td><td>8.6e-1</td><td>4.3e-1</td><td>1.5e-1</td><td>5.9e-2</td><td>4.2e-2</td></tr><tr><td>0.08</td><td>1.3</td><td>4.4e-1</td><td>1.3e-1</td><td>3.1e-2</td><td>4.9e-3</td><td>6.4e-4</td><td>9.9e-5</td></tr><tr><td>0.04</td><td>7.6e-1</td><td>1.3e-1</td><td>1.8e-2</td><td>2.1e-3</td><td>1.5e-4</td><td>6.1e-6</td><td>2.1e-7</td></tr><tr><td>0.02</td><td>4.1e-1</td><td>3.3e-2</td><td>2.4e-3</td><td>1.4e-4</td><td>4.7e-6</td><td>5.2e-8</td><td>4.3e-10</td></tr><tr><td>0.01</td><td>2.1e-1</td><td>8.6e-3</td><td>3.1e-4</td><td>8.7e-6</td><td>1.4e-7</td><td>4.3e-10</td><td>8.5e-13</td></tr><tr><td>observed order</td><td>0.94</td><td>1.95</td><td>2.96</td><td>3.97</td><td>5.02</td><td>6.92</td><td>8.98</td></tr></tbody></table></div>
+    <p>Each order gains one power of $\lambda_c$, as the last row shows.</p>
+    <p>The radius of convergence. Taylor coefficients of the slow rate, computed by a Cauchy integral, grow like
+    $4.947^k$, against $\lvert\Sigma_A - \Sigma_B\rvert = 4.95$.</p>
+    <p>Inside the radius the engine&apos;s partial sums
+    close in on the answer, with oscillations because the singularities are complex. Outside it they blow up:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>order</th><th style="text-transform:none">error at $\lambda_c = 0.16$ ($\lambda_c\lvert\Sigma_A - \Sigma_B\rvert = 0.79$)</th><th style="text-transform:none">error at $\lambda_c = 0.32$ ($\lambda_c\lvert\Sigma_A - \Sigma_B\rvert = 1.58$)</th></tr></thead><tbody><tr><td>0</td><td>2.1</td><td>2.95</td></tr><tr><td>2</td><td>8.60e-1</td><td>5.06</td></tr><tr><td>4</td><td>1.50e-1</td><td>4.01</td></tr><tr><td>6</td><td>5.92e-2</td><td>4.6</td></tr><tr><td>8</td><td>4.22e-2</td><td>15.8</td></tr><tr><td>10</td><td>2.16e-4</td><td>3.66</td></tr><tr><td>12</td><td>9.72e-3</td><td>53.9</td></tr></tbody></table></div>
+    <p>Three nested phases, with the $N$-material formulas and the engine, against the matrix exponential:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\ell$</th><th>atomic mix</th><th>order 1</th><th>order 2</th><th>order 6</th><th>matrix exponential</th></tr></thead><tbody><tr><td>0.025</td><td>0.00162</td><td>0.01721</td><td>0.00694</td><td>0.00882</td><td>0.00881</td></tr><tr><td>0.0125</td><td>0.00162</td><td>0.00528</td><td>0.00421</td><td>0.00435</td><td>0.00435</td></tr><tr><td>0.00625</td><td>0.00162</td><td>0.00293</td><td>0.00276</td><td>0.00278</td><td>0.00278</td></tr><tr><td>0.003125</td><td>0.00162</td><td>0.00218</td><td>0.00215</td><td>0.00215</td><td>0.00215</td></tr></tbody></table></div>
+    <p>Errors in $\log T$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\ell$</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th><th>order 6</th></tr></thead><tbody><tr><td>0.025</td><td>1.7</td><td>6.7e-1</td><td>2.4e-1</td><td>1.9e-2</td><td>6.9e-4</td></tr><tr><td>0.0125</td><td>9.9e-1</td><td>1.9e-1</td><td>3.4e-2</td><td>6.3e-4</td><td>7.8e-6</td></tr><tr><td>0.00625</td><td>5.4e-1</td><td>5.2e-2</td><td>4.6e-3</td><td>2.0e-5</td><td>7.4e-8</td></tr><tr><td>0.003125</td><td>2.8e-1</td><td>1.4e-2</td><td>5.9e-4</td><td>6.5e-7</td><td>6.4e-10</td></tr><tr><td>observed order</td><td>0.93</td><td>1.94</td><td>2.95</td><td>4.98</td><td>6.86</td></tr></tbody></table></div>
+    <p>Monte Carlo. Rays of length 10 in random directions are traced through realizations of a coloured isotropic
+    Poisson plane tessellation in three dimensions, 50 rays per realization, with standard errors taken across
+    realizations. Chord-length sampling draws the material sequence along the ray directly, 400,000 rays per case.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>case</th><th>atomic mix</th><th>matrix exponential</th><th>3D tessellation rays</th><th>chord sampling</th></tr></thead><tbody><tr><td>clumps, $\lambda_c = 0.16$</td><td>0.00430</td><td>0.03494</td><td>0.03599 &plusmn; 0.00084</td><td>0.03494 &plusmn; 0.00012</td></tr><tr><td>clumps, $\lambda_c = 0.08$</td><td>0.00430</td><td>0.01610</td><td>0.01564 &plusmn; 0.00026</td><td>0.01612 &plusmn; 0.00005</td></tr><tr><td>clumps, $\lambda_c = 0.04$</td><td>0.00430</td><td>0.00916</td><td>0.00922 &plusmn; 0.00008</td><td>0.00915 &plusmn; 0.00002</td></tr><tr><td>nested, $\ell = 0.025$</td><td>0.00162</td><td>0.00881</td><td></td><td>0.00880 &plusmn; 0.00003</td></tr><tr><td>nested, $\ell = 0.0125$</td><td>0.00162</td><td>0.00435</td><td></td><td>0.00435 &plusmn; 0.00001</td></tr></tbody></table></div>
+    <p>Both agree with the matrix exponential within three standard errors, and neither is near atomic mix.</p>
+
+    <h2>Prior art</h2>
+    <p>The exact transmission of a purely absorbing binary Markovian mixture is classical
+    (<a href="./bibliography.html#LevermorePomraningSanzoWong1986">Levermore, Pomraning, Sanzo and Wong 1986</a>). So is
+    the Levermore&ndash;Pomraning model of coupled transport equations for the material-conditioned intensities,
+    which is exact for pure absorbers (<a href="./bibliography.html#Pomraning1991">Pomraning 1991</a>), and atomic
+    mix as its limit. Standard benchmarks are <a href="./bibliography.html#AdamsLarsenPomraning1989">Adams, Larsen
+    and Pomraning (1989)</a>, <a href="./bibliography.html#Brantley2011">Brantley (2011)</a> and
+    <a href="./bibliography.html#LarmierEtAl2017">Larmier et al. (2017)</a>.</p>
+    <p>Small-correlation-length analyses exist:
+    <a href="./bibliography.html#MalvagiLevermorePomraning1989">Malvagi, Levermore and Pomraning (1989)</a>,
+    <a href="./bibliography.html#LevermoreWongPomraning1988">Levermore, Wong and Pomraning (1988)</a> for general chord
+    distributions, <a href="./bibliography.html#SuPomraning1994">Su and Pomraning (1994)</a> with scattering, and
+    <a href="./bibliography.html#Pomraning1996">Pomraning (1996)</a>.
+    <a href="./bibliography.html#KiedrowskiVu2025">Kiedrowski and Vu (2025)</a> give a Gaussian law for the distance
+    travelled in each material, which is the central-limit form of the first correction. The first-order term is one
+    line from the exact law and is not claimed as new.</p>
+    <p>For clouds, <a href="./bibliography.html#Titov1990">Titov (1990)</a> and
+    <a href="./bibliography.html#MalvagiByrnePomraningSomerville1993">Malvagi, Byrne, Pomraning and Somerville (1993)</a>
+    develop Markovian models of broken cloud fields. For interstellar dust,
+    <a href="./bibliography.html#HobsonScheuer1993">Hobson and Scheuer (1993)</a> solve an $N$-phase Markov slab with
+    scattering. <a href="./bibliography.html#Kostinski2001">Kostinski (2001)</a> shows that spatial correlation makes
+    attenuation slower than exponential.</p>
+    <p>The fast-switching expansion adds the form of the answer: the correction to atomic mix as a Green&ndash;Kubo
+    integral of the opacity autocovariance for any number of materials, the second-order rate and the entry-layer
+    constant as a triple correlation and a first moment of the covariance, and every order from one recursion. The
+    radius of convergence for two materials follows from the exact law in two lines.</p>
+
+    <h2>Scope</h2>
+    <p>The rule needs the material along the ray to be a Markov chain in path length. With scattering it is not: a
+    scattered particle returns to regions it has already crossed, and the material it meets there is correlated
+    with its past.</p>
+    <p>The Levermore&ndash;Pomraning model is then also approximate. Non-exponential chord lengths, as
+    in packed beds, likewise leave the Markov setting.</p>
+  </main>

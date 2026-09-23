@@ -1,0 +1,345 @@
+<!-- title: Epidemic growth · homogenization | math | extra: demos.css -->
+  <main>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; fast regimes in any pricing equation</a> <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/epidemics/verify_epidemics.py">certificate</a></span></p>
+    <h1>Epidemic growth in a fast-switching environment</h1>
+    <p class="subtitle">The early phase of SIR and SEIR epidemics whose transmission and recovery rates follow a fast hidden regime: the growth of the expected epidemic, the growth of a typical one, and the gap between them.</p>
+
+    <h2>The model</h2>
+    <p>Early in an epidemic almost everyone is susceptible, and the infected compartments grow linearly. With a
+    latent stage $E$ and an infectious stage $I$, the linearized SEIR model is</p>
+    $$E' = \beta\,I - \sigma E, \qquad I' = \sigma E - \gamma I .$$
+    <p>Here $\beta$ is the transmission rate, $1/\sigma$ the mean latent period and $1/\gamma$ the mean infectious
+    period. The linearized SIR model has no latent stage:</p>
+    $$I' = (\beta - \gamma)\,I .$$
+    <p>Now let the rates depend on a hidden regime $y_t$: seasons, swings in behaviour, or a policy that tightens and
+    relaxes. The regime is a Markov chain with generator $Q$ and stationary law $\pi$.</p>
+    <p>It starts from $\pi$, since an
+    observer cannot see it. In matrix form, with $x = (E, I)$,</p>
+    $$x' = A(y_t)\,x, \qquad A(y) = \begin{pmatrix} -\sigma & \beta(y) \\ \sigma & -\gamma(y) \end{pmatrix}.$$
+    <p>There are two time scales. The disease moves through its stages over $1/\sigma$ and $1/\gamma$. The regime
+    changes every $1/\lambda$, where $\lambda$ is a switching rate, and it changes much faster.</p>
+    <p class="muted">Parameters: rates per week; latent period two weeks, $\sigma = 0.5$; infectious period four weeks,
+    $\gamma = 0.25$; transmission $\beta = (0.455,\ 0.055)$ on a symmetric two-state chain switching at rate $\lambda$,
+    so $\bar\beta = 0.255$ and $\bar\beta/\gamma = 1.02$. The three-regime example below has its own parameters.</p>
+    <p>Only ratios of rates matter. Multiplying every rate by seven turns weeks into days and describes a faster
+    infection under faster switching.</p>
+
+    <h2>Two growth rates</h2>
+    <p>Two growth rates describe the linear phase. The <em>mean growth rate</em> is the growth of the expected number
+    infected:</p>
+    $$\Lambda_{\mathrm{mean}} = \lim_{t\to\infty} \frac1t \log \mathbb E\big[\,I_t\,\big].$$
+    <p>The <em>almost-sure growth rate</em> is the growth of a typical path, the top Lyapunov exponent of the switched
+    system:</p>
+    $$\Lambda_{\mathrm{as}} = \lim_{t\to\infty} \frac1t \log I_t .$$
+    <p>By Jensen&apos;s inequality $\Lambda_{\mathrm{mean}} \ge \Lambda_{\mathrm{as}}$. The mean is carried by rare
+    regime paths with long runs of high transmission.</p>
+    <p>The almost-sure rate decides whether an introduction takes off. For a branching process in a random
+    environment, extinction is certain exactly when the typical log growth is not positive
+    (<a href="./bibliography.html#SmithWilkinson1969">Smith and Wilkinson 1969</a>;
+    <a href="./bibliography.html#AthreyaKarlin1971">Athreya and Karlin 1971</a>). For epidemics with Markov switching
+    the same exponent decides extinction
+    (<a href="./bibliography.html#GrayEtAl2012">Gray, Greenhalgh, Mao and Pan 2012</a>;
+    <a href="./bibliography.html#ProdhommeStrickler2024">Prodhomme and Strickler 2024</a>).</p>
+    <p>The mean has an exact linear equation. Let $m_i(t) = \mathbb E[x_t;\ y_t = i]$. Then</p>
+    $$m_i' = A_i\,m_i + \sum_j Q_{ji}\,m_j ,$$
+    <p>so $\Lambda_{\mathrm{mean}}$ is the principal eigenvalue of the combined matrix
+    $Q^\top \otimes I + \operatorname{blockdiag}(A_i)$. The almost-sure rate has no such equation.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast, the rates are replaced by their averages under $\pi$:</p>
+    $$\bar A = \begin{pmatrix} -\sigma & \bar\beta \\ \sigma & -\bar\gamma \end{pmatrix}.$$
+    <p>Both growth rates tend to its principal eigenvalue $r$, which has the sign of $\bar\beta/\bar\gamma - 1$. For
+    SEIR,</p>
+    $$r = \frac{-(\sigma + \bar\gamma) + \sqrt D}{2}, \qquad D = (\sigma - \bar\gamma)^2 + 4\sigma\bar\beta .$$
+    <p>With the parameters above, $\bar\beta/\gamma = 1.02$ and the averaged SEIR epidemic grows at $r = 0.00332$ per
+    week. The averaged SIR epidemic grows at $\bar\beta - \gamma = 0.005$. The question is how fast switching moves each
+    of the two growth rates away from these values.</p>
+
+    <h2>One infected compartment: SIR</h2>
+    <p>In the SIR linearization the infectious count solves a scalar equation, so given the regime path</p>
+    $$I_t = I_0\,\exp\Big(\int_0^t \big(\beta(y_s) - \gamma\big)\,ds\Big).$$
+    <p>By the ergodic theorem the typical growth rate is the average rate, at every switching speed:</p>
+    $$\Lambda_{\mathrm{as}} = \bar\beta - \gamma .$$
+    <p>The mean given the starting regime is $\mathbb E[I_t \mid y_0 = i] = I_0\,a_i(t)$, where</p>
+    $$a' = \big(Q + \operatorname{diag}(\beta - \gamma)\big)\,a, \qquad a(0) = \mathbf 1 .$$
+    <p>This is the <a href="./engine.html">engine</a>&apos;s equation $a' = (Q + \operatorname{diag} g)\,a$ with a
+    constant forcing $g_i = \beta_i - \gamma$. Its growth rate is the principal eigenvalue of
+    $Q + \operatorname{diag}(\beta - \gamma)$. To first order it is the averaged rate plus the Green&ndash;Kubo integral
+    of the transmission rate, as for a hazard rate on the <a href="./any-equation.html">any-equation page</a>, with the
+    sign reversed.</p>
+    <p>For a symmetric two-state chain the eigenvalue is a quadratic root.</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \Lambda_{\mathrm{mean}} &= \bar\beta - \gamma + \sqrt{\lambda^2 + \tilde\beta^2} - \lambda
+      \;=\; \bar\beta - \gamma + K_{\beta\beta} - \frac{\tilde\beta^4}{8\lambda^3} + O(\lambda^{-5}), \\
+    \Lambda_{\mathrm{as}} &= \bar\beta - \gamma ,
+    \end{aligned}$$
+    $$\begin{aligned}
+    \bar\beta &= \tfrac12(\beta_1 + \beta_2), \\
+    \tilde\beta &= \tfrac12(\beta_1 - \beta_2), \\
+    K_{\beta\beta} &= \frac{\tilde\beta^2}{2\lambda} = \int_0^\infty \operatorname{Cov}\big(\beta(y_0),\,\beta(y_t)\big)\,dt, \\
+    \lambda &= \text{switching rate in each direction.}
+    \end{aligned}$$
+    </div>
+    <p>For any chain, $\Lambda_{\mathrm{mean}} = \bar\beta - \gamma + K_{\beta\beta} + O(\lambda^{-2})$, with
+    $K_{\beta\beta} = -\pi\cdot(\tilde\beta\,Q^{\#}\tilde\beta)$ and $Q^{\#}$ the group inverse.</p>
+    <p>The gap $K_{\beta\beta}$ is the gap of <a href="./bibliography.html#LewontinCohen1969">Lewontin and Cohen
+    (1969)</a>: the log of an average of exponentials exceeds the average exponent by half the variance of the
+    integrated rate, and that variance grows like $2tK_{\beta\beta}$.</p>
+    <p>With the parameters above and $\lambda = 1$, so that each regime lasts a week on average, the expected
+    number infected grows 26.9% over ten weeks, while the median path grows 5.0%:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>ten weeks, $\lambda = 1$</th><th>$I_{10}/I_0$</th></tr></thead><tbody><tr><td>mean, Monte Carlo over 200,000 regime paths</td><td>1.2686 &plusmn; 0.0019</td></tr><tr><td>mean, combined system</td><td>1.2691</td></tr><tr><td>median, Monte Carlo</td><td>1.0497</td></tr><tr><td>typical path, $e^{10(\bar\beta - \gamma)}$</td><td>1.0513</td></tr></tbody></table></div>
+
+    <h2>Several infected compartments: the first-order rule</h2>
+    <p>With a latent stage the infected state is a vector, and the direction of that vector matters. Write the
+    regime matrix as its average plus fluctuations:</p>
+    $$A(y) = \bar A + \sum_k \phi_k(y)\,B_k .$$
+    <p>Here $\phi_k(y)$ is the deviation of the $k$-th switched rate from its $\pi$-average, and $B_k$ is the matrix it
+    multiplies. For SEIR, transmission multiplies $B_\beta$ and recovery multiplies $B_\gamma$:</p>
+    $$B_\beta = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}, \qquad B_\gamma = \begin{pmatrix} 0 & 0 \\ 0 & -1 \end{pmatrix}.$$
+    <p>Let $\bar x$ and $\bar y$ be the right and left principal eigenvectors of $\bar A$, scaled so that
+    $\bar y^\top \bar x = 1$. The right vector is the stable mix of latent and infectious cases. The left vector is
+    the reproductive value of each stage: $\bar y^\top x$ grows at exactly $r$ under the averaged model.</p>
+    <p>The Green&ndash;Kubo matrix is</p>
+    $$K_{lk} = \int_0^\infty \operatorname{Cov}\big(\phi_l(y_0),\,\phi_k(y_t)\big)\,dt = -\pi\cdot\big(\phi_l\,Q^{\#}\phi_k\big).$$
+    <p>The first index is the earlier parameter. The matrix need not be symmetric.</p>
+
+    <h3>The mean</h3>
+    <p>The <a href="./any-equation.html">first-order rule</a> adds $\sum K_{lk}$ times a product of operators to the
+    averaged generator. The population runs forward in time, so the operator of the later parameter stands on the
+    left, as in a product of propagators:</p>
+    $$\mathbb E[x_t] \approx e^{t(\bar A + M)}\,x_0, \qquad M = \sum_{k,l} K_{lk}\,B_k B_l .$$
+    <p>The principal eigenvalue of $\bar A + M$ moves, to first order, by $\bar y^\top M \bar x$:</p>
+    $$\Lambda_{\mathrm{mean}} \approx r + \sum_{k,l} K_{lk}\;\bar y^\top B_k B_l\,\bar x .$$
+
+    <h3>The typical path</h3>
+    <p>Follow the size $z = \bar y^\top x$ and the shape $v = x/z$, so that $\bar y^\top v = 1$. Differentiating,</p>
+    $$(\log z)' = \bar y^\top A(y_t)\,v, \qquad v' = A(y_t)\,v - v\;\bar y^\top A(y_t)\,v .$$
+    <p>Write $v = \bar x + w$ with $\bar y^\top w = 0$. Since $\bar y^\top \bar A = r\,\bar y^\top$, the size grows at</p>
+    $$(\log z)' = \rho(y_t) + \sum_k \phi_k(y_t)\;\bar y^\top B_k\,w_t, \qquad
+      \rho(y) = \bar y^\top A(y)\,\bar x = r + \sum_k \phi_k(y)\;\bar y^\top B_k\,\bar x .$$
+    <p>The first term, the projected rate, averages to $r$ because each $\phi_k$ averages to zero. The second term
+    averages to something non-zero only if the shape $w$ remembers recent fluctuations.</p>
+    <p>It does. To leading order the shape obeys</p>
+    $$w' = (\bar A - r)\,w + \sum_l \phi_l(y_t)\,P B_l\,\bar x, \qquad P = I - \bar x\,\bar y^\top .$$
+    <p>Each fluctuation pushes the shape along $PB_l\bar x$, the part of $B_l\bar x$ that is not a change of size.
+    Over one correlation time of the chain, $\bar A - r$ does little, so $w_t$ is the accumulated push of recent
+    fluctuations. Its correlation with the current $\phi_k$ is</p>
+    $$\mathbb E\big[\phi_k(y_t)\,w_t\big] \approx \sum_l \Big(\int_0^\infty \operatorname{Cov}\big(\phi_l(y_0),\,\phi_k(y_s)\big)\,ds\Big)\,P B_l\,\bar x
+      = \sum_l K_{lk}\,P B_l\,\bar x .$$
+    <p>Averaging the growth of the size gives the almost-sure rate:</p>
+    $$\Lambda_{\mathrm{as}} \approx r + \sum_{k,l} K_{lk}\;\bar y^\top B_k\,P\,B_l\,\bar x .$$
+    <p>This is the fast-switching formula of <a href="./bibliography.html#MonmarcheSchreiberStrickler2025">Monmarch&eacute;,
+    Schreiber and Strickler (2025)</a> for Markov switching, written with the Green&ndash;Kubo matrix. Their formula uses
+    the group inverse of the jump chain, from <a href="./bibliography.html#MonmarcheStrickler2025">Monmarch&eacute; and
+    Strickler (2025)</a>. The derivation above is a heuristic for it.</p>
+
+    <h3>The gap</h3>
+    <p>The two formulas differ only by the projection $P$. Since $B_l\bar x = PB_l\bar x + \bar x\,(\bar y^\top B_l \bar x)$,
+    the difference is the part of each fluctuation that changes the size of the epidemic without changing its shape.</p>
+    <p>The typical path takes the log of the size, and those parts average out. The mean takes the average of the size,
+    and they compound.</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \Lambda_{\mathrm{mean}} &\approx r + \sum_{k,l} K_{lk}\;\bar y^\top B_k B_l\,\bar x, \\
+    \Lambda_{\mathrm{as}} &\approx r + \sum_{k,l} K_{lk}\;\bar y^\top B_k\,P\,B_l\,\bar x, \\
+    \Lambda_{\mathrm{mean}} - \Lambda_{\mathrm{as}} &\approx \int_0^\infty \operatorname{Cov}\big(\rho(y_0),\,\rho(y_t)\big)\,dt \;\ge\; 0,
+    \end{aligned}$$
+    $$\begin{aligned}
+    r &= \text{principal eigenvalue of } \bar A = \textstyle\sum_y \pi_y A(y), \\
+    \bar A\,\bar x &= r\,\bar x, \qquad \bar y^\top \bar A = r\,\bar y^\top, \qquad \bar y^\top \bar x = 1, \\
+    P &= I - \bar x\,\bar y^\top, \\
+    \rho(y) &= \bar y^\top A(y)\,\bar x = r + \textstyle\sum_k \phi_k(y)\;\bar y^\top B_k\,\bar x, \\
+    K_{lk} &= \textstyle\int_0^\infty \operatorname{Cov}\big(\phi_l(y_0),\,\phi_k(y_t)\big)\,dt = -\pi\cdot\big(\phi_l\,Q^{\#}\phi_k\big).
+    \end{aligned}$$
+    </div>
+    <p>The gap is a structured Lewontin&ndash;Cohen term. The number $\bar y^\top B_k \bar x$ is the derivative of $r$
+    with respect to the $k$-th rate, so $\rho(y)$ is the growth rate linearized regime by regime.</p>
+    <p>The gap is the
+    Green&ndash;Kubo integral of that rate, and it sees only the symmetric part of $K$. The antisymmetric part moves
+    both growth rates by the same amount.</p>
+    <p>With one infected compartment $P = 0$. The almost-sure rate then has no correction and the mean gains
+    $K_{\beta\beta}$, as in the SIR section.</p>
+
+    <h2>SEIR with switched transmission</h2>
+    <p>Only $\beta$ switches. Its matrix is nilpotent:</p>
+    $$B_\beta^2 = 0 .$$
+    <p>Transmission moves infection from $I$ into $E$, and $E$ is not transmitting. A burst of transmission cannot
+    compound within one correlation time, because the new cases are still latent. So the mean has <em>no</em>
+    first-order correction.</p>
+    <p>The almost-sure rate still has one. Since $\bar y^\top B_\beta P B_\beta \bar x = -(\bar y^\top B_\beta \bar x)^2$,
+    it falls by $K_{\beta\beta}(\bar y_E\,\bar x_I)^2$. For SEIR the principal vectors are explicit:</p>
+    $$\bar x = \begin{pmatrix} r + \gamma \\ \sigma \end{pmatrix}, \qquad
+      \bar y = \frac{1}{\sigma\sqrt D}\begin{pmatrix} \sigma \\ r + \sigma \end{pmatrix}, \qquad
+      \bar y_E\,\bar x_I = \frac{\sigma}{\sqrt D} = \frac{\partial r}{\partial\bar\beta}.$$
+    <p>For a symmetric two-state chain the mean has an exact equation too. Write
+    $s = m_1 + m_2$ and $d = m_1 - m_2$. Then</p>
+    $$s' = \bar A\,s + \tilde\beta\,B_\beta\,d, \qquad d' = (\bar A - 2\lambda)\,d + \tilde\beta\,B_\beta\,s .$$
+    <p>Eliminating $d$ from the eigenvalue problem leaves the averaged matrix with $\bar\beta$ raised by
+    $\tilde\beta^2$ times the $(I, E)$ entry of $(\Lambda_{\mathrm{mean}} + 2\lambda - \bar A)^{-1}$. That gives a scalar equation for
+    the mean growth rate, solved by iteration, and its expansion.</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \Lambda_{\mathrm{mean}} &= r(\bar\beta + \delta), \\
+    \Lambda_{\mathrm{mean}} &= r + \frac{\tilde\beta^2\sigma^2}{4\lambda^2\sqrt D} + O(\lambda^{-3}), \\
+    \Lambda_{\mathrm{as}} &\approx r - K_{\beta\beta}\,\frac{\sigma^2}{D},
+    \end{aligned}$$
+    $$\begin{aligned}
+    \delta &= \frac{\tilde\beta^2\,\sigma}{(\Lambda_{\mathrm{mean}} + 2\lambda + \sigma)(\Lambda_{\mathrm{mean}} + 2\lambda + \gamma) - \sigma\bar\beta}, \\
+    r(\beta) &= \tfrac12\Big(-(\sigma + \gamma) + \sqrt{(\sigma - \gamma)^2 + 4\sigma\beta}\Big), \qquad r = r(\bar\beta), \\
+    D &= (\sigma - \gamma)^2 + 4\sigma\bar\beta, \\
+    \bar\beta &= \tfrac12(\beta_1 + \beta_2), \qquad \tilde\beta = \tfrac12(\beta_1 - \beta_2), \\
+    K_{\beta\beta} &= \frac{\tilde\beta^2}{2\lambda}, \qquad \lambda = \text{switching rate in each direction}.
+    \end{aligned}$$
+    </div>
+    <p>For any chain the almost-sure formula holds with $K_{\beta\beta} = -\pi\cdot(\tilde\beta\,Q^{\#}\tilde\beta)$, and the
+    mean still has no first-order term.</p>
+    <p>The latent stage reverses the SIR picture. In SIR the fluctuation raises the mean and leaves the typical path
+    alone.</p>
+    <p>In SEIR it leaves the mean nearly alone and lowers the typical path. With $\bar\beta/\gamma = 1.02$ and
+    regimes lasting half a week, the averaged model and the mean both grow, yet almost every introduction dies out.</p>
+
+    <h2>SEIR with switched transmission and recovery: the order of regimes</h2>
+    <p>Now both $\beta$ and $\gamma$ switch, for instance a testing campaign that shortens the infectious period. The
+    products of the two matrices are</p>
+    $$B_\beta B_\gamma = -B_\beta, \qquad B_\gamma B_\beta = 0, \qquad B_\gamma^2 = \begin{pmatrix} 0 & 0 \\ 0 & 1 \end{pmatrix}.$$
+    <p>So the mean picks up $K_{\gamma\gamma}$ and $K_{\gamma\beta}$, recovery followed by transmission, but not
+    $K_{\beta\gamma}$. Fast recovery removes the infectious who would transmit next. Transmission followed by fast
+    recovery does nothing at first order, because the new cases are latent while recovery is fast.</p>
+    <p>That asymmetry makes the direction of a cycle matter. Take three regimes visited in the order
+    $1 \to 2 \to 3 \to 1$ at rate $a$, with reverse steps at rate $b$.</p>
+    <p>The stationary law is uniform. The
+    Green&ndash;Kubo integral of two rates $f$ and $g$ on this cycle is a short calculation with the discrete Fourier
+    transform:</p>
+    $$K_{fg} = \frac{3(a + b)\,\tilde f\cdot\tilde g + (a - b)\,W(f, g)}{18\,(a^2 + ab + b^2)}, \qquad
+      W(f, g) = \sum_{j} \big(f_j\,g_{j+1} - f_{j+1}\,g_j\big),$$
+    <p>with indices taken mod 3. The first term is symmetric.</p>
+    <p>The second is antisymmetric: $W(\beta, \gamma)$ is
+    twice the signed area of the triangle traced by the points $(\beta_j, \gamma_j)$ in the order the cycle visits
+    them. Reversing the cycle swaps $a$ and $b$ and flips it.</p>
+    <p>Putting these into the general rule, with $\bar y^\top B_\beta \bar x = \sigma/\sqrt D$ and
+    $\bar y^\top B_\gamma \bar x = -(r + \sigma)/\sqrt D$:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \Lambda_{\mathrm{mean}} &\approx r + \frac{(r + \sigma)\,K_{\gamma\gamma} - \sigma\,K_{\gamma\beta}}{\sqrt D}, \\
+    \Lambda_{\mathrm{as}} &\approx \Lambda_{\mathrm{mean}} - \frac{\sigma^2 K_{\beta\beta} + (r + \sigma)^2 K_{\gamma\gamma}
+      - \sigma(r + \sigma)(K_{\beta\gamma} + K_{\gamma\beta})}{D}, \\
+    \Lambda^{\mathrm{forward}} - \Lambda^{\mathrm{reversed}} &\approx \frac{(a - b)\,\sigma\,W(\beta, \gamma)}{9\,(a^2 + ab + b^2)\,\sqrt D}
+      \quad\text{for both rates},
+    \end{aligned}$$
+    $$\begin{aligned}
+    r &= \tfrac12\big(-(\sigma + \bar\gamma) + \sqrt D\big), \qquad D = (\sigma - \bar\gamma)^2 + 4\sigma\bar\beta, \\
+    \bar\beta &= \tfrac13(\beta_1 + \beta_2 + \beta_3), \qquad \bar\gamma = \tfrac13(\gamma_1 + \gamma_2 + \gamma_3), \\
+    K_{\beta\beta} &= \frac{(a + b)\,\lvert\tilde\beta\rvert^2}{6\,(a^2 + ab + b^2)}, \qquad
+      K_{\gamma\gamma} = \frac{(a + b)\,\lvert\tilde\gamma\rvert^2}{6\,(a^2 + ab + b^2)}, \\
+    K_{\beta\gamma} &= \frac{3(a + b)\,\tilde\beta\cdot\tilde\gamma + (a - b)\,W}{18\,(a^2 + ab + b^2)}, \qquad
+      K_{\gamma\beta} = \frac{3(a + b)\,\tilde\beta\cdot\tilde\gamma - (a - b)\,W}{18\,(a^2 + ab + b^2)}, \\
+    \tilde\beta\cdot\tilde\gamma &= \textstyle\sum_j (\beta_j - \bar\beta)(\gamma_j - \bar\gamma), \qquad
+      \lvert\tilde\beta\rvert^2 = \textstyle\sum_j (\beta_j - \bar\beta)^2, \\
+    W &= \textstyle\sum_j \big(\beta_j\,\gamma_{j+1} - \beta_{j+1}\,\gamma_j\big) \quad (\text{indices mod } 3).
+    \end{aligned}$$
+    </div>
+    <p>The averages, and the symmetric part of $K$, are the same in both directions. Only the order differs, and it
+    moves the mean and the typical growth rate by the same amount.</p>
+    <p class="muted">Parameters: regimes open, testing and cautious, with $\beta = (0.605,\ 0.105,\ 0.055)$ and
+    $\gamma = (0.1,\ 0.55,\ 0.1)$ per week; $\sigma = 0.5$; so $\bar\beta = 0.255$, $\bar\gamma = 0.25$ and
+    $\bar\beta/\bar\gamma = 1.02$ as before. The forward cycle runs open, testing, cautious at rate $a = 2c$ with
+    reverse steps at $b = 0.1c$; the reversed cycle swaps $a$ and $b$.</p>
+    <p>At $c = 2$ each regime lasts a little under two days and a lap of the cycle takes about five and a half days. In the forward order
+    the testing push follows the open phase and finds its new infections still latent. In the reversed order it
+    comes just before the open phase and removes the people who would have transmitted in it.</p>
+
+    <h2>A worked example</h2>
+    <p>Transmission switched on two states at $\lambda = 2$, so that each regime lasts half a week:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$\sqrt D$</td><td>0.756637</td></tr><tr><td>$\bar y_E\,\bar x_I = \sigma/\sqrt D$</td><td>0.660819</td></tr><tr><td>$K_{\beta\beta} = \tilde\beta^2/(2\lambda)$</td><td>0.010000</td></tr><tr><td>averaged SEIR growth $r$</td><td>0.003319</td></tr><tr><td>SEIR mean, second order</td><td>0.004145</td></tr><tr><td>SEIR mean, numerical</td><td>0.004012</td></tr><tr><td>SEIR almost-sure, first order $r - K_{\beta\beta}\sigma^2/D$</td><td>&minus;0.001048</td></tr><tr><td>SEIR almost-sure, Monte Carlo</td><td>&minus;0.000450 &plusmn; 3e&minus;6</td></tr><tr><td>SIR mean, first order $\bar\beta - \gamma + K_{\beta\beta}$</td><td>0.015000</td></tr><tr><td>SIR almost-sure $\bar\beta - \gamma$</td><td>0.005000</td></tr></tbody></table></div>
+    <p>The averaged model says the epidemic grows. So does the mean.</p>
+    <p>The typical path declines, and
+    the Monte Carlo value is &minus;0.00045 per week. The first-order formula overstates the drop by about 16% at
+    this speed; the error falls by four for each doubling of $\lambda$, as the checks show.</p>
+    <p>The three-regime cycle at $c = 2$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>forward</th><th>reversed</th></tr></thead><tbody><tr><td>$a$, $b$</td><td>4, 0.2</td><td>0.2, 4</td></tr><tr><td>$W(\beta, \gamma)$</td><td>0.2475</td><td>&minus;0.2475</td></tr><tr><td>$K_{\beta\beta}$, $K_{\gamma\gamma}$</td><td>0.007690, 0.005612</td><td>0.007690, 0.005612</td></tr><tr><td>$K_{\beta\gamma}$, $K_{\gamma\beta}$</td><td>0.000297, &minus;0.005909</td><td>&minus;0.005909, 0.000297</td></tr><tr><td>averaged growth $r$</td><td>0.003319</td><td>0.003319</td></tr><tr><td>mean, first order</td><td>0.010956</td><td>0.006855</td></tr><tr><td>mean, numerical</td><td>0.010650</td><td>0.007269</td></tr><tr><td>gap $\Lambda_{\mathrm{mean}} - \Lambda_{\mathrm{as}}$, first order</td><td>0.008308</td><td>0.008308</td></tr><tr><td>almost-sure, first order</td><td>0.002648</td><td>&minus;0.001453</td></tr><tr><td>almost-sure, Monte Carlo</td><td>0.002592 &plusmn; 3e&minus;6</td><td>&minus;0.000903 &plusmn; 3e&minus;6</td></tr></tbody></table></div>
+    <p>The averaged rates are the same and $\bar\beta/\bar\gamma = 1.02$ in both cases. In the forward cycle a typical
+    introduction takes off.</p>
+    <p>In the reversed cycle it dies out. The mean grows in both, and it grows about four
+    times as fast as the typical path in the forward cycle.</p>
+
+    <h2>Checks</h2>
+    <p>The mean growth rate is checked against the principal eigenvalue of the combined matrix
+    $Q^\top \otimes I + \operatorname{blockdiag}(A_i)$, computed numerically. The almost-sure rate is checked by Monte
+    Carlo of the switched system with no time discretization: each holding interval of the chain is propagated with
+    the matrix exponential of its regime.</p>
+    <p>Each estimate uses 2,000 paths of 4,000 to 40,000 regime changes. The
+    control variate $\int_0^t \rho(y_s)\,ds$, whose time average is exactly $r$, is subtracted from $\log \bar y^\top x_t$
+    to reduce the variance.</p>
+    <p>That the combined matrix gives the mean is checked directly for SIR at $\lambda = 1$ over ten weeks: 200,000
+    regime paths give $\mathbb E[I_{10}]/I_0 = 1.2686 \pm 0.0019$, against 1.2691 from the matrix exponential.</p>
+    <p>SIR with switched transmission. The quadratic root agrees with the numerical eigenvalue to $10^{-12}$. For the
+    symmetric chain the first-order error is third order, falling by eight per doubling:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th style="text-transform:none">$K_{\beta\beta}$</th><th>mean, numerical</th><th>mean, first order</th><th>error</th><th>almost-sure</th></tr></thead><tbody><tr><td>1</td><td>0.02000</td><td>0.024804</td><td>0.025000</td><td>2.0e&minus;4</td><td>0.005000</td></tr><tr><td>2</td><td>0.01000</td><td>0.014975</td><td>0.015000</td><td>2.5e&minus;5</td><td>0.005000</td></tr><tr><td>4</td><td>0.00500</td><td>0.009997</td><td>0.010000</td><td>3.1e&minus;6</td><td>0.005000</td></tr><tr><td>8</td><td>0.00250</td><td>0.007500</td><td>0.007500</td><td>3.9e&minus;7</td><td>0.005000</td></tr><tr><td>16</td><td>0.00125</td><td>0.006250</td><td>0.006250</td><td>4.9e&minus;8</td><td>0.005000</td></tr></tbody></table></div>
+    <p>SEIR with switched transmission. The scalar equation agrees with the numerical eigenvalue to $10^{-11}$.</p>
+    <p>The
+    mean moves at second order, and $(\Lambda_{\mathrm{mean}} - r)\lambda^2$ tends to
+    $\tilde\beta^2\sigma^2/(4\sqrt D) = 0.00330$. The almost-sure error falls by four per doubling:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th>mean, numerical</th><th>mean, second order</th><th style="text-transform:none">$(\Lambda_{\mathrm{mean}} - r)\lambda^2$</th><th>almost-sure, Monte Carlo</th><th>almost-sure, first order</th><th>error</th></tr></thead><tbody><tr><td>1</td><td>0.005703</td><td>0.006623</td><td>0.00238</td><td>&minus;0.003307</td><td>&minus;0.005415</td><td>&minus;2.1e&minus;3</td></tr><tr><td>2</td><td>0.004012</td><td>0.004145</td><td>0.00278</td><td>&minus;0.000450</td><td>&minus;0.001048</td><td>&minus;6.0e&minus;4</td></tr><tr><td>4</td><td>0.003507</td><td>0.003525</td><td>0.00302</td><td>0.001301</td><td>0.001135</td><td>&minus;1.7e&minus;4</td></tr><tr><td>8</td><td>0.003368</td><td>0.003370</td><td>0.00315</td><td>0.002268</td><td>0.002227</td><td>&minus;4.1e&minus;5</td></tr><tr><td>16</td><td>0.003331</td><td>0.003332</td><td>0.00323</td><td>0.002783</td><td>0.002773</td><td>&minus;1.0e&minus;5</td></tr></tbody></table></div>
+    <p>The three-regime cycle. The closed-form $K$ agrees with $-\pi\cdot(f\,Q^{\#}g)$ to $10^{-13}$. Both first-order
+    formulas have errors falling at second order in each direction:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>forward mean, numerical</th><th>first order</th><th>reversed mean, numerical</th><th>first order</th></tr></thead><tbody><tr><td>1</td><td>0.017530</td><td>0.018593</td><td>0.011917</td><td>0.010392</td></tr><tr><td>2</td><td>0.010650</td><td>0.010956</td><td>0.007269</td><td>0.006855</td></tr><tr><td>4</td><td>0.007055</td><td>0.007137</td><td>0.005195</td><td>0.005087</td></tr><tr><td>8</td><td>0.005207</td><td>0.005228</td><td>0.004230</td><td>0.004203</td></tr><tr><td>16</td><td>0.004268</td><td>0.004273</td><td>0.003768</td><td>0.003761</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>forward almost-sure, Monte Carlo</th><th>first order</th><th>reversed almost-sure, Monte Carlo</th><th>first order</th></tr></thead><tbody><tr><td>1</td><td>0.001816</td><td>0.001977</td><td>&minus;0.004200</td><td>&minus;0.006224</td></tr><tr><td>2</td><td>0.002592</td><td>0.002648</td><td>&minus;0.000903</td><td>&minus;0.001453</td></tr><tr><td>4</td><td>0.002968</td><td>0.002983</td><td>0.001078</td><td>0.000933</td></tr><tr><td>8</td><td>0.003147</td><td>0.003151</td><td>0.002162</td><td>0.002126</td></tr><tr><td>16</td><td>0.003234</td><td>0.003235</td><td>0.002731</td><td>0.002722</td></tr></tbody></table></div>
+    <p>Monte Carlo standard errors are below $6\times10^{-6}$ in every row.</p>
+    <p>The forward-minus-reversed difference against the prediction
+    $(a - b)\,\sigma W/(9(a^2 + ab + b^2)\sqrt D)$, with $W = 0.2475$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>mean, numerical</th><th>almost-sure, Monte Carlo</th><th>predicted</th><th>numerical / predicted</th></tr></thead><tbody><tr><td>1</td><td>0.005613</td><td>0.006017 &plusmn; 8e&minus;6</td><td>0.008201</td><td>0.684</td></tr><tr><td>2</td><td>0.003382</td><td>0.003495 &plusmn; 5e&minus;6</td><td>0.004101</td><td>0.825</td></tr><tr><td>4</td><td>0.001860</td><td>0.001890 &plusmn; 3e&minus;6</td><td>0.002050</td><td>0.907</td></tr><tr><td>8</td><td>0.000976</td><td>0.000985 &plusmn; 1e&minus;6</td><td>0.001025</td><td>0.952</td></tr><tr><td>16</td><td>0.000500</td><td>0.000503 &plusmn; 9e&minus;7</td><td>0.000513</td><td>0.976</td></tr></tbody></table></div>
+    <p>The ratio tends to one, and the error of the prediction falls by four per doubling of $c$. The almost-sure
+    difference follows the mean difference, since the gap between the two rates sees only the symmetric part of
+    $K$.</p>
+    <p>The general formulas on a three-compartment model with two switched rates and the
+    irreversible three-state generator $Q_A$ of the <a href="./any-equation.html">any-equation page</a> sped up by a
+    factor $c$. The gap equals the Green&ndash;Kubo integral of $\rho$ to machine precision at every speed:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>mean, numerical</th><th>first order</th><th>almost-sure, Monte Carlo</th><th>first order</th><th>gap, first order</th></tr></thead><tbody><tr><td>2</td><td>0.053513</td><td>0.053229</td><td>0.051206 &plusmn; 3e&minus;6</td><td>0.050775</td><td>0.002455</td></tr><tr><td>4</td><td>0.053906</td><td>0.053832</td><td>0.052717 &plusmn; 1e&minus;6</td><td>0.052604</td><td>0.001227</td></tr><tr><td>8</td><td>0.054152</td><td>0.054133</td><td>0.053550 &plusmn; 8e&minus;7</td><td>0.053519</td><td>0.000614</td></tr><tr><td>16</td><td>0.054288</td><td>0.054283</td><td>0.053984 &plusmn; 5e&minus;7</td><td>0.053976</td><td>0.000307</td></tr></tbody></table></div>
+
+    <h2>Prior art</h2>
+    <p>The distinction between the two growth rates is old. <a href="./bibliography.html#LewontinCohen1969">Lewontin
+    and Cohen (1969)</a> showed that a population can grow in mean while almost every path goes extinct.
+    <a href="./bibliography.html#Tuljapurkar1982">Tuljapurkar (1982)</a> gave small-noise approximations of the
+    stochastic growth rate for structured populations in correlated environments, and
+    <a href="./bibliography.html#Arnold1984">Arnold (1984)</a> connected moment and sample stability of linear
+    stochastic systems.</p>
+    <p>For epidemics, <a href="./bibliography.html#GrayEtAl2012">Gray, Greenhalgh, Mao and Pan (2012)</a> treat SIS with
+    telegraph-noise switching of the rates. They give a reproduction number for the mean and prove that almost-sure
+    extinction is decided by a different threshold, the $\pi$-average of the transmission rate against the
+    $\pi$-average of the removal rate. That is the scalar statement $\Lambda_{\mathrm{as}} = \bar\beta - \gamma$ above.</p>
+    <p><a href="./bibliography.html#LiLiuCui2017">Li, Liu and Cui (2017)</a> extend it to SIRS.
+    <a href="./bibliography.html#BacaerKhaladi2013">Baca&euml;r and Khaladi (2013)</a> define a reproduction number in
+    a random environment that decides growth or decay of typical populations, and contrast it with the parameter of
+    <a href="./bibliography.html#HernandezSuarezEtAl2012">Hernandez-Suarez, Rabinovich and Hernandez (2012)</a>, which
+    decides growth of the expectation. <a href="./bibliography.html#ProdhommeStrickler2024">Prodhomme and Strickler
+    (2024)</a> show that the sign of the top Lyapunov exponent of the linearized switched system decides the fate of a
+    multitype SIS epidemic.</p>
+    <p>With white noise in place of switching, <a href="./bibliography.html#GrayEtAl2011">Gray, Greenhalgh, Hu, Mao and
+    Pan (2011)</a> find that white noise of intensity $\sigma_W$ in the transmission term, in It&ocirc; form, lowers the
+    almost-sure threshold. In the linear phase it lowers the typical growth rate by $\sigma_W^2/2$ and leaves the mean
+    unchanged. A fast telegraph rate with $2K_{\beta\beta} = \sigma_W^2$
+    converges to Stratonovich noise (<a href="./bibliography.html#WongZakai1965">Wong and Zakai 1965</a>).</p>
+    <p>In both
+    models the mean exceeds the typical growth by $K_{\beta\beta}$. They differ only in which of the two carries the
+    average rate.</p>
+    <p>For fast switching of a general linear system $x' = A(y_t)x$ with Metzler matrices,
+    <a href="./bibliography.html#MonmarcheSchreiberStrickler2025">Monmarch&eacute;, Schreiber and Strickler (2025)</a>
+    give the first-order correction to the top Lyapunov exponent, for periodic and for Markov switching, building on
+    <a href="./bibliography.html#MonmarcheStrickler2025">Monmarch&eacute; and Strickler (2025)</a>. The almost-sure
+    formula above is their Markov result, rewritten with the Green&ndash;Kubo matrix and the projection $P$.
+    For periodic switching they find that the first-order term is a commutator, which vanishes for two
+    environments.</p>
+    <p>Their Markov
+    formula contains the full non-symmetric group inverse, and so the antisymmetric part of $K$, without separating
+    it. <a href="./bibliography.html#BenaimEtAl2014">Bena&iuml;m, Le Borgne, Malrieu and Zitt (2014)</a> show that
+    switching between stable planar systems can be unstable.</p>
+    <p>For periodic environments, <a href="./bibliography.html#WangZhao2008">Wang and Zhao (2008)</a> define the
+    reproduction number of compartmental models and prove it is the invasion threshold. That threshold is the periodic,
+    deterministic counterpart of the invasion question here.</p>
+    <p>Not found in the literature reviewed: the first-order mean growth rate in the Green&ndash;Kubo form, the gap
+    between the two rates as the Green&ndash;Kubo integral of the projected rate, the absence of a first-order mean
+    correction in SEIR when only transmission switches, and the closed-form effect of the direction of a regime cycle
+    through $W(\beta, \gamma)$.</p>
+    <p>All of this is the linear phase. Depletion of susceptibles, final size and endemic levels are outside it.</p>
+  </main>
