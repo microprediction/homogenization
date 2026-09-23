@@ -6,7 +6,7 @@
     var span = hi - lo, step = Math.pow(10, Math.floor(Math.log10(span / n))), err = span / n / step;
     if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
     var t = [], v = Math.ceil(lo / step) * step;
-    for (; v <= hi + 1e-12 * span; v += step) t.push(+v.toPrecision(12));
+    for (; v <= hi + 1e-12 * span; v += step) t.push(Math.abs(v) < 1e-9 * step ? 0 : +v.toPrecision(12));
     return t;
   }
   function logTicks(lo, hi) {

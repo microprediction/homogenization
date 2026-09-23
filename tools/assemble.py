@@ -31,6 +31,7 @@ HEADER = """<header class="site-header">
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>

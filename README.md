@@ -39,6 +39,10 @@ papers/fast-switching/
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
   verify_engine.py, verify_models.py, verify_fast_factor.py   certificates
   make_pages.py            computes the tables on the example pages
+papers/yield-curve/
+  three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
+  verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains
+  make_data.py             writes docs/three-numbers.js for the yield-curve page
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

@@ -1,0 +1,185 @@
+<!-- title: Three numbers in a yield curve · homogenization | math | extra: demos.css -->
+  <main>
+    <p class="demo-nav"><a href="./engine.html">&larr; the fast-switching engine</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_three_numbers.py">certificate</a></span></p>
+    <h1>Three numbers in a yield curve</h1>
+    <p class="subtitle">What a bond curve can and cannot reveal about fast hidden regimes in the short rate.</p>
+
+    <p class="lead">Suppose the short rate is driven by hidden regimes that change often. The regimes could have any
+    number of states and any pattern of transitions. This page shows that, to first order in the switching time,
+    the yield curve sees only three numbers about them. Two quite different regime chains that share those three
+    numbers produce yield curves that agree to within a small fraction of a basis point.</p>
+
+    <h2>The model</h2>
+    <p>The short rate $r_t$ follows a Vasicek model whose mean level and volatility depend on a hidden state $y_t$:</p>
+    $$dr_t = \kappa\,\big(\theta(y_t) - r_t\big)\,dt + \sigma(y_t)\,dW_t .$$
+    <p>The hidden state $y_t$ is a Markov chain on $n$ states with generator $Q$. It is the fast process. The rate
+    $r_t$ is the slow process: it reverts at rate $\kappa$, while the chain switches at rates much larger than
+    $\kappa$. The small parameter is the ratio of the two time scales.</p>
+    <p>An observer who cannot see the regime prices a zero-coupon bond by drawing the regime from its stationary
+    distribution $\pi$:</p>
+    $$P(T) = \mathbb{E}\Big[\exp\Big(-\int_0^T r_s\,ds\Big)\ \Big|\ r_0 = x,\ y_0 \sim \pi\Big].$$
+    <p>Write $\theta_i$ and $s_i = \sigma_i^2$ for the level and the variance in state $i$, and write $\bar\theta$ and
+    $\bar s$ for their averages under $\pi$.</p>
+
+    <h2>Step 1: the bond price becomes a linear system</h2>
+    <p>Because the model is affine in $r$, the bond price conditional on the starting regime factors as</p>
+    $$P_i(T) = e^{-B(T)\,x}\,a_i(T), \qquad B(T) = \frac{1 - e^{-\kappa T}}{\kappa}.$$
+    <p>The factor $B$ does not depend on the regime, because the reversion speed $\kappa$ is shared. The vector
+    $a(T)$ carries everything the regimes contribute. Substituting into the pricing equation gives the linear
+    system</p>
+    $$a' = \big(Q + \operatorname{diag} g\big)\,a, \qquad a(0) = \mathbf 1,$$
+    <p>where the forcing in state $i$ is</p>
+    $$g_i(T) = -\kappa\,\theta_i\,B(T) + \tfrac12\,s_i\,B(T)^2 .$$
+    <p>The first term is the drift pulling the rate toward $\theta_i$. The second is the convexity from the variance
+    $s_i$. The <a href="./engine.html">engine</a> page derives this system and solves it to all orders.</p>
+
+    <h2>Step 2: the first-order answer is a Green&ndash;Kubo integral</h2>
+    <p>The <a href="./idea.html">averaging page</a> explains the first correction with a two-state switch. The
+    exponent of the expectation gains half the variance of the fluctuating integral. For a general chain the same
+    argument gives</p>
+    $$\log\big(\pi\cdot a(T)\big) \approx \int_0^T \bar g\,dt + \int_0^T \mathcal K\big(\tilde g(t),\,\tilde g(t)\big)\,dt,$$
+    <p>where $\tilde g = g - \bar g$ is the fluctuation of the forcing about its average. The bilinear form
+    $\mathcal K$ measures how long a fluctuation is remembered:</p>
+    $$\mathcal K(f, h) = \int_0^\infty \operatorname{Cov}_\pi\big(f(y_0),\,h(y_\tau)\big)\,d\tau .$$
+    <p>This is a Green&ndash;Kubo integral. It can be computed with the group inverse of the generator from the
+    <a href="./solvability.html">solvability page</a>:</p>
+    $$\mathcal K(f, h) = -\,\pi\cdot\big(f\ Q^{\#} h\big).$$
+    <p>The starting regime is drawn from $\pi$, so the memory of the starting state averages away. Only the
+    variance term survives.</p>
+
+    <h2>Step 3: expand in powers of $B$</h2>
+    <p>Write $u = \theta - \bar\theta$ and $v = s - \bar s$ for the fluctuations of level and variance across
+    regimes. Then</p>
+    $$\tilde g = -\kappa\,u\,B + \tfrac12\,v\,B^2 .$$
+    <p>Since $\mathcal K$ is bilinear, the correction is a polynomial in $B$ with three coefficients:</p>
+    $$\mathcal K(\tilde g, \tilde g) = c_2\,B^2 + c_3\,B^3 + c_4\,B^4,$$
+    <p>with</p>
+    $$c_2 = \kappa^2\,\mathcal K(u, u), \qquad c_3 = -\kappa\,\mathcal K_{\mathrm{sym}}(u, v), \qquad c_4 = \tfrac14\,\mathcal K(v, v).$$
+    <p>Here $\mathcal K_{\mathrm{sym}}(u, v)$ is the average of $\mathcal K(u, v)$ and $\mathcal K(v, u)$. Putting the
+    pieces together gives the yield curve to first order:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \log P(T) + B(T)\,x \;=\; &-\kappa\,\bar\theta\int_0^T B + \Big(\tfrac12\,\bar s + c_2\Big)\int_0^T B^2 \\
+    &+ c_3\int_0^T B^3 + c_4\int_0^T B^4 .
+    \end{aligned}$$
+    </div>
+    <p>The first two terms are Vasicek with averaged parameters. The three numbers $c_2$, $c_3$ and $c_4$ are all the
+    regimes add. The chain may have many states and many transition rates, but they enter only through these three
+    numbers.</p>
+
+    <h2>The four shapes</h2>
+    <p>Each coefficient multiplies its own function of maturity. The integrals have closed forms, since $\kappa B$
+    is a polynomial in $e^{-\kappa T}$. The chart shows each integral scaled so that it tends to 1 at long
+    maturities:</p>
+    $$\frac{\kappa^k}{T}\int_0^T B^k\,dt, \qquad k = 1, 2, 3, 4 .$$
+
+    <div class="widget">
+      <div id="leg1"></div>
+      <canvas id="c1" width="820" height="300"></canvas>
+    </div>
+
+    <p>Higher powers start later, because $B$ is small at short maturities and $B^k$ is smaller still. So the three
+    numbers leave different fingerprints on the short and intermediate parts of the curve. At long maturities all
+    four shapes flatten, and only their total is visible.</p>
+
+    <h2>Why the three numbers obey an inequality</h2>
+    <p>The symmetric part of $\mathcal K$ is a covariance. For two functions $f$ and $h$ of the regime, the
+    running integrals of $f(y_t)$ and $h(y_t)$ over a long time $t$ satisfy</p>
+    $$\operatorname{Cov}\Big(\int_0^t f(y_s)\,ds,\ \int_0^t h(y_s)\,ds\Big) \approx 2t\ \mathcal K_{\mathrm{sym}}(f, h).$$
+    <p>So the matrix</p>
+    $$M = \begin{pmatrix} \mathcal K(u, u) & \mathcal K_{\mathrm{sym}}(u, v) \\ \mathcal K_{\mathrm{sym}}(u, v) & \mathcal K(v, v) \end{pmatrix}$$
+    <p>is half the long-run covariance matrix of the integrated level and the integrated variance. A covariance
+    matrix is positive semidefinite, whether or not the chain is reversible. Its determinant is therefore
+    non-negative, and in terms of the three numbers that says</p>
+    <div class="equation-card">
+    $$c_2 \ge 0, \qquad c_4 \ge 0, \qquad c_3^2 \le 4\,c_2\,c_4 .$$
+    </div>
+    <p>With two regimes the inequality is an equality. The fluctuations $u$ and $v$ are then both multiples of the
+    single pattern that is $+$ in one state and $-$ in the other, so $M$ has rank one. Equality in the fitted
+    numbers is the signature of an effectively one-dimensional regime.</p>
+
+    <h2>What can actually be measured</h2>
+    <p>The coefficient of $\int B^2$ is $\tfrac12\bar s + c_2$. A market that only sees bond prices cannot split this
+    sum: extra average variance and extra regime variance look the same. What can be fitted are four
+    coefficients,</p>
+    $$\beta_1 = -\kappa\,\bar\theta, \qquad \beta_2 = \tfrac12\,\bar s + c_2, \qquad \beta_3 = c_3, \qquad \beta_4 = c_4 .$$
+    <p>Since $\bar s \ge 0$, we have $\beta_2 \ge c_2$, and the inequality survives in observable form:</p>
+    $$\beta_3^2 \le 4\,\beta_2\,\beta_4 .$$
+    <p>A fitted curve that violates it cannot come from fast switching of the level and volatility, at least not at
+    first order.</p>
+
+    <h2>Two chains that the curve cannot tell apart</h2>
+    <p>Here are two three-state chains with different transition structures. Neither is reversible. The first
+    visits all states in both directions, and the second cycles mostly one way:</p>
+    $$Q_A = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix}, \qquad
+      Q_B = \begin{pmatrix} -1 & 1 & 0 \\ 0.2 & -2.2 & 2 \\ 3 & 0 & -3 \end{pmatrix}.$$
+    <p>Chain A has levels $(8\%, 4\%, 1\%)$ and variances $(0.003, 0.0015, 0.0005)$. The levels and variances of
+    chain B were solved for so that it has the same $\bar\theta$, the same $\bar s$ and the same matrix $M$:</p>
+    <p class="muted" id="chainB"></p>
+    <p>Both generators are multiplied by 2 below, so the regimes last a few months, and $\kappa = 1$. The chart
+    shows the regime effect on the yield, which is the yield minus the averaged Vasicek yield, in basis points.</p>
+
+    <div class="widget">
+      <div id="leg2"></div>
+      <canvas id="c2" width="820" height="320"></canvas>
+      <div class="readout" id="read2"></div>
+    </div>
+
+    <p>The two numerical solutions lie almost on top of each other. The formula with the three numbers sits a little
+    away from both, and that gap is the second-order term, which the formula omits. The difference between the
+    chains is smaller still, because it too is of second order.</p>
+    <p>The certificate checks the order directly. Multiplying both generators by a factor $m$ and scaling the
+    difference in $\log P$ by $m^2$ gives a number that settles as $m$ grows:</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>maturity</th><th style="text-transform:none">$m = 10$</th><th style="text-transform:none">$m = 20$</th><th style="text-transform:none">$m = 40$</th><th style="text-transform:none">$m = 80$</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>&minus;2.38e-6</td><td>&minus;2.31e-6</td><td>&minus;2.27e-6</td><td>&minus;2.25e-6</td></tr>
+        <tr><td>3</td><td>&minus;6.07e-6</td><td>&minus;5.88e-6</td><td>&minus;5.78e-6</td><td>&minus;5.73e-6</td></tr>
+        <tr><td>5</td><td>&minus;7.72e-6</td><td>&minus;7.51e-6</td><td>&minus;7.40e-6</td><td>&minus;7.35e-6</td></tr>
+        <tr><td>10</td><td>&minus;1.09e-5</td><td>&minus;1.07e-5</td><td>&minus;1.06e-5</td><td>&minus;1.05e-5</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>If the chains differed at first order, these scaled numbers would grow in proportion to $m$.</p>
+
+    <h2>What this says</h2>
+    <ul>
+      <li>A yield curve does not reveal how many regimes there are. To first order it sees a $2\times2$ covariance
+        matrix, whatever the size of the chain.</li>
+      <li>The regime correction has a sign. It always lowers yields, because $c_2$ and $c_4$ are non-negative and
+        $|c_3|$ is bounded by them.</li>
+      <li>The inequality $\beta_3^2 \le 4\beta_2\beta_4$ is a testable restriction on fitted curves.</li>
+      <li>Separating chains that share the three numbers needs second-order effects or other instruments, such as
+        options, which see the regime through the <a href="./bond-options.html">terminal state</a>.</li>
+    </ul>
+
+  <script src="./charts.js"></script>
+  <script src="./three-numbers.js"></script>
+  <script>
+  (function () {
+    var b = THREE.chainB;
+    document.getElementById('chainB').innerHTML = 'Chain B: levels (' + b.theta.map(function (x) { return (100 * x).toFixed(2) + '%'; }).join(', ') +
+      '), variances (' + b.s.map(function (x) { return x.toPrecision(3); }).join(', ') + ').';
+    var S = ['#9a9a9a', '#4a3aff', '#0f8b6e', '#c2410c'];
+    var c1 = new LineChart(document.getElementById('c1'), { legend: 'leg1', xlabel: 'maturity T (years)', ylabel: 'scaled integral', xname: 'T',
+      xfmt: function (v) { return v.toFixed(2); }, yfmt: function (v) { return v.toFixed(3); }, ymin: 0, ymax: 1 });
+    c1.set([1, 2, 3, 4].map(function (k) { return { name: k === 1 ? 'B' : 'B' + ['', '', '²', '³', '⁴'][k], color: S[k - 1], points: THREE.shapes[k] }; }));
+    var e = THREE.effect;
+    var c2 = new LineChart(document.getElementById('c2'), { legend: 'leg2', xlabel: 'maturity T (years)', ylabel: 'regime effect on yield (bp)', xname: 'T',
+      xfmt: function (v) { return v.toFixed(2); }, yfmt: function (v) { return v.toFixed(4) + ' bp'; } });
+    c2.set([
+      { name: 'chain A, numerical solution', color: '#4a3aff', points: e.A },
+      { name: 'chain B, numerical solution', color: '#0f8b6e', dash: [6, 5], points: e.B },
+      { name: 'three-number formula', color: '#9a9a9a', dash: [2, 4], points: e.formula }
+    ]);
+    var worst = 0, gap = 0;
+    e.A.forEach(function (p, i) { worst = Math.max(worst, Math.abs(p[1] - e.B[i][1])); gap = Math.max(gap, Math.abs(p[1] - e.formula[i][1])); });
+    document.getElementById('read2').innerHTML = 'Largest difference between the chains: <b>' + worst.toFixed(4) + ' bp</b>. ' +
+      'Largest difference between chain A and the formula: <b>' + gap.toFixed(4) + ' bp</b>.';
+    window.addEventListener('resize', function () { c1.draw(); c2.draw(); });
+  })();
+  </script>
+  </main>
