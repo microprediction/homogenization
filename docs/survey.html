@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Survey · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Literature</span><span class="drop">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>One correction, many fields</h1>
+    <p class="subtitle">A survey of fast random switching and its first correction, from option pricing to spectroscopy, gene expression and machine learning.</p>
+
+    <p class="lead">Many fields study a slow quantity driven by a fast hidden process. They reach the same two results.
+    The leading answer replaces the hidden process by its average. The first correction is an integrated correlation
+    of the fluctuations, a Green&ndash;Kubo integral. This page collects that literature, says what each field calls the
+    two results, and marks what this site adds. Every reference is on the <a href="./bibliography.html">bibliography</a>
+    page with a checked DOI.</p>
+
+    <h2>The common object</h2>
+    <p>A hidden state $y_t$ moves fast, with stationary law $\pi$. A slow quantity evolves under an operator that
+    depends on the hidden state:</p>
+    $$\mathcal L_y = \bar{\mathcal L} + \sum_k \phi_k(y)\,A_k .$$
+    <p>The averaged model uses $\bar{\mathcal L}$. The first correction adds</p>
+    $$\sum_{j,k} K_{jk}\,A_j A_k, \qquad K_{jk} = \int_0^\infty \operatorname{Cov}_\pi\big(\phi_j(y_0),\,\phi_k(y_\tau)\big)\,d\tau ,$$
+    <p>as derived on the <a href="./any-equation.html">any-equation page</a>. Fields differ in what the slow quantity is,
+    what the operators $A_k$ are, and what can be observed.</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>field</th><th>fast process</th><th>slow quantity</th><th>averaged law</th><th>first correction</th></tr></thead>
+      <tbody>
+        <tr><td>option pricing</td><td>volatility factor or regime</td><td>option price</td><td>Black&ndash;Scholes at effective volatility</td><td>smile and skew terms</td></tr>
+        <tr><td>term structure</td><td>regime of level and volatility</td><td>bond price</td><td>Vasicek with averaged parameters</td><td>three Green&ndash;Kubo numbers</td></tr>
+        <tr><td>credit</td><td>common frailty or regime</td><td>joint survival</td><td>independent names</td><td>default dependence</td></tr>
+        <tr><td>statistical physics</td><td>microscopic fluctuations</td><td>currents</td><td>no net transport</td><td>transport coefficients</td></tr>
+        <tr><td>spectroscopy</td><td>hopping resonance frequency</td><td>line shape</td><td>a sharp line at the mean frequency</td><td>motional-narrowing width</td></tr>
+        <tr><td>chromatography, dispersion</td><td>phase or streamline</td><td>solute band</td><td>drift at mean speed</td><td>effective dispersion</td></tr>
+        <tr><td>gene expression</td><td>promoter state</td><td>molecule counts</td><td>Poisson at mean rate</td><td>excess noise</td></tr>
+        <tr><td>population biology</td><td>environment</td><td>population size</td><td>growth at mean rate</td><td>autocorrelation correction to growth</td></tr>
+        <tr><td>choice and races</td><td>shared driver</td><td>who arrives first</td><td>Luce&apos;s choice axiom</td><td>correction to softmax</td></tr>
+        <tr><td>learning</td><td>data stream</td><td>parameters</td><td>gradient flow on the mean loss</td><td>fluctuation and ordering terms</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Mathematical foundations</h2>
+    <p>The averaging principle for equations with fast random coefficients goes back to Khasminskii
+    (<a href="./bibliography.html#Khasminskii1966">1966</a>). He showed that the fluctuations about the average
+    converge to a diffusion whose coefficients are integrated correlations. Papanicolaou and coauthors built the
+    general theory in the 1970s:</p>
+    <ul>
+      <li>a limit theorem in Banach space (<a href="./bibliography.html#PapanicolaouVaradhan1973">Papanicolaou and Varadhan 1973</a>);</li>
+      <li>the asymptotic theory of mixing differential equations (<a href="./bibliography.html#PapanicolaouKohler1974">Papanicolaou and Kohler 1974</a>);</li>
+      <li>the martingale method with perturbed test functions (<a href="./bibliography.html#PSV1977">Papanicolaou, Stroock and Varadhan 1977</a>).</li>
+    </ul>
+    <p>The same structure appears as random evolutions: operators switched by a Markov chain, whose expectations solve
+    coupled systems of equations (<a href="./bibliography.html#GriegoHersh1969">Griego and Hersh 1969</a>;
+    <a href="./bibliography.html#Hersh1974">Hersh 1974</a>; <a href="./bibliography.html#Pinsky1991">Pinsky 1991</a>).
+    Kurtz gave the operator-semigroup limit theorem for generators of the form $Q/\varepsilon + \mathcal L$
+    (<a href="./bibliography.html#Kurtz1973">Kurtz 1973</a>; <a href="./bibliography.html#EthierKurtz1986">Ethier and Kurtz 1986</a>).
+    Every pricing equation on this site is a random evolution.</p>
+    <p>Physicists reached the same correction through cumulant expansions. The second cumulant of a linear equation
+    with random coefficients is a time-ordered product of the random operators, weighted by their correlation
+    (<a href="./bibliography.html#Kubo1962">Kubo 1962</a>; <a href="./bibliography.html#vanKampen1974">van Kampen 1974</a>).
+    That is the first-order rule with non-commuting operators, including the commutator term.</p>
+    <p>Full asymptotic series for fast Markov chains, with outer expansions and initial layers, are developed in:</p>
+    <ul>
+      <li>the monograph of <a href="./bibliography.html#YinZhang1998">Yin and Zhang (1998)</a>, with a <a href="./bibliography.html#YinZhang2013">second edition in 2013</a>;</li>
+      <li>the related papers of <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> and <a href="./bibliography.html#IlinKhasminskiiYin1999">Il&apos;in, Khasminskii and Yin (1999)</a>.</li>
+    </ul>
+    <p>Control theory reached aggregation of fast states independently
+    (<a href="./bibliography.html#PhillipsKokotovic1981">Phillips and Kokotovic 1981</a>).</p>
+    <p>For diffusions, the Poisson equation that plays the role of $Q w = f$ is solved by
+    <a href="./bibliography.html#PardouxVeretennikov2001">Pardoux and Veretennikov (2001)</a>. Periodic homogenization, the
+    spatial version of the same idea, is the subject of <a href="./bibliography.html#BLP1978">Bensoussan, Lions and
+    Papanicolaou (1978)</a>. Three textbooks cover the methods:
+    <a href="./bibliography.html#FreidlinWentzell1984">Freidlin and Wentzell (1984)</a>,
+    <a href="./bibliography.html#SkorokhodHoppensteadtSalehi2002">Skorokhod, Hoppensteadt and Salehi (2002)</a> and
+    <a href="./bibliography.html#PavliotisStuart2008">Pavliotis and Stuart (2008)</a>.</p>
+    <p>The diffusion approximation was developed at length for waves in randomly layered media
+    (<a href="./bibliography.html#FGPS2007">Fouque, Garnier, Papanicolaou and Sølna 2007</a>). Fast Markov
+    modulation of diffusions has recent limit theorems of its own
+    (<a href="./bibliography.html#HuangMandjesSpreij2014">Huang, Mandjes and Spreij 2014</a>;
+    <a href="./bibliography.html#HuangEtAl2016">Huang et al. 2016</a>).</p>
+
+    <h2>Finance: fast mean-reverting volatility</h2>
+    <p>Fouque, Papanicolaou and Sircar brought the diffusion approximation to option pricing. Volatility is driven by
+    a fast mean-reverting factor. The price is Black&ndash;Scholes at an effective volatility plus a correction
+    (<a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou 1999</a>;
+    <a href="./bibliography.html#FPS2000IJTAF">Fouque, Papanicolaou and Sircar 2000</a>;
+    <a href="./bibliography.html#FPS2000">their 2000 book</a>).</p>
+    <p>In that setting the first correction is of order $\sqrt\varepsilon$ and needs correlation between the asset and
+    the factor. It produces the skew and is summarized by a few group parameters that can be fitted to implied
+    volatilities. The <a href="./fast-factor.html">fast-factor page</a> computes that series to all orders.</p>
+    <p>The program was extended in several directions:</p>
+    <ul>
+      <li>fast and slow scales together (<a href="./bibliography.html#FPSS2003MMS">Fouque, Papanicolaou, Sircar and Sølna 2003</a>; <a href="./bibliography.html#FPSS2003SIAP">2003</a>);</li>
+      <li>interest-rate derivatives (<a href="./bibliography.html#CFPS2004">Cotton, Fouque, Papanicolaou and Sircar 2004</a>) and bond markets (<a href="./bibliography.html#DeSantiagoFouqueSolna2008">DeSantiago, Fouque and Sølna 2008</a>);</li>
+      <li>defaultable bonds (<a href="./bibliography.html#FPSS2006credit">Fouque, Sircar and Sølna 2006</a>) and correlated first-passage defaults (<a href="./bibliography.html#FouqueWignallZhou2008">Fouque, Wignall and Zhou 2008</a>);</li>
+      <li>second order with a terminal layer (<a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar 2016</a>);</li>
+      <li>portfolio choice (<a href="./bibliography.html#FouqueSircarZariphopoulou2017">Fouque, Sircar and Zariphopoulou 2017</a>).</li>
+    </ul>
+    <p>The book <a href="./bibliography.html#FPSS2011">Fouque, Papanicolaou, Sircar and Sølna (2011)</a> collects equity,
+    interest rate and credit. The uncorrelated case goes back to the mixing formula of
+    <a href="./bibliography.html#HullWhite1987">Hull and White (1987)</a>: average Black&ndash;Scholes over integrated
+    variance. To second order in the variance of integrated variance, that formula is the smile on the
+    <a href="./any-equation.html">any-equation page</a>.</p>
+
+    <h2>Finance: regime switching</h2>
+    <p>Regime switching entered econometrics with <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>. It
+    entered option pricing with volatility jumping between levels (<a href="./bibliography.html#Naik1993">Naik 1993</a>)
+    and then with:</p>
+    <ul>
+      <li>hedging (<a href="./bibliography.html#DiMasiKabanovRunggaldier1994">Di Masi, Kabanov and Runggaldier 1995</a>);</li>
+      <li>information about the regime (<a href="./bibliography.html#Guo2001">Guo 2001</a>);</li>
+      <li>American options (<a href="./bibliography.html#BuffingtonElliott2002">Buffington and Elliott 2002</a>);</li>
+      <li>the Esscher transform (<a href="./bibliography.html#ElliottChanSiu2005">Elliott, Chan and Siu 2005</a>);</li>
+      <li>European prices (<a href="./bibliography.html#YaoZhangZhou2006">Yao, Zhang and Zhou 2006</a>).</li>
+    </ul>
+    <p>Two papers expand option prices in the switching rate. <a href="./bibliography.html#Yin2009">Yin (2009)</a> gives
+    a full series with an averaged Black&ndash;Scholes leading term. <a href="./bibliography.html#BasuGhosh2009">Basu and
+    Ghosh (2009)</a> study the fast and slow limits.</p>
+    <p>For the term structure, regime switching was estimated by
+    <a href="./bibliography.html#AngBekaert2002">Ang and Bekaert (2002)</a> and
+    <a href="./bibliography.html#BansalZhou2002">Bansal and Zhou (2002)</a>, with equilibrium foundations in
+    <a href="./bibliography.html#WuZeng2005">Wu and Zeng (2005)</a>. Bond prices under a switching mean level reduce
+    to linear systems of ordinary differential equations:</p>
+    <ul>
+      <li>a hidden Markov short rate (<a href="./bibliography.html#Landen2000">Landén 2000</a>);</li>
+      <li>a simple regime-switching model (<a href="./bibliography.html#HansenPoulsen2000">Hansen and Poulsen 2000</a>);</li>
+      <li>a switching mean level (<a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon 2002</a>);</li>
+      <li>exponential-affine formulae (<a href="./bibliography.html#ElliottSiu2009">Elliott and Siu 2009</a>);</li>
+      <li>affine processes in general (<a href="./bibliography.html#vanBeekEtAl2020">van Beek, Mandjes, Spreij and Winands 2020</a>);</li>
+      <li>time-dependent coefficients (<a href="./bibliography.html#RodrigoMamon2021">Rodrigo and Mamon 2021</a>).</li>
+    </ul>
+    <p>That reduction is the starting point of the <a href="./engine.html">engine</a>. A regime-switching Heston model was
+    fitted jointly to VIX and S&amp;P 500 options by <a href="./bibliography.html#PapanicolaouSircar2014">Papanicolaou and
+    Sircar (2014)</a>.</p>
+
+    <h2>Finance: credit</h2>
+    <p>Reduced-form credit models treat default as the first event of a Cox process
+    (<a href="./bibliography.html#Cox1955">Cox 1955</a>; <a href="./bibliography.html#Lando1998">Lando 1998</a>;
+    <a href="./bibliography.html#DuffieSingleton1999">Duffie and Singleton 1999</a>). They are priced with affine
+    transforms (<a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton 2000</a>). Defaults cluster beyond
+    observable covariates. <a href="./bibliography.html#DuffieEcknerHorelSaita2009">Duffie, Eckner, Horel and Saita
+    (2009)</a> model the clustering with a common latent frailty.</p>
+    <p>With a fast frailty, the any-equation rule gives the joint survival of every set of names from one Green&ndash;Kubo
+    matrix. The matrix has rank at most one less than the number of regimes. Which name defaults first is the race
+    studied below, and there the antisymmetric part of the matrix becomes visible.</p>
+
+    <h2>Statistical physics</h2>
+    <p>Transport coefficients are integrated equilibrium correlations. This is the Green&ndash;Kubo formula
+    (<a href="./bibliography.html#Green1954">Green 1954</a>; <a href="./bibliography.html#Kubo1957">Kubo 1957</a>), and the
+    matrix $K$ is named after it. Onsager showed that transport coefficients are symmetric under microscopic
+    reversibility (<a href="./bibliography.html#Onsager1931">Onsager 1931</a>).</p>
+    <p>For a fast chain the same argument makes $K$ symmetric when the chain satisfies detailed balance. The
+    antisymmetric part is therefore a measure of irreversibility. Kinetics uses it to detect a hidden driver that is
+    out of equilibrium, from the order of arrivals (<a href="https://kinetics.microprediction.org/softmax-fast-mixing.pdf">Cotton, working draft</a>).
+    The <a href="./any-equation.html">any-equation page</a> shows it shifting an effective variance.</p>
+
+    <h2>Spectroscopy and relaxation</h2>
+    <p>A nuclear spin whose resonance frequency hops between values gives a spectral line that narrows as the hopping
+    speeds up. <a href="./bibliography.html#Anderson1954">Anderson (1954)</a> and
+    <a href="./bibliography.html#Kubo1954">Kubo (1954)</a> explained this motional narrowing. The width of the narrowed
+    line is the Green&ndash;Kubo integral of the frequency fluctuation.</p>
+    <p>Mathematically it is the linear system on this site with an imaginary forcing $i\omega(y)$. The two-state
+    eigenvalue on the <a href="./yield-curve.html">yield-curve page</a> is Anderson&apos;s two-site formula.</p>
+    <p>Relaxation rates in magnetic resonance are spectral densities of fluctuating fields
+    (<a href="./bibliography.html#BPP1948">Bloembergen, Purcell and Pound 1948</a>). Redfield theory treats spin
+    operators that do not commute (<a href="./bibliography.html#Redfield1957">Redfield 1957</a>). The rates come from the
+    real parts of spectral densities, and the frequency shifts from their imaginary parts.
+    <a href="./bibliography.html#Blume1968">Blume (1968)</a> extended the stochastic line-shape model to fluctuating
+    Hamiltonians that do not commute at different times.</p>
+
+    <h2>Transport, chemistry and motors</h2>
+    <p>Solute in a tube spreads faster than molecular diffusion alone, because different streamlines move at different
+    speeds (<a href="./bibliography.html#Taylor1953">Taylor 1953</a>; <a href="./bibliography.html#Aris1956">Aris 1956</a>).
+    In chromatography a molecule alternates between moving and stuck phases
+    (<a href="./bibliography.html#GiddingsEyring1955">Giddings and Eyring 1955</a>). Its band moves at the averaged
+    speed, and it spreads with the Green&ndash;Kubo integral of the velocity. This is the averaged law and first
+    correction for a switched drift.</p>
+    <p>Reaction rates that fluctuate in time are called dynamical disorder
+    (<a href="./bibliography.html#Zwanzig1990">Zwanzig 1990</a>). Reactions gated on and off by a random switch were
+    studied by <a href="./bibliography.html#SzaboEtAl1982">Szabo, Shoup, Northrup and McCammon (1982)</a>. A boundary
+    that switches between absorbing and reflecting homogenizes to a Robin condition
+    (<a href="./bibliography.html#LawleyKeener2015">Lawley and Keener 2015</a>).</p>
+    <p>Molecular motors switch between potentials under a chemical cycle that breaks detailed balance
+    (<a href="./bibliography.html#JulicherAjdariProst1997">Jülicher, Ajdari and Prost 1997</a>;
+    <a href="./bibliography.html#Reimann2002">Reimann 2002</a>). They are the physical case where the antisymmetric
+    part of $K$ drives the effect.</p>
+
+    <h2>Biology</h2>
+    <p><a href="./bibliography.html#Bressloff2017">Bressloff (2017)</a> reviews stochastic switching across biology.</p>
+    <p>In gene expression, a promoter switching between states modulates the rate of synthesis. This is the telegraph
+    model (<a href="./bibliography.html#PeccoudYcart1995">Peccoud and Ycart 1995</a>). It is observed as bursting in
+    single-cell counts (<a href="./bibliography.html#RajEtAl2006">Raj et al. 2006</a>). The excess noise over Poisson is the
+    Green&ndash;Kubo term for the switched rate, as on the <a href="./counts.html">Poisson counts</a> page.
+    <a href="./bibliography.html#Paulsson2004">Paulsson (2004)</a> analyses how time-averaging of fluctuating upstream
+    signals controls noise in gene networks.</p>
+    <p>A population growing in a random environment grows in expectation at the averaged rate plus the integrated
+    covariance of the rate. <a href="./bibliography.html#LewontinCohen1969">Lewontin and Cohen (1969)</a> showed that the
+    expected and typical growth rates differ. <a href="./bibliography.html#Tuljapurkar1982">Tuljapurkar (1982)</a> gave
+    the small-noise formula for structured populations in correlated environments, with a
+    <a href="./bibliography.html#Tuljapurkar1990">monograph in 1990</a>. For structured populations the projection
+    matrices do not commute, so the commutator term applies.
+    <a href="./bibliography.html#KussellLeibler2005">Kussell and Leibler (2005)</a> connect growth in a switching
+    environment to information.</p>
+    <p>Bacteria that run and tumble spread with an effective diffusion given by their integrated velocity correlation
+    (<a href="./bibliography.html#OthmerDunbarAlt1988">Othmer, Dunbar and Alt 1988</a>;
+    <a href="./bibliography.html#Schnitzer1993">Schnitzer 1993</a>). Ion channels observed only as open or closed are
+    aggregated Markov chains (<a href="./bibliography.html#FredkinRice1986">Fredkin and Rice 1986</a>). They raise the
+    same question as the <a href="./yield-curve.html">yield-curve page</a>: what can be identified about a hidden chain
+    from coarse observations.</p>
+
+    <h2>Queues and point processes</h2>
+    <p>Arrivals driven by a hidden chain form a Markov-modulated Poisson process
+    (<a href="./bibliography.html#FischerMeierHellstern1993">Fischer and Meier-Hellstern 1993</a>), with marked versions
+    in <a href="./bibliography.html#HeNeuts1998">He and Neuts (1998)</a>. Their long-run count variance exceeds the
+    Poisson variance by twice the Green&ndash;Kubo integral of the rate, and that excess drives queue lengths in heavy traffic
+    (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>). A request sent to several servers, with the first
+    reply winning, is a race under a shared driver (<a href="./bibliography.html#DeanBarroso2013">Dean and Barroso 2013</a>).</p>
+
+    <h2>Choice and competing arrivals</h2>
+    <p>When channels fire as Poisson processes with rates driven by a shared fast driver, the probability that a
+    channel fires first tends to Luce&apos;s choice axiom in the mean rates (<a href="./bibliography.html#Luce1959">Luce 1959</a>).
+    The kinetics site derives the first correction, governed by the same matrix $K$
+    (<a href="https://kinetics.microprediction.org/softmax-fast-mixing.pdf">Cotton, working draft</a>). It shows three
+    further results:</p>
+    <ul>
+      <li>the first two arrivals identify everything the arrival law reveals about $K$ at that order;</li>
+      <li>the diagonal of $K$ cannot be observed;</li>
+      <li>the asymmetry of $K$ can be seen with three channels but never with two.</li>
+    </ul>
+    <p>The horse-race model of choice and response times is its psychological ancestor
+    (<a href="./bibliography.html#MarleyColonius1992">Marley and Colonius 1992</a>).</p>
+
+    <h2>Learning and stochastic approximation</h2>
+    <p>Algorithms fed by a Markovian data stream are analysed by averaging. The parameters follow the ordinary
+    differential equation of the mean update, and the fluctuations about it have integrated-correlation
+    covariances (<a href="./bibliography.html#BenvenisteMetivierPriouret1990">Benveniste, Métivier and Priouret 1990</a>;
+    <a href="./bibliography.html#KushnerYin2003">Kushner and Yin 2003</a>). Convergence rates for data from an ergodic
+    process depend on its mixing time (<a href="./bibliography.html#DuchiEtAl2012">Duchi, Agarwal, Johansson and Jordan 2012</a>).</p>
+    <p>The order in which data is visited matters. Reshuffling beats independent sampling
+    (<a href="./bibliography.html#GurbuzbalabanOzdaglarParrilo2021">Gürbüzbalaban, Ozdaglar and Parrilo 2021</a>). In the
+    language of this site, per-example updates act like switched operators whose Hessians do not commute. The rule
+    then suggests that a structured data order would enter through the antisymmetric part of the correlation matrix.
+    We have not checked this.</p>
+
+    <h2>What this site adds</h2>
+    <p>The averaged law, the Green&ndash;Kubo first correction, and its non-commuting form are classical. The site adds the
+    following. We have not found them in the literature above, and we would welcome pointers.</p>
+    <ul>
+      <li>The <a href="./engine.html">engine</a>: every order of the expansion, including the initial layer, for any
+        Markov-modulated exponential-affine model. It is checked against numerical solutions.</li>
+      <li>The <a href="./yield-curve.html">three numbers in a yield curve</a>. To first order the curve sees a fast chain
+        of any size only through a positive semidefinite $2\times2$ matrix. Different chains sharing it cannot be told
+        apart, and the long end has a convergent eigenvalue series.</li>
+      <li>The <a href="./any-equation.html">commutator effect</a> in pricing. When a chain switches the reversion speed
+        and the volatility of a short rate, the direction of its cycle moves the effective variance.</li>
+      <li>The <a href="./fast-factor.html">fast-factor series</a> to all orders with correlation, and the regime-switching
+        <a href="./regime-switching.html">expansion</a> with unequal rates.</li>
+    </ul>
+
+    <h2>Open directions</h2>
+    <ul>
+      <li>Motional narrowing to all orders: the engine applied to a hopping frequency, checked against Anderson&apos;s
+        closed form.</li>
+      <li>Promoter cycles: whether the direction of an irreversible promoter cycle changes expression noise when
+        synthesis and degradation both switch.</li>
+      <li>Default order: which names default first, and what that reveals about the asymmetry of a hidden credit cycle.</li>
+      <li>Data ordering in training: the commutator term for per-example Hessians under structured data orders.</li>
+    </ul>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

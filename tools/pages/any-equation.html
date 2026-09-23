@@ -87,9 +87,15 @@
         parameter $k$ with the reverse order. It vanishes for a reversible chain, which looks the same run backwards
         in time. It survives when the chain cycles in a preferred direction.</li>
     </ul>
-    <p>The antisymmetric part only acts through the commutator $[A_j, A_k] = A_j A_k - A_k A_j$. So the direction of
-    the cycle matters only when the operators do not commute: when it matters whether one parameter acts before the
-    other.</p>
+    <p>With a payoff that does not depend on the regime, the antisymmetric part only acts through the commutator
+    $[A_j, A_k] = A_j A_k - A_k A_j$. So the direction of the cycle matters only when the operators do not commute:
+    when it matters whether one parameter acts before the other.</p>
+    <p>A payoff or a running source that depends on the regime opens a second route. The race studied on the
+    <a href="https://kinetics.microprediction.org/">kinetics site</a> is the example: each channel&apos;s own rate is
+    the source of its win probability, and the asymmetry of $K$ is visible from the order of arrivals even though
+    every operator there is a multiplication. The symmetry of $K$ under detailed balance, and its use as a witness of
+    a hidden irreversible driver, are developed there
+    (<a href="https://kinetics.microprediction.org/softmax-fast-mixing.pdf">Cotton, working draft</a>).</p>
     <p>Constant-coefficient operators commute. In Black&ndash;Scholes, and whenever the level and variance of Vasicek
     are switched, only the covariance enters. That is why the <a href="./yield-curve.html">yield curve</a> sees a
     symmetric $2\times2$ matrix.</p>
@@ -140,8 +146,12 @@
     <ul>
       <li>Names whose hazards rise in different regimes have negative dependence. Fast regimes can produce it.</li>
       <li>The matrix is positive semidefinite, with rank at most one less than the number of regimes. A three-regime
-        economy supports at most two independent patterns of default dependence, however many names there are.</li>
+        economy supports at most two independent patterns of default dependence, however many names there are. The
+        same rank property appears for races on the kinetics site.</li>
     </ul>
+    <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more. Which name defaults first
+    is a race under a shared driver, and with three or more names its law reveals the asymmetry of $K$, as shown on
+    the <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>
     <p>The check uses four names and the three-state chain $Q_A$ from the smile example. The pairwise dependence over five years, in units
     of $10^{-4}$, is:</p>
     $$2t\,K^{\mathrm{sym}} \times 10^{4} = \begin{pmatrix} 25.3 & 16.8 & -8.5 & -6.3 \\ 16.8 & 11.9 & -4.0 & -4.9 \\ -8.5 & -4.0 & 7.1 & 0.2 \\ -6.3 & -4.9 & 0.2 & 2.4 \end{pmatrix}.$$
