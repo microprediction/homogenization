@@ -28,6 +28,8 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
       </span></span>
       <a href="./papers.html">Papers</a>
@@ -46,15 +48,50 @@
 
   <main>
     <h1>CIR with a switching mean level</h1>
-    <p class="subtitle">A square-root intensity whose long-run level follows a regime.</p>
-    <p>The intensity follows $dx = \kappa(\theta_y - x)\,dt + \sigma\sqrt{x}\,dW$. The coefficient of $x$ in the
-    bond price solves $B' = 1 - \kappa B - \tfrac12\sigma^2 B^2$, which does not involve $\theta$, so the state
-    factors out whenever only the mean level switches:</p>
-    $$B(t) = \frac{2\,(e^{ht} - 1)}{(h+\kappa)(e^{ht}-1) + 2h}, \quad h = \sqrt{\kappa^2 + 2\sigma^2}, \qquad g_i(t) = -\kappa\,\theta_i\,B(t).$$
-    <p>Here $\kappa = 1.5$, $\theta = (0.08, 0.02)$ and $\sigma = 0.15$. The table gives the error in $a_1(3)$
-    after each order. $B$ is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
+    <p class="subtitle">A square-root intensity whose long-run level follows a hidden regime.</p>
+
+    <h2>The model</h2>
+    <p>A default intensity, or short rate, $x_t$ follows a square-root (CIR) process whose long-run level is set by a
+    hidden regime $y_t \in \{1, 2\}$:</p>
+    $$dx_t = \kappa\,(\theta_{y_t} - x_t)\,dt + \sigma\sqrt{x_t}\,dW_t .$$
+    <p>The volatility parameter $\sigma$ is the same in both regimes. The regime switches at rate $\lambda$ in each
+    direction. The intensity reverts over $1/\kappa$; the regime changes every $1/\lambda$. Here $\kappa = 1.5$,
+    $\theta = (0.08, 0.02)$ and $\sigma = 0.15$.</p>
+
+    <h2>What is computed</h2>
+    <p>The survival probability, or bond price, $u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the limit is the CIR model with mean level
+    $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its classical bond price.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>The coefficient of $x$ in the CIR bond price solves $B' = 1 - \kappa B - \tfrac12\sigma^2 B^2$, $B(0) = 0$,
+    which does not involve $\theta$:</p>
+    $$B(t) = \frac{2\,(e^{ht} - 1)}{(h+\kappa)(e^{ht}-1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}.$$
+    <p>So $u_i = e^{-B(t)x}a_i(t)$ with $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and
+    $g_i(t) = -\kappa\,\theta_i\,B(t)$. If $\sigma$ also switched, $B$ would differ between regimes and the state
+    would not factor out.</p>
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
+    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i = -\kappa\theta_i B$, so that $\tilde g = -\kappa\tilde\theta B$ with $\tilde\theta = \tfrac12(\theta_1 - \theta_2)$. To first order,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model. The term
+    $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$; the bracket carries the
+    starting regime and fades as $\lambda$ grows.</p>
+    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
+    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and
+    $\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big)$. This series does not meet
+    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
+    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes. $B$ is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
+
+    <h2>Results</h2>
+    <p>The error in $a_1(3)$ after each order, against a numerical solution:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>5</td><td>2.5e-3</td><td>7.1e-7</td><td>2.8e-7</td><td>2.0e-7</td><td>6.2e-9</td><td>4.4e-9</td><td>1.6e-10</td></tr><tr><td>10</td><td>1.2e-3</td><td>1.3e-7</td><td>2.3e-8</td><td>1.2e-8</td><td>1.2e-10</td><td>6.8e-11</td><td>8.5e-13</td></tr><tr><td>20</td><td>6.2e-4</td><td>2.8e-8</td><td>2.1e-9</td><td>7.5e-10</td><td>2.7e-12</td><td>1.1e-12</td><td>6.9e-15</td></tr><tr><td>40</td><td>3.1e-4</td><td>6.7e-9</td><td>2.2e-10</td><td>4.7e-11</td><td>6.9e-14</td><td>1.7e-14</td><td>6.7e-16</td></tr></tbody></table></div>
-    <p>If $\sigma$ also switched, $B$ would differ between regimes and the state would no longer factor out.</p>
+    <p>A Monte Carlo simulation of the switching CIR model agrees with the numerical solution; see
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>.</p>
   </main>
 
   <footer>

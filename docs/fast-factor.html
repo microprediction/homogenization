@@ -28,6 +28,8 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
       </span></span>
       <a href="./papers.html">Papers</a>
@@ -47,34 +49,59 @@
   <main>
     <h1>A fast mean-reverting factor</h1>
     <p class="subtitle">The continuous version of regime switching, with correlation, to all orders in $\sqrt\varepsilon$.</p>
-    <p>Replace the chain by a fast Ornstein&ndash;Uhlenbeck factor $dY = -\varepsilon^{-1}Y\,dt + \sqrt{2/\varepsilon}\,dZ$,
-    with standard normal stationary law, driving the mean level and volatility of the rate:
-    $dx = \kappa(\theta(Y) - x)\,dt + \sigma(Y)\,dW$, with $d\langle W, Z\rangle = \rho\,dt$. This is the setting of
-    fast mean-reverting stochastic volatility for interest rates. Because $\kappa$ does not depend on $Y$,
-    $u = e^{-B(t)x}a(t,y)$ and, with $\delta = \sqrt\varepsilon$,</p>
-    $$a_t = \Big(\frac{1}{\delta^2}\mathcal L + \frac1\delta\,G_{-1}(t) + G_0(t)\Big)a,$$
-    $$G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y, \qquad G_0 = -\kappa\theta(y)B(t) + \tfrac12\sigma(y)^2B(t)^2,$$
-    <p>where $\mathcal L = -y\,\partial_y + \partial_{yy}$. In the Hermite basis $\mathcal L$ is
-    $\operatorname{diag}(0, -1, -2, \dots)$, the constant function plays the role of the vector of ones, and the
-    expectation under the stationary law plays the role of $\pi$. Multiplication by a polynomial in $y$ couples
-    neighbouring modes, so every order of the expansion involves finitely many of them.</p>
-    <p>The <a href="./engine.html">engine</a> carries over with $G_{-1}$ and $G_0$ in place of $\operatorname{diag} g$:
-    writing $v = a/\pi a$, the outer terms are
-    $w_n = \mathcal L^{\#}\big([w']_{n-2} - [F_{-1}]_{n-1} - [F_0]_{n-2}\big)$ with $F_p(w) = G_p v - v\,\pi G_p v$.
-    The first correction, of order $\sqrt\varepsilon$, needs the correlation:</p>
-    $$\log\frac{\pi a}{\pi a\big|_{\rho = 0}} = -\sqrt{2\varepsilon}\,\rho\int_0^t B(r)\;\mathbb{E}\big[\sigma(Y)\,\partial_y\phi_r(Y)\big]\,dr + O(\varepsilon),
-      \qquad \mathcal L\phi_r = \bar g(r) - g(r,\cdot).$$
-    <p>For a check with an exact answer, take $\theta(y) = \theta_0 + \theta_1 y$ and $\sigma(y) = \sigma_0 + \sigma_1 y$.
-    Then $a = e^{A + C_1y + C_2y^2}$ exactly, with $A$, $C_1$ and $C_2$ solving three ODEs. The table gives the
-    error at $t = 1$, $y = 0.3$, after each order in $\sqrt\varepsilon$, for $\kappa = 1$, $\theta = 0.05 + 0.03y$,
-    $\sigma = 0.25 + 0.2y$ and $\rho = -0.7$.</p>
+
+    <h2>The model</h2>
+    <p>The short rate $x_t$ reverts to a level, and diffuses with a volatility, that both depend on a hidden factor
+    $Y_t$ which moves much faster than the rate:</p>
+    $$dx_t = \kappa\,\big(\theta(Y_t) - x_t\big)\,dt + \sigma(Y_t)\,dW_t, \qquad dY_t = -\frac{1}{\varepsilon}\,Y_t\,dt + \sqrt{\frac{2}{\varepsilon}}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
+    <p>The factor is an Ornstein&ndash;Uhlenbeck process whose stationary law is standard normal. It forgets its
+    starting point over a time of order $\varepsilon$, while the rate reverts over $1/\kappa$, so $\varepsilon \ll 1/\kappa$
+    separates the two time scales. The correlation $\rho$ couples the shocks to the rate and to the factor. This is
+    the setting of fast mean-reverting stochastic volatility for interest rates. Here $\kappa = 1$,
+    $\theta(y) = 0.05 + 0.03y$, $\sigma(y) = 0.25 + 0.2y$ and $\rho = -0.7$.</p>
+
+    <h2>What is computed</h2>
+    <p>The bond price $u(t, x, y) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ Y_0 = y\big]$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the factor is infinitely fast the rate sees only its stationary law, and the limit is Vasicek&apos;s model
+    with mean level $\mathbb{E}[\theta(Y)]$ and variance $\mathbb{E}[\sigma(Y)^2]$, the expectations taken under the
+    standard normal law.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Because $\kappa$ does not depend on $Y$, $u = e^{-B(t)x}a(t,y)$ with $B(t) = (1 - e^{-\kappa t})/\kappa$.
+    With $\delta = \sqrt\varepsilon$,</p>
+    $$a_t = \Big(\frac{1}{\delta^2}\mathcal L + \frac1\delta\,G_{-1}(t) + G_0(t)\Big)a, \qquad a(0,\cdot) = 1,$$
+    $$\mathcal L = -y\,\partial_y + \partial_{yy}, \qquad G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y, \qquad G_0 = -\kappa\theta(y)B(t) + \tfrac12\sigma(y)^2B(t)^2 .$$
+    <p>Write $a(t,\cdot)$ in Hermite coordinates, $a = \sum_n c_n(t)\,\mathrm{He}_n(y)$, with the probabilists&apos; Hermite
+    polynomials $\mathrm{He}_0 = 1$, $\mathrm{He}_1 = y$, $\mathrm{He}_2 = y^2 - 1$, and so on. They are orthogonal under
+    the standard normal law, $\mathcal L\,\mathrm{He}_n = -n\,\mathrm{He}_n$, $y\,\mathrm{He}_n = \mathrm{He}_{n+1} + n\,\mathrm{He}_{n-1}$ and
+    $\partial_y\mathrm{He}_n = n\,\mathrm{He}_{n-1}$. In these coordinates $\mathcal L$ is $\operatorname{diag}(0, -1, -2, \dots)$, the
+    constant function is the unit vector $e_0$, and the stationary expectation reads off $c_0$. The system is a chain
+    with states $0, 1, 2, \dots$ and decay rates $0, 1, 2, \dots$, coupled by the banded matrices $G_{-1}$ and $G_0$.</p>
+
+    <h2>The expansion</h2>
+    <p>Let $s = c_0$, the stationary expectation of $a$, and $v = a/s$. For each coupling $G_p$ let
+    $F_p(v) = G_p v - v\,\mathbb{E}[G_p v]$. The outer terms of $v = 1 + \sum_{n\ge1}\delta^n w_n$ are</p>
+    $$w_n = \mathcal L^{\#}\big(w_{n-2}' - [F_{-1}]_{n-1} - [F_0]_{n-2}\big),$$
+    <p>where $\mathcal L^{\#}$ inverts $\mathcal L$ on functions of mean zero and $[F_p]_k$ is the part of $F_p$ of order
+    $\delta^k$. Each order involves finitely many Hermite modes, because the couplings are polynomial in $y$. The
+    first correction, of order $\sqrt\varepsilon$, needs the correlation:</p>
+    $$\log\frac{s}{s\big|_{\rho = 0}} = -\sqrt{2\varepsilon}\,\rho\int_0^t B(r)\;\mathbb{E}\big[\sigma(Y)\,\partial_y\phi_r(Y)\big]\,dr + O(\varepsilon),
+      \qquad \mathcal L\phi_r = \bar g(r) - g(r,\cdot),$$
+    <p>with $g = G_0$ and $\bar g$ its stationary mean. An initial layer, solved in the eigenbasis of $\mathcal L$, restores
+    $a(0,\cdot) = 1$. Without correlation only even orders appear and the expansion is in $\varepsilon$.</p>
+
+    <h2>Results</h2>
+    <p>With $\theta$ and $\sigma$ linear in $y$ the solution has the form $a = e^{A + C_1y + C_2y^2}$, with $A$, $C_1$
+    and $C_2$ solving three ODEs; their numerical solution is the reference. The error at $t = 1$, $y = 0.3$, after
+    each order in $\sqrt\varepsilon$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>epsilon</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>0.01</td><td>2.1e-5</td><td>3.3e-5</td><td>1.1e-6</td><td>1.8e-7</td><td>1.2e-8</td><td>1.4e-9</td><td>1.2e-9</td></tr><tr><td>0.0025</td><td>2.1e-6</td><td>8.1e-6</td><td>1.3e-7</td><td>1.2e-8</td><td>3.5e-10</td><td>1.9e-11</td><td>1.5e-11</td></tr><tr><td>0.000625</td><td>1.0e-6</td><td>2.0e-6</td><td>1.6e-8</td><td>7.4e-10</td><td>1.0e-11</td><td>2.8e-13</td><td>2.2e-13</td></tr></tbody></table></div>
-    <p>Each quartering of $\varepsilon$ halves $\sqrt\varepsilon$ and divides the order-$n$ error by about
-    $2^{n+1}$, until round-off near $10^{-13}$. Without correlation only even orders appear and the expansion is in
-    $\varepsilon$. A Monte Carlo simulation of the two-factor model agrees with the exact solution; see
-    <a href=\"https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_fast_factor.py">verify_fast_factor.py</a>. The engines are
-    <a href=\"https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch_op.py">fastswitch_op.py</a> and
-    <a href=\"https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch_gen.py">fastswitch_gen.py</a>.</p>
+    <p>Each quartering of $\varepsilon$ halves $\sqrt\varepsilon$ and divides the order-$n$ error by about $2^{n+1}$,
+    until round-off near $10^{-13}$. A Monte Carlo simulation of the two-factor model agrees with the reference solution;
+    see <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_fast_factor.py">verify_fast_factor.py</a>. The engines are
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch_op.py">fastswitch_op.py</a> and
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch_gen.py">fastswitch_gen.py</a>.</p>
   </main>
 
   <footer>

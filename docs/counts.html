@@ -28,6 +28,8 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
       </span></span>
       <a href="./papers.html">Papers</a>
@@ -46,19 +48,53 @@
 
   <main>
     <h1>Poisson counts with a switching rate</h1>
-    <p class="subtitle">A Markov-modulated Poisson process, and its distribution to any order.</p>
-    <p>In a <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a> events arrive at rate $\ell_y$, with $\ell = (8, 1)$ per unit time and a symmetric chain switching at rate
-    $\lambda$. The generating function $a_i(t) = \mathbb{E}[z^{N_t}\mid y_0 = i]$ solves
-    $a' = \big(Q + (z-1)\operatorname{diag}\ell\big)a$, so $g_i = (z-1)\ell_i$ is constant and complex. Evaluating
-    the expansion at $z$ on the unit circle and inverting by the discrete Fourier transform gives every
-    probability $\Pr(N_t = k)$ at once.</p>
-    <p>The averaged model is Poisson with rate $\bar\ell = 4.5$. The corrector carries the overdispersion. The
-    first table gives the moments of $N_1$ starting in the high-rate regime, from the numerical solution.</p>
+    <p class="subtitle">Events whose arrival rate follows a hidden regime, and the distribution of their count.</p>
+
+    <h2>The model</h2>
+    <p>Events arrive one at a time, as insurance claims, defaults in a portfolio or requests to a server do. Their
+    rate depends on a hidden regime $y_t \in \{1, 2\}$: while $y_t = i$ they arrive as a Poisson process with rate
+    $\ell_i$. The regime switches at rate $\lambda$ in each direction. This is a
+    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>. There are two
+    time scales: events arrive every $1/\ell_i$ on average, and the regime changes every $1/\lambda$. Here
+    $\ell = (8, 1)$ per unit time, the process starts in the busy regime, and $N_t$ counts the events up to
+    $t = 1$.</p>
+
+    <h2>What is computed</h2>
+    <p>The whole distribution $\Pr(N_t = k)$, $k = 0, 1, 2, \dots$, through the generating function
+    $a_i(t) = \mathbb{E}\big[z^{N_t} \mid y_0 = i\big]$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast, events arrive as a Poisson process with the average rate
+    $\bar\ell = 4.5$, and the variance of the count equals its mean. Switching at a finite rate makes the count
+    more variable than Poisson, and the corrector carries that overdispersion.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>An event multiplies $z^{N}$ by $z$, so</p>
+    $$a' = \big(Q + (z-1)\operatorname{diag}\ell\big)\,a, \qquad a(0) = \mathbf 1, \qquad g_i = (z-1)\,\ell_i ,$$
+    <p>a constant, complex for complex $z$. Evaluating $a(t)$ at the 64 points $z = e^{2\pi i k/64}$ on the unit circle
+    and applying the discrete Fourier transform returns all the probabilities at once.</p>
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
+    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $\bar g = (z-1)\bar\ell$ and $\tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$ are constants. To first order,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model. The term
+    $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$; the bracket carries the
+    starting regime and fades as $\lambda$ grows.</p>
+    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
+    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and
+    $\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big)$. This series does not meet
+    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
+    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes. For the count, the shared first-order term multiplies the generating function by
+    $\exp\big(\tfrac{t}{8\lambda}(z-1)^2(\ell_1 - \ell_2)^2\big)$, which adds $t(\ell_1 - \ell_2)^2/(4\lambda)$ to the
+    variance.</p>
+
+    <h2>Results</h2>
+    <p>Moments of $N_1$, starting in the busy regime, from the numerical solution:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>mean</th><th>variance</th><th>variance / mean</th></tr></thead><tbody><tr><td>5</td><td>4.8500</td><td>6.9325</td><td>1.4294</td></tr><tr><td>10</td><td>4.6750</td><td>5.8081</td><td>1.2424</td></tr><tr><td>20</td><td>4.5875</td><td>5.1770</td><td>1.1285</td></tr><tr><td>40</td><td>4.5437</td><td>4.8443</td><td>1.0661</td></tr></tbody></table></div>
-    <p>The second table gives the largest error over all probabilities after each order.</p>
+    <p>The largest error over all probabilities after each order:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th></tr></thead><tbody><tr><td>5</td><td>3.6e-2</td><td>3.7e-3</td><td>1.3e-3</td><td>1.2e-3</td><td>5.4e-4</td></tr><tr><td>10</td><td>2.1e-2</td><td>6.6e-4</td><td>2.8e-4</td><td>4.9e-5</td><td>2.4e-5</td></tr><tr><td>20</td><td>1.2e-2</td><td>2.2e-4</td><td>4.4e-5</td><td>3.5e-6</td><td>8.5e-7</td></tr><tr><td>40</td><td>6.0e-3</td><td>6.3e-5</td><td>6.5e-6</td><td>2.2e-7</td><td>2.7e-8</td></tr></tbody></table></div>
-    <p>The same calculation applies to claim counts, defaults in a portfolio, and arrivals of any kind whose rate
-    follows a hidden regime.</p>
   </main>
 
   <footer>

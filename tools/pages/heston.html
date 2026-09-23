@@ -1,20 +1,51 @@
 <!-- title: Heston with a switching long-run variance · homogenization | math -->
   <main>
     <h1>Heston with a switching long-run variance</h1>
-    <p class="subtitle">Option prices by Fourier inversion, with the characteristic function expanded in $1/\lambda$.</p>
-    <p>In <a href="./bibliography.html#Heston1993">Heston&apos;s model</a> the log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
-    $dv = \kappa(\theta_y - v)\,dt + \xi\sqrt v\,dZ$, with correlation $\rho$. The characteristic function is
-    $\mathbb{E}[e^{iuX_T}] = e^{iuX_0 + D(T)v_0}\,a_i(T)$, where $D$ is Heston&apos;s Riccati solution, which does
-    not involve $\theta$. The regime enters only through</p>
-    $$g_i(t) = \kappa\,\theta_i\,D(t), \qquad D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}},$$
-    <p>with $d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)}$ and $\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d)$.
-    Call prices follow from <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>,
+    <p class="subtitle">Stochastic volatility whose long-run level follows a hidden regime, and the option prices it implies.</p>
+
+    <h2>The model</h2>
+    <p>A stock price $S_t = e^{X_t}$ has stochastic variance $v_t$, as in
+    <a href="./bibliography.html#Heston1993">Heston&apos;s model</a>, except that the level to which the variance
+    reverts is set by a hidden regime $y_t \in \{1, 2\}$, a calm market and a turbulent one:</p>
+    $$dX_t = -\tfrac12 v_t\,dt + \sqrt{v_t}\,dW_t, \qquad dv_t = \kappa\,(\theta_{y_t} - v_t)\,dt + \xi\sqrt{v_t}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
+    <p>The regime switches at rate $\lambda$ in each direction. The variance reverts over $1/\kappa$; the regime
+    changes every $1/\lambda$. Here $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$,
+    $S_0 = 100$, zero interest, one year to expiry, $\lambda = 10$, and a start in the turbulent regime.</p>
+
+    <h2>What is computed</h2>
+    <p>European call prices, through the characteristic function
+    $\phi_i(u) = \mathbb{E}\big[e^{iu(X_T - X_0)} \mid v_0,\ y_0 = i\big]$ and
+    <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>
     $C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}$.</p>
-    <p>Here $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$, $S_0 = 100$, one year to
-    expiry, a symmetric chain switching at $\lambda = 10$, and a start in the high-variance regime. The table gives
-    call prices from the numerical characteristic function and after each order.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the limit is Heston&apos;s model with long-run variance
+    $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its closed-form characteristic function.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Heston&apos;s characteristic function is $e^{C(T) + D(T)v_0}$, where $D$ solves a Riccati equation that involves
+    $\kappa$, $\xi$ and $\rho$ but not $\theta$:</p>
+    $$D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)},$$
+    <p>with $\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d)$. So $\phi_i = e^{D(T)v_0}a_i(T)$ with
+    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and $g_i(t) = \kappa\,\theta_i\,D(t)$, which is complex.</p>
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
+    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i = \kappa\theta_i D$, so that $\tilde g = \kappa\tilde\theta D$. To first order,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model. The term
+    $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$; the bracket carries the
+    starting regime and fades as $\lambda$ grows.</p>
+    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
+    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and
+    $\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big)$. This series does not meet
+    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
+    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes. The engine holds the complex $g_i$ as Chebyshev series.</p>
+
+    <h2>Results</h2>
+    <p>Call prices from the numerical characteristic function and after each order:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th></tr></thead><tbody><tr><td>80</td><td>22.13369</td><td>22.06371</td><td>22.13501</td><td>22.13388</td><td>22.13369</td></tr><tr><td>90</td><td>14.47902</td><td>14.38309</td><td>14.47998</td><td>14.47922</td><td>14.47903</td></tr><tr><td>100</td><td>8.40280</td><td>8.29383</td><td>8.40317</td><td>8.40289</td><td>8.40281</td></tr><tr><td>110</td><td>4.22012</td><td>4.11250</td><td>4.22051</td><td>4.22017</td><td>4.22012</td></tr><tr><td>120</td><td>1.82993</td><td>1.73643</td><td>1.83091</td><td>1.83003</td><td>1.82992</td></tr></tbody></table></div>
     <p>A Monte Carlo simulation of the switching model, with 200,000 paths, gives 22.13, 8.41 and 1.83 at strikes 80,
-    100 and 120, each within its standard error of the numerical prices. The same construction applies to any
-    affine stochastic volatility model in which only the long-run level switches.</p>
+    100 and 120, each within its standard error of the numerical prices.</p>
   </main>

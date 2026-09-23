@@ -1,16 +1,43 @@
 <!-- title: Three regimes · homogenization | math -->
   <main>
     <h1>Three regimes</h1>
-    <p class="subtitle">Vasicek with a mean level and volatility that move among three regimes.</p>
-    <p>The short rate follows $dx = \kappa(\theta_{y} - x)\,dt + \sigma_y\,dW$ with $\kappa = 2$,
-    $\theta = (0.20, 0.08, 0.02)$ and $\sigma^2 = (0.04, 0.01, 0.0025)$. The chain need not be reversible. Here
-    its generator is $s\,Q_1$ with</p>
+    <p class="subtitle">A short rate whose mean level and volatility move among three regimes that switch quickly.</p>
+
+    <h2>The model</h2>
+    <p>The short rate $x_t$ is an Ornstein&ndash;Uhlenbeck process whose parameters are set by a hidden regime
+    $y_t \in \{1, 2, 3\}$:</p>
+    $$dx_t = \kappa\,(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t .$$
+    <p>The regime is a continuous-time Markov chain with generator $s\,Q_1$,</p>
     $$Q_1 = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix},$$
-    <p>whose stationary distribution is $\pi = (0.208, 0.458, 0.333)$. The averaged
-    model is Vasicek&apos;s with the $\pi$-weighted mean level and variance. The table gives the error in the bond
-    price $a_1(1)$, starting in the first regime, after each order, against a 30-digit numerical solution.</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>scale</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>4</td><td>6.2e-3</td><td>1.8e-4</td><td>2.1e-5</td><td>3.7e-6</td><td>5.1e-7</td><td>1.0e-7</td><td>1.6e-8</td></tr><tr><td>8</td><td>3.1e-3</td><td>4.2e-5</td><td>2.4e-6</td><td>2.2e-7</td><td>1.4e-8</td><td>1.4e-9</td><td>1.1e-10</td></tr><tr><td>16</td><td>1.6e-3</td><td>1.0e-5</td><td>2.9e-7</td><td>1.3e-8</td><td>4.2e-10</td><td>2.2e-11</td><td>7.9e-13</td></tr></tbody></table></div>
-    <p>Each doubling of the switching rates divides the order-$n$ error by about $2^{n+1}$. For $n$ regimes the
-    recursion is unchanged: the two-state ratio becomes a vector $w$, and each order applies the group inverse
-    of the generator once. See <a href="./engine.html">the engine</a>.</p>
+    <p>so that from regime 1 it jumps to regime 2 at rate $2s$ and to regime 3 at rate $s$, and so on. The chain is
+    not reversible. There are two time scales: the rate reverts towards its current level over $1/\kappa$, and the
+    regime changes every $1/s$ or so. Switching is fast when $s \gg \kappa$. Here $\kappa = 2$,
+    $\theta = (0.20, 0.08, 0.02)$ and $\sigma^2 = (0.04, 0.01, 0.0025)$.</p>
+
+    <h2>What is computed</h2>
+    <p>The zero-coupon bond price $u_i(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = i\big]$ for
+    maturity $t$, which is also the survival probability when $x$ is a default intensity.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the rate sees only the stationary mixture. The chain&apos;s stationary
+    distribution is $\pi = (0.208, 0.458, 0.333)$, and the limit is Vasicek&apos;s model with mean level
+    $\bar\theta = \pi\cdot\theta$ and variance $\bar s = \pi\cdot\sigma^2$.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Because $\kappa$ is the same in every regime, $u_i(t,x) = e^{-B(t)x}a_i(t)$ with
+    $B(t) = (1 - e^{-\kappa t})/\kappa$, and</p>
+    $$a' = \big(s\,Q_1 + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i(t) = -\kappa\theta_i B(t) + \tfrac12\sigma_i^2 B(t)^2 .$$
+
+    <h2>The expansion</h2>
+    <p>Write $Q = s\,Q_1$ and $\bar g = \pi\cdot g$, and let $Q^{\#}$ be the group inverse of $Q$: the matrix that
+    inverts $Q$ on vectors with $\pi\cdot v = 0$ and returns such vectors. To first order in $1/s$,</p>
+    $$a_i(t) \approx \exp\Big(\int_0^t \big[\bar g - \pi\cdot\big(g\,Q^{\#}(g - \bar g)\big)\big]\Big)\,\Big(1 - \big[Q^{\#}(g - \bar g)\big]_i(t)\Big).$$
+    <p>Higher orders follow from one recursion. With $s_\pi = \pi\cdot a$ and $w = a/s_\pi - \mathbf 1$, each order of
+    $w$ applies $Q^{\#}$ once to terms already known, and an initial layer, solved in the eigenbasis of $Q$,
+    restores $a(0) = \mathbf 1$. The <a href="./engine.html">engine</a> page gives the recursion in full.</p>
+
+    <h2>Results</h2>
+    <p>The error in $a_1(1)$, starting in regime 1, after each order, against a 30-digit numerical solution:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>scale s</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>4</td><td>6.2e-3</td><td>1.8e-4</td><td>2.1e-5</td><td>3.7e-6</td><td>5.1e-7</td><td>1.0e-7</td><td>1.6e-8</td></tr><tr><td>8</td><td>3.1e-3</td><td>4.2e-5</td><td>2.4e-6</td><td>2.2e-7</td><td>1.4e-8</td><td>1.4e-9</td><td>1.1e-10</td></tr><tr><td>16</td><td>1.6e-3</td><td>1.0e-5</td><td>2.9e-7</td><td>1.3e-8</td><td>4.2e-10</td><td>2.2e-11</td><td>7.9e-13</td></tr></tbody></table></div>
+    <p>Each doubling of $s$ divides the order-$n$ error by about $2^{n+1}$.</p>
   </main>
