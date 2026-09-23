@@ -1,0 +1,266 @@
+<!-- title: Portfolio choice with fast regimes · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; fast regimes in any pricing equation</a> <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_portfolio.py">certificate</a></span></p>
+    <h1>Portfolio choice with fast regimes</h1>
+    <p class="subtitle">Merton&apos;s problem, the Markowitz frontier and a regime-blind investor when bull and bear markets alternate over weeks to months: each correction is one Green&ndash;Kubo number.</p>
+
+    <h2>The model</h2>
+    <p>A stock and a bank account. The interest rate $r$, the stock&apos;s expected return $\mu$ and its volatility
+    $\sigma$ depend on a market regime $y_t$:</p>
+    $$\frac{dS_t}{S_t} = \mu_{y_t}\,dt + \sigma_{y_t}\,dW_t, \qquad \frac{dB_t}{B_t} = r_{y_t}\,dt .$$
+    <p>The regime is a Markov chain with generator $Q$ and stationary law $\pi$, independent of $W$. An investor
+    holds the fraction $w_t$ of wealth $X_t$ in the stock:</p>
+    $$\frac{dX_t}{X_t} = \big(r_{y_t} + w_t\,(\mu_{y_t} - r_{y_t})\big)\,dt + w_t\,\sigma_{y_t}\,dW_t .$$
+    <p>The Sharpe ratio in regime $i$ is $\lambda_i = (\mu_i - r_i)/\sigma_i$. There are two time scales: the
+    investment horizon $T$, measured in years, and the life of a regime, measured in weeks or months.</p>
+    <p>The example has two regimes. A bull market with a Sharpe ratio of one lasts four months on average. A bear
+    market with falling prices and high volatility lasts about six weeks.</p>
+    <p>The regime changes at rate $q_1$ out of the
+    bull market and $q_2$ out of the bear market, so the bull market holds a share
+    $\pi_1 = q_2/(q_1 + q_2)$ of the time.</p>
+    <p class="muted">Parameters: $r = 3\%$; bull $\mu_1 = 15\%$, $\sigma_1 = 12\%$ ($\lambda_1 = 1$); bear
+    $\mu_2 = -5\%$, $\sigma_2 = 30\%$ ($\lambda_2 = -0.267$); $q_1 = 3$, $q_2 = 9$ per year, so $\pi = (0.75,\ 0.25)$;
+    relative risk aversion $\gamma = 3$; horizon $T = 5$ years for utility and $T = 1$ year for the Markowitz
+    problem. A speed factor $m$ multiplies both rates.</p>
+
+    <h2>The quantities</h2>
+    <p>Three investors are compared.</p>
+    <ul>
+      <li><em>The observed-regime investor</em> sees $y_t$ and maximizes expected CRRA utility
+        $U(x) = x^{1-\gamma}/(1-\gamma)$ of terminal wealth.</li>
+      <li><em>The Markowitz investor</em> also sees $y_t$ and minimizes the variance of $X_T$ for a given mean.</li>
+      <li><em>The regime-blind investor</em> has CRRA utility, cannot see $y_t$ and holds a constant fraction $w$.</li>
+    </ul>
+    <p>Utility is reported as a certainty-equivalent rate: the constant growth rate that a riskless investment would
+    need to give the same expected utility,</p>
+    $$\mathrm{CE} = \frac{1}{(1-\gamma)\,T}\,\log\frac{\mathbb E\,X_T^{1-\gamma}}{X_0^{1-\gamma}} .$$
+    <p>The Markowitz investor&apos;s answer is the efficient frontier: the smallest attainable $\operatorname{Var} X_T$
+    for each value of $\mathbb E X_T$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast, each investor sees an averaged market, but not the same one.</p>
+    <p>The investor who sees the regime can still act on it, holding Merton&apos;s fraction for each regime. This investor&apos;s growth
+    rate in regime $i$ is</p>
+    $$\psi_i = r_i + \frac{\lambda_i^2}{2\gamma},$$
+    <p>and in the limit the investor earns the average $\bar\psi = \pi\cdot\psi$. The investor&apos;s market is Merton&apos;s with the
+    square-averaged Sharpe ratio $\langle\lambda^2\rangle = \pi\cdot\lambda^2$, as in the fast-factor limit of
+    <a href="./bibliography.html#FouqueSircarZariphopoulou2017">Fouque, Sircar and Zariphopoulou (2017)</a>.</p>
+    <p>The regime-blind investor sees a single stock with the averaged return $\bar\mu$ and the averaged variance
+    $\bar s = \pi\cdot\sigma^2$. The investor&apos;s Merton fraction is</p>
+    $$w_0 = \frac{\bar\mu - r}{\gamma\,\bar s} .$$
+    <p>The gap between the two, $\langle\lambda^2\rangle \ge (\bar\mu - r)^2/\bar s$, is a Cauchy&ndash;Schwarz
+    inequality. In the example it is the difference between a certainty-equivalent rate of 15.7% and one of
+    5.3%. The corrections below are what finite regime lifetimes add to each.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Let $V_i(t, x)$ be the observed-regime investor&apos;s value in regime $i$ with wealth $x$ at time $t$. The
+    Hamilton&ndash;Jacobi&ndash;Bellman system couples the regimes through $Q$:</p>
+    $$\partial_t V_i + \max_{w}\Big[x\big(r_i + w(\mu_i - r_i)\big)\,\partial_x V_i + \tfrac12\,x^2 w^2\sigma_i^2\,\partial_{xx}V_i\Big] + \sum_j Q_{ij}V_j = 0 .$$
+    <p>Try $V_i = \frac{x^{1-\gamma}}{1-\gamma}\,\Psi_i(T - t)$. Then $x\,\partial_x V_i$ and $x^2\,\partial_{xx}V_i$ are
+    multiples of $x^{1-\gamma}\Psi_i$, and the bracket becomes</p>
+    $$x^{1-\gamma}\,\Psi_i\,\max_w\Big[r_i + w(\mu_i - r_i) - \tfrac12\,\gamma\,w^2\sigma_i^2\Big] = x^{1-\gamma}\,\Psi_i\,\psi_i ,$$
+    <p>attained at Merton&apos;s fraction $w_i = \lambda_i/(\gamma\sigma_i)$. Dividing by $x^{1-\gamma}/(1-\gamma)$
+    leaves a linear system in time to go $\tau$:</p>
+    $$\frac{d\Psi}{d\tau} = \big(Q + (1-\gamma)\operatorname{diag}\psi\big)\,\Psi, \qquad \Psi(0) = \mathbf 1 .$$
+    <p>This is the system that the <a href="./engine.html">engine</a> solves to all orders, with the constant forcing
+    $g = (1-\gamma)\psi$. It is also the Feynman&ndash;Kac form of</p>
+    $$\Psi_i(T) = \mathbb E_i\exp\Big((1-\gamma)\int_0^T \psi_{y_s}\,ds\Big).$$
+    <p>The regime-blind investor leads to the same system. Given the regime path, $\log X_T$ is Gaussian, and its
+    exponential moment gives</p>
+    $$\frac{\mathbb E\,X_T^{1-\gamma}}{X_0^{1-\gamma}} = \mathbb E\exp\Big((1-\gamma)\int_0^T h_{y_s}(w)\,ds\Big), \qquad
+      h_i(w) = r + w(\mu_i - r) - \tfrac12\,\gamma\,w^2\sigma_i^2 .$$
+    <p>Here $h_i(w)$ is the certainty-equivalent rate of the fixed fraction $w$ in regime $i$; the observed investor&apos;s
+    $\psi_i$ is its maximum over $w$. The two problems differ only in the vector that plays the part of the forcing.</p>
+    <p>The Markowitz problem is linear-quadratic, as
+    <a href="./bibliography.html#ZhouYin2003">Zhou and Yin (2003)</a> show with regimes. With a constant rate $r$ and
+    target $d$, the smallest $\mathbb E(X_T - d)^2$ from regime $i$ is $P_i(T)\,(x - d\,e^{-rT})^2$, where</p>
+    $$\frac{dP}{d\tau} = \big(Q + \operatorname{diag}(2r - \lambda^2)\big)\,P, \qquad P(0) = \mathbf 1 .$$
+    <p>Write $\beta_i = e^{-2rT}P_i(T) = \mathbb E_i\exp\big(-\int_0^T\lambda^2_{y_s}\,ds\big)$. The frontier is</p>
+    $$\operatorname{Var} X_T = \frac{\beta}{1-\beta}\,\big(\mathbb E X_T - x_0\,e^{rT}\big)^2 .$$
+    <p>It has the shape of the no-switching frontier of <a href="./bibliography.html#ZhouLi2000">Zhou and Li (2000)</a>,
+    with $e^{-\lambda^2 T}$ replaced by $\beta$. It is the constant-rate case of the frontier of Zhou and Yin, as
+    restated in <a href="./bibliography.html#YinZhou2004">Yin and Zhou (2004)</a>, eq. (32): with a deterministic rate
+    their function $H$ is the same in every regime, their $\theta$ vanishes, and $P(0,i_0)H(0,i_0)^2 = \beta_{i_0}$.
+    The certificate also derives it from the Lagrangian of the constrained problem and checks it by Monte Carlo.</p>
+
+    <h2>The first-order rule</h2>
+    <p>All three quantities have the form $\mathbb E\exp\big(\int_0^T g_{y_s}\,ds\big)$ for a constant vector $g$.
+    With the regime drawn from $\pi$, the integral has mean $T\bar g$. Over a horizon much longer than a regime its
+    variance is close to</p>
+    $$\operatorname{Var}\int_0^T g_{y_s}\,ds \approx 2T\,\mathcal K(g, g), \qquad
+      \mathcal K(f, h) = \int_0^\infty \operatorname{Cov}_\pi\big(f(y_0),\,h(y_\tau)\big)\,d\tau = -\,\pi\cdot\big(\tilde f\,Q^{\#}\tilde h\big),$$
+    <p>where $Q^{\#}$ is the group inverse of the generator from the <a href="./solvability.html">solvability page</a>
+    and $\tilde f = f - \pi\cdot f$. The integral is nearly Gaussian, so the exponential moment adds half the
+    variance to the mean:</p>
+    $$\log \mathbb E_\pi\exp\Big(\int_0^T g_{y_s}\,ds\Big) \approx T\,\bar g + T\,\mathcal K(g, g) .$$
+    <p>This is the rule of the <a href="./any-equation.html">general page</a> with every operator a multiplication.
+    Multiplications commute, so only the symmetric part of $\mathcal K$ enters, and the direction in which a chain
+    cycles through its regimes cannot matter at first order.</p>
+    <p>A known starting regime $i$ adds the memory term of the first corrector:</p>
+    $$\log \mathbb E_i\exp\Big(\int_0^T g_{y_s}\,ds\Big) \approx T\,\bar g + T\,\mathcal K(g, g) - \big(Q^{\#}\tilde g\big)_i .$$
+    <p>For a single relaxation mode $-Q^{\#}\tilde g$ is $\tilde g$ times the relaxation time: the starting regime&apos;s
+    excess lasts that long on average.</p>
+    <p><em>Observed regime.</em> Put $g = (1-\gamma)\psi$ and divide by $(1-\gamma)T$:</p>
+    $$\mathrm{CE} \approx \bar\psi + (1-\gamma)\,\mathcal K(\psi, \psi) .$$
+    <p>The regime makes the average growth rate over the horizon random. For $\gamma > 1$ that is a risk the
+    investor dislikes, and it lowers the certainty equivalent; for $\gamma < 1$ it raises it. For log utility
+    ($\gamma = 1$) the certainty-equivalent rate is $\mathbb E\int\psi\,ds/T$ exactly, and the effect vanishes.</p>
+    <p><em>Regime-blind.</em> Put $g = (1-\gamma)h(w)$:</p>
+    $$\mathrm{CE}(w) \approx \bar h(w) + (1-\gamma)\,\mathcal K\big(h(w), h(w)\big) .$$
+    <p>Since $\tilde h(w) = w\,\tilde\mu - \tfrac12\gamma w^2\tilde s$, with $s = \sigma^2$, the correction is a
+    polynomial in $w$ with three Green&ndash;Kubo coefficients:</p>
+    $$\mathcal K\big(h(w), h(w)\big) = w^2\,\mathcal K_{\mu\mu} - \gamma\,w^3\,\mathcal K_{\mu s} + \tfrac14\,\gamma^2 w^4\,\mathcal K_{ss} .$$
+    <p>Persistent drift regimes act like extra return variance $2\mathcal K_{\mu\mu}$ on top of $\bar s$. When the bear
+    market is the volatile one, $\mathcal K_{\mu s} < 0$ and the cubic term adds to the penalty.</p>
+    <p><em>Markowitz.</em> Put $g = -\lambda^2$:</p>
+    $$\beta \approx \exp\Big(-T\,\langle\lambda^2\rangle + T\,\mathcal K(\lambda^2, \lambda^2)\Big).$$
+    <p>To first order the frontier sees the chain through two numbers only: $\langle\lambda^2\rangle$ and
+    $\mathcal K(\lambda^2, \lambda^2)$. Fluctuating Sharpe ratios raise $\beta$ and so flatten the frontier: each unit
+    of excess mean costs more variance.</p>
+
+    <h2>The weights</h2>
+    <p>The observed-regime investor&apos;s fractions are Merton&apos;s, regime by regime, at every order:</p>
+    $$w_i = \frac{\mu_i - r_i}{\gamma\,\sigma_i^2} .$$
+    <p>The value factor $\Psi$ does not depend on wealth, and the chain is independent of $W$, so the stock cannot
+    hedge changes in $\Psi$. There is no hedging demand, and the regime speed moves the value but not the policy. The
+    certificate confirms this by maximizing over regime-dependent fractions numerically.</p>
+    <p>The regime-blind investor&apos;s best fraction does move. Setting the derivative of $\mathrm{CE}(w)$ to zero
+    gives a cubic,</p>
+    $$\bar\mu - r - \gamma\,\bar s\,w + (1-\gamma)\big(2w\,\mathcal K_{\mu\mu} - 3\gamma w^2\,\mathcal K_{\mu s} + \gamma^2 w^3\,\mathcal K_{ss}\big) = 0,$$
+    <p>and linearizing around $w_0$ gives the first-order shift</p>
+    $$\delta w = \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s} .$$
+    <p>For $\gamma > 1$ and a bear market that is both worse and more volatile, all three terms shrink the
+    position.</p>
+
+    <h2>The results written out</h2>
+    <p>With two regimes the group inverse is $Q^{\#}\tilde f = -\tilde f/(q_1 + q_2)$, and every Green&ndash;Kubo
+    number is a product of regime differences:</p>
+    $$\mathcal K(f, h) = \frac{\pi_1\pi_2\,(f_1 - f_2)(h_1 - h_2)}{q_1 + q_2} .$$
+    <p>Substituting into the three rules gives the results in the model&apos;s own parameters.</p>
+    <div class="equation-card">
+    <p><em>Observed regime, CRRA.</em></p>
+    $$\begin{aligned}
+    \mathrm{CE} &= \bar\psi + (1-\gamma)\,\frac{\pi_1\pi_2\,(\psi_1 - \psi_2)^2}{q_1 + q_2} \quad \text{(regime drawn from } \pi\text{)}, \\
+    \mathrm{CE}_i &= \mathrm{CE} + \frac{\psi_i - \bar\psi}{(q_1 + q_2)\,T} \quad \text{(start in regime } i\text{)}, \\
+    w_i &= \frac{\mu_i - r_i}{\gamma\,\sigma_i^2}, \\
+    \psi_i &= r_i + \frac{(\mu_i - r_i)^2}{2\gamma\,\sigma_i^2}, \\
+    \bar\psi &= \pi_1\psi_1 + \pi_2\psi_2, \\
+    \pi_1 &= \frac{q_2}{q_1 + q_2}, \\
+    \pi_2 &= \frac{q_1}{q_1 + q_2} .
+    \end{aligned}$$
+    <p><em>Markowitz frontier, constant $r$, start in regime $i$.</em></p>
+    $$\begin{aligned}
+    \operatorname{Var} X_T &= \frac{\beta_i}{1-\beta_i}\,\big(\mathbb E X_T - x_0\,e^{rT}\big)^2, \\
+    \log\beta_i &= -T\,\langle\lambda^2\rangle + T\,\frac{\pi_1\pi_2\,(\lambda_1^2 - \lambda_2^2)^2}{q_1 + q_2}
+      - \frac{\lambda_i^2 - \langle\lambda^2\rangle}{q_1 + q_2}, \\
+    \langle\lambda^2\rangle &= \pi_1\lambda_1^2 + \pi_2\lambda_2^2, \\
+    \lambda_i &= \frac{\mu_i - r}{\sigma_i} .
+    \end{aligned}$$
+    <p><em>Regime-blind constant fraction $w$, constant $r$.</em></p>
+    $$\begin{aligned}
+    \mathrm{CE}(w) &= r + w\,(\bar\mu - r) - \tfrac12\,\gamma\,w^2\,\bar s
+      + (1-\gamma)\,\frac{\pi_1\pi_2\,w^2\big(\mu_1 - \mu_2 - \tfrac12\gamma w\,(\sigma_1^2 - \sigma_2^2)\big)^2}{q_1 + q_2}, \\
+    w^{*} &= w_0 + \delta w, \\
+    w_0 &= \frac{\bar\mu - r}{\gamma\,\bar s}, \\
+    \delta w &= \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s}, \\
+    \mathcal K_{\mu\mu} &= \frac{\pi_1\pi_2\,(\mu_1 - \mu_2)^2}{q_1 + q_2}, \\
+    \mathcal K_{\mu s} &= \frac{\pi_1\pi_2\,(\mu_1 - \mu_2)(\sigma_1^2 - \sigma_2^2)}{q_1 + q_2}, \\
+    \mathcal K_{ss} &= \frac{\pi_1\pi_2\,(\sigma_1^2 - \sigma_2^2)^2}{q_1 + q_2}, \\
+    \bar\mu &= \pi_1\mu_1 + \pi_2\mu_2, \\
+    \bar s &= \pi_1\sigma_1^2 + \pi_2\sigma_2^2 .
+    \end{aligned}$$
+    </div>
+    <p>With two regimes the three Green&ndash;Kubo numbers of the blind investor satisfy
+    $\mathcal K_{\mu s}^2 = \mathcal K_{\mu\mu}\mathcal K_{ss}$, and the correction is a perfect square: it is
+    $(1-\gamma)\,\mathcal K(h, h)$ with $h_1 - h_2$ written out. With more regimes the three numbers are free, subject
+    to the matrix they form being positive semidefinite.</p>
+
+    <h2>Worked example</h2>
+    <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are
+    2.78 in the bull market and &minus;0.30 in the bear market: leveraged long, then short. The Green&ndash;Kubo number is</p>
+    $$\mathcal K(\psi, \psi) = \frac{0.75 \times 0.25 \times (0.1548)^2}{12} = 3.745\times 10^{-4},$$
+    <p>so with $\gamma = 3$ the certainty-equivalent rate falls by $2\mathcal K = 7.49$ basis points, against
+    7.46 basis points in the numerical solution. Starting in the bull market adds
+    $\pi_2(\psi_1 - \psi_2)/(12 \times 5) = 6.45$ basis points.</p>
+    <p>The blind investor holds $w_0 = 0.701$ in the averaged model. The regime numbers are</p>
+    $$\mathcal K_{\mu\mu} = 6.25\times 10^{-4}, \qquad \mathcal K_{\mu s} = -2.36\times 10^{-4}, \qquad \mathcal K_{ss} = 0.893\times 10^{-4},$$
+    <p>against $\bar s = 0.0333$. The extra effective variance $2\mathcal K_{\mu\mu}$ is 3.8% of $\bar s$.</p>
+    <p>The
+    shift is $\delta w = &minus;0.0440$, and the root of the cubic is 0.6609, against 0.6607 from numerical maximization.
+    The investor&apos;s certainty-equivalent rate at $w_0$ falls from 5.45% to 5.33%.</p>
+    <p>When the regimes last four times as long ($m = 1/4$: bull markets of 16 months), the best fraction is
+    0.575, a cut of 18% from $w_0$, and the certainty-equivalent rate at $w_0$ is 4.98%.</p>
+    <p>For the Markowitz investor, $\langle\lambda^2\rangle = 0.7678$ and $\mathcal K(\lambda^2, \lambda^2) = 0.01348$. Over
+    one year $\beta$ rises from 0.4640 to 0.4703 (numerical 0.4700). The standard deviation per unit of excess
+    mean on the frontier, $\sqrt{\beta/(1-\beta)}$, rises from 0.930 to 0.942.</p>
+
+    <h2>Checks</h2>
+    <p>The observed-regime certainty-equivalent rate against the numerical solution of the linear system (matrix
+    exponential), as the regimes speed up. The higher orders come from the <a href="./engine.html">engine</a>.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">speed $m$</th><th>bull / bear lasts</th><th>averaged</th><th>first order</th><th>order 2</th><th>order 4</th><th>numerical</th><th>first-order error (bp)</th></tr></thead><tbody><tr><td>1/4</td><td>16 months / 5 months</td><td>15.796%</td><td>15.497%</td><td>15.5012%</td><td>15.50319%</td><td>15.50318%</td><td>&minus;0.648</td></tr><tr><td>1/2</td><td>8 months / 3 months</td><td>15.796%</td><td>15.646%</td><td>15.6476%</td><td>15.64787%</td><td>15.64787%</td><td>&minus;0.137</td></tr><tr><td>1</td><td>4 months / 5.8 weeks</td><td>15.796%</td><td>15.721%</td><td>15.7217%</td><td>15.72171%</td><td>15.72171%</td><td>&minus;0.031</td></tr><tr><td>2</td><td>2 months / 2.9 weeks</td><td>15.796%</td><td>15.759%</td><td>15.7589%</td><td>15.75892%</td><td>15.75892%</td><td>&minus;0.007</td></tr><tr><td>4</td><td>4.3 weeks / 1.4 weeks</td><td>15.796%</td><td>15.778%</td><td>15.7776%</td><td>15.77759%</td><td>15.77759%</td><td>&minus;0.002</td></tr></tbody></table></div>
+    <p>The first-order error falls by about four when the speed doubles, as a second-order remainder should. At
+    $m = 1/4$ the bull market lasts 16 months and the horizon is five years, and the first-order rule is still within
+    0.6 basis points.</p>
+    <p>From a known starting regime, with the memory term:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">speed $m$</th><th>bull start, first order</th><th>bull start, numerical</th><th>bear start, first order</th><th>bear start, numerical</th></tr></thead><tbody><tr><td>1/4</td><td>15.755%</td><td>15.778%</td><td>14.723%</td><td>14.720%</td></tr><tr><td>1/2</td><td>15.776%</td><td>15.781%</td><td>15.259%</td><td>15.258%</td></tr><tr><td>1</td><td>15.786%</td><td>15.787%</td><td>15.528%</td><td>15.528%</td></tr><tr><td>2</td><td>15.791%</td><td>15.791%</td><td>15.662%</td><td>15.662%</td></tr><tr><td>4</td><td>15.794%</td><td>15.794%</td><td>15.729%</td><td>15.729%</td></tr></tbody></table></div>
+    <p>The effect for different risk aversions at $m = 1$, in basis points of certainty-equivalent rate:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\gamma$</th><th style="text-transform:none">$\bar\psi$</th><th>first order (bp)</th><th>numerical (bp)</th></tr></thead><tbody><tr><td>1</td><td>41.389%</td><td>0.00</td><td>0.00</td></tr><tr><td>2</td><td>22.194%</td><td>&minus;8.43</td><td>&minus;8.36</td></tr><tr><td>3</td><td>15.796%</td><td>&minus;7.49</td><td>&minus;7.46</td></tr><tr><td>5</td><td>10.678%</td><td>&minus;5.39</td><td>&minus;5.38</td></tr><tr><td>10</td><td>6.839%</td><td>&minus;3.03</td><td>&minus;3.03</td></tr></tbody></table></div>
+    <p>For log utility the numerical effect is zero to machine precision. The certificate also runs a three-state
+    chain with a switching interest rate (the chain $Q_A$ of the <a href="./yield-curve.html">yield-curve page</a>,
+    rates of 5%, 3% and 1%), where the errors fall by 3.96 and 3.98 per doubling, and confirms by numerical maximization
+    over regime-dependent fractions that Merton&apos;s weights $(2.78,\ &minus;0.30)$ are optimal at every speed.</p>
+    <p>The regime-blind investor. Fractions, then certainty-equivalent rates at $w_0$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">speed $m$</th><th style="text-transform:none">$w_0$</th><th style="text-transform:none">$w_0 + \delta w$</th><th>root of cubic</th><th>numerical optimum</th><th style="text-transform:none">$\bar h(w_0)$</th><th>CE first order</th><th>CE numerical</th></tr></thead><tbody><tr><td>1/4</td><td>0.7007</td><td>0.5248</td><td>0.5747</td><td>0.5747</td><td>5.452%</td><td>4.973%</td><td>4.978%</td></tr><tr><td>1/2</td><td>0.7007</td><td>0.6128</td><td>0.6278</td><td>0.6274</td><td>5.452%</td><td>5.213%</td><td>5.213%</td></tr><tr><td>1</td><td>0.7007</td><td>0.6567</td><td>0.6609</td><td>0.6607</td><td>5.452%</td><td>5.333%</td><td>5.333%</td></tr><tr><td>2</td><td>0.7007</td><td>0.6787</td><td>0.6798</td><td>0.6798</td><td>5.452%</td><td>5.393%</td><td>5.393%</td></tr><tr><td>4</td><td>0.7007</td><td>0.6897</td><td>0.6900</td><td>0.6900</td><td>5.452%</td><td>5.422%</td><td>5.422%</td></tr></tbody></table></div>
+    <p>The linearized shift $w_0 + \delta w$ has error falling by four per doubling. The root of the cubic is
+    better: it matches the numerical optimum to three or four digits even when the bull market lasts 16 months.
+    Exact Monte Carlo over 400,000 chain paths (given the path, the expectation is exactly
+    $e^{(1-\gamma)\int h}$) gives 5.334% &plusmn; 0.003% at $w_0$ and $m = 1$, against 5.333% from the linear system.</p>
+    <p>The Markowitz frontier. $\beta$ from the stationary start and from each regime:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">speed $m$</th><th>averaged</th><th>first order</th><th>numerical</th><th>bull start: first / numerical</th><th>bear start: first / numerical</th></tr></thead><tbody><tr><td>1/4</td><td>0.46404</td><td>0.48975</td><td>0.48311</td><td>0.45327 / 0.44301</td><td>0.61778 / 0.60340</td></tr><tr><td>1/2</td><td>0.46404</td><td>0.47673</td><td>0.47526</td><td>0.45863 / 0.45550</td><td>0.53542 / 0.53454</td></tr><tr><td>1</td><td>0.46404</td><td>0.47034</td><td>0.47002</td><td>0.46133 / 0.46057</td><td>0.49846 / 0.49837</td></tr><tr><td>2</td><td>0.46404</td><td>0.46718</td><td>0.46711</td><td>0.46268 / 0.46250</td><td>0.48094 / 0.48093</td></tr><tr><td>4</td><td>0.46404</td><td>0.46561</td><td>0.46559</td><td>0.46336 / 0.46332</td><td>0.47242 / 0.47241</td></tr></tbody></table></div>
+    <p>The error in $\log\beta$ falls by about four per doubling. Monte Carlo of the optimal feedback
+    $w_t X_t = -\big((\mu_{y_t} - r)/\sigma_{y_t}^2\big)\big(X_t - d\,e^{-r(T-t)}\big)$, with 400,000 paths and no time
+    discretization (given the regime path, $X_t - d\,e^{-r(T-t)}$ is a geometric Brownian motion), reproduces the
+    frontier at $m = 1$ with $x_0 = 1$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>start</th><th style="text-transform:none">target $\mathbb E X_T$</th><th>Monte Carlo mean</th><th>frontier variance</th><th>Monte Carlo variance</th></tr></thead><tbody><tr><td>bull</td><td>1.10</td><td>1.10004 &plusmn; 0.00010</td><td>0.00413</td><td>0.00409</td></tr><tr><td>bull</td><td>1.20</td><td>1.19997 &plusmn; 0.00025</td><td>0.02454</td><td>0.02465</td></tr><tr><td>bear</td><td>1.10</td><td>1.10003 &plusmn; 0.00011</td><td>0.00481</td><td>0.00478</td></tr><tr><td>bear</td><td>1.20</td><td>1.19997 &plusmn; 0.00027</td><td>0.02856</td><td>0.02858</td></tr></tbody></table></div>
+
+    <h2>Learning the regime</h2>
+    <p>The blind investor is a restriction, not a model of a rational investor. An investor who filters the regime
+    from prices, with the <a href="./bibliography.html#Wonham1964">Wonham (1964)</a> filter, can tilt towards the
+    inferred regime.</p>
+    <p> Over a regime that lasts $\varepsilon$, the filter learns an amount of the same order
+    $\varepsilon$ as the corrections above, and that gain is not in the rule. Its first-order size would need a
+    separate expansion of the filtered problem, as solved exactly by
+    <a href="./bibliography.html#RiederBauerle2005">Rieder and B&auml;uerle (2005)</a>,
+    <a href="./bibliography.html#SassHaussmann2004">Sass and Haussmann (2004)</a> and
+    <a href="./bibliography.html#Honda2003">Honda (2003)</a>.</p>
+    <p>A switching volatility is revealed instantly by quadratic variation in continuous time. So the blind investor
+    with switching $\sigma$ describes discrete rebalancing, or the Y-independent &ldquo;practical&rdquo; strategy of
+    Fouque, Sircar and Zariphopoulou, rather than an investor who cannot see volatility.</p>
+
+    <h2>Prior art</h2>
+    <p>With an observed regime at ordinary speed, these problems are solved exactly.</p>
+    <p><a href="./bibliography.html#ZhouYin2003">Zhou and Yin (2003)</a> give the Markowitz frontier through two systems of
+    linear differential equations. <a href="./bibliography.html#BauerleRieder2004">B&auml;uerle and Rieder (2004)</a>
+    solve power utility of terminal wealth with Markov-modulated rate, drift and volatility, and compare the result
+    with a market of averaged data. <a href="./bibliography.html#SotomayorCadenillas2009">Sotomayor and Cadenillas
+    (2009)</a> add consumption and regime-dependent utility.</p>
+    <p>The linear system above is theirs; the Merton case goes
+    back to <a href="./bibliography.html#Merton1969">Merton (1969</a>, <a href="./bibliography.html#Merton1971">1971)</a>.</p>
+    <p>For fast chains, Yin, Zhang and coauthors aggregate the chain, prove convergence to a limit problem and show
+    that controls built from the limit are nearly optimal (<a href="./bibliography.html#YinZhou2004">Yin and Zhou
+    2004</a>; <a href="./bibliography.html#ZhangYin2004">Zhang and Yin 2004</a>;
+    <a href="./bibliography.html#YangYinWangZhang2013">Yang, Yin, Wang and Zhang 2013</a>;
+    <a href="./bibliography.html#YinZhang2013">Yin and Zhang 2013</a>). The abstracts we read do not give an explicit
+    first-order correction.</p>
+    <p><a href="./bibliography.html#FouqueSircarZariphopoulou2017">Fouque, Sircar and Zariphopoulou (2017)</a> expand
+    Merton&apos;s problem with a fast mean-reverting diffusion factor. The leading order uses the square-averaged
+    Sharpe ratio, as above.</p>
+    <p>Their first correction is of order $\sqrt\varepsilon$ and proportional to the correlation
+    between the factor and the stock; the order-$\varepsilon$ term is not computed. A chain independent of the stock
+    has no such correlation, so its first correction is the order-$\varepsilon$ Green&ndash;Kubo term.</p>
+    <p>The closed forms $\bar\psi + (1-\gamma)\mathcal K(\psi, \psi)$ for the observed investor,
+    $\exp\big(-T\langle\lambda^2\rangle + T\mathcal K(\lambda^2, \lambda^2)\big)$ for the frontier, and the
+    Green&ndash;Kubo penalty and weight shift for the regime-blind investor were not found in the literature
+    reviewed. Empirical studies of regime-switching allocation, such as <a href="./bibliography.html#Tu2010">Tu
+    (2010)</a>, work at estimated regime speeds and are not asymptotic in the switching rate.</p>
+  </main>
