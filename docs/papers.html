@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Papers · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <a href="./papers.html">Papers</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Demos</span><span class="drop">
+        <a href="./survival.html">Survival under regime switching</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>Papers</h1>
+    <p class="subtitle">Write-ups on homogenization in pricing and survival models. The
+    <a href="./bibliography.html">bibliography</a> places them among the classical theory and the
+    regime-switching literature.</p>
+
+    <div class="bib">
+    <h2>Core</h2>
+    <ul>
+      <li>
+        Cotton, P. (2001). <em>An Analytic Approach to Ornstein&ndash;Uhlenbeck Processes with
+        Fluctuating Parameters and Applications in the Modeling of Fixed Income Securities</em>.
+        PhD thesis, Stanford University.
+        <a href="https://www.proquest.com/openview/77a94e16467c20c2e86103967640f3dd/1?pq-origsite=gscholar&amp;cbl=18750&amp;diss=y">ProQuest</a>.
+        <em>The origin of the regime-switching expansion on this site. The second half treats
+        processes whose mean and volatility follow a two-state Markov chain.</em>
+      </li>
+      <li>
+        Cotton, P., Fouque, J.-P., Papanicolaou, G. and Sircar, R. (2004). <em>Stochastic Volatility
+        Corrections for Interest Rate Derivatives</em>. Mathematical Finance 14, 173&ndash;200.
+        <a href="https://doi.org/10.1111/j.0960-1627.2004.00188.x">doi:10.1111/j.0960-1627.2004.00188.x</a>
+        &middot; <a href="http://math.stanford.edu/~papanico/pubftp/cfps.pdf">PDF</a>.
+        <em>Vasicek and CIR short rates with fast mean-reverting stochastic volatility, and the
+        corrections that change the shape of the yield curve.</em>
+      </li>
+    </ul>
+
+    <h2>Working papers &amp; notes</h2>
+    <ul>
+      <li>
+        Cotton, P. (2026). <em>Survival Under Regime-Switching Ornstein&ndash;Uhlenbeck Hazard
+        Rates: An Exact Reduction and the Corrected Homogenization Expansion</em>. Note in
+        preparation. Certificate:
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">verify_expansion.py</a>
+        &middot; demos: <a href="./survival.html">survival</a>, <a href="./convergence.html">convergence</a>.
+        <em>The expansion to second order in 1/&lambda;, checked against the exact two-state
+        solution, with the orders of convergence measured.</em>
+      </li>
+      <li>
+        Cotton, P. (2020). <em>Got Milk? On Homogenization and Survival Probability</em>.
+        <a href="https://www.linkedin.com/pulse/got-milk-homogenization-survival-probability-peter-cotton-phd">Article</a>
+        &middot; code: <a href="https://github.com/microprediction/homogenize">homogenize</a>.
+        <em>An expository account of the same model. Its first-order terms are incorrect; see the
+        <a href="./index.html">home page</a> for the correction.</em>
+      </li>
+    </ul>
+
+    <h2>Related work on other sites</h2>
+    <ul>
+      <li>
+        Cotton, P. (2026). <em>An Asymptotic Correction to Luce&apos;s Choice Axiom for Competing
+        Correlated Cox Processes</em>. Working draft:
+        <a href="https://kinetics.microprediction.org/softmax-fast-mixing.pdf">PDF</a>.
+        <em>Softmax as the homogenized choice law of fast hidden kinetics, with its first
+        correction.</em>
+      </li>
+      <li>
+        <em>Homogenization without the corrector</em>, on
+        <a href="https://conformalprediction.net/homogenization.html">conformalprediction.net</a>.
+        <em>Residual pooling in split conformal prediction is the averaged limit, stopped before the
+        corrector.</em>
+      </li>
+      <li>
+        <em>Homogenization</em>, on <a href="https://skaters.microprediction.org/homogenization.html">skaters.microprediction.org</a>.
+        <em>An online width correction for distributional forecasts built from a hedged two-point
+        scale mixture.</em>
+      </li>
+    </ul>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

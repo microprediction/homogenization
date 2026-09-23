@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Survival under regime switching · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <a href="./papers.html">Papers</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Demos</span><span class="drop">
+        <a href="./survival.html">Survival under regime switching</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./index.html">&larr; Home</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">certificate</a> &middot;
+    <a href="./convergence.html">convergence orders &rarr;</a></span></p>
+    <h1>Survival under regime switching</h1>
+    <p class="subtitle">Companion to the note on the corrected homogenization expansion.</p>
+
+    <p>The hazard rate mean-reverts at speed $\kappa = 2$ towards a level that switches between
+    $\theta_1 = 0.15$ and $\theta_2 = 0.02$, with variance $\sigma_1^2 = 0.0555$ in the first
+    regime and $\sigma_2^2 = 0.0055$ in the second. These are the parameters of the 2020
+    homogenize example. The upper chart plots the survival probability to time $t$. The lower chart
+    plots each approximation minus the exact solution, which is where the differences show.</p>
+
+    <div class="widget">
+      <div class="controls">
+        <label for="lam">switching rate &lambda;</label>
+        <input type="range" id="lam" min="-0.3" max="2.5" step="0.01" value="0.23" />
+        <span class="val" id="lamVal"></span>
+      </div>
+      <div class="controls">
+        <label for="x0">starting hazard x&#8320;</label>
+        <input type="range" id="x0" min="0" max="0.3" step="0.005" value="0.12" />
+        <span class="val" id="x0Val"></span>
+        <label>start in</label>
+        <button id="r0" class="on">regime 1</button><button id="r1">regime 2</button>
+      </div>
+      <div id="leg1"></div>
+      <canvas id="c1" width="820" height="300"></canvas>
+      <canvas id="c2" width="820" height="260"></canvas>
+      <div class="readout" id="read"></div>
+    </div>
+
+    <div class="lookfor">What to look for: the averaged curve is the same whichever regime the
+    process starts in, and the exact curve is not. From about $\lambda = 10$ the second-order
+    curve sits on the exact one, and the first-order curve is close behind. The package&apos;s
+    first-order error shrinks only like $1/\lambda$, at the rate of the averaged curve, as the
+    <a href="./convergence.html">convergence demo</a> shows. A
+    second-order error that failed to shrink as $\lambda$ grows would refute the expansion.</div>
+
+    <p class="muted">The exact solution integrates the two-state linear ODE by fourth-order
+    Runge&ndash;Kutta in your browser. The expansions evaluate the formula on the
+    <a href="./index.html">home page</a>. The same code agrees with the Python reference to
+    $10^{-11}$.</p>
+
+  <script src="./survival.js"></script>
+  <script src="./charts.js"></script>
+  <script>
+  (function () {
+    var P = { kappa: 2, thetas: [0.15, 0.02], sigmas: [Math.sqrt(0.0555), Math.sqrt(0.0055)] };
+    var regime = 0;
+    var C = { exact: '#1a1a1a', avg: '#9a9a9a', first: '#4a3aff', second: '#0f8b6e', pkg: '#c0392b' };
+    var fmt = function (v) { return v.toFixed(5); };
+    var ch1 = new LineChart(document.getElementById('c1'), { legend: 'leg1', xlabel: 'time t (years)', ylabel: 'survival probability', xname: 't', xmin: 0, xmax: 10, yfmt: fmt });
+    var ch2 = new LineChart(document.getElementById('c2'), { xlabel: 'time t (years)', ylabel: 'approximation minus exact', xname: 't', xmin: 0, xmax: 10, yfmt: function (v) { return v.toExponential(2); } });
+    function run() {
+      var lam = Math.pow(10, +document.getElementById('lam').value), x0 = +document.getElementById('x0').value;
+      document.getElementById('lamVal').textContent = lam < 10 ? lam.toFixed(2) : lam.toFixed(0);
+      document.getElementById('x0Val').textContent = x0.toFixed(3);
+      var m = Survival.make(Object.assign({ lmbd: lam }, P));
+      var ex = m.exactCurve(10, 161, x0, regime), A = [], F = [], S2 = [], K = [];
+      ex.forEach(function (pt) {
+        var t = pt[0], e = t === 0 ? [1, 1, 1, 1] : m.expansion(t, x0, regime), k = t === 0 ? 1 : m.packageFirst(t, x0, regime);
+        A.push([t, e[0]]); F.push([t, e[1]]); S2.push([t, e[2]]); K.push([t, k]);
+      });
+      function diff(s) { return s.map(function (p, i) { return [p[0], p[1] - ex[i][1]]; }); }
+      var series = [
+        { name: 'exact', color: C.exact, points: ex, width: 2.5 },
+        { name: 'averaged (Vasicek)', color: C.avg, dash: [6, 5], points: A },
+        { name: 'first order', color: C.first, points: F },
+        { name: 'second order', color: C.second, dash: [2, 4], points: S2 },
+        { name: 'package first order', color: C.pkg, dash: [1, 4], points: K }
+      ];
+      ch1.set(series);
+      ch2.set(series.slice(1).map(function (s) { return Object.assign({}, s, { points: diff(s.points) }); }));
+      var i5 = 80, row = function (n, s) { return n + ' <b>' + (s[i5][1] - ex[i5][1]).toExponential(2) + '</b>'; };
+      document.getElementById('read').innerHTML = 'At t = 5 the exact survival probability is <b>' + ex[i5][1].toFixed(5) + '</b>. Errors: ' +
+        [row('averaged', A), row('first order', F), row('second order', S2), row('package', K)].join(' &middot; ') + '.';
+    }
+    ['lam', 'x0'].forEach(function (id) { document.getElementById(id).addEventListener('input', run); });
+    [0, 1].forEach(function (r) { document.getElementById('r' + r).addEventListener('click', function () {
+      regime = r; document.getElementById('r0').classList.toggle('on', r === 0); document.getElementById('r1').classList.toggle('on', r === 1); run(); }); });
+    window.addEventListener('resize', function () { ch1.draw(); ch2.draw(); });
+    run();
+  })();
+  </script>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

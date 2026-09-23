@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Convergence orders · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <a href="./papers.html">Papers</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Demos</span><span class="drop">
+        <a href="./survival.html">Survival under regime switching</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./survival.html">&larr; survival under regime switching</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">certificate</a></span></p>
+    <h1>Convergence orders</h1>
+    <p class="subtitle">Companion to the note on the corrected homogenization expansion.</p>
+
+    <p>Each line is the absolute error of an approximation to the survival probability at a fixed
+    maturity, against the exact solution, as the switching rate $\lambda$ runs from 1 to 1000. Both
+    axes are logarithmic, so an error of order $\lambda^{-n}$ is a straight line of slope $-n$.
+    The parameters are those of the <a href="./survival.html">survival demo</a>.</p>
+
+    <div class="widget">
+      <div class="controls">
+        <label for="t">maturity t</label>
+        <input type="range" id="t" min="0.25" max="10" step="0.25" value="4" />
+        <span class="val" id="tVal"></span>
+        <label>start in</label>
+        <button id="r0" class="on">regime 1</button><button id="r1">regime 2</button>
+      </div>
+      <div id="leg"></div>
+      <canvas id="c" width="820" height="360"></canvas>
+      <div class="readout" id="read"></div>
+    </div>
+
+    <div class="lookfor">What to look for: slopes of $-1$, $-2$ and $-3$ for the averaged,
+    first-order and second-order approximations, reported below the chart from the last decade of
+    $\lambda$. The package&apos;s first-order terms give a slope of $-1$, the same as no correction
+    at all. A second-order slope visibly shallower than $-3$ at large $\lambda$ would refute the
+    expansion. At small $\lambda$ the lines bend, because the expansion is asymptotic.</div>
+
+    <p class="muted">Errors below about $10^{-12}$ reach the accuracy of the in-browser ODE solver,
+    so the plot stops at $\lambda = 1000$.</p>
+
+  <script src="./survival.js"></script>
+  <script src="./charts.js"></script>
+  <script>
+  (function () {
+    var P = { kappa: 2, thetas: [0.15, 0.02], sigmas: [Math.sqrt(0.0555), Math.sqrt(0.0055)] }, x0 = 0.12, regime = 0;
+    var C = { avg: '#9a9a9a', first: '#4a3aff', second: '#0f8b6e', pkg: '#c0392b' };
+    var ch = new LineChart(document.getElementById('c'), { legend: 'leg', xlog: true, ylog: true, xlabel: 'switching rate λ (log scale)', ylabel: '|approximation − exact| (log scale)',
+      xname: 'λ', xfmt: function (v) { return v < 10 ? v.toFixed(2) : v.toFixed(0); }, yfmt: function (v) { return v.toExponential(2); } });
+    function slope(pts) { var a = pts[pts.length - 11], b = pts[pts.length - 1]; return (Math.log10(b[1]) - Math.log10(a[1])) / (Math.log10(b[0]) - Math.log10(a[0])); }
+    function run() {
+      var t = +document.getElementById('t').value; document.getElementById('tVal').textContent = t.toFixed(2);
+      var A = [], F = [], S2 = [], K = [];
+      for (var i = 0; i <= 30; i++) {
+        var lam = Math.pow(10, i / 10), m = Survival.make(Object.assign({ lmbd: lam }, P));
+        var ex = m.exact(t, x0, regime), e = m.expansion(t, x0, regime);
+        A.push([lam, Math.abs(e[0] - ex)]); F.push([lam, Math.abs(e[1] - ex)]); S2.push([lam, Math.abs(e[2] - ex)]);
+        K.push([lam, Math.abs(m.packageFirst(t, x0, regime) - ex)]);
+      }
+      ch.set([
+        { name: 'averaged', color: C.avg, dash: [6, 5], points: A },
+        { name: 'first order', color: C.first, points: F },
+        { name: 'second order', color: C.second, points: S2 },
+        { name: 'package first order', color: C.pkg, dash: [1, 4], points: K }
+      ]);
+      document.getElementById('read').innerHTML = 'Slopes over 100 &le; &lambda; &le; 1000: averaged <b>' + slope(A).toFixed(2) +
+        '</b> &middot; first order <b>' + slope(F).toFixed(2) + '</b> &middot; second order <b>' + slope(S2).toFixed(2) +
+        '</b> &middot; package first order <b>' + slope(K).toFixed(2) + '</b>.';
+    }
+    document.getElementById('t').addEventListener('input', run);
+    [0, 1].forEach(function (r) { document.getElementById('r' + r).addEventListener('click', function () {
+      regime = r; document.getElementById('r0').classList.toggle('on', r === 0); document.getElementById('r1').classList.toggle('on', r === 1); run(); }); });
+    window.addEventListener('resize', function () { ch.draw(); });
+    run();
+  })();
+  </script>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
