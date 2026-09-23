@@ -290,7 +290,9 @@ def counts_page():
     <p>and letting $dt \to 0$,</p>
     $$a' = \big(Q + (z-1)\operatorname{diag}\ell\big)\,a, \qquad a(0) = \mathbf 1, \qquad g_i = (z-1)\,\ell_i ,$$
     <p>a constant, complex for complex $z$. Evaluating $a(t)$ at the 64 points $z = e^{2\pi i k/64}$ on the unit circle
-    and applying the discrete Fourier transform returns all the probabilities at once.</p>
+    and applying the discrete Fourier transform returns $\Pr(N_t \equiv k \bmod 64)$ for every $k$ at once.</p>
+    <p>These equal the probabilities $\Pr(N_t = k)$ up to the chance of 64 or more events. Given the regime path the
+    count is Poisson with mean at most 8, so that chance is below $2\times10^{-35}$.</p>
 '''
     body += two_state_expansion(r'$\bar g = (z-1)\bar\ell$ and $\tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$ are constants',
                                 r''' For the count, the shared first-order term multiplies the generating function by</p>
@@ -455,7 +457,7 @@ def heston_page():
 
     <h2>Reduction to a linear system</h2>
     <p>The characteristic function solves a Feynman&ndash;Kac equation in the log price, the variance and the regime.
-    Try the Heston form $\phi_i = e^{iuX_0 + D(t)v_0}\,a_i(t)$. The terms in $v_0$ cancel when</p>
+    Try the Heston form $\phi_i = e^{D(t)v_0}\,a_i(t)$. The terms in $v_0$ cancel when</p>
     $$D' = -\tfrac12(u^2 + iu) + (\rho\xi iu - \kappa)\,D + \tfrac12\xi^2D^2, \qquad D(0) = 0 .$$
     <p>This Riccati equation involves $\kappa$, $\xi$ and $\rho$ but not $\theta$, so one $D$ serves both regimes. Its
     solution is</p>

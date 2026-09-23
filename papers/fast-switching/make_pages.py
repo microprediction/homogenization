@@ -97,11 +97,19 @@ def engine_page():
     $e^{-\beta x_T}$ changes only the starting value of $B$. A continuous fast factor in place of the chain is
     treated on its <a href="./fast-factor.html">own page</a>.</p>
 
+    <h2>Scope</h2>
+    <p>The expansion assumes an irreducible fast chain, a fixed horizon $t$ as the switching speeds up, and forcing
+    terms $g_i$ smooth in time. The initial layer is part of the expansion. Under these conditions the certificates
+    observe errors falling by one power of $\varepsilon$ per order.</p>
+    <p>Maturities that grow with the switching rate are a different limit, governed by the principal eigenvalue on the
+    <a href="./yield-curve.html">yield-curve page</a>. For option prices the Fourier integral is truncated where the
+    expansion stops applying, which is a choice of the examples rather than part of the theory.</p>
+
     <h2>Code and checks</h2>
     <ul>
-      <li><a href="''' + SRC + '''fastswitch.py">fastswitch.py</a>: the engine, for any finite chain, real or complex coefficients, any terminal vector.</li>
+      <li><a href="''' + SRC + '''fastswitch.py">fastswitch.py</a>: the engine, for any irreducible finite chain including defective generators, real or complex coefficients, any terminal vector.</li>
       <li><a href="''' + SRC + '''models.py">models.py</a> and <a href="''' + SRC + '''options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
-      <li><a href="''' + SRC + '''verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution.</li>
+      <li><a href="''' + SRC + '''verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
       <li><a href="''' + SRC + '''verify_models.py">verify_models.py</a>: each model&apos;s reduction against Monte Carlo of the switching model, and each expansion&apos;s convergence.</li>
     </ul>
 '''

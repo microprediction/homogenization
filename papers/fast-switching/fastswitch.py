@@ -188,10 +188,34 @@ class FastSwitch:
         self.w = w
         self.log_terms = [None] + [pidot([g[i] * w[m][i] for i in range(n)]) for m in range(1, N + 1)]
 
-        # inner layer
-        lam, V = np.linalg.eig(Q0)
-        Vi = np.linalg.inv(V)
-        self.lam, self.V, self.Vi = lam, V, Vi
+        # inner layer, solved in a Schur basis of Q0 on the mean-zero subspace {v : pi.v = 0}. A triangular solve
+        # handles defective generators (Jordan blocks), where an eigenvector basis does not exist.
+        from scipy.linalg import schur, null_space
+        Bz = null_space(pi[None, :])                                  # orthonormal basis of the mean-zero subspace
+        Tz, Uz = schur((Bz.T @ Q0 @ Bz).astype(complex), output='complex')
+        dz = np.diag(Tz).copy()
+        tol = 1e-6 * max(1.0, float(np.abs(dz).max()))
+        for i in range(len(dz)):                                      # numerically split Jordan clusters are merged
+            close = np.abs(dz - dz[i]) < tol
+            dz[close] = dz[close].mean()
+        Tz[np.diag_indices_from(Tz)] = dz
+        Wz = Bz @ Uz                                                  # eta = Wz z, z = Wz^H eta
+        rz = Wz.shape[1]
+        self.T, self.W = Tz, Wz
+
+        def layer_solve(f, y0):
+            """eta' = Q0 eta + P f, eta(0) = y0 (mean zero), with P f = f - 1 (pi.f)."""
+            pf = sum((f[k].scale(pi[k]) for k in range(n)), ExpPoly())
+            fp = [f[i] + pf.scale(-1) for i in range(n)]
+            fz = [sum((fp[i].scale(np.conj(Wz[i, j])) for i in range(n)), ExpPoly()) for j in range(rz)]
+            z0 = Wz.conj().T @ np.asarray(y0, complex)
+            z = [None] * rz
+            for j in reversed(range(rz)):
+                forcing = fz[j]
+                for k in range(j + 1, rz):
+                    forcing = forcing + z[k].scale(Tz[j, k])
+                z[j] = ExpPoly.solve(Tz[j, j], forcing, z0[j])
+            return [sum((z[j].scale(Wz[i, j]) for j in range(rz)), ExpPoly()) for i in range(n)]
         K = N + 2
         gT = [np.array(g[i].taylor(K)) for i in range(n)]            # g_i(eps tau) = sum_a eps^a tau^a gT[i][a]
         gbT = np.array(gbar.taylor(K))
@@ -203,8 +227,7 @@ class FastSwitch:
 
         eta = [_vpoly(n) for _ in range(N + 1)]
         # order 0 of the layer: the terminal vector relaxing, eta_0 = exp(Q0 tau) w_init
-        y00 = Vi @ w_init
-        eta[0] = [sum((ExpPoly({(0, lam[jj]): y00[jj] * V[i, jj]}) for jj in range(n) if abs(lam[jj]) > 1e-10), ExpPoly()) for i in range(n)]
+        eta[0] = layer_solve(_vpoly(n), w_init)
         for m in range(1, N + 1):
             f = _vpoly(n)
             # eps * [ g*eta - eta*gbar - eta*pi(g*w_o) - (1 + w_o) pi(g*eta) - eta pi(g*eta) ] at eps^m
@@ -235,17 +258,8 @@ class FastSwitch:
                     pge = sum((eta[j2][k].times_poly(poly(a, pi[k] * gT[k][a])) for k in range(n)), ExpPoly())
                     for i in range(n):
                         f[i] = f[i] + (eta[j1][i] * pge).scale(-1)
-            # solve d eta_m / d tau = Q0 eta_m + f in the eigenbasis, eta_m(0) = -w_m(0)
-            y0 = Vi @ np.array([-w[m][i].value(0.0) for i in range(n)], complex)
-            fe = [sum((f[i].scale(Vi[j, i]) for i in range(n)), ExpPoly()) for j in range(n)]
-            ye = []
-            for j in range(n):
-                if abs(lam[j]) < 1e-10:  # stationary direction: pi . eta = 0, so this component vanishes
-                    assert abs(y0[j]) < 1e-9, y0[j]
-                    ye.append(ExpPoly())
-                else:
-                    ye.append(ExpPoly.solve(lam[j], fe[j], y0[j]))
-            eta[m] = [sum((ye[j].scale(V[i, j]) for j in range(n)), ExpPoly()) for i in range(n)]
+            # solve d eta_m / d tau = Q0 eta_m + f, eta_m(0) = -w_m(0)
+            eta[m] = layer_solve(f, np.array([-w[m][i].value(0.0) for i in range(n)], complex))
         self.eta = eta
         self.is_complex = any(np.iscomplexobj(np.asarray(gt)) and np.any(np.abs(np.imag(gt)) > 0) for gt in gT) \
             or bool(np.any(np.abs(np.imag(a0)) > 0))

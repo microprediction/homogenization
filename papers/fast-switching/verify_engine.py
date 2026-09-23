@@ -54,6 +54,14 @@ def main():
     rates = [math.log2(abs(a / b)) for a, b in zip(errs[8], errs[16])]
     print("2. three states: rates " + " ".join(f"{r:.2f}" for r in rates) + " (expected 2..7)")
     ok &= all(abs(r - (n + 2)) < 0.5 for n, r in enumerate(rates))
+    # a defective generator: eigenvalues 0, -3, -3 with a Jordan block, so no eigenvector basis exists
+    J = np.array([[-1, 1, 0], [0, -1, 1], [4, 0, -4]], float)
+    gJ = [ExpSum({0: c}) for c in (1.0, 2.0, 3.0)]
+    exJ = np.array(numerical_a(0.3, 100 * J, gJ, dps=30), float)
+    fsJ = FastSwitch(100 * J, gJ, order=4)
+    errJ = [float(np.abs(fsJ.a(0.3, o) - exJ).max()) for o in range(5)]
+    print("3. Jordan-block chain: errors by order " + " ".join(f"{e:.1e}" for e in errJ))
+    ok &= errJ[4] < 1e-10 and all(b < a / 20 for a, b in zip(errJ, errJ[1:]))
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
 

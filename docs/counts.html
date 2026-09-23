@@ -88,7 +88,9 @@
     <p>and letting $dt \to 0$,</p>
     $$a' = \big(Q + (z-1)\operatorname{diag}\ell\big)\,a, \qquad a(0) = \mathbf 1, \qquad g_i = (z-1)\,\ell_i ,$$
     <p>a constant, complex for complex $z$. Evaluating $a(t)$ at the 64 points $z = e^{2\pi i k/64}$ on the unit circle
-    and applying the discrete Fourier transform returns all the probabilities at once.</p>
+    and applying the discrete Fourier transform returns $\Pr(N_t \equiv k \bmod 64)$ for every $k$ at once.</p>
+    <p>These equal the probabilities $\Pr(N_t = k)$ up to the chance of 64 or more events. Given the regime path the
+    count is Poisson with mean at most 8, so that chance is below $2\times10^{-35}$.</p>
     <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
     $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
