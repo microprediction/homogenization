@@ -500,11 +500,24 @@ def credit():
         return math.exp(L)
 
     corr = lambda S1, S2, S12: (S12 - S1 * S2) / math.sqrt((1 - S1) * S1 * (1 - S2) * S2)
+    from fastswitch import Cheb
+    from mc_credit_exact import mc
+    Bc = Cheb.fit(lambda s: cir_B(s, kap, sig), T, 80)
     rows = []
     for lam in (1.0, 2.0, 4.0, 8.0):
         sn = [surv_num(lam, c) for c in C]
-        vals = [corr(*[surv_exp(lam, c, o) for c in C]) for o in (0, 1, 2)]
-        rows.append([f'{lam:g}', f'{1 - sn[0]:.3f}, {1 - sn[1]:.3f}', f'{corr(*sn):.4f}'] + [f'{v:.4f}' for v in vals])
+        num = corr(*sn)
+        orders = {}
+        for c in C:
+            g = [Bc.scale(-kap * (c @ th[:, i])) for i in range(2)]
+            fs = FastSwitch(sym(lam), g, order=10)
+            orders[tuple(c)] = [math.exp(-B * (c @ x0)) * 0.5 * sum(fs.a(T, o)) for o in range(11)]
+        cs = [corr(orders[(1, 0)][o], orders[(0, 1)][o], orders[(1, 1)][o]) for o in range(11)]
+        hit = [o for o in range(11) if abs(cs[o] - num) < 5e-6]
+        best = hit[0] if hit else min(range(11), key=lambda o: abs(cs[o] - num))
+        m, se = mc(lam)
+        rows.append([f'{lam:g}', f'{1 - sn[0]:.3f}, {1 - sn[1]:.3f}', f'{num:.5f}', f'{m:.5f} &plusmn; {se:.5f}',
+                     '0'] + [f'{cs[o]:.5f}' for o in (1, 2, 4, 6)] + [f'{cs[best]:.5f} (order {best})'])
     lam = 2.0
     sn = [surv_num(lam, c) for c in C]
     se = [surv_exp(lam, c, 2) for c in C]
@@ -546,9 +559,17 @@ def credit():
     <h2>Results</h2>
     <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
     model gives exactly zero at every switching rate.</p>
-""" + table(rows, head=('switching rate', 'default probabilities', 'numerical', 'averaged', 'first order', 'second order')) + r"""    <p>Slower switching gives stronger dependence and a less accurate expansion. With regimes lasting a year the
-    correlation is 0.18 and the second-order formula overstates it. With regimes lasting three months it is 0.05 and
-    the formula is within 0.001.</p>
+""" + table(rows, head=('switching rate', 'default probabilities', 'numerical', 'Monte Carlo', 'averaged',
+                              'order 1', 'order 2', 'order 4', 'order 6', 'first to five digits, or best')) + r"""    <p>The numerical column solves the reduced linear system. The Monte Carlo column checks it with no time
+    discretization: given a simulated regime path the level is piecewise constant, each CIR survival is exact, and
+    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error.</p>
+    <p>The higher orders come from the <a href="./engine.html">engine</a>. With regimes lasting three months or less
+    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order four. With half-year regimes
+    ($\lambda = 2$) it reaches all five digits at order seven. With regimes lasting a year ($\lambda = 1$) the series
+    comes within about 0.003 before its terms start to grow.</p>
+    <p>That is the behaviour of an asymptotic series. When the switching time is not small against the time scale of
+    the forcing, the terms first shrink and then grow, and the best answer comes from stopping at the smallest
+    term.</p>
 """
     return html
 

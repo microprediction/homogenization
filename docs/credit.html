@@ -129,10 +129,17 @@
     <h2>Results</h2>
     <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
     model gives exactly zero at every switching rate.</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>default probabilities</th><th>numerical</th><th>averaged</th><th>first order</th><th>second order</th></tr></thead><tbody><tr><td>1</td><td>0.587, 0.502</td><td>0.1827</td><td>0.0000</td><td>0.2647</td><td>0.2256</td></tr><tr><td>2</td><td>0.612, 0.520</td><td>0.0958</td><td>0.0000</td><td>0.1092</td><td>0.1022</td></tr><tr><td>4</td><td>0.627, 0.530</td><td>0.0474</td><td>0.0000</td><td>0.0498</td><td>0.0483</td></tr><tr><td>8</td><td>0.634, 0.535</td><td>0.0233</td><td>0.0000</td><td>0.0238</td><td>0.0234</td></tr></tbody></table></div>
-    <p>Slower switching gives stronger dependence and a less accurate expansion. With regimes lasting a year the
-    correlation is 0.18 and the second-order formula overstates it. With regimes lasting three months it is 0.05 and
-    the formula is within 0.001.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>default probabilities</th><th>numerical</th><th>Monte Carlo</th><th>averaged</th><th>order 1</th><th>order 2</th><th>order 4</th><th>order 6</th><th>first to five digits, or best</th></tr></thead><tbody><tr><td>1</td><td>0.587, 0.502</td><td>0.18268</td><td>0.18213 &plusmn; 0.00032</td><td>0</td><td>0.26468</td><td>0.22560</td><td>0.18872</td><td>0.20072</td><td>0.17954 (order 7)</td></tr><tr><td>2</td><td>0.612, 0.520</td><td>0.09580</td><td>0.09582 &plusmn; 0.00023</td><td>0</td><td>0.10923</td><td>0.10215</td><td>0.09593</td><td>0.09601</td><td>0.09580 (order 7)</td></tr><tr><td>4</td><td>0.627, 0.530</td><td>0.04745</td><td>0.04748 &plusmn; 0.00011</td><td>0</td><td>0.04977</td><td>0.04827</td><td>0.04745</td><td>0.04745</td><td>0.04745 (order 4)</td></tr><tr><td>8</td><td>0.634, 0.535</td><td>0.02332</td><td>0.02336 &plusmn; 0.00006</td><td>0</td><td>0.02377</td><td>0.02343</td><td>0.02332</td><td>0.02332</td><td>0.02332 (order 4)</td></tr></tbody></table></div>
+    <p>The numerical column solves the reduced linear system. The Monte Carlo column checks it with no time
+    discretization: given a simulated regime path the level is piecewise constant, each CIR survival is exact, and
+    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error.</p>
+    <p>The higher orders come from the <a href="./engine.html">engine</a>. With regimes lasting three months or less
+    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order four. With half-year regimes
+    ($\lambda = 2$) it reaches all five digits at order seven. With regimes lasting a year ($\lambda = 1$) the series
+    comes within about 0.003 before its terms start to grow.</p>
+    <p>That is the behaviour of an asymptotic series. When the switching time is not small against the time scale of
+    the forcing, the terms first shrink and then grow, and the best answer comes from stopping at the smallest
+    term.</p>
   </main>
 
   <footer>
