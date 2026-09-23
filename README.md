@@ -44,6 +44,9 @@ papers/yield-curve/
   long_end.py              the long yield as a principal eigenvalue; its convergent series in the switching time
   verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
   make_data.py             writes docs/three-numbers.js for the yield-curve page
+papers/general/
+  effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
+  verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

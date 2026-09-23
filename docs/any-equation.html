@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Any pricing equation · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./yield-curve.html">&larr; three numbers in a yield curve</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">certificate</a></span></p>
+    <h1>Fast regimes in any pricing equation</h1>
+    <p class="subtitle">One first-order rule for every model whose parameters are switched by a fast hidden chain.</p>
+
+    <p class="lead">The examples on this site switch a volatility, a mean level, a hazard rate or a jump intensity. They
+    all follow one rule. To first order, a fast chain adds a second-order term to the pricing operator, weighted by a
+    Green&ndash;Kubo matrix of the switched parameters. This page derives the rule and explains its two parts. It then
+    checks the rule on option smiles, on the joint survival of many names, and on a model where the order of the
+    regimes matters.</p>
+
+    <h2>The setting</h2>
+    <p>A price $u(t, x)$ depends on time to maturity $t$ and on a slow state $x$, such as a log stock price or a short
+    rate. With the parameters held fixed, it solves a pricing equation</p>
+    $$\partial_t u = \mathcal L\,u,$$
+    <p>where $\mathcal L$ is the generator of the slow process, including any discounting. Now let some of the
+    parameters depend on a hidden state $y_t$. The hidden state is a Markov chain with generator $Q$ and stationary
+    law $\pi$, and it switches much faster than $x$ moves. Write the operator in regime $y$ as its average plus
+    fluctuations:</p>
+    $$\mathcal L_y = \bar{\mathcal L} + \sum_k \phi_k(y)\,A_k .$$
+    <p>Here $\phi_k(y)$ is the deviation of the $k$-th switched parameter from its $\pi$-average, and $A_k$ is the
+    operator that the parameter multiplies. Most models in finance fit this form:</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>model</th><th>switched parameter</th><th>operator it multiplies</th></tr></thead>
+      <tbody>
+        <tr><td>Black&ndash;Scholes, $x = \log S$</td><td>variance $\sigma^2$</td><td>$\tfrac12(\partial_{xx} - \partial_x)$</td></tr>
+        <tr><td>Black&ndash;Scholes</td><td>interest rate $r$</td><td>$\partial_x - 1$</td></tr>
+        <tr><td>Vasicek, $x = r$</td><td>mean level $\theta$</td><td>$\kappa\,\partial_x$</td></tr>
+        <tr><td>Vasicek</td><td>reversion speed $\kappa$</td><td>$(\theta - x)\,\partial_x$</td></tr>
+        <tr><td>Vasicek</td><td>variance $\sigma^2$</td><td>$\tfrac12\,\partial_{xx}$</td></tr>
+        <tr><td>reduced-form credit</td><td>hazard rate $h$</td><td>$-1$</td></tr>
+        <tr><td>jump diffusion</td><td>jump intensity $\nu$</td><td>$\mathcal J - 1$, with $\mathcal J f(x) = \mathbb E f(x + Z)$</td></tr>
+        <tr><td>Heston, $x = (\log S, v)$</td><td>long-run variance $\theta$</td><td>$\kappa\,\partial_v$</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>The regime-dependent prices $u_y$ are coupled by the chain:</p>
+    $$\partial_t u_y = \mathcal L_y\,u_y + \sum_{y'} Q_{yy'}\,u_{y'} .$$
+    <p>We want the price seen by someone who cannot observe the regime, so the regime is drawn from $\pi$ and the
+    payoff does not depend on it.</p>
+
+    <h2>Deriving the rule</h2>
+    <p>Scale the chain as $Q = Q_0/\varepsilon$ and expand $u = u_0 + \varepsilon u_1 + \varepsilon^2 u_2 + \cdots$.
+    Each order is handled with the two steps of the <a href="./solvability.html">solvability page</a>: impose the
+    condition that makes the equation solvable, then solve it.</p>
+    <p><b>Order $\varepsilon^{-1}$.</b> Only the chain appears:</p>
+    $$Q_0\,u_0 = 0 .$$
+    <p>So $u_0$ is constant across regimes. The leading price does not depend on the hidden state.</p>
+    <p><b>Order $1$.</b> The equation for the first corrector is</p>
+    $$Q_0\,u_1 = \partial_t u_0 - \bar{\mathcal L}\,u_0 - \sum_k \phi_k\,A_k\,u_0 .$$
+    <p>Averaging under $\pi$ kills the left side and the fluctuations $\phi_k$. So a solution exists only if</p>
+    $$\partial_t u_0 = \bar{\mathcal L}\,u_0 ,$$
+    <p>which is the averaged model. The equation is then solved with the group inverse:</p>
+    $$u_1 = \bar u_1 - \sum_k \big(Q_0^{\#}\phi_k\big)\,A_k\,u_0 .$$
+    <p>The second term remembers the regime. It is large in a regime whose parameters sit above average and persist.</p>
+    <p><b>Order $\varepsilon$.</b> The solvability condition at the next order fixes the average $\bar u_1$. Averaging
+    the equation under $\pi$ gives</p>
+    $$\partial_t \bar u_1 = \bar{\mathcal L}\,\bar u_1 + \mathbb E_\pi\Big[\sum_j \phi_j\,A_j\,u_1\Big].$$
+    <p>Substituting $u_1$ from the previous step turns the last term into</p>
+    $$-\sum_{j,k} \pi\cdot\big(\phi_j\;Q_0^{\#}\phi_k\big)\,A_j A_k\,u_0 .$$
+    <p>Putting $\varepsilon$ back into the chain, the coefficient is the Green&ndash;Kubo matrix</p>
+    $$K_{jk} = -\,\pi\cdot\big(\phi_j\;Q^{\#}\phi_k\big) = \int_0^\infty \operatorname{Cov}_\pi\big(\phi_j(y_0),\,\phi_k(y_\tau)\big)\,d\tau .$$
+
+    <h2>The rule</h2>
+    <div class="equation-card">
+    $$\bar u \;\approx\; e^{t\bar{\mathcal L}} f \;+\; \int_0^t e^{(t-s)\bar{\mathcal L}}\,\Big(\sum_{j,k} K_{jk}\,A_j A_k\Big)\,e^{s\bar{\mathcal L}} f\,ds .$$
+    </div>
+    <p>Here $f$ is the payoff. In words, the averaged operator gains the correction</p>
+    $$\bar{\mathcal L} \;\longrightarrow\; \bar{\mathcal L} + \sum_{j,k} K_{jk}\,A_j A_k ,$$
+    <p>which should be applied as a first-order perturbation, as in the formula above. Exponentiating the corrected
+    operator is not always safe, because it can contain higher derivatives with the wrong sign for a diffusion.</p>
+
+    <h2>Two parts: covariance and order</h2>
+    <p>Split the matrix into its symmetric and antisymmetric parts, $K = K^{\mathrm{sym}} + K^{\mathrm{anti}}$. The
+    correction splits the same way:</p>
+    $$\sum_{j,k} K_{jk}\,A_j A_k \;=\; \sum_{j,k} K^{\mathrm{sym}}_{jk}\,A_j A_k \;+\; \sum_{j\lt k} K^{\mathrm{anti}}_{jk}\,\big[A_j, A_k\big].$$
+    <ul>
+      <li><b>The symmetric part is a covariance.</b> $2t\,K^{\mathrm{sym}}$ is the long-run covariance matrix of the
+        integrated parameters $\int_0^t \phi_k(y_s)\,ds$. It is positive semidefinite. This is the term the
+        <a href="./idea.html">averaging page</a> explains as half the variance of a fluctuating integral.</li>
+      <li><b>The antisymmetric part is about order.</b> $K^{\mathrm{anti}}_{jk}$ compares parameter $j$ followed by
+        parameter $k$ with the reverse order. It vanishes for a reversible chain, which looks the same run backwards
+        in time. It survives when the chain cycles in a preferred direction.</li>
+    </ul>
+    <p>The antisymmetric part only acts through the commutator $[A_j, A_k] = A_j A_k - A_k A_j$. So the direction of
+    the cycle matters only when the operators do not commute: when it matters whether one parameter acts before the
+    other.</p>
+    <p>Constant-coefficient operators commute. In Black&ndash;Scholes, and whenever the level and variance of Vasicek
+    are switched, only the covariance enters. That is why the <a href="./yield-curve.html">yield curve</a> sees a
+    symmetric $2\times2$ matrix.</p>
+
+    <h2>Example: the smile from switching volatility</h2>
+    <p>Switch the variance in Black&ndash;Scholes. With $x = \log S$ there is one operator,</p>
+    $$A = \tfrac12\big(\partial_{xx} - \partial_x\big).$$
+    <p>It is the derivative with respect to total variance $V = \sigma^2 t$: applied to a Black&ndash;Scholes price, it
+    gives $\partial_V$. So the correction $K\,A^2$ is $K\,\partial_V^2$, and the rule gives a closed form:</p>
+    $$C \;\approx\; C_{\mathrm{BS}}(\bar V) + t\,K_{\sigma^2\sigma^2}\,\frac{\partial^2 C_{\mathrm{BS}}}{\partial V^2}(\bar V),$$
+    $$\frac{\partial^2 C_{\mathrm{BS}}}{\partial V^2} = \frac{S\,\varphi(d_1)\,(d_1 d_2 - 1)}{4\,V^{3/2}} .$$
+    <p>This is a volga term, the convexity of the price in variance. It is positive in the wings and negative near
+    the money, so no single volatility can absorb it: it is a smile. It is the first-order form of the mixing
+    formula of Hull and White, with the variance of integrated variance equal to $2t\,K$.</p>
+    <p>The check uses three regimes with volatilities of 10%, 30% and 20%. The chain is twice the irreversible
+    three-state generator</p>
+    $$Q_A = \begin{pmatrix} -3 & 2 & 1 \\ 1 & -2 & 1 \\ 0.5 & 1.5 & -2 \end{pmatrix},$$
+    <p>so that regimes last about two to three months.</p>
+    <p class="muted">$S = 100$, maturity 1 year, $r = 2\%$, averaged volatility 23.80%.</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>strike</th><th>numerical solution</th><th>rule</th><th>averaged</th></tr></thead>
+      <tbody>
+        <tr><td>70</td><td>24.14%</td><td>24.17%</td><td>23.80%</td></tr>
+        <tr><td>80</td><td>23.83%</td><td>23.81%</td><td>23.80%</td></tr>
+        <tr><td>90</td><td>23.64%</td><td>23.62%</td><td>23.80%</td></tr>
+        <tr><td>100</td><td>23.57%</td><td>23.55%</td><td>23.80%</td></tr>
+        <tr><td>110</td><td>23.59%</td><td>23.58%</td><td>23.80%</td></tr>
+        <tr><td>120</td><td>23.69%</td><td>23.67%</td><td>23.80%</td></tr>
+        <tr><td>130</td><td>23.83%</td><td>23.81%</td><td>23.80%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The table shows implied volatilities. The rule reproduces the smile to within a few hundredths of a
+    volatility point. With the chain four times faster, the largest price error falls from $1.2\times10^{-3}$ to
+    $7\times10^{-5}$, sixteen times smaller, as a second-order remainder should.</p>
+
+    <h2>Example: many names from one matrix</h2>
+    <p>Give each of several firms a hazard rate $h_m(y)$ that depends on the common regime. The survival of a set $S$
+    of names is</p>
+    $$P_S(t) = \mathbb E\Big[\exp\Big(-\int_0^t \sum_{m\in S} h_m(y_s)\,ds\Big)\Big].$$
+    <p>Every operator is $-1$, so all of them commute, and the rule gives</p>
+    $$\log P_S(t) \;\approx\; -t\sum_{m\in S}\bar h_m \;+\; t\sum_{j,k\in S} K^{\mathrm{sym}}_{jk} .$$
+    <p>One matrix gives the joint survival of every subset. For a pair of names the dependence is</p>
+    $$\log\frac{P_{\{1,2\}}(t)}{P_{\{1\}}(t)\,P_{\{2\}}(t)} \;\approx\; 2t\,K^{\mathrm{sym}}_{12} .$$
+    <p>Two consequences follow.</p>
+    <ul>
+      <li>Names whose hazards rise in different regimes have negative dependence. Fast regimes can produce it.</li>
+      <li>The matrix is positive semidefinite, with rank at most one less than the number of regimes. A three-regime
+        economy supports at most two independent patterns of default dependence, however many names there are.</li>
+    </ul>
+    <p>The check uses four names and the three-state chain $Q_A$ from the smile example. The pairwise dependence over five years, in units
+    of $10^{-4}$, is:</p>
+    $$2t\,K^{\mathrm{sym}} \times 10^{4} = \begin{pmatrix} 25.3 & 16.8 & -8.5 & -6.3 \\ 16.8 & 11.9 & -4.0 & -4.9 \\ -8.5 & -4.0 & 7.1 & 0.2 \\ -6.3 & -4.9 & 0.2 & 2.4 \end{pmatrix}.$$
+    <p>Its two smallest eigenvalues are zero. With the chain ten times faster, the rule matches the numerical log
+    survival of all fifteen subsets to within $3\times10^{-6}$. At forty times faster it matches within
+    $2\times10^{-7}$.</p>
+
+    <h2>Example: when the order of the regimes matters</h2>
+    <p>Now switch the reversion speed and the variance of a Vasicek short rate together. The two operators are</p>
+    $$A_\kappa = (\theta - x)\,\partial_x, \qquad A_{\sigma^2} = \tfrac12\,\partial_{xx},$$
+    <p>and they do not commute. A short calculation gives</p>
+    $$\big[A_\kappa,\,A_{\sigma^2}\big] = \partial_{xx} .$$
+    <p>So the antisymmetric part of $K$ acts exactly like extra variance. The effective variance becomes</p>
+    $$\sigma^2_{\mathrm{eff}} = \bar\sigma^2 + 2\,K^{\mathrm{anti}}_{\kappa\sigma^2} + \big(\text{symmetric terms}\big).$$
+    <p>The intuition is about sequence. If high volatility tends to be followed by fast reversion, shocks are
+    forgotten quickly and the rate is effectively calmer. If fast reversion comes first and high volatility is
+    followed by slow reversion, shocks linger. The averages and the covariances are the same in both cases. Only
+    the direction of the cycle differs.</p>
+    <p>The check uses a chain that cycles almost only one way, $1 \to 2 \to 3 \to 1$, at rate 2 per year, with a
+    reverse rate of 0.1:</p>
+    <p class="muted">speeds $\kappa = (0.3,\ 1.5,\ 3.0)$, variances $\sigma^2 = (0.0004,\ 0.0036,\ 0.0016)$, $\theta = 4\%$.</p>
+    <p>For this chain the order term changes the effective variance by $-19\%$, from $0.00187$ to $0.00151$. Running
+    the cycle the other way changes it by $+19\%$. The table shows errors in a two-year bond price, on a finite-difference grid, as
+    the chain is sped up by a factor $m$:</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>approximation</th><th style="text-transform:none">$m = 10$</th><th style="text-transform:none">$m = 20$</th><th style="text-transform:none">$m = 40$</th><th style="text-transform:none">$m = 80$</th></tr></thead>
+      <tbody>
+        <tr><td>averaged</td><td>2.8e-6</td><td>1.5e-6</td><td>7.8e-7</td><td>4.0e-7</td></tr>
+        <tr><td>symmetric part only</td><td>7.7e-6</td><td>3.7e-6</td><td>1.8e-6</td><td>9.1e-7</td></tr>
+        <tr><td>full rule</td><td>4.4e-7</td><td>1.2e-7</td><td>3.0e-8</td><td>7.7e-9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The full rule is second order. Keeping only the covariance does worse than no correction at all, because
+    here the order term is the larger of the two.</p>
+
+    <h2>How this relates to the rest of the site</h2>
+    <ul>
+      <li>The rule is first order for any pricing equation. When the model has an exponential-affine factor with a
+        regime-free exponent, the <a href="./engine.html">engine</a> gives every order.</li>
+      <li>The <a href="./yield-curve.html">yield-curve page</a> is the rule for Vasicek with switching level and
+        variance, where the operators commute.</li>
+      <li>When the payoff depends on the regime at expiry, an <a href="./layers.html">initial layer</a> enters at
+        order zero, as on the <a href="./bond-options.html">bond options</a> page.</li>
+    </ul>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
