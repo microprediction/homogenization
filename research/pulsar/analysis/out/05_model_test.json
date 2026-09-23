@@ -1,0 +1,138 @@
+[
+ {
+  "psr": "B0740-28",
+  "K_data": 119.7297627836479,
+  "markov_pct": 100.0,
+  "renewal_pct": 99.75,
+  "markov_median": 21.743042614408065,
+  "renewal_median": 25.561716616813747
+ },
+ {
+  "psr": "B0919+06",
+  "K_data": 2.350834631763053,
+  "markov_pct": 99.0,
+  "renewal_pct": 100.0,
+  "markov_median": 0.6752212818906282,
+  "renewal_median": 0.4509305805258502
+ },
+ {
+  "psr": "B0950+08",
+  "K_data": 0.016724456253094634,
+  "markov_pct": 73.25,
+  "renewal_pct": 88.0,
+  "markov_median": 0.011435499476792678,
+  "renewal_median": 0.00955659440425132
+ },
+ {
+  "psr": "B1540-06",
+  "K_data": 0.003989145396143375,
+  "markov_pct": 7.249999999999999,
+  "renewal_pct": 97.75,
+  "markov_median": 0.013120924392294134,
+  "renewal_median": 0.0021868850520423205
+ },
+ {
+  "psr": "B1642-03",
+  "K_data": 0.21365640798927168,
+  "markov_pct": 22.25,
+  "renewal_pct": 37.75,
+  "markov_median": 0.3797720874057023,
+  "renewal_median": 0.26433525224870125
+ },
+ {
+  "psr": "B1714-34",
+  "K_data": 0.05190609401084861,
+  "markov_pct": 0.5,
+  "renewal_pct": 28.000000000000004,
+  "markov_median": 0.5979384514304671,
+  "renewal_median": 0.07613864666916641
+ },
+ {
+  "psr": "B1818-04",
+  "K_data": 0.24350669453479254,
+  "markov_pct": 57.99999999999999,
+  "renewal_pct": 68.25,
+  "markov_median": 0.2104152439615713,
+  "renewal_median": 0.18923231437093407
+ },
+ {
+  "psr": "B1822-09",
+  "K_data": 49.285113272850694,
+  "markov_pct": 100.0,
+  "renewal_pct": 100.0,
+  "markov_median": 8.290149524712454,
+  "renewal_median": 8.827895363884828
+ },
+ {
+  "psr": "B1826-17",
+  "K_data": 0.6586836759744639,
+  "markov_pct": 35.75,
+  "renewal_pct": 79.5,
+  "markov_median": 0.8853454052096381,
+  "renewal_median": 0.40468496321491754
+ },
+ {
+  "psr": "B1828-11",
+  "K_data": 0.664581484377516,
+  "markov_pct": 0.5,
+  "renewal_pct": 2.25,
+  "markov_median": 16.397789172076337,
+  "renewal_median": 3.780169274174944
+ },
+ {
+  "psr": "B1839+09",
+  "K_data": 0.11998764184807476,
+  "markov_pct": 47.5,
+  "renewal_pct": 73.25,
+  "markov_median": 0.1279765617918096,
+  "renewal_median": 0.07457164933644429
+ },
+ {
+  "psr": "B1903+07",
+  "K_data": 6.833431925000648,
+  "markov_pct": 77.0,
+  "renewal_pct": 96.5,
+  "markov_median": 4.338504032315983,
+  "renewal_median": 2.3489338195888845
+ },
+ {
+  "psr": "B1907+00",
+  "K_data": 0.011486845160932731,
+  "markov_pct": 31.5,
+  "renewal_pct": 73.25,
+  "markov_median": 0.01691910743912577,
+  "renewal_median": 0.0074964476437913465
+ },
+ {
+  "psr": "B1929+20",
+  "K_data": 0.09306583989778539,
+  "markov_pct": 32.75,
+  "renewal_pct": 99.75,
+  "markov_median": 0.13646315239154075,
+  "renewal_median": 0.019991331702604365
+ },
+ {
+  "psr": "B2035+36",
+  "K_data": 79.40125287243822,
+  "markov_pct": 100.0,
+  "renewal_pct": 99.5,
+  "markov_median": 16.743190765539076,
+  "renewal_median": 25.03300536186406
+ },
+ {
+  "psr": "B2148+63",
+  "K_data": 0.0002777886574218322,
+  "markov_pct": 1.7500000000000002,
+  "renewal_pct": 10.5,
+  "markov_median": 0.002337808295222334,
+  "renewal_median": 0.0008124430347047538
+ },
+ {
+  "psr": "J2043+2740",
+  "K_data": 1941.89383221807,
+  "markov_pct": 100.0,
+  "renewal_pct": 100.0,
+  "markov_median": 633.6398296728642,
+  "renewal_median": 556.3208771285169
+ }
+]

@@ -50,3 +50,32 @@ Caveats to settle next:
   fitted renewal models (bias and interval coverage at this span) are needed before any claim.
 - Threshold and hysteresis choices; detrending (linear) interacts with the longest dwells.
 - Alternating renewal with correlated consecutive dwells (up then down) for the quasi-periodic group.
+
+## 2026-09-23: the estimator is biased, and the fair test is mixed (analysis/04, 05)
+04: simulated renewal square waves on each pulsar's grid, same detrend and six-block estimator.
+- Typical estimate/true ratio 0.6-0.75, 68% interval coverage about 0.6: mildly low, usable.
+- Clockwork dwells (B1540-06): estimate is 13x the true K. Blocks cut cycles, and the edge pieces dominate a
+  tiny true K. So "renewal predicts too little" in the table above is mostly the estimator.
+- Bursty long dwells (B2035+36, J2043+2740): estimate is 0.2-0.4 of true K.
+So the comparison in the previous entry was not like for like. It is replaced by the test below.
+
+05: percentile of the observed K among 400 simulated six-block K under each fitted model (strained: <5 or >95).
+
+| group | pulsars | Markov | renewal |
+|---|---|---|---|
+| excess low-frequency power, both fail high | B0740-28, B0919+06, B1822-09, B2035+36, J2043+2740 | 99-100 | 100 |
+| renewal fits, Markov too high | B1714-34, B2148+63 | 0, 2 | 28, 10 |
+| both fit | B0950+08, B1642-03, B1818-04, B1826-17, B1839+09, B1907+00 | 22-73 | 38-88 |
+| Markov fits, renewal too low | B1540-06, B1929+20, B1903+07 | 7-77 | 96-100 |
+| both too high | B1828-11 | 0 | 2 |
+
+Strained: Markov 8 of 17, renewal 9 of 17. The earlier "renewal beats Markov" does not survive a like-for-like test.
+
+Reading now:
+- Five pulsars have more long-run K than any two-state fit gives. There is a slower process under the switching,
+  the usual red timing noise. A two-state model with a slow Gaussian component (K adds) is the next model.
+- Dwell regularity matters for B1714-34 and B2148+63, where Markov is rejected and renewal is not.
+- B1828-11 has less K than either model: consecutive dwells are anticorrelated (a genuine quasi-period).
+  Needs an alternating renewal with correlated dwells, or a phase-diffusion oscillator, whose K is set by the
+  phase diffusion rate, not by the dwell spread.
+- B1540-06 and B1929+20: independent-dwell renewal gives too little. Amplitude or period wander adds K.
