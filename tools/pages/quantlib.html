@@ -65,7 +65,10 @@
     <h2>The new checks</h2>
     <p>Merton&apos;s jump diffusion, variance gamma and Bates are Lévy or affine with constant or regime-free Riccati
     parts. For each, the regime-dependent forcing is the switched part of the characteristic exponent:</p>
-    $$g_i = \psi_i(u) \quad\text{(Merton, variance gamma)}, \qquad g_i(t) = \kappa\,\theta_i\,D(t) + \lambda_i\,\big(\phi_J(u) - 1 - iu\bar k\big) \quad\text{(Bates)},$$
+    $$\begin{aligned}
+    g_i &= \psi_i(u) &&\text{Merton, variance gamma}, \\
+    g_i(t) &= \kappa\,\theta_i\,D(t) + \lambda_i\,\big(\phi_J(u) - 1 - iu\bar k\big) &&\text{Bates},
+    \end{aligned}$$
     <p>where $\psi_i$ is the Lévy exponent in regime $i$, $D$ the Heston Riccati solution, $\phi_J$ the jump
     characteristic function and $\bar k$ the mean jump size. The certificate compares the expansion with the
     numerical solution as the switching speeds up. Every order converges at its expected rate, from one to five,

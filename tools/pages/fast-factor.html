@@ -106,8 +106,28 @@
     $$\mathbb{E}[g] = \bar g, \qquad \mathbb{E}[G_{-1}w_2] = -c\,(\sigma_0g_1 + \sigma_1g_2),$$
     $$\mathbb{E}[g\,w_2] = g_1^2 + g_2^2, \qquad \mathbb{E}[G_{-1}w_3] = c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big).$$
     <p>Integrating in time, the stationary average of the bond factor is</p>
+    $$\begin{aligned}
+    \log s(t) = &\int_0^t \bar g \;-\; \delta\int_0^t c\,(\sigma_0g_1 + \sigma_1g_2) \\
+      &+ \delta^2\int_0^t \Big[g_1^2 + g_2^2 + c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big)\Big] + O(\delta^3).
+    \end{aligned}$$
+    <p>Every coefficient is a polynomial in $B$:</p>
+    $$g_0 = -\kappa\theta_0 B + \tfrac12(\sigma_0^2 + \sigma_1^2)B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1 B^2,
+      \qquad g_2 = \tfrac12\sigma_1^2 B^2, \qquad c = \sqrt2\,\rho\,B .$$
+    <p>So every integral is a combination of $I_k = \int_0^t B^k$, and the exponent is</p>
     <div class="equation-card">
-    $$\log s(t) = \int_0^t \bar g \;-\; \delta\int_0^t c\,(\sigma_0g_1 + \sigma_1g_2) \;+\; \delta^2\int_0^t \Big[g_1^2 + g_2^2 + c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big)\Big] + O(\delta^3).$$
+    $$\begin{aligned}
+    \log s(t) = \;&-\kappa\theta_0\,I_1 + \tfrac12(\sigma_0^2 + \sigma_1^2)\,I_2 \\
+      &+ \sqrt2\,\rho\,\delta\,\Big(\kappa\theta_1\sigma_0\,I_2 - \big(\sigma_0^2\sigma_1 + \tfrac12\sigma_1^3\big)\,I_3\Big) \\
+      &+ \delta^2\Big(\kappa^2\theta_1^2\,I_2 - 2(1 + \rho^2)\,\kappa\theta_1\sigma_0\sigma_1\,I_3
+        + \big((1 + 3\rho^2)\,\sigma_0^2\sigma_1^2 + (\tfrac14 + \rho^2)\,\sigma_1^4\big)\,I_4\Big) + O(\delta^3),
+    \end{aligned}$$
+    $$\begin{aligned}
+    B &= \frac{1 - E}{\kappa}, \qquad E = e^{-\kappa t}, \\
+    I_1 &= \frac{1}{\kappa}\Big(t - \frac{1 - E}{\kappa}\Big), \\
+    I_2 &= \frac{1}{\kappa^2}\Big(t - \frac{2(1 - E)}{\kappa} + \frac{1 - E^2}{2\kappa}\Big), \\
+    I_3 &= \frac{1}{\kappa^3}\Big(t - \frac{3(1 - E)}{\kappa} + \frac{3(1 - E^2)}{2\kappa} - \frac{1 - E^3}{3\kappa}\Big), \\
+    I_4 &= \frac{1}{\kappa^4}\Big(t - \frac{4(1 - E)}{\kappa} + \frac{3(1 - E^2)}{\kappa} - \frac{4(1 - E^3)}{3\kappa} + \frac{1 - E^4}{4\kappa}\Big).
+    \end{aligned}$$
     </div>
     <p>Each term has a reading.</p>
     <ul>
@@ -122,9 +142,30 @@
 
     <h2>Step 5: the bond price</h2>
     <p>Putting the pieces together, and writing the Hermite polynomials out,</p>
-    $$u(t,x,y) = e^{-B(t)x}\,s(t)\,\Big(1 + \varepsilon\big[g_1\,y + \tfrac12 g_2\,(y^2 - 1)\big] + \varepsilon^{3/2}\big[w_3\big] + O(\varepsilon^2)\Big),$$
-    <p>with $w_3$ from order $\delta^1$ above. The dependence on the current factor value $y$ first appears at order
+    <div class="equation-card">
+    $$\begin{aligned}
+    u(t,x,y) = \;&e^{-B x}\,s(t)\,\Big(1 + \varepsilon\Big[\big(-\kappa\theta_1 B + \sigma_0\sigma_1 B^2\big)\,y + \tfrac14\sigma_1^2 B^2\,(y^2 - 1)\Big] \\
+      &- \sqrt2\,\rho\,\varepsilon^{3/2}\Big[\big(-\kappa\theta_1\sigma_1 B^2 + \tfrac32\sigma_0\sigma_1^2 B^3\big)\,y
+        + \tfrac14\sigma_1^3 B^3\,(y^2 - 1)\Big] + O(\varepsilon^2)\Big),
+    \end{aligned}$$
+    </div>
+    <p>with $\log s(t)$ from the card above. The dependence on the current factor value $y$ first appears at order
     $\varepsilon$.</p>
+    <p>At $t = 1$, $y = 0.3$, $\varepsilon = 0.0025$ and the parameters above:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody>
+      <tr><td>$B$</td><td>0.632121</td></tr>
+      <tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>0.367879, 0.168091, 0.0838978, 0.0439824</td></tr>
+      <tr><td>exponent at orders $1$, $\delta$, $\delta^2$</td><td>&minus;0.00977930, 0.000122386, 0.0000999259</td></tr>
+      <tr><td>shape terms at orders $\varepsilon$, $\varepsilon^{3/2}$</td><td>&minus;0.00333158, &minus;0.0000418965</td></tr>
+    </tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>bond factor $u\,e^{Bx}$</th><th>value</th><th>error</th></tr></thead><tbody>
+      <tr><td>averaged model</td><td>0.99026837</td><td>2.1e-6</td></tr>
+      <tr><td>through $\delta$</td><td>0.99027443</td><td>8.1e-6</td></tr>
+      <tr><td>through $\delta^2$</td><td>0.99026643</td><td>1.3e-7</td></tr>
+      <tr><td>exact (Riccati)</td><td>0.99026629</td><td></td></tr>
+    </tbody></table></div>
+    <p>At these parameters the $\delta$ term moves the averaged value the wrong way before the $\delta^2$ term corrects
+    it, which is the expansion in powers of $\sqrt\varepsilon$ at work.</p>
 
     <h2>All orders</h2>
     <p>Every further order repeats steps 3 and 4. At order $\delta^{n-2}$ the equation is</p>
