@@ -6,6 +6,7 @@
   <title>Regime-switching survival · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
@@ -15,6 +16,11 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -34,7 +40,7 @@
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -138,20 +144,56 @@
       regime has not yet had time to switch. Inside the layer the second-order bracket carries an
       extra transient of size $\varepsilon^2 e^{-2\lambda t}$.</p>
 
+    <h2>Where the formula comes from</h2>
+    <p>This section derives the first-order formula. The <a href="./idea.html">idea</a> page explains the same two
+    corrections without calculus: one is half the variance of the fluctuating hazard, the other is the memory of the
+    starting regime.</p>
+
+    <h3>The coupled equations</h3>
+    <p>By the Feynman&ndash;Kac formula the two survival probabilities, one per starting regime, solve</p>
+    $$\begin{aligned}
+      \partial_t u_1 &= \kappa(\theta_1 - x)\,\partial_x u_1 + \tfrac12\sigma_1^2\,\partial_{xx}u_1 - x\,u_1 + \lambda\,(u_2 - u_1), \\
+      \partial_t u_2 &= \kappa(\theta_2 - x)\,\partial_x u_2 + \tfrac12\sigma_2^2\,\partial_{xx}u_2 - x\,u_2 + \lambda\,(u_1 - u_2),
+    \end{aligned}$$
+    <p>both starting from $u_i(0,x) = 1$. The last terms are the switching: over a short interval $dt$ the regime jumps with
+    probability $\lambda\,dt$, and the expectation then continues from the other regime.</p>
+
+    <h3>Removing the rate</h3>
+    <p>Try $u_i = e^{-B(t)x}\,a_i(t)$. Each derivative in $x$ brings down a factor of $-B$, and the terms proportional to $x$
+    cancel when $B' = 1 - \kappa B$. Because $\kappa$ is the same in both regimes, one $B$ works for both, and what is
+    left is a pair of ordinary differential equations:</p>
+    $$a_1' = g_1\,a_1 + \lambda\,(a_2 - a_1), \qquad a_2' = g_2\,a_2 + \lambda\,(a_1 - a_2), \qquad a_i(0) = 1,$$
+    <p>with $g_i = -\kappa\theta_i B + \tfrac12\sigma_i^2B^2$. Solving this pair numerically gives the reference used
+    throughout the site.</p>
+
+    <h3>Mean and ratio</h3>
+    <p>Write the two solutions through their mean and their normalized difference:</p>
+    $$a_1 = m\,(1 + \omega), \qquad a_2 = m\,(1 - \omega).$$
+    <p>Adding the two equations gives the mean, and the switching terms cancel:</p>
+    $$m' = m\,\big(\bar g + \tilde g\,\omega\big).$$
+    <p>Subtracting them, and dividing by $m$, gives the ratio:</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0 .$$
+
+    <h3>The quasi-steady balance</h3>
+    <p>In the equation for $\omega$ the term $-2\lambda\,\omega$ is large. Switching pulls the two regimes back together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. When $\lambda$ is large, $\omega$ settles quickly near the value
+    that balances the two:</p>
+    $$\omega \approx \frac{\tilde g}{2\lambda}.$$
+    <p>Putting this into the equation for $m$ and integrating gives</p>
+    $$\log m(t) \approx \int_0^t \bar g + \frac{1}{2\lambda}\int_0^t \tilde g^{\,2}.$$
+    <p>With $a_{1,2} = m\,(1 \pm \omega)$ and the factor $e^{-B(t)x}$ restored, this is the first-order formula above. The
+    same balance, carried to higher orders, gives every term.</p>
+
     <h2>All orders</h2>
-    <p>The same calculation gives every term. Divide the difference $d = (a_1 - a_2)/2$ by the mean
-      $m = (a_1 + a_2)/2$. The ratio $\rho = d/m$ solves one scalar Riccati equation, and the mean
-      follows from it:</p>
-    $$\rho' = \tilde g\,(1 - \rho^2) - 2\lambda\rho, \quad \rho(0) = 0, \qquad
-      \log m(t) = \int_0^t (\bar g + \tilde g\,\rho), \qquad u_y = e^{-B(t)x}\, m\,(1 \pm \rho).$$
-    <p>Expanding $\rho = \sum_n \varepsilon^n \rho_n$ gives $\rho_1 = \tilde g/2$ and</p>
-    $$\rho_{n+1} = -\tfrac12\big(\rho_n' + \tilde g \sum_{i+j=n} \rho_i\rho_j\big).$$
+    <p>The balance can be carried to every order, because the two equations for $m$ and $\omega$ are exact.</p>
+    <p>Expanding $\omega = \sum_n \varepsilon^n \omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
+    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g \sum_{i+j=n} \omega_i\omega_j\big).$$
     <p>Every
-      $\rho_n$ is a polynomial in $E = 1 - e^{-\kappa t}$, because $dE/dt = \kappa(1-E)$, so every
+      $\omega_n$ is a polynomial in $E = 1 - e^{-\kappa t}$, because $dE/dt = \kappa(1-E)$, so every
       term of $\log m$ integrates in closed form.</p>
-    <p>The outer series does not start at $\rho(0) = 0$. The fast transient that corrects it decays
+    <p>The outer series does not start at $\omega(0) = 0$. The fast transient that corrects it decays
       within about $1/(2\lambda)$, but it leaves a permanent shift in $\log m$:</p>
-    $$-\varepsilon^4\,\rho_2(0)\,\tilde g'(0)/4 + O(\varepsilon^5).$$
+    $$-\varepsilon^4\,\omega_2(0)\,\tilde g'(0)/4 + O(\varepsilon^5).$$
     <p>The layer is solved to all orders in the span of $\tau^k e^{-2j\tau}$, with $\tau = \lambda t$. With both
       series the error after $n$ orders falls like $\varepsilon^{n+1}$.</p>
     <p>The certificate

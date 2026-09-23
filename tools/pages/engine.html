@@ -14,28 +14,58 @@
     <p>The model enters only through the functions $g_i(t)$, one per regime, and the terminal vector.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>Model</th><th>Switching parameters</th><th>Time function</th></tr></thead><tbody><tr><td><a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a></td><td>mean level, volatility</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$</td></tr><tr><td><a href="./credit.html">Gaussian factors, two-name credit</a></td><td>means, volatilities, correlations</td><td>$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$</td></tr><tr><td><a href="./cir.html">CIR</a></td><td>mean level</td><td>$-\kappa\theta_i B_{\mathrm{CIR}}$</td></tr><tr><td><a href="./jumps.html">Vasicek with jumps</a></td><td>mean, volatility, jump intensity</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$</td></tr><tr><td><a href="./counts.html">Poisson counts</a></td><td>arrival rate</td><td>$(z-1)\,\ell_i$</td></tr><tr><td><a href="./heston.html">Heston</a></td><td>long-run variance</td><td>$\kappa\theta_i D(t)$, complex</td></tr><tr><td><a href="./black-scholes.html">Black&ndash;Scholes</a></td><td>volatility</td><td>$iu(r - \tfrac12\sigma_i^2) - \tfrac12u^2\sigma_i^2$</td></tr><tr><td><a href="./bond-options.html">Bond options</a></td><td>mean level, volatility</td><td>$-\kappa\theta_i \tilde B + \tfrac12\sigma_i^2\tilde B^2$, indicator terminal vector</td></tr><tr><td><a href="./fast-factor.html">Fast mean-reverting factor</a></td><td>mean level and volatility, continuously</td><td>an operator in the Hermite basis, with correlation</td></tr></tbody></table></div>
 
-    <h2>The recursion</h2>
-    <p>Write the generator as $Q = Q_0/\varepsilon$ with $\varepsilon$ the mean holding time, let $\pi$ be the
-    stationary distribution, and set $s = \pi\cdot a$ and $w = a/s - \mathbf 1$, so that $\pi\cdot w = 0$. Then</p>
+    <h2>Deriving the recursion</h2>
+    <p>The derivation uses two ideas from the Background pages: the <a href="./solvability.html">solvability
+    condition</a> and the <a href="./layers.html">initial layer</a>. It is written here for any number of regimes.</p>
+
+    <h3>Step 1: separate the average from the shape</h3>
+    <p>Let $\pi$ be the stationary distribution of the chain, so that $\pi Q = 0$. Split $a$ into its stationary
+    average and its shape:</p>
+    $$s = \pi\cdot a, \qquad w = \frac{a}{s} - \mathbf 1, \qquad \pi\cdot w = 0 .$$
+    <p>Multiply the system $a' = (Q + \operatorname{diag} g)a$ on the left by $\pi$. The switching term drops out because
+    $\pi Q = 0$, which leaves an equation for the average:</p>
+    $$\frac{s'}{s} = \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g .$$
+    <p>Subtracting this from the equation for $a/s$ gives the equation for the shape. Writing $Q = Q_0/\varepsilon$, with
+    $\varepsilon$ a typical holding time,</p>
     <div class="equation-card">
-    $$\begin{aligned}
-      \frac{s'}{s} &= \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g, \\[4pt]
-      \varepsilon\,w' &= Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).
-    \end{aligned}$$
+    $$\varepsilon\,w' = Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).$$
     </div>
-    <p>The outer series $w = \sum_{n\ge1}\varepsilon^n w_n$ follows from $w_n = Q_0^{\#}\big(w_{n-1}' - F_{n-1}\big)$,
-    where $Q_0^{\#}$ is the group inverse of $Q_0$ and $F_{n-1}$ collects the terms of $F$ of that order. Each step
-    is solvable because $\pi$ annihilates the right-hand side. The first order, with $Q^{\#}$ the group inverse of
-    $Q$ itself, is</p>
+    <p>The right side of the shape equation always averages to zero under $\pi$. That is what makes the next step work.</p>
+
+    <h3>Step 2: expand the shape</h3>
+    <p>Write $w = \varepsilon w_1 + \varepsilon^2 w_2 + \cdots$ and match powers of $\varepsilon$. At order $\varepsilon^n$ the
+    shape equation reads</p>
+    $$Q_0\,w_n = w_{n-1}' - F_{n-1},$$
+    <p>where $F_{n-1}$ collects the terms of $F$ of order $\varepsilon^{n-1}$. By the Fredholm alternative this has a
+    solution because the right side averages to zero, and the solution with $\pi\cdot w_n = 0$ is</p>
+    $$w_n = Q_0^{\#}\big(w_{n-1}' - F_{n-1}\big),$$
+    <p>with $Q_0^{\#}$ the group inverse. Each order therefore costs one application of a fixed matrix to terms already
+    known.</p>
+
+    <h3>Step 3: the first order</h3>
+    <p>At the first order $w_0 = 0$ and $F_0 = g - \bar g\,\mathbf 1$, so, with $Q^{\#} = \varepsilon\,Q_0^{\#}$ the group inverse
+    of $Q$ itself,</p>
+    $$\varepsilon\,w_1 = -Q^{\#}\big(g - \bar g\big).$$
+    <p>Putting this into the equation for $s$ gives</p>
     $$a_i(t) \approx \exp\Big(\int_0^t \big[\bar g - \pi\cdot\big(g\,Q^{\#}(g - \bar g)\big)\big]\Big)\,\Big(1 - \big[Q^{\#}(g - \bar g)\big]_i(t)\Big).$$
-    <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$ the class is closed under products and derivatives,
-    so every $w_n$ is again such a sum and every term of $\log s$ integrates in closed form. Otherwise $g_i$ is held
-    as a Chebyshev series.</p>
-    <p>The outer series does not match the terminal vector. The initial layer $\eta = w - w_{\mathrm{outer}}$, in the fast
-    time $\tau = t/\varepsilon$, solves</p>
-    $$d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$$
-    <p>with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
-    $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$
+    <p>The correction in the exponent has a direct meaning. Because $Q^{\#}f = -\int_0^\infty e^{Q\tau}f\,d\tau$ when
+    $\pi\cdot f = 0$,</p>
+    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
+    <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
+    rate of $\int g$, exactly as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
+    is the memory of the starting regime.</p>
+
+    <h3>Step 4: closed form</h3>
+    <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$, products and derivatives of such sums are again such
+    sums. So every $w_n$ is a sum of exponentials, and every term of $\log s$ integrates in closed form. Otherwise
+    $g_i$ is held as a Chebyshev series, which is also closed under these operations.</p>
+
+    <h3>Step 5: the initial layer</h3>
+    <p>The outer series does not match the terminal vector at $t = 0$. The mismatch is removed on the fast clock
+    $\tau = t/\varepsilon$:</p>
+    $$\eta = w - w_{\mathrm{outer}}, \qquad \frac{d\eta}{d\tau} = Q_0\,\eta + \varepsilon\,\big[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})\big], \qquad \eta(0) = w(0) - w_{\mathrm{outer}}(0).$$
+    <p>It decays at the rates of the chain and is solved order by order in the eigenbasis of $Q_0$, in the span of
+    $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$, with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 
     <h2>Other inputs</h2>

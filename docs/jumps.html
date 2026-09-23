@@ -6,6 +6,7 @@
   <title>Vasicek with jumps at a switching intensity · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
@@ -15,6 +16,11 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -34,7 +40,7 @@
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -68,25 +74,55 @@
     plus jumps at the average rate $\bar\ell = \tfrac12(\ell_1 + \ell_2)$.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>A jump of size $J$ multiplies $e^{-Bx}$ by $e^{-BJ}$, whose mean is $1/(1 + mB)$, so the jumps change only the
-    time function. With $B(t) = (1 - e^{-\kappa t})/\kappa$, $u_i = e^{-B(t)x}a_i(t)$,
+    <p>By the Feynman&ndash;Kac formula the prices $u_i(t,x)$, one for each starting regime, solve the coupled
+    equations</p>
+    $$\partial_t u_i = \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i + \ell_i\,\mathbb{E}\big[u_i(t, x + J) - u_i(t, x)\big] + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    <p>The last term is the regime switching: it couples the equation for regime $i$ to the others at the switching
+    rates. Try the Vasicek form $u_i = e^{-B(t)x}a_i(t)$. Then $\partial_x u_i = -B\,u_i$ and $\partial_{xx}u_i = B^2u_i$, and
+    after dividing by $e^{-Bx}$ the terms proportional to $x$ are</p>
+    $$-B'\,x = \kappa B\,x - x .$$
+    <p>They cancel for every regime when $B' = 1 - \kappa B$, that is $B(t) = (1 - e^{-\kappa t})/\kappa$. Because $\kappa$
+    is the same in every regime, one $B$ works for all of them. What remains involves $t$ only.</p>
+    <p>The jump term needs one more step. A jump of size $J$ multiplies $e^{-Bx}$ by $e^{-BJ}$, and for exponential
+    jumps with mean $m$</p>
+    $$\mathbb{E}\big[e^{-BJ}\big] = \frac{1}{1 + mB}.$$
+    <p>So the jumps change only the time function. The prices are $u_i = e^{-B(t)x}a_i(t)$ with
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and</p>
     $$g_i(t) = -\kappa\theta_i B + \tfrac12\sigma_i^2 B^2 + \ell_i\Big(\frac{1}{1 + m B} - 1\Big).$$
     <h2>The expansion</h2>
-    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
-    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i$ is the function above. To first order,</p>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>where $g_i$ is the function above. The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
-    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
-    the starting regime and fades as $\lambda$ grows.</p>
-    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
-    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
-    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
-    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
-    <p>This series does not meet
-    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>$e^{\int\bar g}$ is the averaged model.</li>
+      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
+        both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
+    matching powers gives</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$. An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
+    <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
     <p>The jump term is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
 
     <h2>Results</h2>

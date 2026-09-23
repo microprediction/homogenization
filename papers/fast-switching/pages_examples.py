@@ -50,23 +50,62 @@ def error_rows(make, t, lams, orders=range(0, 7), state=0):
 
 
 def two_state_expansion(g_desc, extra=''):
-    """The expansion paragraph for a symmetric two-state chain switching at rate lambda."""
-    return r'''    <h2>The expansion</h2>
-    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
-    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where ''' + g_desc + r'''. To first order,</p>
+    """The expansion section for a symmetric two-state chain switching at rate lambda."""
+    body = r"""    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>where """ + g_desc + r""". The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
-    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
-    the starting regime and fades as $\lambda$ grows.</p>
-    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
-    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
-    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
-    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
-    <p>This series does not meet
-    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
-''' + (('    <p>' + extra.strip() + '</p>\n') if extra else '')
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>$e^{\int\bar g}$ is the averaged model.</li>
+      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
+        both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
+    matching powers gives</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$. An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
+    <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+"""
+    if extra:
+        body += '    <p>' + extra.strip() + '</p>\n'
+    return body
+
+
+def vasicek_derivation(extra_x='', extra_g='', payoff=r'u_i(0,x) = 1', closing=':'):
+    """How the state factors out of a Vasicek-type Feynman-Kac equation."""
+    return r"""    <p>By the Feynman&ndash;Kac formula the prices $u_i(t,x)$, one for each starting regime, solve the coupled
+    equations</p>
+    $$\begin{aligned}
+      \partial_t u_i = {}& \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i \\
+      &""" + extra_x + r""" + \sum_j Q_{ij}\,u_j ,
+    \end{aligned}$$
+    <p>starting from $""" + payoff + r"""$. The last term is the regime switching: it couples the equation for regime $i$ to the others at the switching
+    rates. Try the Vasicek form $u_i = e^{-B(t)x}a_i(t)$. Then $\partial_x u_i = -B\,u_i$ and $\partial_{xx}u_i = B^2u_i$, and
+    after dividing by $e^{-Bx}$ the terms proportional to $x$ are</p>
+    $$-B'\,x = \kappa B\,x - x .$$
+    <p>They cancel for every regime when $B' = 1 - \kappa B$, that is $B(t) = (1 - e^{-\kappa t})/\kappa$. Because $\kappa$
+    is the same in every regime, one $B$ works for all of them. What remains involves $t$ only""" + closing + """</p>
+"""
 
 
 # ------------------------------------------------------------------ three regimes
@@ -114,9 +153,7 @@ def three_regimes_page():
     $\bar\theta = \pi\cdot\theta$ and variance $\bar s = \pi\cdot\sigma^2$.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>Because $\kappa$ is the same in every regime, $u_i(t,x) = e^{-B(t)x}a_i(t)$ with
-    $B(t) = (1 - e^{-\kappa t})/\kappa$, and</p>
-    $$a' = \big(s\,Q_1 + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i(t) = -\kappa\theta_i B(t) + \tfrac12\sigma_i^2 B(t)^2 .$$
+''' + vasicek_derivation() + r'''    $$a' = \big(s\,Q_1 + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i(t) = -\kappa\theta_i B(t) + \tfrac12\sigma_i^2 B(t)^2 .$$
 
     <h2>The expansion</h2>
     <p>Write $Q = s\,Q_1$ and $\bar g = \pi\cdot g$, and let $Q^{\#}$ be the group inverse of $Q$: the matrix that
@@ -183,7 +220,11 @@ def credit_page():
     are independent. The averaged model has no default correlation at all.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>With $B_j(t) = c_j(1 - e^{-\kappa_j t})/\kappa_j$, $S_c = e^{-B_1x_1 - B_2x_2}\,a(t)$ and</p>
+    <p>The prices solve a Feynman&ndash;Kac equation in $x_1$, $x_2$ and the regime, with the potential
+    $c_1x_1 + c_2x_2$. Try one Vasicek factor per intensity, $S_c = e^{-B_1x_1 - B_2x_2}\,a(t)$. The terms in $x_j$ cancel
+    when $B_j' = c_j - \kappa_jB_j$, which gives</p>
+    $$B_j(t) = c_j\,\frac{1 - e^{-\kappa_j t}}{\kappa_j}.$$
+    <p>Neither $B_j$ depends on the regime, because the mean-reversion speeds do not switch. What remains is</p>
     $$a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i = \sum_j\big(-\kappa_j\theta_{j,i}B_j + \tfrac12\sigma_{j,i}^2B_j^2\big).$$
 '''
     body += two_state_expansion(r'$g$ is the function above for the chosen $c$',
@@ -243,7 +284,10 @@ def counts_page():
     more variable than Poisson, and the corrector carries that overdispersion.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>An event multiplies $z^{N}$ by $z$, so</p>
+    <p>Condition on what happens in a short interval $dt$ at the start. While the regime is $i$, an event occurs with
+    probability $\ell_i\,dt$ and multiplies $z^{N}$ by $z$; the regime jumps to $j$ with probability $Q_{ij}\,dt$. So</p>
+    $$a_i(t + dt) = (1 - \ell_i\,dt)\,a_i(t) + \ell_i\,dt\;z\,a_i(t) + \sum_j Q_{ij}\,dt\;a_j(t) + o(dt),$$
+    <p>and letting $dt \to 0$,</p>
     $$a' = \big(Q + (z-1)\operatorname{diag}\ell\big)\,a, \qquad a(0) = \mathbf 1, \qquad g_i = (z-1)\,\ell_i ,$$
     <p>a constant, complex for complex $z$. Evaluating $a(t)$ at the 64 points $z = e^{2\pi i k/64}$ on the unit circle
     and applying the discrete Fourier transform returns all the probabilities at once.</p>
@@ -291,8 +335,12 @@ def cir_page():
     $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its classical bond price.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>The coefficient of $x$ in the CIR bond price solves $B' = 1 - \kappa B - \tfrac12\sigma^2 B^2$, $B(0) = 0$,
-    which does not involve $\theta$:</p>
+    <p>By the Feynman&ndash;Kac formula the prices solve</p>
+    $$\partial_t u_i = \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma^2x\,\partial_{xx}u_i - x\,u_i + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    <p>Try $u_i = e^{-B(t)x}a_i(t)$. The square-root diffusion now contributes $\tfrac12\sigma^2B^2\,x$, so the terms in
+    $x$ cancel when</p>
+    $$B' = 1 - \kappa B - \tfrac12\sigma^2B^2, \qquad B(0) = 0 .$$
+    <p>This Riccati equation involves $\kappa$ and $\sigma$ but not $\theta$, so one $B$ serves every regime:</p>
     $$B(t) = \frac{2\,(e^{ht} - 1)}{(h+\kappa)(e^{ht}-1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}.$$
     <p>So $u_i = e^{-B(t)x}a_i(t)$ with $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and
     $g_i(t) = -\kappa\,\theta_i\,B(t)$. If $\sigma$ also switched, $B$ would differ between regimes and the state
@@ -340,8 +388,10 @@ def jumps_page():
     plus jumps at the average rate $\bar\ell = \tfrac12(\ell_1 + \ell_2)$.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>A jump of size $J$ multiplies $e^{-Bx}$ by $e^{-BJ}$, whose mean is $1/(1 + mB)$, so the jumps change only the
-    time function. With $B(t) = (1 - e^{-\kappa t})/\kappa$, $u_i = e^{-B(t)x}a_i(t)$,
+''' + vasicek_derivation(extra_x=r' + \ell_i\,\mathbb{E}\big[u_i(t, x + J) - u_i(t, x)\big]', closing='.') + r'''    <p>The jump term needs one more step. A jump of size $J$ multiplies $e^{-Bx}$ by $e^{-BJ}$, and for exponential
+    jumps with mean $m$</p>
+    $$\mathbb{E}\big[e^{-BJ}\big] = \frac{1}{1 + mB}.$$
+    <p>So the jumps change only the time function. The prices are $u_i = e^{-B(t)x}a_i(t)$ with
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and</p>
     $$g_i(t) = -\kappa\theta_i B + \tfrac12\sigma_i^2 B^2 + \ell_i\Big(\frac{1}{1 + m B} - 1\Big).$$
 '''
@@ -404,8 +454,11 @@ def heston_page():
     $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its closed-form characteristic function.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>Heston&apos;s characteristic function is $e^{C(T) + D(T)v_0}$, where $D$ solves a Riccati equation that involves
-    $\kappa$, $\xi$ and $\rho$ but not $\theta$:</p>
+    <p>The characteristic function solves a Feynman&ndash;Kac equation in the log price, the variance and the regime.
+    Try the Heston form $\phi_i = e^{iuX_0 + D(t)v_0}\,a_i(t)$. The terms in $v_0$ cancel when</p>
+    $$D' = -\tfrac12(u^2 + iu) + (\rho\xi iu - \kappa)\,D + \tfrac12\xi^2D^2, \qquad D(0) = 0 .$$
+    <p>This Riccati equation involves $\kappa$, $\xi$ and $\rho$ but not $\theta$, so one $D$ serves both regimes. Its
+    solution is</p>
     $$D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)},$$
     <p>with</p>
     $$\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d).$$
@@ -457,8 +510,11 @@ def black_scholes_page():
     $\bar\sigma^2 = \tfrac12(\sigma_1^2 + \sigma_2^2)$.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>There is no state to factor out: $\phi_i(u) = a_i(T)$ directly, with $a' = (Q + \operatorname{diag} g)a$,
-    $a(0) = \mathbf 1$ and the constant, complex</p>
+    <p>Condition on a short interval $dt$ at the start. While the regime is $i$, the log return grows by a normal amount
+    with mean $(r - \tfrac12\sigma_i^2)\,dt$ and variance $\sigma_i^2\,dt$, which multiplies $e^{iu\log(S_T/S_0)}$ on average by</p>
+    $$\exp\Big(\big[iu(r - \tfrac12\sigma_i^2) - \tfrac12u^2\sigma_i^2\big]\,dt\Big).$$
+    <p>Meanwhile the regime jumps at the rates in $Q$. So $\phi_i(u) = a_i(T)$, with no state to factor out,
+    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and the constant, complex</p>
     $$g_i = iu\big(r - \tfrac12\sigma_i^2\big) - \tfrac12u^2\sigma_i^2 .$$
 '''
     body += two_state_expansion(r'$\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2)$',
@@ -513,7 +569,10 @@ def bond_options_page():
     $$\mathbb{E}\big[e^{-\int_0^T x_r\,dr - c\,x_T}\,\mathbf 1\{x_T < x_j^*,\ y_T = j\}\big]$$
     <p>for $c = b$ and $c = 0$. Each
     follows by Gil-Pelaez inversion from the same expectation without the indicator on $x_T$ and with $c$ replaced
-    by $c - iu$. For a terminal exponent $c$ the coefficient of $x$ is</p>
+    by $c - iu$.</p>
+    <p>For such an expectation the Feynman&ndash;Kac equation is the same as for the bond price, and the same substitution
+    $e^{-\tilde B(t)x}a_i(t)$ works. The terms in $x$ again require $\tilde B' = 1 - \kappa\tilde B$, but now the start
+    is $\tilde B(0) = c$, because the payoff contains $e^{-c\,x}$. So the coefficient of $x$ is</p>
     $$\tilde B(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa,$$
     <p>which does not depend on the regime, so</p>
     $$\mathbb{E}\big[e^{-\int_0^t x_r\,dr - c\,x_t}\,\mathbf 1\{y_t = j\} \mid y_0 = i\big] = e^{-\tilde B(t)x_0}\,a_i(t), \qquad a' = (Q + \operatorname{diag} g)\,a, \quad a(0) = e_j,$$

@@ -6,6 +6,7 @@
   <title>Three regimes · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
@@ -15,6 +16,11 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -34,7 +40,7 @@
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -75,8 +81,15 @@
     $\bar\theta = \pi\cdot\theta$ and variance $\bar s = \pi\cdot\sigma^2$.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>Because $\kappa$ is the same in every regime, $u_i(t,x) = e^{-B(t)x}a_i(t)$ with
-    $B(t) = (1 - e^{-\kappa t})/\kappa$, and</p>
+    <p>By the Feynman&ndash;Kac formula the prices $u_i(t,x)$, one for each starting regime, solve the coupled
+    equations</p>
+    $$\partial_t u_i = \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    <p>The last term is the regime switching: it couples the equation for regime $i$ to the others at the switching
+    rates. Try the Vasicek form $u_i = e^{-B(t)x}a_i(t)$. Then $\partial_x u_i = -B\,u_i$ and $\partial_{xx}u_i = B^2u_i$, and
+    after dividing by $e^{-Bx}$ the terms proportional to $x$ are</p>
+    $$-B'\,x = \kappa B\,x - x .$$
+    <p>They cancel for every regime when $B' = 1 - \kappa B$, that is $B(t) = (1 - e^{-\kappa t})/\kappa$. Because $\kappa$
+    is the same in every regime, one $B$ works for all of them. What remains involves $t$ only:</p>
     $$a' = \big(s\,Q_1 + \operatorname{diag} g(t)\big)\,a, \quad a(0) = \mathbf 1, \qquad g_i(t) = -\kappa\theta_i B(t) + \tfrac12\sigma_i^2 B(t)^2 .$$
 
     <h2>The expansion</h2>

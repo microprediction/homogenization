@@ -6,6 +6,7 @@
   <title>Heston with a switching long-run variance · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
@@ -15,6 +16,11 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -34,7 +40,7 @@
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -71,28 +77,50 @@
     $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its closed-form characteristic function.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>Heston&apos;s characteristic function is $e^{C(T) + D(T)v_0}$, where $D$ solves a Riccati equation that involves
-    $\kappa$, $\xi$ and $\rho$ but not $\theta$:</p>
+    <p>The characteristic function solves a Feynman&ndash;Kac equation in the log price, the variance and the regime.
+    Try the Heston form $\phi_i = e^{iuX_0 + D(t)v_0}\,a_i(t)$. The terms in $v_0$ cancel when</p>
+    $$D' = -\tfrac12(u^2 + iu) + (\rho\xi iu - \kappa)\,D + \tfrac12\xi^2D^2, \qquad D(0) = 0 .$$
+    <p>This Riccati equation involves $\kappa$, $\xi$ and $\rho$ but not $\theta$, so one $D$ serves both regimes. Its
+    solution is</p>
     $$D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)},$$
     <p>with</p>
     $$\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d).$$
     <p>So $\phi_i = e^{D(T)v_0}a_i(T)$ with
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and $g_i(t) = \kappa\,\theta_i\,D(t)$, which is complex.</p>
     <h2>The expansion</h2>
-    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
-    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i = \kappa\theta_i D$, so that $\tilde g = \kappa\tilde\theta D$. To first order,</p>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>where $g_i = \kappa\theta_i D$, so that $\tilde g = \kappa\tilde\theta D$. The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
-    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
-    the starting regime and fades as $\lambda$ grows.</p>
-    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
-    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
-    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
-    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
-    <p>This series does not meet
-    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>$e^{\int\bar g}$ is the averaged model.</li>
+      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
+        both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
+    matching powers gives</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$. An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
+    <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
     <p>The engine holds the complex $g_i$ as Chebyshev series.</p>
 
     <h2>Results</h2>

@@ -37,28 +37,58 @@ def engine_page():
         ['<a href="./fast-factor.html">Fast mean-reverting factor</a>', 'mean level and volatility, continuously', 'an operator in the Hermite basis, with correlation'],
     ])
     body += r'''
-    <h2>The recursion</h2>
-    <p>Write the generator as $Q = Q_0/\varepsilon$ with $\varepsilon$ the mean holding time, let $\pi$ be the
-    stationary distribution, and set $s = \pi\cdot a$ and $w = a/s - \mathbf 1$, so that $\pi\cdot w = 0$. Then</p>
+    <h2>Deriving the recursion</h2>
+    <p>The derivation uses two ideas from the Background pages: the <a href="./solvability.html">solvability
+    condition</a> and the <a href="./layers.html">initial layer</a>. It is written here for any number of regimes.</p>
+
+    <h3>Step 1: separate the average from the shape</h3>
+    <p>Let $\pi$ be the stationary distribution of the chain, so that $\pi Q = 0$. Split $a$ into its stationary
+    average and its shape:</p>
+    $$s = \pi\cdot a, \qquad w = \frac{a}{s} - \mathbf 1, \qquad \pi\cdot w = 0 .$$
+    <p>Multiply the system $a' = (Q + \operatorname{diag} g)a$ on the left by $\pi$. The switching term drops out because
+    $\pi Q = 0$, which leaves an equation for the average:</p>
+    $$\frac{s'}{s} = \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g .$$
+    <p>Subtracting this from the equation for $a/s$ gives the equation for the shape. Writing $Q = Q_0/\varepsilon$, with
+    $\varepsilon$ a typical holding time,</p>
     <div class="equation-card">
-    $$\begin{aligned}
-      \frac{s'}{s} &= \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g, \\[4pt]
-      \varepsilon\,w' &= Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).
-    \end{aligned}$$
+    $$\varepsilon\,w' = Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).$$
     </div>
-    <p>The outer series $w = \sum_{n\ge1}\varepsilon^n w_n$ follows from $w_n = Q_0^{\#}\big(w_{n-1}' - F_{n-1}\big)$,
-    where $Q_0^{\#}$ is the group inverse of $Q_0$ and $F_{n-1}$ collects the terms of $F$ of that order. Each step
-    is solvable because $\pi$ annihilates the right-hand side. The first order, with $Q^{\#}$ the group inverse of
-    $Q$ itself, is</p>
+    <p>The right side of the shape equation always averages to zero under $\pi$. That is what makes the next step work.</p>
+
+    <h3>Step 2: expand the shape</h3>
+    <p>Write $w = \varepsilon w_1 + \varepsilon^2 w_2 + \cdots$ and match powers of $\varepsilon$. At order $\varepsilon^n$ the
+    shape equation reads</p>
+    $$Q_0\,w_n = w_{n-1}' - F_{n-1},$$
+    <p>where $F_{n-1}$ collects the terms of $F$ of order $\varepsilon^{n-1}$. By the Fredholm alternative this has a
+    solution because the right side averages to zero, and the solution with $\pi\cdot w_n = 0$ is</p>
+    $$w_n = Q_0^{\#}\big(w_{n-1}' - F_{n-1}\big),$$
+    <p>with $Q_0^{\#}$ the group inverse. Each order therefore costs one application of a fixed matrix to terms already
+    known.</p>
+
+    <h3>Step 3: the first order</h3>
+    <p>At the first order $w_0 = 0$ and $F_0 = g - \bar g\,\mathbf 1$, so, with $Q^{\#} = \varepsilon\,Q_0^{\#}$ the group inverse
+    of $Q$ itself,</p>
+    $$\varepsilon\,w_1 = -Q^{\#}\big(g - \bar g\big).$$
+    <p>Putting this into the equation for $s$ gives</p>
     $$a_i(t) \approx \exp\Big(\int_0^t \big[\bar g - \pi\cdot\big(g\,Q^{\#}(g - \bar g)\big)\big]\Big)\,\Big(1 - \big[Q^{\#}(g - \bar g)\big]_i(t)\Big).$$
-    <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$ the class is closed under products and derivatives,
-    so every $w_n$ is again such a sum and every term of $\log s$ integrates in closed form. Otherwise $g_i$ is held
-    as a Chebyshev series.</p>
-    <p>The outer series does not match the terminal vector. The initial layer $\eta = w - w_{\mathrm{outer}}$, in the fast
-    time $\tau = t/\varepsilon$, solves</p>
-    $$d\eta/d\tau = Q_0\eta + \varepsilon\,[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})]$$
-    <p>with $\eta(0) = w(0) - w_{\mathrm{outer}}(0)$. It is solved order by order in the eigenbasis of $Q_0$, in the span of
-    $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$
+    <p>The correction in the exponent has a direct meaning. Because $Q^{\#}f = -\int_0^\infty e^{Q\tau}f\,d\tau$ when
+    $\pi\cdot f = 0$,</p>
+    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
+    <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
+    rate of $\int g$, exactly as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
+    is the memory of the starting regime.</p>
+
+    <h3>Step 4: closed form</h3>
+    <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$, products and derivatives of such sums are again such
+    sums. So every $w_n$ is a sum of exponentials, and every term of $\log s$ integrates in closed form. Otherwise
+    $g_i$ is held as a Chebyshev series, which is also closed under these operations.</p>
+
+    <h3>Step 5: the initial layer</h3>
+    <p>The outer series does not match the terminal vector at $t = 0$. The mismatch is removed on the fast clock
+    $\tau = t/\varepsilon$:</p>
+    $$\eta = w - w_{\mathrm{outer}}, \qquad \frac{d\eta}{d\tau} = Q_0\,\eta + \varepsilon\,\big[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})\big], \qquad \eta(0) = w(0) - w_{\mathrm{outer}}(0).$$
+    <p>It decays at the rates of the chain and is solved order by order in the eigenbasis of $Q_0$, in the span of
+    $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$, with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 
     <h2>Other inputs</h2>
@@ -91,57 +121,148 @@ def fast_factor_page():
         ex = fast_factor_exact(t, y, eps, rho=rho, **par)
         rows.append([f'{eps:g}'] + [e(abs(hermite_eval(fg.a(t, o), y) - ex)) for o in range(7)])
     body = r'''    <h1>A fast mean-reverting factor</h1>
-    <p class="subtitle">The continuous version of regime switching, with correlation, to all orders in $\sqrt\varepsilon$.</p>
+    <p class="subtitle">The continuous version of regime switching, with correlation, derived term by term.</p>
+
+    <p class="lead">On most pages of this site a Markov chain switches the parameters of a rate. Here a continuous
+    factor does the same job: it moves the mean level and the volatility smoothly and quickly. This page derives
+    the correction terms one at a time, for a reader who has seen the <a href="./idea.html">idea of averaging</a>
+    and the <a href="./solvability.html">solvability condition</a> but nothing else.</p>
 
     <h2>The model</h2>
     <p>The short rate $x_t$ reverts to a level, and diffuses with a volatility, that both depend on a hidden factor
-    $Y_t$ which moves much faster than the rate:</p>
-    $$dx_t = \kappa\,\big(\theta(Y_t) - x_t\big)\,dt + \sigma(Y_t)\,dW_t, \qquad dY_t = -\frac{1}{\varepsilon}\,Y_t\,dt + \sqrt{\frac{2}{\varepsilon}}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
-    <p>The factor is an Ornstein&ndash;Uhlenbeck process whose stationary law is standard normal. It forgets its
-    starting point over a time of order $\varepsilon$, while the rate reverts over $1/\kappa$, so $\varepsilon \ll 1/\kappa$
-    separates the two time scales.</p>
-    <p>The correlation $\rho$ couples the shocks to the rate and to the factor. This is
-    the setting of fast mean-reverting stochastic volatility for interest rates.</p>
-    <p class="muted">Parameters: $\kappa = 1$,
-    $\theta(y) = 0.05 + 0.03y$, $\sigma(y) = 0.25 + 0.2y$ and $\rho = -0.7$.</p>
+    $Y_t$:</p>
+    $$dx_t = \kappa\,\big(\theta(Y_t) - x_t\big)\,dt + \sigma(Y_t)\,dW_t .$$
+    <p>The factor is a fast Ornstein&ndash;Uhlenbeck process,</p>
+    $$dY_t = -\frac{1}{\varepsilon}\,Y_t\,dt + \sqrt{\frac{2}{\varepsilon}}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
+    <p>Its stationary law is standard normal whatever the value of $\varepsilon$. It forgets its starting point over a
+    time of order $\varepsilon$, while the rate reverts over $1/\kappa$. So $\varepsilon \ll 1/\kappa$ separates the two
+    time scales.</p>
+    <p>The correlation $\rho$ ties the shocks to the rate to the shocks to the factor. This is the setting of fast
+    mean-reverting stochastic volatility for interest rates, with the mean level allowed to move as well.</p>
+    <p>For a check with a closed-form answer, both functions are taken to be linear:</p>
+    $$\theta(y) = \theta_0 + \theta_1\,y, \qquad \sigma(y) = \sigma_0 + \sigma_1\,y .$$
+    <p class="muted">Parameters: $\kappa = 1$, $\theta_0 = 0.05$, $\theta_1 = 0.03$, $\sigma_0 = 0.25$, $\sigma_1 = 0.2$, $\rho = -0.7$.</p>
 
     <h2>What is computed</h2>
-    <p>The bond price</p>
+    <p>The bond price for maturity $t$, starting from rate $x$ and factor value $y$:</p>
     $$u(t, x, y) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ Y_0 = y\big].$$
+
     <h2>Averaging</h2>
-    <p>When the factor is infinitely fast the rate sees only its stationary law, and the limit is Vasicek&apos;s model
-    with mean level $\mathbb{E}[\theta(Y)]$ and variance $\mathbb{E}[\sigma(Y)^2]$, the expectations taken under the
-    standard normal law.</p>
+    <p>When the factor is infinitely fast, the rate sees only its stationary law. The limit is Vasicek&apos;s model with
+    the averaged mean level and variance,</p>
+    $$\bar\theta = \mathbb{E}[\theta(Y)] = \theta_0, \qquad \bar\sigma^2 = \mathbb{E}[\sigma(Y)^2] = \sigma_0^2 + \sigma_1^2,$$
+    <p>with the expectations taken under the standard normal law. The rest of the page computes what the average
+    leaves out.</p>
 
-    <h2>Reduction to a linear system</h2>
-    <p>Because $\kappa$ does not depend on $Y$, $u = e^{-B(t)x}a(t,y)$ with $B(t) = (1 - e^{-\kappa t})/\kappa$.
-    With $\delta = \sqrt\varepsilon$,</p>
-    $$a_t = \Big(\frac{1}{\delta^2}\mathcal L + \frac1\delta\,G_{-1}(t) + G_0(t)\Big)a, \qquad a(0,\cdot) = 1,$$
-    $$\mathcal L = -y\,\partial_y + \partial_{yy}, \qquad G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y, \qquad G_0 = -\kappa\theta(y)B(t) + \tfrac12\sigma(y)^2B(t)^2 .$$
-    <p>Write $a(t,\cdot)$ in Hermite coordinates, $a = \sum_n c_n(t)\,\mathrm{He}_n(y)$, with the probabilists&apos; Hermite
-    polynomials $\mathrm{He}_0 = 1$, $\mathrm{He}_1 = y$, $\mathrm{He}_2 = y^2 - 1$, and so on. They are orthogonal under
-    the standard normal law,</p>
-    $$\mathcal L\,\mathrm{He}_n = -n\,\mathrm{He}_n, \qquad y\,\mathrm{He}_n = \mathrm{He}_{n+1} + n\,\mathrm{He}_{n-1}, \qquad \partial_y\mathrm{He}_n = n\,\mathrm{He}_{n-1}.$$
-    <p>In these coordinates $\mathcal L$ is $\operatorname{diag}(0, -1, -2, \dots)$, the
-    constant function is the unit vector $e_0$, and the stationary expectation reads off $c_0$. The system is a chain
-    with states $0, 1, 2, \dots$ and decay rates $0, 1, 2, \dots$, coupled by the banded matrices $G_{-1}$ and $G_0$.</p>
+    <h2>Step 1: the rate factors out</h2>
+    <p>By the Feynman&ndash;Kac formula, $u$ solves a partial differential equation in $t$, $x$ and $y$. Try the Vasicek
+    form in $x$:</p>
+    $$u(t,x,y) = e^{-B(t)\,x}\,a(t,y), \qquad B(t) = \frac{1 - e^{-\kappa t}}{\kappa}.$$
+    <p>Every term that involves $x$ cancels, because $B$ solves $B' = 1 - \kappa B$ and does not depend on $y$. What
+    remains is an equation for $a$ alone. With $\delta = \sqrt\varepsilon$ it reads</p>
+    $$\partial_t a = \frac{1}{\delta^2}\,\mathcal L a + \frac1\delta\,G_{-1}(t)\,a + g(t,y)\,a, \qquad a(0,y) = 1 .$$
+    <p>Each operator has a source.</p>
+    <ul>
+      <li>$\mathcal L = -y\,\partial_y + \partial_{yy}$ is the generator of the factor on its own clock. It is multiplied by
+        $1/\delta^2 = 1/\varepsilon$ because the factor is fast.</li>
+      <li>The correlation term comes from the cross derivative $\rho\,\sigma(y)\sqrt{2/\varepsilon}\;\partial_x\partial_y u$.
+        Acting on $e^{-Bx}$, the $\partial_x$ produces $-B$, which leaves</li>
+    </ul>
+    $$G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y .$$
+    <ul>
+      <li>The multiplication term collects the drift and the variance of the rate:</li>
+    </ul>
+    $$g(t,y) = -\kappa\,\theta(y)\,B(t) + \tfrac12\,\sigma(y)^2\,B(t)^2 .$$
+    <p>For linear $\theta$ and $\sigma$ this is a quadratic in $y$. Writing $y^2 = \mathrm{He}_2(y) + 1$, with the Hermite
+    polynomials $\mathrm{He}_1 = y$ and $\mathrm{He}_2 = y^2 - 1$,</p>
+    $$g = (g_0 + g_2) + g_1\,\mathrm{He}_1 + g_2\,\mathrm{He}_2,$$
+    <p>where the three coefficient functions are</p>
+    $$g_0 = -\kappa\theta_0 B + \tfrac12\sigma_0^2B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1B^2, \qquad g_2 = \tfrac12\sigma_1^2B^2 .$$
+    <p>The stationary average of $g$ is $\bar g = g_0 + g_2$.</p>
 
-    <h2>The expansion</h2>
-    <p>Let $s = c_0$, the stationary expectation of $a$, and $v = a/s$. For each coupling $G_p$ let
-    $F_p(v) = G_p v - v\,\mathbb{E}[G_p v]$. The outer terms of $v = 1 + \sum_{n\ge1}\delta^n w_n$ are</p>
-    $$w_n = \mathcal L^{\#}\big(w_{n-2}' - [F_{-1}]_{n-1} - [F_0]_{n-2}\big),$$
-    <p>where $\mathcal L^{\#}$ inverts $\mathcal L$ on functions of mean zero and $[F_p]_k$ is the part of $F_p$ of order
-    $\delta^k$. Each order involves finitely many Hermite modes, because the couplings are polynomial in $y$. The
-    first correction, of order $\sqrt\varepsilon$, needs the correlation:</p>
-    $$\log\frac{s}{s\big|_{\rho = 0}} = -\sqrt{2\varepsilon}\,\rho\int_0^t B(r)\;\mathbb{E}\big[\sigma(Y)\,\partial_y\phi_r(Y)\big]\,dr + O(\varepsilon),
-      \qquad \mathcal L\phi_r = \bar g(r) - g(r,\cdot),$$
-    <p>with $g = G_0$ and $\bar g$ its stationary mean. An initial layer, solved in the eigenbasis of $\mathcal L$, restores
-    $a(0,\cdot) = 1$. Without correlation only even orders appear and the expansion is in $\varepsilon$.</p>
+    <h2>Step 2: split off the average</h2>
+    <p>Let $s(t) = \mathbb{E}[a(t,Y)]$ be the stationary average of $a$, and $v = a/s$ its shape, so that
+    $\mathbb{E}[v] = 1$. Take the stationary average of the equation for $a$. The term $\mathcal L a$ averages to zero,
+    because the standard normal law is stationary. Dividing by $s$ gives the slow equation:</p>
+    $$\frac{s'}{s} = \frac1\delta\,\mathbb{E}\big[G_{-1}v\big] + \mathbb{E}\big[g\,v\big].$$
+    <p>Subtracting $v$ times this from the equation for $a/s$ gives the equation for the shape:</p>
+    $$\partial_t v = \frac{1}{\delta^2}\,\mathcal L v + \frac1\delta\Big(G_{-1}v - v\,\mathbb{E}[G_{-1}v]\Big) + \Big(g\,v - v\,\mathbb{E}[g\,v]\Big).$$
+    <p>Both brackets average to zero by construction. That is what will make every step solvable.</p>
+
+    <h2>Step 3: expand the shape</h2>
+    <p>Write the shape as a power series in $\delta$, with each correction averaging to zero:</p>
+    $$v = 1 + \delta\,w_1 + \delta^2\,w_2 + \delta^3\,w_3 + \cdots, \qquad \mathbb{E}[w_n] = 0 .$$
+    <p>Substitute and collect powers of $\delta$. Each power gives an equation $\mathcal L w_n = f_n$. By the
+    <a href="./solvability.html">Fredholm alternative</a> it can be solved when $\mathbb{E}[f_n] = 0$, and the solution
+    divides each Hermite coefficient of $f_n$ by minus its index:</p>
+    $$\mathcal L\,\mathrm{He}_k = -k\,\mathrm{He}_k \quad\Longrightarrow\quad \mathcal L^{-1}\,\mathrm{He}_k = -\frac{\mathrm{He}_k}{k}.$$
+
+    <h3>Order $\delta^{-1}$</h3>
+    <p>The only terms are $\mathcal L w_1$ and the correlation term acting on the constant $1$:</p>
+    $$\mathcal L\,w_1 = -\big(G_{-1}1 - \mathbb{E}[G_{-1}1]\big) = 0,$$
+    <p>since $\partial_y 1 = 0$. So $w_1 = 0$. The factor has no effect at order $\delta$ on the shape.</p>
+
+    <h3>Order $\delta^{0}$</h3>
+    <p>Now $g$ enters:</p>
+    $$\mathcal L\,w_2 = -\big(g - \bar g\big) = -g_1\,\mathrm{He}_1 - g_2\,\mathrm{He}_2 .$$
+    <p>The right side averages to zero, so it can be solved by dividing by $-1$ and $-2$:</p>
+    $$w_2 = g_1\,\mathrm{He}_1 + \tfrac12\,g_2\,\mathrm{He}_2 .$$
+    <p>This is the corrector. It says how the bond price depends on the current factor value: a high factor raises the
+    mean level and the volatility, and the corrector records by how much.</p>
+
+    <h3>Order $\delta^{1}$</h3>
+    <p>The correlation term now acts on $w_2$:</p>
+    $$\mathcal L\,w_3 = -\big(G_{-1}w_2 - \mathbb{E}[G_{-1}w_2]\big).$$
+    <p>Write $c(t) = \sqrt2\,\rho\,B(t)$, so that $G_{-1} = -c\,\sigma(y)\,\partial_y$. Since $\partial_y w_2 = g_1 + g_2\,y$,</p>
+    $$G_{-1}w_2 = -c\,(\sigma_0 + \sigma_1 y)(g_1 + g_2 y) = -c\Big[(\sigma_0g_1 + \sigma_1g_2) + (\sigma_0g_2 + \sigma_1g_1)\,\mathrm{He}_1 + \sigma_1g_2\,\mathrm{He}_2\Big].$$
+    <p>Removing the average and dividing by $-1$ and $-2$ gives</p>
+    $$w_3 = -c\,(\sigma_0g_2 + \sigma_1g_1)\,\mathrm{He}_1 - \tfrac12\,c\,\sigma_1g_2\,\mathrm{He}_2 .$$
+
+    <h2>Step 4: the slow equation, order by order</h2>
+    <p>Substitute the expansion of $v$ into $s'/s = \delta^{-1}\mathbb{E}[G_{-1}v] + \mathbb{E}[g\,v]$ and collect powers
+    of $\delta$. The Hermite polynomials are orthogonal with $\mathbb{E}[\mathrm{He}_k^2] = k!$, which makes each average
+    a short sum:</p>
+    $$\mathbb{E}[g] = \bar g, \qquad \mathbb{E}[G_{-1}w_2] = -c\,(\sigma_0g_1 + \sigma_1g_2),$$
+    $$\mathbb{E}[g\,w_2] = g_1^2 + g_2^2, \qquad \mathbb{E}[G_{-1}w_3] = c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big).$$
+    <p>Integrating in time, the stationary average of the bond factor is</p>
+    <div class="equation-card">
+    $$\log s(t) = \int_0^t \bar g \;-\; \delta\int_0^t c\,(\sigma_0g_1 + \sigma_1g_2) \;+\; \delta^2\int_0^t \Big[g_1^2 + g_2^2 + c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big)\Big] + O(\delta^3).$$
+    </div>
+    <p>Each term has a reading.</p>
+    <ul>
+      <li>The first is the averaged Vasicek model.</li>
+      <li>The second, of order $\sqrt\varepsilon$, exists only with correlation. Shocks to the rate and to the factor
+        move together, so the factor tends to be high exactly when the rate has risen. This is the correlation
+        correction of fast mean-reverting stochastic volatility.</li>
+      <li>The third, of order $\varepsilon$, contains the fluctuation term $g_1^2 + g_2^2$. As on the
+        <a href="./idea.html">idea</a> page, it is half the variance of the fluctuating integral of $g$, and it is
+        present even without correlation.</li>
+    </ul>
+
+    <h2>Step 5: the bond price</h2>
+    <p>Putting the pieces together, and writing the Hermite polynomials out,</p>
+    $$u(t,x,y) = e^{-B(t)x}\,s(t)\,\Big(1 + \varepsilon\big[g_1\,y + \tfrac12 g_2\,(y^2 - 1)\big] + \varepsilon^{3/2}\big[w_3\big] + O(\varepsilon^2)\Big),$$
+    <p>with $w_3$ from order $\delta^1$ above. The dependence on the current factor value $y$ first appears at order
+    $\varepsilon$.</p>
+
+    <h2>All orders</h2>
+    <p>Every further order repeats steps 3 and 4. At order $\delta^{n-2}$ the equation is</p>
+    $$\mathcal L\,w_n = w_{n-2}' - \big[F_{-1}\big]_{n-1} - \big[F_0\big]_{n-2},$$
+    <p>where $F_p$ collects the terms of order $\delta^k$ in the brackets of the shape equation:</p>
+    $$F_{-1}(v) = G_{-1}v - v\,\mathbb{E}[G_{-1}v], \qquad F_0(v) = g\,v - v\,\mathbb{E}[g\,v].$$
+    <p>The right side always averages to zero, so every step is solvable. Because $g$ is a polynomial in $y$, each
+    $w_n$ involves only finitely many Hermite polynomials, and each is a combination of powers of
+    $e^{-\kappa t}$. The computation is exact at every order; only the truncation of the series introduces error.</p>
+    <p>The shape starts at $v(0,y) = 1$, and the outer terms respect this for a while: $g$ vanishes at $t = 0$ because
+    $B(0) = 0$, so $w_2(0) = w_3(0) = 0$. The first mismatch is at $w_4$, where the time derivative $w_2'$ enters. From
+    there an <a href="./layers.html">initial layer</a> in the fast time $t/\varepsilon$ restores the starting condition.
+    It is solved in the eigenbasis of $\mathcal L$, which here is the Hermite basis itself.</p>
 
     <h2>Results</h2>
-    <p>With $\theta$ and $\sigma$ linear in $y$ the solution has the form $a = e^{A + C_1y + C_2y^2}$, with $A$, $C_1$
-    and $C_2$ solving three ODEs; their numerical solution is the reference. The error at $t = 1$, $y = 0.3$, after
-    each order in $\sqrt\varepsilon$:</p>
+    <p>For linear $\theta$ and $\sigma$ the solution also has the form $a = e^{A + C_1y + C_2y^2}$, with $A$, $C_1$ and
+    $C_2$ solving three ordinary differential equations. Their numerical solution is the reference. The terms derived
+    above agree with the code to $10^{-17}$. The table gives the error in the bond factor at $t = 1$, $y = 0.3$, after
+    each order in $\sqrt\varepsilon$.</p>
 '''
     body += table(['epsilon'] + [f'order {o}' for o in range(7)], rows)
     body += r'''    <p>Each quartering of $\varepsilon$ halves $\sqrt\varepsilon$ and divides the order-$n$ error by about $2^{n+1}$,

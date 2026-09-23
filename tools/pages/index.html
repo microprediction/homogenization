@@ -21,6 +21,12 @@
       average. Homogenization treats that averaged model as the leading term and computes the next
       one, the <em>corrector</em>, as a series in the ratio of the two scales.</p>
 
+    <p>
+      If this is new, start with <a href="./idea.html">how averaging works</a>, which derives the first corrections of a
+      small example by hand and explains what each one means. The two ideas that make the higher orders work are
+      <a href="./solvability.html">solvability</a> and <a href="./layers.html">initial layers</a>.
+    </p>
+
     <h2>The mechanism</h2>
     <p>Let the fast variable have generator $\mathcal{L}_0/\varepsilon$ and the slow variable
       generator $\mathcal{L}_1$, so that an expectation $u^\varepsilon$ solves</p>
@@ -28,8 +34,9 @@
     <p>Expand $u^\varepsilon = u_0 + \varepsilon u_1 + \dots$ and match powers of $\varepsilon$.</p>
     <ul>
       <li>At order $\varepsilon^{-1}$, $\mathcal{L}_0 u_0 = 0$, so $u_0$ does not depend on the fast variable.</li>
-      <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. This has a solution only
-        if the right side averages to zero under the stationary law of the fast variable. That
+      <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. By the
+        <a href="./solvability.html">Fredholm alternative</a> this has a solution only if the right side averages to
+        zero under the stationary law of the fast variable. That
         solvability condition is the averaged equation $\partial_t u_0 = \langle \mathcal{L}_1 \rangle u_0$.</li>
       <li>The solution $u_1$ of that Poisson equation is the corrector. It depends on the fast
         variable, and it is where the average&apos;s error lives.</li>

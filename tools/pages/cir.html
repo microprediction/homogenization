@@ -20,27 +20,50 @@
     $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its classical bond price.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>The coefficient of $x$ in the CIR bond price solves $B' = 1 - \kappa B - \tfrac12\sigma^2 B^2$, $B(0) = 0$,
-    which does not involve $\theta$:</p>
+    <p>By the Feynman&ndash;Kac formula the prices solve</p>
+    $$\partial_t u_i = \kappa(\theta_i - x)\,\partial_x u_i + \tfrac12\sigma^2x\,\partial_{xx}u_i - x\,u_i + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    <p>Try $u_i = e^{-B(t)x}a_i(t)$. The square-root diffusion now contributes $\tfrac12\sigma^2B^2\,x$, so the terms in
+    $x$ cancel when</p>
+    $$B' = 1 - \kappa B - \tfrac12\sigma^2B^2, \qquad B(0) = 0 .$$
+    <p>This Riccati equation involves $\kappa$ and $\sigma$ but not $\theta$, so one $B$ serves every regime:</p>
     $$B(t) = \frac{2\,(e^{ht} - 1)}{(h+\kappa)(e^{ht}-1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}.$$
     <p>So $u_i = e^{-B(t)x}a_i(t)$ with $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and
     $g_i(t) = -\kappa\,\theta_i\,B(t)$. If $\sigma$ also switched, $B$ would differ between regimes and the state
     would not factor out.</p>
     <h2>The expansion</h2>
-    <p>Let the regime switch at rate $\lambda$ in each direction and write $\varepsilon = 1/\lambda$,
-    $\bar g = \tfrac12(g_1 + g_2)$ and $\tilde g = \tfrac12(g_1 - g_2)$, where $g_i = -\kappa\theta_i B$, so that $\tilde g = -\kappa\tilde\theta B$ with $\tilde\theta = \tfrac12(\theta_1 - \theta_2)$. To first order,</p>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>where $g_i = -\kappa\theta_i B$, so that $\tilde g = -\kappa\tilde\theta B$ with $\tilde\theta = \tfrac12(\theta_1 - \theta_2)$. The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for regime 1. The factor $e^{\int\bar g}$ is the averaged model.</p>
-    <p>The term $\frac\varepsilon2\int\tilde g^2$ is shared by both regimes and grows with $t$. The bracket carries
-    the starting regime and fades as $\lambda$ grows.</p>
-    <p>Every higher order follows from one equation. With $m = \tfrac12(a_1 + a_2)$ and
-    $\omega = (a_1 - a_2)/(a_1 + a_2)$,</p>
-    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \quad \omega(0) = 0, \qquad \log m(t) = \int_0^t (\bar g + \tilde g\,\omega), \qquad a_{1,2} = m\,(1 \pm \omega).$$
-    <p>Expanding $\omega = \sum_n \varepsilon^n\omega_n$ gives $\omega_1 = \tilde g/2$ and</p>
-    $$\omega_{n+1} = -\tfrac12\big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\omega_j\big).$$
-    <p>This series does not meet
-    $\omega(0) = 0$, so an initial layer of width about $1/(2\lambda)$ is added and solved order by order in the
-    same way. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>$e^{\int\bar g}$ is the averaged model.</li>
+      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
+        both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
+    matching powers gives</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$. An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. The
+    <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
     <p>$B$ is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.</p>
 
     <h2>Results</h2>

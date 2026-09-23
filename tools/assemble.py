@@ -10,6 +10,11 @@ HEADER = """<header class="site-header">
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -29,7 +34,7 @@ HEADER = """<header class="site-header">
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -41,6 +46,7 @@ HEADER = """<header class="site-header">
   </script>
 </header>"""
 KATEX = """  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>

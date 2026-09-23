@@ -6,6 +6,7 @@
   <title>Homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
@@ -15,6 +16,11 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
         <a href="./survival.html">Terms adding up</a>
@@ -34,7 +40,7 @@
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
-      <a href="./map.html">Literature map</a>
+      <a href="./map.html">Map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
     </nav>
   </div>
@@ -68,6 +74,12 @@
       average. Homogenization treats that averaged model as the leading term and computes the next
       one, the <em>corrector</em>, as a series in the ratio of the two scales.</p>
 
+    <p>
+      If this is new, start with <a href="./idea.html">how averaging works</a>, which derives the first corrections of a
+      small example by hand and explains what each one means. The two ideas that make the higher orders work are
+      <a href="./solvability.html">solvability</a> and <a href="./layers.html">initial layers</a>.
+    </p>
+
     <h2>The mechanism</h2>
     <p>Let the fast variable have generator $\mathcal{L}_0/\varepsilon$ and the slow variable
       generator $\mathcal{L}_1$, so that an expectation $u^\varepsilon$ solves</p>
@@ -75,8 +87,9 @@
     <p>Expand $u^\varepsilon = u_0 + \varepsilon u_1 + \dots$ and match powers of $\varepsilon$.</p>
     <ul>
       <li>At order $\varepsilon^{-1}$, $\mathcal{L}_0 u_0 = 0$, so $u_0$ does not depend on the fast variable.</li>
-      <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. This has a solution only
-        if the right side averages to zero under the stationary law of the fast variable. That
+      <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. By the
+        <a href="./solvability.html">Fredholm alternative</a> this has a solution only if the right side averages to
+        zero under the stationary law of the fast variable. That
         solvability condition is the averaged equation $\partial_t u_0 = \langle \mathcal{L}_1 \rangle u_0$.</li>
       <li>The solution $u_1$ of that Poisson equation is the corrector. It depends on the fast
         variable, and it is where the average&apos;s error lives.</li>

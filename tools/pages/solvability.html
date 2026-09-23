@@ -1,0 +1,98 @@
+<!-- title: Solvability · homogenization | math -->
+  <main>
+    <h1>Solvability and the Fredholm alternative</h1>
+    <p class="subtitle">Why each order of the expansion can be solved, and how the averaged equation falls out of the condition.</p>
+
+    <p class="lead">Every expansion on this site reduces, at each order, to one kind of equation: $L w = f$, where $L$
+    is the generator of the fast process. This page explains when that equation has a solution, how to find it,
+    and why the condition for solving it is exactly what produces the averaged model.</p>
+
+    <h2>The generator of the fast process</h2>
+    <p>For a Markov chain with states $1, \dots, n$ the generator is a matrix $Q$. Its off-diagonal entry $Q_{ij}$ is the
+    rate of jumping from $i$ to $j$, and each diagonal entry makes its row sum to zero. For the two-state switch that
+    leaves each state at rate $\lambda$,</p>
+    $$Q = \lambda\begin{pmatrix} -1 & 1 \\ 1 & -1 \end{pmatrix}.$$
+    <p>Applied to a vector $f$, the generator gives the expected rate of change of $f(y_t)$:</p>
+    $$(Qf)_i = \frac{d}{dt}\,\mathbb{E}\big[f(y_t) \mid y_0 = i\big]\Big|_{t=0}.$$
+    <p>For a diffusion the generator is a differential operator. The fast Ornstein&ndash;Uhlenbeck factor used on this
+    site has $\mathcal L = -y\,\partial_y + \partial_{yy}$. Everything below applies to both.</p>
+
+    <h2>Two null vectors</h2>
+    <p>Every generator has two special vectors.</p>
+    <ul>
+      <li>Constants are killed on the right: $Q\mathbf 1 = 0$. A constant function does not change as the chain moves,
+        so its expected rate of change is zero. This is why the rows sum to zero.</li>
+      <li>The stationary distribution $\pi$ is killed on the left: $\pi Q = 0$. If the chain starts in its stationary
+        distribution it stays there, so the average of $Qf$ under $\pi$ is always zero.</li>
+    </ul>
+    <p>For the two-state switch, $\pi = (\tfrac12, \tfrac12)$. For the Ornstein&ndash;Uhlenbeck factor, $\pi$ is the
+    standard normal law.</p>
+
+    <h2>The Fredholm alternative</h2>
+    <p>Consider the equation</p>
+    $$Q\,w = f .$$
+    <p>Multiply on the left by $\pi$. Since $\pi Q = 0$, the left side vanishes, so a solution can exist only if</p>
+    $$\pi\cdot f = 0, \qquad\text{that is,}\qquad \mathbb{E}_\pi[f] = 0 .$$
+    <p>The converse also holds when the chain is irreducible: then the null space of $Q$ is one-dimensional, the
+    range of $Q$ has dimension $n - 1$, and it is exactly the set of vectors with $\pi\cdot f = 0$. So</p>
+    <div class="equation-card">
+    $$Q\,w = f \ \text{ has a solution} \iff \mathbb{E}_\pi[f] = 0 .$$
+    </div>
+    <p>This is the Fredholm alternative: either the right side is orthogonal to the left null vector and the
+    equation can be solved, or it is not and no solution exists. When a solution exists it is unique up to adding a
+    constant, because constants are in the null space. The convention on this site fixes the constant by requiring
+    $\mathbb{E}_\pi[w] = 0$.</p>
+
+    <h2>The intuition</h2>
+    <p>Read $f$ as a source that pays $f_i$ per unit time while the chain sits in state $i$. The solution of
+    $Q w = -f$ is the expected total payment still to come, measured relative to the average:</p>
+    $$w_i = \int_0^\infty \mathbb{E}\big[f(y_s) \mid y_0 = i\big]\,ds .$$
+    <p>This integral converges only if the payments average to zero in the long run. If they do not, the running
+    total grows forever and no finite $w$ exists. So the solvability condition says: remove the average first.
+    Whatever the fast process averages to must be handled separately, on the slow time scale. That separate
+    handling is the averaged equation.</p>
+
+    <h2>How the averaged equation appears</h2>
+    <p>Suppose a slow quantity $u$ depends on the state of the fast process and satisfies</p>
+    $$\partial_t u = \frac1\varepsilon\,Q\,u + G\,u,$$
+    <p>where $G$ describes the slow dynamics. Try $u = u_0 + \varepsilon u_1 + \varepsilon^2 u_2 + \cdots$ and match
+    powers of $\varepsilon$.</p>
+    <ul>
+      <li>At order $\varepsilon^{-1}$: $Q u_0 = 0$. So $u_0$ is in the null space, which means it does not depend on the
+        fast state. The leading answer has already forgotten the fast variable.</li>
+      <li>At order $1$: $Q u_1 = \partial_t u_0 - G u_0$. By the Fredholm alternative this has a solution only if the
+        right side averages to zero:</li>
+    </ul>
+    $$\partial_t u_0 = \mathbb{E}_\pi[G]\,u_0 .$$
+    <p>That is the averaged equation. The fast variable has been replaced by its stationary average, and the step
+    that forced it was the solvability condition.</p>
+    <p>With the averaged equation in hand, the order-1 equation can be solved for $u_1$, which is the corrector. The
+    next order gives a solvability condition that fixes the slow evolution of $u_1$, and so on. Every order is the
+    same two steps: impose solvability, then solve.</p>
+
+    <h2>Solving: the group inverse</h2>
+    <p>When $\mathbb{E}_\pi[f] = 0$, the solution of $Qw = f$ with $\mathbb{E}_\pi[w] = 0$ is written
+    $w = Q^{\#}f$. The matrix $Q^{\#}$ is the group inverse of $Q$. It inverts $Q$ on vectors that average to zero and
+    returns vectors that average to zero. It can be computed as</p>
+    $$Q^{\#} = \big(Q - \mathbf 1\pi\big)^{-1} + \mathbf 1\pi .$$
+    <p>For the two-state switch, a vector with $\mathbb{E}_\pi[f] = 0$ has the form $f = (c, -c)$, and</p>
+    $$Q\,(c, -c)^{\top} = -2\lambda\,(c, -c)^{\top} \quad\Longrightarrow\quad Q^{\#}f = -\frac{f}{2\lambda}.$$
+    <p>So solving costs a division by the rate $2\lambda$ at which the switch forgets its state. That is why each order
+    of the expansion is smaller by a factor of order $1/\lambda$.</p>
+
+    <h2>The same thing in Hermite coordinates</h2>
+    <p>For the Ornstein&ndash;Uhlenbeck factor write functions as sums of Hermite polynomials,
+    $f = \sum_n f_n\,\mathrm{He}_n(y)$, with $\mathrm{He}_0 = 1$, $\mathrm{He}_1 = y$, $\mathrm{He}_2 = y^2 - 1$ and so on.
+    The generator acts on each polynomial separately:</p>
+    $$\mathcal L\,\mathrm{He}_n = -n\,\mathrm{He}_n .$$
+    <p>The stationary average of $f$ is its coefficient $f_0$, because every other Hermite polynomial averages to zero
+    under the standard normal law. So the solvability condition is $f_0 = 0$, and the solution simply divides each
+    coefficient by its rate:</p>
+    $$\mathcal L\,w = f,\ \ f_0 = 0 \quad\Longrightarrow\quad w = -\sum_{n\ge1}\frac{f_n}{n}\,\mathrm{He}_n .$$
+    <p>The <a href="./fast-factor.html">fast-factor page</a> uses exactly this.</p>
+
+    <h2>Where to go next</h2>
+    <p>The expansion that results from repeating these two steps describes the answer once the fast process has
+    mixed. Near $t = 0$ it needs one more ingredient, described on the <a href="./layers.html">initial layers</a>
+    page. The <a href="./engine.html">engine</a> page assembles the whole recursion.</p>
+  </main>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>How averaging works · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+        <a href="./idea.html">How averaging works</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./credit.html">Two factors and two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Map</a>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>How averaging works</h1>
+    <p class="subtitle">The idea behind every page on this site, with one small example worked by hand.</p>
+
+    <p class="lead">This page assumes no background in homogenization. It uses one small model to show what the
+    averaged answer is, why it is only approximately right, and where the first corrections come from. Each
+    correction turns out to have a plain meaning.</p>
+
+    <h2>A quantity driven by a fast switch</h2>
+    <p>Suppose a quantity accumulates at a rate that depends on a hidden switch. The switch $y_t$ flips between two
+    states, 1 and 2, and it leaves each state at rate $\lambda$. While the switch is in state $i$, the quantity
+    grows at rate $g_i$. After time $t$ the accumulated amount is</p>
+    $$I_t = \int_0^t g(y_s)\,ds .$$
+    <p>Think of $g$ as a negative interest rate, or minus a default intensity. The quantity we want is the
+    expectation of its exponential,</p>
+    $$a_i(t) = \mathbb{E}\big[e^{I_t} \mid y_0 = i\big],$$
+    <p>which is a bond price or a survival probability. When $\lambda$ is large the switch flips many times before
+    time $t$.</p>
+
+    <h2>The averaged answer</h2>
+    <p>A switch that flips very often spends half its time in each state. Over any stretch much longer than
+    $1/\lambda$, the rate $g(y_s)$ therefore averages to</p>
+    $$\bar g = \tfrac12\,(g_1 + g_2).$$
+    <p>This is the law of large numbers applied to time averages. It gives the averaged answer</p>
+    $$a_i(t) \approx e^{\bar g\,t}.$$
+    <p>The averaged answer forgets the starting state, and it forgets that the switch is random. Both omissions
+    matter at order $1/\lambda$, and each has a simple explanation.</p>
+
+    <h2>First correction: the integral fluctuates</h2>
+    <p>The integral $I_t$ is not exactly $\bar g\,t$. It is a sum of many short, nearly independent pieces, so by
+    the central limit theorem it is approximately normal around $\bar g\,t$. For a normal variable,</p>
+    $$\mathbb{E}\big[e^{I}\big] = e^{\mathbb{E}[I] + \frac12\operatorname{Var}(I)} .$$
+    <p>So the fluctuations raise the answer by half the variance of the integral.</p>
+    <p>The variance comes from how long the switch remembers its state. Write $\tilde g = \tfrac12(g_1 - g_2)$ for
+    the half-difference, so that $g(y) - \bar g = \pm\tilde g$. The fluctuation $g(y_s) - \bar g$ forgets itself at
+    rate $2\lambda$:</p>
+    $$\operatorname{Cov}\big(g(y_s),\, g(y_{s+\tau})\big) = \tilde g^{\,2}\,e^{-2\lambda\tau}.$$
+    <p>Integrating this over a long time gives</p>
+    $$\operatorname{Var}(I_t) \approx 2t\int_0^\infty \tilde g^{\,2}\,e^{-2\lambda\tau}\,d\tau = \frac{t\,\tilde g^{\,2}}{\lambda}.$$
+    <p>Half of that is the first correction to the exponent:</p>
+    $$\log a_i(t) \approx \bar g\,t + \frac{t\,\tilde g^{\,2}}{2\lambda} .$$
+    <p>The correction is the same for both starting states. It grows with $t$, and it is always positive, because
+    randomness in the rate raises the expectation of an exponential.</p>
+
+    <h2>First correction: the switch remembers where it started</h2>
+    <p>A switch that starts in state 1 is more likely to be in state 1 for a short while. The excess probability of
+    being in state 1 decays like $e^{-2\lambda s}$. Over the whole path this shifts the integral by</p>
+    $$\mathbb{E}\big[I_t \mid y_0 = 1\big] - \bar g\,t \approx \int_0^\infty \tilde g\,e^{-2\lambda s}\,ds = \frac{\tilde g}{2\lambda}.$$
+    <p>Starting in state 2 shifts it by the same amount in the other direction. So the answer carries a factor</p>
+    $$e^{\pm\tilde g/(2\lambda)} \approx 1 \pm \frac{\tilde g}{2\lambda} .$$
+
+    <h2>Putting the pieces together</h2>
+    <p>With $\varepsilon = 1/\lambda$, the two corrections combine into</p>
+    $$a_i(t) \approx \exp\Big(\bar g\,t + \frac{\varepsilon}{2}\,\tilde g^{\,2}\,t\Big)\,\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\Big).$$
+    <p>When the rates change over time, as they do in bond pricing, $g_i$ becomes a function $g_i(t)$ and the
+    products with $t$ become integrals:</p>
+    $$a_i(t) \approx \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\,\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big).$$
+    <p>This is the first-order formula used on the <a href="./regime-switching.html">regime-switching page</a> and in
+    every example. The shared term is the variance of the fluctuations. The regime-dependent bracket is the
+    memory of the starting state.</p>
+
+    <h2>Beyond first order</h2>
+    <p>The heuristic above explains the first corrections, but it does not produce the higher ones. For those the
+    expectation is written as the solution of a differential equation, and the equation is expanded in powers of
+    $\varepsilon$. Two ideas make that expansion work.</p>
+    <ul>
+      <li><a href="./solvability.html">Solvability</a>. At each order one must solve an equation of the form
+        $L w = f$, where $L$ describes the fast switch. It has a solution only when $f$ averages to zero. That
+        condition is what produces the averaged equation, and the solution $w$ is the correction.</li>
+      <li><a href="./layers.html">Initial layers</a>. The expansion describes the answer once the switch has had
+        time to mix. Near $t = 0$ it needs a separate correction on the fast time scale.</li>
+    </ul>
+    <p>The <a href="./engine.html">engine</a> page puts these together into one recursion that produces every
+    order.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
