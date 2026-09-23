@@ -23,6 +23,7 @@ HEADER = """<header class="site-header">
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>

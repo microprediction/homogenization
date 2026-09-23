@@ -28,6 +28,7 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
       </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
@@ -54,7 +55,7 @@
     $$u_i(t,x) = e^{-B(t)\cdot x}\,a_i(t), \qquad a' = \big(Q + \operatorname{diag} g(t)\big)\,a, \qquad a(0) = \mathbf 1 .$$
     <p>The model enters only through the functions $g_i(t)$, one per regime. The table lists them for the
     examples on this site.</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>Model</th><th>Switching parameters</th><th>Time function</th></tr></thead><tbody><tr><td><a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a></td><td>mean level, volatility</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$</td></tr><tr><td><a href="./credit.html">Gaussian factors, two-name credit</a></td><td>means, volatilities, correlations</td><td>$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$</td></tr><tr><td><a href="./cir.html">CIR</a></td><td>mean level</td><td>$-\kappa\theta_i B_{\mathrm{CIR}}$</td></tr><tr><td><a href="./jumps.html">Vasicek with jumps</a></td><td>mean, volatility, jump intensity</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$</td></tr><tr><td><a href="./counts.html">Poisson counts</a></td><td>arrival rate</td><td>$(z-1)\,\ell_i$</td></tr><tr><td><a href="./heston.html">Heston</a></td><td>long-run variance</td><td>$\kappa\theta_i D(t)$, complex</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>Model</th><th>Switching parameters</th><th>Time function</th></tr></thead><tbody><tr><td><a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a></td><td>mean level, volatility</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$</td></tr><tr><td><a href="./credit.html">Gaussian factors, two-name credit</a></td><td>means, volatilities, correlations</td><td>$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$</td></tr><tr><td><a href="./cir.html">CIR</a></td><td>mean level</td><td>$-\kappa\theta_i B_{\mathrm{CIR}}$</td></tr><tr><td><a href="./jumps.html">Vasicek with jumps</a></td><td>mean, volatility, jump intensity</td><td>$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$</td></tr><tr><td><a href="./counts.html">Poisson counts</a></td><td>arrival rate</td><td>$(z-1)\,\ell_i$</td></tr><tr><td><a href="./heston.html">Heston</a></td><td>long-run variance</td><td>$\kappa\theta_i D(t)$, complex</td></tr><tr><td><a href="./fast-factor.html">Fast mean-reverting factor</a></td><td>mean level and volatility, continuously</td><td>operator in the Hermite basis, with correlation</td></tr></tbody></table></div>
 
     <h2>The recursion</h2>
     <p>Write the generator as $Q = Q_0/\varepsilon$ with $\varepsilon$ the mean holding time, let $\pi$ be the

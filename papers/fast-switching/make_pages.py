@@ -67,6 +67,7 @@ def engine_page():
         ['<a href="./jumps.html">Vasicek with jumps</a>', 'mean, volatility, jump intensity', r'$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$'],
         ['<a href="./counts.html">Poisson counts</a>', 'arrival rate', r'$(z-1)\,\ell_i$'],
         ['<a href="./heston.html">Heston</a>', 'long-run variance', r'$\kappa\theta_i D(t)$, complex'],
+        ['<a href="./fast-factor.html">Fast mean-reverting factor</a>', 'mean level and volatility, continuously', r'operator in the Hermite basis, with correlation'],
     ])
     body += r'''
     <h2>The recursion</h2>
@@ -300,6 +301,54 @@ def heston_page():
     write('heston.html', 'Heston with a switching long-run variance', body)
 
 
+# ------------------------------------------------------------------ fast mean-reverting factor
+def fast_factor_page():
+    from fastswitch_op import hermite_eval
+    from fastswitch_gen import FastSwitchGen
+    from models import fast_factor, fast_factor_exact
+    par = dict(kappa=1.0, theta0=0.05, theta1=0.03, sig0=0.25, sig1=0.2)
+    rho, t, y = -0.7, 1.0, 0.3
+    L, pi, one, Gs = fast_factor(rho=rho, order=6, **par)
+    rows = []
+    for eps in (0.01, 0.0025, 0.000625):
+        fg = FastSwitchGen(L, math.sqrt(eps), 2, Gs, pi, one, order=6)
+        ex = fast_factor_exact(t, y, eps, rho=rho, **par)
+        rows.append([f'{eps:g}'] + [e(abs(hermite_eval(fg.a(t, o), y) - ex)) for o in range(7)])
+    body = r"""    <h1>A fast mean-reverting factor</h1>
+    <p class="subtitle">The continuous version of regime switching, with correlation, to all orders in $\sqrt\varepsilon$.</p>
+    <p>Replace the chain by a fast Ornstein&ndash;Uhlenbeck factor $dY = -\varepsilon^{-1}Y\,dt + \sqrt{2/\varepsilon}\,dZ$,
+    with standard normal stationary law, driving the mean level and volatility of the rate:
+    $dx = \kappa(\theta(Y) - x)\,dt + \sigma(Y)\,dW$, with $d\langle W, Z\rangle = \rho\,dt$. This is the setting of
+    fast mean-reverting stochastic volatility for interest rates. Because $\kappa$ does not depend on $Y$,
+    $u = e^{-B(t)x}a(t,y)$ and, with $\delta = \sqrt\varepsilon$,</p>
+    $$a_t = \Big(\frac{1}{\delta^2}\mathcal L + \frac1\delta\,G_{-1}(t) + G_0(t)\Big)a,$$
+    $$G_{-1} = -\sqrt2\,\rho\,B(t)\,\sigma(y)\,\partial_y, \qquad G_0 = -\kappa\theta(y)B(t) + \tfrac12\sigma(y)^2B(t)^2,$$
+    <p>where $\mathcal L = -y\,\partial_y + \partial_{yy}$. In the Hermite basis $\mathcal L$ is
+    $\operatorname{diag}(0, -1, -2, \dots)$, the constant function plays the role of the vector of ones, and the
+    expectation under the stationary law plays the role of $\pi$. Multiplication by a polynomial in $y$ couples
+    neighbouring modes, so every order of the expansion involves finitely many of them.</p>
+    <p>The <a href="./engine.html">engine</a> carries over with $G_{-1}$ and $G_0$ in place of $\operatorname{diag} g$:
+    writing $v = a/\pi a$, the outer terms are
+    $w_n = \mathcal L^{\#}\big([w']_{n-2} - [F_{-1}]_{n-1} - [F_0]_{n-2}\big)$ with $F_p(w) = G_p v - v\,\pi G_p v$.
+    The first correction, of order $\sqrt\varepsilon$, needs the correlation:</p>
+    $$\log\frac{\pi a}{\pi a\big|_{\rho = 0}} = -\sqrt{2\varepsilon}\,\rho\int_0^t B(r)\;\mathbb{E}\big[\sigma(Y)\,\partial_y\phi_r(Y)\big]\,dr + O(\varepsilon),
+      \qquad \mathcal L\phi_r = \bar g(r) - g(r,\cdot).$$
+    <p>For a check with an exact answer, take $\theta(y) = \theta_0 + \theta_1 y$ and $\sigma(y) = \sigma_0 + \sigma_1 y$.
+    Then $a = e^{A + C_1y + C_2y^2}$ exactly, with $A$, $C_1$ and $C_2$ solving three ODEs. The table gives the
+    error at $t = 1$, $y = 0.3$, after each order in $\sqrt\varepsilon$, for $\kappa = 1$, $\theta = 0.05 + 0.03y$,
+    $\sigma = 0.25 + 0.2y$ and $\rho = -0.7$.</p>
+"""
+    body += table(['epsilon'] + [f'order {o}' for o in range(7)], rows)
+    body += r"""    <p>Each quartering of $\varepsilon$ halves $\sqrt\varepsilon$ and divides the order-$n$ error by about
+    $2^{n+1}$, until round-off near $10^{-13}$. Without correlation only even orders appear and the expansion is in
+    $\varepsilon$. A Monte Carlo simulation of the two-factor model agrees with the exact solution; see
+    <a href=\"""" + SRC + r"""verify_fast_factor.py">verify_fast_factor.py</a>. The engines are
+    <a href=\"""" + SRC + r"""fastswitch_op.py">fastswitch_op.py</a> and
+    <a href=\"""" + SRC + r"""fastswitch_gen.py">fastswitch_gen.py</a>.</p>
+"""
+    write('fast-factor.html', 'A fast mean-reverting factor', body)
+
+
 if __name__ == '__main__':
     engine_page()
     three_regimes_page()
@@ -308,3 +357,4 @@ if __name__ == '__main__':
     cir_page()
     jumps_page()
     heston_page()
+    fast_factor_page()
