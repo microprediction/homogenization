@@ -5,9 +5,11 @@
    30-digit numerical solution.  `python3 verify_engine.py`  (about a minute)
 """
 import math
+import os
 import sys
 import numpy as np
-sys.path.insert(0, '../regime-switching-survival')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'regime-switching-survival'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastswitch import FastSwitch, ExpSum, Cheb, numerical_a
 from general_orders import GeneralSeries
 

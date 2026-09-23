@@ -6,7 +6,10 @@ switching rate cuts the order-n error by about 2^(n+1) for the first orders.
 """
 import math
 import cmath
+import os
+import sys
 import numpy as np
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from scipy.linalg import expm
 from fastswitch import FastSwitch, numerical_a_callable
 from models import gaussian_factors, cir_switching_mean, vasicek_jumps, mmpp, heston_switching_theta
