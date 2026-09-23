@@ -470,6 +470,77 @@ def heston_page():
     body += two_state_expansion(r'$g_i = \kappa\theta_i D$, so that $\tilde g = \kappa\tilde\theta D$',
                                 r''' The engine holds the complex $g_i$ as Chebyshev series.''')
     body += r'''
+    <h2>Explicit formulas</h2>
+    <p>For Heston every term up to second order is in closed form. Write</p>
+    $$b = \kappa - \rho\xi iu, \qquad d = \sqrt{b^2 + \xi^2(iu + u^2)}, \qquad \gamma = \frac{b - d}{b + d},$$
+    <p>so that the regime-free coefficient and its derivative are</p>
+    $$D(t) = \frac{b - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad D'(t) = -\tfrac12(u^2 + iu) - b\,D(t) + \tfrac12\xi^2 D(t)^2 .$$
+
+    <h3>Step 1: the forcing</h3>
+    <p>The forcing is proportional to $D$, so its average and half-difference are</p>
+    $$\bar g(t) = \kappa\,\bar\theta\,D(t), \qquad \tilde g(t) = \kappa\,\tilde\theta\,D(t), \qquad
+      \bar\theta = \tfrac12(\theta_1 + \theta_2),\quad \tilde\theta = \tfrac12(\theta_1 - \theta_2).$$
+
+    <h3>Step 2: the two integrals</h3>
+    <p>The averaged exponent needs $\int D$, the Heston integral. With $L(t) = \log\big((1 - \gamma e^{-dt})/(1 - \gamma)\big)$,</p>
+    $$\int_0^t D(s)\,ds = \frac{1}{\xi^2}\Big((b - d)\,t - 2L(t)\Big).$$
+    <p>The first correction needs $\int D^2$. Substituting $E = e^{-ds}$ and splitting into partial fractions gives</p>
+    $$\int_0^t D(s)^2\,ds = \Big(\frac{b-d}{\xi^2}\Big)^2\Big[t + \frac{\alpha}{\gamma d}\,L(t)
+      - \frac{\beta}{\gamma d}\Big(\frac{1}{1 - \gamma e^{-dt}} - \frac{1}{1 - \gamma}\Big)\Big],$$
+    $$\alpha = \frac{\gamma^2 - 1}{\gamma}, \qquad \beta = 2\gamma - 2 - \alpha .$$
+
+    <h3>Step 3: the recursion to second order</h3>
+    <p>The recursion gives $\omega_1 = \tilde g/2$ and $\omega_2 = -\omega_1'/2 = -\tilde g'/4$. The second-order term of
+    the exponent is</p>
+    $$\int_0^t \tilde g\,\omega_2 = -\frac14\int_0^t \tilde g\,\tilde g' = -\frac18\,\tilde g(t)^2,$$
+    <p>because $\tilde g(0) = \kappa\tilde\theta D(0) = 0$.</p>
+
+    <h3>Step 4: the result</h3>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_{1,2}(u) \;=\; &\exp\Big(D(T)\,v_0 + \kappa\bar\theta\int_0^T D
+      + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\int_0^T D^2 - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2 D(T)^2\Big) \\
+    &\times\Big(1 \pm \frac{\varepsilon}{2}\,\kappa\tilde\theta\,D(T) \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta\,D'(T)\Big)
+      \;+\; O(\varepsilon^3).
+    \end{aligned}$$
+    </div>
+    <p>The upper sign is for a start in regime 1. The initial layer adds a term of size $\varepsilon^2 e^{-2\lambda T}$ to the
+    bracket, which is below $10^{-10}$ here.</p>
+
+    <h3>A worked example</h3>
+    <p>With the parameters above, $\varepsilon = 0.1$, a start in the turbulent regime, and the Lewis frequency
+    $u = 1 - i/2$:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>quantity</th><th>value</th></tr></thead>
+      <tbody>
+        <tr><td>$d$</td><td>2.16610 + 0.23489 i</td></tr>
+        <tr><td>$\gamma$</td><td>&minus;0.010494 + 0.002354 i</td></tr>
+        <tr><td>$D(T)$, $D'(T)$</td><td>&minus;0.256566 + 0.020515 i, &nbsp; &minus;0.070925 + 0.017241 i</td></tr>
+        <tr><td>$\int_0^T D$, $\int_0^T D^2$</td><td>&minus;0.171410 + 0.009570 i, &nbsp; 0.034359 &minus; 0.004175 i</td></tr>
+        <tr><td>averaged exponent $\kappa\bar\theta\int D$</td><td>&minus;0.0188551 + 0.0010527 i</td></tr>
+        <tr><td>first-order exponent $\frac\varepsilon2\kappa^2\tilde\theta^2\int D^2$</td><td>8.418e-6 &minus; 1.023e-6 i</td></tr>
+        <tr><td>second-order exponent $-\frac{\varepsilon^2}8\kappa^2\tilde\theta^2 D(T)^2$</td><td>&minus;4.006e-7 + 6.45e-8 i</td></tr>
+        <tr><td>memory, first order $\frac\varepsilon2\kappa\tilde\theta D(T)$</td><td>&minus;8.980e-4 + 7.18e-5 i</td></tr>
+        <tr><td>memory, second order $-\frac{\varepsilon^2}4\kappa\tilde\theta D'(T)$</td><td>1.241e-5 &minus; 3.02e-6 i</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Assembling the terms gives the characteristic function at each order, against the numerical solution
+    $0.9704494 + 0.0018837\,i$:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>order</th><th>$\phi_1(1 - i/2)$</th><th>error</th></tr></thead>
+      <tbody>
+        <tr><td>0 (averaged Heston)</td><td>0.9713004 + 0.0018196 i</td><td>8.5e-4</td></tr>
+        <tr><td>1</td><td>0.9704363 + 0.0018867 i</td><td>1.3e-5</td></tr>
+        <tr><td>2</td><td>0.9704479 + 0.0018839 i</td><td>1.5e-6</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Integrating these characteristic functions over $u$ with Lewis&apos;s formula gives the call prices below.</p>
+'''
+    body += r'''
     <h2>Results</h2>
     <p>Call prices from the numerical characteristic function and after each order:</p>
 '''

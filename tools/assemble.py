@@ -14,7 +14,9 @@ HEADER = """<header class="site-header">
         <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
+        <a href="./engine.html">The fast-switching engine</a>
         <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
         <a href="./regime-switching.html">The expansion</a>
@@ -22,7 +24,6 @@ HEADER = """<header class="site-header">
         <a href="./convergence.html">Convergence orders</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
-        <a href="./engine.html">The fast-switching engine</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./credit.html">Two factors and two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
@@ -34,7 +35,6 @@ HEADER = """<header class="site-header">
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
-        <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Literature</span><span class="drop">
         <a href="./survey.html">Survey</a>
