@@ -30,6 +30,8 @@ papers/regime-switching-survival/
   all_orders.py            the expansion to all orders, outer series plus initial layer
   verify_expansion.py      Monte Carlo check of the numerical solution; orders 1 to 3
   verify_all_orders.py     orders 1 to 6 against a 30-digit numerical solution
+  general_orders.py        any switching rates (unequal occupancy), all orders
+  verify_general_orders.py symmetric reduction; orders 1 to 6 at p = 0.3
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

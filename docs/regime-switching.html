@@ -152,6 +152,31 @@
       shows the terms adding up.
     </p>
 
+    <h2>Unequal switching rates</h2>
+    <p>
+      Let regime 1 switch to regime 2 at rate $\lambda_{12}$ and back at rate $\lambda_{21}$, with total
+      rate $\gamma = \lambda_{12} + \lambda_{21}$ and stationary probabilities $p = \lambda_{21}/\gamma$
+      and $q = \lambda_{12}/\gamma$. Write $G_i = -\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$ and
+      $D = G_1 - G_2$. In the coordinates $s = p\,a_1 + q\,a_2$ and $r = (a_1 - a_2)/s$ the generator
+      separates exactly, and
+    </p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      r' &= D\,\big(1 + (q-p)\,r - pq\,r^2\big) - \gamma\,r, \qquad r(0) = 0, \\[4pt]
+      \log s(t) &= \int_0^t \big(p\,G_1 + q\,G_2 + pq\,D\,r\big)\,dr', \\[4pt]
+      u_1 &= e^{-B(t)x}\, s\,(1 + q\,r), \qquad u_2 = e^{-B(t)x}\, s\,(1 - p\,r).
+    \end{aligned}$$
+    </div>
+    <p>
+      With $\varepsilon = 1/\gamma$ the outer series has $r_1 = D$ and
+      $r_{n+1} = (q-p)\,D\,r_n - pq\,D\sum_{i+j=n} r_i r_j - r_n'$, again polynomials in $E$. The
+      initial layer decays like $e^{-\gamma t}$ and is solved to all orders in the same way. With
+      $p = q = \tfrac12$ and $\gamma = 2\lambda$ this is the symmetric case above. The certificate
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_general_orders.py">verify_general_orders.py</a>
+      checks orders 1 to 6 at $p = 0.3$ against a 30-digit numerical solution, and the
+      <a href="https://github.com/microprediction/homogenize">homogenize</a> package implements both cases.
+    </p>
+
     <p class="next-steps">A note setting out the derivation is in preparation.
     Comments and corrections are welcome through
     <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
