@@ -2,9 +2,9 @@
 
 Averaging a fast hidden variable, and computing the corrector: the terms the average leaves out.
 
-The site collects examples: regime-switching survival, fast mean-reverting volatility, periodic
-media, choice among racing processes, conformal prediction and forecast calibration. The
-regime-switching example is worked out in full here.
+The site collects examples: regime-switching survival, fast switching in exponential-affine models,
+fast mean-reverting volatility, periodic media, choice among racing processes, conformal prediction
+and forecast calibration. The regime-switching and fast-switching examples are worked out in full here.
 
 ## Regime-switching survival
 
@@ -32,6 +32,13 @@ papers/regime-switching-survival/
   verify_all_orders.py     orders 1 to 6 against a 30-digit numerical solution
   general_orders.py        any switching rates (unequal occupancy), all orders
   verify_general_orders.py symmetric reduction; orders 1 to 6 at p = 0.3
+papers/fast-switching/
+  fastswitch.py            the engine: any finite chain, all orders, exponential-sum or Chebyshev coefficients
+  fastswitch_op.py         a general coupling operator (a continuous fast factor in the Hermite basis)
+  fastswitch_gen.py        several time scales: correlation in sqrt(eps)
+  models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
+  verify_engine.py, verify_models.py, verify_fast_factor.py   certificates
+  make_pages.py            computes the tables on the example pages
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
 tools/biblio.json          the verified bibliography

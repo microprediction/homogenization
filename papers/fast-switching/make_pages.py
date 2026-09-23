@@ -90,6 +90,13 @@ def engine_page():
     $\tau^k e^{\mu\tau}$, and it contributes to $\log s$ from order $\varepsilon^2$ or later. The result is
     $a_i = s\,(1 + w_i + \eta_i)$ with error $O(\varepsilon^{N+1})$ after $N$ orders.</p>
 
+    <h2>Other inputs</h2>
+    <p>Time-dependent parameters, such as a Hull&ndash;White mean level $\theta(t)$ fitted to a yield curve, change only
+    the functions $g_i$, which the engine then holds as Chebyshev series. A terminal exponential payoff
+    $e^{-\beta x_T}$ changes only the starting value of $B$, so transforms of the terminal state, and the option
+    prices that follow from them by Fourier inversion, need no new machinery. A continuous fast factor in place
+    of the chain is treated on its <a href="./fast-factor.html">own page</a>.</p>
+
     <h2>Code and checks</h2>
     <ul>
       <li><a href="''' + SRC + '''fastswitch.py">fastswitch.py</a>: the engine, for any finite chain, real or complex coefficients.</li>
