@@ -2,13 +2,13 @@
   <main>
     <h1>Heston with a switching long-run variance</h1>
     <p class="subtitle">Option prices by Fourier inversion, with the characteristic function expanded in $1/\lambda$.</p>
-    <p>The log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
+    <p>In <a href="./bibliography.html#Heston1993">Heston&apos;s model</a> the log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
     $dv = \kappa(\theta_y - v)\,dt + \xi\sqrt v\,dZ$, with correlation $\rho$. The characteristic function is
     $\mathbb{E}[e^{iuX_T}] = e^{iuX_0 + D(T)v_0}\,a_i(T)$, where $D$ is Heston&apos;s Riccati solution, which does
     not involve $\theta$. The regime enters only through</p>
     $$g_i(t) = \kappa\,\theta_i\,D(t), \qquad D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}},$$
     <p>with $d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)}$ and $\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d)$.
-    Call prices follow from Lewis&apos;s formula,
+    Call prices follow from <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>,
     $C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}$.</p>
     <p>Here $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$, $S_0 = 100$, one year to
     expiry, a symmetric chain switching at $\lambda = 10$, and a start in the high-variance regime. The table gives

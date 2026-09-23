@@ -196,7 +196,7 @@ def counts_page():
         moment_rows.append([f'{lam:g}', f'{mean:.4f}', f'{var:.4f}', f'{var / mean:.4f}'])
     body = r'''    <h1>Poisson counts with a switching rate</h1>
     <p class="subtitle">A Markov-modulated Poisson process, and its distribution to any order.</p>
-    <p>Events arrive at rate $\ell_y$, with $\ell = (8, 1)$ per unit time and a symmetric chain switching at rate
+    <p>In a <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a> events arrive at rate $\ell_y$, with $\ell = (8, 1)$ per unit time and a symmetric chain switching at rate
     $\lambda$. The generating function $a_i(t) = \mathbb{E}[z^{N_t}\mid y_0 = i]$ solves
     $a' = \big(Q + (z-1)\operatorname{diag}\ell\big)a$, so $g_i = (z-1)\ell_i$ is constant and complex. Evaluating
     the expansion at $z$ on the unit circle and inverting by the discrete Fourier transform gives every
@@ -280,13 +280,13 @@ def heston_page():
     rows = [[f'{K}', f'{price(K, None):.5f}'] + [f'{price(K, o):.5f}' for o in (0, 1, 2, 4)] for K in (80, 90, 100, 110, 120)]
     body = r'''    <h1>Heston with a switching long-run variance</h1>
     <p class="subtitle">Option prices by Fourier inversion, with the characteristic function expanded in $1/\lambda$.</p>
-    <p>The log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
+    <p>In <a href="./bibliography.html#Heston1993">Heston&apos;s model</a> the log-price follows $dX = -\tfrac12 v\,dt + \sqrt v\,dW$ and the variance
     $dv = \kappa(\theta_y - v)\,dt + \xi\sqrt v\,dZ$, with correlation $\rho$. The characteristic function is
     $\mathbb{E}[e^{iuX_T}] = e^{iuX_0 + D(T)v_0}\,a_i(T)$, where $D$ is Heston&apos;s Riccati solution, which does
     not involve $\theta$. The regime enters only through</p>
     $$g_i(t) = \kappa\,\theta_i\,D(t), \qquad D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}},$$
     <p>with $d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)}$ and $\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d)$.
-    Call prices follow from Lewis&apos;s formula,
+    Call prices follow from <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a>,
     $C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}$.</p>
     <p>Here $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$, $S_0 = 100$, one year to
     expiry, a symmetric chain switching at $\lambda = 10$, and a start in the high-variance regime. The table gives

@@ -438,5 +438,38 @@
   "doi": "10.1007/b106715",
   "url": "https://doi.org/10.1007/b106715",
   "annotation": "Develops conformal prediction, giving distribution-free prediction sets with guaranteed coverage under exchangeability."
+ },
+ {
+  "role": "examples",
+  "key": "Heston1993",
+  "authors": "Steven L. Heston",
+  "year": 1993,
+  "title": "A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options",
+  "venue": "Review of Financial Studies 6(2):327-343",
+  "doi": "10.1093/rfs/6.2.327",
+  "url": "",
+  "annotation": "Introduces the square-root stochastic variance model and its characteristic function; the Heston example on this site lets the long-run variance switch."
+ },
+ {
+  "role": "examples",
+  "key": "Lewis2001",
+  "authors": "Alan L. Lewis",
+  "year": 2001,
+  "title": "A Simple Option Formula for General Jump-Diffusion and Other Exponential Levy Processes",
+  "venue": "SSRN working paper 282110",
+  "doi": "10.2139/ssrn.282110",
+  "url": "",
+  "annotation": "Gives the single-integral option price in terms of the characteristic function that the Heston example uses."
+ },
+ {
+  "role": "examples",
+  "key": "FischerMeierHellstern1993",
+  "authors": "Wolfgang Fischer, Kathleen Meier-Hellstern",
+  "year": 1993,
+  "title": "The Markov-modulated Poisson process (MMPP) cookbook",
+  "venue": "Performance Evaluation 18(2):149-171",
+  "doi": "10.1016/0166-5316(93)90035-s",
+  "url": "",
+  "annotation": "Collects the generating functions, moments and fitting methods of the Markov-modulated Poisson process, the model in the Poisson counts example."
  }
 ]
