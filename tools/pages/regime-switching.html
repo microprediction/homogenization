@@ -1,0 +1,123 @@
+<!-- title: Regime-switching survival · homogenization | math -->
+  <main>
+    <h1>Regime-switching survival</h1>
+    <p class="subtitle">A worked example: a hazard rate whose mean level and volatility switch between two regimes.</p>
+
+    <p class="lead">
+      The problem comes from the second half of my 2001 Stanford thesis. The hazard rate, or short
+      rate, is an Ornstein&ndash;Uhlenbeck process whose mean level and volatility switch between two
+      regimes at rate $\lambda$. The quantity wanted is the survival probability, which is also a
+      zero-coupon bond price. When the regimes switch infinitely fast the answer is
+      Vasicek&apos;s formula with the regime averages plugged in. The corrector adds terms in
+      $\varepsilon = 1/\lambda$.
+    </p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two regimes switching at rate lambda are replaced by one averaged Vasicek model plus a corrector in 1 over lambda">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+            <path d="M0,0 L6.5,3 L0,6 Z" fill="#4a3aff"/>
+          </marker>
+        </defs>
+        <text x="120" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Switching model</text>
+        <rect x="10" y="30" width="220" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="52" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Regime 1</text>
+        <text x="120" y="70" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ₁, volatility σ₁</text>
+        <rect x="10" y="104" width="220" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="126" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Regime 2</text>
+        <text x="120" y="144" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ₂, volatility σ₂</text>
+        <text x="120" y="96" text-anchor="middle" font-size="11" fill="#5a5a5a">⇅ switch at rate λ</text>
+
+        <line x1="236" y1="92" x2="508" y2="92" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="292" y="74" width="160" height="36" rx="18" fill="#ecebfb" stroke="#4a3aff"/>
+        <text x="372" y="97" text-anchor="middle" font-size="12.5" font-weight="600" fill="#4a3aff">ε = 1/λ → 0</text>
+
+        <text x="630" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Homogenized model</text>
+        <rect x="514" y="30" width="236" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="632" y="52" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Averaged Vasicek</text>
+        <text x="632" y="70" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ̄, variance σ̄² (regime averages)</text>
+        <rect x="514" y="104" width="236" height="50" rx="10" fill="#ffffff" stroke="#4a3aff" stroke-dasharray="4 3"/>
+        <text x="632" y="126" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">+ corrector</text>
+        <text x="632" y="144" text-anchor="middle" font-size="11" fill="#5a5a5a">terms in ε and ε², regime dependent</text>
+
+        <line x1="60" y1="206" x2="700" y2="206" stroke="#cfcfcf" stroke-width="1"/>
+        <text x="60" y="226" font-size="11" fill="#5a5a5a">slow switching: regimes persist</text>
+        <text x="700" y="226" text-anchor="end" font-size="11" fill="#5a5a5a">fast switching: regimes blur</text>
+        <text x="380" y="198" text-anchor="middle" font-size="11" fill="#9a9a9a">switching rate λ</text>
+      </svg>
+      <p class="caption">The averaged model forgets the regime. The corrector remembers it at order ε.</p>
+    </div>
+
+
+    <h2>The expansion</h2>
+    <p>The hazard follows $dx_t = \kappa(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t$, where
+    $y_t \in \{1,2\}$ switches at rate $\lambda$ in each direction. The survival probability is
+    $u_y(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \mid x_0 = x,\ y_0 = y\big]$. Write</p>
+    $$B(r) = \frac{1-e^{-\kappa r}}{\kappa}, \qquad \bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2},$$
+    $$\bar g(r) = -\kappa\bar\theta B(r) + \tfrac12 \bar s B(r)^2, \qquad \tilde g(r) = -\kappa\tilde\theta B(r) + \tfrac12 \tilde s B(r)^2 .$$
+    <p>With $\varepsilon = 1/\lambda$, and the upper sign when the process starts in regime 1,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      u_y(t,x) &= e^{-B(t)x}\; M(t)\; \big(1 \pm R(t)\big) + O(\varepsilon^3), \\[4pt]
+      \log M(t) &= \int_0^t \bar g(r)\,dr + \frac{\varepsilon}{2}\int_0^t \tilde g(r)^2\,dr - \frac{\varepsilon^2}{8}\,\tilde g(t)^2, \\[4pt]
+      R(t) &= \frac{\varepsilon}{2}\,\tilde g(t) - \frac{\varepsilon^2}{4}\,\tilde g'(t).
+    \end{aligned}$$
+    </div>
+    <p>The factor $e^{-B(t)x} e^{\int_0^t \bar g}$ is Vasicek&apos;s bond price with the averaged
+    parameters. The $\varepsilon$ term in $\log M$ is the same for both regimes and grows with
+    maturity. The factor $1 \pm R$ depends on the starting regime, and it vanishes as
+    $\lambda \to \infty$.</p>
+
+    <p>
+      The model also has an exact solution, which is what makes the expansion checkable. Because
+      $\kappa$ does not switch, $u_y(t,x) = a_y(t)\,e^{-B(t)x}$, where $a$ solves a two-dimensional
+      linear ODE driven by $\bar g \pm \tilde g$ and the switching generator. This reduction is
+      known: <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a> solve the
+      case of a switching mean level, and <a href="./bibliography.html#ElliottSiu2009">Elliott and
+      Siu (2009)</a> give Markov-modulated exponential-affine bond prices in general.
+    </p>
+
+    <p>
+      Against the exact solution, the error after zero, one and two orders falls like
+      $\varepsilon$, $\varepsilon^2$ and $\varepsilon^3$. The
+      <a href="./convergence.html">convergence demo</a> shows the three slopes, and
+      <a href="./survival.html">the survival demo</a> shows the curves. The published fast-switching
+      expansions treat option prices and transition densities, and a search of the literature did
+      not find the corrector for this bond price or survival probability.
+    </p>
+
+    <p>
+      The formula holds away from an initial layer of width about $1/(2\lambda)$, in which the
+      regime has not yet had time to switch. Inside the layer the second-order bracket carries an
+      extra transient of size $\varepsilon^2 e^{-2\lambda t}$.
+    </p>
+
+    <h2>All orders</h2>
+    <p>
+      The same calculation gives every term. Divide the difference $d = (a_1 - a_2)/2$ by the mean
+      $m = (a_1 + a_2)/2$. The ratio $\rho = d/m$ solves one scalar Riccati equation, and the mean
+      follows from it:
+    </p>
+    $$\rho' = \tilde g\,(1 - \rho^2) - 2\lambda\rho, \quad \rho(0) = 0, \qquad
+      \log m(t) = \int_0^t (\bar g + \tilde g\,\rho), \qquad u_y = e^{-B(t)x}\, m\,(1 \pm \rho).$$
+    <p>
+      Expanding $\rho = \sum_n \varepsilon^n \rho_n$ gives $\rho_1 = \tilde g/2$ and
+      $\rho_{n+1} = -\tfrac12\big(\rho_n' + \tilde g \sum_{i+j=n} \rho_i\rho_j\big)$. Every
+      $\rho_n$ is a polynomial in $E = 1 - e^{-\kappa t}$, because $dE/dt = \kappa(1-E)$, so every
+      term of $\log m$ integrates in closed form.
+    </p>
+    <p>
+      The outer series does not start at $\rho(0) = 0$. The fast transient that corrects it decays
+      within about $1/(2\lambda)$ but leaves a permanent shift in $\log m$, which first appears at
+      order $\varepsilon^4$ as $-\varepsilon^4 \rho_2(0)\,\tilde g'(0)/4$. The layer is solved to all
+      orders in the span of $\tau^k e^{-2j\tau}$, with $\tau = \lambda t$. With both series the
+      error after $n$ orders falls like $\varepsilon^{n+1}$; the certificate
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_all_orders.py">verify_all_orders.py</a>
+      checks orders 1 to 6 against a 30-digit solution. The <a href="./survival.html">survival demo</a>
+      shows the terms adding up.
+    </p>
+
+    <p class="next-steps">A note setting out the derivation and the exact solution is in preparation.
+    Comments and corrections are welcome through
+    <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
+  </main>

@@ -69,19 +69,7 @@
       var expo = Math.exp(G - B(t) * x + e * I / 2 - e * e * g * g / 8) * (1 + sg * (e * g / 2 - e * e * gp / 4));
       return [u0, first, second, expo];
     }
-    // First-order terms as shipped in the homogenize package (homogenize/model.py).
-    function packageFirst(t, x, y) {
-      var E = 1 - Math.exp(-k * t), cg = tht, c1 = k, c4 = sst, ex = Math.exp;
-      var anti = Math.pow(cg * E + c4 * E * E / (c1 * c1) / 2, 2);
-      var sym = ((-24 * cg * cg * Math.pow(c1, 4) - 72 * cg * c1 * c1 * c4 - 36 * c4 * c4) * ex(-2 * c1 * t)
-        + (96 * cg * cg * Math.pow(c1, 4) + 144 * cg * c1 * c1 * c4 + 48 * c4 * c4) * ex(-c1 * t)
-        + 16 * c4 * (cg * c1 * c1 + c4) * ex(-3 * c1 * t) + 48 * cg * cg * Math.pow(c1, 5) * t
-        - 72 * cg * cg * Math.pow(c1, 4) + 48 * cg * Math.pow(c1, 3) * c4 * t - 88 * cg * c1 * c1 * c4
-        + 12 * c1 * c4 * c4 * t - 3 * c4 * c4 * ex(-4 * c1 * t) - 25 * c4 * c4) / Math.pow(c1, 5) / 48;
-      var u0 = Math.exp(simpson(gbar, t) - B(t) * x);
-      return u0 * (1 + (sym + (y === 0 ? 1 : -1) * anti) / lam);
-    }
-    return { B: B, exact: exact, exactCurve: exactCurve, expansion: expansion, packageFirst: packageFirst };
+    return { B: B, exact: exact, exactCurve: exactCurve, expansion: expansion };
   }
   root.Survival = { make: make };
   if (typeof module !== 'undefined') module.exports = root.Survival;

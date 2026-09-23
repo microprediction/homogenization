@@ -15,11 +15,12 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
-      <a href="./papers.html">Papers</a>
-      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Demos</span><span class="drop">
-        <a href="./survival.html">Survival under regime switching</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
         <a href="./convergence.html">Convergence orders</a>
       </span></span>
+      <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>
@@ -34,129 +35,98 @@
 </header>
 
   <main>
+    <style>
+      .examples { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin: 18px 0 8px; }
+      .ex { border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 14px 16px; }
+      .ex h3 { margin: 0 0 6px; font-size: 1.02rem; }
+      .ex p { margin: 4px 0; font-size: .92rem; line-height: 1.5; }
+      .ex .k { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+      .ex .go { margin-top: 8px; font-size: .9rem; }
+    </style>
     <h1>Homogenization</h1>
     <p class="subtitle">Averaging a fast hidden variable, and computing what the average leaves out.</p>
 
     <p class="lead">
       Many models carry a slow quantity of interest and a fast one that nobody observes: a regime
-      that switches, a volatility that mean-reverts quickly, a hidden state that mixes. The first
-      step is always the same. Replace the fast variable by its average over its stationary law.
-      Homogenization treats that averaged model as the leading term and computes the next one, the
-      <em>corrector</em>, as a series in the ratio of the two time scales.
+      that switches, a volatility that mean-reverts quickly, a coefficient that oscillates on a
+      small spatial scale. The first step is always the same. Replace the fast variable by its
+      average. Homogenization treats that averaged model as the leading term and computes the next
+      one, the <em>corrector</em>, as a series in the ratio of the two scales.
     </p>
 
+    <h2>The mechanism</h2>
     <p>
-      This site starts with a problem from the second half of my 2001 Stanford thesis. The hazard
-      rate, or short rate, is an Ornstein&ndash;Uhlenbeck process whose mean level and volatility
-      switch between two regimes at rate $\lambda$. The quantity wanted is the survival probability,
-      which is also a zero-coupon bond price. When the regimes switch infinitely fast the answer is
-      Vasicek&apos;s formula with the regime averages plugged in. The corrector adds terms in
-      $\varepsilon = 1/\lambda$.
+      Let the fast variable have generator $\mathcal{L}_0/\varepsilon$ and the slow variable
+      generator $\mathcal{L}_1$, so that an expectation $u^\varepsilon$ solves
+      $\partial_t u^\varepsilon = \varepsilon^{-1}\mathcal{L}_0 u^\varepsilon + \mathcal{L}_1 u^\varepsilon$.
+      Expand $u^\varepsilon = u_0 + \varepsilon u_1 + \dots$ and match powers of $\varepsilon$.
     </p>
-
-    <div class="diagram">
-      <svg viewBox="0 0 760 250" role="img" aria-label="Two regimes switching at rate lambda are replaced by one averaged Vasicek model plus a corrector in 1 over lambda">
-        <defs>
-          <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
-            <path d="M0,0 L6.5,3 L0,6 Z" fill="#4a3aff"/>
-          </marker>
-        </defs>
-        <text x="120" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Switching model</text>
-        <rect x="10" y="30" width="220" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="52" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Regime 1</text>
-        <text x="120" y="70" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ₁, volatility σ₁</text>
-        <rect x="10" y="104" width="220" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="126" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Regime 2</text>
-        <text x="120" y="144" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ₂, volatility σ₂</text>
-        <text x="120" y="96" text-anchor="middle" font-size="11" fill="#5a5a5a">⇅ switch at rate λ</text>
-
-        <line x1="236" y1="92" x2="508" y2="92" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
-        <rect x="292" y="74" width="160" height="36" rx="18" fill="#ecebfb" stroke="#4a3aff"/>
-        <text x="372" y="97" text-anchor="middle" font-size="12.5" font-weight="600" fill="#4a3aff">ε = 1/λ → 0</text>
-
-        <text x="630" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Homogenized model</text>
-        <rect x="514" y="30" width="236" height="50" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="632" y="52" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Averaged Vasicek</text>
-        <text x="632" y="70" text-anchor="middle" font-size="11" fill="#5a5a5a">mean level θ̄, variance σ̄² (regime averages)</text>
-        <rect x="514" y="104" width="236" height="50" rx="10" fill="#ffffff" stroke="#4a3aff" stroke-dasharray="4 3"/>
-        <text x="632" y="126" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">+ corrector</text>
-        <text x="632" y="144" text-anchor="middle" font-size="11" fill="#5a5a5a">terms in ε and ε², regime dependent</text>
-
-        <line x1="60" y1="206" x2="700" y2="206" stroke="#cfcfcf" stroke-width="1"/>
-        <text x="60" y="226" font-size="11" fill="#5a5a5a">slow switching: regimes persist</text>
-        <text x="700" y="226" text-anchor="end" font-size="11" fill="#5a5a5a">fast switching: regimes blur</text>
-        <text x="380" y="198" text-anchor="middle" font-size="11" fill="#9a9a9a">switching rate λ</text>
-      </svg>
-      <p class="caption">The averaged model forgets the regime. The corrector remembers it at order ε.</p>
-    </div>
-
-    <h2>The corrected formula</h2>
-    <div class="equation-card">
-      <p>Let $dx_t = \kappa(\theta_{y_t} - x_t)\,dt + \sigma_{y_t}\,dW_t$, where $y_t \in \{1,2\}$
-      switches at rate $\lambda$ in each direction, and let
-      $u_y(t,x) = \mathbb{E}\big[e^{-\int_0^t x_r\,dr} \,\big|\, x_0 = x,\ y_0 = y\big]$.
-      Write $B(r) = (1-e^{-\kappa r})/\kappa$, the regime averages and half-differences
-      $\bar\theta, \tilde\theta = (\theta_1 \pm \theta_2)/2$ and
-      $\bar s, \tilde s = (\sigma_1^2 \pm \sigma_2^2)/2$, and</p>
-      $$\bar g(r) = -\kappa\bar\theta B(r) + \tfrac12 \bar s B(r)^2, \qquad \tilde g(r) = -\kappa\tilde\theta B(r) + \tfrac12 \tilde s B(r)^2 .$$
-      <p>With $\varepsilon = 1/\lambda$ and the upper sign for regime 1,</p>
-      $$u_y(t,x) = \exp\!\Big(-B(t)x + \int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2} - \frac{\varepsilon^2}{8}\tilde g(t)^2\Big)\Big(1 \pm \frac{\varepsilon}{2}\tilde g(t) \mp \frac{\varepsilon^2}{4}\tilde g'(t)\Big) + O(\varepsilon^3).$$
-      <p>The first two terms in the exponent are Vasicek&apos;s bond price with the averaged
-      parameters. The $\varepsilon$ term inside the exponent is the same for both regimes and grows
-      with maturity. The bracket is the part that depends on the starting regime, and it vanishes
-      as $\lambda \to \infty$.</p>
-    </div>
-
-    <p>
-      The model also has an exact solution, which is what makes the expansion checkable. Because
-      $\kappa$ does not switch, $u_y(t,x) = a_y(t)\,e^{-B(t)x}$, where $a$ solves a two-dimensional
-      linear ODE driven by $\bar g \pm \tilde g$ and the switching generator. This reduction is
-      known: <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a> solve the
-      case of a switching mean level, and <a href="./bibliography.html#ElliottSiu2009">Elliott and
-      Siu (2009)</a> give Markov-modulated exponential-affine bond prices in general.
-    </p>
-
-    <p>
-      Against the exact solution, the error after zero, one and two correction orders falls like
-      $\varepsilon$, $\varepsilon^2$ and $\varepsilon^3$. The
-      <a href="./convergence.html">convergence demo</a> shows the three slopes, and
-      <a href="./survival.html">the survival demo</a> shows the curves. The published fast-switching
-      expansions treat option prices and transition densities, and a search of the literature did
-      not find the corrector for this bond price or survival probability.
-    </p>
-
-    <p>
-      The formula holds away from an initial layer of width about $1/(2\lambda)$, in which the
-      regime has not yet had time to switch. Inside the layer the second-order bracket carries an
-      extra transient of size $\varepsilon^2 e^{-2\lambda t}$.
-    </p>
-
-    <h2>A correction to the 2020 code</h2>
-    <p>
-      The first-order terms in the <a href="https://github.com/microprediction/homogenize">homogenize</a>
-      package, released in 2020 with an article on the same model, are wrong. Its regime-dependent
-      term has the wrong sign on $\tilde\theta$, is squared, and lacks a factor of one half, and its
-      regime-independent term does not match $\tfrac12\int_0^t \tilde g^2$. With those terms the
-      error stays of order $\varepsilon$, so the correction adds nothing. The formula above replaces
-      them. The certificate script is
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">verify_expansion.py</a>.
-    </p>
-
-    <h2>The wider program</h2>
     <ul>
-      <li><em>Fast mean-reverting stochastic volatility.</em> The same expansion for interest rate
-        derivatives when volatility, rather than the regime, is the fast variable:
-        Cotton, Fouque, Papanicolaou and Sircar (2004), listed on the <a href="./papers.html">papers</a> page.</li>
-      <li><em>Conformal prediction as the averaged limit.</em> Pooling residuals across states is the
-        same averaging step, taken without a corrector:
-        <a href="https://conformalprediction.net/homogenization.html">Homogenization without the corrector</a>.</li>
-      <li><em>Forecast calibration.</em> An online two-point scale mixture replaces an unresolved
-        mixture of regimes by an effective width:
-        <a href="https://skaters.microprediction.org/homogenization.html">homogenization in skaters</a>.</li>
-      <li><em>Choice among racing processes.</em> Softmax as the homogenized choice law of fast hidden
-        kinetics, with its first correction:
-        <a href="https://kinetics.microprediction.org/papers.html">kinetics papers</a>.</li>
+      <li>At order $\varepsilon^{-1}$, $\mathcal{L}_0 u_0 = 0$, so $u_0$ does not depend on the fast variable.</li>
+      <li>At order $1$, $\mathcal{L}_0 u_1 = \partial_t u_0 - \mathcal{L}_1 u_0$. This has a solution only
+        if the right side averages to zero under the stationary law of the fast variable. That
+        solvability condition is the averaged equation $\partial_t u_0 = \langle \mathcal{L}_1 \rangle u_0$.</li>
+      <li>The solution $u_1$ of that Poisson equation is the corrector. It depends on the fast
+        variable, and it is where the average&apos;s error lives.</li>
     </ul>
+    <p>
+      The same steps apply with a diffusive scaling, $\varepsilon^{-2}\mathcal{L}_0 + \varepsilon^{-1}\mathcal{L}_{\mathrm{mix}} + \mathcal{L}_1$,
+      which is the setting of periodic media and of fast mean-reverting volatility. The averaged
+      coefficient is then not always the plain average.
+    </p>
+
+    <h2>Examples</h2>
+    <div class="examples">
+      <div class="ex">
+        <h3>Regime-switching survival</h3>
+        <p><span class="k">fast</span> a two-state chain switching the mean level and volatility of an Ornstein&ndash;Uhlenbeck hazard</p>
+        <p><span class="k">averaged</span> Vasicek&apos;s bond price with the regime averages</p>
+        <p><span class="k">corrector</span> every order in $1/\lambda$, in closed form, checked against the exact solution</p>
+        <p class="go"><a href="./regime-switching.html">The expansion</a> &middot; <a href="./survival.html">terms adding up</a> &middot; <a href="./convergence.html">orders</a></p>
+      </div>
+      <div class="ex">
+        <h3>Fast mean-reverting volatility</h3>
+        <p><span class="k">fast</span> a mean-reverting factor driving the volatility of an asset or a short rate</p>
+        <p><span class="k">averaged</span> constant volatility at its effective level</p>
+        <p><span class="k">corrector</span> first order in the square root of the fast time scale, through a few group parameters</p>
+        <p class="go"><a href="./papers.html#volatility">Fouque, Papanicolaou and Sircar; Cotton et al. (2004)</a></p>
+      </div>
+      <div class="ex">
+        <h3>Periodic media</h3>
+        <p><span class="k">fast</span> a coefficient oscillating on a small spatial scale</p>
+        <p><span class="k">averaged</span> an effective coefficient; in one dimension the harmonic mean, not the arithmetic mean</p>
+        <p><span class="k">corrector</span> the solution of the cell problem</p>
+        <p class="go"><a href="./bibliography.html#BLP1978">Bensoussan, Lions and Papanicolaou (1978)</a></p>
+      </div>
+      <div class="ex">
+        <h3>Choice among racing processes</h3>
+        <p><span class="k">fast</span> hidden kinetics of competing correlated Cox processes</p>
+        <p><span class="k">averaged</span> Luce&apos;s choice axiom, the softmax</p>
+        <p><span class="k">corrector</span> a first correction of Green&ndash;Kubo type, uniform over blocked subsets</p>
+        <p class="go"><a href="https://kinetics.microprediction.org/papers.html">kinetics.microprediction.org</a></p>
+      </div>
+      <div class="ex">
+        <h3>Conformal prediction</h3>
+        <p><span class="k">fast</span> the state on which the forecast error depends</p>
+        <p><span class="k">averaged</span> residuals pooled across states, and a quantile of the pool</p>
+        <p><span class="k">corrector</span> not computed; the certificate holds without it, and the sharpness lost is priced in nats</p>
+        <p class="go"><a href="https://conformalprediction.net/homogenization.html">Homogenization without the corrector</a></p>
+      </div>
+      <div class="ex">
+        <h3>Forecast calibration</h3>
+        <p><span class="k">fast</span> latent regimes behind a forecaster&apos;s residuals</p>
+        <p><span class="k">averaged</span> one effective width for the predictive distribution</p>
+        <p><span class="k">corrector</span> a hedged two-point Gaussian scale mixture, learned online</p>
+        <p class="go"><a href="https://skaters.microprediction.org/homogenization.html">homogenization in skaters</a></p>
+      </div>
+    </div>
+
+    <p>
+      The regime-switching example is worked out in full, with an exact solution to check against
+      and demonstrations. The others link to where they are developed. The
+      <a href="./bibliography.html">bibliography</a> and <a href="./map.html">literature map</a>
+      currently cover the regime-switching example and the classical theory.
+    </p>
 
     <h2>Cite</h2>
     <blockquote>
@@ -165,8 +135,7 @@
       Stanford University.
     </blockquote>
 
-    <p class="next-steps">A note setting out the derivation and the exact solution is in preparation.
-    Comments and corrections are welcome through
+    <p class="next-steps">Comments and corrections are welcome through
     <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
   </main>
 

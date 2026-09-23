@@ -10,11 +10,12 @@ HEADER = """<header class="site-header">
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
-      <a href="./papers.html">Papers</a>
-      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Demos</span><span class="drop">
-        <a href="./survival.html">Survival under regime switching</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
+        <a href="./regime-switching.html">The expansion</a>
+        <a href="./survival.html">Terms adding up</a>
         <a href="./convergence.html">Convergence orders</a>
       </span></span>
+      <a href="./papers.html">Papers</a>
       <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="https://github.com/microprediction/homogenization">GitHub</a>

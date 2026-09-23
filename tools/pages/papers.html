@@ -1,12 +1,11 @@
 <!-- title: Papers · homogenization -->
   <main>
     <h1>Papers</h1>
-    <p class="subtitle">Write-ups on homogenization in pricing and survival models. The
-    <a href="./bibliography.html">bibliography</a> places them among the classical theory and the
-    regime-switching literature.</p>
+    <p class="subtitle">Write-ups grouped by example. The <a href="./bibliography.html">bibliography</a>
+    places them among the classical theory.</p>
 
     <div class="bib">
-    <h2>Core</h2>
+    <h2 id="regime">Regime switching</h2>
     <ul>
       <li>
         Cotton, P. (2001). <em>An Analytic Approach to Ornstein&ndash;Uhlenbeck Processes with
@@ -14,40 +13,43 @@
         PhD thesis, Stanford University.
         <a href="https://raw.githubusercontent.com/microprediction/home/main/papers/Cotton_2001_PhD_Thesis_An_Analytic_Approach_to_Ornstein-Uhlenbeck_Processes_with_Fluctuating_Parameters.pdf">PDF</a>
         &middot; <a href="https://www.proquest.com/openview/77a94e16467c20c2e86103967640f3dd/1?pq-origsite=gscholar&amp;cbl=18750&amp;diss=y">ProQuest</a>.
-        <em>The origin of the regime-switching expansion on this site. The second half treats
-        processes whose mean and volatility follow a two-state Markov chain.</em>
+        <em>Vasicek&apos;s model with a mean and volatility driven by a fast secondary process,
+        continuous or two-state, and the expansions that correct it.</em>
       </li>
+      <li>
+        Cotton, P. (2026). <em>Survival Under Regime-Switching Ornstein&ndash;Uhlenbeck Hazard
+        Rates: The Fast-Switching Expansion to All Orders</em>. Note in preparation.
+        <a href="./regime-switching.html">Summary</a> &middot; certificates:
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_all_orders.py">verify_all_orders.py</a>.
+        <em>The expansion in 1/&lambda; to all orders, checked against the exact two-state
+        solution.</em>
+      </li>
+      <li>
+        Cotton, P. (2020). <em>Got Milk? On Homogenization and Survival Probability</em>.
+        <a href="https://www.linkedin.com/pulse/got-milk-homogenization-survival-probability-peter-cotton-phd">Article</a>
+        &middot; code: <a href="https://github.com/microprediction/homogenize">homogenize</a>.
+        <em>An expository account of the same model.</em>
+      </li>
+    </ul>
+
+    <h2 id="volatility">Fast mean-reverting volatility</h2>
+    <ul>
       <li>
         Cotton, P., Fouque, J.-P., Papanicolaou, G. and Sircar, R. (2004). <em>Stochastic Volatility
         Corrections for Interest Rate Derivatives</em>. Mathematical Finance 14, 173&ndash;200.
         <a href="https://doi.org/10.1111/j.0960-1627.2004.00188.x">doi:10.1111/j.0960-1627.2004.00188.x</a>
         &middot; <a href="http://math.stanford.edu/~papanico/pubftp/cfps.pdf">PDF</a>.
         <em>Vasicek and CIR short rates with fast mean-reverting stochastic volatility, and the
-        corrections that change the shape of the yield curve.</em>
+        first-order terms that change the shape of the yield curve.</em>
+      </li>
+      <li>
+        Fouque, J.-P., Papanicolaou, G. and Sircar, K. R. (2000). <em>Derivatives in Financial
+        Markets with Stochastic Volatility</em>. Cambridge University Press.
+        <em>The fast-scale expansion for option prices.</em>
       </li>
     </ul>
 
-    <h2>Working papers &amp; notes</h2>
-    <ul>
-      <li>
-        Cotton, P. (2026). <em>Survival Under Regime-Switching Ornstein&ndash;Uhlenbeck Hazard
-        Rates: An Exact Reduction and the Corrected Homogenization Expansion</em>. Note in
-        preparation. Certificate:
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_expansion.py">verify_expansion.py</a>
-        &middot; demos: <a href="./survival.html">survival</a>, <a href="./convergence.html">convergence</a>.
-        <em>The expansion to second order in 1/&lambda;, checked against the exact two-state
-        solution, with the orders of convergence measured.</em>
-      </li>
-      <li>
-        Cotton, P. (2020). <em>Got Milk? On Homogenization and Survival Probability</em>.
-        <a href="https://www.linkedin.com/pulse/got-milk-homogenization-survival-probability-peter-cotton-phd">Article</a>
-        &middot; code: <a href="https://github.com/microprediction/homogenize">homogenize</a>.
-        <em>An expository account of the same model. Its first-order terms are incorrect; see the
-        <a href="./index.html">home page</a> for the correction.</em>
-      </li>
-    </ul>
-
-    <h2>Related work on other sites</h2>
+    <h2 id="choice">Choice among racing processes</h2>
     <ul>
       <li>
         Cotton, P. (2026). <em>An Asymptotic Correction to Luce&apos;s Choice Axiom for Competing
@@ -56,15 +58,23 @@
         <em>Softmax as the homogenized choice law of fast hidden kinetics, with its first
         correction.</em>
       </li>
+    </ul>
+
+    <h2 id="conformal">Conformal prediction</h2>
+    <ul>
       <li>
         <em>Homogenization without the corrector</em>, on
         <a href="https://conformalprediction.net/homogenization.html">conformalprediction.net</a>.
         <em>Residual pooling in split conformal prediction is the averaged limit, stopped before the
         corrector.</em>
       </li>
+    </ul>
+
+    <h2 id="forecasting">Forecast calibration</h2>
+    <ul>
       <li>
         <em>Homogenization</em>, on <a href="https://skaters.microprediction.org/homogenization.html">skaters.microprediction.org</a>.
-        <em>An online width correction for distributional forecasts built from a hedged two-point
+        <em>An online width adjustment for distributional forecasts built from a hedged two-point
         scale mixture.</em>
       </li>
     </ul>
