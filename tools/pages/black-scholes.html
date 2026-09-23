@@ -32,7 +32,9 @@
     <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
     $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
-    <p>where $\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2)$. The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    <p>Here</p>
+    $$\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2) .$$
+    <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
     half-difference $\tilde g$ measures how much the two regimes disagree.</p>
 
     <h3>First order</h3>
@@ -41,9 +43,11 @@
     <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
     <a href="./idea.html">idea</a> page.</p>
     <ul>
-      <li>$e^{\int\bar g}$ is the averaged model.</li>
-      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
-        both starting regimes, and it grows with $t$.</li>
+      <li>The factor below is the averaged model:
+        $$e^{\int_0^t \bar g} .$$</li>
+      <li>The term below is half the variance of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        It is the same for both starting regimes, and it grows with $t$.</li>
       <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
         $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
     </ul>
@@ -55,8 +59,9 @@
     $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
     <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
     rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
-    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
-    matching powers gives</p>
+    and expanding in $\varepsilon$ finds that value order by order. Write</p>
+    $$\omega = \sum_n \varepsilon^n\omega_n$$
+    <p>and match powers of $\varepsilon$:</p>
     $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
     <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
     restoring term can be inverted, which here is a division by $2\lambda$.</p>

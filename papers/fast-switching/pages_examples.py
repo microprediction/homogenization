@@ -54,7 +54,7 @@ def two_state_expansion(g_desc, extra=''):
     body = r"""    <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
     $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
-    <p>where """ + g_desc + r""". The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+""" + (("    <p>Here</p>\n    $$" + g_desc[1:-1] + " .$$\n    <p>") if (g_desc.startswith('$') and g_desc.endswith('$') and '$' not in g_desc[1:-1]) else ("    <p>where " + g_desc + ". ")) + r"""The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
     half-difference $\tilde g$ measures how much the two regimes disagree.</p>
 
     <h3>First order</h3>
@@ -63,9 +63,11 @@ def two_state_expansion(g_desc, extra=''):
     <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
     <a href="./idea.html">idea</a> page.</p>
     <ul>
-      <li>$e^{\int\bar g}$ is the averaged model.</li>
-      <li>$\frac\varepsilon2\int\tilde g^2$ is half the variance of the fluctuating integral of $g$. It is the same for
-        both starting regimes, and it grows with $t$.</li>
+      <li>The factor below is the averaged model:
+        $$e^{\int_0^t \bar g} .$$</li>
+      <li>The term below is half the variance of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        It is the same for both starting regimes, and it grows with $t$.</li>
       <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
         $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
     </ul>
@@ -77,8 +79,9 @@ def two_state_expansion(g_desc, extra=''):
     $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
     <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
     rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
-    and expanding in $\varepsilon$ finds that value order by order. Writing $\omega = \sum_n \varepsilon^n\omega_n$ and
-    matching powers gives</p>
+    and expanding in $\varepsilon$ finds that value order by order. Write</p>
+    $$\omega = \sum_n \varepsilon^n\omega_n$$
+    <p>and match powers of $\varepsilon$:</p>
     $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
     <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
     restoring term can be inverted, which here is a division by $2\lambda$.</p>
@@ -296,7 +299,7 @@ def counts_page():
     <p>These equal the probabilities $\Pr(N_t = k)$ up to the chance of 64 or more events. Given the regime path the
     count is Poisson with mean at most 8, so that chance is below $2\times10^{-35}$.</p>
 '''
-    body += two_state_expansion(r'$\bar g = (z-1)\bar\ell$ and $\tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$ are constants',
+    body += two_state_expansion(r'$\bar g = (z-1)\,\bar\ell, \qquad \tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$',
                                 r''' For the count, the shared first-order term multiplies the generating function by</p>
     $$\exp\big(\tfrac{t}{8\lambda}(z-1)^2(\ell_1 - \ell_2)^2\big),$$
     <p>which adds $t(\ell_1 - \ell_2)^2/(4\lambda)$ to the
@@ -351,7 +354,7 @@ def cir_page():
     $g_i(t) = -\kappa\,\theta_i\,B(t)$. If $\sigma$ also switched, $B$ would differ between regimes and the state
     would not factor out.</p>
 '''
-    body += two_state_expansion(r'$g_i = -\kappa\theta_i B$, so that $\tilde g = -\kappa\tilde\theta B$ with $\tilde\theta = \tfrac12(\theta_1 - \theta_2)$',
+    body += two_state_expansion(r'$g_i = -\kappa\theta_i B, \qquad \tilde g = -\kappa\tilde\theta B, \qquad \tilde\theta = \tfrac12(\theta_1 - \theta_2)$',
                                 r''' $B$ is not a sum of exponentials, so the engine holds $g_i$ as a Chebyshev series.''')
     body += r'''
 <!-- include: explicit/cir.html -->
@@ -472,7 +475,7 @@ def heston_page():
     <p>So $\phi_i = e^{D(T)v_0}a_i(T)$ with
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and $g_i(t) = \kappa\,\theta_i\,D(t)$, which is complex.</p>
 '''
-    body += two_state_expansion(r'$g_i = \kappa\theta_i D$, so that $\tilde g = \kappa\tilde\theta D$',
+    body += two_state_expansion(r'$g_i = \kappa\theta_i D, \qquad \tilde g = \kappa\tilde\theta D$',
                                 r''' The engine holds the complex $g_i$ as Chebyshev series.''')
     body += r'''
     <h2>Explicit formulas</h2>
