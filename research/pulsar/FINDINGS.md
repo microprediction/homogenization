@@ -101,3 +101,11 @@ autocovariance near lag 0, and a large-k ring also has a flat top there. Need th
 Keith & Nitu, then fit the ring convolved with that kernel, or fit only lags beyond a few kernel lengths.
 OU time scales hitting the 5e4-day bound (B1903+07, B1907+00, J2043+2740) are not identified; those K_model
 values are meaningless, although the percentile test still simulates the fitted model.
+
+## 2026-09-23: the large stage count is not a smoothing artefact (analysis/07_lag_cutoff.py)
+Refit the ring using only lags >= L (L = 0, 60, 150, 300 days), which removes the region the GP smoothing touches.
+Ratio of the Markov (k = 1) cost to the best-k cost at L = 300: B1540-06 355, J2043+2740 190, B2035+36 85,
+B0950+08 55, B1929+20 26, B1818-04 25, B1714-34 25, B1642-03 20, B1907+00 12, B1826-17 9.5, B2148+63 8.3,
+B1828-11 5.7. Markov is close (ratio < 3) only for B0740-28, B0919+06, B1822-09, B1839+09, B1903+07, the
+same pulsars that need extra low-frequency power. Best k stays 6 to 64 as L grows.
+So 12 of 17 pulsars have dwell times far more regular than exponential, beyond the smoothing scale.
