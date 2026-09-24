@@ -1,11 +1,15 @@
 <!-- title: Timeline · homogenization -->
   <style>
     #tl-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    #timeline { width: 100%; height: 760px; border: 1px solid #ddd; background: #fdfdfc; border-radius: 4px; }
+    #timeline { width: 100%; border: 1px solid #ddd; background: #fdfdfc; border-radius: 4px; overflow-x: auto; }
+    #timeline svg { display: block; }
+    #timeline a { outline: none; }
+    #timeline a:focus-visible .mark { stroke: #1a1a1a; stroke-width: 2.5; }
+    #timeline a:focus-visible text.evlabel { text-decoration: underline; }
     .legend { font-size: 0.85em; color: #444; display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 10px 0; }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
     .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-    #tooltip { position: absolute; pointer-events: none; background: rgba(34,34,34,0.95); color: #eee;
+    #tooltip { position: absolute; pointer-events: none; box-sizing: border-box; background: rgba(34,34,34,0.95); color: #eee;
         padding: 8px 11px; border-radius: 4px; font-size: 13px; max-width: 380px; display: none; line-height: 1.35; }
     text.evlabel { font: 11px sans-serif; fill: #222; }
     text.lanelabel { font: bold 12px sans-serif; }
@@ -17,65 +21,114 @@
   mathematics, physics and fluids, finance, and biology and engineering. Each lane is a field, and each dot is a work
   in the <a href="./bibliography.html">bibliography</a>, placed at its year of publication.</p>
   <p>Labelled marks are landmarks. Squares are the regime-switching homogenization papers, which expand a
-  quantity around its fast-switching average. Hover over any mark for its annotation, and click to open it.</p>
+  quantity around its fast-switching average. Hover over, tap or tab to any mark for its annotation, and click or press Enter to open it.</p>
   <div class="legend" id="lane-legend"></div>
   <div id="timeline"></div>
 </div>
-<div id="tooltip"></div>
+<div id="tooltip" role="tooltip"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="./timeline-data.js"></script>
 <script>
 const LANES = {
-  theory:  {label:"Mathematical theory",            color:"#4a3aff", y0:70,  h:150},
-  physics: {label:"Physics, fluids and climate",    color:"#0f8b6e", y0:250, h:150},
-  finance: {label:"Finance",                         color:"#c2410c", y0:430, h:190},
-  other:   {label:"Biology, queues, choice and learning", color:"#7a5c9e", y0:650, h:80},
+  theory:  {label:"Mathematical theory",            color:"#4a3aff", h:150},
+  physics: {label:"Physics, fluids and climate",    color:"#0f8b6e", h:150},
+  finance: {label:"Finance",                         color:"#c2410c", h:190},
+  other:   {label:"Biology, queues, choice and learning", color:"#7a5c9e", h:80},
 };
-const W = document.getElementById("timeline").clientWidth, H = 760, M = {l: 30, r: 30};
-const svg = d3.select("#timeline").append("svg").attr("width","100%").attr("height",H).attr("viewBox",[0,0,W,H]);
-// 1920-1960 compressed into the left sixth; the dense decades get the room
-const x = d3.scaleLinear().domain([1918, 1960, 2028]).range([M.l, M.l + 0.17*(W - M.l - M.r), W - M.r]);
-const gridYears = [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020];
-svg.append("g").selectAll("line").data(gridYears).join("line")
-  .attr("x1", d=>x(d)).attr("x2", d=>x(d)).attr("y1", 60).attr("y2", H-30).attr("stroke", "#eee");
-svg.append("g").selectAll("text").data(gridYears).join("text")
-  .attr("class","yearlabel").attr("x", d=>x(d)+3).attr("y", H-14).text(d=>d);
-Object.values(LANES).forEach(l => {
-  svg.append("rect").attr("x", M.l).attr("y", l.y0).attr("width", W-M.l-M.r).attr("height", l.h)
-     .attr("fill", l.color).attr("opacity", 0.05);
-  svg.append("text").attr("class","lanelabel").attr("x", M.l+2).attr("y", l.y0-6).attr("fill", l.color).text(l.label);
-});
-// greedy packing: each dot, and each landmark with its label, takes the first row where it does not overlap
-const occ = {};
-Object.keys(LANES).forEach(k => occ[k] = []);
-const rowsOf = k => Math.max(1, Math.floor((LANES[k].h-16)/20)+1);
-const span = e => { const xx = x(e.y+0.5), w = 6.1*e.label.length;
-  if (!e.big) return [xx-6, xx+6];
-  return xx > W-200 ? [xx-14-w, xx+9] : [xx-9, xx+14+w]; };
-const place = e => { const s = span(e), R = rowsOf(e.lane);
-  for (let r = 0; r < R; r++) { const o = occ[e.lane][r] || (occ[e.lane][r] = []);
-    if (o.every(([a,b]) => s[1] < a || s[0] > b)) { o.push(s); e.row = r; return; } }
-  e.row = R-1; };
-EVENTS.filter(e=>e.big).sort((a,b)=>a.y-b.y).forEach(place);
-EVENTS.filter(e=>!e.big).sort((a,b)=>a.y-b.y).forEach(place);
-EVENTS.forEach(e => e.yy = LANES[e.lane].y0 + 14 + e.row*20);
-const tooltip = d3.select("#tooltip");
-const ev = svg.append("g").selectAll("g").data(EVENTS).join("g")
-  .style("cursor","pointer")
-  .on("click", (e,d)=>{ if(d.url) window.open(d.url,"_blank"); })
-  .on("mousemove", (e,d)=>{ tooltip.style("display","block").style("left",(e.pageX+14)+"px").style("top",(e.pageY+8)+"px")
-      .html(`<b>${d.label}</b> (${d.y})<br>${d.note}`); })
-  .on("mouseout", ()=>tooltip.style("display","none"));
-ev.filter(d=>!d.rsh).append("circle").attr("cx", d=>x(d.y+0.5)).attr("cy", d=>d.yy).attr("r", d=>d.big?7:4.5)
-  .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#fff").attr("stroke-width", 1.5).attr("opacity", d=>d.big?1:0.7);
-ev.filter(d=>d.rsh).append("rect").attr("x", d=>x(d.y+0.5)-(d.big?7:5.5)).attr("y", d=>d.yy-(d.big?7:5.5))
-  .attr("width", d=>d.big?14:11).attr("height", d=>d.big?14:11)
-  .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#1f1d3d").attr("stroke-width", 1.5);
-ev.filter(d=>d.big).append("text").attr("class","evlabel")
-  .attr("x", d=>{ const xx=x(d.y+0.5); return xx > W-200 ? xx-10 : xx+10; })
-  .attr("text-anchor", d=>x(d.y+0.5) > W-200 ? "end" : "start")
-  .attr("y", d=>d.yy+4).text(d=>d.label);
+const ROW = 20, GAP = 4, MINW = 800;   // row pitch, clearance between packed marks, narrowest layout before scrolling
+const holder = document.getElementById("timeline"), tooltip = d3.select("#tooltip");
+const measure = document.createElement("canvas").getContext("2d");
+measure.font = "11px sans-serif";
+// chronological, so Tab walks the timeline in time order
+EVENTS.sort((a,b) => a.y - b.y || Object.keys(LANES).indexOf(a.lane) - Object.keys(LANES).indexOf(b.lane));
+let current = null, touched = false;
+
+function showTip(d, px, py) {
+  current = d;
+  tooltip.html(`<b>${d.label}</b> (${d.y})<br>${d.note}`).style("display","block").style("left","0px").style("top","0px");
+  const t = tooltip.node(), vw = document.documentElement.clientWidth;
+  t.style.maxWidth = Math.min(380, vw - 16) + "px";   // fixed before measuring, so moving it cannot rewrap it
+  const w = t.offsetWidth, h = t.offsetHeight;
+  let left = px + 14, top = py + 8;
+  if (left + w > window.scrollX + vw - 8) left = Math.max(window.scrollX + 8, px - 14 - w);
+  if (top + h > window.scrollY + window.innerHeight - 8) top = Math.max(window.scrollY + 8, py - 8 - h);
+  tooltip.style("left", left + "px").style("top", top + "px");
+}
+function hideTip() { current = null; tooltip.style("display","none"); }
+
+function draw() {
+  const W = Math.max(MINW, holder.clientWidth), M = {l: 30, r: 30};
+  // 1920-1960 compressed into the left sixth; the dense decades get the room
+  const x = d3.scaleLinear().domain([1918, 1960, 2028]).range([M.l, M.l + 0.17*(W - M.l - M.r), W - M.r]);
+  // greedy packing: landmarks first, then the other marks, each in the first row where its mark
+  // (and label) clears everything already there; a lane grows rows until everything fits
+  const occ = {};
+  Object.keys(LANES).forEach(k => occ[k] = []);
+  EVENTS.forEach(e => {
+    const xx = x(e.y+0.5), r = e.big ? 7 : (e.rsh ? 5.5 : 4.5);
+    e.x = xx; e.w = e.big ? measure.measureText(e.label).width : 0;
+    e.left = e.big && xx + 10 + e.w > W - M.r;
+    e.span = !e.big ? [xx-r, xx+r] : e.left ? [xx-10-e.w, xx+r] : [xx-r, xx+10+e.w];
+  });
+  const place = e => { const rows = occ[e.lane];
+    for (let r = 0; ; r++) { const o = rows[r] || (rows[r] = []);
+      if (o.every(([a,b]) => e.span[1] + GAP <= a || e.span[0] >= b + GAP)) { o.push(e.span); e.row = r; return; } } };
+  EVENTS.filter(e=>e.big).sort((a,b)=>a.y-b.y).forEach(place);
+  EVENTS.filter(e=>!e.big).sort((a,b)=>a.y-b.y).forEach(place);
+  let y = 70;
+  Object.entries(LANES).forEach(([k, l]) => { l.y0 = y; l.hh = Math.max(l.h, occ[k].length*ROW + 10); y += l.hh + 30; });
+  const H = y;
+  EVENTS.forEach(e => e.yy = LANES[e.lane].y0 + 14 + e.row*ROW);
+
+  hideTip();
+  d3.select(holder).selectAll("svg").remove();
+  const svg = d3.select(holder).append("svg").attr("width", W).attr("height", H).attr("viewBox", [0,0,W,H])
+    .attr("role", "group").attr("aria-label", "Timeline of works by field and year");
+  const gridYears = [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020];
+  const deco = svg.append("g").attr("aria-hidden", "true");
+  deco.append("g").selectAll("line").data(gridYears).join("line")
+    .attr("x1", d=>x(d)).attr("x2", d=>x(d)).attr("y1", 60).attr("y2", H-30).attr("stroke", "#eee");
+  deco.append("g").selectAll("text").data(gridYears).join("text")
+    .attr("class","yearlabel").attr("x", d=>x(d)+3).attr("y", H-14).text(d=>d);
+  Object.values(LANES).forEach(l => {
+    deco.append("rect").attr("x", M.l).attr("y", l.y0).attr("width", W-M.l-M.r).attr("height", l.hh)
+       .attr("fill", l.color).attr("opacity", 0.05);
+    deco.append("text").attr("class","lanelabel").attr("x", M.l+2).attr("y", l.y0-6).attr("fill", l.color).text(l.label);
+  });
+  const ev = svg.append("g").selectAll("a").data(EVENTS).join("a")
+    .attr("class", "ev")
+    .attr("href", d => d.url || null).attr("target", d => d.url ? "_blank" : null).attr("rel", d => d.url ? "noopener" : null)
+    .attr("tabindex", d => d.url ? null : 0)
+    .attr("aria-label", d => `${d.label}, ${d.y}, ${LANES[d.lane].label}${d.rsh ? ", regime-switching homogenization" : ""}`)
+    .attr("aria-describedby", "tooltip")
+    .style("cursor","pointer")
+    .on("pointerdown", e => { touched = e.pointerType !== "mouse"; })
+    .on("keydown", () => { touched = false; })
+    .on("click", (e,d) => { if (touched && current !== d) { e.preventDefault(); const b = e.currentTarget.getBoundingClientRect();
+        showTip(d, b.left + window.scrollX + b.width/2, b.bottom + window.scrollY); } })
+    .on("mousemove", (e,d) => showTip(d, e.pageX, e.pageY))
+    .on("mouseleave", hideTip)
+    .on("focus", (e,d) => { const b = e.currentTarget.querySelector(".mark").getBoundingClientRect();
+        showTip(d, b.right + window.scrollX, b.bottom + window.scrollY); })
+    .on("blur", hideTip);
+  // an invisible hit box over the whole span keeps the label clickable
+  ev.append("rect").attr("x", d=>d.span[0]).attr("y", d=>d.yy-ROW/2).attr("width", d=>d.span[1]-d.span[0]).attr("height", ROW)
+    .attr("fill", "transparent");
+  ev.filter(d=>!d.rsh).append("circle").attr("class","mark").attr("cx", d=>d.x).attr("cy", d=>d.yy).attr("r", d=>d.big?7:4.5)
+    .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#fff").attr("stroke-width", 1.5).attr("opacity", d=>d.big?1:0.7);
+  ev.filter(d=>d.rsh).append("rect").attr("class","mark").attr("x", d=>d.x-(d.big?7:5.5)).attr("y", d=>d.yy-(d.big?7:5.5))
+    .attr("width", d=>d.big?14:11).attr("height", d=>d.big?14:11)
+    .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#1f1d3d").attr("stroke-width", 1.5);
+  ev.filter(d=>d.big).append("text").attr("class","evlabel").attr("aria-hidden", "true")
+    .attr("x", d=>d.left ? d.x-10 : d.x+10).attr("text-anchor", d=>d.left ? "end" : "start")
+    .attr("y", d=>d.yy+4).text(d=>d.label);
+}
+draw();
+let lastW = holder.clientWidth;
+window.addEventListener("resize", () => { if (holder.clientWidth !== lastW) { lastW = holder.clientWidth; draw(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideTip(); });
+document.addEventListener("pointerdown", e => { if (!e.target.closest || !e.target.closest("#timeline a")) hideTip(); });
 d3.select("#lane-legend").selectAll("span").data(Object.values(LANES)).join("span")
   .html(d=>`<span class="dot" style="background:${d.color}"></span>${d.label}`);
 d3.select("#lane-legend").append("span")
