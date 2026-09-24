@@ -1,4 +1,6 @@
-// Minimal line chart on canvas: hairline grid, optional log axes, HTML legend, hover crosshair + tooltip.
+// Minimal line chart on canvas: hairline grid, optional log axes, HTML legend, crosshair + tooltip.
+// The crosshair follows the mouse, a tap, or the arrow keys when the canvas has focus (Home/End, PageUp/PageDown
+// for larger steps, Escape to hide); keyboard moves are also announced through a polite live region.
 // Series: {name, color, dash:[...], width, points:[[x,y],...]}. Light-only, per the site style.
 (function (root) {
   var INK = '#1a1a1a', MUTED = '#5a5a5a', GRID = '#ececec', AXIS = '#cfcfcf';
@@ -22,17 +24,41 @@
     if (a >= 1e4 || a < 1e-3) { var e = Math.floor(Math.log10(a)); return (v / Math.pow(10, e)).toFixed(0) === '1' ? '1e' + e : (v / Math.pow(10, e)).toFixed(1) + 'e' + e; }
     return +v.toPrecision(3) + '';
   }
+  var HIDDEN = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0';
   function LineChart(canvas, opts) {
     this.c = canvas; this.o = opts || {};
-    this.tip = document.createElement('div');
+    this.tip = document.createElement('div'); this.tip.setAttribute('aria-hidden', 'true');
     this.tip.style.cssText = 'position:absolute;pointer-events:none;background:#fff;border:1px solid #e2e2e2;border-radius:6px;' +
-      'padding:6px 9px;font-size:12.5px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.08);display:none;z-index:5;white-space:nowrap';
-    canvas.parentNode.style.position = 'relative'; canvas.parentNode.appendChild(this.tip);
+      'padding:6px 9px;font-size:12.5px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.08);display:none;z-index:5;left:0;top:0';
+    this.live = document.createElement('div'); this.live.setAttribute('aria-live', 'polite'); this.live.style.cssText = HIDDEN;
+    canvas.parentNode.style.position = 'relative'; canvas.parentNode.appendChild(this.tip); canvas.parentNode.appendChild(this.live);
+    if (!canvas.hasAttribute('tabindex')) canvas.tabIndex = 0;
+    if (!canvas.hasAttribute('role')) canvas.setAttribute('role', 'img');
+    if (!canvas.hasAttribute('aria-label')) canvas.setAttribute('aria-label', (this.o.label ||
+      'Chart of ' + (this.o.ylabel || 'y') + ' against ' + (this.o.xlabel || 'x')) + '. Use the left and right arrow keys to read the values.');
     var self = this;
-    canvas.addEventListener('mousemove', function (e) { self.hover(e); });
-    canvas.addEventListener('mouseleave', function () { self.hx = null; self.tip.style.display = 'none'; self.draw(); });
+    canvas.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse' || e.buttons) self.pointer(e); });
+    canvas.addEventListener('pointerdown', function (e) { self.pointer(e); });
+    canvas.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') self.hide(); });
+    document.addEventListener('pointerdown', function (e) { if (e.target !== canvas && self.hi != null) self.hide(); });
+    canvas.addEventListener('focus', function () { if (!self.s) return; self.show(self.hi != null ? self.hi : Math.floor((self.s[0].points.length - 1) / 2)); });
+    canvas.addEventListener('blur', function () { self.hide(); });
+    canvas.addEventListener('keydown', function (e) {
+      if (!self.s) return;
+      var n = self.s[0].points.length, i = self.hi != null ? self.hi : 0, big = Math.max(1, Math.round(n / 10));
+      var k = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: big, PageDown: -big }[e.key];
+      if (k != null) i += e.shiftKey ? k * big : k;
+      else if (e.key === 'Home') i = 0;
+      else if (e.key === 'End') i = n - 1;
+      else if (e.key === 'Escape') { self.hide(); return; }
+      else return;
+      e.preventDefault(); self.show(Math.max(0, Math.min(n - 1, i)), true);
+    });
   }
-  LineChart.prototype.set = function (series) { this.s = series; this.legend(); this.draw(); };
+  LineChart.prototype.set = function (series) {
+    this.s = series; this.legend();
+    if (this.hi != null) this.show(Math.min(this.hi, series[0].points.length - 1)); else this.draw();
+  };
   LineChart.prototype.legend = function () {
     var id = this.o.legend; if (!id) return;
     var el = document.getElementById(id);
@@ -92,19 +118,34 @@
     ctx.restore();
   };
   function nearest(pts, x) { var b = null, d = Infinity; pts.forEach(function (p) { var e = Math.abs(p[0] - x); if (e < d) { d = e; b = p; } }); return b; }
-  LineChart.prototype.hover = function (e) {
+  LineChart.prototype.pointer = function (e) {
     if (!this.s) return;
     var r = this.c.getBoundingClientRect(), g = this.geom(), px = e.clientX - r.left;
-    if (px < g.pad.l || px > g.W - g.pad.r) { this.hx = null; this.tip.style.display = 'none'; this.draw(); return; }
-    this.hx = nearest(this.s[0].points, g.Xinv(px))[0]; this.draw();
-    var o = this.o, hx = this.hx, fy = o.yfmt || function (v) { return v.toPrecision(5); };
-    var rows = this.s.map(function (s) { var p = nearest(s.points, hx);
+    if (px < g.pad.l || px > g.W - g.pad.r) { this.hide(); return; }
+    var pts = this.s[0].points, x = g.Xinv(px), b = 0;
+    pts.forEach(function (p, i) { if (Math.abs(p[0] - x) < Math.abs(pts[b][0] - x)) b = i; });
+    this.show(b);
+  };
+  LineChart.prototype.hide = function () { this.hi = this.hx = null; this.tip.style.display = 'none'; this.draw(); };
+  LineChart.prototype.show = function (i, announce) {
+    this.hi = i; this.hx = this.s[0].points[i][0]; this.draw();
+    var g = this.geom(), o = this.o, hx = this.hx, fy = o.yfmt || function (v) { return v.toPrecision(5); };
+    var head = (o.xname || 'x') + ' = ' + (o.xfmt ? o.xfmt(hx) : fmt(hx)), said = [head];
+    var rows = this.s.map(function (s) { var p = nearest(s.points, hx), v = p && isFinite(p[1]) ? fy(p[1]) : null;
+      said.push(s.name + ' ' + (v == null ? 'no value' : v));
       return '<div><span style="display:inline-block;width:10px;height:2px;background:' + s.color + ';vertical-align:middle;margin-right:6px"></span>' +
-        s.name + ': <b style="color:' + INK + ';font-variant-numeric:tabular-nums">' + (p && isFinite(p[1]) ? fy(p[1]) : '&ndash;') + '</b></div>'; });
-    this.tip.innerHTML = '<div style="color:' + MUTED + ';margin-bottom:2px">' + (o.xname || 'x') + ' = ' + (o.xfmt ? o.xfmt(hx) : fmt(hx)) + '</div>' + rows.join('');
-    this.tip.style.display = 'block';
-    var left = this.c.offsetLeft + g.X(hx) + 12; if (left + this.tip.offsetWidth > this.c.offsetLeft + g.W) left = this.c.offsetLeft + g.X(hx) - this.tip.offsetWidth - 12;
-    this.tip.style.left = left + 'px'; this.tip.style.top = (this.c.offsetTop + g.pad.t + 4) + 'px';
+        s.name + ': <b style="color:' + INK + ';font-variant-numeric:tabular-nums;white-space:nowrap">' + (v == null ? '&ndash;' : v) + '</b></div>'; });
+    var tip = this.tip, par = this.c.parentNode, pr = par.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+    tip.innerHTML = '<div style="color:' + MUTED + ';margin-bottom:2px">' + head + '</div>' + rows.join('');
+    // measure at the left edge so the width is the content width, capped by the container and the viewport
+    tip.style.maxWidth = Math.max(120, Math.min(par.clientWidth, vw - 8) - 8) + 'px';
+    tip.style.left = '0px'; tip.style.display = 'block';
+    var tw = tip.offsetWidth, cx = this.c.offsetLeft + g.X(hx);
+    var left = cx + 12; if (left + tw > this.c.offsetLeft + g.W) left = cx - tw - 12;
+    var lo = Math.max(0, 4 - pr.left), hi = Math.min(par.clientWidth - tw, vw - 4 - pr.left - tw);
+    left = Math.max(lo, Math.min(left, hi));
+    tip.style.left = left + 'px'; tip.style.top = (this.c.offsetTop + g.pad.t + 4) + 'px';
+    if (announce) this.live.textContent = said.join('; ');
   };
   root.LineChart = LineChart;
 })(window);
