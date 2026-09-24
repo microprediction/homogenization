@@ -156,3 +156,12 @@ What survives: waves turn over far below the homogeneous threshold (a large lam 
 not explained by homogeneous SIR. Spatial or persistent heterogeneity fits the shape at least as well as switching
 once the noise is accounted for. Caveats: the instrument is weak in summer and winter (IV then has wide intervals
 and small-sample bias toward OLS), and case growth carries testing trends.
+
+## 2026-09-23: the slope is not identified by these growth measures (analysis/09_rule_table.py)
+Winter waves binned by case-based R (quartiles). Observed share of susceptibles infected before the turnover,
+IFR 0.7%: 6.5%, 7.0%, 6.9%, 8.8% at R_cases 1.08, 1.16, 1.23, 1.34 (textbook 1 - 1/R: 7.8%, 13.8%, 18.9%, 25.5%).
+Death-based R across the same bins: 1.28, 1.25, 1.28, 1.35. The two growth measures barely agree, so binned on case
+growth the relation is flat again, and the large IV slope in 08 mostly reflects the weak instrument (dividing by a
+small covariance). The earlier entry's "the flat relation is largely a noise artefact" overstates it: with these
+data the slope is not identified; the level is. Constant-lam fit: 3.4 (death growth) or 2.1 (case growth) at
+IFR 0.7%. A cleaner growth measure (hospital admissions, or serology-anchored national data) is needed for the slope.
