@@ -18,6 +18,7 @@ import math
 import numpy as np
 from math import comb
 from scipy.stats import norm
+from explicit import vasicek_moment
 
 
 def Phi_n(n, T, kappa):
@@ -25,8 +26,9 @@ def Phi_n(n, T, kappa):
 
 
 def M(k, m, T, kappa):
-    """int_0^T e^{-k kappa t} B(t)^m dt, B = (1 - e^{-kappa t})/kappa."""
-    return sum(comb(m, l) * (-1) ** l * Phi_n(k + l, T, kappa) for l in range(m + 1)) / kappa ** m
+    """int_0^T e^{-k kappa t} B(t)^m dt = kappa^{-m} sum_l C(m, l) (-1)^l Phi_{k+l}(T), B = (1 - e^{-kappa t})/kappa.
+    Evaluated by explicit.vasicek_moment, which avoids the cancellation of the sum when kappa T is small."""
+    return vasicek_moment(k, m, T, kappa)
 
 
 def int_Bc_pow(n, T, kappa):
