@@ -152,6 +152,10 @@
     Kurtz gave the operator-semigroup limit theorem for generators of the form $Q/\varepsilon + \mathcal L$
     (<a href="./bibliography.html#Kurtz1973">Kurtz 1973</a>; <a href="./bibliography.html#EthierKurtz1986">Ethier and Kurtz 1986</a>).
     Every pricing equation in the examples is a random evolution.</p>
+    <p>The long-run covariance behind the Green&ndash;Kubo correction is the subject of the central limit theorem of
+    <a href="./bibliography.html#KipnisVaradhan1986">Kipnis and Varadhan (1986)</a>, proved through the resolvent for
+    additive functionals of reversible Markov processes. The finite chains here need not be reversible, and for them
+    the group inverse gives the same variance directly.</p>
     <p>Physicists reached the same correction through cumulant expansions. The second cumulant of a linear equation
     with random coefficients is a time-ordered product of the random operators, weighted by their correlation
     (<a href="./bibliography.html#Kubo1962">Kubo 1962</a>; <a href="./bibliography.html#vanKampen1974">van Kampen 1974</a>).
@@ -175,6 +179,33 @@
     modulation of diffusions has recent limit theorems of its own
     (<a href="./bibliography.html#HuangMandjesSpreij2014">Huang, Mandjes and Spreij 2014</a>;
     <a href="./bibliography.html#HuangEtAl2016">Huang et al. 2016</a>).</p>
+
+    <h2>Spatial and nonlinear homogenization</h2>
+    <p>Homogenization of coefficients that oscillate in space is a separate theory, and it answers three different
+    questions: what the effective coefficients are, in what sense solutions or energies converge, and how large the
+    fluctuations and the correctors are. None of it involves a state that switches in time.</p>
+    <ul>
+      <li>Convergence of solutions. H-convergence and compensated compactness
+        (<a href="./bibliography.html#Tartar2010">Tartar 2010</a>) and two-scale convergence
+        (<a href="./bibliography.html#Allaire1992">Allaire 1992</a>) pass to the limit in an oscillating divergence-form
+        equation without a formal corrector series. $\Gamma$-convergence
+        (<a href="./bibliography.html#DalMaso1993">Dal Maso 1993</a>) does the same for energies and their minimizers.</li>
+      <li>Random coefficients. For divergence-form equations with stationary random coefficients,
+        <a href="./bibliography.html#ArmstrongKuusiMourrat2019">Armstrong, Kuusi and Mourrat (2019)</a> give rates of
+        convergence and the fluctuations of the corrector. The randomness is in space and is sampled once.</li>
+      <li>Nonlinear equations. <a href="./bibliography.html#Evans1989">Evans (1989)</a> carries the perturbed test
+        function method to viscosity solutions, which covers Hamilton&ndash;Jacobi equations.
+        <a href="./bibliography.html#Ziliotto2017">Ziliotto (2017)</a> constructs a stationary ergodic nonconvex
+        Hamilton&ndash;Jacobi equation that does not homogenize, so stationarity and ergodicity alone do not suffice
+        there. That is a nonlinear equation with spatial randomness; for a linear equation driven by a fast
+        finite-state chain the averaged equation always exists, because the group inverse does.</li>
+      <li>Unexpected terms. A Dirichlet problem in a domain with many small holes has a limit with an extra zero-order
+        term that no averaging of the coefficients produces
+        (<a href="./bibliography.html#CioranescuMurat1997">Cioranescu and Murat 1997</a>).</li>
+      <li>Computation. Multiscale finite elements
+        (<a href="./bibliography.html#HouWu1997">Hou and Wu 1997</a>) build basis functions from local solutions of the
+        oscillating equation, so that a coarse grid carries the effective behaviour.</li>
+    </ul>
 
     <h2>Finance: fast mean-reverting volatility</h2>
     <p>Fouque, Papanicolaou and Sircar brought the diffusion approximation to option pricing. Volatility is driven by
@@ -201,9 +232,11 @@
     <a href="./any-equation.html">any-equation page</a>. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and
     Papanicolaou (1999)</a> derive this first-order smile for a fast ergodic driver whose integrated fluctuations obey
     a central limit theorem, including a finite-state Markov chain.</p>
-    <p>These drivers are one-dimensional diffusions or enter only through a variance, so the Green&ndash;Kubo matrix is
-    symmetric. A chain that cycles in one direction adds an antisymmetric part, which moves the Heston smile when the
-    variance level and the vol-of-vol switch together (<a href="./cycle-smile.html">cycle direction in the smile</a>).</p>
+    <p>These drivers are reversible: scalar diffusions on the line, which carry no stationary current, or processes
+    that enter only through a variance. Their Green&ndash;Kubo matrix is therefore symmetric. A scalar diffusion on
+    a circle with a drift is not reversible, and neither is a chain that cycles in one direction; both add an
+    antisymmetric part, which moves the Heston smile when the variance level and the vol-of-vol switch together
+    (<a href="./cycle-smile.html">cycle direction in the smile</a>).</p>
 
     <h2>Finance: regime switching</h2>
     <p>For bond prices and survival probabilities, the expansion in the switching rate goes back to
@@ -282,6 +315,19 @@
     <p>The nonlinearity is the main difference from the linear pricing equations. In the Navier&ndash;Stokes equations the
     fast modes are generated by the flow itself, and closing the equations for the slow modes is the closure
     problem.</p>
+    <p>Two recent works on three-dimensional Navier&ndash;Stokes are sometimes read alongside averaging, and neither is
+    the fast switching of an exogenous state. <a href="./bibliography.html#Tao2016">Tao (2016)</a> replaces the
+    bilinear term by an averaged operator, built from rotations and Fourier multipliers, that keeps the energy
+    identity, and proves finite-time blowup for that modified equation; the result does not transfer to the original
+    equations.</p>
+    <p>A preprint of September 2026 (<a href="./bibliography.html#OpenAI2026">OpenAI 2026</a>) claims finite-time blowup
+    for the actual forced equations: a smooth, compactly supported force and zero initial velocity, with bounded
+    energy and unbounded velocity, which are the forced alternatives of the Clay statement. As of September 2026 the
+    Clay Mathematics Institute describes the problem as apparently settled and its evaluation as ongoing.</p>
+    <p>In both constructions the oscillations are produced by the flow and their Reynolds stress
+    $\langle w \otimes w\rangle$ enters at leading order, so replacing the velocity by its mean drops a leading term.
+    The $1/\lambda$ Green&ndash;Kubo correction for an exogenous chain does not apply to them without a separate
+    scaling theorem.</p>
     <p>Climate models apply the same elimination of fast modes. <a href="./bibliography.html#Hasselmann1976">Hasselmann
     (1976)</a> treated weather as noise driving slow climate variables.
     <a href="./bibliography.html#MajdaTimofeyevVandenEijnden2001">Majda, Timofeyev and Vanden-Eijnden (2001)</a> derived

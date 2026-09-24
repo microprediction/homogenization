@@ -27,16 +27,25 @@
       <tbody>
         <tr><td>Black&ndash;Scholes, $x = \log S$</td><td>variance $\sigma^2$</td><td>$\tfrac12(\partial_{xx} - \partial_x)$</td></tr>
         <tr><td>Black&ndash;Scholes</td><td>interest rate $r$</td><td>$\partial_x - 1$</td></tr>
-        <tr><td>Vasicek, $x = r$</td><td>mean level $\theta$</td><td>$\kappa\,\partial_x$</td></tr>
-        <tr><td>Vasicek</td><td>reversion speed $\kappa$</td><td>$(\theta - x)\,\partial_x$</td></tr>
+        <tr><td>Vasicek, $x = r$</td><td>mean level $\theta$, with $\kappa$ fixed</td><td>$\kappa\,\partial_x$</td></tr>
+        <tr><td>Vasicek</td><td>reversion speed $\kappa$, with $\theta$ fixed</td><td>$(\theta - x)\,\partial_x$</td></tr>
+        <tr><td>Vasicek</td><td>$\kappa$ and $\theta$ together: the products $\kappa\theta$ and $\kappa$</td><td>$\partial_x$ and $-x\,\partial_x$</td></tr>
         <tr><td>Vasicek</td><td>variance $\sigma^2$</td><td>$\tfrac12\,\partial_{xx}$</td></tr>
         <tr><td>reduced-form credit</td><td>hazard rate $h$</td><td>$-1$</td></tr>
         <tr><td>jump diffusion</td><td>jump intensity $\nu$</td><td>$\mathcal J - 1$, with $\mathcal J f(x) = \mathbb E f(x + Z)$</td></tr>
-        <tr><td>Heston, $x = (\log S, v)$</td><td>long-run variance $\theta$</td><td>$\kappa\,\partial_v$</td></tr>
+        <tr><td>Heston, $x = (\log S, v)$</td><td>long-run variance $\theta$, with $\kappa$ fixed</td><td>$\kappa\,\partial_v$</td></tr>
       </tbody>
     </table>
     </div>
 
+    <p>A parameter that multiplies another is not a coefficient on its own. When $\kappa$ and $\theta$ switch
+    together, the drift is $\kappa_y\theta_y - \kappa_y x$, so the coefficients are $\kappa\theta$ and $\kappa$ with
+    the fixed operators $\partial_x$ and $-x\,\partial_x$, and the averaged drift is
+    $\mathbb E_\pi[\kappa\theta] - \mathbb E_\pi[\kappa]\,x$.</p>
+    <p>Averaging $\kappa$ and $\theta$ separately misses $\operatorname{Cov}_\pi(\kappa, \theta)$ at leading order. With
+    a symmetric two-state chain, $\kappa = (1, 3)$ and $\theta = (0.01, 0.09)$, the effective level is
+    $\mathbb E_\pi[\kappa\theta]/\mathbb E_\pi[\kappa] = 0.07$, not $\mathbb E_\pi[\theta] = 0.05$. The same product
+    $\kappa\theta$ sits in the Heston variance drift.</p>
     <p>The regime-dependent prices $u_y$ are coupled by the chain:</p>
     $$\partial_t u_y = \mathcal L_y\,u_y + \sum_{y'} Q_{yy'}\,u_{y'} .$$
     <p>We want the price seen by someone who cannot observe the regime, so the regime is drawn from $\pi$ and the
@@ -157,7 +166,13 @@
     $$\log\frac{P_{\{1,2\}}(t)}{P_{\{1\}}(t)\,P_{\{2\}}(t)} \;\approx\; 2t\,K^{\mathrm{sym}}_{12} .$$
     <p>Two consequences follow.</p>
     <ul>
-      <li>Names whose hazards rise in different regimes have negative dependence. Fast regimes can produce it.</li>
+      <li>The sign of the dependence between two names is the sign of $K^{\mathrm{sym}}_{12}$, the integrated lagged
+        cross-covariance of their hazards, and it can be negative. It is not fixed by the regimes in which each
+        hazard is high, nor by the sign of the contemporaneous covariance $\operatorname{Cov}_\pi(h_1, h_2)$: with
+        several relaxation times the lagged terms can outweigh it. For the reversible chain with rates
+        $1$ between states 1 and 2 and $10$ between states 2 and 3, and hazards $h_1 = (0.03, 0.05, 0.04)$ and
+        $h_2 = (0.03, 0.02, 0.07)$, the contemporaneous covariance is $-10^{-4}/3$ while $K^{\mathrm{sym}}_{12}$ is
+        $+10^{-4}/(3m)$ at speed $m$, and the numerical log ratio at $t = 5$ is positive at every speed.</li>
       <li>The matrix is positive semidefinite. With constant hazards its rank is at most one less than the number
         of regimes, so a three-regime economy supports at most two independent patterns of default dependence,
         however many names there are. When hazards load on the regime with different maturity profiles, the

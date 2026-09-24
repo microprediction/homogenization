@@ -1,0 +1,20 @@
+[
+ {
+  "key": "Tao2016",
+  "authors": "Tao, T.",
+  "year": 2016,
+  "title": "Finite time blowup for an averaged three-dimensional Navier-Stokes equation",
+  "venue": "Journal of the American Mathematical Society 29(3):601-674",
+  "doi": "10.1090/jams/838",
+  "annotation": "Replaces the bilinear term of the Navier-Stokes equations by an averaged operator that keeps the energy identity, and proves finite-time blowup for the modified equation; the result does not transfer to the original equations."
+ },
+ {
+  "key": "OpenAI2026",
+  "authors": "OpenAI",
+  "year": 2026,
+  "title": "Finite time blowup for Navier-Stokes",
+  "venue": "Preprint, September 2026",
+  "url": "https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf",
+  "annotation": "Claims that a smooth, compactly supported force and zero initial velocity give a three-dimensional Navier-Stokes solution with bounded energy whose velocity becomes unbounded in finite time, the forced alternatives of the Clay statement; under evaluation."
+ }
+]

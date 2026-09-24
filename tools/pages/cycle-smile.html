@@ -13,9 +13,16 @@
     variance of integrated variance.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
     expansion to second order with correlation and a terminal layer.</p>
-    <p>In that work the fast driver is a one-dimensional diffusion or a generic ergodic process whose correlation
-    function enters through a variance. A one-dimensional diffusion is reversible, so its Green&ndash;Kubo matrix is
-    symmetric. The antisymmetric part, which measures the direction of a cycle, does not appear.</p>
+    <p>In that work the fast driver is a scalar diffusion on the line, or a generic ergodic process that enters only
+    through a variance. A stationary scalar diffusion on the line or on an interval carries no probability current,
+    so it is reversible and its Green&ndash;Kubo matrix is symmetric. The antisymmetric part, which measures the
+    direction of a cycle, does not appear.</p>
+    <p>The symmetry comes from reversibility, not from the dimension. A scalar diffusion on the circle with a drift,
+    $dY = c\,dt + \sqrt{2D}\,dW$ modulo $2\pi$, has the uniform stationary law but a current $c/2\pi$, and for the
+    features $(\cos Y, \sin Y)$ its Green&ndash;Kubo matrix is</p>
+    $$K = \frac{1}{2(D^2 + c^2)}\begin{pmatrix} D & c \\ -c & D \end{pmatrix},$$
+    <p>whose antisymmetric part changes sign with the current, as it does below when the chain&apos;s cycle is
+    reversed.</p>
     <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
     whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.</p>
     <p>With $\varepsilon$ the fluctuation time scale, the variance of its integrated variance scales like

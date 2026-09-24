@@ -1,7 +1,8 @@
 """Merge page bibliography snippets (tools/pages/_bib/<page>.json) into tools/biblio.json and the bibliography page.
 
 Each snippet is a list of {key, authors, year, title, venue, doi, annotation}. Entries whose key already exists are
-skipped. New entries go into a section per snippet, headed by SECTION_TITLES[page], before the fluid-dynamics section."""
+skipped. New entries go into the section whose id is <page>-refs or <page> if one exists, otherwise into a new section
+headed by SECTION_TITLES[page], before the fluid-dynamics section."""
 import html, json, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -12,6 +13,7 @@ SECTION_TITLES = {
     'portfolio': 'Portfolio choice with regimes',
     'correlation': 'Correlation regimes and correlation risk',
     'lumping': 'Lumped chains and phase-type durations',
+    'spatial': 'Spatial and nonlinear homogenization',
 }
 
 
@@ -35,8 +37,9 @@ def main(pages):
             link = f' <a href="https://doi.org/{doi}">doi:{doi}</a>.' if doi else (f' <a href="{html.escape(url)}">link</a>.' if url else '')
             lis.append(f'        <li id="{e["key"]}">{html.escape(e["authors"])} ({e["year"]}). <em>{html.escape(e["title"])}</em>. '
                        f'{html.escape(e["venue"])}.{link}<br><span class="muted">{html.escape(e["annotation"])}</span></li>')
-        if lis and f'id="{name}-refs"' in t:
-            i = t.index(f'id="{name}-refs"'); j = t.index('      </ul>', i)
+        sec = next((s for s in (f'id="{name}-refs"', f'id="{name}"') if s in t), None)
+        if lis and sec:
+            i = t.index(sec); j = t.index('      </ul>', i)
             t = t[:j] + '\n'.join(lis) + '\n' + t[j:]
         elif lis:
             blk = f'      <h3 id="{name}-refs">{html.escape(SECTION_TITLES[name])}</h3>\n      <ul>\n' + '\n'.join(lis) + '\n      </ul>\n'

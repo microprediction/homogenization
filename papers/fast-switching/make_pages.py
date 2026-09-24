@@ -50,10 +50,13 @@ def engine_page():
     $\pi Q = 0$, which leaves an equation for the average:</p>
     $$\frac{s'}{s} = \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g .$$
     <p>Subtracting this from the equation for $a/s$ gives the equation for the shape. Writing $Q = Q_0/\varepsilon$, with
-    $\varepsilon$ a typical holding time,</p>
+    the scale $\varepsilon = n/(-\operatorname{tr} Q)$ used by the code, the reciprocal of the mean exit rate over the
+    $n$ states,</p>
     <div class="equation-card">
     $$\varepsilon\,w' = Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).$$
     </div>
+    <p>Any positive scale would serve, provided $Q_0$ is held fixed as the chain speeds up. This one equals the mean
+    holding time only when every state leaves at the same rate; for a symmetric two-state chain it is $1/\lambda$.</p>
     <p>The right side of the shape equation always averages to zero under $\pi$. That is what makes the next step work.</p>
 
     <h3>Step 2: expand the shape</h3>
@@ -74,10 +77,13 @@ def engine_page():
     $$a_i(t) \approx \exp\Big(\int_0^t \big[\bar g - \pi\cdot\big(g\,Q^{\#}(g - \bar g)\big)\big]\Big)\,\Big(1 - \big[Q^{\#}(g - \bar g)\big]_i(t)\Big).$$
     <p>The correction in the exponent has a direct meaning. Because $Q^{\#}f = -\int_0^\infty e^{Q\tau}f\,d\tau$ when
     $\pi\cdot f = 0$,</p>
-    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
-    <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
-    rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
-    is the memory of the starting regime.</p>
+    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \mathbb{E}_\pi\big[\big(g(y_0) - \bar g\big)\big(g(y_\tau) - \bar g\big)\big]\,d\tau .$$
+    <p>This is a Green&ndash;Kubo integral of the autocorrelation of $g$ along the chain. For real $g$ it is the integrated
+    autocovariance, half the long-run variance rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for
+    any chain.</p>
+    <p>For complex $g$, as in the Fourier examples, the product carries no conjugate. The integral is then a second
+    cumulant rather than a variance, and it can be complex. The factor in brackets is the memory of the starting
+    regime.</p>
 
     <h3>Step 4: closed form</h3>
     <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$, products and derivatives of such sums are again such
@@ -153,6 +159,13 @@ def fast_factor_page():
     <p>For a check with a closed-form answer, both functions are taken to be linear:</p>
     $$\theta(y) = \theta_0 + \theta_1\,y, \qquad \sigma(y) = \sigma_0 + \sigma_1\,y .$$
     <p class="muted">Parameters: $\kappa = 1$, $\theta_0 = 0.05$, $\theta_1 = 0.03$, $\sigma_0 = 0.25$, $\sigma_1 = 0.2$, $\rho = -0.7$.</p>
+    <p>The linear $\sigma$ is a signed diffusion loading rather than a volatility. It is negative when
+    $y < -\sigma_0/\sigma_1 = -1.25$, which the stationary law visits about 11% of the time, and there the
+    instantaneous correlation between the shocks to the rate and to the factor is $-\rho$ rather than $\rho$.</p>
+    <p>The non-negative loading $|\sigma(y)|$ has the same $\sigma^2$, so the same averaged model, but a different
+    order-$\sqrt\varepsilon$ term, because that term is linear in the loading: at $t = 1$ its coefficient is
+    $0.000122$ with the signed loading and $0.000035$ with $|\sigma|$. The closed forms and the checks below use the
+    signed loading.</p>
 
     <h2>The quantity</h2>
     <p>The bond price for maturity $t$, starting from rate $x$ and factor value $y$:</p>
@@ -263,9 +276,10 @@ def fast_factor_page():
     <p>Each term has a reading.</p>
     <ul>
       <li>The first is the averaged Vasicek model.</li>
-      <li>The second, of order $\sqrt\varepsilon$, exists only with correlation. Shocks to the rate and to the factor
-        move together, so the factor tends to be high when the rate has risen. This is the correlation
-        correction of fast mean-reverting stochastic volatility.</li>
+      <li>The second, of order $\sqrt\varepsilon$, exists only with correlation, and it is linear in $\rho\,\sigma(y)$.
+        Where $\rho\,\sigma(y) < 0$, as at $\rho = -0.7$ and $y$ near zero, a shock that raises the rate lowers the
+        factor, and with it the mean level and the loading; below $y = -1.25$ the loading changes sign and so does
+        the co-movement. This is the correlation correction of fast mean-reverting stochastic volatility.</li>
       <li>The third, of order $\varepsilon$, contains the fluctuation term $g_1^2 + g_2^2$. As on the
         <a href="./idea.html">idea</a> page, it is half the variance of the fluctuating integral of $g$, and it is
         present even without correlation.</li>
