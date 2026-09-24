@@ -257,7 +257,13 @@
     $$\log\frac{P_{\{1,2\}}(t)}{P_{\{1\}}(t)\,P_{\{2\}}(t)} \;\approx\; 2t\,K^{\mathrm{sym}}_{12} .$$
     <p>Two consequences follow.</p>
     <ul>
-      <li>Names whose hazards rise in different regimes have negative dependence. Fast regimes can produce it.</li>
+      <li>The sign of the dependence between two names is the sign of $K^{\mathrm{sym}}_{12}$, the integrated lagged
+        cross-covariance of their hazards, and it can be negative. It is not fixed by the regimes in which each
+        hazard is high, nor by the sign of the contemporaneous covariance $\operatorname{Cov}_\pi(h_1, h_2)$: with
+        several relaxation times the lagged terms can outweigh it. For the reversible chain with rates
+        $1$ between states 1 and 2 and $10$ between states 2 and 3, and hazards $h_1 = (0.03, 0.05, 0.04)$ and
+        $h_2 = (0.03, 0.02, 0.07)$, the contemporaneous covariance is $-10^{-4}/3$ while $K^{\mathrm{sym}}_{12}$ is
+        $+10^{-4}/(3m)$ at speed $m$, and the numerical log ratio at $t = 5$ is positive at every speed.</li>
       <li>The matrix is positive semidefinite. With constant hazards its rank is at most one less than the number
         of regimes, so a three-regime economy supports at most two independent patterns of default dependence,
         however many names there are. When hazards load on the regime with different maturity profiles, the
