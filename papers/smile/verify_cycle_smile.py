@@ -2,7 +2,7 @@
 
 Heston with rho = 0; a three-state chain cycling 1 -> 2 -> 3 -> 1 switches the variance level theta and the squared
 vol-of-vol xi^2. Reversing the cycle keeps pi and the symmetric Green-Kubo matrix and flips its antisymmetric part.
-Checks, on one finite-difference grid in the variance:
+Checks, on one finite-difference grid in the variance with a node at the stated v0:
  1. the rule's implied-volatility error falls at second order as the chain speeds up;
  2. forward-minus-reverse implied volatilities are first order and the rule reproduces them;
  3. keeping only the symmetric part of K does not reach second order.
@@ -20,8 +20,11 @@ SCALES = [4, 8, 16, 32]
 
 
 def main():
-    g = Grid(vmax=1.0, n=121)
-    out, ok = {'scales': SCALES, 'strikes': STRIKES, 'rows': []}, True
+    g = Grid(vmax=1.0, n=126)                       # nodes k / 125, so v0 = 0.04 is the node k = 5
+    v_used = float(g.v[g.index(V0)])
+    print(f"initial variance evaluated at the grid node v = {v_used:.12g} (stated v0 = {V0})")
+    out, ok = {'scales': SCALES, 'strikes': STRIKES, 'v0': v_used, 'rows': []}, True
+    ok &= v_used == V0
     for m in SCALES:
         res = {lab: calls(STRIKES, T, Q, TH, XI2, KAPPA, g, V0, S0=S0, n=40) for lab, Q in [('forward', m * QC), ('reverse', m * QC.T)]}
         iv = {lab: {k: [100 * implied_vol(c, S0, K, T) for c, K in zip(v, STRIKES)] for k, v in res[lab].items()} for lab in res}
