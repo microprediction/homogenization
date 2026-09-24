@@ -418,7 +418,7 @@ def three_regimes():
     w2T = np.array([P.polyval(B, r) for r in w2])
     G = lambda a, b: ExpSum({0: -a + b / (2 * k * k), k: a - 2 * b / (2 * k * k), 2 * k: b / (2 * k * k)})
     g = [G(th[i], s2[i]) for i in range(3)]
-    ex = np.array(numerical_a(T, Q, g, dps=25), float)
+    ex = np.array(numerical_a(T, Q, g, dps=30), float)
     o0 = np.full(3, math.exp(avg)); o1 = np.exp(avg + gk) * (1 + mem); o2 = np.exp(avg + gk + e2) * (1 + mem + w2T)
     eng = FastSwitch(Q, g, order=2).a(T, 2)
     assert np.abs(o2 - eng).max() < 1e-12

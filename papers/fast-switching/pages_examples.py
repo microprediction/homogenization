@@ -123,9 +123,9 @@ def three_regimes_page():
     rows = []
     for sc in (4, 8, 16):
         Q = sc * base
-        ex = numerical_a(1.0, Q, g, dps=25)
+        ex = numerical_a(1.0, Q, g, dps=30, mp_values=True)          # errors formed at 30 digits
         fs = FastSwitch(Q, g, order=6)
-        rows.append([f'{sc}'] + [e(abs(fs.a(1.0, o)[0] - ex[0])) for o in range(7)])
+        rows.append([f'{sc}'] + [e(float(abs(ex[0] - float(fs.a(1.0, o)[0])))) for o in range(7)])
     pi = FastSwitch(4 * base, g, order=1).pi
     pis = ', '.join(f'{p:.3f}' for p in pi)
     body = r'''    <h1>Three regimes</h1>
