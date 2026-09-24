@@ -109,6 +109,7 @@ header.site-header nav .drop {
   padding: 6px 0; min-width: 170px; box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 header.site-header nav .drop a { display: block; padding: 7px 14px; white-space: nowrap; }
-header.site-header nav .menu:hover .drop,
-header.site-header nav .menu:focus-within .drop,
+/* the header script owns the open state (and aria-expanded); pure CSS opening is the no-script fallback */
+header.site-header:not(.js-menus) nav .menu:hover .drop,
+header.site-header:not(.js-menus) nav .menu:focus-within .drop,
 header.site-header nav .menu.open .drop { display: block; }
