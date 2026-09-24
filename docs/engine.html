@@ -125,10 +125,13 @@
     $\pi Q = 0$, which leaves an equation for the average:</p>
     $$\frac{s'}{s} = \bar g + \pi\cdot(g\,w), \qquad \bar g = \pi\cdot g .$$
     <p>Subtracting this from the equation for $a/s$ gives the equation for the shape. Writing $Q = Q_0/\varepsilon$, with
-    $\varepsilon$ a typical holding time,</p>
+    the scale $\varepsilon = n/(-\operatorname{tr} Q)$ used by the code, the reciprocal of the mean exit rate over the
+    $n$ states,</p>
     <div class="equation-card">
     $$\varepsilon\,w' = Q_0\,w + \varepsilon\,F(w), \qquad F(w) = g\,(\mathbf 1 + w) - (\mathbf 1 + w)\,\big(\bar g + \pi\cdot(g\,w)\big).$$
     </div>
+    <p>Any positive scale would serve, provided $Q_0$ is held fixed as the chain speeds up. This one equals the mean
+    holding time only when every state leaves at the same rate; for a symmetric two-state chain it is $1/\lambda$.</p>
     <p>The right side of the shape equation always averages to zero under $\pi$. That is what makes the next step work.</p>
 
     <h3>Step 2: expand the shape</h3>
