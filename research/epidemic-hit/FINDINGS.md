@@ -165,3 +165,14 @@ growth the relation is flat again, and the large IV slope in 08 mostly reflects 
 small covariance). The earlier entry's "the flat relation is largely a noise artefact" overstates it: with these
 data the slope is not identified; the level is. Constant-lam fit: 3.4 (death growth) or 2.1 (case growth) at
 IFR 0.7%. A cleaner growth measure (hospital admissions, or serology-anchored national data) is needed for the slope.
+
+## 2026-09-23: Spain, first wave, 52 provinces (analysis/10_spain.py, data/spain via build_spain.py)
+ENE-COVID round 3 serology (rapid IgG test, 8-22 June 2020), ISCIII daily admissions and deaths by province.
+- Turnovers are set by the lockdown: admissions peak between 23 and 31 March in almost every province, 9-17 days
+  after the 14 March state of alarm, regardless of growth or immunity.
+- Attack at the turnover 0.3-4.6% (median 2%) against textbook thresholds 46-76%: an immunity factor near 60,
+  which is the lockdown, not heterogeneity.
+- Growth from admissions and from deaths are uncorrelated across provinces (0.04); the slope is not identified.
+- Spain's first wave does not test the paradox. The autumn 2020 wave, with ENE-COVID round 4 (November 2020)
+  serology by province, would: change in seroprevalence June to November against the growth of the autumn wave,
+  without a national lockdown. Round-4 provincial tables still to fetch.
