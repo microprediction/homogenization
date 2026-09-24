@@ -1,7 +1,8 @@
 """Certificate for models.py: each model's reduction checked by Monte Carlo, each expansion by convergence.
 
-`python3 verify_models.py` (a few minutes). A reduction passes when Monte Carlo on a fine grid agrees with the
-numerical solution of the reduced system within four standard errors; an expansion passes when doubling the
+`python3 verify_models.py` (a few minutes). A reduction passes when Monte Carlo on a fine grid (a discretized
+approximation, with the regime held fixed within each step) agrees with the numerical solution of the reduced
+system within four standard errors; an expansion passes when doubling the
 switching rate cuts the order-n error by about 2^(n+1) for the first orders.
 """
 import math
@@ -37,7 +38,12 @@ def orders(make, t, lam, n=4):
 
 
 def switch(y, lam, dt):
-    return np.where(RNG.random(len(y)) < 1 - math.exp(-lam * dt), 1 - y, y)
+    """The regime at the end of a step of length dt: for the symmetric two-state chain the state has changed with
+    probability (1 - exp(-2 lam dt)) / 2, which counts an odd number of jumps within the step. The regime is held
+    fixed inside the step, so the grid Monte Carlo below carries a switching bias of first order in dt, of size
+    about lam dt times the regime contrast; at dt = 0.001 it sits well below the four-standard-error tolerance.
+    verify_option_mc.py has the same models with no time grid."""
+    return np.where(RNG.random(len(y)) < 0.5 * (1 - math.exp(-2 * lam * dt)), 1 - y, y)
 
 
 def main():
