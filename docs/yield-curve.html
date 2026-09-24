@@ -195,8 +195,9 @@
     $$c_2 \ge 0, \qquad c_4 \ge 0, \qquad c_3^2 \le 4\,c_2\,c_4 .$$
     </div>
     <p>With two regimes the inequality is an equality. The fluctuations $u$ and $v$ are then both multiples of the
-    single pattern that is $+$ in one state and $-$ in the other, so $M$ has rank one. Equality in the fitted
-    numbers is the signature of an effectively one-dimensional regime.</p>
+    single pattern that is $+$ in one state and $-$ in the other, so $M$ has rank one. Once $c_2$, $c_3$ and $c_4$
+    are known, equality identifies an effectively one-dimensional regime. Bond prices alone do not fix $c_2$, as the
+    next section shows.</p>
 
     <h2>Observable coefficients</h2>
     <p>The coefficient of $\int B^2$ is $\tfrac12\bar s + c_2$. A market that only sees bond prices cannot split this
@@ -207,6 +208,17 @@
     $$\beta_3^2 \le 4\,\beta_2\,\beta_4 .$$
     <p>A fitted curve that violates it cannot come from fast switching of the level and volatility, at least not at
     first order.</p>
+    <p>When $\beta_4 &gt; 0$ the observable inequality is strict. The variances then differ across regimes, so
+    $\bar s &gt; 0$, and</p>
+    $$4\beta_2\beta_4 - \beta_3^2 = 2\,\bar s\,c_4 + \big(4c_2c_4 - c_3^2\big) &gt; 0 .$$
+    <p>So a yield curve cannot test the rank of $M$. Testing $c_3^2 = 4c_2c_4$ needs an independent estimate of the
+    average variance $\bar s$.</p>
+    <p>An example with $\kappa = 1$ and both chains started from their stationary laws: a three-state chain that
+    jumps between every pair of states at rate 10, with levels $(7\%, 3\%, 5\%)$ and
+    variances $(0.005, 0.0045, 0.0015)$ has a matrix $M$ of rank two. A two-state chain with generator
+    $10\begin{pmatrix} -1 & 1 \\ 1 & -1 \end{pmatrix}$, levels $(5.17609\%, 4.82391\%)$ and variances
+    $(0.00494611, 0.00242215)$ has rank one. The two give the same $\beta_1, \dots, \beta_4$, so their yield curves
+    agree to first order.</p>
 
     <h2>Two chains that the curve cannot tell apart</h2>
     <p>Here are two three-state chains with different transition structures. Neither is reversible. The first

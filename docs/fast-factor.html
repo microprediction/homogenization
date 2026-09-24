@@ -210,7 +210,7 @@
       &+ \delta^2\int_0^t \Big[g_1^2 + g_2^2 + c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big)\Big] + O(\delta^3).
     \end{aligned}$$
     <p>Every coefficient is a polynomial in $B$:</p>
-    $$g_0 = -\kappa\theta_0 B + \tfrac12(\sigma_0^2 + \sigma_1^2)B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1 B^2,
+    $$\bar g = -\kappa\theta_0 B + \tfrac12(\sigma_0^2 + \sigma_1^2)B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1 B^2,
       \qquad g_2 = \tfrac12\sigma_1^2 B^2, \qquad c = \sqrt2\,\rho\,B .$$
     <p>So every integral is a combination of $I_k = \int_0^t B^k$, and the exponent is</p>
     <div class="equation-card">
@@ -254,14 +254,16 @@
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody>
       <tr><td>$B$</td><td>0.632121</td></tr>
       <tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>0.367879, 0.168091, 0.0838978, 0.0439824</td></tr>
-      <tr><td>exponent at orders $1$, $\delta$, $\delta^2$</td><td>&minus;0.00977930, 0.000122386, 0.0000999259</td></tr>
-      <tr><td>shape terms at orders $\varepsilon$, $\varepsilon^{3/2}$</td><td>&minus;0.00333158, &minus;0.0000418965</td></tr>
+      <tr><td>coefficients of $1$, $\delta$, $\delta^2$ in $\log s$</td><td>&minus;0.00977930, 0.000122386, 0.0000999259</td></tr>
+      <tr><td>the $\delta$ and $\delta^2$ terms at $\delta = 0.05$</td><td>0.00000611930, 0.000000249815</td></tr>
+      <tr><td>coefficients of $\varepsilon$, $\varepsilon^{3/2}$ in the bracket</td><td>&minus;0.00333158, &minus;0.0000418965</td></tr>
+      <tr><td>the $\varepsilon$ and $\varepsilon^{3/2}$ terms at $\varepsilon = 0.0025$</td><td>&minus;0.00000832895, &minus;0.00000000523706</td></tr>
     </tbody></table></div>
     <div class="table-wrap"><table class="impl"><thead><tr><th>bond factor $u\,e^{Bx}$</th><th>value</th><th>error</th></tr></thead><tbody>
       <tr><td>averaged model</td><td>0.99026837</td><td>2.1e-6</td></tr>
       <tr><td>through $\delta$</td><td>0.99027443</td><td>8.1e-6</td></tr>
       <tr><td>through $\delta^2$</td><td>0.99026643</td><td>1.3e-7</td></tr>
-      <tr><td>exact (Riccati)</td><td>0.99026629</td><td></td></tr>
+      <tr><td>numerical (Riccati)</td><td>0.99026629</td><td></td></tr>
     </tbody></table></div>
     <p>At these parameters the $\delta$ term moves the averaged value the wrong way before the $\delta^2$ term corrects
     it, which is the expansion in powers of $\sqrt\varepsilon$ at work.</p>

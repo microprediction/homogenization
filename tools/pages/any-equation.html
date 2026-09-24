@@ -78,8 +78,14 @@
     correction splits the same way:</p>
     $$\sum_{j,k} K_{jk}\,A_j A_k \;=\; \sum_{j,k} K^{\mathrm{sym}}_{jk}\,A_j A_k \;+\; \sum_{j\lt k} K^{\mathrm{anti}}_{jk}\,\big[A_j, A_k\big].$$
     <ul>
-      <li><em>The symmetric part is a covariance.</em> $2t\,K^{\mathrm{sym}}$ is the long-run covariance matrix of the
-        integrated parameters $\int_0^t \phi_k(y_s)\,ds$. It is positive semidefinite. This is the term the
+      <li><em>The symmetric part is a covariance rate.</em> For a stationary chain, write $C(s)$ for the covariance
+        matrix of $\phi(y_0)$ and $\phi(y_s)$, and $C^{\mathrm{sym}}$ for its symmetric part. The integrated parameters
+        have covariance
+        $$\operatorname{Cov}\Big(\int_0^t \phi(y_s)\,ds\Big) = 2\int_0^t (t - s)\,C^{\mathrm{sym}}(s)\,ds,$$
+        while $K^{\mathrm{sym}} = \int_0^\infty C^{\mathrm{sym}}(s)\,ds$. With the chain sped up to $Q_0/\varepsilon$,
+        $2t\,K^{\mathrm{sym}}$ is the leading term, of order $\varepsilon$, and the remainder is of order
+        $\varepsilon^2$ at fixed $t$. Dividing by $2t$ and letting $t$ grow shows that $K^{\mathrm{sym}}$ is positive
+        semidefinite. This is the term the
         <a href="./idea.html">averaging page</a> explains as half the variance of a fluctuating integral.</li>
       <li><em>The antisymmetric part is about order.</em> $K^{\mathrm{anti}}_{jk}$ compares parameter $j$ followed by
         parameter $k$ with the reverse order. It vanishes for a reversible chain, which looks the same run backwards
@@ -107,9 +113,11 @@
     $$\frac{\partial^2 C_{\mathrm{BS}}}{\partial V^2} = \frac{S\,\varphi(d_1)\,(d_1 d_2 - 1)}{4\,V^{3/2}} .$$
     <p>This is a volga term, the convexity of the price in variance. It is positive in the wings and negative near
     the money, so no single volatility can absorb it: it is a smile. It is the first-order form of the mixing
-    formula of Hull and White, with the variance of integrated variance equal to $2t\,K$.</p>
+    formula of Hull and White, with the variance of integrated variance replaced by its leading term $2t\,K$. At
+    fixed maturity the two differ by a term of order $\varepsilon^2$, beyond the first-order rule.</p>
     <p>This smile is known. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>
-    derive it for any fast ergodic volatility driver, and <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
+    derive it for a fast ergodic volatility driver whose integrated fluctuations obey a central limit theorem, as
+    a finite-state chain does, and <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
     Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order. The check below confirms the
     rule reproduces it. A <a href="./cycle-smile.html">Heston example</a> shows the antisymmetric part moving the
     smile.</p>
@@ -138,8 +146,8 @@
     $7\times10^{-5}$, sixteen times smaller, as a second-order remainder should.</p>
 
     <h2>Many names from one matrix</h2>
-    <p>Give each of several firms a hazard rate $h_m(y)$ that depends on the common regime. The survival of a set $S$
-    of names is</p>
+    <p>Give each of several firms a hazard rate $h_m(y)$ that depends on the common regime, and let the defaults be
+    independent given the regime path. The survival of a set $S$ of names is</p>
     $$P_S(t) = \mathbb E\Big[\exp\Big(-\int_0^t \sum_{m\in S} h_m(y_s)\,ds\Big)\Big].$$
     <p>Every operator is $-1$, so all of them commute, and the rule gives</p>
     $$\log P_S(t) \;\approx\; -t\sum_{m\in S}\bar h_m \;+\; t\sum_{j,k\in S} K^{\mathrm{sym}}_{jk} .$$
@@ -155,8 +163,21 @@
         same rank property appears for races on the kinetics site.</li>
     </ul>
     <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more. Which name defaults first
-    is a race under a shared driver, and with three or more names its law reveals the asymmetry of $K$, as shown on
-    the <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>
+    is a race under a shared driver, and two names already suffice for its law to reveal the asymmetry of $K$,
+    provided the chain has at least three states and is not reversible. Races of this kind are studied on the
+    <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>
+    <p>For two names, starting from the stationary law, the probability that name 1 defaults first is</p>
+    $$p_1 = \pi^{\top}\big(\operatorname{diag}(h_1 + h_2) - Q\big)^{-1}h_1 .$$
+    <p>Expanding the resolvent for a fast chain, with $\bar h = \bar h_1 + \bar h_2$,</p>
+    $$p_1 = \frac{\bar h_1}{\bar h} + \frac{1}{\bar h}\Big(\frac{\bar h_1}{\bar h}\sum_{j,k}K_{jk} - K_{11} - K_{21}\Big)
+      + O(\varepsilon^2) .$$
+    <p>The entry $K_{21}$ appears without $K_{12}$. Reversing the direction of the cycle transposes $K$, and moves
+    $p_1$ by</p>
+    $$\frac{K_{12} - K_{21}}{\bar h} .$$
+    <p>An example: a three-state cycle with rate 2 one way round and 0.1 the other, hazards $h_1 = (0.07, 0.01, 0.01)$
+    and $h_2 = (0.01, 0.07, 0.01)$, and the generator multiplied by 10. Name 1 defaults first with probability
+    0.500150 with the cycle one way and 0.499850 the other way. Every single-name and joint survival probability
+    is the same for both directions.</p>
     <p>The check uses four names and the three-state chain $Q_A$ from the smile example. The pairwise dependence over five years, in units
     of $10^{-4}$, is:</p>
     $$2t\,K^{\mathrm{sym}} \times 10^{4} = \begin{pmatrix} 25.3 & 16.8 & -8.5 & -6.3 \\ 16.8 & 11.9 & -4.0 & -4.9 \\ -8.5 & -4.0 & 7.1 & 0.2 \\ -6.3 & -4.9 & 0.2 & 2.4 \end{pmatrix}.$$
