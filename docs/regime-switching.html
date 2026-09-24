@@ -204,7 +204,8 @@
     $$\begin{aligned}
     u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 - \frac{\varepsilon^2}{8}\,G^2 \\
       &\qquad + \frac{\varepsilon}{2}\big(\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2 I_4\big)\Big) \\
-      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\big(\tilde s\,B - \kappa\tilde\theta\big)E\Big)
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\big(\tilde s\,B - \kappa\tilde\theta\big)E
+      \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta e^{-2\lambda T}\Big)
       + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
@@ -217,7 +218,8 @@
     </div>
     <p>This is Vasicek&apos;s survival probability with averaged parameters, multiplied by an explicit correction. The
     $\varepsilon$ term in the exponent is the Green&ndash;Kubo correction, and the bracket is the memory of the starting
-    regime.</p>
+    regime. Its last term is the matched initial layer; it makes the stated remainder uniform for $T\geq0$ on every
+    fixed bounded maturity interval.</p>
     <p>At the parameters of the <a href="./survival.html">survival demo</a>, $\kappa = 2$, $\theta = (0.15,\ 0.02)$,
     $\sigma^2 = (0.0555,\ 0.0055)$, $x = 0.12$, with $T = 4$, $\lambda = 20$ and a start in regime 1:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$E$, $B$</td><td>0.000335463, 0.499832</td></tr><tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>1.75008, 0.812584, 0.38548, 0.184938</td></tr><tr><td>averaged exponent $-\kappa\bar\theta I_1 + \frac12\bar s I_2$</td><td>-0.285122</td></tr><tr><td>correction $\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\tilde s I_3 + \frac14\tilde s^2 I_4$</td><td>0.0125088</td></tr><tr><td>$G$</td><td>-0.0618553</td></tr></tbody></table></div>

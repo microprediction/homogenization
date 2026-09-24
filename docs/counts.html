@@ -133,7 +133,7 @@
     <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
     $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
-    <p>Here the forcing is constant:</p>
+    <p>Here</p>
     $$\bar g = (z-1)\,\bar\ell, \qquad \tilde g = \tfrac12(z-1)(\ell_1 - \ell_2) .$$
     <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
     half-difference $\tilde g$ measures how much the two regimes disagree.</p>
@@ -141,8 +141,13 @@
     <h3>First order</h3>
     <p>To first order in $\varepsilon$, at fixed $t > 0$,</p>
     $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
-    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
-    <a href="./idea.html">idea</a> page.</p>
+    <p>with the upper sign for a start in regime 1. If $\tilde g(0)=0$, the remainder is also uniform for
+    $0\leq t\leq T$. Otherwise the uniform composite formula replaces $\tilde g(t)$ in the bracket by</p>
+    $$\tilde g(t)-\tilde g(0)e^{-2t/\varepsilon}$$
+    <p>and includes $-\varepsilon\tilde g(0)\int_0^t\tilde g(s)e^{-2s/\varepsilon}ds/2$ in the exponent. Its remainder is
+    $O(\varepsilon^2)$ uniformly on every fixed bounded maturity interval. The proof and the exact crossover scale
+    are on the <a href="./layers.html">initial-layers</a> page. The three outer factors have separate meanings,
+    explained on the <a href="./idea.html">idea</a> page.</p>
     <ul>
       <li>The factor below is the averaged model:
         $$e^{\int_0^t \bar g} .$$</li>
