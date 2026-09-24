@@ -115,3 +115,23 @@ at the start of the rise and at the death peak (which marks the infection peak a
   the next refinement. The discriminating test between switching and behaviour is the rebound: switching predicts
   a new wave after about the activity correlation time, independent of deaths; a behavioural response predicts
   relaxation tied to falling deaths.
+
+## 2026-09-23: correction to the model ranking above
+The "fixed increment" row is not a mechanism: it is the observed flat relation summarized by one constant fitted
+after the fact, and it says nothing about the level. It is the target a mechanism has to hit, not a competitor.
+The switching model does predict a level: with lam0 = 1, Delta = ln R / (1 + K r) and ln R ~ r T_g, so fast waves
+plateau at Delta ~ T_g / K (0.10 at K = 54 d; winter median observed 0.075).
+Out-of-sample by season (IFR 0.7%), median log(observed / predicted):
+
+| K fitted on | spring | summer | winter |
+|---|---|---|---|
+| spring (119 d) | -0.01 | -0.16 | +0.69 |
+| summer (130 d) | +0.07 | -0.09 | +0.77 |
+| winter (54 d) | -0.69 | -0.80 | +0.10 |
+| homogeneous | -2.28 | -2.17 | -1.26 |
+
+One K carries across spring and summer; winter waves depleted about twice as much as that K predicts. K is not
+stable across seasons, which it should be if it were a property of activity alone. Mitigation (strong in spring
+and summer, weaker in winter) lowers transmission outside the switching model and contaminates K; a changing IFR
+over 2020 may also contribute. Next: an independent K (activity variance and correlation time from contact or
+mobility data) to predict the level without fitting it, and an age-adjusted IFR.
