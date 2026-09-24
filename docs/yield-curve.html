@@ -211,8 +211,9 @@
     <p>since centred functions of $n$ states span $n - 1$ dimensions. A rank $r$ read off the coefficients needs at
     least $r + 1$ regimes. Here $d = 2$, $\phi = (B, B^2)$, $f_1 = -\kappa u$ and $f_2 = \tfrac12 v$, so</p>
     $$H = \begin{pmatrix} c_2 & c_3/2 \\ c_3/2 & c_4 \end{pmatrix},$$
-    <p>and $H \succeq 0$ is the inequality above. The bound applies to $H$ itself: when the shapes $\phi_r$ vary with
-    maturity, the integrated matrix $\int_0^T \phi\phi^{\top}\,dt$ can have higher rank than $n - 1$.</p>
+    <p>and $H \succeq 0$ is the inequality above. The bound applies to $H$ itself. When several instruments load on
+    the features through a maturity-dependent matrix $L(t)$, the integrated matrix $\int_0^T L\,H\,L^{\top}\,dt$ can
+    have rank above $n - 1$, so an integrated rank is not a count of regimes.</p>
 
     <h2>Observable coefficients</h2>
     <p>The coefficient of $\int B^2$ is $\tfrac12\bar s + c_2$. A market that only sees bond prices cannot split this
