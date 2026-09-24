@@ -1,0 +1,6 @@
+# The numerical certificates (papers/*/verify_*.py) and the page generators.
+numpy>=1.24
+scipy>=1.10
+mpmath>=1.3
+# Optional: papers/fast-switching/verify_quantlib_models.py also prices against QuantLib's engines when it is installed.
+# QuantLib>=1.30
