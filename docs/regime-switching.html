@@ -159,7 +159,8 @@
     <p>Write</p>
     $$B(r) = \frac{1-e^{-\kappa r}}{\kappa}, \qquad \bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2},$$
     $$\bar g(r) = -\kappa\bar\theta B(r) + \tfrac12 \bar s B(r)^2, \qquad \tilde g(r) = -\kappa\tilde\theta B(r) + \tfrac12 \tilde s B(r)^2 .$$
-    <p>With $\varepsilon = 1/\lambda$, and the upper sign when the process starts in regime 1,</p>
+    <p>With $\varepsilon = 1/\lambda$, the upper sign when the process starts in regime 1, and $t > 0$ fixed as
+    $\lambda \to \infty$,</p>
     <div class="equation-card">
     $$\begin{aligned}
       u_y(t,x) &= e^{-B(t)x}\; M(t)\; \big(1 \pm R(t)\big) + O(\varepsilon^3), \\[4pt]
@@ -186,9 +187,14 @@
       expansions treat option prices and transition densities, and a search of the literature did
       not find the corrector for this bond price or survival probability.</p>
 
-    <p>The formula holds away from an initial layer of width about $1/(2\lambda)$, in which the
-      regime has not yet had time to switch. Inside the layer the second-order bracket carries an
-      extra transient of size $\varepsilon^2 e^{-2\lambda t}$.</p>
+    <p>The remainder is $O(\varepsilon^3)$ at each fixed $t > 0$, not uniformly down to $t = 0$. The outer series does
+      not satisfy $u_y(0,x) = 1$: at $t = 0$ the bracket is $1 \mp \tfrac14\varepsilon^2\tilde g'(0)$, with
+      $\tilde g'(0) = -\kappa\tilde\theta$, because the regime has not yet had time to switch.</p>
+    <p>An <a href="./layers.html">initial layer</a> repairs the start. To leading order it adds to $R(t)$ the transient</p>
+    $$\frac{\varepsilon^2}{4}\,\tilde g'(0)\,e^{-2\lambda t},$$
+    <p>which is of order $\varepsilon^2$ for $t$ up to a few multiples of $1/(2\lambda)$ and falls below $\varepsilon^3$
+      only once $t$ exceeds about $\log(1/\varepsilon)/(2\lambda)$. With the transient included, the remainder is
+      $O(\varepsilon^3)$ uniformly on bounded intervals of $t$.</p>
 
 
     <h2>The survival probability written out</h2>

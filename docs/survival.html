@@ -107,7 +107,8 @@
     $\theta_1 = 0.15$ and $\theta_2 = 0.02$, with variance $\sigma_1^2 = 0.0555$ in the first
     regime and $\sigma_2^2 = 0.0055$ in the second. Order 0 is Vasicek&apos;s bond price with the
     averaged parameters. Order $n$ adds every term through $\varepsilon^n$: the outer series in
-    $E = 1 - e^{-\kappa t}$ and, from order 4, the contribution of the initial layer.</p>
+    $E = 1 - e^{-\kappa t}$ and the initial layer, which enters the regime-dependent bracket from order 2, as the
+    transient $\tfrac14\varepsilon^2\tilde g'(0)\,e^{-2\lambda t}$, and the exponent from order 4.</p>
 
     <div class="widget">
       <div class="controls">
@@ -140,6 +141,11 @@
     about $10^{-12}$. The gain per term shrinks as switching slows: near $\lambda = 3$ it is only a factor of
     two or three, and the errors of successive orders alternate in sign, because the expansion is asymptotic
     rather than convergent. A term that failed to shrink as $\lambda$ grows would refute the expansion.</p>
+    <p>Near $t = 0$ the outer series alone would miss the layer transient, which is of order $\varepsilon^2$ over the
+    first $1/(2\lambda)$ years; the partial sums include it, so each order starts at $1$. At the slider&apos;s minimum,
+    $\lambda = 0.5$, the terms grow instead of shrinking: at $t = 1/16$ the orders 0 to 6 give 0.9927, 0.985, 0.977,
+    0.955, 0.897, 0.720 and 0.127 against a numerical solution of 0.9924, which is an asymptotic series used outside
+    its range.</p>
 
     <p class="muted">The numerical solution integrates the two-state linear ODE by fourth-order
     Runge&ndash;Kutta in your browser. The partial sums are computed from the recursion in
