@@ -187,3 +187,31 @@ growth and a death peak before the round-4 sampling.
 - Confound: national curfew from 25 October 2020 (RD 926/2020) and regional restrictions; many provinces peaked
   one to two weeks later.
 Same picture as the US counties: a robust level (waves turn over far below the textbook threshold), no usable slope.
+
+## 2026-09-23: age, Sweden, England, Geneva, Manaus (analysis/12-14)
+Age structure alone (12_age.py; Prem et al. 2021 synthetic contact matrices, World Bank 2020 populations, no
+fitting): lam_age = [sum u v^2 / sum u v] / sum n v = 1.3-1.7 with equal susceptibility, 1.1-1.2 with under-20s at
+half. First-wave peak attack at R = 2.5 is 51-56% against the textbook 60%. Age cannot supply lam of 2-7; the
+heterogeneity that matters is within age groups (activity).
+
+Turnovers anchored by serology (13_sweden.py, 14_points.py):
+
+| place | control | turnover attack | lam |
+|---|---|---|---|
+| England, 9 ONS regions (REACT-2) | lockdown 23 Mar; death peaks 6-18 Apr | 1-5% | 17-94 |
+| Geneva (SEROCoV-POP) | partial lockdown 16 Mar | 5% | 23 |
+| Stockholm (FHM outpatient; Castro Dopico) | voluntary; ICU peak 4 Apr | 2-3% | 33-44 |
+| Skane, Vastra Gotaland | voluntary | 1-3% | 20-45 |
+| Spain spring (ENE-COVID) | national lockdown | 0.3-4.6% | ~60 |
+| Spain autumn (ENE-COVID round 4) | curfew 25 Oct | 2.6% of susceptibles | ~7 |
+| US counties, winter 2020-21 (IFR 0.7%) | mixed | ~7% of susceptibles | 2-3.5 |
+| Manaus (Buss et al., excess deaths) | little effective control | ~17% at the peak; 66-76% final | 2.5 |
+
+Where contacts were cut, by law or voluntarily (Sweden), the first wave turned at 1-5% and lam is 20-90: that is
+the contact cut, not immunity. Where control was weak (Manaus, US winter) lam is 2-3.5, which needs activity
+heterogeneity with CV^2 about 0.5-1.25 within age groups, close to the CV^2 ~ 1 of measured social contacts.
+Manaus' final attack (66-76%) is close to the homogeneous final size at R = 1.6 (64%): the early turnover there
+did not stop the epidemic from reaching high attack, as time-varying (transient) heterogeneity predicts and
+persistent heterogeneity does not. Caveats: Manaus serology is monthly (the peak attack is interpolated between
+5% on 11 April and 46% on 10 May) and blood donors are not the population; Stockholm growth from ICU admissions.
+Download scripts copied to fetch/ (data/ stays gitignored).
