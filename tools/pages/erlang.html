@@ -1,0 +1,135 @@
+<!-- title: Regimes with regular durations · homogenization | math -->
+  <main>
+    <h1>Regimes with regular durations</h1>
+    <p class="subtitle">A Vasicek short rate whose mean level switches between two regimes that each last a nearly fixed time. The yield curve then depends on how long the current regime has lasted.</p>
+
+    <h2>The model</h2>
+    <p>The short rate reverts to a level set by a hidden regime $y_t \in \{1, 2\}$:</p>
+    $$dr_t = \kappa\,(\theta_{y_t} - r_t)\,dt + \sigma\,dW_t .$$
+    <p>In the other examples a regime ends at a constant rate, so its duration is exponential and its age says nothing
+    about when it will end. Here regime $i$ lasts an Erlang time: the sum of $k$ independent exponential stages, each
+    with mean $m_i/k$. The mean duration is $m_i$ and its standard deviation is</p>
+    $$s_i = \frac{m_i}{\sqrt k} .$$
+    <p>With $k = 1$ this is the usual Markov switch. As $k$ grows the regimes last close to $m_1$ and $m_2$, like
+    a policy cycle or a clock.</p>
+    <p>The slow variable is the short rate, which reverts over $1/\kappa$. The fast variable is the regime, which
+    changes every $m_1$ or $m_2$. The expansion is in the durations.</p>
+    <p class="muted">Parameters: $\kappa = 0.5$, $\sigma = 0.01$, $\theta = (0.07, 0.01)$, $m = (0.3, 0.6)$ years.</p>
+
+    <h2>Stages make the regime Markov</h2>
+    <p>The regime alone is not a Markov process: the chance that it ends soon depends on how long it has lasted. The
+    stage is Markov.</p>
+    <p>Label the stages $1, \dots, k$ in regime 1 and $k+1, \dots, 2k$ in regime 2, arranged in a ring.
+    Stage $j$ moves to stage $j+1$ at rate $k/m_1$ in regime 1 and $k/m_2$ in regime 2, and stage $2k$ returns
+    to stage $1$.</p>
+    <p>All stages of a regime share its mean level $\theta_i$, so no price observed today can tell them apart. They
+    differ only in how soon the regime will change. Observing a function of a Markov chain that is constant on groups
+    of states is called lumping.</p>
+    <p>The stage chain has constant hazards, so everything on the <a href="./engine.html">engine</a> page applies to it
+    without change.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Let $P_j(T, r)$ be the price of a zero-coupon bond maturing at $T$ when the chain is in stage $j$. As in the
+    <a href="./regime-switching.html">regime-switching</a> example,</p>
+    $$P_j(T, r) = e^{a_j(T) - B(T)\,r}, \qquad B(T) = \frac{1 - e^{-\kappa T}}{\kappa},$$
+    $$a' = (Q + \operatorname{diag} g)\,a, \qquad a(0) = \mathbf 1, \qquad g_j(t) = -\kappa\,\theta_j\,B(t) + \tfrac12\sigma^2 B(t)^2 ,$$
+    <p>where $Q$ is the generator of the ring and $\theta_j$ is the level of the regime that stage $j$ belongs to.</p>
+
+    <h2>Averaging</h2>
+    <p>The regime spends a fraction $\pi_i$ of the time in state $i$:</p>
+    $$\pi_1 = \frac{m_1}{m_1 + m_2}, \qquad \pi_2 = \frac{m_2}{m_1 + m_2}, \qquad \bar\theta = \pi_1\theta_1 + \pi_2\theta_2 .$$
+    <p>When the regimes are short the bond price tends to Vasicek's price with the level $\bar\theta$:</p>
+    $$\log P_{\text{Vas}} = -B\,r - \kappa\bar\theta\,I_1 + \tfrac12\sigma^2 I_2,$$
+    $$I_1 = \int_0^T B = \frac{T - B}{\kappa}, \qquad I_2 = \int_0^T B^2 = \frac{1}{\kappa^2}\Big(T - 2B + \frac{1 - e^{-2\kappa T}}{2\kappa}\Big).$$
+    <p>This limit does not depend on $k$: the averaged model sees only the fractions of time.</p>
+
+    <h2>The first correction</h2>
+    <p>The regime enters the price through the integral</p>
+    $$Z = -\kappa\int_0^T \theta_{y_s}\,B(T - s)\,ds .$$
+    <p>To first order in the durations the logarithm of $\mathbb E\,e^{Z}$ is the mean of $Z$ plus half its variance.
+    Each piece gives one term.</p>
+
+    <h3>The variance term</h3>
+    <p>Over a long horizon the variance of $\int (\theta_{y_s} - \bar\theta)\,h(s)\,ds$ is</p>
+    $$2\,(\theta_1 - \theta_2)^2 K_1 \int h^2 ,$$
+    <p>where $K_1$ is the Green&ndash;Kubo number of the regime indicator, the integral of its autocovariance. For an
+    alternating renewal process it depends on the durations only through their means and variances:</p>
+    $$K_1 = \frac{m_2^2 s_1^2 + m_1^2 s_2^2}{2\,(m_1 + m_2)^3} .$$
+    <p>For Erlang durations $s_i^2 = m_i^2/k$, so</p>
+    $$K_1 = \frac{m_1^2\,m_2^2}{k\,(m_1 + m_2)^3} .$$
+    <p>This is the Markov value divided by $k$. Regular regimes average out faster, because a long stretch of time
+    holds close to the right share of each regime.</p>
+
+    <h3>The start term</h3>
+    <p>The mean of $Z$ differs from its averaged value because the regime today is known. Most of the difference
+    comes from the first few regimes, while $B(T - s)$ is still close to $B(T)$. So the difference is</p>
+    $$-\kappa\,B(T)\,w, \qquad w = \mathbb E\int_0^\infty (\theta_{y_s} - \bar\theta)\,ds,$$
+    <p>where the expectation is given the current regime and how long it has lasted.</p>
+    <p>To compute $w$, follow the chain to the next start of regime 1. Let $R$ be the expected remaining time in the
+    current regime.</p>
+    <p>Starting in regime 1, the level exceeds $\bar\theta$ by $\pi_2(\theta_1 - \theta_2)$ for the
+    remaining time, then falls short by $\pi_1(\theta_1 - \theta_2)$ for a whole regime 2. Starting in regime 2
+    there is only the shortfall over the remaining time.</p>
+    <p>After that point every path is the same, which adds a constant. The constant is fixed by requiring $w$ to
+    average to zero over the stationary distribution, in which the stage is uniform within each regime. The result is</p>
+    $$w_1 = (\theta_1 - \theta_2)\,\pi_2\big(R - \pi_1 m_2 - \pi_1 c\big), \qquad
+      w_2 = -(\theta_1 - \theta_2)\,\pi_1\big(R + \pi_2 c - \pi_1 m_2\big),$$
+    $$c = \frac{(m_1 - m_2)(k + 1)}{2k} .$$
+    <p>For $k = 1$ the remaining time is always $m_i$, whatever the age, and the start terms reduce to the Markov
+    values</p>
+    $$w_1 = (\theta_1 - \theta_2)\,\frac{\pi_2\,m_1 m_2}{m_1 + m_2}, \qquad w_2 = -(\theta_1 - \theta_2)\,\frac{\pi_1\,m_1 m_2}{m_1 + m_2} .$$
+
+    <h3>The remaining time given the age</h3>
+    <p>The stage is hidden but the age $\tau$ of the regime is observed. Given the age, the number of completed stages
+    is Poisson with mean $k\tau/m_i$, conditioned on fewer than $k$ stages having been completed. So</p>
+    $$R(\tau) = \frac{m_i}{k}\;\frac{\sum_{n=0}^{k-1} (k - n)\,\mu^n/n!}{\sum_{n=0}^{k-1} \mu^n/n!}, \qquad \mu = \frac{k\,\tau}{m_i} .$$
+    <p>At $\tau = 0$ this is $m_i$. As the age grows it falls toward $m_i/k$, the mean of one stage.</p>
+
+    <h2>The bond price written out</h2>
+    <div class="equation-card">
+    <p>In regime $i$, at age $\tau$, with short rate $r$ and maturity $T$:</p>
+    $$\log P_i(T, r, \tau) = -B\,r - \kappa\bar\theta\,I_1 + \tfrac12\sigma^2 I_2
+      + \kappa^2(\theta_1 - \theta_2)^2 K_1\,I_2 - \kappa\,B\,w_i\big(R(\tau)\big) + O(m^2),$$
+    $$\begin{aligned}
+    B &= \frac{1 - e^{-\kappa T}}{\kappa}, \\
+    I_1 &= \frac{T - B}{\kappa}, \\
+    I_2 &= \frac{1}{\kappa^2}\Big(T - 2B + \frac{1 - e^{-2\kappa T}}{2\kappa}\Big), \\
+    \bar\theta &= \pi_1\theta_1 + \pi_2\theta_2, \qquad \pi_i = \frac{m_i}{m_1 + m_2}, \\
+    K_1 &= \frac{m_1^2\,m_2^2}{k\,(m_1 + m_2)^3}, \\
+    w_1 &= (\theta_1 - \theta_2)\,\pi_2\big(R - \pi_1 m_2 - \pi_1 c\big), \\
+    w_2 &= -(\theta_1 - \theta_2)\,\pi_1\big(R + \pi_2 c - \pi_1 m_2\big), \\
+    c &= \frac{(m_1 - m_2)(k + 1)}{2k}, \\
+    R &= \frac{m_i}{k}\;\frac{\sum_{n=0}^{k-1} (k - n)\,\mu^n/n!}{\sum_{n=0}^{k-1} \mu^n/n!}, \qquad \mu = \frac{k\,\tau}{m_i} .
+    \end{aligned}$$
+    </div>
+
+    <h2>A worked example</h2>
+    <p>Take the parameters above with $r = 3\%$ and $T = 1$, starting in the high regime. The averaged model gives a
+    one-year yield of 299.9 basis points. The yields $-\log P/T$ in basis points:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>stages $k$</th><th>age $\tau$</th><th>remaining $R$</th><th>first order</th><th>numerical solution</th></tr></thead><tbody>
+    <tr><td>1</td><td>any</td><td>0.300</td><td>331.3</td><td>326.0</td></tr>
+    <tr><td>4</td><td>0</td><td>0.300</td><td>325.4</td><td>325.4</td></tr>
+    <tr><td>4</td><td>0.15</td><td>0.182</td><td>306.8</td><td>308.3</td></tr>
+    <tr><td>4</td><td>0.3</td><td>0.135</td><td>299.5</td><td>301.4</td></tr>
+    <tr><td>4</td><td>0.6</td><td>0.105</td><td>294.8</td><td>296.8</td></tr>
+    <tr><td>16</td><td>0</td><td>0.300</td><td>324.0</td><td>323.2</td></tr>
+    <tr><td>16</td><td>0.15</td><td>0.151</td><td>300.6</td><td>301.5</td></tr>
+    <tr><td>16</td><td>0.3</td><td>0.064</td><td>286.8</td><td>288.1</td></tr>
+    <tr><td>16</td><td>0.6</td><td>0.033</td><td>281.9</td><td>283.2</td></tr>
+    </tbody></table></div>
+    <p>With Markov regimes the one-year yield in the high regime is the same at every age. With 16 stages it falls by
+    40 basis points between the start of the regime and twice its mean duration. By then the high regime is almost
+    certainly about to end, and the yield sits below the averaged value.</p>
+    <p>At one year the variance term is small (0.09 basis points for $k = 1$) and the start term carries the effect.
+    At long maturities the variance term grows like $T$ and the start term fades like $1/T$.</p>
+
+    <h2>What the yield curve identifies</h2>
+    <p>To first order the variance term sees $K_1$ alone, so regular durations cannot be told apart from Markov
+    durations with shorter means. The start term separates them: under Markov switching the curve does not move with
+    the age of the regime, and under regular switching it does. The age of a regime is observable, for example the
+    time since the last policy change, so it can be used as a regressor.</p>
+    <p>The same stage construction covers any duration distribution built from exponential stages, which can
+    approximate any distribution of durations. At first order only the means and variances of the durations enter the
+    variance term.</p>
+    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_erlang.py">verify_erlang.py</a>. It checks $K_1$ and $w$ against the group inverse of the stage chain to machine precision, and checks that the first-order yield error falls like the square of the durations.</p>
+  </main>
