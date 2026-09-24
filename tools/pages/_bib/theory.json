@@ -1,0 +1,11 @@
+[
+ {
+  "key": "KipnisVaradhan1986",
+  "authors": "Kipnis, C. and Varadhan, S. R. S.",
+  "year": 1986,
+  "title": "Central limit theorem for additive functionals of reversible Markov processes and applications to simple exclusions",
+  "venue": "Communications in Mathematical Physics 104(1):1-19",
+  "doi": "10.1007/BF01210789",
+  "annotation": "Proves the central limit theorem for time integrals of a function of a reversible Markov process, with the long-run variance given through the resolvent; the reversibility assumption is essential to the proof."
+ }
+]

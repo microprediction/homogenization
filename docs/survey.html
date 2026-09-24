@@ -152,6 +152,10 @@
     Kurtz gave the operator-semigroup limit theorem for generators of the form $Q/\varepsilon + \mathcal L$
     (<a href="./bibliography.html#Kurtz1973">Kurtz 1973</a>; <a href="./bibliography.html#EthierKurtz1986">Ethier and Kurtz 1986</a>).
     Every pricing equation in the examples is a random evolution.</p>
+    <p>The long-run covariance behind the Green&ndash;Kubo correction is the subject of the central limit theorem of
+    <a href="./bibliography.html#KipnisVaradhan1986">Kipnis and Varadhan (1986)</a>, proved through the resolvent for
+    additive functionals of reversible Markov processes. The finite chains here need not be reversible, and for them
+    the group inverse gives the same variance directly.</p>
     <p>Physicists reached the same correction through cumulant expansions. The second cumulant of a linear equation
     with random coefficients is a time-ordered product of the random operators, weighted by their correlation
     (<a href="./bibliography.html#Kubo1962">Kubo 1962</a>; <a href="./bibliography.html#vanKampen1974">van Kampen 1974</a>).
@@ -175,6 +179,33 @@
     modulation of diffusions has recent limit theorems of its own
     (<a href="./bibliography.html#HuangMandjesSpreij2014">Huang, Mandjes and Spreij 2014</a>;
     <a href="./bibliography.html#HuangEtAl2016">Huang et al. 2016</a>).</p>
+
+    <h2>Spatial and nonlinear homogenization</h2>
+    <p>Homogenization of coefficients that oscillate in space is a separate theory, and it answers three different
+    questions: what the effective coefficients are, in what sense solutions or energies converge, and how large the
+    fluctuations and the correctors are. None of it involves a state that switches in time.</p>
+    <ul>
+      <li>Convergence of solutions. H-convergence and compensated compactness
+        (<a href="./bibliography.html#Tartar2010">Tartar 2010</a>) and two-scale convergence
+        (<a href="./bibliography.html#Allaire1992">Allaire 1992</a>) pass to the limit in an oscillating divergence-form
+        equation without a formal corrector series. $\Gamma$-convergence
+        (<a href="./bibliography.html#DalMaso1993">Dal Maso 1993</a>) does the same for energies and their minimizers.</li>
+      <li>Random coefficients. For divergence-form equations with stationary random coefficients,
+        <a href="./bibliography.html#ArmstrongKuusiMourrat2019">Armstrong, Kuusi and Mourrat (2019)</a> give rates of
+        convergence and the fluctuations of the corrector. The randomness is in space and is sampled once.</li>
+      <li>Nonlinear equations. <a href="./bibliography.html#Evans1989">Evans (1989)</a> carries the perturbed test
+        function method to viscosity solutions, which covers Hamilton&ndash;Jacobi equations.
+        <a href="./bibliography.html#Ziliotto2017">Ziliotto (2017)</a> constructs a stationary ergodic nonconvex
+        Hamilton&ndash;Jacobi equation that does not homogenize, so stationarity and ergodicity alone do not suffice
+        there. That is a nonlinear equation with spatial randomness; for a linear equation driven by a fast
+        finite-state chain the averaged equation always exists, because the group inverse does.</li>
+      <li>Unexpected terms. A Dirichlet problem in a domain with many small holes has a limit with an extra zero-order
+        term that no averaging of the coefficients produces
+        (<a href="./bibliography.html#CioranescuMurat1997">Cioranescu and Murat 1997</a>).</li>
+      <li>Computation. Multiscale finite elements
+        (<a href="./bibliography.html#HouWu1997">Hou and Wu 1997</a>) build basis functions from local solutions of the
+        oscillating equation, so that a coarse grid carries the effective behaviour.</li>
+    </ul>
 
     <h2>Finance: fast mean-reverting volatility</h2>
     <p>Fouque, Papanicolaou and Sircar brought the diffusion approximation to option pricing. Volatility is driven by
