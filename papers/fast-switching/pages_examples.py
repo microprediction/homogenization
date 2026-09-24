@@ -172,6 +172,10 @@ def three_regimes_page():
 '''
     body += table(['scale s'] + [f'order {o}' for o in range(7)], rows)
     body += r'''    <p>Each doubling of $s$ divides the order-$n$ error by about $2^{n+1}$.</p>
+    <p>A Monte Carlo check samples 400,000 paths of the three-state chain exactly, from exponential holding times.
+    Given its path the integrated rate is Gaussian, so each path gives the bond price in closed form. At $s = 4$
+    and $s = 8$ the Monte Carlo mean of $a_1(1)$ agrees with the numerical solution within two standard errors.
+    Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
 '''
     write('three-regimes.html', 'Three regimes', body)
 
@@ -565,8 +569,14 @@ def heston_page():
     <p>Call prices from the numerical characteristic function and after each order:</p>
 '''
     body += table(['strike', 'numerical', 'order 0', 'order 1', 'order 2', 'order 4'], rows)
-    body += r'''    <p>A Monte Carlo simulation of the switching model, with 200,000 paths, gives 22.13, 8.41 and 1.83 at strikes 80,
-    100 and 120, each within its standard error of the numerical prices.</p>
+    body += r'''    <p>A Monte Carlo check samples 200,000 regime paths exactly, from exponential holding times. Given its path the
+    long-run level is piecewise constant, and the conditional characteristic function is</p>
+    $$\exp\Big(D(T)\,v_0 + \kappa\int_0^T \theta_{y_s}\,D(T - s)\,ds\Big),$$
+    <p>whose integral is in closed form, so each path is priced by Lewis&apos;s formula with no time steps.</p>
+    <p>At strikes 80, 100 and 120 this gives 22.1335 &plusmn; 0.0007, 8.4025 &plusmn; 0.0013 and
+    1.8297 &plusmn; 0.0010, each within a third of a standard error of the numerical prices. The averaged model is
+    off by more than 80 standard errors. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
 '''
     write('heston.html', 'Heston with a switching long-run variance', body)
 
@@ -620,9 +630,12 @@ def black_scholes_page():
     <p>Call prices from the numerical characteristic function, and the error after each order:</p>
 '''
     body += table(['switching rate', 'strike', 'numerical'] + [f'order {o}' for o in range(5)], rows)
-    body += r'''    <p>A Monte Carlo simulation of the switching model at $\lambda = 50$, with 400,000 paths, gives 16.581 and 6.758 at
-    strikes 90 and 110, within one standard error of the numerical prices. <a href="./bibliography.html#Yin2009">Yin (2009)</a>
-    develops asymptotic expansions for this model.</p>
+    body += r'''    <p>A Monte Carlo check at $\lambda = 50$ samples 400,000 regime paths exactly, from exponential holding times, and
+    prices each path by the Black&ndash;Scholes formula at its integrated variance. It gives 16.5828 &plusmn; 0.0005 and
+    6.7696 &plusmn; 0.0006 at strikes 90 and 110, within 0.2 standard errors of the numerical prices. The averaged
+    model is off by more than 30 standard errors. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+    <p><a href="./bibliography.html#Yin2009">Yin (2009)</a> develops asymptotic expansions for this model.</p>
 '''
     write('black-scholes.html', 'Black-Scholes with a switching volatility', body)
 
@@ -680,7 +693,11 @@ def bond_options_page():
     <p>Call prices from the numerical solution, and the error after each order:</p>
 '''
     body += table(['switching rate', 'strike', 'numerical'] + [f'order {o}' for o in range(5)], rows)
-    body += r'''    <p>A Monte Carlo simulation of the switching model at $\lambda = 50$, with 400,000 paths, gives 0.001361 at strike
-    0.90, within one standard error of the numerical 0.001356.</p>
+    body += r'''    <p>A Monte Carlo check at $\lambda = 50$ samples 400,000 regime paths exactly, from exponential holding times.
+    Given its path, the integrated rate and the rate at expiry are jointly Gaussian and the bond at expiry is
+    $A_{y_T}e^{-b\,x_T}$, so each path is priced by a Black formula with no time steps.</p>
+    <p>At strike 0.90 this gives $0.00135639 \pm 0.00000007$, against the numerical 0.00135635, a gap of 0.7
+    standard errors. The averaged model is off by about 45 standard errors. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
 '''
     write('bond-options.html', 'Options on bonds under regime switching', body)

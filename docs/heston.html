@@ -228,8 +228,14 @@
     <h2>Results</h2>
     <p>Call prices from the numerical characteristic function and after each order:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th></tr></thead><tbody><tr><td>80</td><td>22.13369</td><td>22.06371</td><td>22.13501</td><td>22.13388</td><td>22.13369</td></tr><tr><td>90</td><td>14.47902</td><td>14.38309</td><td>14.47998</td><td>14.47922</td><td>14.47903</td></tr><tr><td>100</td><td>8.40280</td><td>8.29383</td><td>8.40317</td><td>8.40289</td><td>8.40281</td></tr><tr><td>110</td><td>4.22012</td><td>4.11250</td><td>4.22051</td><td>4.22017</td><td>4.22012</td></tr><tr><td>120</td><td>1.82993</td><td>1.73643</td><td>1.83091</td><td>1.83003</td><td>1.82992</td></tr></tbody></table></div>
-    <p>A Monte Carlo simulation of the switching model, with 200,000 paths, gives 22.13, 8.41 and 1.83 at strikes 80,
-    100 and 120, each within its standard error of the numerical prices.</p>
+    <p>A Monte Carlo check samples 200,000 regime paths exactly, from exponential holding times. Given its path the
+    long-run level is piecewise constant, and the conditional characteristic function is</p>
+    $$\exp\Big(D(T)\,v_0 + \kappa\int_0^T \theta_{y_s}\,D(T - s)\,ds\Big),$$
+    <p>whose integral is in closed form, so each path is priced by Lewis&apos;s formula with no time steps.</p>
+    <p>At strikes 80, 100 and 120 this gives 22.1335 &plusmn; 0.0007, 8.4025 &plusmn; 0.0013 and
+    1.8297 &plusmn; 0.0010, each within a third of a standard error of the numerical prices. The averaged model is
+    off by more than 80 standard errors. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
   </main>
 
   <footer>

@@ -27,8 +27,9 @@ def engine_page():
 '''
     body += table(['Model', 'Switching parameters', 'Time function'], [
         ['<a href="./regime-switching.html">Vasicek</a>, <a href="./three-regimes.html">any number of regimes</a>', 'mean level, volatility', r'$-\kappa\theta_i B + \tfrac12\sigma_i^2 B^2$'],
-        ['Gaussian factors (<a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">certificate</a>); <a href="./credit.html">two-name credit</a> with CIR names', 'means, volatilities, correlations', r'$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$'],
+        ['Gaussian factors (<a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">certificate</a>)', 'means, volatilities, correlations', r'$-\sum_j \kappa_j\theta_{ji} B_j + \tfrac12\sum_{j,l}\rho_{jl,i}\sigma_{ji}\sigma_{li}B_jB_l$'],
         ['<a href="./cir.html">CIR</a>', 'mean level', r'$-\kappa\theta_i B_{\mathrm{CIR}}$'],
+        ['<a href="./credit.html">Two-name credit</a>, CIR names', 'mean levels', r'$-\kappa\,(c_1\theta_{1,i} + c_2\theta_{2,i})\,B_{\mathrm{CIR}}$'],
         ['<a href="./jumps.html">Vasicek with jumps</a>', 'mean, volatility, jump intensity', r'$-\kappa\theta_i B + \tfrac12\sigma_i^2B^2 + \ell_i\big(\tfrac{1}{1+mB} - 1\big)$'],
         ['<a href="./counts.html">Poisson counts</a>', 'arrival rate', r'$(z-1)\,\ell_i$'],
         ['<a href="./heston.html">Heston</a>', 'long-run variance', r'$\kappa\theta_i D(t)$, complex'],
@@ -110,7 +111,9 @@ def engine_page():
       <li><a href="''' + SRC + '''fastswitch.py">fastswitch.py</a>: the engine, for any irreducible finite chain including defective generators, real or complex coefficients, any terminal vector.</li>
       <li><a href="''' + SRC + '''models.py">models.py</a> and <a href="''' + SRC + '''options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="''' + SRC + '''verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
-      <li><a href="''' + SRC + '''verify_models.py">verify_models.py</a>: each model&apos;s reduction against Monte Carlo of the switching model, and each expansion&apos;s convergence.</li>
+      <li><a href="''' + SRC + '''verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
+      <li><a href="''' + SRC + '''verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
+      <li><a href="''' + SRC + '''mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>
     </ul>
 '''
     write('engine.html', 'The fast-switching engine', body)
@@ -239,7 +242,7 @@ def fast_factor_page():
       &+ \delta^2\int_0^t \Big[g_1^2 + g_2^2 + c^2\big(\sigma_0^2g_2 + \sigma_0\sigma_1g_1 + \sigma_1^2g_2\big)\Big] + O(\delta^3).
     \end{aligned}$$
     <p>Every coefficient is a polynomial in $B$:</p>
-    $$g_0 = -\kappa\theta_0 B + \tfrac12(\sigma_0^2 + \sigma_1^2)B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1 B^2,
+    $$\bar g = -\kappa\theta_0 B + \tfrac12(\sigma_0^2 + \sigma_1^2)B^2, \qquad g_1 = -\kappa\theta_1 B + \sigma_0\sigma_1 B^2,
       \qquad g_2 = \tfrac12\sigma_1^2 B^2, \qquad c = \sqrt2\,\rho\,B .$$
     <p>So every integral is a combination of $I_k = \int_0^t B^k$, and the exponent is</p>
     <div class="equation-card">
@@ -283,14 +286,16 @@ def fast_factor_page():
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody>
       <tr><td>$B$</td><td>0.632121</td></tr>
       <tr><td>$I_1$, $I_2$, $I_3$, $I_4$</td><td>0.367879, 0.168091, 0.0838978, 0.0439824</td></tr>
-      <tr><td>exponent at orders $1$, $\delta$, $\delta^2$</td><td>&minus;0.00977930, 0.000122386, 0.0000999259</td></tr>
-      <tr><td>shape terms at orders $\varepsilon$, $\varepsilon^{3/2}$</td><td>&minus;0.00333158, &minus;0.0000418965</td></tr>
+      <tr><td>coefficients of $1$, $\delta$, $\delta^2$ in $\log s$</td><td>&minus;0.00977930, 0.000122386, 0.0000999259</td></tr>
+      <tr><td>the $\delta$ and $\delta^2$ terms at $\delta = 0.05$</td><td>0.00000611930, 0.000000249815</td></tr>
+      <tr><td>coefficients of $\varepsilon$, $\varepsilon^{3/2}$ in the bracket</td><td>&minus;0.00333158, &minus;0.0000418965</td></tr>
+      <tr><td>the $\varepsilon$ and $\varepsilon^{3/2}$ terms at $\varepsilon = 0.0025$</td><td>&minus;0.00000832895, &minus;0.00000000523706</td></tr>
     </tbody></table></div>
     <div class="table-wrap"><table class="impl"><thead><tr><th>bond factor $u\,e^{Bx}$</th><th>value</th><th>error</th></tr></thead><tbody>
       <tr><td>averaged model</td><td>0.99026837</td><td>2.1e-6</td></tr>
       <tr><td>through $\delta$</td><td>0.99027443</td><td>8.1e-6</td></tr>
       <tr><td>through $\delta^2$</td><td>0.99026643</td><td>1.3e-7</td></tr>
-      <tr><td>exact (Riccati)</td><td>0.99026629</td><td></td></tr>
+      <tr><td>numerical (Riccati)</td><td>0.99026629</td><td></td></tr>
     </tbody></table></div>
     <p>At these parameters the $\delta$ term moves the averaged value the wrong way before the $\delta^2$ term corrects
     it, which is the expansion in powers of $\sqrt\varepsilon$ at work.</p>
@@ -327,7 +332,7 @@ def fast_factor_page():
 if __name__ == '__main__':
     engine_page()
     three_regimes_page()
-    # credit_page() is superseded by the hand-written tools/pages/credit.html (CIR names)
+    # credit.html (CIR names) takes its numbers from explicit_pages.credit(), included as explicit/credit*.html
     counts_page()
     cir_page()
     jumps_page()
