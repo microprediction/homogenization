@@ -76,13 +76,19 @@
     over integrated variance (<a href="./bibliography.html#HullWhite1987">Hull and White 1987</a>). Expanding that
     average around the mean variance gives a smile at first order in the fluctuation time scale.</p>
     <p><a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>, section 3.3, derive it
-    for any stationary ergodic volatility driver, a Markov chain included. The implied volatility is quadratic in
-    log-moneyness, with a curvature set by the variance of integrated variance.
+    for a stationary ergodic volatility driver whose integrated fluctuations obey a central limit theorem, which a
+    finite-state Markov chain does. The implied volatility is quadratic in log-moneyness, with a curvature set by the
+    variance of integrated variance.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
     expansion to second order with correlation and a terminal layer.</p>
     <p>In that work the fast driver is a one-dimensional diffusion or a generic ergodic process whose correlation
     function enters through a variance. A one-dimensional diffusion is reversible, so its Green&ndash;Kubo matrix is
     symmetric. The antisymmetric part, which measures the direction of a cycle, does not appear.</p>
+    <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
+    whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.
+    With $\varepsilon$ the fluctuation time scale, the variance of its integrated variance scales like
+    $\varepsilon^\alpha$ in place of $\varepsilon$, and so does the smile correction. The chain below mixes
+    exponentially fast and has the order-$\varepsilon$ correction.</p>
 
     <h2>The model</h2>
     <p>The log price $X_t$ and the variance $v_t$ follow Heston&apos;s model with zero correlation. The variance level

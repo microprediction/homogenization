@@ -31,8 +31,11 @@
         <tr><td>Vasicek, HullWhite</td><td>mean level, volatility</td><td>reversion speed</td><td><a href="./regime-switching.html">regime switching</a>; <a href="./any-equation.html">speed and volatility</a></td></tr>
         <tr><td>CoxIngersollRoss, ExtendedCoxIngersollRoss</td><td>mean level</td><td>volatility, reversion speed</td><td><a href="./cir.html">CIR</a></td></tr>
         <tr><td>G2 (two-factor Gaussian)</td><td>both volatilities, correlation, level</td><td>reversion speeds</td><td>certificate</td></tr>
-        <tr><td>GSR, Gaussian1dModel</td><td>volatility, level</td><td>reversion</td><td></td></tr>
-        <tr><td>HestonHullWhite, H1HW, BSM&ndash;Hull&ndash;White</td><td>variance level, rate level, volatilities</td><td>reversion speeds, vol-of-vol</td><td></td></tr>
+        <tr><td>GSR</td><td>volatility, level</td><td>reversion</td><td></td></tr>
+        <tr><td>Other Gaussian1dModel subclasses, such as MarkovFunctional</td><td></td><td>all parameters</td><td></td></tr>
+        <tr><td>BSM&ndash;Hull&ndash;White</td><td>equity volatility, rate level, rate volatility, equity/rate correlation</td><td>rate reversion</td><td></td></tr>
+        <tr><td>HestonHullWhite, equity and rate uncorrelated (AnalyticHestonHullWhiteEngine)</td><td>variance level, rate level, rate volatility</td><td>$\kappa$, $\xi$, $\rho$, rate reversion</td><td></td></tr>
+        <tr><td>HestonHullWhite with equity/rate correlation; H1HW</td><td></td><td>all parameters</td><td></td></tr>
         <tr><td>ExtendedOrnsteinUhlenbeckProcess, ExtOUWithJumpsProcess, KlugeExtOUProcess</td><td>level, volatility, jump intensity</td><td>reversion speed</td><td><a href="./jumps.html">jumps</a></td></tr>
         <tr><td>BlackKarasinski</td><td></td><td>all parameters</td><td></td></tr>
         <tr><td>CEV, SABR (AnalyticCEVEngine, FdSABRVanillaEngine)</td><td></td><td>all parameters</td><td></td></tr>
@@ -42,6 +45,21 @@
       </tbody>
     </table>
     </div>
+    <p>Two rows need a caveat.</p>
+    <ul>
+      <li>Gaussian1dModel is an interface: each subclass supplies its own numeraire and zero-bond functions. GSR is
+        affine and meets the test. A subclass with a nonlinear numeraire, such as MarkovFunctional, does not, because a
+        Gaussian state does not make the price exponential-affine. It falls under the first-order rule, with the
+        boundary conditions of its own generator.</li>
+      <li>Heston&ndash;Hull&ndash;White is affine only when the equity and the short rate are uncorrelated, which is the
+        case AnalyticHestonHullWhiteEngine prices. With correlation $\rho_{xr}$ and rate volatility $\eta_i$ the
+        generator contains the term below, which no exponential-affine form absorbs, whether or not anything
+        switches:</li>
+    </ul>
+    $$\rho_{xr}\,\eta_i\,\sqrt v\;\partial_x\partial_r .$$
+    <p>AnalyticH1HWEngine replaces that term by an approximation, and the approximate model needs its own analysis.
+    Black&ndash;Scholes&ndash;Hull&ndash;White has a constant equity volatility in place of $\sqrt v$, so the same term
+    is a constant times $\partial_x\partial_r$, and it stays affine with any correlation.</p>
     <p>Three families lie outside the framework. Rough Heston is not Markov. GJR-GARCH is a discrete-time model, which
     would need the discrete-time analogue of the expansion. The credit loss models (Gaussian large-pool and other
     latent-factor models) are static one-period factor models; dynamic credit with switching hazards is on the
