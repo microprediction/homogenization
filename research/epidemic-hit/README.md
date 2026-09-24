@@ -5,7 +5,11 @@ SIR/SEIR models fitted to early epidemic growth imply a reproduction number R an
 1 - 1/R. For COVID-19 the first waves turned over at much lower immunity than those thresholds. Can transmission
 that switches between regimes, in many places at once, produce this gap, with a Green-Kubo size that can be computed?
 
-Origin: Cotton (2020), "Addressing the Herd Immunity Paradox Using Symmetry, Convexity Adjustments and Bond Prices",
+Origin: Cotton (27 May 2020), "A Fundamental Theorem for Epidemiology" (LinkedIn,
+https://www.linkedin.com/pulse/fundamental-theorem-epidemiology-peter-cotton-phd/): states the paradox (doubling times
+under a week, yet peak infection at about 20% penetration), argues via de Finetti that only the orbit of symmetric
+models matters, and gives the susceptible fraction at herd immunity as the usual answer divided by the harmonic
+mean of the transmission multiplier. Then Cotton (2020), "Addressing the Herd Immunity Paradox Using Symmetry, Convexity Adjustments and Bond Prices",
 arXiv:2006.07341 (June 2020). It poses exactly this question and answers it for a mixture of independent
 sub-populations: a growth convexity G (moment generating function of the transmission rate; Vasicek's bond formula
 for an OU rate) raises mean early growth, a harmonic-mean convexity J raises the susceptible fraction at the peak,
