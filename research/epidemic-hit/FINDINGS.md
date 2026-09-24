@@ -135,3 +135,24 @@ stable across seasons, which it should be if it were a property of activity alon
 and summer, weaker in winter) lowers transmission outside the switching model and contaminates K; a changing IFR
 over 2020 may also contribute. Next: an independent K (activity variance and correlation time from contact or
 mobility data) to predict the level without fitting it, and an age-adjusted IFR.
+
+## 2026-09-23: the flat relation is largely a noise artefact (analysis/08_errors_in_variables.py)
+Growth from a few weeks of smoothed deaths is noisy (reporting delays, small counts), and noise in the regressor
+flattens a fitted slope. Instrument: case growth over the same rise window shifted 3 weeks earlier. Elasticity b in
+log Delta = a + b log(ln R): b = 1 for homogeneous or constant-lam heterogeneity, b = 0 for a flat relation.
+
+| season | n | corr(r_deaths, r_cases) | OLS b | IV b | IV 90% bootstrap |
+|---|---|---|---|---|---|
+| spring 2020 | 56 | 0.57 | 0.39 | 0.91 | [0.46, 1.50] |
+| summer 2020 | 66 | 0.18 | -0.23 | 3.61 | [-14.7, 16.8] |
+| winter 2020-21 | 326 | 0.23 | 0.01 | 2.93 | [0.70, 12.5] |
+
+Death-based and case-based growth agree poorly (correlation 0.2-0.6), so the death-based growth is mostly noise
+and the OLS slope is attenuated toward zero. Corrected, spring gives b = 0.91 and winter excludes b = 0; summer is
+uninformative. The data are consistent with depletion proportional to ln R, i.e. a constant immunity factor
+(winter about 3.5, spring about 9.5 at IFR 0.7%), not with the growth-dependent factor that is the switching
+signature. The earlier fits (07) and the out-of-sample K table were fitting the attenuated slope.
+What survives: waves turn over far below the homogeneous threshold (a large lam or mitigation), and the level is
+not explained by homogeneous SIR. Spatial or persistent heterogeneity fits the shape at least as well as switching
+once the noise is accounted for. Caveats: the instrument is weak in summer and winter (IV then has wide intervals
+and small-sample bias toward OLS), and case growth carries testing trends.

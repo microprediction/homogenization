@@ -56,7 +56,8 @@ for f in wk.columns:
         hit = 1 - (1 - a0) / R                        # homogeneous turnover given the immunity at the start
         lam = np.log(R) / -np.log((1 - a) / (1 - a0)) if 0 <= a0 < a < 1 else np.nan
         waves.append(dict(fips=f, pop=int(P[f]), peak=str(wk.index[p].date()), r=r, R=R, attack_start=a0, attack=a,
-                          hit_hom=hit, lam=lam, peak_deaths=float(sm[p]), npts=len(seg)))
+                          hit_hom=hit, lam=lam, peak_deaths=float(sm[p]), npts=len(seg),
+                          rise_start=str(wk.index[seg[0]].date()), rise_end=str(wk.index[seg[-1]].date())))
 W = pd.DataFrame(waves)
 W["season"] = pd.cut(pd.to_datetime(W.peak), pd.to_datetime(["2020-01-01", "2020-06-30", "2020-09-30", "2021-06-30"]),
                      labels=["spring 2020", "summer 2020", "winter 2020-21"])
