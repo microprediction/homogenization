@@ -2154,5 +2154,60 @@
   "doi": "10.1093/mnras/stad1713",
   "url": "https://doi.org/10.1093/mnras/stad1713",
   "annotation": "Models the timing noise of 17 Jodrell Bank pulsars with quasi-periodic and steep-spectrum components, and publishes smoothed spin-down rate series for them (Zenodo, doi:10.5281/zenodo.7664166)."
+ },
+ {
+  "role": "survey_epidemics",
+  "key": "Cotton2020Herd",
+  "authors": "Cotton, P.",
+  "year": 2020,
+  "title": "Addressing the Herd Immunity Paradox Using Symmetry, Convexity Adjustments and Bond Prices",
+  "venue": "arXiv:2006.07341 [q-bio.PE]",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2006.07341",
+  "annotation": "Explains why epidemics turn over below the herd-immunity threshold implied by early growth: in a mixture of independent sub-populations the mean early growth is raised by a growth convexity G, from the moment generating function of the transmission rate (Vasicek's bond formula when it follows an Ornstein-Uhlenbeck process), and the susceptible fraction at the peak is raised by a harmonic-mean convexity J, so s(t*) = 1/(F J G R0)."
+ },
+ {
+  "role": "survey_epidemics",
+  "key": "Cotton2020Repeat",
+  "authors": "Cotton, P.",
+  "year": 2020,
+  "title": "Repeat Contacts and the Spread of Disease: An Agent Model with Compartmental Solution",
+  "venue": "arXiv:2005.10311 [q-bio.PE]",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2005.10311",
+  "annotation": "Attenuates SIR transmission by the probability that an encounter is novel, derived from agents diffusing in the plane. Epidemics with the same early trajectory and R0 then differ by an order of magnitude in final size, depending on how fast circles of acquaintances go stale."
+ },
+ {
+  "role": "survey_epidemics",
+  "key": "BrittonBallTrapman2020",
+  "authors": "Britton, T. and Ball, F. and Trapman, P.",
+  "year": 2020,
+  "title": "A mathematical model reveals the influence of population heterogeneity on herd immunity to SARS-CoV-2",
+  "venue": "Science 369(6505):846-849",
+  "doi": "10.1126/science.abc6810",
+  "url": "https://doi.org/10.1126/science.abc6810",
+  "annotation": "Age and activity heterogeneity lower the disease-induced herd immunity level well below 1 - 1/R0."
+ },
+ {
+  "role": "survey_epidemics",
+  "key": "TkachenkoEtAl2021",
+  "authors": "Tkachenko, A. V. and Maslov, S. and Elbanna, A. and Wong, G. N. and Weiner, Z. J. and Goldenfeld, N.",
+  "year": 2021,
+  "title": "Time-dependent heterogeneity leads to transient suppression of the COVID-19 epidemic, not herd immunity",
+  "venue": "Proceedings of the National Academy of Sciences 118(17):e2015972118",
+  "doi": "10.1073/pnas.2015972118",
+  "url": "https://doi.org/10.1073/pnas.2015972118",
+  "annotation": "Individual social activity that changes over time gives a transient collective immunity below the long-run threshold, with an immunity factor near 4 fitted to the first waves in New York City and Chicago."
+ },
+ {
+  "role": "survey_epidemics",
+  "key": "GomesEtAl2022",
+  "authors": "Gomes, M. G. M. and Ferreira, M. U. and Corder, R. M. and King, J. G. and others",
+  "year": 2022,
+  "title": "Individual variation in susceptibility or exposure to SARS-CoV-2 lowers the herd immunity threshold",
+  "venue": "Journal of Theoretical Biology 540:111063",
+  "doi": "10.1016/j.jtbi.2022.111063",
+  "url": "https://doi.org/10.1016/j.jtbi.2022.111063",
+  "annotation": "Fits models with gamma-distributed susceptibility or exposure to European first waves and finds herd immunity thresholds well below the homogeneous value."
  }
 ]

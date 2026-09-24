@@ -5,9 +5,13 @@ SIR/SEIR models fitted to early epidemic growth imply a reproduction number R an
 1 - 1/R. For COVID-19 the first waves turned over at much lower immunity than those thresholds. Can transmission
 that switches between regimes, in many places at once, produce this gap, with a Green-Kubo size that can be computed?
 
-Origin: Cotton (2020), "Got Milk? On Homogenization and Survival Probability" (LinkedIn): transmission probability and
-the number infected "are related by fluctuations across space and time". The persistent-spatial version is Cotton
-(2020), "How population shape tilts your odds of getting COVID-19" (Jensen / harmonic-mean correction to the HIT).
+Origin: Cotton (2020), "Addressing the Herd Immunity Paradox Using Symmetry, Convexity Adjustments and Bond Prices",
+arXiv:2006.07341 (June 2020). It poses exactly this question and answers it for a mixture of independent
+sub-populations: a growth convexity G (moment generating function of the transmission rate; Vasicek's bond formula
+for an OU rate) raises mean early growth, a harmonic-mean convexity J raises the susceptible fraction at the peak,
+and s(t*) = 1/(F J G R0). Also Cotton (2020), "Repeat Contacts and the Spread of Disease", arXiv:2005.10311 (May 2020):
+staleness of acquaintances; and the LinkedIn pieces "Got Milk?" and "How population shape tilts your odds of getting
+COVID-19". All predate Tkachenko et al. (arXiv 2008.08142, August 2020).
 
 ## Layout
 - fetch_data.py: NYT US county cases and deaths for 2020 into data/ (gitignored).

@@ -1,16 +1,175 @@
 [
- {"key": "SmithWilkinson1969", "authors": "Smith, W. L. and Wilkinson, W. E.", "year": 1969, "title": "On Branching Processes in Random Environments", "venue": "The Annals of Mathematical Statistics 40, 814-827", "doi": "10.1214/aoms/1177697589", "annotation": "Shows that a Galton-Watson process in an i.i.d. random environment dies out with probability one exactly when the expected log of the mean offspring number is not positive."},
- {"key": "AthreyaKarlin1971", "authors": "Athreya, K. B. and Karlin, S.", "year": 1971, "title": "On Branching Processes with Random Environments: I: Extinction Probabilities", "venue": "The Annals of Mathematical Statistics 42, 1499-1520", "doi": "10.1214/aoms/1177693150", "annotation": "Extends the extinction criterion for branching processes to stationary ergodic environments, where the sign of the typical log growth decides extinction."},
- {"key": "Arnold1984", "authors": "Arnold, L.", "year": 1984, "title": "A Formula Connecting Sample and Moment Stability of Linear Stochastic Systems", "venue": "SIAM Journal on Applied Mathematics 44, 793-802", "doi": "10.1137/0144057", "annotation": "Relates the growth rates of the moments of a linear stochastic system to its almost-sure Lyapunov exponent through the convex moment Lyapunov function."},
- {"key": "WongZakai1965", "authors": "Wong, E. and Zakai, M.", "year": 1965, "title": "On the Convergence of Ordinary Integrals to Stochastic Integrals", "venue": "The Annals of Mathematical Statistics 36, 1560-1564", "doi": "10.1214/aoms/1177699916", "annotation": "Shows that ordinary differential equations driven by smooth approximations of Brownian motion converge to the Stratonovich stochastic differential equation."},
- {"key": "WangZhao2008", "authors": "Wang, W. and Zhao, X.-Q.", "year": 2008, "title": "Threshold Dynamics for Compartmental Epidemic Models in Periodic Environments", "venue": "Journal of Dynamics and Differential Equations 20, 699-717", "doi": "10.1007/s10884-008-9111-8", "annotation": "Defines the basic reproduction number for compartmental epidemic models with periodic coefficients and proves that it is the invasion threshold."},
- {"key": "GrayEtAl2011", "authors": "Gray, A. and Greenhalgh, D. and Hu, L. and Mao, X. and Pan, J.", "year": 2011, "title": "A Stochastic Differential Equation SIS Epidemic Model", "venue": "SIAM Journal on Applied Mathematics 71, 876-902", "doi": "10.1137/10081856X", "annotation": "Perturbs the transmission rate of the SIS model by white noise and shows that the almost-sure extinction threshold falls below the deterministic reproduction number."},
- {"key": "GrayEtAl2012", "authors": "Gray, A. and Greenhalgh, D. and Mao, X. and Pan, J.", "year": 2012, "title": "The SIS epidemic model with Markovian switching", "venue": "Journal of Mathematical Analysis and Applications 394, 496-516", "doi": "10.1016/j.jmaa.2012.05.029", "annotation": "Switches the rates of the SIS model by a finite Markov chain and shows that almost-sure extinction or persistence is decided by the stationary average of the per-capita growth rate, not by the reproduction number of the mean system."},
- {"key": "HernandezSuarezEtAl2012", "authors": "Hernandez-Suarez, C. and Rabinovich, J. and Hernandez, K.", "year": 2012, "title": "The long-run distribution of births across environments under environmental stochasticity and its use in the calculation of unconditional life-history parameters", "venue": "Theoretical Population Biology 82, 264-274", "doi": "10.1016/j.tpb.2012.05.004", "annotation": "Computes life-history parameters averaged over a Markovian environment, including a reproduction parameter that governs growth of the expected population."},
- {"key": "BacaerKhaladi2013", "authors": "Bacaër, N. and Khaladi, M.", "year": 2013, "title": "On the basic reproduction number in a random environment", "venue": "Journal of Mathematical Biology 67, 1729-1739", "doi": "10.1007/s00285-012-0611-0", "annotation": "Defines a reproduction number for populations in a Markovian random environment whose position relative to one decides growth or decay of typical populations, and contrasts it with a parameter for the expected population."},
- {"key": "BenaimEtAl2014", "authors": "Benaïm, M. and Le Borgne, S. and Malrieu, F. and Zitt, P.-A.", "year": 2014, "title": "On the stability of planar randomly switched systems", "venue": "The Annals of Applied Probability 24, 292-311", "doi": "10.1214/13-AAP924", "annotation": "Shows that random switching between two stable planar linear systems can produce an unstable system, depending on the switching rate."},
- {"key": "LiLiuCui2017", "authors": "Li, D. and Liu, S. and Cui, J.", "year": 2017, "title": "Threshold dynamics and ergodicity of an SIRS epidemic model with Markovian switching", "venue": "Journal of Differential Equations 263, 8873-8915", "doi": "10.1016/j.jde.2017.08.066", "annotation": "Gives the extinction and persistence threshold of an SIRS model whose rates switch with a Markov chain, as a stationary average over regimes."},
- {"key": "ProdhommeStrickler2024", "authors": "Prodhomme, A. and Strickler, É.", "year": 2024, "title": "Large population asymptotics for a multitype stochastic SIS epidemic model in randomly switching environment", "venue": "The Annals of Applied Probability 34", "doi": "10.1214/23-AAP2035", "annotation": "Studies a multitype stochastic SIS epidemic in a switching environment and shows that the sign of the top Lyapunov exponent of the linearized switched system governs the time to extinction."},
- {"key": "MonmarcheStrickler2025", "authors": "Monmarché, P. and Strickler, É.", "year": 2025, "title": "Asymptotic expansion of the invariant measure for Markov-modulated ODEs at high frequency", "venue": "Journal of Applied Probability 62, 898-924", "doi": "10.1017/jpr.2024.107", "annotation": "Expands the invariant measure of ordinary differential equations modulated by a fast Markov chain in powers of the switching time, with a first-order formula for the top Lyapunov exponent of switched linear systems."},
- {"key": "MonmarcheSchreiberStrickler2025", "authors": "Monmarché, P. and Schreiber, S. J. and Strickler, É.", "year": 2025, "title": "Impacts of Tempo and Mode of Environmental Fluctuations on Population Growth: Slow- and Fast-Limit Approximations of Lyapunov Exponents for Periodic and Random Environments", "venue": "Bulletin of Mathematical Biology 87", "doi": "10.1007/s11538-025-01443-z", "annotation": "Gives first-order slow- and fast-switching approximations of the Lyapunov exponent of structured populations switched periodically or by a Markov chain, the closest prior work to the almost-sure formula here."}
+ {
+  "key": "SmithWilkinson1969",
+  "authors": "Smith, W. L. and Wilkinson, W. E.",
+  "year": 1969,
+  "title": "On Branching Processes in Random Environments",
+  "venue": "The Annals of Mathematical Statistics 40, 814-827",
+  "doi": "10.1214/aoms/1177697589",
+  "annotation": "Shows that a Galton-Watson process in an i.i.d. random environment dies out with probability one exactly when the expected log of the mean offspring number is not positive."
+ },
+ {
+  "key": "AthreyaKarlin1971",
+  "authors": "Athreya, K. B. and Karlin, S.",
+  "year": 1971,
+  "title": "On Branching Processes with Random Environments: I: Extinction Probabilities",
+  "venue": "The Annals of Mathematical Statistics 42, 1499-1520",
+  "doi": "10.1214/aoms/1177693150",
+  "annotation": "Extends the extinction criterion for branching processes to stationary ergodic environments, where the sign of the typical log growth decides extinction."
+ },
+ {
+  "key": "Arnold1984",
+  "authors": "Arnold, L.",
+  "year": 1984,
+  "title": "A Formula Connecting Sample and Moment Stability of Linear Stochastic Systems",
+  "venue": "SIAM Journal on Applied Mathematics 44, 793-802",
+  "doi": "10.1137/0144057",
+  "annotation": "Relates the growth rates of the moments of a linear stochastic system to its almost-sure Lyapunov exponent through the convex moment Lyapunov function."
+ },
+ {
+  "key": "WongZakai1965",
+  "authors": "Wong, E. and Zakai, M.",
+  "year": 1965,
+  "title": "On the Convergence of Ordinary Integrals to Stochastic Integrals",
+  "venue": "The Annals of Mathematical Statistics 36, 1560-1564",
+  "doi": "10.1214/aoms/1177699916",
+  "annotation": "Shows that ordinary differential equations driven by smooth approximations of Brownian motion converge to the Stratonovich stochastic differential equation."
+ },
+ {
+  "key": "WangZhao2008",
+  "authors": "Wang, W. and Zhao, X.-Q.",
+  "year": 2008,
+  "title": "Threshold Dynamics for Compartmental Epidemic Models in Periodic Environments",
+  "venue": "Journal of Dynamics and Differential Equations 20, 699-717",
+  "doi": "10.1007/s10884-008-9111-8",
+  "annotation": "Defines the basic reproduction number for compartmental epidemic models with periodic coefficients and proves that it is the invasion threshold."
+ },
+ {
+  "key": "GrayEtAl2011",
+  "authors": "Gray, A. and Greenhalgh, D. and Hu, L. and Mao, X. and Pan, J.",
+  "year": 2011,
+  "title": "A Stochastic Differential Equation SIS Epidemic Model",
+  "venue": "SIAM Journal on Applied Mathematics 71, 876-902",
+  "doi": "10.1137/10081856X",
+  "annotation": "Perturbs the transmission rate of the SIS model by white noise and shows that the almost-sure extinction threshold falls below the deterministic reproduction number."
+ },
+ {
+  "key": "GrayEtAl2012",
+  "authors": "Gray, A. and Greenhalgh, D. and Mao, X. and Pan, J.",
+  "year": 2012,
+  "title": "The SIS epidemic model with Markovian switching",
+  "venue": "Journal of Mathematical Analysis and Applications 394, 496-516",
+  "doi": "10.1016/j.jmaa.2012.05.029",
+  "annotation": "Switches the rates of the SIS model by a finite Markov chain and shows that almost-sure extinction or persistence is decided by the stationary average of the per-capita growth rate, not by the reproduction number of the mean system."
+ },
+ {
+  "key": "HernandezSuarezEtAl2012",
+  "authors": "Hernandez-Suarez, C. and Rabinovich, J. and Hernandez, K.",
+  "year": 2012,
+  "title": "The long-run distribution of births across environments under environmental stochasticity and its use in the calculation of unconditional life-history parameters",
+  "venue": "Theoretical Population Biology 82, 264-274",
+  "doi": "10.1016/j.tpb.2012.05.004",
+  "annotation": "Computes life-history parameters averaged over a Markovian environment, including a reproduction parameter that governs growth of the expected population."
+ },
+ {
+  "key": "BacaerKhaladi2013",
+  "authors": "Bacaër, N. and Khaladi, M.",
+  "year": 2013,
+  "title": "On the basic reproduction number in a random environment",
+  "venue": "Journal of Mathematical Biology 67, 1729-1739",
+  "doi": "10.1007/s00285-012-0611-0",
+  "annotation": "Defines a reproduction number for populations in a Markovian random environment whose position relative to one decides growth or decay of typical populations, and contrasts it with a parameter for the expected population."
+ },
+ {
+  "key": "BenaimEtAl2014",
+  "authors": "Benaïm, M. and Le Borgne, S. and Malrieu, F. and Zitt, P.-A.",
+  "year": 2014,
+  "title": "On the stability of planar randomly switched systems",
+  "venue": "The Annals of Applied Probability 24, 292-311",
+  "doi": "10.1214/13-AAP924",
+  "annotation": "Shows that random switching between two stable planar linear systems can produce an unstable system, depending on the switching rate."
+ },
+ {
+  "key": "LiLiuCui2017",
+  "authors": "Li, D. and Liu, S. and Cui, J.",
+  "year": 2017,
+  "title": "Threshold dynamics and ergodicity of an SIRS epidemic model with Markovian switching",
+  "venue": "Journal of Differential Equations 263, 8873-8915",
+  "doi": "10.1016/j.jde.2017.08.066",
+  "annotation": "Gives the extinction and persistence threshold of an SIRS model whose rates switch with a Markov chain, as a stationary average over regimes."
+ },
+ {
+  "key": "ProdhommeStrickler2024",
+  "authors": "Prodhomme, A. and Strickler, É.",
+  "year": 2024,
+  "title": "Large population asymptotics for a multitype stochastic SIS epidemic model in randomly switching environment",
+  "venue": "The Annals of Applied Probability 34",
+  "doi": "10.1214/23-AAP2035",
+  "annotation": "Studies a multitype stochastic SIS epidemic in a switching environment and shows that the sign of the top Lyapunov exponent of the linearized switched system governs the time to extinction."
+ },
+ {
+  "key": "MonmarcheStrickler2025",
+  "authors": "Monmarché, P. and Strickler, É.",
+  "year": 2025,
+  "title": "Asymptotic expansion of the invariant measure for Markov-modulated ODEs at high frequency",
+  "venue": "Journal of Applied Probability 62, 898-924",
+  "doi": "10.1017/jpr.2024.107",
+  "annotation": "Expands the invariant measure of ordinary differential equations modulated by a fast Markov chain in powers of the switching time, with a first-order formula for the top Lyapunov exponent of switched linear systems."
+ },
+ {
+  "key": "MonmarcheSchreiberStrickler2025",
+  "authors": "Monmarché, P. and Schreiber, S. J. and Strickler, É.",
+  "year": 2025,
+  "title": "Impacts of Tempo and Mode of Environmental Fluctuations on Population Growth: Slow- and Fast-Limit Approximations of Lyapunov Exponents for Periodic and Random Environments",
+  "venue": "Bulletin of Mathematical Biology 87",
+  "doi": "10.1007/s11538-025-01443-z",
+  "annotation": "Gives first-order slow- and fast-switching approximations of the Lyapunov exponent of structured populations switched periodically or by a Markov chain, the closest prior work to the almost-sure formula here."
+ },
+ {
+  "key": "Cotton2020Herd",
+  "authors": "Cotton, P.",
+  "year": 2020,
+  "title": "Addressing the Herd Immunity Paradox Using Symmetry, Convexity Adjustments and Bond Prices",
+  "venue": "arXiv:2006.07341 [q-bio.PE]",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2006.07341",
+  "annotation": "Explains why epidemics turn over below the herd-immunity threshold implied by early growth: in a mixture of independent sub-populations the mean early growth is raised by a growth convexity G, from the moment generating function of the transmission rate (Vasicek's bond formula when it follows an Ornstein-Uhlenbeck process), and the susceptible fraction at the peak is raised by a harmonic-mean convexity J, so s(t*) = 1/(F J G R0)."
+ },
+ {
+  "key": "Cotton2020Repeat",
+  "authors": "Cotton, P.",
+  "year": 2020,
+  "title": "Repeat Contacts and the Spread of Disease: An Agent Model with Compartmental Solution",
+  "venue": "arXiv:2005.10311 [q-bio.PE]",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2005.10311",
+  "annotation": "Attenuates SIR transmission by the probability that an encounter is novel, derived from agents diffusing in the plane. Epidemics with the same early trajectory and R0 then differ by an order of magnitude in final size, depending on how fast circles of acquaintances go stale."
+ },
+ {
+  "key": "BrittonBallTrapman2020",
+  "authors": "Britton, T. and Ball, F. and Trapman, P.",
+  "year": 2020,
+  "title": "A mathematical model reveals the influence of population heterogeneity on herd immunity to SARS-CoV-2",
+  "venue": "Science 369(6505):846-849",
+  "doi": "10.1126/science.abc6810",
+  "annotation": "Age and activity heterogeneity lower the disease-induced herd immunity level well below 1 - 1/R0."
+ },
+ {
+  "key": "TkachenkoEtAl2021",
+  "authors": "Tkachenko, A. V. and Maslov, S. and Elbanna, A. and Wong, G. N. and Weiner, Z. J. and Goldenfeld, N.",
+  "year": 2021,
+  "title": "Time-dependent heterogeneity leads to transient suppression of the COVID-19 epidemic, not herd immunity",
+  "venue": "Proceedings of the National Academy of Sciences 118(17):e2015972118",
+  "doi": "10.1073/pnas.2015972118",
+  "annotation": "Individual social activity that changes over time gives a transient collective immunity below the long-run threshold, with an immunity factor near 4 fitted to the first waves in New York City and Chicago."
+ },
+ {
+  "key": "GomesEtAl2022",
+  "authors": "Gomes, M. G. M. and Ferreira, M. U. and Corder, R. M. and King, J. G. and others",
+  "year": 2022,
+  "title": "Individual variation in susceptibility or exposure to SARS-CoV-2 lowers the herd immunity threshold",
+  "venue": "Journal of Theoretical Biology 540:111063",
+  "doi": "10.1016/j.jtbi.2022.111063",
+  "annotation": "Fits models with gamma-distributed susceptibility or exposure to European first waves and finds herd immunity thresholds well below the homogeneous value."
+ }
 ]

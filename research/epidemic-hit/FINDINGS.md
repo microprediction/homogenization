@@ -71,3 +71,14 @@ Tkachenko's lam ~ 4, with depletion alone. The long-run threshold stays near 50%
 Caveat: NYC locked down on 22 March 2020, which also cut transmission; these numbers show depletion is sufficient,
 not that it was the cause. Separating the two needs places or periods without strong mitigation, or the
 post-wave rebound timing, which the model ties to 1/kappa.
+
+## 2026-09-23: placing the work against Cotton (2020)
+arXiv:2006.07341 already has the multi-community mechanism of 01_communities.py: mean early growth G, harmonic mean
+J at the peak, peak dispersion F. The simulation in 01 is a regime-switching instance of that paper's growth
+convexity, and it agrees with it: national growth runs at the mean rate, the national peak comes early.
+What the homogenization work adds to the 2020 paper:
+- Markov-switching transmission in place of a static mixture or an OU rate: the mean growth rate is exactly the top
+  eigenvalue of Q + diag(beta_i - gamma), and to first order G = 1 + K_bb / beta_bar with K the Green-Kubo number.
+- SEIR and cycle direction (epidemics page): non-commuting compartments, where the antisymmetric part of K matters.
+- Individual activity switching (04): closed-form growth rate, R0 and immunity factor, lam - 1 ~ r K_a.
+County data (02, 03) are too noisy to test either version, as expected.
