@@ -272,6 +272,31 @@
     al. find a narrow periodic peak in the spin-down spectrum of B1828&minus;11, so the Markov figures overstate its random-walk
     component in the same way as for B1931+24.</p>
 
+    <h2>Regular switching in seventeen pulsars</h2>
+    <p><a href="./bibliography.html#KeithNitu2023">Keith and Ni&#539;u (2023)</a> published spin-down rate series for 17
+    Jodrell Bank pulsars, each about 23.6 years long. The series are smoothed by Gaussian-process regression of the
+    timing residuals.</p>
+    <p>After removing a linear trend, the autocovariance of each series was fitted with the two-level stage model: $k$
+    exponential stages per level, which gives durations with standard deviation $m/\sqrt k$. Only lags of 300 days
+    and more were used, beyond the reach of the smoothing.</p>
+    <p>The stages and durations below come from the fit to all lags. The last column is the least-squares misfit of the
+    best Markov model ($k = 1$) divided by that of the best $k$, using lags of 300 days and more:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>pulsar</th><th>stages $k$</th><th colspan="2">mean durations (days)</th><th>duration sd / mean</th><th>Markov misfit</th></tr></thead><tbody><tr><td>B1540&minus;06</td><td>64</td><td>616</td><td>852</td><td>0.12</td><td>354.5</td></tr><tr><td>J2043+2740</td><td>32</td><td>2778</td><td>1190</td><td>0.18</td><td>189.6</td></tr><tr><td>B2035+36</td><td>32</td><td>3892</td><td>2320</td><td>0.18</td><td>84.9</td></tr><tr><td>B0950+08</td><td>8</td><td>1096</td><td>2504</td><td>0.35</td><td>54.9</td></tr><tr><td>B1929+20</td><td>24</td><td>324</td><td>271</td><td>0.20</td><td>26.2</td></tr><tr><td>B1818&minus;04</td><td>64</td><td>952</td><td>2518</td><td>0.12</td><td>25.3</td></tr><tr><td>B1714&minus;34</td><td>24</td><td>717</td><td>717</td><td>0.20</td><td>24.5</td></tr><tr><td>B1642&minus;03</td><td>8</td><td>386</td><td>1269</td><td>0.35</td><td>19.9</td></tr><tr><td>B1907+00</td><td>6</td><td>771</td><td>1679</td><td>0.41</td><td>12.2</td></tr><tr><td>B1826&minus;17</td><td>32</td><td>288</td><td>817</td><td>0.18</td><td>9.5</td></tr><tr><td>B2148+63</td><td>8</td><td>252</td><td>684</td><td>0.35</td><td>8.3</td></tr><tr><td>B1828&minus;11</td><td>64</td><td>359</td><td>130</td><td>0.12</td><td>5.7</td></tr><tr><td>B1839+09</td><td>24</td><td>365</td><td>78</td><td>0.20</td><td>2.2</td></tr><tr><td>B0919+06</td><td>4</td><td>101</td><td>505</td><td>0.50</td><td>2.2</td></tr><tr><td>B1903+07</td><td>3</td><td>871</td><td>296</td><td>0.58</td><td>1.9</td></tr><tr><td>B0740&minus;28</td><td>4</td><td>66</td><td>66</td><td>0.50</td><td>1.7</td></tr><tr><td>B1822&minus;09</td><td>2</td><td>353</td><td>353</td><td>0.71</td><td>1.2</td></tr></tbody></table></div>
+    <p>For 12 of the 17 pulsars the Markov fit is at least 5 times worse. Their best fits have 6 to 64 stages per
+    level, so the durations vary by 12 to 41 percent of their means, not the 100 percent of exponential durations.
+    The Markov misfit grows or stays the same when the shortest lags are dropped, so the regularity is not produced
+    by the smoothing.</p>
+    <p>For these pulsars the renewal formula applies, and $K$ is about $1/k$ of the Markov value with the same levels
+    and mean durations. Their random-walk timing noise is correspondingly smaller than a Markov switching model
+    predicts.</p>
+    <p>The remaining five pulsars (B0740&minus;28, B0919+06, B1822&minus;09, B1839+09 and B1903+07) are fitted nearly as
+    well by Markov switching. For B0740&minus;28 and B1839+09 the observed $K$ is too large for any two-level fit
+    until a slow Ornstein&ndash;Uhlenbeck component is added. B1822&minus;09 has sharp spikes rather than two
+    levels.</p>
+    <p>Twenty-three years hold too few independent blocks to measure $K$ directly to better than a factor of about 4,
+    so the evidence for regularity comes from the shape of the autocovariance. The analysis scripts and a log of the
+    results are in <a href="https://github.com/microprediction/homogenization/tree/main/research/pulsar">research/pulsar</a>.</p>
+
     <h2>Checks</h2>
     <p>All checks use the B1931+24 parameters, with the span $T$ standing in for the speed of switching. The
     frequency variance against the matrix exponential of the Van Loan block generator, which gives the double

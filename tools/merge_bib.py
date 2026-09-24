@@ -35,7 +35,10 @@ def main(pages):
             link = f' <a href="https://doi.org/{doi}">doi:{doi}</a>.' if doi else (f' <a href="{html.escape(url)}">link</a>.' if url else '')
             lis.append(f'        <li id="{e["key"]}">{html.escape(e["authors"])} ({e["year"]}). <em>{html.escape(e["title"])}</em>. '
                        f'{html.escape(e["venue"])}.{link}<br><span class="muted">{html.escape(e["annotation"])}</span></li>')
-        if lis and f'id="{name}-refs"' not in t:
+        if lis and f'id="{name}-refs"' in t:
+            i = t.index(f'id="{name}-refs"'); j = t.index('      </ul>', i)
+            t = t[:j] + '\n'.join(lis) + '\n' + t[j:]
+        elif lis:
             blk = f'      <h3 id="{name}-refs">{html.escape(SECTION_TITLES[name])}</h3>\n      <ul>\n' + '\n'.join(lis) + '\n      </ul>\n'
             anchor = '      <h3 id="fluid">'
             t = t.replace(anchor, blk + anchor, 1)

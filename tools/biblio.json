@@ -2143,5 +2143,16 @@
   "doi": "10.1098/rstb.1982.0156",
   "url": "https://doi.org/10.1098/rstb.1982.0156",
   "annotation": "Extends the analysis to bursts of openings and clusters of bursts, whose structure shows how the hidden states connect."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "KeithNitu2023",
+  "authors": "Keith, M. J. and Niţu, I. C.",
+  "year": 2023,
+  "title": "Impact of quasi-periodic and steep-spectrum timing noise on the measurement of pulsar timing parameters",
+  "venue": "Monthly Notices of the Royal Astronomical Society (2023)",
+  "doi": "10.1093/mnras/stad1713",
+  "url": "https://doi.org/10.1093/mnras/stad1713",
+  "annotation": "Models the timing noise of 17 Jodrell Bank pulsars with quasi-periodic and steep-spectrum components, and publishes smoothed spin-down rate series for them (Zenodo, doi:10.5281/zenodo.7664166)."
  }
 ]

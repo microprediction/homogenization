@@ -52,5 +52,14 @@
   "venue": "Monthly Notices of the Royal Astronomical Society 428(2):1147-1159",
   "doi": "10.1093/mnras/sts097",
   "annotation": "Treats red timing noise as a Gaussian process and shows how to analyse it together with the timing-model fit."
+ },
+ {
+  "key": "KeithNitu2023",
+  "authors": "Keith, M. J. and Niţu, I. C.",
+  "year": 2023,
+  "title": "Impact of quasi-periodic and steep-spectrum timing noise on the measurement of pulsar timing parameters",
+  "venue": "Monthly Notices of the Royal Astronomical Society (2023)",
+  "doi": "10.1093/mnras/stad1713",
+  "annotation": "Models the timing noise of 17 Jodrell Bank pulsars with quasi-periodic and steep-spectrum components, and publishes smoothed spin-down rate series for them (Zenodo, doi:10.5281/zenodo.7664166)."
  }
 ]
