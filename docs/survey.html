@@ -330,6 +330,33 @@
     (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>). A request sent to several servers, with the first
     reply winning, is a race under a shared driver (<a href="./bibliography.html#DeanBarroso2013">Dean and Barroso 2013</a>).</p>
 
+    <h2>Lumped chains and non-exponential durations</h2>
+    <p>A regime whose duration is not exponential is a group of hidden states observed as one. Split each regime into
+    stages with constant hazards and the stage chain is Markov, while the regime is a function of it.</p>
+    <p>When grouping the states of a chain gives another Markov chain is an old question
+    (<a href="./bibliography.html#BurkeRosenblatt1958">Burke and Rosenblatt 1958</a>). The answer is the lumpability
+    condition of <a href="./bibliography.html#KemenySnell1960">Kemeny and Snell (1960)</a>: every state of a group must
+    have the same total rate into each other group. The interesting regime models fail it, since that is what lets a
+    regime's age matter.</p>
+    <p><a href="./bibliography.html#Gilbert1959">Gilbert (1959)</a> asked which hidden chains can be told apart from
+    their grouped output. <a href="./bibliography.html#Heller1965">Heller (1965)</a> characterized the processes that
+    arise this way.</p>
+    <p>Durations built from exponential stages are the phase-type distributions of
+    <a href="./bibliography.html#Neuts1981">Neuts (1981)</a>. They can approximate any distribution on the positive
+    axis, so a constant-hazard stage chain covers any regime duration to any accuracy.</p>
+    <p>Ion channels are the best-studied case. A channel is seen only as open or shut, while several hidden
+    conformations set the dwell times
+    (<a href="./bibliography.html#ColquhounHawkes1981">Colquhoun and Hawkes 1981</a>). The structure of bursts and
+    clusters of openings shows how the hidden states connect
+    (<a href="./bibliography.html#ColquhounHawkes1982">Colquhoun and Hawkes 1982</a>;
+    <a href="./bibliography.html#FredkinRice1986">Fredkin and Rice 1986</a>).</p>
+    <p>For fast switching the observable is constant on each group, so the first-order correction stays a matrix over
+    the regimes, however many stages there are. For two regimes the Green&ndash;Kubo number depends on the durations
+    only through their means $m_i$ and standard deviations $s_i$:</p>
+    $$K = (\theta_1 - \theta_2)^2\,\frac{m_2^2 s_1^2 + m_1^2 s_2^2}{2\,(m_1 + m_2)^3} .$$
+    <p>The <a href="./erlang.html">regular durations</a> page works this out for a yield curve. There the age of
+    the current regime enters the price through the start term.</p>
+
     <h2>Choice and competing arrivals</h2>
     <p>When channels fire as Poisson processes with rates driven by a shared fast driver, the probability that a
     channel fires first tends to Luce&apos;s choice axiom in the mean rates (<a href="./bibliography.html#Luce1959">Luce 1959</a>).

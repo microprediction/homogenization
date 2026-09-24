@@ -11,6 +11,7 @@ SECTION_TITLES = {
     'epidemics': 'Epidemics in random environments',
     'portfolio': 'Portfolio choice with regimes',
     'correlation': 'Correlation regimes and correlation risk',
+    'lumping': 'Lumped chains and phase-type durations',
 }
 
 
@@ -31,9 +32,9 @@ def main(pages):
             bib.append({'role': f'survey_{name}', 'key': e['key'], 'authors': e['authors'], 'year': e['year'],
                         'title': e['title'], 'venue': e['venue'], 'doi': doi, 'url': url, 'annotation': e['annotation']})
             have.add(e['key'])
-            link = f'<a href="https://doi.org/{doi}">doi:{doi}</a>' if doi else f'<a href="{html.escape(url)}">link</a>'
+            link = f' <a href="https://doi.org/{doi}">doi:{doi}</a>.' if doi else (f' <a href="{html.escape(url)}">link</a>.' if url else '')
             lis.append(f'        <li id="{e["key"]}">{html.escape(e["authors"])} ({e["year"]}). <em>{html.escape(e["title"])}</em>. '
-                       f'{html.escape(e["venue"])}. {link}.<br><span class="muted">{html.escape(e["annotation"])}</span></li>')
+                       f'{html.escape(e["venue"])}.{link}<br><span class="muted">{html.escape(e["annotation"])}</span></li>')
         if lis and f'id="{name}-refs"' not in t:
             blk = f'      <h3 id="{name}-refs">{html.escape(SECTION_TITLES[name])}</h3>\n      <ul>\n' + '\n'.join(lis) + '\n      </ul>\n'
             anchor = '      <h3 id="fluid">'
