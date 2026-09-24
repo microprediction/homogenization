@@ -176,3 +176,14 @@ ENE-COVID round 3 serology (rapid IgG test, 8-22 June 2020), ISCIII daily admiss
 - Spain's first wave does not test the paradox. The autumn 2020 wave, with ENE-COVID round 4 (November 2020)
   serology by province, would: change in seroprevalence June to November against the growth of the autumn wave,
   without a national lockdown. Round-4 provincial tables still to fetch.
+
+## 2026-09-23: Spain, autumn 2020, by province (analysis/11_spain_autumn.py)
+ENE-COVID round 4 seroconversion (infections June to early November among first-wave susceptibles), scaled to the
+autumn death peak with cumulative deaths from 1 July. Weekly growth from admissions and deaths. 24 provinces with
+growth and a death peak before the round-4 sampling.
+- Depletion at the turnover: median 2.6% of susceptibles, textbook median 17%; lam about 7; every province below.
+- Across growth quartiles the depletion is 2.4-4.2% while the textbook rises from 12% to 26%.
+- Admissions-based and death-based growth are again uncorrelated (0.04): the slope is not identified.
+- Confound: national curfew from 25 October 2020 (RD 926/2020) and regional restrictions; many provinces peaked
+  one to two weeks later.
+Same picture as the US counties: a robust level (waves turn over far below the textbook threshold), no usable slope.

@@ -55,3 +55,24 @@ def summarize(name, deaths, admissions, sero, sero_date, end="2020-07-31"):
         out[f"textbook_{key}"] = 1 - 1 / R if R and R > 1 else np.nan
         out[f"lam_{key}"] = np.log(R) / -np.log(1 - a) if R and R > 1 and 0 < a < 1 else np.nan
     return out
+
+
+def growth_weekly(s, start=None, end=None):
+    """Weekly version: 3-week centred mean of weekly totals, contiguous rise between 10% and 60% of the peak.
+    Returns (r per day, rise start, rise end, peak week end)."""
+    w = s.loc[start:end].astype(float).resample("W-SUN").sum()
+    x = w.rolling(3, center=True, min_periods=1).mean()
+    v = x.values
+    if len(v) < 6 or v.max() <= 0:
+        return np.nan, None, None, None
+    p = int(np.argmax(v))
+    i1 = p
+    while i1 > 0 and v[i1] > 0.6 * v[p]:
+        i1 -= 1
+    i0 = i1
+    while i0 > 0 and v[i0 - 1] < v[i0] and v[i0 - 1] >= 0.1 * v[p]:
+        i0 -= 1
+    seg = np.arange(i0, i1 + 1)
+    if len(seg) < 3 or v[i0] > 0.4 * v[p] or v[i0] <= 0:
+        return np.nan, None, None, x.index[p]
+    return np.polyfit(seg, np.log(v[seg]), 1)[0] / 7, x.index[i0], x.index[i1], x.index[p]
