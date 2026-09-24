@@ -10,18 +10,16 @@ HEADER = """<header class="site-header">
   <div class="nav-inner">
     <a class="brand" href="./index.html">homogenization</a>
     <nav>
-      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Background</span><span class="drop">
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Guide</span><span class="drop">
         <a href="./idea.html">Averaging by hand</a>
         <a href="./solvability.html">Solvability</a>
         <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
         <a href="./engine.html">The fast-switching engine</a>
         <a href="./any-equation.html">Any pricing equation</a>
         <a href="./quantlib.html">QuantLib models</a>
-      </span></span>
-      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Regime switching</span><span class="drop">
-        <a href="./regime-switching.html">The expansion</a>
-        <a href="./survival.html">Terms adding up</a>
-        <a href="./convergence.html">Convergence orders</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Finance</span><span class="drop">
         <a href="./three-regimes.html">Three regimes</a>
