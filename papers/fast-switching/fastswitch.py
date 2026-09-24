@@ -76,6 +76,18 @@ def _vec(n):
     return [ExpSum() for _ in range(n)]
 
 
+def _has_imag(f):
+    """Whether a time function has a nonzero imaginary part anywhere, read from its coefficients."""
+    if isinstance(f, ExpSum):
+        c = list(f.t.values())
+    elif hasattr(f, 's') and hasattr(f.s, 'coef'):                  # Cheb
+        c = f.s.coef
+    else:
+        c = f.taylor(12)
+    c = np.asarray(c, complex)
+    return bool(np.any(np.abs(c.imag) > 0))
+
+
 # ------------------------------------------------------------------ inner functions of tau
 class ExpPoly:
     """sum c[(k, mu)] tau^k exp(mu tau), mu complex."""
@@ -115,6 +127,14 @@ class ExpPoly:
 
     def value(self, tau):
         return sum(c * tau ** k * cmath.exp(complex(*m) * tau) for (k, m), c in self.t.items())
+
+    def bound(self):
+        """An upper bound on |value(tau)| over tau >= 0 when every mu has negative real part."""
+        tot = 0.0
+        for (k, m), c in self.t.items():
+            a = -m[0]
+            tot += abs(c) * ((k / a) ** k * math.exp(-k) if a > 0 and k else 1.0)
+        return tot
 
     def integral(self, T):
         tot = 0j
@@ -163,6 +183,16 @@ class FastSwitch:
         N = order
         a0 = np.ones(n) if a0 is None else np.asarray(a0, complex)
         self.s0 = s0 = complex(pi @ a0)
+        # The normalization s = pi . a needs pi . a0 well away from zero. Otherwise use linearity in the terminal
+        # vector: a0 = (a0 + c 1) - c 1, and both parts have pi . a0 of size c.
+        c = float(np.abs(a0).max())
+        self.split = None
+        if abs(s0) < 0.25 * c:
+            self.split = (FastSwitch(Q, g, order, a0 + c), FastSwitch(Q, g, order, np.full(n, c)))
+            self.is_complex = self.split[0].is_complex
+            return
+        if c == 0:
+            raise ValueError("the terminal vector a0 is zero")
         w_init = a0 / s0 - 1  # pi . w_init = 0
         zero = self._zero = g[0].scale(0.0)
         self.gbar = gbar = sum((g[i].scale(pi[i]) for i in range(n)), zero)
@@ -195,13 +225,26 @@ class FastSwitch:
         Tz, Uz = schur((Bz.T @ Q0 @ Bz).astype(complex), output='complex')
         dz = np.diag(Tz).copy()
         tol = 1e-6 * max(1.0, float(np.abs(dz).max()))
-        for i in range(len(dz)):                                      # numerically split Jordan clusters are merged
-            close = np.abs(dz - dz[i]) < tol
-            dz[close] = dz[close].mean()
-        Tz[np.diag_indices_from(Tz)] = dz
+        mu = dz.copy()
+        for i in range(len(mu)):                                      # nearly equal eigenvalues share one exponent mu
+            close = np.abs(mu - mu[i]) < tol
+            mu[close] = mu[close].mean()
+        delta = dz - mu                                               # kept exactly, as a perturbation series below
         Wz = Bz @ Uz                                                  # eta = Wz z, z = Wz^H eta
         rz = Wz.shape[1]
         self.T, self.W = Tz, Wz
+
+        def diag_solve(j, forcing, y0):
+            """z' = (mu_j + delta_j) z + forcing: the terms of order delta_j^p solved in turn, all in exp(mu_j tau).
+            Each term is smaller than the last by about |delta_j| / |Re mu_j| <= 1e-6."""
+            z = ExpPoly.solve(mu[j], forcing, y0)
+            term = z
+            for _ in range(60):
+                if not delta[j] or term.bound() <= 1e-17 * max(z.bound(), 1e-300):
+                    return z
+                term = ExpPoly.solve(mu[j], term.scale(delta[j]), 0.0)
+                z = z + term
+            raise ArithmeticError("the inner layer did not converge for nearly equal eigenvalues of Q0")
 
         def layer_solve(f, y0):
             """eta' = Q0 eta + P f, eta(0) = y0 (mean zero), with P f = f - 1 (pi.f)."""
@@ -214,7 +257,7 @@ class FastSwitch:
                 forcing = fz[j]
                 for k in range(j + 1, rz):
                     forcing = forcing + z[k].scale(Tz[j, k])
-                z[j] = ExpPoly.solve(Tz[j, j], forcing, z0[j])
+                z[j] = diag_solve(j, forcing, z0[j])
             return [sum((z[j].scale(Wz[i, j]) for j in range(rz)), ExpPoly()) for i in range(n)]
         K = N + 2
         gT = [np.array(g[i].taylor(K)) for i in range(n)]            # g_i(eps tau) = sum_a eps^a tau^a gT[i][a]
@@ -261,11 +304,12 @@ class FastSwitch:
             # solve d eta_m / d tau = Q0 eta_m + f, eta_m(0) = -w_m(0)
             eta[m] = layer_solve(f, np.array([-w[m][i].value(0.0) for i in range(n)], complex))
         self.eta = eta
-        self.is_complex = any(np.iscomplexobj(np.asarray(gt)) and np.any(np.abs(np.imag(gt)) > 0) for gt in gT) \
-            or bool(np.any(np.abs(np.imag(a0)) > 0))
+        self.is_complex = any(_has_imag(gi) for gi in g) or bool(np.any(np.abs(np.imag(a0)) > 0))
 
     def a(self, t, order=None):
         """The vector a(t) through eps^order (complex when g is complex)."""
+        if self.split:
+            return self.split[0].a(t, order) - self.split[1].a(t, order)
         N = self.N if order is None else order
         n, e, T, pi = self.n, self.eps, t / self.eps, self.pi
         log_s = self.gbar.integral(t) + sum(e ** m * self.log_terms[m].integral(t) for m in range(1, N + 1))
@@ -280,8 +324,9 @@ class FastSwitch:
         out = self.s0 * cmath.exp(log_s) * (1 + w)
         return out if self.is_complex else out.real
 
-def numerical_a(t, Q, g, dps=30, a0=None):
-    """a(t) for a' = (Q + diag g(t)) a, a(0) = a0 (default 1), by mpmath's Taylor-series ODE solver."""
+def numerical_a(t, Q, g, dps=30, a0=None, mp_values=False):
+    """a(t) for a' = (Q + diag g(t)) a, a(0) = a0 (default 1), by mpmath's Taylor-series ODE solver at dps digits.
+    Returned as Python floats or complex numbers, or as mpmath numbers at full precision when mp_values is set."""
     import mpmath as mp
     mp.mp.dps = dps
     Qm = mp.matrix(np.asarray(Q, float).tolist())
@@ -295,7 +340,10 @@ def numerical_a(t, Q, g, dps=30, a0=None):
             out.append(gi * a[i] + sum(Qm[i, j] * a[j] for j in range(n)))
         return out
     start = [1] * n if a0 is None else [mp.mpc(complex(v)) for v in a0]
-    out = [complex(v) for v in mp.odefun(f, 0, start)(mp.mpf(t))]
+    vals = mp.odefun(f, 0, start)(mp.mpf(t))
+    if mp_values:
+        return vals if any(mp.im(v) for v in vals) else [mp.re(v) for v in vals]
+    out = [complex(v) for v in vals]
     return out if any(v.imag for v in out) else [v.real for v in out]
 
 
@@ -324,7 +372,13 @@ class Cheb:
         return cls(series.truncate(int(keep[-1]) + 1 if len(keep) else 1))
 
     def _wrap(self, s):
+        """Cap the degree at MAXDEG, dropping only a tail at rounding level; a larger tail raises."""
         if len(s.coef) > self.MAXDEG + 1:
+            tail = np.abs(s.coef[self.MAXDEG + 1:]).sum()
+            if tail > 1e-13 * np.abs(s.coef).max():
+                raise ValueError(f"a Chebyshev product needs degree {len(s.coef) - 1} > Cheb.MAXDEG = {self.MAXDEG} "
+                                 f"(the coefficients above the cap sum to {tail:.1e}); raise Cheb.MAXDEG or fit "
+                                 "the forcing with a lower degree")
             s = s.truncate(self.MAXDEG + 1)
         return Cheb(s)
 
@@ -357,21 +411,42 @@ class Cheb:
         return out
 
 
-def numerical_a_callable(t, Q, gfuncs, rtol=1e-12, a0=None):
-    """a(t) for a' = (Q + diag g(t)) a with g given as callables (scipy DOP853, complex allowed)."""
+class _ComplexForcing(Exception):
+    pass
+
+
+def numerical_a_callable(t, Q, gfuncs, rtol=1e-12, a0=None, is_complex=None):
+    """a(t) for a' = (Q + diag g(t)) a with g given as callables (scipy DOP853, complex allowed).
+    is_complex=None decides from the values: g is sampled on [0, t], and a real solve restarts in complex arithmetic
+    as soon as any g it evaluates has a nonzero imaginary part."""
     from scipy.integrate import solve_ivp
     Q = np.asarray(Q, float)
     n = Q.shape[0]
-    probe = np.array([f(0.3) for f in gfuncs])
     a0 = np.ones(len(gfuncs)) if a0 is None else np.asarray(a0)
-    cplx = (np.iscomplexobj(probe) and np.any(probe.imag != 0)) or (np.iscomplexobj(a0) and np.any(a0.imag != 0))
+    if is_complex is None:
+        probe = np.array([f(r) for r in np.linspace(0, t, 17) for f in gfuncs])
+        is_complex = bool((np.iscomplexobj(probe) and np.any(probe.imag != 0)) or
+                          (np.iscomplexobj(a0) and np.any(a0.imag != 0)))
 
-    def rhs(r, y):
-        a = y[:n] + 1j * y[n:] if cplx else y
-        d = np.array([f(r) for f in gfuncs]) * a + Q @ a
-        return np.concatenate([d.real, d.imag]) if cplx else d
-    a0c = a0.astype(complex)
-    y0 = np.concatenate([a0c.real, a0c.imag]) if cplx else a0.astype(float)
-    sol = solve_ivp(rhs, (0, t), y0, method='DOP853', rtol=rtol, atol=1e-14)
-    y = sol.y[:, -1]
-    return y[:n] + 1j * y[n:] if cplx else y
+    def solve(cplx):
+        def rhs(r, y):
+            gv = np.array([f(r) for f in gfuncs])
+            if cplx:
+                a = y[:n] + 1j * y[n:]
+                d = gv * a + Q @ a
+                return np.concatenate([d.real, d.imag])
+            if np.iscomplexobj(gv):
+                if np.any(gv.imag != 0):
+                    raise _ComplexForcing
+                gv = gv.real
+            return gv * y + Q @ y
+        a0c = a0.astype(complex)
+        y0 = np.concatenate([a0c.real, a0c.imag]) if cplx else a0.real.astype(float)
+        y = solve_ivp(rhs, (0, t), y0, method='DOP853', rtol=rtol, atol=1e-14).y[:, -1]
+        return y[:n] + 1j * y[n:] if cplx else y
+    if not is_complex:
+        try:
+            return solve(False)
+        except _ComplexForcing:
+            pass
+    return solve(True)

@@ -37,7 +37,9 @@ papers/fast-switching/
   fastswitch_op.py         a general coupling operator (a continuous fast factor in the Hermite basis)
   fastswitch_gen.py        several time scales: correlation in sqrt(eps)
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
-  verify_engine.py, verify_models.py, verify_fast_factor.py   certificates
+  quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
+  explicit.py, bond_option_explicit.py   closed-form terms for the example pages
+  verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
@@ -55,7 +57,38 @@ tools/assemble.py          builds docs/*.html from tools/pages/ with one canonic
 tools/biblio.json          the verified bibliography
 ```
 
-After editing a page, run `python3 tools/assemble.py && node docs/header-check.js`.
+## Running the certificates
+
+The certificates need Python 3 with NumPy, SciPy and mpmath:
+
+```
+python3 -m pip install -r requirements.txt
+```
+
+Each certificate runs from its own folder and ends with PASS or FAIL:
+
+```
+cd papers/fast-switching
+python3 verify_engine.py
+python3 verify_models.py
+python3 verify_fast_factor.py
+python3 verify_quantlib_models.py
+python3 verify_explicit.py
+cd ../regime-switching-survival
+python3 verify_expansion.py
+python3 verify_all_orders.py
+python3 verify_general_orders.py
+```
+
+The other folders under `papers/` have their own `verify_*.py`, run the same way.
+
+Optional: `verify_quantlib_models.py` also prices against QuantLib's engines when QuantLib is installed
+(`python3 -m pip install QuantLib`); without it those comparisons are skipped.
+
+## Editing the site
+
+The site build needs Node for the header check. After editing a page, run
+`python3 tools/assemble.py && node docs/header-check.js`.
 
 ## Cite
 

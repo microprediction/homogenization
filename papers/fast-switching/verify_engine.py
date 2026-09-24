@@ -1,16 +1,27 @@
 """Certificate for fastswitch.py, the all-orders fast-switching engine on any finite chain.
 
 1. On two states it reproduces general_orders.py term for term (sums of exponentials and Chebyshev series).
-2. On a non-reversible three-state chain the error after n orders falls like eps^(n+1) against a
-   30-digit numerical solution.  `python3 verify_engine.py`  (about a minute)
+2. On a non-reversible three-state chain the error after n orders falls like eps^(n+1) against a numerical
+   solution computed at 30 digits; the errors are formed at that precision.
+3. A chain with a Jordan block.
+4. A complex forcing that is real to high order at t = 0 keeps its imaginary part.
+5. A terminal vector with pi . a0 = 0: the error after n orders still falls like eps^(n+1).
+6. Nearly equal but distinct eigenvalues of Q: with g = 0 the engine reproduces exp(Q t) a0.
+7. The numerical solver keeps complex arithmetic for a forcing that is real at some times.
+8. A Chebyshev product above the degree cap raises instead of losing terms.
+`python3 verify_engine.py`  (about a minute)
 """
 import math
+import cmath
 import os
 import sys
 import numpy as np
+import mpmath as mp
+from numpy.polynomial import Chebyshev
+from scipy.linalg import expm
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'regime-switching-survival'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from fastswitch import FastSwitch, ExpSum, Cheb, numerical_a
+from fastswitch import FastSwitch, ExpSum, Cheb, numerical_a, numerical_a_callable
 from general_orders import GeneralSeries
 
 k = 2.0
@@ -48,9 +59,9 @@ def main():
     errs = {}
     for sc in (8, 16):
         Qs = sc * base
-        ex = numerical_a(0.3, Qs, g, dps=25)
+        ex = numerical_a(0.3, Qs, g, dps=30, mp_values=True)
         fs = FastSwitch(Qs, g, order=6)
-        errs[sc] = [float(fs.a(0.3, o)[0] - ex[0]) for o in range(1, 7)]
+        errs[sc] = [float(mp.mpf(float(fs.a(0.3, o)[0])) - ex[0]) for o in range(1, 7)]
     rates = [math.log2(abs(a / b)) for a, b in zip(errs[8], errs[16])]
     print("2. three states: rates " + " ".join(f"{r:.2f}" for r in rates) + " (expected 2..7)")
     ok &= all(abs(r - (n + 2)) < 0.5 for n, r in enumerate(rates))
@@ -62,6 +73,56 @@ def main():
     errJ = [float(np.abs(fsJ.a(0.3, o) - exJ).max()) for o in range(5)]
     print("3. Jordan-block chain: errors by order " + " ".join(f"{e:.1e}" for e in errJ))
     ok &= errJ[4] < 1e-10 and all(b < a / 20 for a, b in zip(errJ, errJ[1:]))
+
+    # g = i (1 - e^{-t})^5 in both regimes: real through t^4 at 0; the answer is exp(int g)
+    gc = ExpSum({j: 1j * (-1) ** j * math.comb(5, j) for j in range(6)})
+    ac = FastSwitch([[-10, 10], [10, -10]], [gc, gc], order=1).a(2.0)
+    errc = float(np.abs(ac - cmath.exp(gc.integral(2.0))).max())
+    print(f"4. complex forcing flat at t = 0: error {errc:.1e}")
+    ok &= errc < 1e-13
+
+    # terminal vector with stationary mean zero
+    pi3 = FastSwitch(base, g, order=0).pi
+    a0 = np.array([1.0, -1.0, 0.0])
+    a0[2] = -(pi3[0] - pi3[1]) / pi3[2]
+    errz = {}
+    for sc in (8, 16):
+        exz = np.array(numerical_a(0.3, sc * base, g, dps=20, a0=a0), float)
+        fz = FastSwitch(sc * base, g, order=4, a0=a0)
+        errz[sc] = [float(np.abs(fz.a(0.3, o) - exz).max()) for o in range(5)]
+    rz = [math.log2(a / b) for a, b in zip(errz[8], errz[16])]
+    print("5. pi . a0 = 0: rates " + " ".join(f"{r:.2f}" for r in rz) + " (orders 2..4 expected 3..5)")
+    ok &= all(abs(rz[n] - (n + 1)) < 0.5 for n in (2, 3, 4))
+
+    # nearly equal, distinct eigenvalues (-1.4999994 and -1.5000006 for Q / 1000)
+    u = np.array([1., -1., 0.]) / np.sqrt(2)
+    v = np.array([1., 1., -2.]) / np.sqrt(6)
+    Qd = 1000 * (np.ones((3, 3)) / 3 - np.eye(3) + 4e-7 * (np.outer(u, u) - np.outer(v, v)))
+    e1 = np.array([1., 0., 0.])
+    fd = FastSwitch(Qd, [ExpSum.const(0)] * 3, order=4, a0=e1)
+    errd = max(float(np.abs(fd.a(t, 4) - expm(Qd * t) @ e1).max()) for t in (fd.eps / 4, fd.eps, 4 * fd.eps))
+    print(f"6. nearly equal eigenvalues, g = 0: max difference from exp(Qt) a0 {errd:.1e}")
+    ok &= errd < 1e-14
+
+    # g = i (t - 0.3): real at t = 0.3 only
+    gi = lambda t: 1j * (t - 0.3)
+    an = numerical_a_callable(1.0, [[-5, 5], [5, -5]], [gi, gi])
+    erri = float(np.abs(an - cmath.exp(0.2j)).max())
+    print(f"7. numerical solution, complex forcing real at t = 0.3: error {erri:.1e}")
+    ok &= erri < 1e-10
+
+    # T_61 squared has a T_122 component above the cap of 120; T_40 squared fits and is kept exactly
+    f61 = Cheb(Chebyshev([0.] * 61 + [1.], domain=[0, 1]))
+    try:
+        FastSwitch([[-20, 20], [20, -20]], [f61, f61.scale(-1)], order=1)
+        raised = False
+    except ValueError:
+        raised = True
+    f40 = Cheb(Chebyshev([0.] * 40 + [1.], domain=[0, 1]))
+    lt = FastSwitch([[-20, 20], [20, -20]], [f40, f40.scale(-1)], order=1).log_terms[1]
+    errc2 = abs(lt.integral(0.4) - (f40.s * f40.s * 0.5).integ(lbnd=0)(0.4))
+    print(f"8. Chebyshev degree cap: degree 122 raises {raised}; degree 80 first-order term error {errc2:.1e}")
+    ok &= raised and errc2 < 1e-13
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
 
