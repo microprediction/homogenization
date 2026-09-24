@@ -199,6 +199,20 @@
     <p>Once $c_2$, $c_3$ and $c_4$
     are known, equality identifies an effectively one-dimensional regime. Bond prices alone do not fix $c_2$, as the
     next section shows.</p>
+    <p>The same holds for any number of switched features. Let the fluctuating forcing be a sum of maturity shapes
+    times centred regime functions,</p>
+    $$\tilde g(t) = \sum_{r=1}^{d} \phi_r(t)\,f_r, \qquad \pi\cdot f_r = 0, \qquad H_{rs} = \mathcal K_{\mathrm{sym}}(f_r, f_s),$$
+    <p>so that the correction is $\int_0^T \phi^{\top} H \phi\,dt$. The matrix $H$ is half the long-run covariance of the
+    integrated $f_r$, so it is positive semidefinite, and every principal minor is an inequality among the curve
+    coefficients.</p>
+    <p>Its rank is bounded by the number of regimes. For an irreducible chain $\mathcal K_{\mathrm{sym}}(f, f)$ vanishes
+    only at $f = 0$, so the kernel of $H$ is the kernel of the $n \times d$ matrix $F = (f_1, \dots, f_d)$, and</p>
+    $$\operatorname{rank} H = \operatorname{rank} F \le \min(d,\ n - 1),$$
+    <p>since centred functions of $n$ states span $n - 1$ dimensions. A rank $r$ read off the coefficients needs at
+    least $r + 1$ regimes. Here $d = 2$, $\phi = (B, B^2)$, $f_1 = -\kappa u$ and $f_2 = \tfrac12 v$, so</p>
+    $$H = \begin{pmatrix} c_2 & c_3/2 \\ c_3/2 & c_4 \end{pmatrix},$$
+    <p>and $H \succeq 0$ is the inequality above. The bound applies to $H$ itself: when the shapes $\phi_r$ vary with
+    maturity, the integrated matrix $\int_0^T \phi\phi^{\top}\,dt$ can have higher rank than $n - 1$.</p>
 
     <h2>Observable coefficients</h2>
     <p>The coefficient of $\int B^2$ is $\tfrac12\bar s + c_2$. A market that only sees bond prices cannot split this
