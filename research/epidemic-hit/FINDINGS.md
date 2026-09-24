@@ -82,3 +82,36 @@ What the homogenization work adds to the 2020 paper:
 - SEIR and cycle direction (epidemics page): non-commuting compartments, where the antisymmetric part of K matters.
 - Individual activity switching (04): closed-form growth rate, R0 and immunity factor, lam - 1 ~ r K_a.
 County data (02, 03) are too noisy to test either version, as expected.
+
+## 2026-09-23: what fits the county waves (analysis/06_waves.py, 07_model_fits.py)
+Deaths, not cases. NYT county deaths 2020 to June 2021 (NYC as one unit), Census 2019 populations, counties over
+50,000 people, 3-week centred weekly deaths. A wave is a peak with prominence >= 30% of the county maximum and
+>= 10 deaths a week. Early growth r: log-linear slope over the contiguous rise between about 10% and 60% of the
+peak. R = (1 + r theta)^k (generation interval mean 5.5 d, sd 2.1 d). Attack = cumulative deaths / (IFR * pop),
+at the start of the rise and at the death peak (which marks the infection peak about 3 weeks earlier).
+471 waves in 372 counties at IFR 0.7%.
+
+- 95-100% of waves turn over below the homogeneous threshold 1 - (1 - a_start)/R.
+- The attack at the turnover is flat across growth quartiles: spring 2020 about 4%, summer 5-7%, winter 15-17%
+  cumulative, while the homogeneous threshold rises from about 21% to 45% across the same quartiles.
+- Model fits for the log depletion during the wave, Delta = -ln((1 - a_turn)/(1 - a_start)) (winter, IFR 0.7%):
+
+| model | resid sd | BIC | parameters |
+|---|---|---|---|
+| homogeneous, Delta = ln R | 1.49 | 271 | - |
+| persistent, ln R / lam | 0.79 | -151 | lam 3.5 |
+| switching, ln R / (lam0 + K r) | 0.70 | -237 | lam0 1 (bound), K 54 d |
+| fixed increment, Delta = c | 0.68 | -254 | c 0.071 |
+| free power, c (ln R)^b | 0.68 | -249 | b -0.03 |
+
+  Same ranking at IFR 0.5% and 1% and in summer 2020. Spring 2020: switching, fixed increment and free power tie
+  (b = 0.34), all far ahead of homogeneous and persistent.
+- Reading: a wave depletes about the same share of susceptibles whatever its early growth. Homogeneous SIR and
+  constant-lam heterogeneity both need depletion to scale with ln R, and fail. Switching activity reproduces the
+  flat relation because lam grows with r (lam - 1 ~ r K), with K = 54 days at IFR 0.7% (e.g. activity variance 2
+  and a 27-day correlation time), but it has to sit at lam0 = 1 and mimic a fixed increment; it does not beat it.
+  A behavioural response triggered by deaths, or mitigation, gives the fixed increment directly.
+- Residual sd 0.7 in log depletion: county IFR varies with age structure, and reporting varies. Age-adjusted IFR is
+  the next refinement. The discriminating test between switching and behaviour is the rebound: switching predicts
+  a new wave after about the activity correlation time, independent of deaths; a behavioural response predicts
+  relaxation tied to falling deaths.
