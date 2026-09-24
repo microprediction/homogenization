@@ -159,6 +159,13 @@ def fast_factor_page():
     <p>For a check with a closed-form answer, both functions are taken to be linear:</p>
     $$\theta(y) = \theta_0 + \theta_1\,y, \qquad \sigma(y) = \sigma_0 + \sigma_1\,y .$$
     <p class="muted">Parameters: $\kappa = 1$, $\theta_0 = 0.05$, $\theta_1 = 0.03$, $\sigma_0 = 0.25$, $\sigma_1 = 0.2$, $\rho = -0.7$.</p>
+    <p>The linear $\sigma$ is a signed diffusion loading rather than a volatility. It is negative when
+    $y < -\sigma_0/\sigma_1 = -1.25$, which the stationary law visits about 11% of the time, and there the
+    instantaneous correlation between the shocks to the rate and to the factor is $-\rho$ rather than $\rho$.</p>
+    <p>The non-negative loading $|\sigma(y)|$ has the same $\sigma^2$, so the same averaged model, but a different
+    order-$\sqrt\varepsilon$ term, because that term is linear in the loading: at $t = 1$ its coefficient is
+    $0.000122$ with the signed loading and $0.000035$ with $|\sigma|$. The closed forms and the checks below use the
+    signed loading.</p>
 
     <h2>The quantity</h2>
     <p>The bond price for maturity $t$, starting from rate $x$ and factor value $y$:</p>
@@ -269,9 +276,10 @@ def fast_factor_page():
     <p>Each term has a reading.</p>
     <ul>
       <li>The first is the averaged Vasicek model.</li>
-      <li>The second, of order $\sqrt\varepsilon$, exists only with correlation. Shocks to the rate and to the factor
-        move together, so the factor tends to be high when the rate has risen. This is the correlation
-        correction of fast mean-reverting stochastic volatility.</li>
+      <li>The second, of order $\sqrt\varepsilon$, exists only with correlation, and it is linear in $\rho\,\sigma(y)$.
+        Where $\rho\,\sigma(y) < 0$, as at $\rho = -0.7$ and $y$ near zero, a shock that raises the rate lowers the
+        factor, and with it the mean level and the loading; below $y = -1.25$ the loading changes sign and so does
+        the co-movement. This is the correlation correction of fast mean-reverting stochastic volatility.</li>
       <li>The third, of order $\varepsilon$, contains the fluctuation term $g_1^2 + g_2^2$. As on the
         <a href="./idea.html">idea</a> page, it is half the variance of the fluctuating integral of $g$, and it is
         present even without correlation.</li>
