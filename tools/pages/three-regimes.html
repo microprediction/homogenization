@@ -53,7 +53,8 @@
     <div class="table-wrap"><table class="impl"><thead><tr><th>scale s</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>4</td><td>6.2e-3</td><td>1.8e-4</td><td>2.1e-5</td><td>3.7e-6</td><td>5.1e-7</td><td>1.0e-7</td><td>1.6e-8</td></tr><tr><td>8</td><td>3.1e-3</td><td>4.2e-5</td><td>2.4e-6</td><td>2.2e-7</td><td>1.4e-8</td><td>1.4e-9</td><td>1.1e-10</td></tr><tr><td>16</td><td>1.6e-3</td><td>1.0e-5</td><td>2.9e-7</td><td>1.3e-8</td><td>4.2e-10</td><td>2.2e-11</td><td>7.9e-13</td></tr></tbody></table></div>
     <p>Each doubling of $s$ divides the order-$n$ error by about $2^{n+1}$.</p>
     <p>A Monte Carlo check samples 400,000 paths of the three-state chain exactly, from exponential holding times.
-    Given its path the integrated rate is Gaussian, so each path gives the bond price in closed form. At $s = 4$
+    Given its path the integrated rate is Gaussian, so each path gives the bond price in closed form.</p>
+    <p>At $s = 4$
     and $s = 8$ the Monte Carlo mean of $a_1(1)$ agrees with the numerical solution within two standard errors.
     Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
   </main>

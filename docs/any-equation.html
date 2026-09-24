@@ -212,13 +212,15 @@
     $$C \;\approx\; C_{\mathrm{BS}}(\bar V) + t\,K_{\sigma^2\sigma^2}\,\frac{\partial^2 C_{\mathrm{BS}}}{\partial V^2}(\bar V),$$
     $$\frac{\partial^2 C_{\mathrm{BS}}}{\partial V^2} = \frac{S\,\varphi(d_1)\,(d_1 d_2 - 1)}{4\,V^{3/2}} .$$
     <p>This is a volga term, the convexity of the price in variance. It is positive in the wings and negative near
-    the money, so no single volatility can absorb it: it is a smile. It is the first-order form of the mixing
+    the money, so no single volatility can absorb it: it is a smile.</p>
+    <p>It is the first-order form of the mixing
     formula of Hull and White, with the variance of integrated variance replaced by its leading term $2t\,K$. At
     fixed maturity the two differ by a term of order $\varepsilon^2$, beyond the first-order rule.</p>
     <p>This smile is known. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>
     derive it for a fast ergodic volatility driver whose integrated fluctuations obey a central limit theorem, as
     a finite-state chain does, and <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
-    Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order. The check below confirms the
+    Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order.</p>
+    <p>The check below confirms the
     rule reproduces it. A <a href="./cycle-smile.html">Heston example</a> shows the antisymmetric part moving the
     smile.</p>
     <p>The check uses three regimes with volatilities of 10%, 30% and 20%. The chain is twice the irreversible
@@ -262,7 +264,8 @@
         integrated matrix can have higher rank. The
         same rank property appears for races on the kinetics site.</li>
     </ul>
-    <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more. Which name defaults first
+    <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more.</p>
+    <p>Which name defaults first
     is a race under a shared driver, and two names already suffice for its law to reveal the asymmetry of $K$,
     provided the chain has at least three states and is not reversible. Races of this kind are studied on the
     <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>

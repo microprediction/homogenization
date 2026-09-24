@@ -107,7 +107,8 @@
     <p>The short rate follows a Vasicek model whose mean level and variance depend on a hidden Markov chain $y_t$:</p>
     $$dx_t = \kappa\,\big(\theta_{y_t} - x_t\big)\,dt + \sigma_{y_t}\,dW_t .$$
     <p>The rate is observed every $\Delta$, giving $x_0, x_1, \dots, x_n$. The chain is not observed. It switches many
-    times between observations, so $\lambda\Delta \gg 1$ for switching rates $\lambda$. There are three time scales: the
+    times between observations, so $\lambda\Delta \gg 1$ for switching rates $\lambda$.</p>
+    <p>There are three time scales: the
     regimes last about $1/\lambda$, observations come every $\Delta$, and the rate reverts over $1/\kappa$.</p>
     <p class="muted">Parameters for the checks: $\kappa = 0.5$, $\theta = (0.08,\ 0.02)$, $\sigma^2 = (0.0009,\ 0.0001)$,
     monthly observations $\Delta = 1/12$.</p>
@@ -160,7 +161,8 @@
     \end{aligned}$$
     $$\mathrm{He}_2(z) = z^2 - 1, \qquad \mathrm{He}_3(z) = z^3 - 3z, \qquad \mathrm{He}_4(z) = z^4 - 6z^2 + 3 .$$
     </div>
-    <p>The terms have plain meanings. $A_2$ widens the density, as extra variance would. $A_3$ skews it, through the
+    <p>The terms have plain meanings. $A_2$ widens the density, as extra variance would.</p>
+    <p>$A_3$ skews it, through the
     covariance between a regime&apos;s level and its volatility. $A_4$ fattens its tails, through the variance of the
     volatility.</p>
 
@@ -214,7 +216,8 @@
     <h2>Scope</h2>
     <p>The expansion needs many regime changes between observations. When regimes last longer than the sampling
     interval, the regimes at successive observations are correlated, the likelihood no longer factors, and the exact
-    likelihood needs the filter of <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>. A switching variance
+    likelihood needs the filter of <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>.</p>
+    <p>A switching variance
     alone gives the classic normal variance mixture of <a href="./bibliography.html#Clark1973">Clark (1973)</a>. For
     closed-form likelihood expansions of diffusions without regimes see
     <a href="./bibliography.html#AitSahalia2002">A&iuml;t-Sahalia (2002)</a>.</p>

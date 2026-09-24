@@ -197,7 +197,8 @@
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th></tr></thead><tbody><tr><td>25</td><td>90</td><td>16.600838</td><td>3.6e-2</td><td>1.8e-4</td><td>1.2e-6</td><td>2.3e-8</td><td>1.1e-8</td></tr><tr><td>25</td><td>110</td><td>6.790125</td><td>4.1e-2</td><td>3.2e-4</td><td>1.7e-6</td><td>3.9e-7</td><td>1.6e-8</td></tr><tr><td>50</td><td>90</td><td>16.582886</td><td>1.8e-2</td><td>4.6e-5</td><td>1.3e-7</td><td>2.3e-9</td><td>2.7e-10</td></tr><tr><td>50</td><td>110</td><td>6.769676</td><td>2.0e-2</td><td>7.9e-5</td><td>2.3e-7</td><td>2.3e-8</td><td>5.4e-10</td></tr><tr><td>100</td><td>90</td><td>16.573958</td><td>8.9e-3</td><td>1.2e-5</td><td>1.6e-8</td><td>1.6e-10</td><td>8.7e-12</td></tr><tr><td>100</td><td>110</td><td>6.759528</td><td>1.0e-2</td><td>2.0e-5</td><td>2.9e-8</td><td>1.4e-9</td><td>1.6e-11</td></tr></tbody></table></div>
     <p>A Monte Carlo check at $\lambda = 50$ samples 400,000 regime paths exactly, from exponential holding times, and
     prices each path by the Black&ndash;Scholes formula at its integrated variance. It gives 16.5828 &plusmn; 0.0005 and
-    6.7696 &plusmn; 0.0006 at strikes 90 and 110, within 0.2 standard errors of the numerical prices. The averaged
+    6.7696 &plusmn; 0.0006 at strikes 90 and 110, within 0.2 standard errors of the numerical prices.</p>
+    <p>The averaged
     model is off by more than 30 standard errors. Certificate:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
     <p><a href="./bibliography.html#Yin2009">Yin (2009)</a> develops asymptotic expansions for this model.</p>
