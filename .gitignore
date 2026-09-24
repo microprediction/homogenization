@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 reading/
 research/pulsar/data/
+research/epidemic-hit/data/
