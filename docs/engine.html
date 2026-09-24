@@ -152,10 +152,13 @@
     $$a_i(t) \approx \exp\Big(\int_0^t \big[\bar g - \pi\cdot\big(g\,Q^{\#}(g - \bar g)\big)\big]\Big)\,\Big(1 - \big[Q^{\#}(g - \bar g)\big]_i(t)\Big).$$
     <p>The correction in the exponent has a direct meaning. Because $Q^{\#}f = -\int_0^\infty e^{Q\tau}f\,d\tau$ when
     $\pi\cdot f = 0$,</p>
-    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \operatorname{Cov}_\pi\big(g(y_0),\,g(y_\tau)\big)\,d\tau .$$
-    <p>This is a Green&ndash;Kubo integral of the autocovariance of $g$ along the chain. It is half the long-run variance
-    rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for any chain. The factor in brackets
-    is the memory of the starting regime.</p>
+    $$-\pi\cdot\big(g\,Q^{\#}(g - \bar g)\big) = \int_0^\infty \mathbb{E}_\pi\big[\big(g(y_0) - \bar g\big)\big(g(y_\tau) - \bar g\big)\big]\,d\tau .$$
+    <p>This is a Green&ndash;Kubo integral of the autocorrelation of $g$ along the chain. For real $g$ it is the integrated
+    autocovariance, half the long-run variance rate of $\int g$, as on the <a href="./idea.html">idea</a> page, now for
+    any chain.</p>
+    <p>For complex $g$, as in the Fourier examples, the product carries no conjugate. The integral is then a second
+    cumulant rather than a variance, and it can be complex. The factor in brackets is the memory of the starting
+    regime.</p>
 
     <h3>Step 4: closed form</h3>
     <p>When every $g_i$ is a sum of exponentials $e^{-\alpha t}$, products and derivatives of such sums are again such

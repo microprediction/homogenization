@@ -49,7 +49,7 @@ def error_rows(make, t, lams, orders=range(0, 7), state=0):
     return rows
 
 
-def two_state_expansion(g_desc, extra=''):
+def two_state_expansion(g_desc, extra='', complex_g=''):
     """The expansion section for a symmetric two-state chain switching at rate lambda."""
     body = r"""    <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
@@ -65,10 +65,15 @@ def two_state_expansion(g_desc, extra=''):
     <ul>
       <li>The factor below is the averaged model:
         $$e^{\int_0^t \bar g} .$$</li>
-      <li>The term below is half the variance of the fluctuating integral of $g$:
+""" + (r"""      <li>The term below is half the second cumulant of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        The square carries no conjugate, and """ + complex_g + r""", so the term is complex and is not a variance. For real
+        $g$ it is half the variance, as on the <a href="./idea.html">idea</a> page. It is the same for both starting
+        regimes.</li>
+""" if complex_g else r"""      <li>The term below is half the variance of the fluctuating integral of $g$:
         $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
         It is the same for both starting regimes, and it grows with $t$.</li>
-      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+""") + r"""      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
         $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
     </ul>
 
@@ -303,8 +308,8 @@ def counts_page():
     <p>These equal the probabilities $\Pr(N_t = k)$ up to the chance of 64 or more events. Given the regime path the
     count is Poisson with mean at most 8, so that chance is below $2\times10^{-35}$.</p>
 '''
-    body += two_state_expansion(r'$\bar g = (z-1)\,\bar\ell, \qquad \tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$',
-                                r''' For the count, the shared first-order term multiplies the generating function by</p>
+    body += two_state_expansion(r'$\bar g = (z-1)\,\bar\ell, \qquad \tilde g = \tfrac12(z-1)(\ell_1 - \ell_2)$', complex_g='here $g$ is complex whenever $z$ is, and real on the real axis',
+                                extra=r''' For the count, the shared first-order term multiplies the generating function by</p>
     $$\exp\big(\tfrac{t}{8\lambda}(z-1)^2(\ell_1 - \ell_2)^2\big),$$
     <p>which adds $t(\ell_1 - \ell_2)^2/(4\lambda)$ to the
     variance.''')
@@ -479,8 +484,8 @@ def heston_page():
     <p>So $\phi_i = e^{D(T)v_0}a_i(T)$ with
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and $g_i(t) = \kappa\,\theta_i\,D(t)$, which is complex.</p>
 '''
-    body += two_state_expansion(r'$g_i = \kappa\theta_i D, \qquad \tilde g = \kappa\tilde\theta D$',
-                                r''' The engine holds the complex $g_i$ as Chebyshev series.''')
+    body += two_state_expansion(r'$g_i = \kappa\theta_i D, \qquad \tilde g = \kappa\tilde\theta D$', complex_g='here $g$ is complex for every $u$',
+                                extra=r''' The engine holds the complex $g_i$ as Chebyshev series.''')
     body += r'''
     <h2>Explicit formulas</h2>
     <p>For Heston every term up to second order is in closed form. Write</p>
@@ -620,8 +625,8 @@ def black_scholes_page():
     $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and the constant, complex</p>
     $$g_i = iu\big(r - \tfrac12\sigma_i^2\big) - \tfrac12u^2\sigma_i^2 .$$
 '''
-    body += two_state_expansion(r'$\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2)$',
-                                r''' The expansion needs $|\tilde g|/\lambda$ to be small, and $\tilde g$ grows like $u^2$. The Fourier integral is
+    body += two_state_expansion(r'$\tilde g = -\tfrac14(iu + u^2)(\sigma_1^2 - \sigma_2^2)$', complex_g='here $g$ is complex for every $u$',
+                                extra=r''' The expansion needs $|\tilde g|/\lambda$ to be small, and $\tilde g$ grows like $u^2$. The Fourier integral is
     therefore stopped at the frequency where the averaged characteristic function falls below $e^{-40}$; beyond it
     the integrand is negligible and the expansion would not apply.''')
     body += r'''
