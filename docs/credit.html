@@ -76,24 +76,43 @@
     independent Brownian motions, but both take their long-run level from one hidden regime $y_t \in \{1, 2\}$, a
     credit cycle:</p>
     $$dx_{j} = \kappa\,\big(\theta_{j,\,y_t} - x_j\big)\,dt + \sigma\sqrt{x_j}\,dW_j, \qquad j = 1, 2 .$$
-    <p>The intensities stay positive, so they are genuine default intensities. Regime 1 is a crisis and regime 2 is
-    normal times. The cycle switches at rate $\lambda$ in each direction and starts from its stationary law, since
-    an observer cannot see it.</p>
+    <p>Regime 1 is a crisis and regime 2 is normal times. The cycle switches at rate $\lambda$ in each direction.</p>
+    <p>Each company defaults when its accumulated intensity first reaches an exponential clock:</p>
+    $$\tau_j = \inf\Big\{t : \int_0^t x_j(s)\,ds \ge E_j\Big\}, \qquad j = 1, 2,$$
+    <p>where $E_1$ and $E_2$ are independent unit exponentials, independent of the Brownian motions and of the cycle.
+    Given the intensity paths the two defaults are then independent, so the shared cycle is the only source of
+    default dependence.</p>
+    <p>The example assumes that the cycle starts from its stationary law, $(\tfrac12, \tfrac12)$, independent of
+    $x_0$. The effect of another prior is shown below.</p>
     <p>There are two time scales: each intensity reverts over $1/\kappa$, and the cycle turns every $1/\lambda$.</p>
-    <p class="muted">Parameters: $\kappa = 2$, $\sigma = 0.2$; the first company has $\theta_1 = (0.8,\ 0.005)$, the
-    second $\theta_2 = (0.6,\ 0.005)$; $x_0 = (0.05,\ 0.05)$; horizon $T = 3$.</p>
+    <p class="muted">Parameters: $\kappa = 2$, $\sigma = 0.2$; the first company
+    has $\theta_1 = (0.8,\ 0.005)$, the second
+    $\theta_2 = (0.6,\ 0.005)$; $x_0 = (0.05,\ 0.05)$;
+    horizon $T = 3$.</p>
+    <p>A CIR intensity stays strictly positive when</p>
+    $$2\kappa\theta \ge \sigma^2,$$
+    <p>the Feller condition.</p>
+    <p>Here $\sigma^2 = 0.04$, while $2\kappa\theta$ is 3.2 and 2.4 in the crisis
+    regime and 0.02 for both companies in normal times. The condition fails in normal times, where an
+    intensity can touch zero and the hazard of that company vanishes for a moment. Zero is reflecting, so the
+    intensities stay nonnegative and are valid default intensities. The survival formulas below use only the
+    Laplace transform of the integrated CIR process, which holds whether or not the condition is met.</p>
+
 
     <h2>The quantity</h2>
-    <p>The survival of each company and of both:</p>
+    <p>With the exponential clocks, the probability that every company in $c$ survives to $T$ is</p>
     $$S_c(T) = \mathbb{E}\Big[e^{-\int_0^T (c_1 x_1 + c_2 x_2)\,dr}\Big], \qquad c = (1,0),\ (0,1),\ (1,1).$$
     <p>The default probabilities follow from them:</p>
     $$p_1 = 1 - S_{(1,0)}, \qquad p_2 = 1 - S_{(0,1)}, \qquad p_{12} = 1 - S_{(1,0)} - S_{(0,1)} + S_{(1,1)} .$$
     <p>The correlation of the two default indicators is</p>
     $$\operatorname{corr} = \frac{p_{12} - p_1 p_2}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} = \frac{S_{(1,1)} - S_{(1,0)}S_{(0,1)}}{\sqrt{p_1(1 - p_1)\,p_2(1 - p_2)}} .$$
+    <p>A shared clock, $E_1 = E_2$, would keep each company&apos;s survival but replace the joint survival by the
+    expectation of $e^{-\max(A_1, A_2)}$, with $A_j = \int_0^T x_j$. The dependence would then not vanish even
+    in the averaged model.</p>
 
     <h2>Averaging</h2>
     <p>When the cycle switches infinitely fast, each intensity is a CIR process with the averaged level, and the two
-    are independent. The averaged model has no default dependence at all.</p>
+    are independent. With independent clocks the averaged model has no default dependence at all.</p>
 
     <h2>Reduction to a linear system</h2>
     <p>Conditional on the regime path the two intensities are independent CIR processes. Try
@@ -107,8 +126,8 @@
 
     <h2>The survival probabilities written out</h2>
     <p>Given the regime path the two intensities are independent CIR processes, and each has the same coefficient
-    $B$. For a stationary start the memory terms cancel, and the survival of any set of names is the CIR formula with
-    the levels added:</p>
+    $B$. With the stationary start the memory terms cancel, and the survival of any set of names is the CIR formula
+    with the levels added:</p>
     <div class="equation-card">
     $$S_c(T) = \exp\Big(-B\,(c\cdot x_0) - \kappa\,\bar\theta_c\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta_c^2\,I_2
       - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta_c^2\,B^2\Big) + O(\varepsilon^3),$$
@@ -128,25 +147,37 @@
     $$\log\frac{S_{(1,1)}(T)}{S_{(1,0)}(T)\,S_{(0,1)}(T)} = \varepsilon\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,I_2
       - \frac{\varepsilon^2}{4}\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,B^2 + O(\varepsilon^3).$$
     </div>
-    <p>This is the whole of the dependence. The averaged model has none, and the first term is the Green&ndash;Kubo
-    covariance of the two hazards.</p>
+    <p>With the independent default clocks this is the whole of the dependence. The averaged model has none, and the
+    first term is the Green&ndash;Kubo covariance of the two hazards.</p>
     <p>At $\lambda = 2$, so that each regime lasts about half a year:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$B$, $I_1$, $I_2$</td><td>0.496357, 1.246232, 0.558945</td></tr><tr><td>$\tilde\theta_1$, $\tilde\theta_2$</td><td>0.3975, 0.2975</td></tr><tr><td>dependence $\log(S_{12}/S_1S_2)$, second order</td><td>0.124914</td></tr><tr><td>dependence, numerical</td><td>0.117901</td></tr><tr><td>$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, second order</td><td>0.388841, 0.480925, 0.211884</td></tr><tr><td>$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, numerical</td><td>0.387984, 0.480400, 0.209711</td></tr></tbody></table></div>
 
+    <h3>The starting regime</h3>
+    <p>The stationary start is a choice of prior for the hidden cycle. With
+    probability $q$ of starting in the crisis regime,</p>
+    $$S_c(T) = e^{-B\,(c\cdot x_0)}\,\big(q\,a_1(T) + (1 - q)\,a_2(T)\big).$$
+    <p>To first order this multiplies the stationary-start survival by</p>
+    $$1 + (2q - 1)\,\frac{\varepsilon}{2}\,\tilde g_c(T), \qquad \tilde g_c = -\kappa\,\tilde\theta_c\,B .$$
+    <p>If $x_0$ is an observation of a system already running, the right prior is the posterior of the regime given
+    $x_0$, which is in general not $(\tfrac12, \tfrac12)$. The prior moves the correlation at $\lambda = 2$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>prior crisis probability $q$</th><th>default correlation, numerical</th></tr></thead><tbody><tr><td>0.1</td><td>0.101692</td></tr><tr><td>0.5</td><td>0.095799</td></tr><tr><td>0.9</td><td>0.083268</td></tr></tbody></table></div>
+
     <h2>Results</h2>
-    <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
-    model gives exactly zero at every switching rate.</p>
+    <p>The correlation of the two default indicators over three years, with the stationary start, against the
+    numerical solution. The averaged model gives exactly zero at every switching rate.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>default probabilities</th><th>numerical</th><th>Monte Carlo</th><th>averaged</th><th>order 1</th><th>order 2</th><th>order 4</th><th>order 6</th><th>first to five digits, or best</th></tr></thead><tbody><tr><td>1</td><td>0.587, 0.502</td><td>0.18268</td><td>0.18213 &plusmn; 0.00032</td><td>0</td><td>0.26468</td><td>0.22560</td><td>0.18872</td><td>0.20072</td><td>0.17954 (order 7)</td></tr><tr><td>2</td><td>0.612, 0.520</td><td>0.09580</td><td>0.09582 &plusmn; 0.00023</td><td>0</td><td>0.10923</td><td>0.10215</td><td>0.09593</td><td>0.09601</td><td>0.09580 (order 7)</td></tr><tr><td>4</td><td>0.627, 0.530</td><td>0.04745</td><td>0.04748 &plusmn; 0.00011</td><td>0</td><td>0.04977</td><td>0.04827</td><td>0.04745</td><td>0.04745</td><td>0.04745 (order 4)</td></tr><tr><td>8</td><td>0.634, 0.535</td><td>0.02332</td><td>0.02336 &plusmn; 0.00006</td><td>0</td><td>0.02377</td><td>0.02343</td><td>0.02332</td><td>0.02332</td><td>0.02332 (order 4)</td></tr></tbody></table></div>
     <p>The numerical column solves the reduced linear system. The Monte Carlo column checks it with no time
     discretization: given a simulated regime path the level is piecewise constant, each CIR survival is exact, and
-    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error.</p>
+    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>.</p>
     <p>The higher orders come from the <a href="./engine.html">engine</a>. With regimes lasting three months or less
-    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order four. With half-year regimes
-    ($\lambda = 2$) it reaches all five digits at order seven. With regimes lasting a year ($\lambda = 1$) the series
-    comes within about 0.003 before its terms start to grow.</p>
+    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order 4. With
+    half-year regimes ($\lambda = 2$) it reaches all five digits at order 7. With regimes lasting a
+    year ($\lambda = 1$) the series comes within about 0.003 before its terms start to grow.</p>
     <p>That is the behaviour of an asymptotic series. When the switching time is not small against the time scale of
     the forcing, the terms first shrink and then grow, and the best answer comes from stopping at the smallest
     term.</p>
+
   </main>
 
   <footer>

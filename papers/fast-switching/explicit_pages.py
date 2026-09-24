@@ -277,16 +277,29 @@ def counts():
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
 ''' + constant_card(r'\mathbb{E}\big[z^{N_T}\big]') + r'''    <p>with</p>
     $$\bar g = (z - 1)\,\bar\ell, \qquad \tilde g = (z - 1)\,\tilde\ell, \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .$$
-    <p>Differentiating the expansion at $z = 1$ gives the mean and variance of the count to second order. With
-    $L = 1 - e^{-2\lambda T}$,</p>
+    <p>Differentiating the expansion at $z = 1$ gives the mean and variance of the count. With
+    $L = 1 - e^{-2\lambda T}$ and the upper sign for a start in regime 1,</p>
     $$\mathbb{E}[N_T] = \bar\ell\,T \pm \frac{\varepsilon}{2}\,\tilde\ell\,L,$$
     $$\operatorname{Var}[N_T] = \bar\ell\,T + \varepsilon\,\tilde\ell^{\,2}\,T \pm \frac{\varepsilon}{2}\,\tilde\ell\,L
       - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
-    <p>The variance exceeds the mean by $\varepsilon\tilde\ell^2T$, the Green&ndash;Kubo overdispersion. At
-    $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime:</p>
+    <p>These two formulas have no higher-order terms. Given the regime path the count is Poisson with mean
+    $\Lambda = \int_0^T \ell_{y_s}\,ds$, so</p>
+    $$\operatorname{Var}[N_T] = \mathbb{E}[\Lambda] + \operatorname{Var}[\Lambda],$$
+    <p>and integrating the covariance of the two-state regime, which is $e^{-2\lambda|t - s|} - e^{-2\lambda(t + s)}$
+    in the $\pm1$ coding, gives both lines exactly.</p>
+    <p>The variance exceeds the mean by</p>
+    $$\operatorname{Var}[N_T] - \mathbb{E}[N_T] = \varepsilon\,\tilde\ell^{\,2}\,T
+      - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
+    <p>At fixed $T &gt; 0$ the first term leads. It is the Green&ndash;Kubo overdispersion. The second term is the memory
+    of the starting regime, and at horizons short against $1/\lambda$ it nearly cancels the first.</p>
+    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_2 - mean_1:.5f}' + r''',
+    against ''' + f'{eps * lt * lt * T:.5f}' + r''' from the first term alone:</p>
 ''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_2:.5f}', f'{var_ex:.5f}']],
-            head=('', 'first order', 'second order', 'exact')) + r'''    <p>The distribution itself follows by evaluating the exact generating function at the 64 roots of unity, as
-    described above.</p>
+            head=('', 'first order', 'second order (exact)', 'numerical')) + r'''    <p>The numerical column evaluates the generating function at the 64 roots of unity, as described above, and the
+    distribution itself follows the same way. A Monte Carlo check over 400,000 regime paths, sampled exactly from
+    exponential holding times, gives each path a Poisson law for the count. It agrees with the moments and with
+    every probability up to $k = 15$ within two standard errors. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
 '''
     write('counts', html)
 
@@ -478,16 +491,18 @@ def three_regimes():
 
 
 def credit():
+    """Write explicit/credit-parameters.html and explicit/credit.html, included into tools/pages/credit.html."""
     kap, sig, T = 2.0, 0.2, 3.0
     th = np.array([[0.8, 0.005], [0.6, 0.005]])          # name j, regime i
     x0 = np.array([0.05, 0.05])
     B, I1, I2 = cir_B(T, kap, sig), cir_int_B(T, kap, sig), cir_int_B2(T, kap, sig)
     C = [np.array([1, 0]), np.array([0, 1]), np.array([1, 1])]
 
-    def surv_num(lam, c):
+    def surv_num(lam, c, q=0.5):
+        """survival of the names in c; q is the prior probability of starting in the crisis regime"""
         gf = [(lambda i: (lambda s: -kap * (c @ th[:, i]) * cir_B(s, kap, sig)))(i) for i in range(2)]
         a = numerical_a_callable(T, sym(lam), gf, rtol=1e-12)
-        return math.exp(-B * (c @ x0)) * 0.5 * (a[0] + a[1])
+        return math.exp(-B * (c @ x0)) * (q * a[0] + (1 - q) * a[1])
 
     def surv_exp(lam, c, order):
         eps = 1 / lam
@@ -523,11 +538,51 @@ def credit():
     se = [surv_exp(lam, c, 2) for c in C]
     tt1, tt2 = (th[0, 0] - th[0, 1]) / 2, (th[1, 0] - th[1, 1]) / 2
     dep2 = 1 / lam * kap ** 2 * tt1 * tt2 * I2 - (1 / lam) ** 2 / 4 * kap ** 2 * tt1 * tt2 * B * B
+    prior_rows = []
+    for q in (0.1, 0.5, 0.9):
+        sq = [surv_num(lam, c, q) for c in C]
+        prior_rows.append([f'{q:g}', f'{corr(*sq):.6f}'])
+
+    # the parameters, and what the Feller condition says about them
+    feller = 2 * kap * th                                  # 2 kappa theta, name j, regime i
+    ok = feller >= sig ** 2
+    fmt = lambda v: f'{v:g}'
+    params = r"""    <p class="muted">Parameters: $\kappa = """ + fmt(kap) + r"""$, $\sigma = """ + fmt(sig) + r"""$; the first company
+    has $\theta_1 = (""" + fmt(th[0, 0]) + r""",\ """ + fmt(th[0, 1]) + r""")$, the second
+    $\theta_2 = (""" + fmt(th[1, 0]) + r""",\ """ + fmt(th[1, 1]) + r""")$; $x_0 = (""" + fmt(x0[0]) + r""",\ """ + fmt(x0[1]) + r""")$;
+    horizon $T = """ + fmt(T) + r"""$.</p>
+    <p>A CIR intensity stays strictly positive when</p>
+    $$2\kappa\theta \ge \sigma^2,$$
+    <p>the Feller condition.</p>
+"""
+    if ok.all():
+        params += r"""    <p>Here it holds in both regimes, so the intensities never reach zero.</p>
+"""
+    else:
+        def values(i):
+            v = feller[:, i]
+            return f'{fmt(v[0])} for both companies' if v[0] == v[1] else f'{fmt(v[0])} and {fmt(v[1])}'
+        where = ' and '.join(('in the crisis regime', 'in normal times')[i] for i in range(2) if not ok[:, i].all())
+        params += r"""    <p>Here $\sigma^2 = """ + fmt(sig ** 2) + r"""$, while $2\kappa\theta$ is """ + values(0) + r""" in the crisis
+    regime and """ + values(1) + r""" in normal times. The condition fails """ + where + r""", where an
+    intensity can touch zero and the hazard of that company vanishes for a moment. Zero is reflecting, so the
+    intensities stay nonnegative and are valid default intensities. The survival formulas below use only the
+    Laplace transform of the integrated CIR process, which holds whether or not the condition is met.</p>
+"""
+    write('credit-parameters', params)
+
+    # stopping orders, for the prose
+    best = {float(r[0]): r[-1] for r in rows}
+    fast = [float(r[0]) for r in rows if float(r[0]) >= 4]
+    by_order = max(int(best[l].split('order ')[1].rstrip(')')) for l in fast)
+    at2 = int(best[2.0].split('order ')[1].rstrip(')'))
+    gap1 = abs(float(best[1.0].split(' ')[0]) - float(rows[0][2]))
+
     html = r"""
     <h2>The survival probabilities written out</h2>
     <p>Given the regime path the two intensities are independent CIR processes, and each has the same coefficient
-    $B$. For a stationary start the memory terms cancel, and the survival of any set of names is the CIR formula with
-    the levels added:</p>
+    $B$. With the stationary start the memory terms cancel, and the survival of any set of names is the CIR formula
+    with the levels added:</p>
     <div class="equation-card">
     $$S_c(T) = \exp\Big(-B\,(c\cdot x_0) - \kappa\,\bar\theta_c\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta_c^2\,I_2
       - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta_c^2\,B^2\Big) + O(\varepsilon^3),$$
@@ -547,33 +602,44 @@ def credit():
     $$\log\frac{S_{(1,1)}(T)}{S_{(1,0)}(T)\,S_{(0,1)}(T)} = \varepsilon\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,I_2
       - \frac{\varepsilon^2}{4}\,\kappa^2\,\tilde\theta_1\tilde\theta_2\,B^2 + O(\varepsilon^3).$$
     </div>
-    <p>This is the whole of the dependence. The averaged model has none, and the first term is the Green&ndash;Kubo
-    covariance of the two hazards.</p>
-    <p>At $\lambda = 2$, so that each regime lasts about half a year:</p>
+    <p>With the independent default clocks this is the whole of the dependence. The averaged model has none, and the
+    first term is the Green&ndash;Kubo covariance of the two hazards.</p>
+    <p>At $\lambda = """ + f'{lam:g}' + r"""$, so that each regime lasts about half a year:</p>
 """ + table([['$B$, $I_1$, $I_2$', f'{B:.6f}, {I1:.6f}, {I2:.6f}'],
              ['$\\tilde\\theta_1$, $\\tilde\\theta_2$', f'{tt1:.4f}, {tt2:.4f}'],
              ['dependence $\\log(S_{12}/S_1S_2)$, second order', f'{dep2:.6f}'],
              ['dependence, numerical', f'{math.log(sn[2] / (sn[0] * sn[1])):.6f}'],
              ['$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, second order', ', '.join(f'{x:.6f}' for x in se)],
              ['$S_{(1,0)}$, $S_{(0,1)}$, $S_{(1,1)}$, numerical', ', '.join(f'{x:.6f}' for x in sn)]]) + r"""
+    <h3>The starting regime</h3>
+    <p>The stationary start is a choice of prior for the hidden cycle. With
+    probability $q$ of starting in the crisis regime,</p>
+    $$S_c(T) = e^{-B\,(c\cdot x_0)}\,\big(q\,a_1(T) + (1 - q)\,a_2(T)\big).$$
+    <p>To first order this multiplies the stationary-start survival by</p>
+    $$1 + (2q - 1)\,\frac{\varepsilon}{2}\,\tilde g_c(T), \qquad \tilde g_c = -\kappa\,\tilde\theta_c\,B .$$
+    <p>If $x_0$ is an observation of a system already running, the right prior is the posterior of the regime given
+    $x_0$, which is in general not $(\tfrac12, \tfrac12)$. The prior moves the correlation at $\lambda = """ + f'{lam:g}' + r"""$:</p>
+""" + table(prior_rows, head=('prior crisis probability $q$', 'default correlation, numerical')) + r"""
     <h2>Results</h2>
-    <p>The correlation of the two default indicators over three years, against the numerical solution. The averaged
-    model gives exactly zero at every switching rate.</p>
+    <p>The correlation of the two default indicators over three years, with the stationary start, against the
+    numerical solution. The averaged model gives exactly zero at every switching rate.</p>
 """ + table(rows, head=('switching rate', 'default probabilities', 'numerical', 'Monte Carlo', 'averaged',
                               'order 1', 'order 2', 'order 4', 'order 6', 'first to five digits, or best')) + r"""    <p>The numerical column solves the reduced linear system. The Monte Carlo column checks it with no time
     discretization: given a simulated regime path the level is piecewise constant, each CIR survival is exact, and
-    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error.</p>
+    only the regime path is sampled, 400,000 times. The two agree within the Monte Carlo error. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>.</p>
     <p>The higher orders come from the <a href="./engine.html">engine</a>. With regimes lasting three months or less
-    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order four. With half-year regimes
-    ($\lambda = 2$) it reaches all five digits at order seven. With regimes lasting a year ($\lambda = 1$) the series
-    comes within about 0.003 before its terms start to grow.</p>
+    ($\lambda \ge 4$) the expansion reproduces the correlation to all five digits by order """ + f'{by_order}' + r""". With
+    half-year regimes ($\lambda = 2$) it reaches all five digits at order """ + f'{at2}' + r""". With regimes lasting a
+    year ($\lambda = 1$) the series comes within about """ + f'{gap1:.3f}' + r""" before its terms start to grow.</p>
     <p>That is the behaviour of an asymptotic series. When the switching time is not small against the time scale of
     the forcing, the terms first shrink and then grow, and the best answer comes from stopping at the smallest
     term.</p>
 """
+    write('credit', html)
     return html
 
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
-    jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options(); three_regimes()
+    jumps(); regime_switching(); cir(); black_scholes(); counts(); bond_options(); three_regimes(); credit()
