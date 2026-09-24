@@ -13,7 +13,7 @@ Outer: w_n = Q0# ( [w']_{n-q} - sum_p [F_p]_{n-p-q} ), w_0 = 0. Inner layer in t
 """
 import numpy as np
 from collections import defaultdict
-from fastswitch import ExpPoly
+from fastswitch import ExpPoly, SchurLayer
 
 
 class FastSwitchGen:
@@ -77,8 +77,7 @@ class FastSwitchGen:
         cT = {p: [np.array(c.taylor(K)) for c, _ in Gs[p].terms] for p in ps}
         Ms = {p: [M for _, M in Gs[p].terms] for p in ps}
         WT = [None] + [np.array([w[b][i].taylor(K) for i in range(n)]) for b in range(1, N + 1)]
-        lam, V = np.linalg.eig(Q0)
-        Vi = np.linalg.inv(V)
+        layer = SchurLayer(Q0, pi, one)                # Schur basis on the mean-zero subspace; handles Jordan blocks
 
         def Ga(p, a, vec):
             out = [ExpPoly() for _ in range(n)]
@@ -144,10 +143,7 @@ class FastSwitchGen:
                         pGe = pi_ep(Ga(p, a, eta[j2]))
                         for i in range(n):
                             f[i] = f[i] + (eta[j1][i] * pGe).scale(-1)
-            y0 = Vi @ np.array([-w[m][i].value(0.0) for i in range(n)], complex)
-            fe = [sum((f[i].scale(Vi[jj, i]) for i in range(n) if Vi[jj, i]), ExpPoly()) for jj in range(n)]
-            ye = [ExpPoly() if abs(lam[jj]) < 1e-10 else ExpPoly.solve(lam[jj], fe[jj], y0[jj]) for jj in range(n)]
-            eta[m] = [sum((ye[jj].scale(V[i, jj]) for jj in range(n) if V[i, jj]), ExpPoly()) for i in range(n)]
+            eta[m] = layer.solve(f, np.array([-w[m][i].value(0.0) for i in range(n)], complex))
         self.eta, self._Ga, self._pi_ep = eta, Ga, pi_ep
 
     def a(self, t, order=None):

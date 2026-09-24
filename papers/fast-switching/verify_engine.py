@@ -9,6 +9,8 @@
 6. Nearly equal but distinct eigenvalues of Q: with g = 0 the engine reproduces exp(Q t) a0.
 7. The numerical solver keeps complex arithmetic for a forcing that is real at some times.
 8. A Chebyshev product above the degree cap raises instead of losing terms.
+9. An irreducible defective three-state generator (issue 7: Q* = J - I + 0.1 u v^T with v.u = 0, so the eigenvalue
+   -1 has a Jordan block): the error after n orders falls like eps^(n+1), in both engines.
 `python3 verify_engine.py`  (about a minute)
 """
 import math
@@ -123,6 +125,26 @@ def main():
     errc2 = abs(lt.integral(0.4) - (f40.s * f40.s * 0.5).integ(lbnd=0)(0.4))
     print(f"8. Chebyshev degree cap: degree 122 raises {raised}; degree 80 first-order term error {errc2:.1e}")
     ok &= raised and errc2 < 1e-13
+
+    # irreducible but defective: every off-diagonal entry of Q* is positive and N = 0.1 u v^T is nilpotent
+    from fastswitch_gen import FastSwitchGen
+    from fastswitch_op import Op
+    Qstar = np.ones((3, 3)) / 3 - np.eye(3) + 0.1 * np.outer([1., -1., 0.], [1., 1., -2.])
+    g9 = [ExpSum.const(c) for c in (-0.2, 0.3, 0.6)]
+    err9, errg = {}, 0.0
+    for sc in (10, 20):
+        Q9 = sc * Qstar
+        ex9 = numerical_a(1.0, Q9, g9, dps=30, mp_values=True)
+        fs9 = FastSwitch(Q9, g9, order=5)
+        err9[sc] = [max(abs(float(mp.mpf(float(fs9.a(1.0, o)[i])) - ex9[i])) for i in range(3)) for o in range(6)]
+        op9 = Op([(g9[i], np.diag([1.0 if j == i else 0.0 for j in range(3)])) for i in range(3)])
+        fg9 = FastSwitchGen(fs9.Q0, fs9.eps, 1, {0: op9}, fs9.pi, np.ones(3), order=5)
+        errg = max(errg, max(float(np.abs(fg9.a(t, o) - fs9.a(t, o)).max()) for t in (0.3, 1.0) for o in range(6)))
+    r9 = [math.log2(a / b) for a, b in zip(err9[10], err9[20])]
+    print("9. defective irreducible chain: errors at lam = 10 " + " ".join(f"{e:.1e}" for e in err9[10]) +
+          "; rates " + " ".join(f"{r:.2f}" for r in r9) + " (expected 1..6); general engine differs by "
+          f"{errg:.1e}")
+    ok &= err9[10][5] < 1e-7 and all(abs(r - (n + 1)) < 0.5 for n, r in enumerate(r9)) and errg < 1e-12
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
 

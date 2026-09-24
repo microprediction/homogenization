@@ -163,8 +163,10 @@
     <p>The outer series does not match the terminal vector at $t = 0$. The mismatch is removed on the fast clock
     $\tau = t/\varepsilon$:</p>
     $$\eta = w - w_{\mathrm{outer}}, \qquad \frac{d\eta}{d\tau} = Q_0\,\eta + \varepsilon\,\big[F(w_{\mathrm{outer}}+\eta) - F(w_{\mathrm{outer}})\big], \qquad \eta(0) = w(0) - w_{\mathrm{outer}}(0).$$
-    <p>It decays at the rates of the chain and is solved order by order in the eigenbasis of $Q_0$, in the span of
-    $\tau^k e^{\mu\tau}$. The result is $a_i = s\,(1 + w_i + \eta_i)$, with error $O(\varepsilon^{N+1})$ after $N$
+    <p>It decays at the rates of the chain and is solved order by order in a Schur basis of $Q_0$ on the mean-zero
+    subspace, by back substitution through the triangular form, in the span of $\tau^k e^{\mu\tau}$. A generator
+    with a Jordan block has no eigenvector basis, but it has a triangular one, and the powers of $\tau$ come out of
+    the back substitution. The result is $a_i = s\,(1 + w_i + \eta_i)$, with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 
     <h2>Other inputs</h2>

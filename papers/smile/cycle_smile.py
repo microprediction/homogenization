@@ -25,6 +25,13 @@ class Grid:
         D2[-1, :] = D2[-2, :]
         self.D1, self.D2, self.V = D1, D2, np.diag(self.v)
 
+    def index(self, v0):
+        """The node at v0. The grid must contain it: a value is read off at a node, never at the nearest one."""
+        i0 = int(np.argmin(abs(self.v - v0)))
+        if abs(self.v[i0] - v0) > 1e-12:
+            raise ValueError(f"v0 = {v0} is not a grid node; the nearest is {self.v[i0]:.10g}. Choose n so that v0 is a node.")
+        return i0
+
 
 def operators(grid, u, kappa):
     """Averaged-part builder and the two switched operators, for Fourier frequency u (complex)."""
@@ -60,7 +67,7 @@ def char_fns(u, T, Q, thetas, xi2s, kappa, grid, v0):
     K = gk(Q, phis)
     Ks = 0.5 * (K + K.T)
     corr = lambda KK: sum(KK[j, k] * As[j] @ As[k] for j in range(2) for k in range(2))
-    i0 = int(np.argmin(abs(grid.v - v0)))
+    i0 = grid.index(v0)
     return {'numerical': full[i0], 'averaged': (expm(T * Lbar) @ f)[i0],
             'symmetric part only': first_order(Lbar, corr(Ks), T, f)[i0], 'rule': first_order(Lbar, corr(K), T, f)[i0]}
 

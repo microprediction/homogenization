@@ -71,7 +71,7 @@ def main():
     from options import zcb_call
     args = (1e-4, [.05, .03], [.3, .1], .04, 1., 4., .9, 20.)
     c1 = bo.call(*args)
-    num = zcb_call(1., 4., .9, .04, 0, 1e-4, [.05, .03], [.3, .1], 20 * np.array([[-1., 1.], [1., -1.]]), n=80)
+    num = zcb_call(1., 4., .9, .04, 0, 1e-4, [.05, .03], [.3, .1], 20 * np.array([[-1., 1.], [1., -1.]]))
     good = abs(c1 - num) < 3e-4
     ok &= good
     print(f"{'ok ' if good else 'BAD'} 4. bond call, kappa = 1e-4, lam = 20: first order {c1:.8f}, numerical {num:.8f}, "

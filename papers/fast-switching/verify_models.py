@@ -1,7 +1,8 @@
 """Certificate for models.py: each model's reduction checked by Monte Carlo, each expansion by convergence.
 
-`python3 verify_models.py` (a few minutes). A reduction passes when Monte Carlo on a fine grid agrees with the
-numerical solution of the reduced system within four standard errors; an expansion passes when doubling the
+`python3 verify_models.py` (a few minutes). A reduction passes when Monte Carlo on a fine grid (a discretized
+approximation, with the regime held fixed within each step) agrees with the numerical solution of the reduced
+system within four standard errors; an expansion passes when doubling the
 switching rate cuts the order-n error by about 2^(n+1) for the first orders.
 """
 import math
@@ -37,7 +38,12 @@ def orders(make, t, lam, n=4):
 
 
 def switch(y, lam, dt):
-    return np.where(RNG.random(len(y)) < 1 - math.exp(-lam * dt), 1 - y, y)
+    """The regime at the end of a step of length dt: for the symmetric two-state chain the state has changed with
+    probability (1 - exp(-2 lam dt)) / 2, which counts an odd number of jumps within the step. The regime is held
+    fixed inside the step, so the grid Monte Carlo below carries a switching bias of first order in dt, of size
+    about lam dt times the regime contrast; at dt = 0.001 it sits well below the four-standard-error tolerance.
+    verify_option_mc.py has the same models with no time grid."""
+    return np.where(RNG.random(len(y)) < 0.5 * (1 - math.exp(-2 * lam * dt)), 1 - y, y)
 
 
 def main():
@@ -126,6 +132,17 @@ def main():
     num = zcb_call(1.0, 4.0, 0.90, 0.04, 0, 0.5, [0.05, 0.03], [0.015, 0.010], Ql)
     err = abs(zcb_call(1.0, 4.0, 0.90, 0.04, 0, 0.5, [0.05, 0.03], [0.015, 0.010], Ql, order=4) - num)
     check("bond call lam=50", err < 1e-10, f"numerical {num:.8f}, order-4 error {err:.1e}")
+    # identical regimes, so switching plays no part and the price is the constant-parameter Vasicek closed form,
+    # which bond_option_explicit.call gives at order 0 (its corrections vanish when the regimes agree). Deep in the
+    # money the Gil-Pelaez integrand oscillates about 140 times over the frequency range; a fixed 160-node rule
+    # priced this call 4.5% low.
+    from bond_option_explicit import call as explicit_call
+    Qi = [[-10.0, 10.0], [10.0, -10.0]]
+    for K, o in ((0.5, None), (0.93, None), (0.93, 2)):
+        num = zcb_call(0.2, 2.0, K, 0.04, 0, 2.0, [0.03, 0.03], [0.03, 0.03], Qi, order=o)
+        cf = explicit_call(2.0, [0.03, 0.03], [0.03, 0.03], 0.04, 0.2, 2.0, K, 10.0, order=0)
+        check(f"bond call, identical regimes, strike {K}" + ("" if o is None else f", order {o}"), abs(num - cf) < 1e-9,
+              f"Gil-Pelaez {num:.12f}, Vasicek closed form {cf:.12f}, gap {abs(num - cf):.1e}")
 
     print("PASS" if OK else "FAIL")
     return 0 if OK else 1
