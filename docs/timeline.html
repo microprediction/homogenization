@@ -24,7 +24,7 @@
         <a href="./survival.html">Terms adding up</a>
         <a href="./convergence.html">Convergence orders</a>
       </span></span>
-      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Examples</span><span class="drop">
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Finance</span><span class="drop">
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
@@ -80,9 +80,8 @@
   <p>Averaging a fast hidden variable, and correcting the average with an integrated correlation, appears in
   mathematics, physics and fluids, finance, and biology and engineering. Each lane is a field, and each dot is a work
   in the <a href="./bibliography.html">bibliography</a>, placed at its year of publication.</p>
-  <p>Labelled dots are landmarks. Hover over any dot for its annotation, and click to open it. The dashed lines mark
-  the first Green&ndash;Kubo formula (Taylor, 1922), the averaging theorem (Khasminskii, 1966), and the arrival of fast
-  averaging in option pricing (Sircar and Papanicolaou, 1999).</p>
+  <p>Labelled marks are landmarks. Squares are the regime-switching homogenization papers, which expand a
+  quantity around its fast-switching average. Hover over any mark for its annotation, and click to open it.</p>
   <div class="legend" id="lane-legend"></div>
   <div id="timeline"></div>
 </div>
@@ -125,13 +124,6 @@ const place = e => { const s = span(e), R = rowsOf(e.lane);
 EVENTS.filter(e=>e.big).sort((a,b)=>a.y-b.y).forEach(place);
 EVENTS.filter(e=>!e.big).sort((a,b)=>a.y-b.y).forEach(place);
 EVENTS.forEach(e => e.yy = LANES[e.lane].y0 + 14 + e.row*20);
-[[1922,"1922: Taylor's diffusivity"],[1966,"1966: Khasminskii averaging"],[1999,"1999: fast volatility in option pricing"]].forEach(([yr,txt],i)=>{
-  const xx = x(yr+0.5);
-  svg.append("line").attr("x1",xx).attr("x2",xx).attr("y1",40).attr("y2",H-30)
-     .attr("stroke","#c0392b").attr("stroke-dasharray","6,4").attr("stroke-width",1.2).attr("opacity",0.8);
-  svg.append("text").attr("x", xx+6).attr("y",16+i*13).attr("text-anchor","start")
-     .attr("fill","#c0392b").attr("font-size","11px").attr("font-style","italic").text(txt);
-});
 const tooltip = d3.select("#tooltip");
 const ev = svg.append("g").selectAll("g").data(EVENTS).join("g")
   .style("cursor","pointer")
@@ -139,14 +131,19 @@ const ev = svg.append("g").selectAll("g").data(EVENTS).join("g")
   .on("mousemove", (e,d)=>{ tooltip.style("display","block").style("left",(e.pageX+14)+"px").style("top",(e.pageY+8)+"px")
       .html(`<b>${d.label}</b> (${d.y})<br>${d.note}`); })
   .on("mouseout", ()=>tooltip.style("display","none"));
-ev.append("circle").attr("cx", d=>x(d.y+0.5)).attr("cy", d=>d.yy).attr("r", d=>d.big?7:4.5)
+ev.filter(d=>!d.rsh).append("circle").attr("cx", d=>x(d.y+0.5)).attr("cy", d=>d.yy).attr("r", d=>d.big?7:4.5)
   .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#fff").attr("stroke-width", 1.5).attr("opacity", d=>d.big?1:0.7);
+ev.filter(d=>d.rsh).append("rect").attr("x", d=>x(d.y+0.5)-(d.big?7:5.5)).attr("y", d=>d.yy-(d.big?7:5.5))
+  .attr("width", d=>d.big?14:11).attr("height", d=>d.big?14:11)
+  .attr("fill", d=>LANES[d.lane].color).attr("stroke", "#1f1d3d").attr("stroke-width", 1.5);
 ev.filter(d=>d.big).append("text").attr("class","evlabel")
   .attr("x", d=>{ const xx=x(d.y+0.5); return xx > W-200 ? xx-10 : xx+10; })
   .attr("text-anchor", d=>x(d.y+0.5) > W-200 ? "end" : "start")
   .attr("y", d=>d.yy+4).text(d=>d.label);
 d3.select("#lane-legend").selectAll("span").data(Object.values(LANES)).join("span")
   .html(d=>`<span class="dot" style="background:${d.color}"></span>${d.label}`);
+d3.select("#lane-legend").append("span")
+  .html(`<span style="width:11px;height:11px;display:inline-block;border:1.5px solid #1f1d3d;background:#bbb"></span>Regime-switching homogenization`);
 </script>
 
   <footer>

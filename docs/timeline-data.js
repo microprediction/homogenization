@@ -6,7 +6,8 @@ var EVENTS = [
 "label": "Cotton: thesis",
 "big": true,
 "url": "https://raw.githubusercontent.com/microprediction/home/main/papers/Cotton_2001_PhD_Thesis_An_Analytic_Approach_to_Ornstein-Uhlenbeck_Processes_with_Fluctuating_Parameters.pdf",
-"note": "An Analytic Approach to Ornstein-Uhlenbeck Processes with Fluctuating Parameters and Applications in the Modeling of Fixed Income Securities. Treats Ornstein-Uhlenbeck short rates and hazard rates whose parameters are driven by a Markov chain. It reduces bond prices and survival probabilities to a linear system of ordinary differential equations and expands them for fast switching. Its second half is developed to all orders in the regime-switching pages."
+"note": "An Analytic Approach to Ornstein-Uhlenbeck Processes with Fluctuating Parameters and Applications in the Modeling of Fixed Income Securities. Treats Ornstein-Uhlenbeck short rates and hazard rates whose parameters are driven by a Markov chain. It reduces bond prices and survival probabilities to a linear system of ordinary differential equations and expands them for fast switching. Its second half is developed to all orders in the regime-switching pages.",
+"rsh": true
 },
 {
 "y": 1978,
@@ -62,7 +63,8 @@ var EVENTS = [
 "label": "Yin–Zhang",
 "big": true,
 "url": "https://doi.org/10.1007/978-1-4612-0627-9",
-"note": "Continuous-Time Markov Chains and Applications: A Singular Perturbation Approach. Constructs asymptotic expansions, with outer and initial-layer terms, for probability distributions of Markov chains with generators of the form Q/epsilon, the general machinery behind expanding in the inverse switching rate."
+"note": "Continuous-Time Markov Chains and Applications: A Singular Perturbation Approach. Constructs asymptotic expansions, with outer and initial-layer terms, for probability distributions of Markov chains with generators of the form Q/epsilon, the general machinery behind expanding in the inverse switching rate.",
+"rsh": true
 },
 {
 "y": 1996,
@@ -78,7 +80,8 @@ var EVENTS = [
 "label": "A. M. Il'in et al.",
 "big": false,
 "url": "https://doi.org/10.1006/jmaa.1998.6532",
-"note": "Asymptotic Expansions of Solutions of Integro-Differential Equations for Transition Densities of Singularly Perturbed Switching Diffusions: Rapid Switchings. Obtains asymptotic expansions of the transition densities of diffusions whose coefficients are modulated by a rapidly switching Markov chain, the density-level analogue of the expansion for a Markov-modulated Ornstein-Uhlenbeck process."
+"note": "Asymptotic Expansions of Solutions of Integro-Differential Equations for Transition Densities of Singularly Perturbed Switching Diffusions: Rapid Switchings. Obtains asymptotic expansions of the transition densities of diffusions whose coefficients are modulated by a rapidly switching Markov chain, the density-level analogue of the expansion for a Markov-modulated Ornstein-Uhlenbeck process.",
+"rsh": true
 },
 {
 "y": 2014,
@@ -86,7 +89,8 @@ var EVENTS = [
 "label": "Gang Huang et al.",
 "big": false,
 "url": "https://doi.org/10.1016/j.spl.2013.12.013",
-"note": "Weak convergence of Markov-modulated diffusion processes with rapid switching. Proves that a diffusion whose drift and diffusion coefficients are modulated by a rapidly switching Markov chain converges weakly to the diffusion with averaged coefficients, which is the leading-order statement underlying the averaged Vasicek limit."
+"note": "Weak convergence of Markov-modulated diffusion processes with rapid switching. Proves that a diffusion whose drift and diffusion coefficients are modulated by a rapidly switching Markov chain converges weakly to the diffusion with averaged coefficients, which is the leading-order statement underlying the averaged Vasicek limit.",
+"rsh": true
 },
 {
 "y": 2016,
@@ -94,7 +98,8 @@ var EVENTS = [
 "label": "Gang Huang et al.",
 "big": false,
 "url": "https://doi.org/10.1017/apr.2015.15",
-"note": "Markov-modulated Ornstein-Uhlenbeck processes. Computes moments and Laplace-transform PDEs of an Ornstein-Uhlenbeck process with Markov-modulated parameters and proves functional central limit theorems when the modulating chain is accelerated, which is the regime-switching state process studied as a process rather than through its exponential functional."
+"note": "Markov-modulated Ornstein-Uhlenbeck processes. Computes moments and Laplace-transform PDEs of an Ornstein-Uhlenbeck process with Markov-modulated parameters and proves functional central limit theorems when the modulating chain is accelerated, which is the regime-switching state process studied as a process rather than through its exponential functional.",
+"rsh": true
 },
 {
 "y": 2016,
@@ -102,7 +107,8 @@ var EVENTS = [
 "label": "Gang Huang et al.",
 "big": false,
 "url": "https://doi.org/10.1016/j.spa.2015.12.005",
-"note": "Large deviations for Markov-modulated diffusion processes with rapid switching. Proves a joint sample-path large deviations principle for a Markov-modulated diffusion and the chain's occupation measure under rapid switching and small noise."
+"note": "Large deviations for Markov-modulated diffusion processes with rapid switching. Proves a joint sample-path large deviations principle for a Markov-modulated diffusion and the chain's occupation measure under rapid switching and small noise.",
+"rsh": true
 },
 {
 "y": 2000,
@@ -262,7 +268,8 @@ var EVENTS = [
 "label": "Yin: option expansion",
 "big": true,
 "url": "https://doi.org/10.3233/asy-2009-0953",
-"note": "Asymptotic expansions of option price under regime-switching diffusions with a fast-varying switching process. Develops uniform asymptotic expansions, with averaged Black-Scholes leading term and full series, for European option prices when the regime chain switches fast, the closest published analogue of the regime-switching expansion but for equity options rather than bond prices."
+"note": "Asymptotic expansions of option price under regime-switching diffusions with a fast-varying switching process. Develops uniform asymptotic expansions, with averaged Black-Scholes leading term and full series, for European option prices when the regime chain switches fast, the closest published analogue of the regime-switching expansion but for equity options rather than bond prices.",
+"rsh": true
 },
 {
 "y": 2006,
@@ -278,7 +285,8 @@ var EVENTS = [
 "label": "Arnab Basu",
 "big": false,
 "url": "https://doi.org/10.1016/j.orl.2009.06.005",
-"note": "Asymptotic analysis of option pricing in a Markov modulated market. Analyzes Markov-modulated option prices in the limits where the chain moves very fast or very slowly relative to the asset."
+"note": "Asymptotic analysis of option pricing in a Markov modulated market. Analyzes Markov-modulated option prices in the limits where the chain moves very fast or very slowly relative to the asset.",
+"rsh": true
 },
 {
 "y": 2014,
@@ -462,7 +470,8 @@ var EVENTS = [
 "label": "Yin",
 "big": false,
 "url": "https://doi.org/10.1007/978-1-4614-4346-9",
-"note": "Continuous-Time Markov Chains and Applications: A Two-Time-Scale Approach. The second edition of the two-time-scale Markov chain monograph, with outer expansions, initial layers and applications to control and finance."
+"note": "Continuous-Time Markov Chains and Applications: A Two-Time-Scale Approach. The second edition of the two-time-scale Markov chain monograph, with outer expansions, initial layers and applications to control and finance.",
+"rsh": true
 },
 {
 "y": 1987,
@@ -694,7 +703,8 @@ var EVENTS = [
 "label": "Lawley",
 "big": false,
 "url": "https://doi.org/10.1137/15m1015182",
-"note": "A New Derivation of Robin Boundary Conditions through Homogenization of a Stochastically Switching Boundary. Derives Robin boundary conditions by homogenizing a boundary that switches at random between absorbing and reflecting."
+"note": "A New Derivation of Robin Boundary Conditions through Homogenization of a Stochastically Switching Boundary. Derives Robin boundary conditions by homogenizing a boundary that switches at random between absorbing and reflecting.",
+"rsh": true
 },
 {
 "y": 1969,
@@ -939,10 +949,11 @@ var EVENTS = [
 {
 "y": 2026,
 "lane": "finance",
-"label": "Engine to all orders",
+"label": "Cotton: engine to all orders",
 "big": true,
 "url": "./engine.html",
-"note": "The fast-switching engine: every order of the expansion, with the initial layer, for Markov-modulated exponential-affine models."
+"note": "The fast-switching engine: every order of the expansion, with the initial layer, for Markov-modulated exponential-affine models.",
+"rsh": true
 },
 {
 "y": 2026,
@@ -951,5 +962,14 @@ var EVENTS = [
 "big": true,
 "url": "https://kinetics.microprediction.org/softmax-fast-mixing.pdf",
 "note": "An Asymptotic Correction to Luce's Choice Axiom for Competing Correlated Cox Processes (working draft): the first correction to softmax, governed by the Green-Kubo matrix of the rates."
+},
+{
+"y": 2025,
+"lane": "other",
+"label": "Monmarché–Strickler",
+"big": false,
+"rsh": true,
+"url": "https://doi.org/10.1017/jpr.2024.107",
+"note": "Asymptotic expansion of the invariant measure for Markov-modulated ODEs at high frequency. Expands the invariant measure of ordinary differential equations modulated by a fast Markov chain in powers of the switching time, with a first-order formula for the top Lyapunov exponent of switched linear systems."
 }
 ];
