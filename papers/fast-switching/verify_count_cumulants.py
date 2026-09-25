@@ -13,7 +13,8 @@ Lambda_T.  The certificate checks this through order four for one stream and
 through bidegree (2,2) for two conditionally independent streams driven by a
 nonreversible three-state chain.  A third calculation adds a regime-dependent
 common-shock stream and verifies the all-order correction through bidegree
-(3,3).  It then verifies the closed two-state finite-horizon formula used on
+(3,3), first for unit jumps and then for arbitrary integer-valued bivariate
+marks.  It then verifies the closed two-state finite-horizon formula used on
 the counts page and its O(lambda^-2) first-order residual.
 """
 
@@ -274,6 +275,70 @@ def common_shock_factorial_cumulant(Q, rates1, rates2, common_rates,
     return answer
 
 
+def mark_factorial_moments(marks, probabilities, degree):
+    """Return E[(J1)_a (J2)_b] for a bivariate integer mark."""
+    marks = np.asarray(marks, int)
+    probabilities = np.asarray(probabilities, float)
+    if marks.ndim != 2 or marks.shape[1] != 2:
+        raise ValueError("marks must have shape (number of marks, 2)")
+    if np.any(marks < 0) or np.any(probabilities < 0):
+        raise ValueError("marks and probabilities must be nonnegative")
+    if len(probabilities) != len(marks) or not np.isclose(
+            probabilities.sum(), 1.0):
+        raise ValueError("mark probabilities must match and sum to one")
+    falling = np.ones((2, degree + 1, len(marks)))
+    for axis in range(2):
+        for order in range(1, degree + 1):
+            falling[axis, order] = (
+                falling[axis, order - 1] * (marks[:, axis] - order + 1))
+    return np.einsum("ai,bi,i->ab", falling[0], falling[1], probabilities)
+
+
+def marked_common_shock_factorial_cumulant(
+        Q, rates1, rates2, common_rates, mark_moments, r, s, T, prior):
+    """Partition formula for an arbitrarily marked common Poisson stream.
+
+    A block containing ``a`` derivatives in the first coordinate and ``b``
+    in the second contributes the integrated-rate variable W_ab.  Singleton
+    variables are A=Lambda1+E[J1]C and B=Lambda2+E[J2]C; every larger block is
+    E[(J1)_a (J2)_b] C.  Summing their joint cumulants over set partitions is
+    the multivariate logarithmic Faa di Bruno formula.
+    """
+    rates1, rates2 = np.asarray(rates1), np.asarray(rates2)
+    common_rates = np.asarray(common_rates)
+    variables = {
+        (1, 0): rates1 + mark_moments[1, 0] * common_rates,
+        (0, 1): rates2 + mark_moments[0, 1] * common_rates,
+    }
+    labels = tuple([0] * r + [1] * s)
+    answer = 0.0
+    for partition in _set_partitions(labels):
+        multiplicities = {}
+        block_rates = {}
+        vanishes = False
+        for block in partition:
+            block_type = (block.count(0), block.count(1))
+            if block_type not in variables:
+                coefficient = mark_moments[block_type]
+                if coefficient == 0.0:
+                    vanishes = True
+                    break
+                variables[block_type] = coefficient * common_rates
+            multiplicities[block_type] = multiplicities.get(block_type, 0) + 1
+            block_rates[block_type] = variables[block_type]
+        if vanishes:
+            continue
+        types = tuple(multiplicities)
+        answer += integrated_intensity_joint_cumulant(
+            Q,
+            tuple(block_rates[item] for item in types),
+            tuple(multiplicities[item] for item in types),
+            T,
+            prior,
+        )
+    return answer
+
+
 def common_shock_factorial_cumulants22(Q, rates1, rates2, common_rates,
                                         T, prior):
     """Predicted mixed factorial cumulants with a shared Poisson component.
@@ -303,14 +368,31 @@ def common_shock_factorial_cumulants22(Q, rates1, rates2, common_rates,
     ])
 
 
-def bivariate_count_mixed_cumulants(Q, rates1, rates2, T, prior,
-                                     max_count=75, common_rates=None):
+def bivariate_count_mixed_cumulants(
+        Q, rates1, rates2, T, prior, max_count=75, common_rates=None,
+        common_marks=None, common_mark_probabilities=None):
     """Mixed count cumulants from a sparse two-count forward master equation."""
     Q = np.asarray(Q, float)
     rates1, rates2 = np.asarray(rates1, float), np.asarray(rates2, float)
     prior = np.asarray(prior, float)
     common_rates = (np.zeros_like(rates1) if common_rates is None
                     else np.asarray(common_rates, float))
+    if common_marks is None:
+        common_marks = np.array([[1, 1]])
+        common_mark_probabilities = np.array([1.0])
+    else:
+        if common_mark_probabilities is None:
+            raise ValueError("common mark probabilities are required")
+        common_marks = np.asarray(common_marks, int)
+        common_mark_probabilities = np.asarray(
+            common_mark_probabilities, float)
+    if (common_marks.ndim != 2 or common_marks.shape != (len(common_marks), 2)
+            or len(common_marks) == 0
+            or len(common_mark_probabilities) != len(common_marks)
+            or np.any(common_marks < 0)
+            or np.any(common_mark_probabilities < 0)
+            or not np.isclose(common_mark_probabilities.sum(), 1.0)):
+        raise ValueError("invalid common mark distribution")
     n, m = len(prior), max_count + 1
     shift = diags(np.ones(m - 1), -1, shape=(m, m), format="csr")
     count_eye = eye(m, format="csr")
@@ -318,8 +400,20 @@ def bivariate_count_mixed_cumulants(Q, rates1, rates2, T, prior,
     within = Q.T - np.diag(rates1 + rates2 + common_rates)
     A = (kron(regime_eye, within, format="csr")
          + kron(kron(shift, count_eye), np.diag(rates1), format="csr")
-         + kron(kron(count_eye, shift), np.diag(rates2), format="csr")
-         + kron(kron(shift, shift), np.diag(common_rates), format="csr"))
+         + kron(kron(count_eye, shift), np.diag(rates2), format="csr"))
+    shift_powers = {
+        0: count_eye,
+        **{
+            jump: diags(np.ones(m - jump), -jump, shape=(m, m), format="csr")
+            for jump in range(1, common_marks.max() + 1)
+        },
+    }
+    for mark, probability in zip(common_marks, common_mark_probabilities):
+        A += kron(
+            kron(shift_powers[mark[0]], shift_powers[mark[1]]),
+            probability * np.diag(common_rates),
+            format="csr",
+        )
     y0 = np.zeros(m * m * n)
     y0[:n] = prior
     p = np.asarray(expm_multiply(A * T, y0)).reshape(m, m, n).sum(axis=2)
@@ -329,6 +423,22 @@ def bivariate_count_mixed_cumulants(Q, rates1, rates2, T, prior,
         for b in range(3):
             raw[a, b] = np.einsum("i,j,ij->", grid ** a, grid ** b, p)
     return mixed_cumulants22(raw), p
+
+
+def compound_poisson_tail_bound(
+        threshold, horizon, idiosyncratic_rate, common_rate,
+        marks, probabilities, coordinate):
+    """Chernoff bound for a coordinate of the dominating marked count."""
+    marks = np.asarray(marks, float)[:, coordinate]
+    probabilities = np.asarray(probabilities, float)
+    candidates = np.linspace(0.02, 4.0, 2000)
+    exponents = (
+        horizon * idiosyncratic_rate * np.expm1(candidates)
+        + horizon * common_rate
+        * (np.exp(np.outer(candidates, marks)) @ probabilities - 1.0)
+        - threshold * candidates
+    )
+    return float(np.exp(exponents.min()))
 
 
 def two_state_exact(rates, T, lam, sign=1.0):
@@ -400,6 +510,84 @@ def main():
                      (rates_b + common_rates).max() * 1.3)
     )
 
+    # Marked common events replace the unit increment (1,1) by an iid
+    # integer-valued vector J.  The independent forward equation shifts by
+    # each possible mark.  The partition formula uses only the falling-
+    # factorial moments E[(J1)_a (J2)_b] and integrated-rate cumulants.
+    common_marks = np.array([
+        [1, 1],
+        [2, 1],
+        [1, 2],
+        [2, 2],
+        [3, 1],
+        [1, 3],
+    ])
+    common_mark_probabilities = np.array([0.25, 0.20, 0.20, 0.15, 0.10, 0.10])
+    mark_moments = mark_factorial_moments(
+        common_marks, common_mark_probabilities, degree=3)
+    marked_count, p_marked = bivariate_count_mixed_cumulants(
+        Q,
+        rates,
+        rates_b,
+        1.3,
+        prior,
+        max_count=110,
+        common_rates=common_rates,
+        common_marks=common_marks,
+        common_mark_probabilities=common_mark_probabilities,
+    )
+    marked_factorial_grid = bivariate_factorial_cumulant_grid(
+        p_marked, degree=3)
+    marked_predicted_grid = np.array([
+        [marked_common_shock_factorial_cumulant(
+            Q,
+            rates,
+            rates_b,
+            common_rates,
+            mark_moments,
+            r,
+            s,
+            1.3,
+            prior,
+        ) for s in range(1, 4)]
+        for r in range(1, 4)
+    ])
+    marked_error = np.max(
+        np.abs(marked_factorial_grid - marked_predicted_grid))
+    marked_tail_bound = sum(
+        compound_poisson_tail_bound(
+            p_marked.shape[axis] - 1,
+            1.3,
+            (rates, rates_b)[axis].max(),
+            common_rates.max(),
+            common_marks,
+            common_mark_probabilities,
+            axis,
+        )
+        for axis in range(2)
+    )
+
+    # The marked partition theorem must reduce exactly to the previous
+    # matching formula when every common mark is (1,1).
+    unit_mark_moments = mark_factorial_moments(
+        np.array([[1, 1]]), np.array([1.0]), degree=3)
+    unit_partition_grid = np.array([
+        [marked_common_shock_factorial_cumulant(
+            Q,
+            rates,
+            rates_b,
+            common_rates,
+            unit_mark_moments,
+            r,
+            s,
+            1.3,
+            prior,
+        ) for s in range(1, 4)]
+        for r in range(1, 4)
+    ])
+    unit_reduction_error = np.max(
+        np.abs(unit_partition_grid - common_predicted_grid))
+
     # With only a deterministic common component, marginal cumulative rates
     # have no stochastic covariance, yet kappa_11^(F) equals its mean.  This
     # is the sharp counterexample to identification without conditional
@@ -454,6 +642,13 @@ def main():
           " ".join(f"{x:.8f}" for x in common_factorial))
     print("common-shock (3,3) factorial cumulant",
           f"{common_factorial_grid[2, 2]:.8f}")
+    print("marked common-shock formula max error through (3,3)",
+          f"{marked_error:.3e}")
+    print("marked common-shock count-truncation tail bound",
+          f"{marked_tail_bound:.3e}")
+    print("marked common-shock (3,3) factorial cumulant",
+          f"{marked_factorial_grid[2, 2]:.8f}")
+    print("unit-mark reduction max error", f"{unit_reduction_error:.3e}")
     print("common-only mixed factorial cumulants",
           " ".join(f"{x:.8f}" for x in common_only_factorial))
     print("two-state closed-form max error", f"{max(closed_errors):.3e}")
@@ -468,6 +663,9 @@ def main():
     assert common_error < 2e-9
     assert common_all_order_error < 2e-8
     assert common_tail_bound < 1e-45
+    assert marked_error < 2e-7
+    assert marked_tail_bound < 1e-35
+    assert unit_reduction_error < 2e-10
     assert common_only_error < 2e-9
     assert max(closed_errors) < 2e-12
     assert abs(residual_order - 2.0) < 0.01
