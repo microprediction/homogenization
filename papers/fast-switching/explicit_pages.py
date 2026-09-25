@@ -5,7 +5,10 @@ import numpy as np
 from explicit import I_k, J_1, J_2, cir_B, cir_int_B, cir_int_B2, two_state_constant_exact
 from fastswitch import FastSwitch, numerical_a_callable
 from models import cir_switching_mean, vasicek_jumps, mmpp, bs_switching
-from verify_count_cumulants import (bivariate_count_mixed_cumulants, count_cumulants,
+from verify_count_cumulants import (bivariate_count_mixed_cumulants,
+                                    bivariate_factorial_cumulant_grid,
+                                    count_cumulants,
+                                    common_shock_factorial_cumulant,
                                     common_shock_factorial_cumulants22,
                                     integrated_intensity_cumulants,
                                     integrated_intensity_mixed_cumulants,
@@ -288,12 +291,16 @@ def counts():
     mixed_factorial = mixed_factorial_cumulants22(mixed_count)
     mixed_intensity = integrated_intensity_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
     common_rates = np.array([0.4, 1.2, 0.7])
-    common_count, _ = bivariate_count_mixed_cumulants(
+    common_count, common_distribution = bivariate_count_mixed_cumulants(
         Q3, rates_a, rates_b, 1.3, prior3, max_count=80,
         common_rates=common_rates)
     common_factorial = mixed_factorial_cumulants22(common_count)
     common_predicted = common_shock_factorial_cumulants22(
         Q3, rates_a, rates_b, common_rates, 1.3, prior3)
+    common_factorial_33 = bivariate_factorial_cumulant_grid(
+        common_distribution, degree=3)[2, 2]
+    common_predicted_33 = common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, 3, 3, 1.3, prior3)
     html = r'''
     <h2>The generating function in closed form</h2>
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
@@ -366,7 +373,14 @@ def counts():
       \left(\prod_{j\in A}(1+t_j)-1\right)\right\}.$$
     <p>For two counts, write $\Lambda_0$ for the common-event intensity and
       $A=\Lambda_1+\Lambda_0$, $B=\Lambda_2+\Lambda_0$, $C=\Lambda_0$. Expanding the preceding identity through
-      bidegree $(2,2)$ gives</p>
+      arbitrary bidegree $(r,s)$ gives the all-order identity</p>
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{k=0}^{\min(r,s)}
+      {r\choose k}{s\choose k}k!\,
+      \kappa\!\left(A^{[r-k]},B^{[s-k]},C^{[k]}\right)}.$$
+    <p>Here the brackets denote repeated arguments of the joint cumulant; when only one argument remains, it is its
+      expectation. The coefficient counts which $k$ derivatives in each coordinate strike the bilinear common-event
+      term. In particular, through bidegree $(2,2)$,</p>
     $$\begin{aligned}
       \kappa^{(F)}_{11}&=\kappa(A,B)+\mathbb EC,\\
       \kappa^{(F)}_{21}&=\kappa(A,A,B)+2\kappa(A,C),\\
@@ -387,7 +401,11 @@ def counts():
     hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
     for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
     mass bounded by $1.6\times10^{-47}$. A separate master equation with simultaneous $(1,1)$ jumps checks the
-    common-shock formula within $6.2\times10^{-12}$; its omitted mass is below $4.5\times10^{-49}$. It also measures
+    common-shock formula through every mixed order $(r,s)$ with $1\leq r,s\leq3$ within
+    $7.9\times10^{-12}$; at $(3,3)$ the two independent values are
+    ''' + f'{common_factorial_33:.8f}' + r''' and ''' + f'{common_predicted_33:.8f}' + r'''. Its omitted mass is below
+    $4.5\times10^{-49}$. The partition calculation follows the joint-cumulant method of
+    <a href="https://doi.org/10.1137/1104031">Leonov and Shiryaev (1959)</a>. The certificate also measures
     second-order decay of the univariate omitted boundary term.
     The conditioning argument is the defining construction of a
     <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the

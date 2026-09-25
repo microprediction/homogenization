@@ -75,7 +75,14 @@
       \left(\prod_{j\in A}(1+t_j)-1\right)\right\}.$$
     <p>For two counts, write $\Lambda_0$ for the common-event intensity and
       $A=\Lambda_1+\Lambda_0$, $B=\Lambda_2+\Lambda_0$, $C=\Lambda_0$. Expanding the preceding identity through
-      bidegree $(2,2)$ gives</p>
+      arbitrary bidegree $(r,s)$ gives the all-order identity</p>
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{k=0}^{\min(r,s)}
+      {r\choose k}{s\choose k}k!\,
+      \kappa\!\left(A^{[r-k]},B^{[s-k]},C^{[k]}\right)}.$$
+    <p>Here the brackets denote repeated arguments of the joint cumulant; when only one argument remains, it is its
+      expectation. The coefficient counts which $k$ derivatives in each coordinate strike the bilinear common-event
+      term. In particular, through bidegree $(2,2)$,</p>
     $$\begin{aligned}
       \kappa^{(F)}_{11}&=\kappa(A,B)+\mathbb EC,\\
       \kappa^{(F)}_{21}&=\kappa(A,A,B)+2\kappa(A,C),\\
@@ -93,7 +100,11 @@
     hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
     for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
     mass bounded by $1.6\times10^{-47}$. A separate master equation with simultaneous $(1,1)$ jumps checks the
-    common-shock formula within $6.2\times10^{-12}$; its omitted mass is below $4.5\times10^{-49}$. It also measures
+    common-shock formula through every mixed order $(r,s)$ with $1\leq r,s\leq3$ within
+    $7.9\times10^{-12}$; at $(3,3)$ the two independent values are
+    3.05155621 and 3.05155621. Its omitted mass is below
+    $4.5\times10^{-49}$. The partition calculation follows the joint-cumulant method of
+    <a href="https://doi.org/10.1137/1104031">Leonov and Shiryaev (1959)</a>. The certificate also measures
     second-order decay of the univariate omitted boundary term.
     The conditioning argument is the defining construction of a
     <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the

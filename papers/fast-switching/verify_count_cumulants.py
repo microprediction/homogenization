@@ -12,11 +12,12 @@ For a Cox count, factorial cumulants of N_T must equal ordinary cumulants of
 Lambda_T.  The certificate checks this through order four for one stream and
 through bidegree (2,2) for two conditionally independent streams driven by a
 nonreversible three-state chain.  A third calculation adds a regime-dependent
-common-shock stream and verifies the exact correction to mixed factorial
-cumulants.  It then verifies the closed two-state finite-horizon formula used
-on the counts page and its O(lambda^-2) first-order residual.
+common-shock stream and verifies the all-order correction through bidegree
+(3,3).  It then verifies the closed two-state finite-horizon formula used on
+the counts page and its O(lambda^-2) first-order residual.
 """
 
+import itertools
 import math
 import numpy as np
 from scipy.linalg import expm
@@ -71,6 +72,60 @@ def mixed_factorial_cumulants22(ordinary):
     k11, k21, k12, k22 = ordinary
     return np.array([k11, k21 - k11, k12 - k11,
                      k22 - k21 - k12 + k11])
+
+
+def _set_partitions(labels):
+    """Yield every set partition of a short labelled tuple."""
+    if not labels:
+        yield []
+        return
+    first, rest = labels[0], labels[1:]
+    for partition in _set_partitions(rest):
+        yield [(first,)] + partition
+        for j in range(len(partition)):
+            yield (partition[:j]
+                   + [(first,) + partition[j]]
+                   + partition[j + 1:])
+
+
+def joint_cumulant(repeats, moment):
+    """Joint cumulant from a callable returning multivariate raw moments.
+
+    ``repeats[j]`` is the number of copies of coordinate ``j``.  The usual
+    partition formula is practical here because the certificate stops at six
+    arguments (Bell number 203).
+    """
+    labels = tuple(axis for axis, count in enumerate(repeats)
+                   for _ in range(count))
+    total = 0.0
+    for partition in _set_partitions(labels):
+        coefficient = ((-1.0) ** (len(partition) - 1)
+                       * math.factorial(len(partition) - 1))
+        term = coefficient
+        for block in partition:
+            degrees = tuple(block.count(axis) for axis in range(len(repeats)))
+            term *= moment(degrees)
+        total += term
+    return total
+
+
+def bivariate_factorial_cumulant_grid(p, degree=3):
+    """Mixed factorial cumulants from a bivariate count distribution."""
+    grid = np.arange(p.shape[0], dtype=float)
+    falling = np.ones((degree + 1, len(grid)))
+    for r in range(1, degree + 1):
+        falling[r] = falling[r - 1] * (grid - r + 1.0)
+
+    def factorial_moment(degrees):
+        a, b = degrees
+        return np.einsum("i,j,ij->", falling[a], falling[b], p)
+
+    answer = np.empty((degree, degree))
+    for r in range(1, degree + 1):
+        for s in range(1, degree + 1):
+            answer[r - 1, s - 1] = joint_cumulant(
+                (r, s), factorial_moment)
+    return answer
 
 
 def integrated_intensity_cumulants(Q, rates, T, prior, degree=4):
@@ -172,6 +227,51 @@ def integrated_intensity_joint_cumulant111(Q, rates1, rates2, rates3,
     return (raw[1, 1, 1] - ma * raw[0, 1, 1]
             - mb * raw[1, 0, 1] - mc * raw[1, 1, 0]
             + 2.0 * ma * mb * mc)
+
+
+def integrated_intensity_joint_cumulant(Q, rates, repeats, T, prior):
+    """Joint cumulant of repeated integrated-rate coordinates."""
+    Q = np.asarray(Q, float)
+    rates = [np.asarray(item, float) for item in rates]
+    repeats = tuple(repeats)
+    prior = np.asarray(prior, float)
+    n = len(prior)
+    degrees = list(itertools.product(*[range(r + 1) for r in repeats]))
+    pos = {degree: j for j, degree in enumerate(degrees)}
+    generator = np.zeros((len(degrees) * n, len(degrees) * n))
+    for j, degree in enumerate(degrees):
+        sl = slice(j * n, (j + 1) * n)
+        generator[sl, sl] = Q
+        for axis, power in enumerate(degree):
+            if power:
+                lower = list(degree)
+                lower[axis] -= 1
+                lo = pos[tuple(lower)]
+                generator[sl, slice(lo * n, (lo + 1) * n)] = (
+                    power * np.diag(rates[axis]))
+    y0 = np.zeros(len(degrees) * n)
+    y0[:n] = 1.0
+    y = expm(generator * T) @ y0
+    raw = {
+        degree: prior @ y[j * n:(j + 1) * n]
+        for j, degree in enumerate(degrees)
+    }
+    return joint_cumulant(repeats, raw.__getitem__)
+
+
+def common_shock_factorial_cumulant(Q, rates1, rates2, common_rates,
+                                      r, s, T, prior):
+    """All-order common-shock formula for mixed factorial cumulants."""
+    rates_a = np.asarray(rates1) + np.asarray(common_rates)
+    rates_b = np.asarray(rates2) + np.asarray(common_rates)
+    answer = 0.0
+    for k in range(min(r, s) + 1):
+        coefficient = (math.comb(r, k) * math.comb(s, k)
+                       * math.factorial(k))
+        answer += coefficient * integrated_intensity_joint_cumulant(
+            Q, (rates_a, rates_b, common_rates), (r - k, s - k, k),
+            T, prior)
+    return answer
 
 
 def common_shock_factorial_cumulants22(Q, rates1, rates2, common_rates,
@@ -283,6 +383,16 @@ def main():
     common_predicted = common_shock_factorial_cumulants22(
         Q, rates, rates_b, common_rates, 1.3, prior)
     common_error = np.max(np.abs(common_factorial - common_predicted))
+    common_factorial_grid = bivariate_factorial_cumulant_grid(
+        p_common, degree=3)
+    common_predicted_grid = np.array([
+        [common_shock_factorial_cumulant(
+            Q, rates, rates_b, common_rates, r, s, 1.3, prior)
+         for s in range(1, 4)]
+        for r in range(1, 4)
+    ])
+    common_all_order_error = np.max(
+        np.abs(common_factorial_grid - common_predicted_grid))
     common_tail_bound = (
         poisson.sf(p_common.shape[0] - 1,
                    (rates + common_rates).max() * 1.3)
@@ -337,9 +447,13 @@ def main():
     print("mixed factorial/intensity cumulants (11, 21, 12, 22)",
           " ".join(f"{x:.8f}" for x in mixed_intensity))
     print("common-shock formula max error", f"{common_error:.3e}")
+    print("common-shock all-order formula max error through (3,3)",
+          f"{common_all_order_error:.3e}")
     print("common-shock count-truncation tail bound", f"{common_tail_bound:.3e}")
     print("common-shock mixed factorial cumulants (11, 21, 12, 22)",
           " ".join(f"{x:.8f}" for x in common_factorial))
+    print("common-shock (3,3) factorial cumulant",
+          f"{common_factorial_grid[2, 2]:.8f}")
     print("common-only mixed factorial cumulants",
           " ".join(f"{x:.8f}" for x in common_only_factorial))
     print("two-state closed-form max error", f"{max(closed_errors):.3e}")
@@ -352,6 +466,7 @@ def main():
     assert mixed_error < 2e-9
     assert bivariate_tail_bound < 1e-45
     assert common_error < 2e-9
+    assert common_all_order_error < 2e-8
     assert common_tail_bound < 1e-45
     assert common_only_error < 2e-9
     assert max(closed_errors) < 2e-12
