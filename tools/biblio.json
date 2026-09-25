@@ -936,6 +936,17 @@
  },
  {
   "role": "survey_physics",
+  "key": "HaussmannPardoux1986",
+  "authors": "Haussmann, U. G. and Pardoux, E.",
+  "year": 1986,
+  "title": "Time Reversal of Diffusions",
+  "venue": "Annals of Probability 14(4):1188-1205",
+  "doi": "10.1214/aop/1176992362",
+  "url": "https://doi.org/10.1214/aop/1176992362",
+  "annotation": "Derives the reverse-time drift and generator of a diffusion; on a stationary circle it flips the probability current."
+ },
+ {
+  "role": "survey_physics",
   "key": "Reimann2002",
   "authors": "Reimann, P.",
   "year": 2002,
