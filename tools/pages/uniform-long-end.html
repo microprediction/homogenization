@@ -1,0 +1,381 @@
+<!-- title: One curve from short to long maturities · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./yield-curve.html">&larr; three numbers in a yield curve</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_uniform_long_end.py">certificate</a></span></p>
+    <h1>One curve from short to long maturities</h1>
+    <p class="subtitle">Exact Perron growth removes secular error; a moving invariant law has a sharp second-order cost.</p>
+
+    <p class="lead">A fixed-maturity expansion need not remain accurate at long maturities. In a general chain an
+    omitted term of size $T/m^2$ is order one when $T$ is comparable to $m^2$; in the symmetric two-state case below,
+    symmetry cancels that coefficient and the first secular omission is $T/m^3$. Matched formulas are uniformly
+    accurate for every $T\geq0$, and a moving-projection formula extends the result to any finite irreducible chain.
+    If the fast generator itself varies, the same formula remains uniform but a moving invariant law generically
+    lowers the stationary-observation order from three to two.</p>
+
+    <h2>The two-state reduction</h2>
+    <p>Let the regimes switch in either direction at rate $m$, and write their time-dependent pricing forcings as
+    $g_1=\bar g+\delta$ and $g_2=\bar g-\delta$. If $a'=(Q+\operatorname{diag}g)a$ with $a(0)=\mathbf1$, put</p>
+    $$s=\tfrac12(a_1+a_2),\qquad d=\tfrac12(a_1-a_2),\qquad r=d/s.$$
+    <p>Positivity of the pricing system gives $|r|&lt;1$, and the two linear equations reduce exactly to</p>
+    $$\frac{d}{dt}\log s=\bar g+\delta r,\qquad
+      r'=\delta-2mr-\delta r^2,\qquad r(0)=0.$$
+    <p>Suppose $\bar g(t)\to\bar g_\infty$ and $\delta(t)\to\delta_\infty$. The exact principal eigenvalue of the
+    limiting matrix is</p>
+    $$\Lambda(m)=\bar g_\infty+\sqrt{m^2+\delta_\infty^2}-m.$$
+
+    <h2>The matched formula</h2>
+    <p>For a stationary initial regime, the uniformly matched log amplitude is</p>
+    <div class="equation-card">
+    $$L_c(T)=\Lambda(m)T+\int_0^T(\bar g(t)-\bar g_\infty)dt
+      +\frac1{2m}\int_0^T(\delta(t)^2-\delta_\infty^2)dt.$$
+    </div>
+    <p>The last integral is precisely the transient Green&ndash;Kubo correction. For the unscaled generator
+    $Q_0=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$, its quadratic form satisfies
+    $\mathcal K_0((\delta,-\delta),(\delta,-\delta))=\delta^2/2$. At fixed maturity, expanding $\Lambda$ recovers
+    $\int\bar g+(2m)^{-1}\int\delta^2$. At long maturity, keeping $\Lambda$ exact prevents the omitted
+    $T/m^3,T/m^5,\ldots$ eigenvalue terms from accumulating.</p>
+
+    <h2>A uniform theorem</h2>
+    <p>Assume $\delta$ is continuously differentiable, $G=\sup_t|\delta(t)|&lt;m$,</p>
+    $$V_\delta=\int_0^\infty|\delta'(t)|dt&lt;\infty,qquad
+      L_\delta=\int_0^\infty|\delta(t)-\delta_\infty|dt&lt;\infty.$$
+    <p>Then, simultaneously for every maturity $T\geq0$,</p>
+    <div class="equation-card">
+    $$|\log s(T)-L_c(T)|\leq
+      \frac{G(G+V_\delta)}{4m(m-G)}+\frac{G^3L_\delta}{2m^3}.$$
+    </div>
+    <p>The right-hand side is $O(m^{-2})$ and does not grow with $T$. The average forcing $\bar g$ contributes no
+    error because its transient is retained exactly.</p>
+
+    <h3>Proof</h3>
+    <p>Set</p>
+    $$R(x)=\frac{x}{m+\sqrt{m^2+x^2}},\qquad h(x)=xR(x)=\sqrt{m^2+x^2}-m.$$
+    <p>The value $R(\delta)$ is the stable algebraic root of the Riccati equation. For $z=r-R(\delta)$,</p>
+    $$z'=-\{2m+\delta(r+R)\}z-\frac{d}{dt}R(\delta).$$
+    <p>Because $|r|,|R|&lt;1$, the damping is at least $2(m-G)$. Also
+    $|R(x)|\leq |x|/(2m)$ and $|R'(x)|\leq1/(2m)$. Variation of constants therefore gives</p>
+    $$\int_0^T|z(t)|dt\leq\frac{G+V_\delta}{4m(m-G)}.$$
+    <p>The exact correction is $\int\delta r$. Its difference from the composite is the sum of
+    $\int\delta z$ and</p>
+    $$\int_0^T\left[q_m(\delta(t))-q_m(\delta_\infty)\right]dt,qquad
+      q_m(x)=h(x)-\frac{x^2}{2m}.$$
+    <p>Finally $|q_m'(x)|\leq |x|^3/(2m^3)$ for $|x|\leq G$. The two displayed bounds prove the result.</p>
+
+    <h2>Known starting regimes and the initial layer</h2>
+    <p>If regime 1 has initial probability $p$, put $\eta=2p-1$. The exact log amplitude is
+    $\log s+\log(1+\eta r)$. When $D=\sup|\delta'|&lt;\infty$, define</p>
+    $$r_b(T)=\frac{\delta(T)-\delta(0)e^{-2mT}}{2m}.$$
+    <p>The second term is the fast initial layer: it makes $r_b(0)=0$. Adding
+    $\log(1+\eta r_b(T))$ to $L_c$ gives another maturity-uniform approximation. Indeed,</p>
+    $$|r(T)-r_b(T)|\leq\frac{D}{4m^2}+\frac{G^3}{8m^3}.$$
+    <p>Thus its additional log error is at most the right-hand side divided by $1-G/m$. In the Vasicek bond
+    problem $g_i(0)=0$, hence $\delta(0)=0$ and the explicit initial-layer term vanishes; the state correction
+    still approaches the correct eigenvector weight at the far end.</p>
+
+    <h2>The constant spectral projection</h2>
+    <p>For constant $\bar g$ and $\delta$, let $\omega=\sqrt{m^2+\delta^2}$. The stationary-start solution is</p>
+    $$s(T)=e^{(\bar g-m)T}\left\{\cosh(\omega T)+\frac m\omega\sinh(\omega T)\right\}.$$
+    <p>Its slow-mode coefficient is not one:</p>
+    $$s(T)\sim \frac{m+\omega}{2\omega}e^{\Lambda T}.$$
+    <p>The corresponding constant $\log((m+\omega)/(2\omega))$ is $O(m^{-2})$. This is why the composite has a
+    uniform $O(m^{-2})$ remainder rather than tending exactly to zero at the far end. For a known starting mixture,
+    the coefficient is multiplied by $1+\eta R(\delta)$.</p>
+
+    <h2>Vasicek certificate</h2>
+    <p>The certificate uses $\kappa=1$, levels $(8\%,2\%)$, and variances $(0.004,0.001)$. It integrates the exact
+    Riccati system out to $\max(20,m^2)$, checks both known starting regimes, compares the reduction with the original
+    two-component ODE, and separately checks the constant-forcing spectral projection.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>maximum log error</th><th>proved bound</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1.4264e-4</td><td>4.4103e-4</td><td>1.4264e-4</td></tr>
+        <tr><td>2</td><td>3.2118e-5</td><td>1.0858e-4</td><td>1.2847e-4</td></tr>
+        <tr><td>4</td><td>7.4339e-6</td><td>2.6939e-5</td><td>1.1894e-4</td></tr>
+        <tr><td>8</td><td>1.7704e-6</td><td>6.7093e-6</td><td>1.1331e-4</td></tr>
+        <tr><td>16</td><td>4.3057e-7</td><td>1.6742e-6</td><td>1.1023e-4</td></tr>
+        <tr><td>32</td><td>1.0607e-7</td><td>4.1815e-7</td><td>1.0861e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The horizons include $T=O(1)$, $T=O(m)$, and $T=O(m^2)$. The scaled error settles, while a fixed-maturity
+    formula with the eigenvalue truncated at first order would eventually accumulate error.</p>
+
+    <h2>Constant forcing for any irreducible finite chain</h2>
+    <p>The stationary-start result extends cleanly without diagonalizing the generator when the forcing has already
+    reached its limit. Let $Q_0$ be any irreducible finite-state generator, possibly defective, with stationary row
+    vector $\pi$. For a real diagonal matrix $D=\operatorname{diag}g$, set</p>
+    $$A_m=mQ_0+D,$$
+    <p>and let $\Lambda_m$ be its principal eigenvalue and $P_m$ its rank-one Riesz spectral projection. Define the
+    exact slow-mode weight $c_m=\pi P_m\mathbf1$.</p>
+    <div class="equation-card">
+    <p><strong>Finite-chain theorem.</strong> There are constants $m_0,C,c&gt;0$, depending only on $Q_0$ and $D$,
+    such that for every $m\ge m_0$ and every $T\ge0$,</p>
+    $$\left|e^{-\Lambda_mT}\pi e^{A_mT}\mathbf1-c_m\right|
+      \le \frac{C}{m^2}e^{-cmT},\qquad
+      c_m=1+O(m^{-2}).$$
+    <p>Consequently, after increasing $m_0$ if necessary,</p>
+    $$\sup_{T\ge0}\left|\log\!\left(\pi e^{A_mT}\mathbf1\right)-\Lambda_mT\right|
+      \le\frac{C'}{m^2}.$$
+    </div>
+    <p>This theorem retains the exact eigenvalue but does not even need an explicit projection correction to achieve
+    uniform second order for a stationary start. The projection explains the limiting constant:
+    $\log(\pi e^{A_mT}\mathbf1)-\Lambda_mT\to\log c_m=O(m^{-2})$ as $T\to\infty$.</p>
+
+    <h3>Proof without diagonalizability</h3>
+    <p>Put $\varepsilon=1/m$ and $B_\varepsilon=Q_0+\varepsilon D$. The zero eigenvalue of $Q_0$ is simple and
+    isolated. Analytic perturbation of its Riesz projection gives a simple eigenvalue
+    $\lambda_\varepsilon=\Lambda_m/m$ and an analytic projection $P_\varepsilon$, with
+    $P_0=\mathbf1\pi$. The rest of the spectrum stays uniformly separated, so finite-dimensional contour calculus
+    gives</p>
+    $$\left\|e^{\tau(B_\varepsilon-\lambda_\varepsilon I)}
+      (I-P_\varepsilon)\right\|\le M e^{-c\tau},\qquad \tau\ge0,$$
+    <p>uniformly for small $\varepsilon$. This estimate permits Jordan blocks; no eigenbasis is used.</p>
+    <p>Both endpoint factors vanish at $\varepsilon=0$:</p>
+    $$\pi(I-P_\varepsilon)=O(\varepsilon),\qquad
+      (I-P_\varepsilon)\mathbf1=O(\varepsilon).$$
+    <p>Since $P_\varepsilon$ commutes with $B_\varepsilon$, the complementary contribution factors as</p>
+    $$\pi(I-P_\varepsilon)e^{mT(B_\varepsilon-\lambda_\varepsilon I)}
+      (I-P_\varepsilon)\mathbf1,$$
+    <p>which is $O(\varepsilon^2e^{-cmT})$. Differentiating
+    $P_\varepsilon^2=P_\varepsilon$ and multiplying by $P_0$ on both sides gives
+    $P_0P'_0P_0=0$, hence $\pi P'_0\mathbf1=0$ and $c_m=1+O(\varepsilon^2)$. Positivity of the irreducible
+    Feynman&ndash;Kac semigroup and $c_m\to1$ then convert the relative estimate into the logarithmic bound.</p>
+
+    <h3>A defective three-state certificate</h3>
+    <p>The certificate uses</p>
+    $$Q_0=\frac{\mathbf1\mathbf1^\top}{3}-I+0.1\,uv^\top,\qquad
+      u=(1,-1,0)^\top,\quad v=(1,1,-2)^\top,$$
+    <p>with $g=(-0.2,0.3,0.6)$. Every off-diagonal rate is positive. On the mean-zero space the eigenvalue $-1$
+    has a nontrivial Jordan block because $(uv^\top)^2=0$ but $uv^\top\ne0$. The certificate evaluates the exact
+    matrix exponential after subtracting $\Lambda_m$, rather than diagonalizing $Q_0$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>principal eigenvalue</th><th style="text-transform:none">$c_m$</th><th>maximum log error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>0.26393665</td><td>0.99166255</td><td>8.3724e-3</td><td>0.13396</td></tr>
+        <tr><td>8</td><td>0.24895180</td><td>0.99781432</td><td>2.1881e-3</td><td>0.14004</td></tr>
+        <tr><td>16</td><td>0.24121597</td><td>0.99944202</td><td>5.5814e-4</td><td>0.14288</td></tr>
+        <tr><td>32</td><td>0.23729215</td><td>0.99985915</td><td>1.4086e-4</td><td>0.14424</td></tr>
+        <tr><td>64</td><td>0.23531700</td><td>0.99996462</td><td>3.5377e-5</td><td>0.14491</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The last measured convergence rate is $1.9934$. Independently, the residual after the first Green&ndash;Kubo
+    eigenvalue term converges at rate $2.0137$.</p>
+
+    <h2>Time-dependent forcing for any finite chain</h2>
+    <p>The moving-projection problem also has a clean answer. Let $D(t)$ be a bounded $C^1$ diagonal matrix with
+    $D(0)=0$, $\|D'\|_\infty&lt;\infty$, and $\int_0^\infty\|D'(t)\|dt&lt;\infty$. The last condition implies a limit
+    $D_\infty$. Set $A_m(t)=mQ_0+D(t)$ and let $\lambda_m(t)$ be its instantaneous Perron eigenvalue. For all
+    sufficiently large $m$, choose positive right and left eigenvectors $r_m(t),\ell_m(t)$ by</p>
+    $$A_mr_m=\lambda_mr_m,\qquad \ell_m^\top A_m=\lambda_m\ell_m^\top,\qquad
+      \pi r_m=1,\qquad \ell_m^\top r_m=1.$$
+    <p>The normalization fixes the gauge. Its scalar transport connection is</p>
+    $$\gamma_m(t)=\ell_m(t)^\top r_m'(t),\qquad
+      L_m(T)=\int_0^T\{\lambda_m(t)-\gamma_m(t)\}\,dt.$$
+    <div class="equation-card">
+    <p><strong>Moving-projection theorem.</strong> Let $u_m'=A_m(t)u_m$ and $u_m(0)=\mathbf1$. There are constants
+    $m_0,C&lt;infty$ such that, for every $m\ge m_0$,</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-L_m(T)\right|\le \frac{C}{m^3}.$$
+    <p>For any fixed regime prior $\nu$, the endpoint-corrected approximation satisfies</p>
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-L_m(T)-\log(\nu r_m(T))\right|
+      \le \frac{C_\nu}{m^2}.$$
+    </div>
+    <p>The connection term is essential for a nonreversible chain: integrating only the instantaneous eigenvalue
+    omits transport of the moving slow eigenspace. The formula is gauge invariant when the matching endpoint
+    factors are retained; $\pi r_m=1$ is simply the most convenient gauge. The factor $\log(\nu r_m(T))$ is the
+    finite-chain version of the two-state known-start layer above.</p>
+
+    <h3>Why the orders improve</h3>
+    <p>Write $P_m=r_m\ell_m^\top$, $a=\ell_m^\top u_m$, and $z=(I-P_m)u_m$. Then</p>
+    $$a'=(\lambda_m-\gamma_m)a+\ell_m'{}^\top z,\qquad
+      z'=(A_m-P_m')z-aP_m'r_m.$$
+    <p>Uniform spectral separation gives a complementary decay rate $cm$. Analytic resolvent bounds give
+    $P_m'=O(m^{-1}\|D'\|)$, so variation of constants and a standard large-$m$ bootstrap yield</p>
+    $$\sup_T\left\|{z(T)\over a(T)}\right\|=O(m^{-2}),qquad
+      \int_0^\infty\left|\ell_m'{}^\top{z\over a}\right|dt=O(m^{-3}).$$
+    <p>Finally $\ell_m-\pi=O(m^{-1})$ and $\ell_m^\top z=0$. Hence
+    $\pi z=(\pi-\ell_m^\top)z=O(m^{-3})$, proving the stationary rate. A general $\nu$ does not have that last
+    cancellation and retains $O(m^{-2})$. The assumption $D(0)=0$ makes $u_m(0)=r_m(0)=\mathbf1$ exactly; if the
+    forcing is already regime-dependent at the near endpoint, an additional decaying initial-slip term is required.</p>
+
+    <h3>Nonzero near-end forcing: the sharp loss without a slip</h3>
+    <p>The same transport formula remains uniformly useful when $D(0)\ne0$, but its initial slow projection must be
+    retained. Define</p>
+    $$a_{m,0}=\ell_m(0)^\top\mathbf1,\qquad
+      \widetilde L_m(T)=\log a_{m,0}+L_m(T).$$
+    <div class="equation-card">
+    <p><strong>Endpoint-mismatch theorem.</strong> Under the preceding boundedness and integrability assumptions,
+    but with arbitrary fixed $D(0)$, there are constants $m_0,C,C_\nu$ such that</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-\widetilde L_m(T)\right|
+      \le \frac{C}{m^2},$$
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-\widetilde L_m(T)-\log(\nu r_m(T))\right|
+      \le \frac{C_\nu}{m}.$$
+    </div>
+    <p>These orders are generically sharp for this formula. At $T=0$ the exact logarithm is zero, whereas the two
+    approximations equal $\log a_{m,0}=O(m^{-2})$ and
+    $\log\{a_{m,0}\nu r_m(0)\}=O(m^{-1})$, respectively. A decaying fast-mode slip is therefore necessary to
+    recover the $O(m^{-3})$ stationary and $O(m^{-2})$ specified-start orders through the near endpoint.</p>
+
+    <h3>Proof of the endpoint-mismatch orders</h3>
+    <p>At time zero put $z_0=\mathbf1-a_{m,0}r_m(0)$. Analytic perturbation and the two normalizations give</p>
+    $$r_m(0)-\mathbf1=O(m^{-1}),\qquad \ell_m(0)-\pi=O(m^{-1}),\qquad
+      a_{m,0}-1=O(m^{-2}),\qquad z_0=O(m^{-1}).$$
+    <p>The cancellation in $a_{m,0}$ follows by differentiating
+    $\pi r_m=\ell_m^\top r_m=1$ at $m^{-1}=0$. Complementary spectral decay and variation of constants then give</p>
+    $$\left\|\frac{z(T)}{a(T)}\right\|
+      \le C\{m^{-1}e^{-cmT}+m^{-2}\},\qquad
+      \left|\log\frac{a(T)}{a_{m,0}}-L_m(T)\right|\le \frac{C}{m^3}.$$
+    <p>For stationary observation, $\pi z=(\pi-\ell_m^\top)z$ supplies one more factor $m^{-1}$; a general prior
+    has no such cancellation. Taking logarithms, uniformly away from zero for sufficiently large $m$, proves the
+    two bounds.</p>
+
+    <h3>The frozen initial slip restores the higher orders</h3>
+    <p>The missing boundary layer is explicit. With $A_{m,0}=A_m(0)$ and
+    $\lambda_{m,0}=\lambda_m(0)$, define</p>
+    $$b_{m,0}(T)=e^{(A_{m,0}-\lambda_{m,0}I)T}z_0,$$
+    <p>and, for any fixed prior $\nu$, set</p>
+    $$L^{\mathrm{slip}}_{m,\nu}(T)=L_m(T)+
+      \log\{a_{m,0}\nu r_m(T)+\nu b_{m,0}(T)\}.$$
+    <p>Because $\ell_m(0)^\top z_0=0$, the frozen semigroup contains only fast modes and
+    $b_{m,0}(T)=O(m^{-1}e^{-cmT})$. At $T=0$ the vector inside braces reconstructs the exact initial condition:</p>
+    $$a_{m,0}r_m(0)+b_{m,0}(0)=\mathbf1.$$
+    <div class="equation-card">
+    <p><strong>Initial-slip theorem.</strong> Under the same assumptions as the endpoint-mismatch theorem,</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-L^{\mathrm{slip}}_{m,\pi}(T)\right|
+      \le \frac{C}{m^3},$$
+    <p>and, for every fixed prior $\nu$,</p>
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-L^{\mathrm{slip}}_{m,\nu}(T)\right|
+      \le \frac{C_\nu}{m^2}.$$
+    </div>
+    <p>Thus a frozen fast semigroup is enough: no time-ordered exponential is needed in the boundary layer.</p>
+
+    <h3>Proof of the slip theorem</h3>
+    <p>Scale out the transported slow exponential by writing
+    $\alpha=e^{-L_m}a$ and $y=e^{-L_m}z$. Then $\alpha(0)=a_{m,0}$, $y(0)=z_0$, and</p>
+    $$\alpha'=\ell_m'{}^\top y,\qquad
+      y'=\{A_m-\lambda_mI-P_m'+\gamma_mI\}y-\alpha P_m'r_m.$$
+    <p>The frozen slip solves $b_{m,0}'=(A_{m,0}-\lambda_{m,0}I)b_{m,0}$. Since
+    $D(T)-D(0)=O(T)$ in the $T=O(m^{-1})$ layer, variation of constants, the complementary spectral gap, and
+    $P_m'=O(m^{-1}\|D'\|)$ give, uniformly in $T$,</p>
+    $$\|y-b_{m,0}\|=O(m^{-2}),\qquad
+      |\alpha-a_{m,0}|=O(m^{-3}).$$
+    <p>For stationary observation there is one further cancellation. Both $y$ and the frozen slip lie in their
+    respective left-eigenvector complements, and
+    $\ell_m(T)-\ell_m(0)=O(m^{-1}\min\{T,1\})$ inside the layer. Hence</p>
+    $$|\pi(y-b_{m,0})|=O(m^{-3}).$$
+    <p>Finally
+    $e^{-L_m}\nu u_m=\alpha\nu r_m+\nu y$. Subtracting the slip approximation gives $O(m^{-2})$ for a general
+    prior and $O(m^{-3})$ for $\nu=\pi$; positivity for sufficiently large $m$ converts these relative estimates
+    into the displayed logarithmic bounds.</p>
+
+    <h3>A moving defective-chain certificate</h3>
+    <p>Using the same defective $Q_0$, the certificate takes
+    $D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2,-0.4)$. It computes $r_m'$ from the bordered differentiated
+    eigenvalue equation rather than differencing eigenvectors, and checks that calculation independently by a
+    centered difference. The exact nonautonomous system is also integrated independently.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>stationary error</th><th style="text-transform:none">$m^3\times$error</th><th>largest specified-start error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>1.60990e-4</td><td>0.010303</td><td>7.86282e-3</td><td>0.125805</td></tr>
+        <tr><td>8</td><td>2.27545e-5</td><td>0.011650</td><td>2.31939e-3</td><td>0.148441</td></tr>
+        <tr><td>16</td><td>3.03784e-6</td><td>0.012443</td><td>6.47891e-4</td><td>0.165860</td></tr>
+        <tr><td>32</td><td>3.92914e-7</td><td>0.012875</td><td>1.74182e-4</td><td>0.178363</td></tr>
+        <tr><td>64</td><td>4.99833e-8</td><td>0.013103</td><td>4.51604e-5</td><td>0.184977</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured rates are $2.9747$ and $1.9475$, respectively. The test covers
+    $T=O(1),O(m),O(m^2)$ and the far-end limit; reconstructing the original three-component ODE from the normalized
+    calculation agrees below $5\times10^{-12}$.</p>
+
+    <h3>Endpoint-mismatch certificate</h3>
+    <p>To test the sharp loss, the same defective generator is paired with
+    $D(0)=\operatorname{diag}(-0.25,0.12,-0.02)$ and
+    $D(\infty)=\operatorname{diag}(-0.6,-0.2,-0.4)$. The approximation includes $\log a_{m,0}$ but no fast-mode
+    slip. Over $T=O(1),O(m),O(m^2)$, the stationary and specified-start residuals have measured orders
+    $1.9957$ and $1.0024$. At $m=64$ they are $6.2040\times10^{-6}$ and $3.2712\times10^{-3}$, with scaled
+    errors $m^2E=0.02541$ and $mE=0.20936$.</p>
+    <p>Adding the frozen slip restores measured orders $2.9322$ and $1.9478$. At $m=64$ the corrected residuals
+    are $1.2922\times10^{-8}$ and $6.7756\times10^{-6}$, with $m^3E=0.00339$ and $m^2E=0.02775$.</p>
+
+    <h2>When the fast generator moves</h2>
+    <p>The third-order stationary cancellation above uses more than a spectral gap: it uses the fixed invariant
+    row $\pi$. Let $Q(t)$ now be a $C^1$ family of finite-state generators with a common state space,
+    $Q(t)\mathbf1=0$, invariant rows $\pi(t)$, and uniform exponential ergodicity on the complementary
+    subspace. Assume $Q$ and $D$ are bounded and have finite total variation,</p>
+    $$\int_0^\infty\{\|Q'(t)\|+\|D'(t)\|\}\,dt&lt;\infty,$$
+    <p>and put $A_m(t)=mQ(t)+D(t)$. Take $D(0)=0$ and fix the gauge row $q=\pi(0)$. For the Perron eigenvectors use</p>
+    $$A_mr_m=\lambda_mr_m,\qquad \ell_m^\top A_m=\lambda_m\ell_m^\top,\qquad
+      q r_m=1,\qquad \ell_m^\top r_m=1,$$
+    <p>and retain the same connection and transported exponent</p>
+    $$\gamma_m=\ell_m^\top r_m',\qquad
+      L_m(T)=\int_0^T(\lambda_m-\gamma_m)\,dt.$$
+    <div class="equation-card">
+    <p><strong>Moving-generator theorem.</strong> For every fixed regime prior $\nu$, there are
+    $m_0,C_\nu&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log(\nu u_m(T))-L_m(T)-\log\{\nu r_m(T)\}\right|
+      \leq {C_\nu\over m^2},\qquad m\geq m_0.$$
+    <p>The order is generically sharp even for the initial stationary observation $\nu=q$. Thus the fixed-$Q$
+    $O(m^{-3})$ statement must not be transferred to state-dependent or time-dependent switching rates.</p>
+    </div>
+
+    <h3>Why one order disappears</h3>
+    <p>Although $\ell_m'=\pi'(t)+O(m^{-1})$ is now order one, $Q'(t)\mathbf1=0$ still gives
+    $r_m'=O(m^{-1})$. Hence the full projector derivative $P_m'$ is order one, but its only forcing of the fast
+    component satisfies</p>
+    $$P_m'r_m=r_m'-\gamma_mr_m=O(m^{-1}).$$
+    <p>The $O(m)$ complementary gap therefore still yields $z/a=O(m^{-2})$. The slow-amplitude feedback is now</p>
+    $$\int_0^\infty \ell_m'{}^\top{z\over a}\,dt=O(m^{-2}),$$
+    <p>because the total variation is finite. This term was $O(m^{-3})$ for fixed $Q$, where
+    $\ell_m'=O(m^{-1})$. In addition, $q-\ell_m(t)$ is generally order one, so observing with the initial
+    stationary row supplies no extra cancellation. These two changes prove the bound and identify the mechanism
+    behind its sharpness.</p>
+
+    <h3>A sharp two-state certificate</h3>
+    <p>The certificate takes</p>
+    $$Q(t)=\begin{pmatrix}-a(t)&amp;a(t)\\b(t)&amp;-b(t)\end{pmatrix},\quad
+      a(t)=1+0.4(1-e^{-t}),\quad b(t)=0.7+0.5(1-e^{-t}),$$
+    $$D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2),\qquad q=\pi(0)=(0.7,1)/1.7.$$
+    <p>It integrates the exact normalized pricing system through
+    $T=\max(20,m^2)$ and computes $r_m'$ from the bordered differentiated eigenvalue equation. A centered
+    difference checks the connection independently. Freezing $Q$ at $Q(0)$ while retaining the same $D(t)$
+    isolates the effect of the moving invariant law.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>moving-$Q$ error</th><th style="text-transform:none">$m^2\times$error</th><th>fixed-$Q$ error</th><th style="text-transform:none">$m^3\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>2.81912e-4</td><td>0.001128</td><td>3.63739e-4</td><td>0.002910</td></tr>
+        <tr><td>4</td><td>1.09118e-4</td><td>0.001746</td><td>5.26324e-5</td><td>0.003368</td></tr>
+        <tr><td>8</td><td>3.38371e-5</td><td>0.002166</td><td>7.10761e-6</td><td>0.003639</td></tr>
+        <tr><td>16</td><td>9.45377e-6</td><td>0.002420</td><td>9.24541e-7</td><td>0.003787</td></tr>
+        <tr><td>32</td><td>2.50280e-6</td><td>0.002563</td><td>1.17928e-7</td><td>0.003864</td></tr>
+        <tr><td>64</td><td>6.44281e-7</td><td>0.002639</td><td>1.49032e-8</td><td>0.003907</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured orders are $1.9578$ for the moving generator and $2.9842$ for its fixed-generator
+    control. This is a counterexample to carrying the fixed-generator stationary $O(m^{-3})$ rate over to a
+    moving invariant law.</p>
+
+    <h2>What remains beyond this theorem</h2>
+    <p>The fixed-generator theorem assumes a diagonal forcing of bounded total variation and $D(0)=0$ only when
+    the boundary-layer term is omitted. The frozen-slip theorem restores the higher orders for arbitrary fixed
+    near-end forcing. The moving-generator extension requires a uniformly ergodic smooth family and integrable
+    total variation. Periodic or rough coefficients with infinite variation, generators that lose their gap,
+    and infinite-state factors require different uniform estimates.</p>
+    <p>The fixed-horizon expansion and its initial layers belong to the singular-perturbation framework summarized
+    by <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a> and originate with
+    <a href="https://www.mathnet.ru/eng/sm5548">Tikhonov&apos;s 1952 theorem</a>; the perturbed-semigroup viewpoint goes back to
+    <a href="./bibliography.html#Kurtz1973">Kurtz</a>. Analytic Riesz projections and the
+    non-diagonalizable perturbation argument follows
+    <a href="https://doi.org/10.1007/978-3-642-66282-9">Kato&apos;s perturbation theory</a>; the connection term is the
+    finite-dimensional spectral transport introduced in
+    <a href="https://doi.org/10.1143/JPSJ.5.435">Kato&apos;s original adiabatic theorem</a>. The
+    exact-eigenvalue resummation here addresses the additional growing-maturity scale. State-dependent fast
+    generators and their boundary layers are treated, at fixed horizons, by
+    <a href="https://doi.org/10.1090/S0033-569X-2013-01277-X">Nguyen and Yin (2013)</a>; the theorem here shows
+    what changes when the maturity horizon is also required to be uniform.</p>
+  </main>
