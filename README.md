@@ -45,6 +45,7 @@ papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
   long_end.py              the long yield as a principal eigenvalue; its convergent series in the switching time
   verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
+  verify_uniform_long_end.py  uniform long-maturity, initial-slip, and moving-generator certificates
   make_data.py             writes docs/three-numbers.js for the yield-curve page
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
