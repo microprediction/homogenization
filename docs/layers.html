@@ -142,23 +142,36 @@
     <p>This is a uniform first-order composite approximation. It both satisfies the starting condition and retains
     the small permanent shift left by the transient. The constants in the remainder may depend on $T$ and bounds
     for $q$ and $q'$, but not on $t$ or sufficiently small $\varepsilon$.</p>
-    <p>The short-rate and survival examples have the special cancellation $q(0)=0$. If $q$ is twice continuously
-    differentiable, the second-order composite becomes</p>
+    <p>The expansion continues uniformly without assuming $q(0)=0$. If $q$ is twice continuously differentiable,
+      put $I_\varepsilon(t)=\int_0^tq(s)e^{-2s/\varepsilon}ds$. Then</p>
+    $$\omega(t)=\frac{\varepsilon}{2}\{q(t)-q(0)e^{-2t/\varepsilon}\}
+      -\frac{\varepsilon^2}{4}\{q'(t)-q'(0)e^{-2t/\varepsilon}\}
+      +O(\varepsilon^3),$$
+    <div class="equation-card">
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon q(0)}2I_\varepsilon(t)
+      -\frac{\varepsilon^2}{8}\{q(t)^2-q(0)^2\}
+      +\frac{\varepsilon^2q'(0)}4I_\varepsilon(t)+O(\varepsilon^3).$$
+    </div>
+    <p>Both orders of the exponential layer are needed to match $\omega(0)=0$ through second order. The integral
+      terms retain the permanent amplitude shift accumulated while the layer decays.</p>
+    <p>The short-rate and survival examples have the simplifying cancellation $q(0)=0$. There
+      $I_\varepsilon(t)=O(\varepsilon^2)$ uniformly, so the formula reduces, through order $\varepsilon^2$, to</p>
     $$\omega(t)=\frac{\varepsilon}{2}q(t)-\frac{\varepsilon^2}{4}q'(t)
       +\frac{\varepsilon^2}{4}q'(0)e^{-2t/\varepsilon}+O(\varepsilon^3),$$
     $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
-      -\frac{\varepsilon^2}{8}q(t)^2+O(\varepsilon^3),$$
-    <p>again uniformly on $[0,T]$. The exponential term is the piece missing from an outer-only second-order bond
-    formula. It cancels $-\varepsilon^2q'(0)/4$ at $t=0$ exactly.</p>
+      -\frac{\varepsilon^2}{8}q(t)^2+O(\varepsilon^3).$$
 
     <h3>Why the bound is uniform</h3>
     <p>Insert the first composite ratio into its Riccati equation. Its residual is</p>
     $$R_1=\frac{\varepsilon}{2}q'(t)+q(t)\omega_1(t)^2=O(\varepsilon).$$
     <p>The error equation has the stable leading operator $d/dt+2/\varepsilon$. Convolution with its kernel has
     mass $\varepsilon/2$, turning this residual into an $O(\varepsilon^2)$ error uniformly, including at $t=0$.
-    When $q(0)=0$, the second composite has residual</p>
+    The general second composite has residual</p>
     $$R_2=-\frac{\varepsilon^2}{4}q''(t)+q(t)\omega_2(t)^2=O(\varepsilon^2),$$
-    <p>and the same argument gives $O(\varepsilon^3)$. This is the finite-dimensional boundary-layer mechanism in
+    <p>because the $q(0)e^{-2t/\varepsilon}$ and $q'(0)e^{-2t/\varepsilon}$ derivative terms cancel their stiff
+      contributions exactly. The same stable-kernel argument gives $O(\varepsilon^3)$ for arbitrary $q(0)$.
+      This is the finite-dimensional boundary-layer mechanism in
     the general singular-perturbation expansions of <a href="./bibliography.html#YinZhang2013">Yin and Zhang</a> and
     <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin</a>.</p>
 
@@ -175,9 +188,9 @@
     <h3>Numerical certificate</h3>
     <p>Direct integration of the original two-component system over the whole interval, with the fast layer resolved,
     gives the following observed orders as $\varepsilon$ is halved:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>case</th><th>outer-only sup error</th><th>composite sup error</th></tr></thead><tbody>
-      <tr><td>$q(0)\neq0$, first order</td><td>$\varepsilon^{1.000}$</td><td>$\varepsilon^{1.981}$</td></tr>
-      <tr><td>$q(0)=0$, second order</td><td>$\varepsilon^{2.000}$</td><td>$\varepsilon^{2.953}$</td></tr>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>case</th><th>outer-only sup error</th><th>first composite</th><th>second composite</th></tr></thead><tbody>
+      <tr><td>$q(0)\neq0$</td><td>$\varepsilon^{1.000}$</td><td>$\varepsilon^{1.981}$</td><td>$\varepsilon^{3.010}$</td></tr>
+      <tr><td>$q(0)=0$</td><td>$\varepsilon^{2.000}$</td><td>&mdash;</td><td>$\varepsilon^{2.946}$</td></tr>
     </tbody></table></div>
     <p>The code also evaluates the layer at $t=(\varepsilon/2)\log(1/\varepsilon)$ and obtains exactly a constant
     times $\varepsilon^3$ in the second case. Certificate:
