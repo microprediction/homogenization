@@ -11,9 +11,10 @@ Two independent finite-dimensional calculations are compared:
 For a Cox count, factorial cumulants of N_T must equal ordinary cumulants of
 Lambda_T.  The certificate checks this through order four for one stream and
 through bidegree (2,2) for two conditionally independent streams driven by a
-nonreversible three-state chain.  It then verifies the closed two-state
-finite-horizon formula used on the counts page and its O(lambda^-2)
-first-order residual.
+nonreversible three-state chain.  A third calculation adds a regime-dependent
+common-shock stream and verifies the exact correction to mixed factorial
+cumulants.  It then verifies the closed two-state finite-horizon formula used
+on the counts page and its O(lambda^-2) first-order residual.
 """
 
 import math
@@ -141,20 +142,84 @@ def integrated_intensity_mixed_cumulants(Q, rates1, rates2, T, prior):
     return mixed_cumulants22(raw)
 
 
+def integrated_intensity_joint_cumulant111(Q, rates1, rates2, rates3,
+                                             T, prior):
+    """Third joint cumulant of three integrated rates."""
+    Q = np.asarray(Q, float)
+    rates = [np.asarray(item, float) for item in (rates1, rates2, rates3)]
+    prior = np.asarray(prior, float)
+    n = len(prior)
+    triples = [(a, b, c) for a in range(2) for b in range(2)
+               for c in range(2)]
+    pos = {triple: j for j, triple in enumerate(triples)}
+    A = np.zeros((len(triples) * n, len(triples) * n))
+    for j, triple in enumerate(triples):
+        sl = slice(j * n, (j + 1) * n)
+        A[sl, sl] = Q
+        for axis, degree in enumerate(triple):
+            if degree:
+                lower = list(triple)
+                lower[axis] -= 1
+                lo = pos[tuple(lower)]
+                A[sl, slice(lo * n, (lo + 1) * n)] = np.diag(rates[axis])
+    y0 = np.zeros(len(triples) * n)
+    y0[:n] = 1.0
+    y = expm(A * T) @ y0
+    raw = {}
+    for j, triple in enumerate(triples):
+        raw[triple] = prior @ y[j * n:(j + 1) * n]
+    ma, mb, mc = raw[1, 0, 0], raw[0, 1, 0], raw[0, 0, 1]
+    return (raw[1, 1, 1] - ma * raw[0, 1, 1]
+            - mb * raw[1, 0, 1] - mc * raw[1, 1, 0]
+            + 2.0 * ma * mb * mc)
+
+
+def common_shock_factorial_cumulants22(Q, rates1, rates2, common_rates,
+                                        T, prior):
+    """Predicted mixed factorial cumulants with a shared Poisson component.
+
+    Conditional on the regime path, N1=I1+C and N2=I2+C, where the three
+    Poisson components have cumulative intensities Lambda1, Lambda2 and Cbar.
+    Put A=Lambda1+Cbar and B=Lambda2+Cbar.  Substitution of v=t1*t2 in the
+    joint cumulant generating function gives the four returned terms.
+    """
+    rates_a = np.asarray(rates1) + np.asarray(common_rates)
+    rates_b = np.asarray(rates2) + np.asarray(common_rates)
+    base = integrated_intensity_mixed_cumulants(
+        Q, rates_a, rates_b, T, prior)
+    cov_ac = integrated_intensity_mixed_cumulants(
+        Q, rates_a, common_rates, T, prior)[0]
+    cov_bc = integrated_intensity_mixed_cumulants(
+        Q, rates_b, common_rates, T, prior)[0]
+    common_kappa = integrated_intensity_cumulants(
+        Q, common_rates, T, prior)
+    joint_abc = integrated_intensity_joint_cumulant111(
+        Q, rates_a, rates_b, common_rates, T, prior)
+    return base + np.array([
+        common_kappa[0],
+        2.0 * cov_ac,
+        2.0 * cov_bc,
+        4.0 * joint_abc + 2.0 * common_kappa[1],
+    ])
+
+
 def bivariate_count_mixed_cumulants(Q, rates1, rates2, T, prior,
-                                     max_count=75):
+                                     max_count=75, common_rates=None):
     """Mixed count cumulants from a sparse two-count forward master equation."""
     Q = np.asarray(Q, float)
     rates1, rates2 = np.asarray(rates1, float), np.asarray(rates2, float)
     prior = np.asarray(prior, float)
+    common_rates = (np.zeros_like(rates1) if common_rates is None
+                    else np.asarray(common_rates, float))
     n, m = len(prior), max_count + 1
     shift = diags(np.ones(m - 1), -1, shape=(m, m), format="csr")
     count_eye = eye(m, format="csr")
     regime_eye = eye(m * m, format="csr")
-    within = Q.T - np.diag(rates1 + rates2)
+    within = Q.T - np.diag(rates1 + rates2 + common_rates)
     A = (kron(regime_eye, within, format="csr")
          + kron(kron(shift, count_eye), np.diag(rates1), format="csr")
-         + kron(kron(count_eye, shift), np.diag(rates2), format="csr"))
+         + kron(kron(count_eye, shift), np.diag(rates2), format="csr")
+         + kron(kron(shift, shift), np.diag(common_rates), format="csr"))
     y0 = np.zeros(m * m * n)
     y0[:n] = prior
     p = np.asarray(expm_multiply(A * T, y0)).reshape(m, m, n).sum(axis=2)
@@ -206,6 +271,40 @@ def main():
     bivariate_tail_bound = (poisson.sf(p_bi.shape[0] - 1, rates.max() * 1.3)
                             + poisson.sf(p_bi.shape[1] - 1, rates_b.max() * 1.3))
 
+    # Shared events are a different observation model.  Conditional on the
+    # path, a third Poisson stream increments both observed counts at once.
+    # Its shot noise survives the mixed factorial transform.  The predicted
+    # terms follow by substituting v=t1*t2 in K(A*t1+B*t2+Cbar*v).
+    common_rates = np.array([0.4, 1.2, 0.7])
+    common_count, p_common = bivariate_count_mixed_cumulants(
+        Q, rates, rates_b, 1.3, prior, max_count=80,
+        common_rates=common_rates)
+    common_factorial = mixed_factorial_cumulants22(common_count)
+    common_predicted = common_shock_factorial_cumulants22(
+        Q, rates, rates_b, common_rates, 1.3, prior)
+    common_error = np.max(np.abs(common_factorial - common_predicted))
+    common_tail_bound = (
+        poisson.sf(p_common.shape[0] - 1,
+                   (rates + common_rates).max() * 1.3)
+        + poisson.sf(p_common.shape[1] - 1,
+                     (rates_b + common_rates).max() * 1.3)
+    )
+
+    # With only a deterministic common component, marginal cumulative rates
+    # have no stochastic covariance, yet kappa_11^(F) equals its mean.  This
+    # is the sharp counterexample to identification without conditional
+    # independence.
+    common_only_rate = 0.8
+    zero = np.zeros(3)
+    deterministic_common = np.full(3, common_only_rate)
+    common_only_count, _ = bivariate_count_mixed_cumulants(
+        Q, zero, zero, 1.3, prior, max_count=45,
+        common_rates=deterministic_common)
+    common_only_factorial = mixed_factorial_cumulants22(common_only_count)
+    common_only_expected = np.array([common_only_rate * 1.3, 0.0, 0.0, 0.0])
+    common_only_error = np.max(
+        np.abs(common_only_factorial - common_only_expected))
+
     # The page's symmetric two-state example, checked for both known starts.
     rates2 = np.array([8.0, 1.0])
     closed_errors = []
@@ -237,6 +336,12 @@ def main():
     print("bivariate count-truncation tail bound", f"{bivariate_tail_bound:.3e}")
     print("mixed factorial/intensity cumulants (11, 21, 12, 22)",
           " ".join(f"{x:.8f}" for x in mixed_intensity))
+    print("common-shock formula max error", f"{common_error:.3e}")
+    print("common-shock count-truncation tail bound", f"{common_tail_bound:.3e}")
+    print("common-shock mixed factorial cumulants (11, 21, 12, 22)",
+          " ".join(f"{x:.8f}" for x in common_factorial))
+    print("common-only mixed factorial cumulants",
+          " ".join(f"{x:.8f}" for x in common_only_factorial))
     print("two-state closed-form max error", f"{max(closed_errors):.3e}")
     print("first-order overdispersion residual order", f"{residual_order:.6f}")
     print("lambda=10 ordinary count cumulants", " ".join(f"{x:.8f}" for x in count10))
@@ -246,6 +351,9 @@ def main():
     assert tail_bound < 1e-45
     assert mixed_error < 2e-9
     assert bivariate_tail_bound < 1e-45
+    assert common_error < 2e-9
+    assert common_tail_bound < 1e-45
+    assert common_only_error < 2e-9
     assert max(closed_errors) < 2e-12
     assert abs(residual_order - 2.0) < 0.01
     assert abs(count10[1] - 5.808125) < 2e-10

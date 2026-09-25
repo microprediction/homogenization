@@ -6,6 +6,7 @@ from explicit import I_k, J_1, J_2, cir_B, cir_int_B, cir_int_B2, two_state_cons
 from fastswitch import FastSwitch, numerical_a_callable
 from models import cir_switching_mean, vasicek_jumps, mmpp, bs_switching
 from verify_count_cumulants import (bivariate_count_mixed_cumulants, count_cumulants,
+                                    common_shock_factorial_cumulants22,
                                     integrated_intensity_cumulants,
                                     integrated_intensity_mixed_cumulants,
                                     mixed_factorial_cumulants22)
@@ -286,6 +287,13 @@ def counts():
     mixed_count, _ = bivariate_count_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
     mixed_factorial = mixed_factorial_cumulants22(mixed_count)
     mixed_intensity = integrated_intensity_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    common_rates = np.array([0.4, 1.2, 0.7])
+    common_count, _ = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=80,
+        common_rates=common_rates)
+    common_factorial = mixed_factorial_cumulants22(common_count)
+    common_predicted = common_shock_factorial_cumulants22(
+        Q3, rates_a, rates_b, common_rates, 1.3, prior3)
     html = r'''
     <h2>The generating function in closed form</h2>
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
@@ -340,23 +348,52 @@ def counts():
       \kappa^{(F)}_{12}&=\kappa_{12}-\kappa_{11},&
       \kappa^{(F)}_{22}&=\kappa_{22}-\kappa_{21}-\kappa_{12}+\kappa_{11}.
     \end{aligned}$$
-    <p>The transform is applied separately in each coordinate. Conditional independence is essential: shared event
-    marks or common jumps require additional terms.</p>
+    <p>The transform is applied separately in each coordinate. Conditional independence is essential; without it,
+      shared-event shot noise is not removed.</p>
 ''' + table([[str(k + 1), f'{count_kappa[k]:.8f}', f'{factorial_kappa[k]:.8f}'] for k in range(4)],
             head=('order', 'ordinary count cumulant', 'factorial / intensity cumulant')) + r'''
 ''' + table([[label, f'{ordinary:.8f}', f'{factorial:.8f}', f'{intensity:.8f}']
              for label, ordinary, factorial, intensity in zip(
                  ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
                  mixed_count, mixed_factorial, mixed_intensity)],
-            head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''    <p>The
+            head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''
+    <h3>What common shocks add</h3>
+    <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
+      $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
+      intensities $\Lambda_A$, put $N_j=\sum_{A\ni j}C_A$. Then</p>
+    $$\log\mathbb E\prod_{j=1}^d(1+t_j)^{N_j}
+      =\log\mathbb E\exp\left\{\sum_{A\ne\varnothing}\Lambda_A
+      \left(\prod_{j\in A}(1+t_j)-1\right)\right\}.$$
+    <p>For two counts, write $\Lambda_0$ for the common-event intensity and
+      $A=\Lambda_1+\Lambda_0$, $B=\Lambda_2+\Lambda_0$, $C=\Lambda_0$. Expanding the preceding identity through
+      bidegree $(2,2)$ gives</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa(A,B)+\mathbb EC,\\
+      \kappa^{(F)}_{21}&=\kappa(A,A,B)+2\kappa(A,C),\\
+      \kappa^{(F)}_{12}&=\kappa(A,B,B)+2\kappa(B,C),\\
+      \kappa^{(F)}_{22}&=\kappa(A,A,B,B)+4\kappa(A,B,C)+2\kappa(C,C).
+    \end{aligned}$$
+    <p>Thus mixed factorial cumulants identify marginal-intensity dependence only after the common-shock terms are
+      modeled or ruled out. The sharp counterexample has deterministic $C=cT$ and no idiosyncratic intensity:
+      $N_1=N_2\sim\operatorname{Poisson}(cT)$. The cumulative intensities have zero covariance, but
+      $\kappa^{(F)}_{11}=cT$. At $c=0.8$ and $T=1.3$, the certificate obtains $1.04000000$.</p>
+''' + table([[label, f'{observed:.8f}', f'{predicted:.8f}']
+             for label, observed, predicted in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 common_factorial, common_predicted)],
+            head=('mixed order', 'factorial count', 'common-shock formula')) + r'''    <p>The
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_count_cumulants.py">certificate</a>
     obtains the factorial-count and integrated-intensity columns independently from the regime/count master equation and a polynomial Feynman&ndash;Kac
     hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
     for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
-    mass bounded by $1.6\times10^{-47}$. It also measures second-order decay of the univariate omitted boundary term.
+    mass bounded by $1.6\times10^{-47}$. A separate master equation with simultaneous $(1,1)$ jumps checks the
+    common-shock formula within $6.2\times10^{-12}$; its omitted mass is below $4.5\times10^{-49}$. It also measures
+    second-order decay of the univariate omitted boundary term.
     The conditioning argument is the defining construction of a
     <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the
-    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>.</p>
+    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>. The common-component
+    construction is the classical bivariate Poisson model of
+    <a href="https://doi.org/10.1093/biomet/51.1-2.241">Holgate (1964)</a>.</p>
 '''
     write('counts', html)
 
