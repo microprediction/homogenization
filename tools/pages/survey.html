@@ -283,6 +283,9 @@
     single-cell counts (<a href="./bibliography.html#RajEtAl2006">Raj et al. 2006</a>).</p>
     <p>The excess noise over Poisson is the
     Green&ndash;Kubo term for the switched rate, as on the <a href="./counts.html">Poisson counts</a> page.
+    At finite horizons the exact excess includes a boundary correction; more generally, count factorial cumulants equal
+    the ordinary cumulants of the integrated stochastic rate, so higher-order upstream fluctuations can be separated
+    from Poisson shot noise.
     <a href="./bibliography.html#Paulsson2004">Paulsson (2004)</a> analyses how time-averaging of fluctuating upstream
     signals controls noise in gene networks.</p>
     <p>A population growing in a random environment grows in expectation at the averaged rate plus the integrated
@@ -306,7 +309,8 @@
     (<a href="./bibliography.html#FischerMeierHellstern1993">Fischer and Meier-Hellstern 1993</a>), with marked versions
     in <a href="./bibliography.html#HeNeuts1998">He and Neuts (1998)</a>. Their long-run count variance exceeds the
     Poisson variance by twice the Green&ndash;Kubo integral of the rate, and that excess drives queue lengths in heavy traffic
-    (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>). A request sent to several servers, with the first
+    (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>). At finite horizons the exact excess is the variance
+    of the cumulative intensity, including its initial-condition boundary term. A request sent to several servers, with the first
     reply winning, is a race under a shared driver (<a href="./bibliography.html#DeanBarroso2013">Dean and Barroso 2013</a>).</p>
 
     <h2>Lumped chains and non-exponential durations</h2>

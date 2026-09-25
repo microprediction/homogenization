@@ -5,6 +5,10 @@ import numpy as np
 from explicit import I_k, J_1, J_2, cir_B, cir_int_B, cir_int_B2, two_state_constant_exact
 from fastswitch import FastSwitch, numerical_a_callable
 from models import cir_switching_mean, vasicek_jumps, mmpp, bs_switching
+from verify_count_cumulants import (bivariate_count_mixed_cumulants, count_cumulants,
+                                    integrated_intensity_cumulants,
+                                    integrated_intensity_mixed_cumulants,
+                                    mixed_factorial_cumulants22)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -271,7 +275,17 @@ def counts():
     var_ex = sum(k * k * p for k, p in enumerate(p_exact)) - mean_ex ** 2
     mean_1 = lb * T + eps / 2 * lt * L
     var_1 = lb * T + eps * lt * lt * T + eps / 2 * lt * L
-    var_2 = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    var_exact = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    Q = sym(lam)
+    count_kappa, _ = count_cumulants(Q, ell, T, [1.0, 0.0])
+    factorial_kappa = integrated_intensity_cumulants(Q, ell, T, [1.0, 0.0])
+    Q3 = np.array([[-3.0, 2.0, 1.0], [1.0, -4.0, 3.0], [2.0, 1.0, -3.0]])
+    rates_a = np.array([0.5, 3.0, 6.0])
+    rates_b = np.array([4.0, 0.75, 2.5])
+    prior3 = np.array([0.2, 0.5, 0.3])
+    mixed_count, _ = bivariate_count_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    mixed_factorial = mixed_factorial_cumulants22(mixed_count)
+    mixed_intensity = integrated_intensity_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
     html = r'''
     <h2>The generating function in closed form</h2>
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
@@ -292,14 +306,57 @@ def counts():
       - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
     <p>At fixed $T &gt; 0$ the first term leads. It is the Green&ndash;Kubo overdispersion. The second term is the memory
     of the starting regime, and at horizons short against $1/\lambda$ it nearly cancels the first.</p>
-    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_2 - mean_1:.5f}' + r''',
+    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_exact - mean_1:.5f}' + r''',
     against ''' + f'{eps * lt * lt * T:.5f}' + r''' from the first term alone:</p>
-''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_2:.5f}', f'{var_ex:.5f}']],
+''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_exact:.5f}', f'{var_ex:.5f}']],
             head=('', 'first order', 'second order (exact)', 'numerical')) + r'''    <p>The numerical column evaluates the generating function at the 64 roots of unity, as described above, and the
     distribution itself follows the same way. A Monte Carlo check over 400,000 regime paths, sampled exactly from
     exponential holding times, gives each path a Poisson law for the count. It agrees with the moments and with
     every probability up to $k = 15$ within two standard errors. Certificate:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+    <h2>Factorial cumulants remove Poisson noise</h2>
+    <p>The preceding identity extends to every order and any stochastic intensity whose transform is finite near the
+    origin. Define the factorial cumulant generating function by</p>
+    $$H_N(t)=\log\mathbb E[(1+t)^{N_T}].$$
+    <p>Conditional Poisson sampling gives the exact identity</p>
+    $$H_N(t)=\log\mathbb E[e^{t\Lambda_T}].$$
+    <p>Therefore the $r$th factorial cumulant of $N_T$ is the ordinary $r$th cumulant of $\Lambda_T$. In particular,</p>
+    $$\begin{aligned}
+      \kappa_2^{(F)}(N_T)&=\kappa_2(N_T)-\kappa_1(N_T),\\
+      \kappa_3^{(F)}(N_T)&=\kappa_3(N_T)-3\kappa_2(N_T)+2\kappa_1(N_T),\\
+      \kappa_4^{(F)}(N_T)&=\kappa_4(N_T)-6\kappa_3(N_T)+11\kappa_2(N_T)-6\kappa_1(N_T).
+    \end{aligned}$$
+    <p>Beyond the mean, these combinations strip out Poisson shot noise and leave only fluctuations of the integrated
+    rate. For several counts that are conditionally independent given cumulative intensities $\Lambda_1,\ldots,\Lambda_d$,
+    the joint identity is</p>
+    $$\log\mathbb E\!\left[\prod_{j=1}^d(1+t_j)^{N_j}\right]
+      =\log\mathbb E\!\left[e^{\sum_jt_j\Lambda_j}\right].$$
+    <p>Thus mixed factorial cumulants identify the joint cumulants of the integrated rates exactly. For two streams,
+    writing $\kappa_{rs}$ for the ordinary joint cumulant with $r$ copies of $N_1$ and $s$ copies of $N_2$, the
+    signed-Stirling conversion through bidegree $(2,2)$ is</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa_{11},&
+      \kappa^{(F)}_{21}&=\kappa_{21}-\kappa_{11},\\
+      \kappa^{(F)}_{12}&=\kappa_{12}-\kappa_{11},&
+      \kappa^{(F)}_{22}&=\kappa_{22}-\kappa_{21}-\kappa_{12}+\kappa_{11}.
+    \end{aligned}$$
+    <p>The transform is applied separately in each coordinate. Conditional independence is essential: shared event
+    marks or common jumps require additional terms.</p>
+''' + table([[str(k + 1), f'{count_kappa[k]:.8f}', f'{factorial_kappa[k]:.8f}'] for k in range(4)],
+            head=('order', 'ordinary count cumulant', 'factorial / intensity cumulant')) + r'''
+''' + table([[label, f'{ordinary:.8f}', f'{factorial:.8f}', f'{intensity:.8f}']
+             for label, ordinary, factorial, intensity in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 mixed_count, mixed_factorial, mixed_intensity)],
+            head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''    <p>The
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_count_cumulants.py">certificate</a>
+    obtains the factorial-count and integrated-intensity columns independently from the regime/count master equation and a polynomial Feynman&ndash;Kac
+    hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
+    for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
+    mass bounded by $1.6\times10^{-47}$. It also measures second-order decay of the univariate omitted boundary term.
+    The conditioning argument is the defining construction of a
+    <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the
+    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>.</p>
 '''
     write('counts', html)
 
