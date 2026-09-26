@@ -102,7 +102,7 @@
 
   <main>
     <h1>The direction of a regime cycle in the Heston smile</h1>
-    <p class="subtitle">A chain that cycles through regimes in one direction moves the smile, although its averages and covariances do not depend on the direction.</p>
+    <p class="subtitle">A chain or continuous periodic factor that cycles in one direction contributes a commutator correction invisible to averages and symmetric covariances.</p>
 
     <h2>The smile from fast volatility</h2>
     <p>When volatility fluctuates fast and independently of the stock, the option price is Black&ndash;Scholes averaged
@@ -114,16 +114,74 @@
     variance of integrated variance.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
     expansion to second order with correlation and a terminal layer.</p>
-    <p>In that work the fast driver is a scalar diffusion on the line, or a generic ergodic process that enters only
-    through a variance. A stationary scalar diffusion on the line or on an interval carries no probability current,
-    so it is reversible and its Green&ndash;Kubo matrix is symmetric. The antisymmetric part, which measures the
-    direction of a cycle, does not appear.</p>
-    <p>The symmetry comes from reversibility, not from the dimension. A scalar diffusion on the circle with a drift,
-    $dY = c\,dt + \sqrt{2D}\,dW$ modulo $2\pi$, has the uniform stationary law but a current $c/2\pi$, and for the
-    features $(\cos Y, \sin Y)$ its Green&ndash;Kubo matrix is</p>
-    $$K = \frac{1}{2(D^2 + c^2)}\begin{pmatrix} D & c \\ -c & D \end{pmatrix},$$
-    <p>whose antisymmetric part changes sign with the current, as it does below when the chain&apos;s cycle is
-    reversed.</p>
+    <p>In that work the fast driver is a one-dimensional diffusion or a generic ergodic process whose correlation
+    function enters through a variance. A stationary scalar diffusion on an interval or the line is reversible under
+    the usual zero-current boundary conditions. Dimension alone is not enough: a diffusion on a periodic domain can
+    carry stationary current, break detailed balance, and have an antisymmetric Green&ndash;Kubo matrix.</p>
+
+    <h2>A continuous cycle in closed form</h2>
+    <p>Let the fast factor be drifted Brownian motion on the circle,</p>
+    $$dY_t=c\,dt+\sqrt{2D}\,dW_t\pmod {2\pi},\qquad D&gt;0.$$
+    <p>Its stationary law is uniform, but its stationary current is $c/(2\pi)$ and time reversal changes $c$ to
+    $-c$. For every Fourier mode $n\ge1$, use the centered feature pair
+    $\phi_{n,c}(y)=\cos(ny)$ and $\phi_{n,s}(y)=\sin(ny)$. Fourier orthogonality makes every cross-mode entry vanish,
+    while the block for mode $n$ is exactly</p>
+    <div class="equation-card">
+    $$K_n=\frac1{2\{D^2n^4+c^2n^2\}}
+      \begin{pmatrix}Dn^2&amp;cn\\-cn&amp;Dn^2\end{pmatrix}.$$
+    </div>
+    <p>Indeed, the off-diagonal correlation is
+    $\mathbb E[\cos(nY_0)\sin(nY_t)]=\tfrac12e^{-Dn^2t}\sin(cnt)$; the reverse ordering has the opposite sign.
+    Thus $c\mapsto-c$ preserves $K_n^{\rm sym}$ and flips $K_n^{\rm anti}$ for every mode.</p>
+    <p>If $\cos Y$ and $\sin Y$ multiply two fixed operators $A_c,A_s$, their first correction is</p>
+    $$\frac{D}{2(D^2+c^2)}(A_c^2+A_s^2)
+      +\frac{c}{2(D^2+c^2)}[A_c,A_s].$$
+    <p>For $D=1,c=2$, the block is
+    $K_1=\left(\begin{smallmatrix}0.1&amp;0.2\\-0.2&amp;0.1\end{smallmatrix}\right)$.
+    Direct correlation quadrature agrees below $9\times10^{-16}$. A periodic CTMC discretization converges to this
+    block at rate 2.001, and an independent coupled-operator evolution gives a 2.002 rate for the residual after the
+    full first-order rule. Keeping only the symmetric block leaves a first-order error; the
+    forward-minus-reverse residual after the commutator correction converges at rate 2.000.</p>
+    <p class="muted">Continuous-factor certificate:
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">verify_circle_factor.py</a>.
+      The physical interpretation of current and broken detailed balance is standard in periodic Brownian-motor
+      models (<a href="./bibliography.html#Reimann2002">Reimann 2002</a>).</p>
+
+    <h2>The theorem for every scalar periodic diffusion</h2>
+    <p>The constant-coefficient example is not special. Let</p>
+    $$dY_t=b(Y_t)\,dt+\sqrt{2a(Y_t)}\,dW_t\pmod {2\pi},\qquad a&gt;0,$$
+    <p>have a smooth positive stationary density $p$. Its stationary probability current</p>
+    $$J=b(y)p(y)-(a(y)p(y))'$$
+    <p>is constant around the circle, and its generator has the exact decomposition</p>
+    <div class="equation-card">
+    $$L=p^{-1}\partial_y(ap\,\partial_y)+Jp^{-1}\partial_y=:S+A.$$
+    </div>
+    <p>In $L^2(p)$, $S$ is self-adjoint and $A$ is skew-adjoint. Consequently the stationary time-reversed
+    diffusion has generator $L^\dagger=S-A$, current $-J$, and drift $b^\dagger=b-2J/p$. In particular, a regular
+    scalar diffusion on the circle is reversible if and only if $J=0$. This is the periodic specialization of the
+    diffusion time-reversal formula of
+    <a href="./bibliography.html#HaussmannPardoux1986">Haussmann and Pardoux (1986)</a>.</p>
+    <p>For centered observables $f,g$, define</p>
+    $$K_L(f,g)=\int_0^\infty\langle f,e^{tL}g\rangle_p\,dt
+      =\langle f,(-L)^{-1}g\rangle_p.$$
+    <p>Adjointness gives the exact identity</p>
+    <div class="equation-card">
+    $$K_{L^\dagger}(f,g)=K_L(g,f).$$
+    </div>
+    <p>Thus time reversal preserves the entire symmetric Green&ndash;Kubo form and flips the entire antisymmetric form,
+    not merely the Fourier block above. If $J\ne0$, some smooth centered pair has a nonzero antisymmetric entry;
+    otherwise $(-L)^{-1}$, hence $L$, would be self-adjoint. A particular feature pair can still miss the current,
+    so this is an existence statement rather than universal detectability.</p>
+    <p>If features $f_r$ multiply slow operators $A_r$, the first corrector is
+    $\sum_{r,s}K_L(f_r,f_s)A_rA_s$. Reversal leaves its anticommutator part unchanged and flips
+    $\sum_{r&lt;s}K_L^{\rm anti}(f_r,f_s)[A_r,A_s]$. A feature pair can therefore contribute directional sensitivity
+    only when its antisymmetric Green&ndash;Kubo entry and operator commutator are both nonzero.</p>
+    <p>The certificate also uses a genuinely nonconstant example,
+    $p(y)=(1+0.35\cos y)/(2\pi)$, $a(y)=0.8+0.2\sin y$, and $J=0.08$. A flux-form periodic CTMC preserves the
+    self/skew-adjoint decomposition exactly. For $(\cos y,\sin y+0.25\cos2y)$, its $K_{12}-K_{21}$ converges to a
+    nonzero limit at rate 2.001, while reversing $J$ transposes the full matrix with error below
+    $2.2\times10^{-13}$.</p>
+
     <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
     whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.</p>
     <p>With $\varepsilon$ the fluctuation time scale, the variance of its integrated variance scales like
@@ -207,7 +265,7 @@
     <p>Keeping only the symmetric part is worse than no correction. In the forward direction the symmetric and
     antisymmetric parts of the correction largely cancel, so either one alone misses by more than the average
     does.</p>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">verify_cycle_smile.py</a>.</p>
+    <p class="muted">Discrete-cycle certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">verify_cycle_smile.py</a>.</p>
   </main>
 
   <footer>
