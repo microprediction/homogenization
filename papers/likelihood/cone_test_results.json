@@ -1,0 +1,77 @@
+{
+  "n": 4000,
+  "replications": 20000,
+  "chibar_95": 5.138380785321499,
+  "null_rejection_cone": 0.0546,
+  "null_rejection_unprojected_at_chibar": 0.0745,
+  "null_negative_excess_fraction": 0.5229,
+  "null_projection_changes_fraction": 0.5229,
+  "uniform_skewness": -0.0035144704091196865,
+  "uniform_excess_kurtosis": -1.198187370408004,
+  "uniform_ordinary_statistic": 11964.186505118947,
+  "uniform_cone_statistic": 0.41171674188592994,
+  "local_score_replications": 2000000,
+  "local_power": [
+    {
+      "delta_skew": 0.0,
+      "delta_kurt": 0.0,
+      "exact_cone_power": 0.0499999999999987,
+      "simulated_cone_power": 0.050062,
+      "ordinary_jb_power": 0.05000000000000007
+    },
+    {
+      "delta_skew": 1.0,
+      "delta_kurt": 0.0,
+      "exact_cone_power": 0.14168095831114852,
+      "simulated_cone_power": 0.141834,
+      "ordinary_jb_power": 0.1327100142325168
+    },
+    {
+      "delta_skew": 0.0,
+      "delta_kurt": 1.0,
+      "exact_cone_power": 0.17772983501031064,
+      "simulated_cone_power": 0.1779815,
+      "ordinary_jb_power": 0.1327100142325168
+    },
+    {
+      "delta_skew": 1.0,
+      "delta_kurt": 1.0,
+      "exact_cone_power": 0.2834864025161288,
+      "simulated_cone_power": 0.283862,
+      "ordinary_jb_power": 0.22554491576956384
+    },
+    {
+      "delta_skew": 0.0,
+      "delta_kurt": 2.0,
+      "exact_cone_power": 0.49097999499758715,
+      "simulated_cone_power": 0.4919325,
+      "ordinary_jb_power": 0.41542679253061005
+    }
+  ],
+  "local_power_max_simulation_error": 0.0009525050024128401,
+  "correlated_score_covariance": [
+    [
+      1.7,
+      0.8746427842267952
+    ],
+    [
+      0.8746427842267952,
+      0.8
+    ]
+  ],
+  "correlated_score_correlation": 0.75,
+  "correlated_score_replications": 2000000,
+  "fisher_projection_identity_max_error": 1.4210854715202004e-14,
+  "correlated_null_rejection_metric_projection": 0.050056,
+  "correlated_null_rejection_naive_clipping": 0.0597015,
+  "correlated_local_raw_mean": [
+    1.8402897763134143,
+    0.8944271909999159
+  ],
+  "correlated_local_canonical_mean": [
+    1.0,
+    1.0
+  ],
+  "correlated_local_power_exact": 0.2834864025161288,
+  "correlated_local_power_simulated": 0.283067
+}
