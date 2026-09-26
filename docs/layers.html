@@ -152,6 +152,29 @@
     more outer terms does not reduce the error below the size of the missing shift. The
     <a href="./convergence.html">convergence demo</a> shows the orders that result when both are included.</p>
 
+    <h2>The layer to second order for two states</h2>
+    <p>For the two-state switch the whole layer can be written down. With $q = \tilde g$ and the ratio $\omega$ of the
+    <a href="./regime-switching.html">regime-switching page</a>, $\omega' = q\,(1 - \omega^2) - 2\omega/\varepsilon$
+    from $\omega(0) = 0$, and the outer terms $\omega_1 = q/2$, $\omega_2 = -q'/4$ miss the start by
+    $\tfrac12\varepsilon q(0) - \tfrac14\varepsilon^2 q'(0)$. The layer returns each to zero on the fast clock:</p>
+    $$\omega = \frac\varepsilon2\big(q - q(0)\,e^{-2t/\varepsilon}\big) - \frac{\varepsilon^2}4\big(q' - q'(0)\,e^{-2t/\varepsilon}\big) + O(\varepsilon^3),$$
+    <p>uniformly on $[0, T]$. The stiff parts of the two exponentials cancel in the equation, leaving a source of
+    order $\varepsilon^2$ acting through a kernel of mass $\varepsilon/2$, which is where the order of the remainder
+    comes from. Integrating $q\,\omega$ gives the mean, with $I(t) = \int_0^t q(s)\,e^{-2s/\varepsilon}\,ds$:</p>
+    $$\log m = \int_0^t \bar g + \frac\varepsilon2\int_0^t q^2 - \frac{\varepsilon\,q(0)}2\,I
+      - \frac{\varepsilon^2}8\big(q^2 - q(0)^2\big) + \frac{\varepsilon^2 q'(0)}4\,I + O(\varepsilon^3).$$
+    <p>The two terms in $I$ are permanent shifts of the kind described above: $I$ settles at about
+    $\tfrac12\varepsilon q(0)$, so the first is of order $\varepsilon^2$ and the second of order $\varepsilon^3$. When
+    $q(0) = 0$, as for the affine survival examples, both vanish and the first shift is the $\varepsilon^4$ term. When
+    $q(0) \ne 0$, as for <a href="./counts.html">counts</a>, <a href="./jumps.html">jumps</a> and
+    <a href="./black-scholes.html">Black&ndash;Scholes</a>, the first is the term
+    $-\tfrac14\varepsilon^2\tilde g^{\,2}(1 - e^{-2\lambda T})$ that the exact count formula carries.</p>
+    <p>The certificate takes $q(t) = 0.4 + 0.3\sin 2t - 0.2\,t\,e^{-t}$ on $[0, 3]$ and measures the largest error as
+    $\varepsilon$ halves from $0.2$ to $0.025$. The outer series is out by order $\varepsilon$ in $\omega$, which costs
+    order $\varepsilon^2$ in $\log m$ because the miss lasts a time of order $\varepsilon$; the first composite is
+    second order in both; the second composite is third order in both, with measured orders $3.00$ and $2.99$.</p>
+    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/layers/verify_layer.py">verify_layer.py</a>.</p>
+
     <h2>Layers at order zero</h2>
     <p>If the payoff itself depends on the final state of the fast process, the mismatch is of order one. This
     happens for an option on a bond whose price depends on the regime at expiry.</p>

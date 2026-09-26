@@ -53,6 +53,9 @@ papers/conformal/
 papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
+  verify_counts.py         factorial cumulants of a switched Poisson count equal the cumulants of the integrated rate
+papers/layers/
+  verify_layer.py          the two-state initial layer to second order with a forcing that does not vanish at the start
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
   verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit
