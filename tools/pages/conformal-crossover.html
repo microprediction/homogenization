@@ -1,0 +1,341 @@
+<!-- title: When fast mixing justifies pooled residuals · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">numerical certificate</a></span></p>
+    <h1>When fast mixing justifies pooled residuals</h1>
+    <p class="subtitle">An exact finite-chain horizon-to-switching crossover for conditional coverage, alongside finite-calibration, burn-in and transient-panel bounds.</p>
+    <p class="muted">Research note, 23 September 2026; extended 26 September 2026. A finite-state benchmark for
+      <a href="./index.html">homogenization and residual pooling</a>;
+      it does not assert distribution-free conditional coverage.</p>
+
+    <h2>What is being pooled?</h2>
+    <p>Let $Y_t$ be an irreducible finite-state continuous-time chain with
+      generator $mQ_0$ and invariant law $\pi$; the initial law need not equal $\pi$.
+      A score $R_t$ (for example an absolute prediction residual) has continuous
+      conditional CDF $F_i(r)$ when $Y_t=i$. Emissions are independent given the
+      states; the prediction rule and the emission laws are fixed.
+      To forecast a <em>terminal</em> score at horizon $\Delta$ we pool
+      calibration scores and choose the population threshold $q$ satisfying</p>
+    $$\bar F(q)=1-\alpha,\qquad \bar F=\sum_i\pi_iF_i.$$
+    <p>The distinction is between coverage averaged over the stationary current state
+      and coverage conditional on a specified current state. It is also essential
+      to separate the <em>forecast horizon</em> $\Delta$ from the calibration
+      spacing $h$: fast mixing along the former does not imply a large effective
+      calibration sample along the latter.</p>
+
+    <h2>The finite-chain identity and a nonreversible bound</h2>
+    <p>Write $F(r)=(F_1(r),\ldots,F_d(r))^\top$ and
+      $P_t=e^{mQ_0t}$. For any initial regime prior $\nu$, the conditional
+      coverage error at the pooled population threshold is exactly</p>
+    <div class="equation-card">
+    $$\Pr_\nu(R_\Delta\le q)-(1-\alpha)
+      =(\nu P_\Delta-\pi)F(q).$$
+    </div>
+    <p>At $\Delta=c/m$ this is $(\nu e^{cQ_0}-\pi)F(q)$, independent of
+      $m$ and generally nonzero; at fixed positive $\Delta$ it vanishes as
+      $m\to\infty$. This is an exact semigroup identity, not an asymptotic
+      or a distribution-free conditional-coverage claim.</p>
+    <p>The identity also has a general nonreversible rate bound. Let
+      $Q_0^*$ be the $L^2(\pi)$ adjoint, let
+      $Q_s=(Q_0+Q_0^*)/2$, and let $\gamma_s$ be the smallest positive
+      eigenvalue of $-Q_s$ on centered functions. Then</p>
+    <div class="equation-card">
+    $$\left|\Pr_\nu(R_\Delta\le q)-(1-\alpha)\right|
+      \le e^{-m\gamma_s\Delta}
+      \left\|\frac{\nu}{\pi}-1\right\|_{L^2(\pi)}
+      \left\|F(q)-(1-\alpha){\bf1}\right\|_{L^2(\pi)}.$$
+    </div>
+    <p>Indeed, for centered $g$, differentiation along the original
+      nonreversible semigroup gives</p>
+    $$\frac{d}{dt}\|P_tg\|_{L^2(\pi)}^2
+      =2m\langle P_tg,Q_sP_tg\rangle_\pi
+      \le-2m\gamma_s\|P_tg\|_{L^2(\pi)}^2.$$
+    <p>Thus $\|P_tg\|_{2,\pi}\le e^{-m\gamma_s t}\|g\|_{2,\pi}$;
+      Cauchy&ndash;Schwarz yields the displayed result. For a specified state
+      $i$, $\|\delta_i/\pi-1\|_{2,\pi}=\sqrt{1/\pi_i-1}$ and the final
+      score-CDF norm is at most $1/2$. In the reversible case
+      $Q_s=Q_0$, so this reduces to the usual spectral-gap bound.
+      This additive-reversibilization route follows the nonreversible
+      $L^2$ framework of
+      <a href="https://doi.org/10.1090/S0002-9947-1988-0930082-9">Lawler and Sokal (1988)</a>.</p>
+    <p>The exponent is sharp among bounds with prefactor one. More precisely,</p>
+    <div class="equation-card">
+    $$\gamma_s=\sup\left\{\gamma:
+      \|e^{tQ_0}g\|_{2,\pi}\le e^{-\gamma t}\|g\|_{2,\pi}
+      \quad\hbox{for every }t\ge0\hbox{ and }\pi g=0\right\}.$$
+    </div>
+    <p>Sufficiency is the preceding energy estimate. For necessity, choose a
+      unit eigenfunction $g_s$ of $-Q_s$ with eigenvalue $\gamma_s$.
+      The exact right derivative at zero is</p>
+    $$\left.\frac{d}{dt}\|e^{tQ_0}g_s\|_{2,\pi}^2\right|_{t=0}
+      =-2\gamma_s.$$
+    <p>Any larger exponential rate with prefactor one would force a strictly
+      smaller derivative, a contradiction. This is a worst-direction,
+      all-times statement; a particular score vector may contract faster.
+      Equivalently, $-\gamma_s$ is the Hilbert-space logarithmic norm on the
+      centered subspace, in the sense introduced by
+      <a href="https://openlibrary.org/books/OL5804145M/Stability_and_error_bounds_in_the_numerical_integration_of_ordinary_differential_equations.">Dahlquist (1958)</a>.</p>
+
+    <h2>The symmetric two-state formula</h2>
+    <p>For $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,
+      $m=1/\varepsilon$, and $\pi=(1/2,1/2)$, the general identity reduces to</p>
+    <div class="equation-card">
+    $$\Pr(R_{\Delta}\le q\mid Y_0=i)
+      =1-\alpha+e^{-2\Delta/\varepsilon}
+         \bigl(F_i(q)-(1-\alpha)\bigr),\qquad i=1,2.$$
+    </div>
+    <p>Indeed, $e^{Q\Delta}={\bf1}\pi+
+      e^{-2\Delta/\varepsilon}(I-{\bf1}\pi)$, so the distribution of
+      the terminal state is its stationary law plus a decaying memory
+      of $Y_0$. The expression is exact for the stated model.
+      If $Y_0$ is stationary, averaging over $i$ gives exactly
+      $1-\alpha$ <em>at the population threshold</em>, for every $\Delta$.
+      This marginal identity says nothing about conditional coverage.</p>
+    <p>At $\Delta=c\varepsilon$, the conditional error is
+      $e^{-2c}(F_i(q)-(1-\alpha))$. It remains nonzero as
+      $\varepsilon\to0$ whenever the two residual distributions
+      disagree at $q$. Only for $\Delta/\varepsilon\to\infty$ does
+      pooling become conditionally accurate in this benchmark.
+      For $\Delta/\varepsilon\to0$, conditioning retains the
+      full regime-specific difference.</p>
+
+    <h2>Coverage and width</h2>
+    <p>The shortest upper score threshold with population conditional
+      coverage $1-\alpha$ under prior $\nu$ is
+      $q_{\nu,\Delta}=F_{\nu,\Delta}^{-1}(1-\alpha)$, where
+      $F_{\nu,\Delta}(r)=\nu P_\Delta F(r)$.
+      When the conditional laws have continuously differentiable densities near $q$
+      and $\bar f(q)>0$, expansion as the chain mixes gives</p>
+    $$q_{\nu,\Delta}=q-
+       \frac{(\nu P_\Delta-\pi)F(q)}{\bar f(q)}
+       +O(\|\nu P_\Delta-\pi\|^2).$$
+    <p>The preceding two-state expression follows by substituting its single
+      exponential mode.</p>
+    <p>A pooled threshold $q$ can be too narrow for one state and
+      unnecessarily wide for the other. If state information is used
+      only to demand coverage for <em>both</em> states with a single
+      threshold, the smallest such threshold is
+      $\max_i q_{i,\Delta}$. Thus marginal validity, conditional
+      validity, and sharpness are distinct objectives.</p>
+    <p>For example, take exponential scores with conditional means 1
+      and 3 and $\alpha=0.1$. The pooled threshold is about $4.93784$.
+      At $\Delta=0$ its conditional coverages are approximately
+      $0.99283$ and $0.80717$, despite exactly $0.9$ stationary
+      marginal coverage. At $\Delta=\varepsilon$ they are
+      $0.91256$ and $0.88744$. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">certificate</a>
+      simulates the Markov transitions and fresh scores to check these
+      figures.</p>
+    <p>The certificate also uses a nonreversible three-state chain with a
+      nonuniform invariant law. It obtains $\gamma_s=3.67885921$; over forty
+      scaled horizons the largest score-vector ratio of the exact $L^2(\pi)$
+      norm to its additive-reversibilization envelope is $0.97508013$.
+      For the gap eigenfunction at $t=10^{-3}$, the ratio is
+      $0.999999999315$, while replacing $\gamma_s$ by $1.01\gamma_s$
+      gives $1.000036788583>1$ and violates the proposed faster bound.
+      This checks the original nonnormal semigroup rather than diagonalizing
+      it as though it were reversible.</p>
+
+    <h2>Finite dependent calibration</h2>
+    <p>The population threshold is not what split conformal actually
+      computes. Suppose $n$ calibration scores are sampled from the
+      stationary process at spacing $h>0$, and let
+      $\widehat F_n(r)=n^{-1}\sum_{\ell=1}^n
+      {\bf1}\{R_{\ell h}\le r\}$. Put $f_r=F(r)$,
+      $p_r=\pi f_r$, $\widetilde f_r=f_r-p_r{\bf1}$, and
+      $P_h=e^{mQ_0h}$. Conditional independence of distinct emissions gives
+      the exact finite-chain Green&ndash;Kubo sum</p>
+    $$\operatorname{Var}\widehat F_n(r)
+       =\frac{p_r(1-p_r)}{n}
+        +\frac{2}{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
+          \langle\widetilde f_r,P_h^\ell\widetilde f_r\rangle_\pi.$$
+    <p>The same nonreversible contraction gives, with
+      $a=e^{-m\gamma_sh}$, the exact finite-panel envelope</p>
+    <div class="equation-card">
+    $$\operatorname{Var}\widehat F_n(r)
+       \le \frac{p_r(1-p_r)}{n}V_n(a),$$
+    $$V_n(a)=1+\frac2n\sum_{\ell=1}^{n-1}(n-\ell)a^\ell
+       =\frac{1+a}{1-a}
+        -\frac{2a(1-a^n)}{n(1-a)^2}.$$
+    </div>
+    <p>This uses $\|\widetilde f_r\|_{2,\pi}^2\le p_r(1-p_r)$ and
+      retains the finite geometric sum. It remains valid when the covariances
+      oscillate or change sign, and is strictly sharper than the asymptotic
+      factor $(1+a)/(1-a)$ for finite $n$. For the symmetric
+      two-state chain, $\gamma_s=2$ and
+      $\langle\widetilde f_r,P_h^\ell\widetilde f_r\rangle_\pi
+      =d_r^2e^{-2\ell h/\varepsilon}$, recovering the original equality.
+      In fact the variance envelope is sharp: take the symmetric two-state
+      chain and conditional CDF values $(0,1)$ at the threshold. Continuous
+      score laws with disjoint supports realize this case, and every covariance
+      inequality above is then an equality.
+      When $m\gamma_sh\ll1$,
+      adjacent scores carry nearly the same regime information, so
+      $n$ can badly overstate the effective sample size. The first
+      term includes the within-regime emission noise, while the
+      second is exactly the dependence contribution from the hidden chain.
+      In the nonreversible certificate, the exact variance is $0.00091950$
+      and the finite-panel bound is $0.00123603$. In the reversible three-state
+      specialization, the exact variance is $0.00110385$ versus $0.00110741$
+      in direct simulation. A separate $n=17$ two-state construction attains
+      its bound exactly at variance $0.04032855$.</p>
+    <p>Here is a conservative finite-sample statement that requires no
+      independent-calibration fiction. Assume $\bar F$ is continuous
+      and strictly increasing. Select an integer $M\ge2$ and failure
+      probability $\delta\in(0,1)$, and let
+      $V=V_n(a)$. A grid of $M-1$ population quantiles,
+      Chebyshev's inequality and a union bound imply, with probability
+      at least $1-\delta$ over the stationary calibration sequence,</p>
+    $$\sup_r|\widehat F_n(r)-\bar F(r)|
+       \le \frac1M+\sqrt{\frac{(M-1)V}{4n\delta}}
+       =:\eta_{n,M,\delta}.$$
+    <p>Let $\widehat q$ be the ordinary split-conformal order statistic
+      of rank $k=\lceil(n+1)(1-\alpha)\rceil$, assuming $k\le n$
+      and no score ties. Then on this same event,
+      for each possible observed state $Y_0=i$,</p>
+    <div class="equation-card">
+    $$\left|\Pr(R_\Delta\le\widehat q
+        \mid\text{calibration history},Y_0=i)
+          -(1-\alpha)\right|
+      \le \eta_{n,M,\delta}+\frac2n+
+        \frac12\sqrt{\frac1{\pi_i}-1}\,e^{-m\gamma_s\Delta}.$$
+    </div>
+    <p>The Markov property makes the future emission conditionally independent
+      of past calibration given $Y_0$. The order-statistic convention contributes
+      at most $2/n$ in pooled CDF units. This bound separates
+      calibration uncertainty from the irreducible horizon effect;
+      it is intentionally loose, particularly its Chebyshev factor.
+      For the symmetric two-state chain, the sharper exact horizon term is
+      $e^{-2\Delta/\varepsilon}\sup_r|F_i(r)-\bar F(r)|$.
+      If the current state is hidden, the same reasoning applies with its
+      posterior $\nu$, replacing $\sqrt{1/\pi_i-1}$ by
+      $\|\nu/\pi-1\|_{L^2(\pi)}$.</p>
+
+    <h2>Arbitrary starts and burn-in</h2>
+    <p>The preceding calibration confidence was stated for a stationary panel.
+      There is an explicit transfer to any initial regime law. Let the chain
+      start from $\nu$, allow a burn-in $b\ge0$, and then observe the emitted
+      panel
+      $\mathcal P_b=(R_b,R_{b+h},\ldots,R_{b+(n-1)h})$.
+      If $\mathcal P_\pi$ denotes the same panel started from $\pi$, then</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\{\mathcal L_\nu(\mathcal P_b),
+                    \mathcal L_\pi(\mathcal P_\pi)\}
+      \le d_{\rm TV}(\nu e^{mQ_0b},\pi)
+      \le \frac12e^{-m\gamma_sb}
+          \left\|\frac{\nu}{\pi}-1\right\|_{L^2(\pi)}
+      =:\zeta_b.$$
+    </div>
+    <p>For the first inequality, condition on the state at time $b$ and view
+      all later states and emissions as one Markov kernel; total variation
+      cannot increase under that kernel. This data-processing principle is
+      the finite-state form of the contraction studied by
+      <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a>.
+      For the second inequality, the density relative to $\pi$ evolves under
+      the adjoint semigroup. Its symmetric part is again $Q_s$, so the same
+      energy argument gives $L^2(\pi)$ contraction at rate $\gamma_s$;
+      Cauchy&ndash;Schwarz then converts $L^2$ to total variation.</p>
+    <p>Consequently, every stationary-panel event with probability at least
+      $1-\delta$ holds after burn-in with probability at least
+      $1-\delta-\zeta_b$. In particular, the uniform empirical-CDF event and
+      the conditional-coverage inequality above remain unchanged on the good
+      event, but their confidence becomes $1-\delta-\zeta_b$.
+      To make the start-up penalty at most $\epsilon$, it is sufficient that</p>
+    $$b\ge\frac1{m\gamma_s}
+       \left[\log\frac{\|\nu/\pi-1\|_{L^2(\pi)}}{2\epsilon}\right]_+.$$
+    <p>For a specified initial state $i$, the numerator is
+      $\sqrt{1/\pi_i-1}$. This is a marginal probability statement over the
+      random calibration panel. It is neither training-conditional nor
+      feature-conditional validity, and the bound does not replace the panel
+      size by an informal effective sample size.</p>
+    <p>The nonreversible three-state certificate enumerates the exact law of
+      every four-score binary panel. For scaled burn-ins $mb=0,0.25,0.5,1$,
+      the score-panel total variations are respectively $0.13175444$,
+      $0.06439285$, $0.02503886$, and $0.00201894$; each lies below both the
+      exact first-state total variation and the $L^2$ envelope. From state
+      zero, the sufficient burn-in for a one-percent envelope is
+      $mb\ge1.19131949$.</p>
+
+    <h3>The panel also forgets the start</h3>
+    <p>The total-variation transfer is deliberately uniform over every panel
+      event. For the empirical CDF itself, later observations provide their
+      own burn-in and give a sharper result. Fix $r$, put $f=F(r)$,
+      $p=\pi f$, $P=e^{mQ_0h}$, and
+      $\mu_\ell=\nu e^{mQ_0b}P^\ell$. For
+      $X_\ell={\bf1}\{R_{b+\ell h}\le r\}$ and
+      $\widehat F_n(r)=n^{-1}\sum_{\ell=0}^{n-1}X_\ell$,</p>
+    <div class="equation-card">
+    $$\mathbb E_\nu\widehat F_n(r)-p
+      =\frac1n\sum_{\ell=0}^{n-1}(\mu_\ell-\pi)f,$$
+    $$\left|\mathbb E_\nu\widehat F_n(r)-p\right|
+      \le e^{-m\gamma_sb}
+      \left\|\frac\nu\pi-1\right\|_{2,\pi}
+      \|f-p{\bf1}\|_{2,\pi}
+      B_n(a),$$
+    $$B_n(a)=\frac{1-a^n}{n(1-a)},\qquad
+      a=e^{-m\gamma_sh}.$$
+    </div>
+    <p>The identity is just the sum of the transient marginal expectations.
+      For the bound, center $f$, move each transition semigroup onto that
+      centered function, and apply the additive-reversibilization contraction.
+      Since $f_i\in[0,1]$, its stationary standard deviation is at most
+      $1/2$, giving the universal version</p>
+    $$\left|\mathbb E_\nu\widehat F_n(r)-p\right|
+      \le\frac12e^{-m\gamma_sb}
+      \left\|\frac\nu\pi-1\right\|_{2,\pi}B_n(a).$$
+    <p>This prefactor and the complete factor $B_n(a)$ are sharp. For the
+      symmetric two-state chain, a point start, and conditional success
+      probabilities $(0,1)$, every summand has the same sign and lies in the
+      gap eigenspace, so equality holds for every $n$, $b$, and $h$.
+      In particular, if $mh$ is bounded away from zero, then
+      $B_n(a)\sim\{n(1-a)\}^{-1}$: within-panel relaxation makes the initial-law
+      bias $O(n^{-1})$ even with no separate burn-in. This does not improve
+      the preceding $\zeta_b$ guarantee for an arbitrary panel event; it uses
+      the averaging structure of this particular statistic.</p>
+    <p>The same conditioning argument gives an exact nonstationary variance,
+      not an effective-sample-size heuristic:</p>
+    <div class="equation-card">
+    $$\operatorname{Var}_\nu\widehat F_n(r)
+      =\frac1{n^2}\left\{
+      \sum_{\ell=0}^{n-1}\mu_\ell f
+      +2\sum_{0\le\ell<j\le n-1}
+        \mu_\ell\operatorname{diag}(f)P^{j-\ell}f
+      -\left(\sum_{\ell=0}^{n-1}\mu_\ell f\right)^2
+      \right\}.$$
+    </div>
+    <p>Conditional independence of the emissions is used only in the mixed
+      moment
+      $\mathbb E(X_\ell X_j)=
+      \mu_\ell\operatorname{diag}(f)P^{j-\ell}f$.
+      Exact enumeration of all $2^4$ binary panels agrees with both moment
+      identities within $2\times10^{-15}$. In the nonreversible example,
+      the empirical-CDF bias decreases from $0.04088399$ at $mb=0$ to
+      $0.00051374$ at $mb=1$; the corresponding score-specific bounds are
+      $0.07072227$ and $0.00178586$. The sharp two-state certificate has
+      absolute bias and bound both equal to $0.09440221$.
+      These finite sums are the elementary finite-state version of the
+      Markov-additive calculations organized more generally through the
+      Poisson equation; see
+      <a href="https://doi.org/10.1214/aop/1039639370">Glynn and Meyn (1996)</a>.</p>
+
+    <h2>Relation to Markov conformal work and next step</h2>
+    <p><a href="https://proceedings.mlr.press/v235/zheng24j.html">Zheng and Proutiere (2024)</a>
+      analyze the coverage gap for split conformal with Markovian data
+      and the effects of thinning calibration.
+      <a href="https://proceedings.mlr.press/v313/barber26a.html">Barber and Pananjady (2026)</a>
+      analyze temporal dependence, including predictors with memory,
+      through a switch coefficient.
+      <a href="https://proceedings.mlr.press/v202/nettasinghe23a.html">Nettasinghe et al. (2023)</a>
+      obtain a different exact-validity construction for hidden Markov
+      models using exchangeable blocks. The calculation here isolates
+      a separate question: how a forecast horizon comparable to the
+      switching time leaves a conditional residual mismatch even
+      with the <em>population</em> pooled quantile.</p>
+    <p class="muted">Scope: the identity and additive-reversibilization
+      bounds cover any irreducible finite-state CTMC. Scores are independent
+      terminal emissions conditional on the terminal state, with fixed laws
+      and a frozen prediction rule. Path functionals, predictors with memory,
+      and overlapping path-score calibration require different formulas;
+      those are treated separately in
+      <a href="https://github.com/microprediction/homogenization/pull/60">PR #60</a>.
+      No result here asserts distribution-free conditional coverage.</p>
+  </main>
