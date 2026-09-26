@@ -5,6 +5,16 @@ import numpy as np
 from explicit import I_k, J_1, J_2, cir_B, cir_int_B, cir_int_B2, two_state_constant_exact
 from fastswitch import FastSwitch, numerical_a_callable
 from models import cir_switching_mean, vasicek_jumps, mmpp, bs_switching
+from verify_count_cumulants import (bivariate_count_mixed_cumulants,
+                                    bivariate_factorial_cumulant_grid,
+                                    count_cumulants,
+                                    common_shock_factorial_cumulant,
+                                    common_shock_factorial_cumulants22,
+                                    integrated_intensity_cumulants,
+                                    integrated_intensity_mixed_cumulants,
+                                    mark_factorial_moments,
+                                    marked_common_shock_factorial_cumulant,
+                                    mixed_factorial_cumulants22)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -271,7 +281,41 @@ def counts():
     var_ex = sum(k * k * p for k, p in enumerate(p_exact)) - mean_ex ** 2
     mean_1 = lb * T + eps / 2 * lt * L
     var_1 = lb * T + eps * lt * lt * T + eps / 2 * lt * L
-    var_2 = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    var_exact = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    Q = sym(lam)
+    count_kappa, _ = count_cumulants(Q, ell, T, [1.0, 0.0])
+    factorial_kappa = integrated_intensity_cumulants(Q, ell, T, [1.0, 0.0])
+    Q3 = np.array([[-3.0, 2.0, 1.0], [1.0, -4.0, 3.0], [2.0, 1.0, -3.0]])
+    rates_a = np.array([0.5, 3.0, 6.0])
+    rates_b = np.array([4.0, 0.75, 2.5])
+    prior3 = np.array([0.2, 0.5, 0.3])
+    mixed_count, _ = bivariate_count_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    mixed_factorial = mixed_factorial_cumulants22(mixed_count)
+    mixed_intensity = integrated_intensity_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    common_rates = np.array([0.4, 1.2, 0.7])
+    common_count, common_distribution = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=80,
+        common_rates=common_rates)
+    common_factorial = mixed_factorial_cumulants22(common_count)
+    common_predicted = common_shock_factorial_cumulants22(
+        Q3, rates_a, rates_b, common_rates, 1.3, prior3)
+    common_factorial_33 = bivariate_factorial_cumulant_grid(
+        common_distribution, degree=3)[2, 2]
+    common_predicted_33 = common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, 3, 3, 1.3, prior3)
+    common_marks = np.array([
+        [1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [1, 3]])
+    common_mark_probabilities = np.array([0.25, 0.20, 0.20, 0.15, 0.10, 0.10])
+    mark_moments = mark_factorial_moments(
+        common_marks, common_mark_probabilities, degree=3)
+    _, marked_distribution = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=110,
+        common_rates=common_rates, common_marks=common_marks,
+        common_mark_probabilities=common_mark_probabilities)
+    marked_factorial_33 = bivariate_factorial_cumulant_grid(
+        marked_distribution, degree=3)[2, 2]
+    marked_predicted_33 = marked_common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, mark_moments, 3, 3, 1.3, prior3)
     html = r'''
     <h2>The generating function in closed form</h2>
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
@@ -292,14 +336,135 @@ def counts():
       - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
     <p>At fixed $T &gt; 0$ the first term leads. It is the Green&ndash;Kubo overdispersion. The second term is the memory
     of the starting regime, and at horizons short against $1/\lambda$ it nearly cancels the first.</p>
-    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_2 - mean_1:.5f}' + r''',
+    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_exact - mean_1:.5f}' + r''',
     against ''' + f'{eps * lt * lt * T:.5f}' + r''' from the first term alone:</p>
-''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_2:.5f}', f'{var_ex:.5f}']],
+''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_exact:.5f}', f'{var_ex:.5f}']],
             head=('', 'first order', 'second order (exact)', 'numerical')) + r'''    <p>The numerical column evaluates the generating function at the 64 roots of unity, as described above, and the
     distribution itself follows the same way. A Monte Carlo check over 400,000 regime paths, sampled exactly from
     exponential holding times, gives each path a Poisson law for the count. It agrees with the moments and with
     every probability up to $k = 15$ within two standard errors. Certificate:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+    <h2>Factorial cumulants remove Poisson noise</h2>
+    <p>The preceding identity extends to every order and any stochastic intensity whose transform is finite near the
+    origin. Define the factorial cumulant generating function by</p>
+    $$H_N(t)=\log\mathbb E[(1+t)^{N_T}].$$
+    <p>Conditional Poisson sampling gives the exact identity</p>
+    $$H_N(t)=\log\mathbb E[e^{t\Lambda_T}].$$
+    <p>Therefore the $r$th factorial cumulant of $N_T$ is the ordinary $r$th cumulant of $\Lambda_T$. In particular,</p>
+    $$\begin{aligned}
+      \kappa_2^{(F)}(N_T)&=\kappa_2(N_T)-\kappa_1(N_T),\\
+      \kappa_3^{(F)}(N_T)&=\kappa_3(N_T)-3\kappa_2(N_T)+2\kappa_1(N_T),\\
+      \kappa_4^{(F)}(N_T)&=\kappa_4(N_T)-6\kappa_3(N_T)+11\kappa_2(N_T)-6\kappa_1(N_T).
+    \end{aligned}$$
+    <p>Beyond the mean, these combinations strip out Poisson shot noise and leave only fluctuations of the integrated
+    rate. For several counts that are conditionally independent given cumulative intensities $\Lambda_1,\ldots,\Lambda_d$,
+    the joint identity is</p>
+    $$\log\mathbb E\!\left[\prod_{j=1}^d(1+t_j)^{N_j}\right]
+      =\log\mathbb E\!\left[e^{\sum_jt_j\Lambda_j}\right].$$
+    <p>Thus mixed factorial cumulants identify the joint cumulants of the integrated rates exactly. For two streams,
+    writing $\kappa_{rs}$ for the ordinary joint cumulant with $r$ copies of $N_1$ and $s$ copies of $N_2$, the
+    signed-Stirling conversion through bidegree $(2,2)$ is</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa_{11},&
+      \kappa^{(F)}_{21}&=\kappa_{21}-\kappa_{11},\\
+      \kappa^{(F)}_{12}&=\kappa_{12}-\kappa_{11},&
+      \kappa^{(F)}_{22}&=\kappa_{22}-\kappa_{21}-\kappa_{12}+\kappa_{11}.
+    \end{aligned}$$
+    <p>The transform is applied separately in each coordinate. Conditional independence is essential; without it,
+      shared-event shot noise is not removed.</p>
+''' + table([[str(k + 1), f'{count_kappa[k]:.8f}', f'{factorial_kappa[k]:.8f}'] for k in range(4)],
+            head=('order', 'ordinary count cumulant', 'factorial / intensity cumulant')) + r'''
+''' + table([[label, f'{ordinary:.8f}', f'{factorial:.8f}', f'{intensity:.8f}']
+             for label, ordinary, factorial, intensity in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 mixed_count, mixed_factorial, mixed_intensity)],
+            head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''
+    <h3>What common shocks add</h3>
+    <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
+      $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
+      intensities $\Lambda_A$, put $N_j=\sum_{A\ni j}C_A$. Then</p>
+    $$\log\mathbb E\prod_{j=1}^d(1+t_j)^{N_j}
+      =\log\mathbb E\exp\left\{\sum_{A\ne\varnothing}\Lambda_A
+      \left(\prod_{j\in A}(1+t_j)-1\right)\right\}.$$
+    <p>For two counts, write $\Lambda_0$ for the common-event intensity and
+      $A=\Lambda_1+\Lambda_0$, $B=\Lambda_2+\Lambda_0$, $C=\Lambda_0$. Expanding the preceding identity through
+      arbitrary bidegree $(r,s)$ gives the all-order identity</p>
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{k=0}^{\min(r,s)}
+      {r\choose k}{s\choose k}k!\,
+      \kappa\!\left(A^{[r-k]},B^{[s-k]},C^{[k]}\right)}.$$
+    <p>Here the brackets denote repeated arguments of the joint cumulant; when only one argument remains, it is its
+      expectation. The coefficient counts which $k$ derivatives in each coordinate strike the bilinear common-event
+      term. In particular, through bidegree $(2,2)$,</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa(A,B)+\mathbb EC,\\
+      \kappa^{(F)}_{21}&=\kappa(A,A,B)+2\kappa(A,C),\\
+      \kappa^{(F)}_{12}&=\kappa(A,B,B)+2\kappa(B,C),\\
+      \kappa^{(F)}_{22}&=\kappa(A,A,B,B)+4\kappa(A,B,C)+2\kappa(C,C).
+    \end{aligned}$$
+    <p>Thus mixed factorial cumulants identify marginal-intensity dependence only after the common-shock terms are
+      modeled or ruled out. The sharp counterexample has deterministic $C=cT$ and no idiosyncratic intensity:
+      $N_1=N_2\sim\operatorname{Poisson}(cT)$. The cumulative intensities have zero covariance, but
+      $\kappa^{(F)}_{11}=cT$. At $c=0.8$ and $T=1.3$, the certificate obtains $1.04000000$.</p>
+''' + table([[label, f'{observed:.8f}', f'{predicted:.8f}']
+             for label, observed, predicted in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 common_factorial, common_predicted)],
+            head=('mixed order', 'factorial count', 'common-shock formula')) + r'''
+    <h3>Arbitrary integer marks</h3>
+    <p>The unit-jump restriction is unnecessary. Let each common event carry an iid nonnegative integer mark
+      $J=(J_1,J_2)$, independent of the cumulative intensities and of the other marks. Conditional on the common
+      cumulative intensity $C$, the number of marked events is Poisson with mean $C$. If $\Lambda_1,\Lambda_2$ are
+      the idiosyncratic cumulative intensities, then the exact factorial cumulant generating function is</p>
+    $$H(t,u)=\log\mathbb E\exp\!\left\{t\Lambda_1+u\Lambda_2
+      +C\left(\mathbb E[(1+t)^{J_1}(1+u)^{J_2}]-1\right)\right\}.$$
+    <p>Put $\mu_{ab}=\mathbb E[(J_1)_a(J_2)_b]$, where $(j)_a$ is a falling factorial, and define the integrated-rate
+      variables</p>
+    $$W_{10}=\Lambda_1+\mu_{10}C,\qquad
+      W_{01}=\Lambda_2+\mu_{01}C,\qquad
+      W_{ab}=\mu_{ab}C\quad(a+b\ge2).$$
+    <p>Take $r$ labelled symbols of type 1 and $s$ of type 2. For a block $B$ of a set partition, let
+      $a_B,b_B$ be its numbers of the two symbol types. The all-order marked theorem is</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{\pi\in\Pi_{r,s}}
+      \kappa\!\left(W_{a_Bb_B}:B\in\pi\right).}$$
+    </div>
+    <p>This is the multivariate logarithmic Fa&agrave; di Bruno formula applied to $H$. It requires the displayed
+      falling-factorial mark moments and the corresponding integrated-rate cumulants to be finite. For example,</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa(W_{10},W_{01})+\mathbb EW_{11},\\
+      \kappa^{(F)}_{21}&=\kappa(W_{10},W_{10},W_{01})
+        +\kappa(W_{20},W_{01})+2\kappa(W_{10},W_{11})+\mathbb EW_{21}.
+    \end{aligned}$$
+    <p>When $J=(1,1)$ almost surely, every $\mu_{ab}$ vanishes except those with $a,b\le1$. Only singleton blocks
+      and disjoint type-1/type-2 pairs survive, and the partition formula reduces exactly to the preceding
+      ${r\choose k}{s\choose k}k!$ matching formula. Thus larger or asymmetric common marks do not invalidate
+      factorial-cumulant identification; they change the shared-shot-noise correction through their factorial
+      moments.</p>
+    <p>The
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_count_cumulants.py">certificate</a>
+    obtains the factorial-count and integrated-intensity columns independently from the regime/count master equation and a polynomial Feynman&ndash;Kac
+    hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
+    for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
+    mass bounded by $1.6\times10^{-47}$. A separate master equation with simultaneous $(1,1)$ jumps checks the
+    common-shock formula through every mixed order $(r,s)$ with $1\leq r,s\leq3$ within
+    $7.9\times10^{-12}$; at $(3,3)$ the two independent values are
+    ''' + f'{common_factorial_33:.8f}' + r''' and ''' + f'{common_predicted_33:.8f}' + r'''. A second marked master
+    equation uses six mark vectors, including $(3,1)$ and $(1,3)$, and agrees with the marked partition theorem
+    through bidegree $(3,3)$ within $9.6\times10^{-10}$; the independent values of
+    $\kappa^{(F)}_{33}$ are ''' + f'{marked_factorial_33:.8f}' + r''' and ''' + f'{marked_predicted_33:.8f}' + r''',
+    with omitted mass below $8.7\times10^{-49}$. Substituting the degenerate mark $(1,1)$ recovers the matching
+    formula within $1.1\times10^{-11}$. The partition calculation follows the joint-cumulant method of
+    <a href="https://doi.org/10.1137/1104031">Leonov and Shiryaev (1959)</a>. The certificate also measures
+    second-order decay of the univariate omitted boundary term.
+    The conditioning argument is the defining construction of a
+    <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the
+    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>. The common-component
+    construction is the classical bivariate Poisson model of
+    <a href="https://doi.org/10.1093/biomet/51.1-2.241">Holgate (1964)</a>; the arbitrary-mark construction is a
+    multivariate compound-Poisson law in the sense of
+    <a href="https://doi.org/10.1214/aoms/1177731359">Feller (1943)</a>.</p>
 '''
     write('counts', html)
 
