@@ -82,3 +82,42 @@ def density_exact(xp, Q, kappa, thetas, s, x, D, U=None, n=400):
     du = us[1] - us[0]
     xp = np.atleast_1d(xp)
     return np.array([np.real(np.sum(phis * np.exp(-1j * us * y)) * du / (2 * math.pi)) for y in xp])
+
+
+def kernel_transform(us, Q, kappa, thetas, s, D, steps=800):
+    """A(u) with A_ij(u) = E[exp(i u (x' - e^{-kappa D} x)) 1{y' = j} | x, y = i]: the regime-resolved transform.
+
+    A solves A' = (Q + diag g(t)) A, A(0) = I, integrated by RK4 for all u at once."""
+    Q = np.asarray(Q, float)
+    n = len(Q)
+    us = np.asarray(us, float)
+    A = np.broadcast_to(np.eye(n, dtype=complex), (len(us), n, n)).copy()
+    dt = D / steps
+
+    def M(t):
+        g = 1j * us[:, None] * kappa * np.asarray(thetas) * math.exp(-kappa * t) \
+            - 0.5 * us[:, None] ** 2 * np.asarray(s) * math.exp(-2 * kappa * t)
+        out = np.broadcast_to(Q, (len(us), n, n)).astype(complex)
+        out[:, np.arange(n), np.arange(n)] += g
+        return out
+
+    for k in range(steps):
+        t = k * dt
+        M0, M1, M2 = M(t), M(t + dt / 2), M(t + dt)
+        k1 = M0 @ A
+        k2 = M1 @ (A + dt / 2 * k1)
+        k3 = M1 @ (A + dt / 2 * k2)
+        k4 = M2 @ (A + dt * k3)
+        A = A + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    return A
+
+
+def kernel_exact(x, xp, Q, kappa, thetas, s, D, n=600, steps=800):
+    """The matrix transition density K_ij(x, x') = density of (x' , y' = j) given (x, y = i), by Fourier inversion."""
+    m, v = averaged(Q, kappa, thetas, s, x, D)
+    U = 12 / math.sqrt(v)
+    us = np.linspace(-U, U, n + 1)
+    A = kernel_transform(us, Q, kappa, thetas, s, D, steps)
+    du = us[1] - us[0]
+    ph = np.exp(-1j * us * (xp - math.exp(-kappa * D) * x))
+    return np.real(np.einsum('u,uij->ij', ph, A)) * du / (2 * math.pi)
