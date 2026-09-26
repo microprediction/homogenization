@@ -131,6 +131,73 @@
     <p>For the two-state switch it decays like $e^{-2\tau} = e^{-2\lambda t}$, so it lives for a time of about
     $1/(2\lambda)$ in the original units. This short interval is the <em>initial layer</em>.</p>
 
+    <h2>A uniform two-state theorem</h2>
+    <p>The layer can be made quantitative. Put $\varepsilon=1/\lambda$, write
+    $a_{1,2}=m(1\pm\omega)$, and let $b=(g_1+g_2)/2$ and $q=(g_1-g_2)/2$. Then</p>
+    $$\omega'=q(t)(1-\omega^2)-\frac{2}{\varepsilon}\omega,\qquad
+      (\log m)'=b(t)+q(t)\omega,\qquad \omega(0)=0.$$
+    <p>If $q$ is real- or complex-valued and continuously differentiable on $[0,T]$, then, for sufficiently small
+    $\varepsilon$, uniformly for every $0\leq t\leq T$,</p>
+    $$\omega(t)=\frac{\varepsilon}{2}\Big(q(t)-q(0)e^{-2t/\varepsilon}\Big)+O(\varepsilon^2),$$
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon q(0)}{2}\int_0^tq(s)e^{-2s/\varepsilon}ds+O(\varepsilon^2).$$
+    <p>This is a uniform first-order composite approximation. It both satisfies the starting condition and retains
+    the small permanent shift left by the transient. The constants in the remainder may depend on $T$ and bounds
+    for $q$ and $q'$, but not on $t$ or sufficiently small $\varepsilon$.</p>
+    <p>The expansion continues uniformly without assuming $q(0)=0$. If $q$ is twice continuously differentiable,
+      put $I_\varepsilon(t)=\int_0^tq(s)e^{-2s/\varepsilon}ds$. Then</p>
+    $$\omega(t)=\frac{\varepsilon}{2}\{q(t)-q(0)e^{-2t/\varepsilon}\}
+      -\frac{\varepsilon^2}{4}\{q'(t)-q'(0)e^{-2t/\varepsilon}\}
+      +O(\varepsilon^3),$$
+    <div class="equation-card">
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon q(0)}2I_\varepsilon(t)
+      -\frac{\varepsilon^2}{8}\{q(t)^2-q(0)^2\}
+      +\frac{\varepsilon^2q'(0)}4I_\varepsilon(t)+O(\varepsilon^3).$$
+    </div>
+    <p>Both orders of the exponential layer are needed to match $\omega(0)=0$ through second order. The integral
+      terms retain the permanent amplitude shift accumulated while the layer decays.</p>
+    <p>The short-rate and survival examples have the simplifying cancellation $q(0)=0$. There
+      $I_\varepsilon(t)=O(\varepsilon^2)$ uniformly, so the formula reduces, through order $\varepsilon^2$, to</p>
+    $$\omega(t)=\frac{\varepsilon}{2}q(t)-\frac{\varepsilon^2}{4}q'(t)
+      +\frac{\varepsilon^2}{4}q'(0)e^{-2t/\varepsilon}+O(\varepsilon^3),$$
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon^2}{8}q(t)^2+O(\varepsilon^3).$$
+
+    <h3>Why the bound is uniform</h3>
+    <p>Insert the first composite ratio into its Riccati equation. Its residual is</p>
+    $$R_1=\frac{\varepsilon}{2}q'(t)+q(t)\omega_1(t)^2=O(\varepsilon).$$
+    <p>The error equation has the stable leading operator $d/dt+2/\varepsilon$. Convolution with its kernel has
+    mass $\varepsilon/2$, turning this residual into an $O(\varepsilon^2)$ error uniformly, including at $t=0$.
+    The general second composite has residual</p>
+    $$R_2=-\frac{\varepsilon^2}{4}q''(t)+q(t)\omega_2(t)^2=O(\varepsilon^2),$$
+    <p>because the $q(0)e^{-2t/\varepsilon}$ and $q'(0)e^{-2t/\varepsilon}$ derivative terms cancel their stiff
+      contributions exactly. The same stable-kernel argument gives $O(\varepsilon^3)$ for arbitrary $q(0)$.
+      This is the finite-dimensional boundary-layer mechanism in
+    the general singular-perturbation expansions of <a href="./bibliography.html#YinZhang2013">Yin and Zhang</a> and
+    <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin</a>.</p>
+
+    <h2>The logarithmic crossover</h2>
+    <p>A fixed number of switching times is enough to make the layer numerically small, but not enough to recover
+    the next asymptotic order. When $q(0)\neq0$, the outer-only first-order error contains
+    $\varepsilon q(0)e^{-2t/\varepsilon}/2$. To make this $O(\varepsilon^2)$ requires</p>
+    $$t\geq\frac{\varepsilon}{2}\log\frac1\varepsilon+O(\varepsilon).$$
+    <p>When $q(0)=0$, exactly the same crossover makes the omitted second-order layer
+    $\varepsilon^2q'(0)e^{-2t/\varepsilon}/4$ as small as the nominal $O(\varepsilon^3)$ remainder. Thus “away from
+    a layer of width $O(\varepsilon)$” is correct for fixed positive maturity, but a uniform next-order claim needs
+    either the exponential correction or the logarithmic factor.</p>
+
+    <h3>Numerical certificate</h3>
+    <p>Direct integration of the original two-component system over the whole interval, with the fast layer resolved,
+    gives the following observed orders as $\varepsilon$ is halved:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>case</th><th>outer-only sup error</th><th>first composite</th><th>second composite</th></tr></thead><tbody>
+      <tr><td>$q(0)\neq0$</td><td>$\varepsilon^{1.000}$</td><td>$\varepsilon^{1.981}$</td><td>$\varepsilon^{3.010}$</td></tr>
+      <tr><td>$q(0)=0$</td><td>$\varepsilon^{2.000}$</td><td>&mdash;</td><td>$\varepsilon^{2.946}$</td></tr>
+    </tbody></table></div>
+    <p>The code also evaluates the layer at $t=(\varepsilon/2)\log(1/\varepsilon)$ and obtains exactly a constant
+    times $\varepsilon^3$ in the second case. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_uniform_layer.py">verify_uniform_layer.py</a>.</p>
+
     <h2>Higher orders of the layer</h2>
     <p>At higher orders the layer feels the slow forcing too. The forcing is evaluated at $t = \varepsilon\tau$, which is
     expanded in a Taylor series around $t = 0$, and the products of decaying exponentials with these polynomials
@@ -140,7 +207,7 @@
     expansion needs: products, derivatives, integrals from $0$ to $\tau$, and solving $d\eta/d\tau = Q_0\eta + f$. So
     the layer can be computed order by order in closed form, just like the outer series.</p>
 
-    <h2>The size of the layer</h2>
+    <h2>The permanent part of the layer</h2>
     <p>Most of the layer disappears after a few multiples of $1/\lambda$. Only one part survives.</p>
     <p>The quantity $s$, the stationary average of the answer, is an integral over time. The transient contributes a
     fixed amount to that integral before it dies out, which leaves a permanent shift in $\log s$.</p>

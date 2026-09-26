@@ -34,7 +34,8 @@ VASICEK_CARD = r'''    <div class="equation-card">
     $$\begin{aligned}
     u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 + \bar\ell\,(J_1 - T)
       + \frac{\varepsilon}{2}\,A - \frac{\varepsilon^2}{8}\,G^2\Big) \\
-      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,G'\Big) + O(\varepsilon^3),
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,G'
+      \pm \frac{\varepsilon^2}{4}\,G'_0 e^{-2\lambda T}\Big) + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
     A \;=\; &\kappa^2\tilde\theta^2 I_2 \;-\; \kappa\tilde\theta\,\tilde s\,I_3 \;+\; \tfrac14\tilde s^2 I_4
@@ -45,6 +46,7 @@ VASICEK_CARD = r'''    <div class="equation-card">
     $$\begin{aligned}
     G &= -\kappa\tilde\theta\,B + \tfrac12\tilde s\,B^2 + \tilde\ell\,\Big(\frac{1}{1 + mB} - 1\Big), \\
     G' &= \Big(-\kappa\tilde\theta + \tilde s\,B - \frac{\tilde\ell\,m}{(1 + mB)^2}\Big)E, \\
+    G'_0 &= -\kappa\tilde\theta-\tilde\ell m, \\
     B &= \frac{1 - E}{\kappa}, \qquad E = e^{-\kappa T}, \\
     I_1 &= \frac{1}{\kappa}\Big(T - \frac{1 - E}{\kappa}\Big), \\
     I_2 &= \frac{1}{\kappa^2}\Big(T - \frac{2(1 - E)}{\kappa} + \frac{1 - E^2}{2\kappa}\Big), \\
@@ -74,10 +76,13 @@ def vasicek_values(T, x, kappa, th, s2, ell, m, lam, sign=+1):
     r = 1 / (1 + m * B) if m else 1.0
     G = -kappa * tht * B + 0.5 * st * B * B + lt * (r - 1)
     Gp = (-kappa * tht + st * B - lt * m * r * r) * E
+    Gp0 = -kappa * tht - lt * m
     avg = -kappa * thb * I[1] + 0.5 * sb * I[2] + lb * (J1 - T)
     logu = -B * x + avg + eps / 2 * A - eps ** 2 / 8 * G * G
-    u = math.exp(logu) * (1 + sign * (eps / 2 * G - eps ** 2 / 4 * Gp))
-    parts = dict(E=E, B=B, I1=I[1], I2=I[2], I3=I[3], I4=I[4], J1=J1, J2=J2, A=A, G=G, Gp=Gp, avg=avg)
+    u = math.exp(logu) * (1 + sign * (eps / 2 * G - eps ** 2 / 4 * Gp
+                                      + eps ** 2 / 4 * Gp0 * math.exp(-2 * lam * T)))
+    parts = dict(E=E, B=B, I1=I[1], I2=I[2], I3=I[3], I4=I[4], J1=J1, J2=J2,
+                 A=A, G=G, Gp=Gp, Gp0=Gp0, avg=avg)
     orders = [math.exp(-B * x + avg),
               math.exp(-B * x + avg + eps / 2 * A) * (1 + sign * eps / 2 * G), u]
     return parts, orders
@@ -99,14 +104,15 @@ def jumps():
     $$\bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \qquad \bar s, \tilde s = \frac{\sigma_1^2 \pm \sigma_2^2}{2},
       \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .$$
     <p>The first factor, without the $\varepsilon$ terms, is the survival probability of the averaged model. The terms
-    in $A$ are the Green&ndash;Kubo correction, and the bracket is the memory of the starting regime.</p>
+    in $A$ are the Green&ndash;Kubo correction, and the bracket is the memory of the starting regime. The last,
+    exponentially decaying term makes the $O(\varepsilon^3)$ remainder uniform through $T=0$.</p>
     <p>At the parameters above, with $T = 3$, $x = 0$ and $\lambda = 10$:</p>
 ''' + table([['$E$, $B$', f'{parts["E"]:.6f}, {parts["B"]:.6f}'],
              ['$I_1$, $I_2$, $I_3$, $I_4$', ', '.join(f'{parts[k]:.6g}' for k in ('I1', 'I2', 'I3', 'I4'))],
              ['$J_1$, $J_2$', f'{parts["J1"]:.6f}, {parts["J2"]:.6f}'],
              ['averaged exponent', f'{parts["avg"]:.6f}'],
              ['$A$', f'{parts["A"]:.6g}'],
-             ["$G$, $G'$", f'{parts["G"]:.6g}, {parts["Gp"]:.6g}']]) + \
+             ["$G$, $G'$, $G'_0$", f'{parts["G"]:.6g}, {parts["Gp"]:.6g}, {parts["Gp0"]:.6g}']]) + \
         table([['averaged model', f'{orders[0]:.8f}', f'{abs(orders[0]-ref):.1e}'],
                ['first order', f'{orders[1]:.8f}', f'{abs(orders[1]-ref):.1e}'],
                ['second order', f'{orders[2]:.8f}', f'{abs(orders[2]-ref):.1e}'],
@@ -129,7 +135,8 @@ def regime_switching():
     $$\begin{aligned}
     u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 - \frac{\varepsilon^2}{8}\,G^2 \\
       &\qquad + \frac{\varepsilon}{2}\big(\kappa^2\tilde\theta^2 I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2 I_4\big)\Big) \\
-      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\big(\tilde s\,B - \kappa\tilde\theta\big)E\Big)
+      &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\big(\tilde s\,B - \kappa\tilde\theta\big)E
+      \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta e^{-2\lambda T}\Big)
       + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
@@ -147,7 +154,8 @@ def regime_switching():
     integrals are therefore elementary, and the survival probability to second order is</p>
 ''' + card + r'''    <p>This is Vasicek&apos;s survival probability with averaged parameters, multiplied by an explicit correction. The
     $\varepsilon$ term in the exponent is the Green&ndash;Kubo correction, and the bracket is the memory of the starting
-    regime.</p>
+    regime. Its last term is the matched initial layer; it makes the stated remainder uniform for $T\geq0$ on every
+    fixed bounded maturity interval.</p>
     <p>At the parameters of the <a href="./survival.html">survival demo</a>, $\kappa = 2$, $\theta = (0.15,\ 0.02)$,
     $\sigma^2 = (0.0555,\ 0.0055)$, $x = 0.12$, with $T = 4$, $\lambda = 20$ and a start in regime 1:</p>
 ''' + table([['$E$, $B$', f'{parts["E"]:.6g}, {parts["B"]:.6f}'],
@@ -175,7 +183,8 @@ def cir():
     A = (kappa * tht) ** 2 * I2
     o0 = math.exp(-B * x + avg)
     o1 = math.exp(-B * x + avg + eps / 2 * A) * (1 + eps / 2 * G)
-    o2 = math.exp(-B * x + avg + eps / 2 * A - eps ** 2 / 8 * G * G) * (1 + eps / 2 * G - eps ** 2 / 4 * Gp)
+    o2 = math.exp(-B * x + avg + eps / 2 * A - eps ** 2 / 8 * G * G) \
+        * (1 + eps / 2 * G - eps ** 2 / 4 * Gp - eps ** 2 / 4 * kappa * tht * math.exp(-2 * lam * T))
     g, gf, _, _ = cir_switching_mean(kappa, th, sig, 5.0)
     ref = numerical_a_callable(T, sym(lam), gf, rtol=1e-13)[0] * math.exp(-B * x)
     eng = FastSwitch(sym(lam), g, order=2).a(T, 2)[0] * math.exp(-B * x)
@@ -185,7 +194,7 @@ def cir():
     u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\,I_2
       - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2 B^2\Big) \\
       &\times\Big(1 \mp \frac{\varepsilon}{2}\,\kappa\tilde\theta\,B \pm \frac{\varepsilon^2}{4}\,\kappa\tilde\theta
-      \big(1 - \kappa B - \tfrac12\sigma^2B^2\big)\Big) + O(\varepsilon^3),
+      \big(1 - \kappa B - \tfrac12\sigma^2B^2 - e^{-2\lambda T}\big)\Big) + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
     B &= \frac{2(e^{hT} - 1)}{(h + \kappa)(e^{hT} - 1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}, \\
@@ -204,7 +213,8 @@ def cir():
     Because $\tilde g(0) = 0$, the second-order term of the exponent collapses to $-\frac{\varepsilon^2}{8}\tilde g(T)^2$.
     The survival probability to second order is</p>
 ''' + card + r'''    <p>The upper sign is for a start in the high-level regime. The first factor without the $\varepsilon$ terms is the
-    CIR survival probability with the averaged level.</p>
+    CIR survival probability with the averaged level. The $e^{-2\lambda T}$ term is the initial layer and makes the
+    second-order remainder uniform down to $T=0$.</p>
     <p>At the parameters above, with $T = 3$, $x = 0.05$ and $\lambda = 10$:</p>
 ''' + table([['$h$, $B$', f'{h:.6f}, {B:.6f}'], ['$I_1$, $I_2$', f'{I1:.6f}, {I2:.6f}'],
              ['averaged exponent $-\\kappa\\bar\\theta I_1$', f'{avg:.6f}'], ['correction $\\kappa^2\\tilde\\theta^2 I_2$', f'{A:.6g}']]) + \
@@ -465,11 +475,11 @@ def three_regimes():
     w_2 &= Q^{\#}\big(w_1' - \tilde g\circ w_1 + \pi\cdot(\tilde g\circ w_1)\,\mathbf 1\big), \qquad
       w_1' = (1 - \kappa B)\,\partial_B w_1 .
     \end{aligned}$$
-    <p>The second-order exponent is $\int_0^T \pi\cdot(\tilde g\circ w_2)$, a polynomial in $B$ integrated term by term, and
+    <p>For every fixed $T&gt;0$, the second-order exponent is $\int_0^T \pi\cdot(\tilde g\circ w_2)$, a polynomial in $B$ integrated term by term, and
     the bracket gains $w_2(T)$:</p>
     <div class="equation-card">
     $$u_i(T, x) = \exp\Big(\cdots + \sum_{k} d_k\,I_k\Big)\Big(1 + \kappa B\,[Q^{\#}u]_i - \tfrac12 B^2\,[Q^{\#}v]_i + [w_2(T)]_i\Big)
-      + O(|Q|^{-3}),$$
+      + O(|Q|^{-3}),\qquad T&gt;0\ \text{fixed},$$
     $$\pi\cdot(\tilde g\circ w_2) = \sum_k d_k\,B^k .$$
     </div>
     <p>The remainder is $O(|Q|^{-3})$ at fixed $T > 0$. At $T = 0$ the bracket is $1 + [w_2(0)]_i$ with
@@ -486,8 +496,10 @@ def three_regimes():
              ['memory $\\kappa B[Q^{\\#}u]_i - \\frac12B^2[Q^{\\#}v]_i$', ', '.join(f'{x:.6g}' for x in mem)],
              ['$w_2(T)$', ', '.join(f'{x:.4g}' for x in w2T)]]) + \
         table([[f'regime {i + 1}', f'{o0[i]:.8f}', f'{o1[i]:.8f}', f'{o2[i]:.8f}', f'{ex[i]:.8f}'] for i in range(3)],
-              head=('start', 'averaged', 'first order', 'second order', 'numerical')) + r"""    <p>The second-order formula agrees with the engine to rounding, and its error against the numerical solution is
-    """ + f'{np.abs(o2 - ex).max():.1e}' + r""".</p>
+              head=('start', 'averaged', 'first order', 'second order', 'numerical')) + r"""    <p>The second-order formula agrees with the engine&apos;s outer series to rounding, and its error against the numerical solution is
+    """ + f'{np.abs(o2 - ex).max():.1e}' + r""". A maturity-uniform formula also includes the engine&apos;s initial
+    layer; the <a href="./layers.html">initial-layers</a> page proves that correction explicitly in the symmetric
+    two-state case.</p>
 """
     write('three-regimes', html)
 

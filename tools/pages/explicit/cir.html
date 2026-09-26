@@ -9,7 +9,7 @@
     u_{1,2}(T, x) \;=\; &\exp\Big(-B\,x - \kappa\bar\theta\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\,I_2
       - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2 B^2\Big) \\
       &\times\Big(1 \mp \frac{\varepsilon}{2}\,\kappa\tilde\theta\,B \pm \frac{\varepsilon^2}{4}\,\kappa\tilde\theta
-      \big(1 - \kappa B - \tfrac12\sigma^2B^2\big)\Big) + O(\varepsilon^3),
+      \big(1 - \kappa B - \tfrac12\sigma^2B^2 - e^{-2\lambda T}\big)\Big) + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
     B &= \frac{2(e^{hT} - 1)}{(h + \kappa)(e^{hT} - 1) + 2h}, \qquad h = \sqrt{\kappa^2 + 2\sigma^2}, \\
@@ -21,7 +21,8 @@
     \end{aligned}$$
     </div>
     <p>The upper sign is for a start in the high-level regime. The first factor without the $\varepsilon$ terms is the
-    CIR survival probability with the averaged level.</p>
+    CIR survival probability with the averaged level. The $e^{-2\lambda T}$ term is the initial layer and makes the
+    second-order remainder uniform down to $T=0$.</p>
     <p>At the parameters above, with $T = 3$, $x = 0.05$ and $\lambda = 10$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$h$, $B$</td><td>1.514926, 0.656285</td></tr><tr><td>$I_1$, $I_2$</td><td>1.555804, 0.889673</td></tr><tr><td>averaged exponent $-\kappa\bar\theta I_1$</td><td>-0.116685</td></tr><tr><td>correction $\kappa^2\tilde\theta^2 I_2$</td><td>0.00180159</td></tr></tbody></table></div>
     <div class="table-wrap"><table class="impl"><thead><tr><th>survival</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>0.86113882</td><td>1.2e-03</td></tr><tr><td>first order</td><td>0.85994468</td><td>1.2e-07</td></tr><tr><td>second order</td><td>0.85994479</td><td>2.2e-08</td></tr><tr><td>numerical solution</td><td>0.85994481</td><td></td></tr></tbody></table></div>

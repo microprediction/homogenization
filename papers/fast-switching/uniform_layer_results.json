@@ -1,0 +1,73 @@
+{
+  "nonzero_start": {
+    "rows": [
+      {
+        "epsilon": 0.05,
+        "outer_sup": 0.016250000000000098,
+        "first_composite_sup": 0.0002701432633305245,
+        "second_composite_sup": 3.062149896260191e-05,
+        "outer_fixed_T": 0.0004735416164460826
+      },
+      {
+        "epsilon": 0.025,
+        "outer_sup": 0.008124999999999938,
+        "first_composite_sup": 6.879336815734938e-05,
+        "second_composite_sup": 3.788893233047652e-06,
+        "outer_fixed_T": 0.00011192958926864449
+      },
+      {
+        "epsilon": 0.0125,
+        "outer_sup": 0.00406250000000008,
+        "first_composite_sup": 1.7423795021676014e-05,
+        "second_composite_sup": 4.707393569391982e-07,
+        "outer_fixed_T": 2.7183273231257132e-05
+      },
+      {
+        "epsilon": 0.00625,
+        "outer_sup": 0.002031249999999929,
+        "first_composite_sup": 4.3921662615797885e-06,
+        "second_composite_sup": 5.850615614200194e-08,
+        "outer_fixed_T": 6.6963692140209474e-06
+      }
+    ],
+    "outer_sup_order": 1.0000000000000142,
+    "first_composite_sup_order": 1.9809155288845923,
+    "second_composite_sup_order": 3.010399836952127,
+    "outer_fixed_order": 2.047370538486987
+  },
+  "zero_start": {
+    "rows": [
+      {
+        "epsilon": 0.05,
+        "outer_sup": 0.0007999999999999119,
+        "composite_sup": 2.7789296979330302e-05,
+        "outer_fixed_T": 3.20557008048894e-07,
+        "crossover_ratio": 0.3200000000000001
+      },
+      {
+        "epsilon": 0.025,
+        "outer_sup": 0.00019999999999997797,
+        "composite_sup": 3.6807380989767324e-06,
+        "outer_fixed_T": 1.6155360382796857e-09,
+        "crossover_ratio": 0.3200000000000001
+      },
+      {
+        "epsilon": 0.0125,
+        "outer_sup": 5.0000000000105516e-05,
+        "composite_sup": 4.764933261292015e-07,
+        "outer_fixed_T": 2.141672506006387e-09,
+        "crossover_ratio": 0.32000000000000023
+      },
+      {
+        "epsilon": 0.00625,
+        "outer_sup": 1.2499999999970868e-05,
+        "composite_sup": 6.080772718686234e-08,
+        "outer_fixed_T": 3.1570523972845876e-10,
+        "crossover_ratio": 0.3200000000000002
+      }
+    ],
+    "outer_sup_order": 2.0000000000006386,
+    "composite_sup_order": 2.9457644051891267,
+    "crossover_ratio": 0.3200000000000001
+  }
+}
