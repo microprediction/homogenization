@@ -1,0 +1,254 @@
+<!-- title: Green–Kubo geometry of joint default · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">numerical certificate</a></span></p>
+    <h1>Green&ndash;Kubo geometry of joint default</h1>
+    <p class="subtitle">Positive CIR intensities, an identifiable instantaneous matrix, and a maturity-integrated rank trap.</p>
+    <p class="muted">Research note, 23 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
+      gives the starting point; this note changes the loadings while retaining nonnegative intensities.</p>
+
+    <h2>A positive-intensity model</h2>
+    <p>Conditionally independent <a href="./bibliography.html#Lando1998">Cox defaults</a> have intensities
+      $X_j(t)$, $j=1,\ldots,d$. Specifically, let $E_j$ be independent unit-exponential variables,
+      independent of the Brownian motions and the regime, and set
+      $\tau_j=\inf\{t:\int_0^tX_j(s)ds\ge E_j\}$. A common irreducible $n$-state chain $y_t$
+      with stationary law $\pi$ switches their CIR mean levels:</p>
+    $$dX_j=\kappa_j(\theta_{j,y_t}-X_j)dt+
+      \sigma_j\sqrt{X_j}\,dW_j,\qquad
+      y_t\ \text{has generator }mQ_0.$$
+    <p>Assume $\kappa_j>0$, $\sigma_j>0$, $X_j(0)=x_j>0$,
+      independent Brownian motions and the independent default triggers just defined. Taking
+      $2\kappa_j\min_i\theta_{j,i}>\sigma_j^2$ keeps each intensity strictly
+      positive over every finite time interval, even as regimes switch.
+      For a subset $A$ of names the joint survival price is
+      $S_A(T)=\mathbb E\exp(-\int_0^T\sum_{j\in A}X_j(t)\,dt)$.</p>
+    <p>The CIR Riccati loading $B_j$ and the regime-dependent factor obey</p>
+    $$B_j'=1-\kappa_jB_j-\tfrac12\sigma_j^2B_j^2,\qquad B_j(0)=0,$$
+    $$S_A^\nu(T)=e^{-\sum_{j\in A}B_j(T)x_j}\,\nu a_A(T),\qquad
+      a_A'=\left(mQ_0+\operatorname{diag}
+      \left[-\sum_{j\in A}\kappa_j\theta_j B_j(t)\right]\right)a_A,\quad a_A(0)={\bf1}.$$
+    <p>This is an exact finite-dimensional reduction for any initial regime prior $\nu$.
+      The loadings $B_j$ vary with maturity and can differ across names, although $Q_0$ is shared.</p>
+
+    <h2>The first-order matrix</h2>
+    <p>Let $h_j=-\kappa_j(\theta_j-\bar\theta_j{\bf1})$, where
+      $\bar\theta_j=\pi\theta_j$, and define the <em>fixed</em>
+      Green&ndash;Kubo matrix and the loading integrals</p>
+    $$K_{jk}=\frac1m\mathcal K^{\rm sym}_0(h_j,h_k),\qquad
+      J_{jk}(T)=\int_0^T B_j(t)B_k(t)\,dt.$$
+    <p>Here $\mathcal K^{\rm sym}_0$ uses $Q_0$ and is the half-asymptotic covariance
+      of the two centered additive functionals. On each fixed interval $0\le T\le L$,
+      the stationary-start fast-switching expansion gives</p>
+    <div class="equation-card">
+    $$\log S_A(T)=-\sum_{j\in A}
+      \left[B_j(T)x_j+\kappa_j\bar\theta_j\int_0^T B_j(t)\,dt\right]
+       +\sum_{j,k\in A}D_{jk}(T)+O_L(m^{-2}),\qquad
+       D_{jk}(T)=K_{jk}J_{jk}(T).$$
+    </div>
+    <p>The $O_L(m^{-2})$ error is uniform in $T$ for fixed model parameters.
+      It follows by separating the constant and centered regime components in the
+      $a_A$ equation: the centered component is
+      $-Q_0^\#\tilde g/m$ plus an $O_L(m^{-2})$ remainder. Since all
+      $B_j(0)=0$, the first-order initial-layer amplitude vanishes. Substitution
+      into the stationary component gives the quadratic Green&ndash;Kubo term.
+      This is an asymptotic statement, not an exact low-rank statement at finite $m$.</p>
+
+    <h2>An arbitrary initial regime prior</h2>
+    <p>Hiddenness does not imply a stationary start. Let $\nu$ be any initial prior for the regime;
+      if the displayed initial intensities are observed from an already-running system, $\nu$ can instead be the
+      posterior conditional on those observations. Put $H=-Q_0^\#$ and</p>
+    $$f_A(t)=\sum_{j\in A}B_j(t)h_j,\qquad
+      h_j=-\kappa_j(\theta_j-\bar\theta_j{\bf1}).$$
+    <p>The same outer expansion, now retained before multiplication by the initial prior, gives</p>
+    <div class="equation-card">
+    $$\log S_A^\nu(T)=\log S_A^\pi(T)+\frac1m\,\nu Hf_A(T)+O_L(m^{-2}).$$
+    </div>
+    <p>This estimate is uniform on every fixed $0\le T\le L$: because $B_j(0)=0$, one has
+      $f_A(0)=0$, so the first-order outer corrector already satisfies the initial condition and no
+      order-$m^{-1}$ boundary layer is needed. The term is genuine start-regime memory and vanishes for
+      $\nu=\pi$, since $\pi H=0$.</p>
+    <p>A useful cancellation follows from $f_{\{j,k\}}=f_{\{j\}}+f_{\{k\}}$:</p>
+    $$\log\frac{S_{\{j,k\}}^\nu(T)}{S_{\{j\}}^\nu(T)S_{\{k\}}^\nu(T)}
+      =2K_{jk}J_{jk}(T)+O_L(m^{-2}).$$
+    <p>Thus the first-order pairwise log-survival ratio and the identification of $K_{jk}$ are robust to
+      an unknown common prior, even though every marginal survival curve changes at order $m^{-1}$.
+      Since default correlation is itself order $m^{-1}$, its change with the prior begins at order $m^{-2}$.
+      The certificate checks all three statements directly against the finite-rate ODE: the measured rates are
+      $2.004$ for survival after the endpoint correction, $2.010$ for the prior-independent pair formula, and
+      $1.998$ for the prior effect on correlation.</p>
+    <p>For two distinct names, the observable pairwise survival ratio is</p>
+    $$\log\frac{S_{\{j,k\}}(T)}{S_{\{j\}}(T)S_{\{k\}}(T)}
+      =2K_{jk}J_{jk}(T)+O_L(m^{-2}).$$
+    <p>Its first-order sign is the sign of $K_{jk}$. Off-diagonal values can be
+      negative while the entire $K$ matrix remains positive semidefinite.
+      Different states having high instantaneous hazards do not, by themselves,
+      determine that sign: the integrated lagged covariance does.</p>
+
+    <h2>Two names suffice to detect cycle direction</h2>
+    <p>Unordered joint survival sees only the symmetric Green&ndash;Kubo matrix because hazard multiplication
+      operators commute. The identity of the first defaulter is different: it is an absorbing-channel label and
+      retains time orientation. Let two names have positive regime-dependent hazards $h_1,h_2$, put
+      $h=h_1+h_2$, and start the regime in stationarity. The exact probability that name 1 defaults first is</p>
+    $$p_1=\pi^\top(\operatorname{diag}h-mQ_0)^{-1}h_1.$$
+    <p>Define the unscaled oriented matrix</p>
+    $$K^{(0)}_{jk}=-\pi\cdot\left[(h_j-\bar h_j{\bf1})\odot
+      Q_0^\#(h_k-\bar h_k{\bf1})\right].$$
+    <p>A singular resolvent expansion gives</p>
+    <div class="equation-card">
+    $$p_1=\frac{\bar h_1}{\bar h}
+      +\frac1{m\bar h}\left\{
+      \frac{\bar h_1}{\bar h}K^{(0)}_{h,h}-K^{(0)}_{h,1}\right\}
+      +O(m^{-2}),$$
+    $$p_1(Q_0)-p_1(Q_0^{\rm rev})
+      =\frac{K^{(0)}_{12}-K^{(0)}_{21}}{m\bar h}+O(m^{-2}).$$
+    </div>
+    <p>For a direct proof, solve $(\operatorname{diag}h-mQ_0)x=h_1$ with
+      $x=x_0{\bf1}+m^{-1}x_1+\cdots$. Solvability at order one gives
+      $x_0=\bar h_1/\bar h$ and
+      $x_1=Q_0^\#(x_0h-h_1)+a_1{\bf1}$. Solvability at the next order,
+      $\pi\operatorname{diag}(h)x_1=0$, gives
+      $a_1=(x_0K^{(0)}_{h,h}-K^{(0)}_{h,1})/\bar h$. Since
+      $p_1=\pi x=x_0+a_1/m+O(m^{-2})$, this proves the first display. Time reversal transposes $K^{(0)}$ and gives
+      the second.</p>
+    <p>Here $K^{(0)}_{h,1}=K^{(0)}_{11}+K^{(0)}_{21}$ and
+      $K^{(0)}_{h,h}=\sum_{j,k}K^{(0)}_{jk}$. Thus only two event types are required; at least three hidden states
+      are needed for a finite irreducible chain to violate detailed balance.</p>
+    <p>For the three-state cycle with clockwise/backward rates $(2,0.1)$ and hazards</p>
+    $$h_1=(0.07,0.01,0.01),\qquad h_2=(0.01,0.07,0.01),$$
+    <p>one obtains $\bar h_1=\bar h_2=0.03$,
+      $K^{(0)}_{12}=-9.50119\times10^{-6}$ and
+      $K^{(0)}_{21}=-1.90024\times10^{-4}$. The predicted clockwise-minus-counterclockwise gap is therefore
+      $0.0030087094/m+O(m^{-2})$.</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>clockwise $p_1$</th><th>counterclockwise $p_1$</th><th>gap</th></tr></thead>
+      <tbody>
+        <tr><td>5</td><td>0.5002992766</td><td>0.4997007234</td><td>0.00059855</td></tr>
+        <tr><td>10</td><td>0.5001500361</td><td>0.4998499639</td><td>0.00030007</td></tr>
+        <tr><td>20</td><td>0.5000751178</td><td>0.4999248822</td><td>0.00015024</td></tr>
+        <tr><td>40</td><td>0.5000375839</td><td>0.4999624161</td><td>0.00007517</td></tr>
+      </tbody>
+    </table></div>
+    <p>The exact stationary Feynman&ndash;Kac survival probabilities for name 1, name 2, and the pair are unchanged
+      by reversing this cycle. In contrast, the ordered-default formula detects its current at first order. The
+      certificate checks both resolvents directly; the residual rates are 1.999 for $p_1$ and for the directional
+      gap.</p>
+
+    <h2>What a multi-name race identifies</h2>
+    <p>With $d$ competing causes, one unweighted race does not generally identify the whole oriented matrix.
+      Let $w_a>0$ scale cause $a$, put
+      $\bar h(w)=\sum_a w_a\bar h_a$, and decompose the unscaled oriented matrix as</p>
+    $$K^{(0)}=G+A,\qquad G=\tfrac12(K^{(0)}+K^{(0)\top}),\qquad
+      A=\tfrac12(K^{(0)}-K^{(0)\top}).$$
+    <p>The exact cause-probability vector is</p>
+    $$p_a(w)=\pi^\top\left(\operatorname{diag}\!\left\{\sum_jw_jh_j\right\}
+      -mQ_0\right)^{-1}w_ah_a.$$
+    <p>Applying the same singular-resolvent calculation componentwise gives</p>
+    $$p_a(w)=\frac{w_a\bar h_a}{\bar h(w)}+\frac{c_a(w)}m+O(m^{-2}),$$
+    $$c_a(w)=\frac1{\bar h(w)}\left\{
+      \frac{w_a\bar h_a}{\bar h(w)}w^\top Gw-w_a(w^\top K^{(0)})_a\right\}.$$
+    <p>Unordered marginal and joint survivals identify $G$. If $c_a^G(w)$ denotes the coefficient predicted by
+      setting $A=0$, the remaining cause-order signal is exactly</p>
+    <div class="equation-card">
+    $$c_a(w)-c_a^G(w)=\frac{w_a(Aw)_a}{\bar h(w)},$$
+    $$p_a(w;Q_0)-p_a(w;Q_0^{\rm rev})
+      =\frac{2w_a(Aw)_a}{m\bar h(w)}+O(m^{-2}).$$
+    </div>
+    <p>Thus one unweighted race sees only $A\mathbf1$, a $(d-1)$-dimensional contrast. For $d\ge3$ it can be
+      zero even when $A\ne0$. Antisymmetry makes the sharp multi-design result stronger than ordinary
+      column-by-column recovery. If the exposure designs span a $q$-dimensional subspace $W$, then the kernel of</p>
+    $$A\longmapsto(Aw^{(1)},\ldots,Aw^{(q)})$$
+    <p>is exactly the space of skew maps supported on $W^\perp$, and hence has dimension</p>
+    $$\binom{d-q}{2}.$$
+    <p>Indeed, a kernel element vanishes on $W$; skew-adjointness then makes $W^\perp$ invariant, while every
+      skew map on $W^\perp$ gives such an element. Therefore $q=d-1$ linearly independent positive designs
+      identify every antisymmetric $d\times d$ matrix, and this number is minimal: with $q\le d-2$ there is
+      always a nonzero invisible skew map on $W^\perp$. This identification result keeps the fixed oriented
+      parameter matrix separate from any maturity-integrated rank claim.</p>
+    <p>A sharp three-cause example uses the same directed three-state cycle and cyclic hazards</p>
+    $$h_1=(0.07,0.01,0.01),\quad h_2=(0.01,0.07,0.01),\quad
+      h_3=(0.01,0.01,0.07).$$
+    <p>Here $\|A\|_F=2.21094\times10^{-4}$ but $A\mathbf1=0$, so the equal-weight race is exactly unchanged by
+      cycle reversal. At $w=(1,2,4)$ the predicted reversal-gap coefficients for the three causes are
+      $(-0.0017192625,0.0051577876,-0.0034385251)$. Exact resolvents give second-order residual rates
+      $1.998$ for both the probability vector and reversal gap. The equal-weight design alone is the sharp
+      $q=d-2$ counterexample. Adding just one further positive design recovers $A$ with maximum error
+      $1.36\times10^{-19}$. The certificate also verifies the kernel-dimension formula for every
+      $3\le d\le7$ and $1\le q\le d-1$.</p>
+
+    <h2>Which rank bound survives?</h2>
+    <p>For fixed centered feature vectors $h_1,\ldots,h_d$, the matrix
+      $K\succeq0$ has rank at most $n-1$. In fact its rank equals the
+      dimension spanned by those centered vectors for an irreducible
+      finite chain. At a <em>single maturity</em>, the matrix of correction
+      densities is $\operatorname{diag}(B(t))K\operatorname{diag}(B(t))$,
+      and it has the same rank for $t>0$.</p>
+    <p>For completeness, if $f$ is centered and $w=-Q_0^\#f$, then
+      $2\mathcal K_0(f,f)=\sum_{i,\ell\ne i}\pi_i(Q_0)_{i\ell}
+      (w_\ell-w_i)^2$. Irreducibility makes this zero only when
+      $w$ is constant, equivalently $f=0$. Thus the symmetric
+      Green&ndash;Kubo form is an inner product on the $(n-1)$-dimensional
+      centered space, which proves the claimed rank of $K$.</p>
+    <p>The integrated matrix $D(T)=K\circ J(T)$ is also positive semidefinite,
+      because it is a time integral of positive semidefinite matrices. Its
+      rank need <em>not</em> be at most $n-1$. Time-dependent diagonal
+      rescalings rotate a low-dimensional range as $t$ varies.
+      In particular, a rank test applied directly to $D(T)$ is not a
+      lower bound on the number of regimes. This distinction is absent
+      for constant hazards: all $B_j(t)=1$ and $D(T)=TK$.</p>
+
+    <h2>Two regimes, rank two</h2>
+    <p>Take a symmetric two-state generator
+      $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,
+      $\pi=(1/2,1/2)$, and two CIR names with</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>name</th><th>$\kappa_j$</th><th>$\sigma_j$</th><th>$(\theta_{j,1},\theta_{j,2})$</th><th>$x_j$</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td>0.1</td><td>$(0.06,0.02)$</td><td>0.03</td></tr>
+        <tr><td>2</td><td>2</td><td>0.1</td><td>$(0.05,0.015)$</td><td>0.03</td></tr>
+      </tbody>
+    </table></div>
+    <p>The smallest Feller margin
+      $\min_{i,j}(2\kappa_j\theta_{j,i}-\sigma_j^2)$ is $0.03>0$.
+      With $d_j=(\theta_{j,1}-\theta_{j,2})/2$, the one-dimensional
+      centered space gives $K_{jk}=\kappa_jd_j\kappa_kd_k/(2m)$.
+      Thus $K$ has rank one. Yet $B_1$ and $B_2$ are linearly independent
+      on <em>every</em> positive maturity interval: both have
+      $B_j'(0)=1$, while $B_j''(0)=-\kappa_j$ differ. Their Gram matrix
+      $J(T)$ is positive definite, and multiplication by the nonzero
+      diagonal $(\kappa_1d_1,\kappa_2d_2)$ proves $D(T)$ has rank two.</p>
+    <p>For $T=5$ and $m=1$, the eigenvalues of $K$ are
+      $(0,\,8.125\times10^{-4})$, whereas those of $D(5)$ are approximately
+      $(4.143\times10^{-6},\,1.343\times10^{-3})$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>
+      checks the Feller condition and eigenvalues, then solves the exact
+      joint-survival ODE. The residual of the pairwise formula multiplied
+      by $m^2$ stabilizes at approximately $-8.6\times10^{-5}$
+      as $m$ increases from 10 to 80.</p>
+
+    <h2>What the curves identify</h2>
+    <p>Suppose $x_j,\kappa_j,\sigma_j$ are known, every name shares the
+      same stationary-start chain, and ideal first-order marginal and
+      pairwise survival curves are available over a maturity interval.
+      The marginal curve for $j$, after subtracting $-B_jx_j$, has the
+      coefficients $-\kappa_j\bar\theta_j$ on $\int B_j$ and $K_{jj}$
+      on $\int B_j^2$. Those two functions are independent because $B_j$
+      is nonconstant. The pairwise log ratio then determines
+      $K_{jk}$ through $2K_{jk}J_{jk}(T)$, with $J_{jk}(T)>0$ for $T>0$.
+      Thus these curves identify $\bar\theta_j$ and the whole
+      rate-scaled matrix $K$ at first order, although they do not
+      identify $Q_0$, $\theta_{j,i}$, or $m$ separately.</p>
+    <p>After removing the known loadings, the correct regime-count
+      restriction is $\operatorname{rank}K\le n-1$, or equivalently
+      $\operatorname{rank}[\operatorname{diag}(B(t))^{-1}
+      D'(t)\operatorname{diag}(B(t))^{-1}]\le n-1$ for $t>0$.
+      The corresponding bound on $\operatorname{rank}D(T)$ is false.
+      Estimating derivatives from noisy curves may be unstable; the
+      entrywise division $K_{jk}=D_{jk}(T)/J_{jk}(T)$ uses integrated
+      loadings instead.</p>
+    <p class="muted">Scope: fixed CIR $\kappa_j,\sigma_j$, switching mean
+      levels, independent Brownian motions and Cox triggers, arbitrary initial regime prior independent of the
+      specified $x_j$, and
+      first-order fast-switching accuracy. Switching $\kappa$ or
+      $\sigma$ changes the Riccati reduction and requires its own
+      identification argument.</p>
+  </main>
