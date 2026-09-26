@@ -1,7 +1,7 @@
 <!-- title: Likelihood · homogenization | math | extra: demos.css -->
   <main>
     <h1>The likelihood of a switching short rate</h1>
-    <p class="subtitle">A short rate observed at discrete times, with a level and volatility switched by a hidden regime much faster than the sampling: the first-order transition density, the composite likelihood it gives, what it identifies, and the one-sided test for switching it implies.</p>
+    <p class="subtitle">A short rate observed at discrete times, with a level and volatility switched by a hidden regime much faster than the sampling: the first-order stationary-start transition density, what it identifies, and the cone-corrected test for switching it implies.</p>
 
     <h2>The model</h2>
     <p>The short rate follows a Vasicek model whose mean level and variance depend on a hidden Markov chain $y_t$:</p>
@@ -14,29 +14,46 @@
     monthly observations $\Delta = 1/12$.</p>
 
     <h2>The quantity</h2>
-    <p>The transition density $p_\pi(x_{k+1} \mid x_k)$ of the next observation, with the regime drawn from its
-    stationary law $\pi$ at the start of the interval and summed at the end. Summed over the observations it gives</p>
-    $$\ell_C = \sum_{k} \log p_\pi\big(x_{k+1} \mid x_k\big).$$
-    <p>This is a composite likelihood in the sense of <a href="./bibliography.html#Lindsay1988">Lindsay (1988)</a>: a
-    sum of log densities of pairs, each exact on its own, not the likelihood of the whole sample. The observed rate is
-    not Markov by itself. Past observations carry information about the current regime, and the exact likelihood
-    $\ell_F$ propagates that filter, as in <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>.</p>
-    <p>Fast switching makes the two close, but not for the obvious reason. The regime at the end of an interval is
-    independent of the regime at its start up to $e^{-2\lambda\Delta}$, yet the observations inside the interval move
-    the filter away from $\pi$ by an amount of order $1/\lambda$, which is not small at the order kept here.</p>
-    <p>What closes the gap is that the leading kernel forgets the starting regime. Let $K_{ij}(x, x&apos;)$ be the density
-    of $x&apos;$ together with the ending regime $j$, given $x$ and the starting regime $i$. To first order</p>
-    $$K = p_0\,\mathbf 1\,\pi^{\top} + \frac1\lambda\,K_1 + O(\lambda^{-2}),$$
-    <p>with $p_0$ the averaged Gaussian density below. A filter $\nu = \pi + r/\lambda + O(\lambda^{-2})$ has
-    $r\cdot\mathbf 1 = 0$, so its predictive density $\nu K\mathbf 1$ differs from the stationary-start density
-    $\pi K\mathbf 1$ by $r\cdot(p_0\mathbf 1)/\lambda + O(\lambda^{-2}) = O(\lambda^{-2})$. The updated filter is
-    again $\pi + O(1/\lambda)$, and on a panel of $N$ transitions started from $\pi$,</p>
-    $$\ell_F - \ell_C = O\big(N/\lambda^2\big).$$
-    <p>The first-order formulas below are therefore also the first-order terms of the exact likelihood. A start in a
-    known regime changes the first transition density at order $1/\lambda$; after that observation the filter is
-    $\pi + O(1/\lambda)$ and the remaining gap is again $O(N/\lambda^2)$.</p>
-    <p>The bound is for a fixed panel. It says nothing about $N$ growing with $\lambda$, and the optimality results
-    quoted below for full-likelihood tests are not claimed for $\ell_C$.</p>
+    <p>The calculation below gives the transition density with the regime drawn from its stationary law $\pi$ at the
+    start of each interval and summed at the end. Its sum</p>
+    $$\ell_C = \sum_{k} \log p_\pi\big(x_{k+1} \mid x_k\big)$$
+    <p>is a stationary-start transition <em>composite</em> likelihood. The distinction matters: after the regime is
+    hidden, $x_t$ alone is generally not Markov, because the past observations filter the current regime. Fast mixing
+    makes endpoint regime memory exponentially small, but that fact by itself does not make the displayed product the
+    exact observed-data likelihood. A full likelihood propagates the hidden-state filter. The fixed-panel theorem below
+    shows when the two likelihoods nevertheless agree through first order; it does not make the observations exactly
+    Markov or give a uniform long-panel equivalence.</p>
+
+    <h2>When the composite likelihood is first-order exact</h2>
+    <p>Write $Q=mQ_0$ and let $K_m(x,x')$ be the matrix transition density: its $(i,j)$ entry is the joint density of
+    $x'$ and ending regime $j$, given $x$ and starting regime $i$. For fixed $\Delta&gt;0$, suppose uniformly on a compact
+    observation set that</p>
+    $$K_m=p_0\,\mathbf1\pi^\top+m^{-1}K_1+O(m^{-2}), \qquad
+      K_m\mathbf1=p_0\mathbf1+m^{-1}h+O(m^{-2}),$$
+    <p>with $p_0$ bounded away from zero. This is the regime-resolved version of the fast-switching expansion; the
+    exponentially small endpoint transient is absorbed by the remainder.</p>
+    <p>If the incoming filter is $\nu_k=\pi+m^{-1}r_k+O(m^{-2})$, where $r_k\mathbf1=0$, its predictive density differs
+    from the stationary-start density only at second order:</p>
+    $$\nu_kK_m\mathbf1-\pi K_m\mathbf1
+      =m^{-1}r_k(p_0\mathbf1)+O(m^{-2})=O(m^{-2}).$$
+    <p>Moreover the Bayes update $\nu_{k+1}=\nu_kK_m/(\nu_kK_m\mathbf1)$ is again $\pi+O(m^{-1})$. Induction therefore
+    gives, for a fixed panel of $N$ transitions started from $\pi$,</p>
+    $$\ell_F-\ell_C=O(Nm^{-2}),$$
+    <p>where $\ell_F$ is the exact filtered log likelihood. An arbitrary initial regime prior changes the first
+    predictive density by $O(m^{-1})$; after that observation the filter is $\pi+O(m^{-1})$, so the remaining gap is
+    $O(Nm^{-2})$. For a growing panel the displayed bound tends to zero only if $N/m^2\to0$, and it is $o(m^{-1})$
+    only if $N/m\to0$. No long-panel equivalence is asserted.</p>
+    <p>The second-order likelihood coefficient is explicit. For transition $k$, write</p>
+    $$K_{m,k}=p_k\mathbf1\pi^\top+m^{-1}K_{1,k}+O(m^{-2}),\qquad h_k=K_{1,k}\mathbf1.$$
+    <p>For a stationary start set $r_0=0$ and propagate</p>
+    $$r_{k+1}=\frac{\pi K_{1,k}-(\pi h_k)\pi}{p_k}.$$
+    <p>The incoming $r_k$ drops out of this recursion because $r_k\mathbf1=0$: the leading kernel maps every starting
+    regime to the same stationary ending law. Consequently, for fixed $N$ and a uniform kernel expansion,</p>
+    $$\ell_F-\ell_C=\frac1{m^2}\sum_{k=0}^{N-1}\frac{r_kh_k}{p_k}+O(Nm^{-3}).$$
+    <p>For an arbitrary initial prior $\nu$, the first coefficient is $(\nu-\pi)h_0/p_0$, while the filter entering the
+    second interval has $r_1=\{\nu K_{1,0}-(\nu h_0)\pi\}/p_0$. After the next update, its first-order correction no
+    longer depends on $\nu$. Thus the theorem identifies not just the rates but the pathwise coefficients and the exact
+    point at which initial-prior memory disappears at each order.</p>
 
     <h2>Averaging</h2>
     <p>When the chain switches infinitely fast the rate is Vasicek with averaged parameters, observed as an AR(1):</p>
@@ -54,7 +71,7 @@
     $$a' = \big(Q + \operatorname{diag} g\big)\,a, \qquad a(0) = \mathbf 1, \qquad
       g_i(t) = -\kappa\,\theta_i\,B(t) + \tfrac12\,\sigma_i^2\,B(t)^2 .$$
 
-    <h2>The first-order transition density</h2>
+    <h2>The first-order transition composite likelihood</h2>
     <p>Let $u = \theta - \bar\theta$ and $w = \sigma^2 - \bar s$ be the fluctuations of level and variance across
     regimes. The first-order correction to $\log(\pi\cdot a)$ is the Green&ndash;Kubo integral of the fluctuating
     forcing, as on the <a href="./yield-curve.html">yield-curve page</a>:</p>
@@ -70,7 +87,7 @@
     <p>A factor $c^n$ on the transform is the $n$-th derivative of the Gaussian density, and that derivative is a
     Hermite polynomial times the density:</p>
     $$f^{(n)}(x) = (-1)^n\,v^{-n/2}\,\mathrm{He}_n(z)\,f(x), \qquad z = \frac{x - m_k}{\sqrt v}.$$
-    <p>So the transition density and the composite likelihood are, to first order,</p>
+    <p>So the transition density and the stationary-start transition composite likelihood are, to first order,</p>
     <div class="equation-card">
     $$\begin{aligned}
     p(x_{k+1} \mid x_k) &= f(x_{k+1})\Big(1 + \frac{A_2}{v}\,\mathrm{He}_2(z_k) - \frac{A_3}{v^{3/2}}\,\mathrm{He}_3(z_k)
@@ -85,7 +102,7 @@
     covariance between a regime&apos;s level and its volatility. $A_4$ fattens its tails, through the variance of the
     volatility.</p>
 
-    <h2>What the composite likelihood identifies</h2>
+    <h2>What the stationary-start transition density identifies</h2>
     <ul>
       <li>To first order the chain enters only through the $2\times2$ Green&ndash;Kubo matrix of $(u, w)$, the same matrix
         that the <a href="./yield-curve.html">yield curve</a> sees. Different chains with the same averages and matrix have
@@ -98,44 +115,102 @@
         $e^{-2\kappa t}$ and $e^{-4\kappa t}$.</li>
     </ul>
 
-    <h2>The test for switching</h2>
+    <h2>The cone-corrected test for switching</h2>
     <p>With no switching the matrix is zero. The scores for $A_3$ and $A_4$ at zero are sums of Hermite polynomials of
     the AR(1) residuals, whose sample means are the residual skewness and excess kurtosis:</p>
-    $$\frac{\partial\ell}{\partial A_3} = -\frac{1}{v^{3/2}}\sum_k \mathrm{He}_3(z_k), \qquad
-      \frac{\partial\ell}{\partial A_4} = \frac{1}{v^2}\sum_k \mathrm{He}_4(z_k).$$
-    <p>Since $\mathbb{E}[\mathrm{He}_3^2] = 6$ and $\mathbb{E}[\mathrm{He}_4^2] = 24$ under the null, the standardized
-    scores are $Z_3 = \sqrt n\,\hat S/\sqrt 6$ and $Z_4 = \sqrt n\,\hat K/\sqrt{24}$. Their sum of squares is the
-    <a href="./bibliography.html#JarqueBera1980">Jarque&ndash;Bera</a> statistic $n(\hat S^2/6 + \hat K^2/24)$ of the
-    AR(1) residuals, which is two-sided in kurtosis: it squares a negative $\hat K$ as readily as a positive one.</p>
-    <p>The model does not allow that direction. $A_4 \ge 0$, and the constraint $A_3^2 \le 4A_2A_4$ does not bind
-    once $A_2$ is absorbed into the Gaussian variance, since any $A_3$ and any $A_4 &gt; 0$ satisfy it for $A_2$ large
-    enough. The local alternatives fill the half-plane $\mathbb R\times\mathbb R_+$ in $(A_3, A_4)$, and the score
-    is projected onto it (<a href="./bibliography.html#SelfLiang1987">Self and Liang 1987</a>;
-    <a href="./bibliography.html#Shapiro1988">Shapiro 1988</a>):</p>
+    $$\frac{\partial\ell_C}{\partial A_3} = -\frac{1}{v^{3/2}}\sum_k \mathrm{He}_3(z_k), \qquad
+      \frac{\partial\ell_C}{\partial A_4} = \frac{1}{v^2}\sum_k \mathrm{He}_4(z_k).$$
+    <p>Since $\mathbb{E}[\mathrm{He}_3^2] = 6$ and $\mathbb{E}[\mathrm{He}_4^2] = 24$ under the null, put</p>
+    $$Z_3=\sqrt{n}\,\hat S/\sqrt6,\qquad Z_4=\sqrt{n}\,\hat K/\sqrt{24}.$$
+    <p>The ordinary <a href="./bibliography.html#JarqueBera1980">Jarque&ndash;Bera</a> statistic is $Z_3^2+Z_4^2$;
+    it tests both positive and negative excess kurtosis. That is not the score statistic for this model.</p>
+    <p>Here $A_4\geq0$. After the variance correction $A_2$ is profiled into the Gaussian variance, the closure of the
+    local alternative cone in the skewness&ndash;kurtosis coordinates is $\mathbb R\times\mathbb R_+$. Indeed, for every
+    $A_4&gt;0$ and either sign of $A_3$, the positive-semidefinite constraint $A_3^2\leq4A_2A_4$ can be met by choosing
+    $A_2$ large enough, while $A_2$ is absorbed by the interior variance nuisance parameter. Projecting the Gaussian
+    score onto that cone gives</p>
     <div class="equation-card">
-    $$\mathrm{LM}_+ = Z_3^2 + \max(Z_4, 0)^2 = n\Big(\frac{\hat S^2}{6} + \frac{\max(\hat K, 0)^2}{24}\Big).$$
+    $$\mathrm{LM}_+=Z_3^2+(Z_4^+)^2
+      =n\left\{\frac{\hat S^2}{6}+\frac{\max(\hat K,0)^2}{24}\right\}.$$
     </div>
-    <p>Under the Gaussian null the two scores are asymptotically independent standard normals, so $\mathrm{LM}_+$ has
-    the chi-bar-square law $\tfrac12\chi_1^2 + \tfrac12\chi_2^2$. Its 95% point is 5.138, against 5.991 for the
-    $\chi_2^2$ law of the two-sided statistic. Negative sample kurtosis contributes nothing: it is evidence against
-    the model, not evidence of a small switching effect.</p>
-    <p>The Jarque&ndash;Bera statistic remains the omnibus test of normality. $\mathrm{LM}_+$ is the score test of this
-    model, in which the only route to non-normality is a positive variance of the volatility.</p>
-    <p>This is an information-matrix-type test, of the family that
+    <p>Thus negative sample excess kurtosis contributes zero, not its square. Under the Gaussian null, with regular
+    estimation of the Gaussian AR parameters, Hermite orthogonality makes the third- and fourth-order scores
+    asymptotically independent standard normals and orthogonal to the nuisance scores. Therefore</p>
+    $$\mathrm{LM}_+\ \Longrightarrow\ \tfrac12\chi_1^2+\tfrac12\chi_2^2.$$
+    <p>This is a chi-bar-square law, with 95% critical value $5.138381$. It is the projection geometry of boundary
+    tests described by <a href="./bibliography.html#SelfLiang1987">Self and Liang (1987)</a> and
+    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. Ordinary Jarque&ndash;Bera remains the right omnibus
+    score test for unrestricted nonnormality; $\mathrm{LM}_+$ is the directional test implied by the fast-switching
+    variance-mixture model.</p>
+    <h3>General Fisher covariance</h3>
+    <p>The independent Hermite coordinates are convenient, but not essential. Let $Z=(Z_1,Z_2)$ be the unconstrained
+    Gaussian local estimator after profiling the regular nuisance parameters, with positive-definite covariance
+    $\Sigma$, where the local cone is $\{h:h_2\geq0\}$. Equivalently, $\Sigma^{-1}$ is the Fisher metric in these
+    coordinates. Put</p>
+    $$V=\frac{Z_2}{\sqrt{\Sigma_{22}}},\qquad
+      U=\frac{Z_1-\Sigma_{12}\Sigma_{22}^{-1}Z_2}
+      {\sqrt{\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}}}.$$
+    <p>Under the null, $U$ and $V$ are independent standard normals. The metric projection onto the half-space gives</p>
+    <div class="equation-card">
+    $$\mathrm{LM}_{\Sigma}=U^2+\max(V,0)^2
+      =\begin{cases}
+      Z^\top\Sigma^{-1}Z,& Z_2\geq0,\\[2pt]
+      \displaystyle\frac{(Z_1-\Sigma_{12}\Sigma_{22}^{-1}Z_2)^2}
+      {\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}},& Z_2&lt;0.
+      \end{cases}$$
+    </div>
+    <p>Consequently the null law remains $\tfrac12\chi_1^2+\tfrac12\chi_2^2$ for every nonsingular $\Sigma$.
+    What is invariant is the Fisher-metric projection, not marginal standardization followed by coordinatewise
+    clipping. The latter generally has the wrong null law when the two coordinates are correlated. The simple
+    $Z_3^2+(Z_4^+)^2$ formula above is the special case $\Sigma=I$ supplied by Hermite orthogonality.</p>
+    <h3>Local alternatives and power</h3>
+    <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
+    alternatives, after the same nuisance-parameter profiling, satisfies</p>
+    $$\left(Z_3,Z_4\right)\ \Longrightarrow\
+      \left(G_3+\delta_3,G_4+\delta_4\right),\qquad
+      G_3,G_4\stackrel{\mathrm{iid}}{\sim}N(0,1),\qquad \delta_4\geq0.$$
+    <p>Then, by continuous mapping,</p>
+    $$\mathrm{LM}_+\ \Longrightarrow\
+      (G_3+\delta_3)^2+\max(G_4+\delta_4,0)^2.$$
+    <p>This is generally not a noncentral chi-bar-square with fixed one-half weights: when $\delta_4&gt;0$, the
+    probability of landing on the boundary face is $\Phi(-\delta_4)$ rather than $1/2$. For a critical value $c$, put
+    $r=\sqrt c$ and
+    $H_{\delta}(a)=\Pr\{|G+\delta|&gt;a\}=\Phi(-a-\delta)+1-\Phi(a-\delta)$. The limiting power is the
+    one-dimensional formula</p>
+    <div class="equation-card">
+    $$\beta(\delta_3,\delta_4;c)=
+      \Phi(-\delta_4)H_{\delta_3}(r)
+      +\int_0^r H_{\delta_3}\!\left(\sqrt{c-y^2}\right)\phi(y-\delta_4)\,dy
+      +1-\Phi(r-\delta_4).$$
+    </div>
+    <p>At $(\delta_3,\delta_4)=(0,0)$ this reduces exactly to the chi-bar-square null law. The statement concerns
+    local power in the two-score Gaussian limit. It does not assert finite-sample optimality, a rate relating $n$ to
+    the switching speed, or equivalence to the full filtered-likelihood test.</p>
+    <p>For a general covariance and raw local mean $\delta=(\delta_1,\delta_2)$, the same formula applies after the
+    canonical transformation</p>
+    $$\eta_1=\frac{\delta_1-\Sigma_{12}\Sigma_{22}^{-1}\delta_2}
+      {\sqrt{\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}}},\qquad
+      \eta_2=\frac{\delta_2}{\sqrt{\Sigma_{22}}},$$
+    <p>with $(\delta_3,\delta_4)$ in $\beta$ replaced by $(\eta_1,\eta_2)$. In particular, the one-sided condition is
+    preserved: $\delta_2\geq0$ if and only if $\eta_2\geq0$.</p>
+    <p>This is an information-matrix-type construction, related to the full-likelihood test that
     <a href="./bibliography.html#CarrascoHuPloberger2014">Carrasco, Hu and Ploberger (2014)</a> show to be optimal for
-    Markov switching when built from the full likelihood, building on <a href="./bibliography.html#White1982">White
-    (1982)</a> and <a href="./bibliography.html#Chesher1984">Chesher (1984)</a>. Built from the composite likelihood,
-    it carries no such optimality claim. What the continuous-time model adds is the structure of the coefficients:
-    they are Green&ndash;Kubo integrals with explicit time factors, bound by the inequality above.</p>
+    Markov switching, building on <a href="./bibliography.html#White1982">White (1982)</a> and
+    <a href="./bibliography.html#Chesher1984">Chesher (1984)</a>. Because the density used here is a stationary-start
+    composite likelihood, no corresponding full-data optimality claim is made. What the continuous-time model adds is
+    the structure of the coefficients: they are Green&ndash;Kubo integrals with explicit time factors, bound by the
+    inequality above.</p>
     <p>Tests for switching are usually non-standard because the switching parameters are not identified under the
     null (<a href="./bibliography.html#Hansen1992">Hansen 1992</a>; <a href="./bibliography.html#Garcia1998">Garcia
-    1998</a>; <a href="./bibliography.html#ChoWhite2007">Cho and White 2007</a>). In the fast-switching expansion the
-    parameters are the Green&ndash;Kubo entries, which are identified. The null is the zero matrix, a boundary point of
-    the positive semidefinite cone, which is why the score is projected.</p>
-    <p>Moment diagnostics follow from the same expansion:</p>
+    1998</a>; <a href="./bibliography.html#ChoWhite2007">Cho and White 2007</a>). Here the first-order working parameters
+    are Green&ndash;Kubo combinations: $A_3$ and $A_4$ are identified by the transition shape, while $A_2$ is profiled with
+    the Gaussian variance. The null remains the vertex of a positive-semidefinite cone, so the kurtosis direction is
+    one-sided.</p>
+    <p>Unconstrained moment diagnostics follow from the same expansion:</p>
     $$\hat A_3 = -\frac{\hat S\,v^{3/2}}{6}, \qquad \hat A_4 = \frac{\hat K\,v^2}{24} .$$
-    <p>They are unconstrained. A negative $\hat A_4$ is not a feasible value under the model, and a constrained fit
-    should impose the positive semidefinite matrix as a whole rather than clip the two separately.</p>
+    <p>A negative $\hat A_4$ diagnoses a direction outside the model; it is not a feasible switching estimate. A
+    constrained estimator should optimize the full positive-semidefinite Green&ndash;Kubo matrix and the Gaussian
+    variance jointly, rather than clipping these two formulas separately.</p>
 
     <h2>Checks</h2>
     <p>The transition density against its exact value by Fourier inversion, as a share of the peak density:</p>
@@ -146,26 +221,43 @@
     Green&ndash;Kubo matrix, observed quarterly with $\kappa = 1$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>speed factor</th><th>chain A vs Gaussian</th><th>chain A vs chain B</th></tr></thead><tbody><tr><td>20</td><td>1.751%</td><td>0.1293%</td></tr><tr><td>40</td><td>0.876%</td><td>0.0320%</td></tr><tr><td>80</td><td>0.437%</td><td>0.0079%</td></tr></tbody></table></div>
     <p>Their densities differ at second order, while each differs from the Gaussian at first order.</p>
+    <p>A separate cone-test certificate simulates 20,000 Gaussian samples of size 4,000. At the chi-bar-square 95%
+    cutoff, $\mathrm{LM}_+$ rejects 5.46% while the unprojected square rejects 7.45%; sample excess kurtosis is negative
+    52.29% of the time. For a standardized uniform sample, ordinary Jarque&ndash;Bera is 11964.19 because excess kurtosis
+    is $-1.19819$, whereas the cone statistic is only 0.41. An independent simulation of two million limiting
+    Gaussian score pairs agrees with the power integral within $9.6\times10^{-4}$. At local shifts
+    $(\delta_3,\delta_4)=(1,0),(0,1),(1,1),(0,2)$, the exact directional powers are respectively
+    $0.141681$, $0.177730$, $0.283486$, and $0.490980$; the size-matched ordinary Jarque&ndash;Bera powers are
+    $0.132710$, $0.132710$, $0.225545$, and $0.415427$.</p>
+    <p>The same certificate tests correlated Gaussian coordinates with correlation $0.75$. The canonical formula and
+    the direct piecewise Fisher-metric projection agree within $1.42\times10^{-14}$. At the same chi-bar cutoff, the
+    metric statistic rejects $5.0056\%$ under the null, whereas marginal standardization followed by naive clipping
+    rejects $5.9701\%$. For a raw mean shift corresponding to canonical shift $(1,1)$, simulated power is $0.283067$
+    against the exact value $0.283486$.</p>
+    <p>A separate matrix-kernel certificate propagates the exact two-state filter by Fourier inversion for a fixed
+    six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
+    log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s
+    distance from $\pi$. The specified-start first-observation gap has order $0.906$, confirming the stated
+    $O(m^{-1})$ initial-prior caveat. Refining both Fourier and time grids changes the fastest-rate log gap by less than
+    $4\times10^{-15}$. The kernel formula predicts coefficients $-2.529716$, $-0.183148$, and $-2.530169$ for the
+    stationary gap, specified-start first interval, and specified-start tail. Richardson extrapolation of the exact
+    filtered likelihood gives $-2.528356$, $-0.183174$, and $-2.528853$, respectively; the largest discrepancy is
+    $1.4\times10^{-3}$.</p>
     <p>Moments of the AR(1) residuals from 200,000 exactly simulated monthly observations, against the first-order
     predictions $-6A_3/v^{3/2}$, $24A_4/v^2$ and $1 + 2A_2/v$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>skewness</th><th>predicted</th><th>excess kurtosis</th><th>predicted</th><th>variance ratio</th><th>predicted</th></tr></thead><tbody><tr><td>60</td><td>+0.0821</td><td>+0.0930</td><td>0.3373</td><td>0.3842</td><td>1.0099</td><td>1.0075</td></tr><tr><td>120</td><td>+0.0361</td><td>+0.0465</td><td>0.1791</td><td>0.1921</td><td>1.0048</td><td>1.0037</td></tr><tr><td>240</td><td>+0.0249</td><td>+0.0232</td><td>0.0921</td><td>0.0961</td><td>1.0003</td><td>1.0019</td></tr></tbody></table></div>
-    <p>The one-sided statistic under the Gaussian null, in 20,000 samples of 4,000 residuals: $\mathrm{LM}_+$ rejects
-    5.4% of samples at 5.138, while the two-sided statistic rejects 7.3% at the same point. Sample excess kurtosis is
-    negative in 53% of Gaussian samples, and on a standardized uniform sample Jarque&ndash;Bera is 226 while
-    $\mathrm{LM}_+$ is 0.2.</p>
-    <p>The composite against the exact filtered likelihood, on a fixed panel of eight monthly observations, with the
-    filter propagated through the exact regime-resolved kernel by Fourier inversion:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>$\ell_F - \ell_C$</th><th>$\lambda^2(\ell_F - \ell_C)$</th><th>first term, known regime</th><th>later terms, known regime</th></tr></thead><tbody><tr><td>160</td><td>&minus;1.59e-4</td><td>&minus;4.08</td><td>3.41e-2</td><td>&minus;1.39e-4</td></tr><tr><td>320</td><td>&minus;3.13e-5</td><td>&minus;3.21</td><td>1.70e-2</td><td>&minus;2.86e-5</td></tr><tr><td>640</td><td>&minus;6.76e-6</td><td>&minus;2.77</td><td>8.44e-3</td><td>&minus;6.40e-6</td></tr><tr><td>1280</td><td>&minus;1.56e-6</td><td>&minus;2.55</td><td>4.21e-3</td><td>&minus;1.51e-6</td></tr></tbody></table></div>
-    <p>The gap falls at second order. A known starting regime moves the first term at first order and the later
-    terms at second order, as the argument above says.</p>
 
     <h2>Scope</h2>
     <p>The expansion needs many regime changes between observations. When regimes last longer than the sampling
-    interval, the regimes at successive observations are correlated, the composite likelihood is far from the exact
-    one, and the exact one needs the filter of <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>.</p>
+    interval, the first-order cancellation above is unavailable and the exact likelihood needs the filter of
+    <a href="./bibliography.html#Hamilton1989">Hamilton (1989)</a>. Even in the fast-switching limit, the equivalence
+    theorem is pointwise on compact observation sets with predictive densities bounded away from zero; it is not a
+    tail-uniform likelihood theorem.</p>
     <p>A switching variance
     alone gives the classic normal variance mixture of <a href="./bibliography.html#Clark1973">Clark (1973)</a>. For
     closed-form likelihood expansions of diffusions without regimes see
     <a href="./bibliography.html#AitSahalia2002">A&iuml;t-Sahalia (2002)</a>.</p>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">verify_likelihood.py</a>.</p>
+    <p class="muted">Certificates: <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">transition expansion</a>,
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_filtered_likelihood.py">filtered likelihood</a>,
+    and <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_cone_test.py">cone test</a>.</p>
   </main>
