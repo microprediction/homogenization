@@ -1,0 +1,207 @@
+<!-- title: What sets the homogenization scale? · homogenization | math -->
+  <main>
+    <h1>What sets the homogenization scale?</h1>
+    <p class="subtitle">Ergodicity gives averaging. The covariance tail decides the size of the first fluctuation correction.</p>
+
+    <p class="lead">A fast finite-state chain has an integrable covariance, so its symmetric correction is proportional
+      to its correlation time. That conclusion is not a consequence of stationarity and ergodicity alone. Long memory
+      changes the power of the small parameter. Conversely, a vanishing Green&ndash;Kubo integral can make averaging
+      faster than the usual diffusive rate, while a periodic ergodic driver can have no convergent Green&ndash;Kubo
+      integral at all.</p>
+
+    <h2>The exact starting point</h2>
+    <p>Let $X_t$ be a centered stationary scalar process with covariance
+      $C(t)=\mathbb E[X_0X_t]$, and accelerate it to $X_{t/\varepsilon}$. For</p>
+    $$A_\varepsilon(T)=\int_0^T X_{t/\varepsilon}\,dt,$$
+    <p>stationarity alone gives the exact identity</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      =2\int_0^T(T-u)C(u/\varepsilon)\,du
+      =2\varepsilon\int_0^{T/\varepsilon}(T-\varepsilon s)C(s)\,ds.$$
+    </div>
+    <p>Everything below follows from this formula. Ergodicity is relevant to the averaged limit, but it does not
+      determine the rate at which the variance vanishes.</p>
+
+    <h2>Four covariance regimes</h2>
+    <h3>Integrable correlation</h3>
+    <p>If $C$ is absolutely integrable and $K=\int_0^\infty C(s)ds$, dominated convergence gives, for fixed $T&gt;0$,</p>
+    $$\operatorname{Var}A_\varepsilon(T)=2TK\,\varepsilon+o(\varepsilon).$$
+    <p>This is the Green&ndash;Kubo regime used by the finite-chain pages. Exponential mixing is more than enough; a
+      central limit theorem or a Poisson equation supplies the corresponding fluctuation limit.</p>
+
+    <h3>Zero Green&ndash;Kubo and antipersistence</h3>
+    <p>Integrability alone does not make the order-$\varepsilon$ coefficient nonzero. Suppose that $C$ is absolutely
+      integrable,</p>
+    $$K=\int_0^\infty C(s)ds=0,$$
+    <p>and, for some $1&lt;\alpha&lt;2$,</p>
+    $$C(t)\sim c\,t^{-\alpha}L(t),\qquad c\ne0,$$
+    <p>with $L$ slowly varying and eventually positive. Karamata&apos;s tail theorem and its truncated-moment form give</p>
+    $$\int_0^x C(s)ds\sim-\frac{c}{\alpha-1}x^{1-\alpha}L(x),\qquad
+      \int_0^x sC(s)ds\sim\frac{c}{2-\alpha}x^{2-\alpha}L(x).$$
+    <p>Substitution in the exact identity yields the cancellation theorem</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      \sim-\frac{2c}{(\alpha-1)(2-\alpha)}
+      T^{2-\alpha}\varepsilon^\alpha L(T/\varepsilon).$$
+    </div>
+    <p>Since the left side is nonnegative, a nonzero regularly varying tail under these assumptions must have
+      $c&lt;0$. Negative long-lag covariance cancels the short-lag contribution exactly enough to replace the usual
+      $\varepsilon$ variance by $\varepsilon^\alpha L(1/\varepsilon)$. The fluctuation amplitude is therefore
+      $\varepsilon^{\alpha/2}L(1/\varepsilon)^{1/2}$: smaller than $\sqrt\varepsilon$, but generally larger than
+      $\varepsilon$.</p>
+    <p>A fully valid stationary Gaussian benchmark has spectral density proportional to
+      $e^{-|\omega|}|\omega|^{\alpha-1}$. Its normalized covariance is</p>
+    $$C_\alpha(t)=\frac1{\Gamma(\alpha)}\int_0^\infty
+      e^{-\omega}\omega^{\alpha-1}\cos(\omega t)d\omega
+      =\operatorname{Re}(1-it)^{-\alpha}.$$
+    <p>It has $K=0$ exactly and
+      $C_\alpha(t)\sim\cos(\pi\alpha/2)t^{-\alpha}$, whose coefficient is negative for
+      $1&lt;\alpha&lt;2$. Direct integration gives the exact finite-$\varepsilon$ formula</p>
+    $$\operatorname{Var}A_\varepsilon(T)
+      =\frac{2\varepsilon^2}{(\alpha-1)(2-\alpha)}
+      \left\{\operatorname{Re}(1-iT/\varepsilon)^{2-\alpha}-1\right\}.$$
+    <p>This is the continuous-time analogue of the antipersistent fractional noises introduced by
+      <a href="https://doi.org/10.1137/1010093">Mandelbrot and Van Ness (1968)</a>. It also shows why the statement
+      &ldquo;integrable covariance implies an order-$\varepsilon$ correction&rdquo; requires the qualification $K\ne0$.</p>
+
+    <h3>The second critical index and the $\varepsilon^2$ boundary</h3>
+    <p>The cancellation theorem has a second critical index at $\alpha=2$. Keep $K=0$ and suppose</p>
+    $$C(t)\sim c\,t^{-2}L(t),\qquad c\ne0,$$
+    <p>with $L$ slowly varying and eventually positive. Define</p>
+    $$H(x)=\int_1^x\frac{L(s)}s\,ds.$$
+    <p>If $H(x)\to\infty$, Karamata&apos;s tail theorem gives
+      $\int_x^\infty C(s)ds\sim cL(x)/x$, while its critical truncated-moment form and
+      $L(x)=o(H(x))$ give $\int_0^x sC(s)ds\sim cH(x)$. Hence</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      \sim-2c\,\varepsilon^2H(T/\varepsilon).$$
+    </div>
+    <p>Again nonnegativity forces $c&lt;0$. Thus a pure $t^{-2}$ tail produces
+      $-2c\varepsilon^2\log(T/\varepsilon)$, not a pure $\varepsilon^2$ law.</p>
+    <p>If instead the first covariance moment is absolutely integrable,</p>
+    $$M=\int_0^\infty sC(s)ds,\qquad
+      \int_0^\infty s|C(s)|ds&lt;\infty,$$
+    <p>then $x\int_x^\infty|C(s)|ds\to0$ and the exact variance identity gives</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)=-2M\varepsilon^2+o(\varepsilon^2).$$
+    </div>
+    <p>The coefficient is independent of fixed $T&gt;0$, and variance nonnegativity requires $M\le0$.
+      The displayed asymptotic is nondegenerate when $M&lt;0$; if $M=0$, still finer cancellation determines the
+      scale. This includes regularly varying tails with $\alpha&gt;2$, and the $\alpha=2$ case when
+      $H(\infty)&lt;\infty$.</p>
+    <p>The same Gamma-spectral benchmark makes both boundaries exact. At $\alpha=2$ and $\alpha&gt;2$, respectively,</p>
+    $$\operatorname{Var}A_\varepsilon(T)
+      =\varepsilon^2\log\{1+(T/\varepsilon)^2\},\qquad
+      \operatorname{Var}A_\varepsilon(T)
+      \sim\frac{2\varepsilon^2}{(\alpha-1)(\alpha-2)}.$$
+    <p>For the second formula, $M=-1/\{(\alpha-1)(\alpha-2)\}$. Together with the
+      $1&lt;\alpha&lt;2$ theorem, this is the complete zero-Green&ndash;Kubo trichotomy under the stated regular-variation
+      or first-moment assumptions; it is distinct from the oscillatory periodic example below.</p>
+
+    <h3>Long-range dependence</h3>
+    <p>More generally, suppose that the covariance is eventually positive and regularly varying:</p>
+    $$C(t)\sim c\,t^{-\alpha}L(t),\qquad c&gt;0,\quad0&lt;\alpha&lt;1,$$
+    <p>where $L$ is slowly varying. Karamata&apos;s integral theorem gives</p>
+    $$\int_0^x C(s)ds\sim\frac{xC(x)}{1-\alpha},\qquad
+      \int_0^x sC(s)ds\sim\frac{x^2C(x)}{2-\alpha}.$$
+    <p>Substitution in the exact covariance identity, with $x=T/\varepsilon$, therefore gives</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      \sim\frac{2c}{(1-\alpha)(2-\alpha)}
+      T^{2-\alpha}\varepsilon^\alpha L(T/\varepsilon).$$
+    </div>
+    <p>The Green&ndash;Kubo integral diverges and the fluctuation size is
+      $\varepsilon^{\alpha/2}L(1/\varepsilon)^{1/2}$ rather than $\sqrt\varepsilon$.
+      The pure-power formula is the special case $L\equiv1$.</p>
+
+    <h3>The critical index is not one formula</h3>
+    <p>At the boundary $C(t)\sim cL(t)/t$, put</p>
+    $$H(x)=\int_1^x\frac{L(s)}s\,ds.$$
+    <p>If $H(x)\to\infty$, then Karamata&apos;s theorem and $L(x)=o(H(x))$ give</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)\sim2cT\varepsilon H(T/\varepsilon).$$
+    </div>
+    <p>If $H(\infty)&lt;\infty$, the tail is integrable and the ordinary Green&ndash;Kubo
+      order $\varepsilon$ returns. Thus $C(t)\sim c/t$ gives
+      $2cT\varepsilon\log(1/\varepsilon)$, but a logarithmic modifier changes even the
+      critical scale. For $L(t)=(\log t)^\beta$,</p>
+    $$\operatorname{Var}A_\varepsilon(T)\sim
+      \begin{cases}
+      \displaystyle\frac{2cT}{\beta+1}\varepsilon
+        (\log(1/\varepsilon))^{\beta+1},&\beta&gt;-1,\\[4pt]
+      2cT\varepsilon\log\log(1/\varepsilon),&\beta=-1,
+      \end{cases}$$
+    <p>whereas $\beta&lt;-1$ is integrable. Therefore neither the coefficient nor even the
+      power-and-log scale of the correction is universal.</p>
+    <p>The certificate tests both new scales on the valid covariance</p>
+    $$C_\alpha(t)=\int_0^{e^{-1}}e^{-\lambda t}\lambda^{\alpha-1}
+      \log(1/\lambda)\,d\lambda
+      \sim\Gamma(\alpha)t^{-\alpha}\log t.$$
+    <p>It is a positive mixture of Ornstein&ndash;Uhlenbeck covariances. Numerical integration of the
+      exact finite-horizon variance gives asymptotic ratios $1.02166$ for $\alpha=0.4$ and
+      $0.94394$ at the critical $\varepsilon\log^2(1/\varepsilon)$ scale.</p>
+    <p>For the zero-Green&ndash;Kubo benchmark, independent covariance quadrature agrees with the exact formula within
+      $1.1\times10^{-17}$. At $\alpha=1.4$, the measured order and asymptotic ratio are $1.399942$ and $0.999921$;
+      at $\alpha=1.7$, they are $1.697433$ and $0.992367$. The boundary checks obtain the exact log-corrected ratio
+      $1.000000000000$ at $\alpha=2$. At $\alpha=3$, independent quadrature gives $M=-0.5$, measured order
+      $2.000000000$, and asymptotic ratio $0.999999999996$.</p>
+
+    <h2>A bounded positive volatility counterexample</h2>
+    <p>For $0&lt;\alpha&lt;1$, let $G_t$ be a centered stationary Gaussian process with correlation</p>
+    $$R(t)=(1+t^2)^{-\alpha/2}.$$
+    <p>This is a valid covariance because it is a positive Gamma mixture of Gaussian kernels. Its spectral measure
+      has no atoms, so the process is ergodic. Define a bounded strictly positive variance by</p>
+    $$v_t=v_0+\delta\,\operatorname{sign}(G_t),\qquad0&lt;\delta&lt;v_0.$$
+    <p>The Gaussian sign identity gives</p>
+    $$C_v(t)=\frac{2\delta^2}{\pi}\arcsin R(t)
+      \sim\frac{2\delta^2}{\pi}t^{-\alpha}.$$
+    <p>Consequently, for integrated variance $V_\varepsilon(T)=\int_0^T v_{t/\varepsilon}dt$,</p>
+    $$\operatorname{Var}V_\varepsilon(T)
+      \sim\frac{4\delta^2}{\pi(1-\alpha)(2-\alpha)}
+      T^{2-\alpha}\varepsilon^\alpha.$$
+    <p>The observable is bounded and the driver is stationary and ergodic, yet the order-$\varepsilon$
+      Green&ndash;Kubo smile does not apply.</p>
+
+    <h2>Implication for the uncorrelated volatility smile</h2>
+    <p>When the Brownian return is independent of the variance driver, conditioning on integrated variance gives the
+      Hull&ndash;White mixture $\mathbb E[C_{\rm BS}(V_\varepsilon)]$. For a smooth payoff, a second-order delta method gives</p>
+    $$\mathbb E[C_{\rm BS}(V_\varepsilon)]-C_{\rm BS}(\mathbb EV_\varepsilon)
+      =\tfrac12 C_{\rm BS}''(\mathbb EV_\varepsilon)
+       \operatorname{Var}V_\varepsilon+o(\operatorname{Var}V_\varepsilon),$$
+    <p>provided the normalized integrated variance has the required moment convergence. The sign-Gaussian example
+      has Hermite rank one, and the long-range Gaussian limit theory supplies that normalization. Its convexity smile
+      is therefore of order $\varepsilon^\alpha$, not $\varepsilon$.</p>
+    <p>This statement concerns the uncorrelated variance-mixture effect. Correlation between the stock and a fast
+      diffusive factor can separately create an order-$\sqrt\varepsilon$ skew term; the two mechanisms should not be
+      conflated.</p>
+
+    <h2>Ergodic need not mean diffusive</h2>
+    <p>Let $U$ be uniform on the circle and $Y_t=U+t/\varepsilon\pmod{2\pi}$. The continuous flow is stationary and
+      ergodic. With $v(y)=v_0+\delta\cos y&gt;0$,</p>
+    $$\int_0^T v(Y_t)dt=v_0T+\delta\varepsilon
+      [\sin(U+T/\varepsilon)-\sin U],$$
+    <p>and hence exactly</p>
+    $$\operatorname{Var}\left(\int_0^T v(Y_t)dt\right)
+      =\delta^2\varepsilon^2[1-\cos(T/\varepsilon)].$$
+    <p>The correction is order $\varepsilon^2$ with an oscillatory coefficient. The one-sided covariance integral
+      does not converge. This example is smooth, bounded and positive, so stronger mixing or fluctuation assumptions
+      really are necessary.</p>
+
+    <h2>Scope and literature</h2>
+    <p>The theorems above determine the variance scale from the covariance tail together with whether the
+      Green&ndash;Kubo integral vanishes; they do not claim a universal option
+      expansion for every long-memory process or nonsmooth payoff. Distributional limits depend on the process and
+      on the Hermite rank of the observable. The regular-variation step is
+      <a href="https://doi.org/10.24033/bsmf.1196">Karamata&apos;s
+      integral theorem (1933)</a>. Primary long-memory references are
+      <a href="https://doi.org/10.1007/BF00532868">Taqqu (1975)</a>,
+      <a href="https://doi.org/10.1007/BF00535673">Dobrushin and Major (1979)</a>, and
+      <a href="https://doi.org/10.1007/BF00535674">Taqqu (1979)</a>. In finance,
+      <a href="https://doi.org/10.1111/1467-9965.00057">Comte and Renault (1998)</a> develop continuous-time
+      long-memory stochastic volatility.</p>
+    <p>Sircar and Papanicolaou&apos;s fast-volatility calculation invokes a fluctuation limit in addition to ergodicity.
+      The finite-state chain used on this site satisfies the stronger assumptions; the counterexamples delimit the
+      generality of the claim rather than contradicting the chain calculation.</p>
+    <p class="muted">Certificate:
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/long-memory/verify_long_memory.py">verify_long_memory.py</a>.</p>
+  </main>
