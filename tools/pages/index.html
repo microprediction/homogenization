@@ -95,8 +95,8 @@
         <h3>Conformal prediction</h3>
         <p><span class="k">fast</span> the state on which the forecast error depends</p>
         <p><span class="k">averaged</span> residuals pooled across states, and a quantile of the pool</p>
-        <p><span class="k">corrector</span> not computed; the certificate holds without it, and the sharpness lost is priced in nats</p>
-        <p class="go"><a href="https://conformalprediction.net/homogenization.html">Homogenization without the corrector</a></p>
+        <p><span class="k">corrector</span> the conditional coverage error: exponential in the horizon for a terminal score, algebraic for a path average, and set by the predictor&apos;s own memory for a filtered state</p>
+        <p class="go"><a href="./conformal.html">Pooled residuals under a fast regime</a> &middot; <a href="https://conformalprediction.net/homogenization.html">without the corrector</a></p>
       </div>
       <div class="ex">
         <h3>Forecast calibration</h3>

@@ -1,0 +1,32 @@
+[
+ {
+  "key": "NettasingheChatterjeeTipireddyHalappanavar2023",
+  "authors": "Nettasinghe, B., Chatterjee, S., Tipireddy, R. and Halappanavar, M.",
+  "year": 2023,
+  "title": "Extending conformal prediction to hidden Markov models with exact validity via de Finetti's theorem for Markov chains",
+  "venue": "Proceedings of the 40th International Conference on Machine Learning, PMLR 202:25890-25903",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v202/nettasinghe23a.html",
+  "annotation": "Conformal prediction for observations driven by a hidden Markov chain, with exact marginal validity from a block-randomization that restores exchangeability; the pooled-residual page quantifies instead the conditional error of the ordinary pooled threshold."
+ },
+ {
+  "key": "ChernozhukovWuthrichZhu2018",
+  "authors": "Chernozhukov, V., Wüthrich, K. and Zhu, Y.",
+  "year": 2018,
+  "title": "Exact and robust conformal inference methods for predictive machine learning with dependent data",
+  "venue": "Proceedings of the 31st Conference on Learning Theory, PMLR 75:732-749",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v75/chernozhukov18a.html",
+  "annotation": "Conformal inference for time series through block permutations, exact under a block-exchangeability condition and approximately valid under mixing; the dependence between calibration residuals is the effect it addresses."
+ },
+ {
+  "key": "OliveiraOrensteinRamosRomano2024",
+  "authors": "Oliveira, R. I., Orenstein, P., Ramos, T. and Romano, J. V.",
+  "year": 2024,
+  "title": "Split conformal prediction and non-exchangeable data",
+  "venue": "Journal of Machine Learning Research 25(225):1-38",
+  "doi": "",
+  "url": "https://jmlr.org/papers/v25/23-1553.html",
+  "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
+ }
+]

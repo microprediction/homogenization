@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pooled residuals · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <h1>Pooled residuals under a fast regime</h1>
+    <p class="subtitle">A conformal threshold pools residuals across a hidden state that switches fast. How far its conditional coverage is from nominal depends on what the residual remembers: the regime at the end of the horizon, its average along the way, or the predictor&apos;s own slow state.</p>
+
+    <h2>The model</h2>
+    <p>A hidden state $y_t \in \{-1, +1\}$ flips at rate $1/\varepsilon$ in each direction. A forecast made at time
+    $0$ for horizon $\Delta$ has a residual, or conformity score, $S$ whose law depends on the state; write
+    $c = \Delta/\varepsilon$ for the number of regime lifetimes in the horizon. Three scores, each with independent
+    Gaussian noise $\sigma Z$:</p>
+    $$\begin{aligned}
+      S &= \mu\,y_\Delta + \sigma Z, \\
+      S &= \mu\,A_\Delta + \sigma Z, \qquad A_\Delta = \frac1\Delta\int_0^\Delta y_t\,dt, \\
+      S &= \mu\,X_\Delta + \sigma Z, \qquad dX_t = -\kappa\,(X_t - y_t)\,dt .
+    \end{aligned}$$
+    <p>The first depends on the regime at the end of the horizon, as an error in a level does. The second
+    aggregates the path, as an error in a cumulative quantity does. The third is the state of a predictor that
+    filters the regime with its own memory $1/\kappa$, and the information it conditions on is $X_0$, not $y_0$.</p>
+    <p class="muted">Parameters for the checks: $\mu = \sigma = 1$, coverage $1 - \alpha = 0.9$, and
+    $\kappa = 1$, $1/\varepsilon = 5$ for the slow state.</p>
+
+    <h2>The quantity</h2>
+    <p>The pooled threshold $q$ is the $(1-\alpha)$ quantile of the stationary law of $S$, the population version of
+    a split-conformal threshold calibrated on residuals from every state. Its marginal coverage is $1 - \alpha$ by
+    construction. The quantity is the coverage conditional on the forecaster&apos;s information at time $0$:
+    $P(S \le q \mid y_0)$ for the first two scores and $P(S \le q \mid X_0)$ for the third.</p>
+
+    <h2>Averaging</h2>
+    <p>When the state switches infinitely fast the residual law is the same in every state, the pooled threshold
+    is the conditional one, and pooling costs nothing. The corrector is the conditional coverage error at finite
+    $\varepsilon$, and the three scores give it three different shapes.</p>
+
+    <h2>Terminal score</h2>
+    <p>The regime at the end of the horizon is the starting one with probability $\tfrac12(1 + e^{-2c})$. The
+    pooled threshold does not depend on $c$, and the conditional coverage error is, exactly,</p>
+    $$P(S \le q \mid y_0 = \pm1) - (1 - \alpha) = \mp\,\frac{e^{-2c}}{2}\Big[\Phi\Big(\frac{q + \mu}{\sigma}\Big) - \Phi\Big(\frac{q - \mu}{\sigma}\Big)\Big].$$
+    <p>It is exponential in the horizon: two regime lifetimes bring it under $0.002$ here.</p>
+
+    <h2>Path-average score</h2>
+    <p>The average of the state over the horizon remembers the start algebraically,</p>
+    $$\mathbb E[A_\Delta \mid y_0 = \pm1] = \pm\,\frac{1 - e^{-2c}}{2c},$$
+    <p>because the starting regime holds for about $\varepsilon/2$ of a horizon of length $\Delta$, however long
+    the horizon. The exact conditional law follows from the transform of the occupation time,
+    $\mathbb E[e^{iu\mu A_\Delta} \mid y_0] = \big[\exp\big(\Delta Q + iu\mu\operatorname{diag}(1, -1)\big)\mathbf 1\big]_{y_0}$
+    with $Q$ the generator, inverted against the Gaussian noise. For small $\mu/\sigma$ the coverage error is
+    $-(\mu/\sigma)\,\varphi(z_{1-\alpha})\,\mathbb E[A_\Delta \mid y_0]$, with $\varphi$ the normal density and
+    $z_{1-\alpha}$ its quantile.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$c = \Delta/\varepsilon$</th><th>pooled $q$</th><th>path score error, $\mu/\sigma = 1$</th><th>first order</th><th>$\mu/\sigma = 0.3$</th><th>first order</th><th>terminal score error</th></tr></thead><tbody><tr><td>0.25</td><td>1.7764</td><td>&minus;0.0849</td><td>&minus;0.1381</td><td>&minus;0.0393</td><td>&minus;0.0414</td><td>&minus;0.05932</td></tr><tr><td>0.5</td><td>1.7152</td><td>&minus;0.0737</td><td>&minus;0.1109</td><td>&minus;0.0318</td><td>&minus;0.0333</td><td>&minus;0.03598</td></tr><tr><td>1</td><td>1.6219</td><td>&minus;0.0562</td><td>&minus;0.0759</td><td>&minus;0.0220</td><td>&minus;0.0228</td><td>&minus;0.01324</td></tr><tr><td>2</td><td>1.5112</td><td>&minus;0.0357</td><td>&minus;0.0431</td><td>&minus;0.0127</td><td>&minus;0.0129</td><td>&minus;0.00179</td></tr><tr><td>4</td><td>1.4166</td><td>&minus;0.0197</td><td>&minus;0.0219</td><td>&minus;0.0065</td><td>&minus;0.0066</td><td>&minus;0.00003</td></tr><tr><td>8</td><td>1.3549</td><td>&minus;0.0104</td><td>&minus;0.0110</td><td>&minus;0.0033</td><td>&minus;0.0033</td><td>&minus;0.00000</td></tr></tbody></table></div>
+    <p>The two scores start together: for $c$ below one the forecaster&apos;s regime is still in force and both
+    errors are of order one. Beyond that the terminal error dies like $e^{-2c}$ and the path error like $1/(2c)$,
+    so a horizon that makes a terminal score safe leaves a path score biased, by a factor of 20 at $c = 2$ and
+    601 at $c = 4$. The first-order formula is within 10% at $\mu/\sigma = 0.3$ and overstates the error at
+    $\mu/\sigma = 1$.</p>
+
+    <h2>A predictor with a slow state</h2>
+    <p>Let the predictor carry $X_t$, an exponentially weighted average of the regime with memory $1/\kappa$. In
+    the stationary state $\tfrac12(1 + X)$ has the Beta law with both parameters $1/(\kappa\varepsilon)$, and
+    $P(y_t = +1 \mid X_t = x) = \tfrac12(1 + x)$, both read off the stationary Fokker&ndash;Planck equation of the
+    pair. Conditioning on the predictor&apos;s state and integrating the regime out,</p>
+    $$\mathbb E[X_t \mid X_0 = x] = x\,R(t), \qquad
+      R(t) = \frac{2\lambda\,e^{-\kappa t} - \kappa\,e^{-2\lambda t}}{2\lambda - \kappa}, \qquad \lambda = 1/\varepsilon .$$
+    <p>The regime&apos;s own memory $e^{-2\lambda t}$ is there, but the leading term decays at the predictor&apos;s
+    rate $\kappa$: the residual forgets the information it was conditioned on only as fast as the predictor does,
+    however fast the regime switches. Fast switching shrinks the amplitude instead, since a typical $X$ is of size
+    $\sqrt{\kappa\varepsilon/2}$.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$t$</th><th>$\mathbb E[X_t \mid X_0 = 0.6]$ simulated</th><th>$0.6\,R(t)$</th><th>coverage error, simulated</th><th>first order</th><th>$e^{-2\lambda t}$</th></tr></thead><tbody><tr><td>0.5</td><td>0.4034</td><td>0.4039</td><td>&minus;0.0826</td><td>&minus;0.0709</td><td>6.7e-3</td></tr><tr><td>1</td><td>0.2456</td><td>0.2452</td><td>&minus;0.0463</td><td>&minus;0.0430</td><td>4.5e-5</td></tr><tr><td>2</td><td>0.0907</td><td>0.0902</td><td>&minus;0.0162</td><td>&minus;0.0158</td><td>2.1e-9</td></tr><tr><td>4</td><td>0.0123</td><td>0.0122</td><td>&minus;0.0028</td><td>&minus;0.0021</td><td>4.2e-18</td></tr></tbody></table></div>
+    <p>The coverage error is the first-order formula with $x\,R(t)$ in place of the regime memory, while the
+    endpoint memory has long vanished.</p>
+
+    <h2>Calibration dependence is a separate effect</h2>
+    <p>The threshold is estimated from residuals of forecasts made every $h$. For the terminal score their
+    correlation comes only from the regimes at their endpoints, $r = e^{-2h/\varepsilon}$, whatever the horizon.
+    The indicator $1\{S \le q\}$ has conditional means $F_\pm = \Phi((q \mp \mu)/\sigma)$ given the endpoint regime,
+    so the covariance of two indicators $j$ steps apart is $r^j(F_+ - F_-)^2/4$ and the variance of the empirical
+    coverage at $q$ is inflated by</p>
+    $$1 + \frac{(F_+ - F_-)^2}{2\alpha(1-\alpha)}\sum_{j=1}^{N-1}\Big(1 - \frac jN\Big)r^j .$$
+    <div class="table-wrap"><table class="impl"><thead><tr><th>spacing $h$</th><th>$r = e^{-2h/\varepsilon}$</th><th>inflation, formula ($N = 200$)</th><th>simulated</th></tr></thead><tbody><tr><td>0.25$\,\varepsilon$</td><td>0.6065</td><td>1.3236</td><td>1.3261</td></tr><tr><td>1$\,\varepsilon$</td><td>0.1353</td><td>1.0331</td><td>1.0367</td></tr><tr><td>4$\,\varepsilon$</td><td>0.0003</td><td>1.0001</td><td>0.9933</td></tr></tbody></table></div>
+    <p>So the horizon sets the bias of the pooled threshold given the current information, and the spacing sets how
+    many effective calibration points there are. The two are controlled separately, and neither is fixed by the
+    other. Block-permutation and mixing-coefficient treatments of the second effect are in
+    <a href="./bibliography.html#ChernozhukovWuthrichZhu2018">Chernozhukov, W&uuml;thrich and Zhu (2018)</a> and
+    <a href="./bibliography.html#OliveiraOrensteinRamosRomano2024">Oliveira, Orenstein, Ramos and Romano (2024)</a>;
+    for a finite chain the covariance sum above is the exact version of their bounds.</p>
+
+    <h2>Thresholds</h2>
+    <p>A regime-aware threshold, the Mondrian construction of
+    <a href="./bibliography.html#VovkGammermanShafer2005">Vovk, Gammerman and Shafer (2005)</a> with the regime as
+    the category, uses the quantile $q_\pm$ of the residual law given $y_0$ and has exact conditional coverage. The
+    pooled threshold lies between $q_+$ and $q_-$: too narrow when the regime is high, too wide when it is low.</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$c$</th><th>score</th><th>pooled $q$</th><th>coverage given $+1$</th><th>given $-1$</th><th>$q_+$</th><th>$q_-$</th></tr></thead><tbody><tr><td>0.5</td><td>terminal</td><td>1.8495</td><td>0.8640</td><td>0.9360</td><td>2.0551</td><td>1.5144</td></tr><tr><td>0.5</td><td>path</td><td>1.7152</td><td>0.8263</td><td>0.9737</td><td>2.0824</td><td>0.8789</td></tr><tr><td>1</td><td>terminal</td><td>1.8495</td><td>0.8868</td><td>0.9132</td><td>1.9350</td><td>1.7476</td></tr><tr><td>1</td><td>path</td><td>1.6219</td><td>0.8438</td><td>0.9562</td><td>1.9237</td><td>1.1006</td></tr><tr><td>2</td><td>terminal</td><td>1.8495</td><td>0.8982</td><td>0.9018</td><td>1.8619</td><td>1.8367</td></tr><tr><td>2</td><td>path</td><td>1.5112</td><td>0.8643</td><td>0.9357</td><td>1.7154</td><td>1.2361</td></tr></tbody></table></div>
+    <p>Weighting the calibration residuals by the posterior of the current regime interpolates between the two; for
+    the slow-state predictor that posterior is $\tfrac12(1 + X_0)$. The pooled threshold is the choice that needs no
+    regime at all, and the tables say what it costs.</p>
+
+    <h2>Scope</h2>
+    <p>The chain is symmetric with two states and the noise Gaussian; the thresholds are population quantiles, so
+    the finite-sample randomness of a calibrated threshold enters only through the variance in the calibration
+    section. Nothing here is a distribution-free conditional guarantee: the errors are computed in the model, and
+    that is the point.</p>
+    <p><a href="./bibliography.html#NettasingheChatterjeeTipireddyHalappanavar2023">Nettasinghe, Chatterjee,
+    Tipireddy and Halappanavar (2023)</a> obtain exact marginal validity under a hidden Markov chain by
+    randomizing over blocks; the pooled threshold studied here is the ordinary one, and its conditional error is
+    what the corrector measures. The <a href="https://conformalprediction.net/homogenization.html">conformal
+    prediction site</a> gives the view from the other side: the guarantee holds without the corrector, and the
+    sharpness given up is priced.</p>
+    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_pooled_residuals.py">verify_pooled_residuals.py</a>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
