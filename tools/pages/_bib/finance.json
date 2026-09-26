@@ -1,0 +1,11 @@
+[
+ {
+  "key": "CuchieroKellerResselTeichmann2012",
+  "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
+  "year": 2012,
+  "title": "Polynomial processes and their applications to mathematical finance",
+  "venue": "Finance and Stochastics 16(4):711-740",
+  "doi": "10.1007/s00780-012-0188-x",
+  "annotation": "Markov processes whose generator maps polynomials of degree n to polynomials of degree at most n, so that moments follow from a finite matrix exponential; the square-root process and its integral are examples, used here for exact cumulants under a switching level."
+ }
+]

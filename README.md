@@ -47,6 +47,9 @@ papers/yield-curve/
   verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
   verify_uniform_long_end.py  the composite with the exact eigenvalue: uniform in maturity, two-state proof, chain A checked
   make_data.py             writes docs/three-numbers.js for the yield-curve page
+papers/cumulants/
+  polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
+  verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
   verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit

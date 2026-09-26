@@ -29,6 +29,7 @@ HEADER = """<header class="site-header">
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
