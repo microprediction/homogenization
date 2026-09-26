@@ -311,6 +311,63 @@
     end is simpler than the rest of the curve: it forgets the start, so there is no
     <a href="./layers.html">initial layer</a>, and the whole correction is one eigenvalue.</p>
 
+    <h2>Between fixed maturity and the long end</h2>
+    <p>The three-number formula holds at fixed maturity with an error of order $\varepsilon^2$, and the eigenvalue
+    series holds as $T \to \infty$. Neither covers the middle. The secular part of the formula, $\bar g_\infty T$ plus
+    the Green&ndash;Kubo term $\varepsilon\mu_2 T$, is the eigenvalue series stopped after two terms, so its error
+    grows like $\varepsilon^2\mu_3 T$ and is of order one once $T$ is of order $1/\varepsilon^2$.</p>
+    <p>The remedy is to keep the eigenvalue exact and expand only the transient. With $\Lambda$ the principal
+    eigenvalue of $Q + \operatorname{diag} g_\infty$, $\bar g = \pi\cdot g$ and $k = \mathcal K(\tilde g, \tilde g)$
+    the integrand of the first-order term, with $\bar g_\infty$ and $k_\infty$ their limits,</p>
+    <div class="equation-card">
+    $$\log\big(\pi\cdot a(T)\big) = \Lambda\,T + \int_0^T \big(\bar g - \bar g_\infty\big)\,dt
+      + \int_0^T \big(k - k_\infty\big)\,dt + O(\varepsilon^2),$$
+    </div>
+    <p>uniformly in $T \ge 0$. At fixed $T$ this differs from the three-number formula by $\varepsilon^2\mu_3T + \cdots$,
+    within that formula&apos;s error. As $T$ grows the two integrals converge, and what remains is the exact long
+    yield.</p>
+    <p>For two regimes the proof is short. The mean $\bar a = \tfrac12(a_1 + a_2) = \pi\cdot a$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ satisfy, as on the <a href="./cir.html">CIR page</a>,</p>
+    $$\log\bar a(T) = \int_0^T \big(\bar g + \tilde g\,\omega\big)\,dt, \qquad
+      \omega&apos; = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0 .$$
+    <p>Freeze $t$. The balance $\tilde g(1 - \omega^2) = 2\lambda\omega$ has the stable root
+    $\omega^*(t) = \big(\sqrt{\lambda^2 + \tilde g^{\,2}} - \lambda\big)/\tilde g$, and
+    $\bar g + \tilde g\,\omega^* = \Lambda(t)$ is the principal eigenvalue of $Q + \operatorname{diag} g(t)$. So</p>
+    $$\log\bar a(T) - \int_0^T \Lambda(t)\,dt = \int_0^T \tilde g\,(\omega - \omega^*)\,dt .$$
+    <p>The gap $\omega - \omega^*$ starts at zero, because $\tilde g(0) = 0$, and is driven only by
+    $\omega^{*\prime} = O(\varepsilon\,\tilde g&apos;)$ against a restoring rate $2\lambda - 2|\tilde g|$. It is
+    therefore $O(\varepsilon^2)$ and decays like $\tilde g&apos;$, so the integral is bounded by a constant times
+    $\varepsilon^2$ for every $T$.</p>
+    <p>Finally $\Lambda(t) = \bar g + \tilde g^{\,2}/(2\lambda) - \tilde g^{\,4}/(8\lambda^3) + \cdots$ with
+    $k = \tilde g^{\,2}/(2\lambda)$, so $\int_0^T(\Lambda(t) - \Lambda)\,dt$ is the two integrals above plus an
+    $O(\varepsilon^3)$ integral that converges.</p>
+    <p>The same symmetry makes $\mu_3 = 0$ for two regimes: $\Lambda$ depends on $\tilde g^{\,2}$ only. The
+    fixed-maturity formula is then out by $\varepsilon^3\mu_4 T$ at long maturities, which is why the composite
+    matters most for chains of three or more regimes, where $\mu_3 \ne 0$.</p>
+    <p>For a start in a known regime $\nu$, add $\log(\nu\cdot r(T))$, with $r(T)$ the Perron vector of
+    $Q + \operatorname{diag} g(T)$ normalized by $\pi\cdot r = 1$. For two regimes $r \propto (1 + \omega^*, 1 - \omega^*)$,
+    and $\log(1 \pm \omega^*) = \pm\tfrac12\varepsilon\,\tilde g(T) + O(\varepsilon^2)$ is the memory factor of the
+    CIR page. Without it the error is $O(\varepsilon)$ at every maturity; with it, $O(\varepsilon^2)$ uniformly,
+    and there is no initial layer at this order because $g(0) = 0$.</p>
+    <p>The certificate checks both chains on maturities up to $1/\varepsilon^2$, with the tail of the exact solution
+    computed from the constant-coefficient system once the forcing has settled. Doubling $1/\varepsilon$ divides
+    the largest error by about four. The fixed-maturity formula at $T = 1/\varepsilon^2$ settles instead at
+    $|\mu_3| = 3.61e-7$ for chain A.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>largest error over $0 \le T \le 1/\varepsilon^2$</th><th style="text-transform:none">$1/\varepsilon = 10$</th><th style="text-transform:none">$1/\varepsilon = 20$</th><th style="text-transform:none">$1/\varepsilon = 40$</th><th style="text-transform:none">$1/\varepsilon = 80$</th></tr></thead>
+      <tbody>
+        <tr><td>chain A, composite</td><td>3.04e-7</td><td>7.48e-8</td><td>1.86e-8</td><td>4.93e-9</td></tr>
+        <tr><td>chain A, fixed-maturity formula at $T = 1/\varepsilon^2$</td><td>6.64e-7</td><td>4.35e-7</td><td>3.79e-7</td><td>3.65e-7</td></tr>
+        <tr><td>chain A, known start, with $\log(\nu\cdot r)$</td><td>3.04e-5</td><td>7.65e-6</td><td>1.96e-6</td><td>5.22e-7</td></tr>
+        <tr><td>chain A, known start, without</td><td>1.16e-3</td><td>5.80e-4</td><td>2.90e-4</td><td>1.45e-4</td></tr>
+        <tr><td>two regimes, composite</td><td>1.09e-6</td><td>2.70e-7</td><td>6.70e-8</td><td>1.67e-8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>For chain A the composite is checked, not proved. The argument above needs the Perron vector to move with
+    $t$ and a transport term to go with it, and that proof is not given here.</p>
+
     <h2>Consequences</h2>
     <ul>
       <li>A yield curve does not reveal how many regimes there are. To first order it sees a $2\times2$ covariance
@@ -321,7 +378,7 @@
       <li>Separating chains that share the three numbers needs second-order effects or other instruments, such as
         options, which see the regime through the <a href="./bond-options.html">terminal state</a>.</li>
       <li>The long yield is a principal eigenvalue. Its expansion in the switching time converges, even for regimes
-        that last many years.</li>
+        that last many years, and keeping the eigenvalue exact gives a formula uniform in maturity.</li>
     </ul>
 
   <script src="./charts.js"></script>
