@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>What a fast-switching yield curve identifies · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_identifiability.py">numerical certificate</a></span></p>
+    <h1>What a fast-switching yield curve identifies</h1>
+    <p class="subtitle">A first-order identifiability theorem, exact loading and initial-mixture rank boundaries, and an explicit finite-rate remainder.</p>
+    <p class="muted">Research note, 23 September 2026. This note develops the <a href="./yield-curve.html">three-number example</a>;
+      the asymptotic statements concern a fixed finite maturity interval as the generator is sped up.</p>
+
+    <h2>Model and convention</h2>
+    <p>Let $Q_0$ be an irreducible generator on $n$ states, with stationary row vector $\pi$, and let the
+      regime generator be $mQ_0$, $m\to\infty$. The short rate obeys
+      $dr_t=\kappa(\theta_{y_t}-r_t)dt+\sqrt{s_{y_t}}\,dW_t$, with
+      $\kappa>0$, $s_i\ge0$, and $y_t$ independent of $W$. Define</p>
+    $$B(T)=\frac{1-e^{-\kappa T}}{\kappa},\quad I_j(T)=\int_0^T B(t)^jdt,\quad
+      u=\theta-(\pi\theta){\bf1},\quad v=s-(\pi s){\bf1}.$$
+    <p>For a known initial rate $x$, write $P_i(T)=e^{-B(T)x}a_i(T)$ for a specified
+      starting regime and $P_\pi(T)=e^{-B(T)x}\pi a(T)$ for a stationary start. The exact finite-dimensional equation is</p>
+    $$a'(T)=\{mQ_0+\operatorname{diag}g(T)\}a(T),\quad a(0)={\bf1},
+      \qquad g(T)=-\kappa\theta B(T)+\tfrac12 s B(T)^2.$$
+    <p>In particular, $g(0)=0$. Put $R=I-{\bf1}\pi$ and $H=-Q_0^{\#}
+      =\int_0^\infty e^{Q_0t}R\,dt$. The symmetric Green&ndash;Kubo form is
+      $\mathcal K_0^{\rm sym}(f,h)
+      =\frac12\{\pi[f(Hh)]+\pi[h(Hf)]\}$ on centered vectors.
+      The coefficients below are computed with <em>$Q_0$</em>; their actual contribution at rate $mQ_0$ is divided by $m$.</p>
+
+    <h2>Theorem: the first-order information</h2>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log P_\pi(T)+B(T)x
+        &=\beta_1 I_1+\beta_2 I_2+\beta_3 I_3+\beta_4 I_4+E_\pi(T),\\
+      \beta_1&=-\kappa\bar\theta,\qquad
+      \beta_2=\tfrac12\bar s+\frac{\kappa^2}{m}\mathcal K_0(u,u),\\
+      \beta_3&=-\frac{\kappa}{m}\mathcal K_0^{\rm sym}(u,v),\qquad
+      \beta_4=\frac{1}{4m}\mathcal K_0(v,v).
+    \end{aligned}$$
+    </div>
+    <p>For every fixed $L<\infty$, $\sup_{0\le T\le L}|E_\pi(T)|=O_L(m^{-2})$.
+      With $\kappa$ and $x$ fixed, the four functions $I_1,\ldots,I_4$ are linearly independent
+      on every open maturity interval. Hence an <em>ideal first-order stationary curve</em> uniquely determines
+      these four coefficients. It does not separately determine $\bar s$ and
+      $\mathcal K_0(u,u)/m$ from $\beta_2$, nor the underlying chain. Two chains can share all four
+      first-order coefficients and have different exact curves at order $m^{-2}$.
+      Finite-rate observations do not recover these coefficients without error; a bound appears below.</p>
+    <p>Let $c_2=\kappa^2\mathcal K_0(u,u)/m$, $c_3=\beta_3$ and
+      $c_4=\beta_4$. The $2\times2$ Green&ndash;Kubo matrix is positive semidefinite, so
+      $c_3^2\le4c_2c_4$, and the observable restriction is
+      $\beta_3^2\le4\beta_2\beta_4$. When $\beta_4=0$, necessarily $\beta_3=0$.
+      Equality for the <em>latent</em> $c$'s holds with two regimes, including
+      the degenerate zero-variance case. Strict inequality for the <em>observable</em> $\beta$'s alone
+      cannot establish three regimes: $\bar s>0$ makes it strict even for two states.
+      If $\bar s$ is separately known, strict inequality among the $c$'s implies at least three
+      regimes. It still does not identify their transition graph.</p>
+
+    <h2>The general fixed-feature Gram theorem</h2>
+    <p>The two-feature restriction is a special case. Suppose the centered forcing separates as</p>
+    $$g_i(t)-\pi g(t)=\sum_{r=1}^d\phi_r(t)f_r(i),\qquad \pi f_r=0,$$
+    <p>and let $F=[f_1\ \cdots\ f_d]$ be the $n\times d$ feature matrix. Define the fixed-parameter
+      Green&ndash;Kubo Gram matrix</p>
+    $$G_{rs}=\mathcal K_0^{\rm sym}(f_r,f_s).$$
+    <p>Then the stationary first correction is</p>
+    $$\frac1m\int_0^T\phi(t)^\top G\phi(t)\,dt,$$
+    <p>and, for every irreducible finite chain,</p>
+    <div class="equation-card">
+    $$G\succeq0,\qquad
+      \ker G=\ker F,\qquad
+      \operatorname{rank}G=\operatorname{rank}F\le\min(d,n-1).$$
+    </div>
+    <p>The equality of kernels is stronger than the rank upper bound. For any coefficient vector $a$,
+      $a^\top Ga=\mathcal K_0^{\rm sym}(Fa,Fa)$. The additive-functional martingale argument in the
+      proof below makes this zero exactly when the centered state function $Fa$ is zero. Thus an
+      identified fixed-feature rank $r$ requires at least $r+1$ regimes. It does not identify the
+      generator: many chains and feature embeddings produce the same $G$.</p>
+    <p>Identification of the whole matrix still requires the maturity functions
+      $\int_0^T\phi_r(t)\phi_s(t)\,dt$ to be linearly independent over the observed interval. Without
+      that design condition, a curve identifies only the corresponding linear combinations of the
+      entries of $G$.</p>
+
+    <h3>The exact finite-horizon covariance</h3>
+    <p>The Green&ndash;Kubo matrix is a covariance <em>rate</em>, not the covariance at a finite
+      horizon. Let $Y$ start in stationarity, let its generator be $mQ_0$, put
+      $H=-Q_0^\#$, and define</p>
+    $$Z_T=\int_0^T F^\top e_{Y_s}\,ds,\qquad
+      J_m(T)=\frac{T}{m}H-\frac1{m^2}H^2(I-e^{mQ_0T}).$$
+    <p>Here the columns of $F$ are centered and $e_i$ is the state basis vector. Direct
+      integration of the two-time covariance gives the exact identity</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}_\pi(Z_T)
+      =F^\top\operatorname{diag}(\pi)J_m(T)F
+       +F^\top J_m(T)^\top\operatorname{diag}(\pi)F
+      =\frac{2T}{m}G+O(m^{-2}).$$
+    </div>
+    <p>The remainder is uniform over every $T\ge0$: exponential mixing bounds
+      $H^2(I-e^{mQ_0T})$ independently of $T$. For each fixed $T&gt;0$ the exponentially
+      small part also yields the explicit boundary correction</p>
+    $$\operatorname{Cov}_\pi(Z_T)
+      =\frac{2T}{m}G-\frac1{m^2}
+       \left[F^\top\operatorname{diag}(\pi)H^2F
+       +F^\top(H^2)^\top\operatorname{diag}(\pi)F\right]+O(e^{-m\delta T}/m^2).$$
+    <p>At every finite $T&gt;0$ this exact covariance is positive semidefinite and has
+      $\ker\operatorname{Cov}_\pi(Z_T)=\ker F$. The rank statement is stronger than the
+      closed stationary formula: it remains true for <em>every</em> initial regime prior $\nu$,
+      including a deterministic start, although the covariance formula itself then changes.</p>
+    <p>To prove this, suppose the variance of $\int_0^T f(Y_s)ds$ vanishes and choose a state
+      $i_0$ in the support of $\nu$. The integral is constant almost surely. On the no-jump
+      path it equals $Tf_{i_0}$. For any directed path $i_0\to i_1\to\cdots\to i_k$, consider
+      paths that make exactly these $k$ jumps and then no more before $T$. Their ordered jump
+      times have a strictly positive density on the open simplex. The integral is the continuous
+      affine function
+      $f_{i_0}t_1+\cdots+f_{i_{k-1}}(t_k-t_{k-1})+f_{i_k}(T-t_k)$.
+      Since it is almost surely constant, it is constant throughout that simplex, forcing
+      $f_{i_{r-1}}=f_{i_r}$ for every edge. Irreducibility gives a directed path from $i_0$ to
+      every state, so $f$ is constant; after centering, $f=0$. Hence for arbitrary $\nu$</p>
+    $$\ker\operatorname{Cov}_\nu(Z_T)=\ker F,\qquad
+      \operatorname{rank}\operatorname{Cov}_\nu(Z_T)=\operatorname{rank}F.$$
+    <p>This still says nothing about rank after different time-dependent loadings have been
+      integrated. For a stationary start and reversible $Q_0$, spectral calculus also gives
+      the Loewner bound $0\preceq\operatorname{Cov}_\pi(Z_T)\preceq2TG/m$; neither the closed
+      formula nor that upper bound is asserted for a nonstationary start.</p>
+    <p>The certificate independently integrates the joint first- and second-moment equations.
+      Across 48 dense nonreversible chain/prior cases, including point-mass starts, every numerical
+      covariance has the predicted rank; under stationarity the ODE and closed formula agree within
+      $1.6\times10^{-14}$.</p>
+
+    <h3>Why an integrated rank is not a regime count</h3>
+    <p>The rank statement applies to one fixed feature matrix. If $p$ contracts have a
+      maturity-dependent loading matrix $L(t)\in\mathbb R^{p\times d}$, their integrated coefficient
+      matrix is</p>
+    $$D(T)=\int_0^T L(t)G L(t)^\top dt.$$
+    <p>Let $r=\operatorname{rank}G$ and choose any full-column factor $G=RR^\top$ with
+      $R\in\mathbb R^{d\times r}$. Then for every $x\in\mathbb R^p$,</p>
+    $$x^\top D(T)x=\int_0^T\|R^\top L(t)^\top x\|^2dt.$$
+    <p>Consequently, writing essential span to ignore measure-zero values of a merely measurable loading,</p>
+    <div class="equation-card">
+    $$\ker D(T)=\{x:R^\top L(t)^\top x=0\text{ for a.e. }t\},\qquad
+      \operatorname{rank}D(T)=\dim\operatorname*{ess\,span}_{t\in[0,T]}\operatorname{range}(L(t)R).$$
+    </div>
+    <p>For continuous loadings, &ldquo;almost everywhere&rdquo; can be replaced by &ldquo;everywhere.&rdquo;
+      This is the exact rank boundary: integrating does not recover another property of the hidden
+      chain; it measures the span swept out by the loaded fixed-feature range.</p>
+    <p>A useful finite-dimensional specialization makes the possible inflation explicit. If</p>
+    $$L(t)=\sum_{j=1}^q\psi_j(t)L_j,\qquad
+      \Gamma_{ij}=\int_0^T\psi_i(t)\psi_j(t)dt\succ0,$$
+    <p>and $\mathcal B=[L_1R\ \cdots\ L_qR]$, then</p>
+    $$D(T)=\mathcal B(\Gamma\otimes I_r)\mathcal B^\top,\qquad
+      \operatorname{rank}D(T)=\operatorname{rank}\mathcal B\le\min(p,qr).$$
+    <p>The matrix $D(T)$ is a finite-horizon controllability Gramian with input matrix $L(t)R$;
+      the rank interpretation goes back to
+      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman (1960)</a>.</p>
+    <p>Although every integrand has rank at most $r$, its range can rotate with $t$, so $D(T)$
+      can attain the larger bound $qr$. The smallest counterexample uses only two regimes and one
+      centered feature. Take scalar $G=[g]$ with $g>0$ and
+      $L(t)=(1,t,t^2)^\top$. At $T=1$,</p>
+    $$D(1)=g\begin{pmatrix}
+      1&1/2&1/3\\
+      1/2&1/3&1/4\\
+      1/3&1/4&1/5
+    \end{pmatrix},$$
+    <p>the positive-definite $3\times3$ Hilbert matrix. Hence $\operatorname{rank}D(1)=3$ even though
+      $n-1=1$. A rank lower bound on the number of regimes is valid for the fixed Green&ndash;Kubo
+      Gram matrix after known loadings have been removed, not for a matrix obtained by integrating
+      heterogeneous maturity loadings. The certificate also checks a rank-two, three-basis example
+      attaining rank six and reproduces the factorization by independent quadrature within
+      $2\times10^{-12}$. This is the same distinction needed in multi-name credit and multi-factor
+      term-structure applications.</p>
+
+    <h2>Known starting regime</h2>
+    <p>For any specified state $i$, the same theorem adds two unintegrated terms:</p>
+    <div class="equation-card">
+    $$\log P_i(T)+B(T)x
+      =\sum_{j=1}^4\beta_j I_j(T)
+       +\frac1m\left[-\kappa(Hu)_iB(T)+\tfrac12(Hv)_iB(T)^2\right]
+       +E_i(T),\qquad
+       \sup_{0\le T\le L}|E_i(T)|=O_L(m^{-2}).$$
+    </div>
+    <p>The coefficients of $B$ and $B^2$ record the Poisson solutions for the initial state.
+      Their $\pi$-weighted averages are zero, recovering the stationary formula. They are two
+      distinct functions, but they do <em>not</em> contribute two new independent shapes to a
+      single curve. The identities</p>
+    $$B(T)=T-\kappa I_1(T),\qquad B(T)^2=2I_1(T)-2\kappa I_2(T)$$
+    <p>show that the six displayed functions span only
+      $\{T,I_1,I_2,I_3,I_4\}$, a five-dimensional space. Writing the known-start coefficients as
+      $\gamma_{1i}=-\kappa(Hu)_i/m$ and $\gamma_{2i}=(Hv)_i/(2m)$, one curve determines only</p>
+    $$(\gamma_{1i},\;\beta_1-\kappa\gamma_{1i}+2\gamma_{2i},\;
+      \beta_2-2\kappa\gamma_{2i},\;\beta_3,\;\beta_4)$$
+    <p>at this order. If separately labeled curves for several initial regimes are available,
+      their differences isolate $(\gamma_{1i}-\gamma_{1j})B+
+      (\gamma_{2i}-\gamma_{2j})B^2$. Both relative coefficients can then be read from a
+      maturity interval; a stationary-start curve also isolates the common $\beta$'s.</p>
+    <p>The approximation has a uniform <em>value</em> error but no claimed uniform derivative
+      error near $T=0$. In particular, differentiating its known-start term at zero
+      would give a spurious $O(m^{-1})$ initial slope; the order-$m^{-2}$ initial layer
+      cancels it in a window of width $O(m^{-1})$.</p>
+
+    <h2>An unobserved initial mixture: outer and boundary information</h2>
+    <p>Let the initial regime have an unknown row distribution $\nu$. Averaging the
+      statewise expansion before taking its logarithm gives, uniformly on a fixed bounded
+      maturity interval,</p>
+    <div class="equation-card">
+    $$\log P_\nu(T)+B(T)x
+      =\sum_{j=1}^4\beta_jI_j(T)
+       +\frac1m\left[-\kappa\nu Hu\,B(T)+\tfrac12\nu Hv\,B(T)^2\right]
+       +O_L(m^{-2}).$$
+    </div>
+    <p>Thus the fixed-maturity outer expansion sees the unknown mixture only through
+      $\nu H[u\ v]$. If the common stationary coefficients are known separately, the
+      whole distribution $\nu$ is identified at this order exactly when
+      $\operatorname{rank}[u\ v]=n-1$; otherwise any zero-sum row vector in the kernel of
+      $H[u\ v]$ is an observationally equivalent perturbation (while it remains inside
+      the probability simplex). Without a stationary baseline, the shape aliases in the
+      preceding section further mix these projections with $\beta_1$ and $\beta_2$.</p>
+
+    <h3>Exact transient observability</h3>
+    <p>The underlying rank boundary is clearest for a general centered feature matrix
+      $F\in\mathbb R^{n\times d}$. For
+      $Z_T=\int_0^T F^\top e_{Y_s}ds$ and any initial distribution $\nu$, direct semigroup
+      integration gives the exact mean</p>
+    $$\mathbb E_\nu Z_T
+      =\frac1m\nu H(I-e^{mQ_0T})F.$$
+    <p>At maturities $T_1,\ldots,T_q$, define the transient observability matrix</p>
+    $$\mathcal O_m=[H(I-e^{mQ_0T_1})F\ \cdots\
+      H(I-e^{mQ_0T_q})F].$$
+    <p>Two priors $\nu,\nu'$ have the same mean responses exactly when
+      $(\nu-\nu')\mathcal O_m=0$. Consequently the responses identify every prior if and
+      only if</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ \mathcal O_m]=n,
+      \qquad\text{equivalently}\qquad
+      \operatorname{rank}\mathcal O_m=n-1.$$
+    </div>
+    <p>This is the observability counterpart of
+      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman's 1960 rank framework</a>.
+      It concerns initial-distribution information, not the fixed-feature Green&ndash;Kubo
+      rank and not the rank created by maturity-dependent contract loadings.</p>
+
+    <h3>The whole maturity curve: an exact Krylov criterion</h3>
+    <p>The finite list above leaves open whether some choice of scaled maturities can identify
+      the prior. This has an intrinsic answer. For $\tau&gt;0$ put
+      $R(\tau)=H(I-e^{Q_0\tau})F$. Then</p>
+    <div class="equation-card">
+    $$\operatorname*{span}_{\tau&gt;0}\operatorname{range}R(\tau)
+      =\operatorname{range}[F\ Q_0F\ \cdots\ Q_0^{n-2}F].$$
+    </div>
+    <p>Consequently the complete scaled-maturity mean curve identifies every initial
+      distribution if and only if</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{n-2}F]=n.$$
+    </div>
+    <p>This is the classical Kalman reachability condition on the centered state space,
+      used here through its observability dual. Equivalently, the PBH obstruction is a
+      nonzero left eigenvector $\ell Q_0=\lambda\ell$, $\lambda\ne0$, with $\ell F=0$;
+      see <a href="https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/">Hautus (1969)</a>.
+      For a reversible chain and one scalar feature, full identification therefore requires
+      every nonzero eigenvalue to be simple and the feature to have a nonzero component in
+      every nonconstant eigenmode. A repeated eigenspace is a genuine obstruction: varying
+      maturity cannot create more than one direction from one vector inside that eigenspace.</p>
+    <p>The Krylov rank is attained by finitely many maturities. More precisely, whenever a
+      given number of maturity blocks can attain it, almost every such tuple does, because
+      the relevant minors are analytic and not identically zero. The scalar cyclic case
+      makes the near-zero conditioning explicit. Let $r=n-1$, let
+      $K=[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{r-1}F]$, and take
+      $\tau_j=\epsilon c_j$ with $0&lt;c_1&lt;\cdots&lt;c_r$. Then</p>
+    <div class="equation-card">
+    $$\det[ {\bf1}\ R(\epsilon c_1)\ \cdots\ R(\epsilon c_r)]
+      =\det K\,
+      \frac{\left(\prod_jc_j\right)
+      \left(\prod_{i&lt;j}(c_j-c_i)\right)}{\prod_{k=1}^r k!}
+      \epsilon^{r(r+1)/2}\{1+O(\epsilon)\}.$$
+    </div>
+    <p>Thus distinct sufficiently small maturities do identify a cyclic prior, but their
+      determinant collapses at a precisely polynomial rate. This small-$\tau$ loss is
+      different from the exponential loss at fixed positive maturities as $m\to\infty$.</p>
+
+    <h3>The $T=O(m^{-1})$ boundary layer</h3>
+    <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
+      trivial $1/m$ response scaling:</p>
+    $$m\mathbb E_\nu Z_{\tau_j/m}
+      =\nu H(I-e^{Q_0\tau_j})F.$$
+    <p>Different $\tau_j$ can rotate a single feature through enough directions to identify
+      the full prior. By contrast, for fixed positive $T_j$ all blocks converge to $HF$.
+      If $\|e^{Q_0t}R\|\le Ce^{-\delta t}$, then $\mathcal O_m$ lies within
+      $O(e^{-m\delta T_{\min}})$ of $[HF\ \cdots\ HF]$. Hence every singular value beyond
+      $\operatorname{rank}F$ is exponentially small: exact finite-$m$ rank can survive,
+      but the extra identification is exponentially ill-conditioned. This is why the
+      fixed-maturity first-order theorem correctly retains only $\nu HF$.</p>
+    <p>The actual bond curve has a compatible, but one order smaller, initial layer because
+      $g(0)=0$. Put $T=\tau/m$, $u=\theta-\bar\theta{\bf1}$, and
+      $v=s-\bar s{\bf1}$. A rescaled Duhamel expansion through the first volatility term gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log P_\nu(\tau/m)-\log P_\pi(\tau/m)
+      &=-\frac{\kappa}{m^2}(\nu-\pi)K_1(\tau)
+        +\frac1{2m^3}(\nu-\pi)K_2(\tau)+O_L(m^{-4}),\\
+      K_1(\tau)&=\int_0^\tau(\tau-s)e^{Q_0s}u\,ds,\\
+      K_2(\tau)&=\int_0^\tau(\tau-s)^2e^{Q_0s}(\kappa^2u+v)\,ds,
+      \qquad 0\le\tau\le L.
+    \end{aligned}$$
+    </div>
+    <p>For several scaled maturities, $[K_1(\tau_1)\ \cdots\ K_1(\tau_q)]$ gives the
+      order-$m^{-2}$ rank test. If both displayed coefficients are resolved, append the
+      $K_2$ columns. The next coefficient contains volatility only through the combination
+      $\kappa^2u+v$; it does not separately identify both unknown features without additional
+      information. In the important special case of constant $\theta$, $u=0$ and the
+      order-$m^{-2}$ initial-prior signal vanishes. Switched variance then becomes the leading
+      signal at order $m^{-3}$, and the augmented rank of
+      $[K_2(\tau_1)\ \cdots\ K_2(\tau_q)]$ determines initial-prior identification.</p>
+    <p>In the certificate, one centered feature on a nonreversible three-state chain has
+      fixed rank one, yet two scaled maturities $\tau=(0.4,1.7)$ give observability rank two
+      and recover the prior $(0.15,0.55,0.30)$. The exact mean formula agrees with independent
+      quadrature within $1.4\times10^{-16}$. After subtracting the $m^{-2}$ term, the
+      bond-price remainder has orders $2.9997$ and $2.9983$; after also subtracting the new
+      $m^{-3}$ term, these improve to $4.0015$ and $4.0009$. A separate positive-variance,
+      constant-$\theta$ example recovers the same prior from volatility alone, with remainder
+      orders $3.9988$ and $3.9946$ after its leading $m^{-3}$ term.
+      At fixed maturities, the second singular value falls from $4.47\times10^{-2}$ at $m=2$
+      to $1.05\times10^{-6}$ at $m=16$, displaying the predicted loss of conditioning.</p>
+    <p>A separate four-state certificate has one scalar cyclic feature. Three maturities
+      $(0.25,0.8,1.9)$ recover the prior $(0.10,0.25,0.40,0.25)$ to $2\times10^{-13}$,
+      while 32 random finite-chain cases verify equality of the sampled response and Krylov
+      ranks. The normalized small-maturity determinant approaches its Vandermonde coefficient
+      with measured order $0.946$. For a four-state complete-graph generator, whose nonzero
+      eigenvalue has multiplicity three, the scalar-feature response rank remains exactly one
+      at every maturity, confirming the spectral obstruction.</p>
+
+    <h2>A computable finite-rate bound</h2>
+    <p>The following deliberately conservative estimate makes the $O(m^{-2})$ statement
+      explicit, including $T=0$. Use the row-sum operator norm $\|\cdot\|_\infty$.
+      Since $Q_0$ is finite and irreducible, choose $C,\delta>0$ such that</p>
+    $$\|e^{Q_0t}R\|_\infty\le C e^{-\delta t},\qquad t\ge0.$$
+    <p>These constants can be certified numerically: select $t_0>0$ with
+      $\rho=\|e^{Q_0t_0}R\|_\infty<1$, then take
+      $C=2/\rho$ and $\delta=-\log\rho/t_0$.
+      On $[0,L]$ set $f(t)=g(t)-(\pi g(t)){\bf1}$,
+      $G=\sup\|f(t)\|_\infty$ and $J=\sup\|f'(t)\|_\infty$.
+      For the model here, for example, one may take
+      $G=\|u\|_\infty+\|v\|_\infty/(2\kappa^2)$ and
+      $J=\kappa\|u\|_\infty+\|v\|_\infty/\kappa$.
+      Write</p>
+    $$\alpha=\frac{C}{m\delta},\qquad
+      W=\alpha^2e^{GL}(4G^2+J+2\alpha G^3).$$
+    <p>If $4\alpha G e^{2GL}\le1$ (automatically true when $G=0$),
+      then for every $0\le T\le L$ the remainders in the theorem obey</p>
+    <div class="equation-card">
+    $$|E_\pi(T)|\le LG e^{GL}W,\qquad
+      |E_i(T)|\le (LG+1)e^{GL}W+4\alpha^2G^2e^{4GL}.$$
+    </div>
+    <p>These are analytic upper bounds, not confidence intervals for noisy bond quotes.
+      Their rate threshold and constants are intentionally loose; they establish uniform
+      finite-rate control for an arbitrary irreducible finite chain, including a nonreversible
+      one. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_identifiability.py">certificate</a>
+      checks both bounds and the $m^{-2}$ numerical behavior on the three-state example.</p>
+
+    <h2>Proof</h2>
+    <p><strong>Expansion and error.</strong> Divide $a(t)$ by
+      $\exp(\int_0^t\bar g)$ and call the resulting vector $b$. Decompose it as
+      $b=p{\bf1}+z$, with $p=\pi b$ and $\pi z=0$. Then</p>
+    $$p'=\pi[fz],\qquad
+      z'=mQ_0z+p f+R\,\operatorname{diag}(f)z,\qquad p(0)=1,\ z(0)=0.$$
+    <p>Positivity of the finite-state Feynman&ndash;Kac functional gives
+      $e^{-GL}\le p\le e^{GL}$. Write $h=Hf$, so $Q_0h=-f$ and
+      $\|h\|\le CG/\delta$, $\|h'\|\le CJ/\delta$.
+      The semigroup estimate and variation of constants, with $4\alpha G\le1$,
+      give $\sup\|z\|\le 2\alpha G e^{GL}$. For
+      $w=z-ph/m$, the condition $f(0)=0$ gives $w(0)=0$, and</p>
+    $$w'=mQ_0w+R\,\operatorname{diag}(f)z
+         -\frac1m(h'p+hp').$$
+    <p>Here $\|R\|_\infty\le2$ and $|p'|\le G\|z\|$.
+      Another variation-of-constants estimate gives $\sup\|w\|\le W$.
+      Consequently</p>
+    $$\left|(\log p)'-\frac1m\pi[fh]\right|
+       \le G e^{GL}W.$$
+    <p>Integration proves the first bound. Since
+      $b_i=p(1+z_i/p)$, $|z_i/p|\le2\alpha Ge^{2GL}\le1/2$, and
+      $|\log(1+q)-q|\le q^2$ for $|q|\le1/2$,
+      the second bound follows. Substituting
+      $f=-\kappa uB+vB^2/2$ into $\pi[fh]$ yields the three
+      Green&ndash;Kubo coefficients and the displayed known-start term.</p>
+    <p><strong>Information and rank.</strong> If
+      $\sum_{j=1}^4 d_j I_j(T)=0$ on an open interval, differentiation gives
+      $\sum_{j=1}^4d_j B(T)^j=0$. Because $B$ ranges over an interval,
+      every $d_j$ vanishes. The same argument with the constant polynomial term
+      proves independence of $T,I_1,\ldots,I_4$.
+      Finally, the long-run covariance rate of additive functionals is
+      $2\mathcal K_0^{\rm sym}$. For an irreducible finite chain this quadratic form
+      is strictly positive for any nonzero centered vector: writing $h=Hf$,
+      the martingale quadratic variation is
+      $\sum_{i,j}\pi_i(Q_0)_{ij}(h_j-h_i)^2$,
+      which vanishes only if $h$ is constant along every transition, hence $f=0$.
+      Thus the Gram matrix of centered regime features has precisely their
+      linear rank, at most $n-1$. For two features this proves the latent
+      determinant restriction, including the two-state equality case.</p>
+    <p><strong>Initial mixture and boundary layer.</strong> Since $Q_0H=H Q_0=\Pi-I$ and
+      $\pi F=0$, integration of $\nu e^{mQ_0t}F$ gives the exact transient-mean formula.
+      Stacking its values gives $\mathcal O_m$, and the augmented rank criterion is simply
+      injectivity on the affine hyperplane $\nu{\bf1}=1$. Exponential mixing proves the
+      fixed-maturity singular-value bound by comparison with the repeated block $HF$.
+      Moreover, on centered columns, $HQ_0=-I$, so the analytic expansion is
+      $R(\tau)=\tau F+\tau^2Q_0F/2!+\cdots$. Its derivatives at zero generate the Krylov
+      space, while Cayley&ndash;Hamilton stops that space at power $n-2$; this proves both
+      inclusions in the whole-curve theorem. In the scalar cyclic case, expressing the
+      response columns in the Krylov basis and taking the lowest-degree determinant gives
+      the displayed Vandermonde coefficient.
+      For the yield boundary, set $t=r/m$ in the backward equation and expand</p>
+    $$g(r/m)=-\frac{\kappa r\theta}{m}
+      +\frac{r^2(\kappa^2\theta+s)}{2m^2}+O_L(m^{-3}).$$
+    <p>The rescaled equation therefore has potential terms first at orders $m^{-2}$ and
+      $m^{-3}$. Variation of constants around $e^{Q_0r}$ gives the two displayed integrals
+      after changing variables and subtracting the stationary start. A product of two
+      potential insertions, and hence the first quadratic Dyson term, cannot occur before
+      order $m^{-4}$; the quadratic term from the logarithm also first occurs there. This
+      proves the $O_L(m^{-4})$ remainder uniformly for $\tau$ in a fixed compact interval.</p>
+    <p>This finite-state proof is the elementary Poisson-equation version of the additive-functional
+      central-limit framework. For broader state spaces see
+      <a href="https://doi.org/10.1007/BF01210789">Kipnis and Varadhan (1986)</a> in the reversible
+      case and <a href="https://doi.org/10.1214/aop/1039639370">Glynn and Meyn (1996)</a> for
+      irreducible discrete- and continuous-time Markov processes.</p>
+    <p class="muted">Scope: common fixed $\kappa$, fixed known $x$, finite $n$, and a fixed bounded maturity interval.
+      The exact fixed-feature covariance-rank theorem permits any initial prior. The pricing-identification formulas
+      cover stationarity, a labeled starting state, and an unobserved fixed initial mixture. The Krylov theorem
+      characterizes noiseless mean observability across the complete scaled-maturity curve; its determinant formula
+      also warns that formal rank need not imply stable statistical recovery. The boundary theorem
+      concerns $T=\tau/m$ with $\tau$ in a fixed compact interval; it is distinct from the fixed-maturity outer theorem.
+      Stochastic reversion speed and simultaneous limits $T\to\infty$ require separate analyses. The integrated-loading theorem only requires
+      $G\succeq0$ and square-integrable deterministic $L$; its finite-basis equality assumes the scalar loading Gram
+      matrix $\Gamma$ is positive definite.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

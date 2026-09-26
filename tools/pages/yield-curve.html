@@ -94,11 +94,9 @@
     <div class="equation-card">
     $$c_2 \ge 0, \qquad c_4 \ge 0, \qquad c_3^2 \le 4\,c_2\,c_4 .$$
     </div>
-    <p>With two regimes the inequality is an equality. The fluctuations $u$ and $v$ are then both multiples of the
-    single pattern that is $+$ in one state and $-$ in the other, so $M$ has rank one.</p>
-    <p>Once $c_2$, $c_3$ and $c_4$
-    are known, equality identifies an effectively one-dimensional regime. Bond prices alone do not fix $c_2$, as the
-    next section shows.</p>
+    <p>With two regimes the latent inequality is an equality. The fluctuations $u$ and $v$ are then both multiples of
+    one centered pattern, so $M$ has rank at most one. Equality also occurs when $u$ and $v$ are proportional in a
+    larger chain, so it identifies a one-dimensional feature span, not the number of hidden regimes.</p>
     <p>The same holds for any number of switched features. Let the fluctuating forcing be a sum of maturity shapes
     times centred regime functions,</p>
     $$\tilde g(t) = \sum_{r=1}^{d} \phi_r(t)\,f_r, \qquad \pi\cdot f_r = 0, \qquad H_{rs} = \mathcal K_{\mathrm{sym}}(f_r, f_s),$$
@@ -135,6 +133,11 @@
     $10\begin{pmatrix} -1 & 1 \\ 1 & -1 \end{pmatrix}$, levels $(5.17609\%, 4.82391\%)$ and variances
     $(0.00494611, 0.00242215)$ has rank one. The two give the same $\beta_1, \dots, \beta_4$, so their yield curves
     agree to first order.</p>
+    <p>The <a href="./identifiability.html">identifiability note</a> proves precisely which coefficients a stationary
+      curve determines, supplies the general fixed-feature Gram/rank theorem and an exact kernel theorem for rank after
+      integrating maturity-dependent loadings, gives an explicit $O(m^{-2})$ finite-rate bound, and treats a specified
+    starting regime. Such a start adds $B(T)$ and $B(T)^2$ terms, although the latter is already a linear combination
+    of $\int B$ and $\int B^2$.</p>
 
     <h2>Two chains that the curve cannot tell apart</h2>
     <p>Here are two three-state chains with different transition structures. Neither is reversible. The first
