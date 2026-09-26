@@ -1,0 +1,488 @@
+<!-- title: Path-dependent conformal pooling · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_path_crossover.py">certificate</a></span></p>
+    <h1>Path-dependent conformal pooling</h1>
+    <p class="subtitle">Occupation-time scores remember the start algebraically, overlapping calibration
+    windows remain strongly correlated, and a dependent empirical threshold need not retain its iid rank coverage.</p>
+
+    <p class="lead">A terminal score forgets its starting regime like $e^{-2\Delta/\varepsilon}$. A score accumulated
+    along the forecast path behaves differently: every early observation remains in the average. In the same
+    two-state chain, its conditional coverage error is generically of order $\varepsilon/\Delta$.</p>
+
+    <h2>Score and information</h2>
+    <p>Let $Y_t\in\{-1,+1\}$ flip at rate $1/\varepsilon$ in each direction. At forecast origin the information
+    $\mathcal G_0$ determines a posterior $p=\Pr(Y_0=+1\mid\mathcal G_0)$. Define the path average and a noisy upper
+    nonconformity score by</p>
+    $$A_\Delta=\frac1\Delta\int_0^\Delta Y_t\,dt,\qquad
+      S_\Delta=\mu A_\Delta+\sigma Z,qquad Z\sim N(0,1),$$
+    <p>where $Z$ is independent of the chain and $\sigma&gt;0$. The predictor and score map are frozen. This is a
+    population calculation: estimating a threshold from dependent calibration data is a separate error source.</p>
+    <p>Only the ratio $c=\Delta/\varepsilon$ matters. Write $F_+(q;c)$ and $F_-(q;c)$ for the score CDFs conditional
+    on $Y_0=+1$ and $Y_0=-1$, and $\bar F=(F_++F_-)/2$. The stationary pooled threshold $q_c$ satisfies</p>
+    $$\bar F(q_c;c)=1-\alpha.$$
+    <p>It therefore has exact <em>marginal</em> population coverage under a stationary start. Its conditional
+    coverages are $F_+(q_c;c)$ and $F_-(q_c;c)$, which need not equal $1-\alpha$.</p>
+
+    <h2>An exact occupation-time law</h2>
+    <p>Condition on $N$, the number of flips in the interval. Then $N\sim\operatorname{Poisson}(c)$. If the chain
+    starts at $+1$, the fraction $U$ of the interval spent in state $+1$ has the following law:</p>
+    <ul>
+      <li>$N=0$: $U=1$;</li>
+      <li>$N=2k+1$: $U\sim\operatorname{Beta}(k+1,k+1)$;</li>
+      <li>$N=2k\ge2$: $U\sim\operatorname{Beta}(k+1,k)$.</li>
+    </ul>
+    <p>For a negative start replace $U$ by $1-U$. Since $A_\Delta=2U-1$, this gives an exact, rapidly convergent
+    CDF series. With $w_n=e^{-c}c^n/n!$ and
+    $H_q(u)=\Phi((q-\mu(2u-1))/\sigma)$,</p>
+    $$\begin{aligned}
+    F_+(q;c)={}&w_0H_q(1)
+      +\sum_{k\ge0}w_{2k+1}\,\mathbb E_{\mathrm{Beta}(k+1,k+1)}H_q(U)\\
+      &+\sum_{k\ge1}w_{2k}\,\mathbb E_{\mathrm{Beta}(k+1,k)}H_q(U),
+    \end{aligned}$$
+    <p>and $F_-$ uses $H_q(0)$ in the atom and $\operatorname{Beta}(k,k+1)$ in the even sum. This is not a
+    normal approximation. The certificate evaluates the series by Gauss&ndash;Jacobi quadrature and verifies its
+    characteristic function against the independent two-by-two Feynman&ndash;Kac matrix exponential.</p>
+
+    <h2>The crossover theorem</h2>
+    <p>The conditional mean already exposes the changed rate:</p>
+    $$\mathbb E[A_\Delta\mid Y_0=\pm1]
+      =\pm\frac{1-e^{-2c}}{2c}.$$
+    <p>For $c$ fixed this memory is nonzero as $\varepsilon\to0$ with $\Delta=c\varepsilon$. For long horizons it
+    falls as $1/(2c)$, not exponentially. The exact characteristic functions are</p>
+    $$\varphi_\pm(k;c)=e^{-\sigma^2k^2/2-c}
+      \left[\cosh(c\omega)+\frac{1\pm ik\mu/c}{\omega}\sinh(c\omega)\right],qquad
+      \omega=\sqrt{1-(k\mu/c)^2}.$$
+    <p>Expanding this expression under the Gaussian smoothing factor gives the conditional-coverage and quantile
+    asymptotics. If $z_{1-\alpha}=\Phi^{-1}(1-\alpha)$, then</p>
+    <div class="equation-card">
+    $$F_+(q_c;c)-(1-\alpha)
+       =-\frac{\mu}{2\sigma c}\phi(z_{1-\alpha})+O(c^{-2}),$$
+    $$F_-(q_c;c)-(1-\alpha)
+       =+\frac{\mu}{2\sigma c}\phi(z_{1-\alpha})+O(c^{-2}).$$
+    </div>
+    <p>The errors cancel in the stationary average; that is marginal coverage, not conditional coverage. By contrast,
+    the terminal-score error in the companion calculation is exactly a regime-specific constant times $e^{-2c}$.</p>
+
+    <h2>Regime-aware and locally weighted thresholds</h2>
+    <p>Given posterior $p$, the model-conditional CDF is $F_p=pF_++(1-p)F_-$. Let $q_p(c)$ solve
+    $F_p(q_p;c)=1-\alpha$. The implicit-function theorem gives the exact sensitivity</p>
+    $$\frac{dq_p}{dp}=-\frac{F_+(q_p;c)-F_-(q_p;c)}
+      {p f_+(q_p;c)+(1-p)f_-(q_p;c)}.$$
+    <p>At long horizons this reduces to</p>
+    $$q_p(c)=q_c+(2p-1)\frac{\mu}{2c}+O(c^{-2}).$$
+    <p>Thus the fully regime-aware thresholds differ from the pooled threshold by $\pm\mu/(2c)$ to first order.
+    A posterior-weighted threshold interpolates continuously: it attains population coverage conditional on the
+    stated information model, while widening the interval in the high-score regime and narrowing it in the other.
+    This is a model-based conditional statement, not distribution-free conditional conformal validity.</p>
+
+    <h2>A numerical benchmark</h2>
+    <p>Take $\mu=1$, $\sigma=0.5$, and target coverage $0.9$. The table uses the exact pooled quantile. The last
+    column is the positive-start error of the corresponding terminal score $\mu Y_\Delta+\sigma Z$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$c=\Delta/\varepsilon$</th><th>pooled threshold</th><th>coverage, start +</th><th>coverage, start &minus;</th><th>path gap</th><th>terminal gap</th></tr></thead>
+      <tbody>
+        <tr><td>0.5</td><td>1.29812</td><td>0.81403</td><td>0.98597</td><td>&minus;0.08597</td><td>&minus;3.68e-2</td></tr>
+        <tr><td>1</td><td>1.19189</td><td>0.82732</td><td>0.97268</td><td>&minus;0.07268</td><td>&minus;1.35e-2</td></tr>
+        <tr><td>2</td><td>1.03771</td><td>0.84791</td><td>0.95209</td><td>&minus;0.05209</td><td>&minus;1.83e-3</td></tr>
+        <tr><td>4</td><td>0.88505</td><td>0.86829</td><td>0.93171</td><td>&minus;0.03171</td><td>&minus;3.35e-5</td></tr>
+        <tr><td>8</td><td>0.77821</td><td>0.88197</td><td>0.91803</td><td>&minus;0.01803</td><td>&minus;1.13e-8</td></tr>
+        <tr><td>16</td><td>0.71445</td><td>0.89017</td><td>0.90983</td><td>&minus;0.00983</td><td>&minus;1.27e-15</td></tr>
+        <tr><td>32</td><td>0.67910</td><td>0.89483</td><td>0.90517</td><td>&minus;0.00517</td><td>&minus;1.60e-29</td></tr>
+        <tr><td>64</td><td>0.66035</td><td>0.89734</td><td>0.90266</td><td>&minus;0.00266</td><td>&minus;2.57e-57</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $c=4$, endpoint memory is essentially gone but the path-dependent coverage error is still 3.17 percentage
+    points. The certificate independently simulates exponential holding times and recovers the exact coverages.</p>
+
+    <h2>Overlapping calibration windows</h2>
+    <p>There is a second, distinct memory effect when the threshold is estimated. Start the stationary chain at time
+    $-\infty$, write $m=1/\varepsilon$, and form length-$D$ calibration windows every $h$ units,</p>
+    $$A_j=\frac1D\int_{jh}^{jh+D}Y_t\,dt.$$
+    <p>Since $\operatorname{Cov}(Y_s,Y_t)=e^{-\lambda|t-s|}$ with $\lambda=2m$, direct integration gives the exact
+    covariance $\Gamma(\tau)=\operatorname{Cov}(A_0,A_\tau)$:</p>
+    <div class="equation-card">
+    $$D^2\Gamma(\tau)=
+    \begin{cases}
+    \displaystyle \frac{2(D-\tau)}{\lambda}
+      +\frac{e^{-\lambda(D-\tau)}+e^{-\lambda(D+\tau)}-2e^{-\lambda\tau}}{\lambda^2},
+      &amp;0\le\tau\le D,\\[6pt]
+    \displaystyle \frac{e^{-\lambda(\tau-D)}(1-e^{-\lambda D})^2}{\lambda^2},
+      &amp;\tau\ge D.
+    \end{cases}$$
+    </div>
+    <p>The two branches agree at $\tau=D$. In the fast limit, $\Gamma(0)\sim\varepsilon/D$, but the correlation does
+    not vanish for overlapping windows:</p>
+    $$\frac{\Gamma(\tau)}{\Gamma(0)}\longrightarrow
+      \left(1-\frac{\tau}{D}\right)_+.$$
+    <p>Fast switching shrinks every window average, yet two densely sampled averages share essentially the same path
+    segment. For the sample mean of $N$ windows, the exact linear-statistic variance inflation and effective size are</p>
+    $$\mathcal I_N=1+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)
+      \frac{\Gamma(\ell h)}{\Gamma(0)},\qquad N_{\rm eff}=\frac{N}{\mathcal I_N}.$$
+    <p>With $D=1$, $h=0.1$, $N=200$, and $m=128$, the certificate gives $\mathcal I_N=9.8734$ and
+    $N_{\rm eff}=20.26$; the triangular fast-limit values are $9.8350$ and $20.34$. Thus tenfold overlapping
+    sampling supplies about one independent path average per window length, not ten.</p>
+
+    <h3>What this implies for an empirical quantile</h3>
+    <p>Let each calibration score be $S_j=\mu A_j+\sigma Z_j$ with independent Gaussian $Z_j$, and let $q_\mu$ be
+    the stationary population $p$-quantile. For $I_j=\mathbf 1\{S_j\le q_\mu\}$, symmetry gives
+    $q_\mu=\sigma z_p+O(\mu^2)$, and a Taylor expansion gives, for every nonzero lag,</p>
+    $$\operatorname{Cov}(I_0,I_\ell)
+      =\frac{\mu^2}{\sigma^2}\phi(z_p)^2\Gamma(\ell h)+O(\mu^3).$$
+    <p>Consequently,</p>
+    $$\operatorname{Var}\!\left(\frac1N\sum_{j=1}^NI_j\right)
+      =\frac1N\left[p(1-p)+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)
+      \frac{\mu^2}{\sigma^2}\phi(z_p)^2\Gamma(\ell h)\right]+O_N(\mu^3).$$
+    <p>The remainder statement is for fixed $N$. This is a local variance calculation for the empirical CDF, not a
+    distribution-free coverage theorem. It
+    isolates why naive calibration counts overstate precision. Thinning to $h\ge D$ removes geometric overlap; the
+    remaining dependence then falls as $e^{-2m(h-D)}$, matching the role of thinning in Markov conformal methods.</p>
+
+    <h2>An exact fixed-$N$ terminal-threshold benchmark</h2>
+    <p>The random order statistic can be analyzed exactly in a terminal-emission benchmark. Sample the stationary
+      telegraph chain at equal spacings and write $Y_j\in\{-1,+1\}$, with adjacent correlation
+      $\rho=e^{-2mh}$. Conditional on $Y_j$, let the score $S_j$ have a continuous density, independently across
+      times. Use $S_0,\ldots,S_{N-1}$ for calibration, let $Q_k$ be their $k$th order statistic, and test on the
+      immediately following $S_N$.</p>
+    <p>Let $F$ be the stationary mixture CDF, put $U=F(S)$, and define the posterior contrast and its integral</p>
+    $$r(u)=\mathbb E[Y\mid U=u],\qquad R(u)=\int_0^u r(v)\,dv.$$
+    <p>Because the stationary state is balanced, $R(0)=R(1)=0$. Write
+      $b_{n,j}(u)={n\choose j}u^j(1-u)^{n-j}$, with $b_{n,j}=0$ outside $0\le j\le n$. Then, for fixed $N$ and
+      $1\le k\le N$,</p>
+    <div class="equation-card">
+    $$\Pr_\rho(S_N\le Q_k)=\frac{k}{N+1}
+      +\rho\{(N-1)A_{CC}+A_{CT}\}+O_N(\rho^2),$$
+    $$A_{CC}=\int_0^1R(u)^2
+      \{b_{N-2,k-1}(u)-b_{N-2,k-2}(u)\}\,du,$$
+    $$A_{CT}=-\int_0^1r(u)R(u)b_{N-1,k-1}(u)\,du.$$
+    </div>
+    <p>The proof is a finite path-likelihood expansion. For a state path $y_0,\ldots,y_N$,</p>
+    $$\Pr_\rho(y_0,\ldots,y_N)=2^{-(N+1)}
+      \prod_{j=1}^N(1+\rho y_{j-1}y_j).$$
+    <p>The derivative at $\rho=0$ is therefore the sum over adjacent pairs. There are $N-1$
+      calibration&ndash;calibration edges and one final calibration&ndash;test edge. Conditional on the test quantile
+      $u$, the remaining counts are binomial. Integrating the two possible pair types gives $A_{CC}$ and $A_{CT}$.
+      Since the path likelihood is a polynomial in $\rho$, the remainder is $O_N(\rho^2)$ without an asymptotic
+      mixing argument.</p>
+    <p>This is an exact <em>marginal</em> coverage expansion. At $\rho=0$ the scores are iid and the usual rank value
+      $k/(N+1)$ returns. Dependence breaks that finite-sample identity even though every score has the same marginal
+      distribution. It does not imply or claim distribution-free conditional coverage.</p>
+    <p>For Gaussian emissions $S_j=Y_j+0.5Z_j$, $N=9$, and $k=9$, the iid coverage is exactly $0.9$. The coefficient
+      is $(N-1)A_{CC}+A_{CT}=-0.0108539431$; after subtracting it, the measured residual rate is $2.01937$.
+      Exact Markov-binomial propagation gives coverage $0.87995908$ at $\rho=0.8$, versus $0.88055333$ in
+      300,000 direct simulations.</p>
+
+    <h3>What iid marginal coverage does not say</h3>
+    <p>Even at $\rho=0$, the value $k/(N+1)$ is not the coverage conditional on the realized calibration sample.
+      Let $Q_k$ be the $k$th order statistic of $N$ iid scores with continuous CDF $F$. Once those calibration
+      scores are fixed, an independent test score has conditional coverage</p>
+    <div class="equation-card">
+    $$C_{N,k}=\Pr(S_{N+1}\le Q_k\mid S_1,\ldots,S_N)=F(Q_k),$$
+    $$C_{N,k}\sim\operatorname{Beta}(k,N+1-k).$$
+    </div>
+    <p>The proof is immediate but important: the probability integral transforms $F(S_i)$ are iid uniform, and
+      $F(Q_k)$ is their $k$th order statistic. Consequently</p>
+    <div class="equation-card">
+    $$\mathbb E C_{N,k}=\frac{k}{N+1},\qquad
+      \operatorname{Var}(C_{N,k})=
+      \frac{k(N+1-k)}{(N+1)^2(N+2)},$$
+    $$\Pr(C_{N,k}\le c)=I_c(k,N+1-k).$$
+    </div>
+    <p>Thus exchangeability gives exact coverage only after averaging over calibration samples. For $N=k=9$,
+      $C_{9,9}\sim\operatorname{Beta}(9,1)$: its mean is $0.9$, its standard deviation is $0.09045$, and its
+      5%, 10%, and 50% quantiles are $0.71687$, $0.77426$, and $0.92587$. In particular,</p>
+    $$\Pr(C_{9,9}&lt;0.8)=0.8^9=0.134217728.$$
+    <p>This is an exact <em>training-conditional</em> statement about the random threshold, not a failure of
+      marginal conformal validity and not feature-conditional validity. It also gives the iid reference law before
+      considering overlap or serial dependence. The distinction and high-probability training-conditional goals
+      are studied more generally by
+      <a href="https://doi.org/10.1214/23-EJS2145">Bian and Barber (2023)</a>.</p>
+
+    <h3>The sharp iid calibration design</h3>
+    <p>The same beta law gives an exact finite-sample design rule. Let $p=1-\alpha$ be the desired conditional
+      coverage and $1-\delta$ the desired probability, over calibration samples, of attaining it. Since
+      $C_{N,k}=U_{(k)}$ for iid uniforms,</p>
+    <div class="equation-card">
+    $$\Pr(C_{N,k}\ge p)
+      =\sum_{j=0}^{k-1}{N\choose j}p^j(1-p)^{N-j}.$$
+    </div>
+    <p>Therefore the least conservative finite order statistic is</p>
+    $$k_{\rm PAC}=\min\left\{1\le k\le N:
+      \sum_{j=0}^{k-1}{N\choose j}p^j(1-p)^{N-j}\ge1-\delta\right\}.$$
+    <p>This choice is sharp: any smaller order statistic fails the requested confidence. A finite choice exists if
+      and only if the sample maximum works, namely $p^N\le\delta$. Thus the smallest feasible calibration size is</p>
+    $$N_{\min}=\left\lceil\frac{\log\delta}{\log p}\right\rceil.$$
+    <p>If this condition fails, only an infinite threshold can give the requested distribution-free guarantee.
+      The price of the finite PAC guarantee is visible in its marginal coverage, $k_{\rm PAC}/(N+1)$, which is
+      generally above $p$.</p>
+    <p>At $p=0.9$, the smallest calibration sizes are $22$, $29$, and $44$ for confidence levels $0.90$, $0.95$,
+      and $0.99$, respectively; at each minimum the threshold must be the sample maximum. With $N=100$, the
+      corresponding orders are $95$, $96$, and $97$. By contrast, the conventional marginal choice $k=91$ has
+      marginal coverage $91/101=0.90099$ but only</p>
+    $$\Pr(C_{100,91}\ge0.9)=0.54870983.$$
+    <p>This is the classical one-sided distribution-free tolerance-limit calculation, not a new conformal
+      phenomenon; see <a href="https://doi.org/10.1214/aoms/1177731788">Wilks (1941)</a>. Its role here is to make
+      the marginal/training-conditional distinction numerically exact before adding dependence.</p>
+
+    <h2>An exact lifted recursion for overlapping and thinned path scores</h2>
+    <p>The random threshold can also be treated exactly when the score itself is a sliding path functional. Let
+      $Y_j\in\{-1,+1\}$ be the same stationary chain and define consecutive length-$L$ blocks and noisy scores</p>
+    $$W_j=(Y_j,\ldots,Y_{j+L-1}),\qquad
+      S_j=\mu\bar W_j+\sigma Z_j,\qquad
+      \bar W_j=L^{-1}\sum_{r=0}^{L-1}Y_{j+r},$$
+    <p>with independent standard Gaussian $Z_j$. Adjacent scores share $L-1$ latent states. The correct Markov
+      state is therefore the whole block $W_j$, not the endpoint $Y_j$. On
+      $\mathcal W=\{-1,+1\}^L$, its stationary law and transition kernel are</p>
+    <div class="equation-card">
+    $$\varpi_\rho(w)=2^{-L}\prod_{r=1}^{L-1}(1+\rho w_rw_{r+1}),$$
+    $$P_\rho(w,w')=
+      \mathbf1\{w'_{1:L-1}=w_{2:L}\}\frac{1+\rho w_Lw'_L}{2}.$$
+    </div>
+    <p>For a fixed prospective test score $x$, put
+      $p_w(x)=\Phi((x-\mu\bar w)/\sigma)$ and let</p>
+    $$M_j(c,w;x)=\Pr\!\left(\sum_{r=0}^{j-1}\mathbf1\{S_r&lt;x\}=c,\ W_j=w\right).$$
+    <p>Initialize $M_0(0,w;x)=\varpi_\rho(w)$. Conditioning first on the calibration emission and then shifting the
+      block gives the exact recursion</p>
+    $$M_{j+1}(c,w';x)=\sum_wP_\rho(w,w')
+      \{[1-p_w(x)]M_j(c,w;x)+p_w(x)M_j(c-1,w;x)\}.$$
+    <p>Because the score distribution is continuous, the exact marginal coverage of the $k$th calibration order
+      statistic is then</p>
+    <div class="equation-card">
+    $$\Pr(S_N\le Q_k)=\sum_{w\in\mathcal W}\int_{-\infty}^{\infty}
+      \frac1\sigma\phi\!\left(\frac{x-\mu\bar w}{\sigma}\right)
+      \sum_{c=0}^{k-1}M_N(c,w;x)\,dx.$$
+    </div>
+    <p>This identity follows only from the Markov property and conditional independence of the Gaussian noises; it
+      is not a mixing or large-$N$ approximation. Its cost is $O(Nk2^L)$ per quadrature point because every block
+      has only two successors. When $L=1$ it reduces to the terminal-emission dynamic program above.</p>
+    <p>Overlap alone already breaks iid rank coverage. With $N=k=9$, $L=4$, $\mu=1$, and $\sigma=0.5$, independent
+      latent samples ($\rho=0$) give exact coverage $0.88580278$, not $0.9$; 300,000 direct simulations give
+      $0.88592667$. At $\rho=0.8$, overlap and latent persistence combine to give $0.86318921$, versus
+      $0.86348000$ in simulation. Thus setting the endpoint mixing coefficient to zero does not remove dependence
+      created by shared path segments.</p>
+    <h3>What thinning restores</h3>
+    <p>Now sample window starts every $d$ latent steps:</p>
+    $$W_j^{(d)}=(Y_{jd},\ldots,Y_{jd+L-1}),\qquad
+      S_j^{(d)}=\mu\overline W_j^{(d)}+\sigma Z_j.$$
+    <p>The exact recursion above remains valid after replacing $P_\rho$ by $P_\rho^d$. This gives a precise
+      distinction between removing overlap and removing all dependence. If $d\ge L$, the closest states in
+      consecutive windows are separated by $g=d-L+1$ transitions. For every current block $w$,</p>
+    $$\left\|P_\rho^d(w,\cdot)-\varpi_\rho\right\|_{\rm TV}
+      =\frac{|\rho|^{d-L+1}}2.$$
+    <p>Indeed, conditional on the last state of $w$, the first state of the next window has bias
+      $\rho^g$; conditional on that first state, the rest of the window has exactly its stationary Markov law.
+      Total variation is therefore just the Bernoulli first-state distance. Coupling the $N$ successive sampled
+      block transitions to $N$ independent stationary blocks gives the finite-sample marginal bound</p>
+    <div class="equation-card">
+    $$\left|\Pr(S_N^{(d)}\le Q_k^{(d)})-\frac{k}{N+1}\right|
+      \le \min\left\{1,\frac{N}{2}|\rho|^{d-L+1}\right\},
+      \qquad d\ge L.$$
+    </div>
+    <p>In particular, at $\rho=0$, nonoverlapping windows are iid and recover the exact rank value
+      $k/(N+1)$&mdash;still a marginal exchangeability statement, not conditional conformal validity. At nonzero
+      $\rho$, $d=L$ removes shared observations but adjacent blocks remain dependent; an additional gap makes the
+      error decay geometrically.</p>
+    <p>For the same $N=k=9$ and $L=4$ example, exact coverage at $\rho=0$ is $0.90000000$ for every
+      $d\ge4$. At $\rho=0.8$, the exact coverages for $d=4,12,20,28$ are respectively
+      $0.88738519$, $0.89873625$, $0.89980327$, and $0.89996739$. This separates the overlap correction from the
+      remaining Markov correction. The certificate evaluates $P_\rho^d$ directly and independently simulates the
+      disjoint $\rho=0$ case.</p>
+
+    <h3>Absolute regularity beyond the binary chain</h3>
+    <p>The same finite-sample conclusion has a distribution-free dependence bound. Let $(X_t)_{t\in\mathbb Z}$
+      be a stationary process on a standard Borel space, put
+      $B_j=(X_{jd},\ldots,X_{jd+L-1})$ with $d\ge L$, and let
+      $S_j=s(B_j,U_j)$, where the $U_j$ are iid, independent of $X$, and the common score distribution is
+      continuous. To remove normalization ambiguity, define absolute regularity by total variation:</p>
+    $$\beta_X(h)=\left\|\mathcal L(X_{-\infty:0},X_{h:\infty})
+      -\mathcal L(X_{-\infty:0})\otimes\mathcal L(X_{h:\infty})\right\|_{\rm TV}.$$
+    <p>If $Q_k^{(d)}$ is the $k$th order statistic of $S_0,\ldots,S_{N-1}$, then</p>
+    <div class="equation-card">
+    $$\left|\Pr(S_N\le Q_k^{(d)})-\frac{k}{N+1}\right|
+      \le \min\{1,N\beta_X(d-L+1)\}.$$
+    </div>
+    <p>To prove it, apply Berbee's maximal coupling successively to the $N+1$ blocks. The end of one block and
+      start of the next are $h=d-L+1$ steps apart, so the coupled block vector differs from iid stationary blocks
+      with probability at most $N\beta_X(h)$. Total variation then bounds the rank event, while the iid coupled
+      scores have exact coverage $k/(N+1)$. This is a <em>marginal</em> guarantee. It neither conditions on the
+      observed calibration sample nor supplies conditional conformal validity.</p>
+    <p>For a stationary finite Markov chain with transition matrix $P$ and invariant law $\pi$, the coefficient is
+      explicit:</p>
+    $$\beta_X(h)=\sum_i\pi_i\left\|P^h(i,\cdot)-\pi\right\|_{\rm TV}.$$
+    <p>The binary formula above is the special case $\beta_X(h)=|\rho|^h/2$. An independent three-state,
+      nonreversible certificate gives $\beta_X(4)=0.05331706$ and $\beta_X(12)=0.00028149$; the corresponding exact
+      rank coverages are $0.89938377$ and $0.90000727$. It also enumerates five sampled states and verifies their
+      joint-law distance from iid draws is bounded by $4\beta_X(h)$.</p>
+
+    <h3>A sharper training-conditional transfer</h3>
+    <p>A PAC statement follows by separating two kinds of dependence instead of coupling all $N+1$ scores at
+      once. Let $P$ be the joint law of the calibration vector $X=(S_1,\ldots,S_N)$ and test score $S_{N+1}$,
+      let $\mu=P_X$, let $F$ be their common continuous marginal, and put $\nu=F^{\otimes N}$. Define</p>
+    <div class="equation-card">
+    $$\eta_{\rm cal}=\|\mu-\nu\|_{\rm TV},\qquad
+      \eta_{\rm test}=\|P-\mu\otimes F\|_{\rm TV}.$$
+    </div>
+    <p>The first distance measures non-iid calibration panels. The second keeps the actual panel law fixed and
+      measures only the cost of replacing the test score by an independent draw. For a realized panel $x$, write</p>
+    <div class="equation-card">
+    $$C_P(x)=P\{S_{N+1}\le Q_k(x)\mid X=x\},\qquad
+      C_0(x)=F(Q_k(x)).$$
+    </div>
+    <p>Then for every target $0&lt;p&lt;1$ and slack $0&lt;\gamma&lt;1-p$,</p>
+    <div class="equation-card">
+    $$P_X\{C_P(X)&lt;p\}\le
+      \min\left\{1,
+      I_{p+\gamma}(k,N+1-k)+\eta_{\rm cal}
+      +\frac{\eta_{\rm test}}{\gamma}
+      \right\}.$$
+    </div>
+    <p>Here $I_z(a,b)$ is the beta CDF. To prove the bound, put
+      $B=\{C_P&lt;p,\ C_0\ge p+\gamma\}$ and
+      $A_B=\{X\in B,S_{N+1}\le Q_k(X)\}$. Since $P$ and $\mu\otimes F$ have the same panel marginal,</p>
+    <div class="equation-card">
+    $$\gamma\mu(B)
+      \le\int_B(C_0-C_P)d\mu
+      =(\mu\otimes F)(A_B)-P(A_B)
+      \le\eta_{\rm test}.$$
+    </div>
+    <p>Also $\mu\{C_0&lt;p+\gamma\}\le\nu\{C_0&lt;p+\gamma\}+\eta_{\rm cal}$, while under $\nu$ the variable
+      $C_0$ has the $\operatorname{Beta}(k,N+1-k)$ law. Combining the two events proves the display.</p>
+    <p>For the thinned block construction above, with $h=d-L+1$, successive Berbee couplings and the definition
+      of absolute regularity give</p>
+    <div class="equation-card">
+    $$\eta_{\rm cal}\le\min\{1,(N-1)\beta_X(h)\},\qquad
+      \eta_{\rm test}\le\beta_X(h),$$
+    $$P_X\{C_P(X)&lt;p\}\le
+      \min\left\{1,I_{p+\gamma}(k,N+1-k)
+      +(N-1)\beta_X(h)+\frac{\beta_X(h)}{\gamma}\right\}.$$
+    </div>
+    <p>The first bound couples the $N$ calibration blocks across their $N-1$ gaps. The second decouples the test
+      block from the whole preceding panel across the final gap. This improves the previous
+      $N\beta+2N\beta/\gamma$ penalty without assuming a Markov score process.</p>
+    <p>This is a genuine high-probability statement about coverage conditional on the realized calibration panel;
+      it is not pointwise conditional validity and not feature-conditional validity. The free slack should be
+      optimized. In particular, simply replacing $N$ by an ``effective sample size'' in the iid beta law has no
+      justification.</p>
+    <p>The certificate makes the distinction exact using a binary Markov chain and the randomized score
+      $S=(Y+U)/2$, whose stationary marginal is uniform but whose value reveals the state. With $N=k=9$, target
+      $p=0.8$, latent correlation $0.8$, and strides $28,40,48$, the exact training-conditional failure
+      probabilities are $0.13428285$, $0.13422219$, and $0.13421848$; the iid value is $0.8^9=0.134217728$.
+      Optimizing the separated Berbee bound gives $0.22299480$, $0.15511260$, and $0.14256883$. Using the exact
+      calibration-panel distances gives $0.21737533$, $0.15472630$, and $0.14250402$; the exact test-decoupling
+      distance equals $\beta$ in this chain. The conservatism is visible, but so is convergence to the exact iid
+      training-conditional law.</p>
+
+    <h3>A slack-free bound when the panel law is known</h3>
+    <p>The free slack is unnecessary if the distribution of the random independent-test coverage under the actual
+      panel law can be computed. Let $U=C_0(X)$ under $\mu$, put $W=(U-p)_+$, and write
+      $Q_W(s)=\inf\{w:\Pr(W\le w)\ge s\}$ for its quantile function. Disintegration of total variation, using the
+      common panel marginal of $P$ and $\mu\otimes F$, gives</p>
+    $$\int|C_P-C_0|\,d\mu\le\eta_{\rm test}.$$
+    <p>On the failure set $A=\{C_P&lt;p\}$, one has
+      $W\le(C_0-C_P)_+$. The lower rearrangement inequality therefore yields</p>
+    <div class="equation-card">
+    $$\int_0^{\mu(A)}Q_W(s)\,ds\le\eta_{\rm test},$$
+    $$\mu(A)\le
+      \sup\left\{a\in[0,1]:\int_0^aQ_W(s)\,ds\le\eta_{\rm test}\right\}.$$
+    </div>
+    <p>This is the strongest bound obtainable from the distribution of $U$ and this $L^1$ deficit budget: panels
+      with $U$ closest to, but above, $p$ are the cheapest ones on which to lose coverage. If $U$ has continuous CDF
+      $G$ and the budget is not already large enough to make the bound one, let $q\ge p$ solve</p>
+    $$\int_p^q(u-p)\,dG(u)=\eta_{\rm test};$$
+    <p>then the bound is simply $G(q)$. This refinement requires the actual panel order-statistic law; a mixing
+      coefficient alone generally supplies only the preceding slack bound.</p>
+    <p>For the binary-chain certificate, that panel law is an exact finite mixture of affine beta order statistics.
+      At strides $28,40,48$, the rearrangement bounds are $0.19149163$, $0.14861292$, and $0.14005907$, improving
+      the corresponding exact-TV slack bounds $0.21737533$, $0.15472630$, and $0.14250402$. They remain above the
+      exact failures $0.13428285$, $0.13422219$, and $0.13421848$.</p>
+
+    <h3>Atoms and randomized ties</h3>
+    <p>The continuity condition can be removed, but tie handling then matters. For arbitrary stationary scores,
+      including discrete scores, attach iid $V_j\sim\operatorname{Unif}(0,1)$ independent of everything else and
+      order the pairs $\widetilde S_j=(S_j,V_j)$ lexicographically. If $\widetilde Q_k$ is the $k$th calibration
+      pair, the same coupling proof gives</p>
+    <div class="equation-card">
+    $$\left|\Pr(\widetilde S_N\le_{\rm lex}\widetilde Q_k)-\frac{k}{N+1}\right|
+      \le \min\{1,N\beta_X(d-L+1)\}.$$
+    </div>
+    <p>The iid coupled pairs have no ties, so exchangeability makes the test rank exactly uniform. This is the
+      randomized tie-breaking used in exact conformal validity; see
+      <a href="https://doi.org/10.1007/b106715">Vovk, Gammerman, and Shafer (2005)</a>.</p>
+    <p>If ties are instead retained and the event is $S_N\le Q_k$, the dependence bound remains valid but its iid
+      center is generally not $k/(N+1)$. Writing $F_-(s)=\Pr(S&lt;s)$, the exact iid center is</p>
+    <div class="equation-card">
+    $$C_{\rm iid}^{\le}=
+      \mathbb E\!\left[\sum_{j=0}^{k-1}{N\choose j}F_-(S)^j
+      \{1-F_-(S)\}^{N-j}\right]\ge\frac{k}{N+1},$$
+    $$\left|\Pr(S_N\le Q_k)-C_{\rm iid}^{\le}\right|
+      \le \min\{1,N\beta_X(d-L+1)\}.$$
+    </div>
+    <p>The first formula conditions on the test score: inclusion occurs exactly when fewer than $k$ calibration
+      scores are strictly smaller. The inequality follows by comparing with independent uniform tie-breaking.
+      Thus atoms create deterministic conservatism even under independence; they must not be misread as a
+      dependence effect or as conditional validity.</p>
+    <p>For the nonreversible three-state chain, collapse the first two states to score zero and assign score one to
+      the third. With $N=k=9$, deterministic iid coverage is $0.98322654$, whereas randomized iid coverage is
+      exactly $0.9$. At strides $1,4,12$, randomized dependent coverage is respectively $0.88703565$,
+      $0.89984374$, and $0.90000932$; both the deterministic and randomized versions satisfy their corresponding
+      $N\beta_X$ bounds. The certificate evaluates the finite-state recursion and the iid atomic formula
+      independently.</p>
+
+    <h2>A predictor with slow internal state</h2>
+    <p>The same warning can be made exact for a predictor with memory. Let its internal state be the exponential
+    filter</p>
+    $$dX_t=-\kappa(X_t-Y_t)dt,\qquad -1&lt;X_t&lt;1.$$
+    <p>This is a piecewise-deterministic Markov process, not an endpoint emission. Put $m=1/\varepsilon$ and
+    $\nu=m/\kappa$. In stationarity,</p>
+    $$\frac{X_t+1}{2}\sim\operatorname{Beta}(\nu,\nu),qquad
+      \Pr(Y_t=+1\mid X_t=x)=\frac{1+x}{2},$$
+    <p>and $\operatorname{Var}(X_t)=\kappa/(\kappa+2m)$. Thus the predictor state becomes smaller under fast
+    switching, but it does not forget a realized state at the fast rate. Conditional on observing $X_0=x$,</p>
+    <div class="equation-card">
+    $$\mathbb E[X_t\mid X_0=x]=xR(t),qquad
+      R(t)=\frac{2m e^{-\kappa t}-\kappa e^{-2mt}}{2m-\kappa}.$$
+    </div>
+    <p>When $2m=\kappa$, the continuous limit is $(1+\kappa t)e^{-\kappa t}$. For $m\gg\kappa$, the endpoint
+    regime forgets like $e^{-2mt}$ while the predictor state forgets like $e^{-\kappa t}$.</p>
+    <p>Consider the noisy score $S_t=\mu X_t+\sigma Z$ and let $q_\mu$ be its stationary pooled
+    $(1-\alpha)$-quantile. Symmetry gives $q_\mu=\sigma z_{1-\alpha}+O(\mu^2)$. Gaussian smoothing and the exact
+    conditional mean yield</p>
+    $$\Pr(S_t\le q_\mu\mid X_0=x)-(1-\alpha)
+      =-\frac{\mu}{\sigma}\phi(z_{1-\alpha})xR(t)+O(\mu^2).$$
+    <p>This is a local, model-based conditional expansion. A typical stationary $X_0$ is only $O(\sqrt{\kappa/m})$,
+    so its amplitude also shrinks in the fast limit unless a learned model normalizes or amplifies the feature. The
+    decay rate, however, is the predictor rate $\kappa$, not the hidden-chain rate.</p>
+    <p>The full conditional characteristic function is also computable. Given $X_0=x$, mix the two starting regimes
+    with probabilities $(1\pm x)/2$, retain the deterministic term $e^{-\kappa t}x$, and solve the two-state
+    Feynman&ndash;Kac system with time-dependent potential
+    $ik\mu\kappa e^{-\kappa s}\operatorname{diag}(1,-1)$. The certificate performs this time-ordered solve and
+    Fourier inversion, then checks it against direct piecewise-deterministic simulation.</p>
+    <p>For $m=1$, $\kappa=0.2$, $\mu=0.1$, $\sigma=0.5$, $x=0.8$, and 90% pooled coverage, at $t=5$ the endpoint
+    memory is $e^{-10}=4.54\times10^{-5}$ but $R(5)=0.40875$. Exact conditional coverage is $0.88813$; the first-order
+    prediction is $0.88852$.</p>
+
+    <h2>What remains separate</h2>
+    <p>The lifted recursion still controls one explicit discrete sliding-window model. The absolute-regularity
+      theorem controls arbitrary stationary block scores through a generally conservative marginal bound and the
+      total-variation transfer gives a correspondingly conservative training-conditional tail bound; neither gives
+      exact coverage for a general score. A continuous occupation integral, irregular spacing, or a nonlinear
+      learned path score requires its own augmented state or numerical approximation for exact results. None of
+      these results is a distribution-free pointwise conditional conformal guarantee.</p>
+    <p>A general learned predictor need not reduce to one exponential filter. Its full internal state must be included
+    in $\mathcal G_0$ and in the augmented Markov dynamics. The exact linear-filter benchmark shows why terminal
+    mixing alone can underestimate conditional coverage error by orders of magnitude.</p>
+    <p>The stationary law belongs to the classical filtered-telegraph literature; see
+    <a href="https://doi.org/10.1214/aoms/1177698321">Newman (1968)</a> and the transition-density treatment of
+    <a href="https://doi.org/10.1080/00207177008931818">Pawula (1970)</a>. Related Markov conformal results analyze
+    dependent calibration samples, temporal predictors, and blockwise hidden-state constructions:
+    <a href="https://proceedings.mlr.press/v235/zheng24j.html">Zheng and Proutiere (2024)</a>,
+    <a href="https://proceedings.mlr.press/v313/barber26a.html">Barber and Pananjady (2026)</a>, and
+    <a href="https://proceedings.mlr.press/v202/nettasinghe23a.html">Nettasinghe et al. (2023)</a>.
+    <a href="https://proceedings.mlr.press/v75/chernozhukov18a.html">Chernozhukov, W&uuml;thrich, and Zhu (2018)</a>
+    instead build dependence-aware permutation groups from blocks. The calculations here diagnose what happens to
+    the ordinary sequential order-statistic threshold when the path scores themselves overlap. The sequential
+    coupling step uses the original absolute-regularity construction of
+    <a href="https://ir.cwi.nl/pub/12694">Berbee (1979)</a>.</p>
+  </main>
