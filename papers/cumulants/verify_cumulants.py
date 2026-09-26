@@ -1,219 +1,622 @@
-"""Certificate for the cumulant benchmark of integrated variance under a fast regime.
+"""Certificate for the integrated-variance cumulant theorem.
 
-1. Switched Black-Scholes variance s(Y_t), three regimes: Var(V_T) = 2TK - 2 pi.(s~ (Q#)^2 (I - e^{QT}) s~) exactly,
-   against the polynomial moment system; kappa_4(M_T) = 3 Var(V_T) for independent Brownian noise; the finite-rate bound
-   |Var(V_T) - 2TK| <= 2 int_0^inf u |C(u)| du holds uniformly in T and is O(m^-2); the log return X = M - V/2 has
-   kappa_4(X) = 3 kappa_2(V) + 3/2 kappa_3(V) + kappa_4(V)/16, which is not 3 Var(V).
-2. CIR variance with a switched mean level (the Heston page's model, rho = 0): Var(V_T) = Var_avg(V_T) + Var(E[V_T | Y])
-   exactly, the second term a double integral of the chain covariance with weight h(u) = 1 - e^{-kappa (T-u)};
-   replacing it by 2K int h^2 leaves a remainder bounded by 4 int u |C(u)| du uniformly in T.
-3. At fixed T the first-order rule L_bar + K A^2 on the polynomial space gives the cumulants of V_T to O(m^-2).
-4. With kappa and theta both switched on a one-way cycle, the rule with the product coefficients (kappa theta, kappa)
-   reaches O(m^-2); its symmetric part alone does not, because [d_v, v d_v] != 0.
-5. Leverage: with rho != 0 the identity for kappa_4(X) fails; exact values for rho = 0 and rho = -0.6.
+The variance follows a CIR process whose long-run level is selected by a
+stationary two-state chain.  The certificate compares two independent
+calculations:
+
+1. a closed covariance decomposition of the integrated variance; and
+2. a matrix exponential for every mixed polynomial moment E[V^a v^b 1_{Y=i}]
+   of total degree at most four.
+
+It also checks the exact normal-mixture identities for the Brownian return and
+the risk-neutral log return, the uniform finite-rate error bound, and an exact
+joint-cumulant decomposition when the price and variance Brownian motions are
+correlated.  The leveraged calculation uses a separate closed polynomial
+moment system for (M,V,v,Y).  Finally, exact switched affine transforms verify
+the first-order European option correction both without and with leverage.
 """
-import json, math, os
+import math
+
 import numpy as np
-from scipy.linalg import expm
 from scipy.integrate import quad
-from polymoments import (Poly, stationary, group_inverse, gk, cir_generator, bs_generator, switched_expectation,
-                         first_order_expectation, cumulants, cumulant_derivative, logreturn_from_V)
-
-QA = np.array([[-3, 2, 1], [1, -2, 1], [0.5, 1.5, -2]], float)
-QC = np.array([[-2.1, 2, 0.1], [0.1, -2.1, 2], [2, 0.1, -2.1]], float)   # strongly one-way cycle 1 -> 2 -> 3 -> 1
-Q2 = np.array([[-1, 1], [1, -1.0]])
-P = Poly(4)
+from scipy.integrate import solve_ivp
+from scipy.linalg import expm
+from scipy.optimize import brentq
+from scipy.special import roots_legendre
+from scipy.stats import norm
 
 
-def chain_cov(Q, f):
-    """C(u) = Cov_pi(f(Y_0), f(Y_u)) as a function, and int_0^inf u |C(u)| du."""
-    pi = stationary(Q)
-    ft = np.asarray(f, float) - pi @ f
-    C = lambda u: pi @ (ft * (expm(Q * u) @ ft))
-    rate = -max(np.linalg.eigvals(Q).real[np.abs(np.linalg.eigvals(Q)) > 1e-9])
-    I = quad(lambda u: u * abs(C(u)), 0, 60 / rate, limit=400)[0]
-    return C, I
+KAPPA = 2.0
+XI = 0.2
+THETA = np.array([0.08, 0.02])
+V0 = 0.04
+T = 1.5
+SPEEDS = [1, 2, 4, 8, 16, 32]
 
 
-def var_V_chain(Q, s, T):
-    pi, Qs = stationary(Q), group_inverse(Q)
-    st = np.asarray(s, float) - pi @ s
-    return 2 * T * gk(Q, s, s) - 2 * pi @ (st * (Qs @ Qs @ ((np.eye(len(Q)) - expm(Q * T)) @ st)))
+def stationary(q):
+    """Stationary row vector of an irreducible row-generator."""
+    n = len(q)
+    return np.linalg.lstsq(
+        np.vstack([q.T, np.ones(n)]),
+        np.r_[np.zeros(n), 1.0],
+        rcond=None,
+    )[0]
 
 
-def moments_V(Q, Ls, T, v0, nu=None):
-    return np.array([switched_expectation(Q, Ls, T, P.monomial(0, k, 0), P, v0, nu) for k in (1, 2, 3, 4)])
+def cumulants(raw):
+    """First four cumulants from raw moments [1, m1, ..., m4]."""
+    m1, m2, m3, m4 = raw[1:5]
+    return np.array(
+        [
+            m1,
+            m2 - m1**2,
+            m3 - 3 * m2 * m1 + 2 * m1**3,
+            m4 - 4 * m3 * m1 - 3 * m2**2 + 12 * m2 * m1**2 - 6 * m1**4,
+        ]
+    )
 
 
-def moments_X(Q, Ls, T, v0, nu=None):
-    return np.array([switched_expectation(Q, Ls, T, P.logreturn_power(k), P, v0, nu) for k in (1, 2, 3, 4)])
+def integrated_cir_moments(q, theta, kappa, xi, v0, maturity, order=4):
+    """Raw moments of V=int_0^T v_s ds by a polynomial moment ODE.
+
+    For z_{a,b,i}=E[V^a v^b 1_{Y=i}], Ito's formula gives
+
+      z'_{a,b} = (Q^T-b*kappa I)z_{a,b}
+                 + a z_{a-1,b+1}
+                 + diag(b*kappa*theta + b(b-1)xi^2/2) z_{a,b-1}.
+
+    The system closes at each total polynomial degree.
+    """
+    q = np.asarray(q, float)
+    theta = np.asarray(theta, float)
+    n = len(theta)
+    pairs = [(a, degree - a) for degree in range(order + 1) for a in range(degree + 1)]
+    where = {pair: j for j, pair in enumerate(pairs)}
+    size = n * len(pairs)
+    generator = np.zeros((size, size))
+    initial = np.zeros(size)
+    pi = stationary(q)
+
+    def block(pair):
+        j = where[pair]
+        return slice(j * n, (j + 1) * n)
+
+    for a, b in pairs:
+        target = block((a, b))
+        generator[target, target] += q.T - b * kappa * np.eye(n)
+        if a:
+            generator[target, block((a - 1, b + 1))] += a * np.eye(n)
+        if b:
+            coefficient = b * kappa * theta + 0.5 * b * (b - 1) * xi**2
+            generator[target, block((a, b - 1))] += np.diag(coefficient)
+        if a == 0:
+            initial[target] = v0**b * pi
+
+    solution = expm(maturity * generator) @ initial
+    return np.array([1.0] + [solution[block((a, 0))].sum() for a in range(1, order + 1)])
 
 
-def var_cond_mean(Q, thetas, kappa, T, nodes=400):
-    """Var(E[V_T | Y]) = 2 int_0^T h(u) pi.(th~ * [int_0^u h(u') e^{Q (u-u')} du'] th~) du, h(u) = 1 - e^{-kappa (T-u)}.
-    The inner integral is closed form on the centered subspace; the outer one is Gauss-Legendre on two panels."""
-    Q = np.asarray(Q, float)
-    n, pi, Qs = len(Q), stationary(Q), group_inverse(Q)
-    tt = np.asarray(thetas, float) - pi @ thetas
-    Qk = np.linalg.inv(Q - kappa * np.eye(n))
-    I = np.eye(n)
-
-    def inner(u):  # int_0^u (1 - e^{-kappa (T - u')}) e^{Q (u - u')} du' applied to a centered vector
-        return Qs @ (expm(Q * u) - I) @ tt - math.exp(-kappa * (T - u)) * (Qk @ (expm((Q - kappa * I) * u) - I) @ tt)
-
-    f = lambda u: (1 - math.exp(-kappa * (T - u))) * (pi @ (tt * inner(u)))
-    rate = -max(np.linalg.eigvals(Q).real[np.abs(np.linalg.eigvals(Q)) > 1e-9])
-    split = min(T, 25 / rate)
-    x, w = np.polynomial.legendre.leggauss(nodes)
-    total = 0.0
-    for a, b in ([(0, split), (split, T)] if split < T else [(0, T)]):
-        us = 0.5 * (b - a) * x + 0.5 * (b + a)
-        total += 0.5 * (b - a) * sum(wi * f(ui) for wi, ui in zip(w, us))
-    return 2 * total
+def bfun(t, kappa=KAPPA):
+    return -math.expm1(-kappa * t) / kappa
 
 
-def int_h2(kappa, T):
-    return T - 2 * (1 - math.exp(-kappa * T)) / kappa + (1 - math.exp(-2 * kappa * T)) / (2 * kappa)
+def i2(maturity=T, kappa=KAPPA):
+    """Integral_0^T B_kappa(t)^2 dt."""
+    return (
+        maturity
+        - 2 * (1 - math.exp(-kappa * maturity)) / kappa
+        + (1 - math.exp(-2 * kappa * maturity)) / (2 * kappa)
+    ) / kappa**2
+
+
+def overlap(u, maturity=T, kappa=KAPPA):
+    """H_T(u)=Integral_0^(T-u) B(x)B(x+u) dx, in closed form."""
+    length = maturity - u
+    if length <= 0:
+        return 0.0
+    e = math.exp(-kappa * u)
+    return (
+        length
+        - (1 + e) * (1 - math.exp(-kappa * length)) / kappa
+        + e * (1 - math.exp(-2 * kappa * length)) / (2 * kappa)
+    ) / kappa**2
+
+
+def averaged_cir_variance(maturity=T):
+    theta_bar = float(THETA.mean())
+    return XI**2 * quad(
+        lambda s: bfun(maturity - s) ** 2
+        * (theta_bar + (V0 - theta_bar) * math.exp(-KAPPA * s)),
+        0,
+        maturity,
+        epsabs=2e-14,
+    )[0]
+
+
+def exact_regime_variance(speed, maturity=T):
+    delta = float((THETA[0] - THETA[1]) / 2)
+    return 2 * KAPPA**2 * quad(
+        lambda u: delta**2 * math.exp(-2 * speed * u) * overlap(u, maturity),
+        0,
+        maturity,
+        epsabs=2e-14,
+    )[0]
+
+
+def raw_log_return_moments(raw_v):
+    """Raw moments of X=-V/2+sqrt(V)Z, Z standard normal."""
+    e1, e2, e3, e4 = raw_v[1:5]
+    return np.array(
+        [
+            1.0,
+            -0.5 * e1,
+            e1 + 0.25 * e2,
+            -1.5 * e2 - 0.125 * e3,
+            3 * e2 + 1.5 * e3 + 0.0625 * e4,
+        ]
+    )
+
+
+def leveraged_joint_moments(q, theta, kappa, xi, v0, maturity, rho, order=4):
+    """Raw E[M^a V^b] for leveraged CIR, for every a+b <= order.
+
+    Here dM=sqrt(v)dW, dV=v dt, and d<W,B>=rho dt where B drives v.  For
+    z_{a,b,c,i}=E[M^a V^b v^c 1_{Y=i}], Ito's formula gives
+
+      z'_{a,b,c} = (Q^T-c*kappa I) z_{a,b,c}
+        + b z_{a,b-1,c+1}
+        + a(a-1)/2 z_{a-2,b,c+1}
+        + diag(c*kappa*theta+c(c-1)xi^2/2) z_{a,b,c-1}
+        + rho*xi*a*c z_{a-1,b,c}.
+
+    Total polynomial degree never increases, so all moments through degree
+    four form one finite linear system.
+    """
+    q = np.asarray(q, float)
+    theta = np.asarray(theta, float)
+    n = len(theta)
+    triples = [
+        (a, b, degree - a - b)
+        for degree in range(order + 1)
+        for a in range(degree + 1)
+        for b in range(degree - a + 1)
+    ]
+    where = {triple: j for j, triple in enumerate(triples)}
+    size = n * len(triples)
+    generator = np.zeros((size, size))
+    initial = np.zeros(size)
+    pi = stationary(q)
+
+    def block(triple):
+        j = where[triple]
+        return slice(j * n, (j + 1) * n)
+
+    for a, b, c in triples:
+        target = block((a, b, c))
+        generator[target, target] += q.T - c * kappa * np.eye(n)
+        if b:
+            generator[target, block((a, b - 1, c + 1))] += b * np.eye(n)
+        if a >= 2:
+            generator[target, block((a - 2, b, c + 1))] += 0.5 * a * (a - 1) * np.eye(n)
+        if c:
+            coefficient = c * kappa * theta + 0.5 * c * (c - 1) * xi**2
+            generator[target, block((a, b, c - 1))] += np.diag(coefficient)
+        if a and c:
+            generator[target, block((a - 1, b, c))] += rho * xi * a * c * np.eye(n)
+        if a == 0 and b == 0:
+            initial[target] = v0**c * pi
+
+    solution = expm(maturity * generator) @ initial
+    return {
+        (a, b): solution[block((a, b, 0))].sum()
+        for a in range(order + 1)
+        for b in range(order + 1 - a)
+    }
+
+
+def set_partitions(items):
+    """Yield each set partition once; only used for at most four labels."""
+    if not items:
+        yield []
+        return
+    first, rest = items[0], items[1:]
+    for partition in set_partitions(rest):
+        yield [[first]] + [block[:] for block in partition]
+        for j in range(len(partition)):
+            yield [
+                (block + [first]) if k == j else block[:]
+                for k, block in enumerate(partition)
+            ]
+
+
+def joint_cumulant(raw, m_count, v_count):
+    """Joint cumulant with m_count copies of M and v_count copies of V."""
+    labels = ["M"] * m_count + ["V"] * v_count
+    answer = 0.0
+    for partition in set_partitions(labels):
+        blocks = len(partition)
+        product = 1.0
+        for block in partition:
+            product *= raw[(block.count("M"), block.count("V"))]
+        answer += (-1) ** (blocks - 1) * math.factorial(blocks - 1) * product
+    return answer
+
+
+def log_return_raw_moments(joint_raw):
+    """Raw moments of X=M-V/2 from joint moments of (M,V)."""
+    return np.array(
+        [
+            sum(
+                math.comb(order, v_power)
+                * (-0.5) ** v_power
+                * joint_raw[(order - v_power, v_power)]
+                for v_power in range(order + 1)
+            )
+            for order in range(5)
+        ]
+    )
+
+
+def affine_log_mgf(q, theta, kappa, xi, v0, maturity, rho, argument):
+    """Log E exp(argument*(M-V/2)) from the affine Riccati system."""
+    q = np.asarray(q, float)
+    theta = np.asarray(theta, float)
+    n = len(theta)
+    u = complex(argument)
+    w = -0.5 * u
+
+    def rhs(_, state):
+        b = state[0]
+        amplitude = state[1:]
+        b_prime = (
+            -kappa * b
+            + 0.5 * xi**2 * b**2
+            + rho * xi * u * b
+            + 0.5 * u**2
+            + w
+        )
+        amplitude_prime = q @ amplitude + kappa * theta * b * amplitude
+        return np.r_[b_prime, amplitude_prime]
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, maturity),
+        np.r_[0.0j, np.ones(n, dtype=complex)],
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    ).y[:, -1]
+    transform = np.exp(solution[0] * v0) * np.dot(stationary(q), solution[1:])
+    return np.log(transform)
+
+
+def affine_cumulant_four(q, theta, kappa, xi, v0, maturity, rho):
+    """Fourth cumulant by Cauchy coefficient extraction of the affine log MGF."""
+    radius = 0.18
+    order = 32
+    angles = 2 * np.pi * np.arange(order) / order
+    values = np.array(
+        [
+            affine_log_mgf(
+                q, theta, kappa, xi, v0, maturity, rho, radius * np.exp(1j * angle)
+            )
+            for angle in angles
+        ]
+    )
+    coefficient = np.mean(values * np.exp(-4j * angles)) / radius**4
+    return float((math.factorial(4) * coefficient).real)
+
+
+def averaged_transform_and_correction(arguments, maturity=T, rho=0.0):
+    """Averaged-Heston MGF and coefficient of its 1/m switching correction."""
+    arguments = np.asarray(arguments, complex)
+    count = len(arguments)
+    theta_bar = float(THETA.mean())
+    delta = float((THETA[0] - THETA[1]) / 2)
+
+    def rhs(_, state):
+        b = state[:count]
+        db = (
+            -KAPPA * b
+            + 0.5 * XI**2 * b**2
+            + rho * XI * arguments * b
+            + 0.5 * (arguments**2 - arguments)
+        )
+        return np.r_[db, b, b**2]
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, maturity),
+        np.zeros(3 * count, dtype=complex),
+        method="DOP853",
+        rtol=2e-11,
+        atol=2e-13,
+    ).y[:, -1]
+    b = solution[:count]
+    integral_b = solution[count : 2 * count]
+    integral_b2 = solution[2 * count :]
+    averaged = np.exp(b * V0 + KAPPA * theta_bar * integral_b)
+    correction = 0.5 * KAPPA**2 * delta**2 * integral_b2
+    return averaged, correction
+
+
+def exact_switched_transform(speed, arguments, maturity=T, rho=0.0):
+    """Exact MGF of the stationary-start, symmetric two-state switched CIR."""
+    arguments = np.asarray(arguments, complex)
+    count = len(arguments)
+
+    def rhs(_, state):
+        b = state[:count]
+        plus = state[count : 2 * count]
+        minus = state[2 * count :]
+        db = (
+            -KAPPA * b
+            + 0.5 * XI**2 * b**2
+            + rho * XI * arguments * b
+            + 0.5 * (arguments**2 - arguments)
+        )
+        return np.r_[
+            db,
+            speed * (minus - plus) + KAPPA * THETA[0] * b * plus,
+            speed * (plus - minus) + KAPPA * THETA[1] * b * minus,
+        ]
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, maturity),
+        np.r_[np.zeros(count, dtype=complex), np.ones(2 * count, dtype=complex)],
+        method="DOP853",
+        rtol=2e-11,
+        atol=2e-13,
+    ).y[:, -1]
+    b = solution[:count]
+    return np.exp(b * V0) * 0.5 * (
+        solution[count : 2 * count] + solution[2 * count :]
+    )
+
+
+def call_price_terms(
+    speed=None, strike=1.0, alpha=1.0, cutoff=80.0, order=320, rho=0.0
+):
+    """Carr--Madan call price and explicit first-order coefficient.
+
+    If speed is None, return the averaged price and the coefficient c1 in
+    C_m=C_av+c1/m+O(m^-2).  Otherwise return the exact switched price.
+    """
+    nodes, weights = roots_legendre(order)
+    frequencies = 0.5 * cutoff * (nodes + 1)
+    weights = 0.5 * cutoff * weights
+    arguments = alpha + 1 + 1j * frequencies
+    denominator = (
+        alpha**2
+        + alpha
+        - frequencies**2
+        + 1j * (2 * alpha + 1) * frequencies
+    )
+    oscillation = np.exp(-1j * frequencies * math.log(strike))
+    scale = strike ** (-alpha) / math.pi
+
+    if speed is None:
+        transform, log_correction = averaged_transform_and_correction(
+            arguments, rho=rho
+        )
+        price = scale * np.dot(weights, np.real(oscillation * transform / denominator))
+        correction = scale * np.dot(
+            weights, np.real(oscillation * transform * log_correction / denominator)
+        )
+        return float(price), float(correction)
+
+    transform = exact_switched_transform(speed, arguments, rho=rho)
+    price = scale * np.dot(weights, np.real(oscillation * transform / denominator))
+    return float(price)
+
+
+def black_scholes_call(strike, volatility, maturity=T):
+    """Normalized zero-rate Black--Scholes call with spot one."""
+    scale = volatility * math.sqrt(maturity)
+    if scale <= 0:
+        return max(1.0 - strike, 0.0)
+    d1 = (-math.log(strike) + 0.5 * scale**2) / scale
+    d2 = d1 - scale
+    return float(norm.cdf(d1) - strike * norm.cdf(d2))
+
+
+def black_scholes_vega(strike, volatility, maturity=T):
+    """Derivative of the normalized call with respect to volatility."""
+    scale = volatility * math.sqrt(maturity)
+    d1 = (-math.log(strike) + 0.5 * scale**2) / scale
+    return float(norm.pdf(d1) * math.sqrt(maturity))
+
+
+def implied_volatility(strike, price, maturity=T):
+    """Black--Scholes implied volatility on the positive-volatility branch."""
+    intrinsic = max(1.0 - strike, 0.0)
+    if not intrinsic < price < 1.0:
+        raise ValueError("call price must lie strictly inside arbitrage bounds")
+    return float(
+        brentq(
+            lambda volatility: black_scholes_call(
+                strike, volatility, maturity
+            ) - price,
+            1e-10,
+            5.0,
+            xtol=2e-14,
+        )
+    )
+
+
+def black_scholes_fourier_check(total_variance=0.06, alpha=1.0, cutoff=80.0, order=640):
+    """Check the damped inversion against the closed ATM Black--Scholes call."""
+    nodes, weights = roots_legendre(order)
+    frequencies = 0.5 * cutoff * (nodes + 1)
+    weights = 0.5 * cutoff * weights
+    arguments = alpha + 1 + 1j * frequencies
+    transform = np.exp(0.5 * total_variance * (arguments**2 - arguments))
+    denominator = (
+        alpha**2
+        + alpha
+        - frequencies**2
+        + 1j * (2 * alpha + 1) * frequencies
+    )
+    fourier = np.dot(weights, np.real(transform / denominator)) / math.pi
+    closed = math.erf(math.sqrt(total_variance) / (2 * math.sqrt(2)))
+    return float(fourier), closed
 
 
 def main():
-    ok, out = True, {}
+    assert 2 * KAPPA * THETA.min() > XI**2  # strict positivity for every regime
+    baseline = averaged_cir_variance()
+    delta = float((THETA[0] - THETA[1]) / 2)
+    residuals = []
 
-    print("1. switched Black-Scholes variance: three regimes, volatilities 10%, 30%, 20%, chain m Q_A")
-    s = np.array([0.01, 0.09, 0.04])
-    Ls = [bs_generator(P, si) for si in s]
-    rows = []
-    for m in (2, 4, 8, 16):
-        Q = m * QA
-        K = gk(Q, s, s)
-        mV = moments_V(Q, Ls, 1.0, 0.0)
-        kV = cumulants(mV)
-        closed = var_V_chain(Q, s, 1.0)
-        M4 = switched_expectation(Q, Ls, 1.0, P.monomial(0, 0, 4), P, 0.0)
-        kX = cumulants(moments_X(Q, Ls, 1.0, 0.0))
-        ident = logreturn_from_V(kV)
-        C, I = chain_cov(Q, s)
-        sup = max(abs(var_V_chain(Q, s, T) - 2 * T * K) for T in np.geomspace(0.02, 40, 80))
-        ok &= abs(closed - kV[1]) < 1e-14 and abs(M4 - 3 * mV[1]) < 1e-14 and abs(kX[3] - ident[2]) < 1e-14 and sup <= 2 * I * (1 + 1e-9)
-        rows.append([m, 6 * K, 3 * kV[1], kX[3], sup, 2 * I])
-        print(f"   m={m:2d}  T=1: 6TK {6 * K:.4e}, 3 Var(V) {3 * kV[1]:.4e}, kappa_4(X) {kX[3]:.4e};"
-              f" closed form vs moments {abs(closed - kV[1]):.1e}, E[M^4] - 3E[V^2] {abs(M4 - 3 * mV[1]):.1e},"
-              f" identity {abs(kX[3] - ident[2]):.1e}; sup_T |Var - 2TK| {sup:.3e} <= bound {2 * I:.3e}")
-    r = np.array(rows)
-    o = math.log2(r[-2, 4] / r[-1, 4]); ob = math.log2(r[-2, 5] / r[-1, 5])
-    print(f"   orders from the last doubling: sup_T |Var(V_T) - 2TK| {o:.3f}, bound {ob:.3f}")
-    ok &= abs(o - 2) < 0.1 and abs(ob - 2) < 0.1
-    out['chain'] = rows
+    print("m  kappa4(M), exact   first order      residual       m^2 residual    kappa4(X)")
+    for speed in SPEEDS:
+        q = speed * np.array([[-1.0, 1.0], [1.0, -1.0]])
+        raw_v = integrated_cir_moments(q, THETA, KAPPA, XI, V0, T)
+        k_v = cumulants(raw_v)
 
-    print("2. CIR variance with a switched mean level: kappa = 2, theta = (0.09, 0.02), xi = 0.4, v0 = 0.04, rho = 0")
-    kappa, th, xi, v0 = 2.0, np.array([0.09, 0.02]), 0.4, 0.04
-    rows = []
-    Ts = np.geomspace(0.05, 50, 40)
-    for lam in (10, 20, 40, 80):
-        Q = lam * Q2
-        pi = stationary(Q)
-        K = gk(Q, th, th)
-        Ls = [cir_generator(P, kappa, t, xi, 0.0) for t in th]
-        Lavg = cir_generator(P, kappa, pi @ th, xi, 0.0)
-        C, I = chain_cov(Q, th)
-        worst_dec, worst_gk = 0.0, 0.0
-        for T in Ts:
-            varV = cumulants(moments_V(Q, Ls, T, v0))[1]
-            var_avg = cumulants(moments_V(np.zeros((1, 1)), [Lavg], T, v0))[1]
-            vcm = var_cond_mean(Q, th, kappa, T)
-            worst_dec = max(worst_dec, abs(varV - var_avg - vcm) / varV)
-            worst_gk = max(worst_gk, abs(vcm - 2 * K * int_h2(kappa, T)))
-        M4 = switched_expectation(Q, Ls, 1.0, P.monomial(0, 0, 4), P, v0)
-        V2 = moments_V(Q, Ls, 1.0, v0)[1]
-        rows.append([lam, worst_dec, worst_gk, 4 * I])
-        ok &= worst_dec < 1e-9 and worst_gk <= 4 * I * (1 + 1e-9) and abs(M4 - 3 * V2) < 1e-13
-        print(f"   lam={lam:3d}: decomposition Var = Var_avg + Var(E[V|Y]) relative error {worst_dec:.1e} over T in [0.05, 50];"
-              f" sup_T |Var(E[V|Y]) - 2K int h^2| {worst_gk:.3e} <= bound {4 * I:.3e}; E[M^4] - 3E[V^2] at T=1: {abs(M4 - 3 * V2):.1e}")
-    r = np.array(rows)
-    o = math.log2(r[-2, 2] / r[-1, 2])
-    print(f"   order of the Green-Kubo remainder from the last doubling: {o:.3f}")
-    ok &= abs(o - 2) < 0.1
-    out['cir_uniform'] = rows
+        decomposition = baseline + exact_regime_variance(speed)
+        assert abs(k_v[1] - decomposition) < 2e-13
 
-    print("3. fixed T = 1: cumulants of V_T from the first-order rule, switched mean level")
-    A_th = kappa * P.d_v()
-    rows = []
-    for lam in (10, 20, 40, 80):
-        Q = lam * Q2
-        pi = stationary(Q)
-        Ls = [cir_generator(P, kappa, t, xi, 0.0) for t in th]
-        Lavg = cir_generator(P, kappa, pi @ th, xi, 0.0)
-        K0 = gk(Q2, th, th)
-        D = K0 * (A_th @ A_th)
-        a, b = zip(*[first_order_expectation(Lavg, D, 1.0, P.monomial(0, k, 0), P, v0) for k in (1, 2, 3, 4)])
-        a, b = np.array(a), np.array(b)
-        pred = cumulants(a) + cumulant_derivative(a, b) / lam
-        exact = cumulants(moments_V(Q, Ls, 1.0, v0))
-        avg = cumulants(a)
-        rows.append([lam] + list(exact[1:]) + list(pred[1:]) + list(np.abs(exact - pred)[1:]) + list(np.abs(exact - avg)[1:]))
-        gkvar = 2 * K0 * int_h2(kappa, 1.0)
-        ok &= abs(cumulant_derivative(a, b)[1] - gkvar) < 1e-12
-        print(f"   lam={lam:3d}: kappa_2..4 exact {exact[1]:.4e} {exact[2]:.4e} {exact[3]:.4e}; rule residual"
-              f" {abs(exact - pred)[1]:.2e} {abs(exact - pred)[2]:.2e} {abs(exact - pred)[3]:.2e}; averaged model residual"
-              f" {abs(exact - avg)[1]:.2e} {abs(exact - avg)[2]:.2e} {abs(exact - avg)[3]:.2e};"
-              f" rule's variance term vs 2K int h^2: {abs(cumulant_derivative(a, b)[1] - gkvar):.1e}")
-    r = np.array(rows)
-    orders = [math.log2(r[-2, 7 + j] / r[-1, 7 + j]) for j in range(3)]
-    orders0 = [math.log2(r[-2, 10 + j] / r[-1, 10 + j]) for j in range(3)]
-    print(f"   orders of the rule's residual: {orders[0]:.3f} {orders[1]:.3f} {orders[2]:.3f}; of the averaged model: {orders0[0]:.3f} {orders0[1]:.3f} {orders0[2]:.3f}")
-    ok &= all(abs(o - 2) < 0.15 for o in orders) and all(abs(o - 1) < 0.15 for o in orders0)
-    out['cir_fixed_T'] = rows
+        # Conditional normality: M=sqrt(V)Z and X=-V/2+sqrt(V)Z.
+        kappa4_m = 3 * k_v[1]
+        kappa4_x_formula = 3 * k_v[1] + 1.5 * k_v[2] + k_v[3] / 16
+        kappa4_x_direct = cumulants(raw_log_return_moments(raw_v))[3]
+        assert abs(kappa4_x_formula - kappa4_x_direct) < 2e-13
 
-    print("4. kappa and theta both switched, three regimes on the one-way cycle Q_C: product coefficients c = kappa theta and kappa")
-    kap3, th3 = np.array([1.5, 2.5, 2.0]), np.array([0.09, 0.02, 0.05])
-    c3 = kap3 * th3
-    A_c, A_k = P.d_v(), -P.v_d_v()
-    rows = []
-    for m in (10, 20, 40, 80):
-        Q = m * QC
-        pi = stationary(Q)
-        Ls = [cir_generator(P, k, t, xi, 0.0) for k, t in zip(kap3, th3)]
-        cbar, kbar = pi @ c3, pi @ kap3
-        Lavg = cir_generator(P, kbar, cbar / kbar, xi, 0.0)
-        feats = [c3, kap3]
-        K0 = np.array([[gk(QC, f, g) for g in feats] for f in feats])
-        As = [A_c, A_k]
-        D = sum(K0[j, k] * (As[j] @ As[k]) for j in range(2) for k in range(2))
-        Ksym = 0.5 * (K0 + K0.T)
-        Dsym = sum(Ksym[j, k] * (As[j] @ As[k]) for j in range(2) for k in range(2))
-        exact = cumulants(moments_V(Q, Ls, 1.0, v0))
-        res = {}
-        for name, DD in (('rule', D), ('symmetric part only', Dsym)):
-            a, b = zip(*[first_order_expectation(Lavg, DD, 1.0, P.monomial(0, k, 0), P, v0) for k in (1, 2, 3, 4)])
-            a, b = np.array(a), np.array(b)
-            res[name] = np.abs(exact - cumulants(a) - cumulant_derivative(a, b) / m)
-        rows.append([m] + list(exact) + list(res['rule']) + list(res['symmetric part only']))
-        print(f"   m={m:3d}: kappa_1..4 exact {exact[0]:.4e} {exact[1]:.4e} {exact[2]:.4e} {exact[3]:.4e};"
-              f" rule residual {res['rule'][0]:.2e} {res['rule'][1]:.2e} {res['rule'][2]:.2e} {res['rule'][3]:.2e};"
-              f" symmetric only {res['symmetric part only'][0]:.2e} {res['symmetric part only'][1]:.2e}")
-    r = np.array(rows)
-    orders = [math.log2(r[-2, 5 + j] / r[-1, 5 + j]) for j in range(4)]
-    osym = math.log2(r[-2, 9] / r[-1, 9])
-    print(f"   orders of the rule's residual: {' '.join(f'{o:.3f}' for o in orders)}; symmetric part only, mean: {osym:.3f}")
-    ok &= all(abs(o - 2) < 0.15 for o in orders) and osym < 1.5
-    out['both'] = rows
+        green_kubo = delta**2 / (2 * speed)
+        first_order = 3 * (baseline + 2 * KAPPA**2 * green_kubo * i2())
+        residual = kappa4_m - first_order
+        residuals.append(abs(residual))
 
-    print("5. leverage: the same two-state Heston variance, kappa_4 of the log return at T = 1, lam = 10")
-    Q = 10 * Q2
-    rows = []
-    for rho in (0.0, -0.6):
-        Ls = [cir_generator(P, kappa, t, xi, rho) for t in th]
-        kV = cumulants(moments_V(Q, Ls, 1.0, v0))
-        kX = cumulants(moments_X(Q, Ls, 1.0, v0))
-        ident = logreturn_from_V(kV)
-        rows.append([rho, kX[2], ident[1], kX[3], ident[2]])
-        print(f"   rho={rho:+.1f}: kappa_3(X) exact {kX[2]:+.5e} vs identity {ident[1]:+.5e}; kappa_4(X) exact {kX[3]:.5e} vs identity {ident[2]:.5e}")
-    ok &= abs(rows[0][3] - rows[0][4]) < 1e-14 and abs(rows[1][3] / rows[1][4] - 1) > 0.05
-    out['leverage'] = rows
+        # The theorem gives |R_4| <= 12 int_0^infty u |C_m(u)| du.
+        bound = 3 * delta**2 / speed**2
+        assert abs(residual) <= bound + 2e-14
+        print(
+            f"{speed:2d}  {kappa4_m:.10f}      {first_order:.10f}"
+            f"  {residual:+.3e}    {speed**2 * residual:+.3e}    {kappa4_x_formula:.10f}"
+        )
 
-    json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results.json'), 'w'), indent=1)
-    print("PASS" if ok else "FAIL")
+    rate = math.log(residuals[-2] / residuals[-1], 2)
+    print(f"last residual rate {rate:.3f} (want 2)")
+    assert 1.8 < rate < 2.2
+
+    # Under leverage, X=M-V/2 still has an exact fourth-cumulant
+    # decomposition, but the four normal-mixture reductions no longer hold.
+    speed = 8.0
+    q = speed * np.array([[-1.0, 1.0], [1.0, -1.0]])
+    print("\nrho   kappa4(X)   independent shortcut   error      mixed corrections")
+    for rho in (0.0, -0.7, 0.7):
+        raw = leveraged_joint_moments(q, THETA, KAPPA, XI, V0, T, rho)
+        k40 = joint_cumulant(raw, 4, 0)
+        k31 = joint_cumulant(raw, 3, 1)
+        k22 = joint_cumulant(raw, 2, 2)
+        k13 = joint_cumulant(raw, 1, 3)
+        k04 = joint_cumulant(raw, 0, 4)
+        exact_identity = k40 - 2 * k31 + 1.5 * k22 - 0.5 * k13 + k04 / 16
+        direct = cumulants(log_return_raw_moments(raw))[3]
+        assert abs(exact_identity - direct) < 3e-13
+        affine = affine_cumulant_four(q, THETA, KAPPA, XI, V0, T, rho)
+        assert abs(affine - direct) < 3e-9
+
+        independent_shortcut = (
+            3 * joint_cumulant(raw, 0, 2)
+            + 1.5 * joint_cumulant(raw, 0, 3)
+            + k04 / 16
+        )
+        if rho == 0:
+            assert abs(k40 - 3 * joint_cumulant(raw, 0, 2)) < 3e-13
+            assert abs(k31) < 3e-13
+            assert abs(k22 - joint_cumulant(raw, 0, 3)) < 3e-13
+            assert abs(k13) < 3e-13
+            assert abs(direct - independent_shortcut) < 3e-13
+        else:
+            assert abs(direct - independent_shortcut) > 1e-5
+        print(
+            f"{rho:+.1f}  {direct:+.9f}   {independent_shortcut:+.9f}"
+            f"   {direct-independent_shortcut:+.3e}"
+            f"   ({k40:+.3e},{-2*k31:+.3e},{1.5*k22:+.3e},{-0.5*k13:+.3e},{k04/16:+.3e})"
+        )
+
+    # The same two-state amplitude gives an explicit European call correction.
+    # This is a fixed-maturity, damped-Fourier statement; it is not the
+    # maturity-uniform cumulant bound proved above.
+    fourier_bs, closed_bs = black_scholes_fourier_check()
+    assert abs(fourier_bs - closed_bs) < 2e-10
+    for option_rho in (0.0, -0.7):
+        averaged_call, call_coefficient = call_price_terms(rho=option_rho)
+        averaged_call_fine, call_coefficient_fine = call_price_terms(
+            order=640, rho=option_rho
+        )
+        assert abs(averaged_call - averaged_call_fine) < 2e-10
+        assert abs(call_coefficient - call_coefficient_fine) < 2e-10
+        coarse_exact = call_price_terms(speed=8, rho=option_rho)
+        fine_exact = call_price_terms(speed=8, order=640, rho=option_rho)
+        assert abs(coarse_exact - fine_exact) < 2e-10
+        option_residuals = []
+        print(
+            f"\nrho={option_rho:+.1f}: m  exact call    averaged + c1/m"
+            "    residual      m^2 residual"
+        )
+        for speed in (4, 8, 16, 32):
+            exact_call = call_price_terms(speed=speed, rho=option_rho)
+            approximation = averaged_call + call_coefficient / speed
+            residual = exact_call - approximation
+            option_residuals.append(abs(residual))
+            print(
+                f"{speed:2d}  {exact_call:.10f}   {approximation:.10f}"
+                f"   {residual:+.3e}   {speed**2*residual:+.3e}"
+            )
+        option_rate = math.log(option_residuals[-2] / option_residuals[-1], 2)
+        assert 1.8 < option_rate < 2.2
+        print(
+            f"averaged call {averaged_call:.10f}; c1 {call_coefficient:+.10f}; "
+            f"last residual rate {option_rate:.3f} (want 2)"
+        )
+
+    # On any compact strike set whose averaged implied volatilities stay away
+    # from zero, Black--Scholes vega is bounded below.  The implicit-function
+    # theorem therefore transports the price expansion to implied volatility,
+    # with coefficient c1 / vega.  Check the leveraged smile at three strikes.
+    print("\nLeveraged implied-volatility correction (rho=-0.7)")
+    print(
+        " strike   averaged IV     IV coefficient    last residual rate"
+    )
+    for strike in (0.85, 1.0, 1.15):
+        averaged_call, call_coefficient = call_price_terms(
+            strike=strike, rho=-0.7, order=640
+        )
+        coarse_call, coarse_coefficient = call_price_terms(
+            strike=strike, rho=-0.7, order=320
+        )
+        assert abs(averaged_call - coarse_call) < 5e-10
+        assert abs(call_coefficient - coarse_coefficient) < 5e-10
+        averaged_iv = implied_volatility(strike, averaged_call)
+        vega = black_scholes_vega(strike, averaged_iv)
+        assert vega > 0.35
+        iv_coefficient = call_coefficient / vega
+        iv_residuals = []
+        for speed in (4, 8, 16, 32):
+            exact_call = call_price_terms(
+                speed=speed, strike=strike, rho=-0.7, order=640
+            )
+            exact_iv = implied_volatility(strike, exact_call)
+            iv_residuals.append(
+                abs(exact_iv - averaged_iv - iv_coefficient / speed)
+            )
+        iv_rate = math.log(iv_residuals[-2] / iv_residuals[-1], 2)
+        assert 1.9 < iv_rate < 2.2
+        print(
+            f" {strike:5.2f}     {averaged_iv:.10f}"
+            f"     {iv_coefficient:+.10f}          {iv_rate:.3f}"
+        )
+
+    print(
+        "PASS: cumulants, leverage, and the explicit option-price and "
+        "implied-volatility corrections"
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

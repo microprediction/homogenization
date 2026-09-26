@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cumulants of integrated variance · homogenization</title>
+  <title>Integrated-variance cumulants · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -101,113 +101,593 @@
 </header>
 
   <main>
-    <h1>Cumulants of integrated variance under a fast regime</h1>
-    <p class="subtitle">The fourth cumulant a fast switching variance gives a return, what its Green&ndash;Kubo form leaves out at every maturity, and the same for a CIR variance whose level switches.</p>
+    <p class="demo-nav"><a href="./any-equation.html">&larr; any pricing equation</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a>
+    &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a></span></p>
+    <h1>Integrated-variance cumulants</h1>
+    <p class="subtitle">Exact fourth-cumulant benchmarks and an explicit European option correction for a positive switched CIR variance.</p>
 
-    <h2>The model</h2>
-    <p>A stationary finite-state chain $y_t$ with generator $Q = Q_0/\varepsilon$ drives a variance $v_t$ in one of two
-    ways: directly, $v_t = s(y_t)$, as in the switched Black&ndash;Scholes model of the
-    <a href="./any-equation.html">any-equation page</a>; or through the level of a square-root process,</p>
-    $$dv_t = \kappa\,(\theta_{y_t} - v_t)\,dt + \xi\sqrt{v_t}\,dB_t,$$
-    <p>as on the <a href="./heston.html">Heston page</a>. In both cases the integrated variance, the martingale part
-    of the log return and the log return itself are</p>
-    $$V_T = \int_0^T v_t\,dt, \qquad M_T = \int_0^T \sqrt{v_t}\,dW_t, \qquad X_T = M_T - \tfrac12 V_T,$$
-    <p>with $W$ independent of the chain and of $B$. Correlation between $W$ and $B$ is taken up at the end.</p>
-    <p class="muted">Parameters for the checks: the three-state chain $mQ_A$ of the any-equation page with volatilities
-    10%, 30% and 20%; and the Heston page&apos;s $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $v_0 = 0.04$,
-    switching at rate $\lambda$ in each direction.</p>
+    <p class="lead">The smile produced by uncorrelated stochastic volatility is often described through the variance
+    of integrated variance. There are two points to keep separate. The Brownian return has a fourth cumulant exactly
+    equal to three times that variance. The risk-neutral log return does not: its drift contributes the third and
+    fourth cumulants of integrated variance as well. With leverage, four joint cumulants replace the
+    conditional-normal shortcut.</p>
 
-    <h2>The quantity</h2>
-    <p>The cumulants of $V_T$, $M_T$ and $X_T$. Given the variance path, $M_T$ is normal with variance $V_T$, so
-    $\log\mathbb E\,e^{\vartheta X_T} = \mathcal K_V\big(\tfrac12(\vartheta^2 - \vartheta)\big)$ with $\mathcal K_V$ the
-    cumulant generating function of $V_T$, and</p>
+    <h2>The exact normal-mixture identities</h2>
+    <p>Let $V_T$ be any non-negative random variable and let $Z$ be a standard normal independent of it. Define</p>
+    $$M_T = \sqrt{V_T}\,Z, \qquad X_T = -\tfrac12 V_T + \sqrt{V_T}\,Z.$$
+    <p>In a stochastic-volatility model, $V_T=\int_0^T v_s\,ds$, $M_T$ is the Brownian return, and $X_T$ is the
+    risk-neutral log return when the price Brownian motion is independent of the volatility process. Conditional
+    normality gives the cumulant-generating functions</p>
+    $$K_M(z)=K_V(z^2/2), \qquad K_X(z)=K_V((z^2-z)/2).$$
+    <p>Comparing coefficients proves the exact identities</p>
     <div class="equation-card">
-    $$\kappa_4(M_T) = 3\,\kappa_2(V_T), \qquad
-      \kappa_4(X_T) = 3\,\kappa_2(V_T) + \tfrac32\,\kappa_3(V_T) + \tfrac1{16}\,\kappa_4(V_T),$$
-    $$\kappa_2(X_T) = \kappa_1(V_T) + \tfrac14\kappa_2(V_T), \qquad
-      \kappa_3(X_T) = -\tfrac32\,\kappa_2(V_T) - \tfrac18\,\kappa_3(V_T).$$
+    $$\kappa_{2r}(M_T)=(2r-1)!!\,\kappa_r(V_T), \qquad \kappa_{2r+1}(M_T)=0,$$
+    $$\kappa_4(M_T)=3\,\operatorname{Var}(V_T),$$
+    $$\kappa_4(X_T)=3\kappa_2(V_T)+\tfrac32\kappa_3(V_T)+\tfrac1{16}\kappa_4(V_T).$$
     </div>
-    <p>The fourth cumulant of the return is not three times the variance of integrated variance. The drift
-    $-V_T/2$ is random too, and its skewness and kurtosis enter, in small proportions.</p>
+    <p>The last two formulas are not interchangeable. The common expression $3\operatorname{Var}(V_T)$ is exact
+    for the martingale return $M_T$ but only the leading part of the log-return cumulant when the higher cumulants of
+    $V_T$ are negligible.</p>
 
-    <h2>A switched Black&ndash;Scholes variance</h2>
-    <p>Let $C(u) = \operatorname{Cov}_\pi\big(s(y_0), s(y_u)\big) = \pi\cdot\big(\tilde s\,e^{Qu}\tilde s\big)$, with
-    $\tilde s = s - \pi\cdot s$. Then $\operatorname{Var}(V_T) = 2\int_0^T (T - u)\,C(u)\,du$, and since $Q$ is
-    invertible on mean-zero vectors, with inverse the group inverse $Q^{\#}$,</p>
-    $$\operatorname{Var}(V_T) = 2TK - 2\,\pi\cdot\Big(\tilde s\,(Q^{\#})^2\big(I - e^{QT}\big)\tilde s\Big), \qquad
-      K = \int_0^\infty C(u)\,du = -\pi\cdot\big(\tilde s\,Q^{\#}\tilde s\big).$$
-    <p>The first term is the Green&ndash;Kubo term of the <a href="./idea.html">averaging page</a>. The second is
-    bounded for every maturity:</p>
-    $$\big|\operatorname{Var}(V_T) - 2TK\big| \le 2\int_0^\infty u\,|C(u)|\,du \qquad\text{for all } T \ge 0,$$
-    <p>because the difference is $-2\int_0^\infty uC\,du + 2\int_T^\infty (u - T)\,C\,du$, and each piece is
-    controlled by $u|C(u)|$. With $C(u) = C_0(u/\varepsilon)$ the bound is $\varepsilon^2\int_0^\infty \tau|C_0(\tau)|\,d\tau$,
-    so $\kappa_4(M_T) = 6TK + O(\varepsilon^2)$ uniformly in $T$, with an explicit constant.</p>
-    <p>At one year, on the chain of the smile check and its faster copies:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>chain</th><th>$6TK$</th><th>$3\operatorname{Var}(V_T)$</th><th>$\kappa_4(X_T)$</th><th>$\sup_T|\operatorname{Var}(V_T) - 2TK|$</th><th>bound</th></tr></thead><tbody><tr><td>$2\,Q_A$</td><td>8.056e-4</td><td>7.026e-4</td><td>7.023e-4</td><td>3.434e-5</td><td>3.434e-5</td></tr><tr><td>$4\,Q_A$</td><td>4.028e-4</td><td>3.770e-4</td><td>3.769e-4</td><td>8.584e-6</td><td>8.584e-6</td></tr><tr><td>$8\,Q_A$</td><td>2.014e-4</td><td>1.950e-4</td><td>1.949e-4</td><td>2.146e-6</td><td>2.146e-6</td></tr><tr><td>$16\,Q_A$</td><td>1.007e-4</td><td>9.908e-5</td><td>9.908e-5</td><td>5.365e-7</td><td>5.365e-7</td></tr></tbody></table></div>
-    <p>The bound is attained as $T \to \infty$, since $C \ge 0$ for this chain. Halving $\varepsilon$ divides both the
-    gap and the bound by four.</p>
-
-    <h2>A CIR variance with a switching level</h2>
-    <p>Given the regime path, the variance is a linear equation with a known forcing, and its integral has
-    conditional mean</p>
-    $$\mathbb E[V_T \mid y] = \frac{v_0\,(1 - e^{-\kappa T})}{\kappa} + \int_0^T h(u)\,\theta_{y_u}\,du, \qquad
-      h(u) = 1 - e^{-\kappa (T - u)} .$$
-    <p>A level in force at time $u$ is felt for the rest of the horizon, less the part that has not yet reverted.
-    The conditional variance $\operatorname{Var}(V_T \mid y) = \xi^2\int_0^T \mathbb E[v_u \mid y]\,\big((1 - e^{-\kappa(T-u)})/\kappa\big)^2\,du$
-    is linear in the path, so its mean is the averaged model&apos;s value. Hence, exactly,</p>
+    <h2>A positive switched CIR variance</h2>
+    <p>Now let a stationary finite-state chain $Y_t$ switch the long-run level of a CIR variance:</p>
+    $$dv_t=\kappa(\theta(Y_t)-v_t)\,dt+\xi\sqrt{v_t}\,dB_t, \qquad v_0>0.$$
+    <p>The Brownian motion $B$ is independent of $Y$ and of the price Brownian motion. We keep $\kappa$ and $\xi$
+    fixed and assume $2\kappa\min_i\theta_i\ge\xi^2$. Thus, from every $v_0>0$, the model stays strictly positive;
+    equality is allowed. Write</p>
+    $$B_\kappa(t)=\frac{1-e^{-\kappa t}}{\kappa}, \qquad
+      \bar\theta=\mathbb E_\pi\theta(Y_0),$$
+    $$C_m(u)=\operatorname{Cov}_\pi(\theta(Y_0),\theta(Y_u)), \qquad
+      K_m=\int_0^\infty C_m(u)\,du.$$
+    <p>Integrating the CIR equation and then integrating over time gives</p>
+    $$V_T=B_\kappa(T)v_0+\kappa\int_0^T B_\kappa(T-s)\theta(Y_s)\,ds
+      +\xi\int_0^T B_\kappa(T-s)\sqrt{v_s}\,dB_s.$$
+    <p>The regime integral and the martingale are uncorrelated. Since</p>
+    $$\mathbb E[v_s]=\bar\theta+(v_0-\bar\theta)e^{-\kappa s},$$
+    <p>It&ocirc; isometry gives the exact decomposition</p>
     <div class="equation-card">
-    $$\operatorname{Var}(V_T) = \operatorname{Var}_{\mathrm{av}}(V_T) + 2\int_0^T h(u)\int_0^u h(u')\,C(u - u')\,du'\,du,
-      \qquad C(u) = \operatorname{Cov}_\pi\big(\theta_{y_0}, \theta_{y_u}\big).$$
+    $$\begin{aligned}
+    \operatorname{Var}(V_T)={}&\xi^2\int_0^T B_\kappa(T-s)^2
+      \big(\bar\theta+(v_0-\bar\theta)e^{-\kappa s}\big)\,ds\\
+      &+2\kappa^2\int_0^T C_m(u)H_T(u)\,du,
+    \end{aligned}$$
+    $$H_T(u)=\int_0^{T-u}B_\kappa(x)B_\kappa(x+u)\,dx.$$
     </div>
-    <p>Replacing the double integral by its Green&ndash;Kubo form $2K\int_0^T h^2\,du$ costs at most
-    $4\int_0^\infty u|C(u)|\,du$, again uniformly in $T$: truncating the inner integral costs
-    $2\int_0^\infty u|C|$, and replacing $h(u')$ by $h(u)$ costs the same, because
-    $h(u) - h(u') = e^{-\kappa(T-u)}\big(1 - e^{-\kappa(u-u')}\big) \le \kappa(u - u')\,e^{-\kappa(T-u)}$ and
-    $e^{-\kappa(T-u)}$ integrates to at most $1/\kappa$. So</p>
-    $$\kappa_4(M_T) = 3\operatorname{Var}_{\mathrm{av}}(V_T) + 6K\Big(T - \frac{2(1 - e^{-\kappa T})}{\kappa}
-      + \frac{1 - e^{-2\kappa T}}{2\kappa}\Big) + O(\varepsilon^2) \quad\text{uniformly in } T .$$
-    <p>The switching term is the Black&ndash;Scholes one with $T$ replaced by $\int_0^T h^2$, which is
-    $T - 3/(2\kappa)$ at long maturities: mean reversion delays the effect of the regimes by a reversion time and
-    a half. The certificate checks the exact decomposition to $10^{-11}$ and the remainder against the bound on
-    maturities from a few weeks to fifty years:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>$\sup_T \big|\operatorname{Var}(\mathbb E[V_T\mid y]) - 2K\!\int_0^T h^2\big|$</th><th>bound $4\int u|C|$</th></tr></thead><tbody><tr><td>10</td><td>3.341e-6</td><td>1.225e-5</td></tr><tr><td>20</td><td>8.021e-7</td><td>3.062e-6</td></tr><tr><td>40</td><td>1.961e-7</td><td>7.656e-7</td></tr><tr><td>80</td><td>4.844e-8</td><td>1.914e-7</td></tr></tbody></table></div>
+    <p>The first line is the integrated-variance variance of the averaged CIR model. The second is exactly the extra
+    variance created by the hidden regimes. This separation does not require an asymptotic expansion.</p>
 
-    <h2>All cumulants at fixed maturity</h2>
-    <p>Polynomials in $(v, z)$ with $z_t = \int_0^t v$ of total degree at most four form a space that the CIR
-    generator preserves, so on it every operator is a finite matrix and the moments of $V_T$ are exact
-    (<a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann 2012</a>).
-    The <a href="./any-equation.html">first-order rule</a> applies to the same matrices: the switched level enters
-    through $A = \kappa\,\partial_v$, and the correction is $K_0(\tilde\theta, \tilde\theta)\,A^2$, applied as a
-    Duhamel term to the averaged semigroup.</p>
-    <p>Moments $a_k + \varepsilon b_k$ give cumulants by differentiating the moment&ndash;cumulant polynomial. The
-    variance term reproduces $2K\int_0^T h^2$ exactly, and at one year the residuals fall at second order:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>$\kappa_2(V_T)$</th><th>$\kappa_3(V_T)$</th><th>$\kappa_4(V_T)$</th><th>rule residuals</th><th>averaged model</th></tr></thead><tbody><tr><td>10</td><td>7.497e-4</td><td>2.789e-5</td><td>1.553e-6</td><td>2.48e-6 / 1.38e-7 / 1.11e-8</td><td>4.42e-5 / 1.65e-6 / 9.06e-8</td></tr><tr><td>20</td><td>7.283e-4</td><td>2.710e-5</td><td>1.510e-6</td><td>5.99e-7 / 3.47e-8 / 2.78e-9</td><td>2.27e-5 / 8.59e-7 / 4.80e-8</td></tr><tr><td>40</td><td>7.171e-4</td><td>2.668e-5</td><td>1.487e-6</td><td>1.47e-7 / 8.71e-9 / 6.96e-10</td><td>1.15e-5 / 4.38e-7 / 2.47e-8</td></tr><tr><td>80</td><td>7.114e-4</td><td>2.646e-5</td><td>1.475e-6</td><td>3.62e-8 / 2.18e-9 / 1.74e-10</td><td>5.79e-6 / 2.21e-7 / 1.25e-8</td></tr></tbody></table></div>
-    <p>When $\kappa$ switches too, the coefficients that enter are the products $c = \kappa\theta$ and $\kappa$,
-    as the <a href="./any-equation.html">any-equation page</a> says, with $A_c = \partial_v$ and
-    $A_\kappa = -v\,\partial_v$. These do not commute, $[A_c, A_\kappa] = -\partial_v$, so the direction of a regime
-    cycle moves the mean of $V_T$. On the one-way cycle $Q_C$ of the general certificate the rule&apos;s residuals
-    for $\kappa_1$ to $\kappa_4$ have orders 2.00, 2.02, 2.05, 1.96; the symmetric part of the Green&ndash;Kubo matrix alone
-    leaves the mean with order 0.43.</p>
+    <h2>The Green&ndash;Kubo correction and a uniform bound</h2>
+    <p>Put $I_2(T)=\int_0^T B_\kappa(s)^2\,ds$. Replacing the narrow correlation kernel by its mass $K_m$ gives</p>
+    $$\operatorname{Var}(V_T)=\operatorname{Var}_{\rm av}(V_T)
+      +2\kappa^2 K_m I_2(T)+R_V(T,m).$$
+    <p>The remainder can be bounded without fixing the maturity. Monotonicity and
+    $0\le B_\kappa\le1/\kappa$ imply</p>
+    $$|H_T(u)-H_T(0)|\le\frac{2u}{\kappa^2}.$$
+    <p>Splitting the covariance integral at $T$ then gives</p>
+    <div class="equation-card">
+    $$\sup_{T\ge0}|R_V(T,m)|\le4\int_0^\infty u\,|C_m(u)|\,du.$$
+    </div>
+    <p>If the generator is $mQ_0$ and $|C_m(u)|\le A e^{-m\rho u}$, the right side is at most
+    $4A/(m^2\rho^2)$. Consequently</p>
+    <div class="equation-card">
+    $$\kappa_4(M_T)=3\operatorname{Var}_{\rm av}(V_T)
+      +6\kappa^2K_m I_2(T)+R_4(T,m),$$
+    $$\sup_{T\ge0}|R_4(T,m)|\le12\int_0^\infty u\,|C_m(u)|\,du=O(m^{-2}).$$
+    </div>
+    <p>This is a finite-rate statement, uniform over all maturities. It is stronger than merely observing a
+    first-order slope at one fixed expiry.</p>
 
-    <h2>Leverage</h2>
-    <p>With $d\langle W, B\rangle = \rho\,dt$ the martingale $M_T$ is no longer normal given the variance path,
-    and the identities at the top fail. Everything said about $V_T$ still holds, since $V_T$ does not involve $W$;
-    only the transfer to $M_T$ and $X_T$ changes. On the Heston page&apos;s model at one year with $\lambda = 10$,
-    exact cumulants of the return from the polynomial system in $(M, v, z)$:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>$\rho$</th><th>$\kappa_3(X_T)$ exact</th><th>from $V_T$</th><th>$\kappa_4(X_T)$ exact</th><th>from $V_T$</th></tr></thead><tbody><tr><td>+0.0</td><td>&minus;1.128e-3</td><td>&minus;1.128e-3</td><td>2.291e-3</td><td>2.291e-3</td></tr><tr><td>&minus;0.6</td><td>&minus;1.140e-2</td><td>&minus;1.128e-3</td><td>5.348e-3</td><td>2.291e-3</td></tr></tbody></table></div>
-    <p>Leverage multiplies the skewness by ten and more than doubles the fourth cumulant. The conditional-normal
-    shortcut is for independent Brownian noise only.</p>
+    <h2>When drift and vol-of-vol switch together</h2>
+    <p>The correct drift coordinates are not $\kappa$ and $\theta$ separately. Write
+      $c_i=\kappa_i\theta_i$. If vol-of-vol also switches, put $a_i=\xi_i^2$. The regime-dependent part of the
+      CIR variance generator is</p>
+    $$c_i A_c+\kappa_i A_\kappa+a_i A_a,\qquad
+      A_c=\partial_v,\quad A_\kappa=-v\partial_v,\quad A_a=\tfrac12v\partial_{vv}.$$
+    <p>Thus the averaged drift is $\bar c-\bar\kappa v$, whose effective mean level is
+      $\bar c/\bar\kappa$, generally not $\bar\theta$.</p>
+
+    <h3>The Feller test is statewise, including vol-of-vol</h3>
+    <p>Suppose $Y$ is independent of $B$, every $c_i,\kappa_i,\xi_i>0$, $v_0>0$, and</p>
+    $$dv_t=(c_{Y_t}-\kappa_{Y_t}v_t)dt+\xi_{Y_t}\sqrt{v_t}\,dB_t.$$
+    <div class="equation-card">
+    <p><strong>Statewise Feller theorem.</strong> Zero is inaccessible from every positive initial value and every
+      initial regime if</p>
+    $$2c_i\ge\xi_i^2\qquad\text{for every }i.$$
+    <p>For an irreducible finite chain this condition is also necessary.</p>
+    </div>
+    <p>The result allows both mean reversion and vol-of-vol to switch. Put
+      $K_t=\int_0^t\kappa_{Y_u}du$, $X_t=e^{K_t}v_t$, and introduce the strictly increasing clock</p>
+    $$s(t)=\frac14\int_0^t e^{K_u}\xi_{Y_u}^2du.$$
+    <p>It&ocirc;'s formula followed by the quadratic-variation time change gives exactly</p>
+    $$dZ_s=\delta_s\,ds+2\sqrt{Z_s}\,dW_s,\qquad
+      Z_{s(t)}=X_t,\qquad \delta_{s(t)}={4c_{Y_t}\over\xi_{Y_t}^2}.$$
+    <p>This is a squared-Bessel equation with an adapted, piecewise-constant dimension. Before a possible hit of
+      zero,</p>
+    $$d\log Z_s={\delta_s-2\over Z_s}\,ds+{2\over\sqrt{Z_s}}\,dW_s.$$
+    <p>If every $\delta_s\ge2$, the finite-variation term is nonnegative; McKean's stopped-log argument rules out
+      $\log Z_s\to-\infty$ in finite time. Equality is included. Unlike the common-$\xi$ proof, this argument does
+      not apply a comparison theorem across unequal diffusion coefficients.</p>
+    <p>For necessity, if some regime $i$ has $2c_i<\xi_i^2$, let
+      $q_i=-Q_{ii}$ and let $\tau_0$ be the zero-hitting time of the CIR process frozen in that regime. Conditional
+      on starting in $i$, the probability of reaching zero before the first switch is</p>
+    <div class="equation-card">
+    $$\Pr_{v_0,i}(\tau_0<T_{\rm switch})=\mathbb E_{v_0}[e^{-q_i\tau_0}]
+      =\frac{\Gamma(1+\alpha-\beta)}{\Gamma(1-\beta)}
+        U(\alpha,\beta,z)>0,$$
+    $$\alpha=\frac{q_i}{\kappa_i},\qquad
+      \beta=\frac{2c_i}{\xi_i^2}<1,\qquad z=\frac{2\kappa_i v_0}{\xi_i^2},$$
+    </div>
+    <p>where $U$ is Tricomi's confluent hypergeometric function. The formula follows by solving
+      $\tfrac12\xi_i^2v u''+(c_i-\kappa_i v)u'=q_i u$ with $u(0)=1$ and $u(\infty)=0$. Accessibility of $i$ then
+      gives positive boundary-hitting probability from every communicating regime. Consequently the Feller test
+      cannot be applied only to the averaged model.</p>
+    <p>A two-state counterexample makes the distinction concrete. Take switching rate $q=1.5$,
+      $(c_1,c_2)=(0.04,0.16)$, $(\kappa_1,\kappa_2)=(0.8,2)$, and $(\xi_1,\xi_2)=(0.4,0.3)$.
+      For the symmetric fast chain the correctly averaged squared vol-of-vol is
+      $\overline{\xi^2}=0.125$, so the averaged model passes with
+      $2\bar c/\overline{\xi^2}=1.6$. Regime 1 nevertheless has $2c_1/\xi_1^2=0.5$. Starting from $v_0=0.04$ there, the
+      exact probability of hitting zero before the next switch is $0.2341927683$. The
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_feller.py">boundary certificate</a>
+      independently evaluates the integral representation of $U$ and agrees below $9\times10^{-16}$.</p>
+
+    <p>Now let $K^{(0)}$ be the Green&ndash;Kubo matrix of the centered feature triple $(c,\kappa,a)$ for the unscaled
+      generator $Q_0$. For a stationary-start chain with generator $mQ_0$, a regime-free polynomial payoff $f$,
+      and fixed $T$, the semigroup expansion on every invariant finite-degree polynomial space is</p>
+    $$P_m(T)f=e^{T\bar L}f+\frac1m\int_0^T e^{(T-s)\bar L}\mathcal D
+      e^{s\bar L}f\,ds+O_T(m^{-2}),$$
+    <p>where the remainder is in the finite-dimensional matrix norm and</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathcal D={}&(K^{(0)}_{\kappa\kappa}v-K^{(0)}_{c\kappa})\partial_v\\
+      &+\left[K^{(0)}_{cc}+\tfrac12K^{(0)}_{ca}
+      -\{K^{(0)}_{c\kappa}+K^{(0)}_{\kappa c}
+      +\tfrac12K^{(0)}_{\kappa a}+K^{(0)}_{a\kappa}\}v
+      +K^{(0)}_{\kappa\kappa}v^2\right]\partial_{vv}\\
+      &+\tfrac12\left[\{K^{(0)}_{ca}+K^{(0)}_{ac}+K^{(0)}_{aa}\}v
+      -\{K^{(0)}_{\kappa a}+K^{(0)}_{a\kappa}\}v^2\right]\partial_{vvv}\\
+      &+\tfrac14K^{(0)}_{aa}v^2\partial_{vvvv}.
+    \end{aligned}$$
+    </div>
+    <p>Indeed, centering the three coefficient vectors and solving the fast Poisson equations gives
+      $\mathcal D=\sum_{r,s\in\{c,\kappa,a\}}K^{(0)}_{rs}A_rA_s$; multiplying the differential operators yields the displayed
+      formula. Standard finite-dimensional semigroup perturbation then gives the Duhamel term and its
+      $O_T(m^{-2})$ remainder. In particular,</p>
+    $$[A_c,A_\kappa]=-\partial_v,\qquad [A_c,A_a]=\tfrac12\partial_{vv},\qquad
+      [A_\kappa,A_a]=\tfrac12v\partial_{vv}.$$
+    <p>Thus reversing a nonreversible regime cycle transposes $K^{(0)}$ and flips the entire antisymmetric
+      contribution</p>
+    $$-K^{(0),\rm anti}_{c\kappa}\partial_v
+      +\tfrac12K^{(0),\rm anti}_{ca}\partial_{vv}
+      +\tfrac12K^{(0),\rm anti}_{\kappa a}v\partial_{vv},$$
+    <p>while preserving every symmetric term. A reversible two-state chain has no directional term.</p>
+    <p>The same theorem supplies a cumulant correction without a common Riccati coefficient. Augment the state by
+      $z_t=\int_0^t v_sds$; the averaged generator gains $v\partial_z$, while $\mathcal D$ is unchanged because the
+      integrated coordinate itself is not switched. Define</p>
+    $$a_r=[e^{T\bar L}z^r](v_0,0),\qquad
+      b_r=\left[\int_0^T e^{(T-s)\bar L}\mathcal D e^{s\bar L}z^rds\right](v_0,0).$$
+    <p>Then $\mathbb E[V_T^r]=a_r+b_r/m+O_T(m^{-2})$ for $r\le4$. Let $\bar\kappa_r$ be the cumulant formed
+      from $(a_1,\ldots,a_r)$, and let $\dot\kappa_r$ be the directional derivative of that moment&ndash;cumulant
+      polynomial in direction $(b_1,\ldots,b_r)$. The needed coefficients are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \dot\kappa_2={}&b_2-2a_1b_1,\\
+    \dot\kappa_3={}&b_3-3(a_1b_2+a_2b_1)+6a_1^2b_1,\\
+    \dot\kappa_4={}&b_4-4(a_1b_3+a_3b_1)-6a_2b_2\\
+      &+12(a_1^2b_2+2a_1a_2b_1)-24a_1^3b_1.
+    \end{aligned}$$
+    </div>
+    <p>For price Brownian noise independent of the variance driver, this gives the explicit fixed-maturity
+      corrections</p>
+    $$\kappa_4(M_T)=3\bar\kappa_2(V_T)+\frac{3\dot\kappa_2}{m}+O_T(m^{-2}),$$
+    $$\kappa_4(X_T)=3\bar\kappa_2+\frac32\bar\kappa_3+\frac1{16}\bar\kappa_4
+      +\frac1m\left(3\dot\kappa_2+\frac32\dot\kappa_3+\frac1{16}\dot\kappa_4\right)+O_T(m^{-2}).$$
+
+    <h2>Why the simultaneous-switching bound is not maturity-uniform</h2>
+    <p>The dependence of the remainder on $T$ is necessary, already for the first integrated-variance moment.
+      This is consistent with the fixed-time perturbed-semigroup framework of
+      <a href="./bibliography.html#Kurtz1973">Kurtz (1973)</a>; the calculation below identifies the precise
+      obstruction to strengthening the present expansion.
+      Consider the symmetric two-state generator
+      $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$, stationary law
+      $\pi=(1/2,1/2)$, and coefficient vectors
+      $c=(0.04,0.16)$ and $\kappa=(0.8,2)$. One may take $\xi=(0.2,0.2)$, so the statewise
+      Feller inequalities are strict. Vol-of-vol does not enter the following mean calculation.</p>
+    <p>If $r_m$ is the stationary row vector with components
+      $\mathbb E[v_t\mathbf1_{\{Y_t=i\}}]$, then</p>
+    $$r_m\{mQ_0-\operatorname{diag}(\kappa)\}
+      =-\pi\operatorname{diag}(c),\qquad
+      \mu_m:=r_m\mathbf1=\frac{25m+13}{50(7m+4)}.$$
+    <p>Consequently</p>
+    $$\mu_m=\frac1{14}-\frac9{2450m}+\frac{18}{8575m^2}+O(m^{-3}),$$
+    $$\mu_m-\frac1{14}+\frac9{2450m}
+      =\frac{18}{1225m(7m+4)}>0.$$
+    <p>With $Y_0\sim\pi$ and any fixed finite initial variance mean, the stable two-state first-moment
+      system gives $\mathbb E[V_T]=\mu_mT+O_m(1)$ as $T\to\infty$. Thus even after the
+      averaged and first-order long-run slopes have been matched, the residual grows linearly in maturity
+      for every fixed $m$. An absolute $O(m^{-2})$ remainder uniform over all $T\ge0$ is therefore impossible
+      without retaining second-order long-run information.</p>
+    <p>The obstruction also survives a joint limit. Starting from
+      $v_0=\mu_0=1/14$ and taking $T=m^2$, the exact matrix-exponential solution satisfies</p>
+    $$\mathbb E[V_{m^2}]-\mu_0m^2-\mu_1m\longrightarrow\frac{18}{8575}
+      =0.0020991254\ldots,\qquad \mu_1=-\frac9{2450}.$$
+    <p>For $m=8,16,32,64,128$, the certificate obtains respectively
+      $0.0022948980$, $0.0021929979$, $0.0021449064$, $0.0021217062$, and
+      $0.0021103356$. This counterexample concerns simultaneous switching. It does not weaken the separate
+      fixed-$\kappa$ covariance result above, whose special structure yields a maturity-uniform bound.</p>
+
+    <h2>Uniformity recovered by retaining the exact slow mode</h2>
+    <p>The secular obstruction can be removed at the first-moment level without returning to the full switched
+      diffusion. Let $Q_0$ be any irreducible finite-state generator with stationary row vector $\pi$, put
+      $K=\operatorname{diag}(\kappa)$ with $\min_i\kappa_i>0$, and assume $Y_0\sim\pi$. If</p>
+    $$r_m(t)_i=\mathbb E[v_t\mathbf1_{\{Y_t=i\}}],\qquad
+      A_m=mQ_0-K,\qquad b=\pi\operatorname{diag}(c),$$
+    <p>then $r_m'=r_mA_m+b$. Its stationary row vector and long-run mean are</p>
+    $$r_{m,\infty}A_m=-b,\qquad \mu_m=r_{m,\infty}\mathbf1.$$
+    <p>Let $\lambda_m<0$ be the simple principal eigenvalue of the irreducible Metzler matrix $A_m$, and let
+      $P_m$ be its Riesz projection. For
+      $d_m=r_m(0)-r_{m,\infty}$ define the slope-and-mode composite</p>
+    $$\mathcal M_m(T)=\mu_mT+
+      d_mP_m\mathbf1\,\frac{e^{\lambda_mT}-1}{\lambda_m}.$$
+    <p>The exact remainder is</p>
+    $$\mathbb E[V_T]-\mathcal M_m(T)
+      =d_m(I-P_m)A_m^{-1}(e^{A_mT}-I)\mathbf1.$$
+    <p>Analytic spectral perturbation gives
+      $P_m=\mathbf1\pi+O(m^{-1})$, a complementary inverse of order $m^{-1}$, and a complementary semigroup
+      bounded by $Ce^{-cmT}$. In particular $(I-P_m)\mathbf1=O(m^{-1})$, and therefore</p>
+    $$\sup_{T\ge0}|\mathbb E[V_T]-\mathcal M_m(T)|=O(m^{-2}).$$
+    <p>If the initial variance is independent of the stationary regime, so
+      $r_m(0)=v_0\pi$, the left complementary amplitude is also $O(m^{-1})$ and the rate improves to</p>
+    $$\sup_{T\ge0}|\mathbb E[V_T]-\mathcal M_m(T)|=O(m^{-3}).$$
+    <p>This is the affine first-moment analogue of retaining an exact Perron exponent at the long end. The spectral
+      step follows the isolated-eigenprojection perturbation framework of
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>. It does not assert a uniform approximation for higher
+      integrated-variance cumulants, leveraged returns, option prices, or the full transition semigroup.</p>
+    <p>For the preceding strictly positive two-state model, the certificate maximizes the exact error over
+      $0\le T\le m^2$. At $m=8,16,32,64,128$, independent initial variance gives errors
+      $3.834\times10^{-6}$, $5.130\times10^{-7}$, $6.635\times10^{-8}$,
+      $8.437\times10^{-9}$, and $1.064\times10^{-9}$, with measured rate $2.987$.
+      Allowing the conditional initial means to differ by regime gives
+      $6.056\times10^{-5}$, $1.631\times10^{-5}$, $4.233\times10^{-6}$,
+      $1.078\times10^{-6}$, and $2.721\times10^{-7}$, with measured rate $1.986$.</p>
+
+    <h2>An explicit Green&ndash;Kubo slow mode</h2>
+    <p>The eigenvectors in the preceding composite are not necessary at the target $O(m^{-2})$ accuracy. Let
+      $Q_0^{\#}$ be the group inverse, normalized by
+      $Q_0Q_0^{\#}=Q_0^{\#}Q_0=I-\mathbf1\pi$, and define</p>
+    $$\bar\kappa=\pi\kappa,\qquad
+      \widetilde\kappa=\kappa-\bar\kappa\mathbf1,\qquad
+      h=Q_0^{\#}\widetilde\kappa,$$
+    $$K_{\kappa\kappa}=-\pi\!\left(\widetilde\kappa\,h\right).$$
+    <p>Ordinary isolated-eigenvalue perturbation gives the two explicit expansions</p>
+    $$\lambda_m=-\bar\kappa+\frac{K_{\kappa\kappa}}m+O(m^{-2}),\qquad
+      P_m\mathbf1=\mathbf1+\frac hm+O(m^{-2}).$$
+    <p>The second coefficient is the Poisson corrector for the switched mean-reversion rate; the first is its
+      Green&ndash;Kubo quadratic form. Retain the exact stationary slope $\mu_m$, but replace the spectral data by</p>
+    $$\widehat\lambda_m=-\bar\kappa+\frac{K_{\kappa\kappa}}m,$$
+    $$\widehat{\mathcal M}_m(T)=\mu_mT+
+      d_m\left(\mathbf1+\frac hm\right)
+      \frac{e^{\widehat\lambda_mT}-1}{\widehat\lambda_m}.$$
+    <p>Because $(e^{\lambda T}-1)/\lambda$ and its first derivative in $\lambda$ are bounded uniformly over
+      $T\ge0$ when $\lambda$ stays to the left of a fixed negative constant, replacing $(\lambda_m,P_m\mathbf1)$
+      by these first-order expressions costs only $O(m^{-2})$. Combining this with the fast-complement estimate
+      proves</p>
+    $$\sup_{T\ge0}|\mathbb E[V_T]-\widehat{\mathcal M}_m(T)|=O(m^{-2}).$$
+    <p>The exact slope is essential: any nonzero error in its coefficient is multiplied by $T$ and therefore cannot
+      be bounded uniformly over all maturities. The explicit composite needs one linear solve for $\mu_m$ and one
+      group inverse of $Q_0$, but no $m$-dependent eigenvectors.</p>
+    <p>For the two-state example, the uniform errors at $m=8,16,32,64,128$ are
+      $1.779\times10^{-5}$, $4.888\times10^{-6}$, $1.282\times10^{-6}$,
+      $3.283\times10^{-7}$, and $8.307\times10^{-8}$ for an independent initial variance, with rate $1.983$.
+      For regime-dependent conditional initial means they are
+      $8.448\times10^{-5}$, $2.200\times10^{-5}$, $5.617\times10^{-6}$,
+      $1.419\times10^{-6}$, and $3.568\times10^{-7}$, with rate $1.992$.
+      A nonreversible three-state check gives rates $1.954$ and $1.987$, respectively.</p>
+
+    <h2>Removing the exact stationary solve on growing maturity windows</h2>
+    <p>The exact slope is necessary on the whole half-line, but it can be replaced to any prescribed algebraic
+      order on a correspondingly growing maturity window. Write $D_\kappa=\operatorname{diag}(\kappa)$,
+      $D_c=\operatorname{diag}(c)$, $S=Q_0^{\#}$, and seek</p>
+    $$r_{m,\infty}=\sum_{j=0}^p m^{-j}\rho_j+O(m^{-p-1}),\qquad
+      \mu_m=\sum_{j=0}^p m^{-j}\mu_j+O(m^{-p-1}),\quad \mu_j=\rho_j\mathbf1.$$
+    <p>All coefficients follow from one group inverse and a Poisson recursion. First set</p>
+    $$\mu_0=\frac{\pi c}{\bar\kappa},\qquad \rho_0=\mu_0\pi,$$
+    $$z_1=(\rho_0D_\kappa-\pi D_c)S,\qquad
+      \mu_1=-\frac{z_1\kappa}{\bar\kappa},\qquad \rho_1=z_1+\mu_1\pi.$$
+    <p>For every $j\ge1$, continue with</p>
+    $$z_{j+1}=\rho_jD_\kappa S,\qquad
+      \mu_{j+1}=-\frac{z_{j+1}\kappa}{\bar\kappa},\qquad
+      \rho_{j+1}=z_{j+1}+\mu_{j+1}\pi.$$
+    <p>The normalization makes $z_j\mathbf1=0$ and the choice of $\mu_j$ enforces the next solvability condition
+      $\rho_j\kappa=0$. Substitution into
+      $r_{m,\infty}(mQ_0-D_\kappa)=-\pi D_c$ proves the expansion recursively; finite-dimensional resolvent
+      analyticity, in the sense of <a href="./bibliography.html#Kato1949">Kato (1949)</a>, supplies its remainder.
+      In particular,</p>
+    $$\mu_1=\frac{\pi\!\left[(c-\mu_0\kappa)
+      Q_0^{\#}(\kappa-\bar\kappa\mathbf1)\right]}{\bar\kappa}.$$
+    <p>Replace $r_{m,\infty}$ and $\mu_m$ in the explicit Green&ndash;Kubo slow-mode composite by their order-$p$
+      truncations. For each fixed $p\ge1$ and any deterministic horizon $T_m$, the same fast-mode estimate gives</p>
+    $$\sup_{0\le T\le T_m}\left|\mathbb E[V_T]-
+      \widehat{\mathcal M}^{[p]}_m(T)\right|
+      \le C_p\left(m^{-2}+T_m m^{-p-1}\right).$$
+    <p>Consequently $T_m=O(m^{p-1})$ preserves the $O(m^{-2})$ accuracy without any $m$-dependent linear solve:
+      one slope correction covers bounded maturities, two cover maturities of order $m$, and three cover maturities
+      of order $m^2$. This is a joint switching-speed/maturity theorem, not an all-maturity approximation. Uniformity
+      over every $T\ge0$ still requires the exact slope.</p>
+    <p>For the positive two-state benchmark, the recursion gives
+      $(\mu_0,\mu_1,\mu_2,\mu_3)=(0.0714285714,-0.0036734694,
+      0.0020991254,-0.0011995002)$. The measured slope-remainder orders for $p=1,2,3$ are
+      $1.994$, $2.994$, and $3.994$; the full composite orders on $T\le m^{p-1}$ are
+      $1.990$, $1.986$, and $1.992$. A nonreversible three-state check gives slope orders
+      $1.995$, $2.995$, and $3.997$.</p>
+
+    <p>Leverage can be included without conditional normality by augmenting once more with
+      $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
+    $$d\langle W,B\rangle_t=\rho_{Y_t}dt,\qquad |\rho_i|\le1,\qquad
+      \eta_i=\rho_i\xi_i.$$
+    <p>The two regime-dependent diffusion coefficients are $a_i=\xi_i^2$ and $\eta_i$; neither $\rho_i$ nor
+      $\xi_i$ alone is a generator coordinate. On polynomials in $(M,v,z)$, define</p>
+    $$A_\eta=v\partial_{Mv},\qquad
+      \bar L=\bar cA_c+\bar\kappa A_\kappa+\bar aA_a+\bar\eta A_\eta
+      +\tfrac12v\partial_{MM}+v\partial_z.$$
+    <p>The averaged model is again a valid Heston diffusion, with</p>
+    $$\xi_{\rm eff}=\sqrt{\bar a},\qquad
+      \rho_{\rm eff}=\frac{\bar\eta}{\sqrt{\bar a}},qquad
+      |\rho_{\rm eff}|\le1.$$
+    <p>The last inequality follows from $|\mathbb E_\pi(\rho\xi)|^2\le
+      \mathbb E_\pi(\rho^2)\mathbb E_\pi(\xi^2)\le\bar a$. Let $K^{(0)}$ now be the Green&ndash;Kubo matrix of
+      the centered feature vector $(c,\kappa,a,\eta)$. For fixed maturity on every invariant finite-degree
+      polynomial space, the corrector is</p>
+    $$\mathcal D_{\rm lev}=\sum_{r,s\in\{c,\kappa,a,\eta\}}K^{(0)}_{rs}A_rA_s,$$
+    <p>with an $O_T(m^{-2})$ semigroup remainder. For constant $\rho$, writing $\eta_i=\rho\xi_i$ is exactly
+      equivalent to the earlier $(\xi_i,\rho A_\eta)$ representation. For switched $\rho$, however, separately
+      averaging $\rho$ and $\xi$ is generally wrong; the relevant average and Poisson equation use $\eta=\rho\xi$.
+      The new commutators are</p>
+    $$[A_c,A_\eta]=\partial_{Mv},\qquad [A_\kappa,A_\eta]=0,
+      \qquad [A_a,A_\eta]=\tfrac12v\partial_{Mvv}.$$
+    <p>Thus cycle reversal also flips
+      $K^{(0),\rm anti}_{c\eta}\partial_{Mv}
+      +\tfrac12K^{(0),\rm anti}_{a\eta}v\partial_{Mvv}$, while preserving the symmetric correction.
+      Put $x=M-z/2$ and define</p>
+    $$\alpha_r=[e^{T\bar L_\rho}x^r](0,v_0,0),\qquad
+      \beta_r=\left[\int_0^T e^{(T-s)\bar L_\rho}\mathcal D_\rho
+      e^{s\bar L_\rho}x^rds\right](0,v_0,0).$$
+    <p>Direct differentiation of the fourth moment&ndash;cumulant polynomial gives</p>
+    <div class="equation-card">
+    $$\kappa_4(X_T)=\bar\kappa_4^X+\frac{\dot\kappa_4^X}{m}+O_T(m^{-2}),$$
+    $$\dot\kappa_4^X=\beta_4-4(\alpha_1\beta_3+\alpha_3\beta_1)-6\alpha_2\beta_2
+      +12(\alpha_1^2\beta_2+2\alpha_1\alpha_2\beta_1)-24\alpha_1^3\beta_1.$$
+    </div>
+    <p>This is the simultaneous-$(\kappa\theta,\kappa,\xi^2,\rho\xi)$ leverage correction. It agrees with the
+      independent-price formula above when $\eta=0$, but does not assume that reduction under leverage.</p>
+    <p>The independent certificate works on polynomials through degree five, an invariant subspace of the CIR
+      generator. For a nonreversible three-state chain it compares the original coupled semigroup with the displayed
+      Duhamel correction. The averaged and symmetric-only errors remain first order, whereas the full residual has
+      rate 1.994. Reversing the chain transposes $K^{(0)}$; after subtracting the commutator correction, the
+      forward-minus-reverse residual has rate 1.985. The matrix identity between the displayed and abstract
+      correctors holds to $6.9\times10^{-18}$. In the augmented degree-four system, the averaged fourth cumulants are
+      $0.0003932318$ for $M_T$ and $0.0003946899$ for $X_T$; their $m^{-1}$ coefficients are $0.0000922515$ and
+      $0.0000931020$. Both corrected residuals have measured rate 1.992. At $\rho=-0.7$, the averaged
+      $\kappa_4(X_T)$ is $0.0009887961$, its simultaneous-switching coefficient is $0.0001250489$, and the corrected
+      residual has rate 1.990. For switched correlations $(-0.80,-0.25,0.35)$, the effective correlation is
+      $-0.20052942$, the averaged fourth cumulant is $0.0004572129$, the first-order coefficient is $0.0003411583$,
+      and the corrected residual has rate 1.986. The certificate independently verifies the constant-$\rho$
+      equivalence to $2.1\times10^{-17}$, the three displayed commutators exactly on the polynomial space, and
+      Green&ndash;Kubo transposition under cycle reversal to $1.4\times10^{-17}$. The
+      $\rho=0$ augmented calculation reproduces both independent-price numbers within numerical precision. The
+      parameter choice satisfies the strict Feller inequality in every regime.</p>
+    <p>This extension is deliberately an operator theorem, not another closed Riccati formula. When $\kappa$ varies,
+      the regime transform coefficients are no longer represented by one common scalar $B_s$, so the explicit
+      one-dimensional call correction below does not carry over unchanged.</p>
+
+    <h2>A two-state certificate</h2>
+    <p>The certificate uses a symmetric chain with flip rate $m$, $\theta=(0.08,0.02)$, $\kappa=2$, $\xi=0.2$,
+    $v_0=0.04$, and $T=1.5$. The strict Feller inequality holds in both regimes. Here
+    $C_m(u)=0.03^2e^{-2mu}$ and $K_m=0.03^2/(2m)$.</p>
+    <p>An independent matrix exponential solves the closed ODE for every mixed moment
+    $\mathbb E[V_T^a v_T^b\mathbf1_{\{Y_T=i\}}]$ of total degree at most four. It agrees with the covariance
+    decomposition to better than $2\times10^{-13}$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">exact $\kappa_4(M)$</th><th>first order</th><th>residual</th><th style="text-transform:none">$m^2$ residual</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>0.0019797681</td><td>0.0021728072</td><td>&minus;1.9304e-4</td><td>&minus;7.7216e-4</td></tr>
+        <tr><td>4</td><td>0.0015882057</td><td>0.0016333692</td><td>&minus;4.5164e-5</td><td>&minus;7.2262e-4</td></tr>
+        <tr><td>8</td><td>0.0013531018</td><td>0.0013636502</td><td>&minus;1.0548e-5</td><td>&minus;6.7510e-4</td></tr>
+        <tr><td>16</td><td>0.0012262720</td><td>0.0012287907</td><td>&minus;2.5187e-6</td><td>&minus;6.4479e-4</td></tr>
+        <tr><td>32</td><td>0.0011607479</td><td>0.0011613610</td><td>&minus;6.1309e-7</td><td>&minus;6.2780e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The scaled residual settles, confirming the $m^{-2}$ remainder. The certificate also computes
+    $\kappa_4(X_T)$ two ways: directly from conditional raw moments and from the exact three-cumulant formula above.</p>
+
+    <h2>What leverage changes exactly</h2>
+    <p>Now allow the price and variance Brownian motions to have correlation $\rho$:</p>
+    $$dM_t=\sqrt{v_t}\,dW_t,\qquad d\langle W,B\rangle_t=\rho\,dt,\qquad
+      X_T=M_T-\tfrac12V_T.$$
+    <p>Conditional on the variance path, $M_T$ is no longer an independent centered normal with variance $V_T$.
+    The replacement is an exact identity that uses joint cumulants. Write $\kappa_{r,s}$ for the joint cumulant
+    with $r$ copies of $M_T$ and $s$ copies of $V_T$. Multilinearity gives</p>
+    <div class="equation-card">
+    $$\kappa_4(X_T)=\kappa_{4,0}-2\kappa_{3,1}
+      +\tfrac32\kappa_{2,2}-\tfrac12\kappa_{1,3}+\tfrac1{16}\kappa_{0,4}.$$
+    </div>
+    <p>This statement needs only fourth moments. When $\rho=0$, conditional normality reduces its five terms to</p>
+    $$\kappa_{4,0}=3\kappa_{0,2},\qquad \kappa_{3,1}=\kappa_{1,3}=0,
+      \qquad \kappa_{2,2}=\kappa_{0,3},$$
+    <p>recovering the earlier formula. None of these four reductions should be assumed under leverage.</p>
+
+    <h2>An independent affine referee</h2>
+    <p>The leveraged certificate solves every polynomial moment
+    $\mathbb E[M_T^aV_T^bv_T^c\mathbf1_{\{Y_T=i\}}]$ with $a+b+c\le4$. This system closes exactly under the
+    switched CIR generator. As an independent check, it also solves the affine transform. For the log-return MGF,
+    with $B(0)=0$ and $a(0)=\mathbf1$,</p>
+    $$B'=-\kappa B+\tfrac12\xi^2B^2+\rho\xi uB+\tfrac12u^2-\tfrac12u,$$
+    $$a'=Qa+\kappa B\,\operatorname{diag}(\theta)a,
+      \qquad K_X(u)=B(T)v_0+\log(\pi^\top a(T)).$$
+    <p>Cauchy coefficient extraction from this transform agrees with the polynomial fourth cumulant below
+    $3\times10^{-9}$.</p>
+
+    <p>For the certificate parameters at switching speed $m=8$, the independent shortcut is exact at $\rho=0$
+    but materially wrong under leverage:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$\rho$</th><th style="text-transform:none">exact $\kappa_4(X)$</th><th>independent shortcut</th><th>error</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0.001362747</td><td>0.001362747</td><td>0</td></tr>
+        <tr><td>&minus;0.7</td><td>0.003433475</td><td>0.001362747</td><td>+0.002070728</td></tr>
+        <tr><td>+0.7</td><td>0.002649857</td><td>0.001362747</td><td>+0.001287110</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The even-in-$\rho$ change in $\kappa_{4,0}$ is accompanied by odd mixed-cumulant terms, so positive and
+    negative leverage do not give the same log-return kurtosis. At $\rho=-0.7$, the independence formula misses
+    about 60% of the exact fourth cumulant.</p>
+
+    <h2>An explicit leveraged option-price correction</h2>
+    <p>Set $\bar\theta=(\theta_++\theta_-)/2$ and $\delta=(\theta_+-\theta_-)/2$, and let the symmetric
+    chain flip at rate $m$. The price and variance Brownian motions may now have any fixed correlation $\rho$.
+    For an MGF argument $s$, the Heston Riccati coefficient remains independent of the regime:</p>
+    $$B_s'=-\kappa B_s+\tfrac12\xi^2B_s^2+\rho\xi sB_s+\tfrac12(s^2-s),
+      \qquad B_s(0)=0.$$
+    <p>Write the two regime amplitudes as $a_\pm$, their mean as $a=(a_++a_-)/2$, their half-difference as
+    $d=(a_+-a_-)/2$, and $r=d/a$. With $g(t)=\kappa\delta B_s(t)$, their exact equations reduce to</p>
+    $$\frac{d}{dt}\log a=\kappa\bar\theta B_s+g r,
+      \qquad r'=g-2mr-gr^2,\qquad r(0)=0.$$
+    <p>The stationary start and $B_s(0)=0$ remove the leading initial layer. Therefore, at fixed maturity and
+    uniformly for $s$ in any compact subset of the MGF strip,</p>
+    <div class="equation-card">
+    $$\log\Phi_m(s)=\log\Phi_{\rm av}(s)+\frac{h_T(s)}{m}+O(m^{-2}),$$
+    $$h_T(s)=\frac{\kappa^2\delta^2}{2}\int_0^T B_s(t)^2\,dt.$$
+    </div>
+    <p>This has an elementary finite-rate proof. If $G=\sup|g|$, $L=\sup|g'|$, and $m\ge G$, a bootstrap in
+    the Riccati equation gives $|r|\le G/m$. For $e=r-g/(2m)$,</p>
+    $$\sup_{t\le T}|e(t)|\le\frac{L}{4m^2}+\frac{G^3}{2m^3},$$
+    <p>so the remainder in the displayed log transform is bounded by
+    $TG[L/(4m^2)+G^3/(2m^3)]$. This bound is fixed-maturity and compact-transform-domain; it is not the
+    maturity-uniform cumulant bound above.</p>
+
+    <p>For log strike $k$, Carr&ndash;Madan damping $\alpha&gt;0$, and
+    $D_\alpha(u)=\alpha^2+\alpha-u^2+i(2\alpha+1)u$, the normalized call price consequently has first correction</p>
+    $$C_m(k)=C_{\rm av}(k)+\frac{c_1(k)}m+O(m^{-2}),$$
+    $$c_1(k)=\frac{e^{-\alpha k}}{\pi}\int_0^\infty
+      \Re\!\left(\frac{e^{-iuk}\Phi_{\rm av}(\alpha+1+iu)
+      h_T(\alpha+1+iu)}{D_\alpha(u)}\right)du.$$
+    <p>The stated error follows directly on every truncated frequency interval. Passing to the infinite integral
+    additionally requires the usual Heston moment-strip and Fourier-tail domination conditions. The certificate
+    uses $k=0$, $\alpha=1$, cutoff 80, and doubles the Gauss&ndash;Legendre order from 320 to 640; both $C_{\rm av}$
+    and $c_1$ change by less than $2\times10^{-10}$.</p>
+
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>exact call</th><th style="text-transform:none">$C_{\rm av}+c_1/m$</th><th>residual</th><th style="text-transform:none">$m^2$ residual</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>0.1040021431</td><td>0.1039744651</td><td>+2.768e-5</td><td>+4.428e-4</td></tr>
+        <tr><td>8</td><td>0.1042301615</td><td>0.1042245834</td><td>+5.578e-6</td><td>+3.570e-4</td></tr>
+        <tr><td>16</td><td>0.1043508454</td><td>0.1043496426</td><td>+1.203e-6</td><td>+3.079e-4</td></tr>
+        <tr><td>32</td><td>0.1044124475</td><td>0.1044121722</td><td>+2.754e-7</td><td>+2.820e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>This first table is the independent-price case $\rho=0$: $C_{\rm av}=0.1044747017$ and
+    $c_1=-0.0020009463$. Its last residual rate is 2.127.</p>
+
+    <p>Leverage changes the Riccati solution, and hence both $C_{\rm av}$ and $c_1$, but it does not change the
+    two-state amplitude equation or its error proof. At $\rho=-0.7$ the independent check gives:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>exact call</th><th style="text-transform:none">$C_{\rm av}+c_1/m$</th><th>residual</th><th style="text-transform:none">$m^2$ residual</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>0.1025765801</td><td>0.1025502974</td><td>+2.628e-5</td><td>+4.205e-4</td></tr>
+        <tr><td>8</td><td>0.1028052451</td><td>0.1028000430</td><td>+5.202e-6</td><td>+3.329e-4</td></tr>
+        <tr><td>16</td><td>0.1029260243</td><td>0.1029249158</td><td>+1.108e-6</td><td>+2.838e-4</td></tr>
+        <tr><td>32</td><td>0.1029876043</td><td>0.1029873522</td><td>+2.520e-7</td><td>+2.581e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Here $C_{\rm av}=0.1030497886$, $c_1=-0.0019979648$, and the last residual rate is 2.137. Doubling the
+    quadrature order changes the leveraged averaged price, correction, and $m=8$ exact price by less than
+    $2\times10^{-10}$. Thus the same full-transform option correction survives leverage; it is not an Edgeworth
+    approximation based only on four cumulants.</p>
+
+    <h2>The corresponding implied-volatility correction</h2>
+    <p>The price result transfers directly to Black&ndash;Scholes implied volatility, but only where inversion is
+      well conditioned. Let $C_{\rm BS}(k,\sigma)$ be the normalized zero-rate Black&ndash;Scholes call, define
+      $\sigma_{\rm av}(k)$ by
+      $C_{\rm BS}(k,\sigma_{\rm av}(k))=C_{\rm av}(k)$, and write
+      $\mathcal V_{\rm av}(k)=\partial_\sigma C_{\rm BS}(k,\sigma_{\rm av}(k))$.</p>
+    <p>On a compact strike interval $K$, assume the call expansion is uniform, all prices remain strictly inside
+      their no-arbitrage bounds, and $\mathcal V_{\rm av}\ge v_*>0$. The implicit-function theorem then gives,
+      uniformly for $k\in K$,</p>
+    <div class="equation-card">
+    $$\sigma_m(k)=\sigma_{\rm av}(k)+\frac{b_1(k)}m+O(m^{-2}),\qquad
+      b_1(k)=\frac{c_1(k)}{\mathcal V_{\rm av}(k)}.$$
+    </div>
+    <p>The error statement has an elementary quantitative form. If
+      $|C_m-C_{\rm av}-c_1/m|\le A/m^2$, $|c_1|\le B$, Vega is at least $v_*$ throughout the intervening volatility
+      interval, and Black&ndash;Scholes volga is at most $M$, then</p>
+    $$\left|\sigma_m-\sigma_{\rm av}-\frac{c_1}{m\mathcal V_{\rm av}}\right|
+      \le\frac1{m^2}\left\{\frac A{v_*}+
+      \frac{M(A+B)^2}{2v_*^3}\right\}.$$
+    <p>This follows by the mean-value theorem to obtain
+      $|\sigma_m-\sigma_{\rm av}|\le(A+B)/(v_*m)$, followed by one Taylor expansion of $C_{\rm BS}$.
+      The lower-Vega condition is essential: no strike-uniform wing claim is being made.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>strike</th><th>averaged implied volatility</th><th style="text-transform:none">$b_1$</th><th>last residual rate</th></tr></thead>
+      <tbody>
+        <tr><td>0.85</td><td>0.2230556084</td><td>&minus;0.0022456380</td><td>2.034</td></tr>
+        <tr><td>1.00</td><td>0.2114969964</td><td>&minus;0.0041235816</td><td>2.137</td></tr>
+        <tr><td>1.15</td><td>0.2015540258</td><td>&minus;0.0031795630</td><td>2.081</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The table uses $\rho=-0.7$ and exact switched prices at $m=4,8,16,32$. The averaged Vegas across these
+      strikes are $0.37391$, $0.48452$, and $0.44298$, safely away from zero. After subtracting $b_1/m$, every
+      implied-volatility residual decays at second order.</p>
 
     <h2>Scope</h2>
-    <p>The chain is stationary at the start and fixed, and the bounds uniform in maturity are for the variance of
-    $V_T$ and hence for $\kappa_4(M_T)$. The higher cumulants of $V_T$ are corrected at fixed maturity, with a
-    remainder of order $\varepsilon^2$ that may grow with $T$.</p>
-    <p>Moments of the square-root process exist whether or not the Feller condition holds, so nothing here needs
-    it. Option prices under the switched level are on the <a href="./heston.html">Heston page</a>, where the
-    <a href="./engine.html">engine</a> gives them to every order; the smile they imply at first order is the
-    variance-convexity term of the <a href="./any-equation.html">any-equation page</a>, the first-order form of
-    <a href="./bibliography.html#HullWhite1987">Hull and White&apos;s</a> mixing formula.</p>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">verify_cumulants.py</a>.</p>
+    <ul>
+      <li>The chain starts in stationarity. A known or filtered starting regime adds an initial-memory term.</li>
+      <li>The maturity-uniform Green&ndash;Kubo bound above is proved for the independent-price benchmark. The leverage
+      section supplies an exact finite-rate identity and exact computation, not a uniform asymptotic error bound.</li>
+      <li>The call correction assumes a stationary symmetric two-state chain, fixed correlation $\rho$, fixed
+      maturity, and a valid damped Fourier contour. It is uniform only on compact transform contours unless separate
+      tail bounds are supplied; no maturity-uniform leverage bound is claimed.</li>
+      <li>The implied-volatility correction is uniform only on compact strike sets where the price expansion is
+      uniform and Black&ndash;Scholes Vega has a positive lower bound. It deliberately excludes vanishing-Vega wings.</li>
+      <li>The exact integrated-variance decomposition, maturity-uniform cumulant bound, and explicit Fourier call
+      correction assume fixed $\kappa$ and switch only the CIR mean level. The simultaneous
+      $(\kappa\theta,\kappa,\xi^2)$ results are separate fixed-maturity polynomial-generator and cumulant theorems;
+      with leverage the feature list additionally contains $\rho\xi$ because that product is the cross-derivative
+      coefficient. The exact two-state mean calculation above proves that their first-order remainder cannot be
+      absolute and maturity-uniform in general. Retaining the exact stationary slope and either the exact principal
+      first-moment mode or its explicit first-order Green&ndash;Kubo expansion restores a uniform mean approximation
+      only. Truncating the Poisson recursion at order $p$ instead gives a joint-limit result only through
+      $T=O(m^{p-1})$; no higher-cumulant or price extension is claimed.</li>
+      <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
+      valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
+      expansions.</li>
+      <li>The result identifies the fourth cumulant of the martingale return. The exact formula shows explicitly what
+      else is needed for the risk-neutral log return.</li>
+    </ul>
+    <p>The conditional integrated-variance viewpoint goes back to
+    <a href="./bibliography.html#HullWhite1987">Hull and White (1987)</a>; the positive square-root model is from
+    <a href="./bibliography.html#CIR1985">Cox, Ingersoll and Ross (1985)</a>. Boundary classification and the
+    martingale time change use <a href="./bibliography.html#Feller1951">Feller (1951)</a> and
+    <a href="./bibliography.html#Dambis1965">Dambis (1965)</a>. The leveraged affine referee follows
+    the transform structure of <a href="./bibliography.html#Heston1993">Heston (1993)</a>; switched-Heston calibration
+    is treated by <a href="./bibliography.html#PapanicolaouSircar2014">Papanicolaou and Sircar (2014)</a>. The
+    finite-dimensional moment construction follows the polynomial-process framework of
+    <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>. The
+    contribution here is the exact switched-CIR covariance decomposition, its finite-rate Green&ndash;Kubo bound, the
+    explicit joint-cumulant benchmark showing precisely which terms leverage adds, full-transform European option
+    and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
+    $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction to extending
+    that simultaneous-switching remainder uniformly in $T$. The damped inversion follows
+    <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
+    and Madan (1999)</a>.</p>
   </main>
 
   <footer>
