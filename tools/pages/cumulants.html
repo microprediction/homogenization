@@ -320,6 +320,54 @@
       $1.990$, $1.986$, and $1.992$. A nonreversible three-state check gives slope orders
       $1.995$, $2.995$, and $3.997$.</p>
 
+    <h2>The exact long-run second-cumulant slope</h2>
+    <p>The higher-cumulant expansion above is fixed-maturity, but its first secular coefficient can still be
+      obtained exactly when all three variance coefficients switch. Let the joint process $(Y_t,v_t)$ start in its
+      invariant law $\Pi_m$, put $a_i=\xi_i^2$, and define the row vectors</p>
+    $$r_i=\mathbb E_{\Pi_m}[v\mathbf1_{\{Y=i\}}],\qquad
+      s_i=\mathbb E_{\Pi_m}[v^2\mathbf1_{\{Y=i\}}].$$
+    <p>With $A_m=mQ_0-D_\kappa$ and $B_m=mQ_0-2D_\kappa$, stationarity of the first two polynomial moments gives
+      the finite linear systems</p>
+    $$rA_m=-\pi D_c,\qquad sB_m=-rD_{2c+a},\qquad \mu_m=r\mathbf1.$$
+    <p>The centered Poisson equation for the joint generator,</p>
+    $$-\mathcal L_m\phi(i,v)=v-\mu_m,$$
+    <p>has an affine solution $\phi_i(v)=\alpha_i v+\beta_i$. Its coefficients require only two more finite
+      solves:</p>
+    $$A_m\alpha=-\mathbf1,qquad
+      mQ_0\beta=\mu_m\mathbf1-D_c\alpha,qquad \pi\beta=0.$$
+    <p>The second equation is solvable because
+      $\pi D_c\alpha=-\pi D_cA_m^{-1}\mathbf1=r\mathbf1=\mu_m$. The stationary covariance identity, or direct
+      integration of the affine conditional mean, therefore proves the exact formula</p>
+    <div class="equation-card">
+    $$\lim_{T\to\infty}{\operatorname{Var}_{\Pi_m}(V_T)\over T}
+      =:\sigma_m^2
+      =2\left\{(s-\mu_m r)\alpha+
+      (r-\mu_m\pi)\beta\right\}.$$
+    </div>
+    <p>No reversibility is used. The affine conditional-mean system is exponentially stable, so the stronger
+      fixed-rate statement is
+      $\operatorname{Var}_{\Pi_m}(V_T)=\sigma_m^2T+O_m(1)$ as $T\to\infty$.
+      This is the finite-dimensional switched-CIR specialization of the Poisson-equation method developed for
+      ergodic diffusions by <a href="./bibliography.html#PardouxVeretennikov2001">Pardoux and Veretennikov
+      (2001)</a>.</p>
+    <p>For the strictly positive two-state benchmark above, with $a=(0.04,0.04)$, exact elimination gives</p>
+    $$\sigma_m^2=
+      {288+4276m+19103m^2+35325m^3+28825m^4+8750m^5
+      \over
+      1280000m+7840000m^2+17640000m^3+17150000m^4+6002500m^5},$$
+    $$\sigma_m^2={1\over686}+{153\over240100m}
+      -{369\over1680700m^2}+O(m^{-3}).$$
+    <p>At $m=8,16,32,64,128$, the exact rates are
+      $0.0015340375$, $0.0014967052$, $0.0014774262$, $0.0014676293$, and $0.0014626910$.
+      The averaged and first-order-corrected errors have measured orders $0.996$ and $1.998$. An independent
+      degree-two polynomial semigroup, differenced between maturities 20 and 40 to remove the bounded intercept,
+      matches the Poisson formula within $9.1\times10^{-14}$; a nonreversible three-state check matches within
+      $1.5\times10^{-14}$.</p>
+    <p>This theorem identifies the exact long-run slope, not a maturity-uniform $O(m^{-2})$ approximation to the
+      whole variance curve. Replacing $\sigma_m^2$ by a finite expansion leaves a nonzero slope error that is again
+      multiplied by $T$; retaining it removes that secular term but leaves an $m$-dependent bounded intercept.
+      No uniform theorem for the third or fourth integrated-variance cumulant is asserted.</p>
+
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
     $$d\langle W,B\rangle_t=\rho_{Y_t}dt,\qquad |\rho_i|\le1,\qquad
@@ -582,7 +630,9 @@
       absolute and maturity-uniform in general. Retaining the exact stationary slope and either the exact principal
       first-moment mode or its explicit first-order Green&ndash;Kubo expansion restores a uniform mean approximation
       only. Truncating the Poisson recursion at order $p$ instead gives a joint-limit result only through
-      $T=O(m^{p-1})$; no higher-cumulant or price extension is claimed.</li>
+      $T=O(m^{p-1})$. The affine Poisson solve identifies the exact long-run second-cumulant slope under joint
+      stationarity, but does not control its bounded intercept uniformly in $m$ or extend to the third and fourth
+      cumulants or prices.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -601,8 +651,9 @@
     contribution here is the exact switched-CIR covariance decomposition, its finite-rate Green&ndash;Kubo bound, the
     explicit joint-cumulant benchmark showing precisely which terms leverage adds, full-transform European option
     and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
-    $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction to extending
-    that simultaneous-switching remainder uniformly in $T$. The damped inversion follows
+    $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and an exact
+    finite-rate formula for the stationary second-cumulant slope in that simultaneous-switching model. The damped
+    inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>
   </main>
