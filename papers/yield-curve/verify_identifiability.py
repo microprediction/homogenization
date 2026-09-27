@@ -252,7 +252,7 @@ def verify_krylov_observability():
 
 
 def verify_real_spectrum_all_maturities():
-    """A real spectrum is enough, even with Jordan blocks."""
+    """A real spectrum is enough, and is necessary in three states."""
     # Start from a reversible weighted path plus a complete-graph component,
     # then add a nonzero circulation.  The chain is not reversible, but its
     # three nonzero eigenvalues remain real and simple.
@@ -428,6 +428,86 @@ def verify_real_spectrum_all_maturities():
         np.ones(3), generic_response]))
     assert abs(generic_determinant) > 0.15
 
+    # The directed cycle is not exceptional: every three-state generator
+    # with a complex centered pair -a +/- ib has an exceptional pair at
+    # pi/b and 2pi/b.  In complex coordinates the response multiplier is
+    # (exp((-a+ib)t)-1)/(-a+ib), so the second response is exactly
+    # (1-exp(-a*pi/b)) times the first.  Verify this on 100 random
+    # irreducible generators with positive off-diagonal rates.
+    converse_rng = np.random.default_rng(27092027)
+    converse_cases = 0
+    converse_attempts = 0
+    maximum_collinearity_error = 0.0
+    maximum_relative_exceptional_determinant = 0.0
+    maximum_relative_exceptional_singular_value = 0.0
+    minimum_relative_generic_determinant = math.inf
+    while converse_cases < 100 and converse_attempts < 10000:
+        converse_attempts += 1
+        random_rates = converse_rng.uniform(0.1, 2.0, (3, 3))
+        np.fill_diagonal(random_rates, 0.0)
+        random_Q = random_rates.copy()
+        random_Q[np.diag_indices(3)] = -random_rates.sum(axis=1)
+        random_eigenvalues = np.linalg.eigvals(random_Q)
+        complex_eigenvalue = random_eigenvalues[
+            np.argmax(random_eigenvalues.imag)]
+        a = -complex_eigenvalue.real
+        b = complex_eigenvalue.imag
+        if b < 0.2 or a / b > 5.0:
+            continue
+        random_pi = stationary(random_Q)
+        raw_feature = converse_rng.normal(size=3)
+        random_feature = (raw_feature
+                          - (random_pi @ raw_feature) * np.ones(3))[:, None]
+        random_krylov = np.column_stack([
+            np.ones(3), random_feature, random_Q @ random_feature])
+        if abs(np.linalg.det(random_krylov)) < 1e-5:
+            continue
+
+        random_exceptional_taus = (math.pi / b, 2.0 * math.pi / b)
+        random_exceptional_response = transient_response_matrix(
+            random_Q, random_feature, random_exceptional_taus)
+        exact_ratio = 1.0 - math.exp(-a * math.pi / b)
+        collinearity_error = np.linalg.norm(
+            random_exceptional_response[:, 1]
+            - exact_ratio * random_exceptional_response[:, 0]
+        ) / np.linalg.norm(random_exceptional_response[:, 1])
+        random_exceptional_augmented = np.column_stack([
+            np.ones(3), random_exceptional_response])
+        exceptional_column_norms = np.linalg.norm(
+            random_exceptional_augmented, axis=0)
+        relative_exceptional_determinant = abs(np.linalg.det(
+            random_exceptional_augmented)) / np.prod(exceptional_column_norms)
+        exceptional_singular_values = np.linalg.svd(
+            random_exceptional_augmented, compute_uv=False)
+        relative_exceptional_singular_value = (
+            exceptional_singular_values[-1] / exceptional_singular_values[0])
+
+        random_generic_response = transient_response_matrix(
+            random_Q, random_feature, (0.4 / b, 1.7 / b))
+        random_generic_augmented = np.column_stack([
+            np.ones(3), random_generic_response])
+        relative_generic_determinant = abs(np.linalg.det(
+            random_generic_augmented)) / np.prod(np.linalg.norm(
+                random_generic_augmented, axis=0))
+
+        maximum_collinearity_error = max(
+            maximum_collinearity_error, collinearity_error)
+        maximum_relative_exceptional_determinant = max(
+            maximum_relative_exceptional_determinant,
+            relative_exceptional_determinant)
+        maximum_relative_exceptional_singular_value = max(
+            maximum_relative_exceptional_singular_value,
+            relative_exceptional_singular_value)
+        minimum_relative_generic_determinant = min(
+            minimum_relative_generic_determinant,
+            relative_generic_determinant)
+        converse_cases += 1
+    assert converse_cases == 100
+    assert maximum_collinearity_error < 8e-15
+    assert maximum_relative_exceptional_determinant < 8e-15
+    assert maximum_relative_exceptional_singular_value < 8e-15
+    assert minimum_relative_generic_determinant > 0.02
+
     print("\nReal-spectrum scalar observability at every maturity tuple")
     print(f"detailed-balance residual: {detailed_balance_residual:.9f}")
     print(f"nonzero spectral rates: {rates}")
@@ -459,6 +539,16 @@ def verify_real_spectrum_all_maturities():
     print(f"exceptional smallest singular value: "
           f"{exceptional_singular_value:.3e}")
     print(f"generic response determinant: {generic_determinant:.9f}")
+    print("\nSharp three-state complex-spectrum converse")
+    print(f"random complex-spectrum chains checked: {converse_cases}")
+    print(f"maximum exact-ratio residual: "
+          f"{maximum_collinearity_error:.3e}")
+    print(f"maximum relative exceptional determinant: "
+          f"{maximum_relative_exceptional_determinant:.3e}")
+    print(f"maximum relative exceptional singular value: "
+          f"{maximum_relative_exceptional_singular_value:.3e}")
+    print(f"minimum relative generic determinant: "
+          f"{minimum_relative_generic_determinant:.3e}")
 
 
 def verify_initial_mixture_observability():
@@ -842,7 +932,8 @@ def main():
 
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
-        "exact integrated-loading rank, Krylov, real-spectrum, and initial-mixture observability, shape identities, "
+        "exact integrated-loading rank, Krylov, real-spectrum and three-state-converse "
+        "observability, shape identities, "
         "known-start expansion, and explicit bounds"
     )
 

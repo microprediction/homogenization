@@ -425,6 +425,23 @@
     <p>Thus a cyclic feature still gives generic identifiability, but distinct maturities need
       not all work once oscillatory modes are present. The theorem assumes a real nonzero
       spectrum; it does not claim that this condition is necessary for every particular chain.</p>
+    <p>For three states, however, the boundary is exact. A cyclic centered scalar feature has
+      the all-pairs property</p>
+    $$\det[ {\bf1}\ R(\tau_1)\ R(\tau_2)]\ne0
+      \quad\text{for every }0&lt;\tau_1&lt;\tau_2$$
+    <p>if and only if the two nonzero eigenvalues are real. Sufficiency is the real-spectrum
+      theorem above. Conversely, write a complex pair as $-a\pm ib$, with $a,b&gt;0$, and
+      identify the centered real plane with $\mathbb C$. Apart from a fixed nonzero feature
+      factor, the response is</p>
+    $$z(t)={e^{(-a+ib)t}-1\over -a+ib}.$$
+    <p>At $\tau_1=\pi/b$ and $\tau_2=2\pi/b$, direct substitution gives the exact relation</p>
+    <div class="equation-card">
+    $$R(2\pi/b)=\left(1-e^{-a\pi/b}\right)R(\pi/b).$$
+    </div>
+    <p>Hence every three-state complex-spectrum generator has an exceptional positive
+      maturity pair, not just the directed cycle. This converse is special to a two-dimensional
+      centered space; in higher dimensions a complex pair does not by itself force two full
+      response columns to be collinear.</p>
     <p>The Krylov rank is attained by finitely many maturities. More precisely, whenever a
       given number of maturity blocks can attain it, almost every such tuple does, because
       the relevant minors are analytic and not identically zero. The scalar cyclic case
@@ -503,7 +520,11 @@
       $5\times10^{-13}$, and recover a prior within $4.2\times10^{-15}$.
       For the directed-cycle counterexample, the Krylov determinant is $-3$, a generic pair
       has response determinant $-0.170100185$, but the exceptional pair has determinant
-      $4.46\times10^{-16}$ and smallest singular value $1.75\times10^{-16}$.</p>
+      $4.46\times10^{-16}$ and smallest singular value $1.75\times10^{-16}$.
+      Finally, 100 random irreducible three-state chains with complex spectra verify the
+      universal exceptional-pair ratio: the maximum collinearity residual is
+      $5.8\times10^{-16}$, while the smallest relative determinant at a generic comparison
+      pair remains above $0.029$.</p>
 
     <h2>A computable finite-rate bound</h2>
     <p>The following deliberately conservative estimate makes the $O(m^{-2})$ statement
