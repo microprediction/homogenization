@@ -10,6 +10,8 @@ arbitrary initial regime law to a stationary calibration panel.  It also
 checks exact transient mean and variance identities for the empirical CDF.
 Irregular observation grids check the pairwise-kernel variance bound and
 show that substituting the average spacing can be anti-conservative.
+Finally, exact order-statistic enumeration checks the one-sided Cantelli
+conversion from the spectral variance bound to a training-panel PAC bound.
 """
 import itertools
 import math
@@ -87,6 +89,56 @@ def finite_variance_factor(a, n):
               - 2 * a * (1 - a ** n) / (n * (1 - a) ** 2))
     assert abs(direct - closed) < 2e-14
     return closed
+
+
+def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
+    """Check the one-sided PAC bound for a dependent order statistic.
+
+    At the population p-quantile, the event that the kth calibration order
+    statistic lies below that quantile is the event that at least k binary
+    indicators are one.  Exact hidden-state enumeration therefore supplies
+    the failure probability without simulating either scores or ranks.
+    """
+    target = 0.8
+    n = k = 9
+    q = brentq(
+        lambda x: pi @ cdf_vector(x, scales) - target,
+        0.0,
+        50.0,
+    )
+    success = cdf_vector(q, scales)
+    counts = np.asarray([
+        sum(pattern) for pattern in itertools.product((0, 1), repeat=n)
+    ])
+    rows = []
+    for spacing in (0.05, 0.1, 0.2, 0.4, 0.8, 1.5):
+        transition = expm(spacing * Q)
+        law = binary_panel_law(pi, transition, success, n)
+        exact_failure = law[counts >= k].sum()
+        panel_mean, panel_variance = panel_moments_from_law(law, n)
+        assert abs(panel_mean - target) < 5e-15
+
+        a = math.exp(-gamma_s * spacing)
+        factor = finite_variance_factor(a, n)
+        variance_bound = target * (1 - target) * factor / n
+        assert panel_variance <= variance_bound + 2e-14
+        rank_gap = k / n - target
+        cantelli = variance_bound / (variance_bound + rank_gap ** 2)
+        chebyshev = min(1.0, variance_bound / rank_gap ** 2)
+        assert exact_failure <= cantelli + 2e-14
+        assert cantelli < chebyshev
+        rows.append((spacing, factor, exact_failure, cantelli, chebyshev))
+
+    iid_failure = target ** n
+    assert abs(rows[-1][2] - iid_failure) < 2e-4
+    print("one-sided dependent order-statistic PAC bound:")
+    print("  spacing   V_n       exact failure   Cantelli    Chebyshev")
+    for spacing, factor, exact_failure, cantelli, chebyshev in rows:
+        print(
+            f"   {spacing:4.2f}   {factor:8.6f}    {exact_failure:10.8f}"
+            f"    {cantelli:8.6f}    {chebyshev:8.6f}"
+        )
+    print(f"  iid Beta(9,1) failure: {iid_failure:.9f}")
 
 
 def binary_panel_law(initial, P, success, n):
@@ -411,6 +463,7 @@ def nonreversible_contraction_checks():
     print("finite-n factor saturation:",
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
+    cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
     burnin_transfer_checks(Q, pi, gamma_s, f)
 
@@ -516,8 +569,9 @@ def main():
     assert abs(empirical_var - predicted_var) / predicted_var < 0.07
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
-          " regular and irregular calibration variance, nonstationary"
-          " burn-in transfer, and transient panel moments")
+          " regular and irregular calibration variance, one-sided"
+          " order-statistic PAC conversion, nonstationary burn-in transfer,"
+          " and transient panel moments")
 
 
 if __name__ == "__main__":

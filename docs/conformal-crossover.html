@@ -341,6 +341,70 @@
       posterior $\nu$, replacing $\sqrt{1/\pi_i-1}$ by
       $\|\nu/\pi-1\|_{L^2(\pi)}$.</p>
 
+    <h3>A sharper one-sided threshold guarantee</h3>
+    <p>The uniform bound pays for a grid of thresholds and both tails. If the
+      question is only whether the realized order-statistic threshold has at
+      least a specified pooled coverage, the variance theorem gives a sharper
+      one-sided result with no discretization parameter. Let $\widehat q=R_{(k)}$
+      be the $k$th of the $n$ stationary calibration scores, put
+      $C_0=\bar F(\widehat q)$, and choose $0&lt;p&lt;k/n$. If
+      $q_p=\bar F^{-1}(p)$, continuity and absence of ties give the exact event
+      identity</p>
+    $$\{C_0&lt;p\}=\{\widehat F_n(q_p)\ge k/n\}.$$
+    <p>Since the empirical CDF has mean $p$ and variance at most
+      $p(1-p)V/n$, Cantelli&apos;s one-sided inequality yields</p>
+    <div class="equation-card">
+    $$\Pr_\pi\{C_0&lt;p\}
+      \le B_{n,k,V}(p)
+      :=\frac{p(1-p)V}
+      {p(1-p)V+n(k/n-p)^2}.$$
+    </div>
+    <p>Here $V=V_n(e^{-m\gamma_sh})$ on a regular grid and
+      $V=V_{\boldsymbol t}$ on an irregular grid. The proof uses dependence
+      only through the already established spectral variance envelope.
+      Cantelli&apos;s denominator makes the bound strictly sharper than the
+      corresponding one-sided Chebyshev bound
+      $p(1-p)V/[n(k/n-p)^2]$. This is the one-sided inequality introduced by
+      <a href="https://www.mathunion.org/fileadmin/ICM/Proceedings/ICM1928.6/ICM1928.6.ocr.pdf">Cantelli (1928)</a>.</p>
+    <p>The terminal-horizon error can be included without conflating the two
+      effects. Put</p>
+    $$H_i(\Delta)=\frac12\sqrt{\frac1{\pi_i}-1}
+      e^{-m\gamma_s\Delta}.$$
+    <p>For every calibration panel,
+      $|\Pr(R_\Delta\le\widehat q\mid\text{history},Y_0=i)-C_0|
+      \le H_i(\Delta)$. Therefore, whenever $u_i=p+H_i(\Delta)&lt;k/n$,</p>
+    <div class="equation-card">
+    $$\Pr_\pi\!\left\{
+      \Pr(R_\Delta\le\widehat q\mid\text{history},Y_0=i)&lt;p
+      \right\}
+      \le B_{n,k,V}(u_i).$$
+    </div>
+    <p>Replacing $H_i$ by $\max_iH_i$ makes the conclusion simultaneous over
+      all possible current states. This is a PAC statement over random
+      stationary calibration panels. It is training-conditional in the sense
+      that it controls the probability of drawing a badly calibrated panel;
+      it is neither pointwise nor feature-conditional conformal validity.</p>
+    <p>An exact nonreversible three-state enumeration uses $p=0.8$, $n=k=9$.
+      It converts every score to the indicator that it is below the population
+      $0.8$-quantile and sums all $2^9$ hidden-state emission patterns:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>scaled spacing</th><th style="text-transform:none">$V_n$</th><th>exact failure</th><th>Cantelli</th><th>Chebyshev</th></tr></thead>
+      <tbody>
+        <tr><td>0.05</td><td>5.605161</td><td>0.25922080</td><td>0.713564</td><td>1.000000</td></tr>
+        <tr><td>0.10</td><td>3.933312</td><td>0.20575616</td><td>0.636117</td><td>1.000000</td></tr>
+        <tr><td>0.20</td><td>2.447832</td><td>0.16380956</td><td>0.521056</td><td>1.000000</td></tr>
+        <tr><td>0.40</td><td>1.510007</td><td>0.14146048</td><td>0.401597</td><td>0.671114</td></tr>
+        <tr><td>0.80</td><td>1.098219</td><td>0.13418952</td><td>0.328001</td><td>0.488097</td></tr>
+        <tr><td>1.50</td><td>1.007159</td><td>0.13408634</td><td>0.309214</td><td>0.447626</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The exact iid benchmark is $0.8^9=0.134217728$. The spectral-Cantelli
+      bound is conservative, as a second-moment bound must be, but it remains
+      nonvacuous where the Chebyshev conversion is one and approaches the iid
+      regime without an effective-sample-size substitution.</p>
+
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.
       There is an explicit transfer to any initial regime law. Let the chain
