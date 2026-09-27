@@ -355,7 +355,7 @@
       $-\mathcal L_m\psi=\phi-\bar\phi_m$, with
       $\psi_i(v)=p_iv+q_i$. Its coefficients are</p>
     $$A_mp=-\alpha,\qquad
-      mQ_0q=-\beta+\bar\phi_m\mathbf1-D_cp,qquad \pi q=0.$$
+      mQ_0q=-\beta+\bar\phi_m\mathbf1-D_cp,\qquad \pi q=0.$$
     <p>Solvability follows from
       $\pi D_cp=-\pi D_cA_m^{-1}\alpha=r\alpha=\bar\phi_m$; the last equality uses $\pi\beta=0$.
       Integrating the stationary covariance twice gives the exact finite-maturity decomposition</p>
@@ -364,9 +364,34 @@
     $$\chi_m=-2\left\{(s-\mu_mr)p+(r-\mu_m\pi)q\right\},
       \qquad \rho_m(T)=2\mathbb E_{\Pi_m}\!\left[(v_0-\mu_m)(P_T\psi)(Y_0,v_0)\right].$$
     </div>
-    <p>For every fixed $m$, $\rho_m(T)$ decays exponentially as $T\to\infty$. This follows directly from the
-      finite-dimensional affine semigroup. The decay constants are allowed to depend on $m$; this statement is
-      not a joint maturity-switching-rate bound.</p>
+    <p>The decay can in fact be made uniform over every half-line of switching rates. Assume
+      $\kappa_*:=\min_i\kappa_i&gt;0$ and fix $m_0&gt;0$. If
+      $(P_T\psi)(i,v)=a_m(T)_i+b_m(T)_iv$, then</p>
+    $$b_m(T)=e^{A_mT}p,\qquad
+      a_m(T)=e^{mQ_0T}q+\int_0^T e^{mQ_0(T-u)}D_c b_m(u)\,du,$$
+    $$\rho_m(T)=2\left\{(s-\mu_mr)b_m(T)+(r-\mu_m\pi)a_m(T)\right\}.$$
+    <p>The first semigroup is a finite-state chain killed at rate $\kappa_i$, so the
+      <a href="./bibliography.html#Kac1949">Feynman&ndash;Kac representation</a> gives
+      $\lVert e^{A_mT}\rVert_\infty\le e^{-\kappa_*T}$. Irreducibility of $Q_0$ gives constants
+      $M_Q,\gamma_Q&gt;0$ with
+      $\lVert e^{tQ_0}-\mathbf1\pi\rVert\le M_Qe^{-\gamma_Qt}$. Because
+      $(r-\mu_m\pi)\mathbf1=0$, the constant term is therefore bounded by a convolution of
+      $e^{-m\gamma_Q(T-u)}$ and $e^{-\kappa_*u}$. Uniform boundedness of $r,s,\alpha,\beta,p,q$ for
+      $m\ge m_0$ follows from the killed resolvents, the fixed group inverse of $Q_0$, and the stationary moment
+      bounds
+      $\mu_m\le\max_i c_i/\kappa_*$ and
+      $\mathbb E_{\Pi_m}v^2\le(2\max_i c_i+\max_i a_i)\mu_m/(2\kappa_*)$.
+      At a resonant pair of rates, $Te^{-\lambda T}$ is absorbed by $e^{-\lambda T/2}$. Consequently there are
+      constants $C&lt;\infty$ and</p>
+    <div class="equation-card">
+    $$\gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}&gt;0$$
+    $$\text{such that}\qquad
+      \sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}
+      \left|\operatorname{Var}_{\Pi_m}(V_T)-\sigma_m^2T-\chi_m\right|\le C.$$
+    </div>
+    <p>This is a joint maturity&ndash;switching-rate bound for the exact coefficients $\sigma_m^2$ and $\chi_m$;
+      it does not make a finite $1/m$ truncation maturity-uniform, because any nonzero error in the slope is still
+      multiplied by $T$. No reversibility is required.</p>
     <p>For the strictly positive two-state benchmark above, with $a=(0.04,0.04)$, exact elimination gives</p>
     $$\sigma_m^2=
       {288+4276m+19103m^2+35325m^3+28825m^4+8750m^5
@@ -392,7 +417,12 @@
       the independent polynomial semigroup matches $\sigma_m^2T+\chi_m$ within $2.6\times10^{-13}$; the
       nonreversible three-state discrepancy is $4.4\times10^{-14}$. At $T=0.75$, retaining the explicit
       remainder $\rho_m(T)$ recovers the full variance within $2.1\times10^{-17}$, including on the
-      nonreversible example.</p>
+      nonreversible example. On grids $m=1,2,\ldots,128$ and $0\le T\le12$, one common exponent
+      $\gamma=0.4$ gives maximum rescaled envelopes
+      $\max e^{\gamma T}|\rho_m(T)|=0.0015977624$ and $0.0004103649$ in the two-state and nonreversible
+      three-state examples. At $T=12$ the corresponding remainder maxima are $6.13\times10^{-10}$ and
+      $6.54\times10^{-15}$; independent degree-two semigroups verify the full decomposition within
+      $5.1\times10^{-14}$ and $3.2\times10^{-13}$.</p>
     <p>This theorem identifies the exact stationary long-time slope and intercept, not a maturity-uniform
       $O(m^{-2})$ approximation to the whole variance curve. Replacing either coefficient by a finite expansion
       still leaves a joint-limit error, and no uniform theorem for the third or fourth integrated-variance
@@ -661,8 +691,9 @@
       first-moment mode or its explicit first-order Green&ndash;Kubo expansion restores a uniform mean approximation
       only. Truncating the Poisson recursion at order $p$ instead gives a joint-limit result only through
       $T=O(m^{p-1})$. The two affine Poisson solves identify the exact long-run second-cumulant slope and intercept
-      under joint stationarity, with an exponentially decaying remainder for each fixed $m$; they do not give a
-      joint maturity-switching-rate bound or extend to the third and fourth cumulants or prices.</li>
+      under joint stationarity. For every $m\ge m_0&gt;0$, their exact remainder has one switching-rate-uniform
+      exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform, and the
+      result does not extend here to the third and fourth cumulants or prices.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>

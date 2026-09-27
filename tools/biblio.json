@@ -584,6 +584,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "Kac1949",
+  "authors": "Kac, M.",
+  "year": 1949,
+  "title": "On Distributions of Certain Wiener Functionals",
+  "venue": "Transactions of the American Mathematical Society 65(1):1-13",
+  "doi": "10.1090/S0002-9947-1949-0027960-X",
+  "url": "https://doi.org/10.1090/S0002-9947-1949-0027960-X",
+  "annotation": "A primary source for the Feynman-Kac representation, used here in its finite-state killed-semigroup form to obtain a switching-rate-uniform contraction bound."
+ },
+ {
+  "role": "survey_theory",
   "key": "PardouxVeretennikov2001",
   "authors": "Pardoux, E. and Veretennikov, A. Yu.",
   "year": 2001,

@@ -257,6 +257,116 @@ def integrated_variance_remainder(
     return 2 * covariance
 
 
+def verify_uniform_variance_remainder():
+    """Certify one switching-rate-uniform exponential remainder envelope.
+
+    The theorem applies to every speed m >= m0.  A finite grid cannot prove
+    that statement, so this certificate has a narrower role: it checks the
+    exact affine-Poisson remainder against the independent degree-two moment
+    semigroup, and illustrates one common exponential envelope on reversible
+    and nonreversible examples over two decades of switching rates.
+    """
+    q2 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    models = [
+        (
+            "two-state",
+            q2,
+            np.array([0.5, 0.5]),
+            np.array([0.04, 0.16]),
+            np.array([0.8, 2.0]),
+            np.array([0.04, 0.04]),
+        )
+    ]
+    q3 = np.array(
+        [
+            [-3.0, 2.7, 0.3],
+            [0.2, -2.2, 2.0],
+            [2.4, 0.4, -2.8],
+        ]
+    )
+    pi3 = stationary(q3)
+    kappa3 = np.array([1.1, 2.3, 3.0])
+    models.append(
+        (
+            "three-state nonreversible",
+            q3,
+            pi3,
+            kappa3 * np.array([0.035, 0.080, 0.050]),
+            kappa3,
+            np.array([0.20, 0.25, 0.22]) ** 2,
+        )
+    )
+
+    speeds = 2.0 ** np.arange(8)
+    maturities = np.linspace(0.0, 12.0, 49)
+    gamma = 0.4
+    results = {}
+    for label, q0, pi, c, kappa, variance in models:
+        envelopes = []
+        terminal_remainders = []
+        composite_errors = []
+        for speed in speeds:
+            intercept, slope, _, _, _, _, _, _, _ = (
+                integrated_variance_intercept(
+                    speed, q0, pi, c, kappa, variance
+                )
+            )
+            weighted_remainders = []
+            for maturity in maturities:
+                remainder = integrated_variance_remainder(
+                    speed, maturity, q0, pi, c, kappa, variance
+                )
+                independent = stationary_integrated_variance(
+                    speed, maturity, q0, pi, c, kappa, variance
+                )
+                composite_errors.append(
+                    abs(independent - slope * maturity - intercept - remainder)
+                )
+                weighted_remainders.append(
+                    math.exp(gamma * maturity) * abs(remainder)
+                )
+            envelopes.append(max(weighted_remainders))
+            terminal_remainders.append(
+                abs(
+                    integrated_variance_remainder(
+                        speed, maturities[-1], q0, pi, c, kappa, variance
+                    )
+                )
+            )
+
+        # At long maturities the independent check subtracts the O(T) slope
+        # and O(1) intercept, so its floating-point cancellation is larger
+        # than the short-maturity checks above.
+        assert max(composite_errors) < 4e-13
+        if label == "two-state":
+            assert max(envelopes) < 1.60e-3
+            assert max(terminal_remainders) < 6.2e-10
+        else:
+            assert max(envelopes) < 4.11e-4
+            assert max(terminal_remainders) < 6.6e-15
+        results[label] = {
+            "envelopes": envelopes,
+            "terminal_remainders": terminal_remainders,
+            "composite_error": max(composite_errors),
+        }
+
+    print("5b. switching-rate-uniform exponential variance remainder")
+    print(
+        f"   tested m=1,...,128 and T in [0,12] with gamma={gamma:.1f}; "
+        f"largest envelopes {max(results['two-state']['envelopes']):.10f}/"
+        f"{max(results['three-state nonreversible']['envelopes']):.10f}"
+    )
+    print(
+        "   T=12 remainder maxima "
+        f"{max(results['two-state']['terminal_remainders']):.2e}/"
+        f"{max(results['three-state nonreversible']['terminal_remainders']):.2e}; "
+        "composite discrepancies "
+        f"{results['two-state']['composite_error']:.2e}/"
+        f"{results['three-state nonreversible']['composite_error']:.2e}"
+    )
+    return gamma, results
+
+
 def stationary_integrated_variance(
     speed, maturity, q0, pi, c, kappa, variance
 ):
@@ -943,6 +1053,7 @@ def main():
     uniform_mean_rates = verify_uniform_spectral_mean()
     expansion_rates = verify_stationary_mean_expansion()
     variance_rate_results = verify_long_run_variance_rate()
+    uniform_remainder_results = verify_uniform_variance_remainder()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -1340,7 +1451,8 @@ def main():
         f"{uniform_mean_rates[0]:.3f}/{uniform_mean_rates[1]:.3f}, "
         f"growing-window rate {expansion_rates[1][3]:.3f}, "
         f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
-        f"{variance_rate_results[4]:.3f}"
+        f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
+        f"{uniform_remainder_results[0]:.1f}"
     )
 
 
