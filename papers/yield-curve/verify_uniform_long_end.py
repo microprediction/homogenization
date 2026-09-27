@@ -1639,6 +1639,35 @@ def periodic_three_state_generator(time: float) -> np.ndarray:
     )
 
 
+def periodic_three_state_generator_derivative(time: float) -> np.ndarray:
+    """Derivative of the moving three-state generator."""
+    derivative_01 = 0.1 * np.cos(time)
+    derivative_02 = -0.1 * np.sin(2 * time)
+    derivative_10 = -0.05 * np.sin(time)
+    derivative_12 = 0.2 * np.cos(2 * time)
+    derivative_20 = 0.08 * np.cos(time)
+    derivative_21 = -0.12 * np.sin(2 * time)
+    return np.array(
+        [
+            [
+                -derivative_01 - derivative_02,
+                derivative_01,
+                derivative_02,
+            ],
+            [
+                derivative_10,
+                -derivative_10 - derivative_12,
+                derivative_12,
+            ],
+            [
+                derivative_20,
+                derivative_21,
+                -derivative_20 - derivative_21,
+            ],
+        ]
+    )
+
+
 def periodic_three_state_forcing(time: float) -> np.ndarray:
     """Periodic diagonal forcing for the finite-chain Floquet certificate."""
     return np.diag(
@@ -1657,6 +1686,41 @@ def stationary_row(generator: np.ndarray) -> np.ndarray:
     row = vectors[:, index].real
     row /= np.sum(row)
     return row
+
+
+def finite_chain_first_order_drift() -> tuple[float, float, float]:
+    """Mean, dynamic, and geometric terms in the first Floquet correction."""
+    integrands = []
+    grid = np.linspace(0.0, PERIOD, 20000, endpoint=False)
+    one = np.ones(3)
+    for time in grid:
+        generator = periodic_three_state_generator(time)
+        generator_derivative = periodic_three_state_generator_derivative(time)
+        pi = stationary_row(generator)
+        forcing_values = np.diag(periodic_three_state_forcing(time))
+        forcing_mean = float(pi @ forcing_values)
+        centered = forcing_values - forcing_mean
+        projection = np.outer(one, pi)
+        group_inverse = np.linalg.inv(generator - projection) + projection
+        first_profile = -group_inverse @ centered
+        assert abs(pi @ first_profile) < 2e-13
+        assert np.max(np.abs(generator @ first_profile + centered)) < 3e-13
+
+        bordered = generator.T.copy()
+        right_hand_side = -generator_derivative.T @ pi
+        bordered[-1, :] = one
+        right_hand_side[-1] = 0.0
+        pi_derivative = np.linalg.solve(bordered, right_hand_side)
+        assert abs(np.sum(pi_derivative)) < 2e-13
+        assert np.max(
+            np.abs(pi_derivative @ generator + pi @ generator_derivative)
+        ) < 3e-13
+
+        dynamic = float(pi @ (centered * first_profile))
+        geometric = float(pi_derivative @ first_profile)
+        integrands.append((forcing_mean, dynamic, geometric))
+    averages = np.mean(np.asarray(integrands), axis=0)
+    return float(averages[0]), float(averages[1]), float(averages[2])
 
 
 def finite_chain_periodic_errors(
@@ -1770,11 +1834,16 @@ def finite_chain_periodic_errors(
         "arbitrary_plain": arbitrary_plain,
         "arbitrary_slip": arbitrary_slip,
         "periodicity_error": float(periodicity_error),
+        "exponent": exponent,
     }
 
 
 def check_general_periodic_generator() -> None:
     """Finite-chain Floquet profile and frozen boundary slip."""
+    leading_mean, dynamic_drift, geometric_drift = (
+        finite_chain_first_order_drift()
+    )
+    predicted_drift = dynamic_drift + geometric_drift
     moving_results = []
     fixed_results = []
     print("\nFinite-chain periodic Floquet profile")
@@ -1802,11 +1871,16 @@ def check_general_periodic_generator() -> None:
     moving_stationary_rate = final_rate(moving_results, "stationary_plain")
     fixed_stationary_raw_rate = final_rate(fixed_results, "stationary_plain")
     fixed_stationary_slip_rate = final_rate(fixed_results, "stationary_slip")
+    measured_drift = 64.0 * (
+        moving_results[-1]["exponent"] - leading_mean
+    )
     assert 0.95 < moving_arbitrary_raw_rate < 1.1
     assert moving_arbitrary_slip_rate > 1.95
     assert moving_stationary_rate > 1.95
     assert fixed_stationary_raw_rate > 1.95
     assert fixed_stationary_slip_rate > 2.9
+    assert abs(measured_drift / predicted_drift - 1) < 0.02
+    assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
     assert max(result["periodicity_error"] for result in fixed_results) < 3e-11
     print(
@@ -1832,6 +1906,11 @@ def check_general_periodic_generator() -> None:
     print(
         "maximum finite-chain Floquet periodicity discrepancy: "
         f"{max(result['periodicity_error'] for result in moving_results + fixed_results):.3e}"
+    )
+    print(
+        "moving three-state first-order Floquet drift: numerical "
+        f"{measured_drift:.10e}, predicted {predicted_drift:.10e}; "
+        f"dynamic {dynamic_drift:.10e}, geometric {geometric_drift:.10e}"
     )
 
 

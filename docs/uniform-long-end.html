@@ -741,6 +741,25 @@
     stationary-prior formula with the frozen slip improves to $O(m^{-3})$ even when $Q_0$ is defective.</p>
     </div>
 
+    <h3>Explicit first-order coefficient</h3>
+    <p>The exact Floquet exponent also has an explicit first correction in any number of states. Let
+    $g(t)=\operatorname{diag}D(t)$, $\bar g(t)=\pi(t)g(t)$, and
+    $\widetilde g(t)=g(t)-\bar g(t)\mathbf1$. With $Q(t)^\#$ the group inverse, normalize the first profile
+    correction by $\pi(t)u_1(t)=0$ and set</p>
+    $$u_1(t)=-Q(t)^\#\widetilde g(t).$$
+    <p>Expanding the periodic Floquet equation and applying the instantaneous stationary row gives</p>
+    $$\lambda_m=\langle\bar g\rangle+{1\over m}\lambda_1+O(m^{-2}),\qquad
+      \lambda_1=\left\langle
+      \pi(D-\bar g I)u_1+\pi'u_1
+      \right\rangle,$$
+    <p>where $\langle\cdot\rangle$ denotes the period average. The first summand is the dynamic
+    Green&ndash;Kubo contribution. The second is a geometric contribution caused by transport of the invariant row;
+    it vanishes for a fixed generator but need not vanish when $Q(t)$ moves. The identity follows because the
+    next-order solvability condition contains $-\pi u_1'$, while differentiating the gauge
+    $\pi u_1=0$ gives $-\pi u_1'=\pi'u_1$. In two states the formula reduces exactly to the earlier
+    $\langle(v\delta+p')R_1\rangle$. Thus this multi-state coefficient remains distinct from a
+    fixed-parameter Green&ndash;Kubo rank calculation: moving stationary weights add a separate geometric term.</p>
+
     <h3>Why the orders differ</h3>
     <p>Perron decomposition of the monodromy gives
     $\mathbf1=c_mv_m+z_{m,0}$ with $w_m^\top z_{m,0}=0$. Singular perturbation gives
@@ -775,7 +794,10 @@
     <p>The final measured orders are $1.0364$ for the moving arbitrary-prior profile without the slip,
     $2.0356$ after adding it, and $2.0027$ for the moving stationary-prior profile without a slip.
     The fixed defective-chain control has order $2.0058$ without the slip and $3.0254$ with it.
-    The principal profile closes after one period within $2.8\times10^{-13}$.</p>
+    The principal profile closes after one period within $2.8\times10^{-13}$. For the moving chain, the
+    coefficient above predicts $\lambda_1=0.01049251$: its dynamic part is $0.01075822$ and its geometric part is
+    $-0.00026571$. Direct monodromy at $m=64$ gives $m\{\lambda_m-\langle\bar g\rangle\}=0.01051100$, a relative
+    discrepancy of $0.18\%$.</p>
 
     <h2>What remains beyond this theorem</h2>
     <p>The fixed-generator theorem assumes a diagonal forcing of bounded total variation and $D(0)=0$ only when
@@ -783,9 +805,8 @@
     near-end forcing. The moving-generator extension requires a uniformly ergodic smooth family and integrable
     total variation. The Floquet theorems above separately cover smooth periodic forcing and smooth periodic
     two-state generators with a uniform rate gap; the exact-profile theorem extends maturity-uniform control to
-    every finite periodic chain. Explicit multi-state coefficient formulae, rough nonperiodic coefficients with
-    infinite variation, generators that lose their gap, and infinite-state factors still require different
-    estimates.</p>
+    every finite periodic chain and supplies its explicit first coefficient. Rough nonperiodic coefficients with
+    infinite variation, generators that lose their gap, and infinite-state factors still require different estimates.</p>
     <p>The fixed-horizon expansion and its initial layers belong to the singular-perturbation framework summarized
     by <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a> and originate with
     <a href="https://www.mathnet.ru/eng/sm5548">Tikhonov&apos;s 1952 theorem</a>; the perturbed-semigroup viewpoint goes back to
