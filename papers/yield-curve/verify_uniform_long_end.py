@@ -1679,6 +1679,17 @@ def periodic_three_state_forcing(time: float) -> np.ndarray:
     )
 
 
+def periodic_three_state_forcing_derivative(time: float) -> np.ndarray:
+    """Derivative of the periodic diagonal forcing."""
+    return np.diag(
+        [
+            0.22 * np.cos(time),
+            -0.17 * np.sin(time),
+            0.26 * np.cos(2 * time),
+        ]
+    )
+
+
 def stationary_row(generator: np.ndarray) -> np.ndarray:
     """Stationary row of an irreducible finite-state generator."""
     values, vectors = np.linalg.eig(generator.T)
@@ -1688,8 +1699,8 @@ def stationary_row(generator: np.ndarray) -> np.ndarray:
     return row
 
 
-def finite_chain_first_order_drift() -> tuple[float, float, float]:
-    """Mean, dynamic, and geometric terms in the first Floquet correction."""
+def finite_chain_floquet_coefficients() -> tuple[float, float, float, float]:
+    """Mean and the first two finite-chain Floquet coefficients."""
     integrands = []
     grid = np.linspace(0.0, PERIOD, 20000, endpoint=False)
     one = np.ones(3)
@@ -1698,6 +1709,9 @@ def finite_chain_first_order_drift() -> tuple[float, float, float]:
         generator_derivative = periodic_three_state_generator_derivative(time)
         pi = stationary_row(generator)
         forcing_values = np.diag(periodic_three_state_forcing(time))
+        forcing_derivative = np.diag(
+            periodic_three_state_forcing_derivative(time)
+        )
         forcing_mean = float(pi @ forcing_values)
         centered = forcing_values - forcing_mean
         projection = np.outer(one, pi)
@@ -1718,9 +1732,55 @@ def finite_chain_first_order_drift() -> tuple[float, float, float]:
 
         dynamic = float(pi @ (centered * first_profile))
         geometric = float(pi_derivative @ first_profile)
-        integrands.append((forcing_mean, dynamic, geometric))
+        local_first_drift = dynamic + geometric
+
+        forcing_mean_derivative = float(
+            pi_derivative @ forcing_values + pi @ forcing_derivative
+        )
+        centered_derivative = (
+            forcing_derivative - forcing_mean_derivative
+        )
+        first_profile_rhs = (
+            -centered_derivative
+            - generator_derivative @ first_profile
+        )
+        first_profile_derivative = (
+            group_inverse @ first_profile_rhs
+            - (pi_derivative @ first_profile) * one
+        )
+        assert np.max(np.abs(
+            generator @ first_profile_derivative - first_profile_rhs
+        )) < 3e-13
+        assert abs(
+            pi @ first_profile_derivative
+            + pi_derivative @ first_profile
+        ) < 3e-13
+
+        second_profile_rhs = (
+            first_profile_derivative
+            - centered * first_profile
+            + local_first_drift * one
+        )
+        assert abs(pi @ second_profile_rhs) < 3e-13
+        second_profile = group_inverse @ second_profile_rhs
+        assert abs(pi @ second_profile) < 3e-13
+        assert np.max(np.abs(
+            generator @ second_profile - second_profile_rhs
+        )) < 3e-13
+        second_drift = float(
+            pi @ (centered * second_profile)
+            + pi_derivative @ second_profile
+        )
+        integrands.append(
+            (forcing_mean, dynamic, geometric, second_drift)
+        )
     averages = np.mean(np.asarray(integrands), axis=0)
-    return float(averages[0]), float(averages[1]), float(averages[2])
+    return (
+        float(averages[0]),
+        float(averages[1]),
+        float(averages[2]),
+        float(averages[3]),
+    )
 
 
 def finite_chain_periodic_errors(
@@ -1840,8 +1900,8 @@ def finite_chain_periodic_errors(
 
 def check_general_periodic_generator() -> None:
     """Finite-chain Floquet profile and frozen boundary slip."""
-    leading_mean, dynamic_drift, geometric_drift = (
-        finite_chain_first_order_drift()
+    leading_mean, dynamic_drift, geometric_drift, second_drift = (
+        finite_chain_floquet_coefficients()
     )
     predicted_drift = dynamic_drift + geometric_drift
     moving_results = []
@@ -1874,12 +1934,47 @@ def check_general_periodic_generator() -> None:
     measured_drift = 64.0 * (
         moving_results[-1]["exponent"] - leading_mean
     )
+    first_order_exponent_errors = [
+        abs(result["exponent"] - leading_mean - predicted_drift / m)
+        for m, result in zip((2.0, 4.0, 8.0, 16.0, 32.0, 64.0), moving_results)
+    ]
+    second_order_exponent_errors = [
+        abs(
+            result["exponent"]
+            - leading_mean
+            - predicted_drift / m
+            - second_drift / m ** 2
+        )
+        for m, result in zip((2.0, 4.0, 8.0, 16.0, 32.0, 64.0), moving_results)
+    ]
+    first_order_exponent_rate = float(np.log2(
+        first_order_exponent_errors[-2] / first_order_exponent_errors[-1]
+    ))
+    second_order_exponent_rate = float(np.log2(
+        second_order_exponent_errors[-2] / second_order_exponent_errors[-1]
+    ))
+    measured_second_drift = 64.0 ** 2 * (
+        moving_results[-1]["exponent"]
+        - leading_mean
+        - predicted_drift / 64.0
+    )
+    previous_measured_second_drift = 32.0 ** 2 * (
+        moving_results[-2]["exponent"]
+        - leading_mean
+        - predicted_drift / 32.0
+    )
+    richardson_second_drift = (
+        2.0 * measured_second_drift - previous_measured_second_drift
+    )
     assert 0.95 < moving_arbitrary_raw_rate < 1.1
     assert moving_arbitrary_slip_rate > 1.95
     assert moving_stationary_rate > 1.95
     assert fixed_stationary_raw_rate > 1.95
     assert fixed_stationary_slip_rate > 2.9
     assert abs(measured_drift / predicted_drift - 1) < 0.02
+    assert first_order_exponent_rate > 1.95
+    assert second_order_exponent_rate > 2.95
+    assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
     assert max(result["periodicity_error"] for result in fixed_results) < 3e-11
@@ -1911,6 +2006,21 @@ def check_general_periodic_generator() -> None:
         "moving three-state first-order Floquet drift: numerical "
         f"{measured_drift:.10e}, predicted {predicted_drift:.10e}; "
         f"dynamic {dynamic_drift:.10e}, geometric {geometric_drift:.10e}"
+    )
+    print(
+        "moving three-state second-order Floquet drift: numerical "
+        f"{measured_second_drift:.10e}, Richardson "
+        f"{richardson_second_drift:.10e}, predicted {second_drift:.10e}"
+    )
+    print(
+        "finite-chain exponent residual rates: first-order "
+        f"{first_order_exponent_rate:.6f}, second-order "
+        f"{second_order_exponent_rate:.6f}"
+    )
+    print(
+        "m=64 exponent residuals: first-order "
+        f"{first_order_exponent_errors[-1]:.3e}, second-order "
+        f"{second_order_exponent_errors[-1]:.3e}"
     )
 
 

@@ -760,6 +760,26 @@
     $\langle(v\delta+p')R_1\rangle$. Thus this multi-state coefficient remains distinct from a
     fixed-parameter Green&ndash;Kubo rank calculation: moving stationary weights add a separate geometric term.</p>
 
+    <h3>Explicit second-order coefficient</h3>
+    <p>If $Q,D$ are $C^3$, the same periodic solvability calculation continues one order.
+      Write the local first drift as</p>
+    $$\gamma_1(t)=\pi(D-\bar gI)u_1+\pi'u_1,$$
+    <p>and choose the second profile correction in the gauge $\pi u_2=0$:</p>
+    $$u_2=Q^\#\left\{u_1'-(D-\bar gI)u_1+\gamma_1{\bf1}\right\}.$$
+    <p>The expression in braces is centered under $\pi$ precisely because of the definition
+      of $\gamma_1$. The next solvability condition gives</p>
+    <div class="equation-card">
+    $$\lambda_m=\langle\bar g\rangle+{\lambda_1\over m}
+      +{\lambda_2\over m^2}+O(m^{-3}),\qquad
+      \lambda_2=\left\langle
+      \pi(D-\bar gI)u_2+\pi'u_2
+      \right\rangle.$$
+    </div>
+    <p>The apparent $-\gamma_1u_1$ contribution vanishes from the solvability condition
+      because $\pi u_1=0$; it remains indirectly inside $u_2$. Thus the second coefficient
+      has the same dynamic-plus-geometric form as the first, but acts on the transported
+      second profile.</p>
+
     <h3>Why the orders differ</h3>
     <p>Perron decomposition of the monodromy gives
     $\mathbf1=c_mv_m+z_{m,0}$ with $w_m^\top z_{m,0}=0$. Singular perturbation gives
@@ -795,9 +815,24 @@
     $2.0356$ after adding it, and $2.0027$ for the moving stationary-prior profile without a slip.
     The fixed defective-chain control has order $2.0058$ without the slip and $3.0254$ with it.
     The principal profile closes after one period within $2.8\times10^{-13}$. For the moving chain, the
-    coefficient above predicts $\lambda_1=0.01049251$: its dynamic part is $0.01075822$ and its geometric part is
-    $-0.00026571$. Direct monodromy at $m=64$ gives $m\{\lambda_m-\langle\bar g\rangle\}=0.01051100$, a relative
-    discrepancy of $0.18\%$.</p>
+    first coefficient is $\lambda_1=0.0104925059$: its dynamic part is $0.0107582179$ and its geometric part is
+    $-0.0002657120$. The second solvability coefficient is $\lambda_2=0.0012048119$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>residual after $\lambda_1/m$</th><th>residual after $\lambda_1/m+\lambda_2/m^2$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>1.59218e-5</td><td>2.90342e-6</td></tr>
+        <tr><td>16</td><td>4.36168e-6</td><td>3.44614e-7</td></tr>
+        <tr><td>32</td><td>1.13464e-6</td><td>4.19314e-8</td></tr>
+        <tr><td>64</td><td>2.88973e-7</td><td>5.17063e-9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The measured residual orders are $1.9732$ and $3.0197$, respectively. At $m=64$,
+      $m^2\{\lambda_m-\langle\bar g\rangle-\lambda_1/m\}=0.0011836342$;
+      Richardson extrapolation from $m=32,64$ gives $0.0012053936$, within $0.049\%$ of
+      the analytic $\lambda_2$. Including the second coefficient reduces the raw exponent
+      error by a factor of about $56$.</p>
 
     <h2>What remains beyond this theorem</h2>
     <p>The fixed-generator theorem assumes a diagonal forcing of bounded total variation and $D(0)=0$ only when
@@ -805,7 +840,7 @@
     near-end forcing. The moving-generator extension requires a uniformly ergodic smooth family and integrable
     total variation. The Floquet theorems above separately cover smooth periodic forcing and smooth periodic
     two-state generators with a uniform rate gap; the exact-profile theorem extends maturity-uniform control to
-    every finite periodic chain and supplies its explicit first coefficient. Rough nonperiodic coefficients with
+    every finite periodic chain and supplies its explicit first two coefficients. Rough nonperiodic coefficients with
     infinite variation, generators that lose their gap, and infinite-state factors still require different estimates.</p>
     <p>The fixed-horizon expansion and its initial layers belong to the singular-perturbation framework summarized
     by <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a> and originate with
