@@ -110,7 +110,8 @@
     regime and $\sigma_2^2 = 0.0055$ in the second. Order 0 is Vasicek&apos;s bond price with the
     averaged parameters. Order $n$ adds every term through $\varepsilon^n$: the outer series in
     $E = 1 - e^{-\kappa t}$ and the initial layer, which enters the regime-dependent bracket from order 2, as the
-    transient $\tfrac14\varepsilon^2\tilde g'(0)\,e^{-2\lambda t}$, and the exponent from order 4.</p>
+    transient $\tfrac14\varepsilon^2\tilde g'(0)\,e^{-2\lambda t}$. Its permanent contribution to the common
+    log amplitude starts at order 4.</p>
 
     <div class="widget">
       <div class="controls">
@@ -172,7 +173,7 @@
       var ex = S.exactCurve(10, 161, x0, regime), sums = [], errs = [];
       for (var n = 0; n <= N; n++) { sums.push([]); errs.push([]); }
       ex.forEach(function (pt) {
-        var t = pt[0], ps = t === 0 ? new Array(N + 1).fill(1) : A.partialSums(t, x0, regime);
+        var t = pt[0], ps = A.partialSums(t, x0, regime);
         for (var n = 0; n <= N; n++) { sums[n].push([t, ps[n]]); errs[n].push([t, t === 0 ? NaN : Math.max(Math.abs(ps[n] - pt[1]), 1e-13)]); }
       });
       var s1 = [], s2 = [];

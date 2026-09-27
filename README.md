@@ -39,6 +39,8 @@ papers/fast-switching/
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
+  uniform_layer.py          maturity-uniform two-state composite formulas
+  verify_uniform_layer.py   uniform first- and second-order bounds and crossover scale
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
@@ -80,6 +82,7 @@ Each certificate runs from its own folder and ends with PASS or FAIL:
 ```
 cd papers/fast-switching
 python3 verify_engine.py
+python3 verify_uniform_layer.py
 python3 verify_models.py
 python3 verify_fast_factor.py
 python3 verify_quantlib_models.py
