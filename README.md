@@ -50,6 +50,7 @@ papers/yield-curve/
 papers/conformal/
   pooled.py                exact conditional laws of terminal, path-average and slow-state scores under a two-state chain
   verify_pooled_residuals.py  conditional coverage of the pooled threshold, calibration dependence, regime-aware thresholds
+  verify_path_crossover.py exact thresholds for dependent path scores, thinning, ties and training-conditional PAC bounds
 papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
