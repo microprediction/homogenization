@@ -355,6 +355,30 @@
       every nonzero eigenvalue to be simple and the feature to have a nonzero component in
       every nonconstant eigenmode. A repeated eigenspace is a genuine obstruction: varying
       maturity cannot create more than one direction from one vector inside that eigenspace.</p>
+    <p>In this reversible scalar case the generic-maturity statement can be sharpened to
+      <em>every</em> strictly ordered positive maturity tuple. Write the spectrum as
+      $0,-a_1,\ldots,-a_r$, with $0&lt;a_1&lt;\cdots&lt;a_r$ and $r=n-1$, choose
+      $L^2(\pi)$-orthonormal right eigenvectors $\psi_0={\bf1},\psi_1,\ldots,\psi_r$,
+      and expand the centered scalar feature as $F=\sum_{k=1}^r f_k\psi_k$.
+      If every $f_k\ne0$, then for all $0&lt;\tau_1&lt;\cdots&lt;\tau_r$:</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \det[ {\bf1}\ R(\tau_1)\ \cdots\ R(\tau_r)]
+      &=\det[\psi_0\ \cdots\ \psi_r]
+        \left(\prod_{k=1}^r{f_k\over a_k}\right)
+        \det[1-e^{-a_k\tau_j}]_{k,j=1}^r,\\
+      \operatorname{sgn}\det[1-e^{-a_k\tau_j}]_{k,j=1}^r
+      &=(-1)^{r(r-1)/2},
+    \end{aligned}$$
+    <p>so the response determinant never vanishes. There are no exceptional distinct
+      maturities hidden by the earlier almost-everywhere result. To see this, a singular
+      kernel matrix would produce a nonzero
+      $h(t)=\sum_kc_k(1-e^{-a_kt})$ with zeros at all $\tau_j$ and also at zero.
+      But $1,e^{-a_1t},\ldots,e^{-a_rt}$ form a Chebyshev system: repeated use of Rolle&apos;s
+      theorem shows that a nonzero exponential polynomial has at most $r$ zeros.
+      The sign follows by continuity and the small-maturity exponential Vandermonde limit.
+      This is the classical total-positivity mechanism developed by
+      <a href="https://doi.org/10.1073/pnas.33.1.11">Schoenberg (1947)</a>.</p>
     <p>The Krylov rank is attained by finitely many maturities. More precisely, whenever a
       given number of maturity blocks can attain it, almost every such tuple does, because
       the relevant minors are analytic and not identically zero. The scalar cyclic case
@@ -422,6 +446,13 @@
       with measured order $0.946$. For a four-state complete-graph generator, whose nonzero
       eigenvalue has multiplicity three, the scalar-feature response rank remains exactly one
       at every maturity, confirming the spectral obstruction.</p>
+    <p>The reversible all-maturities certificate uses a weighted four-state path with three
+      distinct nonzero eigenvalues and a feature present in every eigenmode. Across 200
+      randomly ordered positive maturity triples, it verifies the determinant factorization
+      and its fixed sign; the maximum relative discrepancy is below $5\times10^{-13}$.
+      A representative triple recovers the four-state prior to machine precision. This is an
+      exact noiseless theorem: as the maturities collide or approach zero, the determinant
+      can still become arbitrarily small.</p>
 
     <h2>A computable finite-rate bound</h2>
     <p>The following deliberately conservative estimate makes the $O(m^{-2})$ statement
@@ -519,7 +550,7 @@
       The exact fixed-feature covariance-rank theorem permits any initial prior. The pricing-identification formulas
       cover stationarity, a labeled starting state, and an unobserved fixed initial mixture. The Krylov theorem
       characterizes noiseless mean observability across the complete scaled-maturity curve; its determinant formula
-      also warns that formal rank need not imply stable statistical recovery. The boundary theorem
+      and the reversible all-maturity sharpening also warn that formal rank need not imply stable statistical recovery. The boundary theorem
       concerns $T=\tau/m$ with $\tau$ in a fixed compact interval; it is distinct from the fixed-maturity outer theorem.
       Stochastic reversion speed and simultaneous limits $T\to\infty$ require separate analyses. The integrated-loading theorem only requires
       $G\succeq0$ and square-integrable deterministic $L$; its finite-basis equality assumes the scalar loading Gram

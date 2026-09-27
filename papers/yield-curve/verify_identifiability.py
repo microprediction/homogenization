@@ -251,6 +251,82 @@ def verify_krylov_observability():
     print("repeated-eigenvalue scalar observability rank: 1")
 
 
+def verify_reversible_all_maturities():
+    """Every ordered positive maturity tuple works in the cyclic reversible case."""
+    # A symmetric weighted path has a simple spectrum.  The scalar feature is
+    # constructed to have a nonzero coefficient in every nonconstant mode.
+    Q = np.array([
+        [-1.0, 1.0, 0.0, 0.0],
+        [1.0, -3.0, 2.0, 0.0],
+        [0.0, 2.0, -5.0, 3.0],
+        [0.0, 0.0, 3.0, -3.0],
+    ])
+    pi = stationary(Q)
+    root_pi = np.sqrt(pi)
+    symmetric_generator = root_pi[:, None] * Q / root_pi[None, :]
+    eigenvalues, orthogonal_modes = np.linalg.eigh(symmetric_generator)
+    ordering = np.argsort(-eigenvalues)
+    eigenvalues = eigenvalues[ordering]
+    orthogonal_modes = orthogonal_modes[:, ordering]
+    modes = orthogonal_modes / root_pi[:, None]
+    if np.mean(modes[:, 0]) < 0:
+        modes[:, 0] *= -1
+    assert np.max(np.abs(modes[:, 0] - 1.0)) < 2e-13
+
+    rates = -eigenvalues[1:]
+    chosen_coefficients = np.array([1.0, 0.7, -0.4])
+    feature = modes[:, 1:] @ chosen_coefficients
+    modal_coefficients = modes[:, 1:].T @ (pi * feature)
+    assert np.max(np.abs(modal_coefficients - chosen_coefficients)) < 2e-13
+
+    rng = np.random.default_rng(27092026)
+    maximum_factorization_error = 0.0
+    minimum_response_determinant = math.inf
+    minimum_singular_value = math.inf
+    expected_kernel_sign = (-1) ** (len(rates) * (len(rates) - 1) // 2)
+    for _ in range(200):
+        taus = np.cumsum(rng.uniform(0.1, 0.8, len(rates)))
+        response = transient_response_matrix(Q, feature[:, None], taus)
+        augmented = np.column_stack([np.ones(len(Q)), response])
+        kernel = 1.0 - np.exp(-np.outer(rates, taus))
+        kernel_determinant = np.linalg.det(kernel)
+        assert np.sign(kernel_determinant) == expected_kernel_sign
+        predicted = (np.linalg.det(modes)
+                     * np.prod(modal_coefficients / rates)
+                     * kernel_determinant)
+        observed = np.linalg.det(augmented)
+        relative_error = abs(observed - predicted) / abs(observed)
+        maximum_factorization_error = max(
+            maximum_factorization_error, relative_error)
+        minimum_response_determinant = min(
+            minimum_response_determinant, abs(observed))
+        minimum_singular_value = min(
+            minimum_singular_value,
+            np.linalg.svd(augmented, compute_uv=False)[-1])
+    assert maximum_factorization_error < 3e-12
+    assert minimum_response_determinant > 8e-5
+
+    taus = np.array([0.2, 0.7, 1.5])
+    response = transient_response_matrix(Q, feature[:, None], taus)
+    augmented = np.column_stack([np.ones(len(Q)), response])
+    prior = np.array([0.10, 0.25, 0.40, 0.25])
+    recovered = np.linalg.solve(
+        augmented.T, np.array([1.0, *(prior @ response)]))
+    recovery_error = np.max(np.abs(recovered - prior))
+    assert recovery_error < 3e-14
+
+    print("\nReversible scalar observability at every maturity tuple")
+    print(f"nonzero spectral rates: {rates}")
+    print(f"modal feature coefficients: {modal_coefficients}")
+    print(f"maturity tuples checked: 200")
+    print(f"maximum determinant factorization error: "
+          f"{maximum_factorization_error:.3e}")
+    print(f"minimum sampled response determinant: "
+          f"{minimum_response_determinant:.3e}")
+    print(f"minimum sampled singular value: {minimum_singular_value:.3e}")
+    print(f"prior recovery error: {recovery_error:.3e}")
+
+
 def verify_initial_mixture_observability():
     """Boundary-layer maturities can identify more than the outer projection."""
     Q = np.array([
@@ -608,6 +684,7 @@ def main():
     verify_finite_horizon_covariance()
     verify_arbitrary_prior_rank()
     verify_krylov_observability()
+    verify_reversible_all_maturities()
     verify_initial_mixture_observability()
 
     for T in (0.2, 1.0, 3.0, 5.0):
@@ -631,7 +708,7 @@ def main():
 
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
-        "exact integrated-loading rank, Krylov and initial-mixture observability, shape identities, "
+        "exact integrated-loading rank, Krylov, reversible, and initial-mixture observability, shape identities, "
         "known-start expansion, and explicit bounds"
     )
 

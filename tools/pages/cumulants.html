@@ -102,7 +102,10 @@
     $V_T$ and hence for $\kappa_4(M_T)$. The higher cumulants of $V_T$ are corrected at fixed maturity, with a
     remainder of order $\varepsilon^2$ that may grow with $T$.</p>
     <p>Moments of the square-root process exist whether or not the Feller condition holds, so nothing here needs
-    it. Option prices under the switched level are on the <a href="./heston.html">Heston page</a>, where the
+    it. For the switched process itself, zero is unreachable from a positive start if and only if
+    $2\kappa\theta_i \ge \xi^2$ in every regime: a regime that fails it holds for an exponential time, during which
+    the frozen process reaches zero with positive probability, while if every regime passes, the process stays above
+    the square-root process with the smallest $\kappa\theta$, which never reaches zero. Option prices under the switched level are on the <a href="./heston.html">Heston page</a>, where the
     <a href="./engine.html">engine</a> gives them to every order; the smile they imply at first order is the
     variance-convexity term of the <a href="./any-equation.html">any-equation page</a>, the first-order form of
     <a href="./bibliography.html#HullWhite1987">Hull and White&apos;s</a> mixing formula.</p>
