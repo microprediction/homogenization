@@ -251,32 +251,44 @@ def verify_krylov_observability():
     print("repeated-eigenvalue scalar observability rank: 1")
 
 
-def verify_reversible_all_maturities():
-    """Every ordered positive maturity tuple works in the cyclic reversible case."""
-    # A symmetric weighted path has a simple spectrum.  The scalar feature is
-    # constructed to have a nonzero coefficient in every nonconstant mode.
-    Q = np.array([
+def verify_real_spectrum_all_maturities():
+    """Real simple spectrum is enough; a complex pair creates exceptions."""
+    # Start from a reversible weighted path plus a complete-graph component,
+    # then add a nonzero circulation.  The chain is not reversible, but its
+    # three nonzero eigenvalues remain real and simple.
+    reversible_part = np.array([
         [-1.0, 1.0, 0.0, 0.0],
         [1.0, -3.0, 2.0, 0.0],
         [0.0, 2.0, -5.0, 3.0],
         [0.0, 0.0, 3.0, -3.0],
+    ]) + 0.2 * (np.ones((4, 4)) - 4.0 * np.eye(4))
+    circulation = 0.1 * np.array([
+        [0.0, 1.0, -1.0, 0.0],
+        [-1.0, 0.0, 1.0, 0.0],
+        [1.0, -1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
     ])
+    Q = reversible_part + circulation
     pi = stationary(Q)
-    root_pi = np.sqrt(pi)
-    symmetric_generator = root_pi[:, None] * Q / root_pi[None, :]
-    eigenvalues, orthogonal_modes = np.linalg.eigh(symmetric_generator)
-    ordering = np.argsort(-eigenvalues)
+    detailed_balance_residual = np.max(np.abs(
+        pi[:, None] * Q - pi[None, :] * Q.T))
+    assert detailed_balance_residual > 0.04
+
+    eigenvalues, modes = np.linalg.eig(Q)
+    ordering = np.argsort(-eigenvalues.real)
     eigenvalues = eigenvalues[ordering]
-    orthogonal_modes = orthogonal_modes[:, ordering]
-    modes = orthogonal_modes / root_pi[:, None]
-    if np.mean(modes[:, 0]) < 0:
-        modes[:, 0] *= -1
-    assert np.max(np.abs(modes[:, 0] - 1.0)) < 2e-13
+    modes = modes[:, ordering]
+    assert np.max(np.abs(eigenvalues.imag)) < 2e-13
+    assert np.max(np.abs(modes.imag)) < 2e-13
+    eigenvalues = eigenvalues.real
+    modes = modes.real
+    modes[:, 0] = 1.0
+    assert np.max(np.abs(Q @ modes - modes @ np.diag(eigenvalues))) < 3e-13
 
     rates = -eigenvalues[1:]
     chosen_coefficients = np.array([1.0, 0.7, -0.4])
     feature = modes[:, 1:] @ chosen_coefficients
-    modal_coefficients = modes[:, 1:].T @ (pi * feature)
+    modal_coefficients = np.linalg.solve(modes, feature)[1:]
     assert np.max(np.abs(modal_coefficients - chosen_coefficients)) < 2e-13
 
     rng = np.random.default_rng(27092026)
@@ -285,7 +297,7 @@ def verify_reversible_all_maturities():
     minimum_singular_value = math.inf
     expected_kernel_sign = (-1) ** (len(rates) * (len(rates) - 1) // 2)
     for _ in range(200):
-        taus = np.cumsum(rng.uniform(0.1, 0.8, len(rates)))
+        taus = np.cumsum(rng.uniform(0.05, 0.35, len(rates)))
         response = transient_response_matrix(Q, feature[:, None], taus)
         augmented = np.column_stack([np.ones(len(Q)), response])
         kernel = 1.0 - np.exp(-np.outer(rates, taus))
@@ -304,7 +316,7 @@ def verify_reversible_all_maturities():
             minimum_singular_value,
             np.linalg.svd(augmented, compute_uv=False)[-1])
     assert maximum_factorization_error < 3e-12
-    assert minimum_response_determinant > 8e-5
+    assert minimum_response_determinant > 4e-7
 
     taus = np.array([0.2, 0.7, 1.5])
     response = transient_response_matrix(Q, feature[:, None], taus)
@@ -315,7 +327,40 @@ def verify_reversible_all_maturities():
     recovery_error = np.max(np.abs(recovered - prior))
     assert recovery_error < 3e-14
 
-    print("\nReversible scalar observability at every maturity tuple")
+    # A directed three-cycle has the complex spectrum
+    # 0, -3/2 +/- i sqrt(3)/2.  Although the scalar feature is cyclic, at
+    # tau=pi/b and 2pi/b the two complex numerators 1-exp((-a+ib)tau)
+    # are real.  The two real response vectors are therefore collinear.
+    cycle_Q = np.array([
+        [-1.0, 1.0, 0.0],
+        [0.0, -1.0, 1.0],
+        [1.0, 0.0, -1.0],
+    ])
+    cycle_feature = np.array([[1.0], [-1.0], [0.0]])
+    cycle_krylov = np.column_stack([
+        np.ones(3), cycle_feature, cycle_Q @ cycle_feature])
+    cycle_krylov_determinant = np.linalg.det(cycle_krylov)
+    assert abs(cycle_krylov_determinant) > 2.9
+    frequency = math.sqrt(3.0) / 2.0
+    exceptional_taus = (math.pi / frequency, 2.0 * math.pi / frequency)
+    exceptional_response = transient_response_matrix(
+        cycle_Q, cycle_feature, exceptional_taus)
+    exceptional_augmented = np.column_stack([
+        np.ones(3), exceptional_response])
+    exceptional_determinant = np.linalg.det(exceptional_augmented)
+    exceptional_singular_value = np.linalg.svd(
+        exceptional_augmented, compute_uv=False)[-1]
+    assert abs(exceptional_determinant) < 8e-15
+    assert exceptional_singular_value < 8e-15
+
+    generic_response = transient_response_matrix(
+        cycle_Q, cycle_feature, (0.4, 1.7))
+    generic_determinant = np.linalg.det(np.column_stack([
+        np.ones(3), generic_response]))
+    assert abs(generic_determinant) > 0.15
+
+    print("\nReal-spectrum scalar observability at every maturity tuple")
+    print(f"detailed-balance residual: {detailed_balance_residual:.9f}")
     print(f"nonzero spectral rates: {rates}")
     print(f"modal feature coefficients: {modal_coefficients}")
     print(f"maturity tuples checked: 200")
@@ -325,6 +370,13 @@ def verify_reversible_all_maturities():
           f"{minimum_response_determinant:.3e}")
     print(f"minimum sampled singular value: {minimum_singular_value:.3e}")
     print(f"prior recovery error: {recovery_error:.3e}")
+    print("\nComplex-spectrum exceptional maturities")
+    print(f"directed-cycle Krylov determinant: {cycle_krylov_determinant:.9f}")
+    print(f"exceptional maturities: {exceptional_taus}")
+    print(f"exceptional response determinant: {exceptional_determinant:.3e}")
+    print(f"exceptional smallest singular value: "
+          f"{exceptional_singular_value:.3e}")
+    print(f"generic response determinant: {generic_determinant:.9f}")
 
 
 def verify_initial_mixture_observability():
@@ -684,7 +736,7 @@ def main():
     verify_finite_horizon_covariance()
     verify_arbitrary_prior_rank()
     verify_krylov_observability()
-    verify_reversible_all_maturities()
+    verify_real_spectrum_all_maturities()
     verify_initial_mixture_observability()
 
     for T in (0.2, 1.0, 3.0, 5.0):
@@ -708,7 +760,7 @@ def main():
 
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
-        "exact integrated-loading rank, Krylov, reversible, and initial-mixture observability, shape identities, "
+        "exact integrated-loading rank, Krylov, real-spectrum, and initial-mixture observability, shape identities, "
         "known-start expansion, and explicit bounds"
     )
 
