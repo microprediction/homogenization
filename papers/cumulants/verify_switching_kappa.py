@@ -547,6 +547,66 @@ def verify_long_maturity_nonuniformity():
     return residuals
 
 
+def verify_averaged_admissibility(pi, c, xi, rho):
+    """Sharp Feller-margin and effective-correlation checks."""
+    variance = xi**2
+    eta = rho * xi
+    effective_xi = math.sqrt(pi @ variance)
+    effective_rho = (pi @ eta) / effective_xi
+    correlation_envelope = (pi @ xi) / effective_xi
+    coefficient_of_variation = math.sqrt(
+        pi @ (xi - pi @ xi) ** 2
+    ) / (pi @ xi)
+
+    # The averaged boundary margin is exactly the stationary average of the
+    # statewise margins. Statewise Feller admissibility therefore implies
+    # averaged admissibility, although the converse need not hold.
+    averaged_margin = 2 * (pi @ c) - pi @ variance
+    statewise_margin_average = pi @ (2 * c - variance)
+    assert abs(averaged_margin - statewise_margin_average) < 2e-16
+    assert averaged_margin > 0.0
+
+    # For fixed positive xi, the full attainable interval is sharper than
+    # |rho_eff| <= 1. Its endpoints occur only at rho_i = +/-1 for all i.
+    assert abs(effective_rho) <= correlation_envelope + 2e-16
+    assert abs(
+        correlation_envelope
+        - 1 / math.sqrt(1 + coefficient_of_variation**2)
+    ) < 2e-15
+    endpoint_plus = (pi @ xi) / effective_xi
+    endpoint_minus = -(pi @ xi) / effective_xi
+    assert abs(endpoint_plus - correlation_envelope) < 2e-16
+    assert abs(endpoint_minus + correlation_envelope) < 2e-16
+    target = 0.37 * correlation_envelope
+    assert abs((pi @ (0.37 * xi)) / effective_xi - target) < 2e-16
+
+    # Independent random stress test of the sharp envelope and covariance
+    # determinant. The latter is a_bar-eta_bar^2 in units of v^2.
+    rng = np.random.default_rng(20260927)
+    weights = rng.dirichlet(np.ones(5), size=10000)
+    xis = rng.uniform(0.03, 1.25, size=(10000, 5))
+    rhos = rng.uniform(-1.0, 1.0, size=(10000, 5))
+    mean_xi = np.sum(weights * xis, axis=1)
+    mean_xi2 = np.sum(weights * xis**2, axis=1)
+    mean_eta = np.sum(weights * xis * rhos, axis=1)
+    random_effective_rho = mean_eta / np.sqrt(mean_xi2)
+    random_envelope = mean_xi / np.sqrt(mean_xi2)
+    envelope_slack = random_envelope - np.abs(random_effective_rho)
+    envelope_excess = max(0.0, -np.min(envelope_slack))
+    determinant_floor = np.min(mean_xi2 - mean_eta**2)
+    assert envelope_excess < 2e-15
+    assert determinant_floor > 0.0
+    return {
+        "effective_rho": effective_rho,
+        "envelope": correlation_envelope,
+        "cv": coefficient_of_variation,
+        "margin": averaged_margin,
+        "envelope_excess": envelope_excess,
+        "envelope_slack": np.min(envelope_slack),
+        "determinant_floor": determinant_floor,
+    }
+
+
 def main():
     long_maturity_residuals = verify_long_maturity_nonuniformity()
     uniform_mean_rates = verify_uniform_spectral_mean()
@@ -869,12 +929,14 @@ def main():
 
     rho_switch = np.array([-0.80, -0.25, 0.35])
     eta_switch = rho_switch * xi
+    admissibility = verify_averaged_admissibility(pi, c, xi, rho_switch)
     switched_result, k0_eta = leverage_case(eta_switch)
     leverage_results["switched rho"] = switched_result
     effective_xi = math.sqrt(pi @ variance)
     effective_rho = (pi @ eta_switch) / effective_xi
     assert np.all(np.abs(rho_switch) <= 1.0)
     assert abs(effective_rho) <= 1.0
+    assert abs(effective_rho - admissibility["effective_rho"]) < 2e-16
 
     # Reversal transposes the four-feature Green--Kubo matrix.  The new
     # directional terms are K^anti_{c,eta}[A_c,A_eta] and
@@ -913,6 +975,16 @@ def main():
     print(
         f"   rho states {rho_switch}; eta=rho*xi {eta_switch}; "
         f"effective rho {effective_rho:+.8f}"
+    )
+    print(
+        f"   sharp correlation envelope +/-{admissibility['envelope']:.8f}; "
+        f"CV(xi) {admissibility['cv']:.8f}; averaged Feller margin "
+        f"{admissibility['margin']:.8f}"
+    )
+    print(
+        f"   10000-case envelope excess {admissibility['envelope_excess']:.2e}; "
+        f"minimum slack {admissibility['envelope_slack']:.3e}; "
+        f"minimum covariance determinant {admissibility['determinant_floor']:.3e}"
     )
     print(
         f"   fixed-rho coordinate error {fixed_coordinate_error:.2e}; "
