@@ -355,12 +355,34 @@
       every nonzero eigenvalue to be simple and the feature to have a nonzero component in
       every nonconstant eigenmode. A repeated eigenspace is a genuine obstruction: varying
       maturity cannot create more than one direction from one vector inside that eigenspace.</p>
-    <p>Reversibility is sufficient for a real spectrum, but it is not necessary for the
-      all-maturity conclusion. Suppose instead that the generator has the simple real spectrum
-      $0,-a_1,\ldots,-a_r$, with $0&lt;a_1&lt;\cdots&lt;a_r$ and $r=n-1$, and choose any real
-      right-eigenvector basis $\psi_0={\bf1},\psi_1,\ldots,\psi_r$. Expand the centered scalar
-      feature as $F=\sum_{k=1}^r f_k\psi_k$.
-      If every $f_k\ne0$, then for all $0&lt;\tau_1&lt;\cdots&lt;\tau_r$:</p>
+    <p>Reversibility is sufficient for a real spectrum, but neither reversibility nor
+      diagonalizability is necessary for the all-maturity conclusion. Suppose the restriction
+      of $Q_0$ to the centered state space has only real eigenvalues, repeated eigenvalues and
+      Jordan blocks being allowed, and a centered scalar feature $F$ is cyclic:</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{r-1}F]=n,
+      \qquad r=n-1.$$
+    </div>
+    <p>Then every ordered tuple $0&lt;\tau_1&lt;\cdots&lt;\tau_r$ identifies the prior:</p>
+    <div class="equation-card">
+    $$\det[ {\bf1}\ R(\tau_1)\ \cdots\ R(\tau_r)]\ne0.$$
+    </div>
+    <p>Indeed, if a nonzero centered row vector $\ell$ annihilated all response columns,
+      $h(t)=\ell R(t)$ would have the $r+1$ distinct zeros
+      $0,\tau_1,\ldots,\tau_r$. Cyclicity makes
+      $h'(t)=\ell e^{Q_0t}F$ nonzero. In a real Jordan basis this derivative is an exponential
+      polynomial</p>
+    $$h'(t)=\sum_{q=1}^s p_q(t)e^{-a_qt},
+      \qquad \deg p_q&lt;m_q,\qquad \sum_qm_q=r.$$
+    <p>These functions form an extended Chebyshev system, so a nonzero $h'$ has at most
+      $r-1$ real zeros counting multiplicity. Rolle&apos;s theorem would give at least $r$,
+      a contradiction. Cyclicity also explains exactly which repetitions are permitted:
+      it forces one Jordan chain per eigenvalue. A repeated eigenspace with two independent
+      eigenvectors remains an obstruction to any scalar feature.</p>
+    <p>For a simple spectrum the theorem has an explicit determinant. Write
+      $0,-a_1,\ldots,-a_r$, with $0&lt;a_1&lt;\cdots&lt;a_r$, choose a real right-eigenvector basis
+      $\psi_0={\bf1},\psi_1,\ldots,\psi_r$, and expand
+      $F=\sum_{k=1}^r f_k\psi_k$. Cyclicity is then equivalent to every $f_k\ne0$, and</p>
     <div class="equation-card">
     $$\begin{aligned}
       \det[ {\bf1}\ R(\tau_1)\ \cdots\ R(\tau_r)]
@@ -370,15 +392,24 @@
       \operatorname{sgn}\det[1-e^{-a_k\tau_j}]_{k,j=1}^r
       &=(-1)^{r(r-1)/2},
     \end{aligned}$$
-    <p>so the response determinant never vanishes. There are no exceptional distinct
-      maturities hidden by the earlier almost-everywhere result. To see this, a singular
-      kernel matrix would produce a nonzero
-      $h(t)=\sum_kc_k(1-e^{-a_kt})$ with zeros at all $\tau_j$ and also at zero.
-      But $1,e^{-a_1t},\ldots,e^{-a_rt}$ form a Chebyshev system: repeated use of Rolle&apos;s
-      theorem shows that a nonzero exponential polynomial has at most $r$ zeros.
-      The sign follows by continuity and the small-maturity exponential Vandermonde limit.
-      This is the classical total-positivity mechanism developed by
+    </div>
+    <p>The sign follows by continuity and the small-maturity exponential Vandermonde limit.
+      The ordinary and confluent cases are the classical exponential
+      Chebyshev/total-positivity mechanism developed by
       <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
+    <p>An exact defective example makes the confluent case explicit. Let</p>
+    $$Q_J=\begin{pmatrix}
+      -8/15&amp;1/15&amp;7/15\\1/3&amp;-2/3&amp;1/3\\1/5&amp;3/5&amp;-4/5
+      \end{pmatrix},\quad
+      v=(-4,0,4)^\top,\quad w=(-4,1,3)^\top.$$
+    <p>Every off-diagonal rate is positive, while $Q_Jv=-v$ and
+      $Q_Jw=0.1v-w$, so the eigenvalue $-1$ has a size-two Jordan block.
+      With $F=w$,</p>
+    $$R(t)=g_0(t)w+0.1g_1(t)v,\qquad
+      g_0(t)=1-e^{-t},\quad g_1(t)=1-(1+t)e^{-t}.$$
+    <p>The ratio $g_1/g_0$ is strictly increasing because its derivative is
+      $e^{-t}(t-1+e^{-t})/(1-e^{-t})^2&gt;0$. Thus every positive ordered pair
+      works directly, despite the defective generator.</p>
     <p>A complex spectrum marks a real boundary to that statement, not merely a limitation of
       the proof. For the directed three-cycle</p>
     $$Q_\circlearrowright=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\1&amp;0&amp;-1\end{pmatrix},
@@ -392,8 +423,8 @@
     $$\det[ {\bf1}\ R(2\pi/\sqrt3)\ R(4\pi/\sqrt3)]=0.$$
     </div>
     <p>Thus a cyclic feature still gives generic identifiability, but distinct maturities need
-      not all work once oscillatory modes are present. The theorem assumes a simple real
-      spectrum; it does not claim that real spectrum is necessary for every particular chain.</p>
+      not all work once oscillatory modes are present. The theorem assumes a real nonzero
+      spectrum; it does not claim that this condition is necessary for every particular chain.</p>
     <p>The Krylov rank is attained by finitely many maturities. More precisely, whenever a
       given number of maturity blocks can attain it, almost every such tuple does, because
       the relevant minors are analytic and not identically zero. The scalar cyclic case
@@ -466,6 +497,10 @@
       simple. Across 200 randomly ordered positive maturity triples, it verifies the
       determinant factorization and its fixed sign; the maximum relative discrepancy is below
       $5\times10^{-13}$. A representative prior is recovered within $2.2\times10^{-15}$.
+      A separate irreducible three-state chain has the genuine Jordan relations
+      $Q_0v=-v$ and $Q_0w=0.1v-w$. With $F=w$, its Krylov determinant is $1.2$;
+      200 ordered maturity pairs verify the confluent factorization within
+      $5\times10^{-13}$, and recover a prior within $4.2\times10^{-15}$.
       For the directed-cycle counterexample, the Krylov determinant is $-3$, a generic pair
       has response determinant $-0.170100185$, but the exceptional pair has determinant
       $4.46\times10^{-16}$ and smallest singular value $1.75\times10^{-16}$.</p>

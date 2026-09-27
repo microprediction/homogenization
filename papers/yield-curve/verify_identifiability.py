@@ -252,7 +252,7 @@ def verify_krylov_observability():
 
 
 def verify_real_spectrum_all_maturities():
-    """Real simple spectrum is enough; a complex pair creates exceptions."""
+    """A real spectrum is enough, even with Jordan blocks."""
     # Start from a reversible weighted path plus a complete-graph component,
     # then add a nonzero circulation.  The chain is not reversible, but its
     # three nonzero eigenvalues remain real and simple.
@@ -327,6 +327,75 @@ def verify_real_spectrum_all_maturities():
     recovery_error = np.max(np.abs(recovered - prior))
     assert recovery_error < 3e-14
 
+    # A genuinely defective irreducible generator.  In the basis (1, v, w),
+    # Q has a size-two Jordan block at -1:
+    # Qv=-v and Qw=(1/10)v-w.  Taking F=w makes (1,F,QF) cyclic.
+    defective_Q = np.array([
+        [-8.0 / 15.0, 1.0 / 15.0, 7.0 / 15.0],
+        [1.0 / 3.0, -2.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 5.0, 3.0 / 5.0, -4.0 / 5.0],
+    ])
+    generalized_eigenvector = np.array([-4.0, 0.0, 4.0])
+    cyclic_vector = np.array([-4.0, 1.0, 3.0])
+    jordan_strength = 0.1
+    defective_feature = cyclic_vector[:, None]
+    defective_basis = np.column_stack([
+        np.ones(3), generalized_eigenvector, cyclic_vector])
+    assert np.min(defective_Q[~np.eye(3, dtype=bool)]) > 0.06
+    assert np.max(np.abs(defective_Q.sum(axis=1))) < 2e-16
+    assert np.max(np.abs(
+        defective_Q @ generalized_eigenvector
+        + generalized_eigenvector)) < 3e-16
+    assert np.max(np.abs(
+        defective_Q @ cyclic_vector
+        - jordan_strength * generalized_eigenvector
+        + cyclic_vector)) < 3e-16
+    assert np.linalg.matrix_rank(defective_Q + np.eye(3), tol=2e-13) == 2
+    defective_krylov_determinant = np.linalg.det(np.column_stack([
+        np.ones(3), defective_feature, defective_Q @ defective_feature]))
+    assert abs(defective_krylov_determinant) > 1.1
+
+    # The response is g0(t)w + eta*g1(t)v, where
+    # g0=1-exp(-t) and g1=1-(1+t)exp(-t).  Since g1/g0 is strictly
+    # increasing, every ordered positive pair has a nonzero determinant.
+    defective_maximum_factorization_error = 0.0
+    defective_minimum_response_determinant = math.inf
+    defective_minimum_singular_value = math.inf
+    for _ in range(200):
+        defective_taus = np.cumsum(rng.uniform(0.05, 0.35, 2))
+        defective_response = transient_response_matrix(
+            defective_Q, defective_feature, defective_taus)
+        defective_augmented = np.column_stack([
+            np.ones(3), defective_response])
+        g0 = 1.0 - np.exp(-defective_taus)
+        g1 = 1.0 - (1.0 + defective_taus) * np.exp(-defective_taus)
+        predicted = (np.linalg.det(defective_basis) * jordan_strength
+                     * (g1[0] * g0[1] - g1[1] * g0[0]))
+        observed = np.linalg.det(defective_augmented)
+        defective_maximum_factorization_error = max(
+            defective_maximum_factorization_error,
+            abs(observed - predicted) / abs(observed))
+        defective_minimum_response_determinant = min(
+            defective_minimum_response_determinant, abs(observed))
+        defective_minimum_singular_value = min(
+            defective_minimum_singular_value,
+            np.linalg.svd(defective_augmented, compute_uv=False)[-1])
+    assert defective_maximum_factorization_error < 8e-13
+    assert defective_minimum_response_determinant > 2e-4
+
+    defective_taus = np.array([0.4, 1.7])
+    defective_response = transient_response_matrix(
+        defective_Q, defective_feature, defective_taus)
+    defective_augmented = np.column_stack([
+        np.ones(3), defective_response])
+    defective_prior = np.array([0.15, 0.55, 0.30])
+    defective_recovered = np.linalg.solve(
+        defective_augmented.T,
+        np.array([1.0, *(defective_prior @ defective_response)]))
+    defective_recovery_error = np.max(np.abs(
+        defective_recovered - defective_prior))
+    assert defective_recovery_error < 8e-15
+
     # A directed three-cycle has the complex spectrum
     # 0, -3/2 +/- i sqrt(3)/2.  Although the scalar feature is cyclic, at
     # tau=pi/b and 2pi/b the two complex numerators 1-exp((-a+ib)tau)
@@ -370,6 +439,19 @@ def verify_real_spectrum_all_maturities():
           f"{minimum_response_determinant:.3e}")
     print(f"minimum sampled singular value: {minimum_singular_value:.3e}")
     print(f"prior recovery error: {recovery_error:.3e}")
+    print("\nDefective real-spectrum certificate")
+    print(f"defective Krylov determinant: "
+          f"{defective_krylov_determinant:.9f}")
+    print("Jordan relations: Qv=-v, Qw=0.1v-w")
+    print("defective maturity pairs checked: 200")
+    print(f"maximum defective factorization error: "
+          f"{defective_maximum_factorization_error:.3e}")
+    print(f"minimum defective response determinant: "
+          f"{defective_minimum_response_determinant:.3e}")
+    print(f"minimum defective singular value: "
+          f"{defective_minimum_singular_value:.3e}")
+    print(f"defective prior recovery error: "
+          f"{defective_recovery_error:.3e}")
     print("\nComplex-spectrum exceptional maturities")
     print(f"directed-cycle Krylov determinant: {cycle_krylov_determinant:.9f}")
     print(f"exceptional maturities: {exceptional_taus}")
