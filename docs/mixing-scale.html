@@ -120,8 +120,49 @@
       =2\int_0^T(T-u)C(u/\varepsilon)\,du
       =2\varepsilon\int_0^{T/\varepsilon}(T-\varepsilon s)C(s)\,ds.$$
     </div>
-    <p>Everything below follows from this formula. Ergodicity is relevant to the averaged limit, but it does not
-      determine the rate at which the variance vanishes.</p>
+    <p>Everything below follows from this formula or its equivalent spectral form. Ergodicity is relevant to the
+      averaged limit, but it does not determine the rate at which the variance vanishes.</p>
+
+    <h2>The low-frequency theorem</h2>
+    <p>The covariance-tail results below require eventual sign and regular variation in the time domain. A spectral
+      formulation removes that restriction. Write Bochner&apos;s one-sided representation as</p>
+    $$C(t)=\int_{[0,\infty)}\cos(\omega t)\,\mu(d\omega).$$
+    <p>Fubini&apos;s theorem gives the exact Fej&eacute;r-kernel identity</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      =2\varepsilon^2\int_{(0,\infty)}
+      \frac{1-\cos(\omega T/\varepsilon)}{\omega^2}\,\mu(d\omega).$$
+    </div>
+    <p>Suppose that near zero the spectral measure has density</p>
+    $$f(\omega)\sim a\,\omega^{\alpha-1}L(1/\omega),
+      \qquad a&gt;0,\quad0&lt;\alpha&lt;2,$$
+    <p>where $L$ is slowly varying. Then, for each fixed $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)
+      \sim\frac{a\pi}{\Gamma(3-\alpha)\sin(\pi\alpha/2)}
+      T^{2-\alpha}\varepsilon^\alpha L(T/\varepsilon).$$
+    </div>
+    <p>To prove it, substitute $x=\omega T/\varepsilon$ in the exact spectral identity. Potter bounds supply an
+      integrable majorant at zero and infinity, while frequencies bounded away from zero contribute only
+      $O(\varepsilon^2)$. Dominated convergence then uses</p>
+    $$\int_0^\infty(1-\cos x)x^{\alpha-3}dx
+      =\frac{\pi}{2\Gamma(3-\alpha)\sin(\pi\alpha/2)}.$$
+    <p>This single formula includes long memory for $0&lt;\alpha&lt;1$, ordinary Green&ndash;Kubo scaling at
+      $\alpha=1$ when $L$ tends to a positive constant, and zero-Green&ndash;Kubo antipersistence for
+      $1&lt;\alpha&lt;2$. At the endpoint $alpha=2$, if
+      $f(\omega)\sim a\omega L(1/\omega)$ and
+      $H(x)=\int_1^xL(s)ds/s\to\infty$, the corresponding critical law is</p>
+    $$\operatorname{Var}A_\varepsilon(T)sim2a\varepsilon^2H(T/\varepsilon).$$
+    <p>The frequency-domain statement is stronger than an eventual-sign covariance theorem. For example, add a
+      flat spectral band $0.8\mathbf1_{[4,5]}(\omega)$ to the Gamma density
+      $e^{-\omega}\omega^{0.7}/\Gamma(1.7)$. Its covariance is</p>
+    $$\operatorname{Re}(1-it)^{-1.7}
+      +0.8\frac{\sin(5t)-\sin(4t)}t.$$
+    <p>The second term makes the covariance change sign forever and dominate its pointwise tail, but it is separated
+      from frequency zero and contributes only $O(\varepsilon^2)$. The theorem still gives the sharp
+      $\varepsilon^{1.7}$ variance. This is the continuous-time counterpart of the spectral regular-variation
+      criterion for partial sums proved by
+      <a href="./bibliography.html#DeligiannidisUtev2013">Deligiannidis and Utev (2013)</a>.</p>
 
     <h2>Four covariance regimes</h2>
     <h3>Integrable correlation</h3>
@@ -259,6 +300,10 @@
       $1.000000000000$ at $\alpha=2$. At $\alpha=3$, independent quadrature gives $M=-0.5$, measured order
       $2.000000000$, and asymptotic ratio $0.999999999996$. Independent spectral quadrature gives
       $\int\omega^{-2}\mu(d\omega)=0.5$, agreeing with $-M$ within $1.1\times10^{-16}$.</p>
+    <p>The low-frequency certificate also reconciles the spectral and covariance-tail constants within
+      $5.33\times10^{-15}$. For the oscillatory-band example above, independent covariance and spectral integration
+      agree within $2.95\times10^{-17}$; the measured order is $1.697454$, the asymptotic ratio is $0.992431$, and
+      the covariance changes sign 3,151 times on the deterministic mesh $20\le t\le2000$.</p>
 
     <h2>A bounded positive volatility counterexample</h2>
     <p>For $0&lt;\alpha&lt;1$, let $G_t$ be a centered stationary Gaussian process with correlation</p>
@@ -302,8 +347,8 @@
       really are necessary.</p>
 
     <h2>Scope and literature</h2>
-    <p>The theorems above determine the variance scale from the covariance tail together with whether the
-      Green&ndash;Kubo integral vanishes; they do not claim a universal option
+    <p>The theorems above determine the variance scale from either the covariance tail or the low-frequency spectral
+      density, together with whether the Green&ndash;Kubo integral vanishes; they do not claim a universal option
       expansion for every long-memory process or nonsmooth payoff. Distributional limits depend on the process and
       on the Hermite rank of the observable. The regular-variation step is
       <a href="https://doi.org/10.24033/bsmf.1196">Karamata&apos;s

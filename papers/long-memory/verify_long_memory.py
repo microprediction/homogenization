@@ -9,6 +9,7 @@ import math
 
 import numpy as np
 from scipy.integrate import quad
+from scipy.special import sici
 
 
 def integrated_variance(covariance, epsilon, maturity=1.0):
@@ -104,6 +105,118 @@ def antipersistent_variance(epsilon, alpha, maturity=1.0):
     numerator = ((1.0 - 1j * x) ** (2.0 - alpha)).real - 1.0
     return (2.0 * epsilon ** 2 * numerator
             / ((alpha - 1.0) * (2.0 - alpha)))
+
+
+def spectral_abelian_constant(alpha, density_coefficient=1.0):
+    """Constant for f(omega) ~ a omega^(alpha-1), 0 < alpha < 2."""
+    return (density_coefficient * math.pi
+            / (math.gamma(3.0 - alpha)
+               * math.sin(math.pi * alpha / 2.0)))
+
+
+def band_variance(epsilon, weight, lower, upper, maturity=1.0):
+    """Exact contribution from a flat spectral band.
+
+    The one-sided spectral density is ``weight`` on [lower, upper].
+    """
+    scale = maturity / epsilon
+
+    def primitive(omega):
+        sine_integral = sici(scale * omega)[0]
+        return (-(1.0 - math.cos(scale * omega)) / omega
+                + scale * sine_integral)
+
+    return (2.0 * epsilon ** 2 * weight
+            * (primitive(upper) - primitive(lower)))
+
+
+def verify_spectral_abelian_theorem():
+    """Check the low-frequency theorem beyond one-signed covariance tails.
+
+    Add a flat band away from zero to the Gamma spectral density.  Its
+    covariance contribution oscillates like 1/t and dominates the signed
+    pointwise tail when alpha > 1, but its integrated-variance contribution
+    is only O(epsilon^2).  The low-frequency omega^(alpha-1) term still gives
+    the sharp epsilon^alpha law.
+    """
+    # First reconcile the frequency-domain constant with both time-domain
+    # Karamata constants for the Gamma spectral benchmark.
+    constant_errors = []
+    for alpha in (0.4, 1.4, 1.7):
+        spectral = spectral_abelian_constant(
+            alpha, density_coefficient=1.0 / math.gamma(alpha)
+        )
+        covariance_tail = math.cos(math.pi * alpha / 2.0)
+        if alpha < 1.0:
+            temporal = (2.0 * covariance_tail
+                        / ((1.0 - alpha) * (2.0 - alpha)))
+        else:
+            temporal = (-2.0 * covariance_tail
+                        / ((alpha - 1.0) * (2.0 - alpha)))
+        constant_errors.append(abs(spectral - temporal))
+    constant_error = max(constant_errors)
+    assert constant_error < 2e-14
+
+    alpha = 1.7
+    weight, lower, upper = 0.8, 4.0, 5.0
+
+    def mixed_covariance(t):
+        gamma_part = antipersistent_covariance(t, alpha)
+        if t == 0.0:
+            band_part = weight * (upper - lower)
+        else:
+            band_part = (weight
+                         * (math.sin(upper * t) - math.sin(lower * t)) / t)
+        return gamma_part + band_part
+
+    # Independent time-domain quadrature agrees with the exact spectral
+    # decomposition at moderate switching rates.
+    quadrature_epsilons = 2.0 ** -np.arange(3, 8)
+    covariance_values = np.array([
+        integrated_variance(mixed_covariance, eps)
+        for eps in quadrature_epsilons
+    ])
+    spectral_values = np.array([
+        antipersistent_variance(eps, alpha)
+        + band_variance(eps, weight, lower, upper)
+        for eps in quadrature_epsilons
+    ])
+    identity_error = float(np.max(np.abs(
+        covariance_values - spectral_values
+    )))
+    assert identity_error < 2e-15
+
+    # The exact spectral expression can be evaluated deep in the asymptotic
+    # regime without oscillatory quadrature.
+    epsilons = 2.0 ** -np.arange(8, 25)
+    exact = np.array([
+        antipersistent_variance(eps, alpha)
+        + band_variance(eps, weight, lower, upper)
+        for eps in epsilons
+    ])
+    coefficient = spectral_abelian_constant(
+        alpha, density_coefficient=1.0 / math.gamma(alpha)
+    )
+    leading = coefficient * epsilons ** alpha
+    order = measured_order(exact)
+    ratio = exact[-1] / leading[-1]
+    band_fraction = band_variance(
+        epsilons[-1], weight, lower, upper
+    ) / exact[-1]
+    assert abs(order - alpha) < 0.004
+    assert abs(ratio - 1.0) < 0.009
+    assert band_fraction < 1e-4
+
+    # The remote band makes the covariance oscillate forever.  Count sign
+    # changes on a long deterministic mesh to certify that eventual sign is
+    # absent in this concrete example.
+    times = np.linspace(20.0, 2000.0, 100001)
+    covariance = np.array([mixed_covariance(t) for t in times])
+    signs = np.sign(covariance)
+    sign_changes = int(np.count_nonzero(signs[1:] * signs[:-1] < 0.0))
+    assert sign_changes > 3000
+    return (constant_error, identity_error, order, ratio,
+            band_fraction, sign_changes)
 
 
 def verify_antipersistent_case(alpha):
@@ -307,6 +420,7 @@ def main():
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
     zero_gk_boundary = verify_zero_gk_boundary()
+    spectral_abelian = verify_spectral_abelian_theorem()
     regular_variation = verify_regular_variation()
     periodic_coefficient = verify_periodic_case()
 
@@ -328,6 +442,12 @@ def main():
           f"{zero_gk_boundary[6]:.12f}, {zero_gk_boundary[7]:.3e}")
     print("alpha=3 inverse spectral moment, spectral identity error: "
           f"{zero_gk_boundary[3]:.12f}, {zero_gk_boundary[4]:.3e}")
+    print("spectral Abelian constant error, covariance/spectral identity error: "
+          f"{spectral_abelian[0]:.3e}, {spectral_abelian[1]:.3e}")
+    print("oscillatory-band alpha=1.7 order, ratio, remote-band fraction, "
+          "sign changes: "
+          f"{spectral_abelian[2]:.6f}, {spectral_abelian[3]:.6f}, "
+          f"{spectral_abelian[4]:.3e}, {spectral_abelian[5]}")
     print("OU-mixture regular-variation ratios: "
           f"power-log {regular_variation[0]:.6f}, "
           f"critical-log^2 {regular_variation[1]:.6f}")
