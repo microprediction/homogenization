@@ -1,9 +1,12 @@
 """Certificate for conditional coverage of a path-dependent Markov score.
 
 The score is S = mu * A_c + sigma * Z, where A_c is the average of a
-symmetric two-state chain over c switching times.  Exact CDFs are computed
-from a Poisson--Beta occupation-time mixture.  Direct path simulation and the
-independent Feynman--Kac characteristic function check that representation.
+two-state chain over c switching times.  In the symmetric case, exact CDFs are
+computed from a Poisson--Beta occupation-time mixture.  Direct path simulation
+and the independent Feynman--Kac characteristic function check that
+representation.  A second matrix Feynman--Kac calculation treats unequal
+transition rates and checks the stationary-weighted cancellation of unequal
+conditional-coverage errors.
 The certificate also checks the exact covariance of overlapping occupation
 windows, its fast-switching effective-sample limit, and the exact finite-sample
 coverage of a sliding-window order-statistic threshold.  It additionally
@@ -27,6 +30,7 @@ import math
 from functools import lru_cache
 
 import numpy as np
+from scipy.linalg import expm
 from scipy.integrate import quad, solve_ivp
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import ndtr, roots_hermite, roots_jacobi, roots_legendre
@@ -943,6 +947,68 @@ def threshold(c: float, start_probability: float = 0.5) -> float:
     return brentq(equation, -4.0, 4.0, xtol=2e-13)
 
 
+def asymmetric_path_cdfs(
+    q: float,
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    signal: float = MU,
+    noise: float = SIGMA,
+    quadrature_order: int = 240,
+) -> np.ndarray:
+    """Exact unequal-rate path-score CDFs by matrix Feynman--Kac inversion.
+
+    Time is measured in units for which the generator is
+    [[-alpha, alpha], [beta, -beta]], and ``c`` is the elapsed time.  The
+    additive score uses the average of the state values +1 and -1.
+    """
+    alpha, beta = rate_plus_to_minus, rate_minus_to_plus
+    if min(c, alpha, beta, noise) <= 0:
+        raise ValueError("c, transition rates, and noise must be positive")
+    nodes, weights = roots_legendre(quadrature_order)
+    cutoff = 14.0 / noise
+    frequencies = (nodes + 1.0) * cutoff / 2.0
+    weights = weights * cutoff / 2.0
+    generator = np.array([[-alpha, alpha], [beta, -beta]])
+    state_values = np.diag([1.0, -1.0])
+    one = np.ones(2)
+    transforms = np.stack(
+        [
+            expm(c * generator + 1j * frequency * signal * state_values)
+            @ one
+            for frequency in frequencies
+        ],
+        axis=1,
+    )
+    characteristics = transforms * np.exp(
+        -0.5 * noise**2 * frequencies**2
+    )
+    inversion = np.imag(
+        np.exp(-1j * frequencies * q)[None, :] * characteristics
+    ) / frequencies
+    return 0.5 - inversion @ weights / math.pi
+
+
+def asymmetric_path_threshold(
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> float:
+    """Stationary pooled threshold for the unequal-rate path score."""
+    alpha, beta = rate_plus_to_minus, rate_minus_to_plus
+    stationary = np.array([beta, alpha]) / (alpha + beta)
+    return brentq(
+        lambda q: stationary
+        @ asymmetric_path_cdfs(q, c, alpha, beta, signal, noise)
+        - TARGET,
+        -4.0,
+        4.0,
+        xtol=2e-13,
+    )
+
+
 def mixture_characteristic(k: float, c: float, start: int) -> complex:
     values = conditional_values(c, lambda a: np.exp(1j * k * MU * a))
     return math.exp(-0.5 * SIGMA**2 * k**2) * values[0 if start == 1 else 1]
@@ -1128,6 +1194,61 @@ def main() -> None:
     limit = -MU * norm.pdf(norm.ppf(TARGET)) / (2 * SIGMA)
     assert abs(64 * gaps[-1] - limit) < 0.006
     print(f"Predicted limit of c times the + coverage gap: {limit:.8f}")
+
+    # Unequal rates destroy the equal-and-opposite symmetry.  The conditional
+    # errors instead cancel with the stationary weights.  Matrix
+    # Feynman--Kac inversion is independent of the Poisson--Beta formula above.
+    alpha, beta = 1.7, 0.4
+    rho = alpha + beta
+    stationary = np.array([beta, alpha]) / rho
+    state_values = np.array([1.0, -1.0])
+    stationary_mean = float(stationary @ state_values)
+    unequal_coefficients = (
+        -MU
+        / SIGMA
+        * norm.pdf(norm.ppf(TARGET))
+        * (state_values - stationary_mean)
+        / rho
+    )
+    unequal_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0])
+    unequal_gaps = []
+    unequal_thresholds = []
+    for c in unequal_scales:
+        q = asymmetric_path_threshold(c, alpha, beta)
+        coverages = asymmetric_path_cdfs(q, c, alpha, beta)
+        assert abs(stationary @ coverages - TARGET) < 4e-12
+        unequal_thresholds.append(q)
+        unequal_gaps.append(coverages - TARGET)
+    unequal_gaps = np.asarray(unequal_gaps)
+    unequal_residuals = np.abs(
+        unequal_gaps - unequal_coefficients[None, :] / unequal_scales[:, None]
+    )
+    unequal_rates = np.log2(
+        unequal_residuals[:-1] / unequal_residuals[1:]
+    )
+    assert np.min(unequal_rates[-1]) > 1.95
+    assert abs(stationary @ unequal_coefficients) < 2e-16
+    assert abs(
+        unequal_coefficients[0] / unequal_coefficients[1] + alpha / beta
+    ) < 2e-14
+    print("\nUnequal-rate path-score crossover")
+    print(
+        "rates alpha=1.7, beta=0.4; stationary mean "
+        f"{stationary_mean:.8f}"
+    )
+    print(" c       q_pool        c*gap +        c*gap -")
+    for c, q, gap in zip(unequal_scales, unequal_thresholds, unequal_gaps):
+        print(
+            f"{c:4.0f}   {q:11.8f}   {c * gap[0]:12.8f}"
+            f"   {c * gap[1]:12.8f}"
+        )
+    print(
+        "predicted limits: "
+        f"{unequal_coefficients[0]:.8f}, "
+        f"{unequal_coefficients[1]:.8f}; "
+        f"last residual rates {unequal_rates[-1, 0]:.6f}, "
+        f"{unequal_rates[-1, 1]:.6f}"
+    )
 
     # The state-aware thresholds differ from the pooled threshold by +/-mu/(2c).
     print("\nPopulation thresholds at c=4")
@@ -1941,7 +2062,8 @@ def main() -> None:
     print(f"Direct predictor simulation t=5: exact={exact[3]:.8f}, observed={observed:.8f}")
 
     print(
-        "PASS: path and predictor crossovers, overlap covariance, "
+        "PASS: symmetric and unequal-rate path crossovers, predictor "
+        "crossover, overlap covariance, "
         "finite-sample terminal and strided-window rank coverage, general "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "

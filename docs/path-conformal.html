@@ -165,6 +165,61 @@
     <p>The errors cancel in the stationary average; that is marginal coverage, not conditional coverage. By contrast,
     the terminal-score error in the companion calculation is exactly a regime-specific constant times $e^{-2c}$.</p>
 
+    <h3>Unequal switching rates</h3>
+    <p>The equal-and-opposite errors above are a consequence of symmetry, not a general property of path scores.
+    Let the dimensionless generator and its stationary law be</p>
+    $$Q_0=\begin{pmatrix}-a&amp;a\\ b&amp;-b\end{pmatrix},\qquad
+      r=a+b,\qquad \pi=\left(\frac b r,\frac a r\right),$$
+    <p>let the physical generator be $mQ_0$, and set $c=m\Delta$. For $y_+=1$, $y_-=-1$, and
+    $\bar y=(b-a)/r$, the initial-memory mean is exact:</p>
+    $$\mathbb E_i A_\Delta-\bar y=(y_i-\bar y)\frac{1-e^{-rc}}{rc}.$$
+    <p>For the proof, expand the simple slow eigenvalue and its left and right eigenvectors in the tilted matrix
+    $cQ_0+ik\mu\operatorname{diag}(1,-1)$. Subtracting the stationary start removes the common slow term, while
+    the other eigenmode is $O(e^{-rc})$. Uniformly for bounded $k$,</p>
+    $$\varphi_i(k;c)-\varphi_\pi(k;c)
+      =e^{-\sigma^2k^2/2+ik\mu\bar y}
+       \left\{\frac{ik\mu(y_i-\bar y)}{rc}+O\!\left(\frac{(1+|k|)^2}{c^2}\right)\right\}.$$
+    <p>A bounded-frequency expansion followed by a Gaussian-tail split makes the remainder integrable, so Fourier
+    inversion is termwise valid; the
+    leading term is exactly a translation of the limiting $N(\mu\bar y,\sigma^2)$ law. Evaluating at the stationary
+    quantile (whose displacement from its limit is $O(c^{-1})$) gives, for fixed $a,b,\mu,\sigma&gt;0$,</p>
+    <div class="equation-card">
+    $$\Pr_i(S_\Delta\le q_c)-(1-\alpha)
+      =-\frac{\mu}{\sigma}\phi(z_{1-\alpha})
+       \frac{y_i-\bar y}{rc}+O(c^{-2}).$$
+    </div>
+    <p>Equivalently, the leading coefficients for starts $+$ and $-$ are
+    $-2\mu a\phi(z_{1-\alpha})/(\sigma r^2)$ and
+    $+2\mu b\phi(z_{1-\alpha})/(\sigma r^2)$. Their magnitudes have ratio $a/b$;
+    they are equal and opposite only when $a=b$. What remains exact is the stationary-weighted cancellation</p>
+    $$\frac b r\{F_+(q_c;c)-(1-\alpha)\}
+      +\frac a r\{F_-(q_c;c)-(1-\alpha)\}=0.$$
+    <p>Thus an exact marginal guarantee can conceal conditional errors of different sizes. A threshold adapted to an
+    initial distribution $\nu$ instead obeys
+    $q_\nu(c)-q_c=\mu(\nu y-\bar y)/(rc)+O(c^{-2})$. This remains a population, model-conditional
+    result rather than feature-conditional conformal validity.</p>
+    <p>The certificate evaluates the exact characteristic functions</p>
+    $$\varphi_i(k;c)=e^{-\sigma^2k^2/2}
+      \left[\exp\{cQ_0+ik\mu\operatorname{diag}(1,-1)\}\mathbf1\right]_i$$
+    <p>by matrix exponentiation and independent Fourier inversion. This follows the Feynman&ndash;Kac treatment of
+    telegraph occupation functionals in
+    <a href="https://doi.org/10.1016/j.spa.2011.03.016">Bogachev and Ratanov (2011)</a>.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$c$</th><th>pooled threshold</th><th style="text-transform:none">$c\,$ gap, start +</th><th style="text-transform:none">$c\,$ gap, start &minus;</th></tr></thead>
+      <tbody>
+        <tr><td>32</td><td>0.04487184</td><td>&minus;0.27252358</td><td>0.06412319</td></tr>
+        <tr><td>64</td><td>0.03339903</td><td>&minus;0.27178543</td><td>0.06394951</td></tr>
+        <tr><td>128</td><td>0.02758705</td><td>&minus;0.27125737</td><td>0.06382526</td></tr>
+        <tr><td>256</td><td>0.02466326</td><td>&minus;0.27094913</td><td>0.06375274</td></tr>
+        <tr><td>512</td><td>0.02319710</td><td>&minus;0.27078339</td><td>0.06371374</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Here $a=1.7$, $b=0.4$, $\mu=1$, $\sigma=0.5$, and the target coverage is $0.9$. The predicted limits are
+    $-0.27060967$ and $0.06367286$; both residuals converge with measured order $1.9665$, consistent with the
+    stated $O(c^{-2})$ remainder.</p>
+
     <h2>Regime-aware and locally weighted thresholds</h2>
     <p>Given posterior $p$, the model-conditional CDF is $F_p=pF_++(1-p)F_-$. Let $q_p(c)$ solve
     $F_p(q_p;c)=1-\alpha$. The implicit-function theorem gives the exact sensitivity</p>
