@@ -265,6 +265,47 @@
       identify every antisymmetric $d\times d$ matrix, and this number is minimal: with $q\le d-2$ there is
       always a nonzero invisible skew map on $W^\perp$. This identification result keeps the fixed oriented
       parameter matrix separate from any maturity-integrated rank claim.</p>
+    <h3>Stability, not merely rank</h3>
+    <p>After subtracting the symmetric prediction and undoing the known positive factors
+      $w_a/\bar h(w)$, each design supplies $Aw$. The same calculation gives the complete conditioning theorem.
+      Equip $\mathfrak{so}(d)$ with the
+      coefficient norm $\|A\|_\wedge=(\sum_{i<j}a_{ij}^2)^{1/2}=\|A\|_F/\sqrt2$. Put the designs into
+      $W=[w^{(1)}\ \cdots\ w^{(q)}]$, and let
+      $\lambda_1\ge\cdots\ge\lambda_d\ge0$ be the eigenvalues of the frame operator $WW^\top$.
+      Then the singular values of</p>
+    $$\mathcal M_W:\mathfrak{so}(d)\longrightarrow(\mathbb R^d)^q,\qquad
+      \mathcal M_W(A)=(Aw^{(1)},\ldots,Aw^{(q)}),$$
+    <p>including zeros, are exactly</p>
+    <div class="equation-card">
+    $$\left\{\sqrt{\lambda_i+\lambda_j}:1\le i<j\le d\right\}.$$
+    </div>
+    <p>With the unscaled Frobenius norm on the domain, every displayed singular value is divided by $\sqrt2$;
+      the rank and condition number are unchanged.</p>
+    <p>To prove it, diagonalize $WW^\top$ and use the orthonormal skew basis for this coefficient norm,
+      $E_{ij}-E_{ji}$. If $A=(a_{ij})$ in that basis, then</p>
+    $$\|\mathcal M_W(A)\|_F^2
+      =\operatorname{tr}(A^\top AWW^\top)
+      =\sum_{i<j}(\lambda_i+\lambda_j)a_{ij}^2.$$
+    <p>The previous kernel dimension is the number of pairs of zero frame eigenvalues. When $q=d-1$, the
+      exact spectral condition number is</p>
+    $$\kappa(\mathcal M_W)
+      =\sqrt{\frac{\lambda_1+\lambda_2}{\lambda_{d-1}}}.$$
+    <p>Thus full rank can still be numerically useless when the design vectors nearly lie in a smaller
+      subspace. This is the finite-dimensional frame-operator viewpoint introduced by
+      <a href="./bibliography.html#DuffinSchaeffer1952">Duffin and Schaeffer (1952)</a>.</p>
+    <p>An explicit positive design avoids an existence-only theorem. For any $\epsilon>0$, take</p>
+    $$w^{(r)}=\mathbf1+\epsilon e_r,\qquad r=1,\ldots,d-1.$$
+    <p>Here $W^\top W=\epsilon^2I+(d+2\epsilon)\mathbf1\mathbf1^\top$, so</p>
+    $$\sigma_{\min}(\mathcal M_W)=\epsilon,\qquad
+      \kappa(\mathcal M_W)
+      =\frac{\sqrt{2\epsilon^2+(d-1)(d+2\epsilon)}}{\epsilon}.$$
+    <p>There is also a closed-form inverse. If $y^{(r)}=Aw^{(r)}$ and $b=A\mathbf1$, then
+      $b_r=y^{(r)}_r$ for $r<d$, $b_d=-\sum_{r<d}b_r$, and</p>
+    $$Ae_r=\frac{y^{(r)}-b}{\epsilon}\quad(r<d),\qquad
+      Ae_d=b-\sum_{r<d}Ae_r.$$
+    <p>The $1/\epsilon$ factor is the unavoidable noise amplification visible in the exact singular value.
+      The certificate verifies the full singular spectrum for every $3\le d\le7$ and $1\le q\le d-1$,
+      and the explicit condition number and inverse for $3\le d\le8$.</p>
     <p>A sharp three-cause example uses the same directed three-state cycle and cyclic hazards</p>
     $$h_1=(0.07,0.01,0.01),\quad h_2=(0.01,0.07,0.01),\quad
       h_3=(0.01,0.01,0.07).$$
@@ -274,7 +315,7 @@
       $1.998$ for both the probability vector and reversal gap. The equal-weight design alone is the sharp
       $q=d-2$ counterexample. Adding just one further positive design recovers $A$ with maximum error
       $1.36\times10^{-19}$. The certificate also verifies the kernel-dimension formula for every
-      $3\le d\le7$ and $1\le q\le d-1$.</p>
+      $3\le d\le7$ and $1\le q\le d-1$, together with the complete frame spectrum.</p>
 
     <h2>Which rank bound survives?</h2>
     <p>For fixed centered feature vectors $h_1,\ldots,h_d$, the matrix

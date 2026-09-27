@@ -115,6 +115,41 @@ def skew_measurement_matrix(designs):
     return np.column_stack(columns), pairs
 
 
+def predicted_skew_singular_values(designs):
+    """Singular values for the upper-triangle coefficient norm on skew A."""
+    design_matrix = np.column_stack(designs)
+    eigenvalues = np.linalg.eigvalsh(design_matrix @ design_matrix.T)
+    eigenvalues[eigenvalues < 1e-12 * eigenvalues[-1]] = 0.0
+    values = [
+        math.sqrt(max(0.0, eigenvalues[i] + eigenvalues[j]))
+        for i in range(len(eigenvalues))
+        for j in range(i + 1, len(eigenvalues))
+    ]
+    return np.sort(values)[::-1]
+
+
+def near_simplex_designs(d, epsilon):
+    """Explicit positive d-1 design family 1+epsilon*e_r."""
+    return [
+        np.ones(d) + epsilon * np.eye(d)[r]
+        for r in range(d - 1)
+    ]
+
+
+def recover_skew_near_simplex(responses, epsilon):
+    """Closed-form recovery for the near-simplex positive designs."""
+    d = len(responses) + 1
+    b = np.zeros(d)
+    for r, response in enumerate(responses):
+        b[r] = response[r]
+    b[-1] = -b[:-1].sum()
+    recovered = np.zeros((d, d))
+    for r, response in enumerate(responses):
+        recovered[:, r] = (response - b) / epsilon
+    recovered[:, -1] = b - recovered[:, :-1].sum(axis=1)
+    return recovered
+
+
 def recover_skew(designs, responses):
     """Recover a skew matrix from exact products A w by least squares."""
     measurement, pairs = skew_measurement_matrix(designs)
@@ -380,6 +415,7 @@ def main():
     # the kernel consists of skew maps supported on the designs' orthogonal
     # complement and has dimension choose(d-q, 2).
     rng = np.random.default_rng(20260926)
+    maximum_spectrum_error = 0.0
     for d in range(3, 8):
         for q in range(1, d):
             rank_q = 0
@@ -389,6 +425,46 @@ def main():
             measurement, _ = skew_measurement_matrix(generic_designs)
             expected_rank = math.comb(d, 2) - math.comb(d - q, 2)
             assert np.linalg.matrix_rank(measurement) == expected_rank
+            observed = np.linalg.svd(measurement, compute_uv=False)
+            observed = observed[observed > 1e-11]
+            predicted = predicted_skew_singular_values(generic_designs)
+            predicted = predicted[predicted > 1e-11]
+            assert len(observed) == len(predicted) == expected_rank
+            maximum_spectrum_error = max(
+                maximum_spectrum_error, np.max(abs(observed - predicted))
+            )
+
+    # The explicit positive family w_r=1+epsilon*e_r has smallest singular
+    # value epsilon and a closed-form reconstruction. Its condition number
+    # quantifies the instability as the designs collapse toward one vector.
+    maximum_condition_error = 0.0
+    maximum_recovery_error = 0.0
+    example_condition = None
+    for d in range(3, 9):
+        random_matrix = rng.normal(size=(d, d))
+        random_skew = random_matrix - random_matrix.T
+        for epsilon in (0.2, 0.5, 1.0):
+            explicit_designs = near_simplex_designs(d, epsilon)
+            measurement, _ = skew_measurement_matrix(explicit_designs)
+            singular_values = np.linalg.svd(measurement, compute_uv=False)
+            condition = singular_values[0] / singular_values[-1]
+            predicted_condition = math.sqrt(
+                2 * epsilon**2 + (d - 1) * (d + 2 * epsilon)
+            ) / epsilon
+            maximum_condition_error = max(
+                maximum_condition_error, abs(condition - predicted_condition)
+            )
+            responses = [random_skew @ w for w in explicit_designs]
+            reconstructed = recover_skew_near_simplex(responses, epsilon)
+            maximum_recovery_error = max(
+                maximum_recovery_error,
+                np.max(abs(reconstructed - random_skew)),
+            )
+            if d == 6 and epsilon == 0.5:
+                example_condition = condition
+    assert maximum_spectrum_error < 2e-13
+    assert maximum_condition_error < 2e-12
+    assert maximum_recovery_error < 2e-13
 
     # In dimension three, two positive independent designs recover A.  The
     # single equal-weight design is already the sharp d-2 counterexample:
@@ -425,6 +501,11 @@ def main():
         f"   weighted probability/gap rates {weighted_rate:.3f}/"
         f"{weighted_gap_rate:.3f}; two-design recovery error "
         f"{recovery_error:.2e}"
+    )
+    print(
+        f"   frame-spectrum error {maximum_spectrum_error:.2e}; "
+        f"near-simplex recovery error {maximum_recovery_error:.2e}; "
+        f"d=6, epsilon=0.5 condition {example_condition:.6f}"
     )
 
     print("PASS: positivity, rank, prior memory, pair cancellation, and ordered default")
