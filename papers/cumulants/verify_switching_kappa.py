@@ -197,6 +197,66 @@ def integrated_variance_rate(speed, q0, pi, c, kappa, variance):
     return asymptotic_variance, mean, first, second, alpha, beta
 
 
+def integrated_variance_intercept(speed, q0, pi, c, kappa, variance):
+    """Exact bounded intercept in the stationary long-time variance.
+
+    If -L phi=v-mu and -L psi=phi-E[phi], both Poisson solutions are
+    affine.  The resolvent identity gives
+
+        Var(int_0^T v_s ds) = sigma^2*T - 2 E[(v-mu) psi] + o(1).
+
+    The normalization pi@q=0 fixes the otherwise arbitrary constant in
+    psi; the intercept is independent of that normalization.
+    """
+    rate_value, mean, first, second, alpha, beta = integrated_variance_rate(
+        speed, q0, pi, c, kappa, variance
+    )
+    drift = speed * q0 - np.diag(kappa)
+    p = np.linalg.solve(drift, -alpha)
+    phi_mean = first @ alpha + pi @ beta
+    forcing = -beta + phi_mean * np.ones(len(pi)) - c * p
+    assert abs(pi @ forcing) < 3e-13
+    q = group_inverse(q0) @ forcing / speed
+    assert np.linalg.norm(speed * q0 @ q - forcing) < 3e-12
+    assert abs(pi @ q) < 3e-13
+    intercept = -2 * (
+        p @ (second - mean * first)
+        + q @ (first - mean * pi)
+    )
+    return intercept, rate_value, mean, first, second, alpha, beta, p, q
+
+
+def integrated_variance_remainder(
+    speed, maturity, q0, pi, c, kappa, variance
+):
+    """Exact decaying remainder after the stationary slope and intercept."""
+    (
+        _, _, mean, first, second, _, _, p, q
+    ) = integrated_variance_intercept(speed, q0, pi, c, kappa, variance)
+    a_c, a_kappa, a_variance, _ = polynomial_operators(1)
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+    )
+    generator = full_generator(
+        speed * q0, averaged, [a_c, a_kappa, a_variance],
+        [c, kappa, variance]
+    )
+    payoff = np.array([
+        coefficient
+        for state in range(len(pi))
+        for coefficient in (q[state], p[state])
+    ])
+    conditional = expm(maturity * generator) @ payoff
+    covariance = 0.0
+    for state in range(len(pi)):
+        constant, linear = conditional[2 * state:2 * state + 2]
+        covariance += constant * (first[state] - mean * pi[state])
+        covariance += linear * (second[state] - mean * first[state])
+    return 2 * covariance
+
+
 def stationary_integrated_variance(
     speed, maturity, q0, pi, c, kappa, variance
 ):
@@ -624,7 +684,7 @@ def verify_long_maturity_nonuniformity():
 
 
 def verify_long_run_variance_rate():
-    """Check the exact Poisson formula against a separate moment semigroup."""
+    """Check the two Poisson formulas against a separate moment semigroup."""
     q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
     pi = np.array([0.5, 0.5])
     c = np.array([0.04, 0.16])
@@ -640,27 +700,56 @@ def verify_long_run_variance_rate():
         [0, 1280000, 7840000, 17640000, 17150000, 6002500],
         dtype=float,
     )
+    intercept_numerator = np.array(
+        [-1152, -9072, -53800, -216369, -474170, -562900, -349500, -87500],
+        dtype=float,
+    )
+    intercept_denominator = np.array(
+        [0, 0, 10240000, 80640000, 250880000, 384160000, 288120000, 84035000],
+        dtype=float,
+    )
     sigma0 = 1.0 / 686.0
     sigma1 = 153.0 / 240100.0
     sigma2 = -369.0 / 1680700.0
+    chi0 = -5.0 / 4802.0
+    chi1 = -99.0 / 168070.0
+    chi2 = 477.0 / 5882450.0
     exact_rates = []
+    exact_intercepts = []
     averaged_errors = []
     corrected_errors = []
+    intercept_averaged_errors = []
+    intercept_corrected_errors = []
     scaled_second_remainders = []
+    intercept_scaled_second_remainders = []
     semigroup_errors = []
+    intercept_semigroup_errors = []
+    finite_composite_errors = []
     for speed in speeds:
-        exact, _, _, _, _, _ = integrated_variance_rate(
+        intercept, exact, _, _, _, _, _, _, _ = integrated_variance_intercept(
             speed, q0, pi, c, kappa, variance
         )
         closed = sum(numerator[j] * speed**j for j in range(6)) / sum(
             denominator[j] * speed**j for j in range(6)
         )
+        closed_intercept = sum(
+            intercept_numerator[j] * speed**j for j in range(8)
+        ) / sum(intercept_denominator[j] * speed**j for j in range(8))
         assert abs(exact - closed) < 3e-16
+        assert abs(intercept - closed_intercept) < 3e-16
         exact_rates.append(exact)
+        exact_intercepts.append(intercept)
         averaged_errors.append(abs(exact - sigma0))
         corrected_errors.append(abs(exact - sigma0 - sigma1 / speed))
+        intercept_averaged_errors.append(abs(intercept - chi0))
+        intercept_corrected_errors.append(
+            abs(intercept - chi0 - chi1 / speed)
+        )
         scaled_second_remainders.append(
             speed**2 * (exact - sigma0 - sigma1 / speed)
+        )
+        intercept_scaled_second_remainders.append(
+            speed**2 * (intercept - chi0 - chi1 / speed)
         )
 
         # The degree-two semigroup starts the joint process in its invariant
@@ -673,13 +762,32 @@ def verify_long_run_variance_rate():
         )
         independent_slope = (variance_40 - variance_20) / 20.0
         semigroup_errors.append(abs(independent_slope - exact))
+        intercept_semigroup_errors.append(
+            abs(variance_20 - 20.0 * exact - intercept)
+        )
+        remainder = integrated_variance_remainder(
+            speed, 0.75, q0, pi, c, kappa, variance
+        )
+        variance_short = stationary_integrated_variance(
+            speed, 0.75, q0, pi, c, kappa, variance
+        )
+        finite_composite_errors.append(
+            abs(variance_short - 0.75 * exact - intercept - remainder)
+        )
 
     averaged_rate = rate(averaged_errors)
     corrected_rate = rate(corrected_errors)
+    intercept_averaged_rate = rate(intercept_averaged_errors)
+    intercept_corrected_rate = rate(intercept_corrected_errors)
     assert 0.95 < averaged_rate < 1.05
     assert 1.95 < corrected_rate < 2.05
+    assert 0.95 < intercept_averaged_rate < 1.05
+    assert 1.90 < intercept_corrected_rate < 2.05
     assert abs(scaled_second_remainders[-1] - sigma2) < 2e-6
+    assert abs(intercept_scaled_second_remainders[-1] - chi2) < 1e-6
     assert max(semigroup_errors) < 3e-12
+    assert max(intercept_semigroup_errors) < 3e-12
+    assert max(finite_composite_errors) < 3e-14
 
     # Repeat the exact Poisson-versus-semigroup check on a nonreversible
     # three-state model to ensure the formula does not use reversibility.
@@ -694,7 +802,11 @@ def verify_long_run_variance_rate():
     kappa3 = np.array([1.1, 2.3, 3.0])
     c3 = kappa3 * np.array([0.035, 0.080, 0.050])
     variance3 = np.array([0.20, 0.25, 0.22]) ** 2
-    nonreversible_rate, _, _, _, _, _ = integrated_variance_rate(
+    (
+        nonreversible_intercept,
+        nonreversible_rate,
+        _, _, _, _, _, _, _,
+    ) = integrated_variance_intercept(
         32.0, q3, pi3, c3, kappa3, variance3
     )
     variance_20 = stationary_integrated_variance(
@@ -706,7 +818,24 @@ def verify_long_run_variance_rate():
     nonreversible_error = abs(
         (variance_40 - variance_20) / 20.0 - nonreversible_rate
     )
+    nonreversible_intercept_error = abs(
+        variance_20 - 20.0 * nonreversible_rate - nonreversible_intercept
+    )
+    nonreversible_remainder = integrated_variance_remainder(
+        32.0, 0.75, q3, pi3, c3, kappa3, variance3
+    )
+    nonreversible_short = stationary_integrated_variance(
+        32.0, 0.75, q3, pi3, c3, kappa3, variance3
+    )
+    nonreversible_composite_error = abs(
+        nonreversible_short
+        - 0.75 * nonreversible_rate
+        - nonreversible_intercept
+        - nonreversible_remainder
+    )
     assert nonreversible_error < 3e-12
+    assert nonreversible_intercept_error < 3e-12
+    assert nonreversible_composite_error < 3e-14
 
     print("4. exact long-run integrated-variance variance rate")
     print(
@@ -720,7 +849,33 @@ def verify_long_run_variance_rate():
         f"   polynomial-semigroup discrepancy {max(semigroup_errors):.2e}; "
         f"nonreversible discrepancy {nonreversible_error:.2e}"
     )
-    return averaged_rate, corrected_rate, max(semigroup_errors)
+    print("5. exact bounded intercept in the stationary variance")
+    print(
+        "   chi_m: "
+        + " ".join(f"{value:.10f}" for value in exact_intercepts)
+    )
+    print(
+        f"   averaged/corrected rates {intercept_averaged_rate:.3f}/"
+        f"{intercept_corrected_rate:.3f}; m^2 remainder "
+        f"{intercept_scaled_second_remainders[-1]:+.10f} -> {chi2:+.10f}"
+    )
+    print(
+        f"   polynomial-semigroup discrepancy "
+        f"{max(intercept_semigroup_errors):.2e}; nonreversible discrepancy "
+        f"{nonreversible_intercept_error:.2e}"
+    )
+    print(
+        f"   finite-T composite discrepancy {max(finite_composite_errors):.2e}; "
+        f"nonreversible discrepancy {nonreversible_composite_error:.2e}"
+    )
+    return (
+        averaged_rate,
+        corrected_rate,
+        max(semigroup_errors),
+        intercept_averaged_rate,
+        intercept_corrected_rate,
+        max(intercept_semigroup_errors),
+    )
 
 
 def verify_averaged_admissibility(pi, c, xi, rho):
@@ -839,7 +994,7 @@ def main():
     formula_error = np.max(abs(explicit - abstract))
     assert formula_error < 2e-15
 
-    print("5. switched coordinates and the explicit CIR corrector")
+    print("6. switched coordinates and the explicit CIR corrector")
     print(f"   stationary law {pi}")
     print(f"   kappa*theta {c}; average theta is {(pi @ c) / (pi @ kappa):.8f}")
     print(f"   xi^2 {variance}; effective xi is {math.sqrt(pi @ variance):.8f}")
@@ -865,7 +1020,7 @@ def main():
         errors["full"].append(np.linalg.norm(truth - full))
         forward_values.append(truth)
 
-    print("6. polynomial semigroup check")
+    print("7. polynomial semigroup check")
     for name, values in errors.items():
         print(
             f"   {name:9s}: "
@@ -902,7 +1057,7 @@ def main():
     direction_rate = rate(direction_errors)
     assert 1.8 < direction_rate < 2.2
     anti = 0.5 * (k0 - k0.T)
-    print("7. cycle reversal")
+    print("8. cycle reversal")
     print(
         "   antisymmetric coefficients "
         f"c/kappa={anti[0, 1]:+.10f}, c/xi^2={anti[0, 2]:+.10f}, "
@@ -985,7 +1140,7 @@ def main():
             abs(exact_logreturn - logreturn_average - logreturn_first / speed)
         )
 
-    print("8. integrated-variance cumulants")
+    print("9. integrated-variance cumulants")
     print(
         f"   kappa4(M): averaged {martingale_average:.10f}, coefficient {martingale_first:+.10f}"
     )
@@ -1148,7 +1303,7 @@ def main():
     independent = leverage_results["rho=+0.0"]
     assert abs(independent[0] - logreturn_average) < 2e-15
     assert abs(independent[1] - logreturn_first) < 2e-15
-    print("9. simultaneous switching with regime-dependent leverage")
+    print("10. simultaneous switching with regime-dependent leverage")
     print(
         f"   rho states {rho_switch}; eta=rho*xi {eta_switch}; "
         f"effective rho {effective_rho:+.8f}"
@@ -1184,7 +1339,8 @@ def main():
         f"{long_maturity_residuals[-1]:.10f}, uniform mean rates "
         f"{uniform_mean_rates[0]:.3f}/{uniform_mean_rates[1]:.3f}, "
         f"growing-window rate {expansion_rates[1][3]:.3f}, "
-        f"variance-rate order {variance_rate_results[1]:.3f}"
+        f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
+        f"{variance_rate_results[4]:.3f}"
     )
 
 
