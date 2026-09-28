@@ -4,7 +4,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">numerical certificate</a></span></p>
     <h1>When fast mixing justifies pooled residuals</h1>
     <p class="subtitle">An exact finite-chain horizon-to-switching crossover for conditional coverage, alongside finite-calibration, irregular-grid, burn-in and transient-panel bounds.</p>
-    <p class="muted">Research note, 23 September 2026; extended 26 September 2026. A finite-state benchmark for
+    <p class="muted">Research note, 23 September 2026; extended 28 September 2026. A finite-state benchmark for
       <a href="./index.html">homogenization and residual pooling</a>;
       it does not assert distribution-free conditional coverage.</p>
 
@@ -387,14 +387,14 @@
     $$I(0.9)=0.023859569,\qquad \theta_*=0.545570879.$$
     <div class="table-wrap">
     <table class="impl">
-      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th></tr></thead>
+      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th><th>exact / corrected</th></tr></thead>
       <tbody>
-        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td></tr>
-        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td></tr>
-        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td></tr>
-        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td></tr>
-        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td></tr>
-        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td></tr>
+        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td><td>1.550044</td></tr>
+        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td><td>1.139470</td></tr>
+        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td><td>1.041074</td></tr>
+        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td><td>1.011992</td></tr>
+        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td><td>1.003353</td></tr>
+        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td><td>1.000899</td></tr>
       </tbody>
     </table>
     </div>
@@ -439,12 +439,47 @@
       <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin
       (1987)</a>. For the benchmark $x_n=0.9$,
       $v_n=0.122606564$, $B_\pi(\theta_n)=0.984845741$, and the $n$-free
-      prefactor is $2.66849646$. The table's final column shows the exact tail
+      prefactor is $2.66849646$. The table's fourth column shows the exact tail
       divided by this sharp approximation, converging to one. A pure
       exponential approximation
       omits both the $n^{-1/2}$ factor and the initial-law amplitude. The
       theorem remains a fixed-$P$ result; it neither covers irregular grids
       nor asserts a joint limit in panel size and switching rate.</p>
+
+    <h3>The first relative saddle-point correction</h3>
+    <p>The same local Fourier calculation supplies the next term, including
+      the derivatives of the initial-law and lattice amplitude. Write</p>
+    <div class="equation-card">
+    $$H_\nu(\theta)=\frac{B_\nu(\theta)}{1-e^{-\theta}},\qquad
+      v=\Lambda''(\theta),\quad c_3=\Lambda'''(\theta),\quad
+      c_4=\Lambda''''(\theta).$$
+    </div>
+    <p>With every quantity below evaluated at $\theta_n$, uniformly while
+      $x_n=k_n/n$ remains in a compact subset of $(p,1)$,</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{H_\nu e^{-nI(x_n)}}{\sqrt{2\pi n v}}
+       \left\{1+\frac{C_1(\theta_n)}{n}+o(n^{-1})\right\},$$
+    $$C_1=-\frac{H_\nu''}{2vH_\nu}
+      +\frac{H_\nu'c_3}{2v^2H_\nu}
+      +\frac{c_4}{8v^2}-\frac{5c_3^2}{24v^3}.$$
+    </div>
+    <p>Indeed, after the saddle scaling $t=s/\sqrt n$, expand the analytic
+      Fourier amplitude as $H_\nu+iH_\nu't-H_\nu''t^2/2$ and the Perron
+      exponent as $-vt^2/2-ic_3t^3/6+c_4t^4/24$. Integrating the even terms
+      against the centered Gaussian gives the four displayed contributions;
+      the noncentral arc is exponentially smaller by the same Perron
+      separation used above. This is the finite-state Markov-additive version
+      of the asymptotic saddle-point expansion introduced by
+      <a href="./bibliography.html#Daniels1954">Daniels (1954)</a>.</p>
+    <p>For the benchmark, $C_1=-14.728744578$. The table's final column divides
+      the exact probability by the corrected approximation. At $n=480$ and
+      $960$ the relative discrepancies are $0.3353\%$ and $0.0899\%$, compared
+      with $2.7434\%$ and $1.4457\%$ for the leading formula. The overshoot at
+      small $n$ is deliberately retained: this is an asymptotic expansion, not
+      a finite-panel error bound, and truncation is not guaranteed to improve
+      every small panel. The statement is still for a fixed regular-grid $P$;
+      it makes no irregular-grid or joint $n$--switching-rate claim.</p>
 
     <h3>Perron curvature is exactly Green&ndash;Kubo</h3>
     <p>The tilted eigenvalue is also consistent with the finite-panel variance

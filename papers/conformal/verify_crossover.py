@@ -14,8 +14,9 @@ Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
-It verifies the associated sharp lattice tail prefactor against exact
-coefficient tails through 960 observations.
+It verifies the associated sharp lattice tail prefactor and its first relative
+saddle-point correction against exact coefficient tails through 960
+observations.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
@@ -190,6 +191,12 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     derivative = (perron_log_cgf(transition, success, 1e-5)
                   - perron_log_cgf(transition, success, -1e-5)) / 2e-5
     assert abs(derivative - target) < 2e-10
+    sharp_prefactor, correction, curvature, boundary_factor = (
+        perron_sharp_tail_approx(
+            transition, pi, success, tail_level))
+    _, fine_correction, _, _ = perron_sharp_tail_approx(
+        transition, pi, success, tail_level, radius=0.015)
+    assert abs(correction - fine_correction) < 2e-6
     rate_rows = []
     for panel_size in (30, 60, 120, 240, 480, 960):
         law = binary_count_distribution(
@@ -197,25 +204,32 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         threshold = math.ceil(tail_level * panel_size)
         tail = law[threshold:].sum()
         finite_rate = -math.log(tail) / panel_size
-        sharp_tail, curvature, boundary_factor = perron_sharp_tail_approx(
-            transition, pi, success, tail_level)
-        sharp_tail *= (math.exp(-panel_size * asymptotic_rate)
-                       / math.sqrt(panel_size))
+        sharp_tail = (sharp_prefactor
+                      * math.exp(-panel_size * asymptotic_rate)
+                      / math.sqrt(panel_size))
+        corrected_tail = sharp_tail * (1 + correction / panel_size)
         rate_rows.append((panel_size, tail, finite_rate,
-                          sharp_tail, tail / sharp_tail))
+                          sharp_tail, tail / sharp_tail,
+                          tail / corrected_tail))
     assert abs(rate_rows[-1][2] - asymptotic_rate) < 0.005
     print("Perron large-deviation rate at success fraction 0.9:")
-    for panel_size, tail, finite_rate, sharp_tail, sharp_ratio in rate_rows:
+    for (panel_size, tail, finite_rate, sharp_tail,
+         sharp_ratio, corrected_ratio) in rate_rows:
         print(f"  n={panel_size:3d} tail {tail:.10e},"
               f" -log(tail)/n {finite_rate:.9f},"
-              f" sharp ratio {sharp_ratio:.9f}")
+              f" sharp/corrected ratios"
+              f" {sharp_ratio:.9f}/{corrected_ratio:.9f}")
     print(f"  limiting rate {asymptotic_rate:.9f},"
           f" optimizing tilt {asymptotic_tilt:.9f},"
           f" tilted variance {curvature:.9f},"
-          f" boundary factor {boundary_factor:.9f}")
+          f" boundary factor {boundary_factor:.9f},"
+          f" 1/n coefficient {correction:.9f}")
     sharp_ratios = np.asarray([row[4] for row in rate_rows])
+    corrected_ratios = np.asarray([row[5] for row in rate_rows])
     assert np.all(np.diff(sharp_ratios) > 0)
     assert abs(sharp_ratios[-1] - 1) < 0.02
+    assert np.all(np.diff(corrected_ratios[1:]) < 0)
+    assert np.max(abs(corrected_ratios[-2:] - 1)) < 0.004
 
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
@@ -420,12 +434,16 @@ def binary_count_pgf(initial, transitions, success, z):
 
 def perron_log_cgf(transition, success, theta):
     """Long-panel log MGF per observation from the tilted Perron root."""
-    emission = 1 - success + math.exp(theta) * success
+    return float(perron_log_cgf_analytic(transition, success, theta).real)
+
+
+def perron_log_cgf_analytic(transition, success, theta):
+    """Analytic Perron branch near a real tilt, including complex arguments."""
+    emission = 1 - success + np.exp(theta) * success
     tilted = transition @ np.diag(emission)
     eigenvalues = np.linalg.eigvals(tilted)
-    rho = max(abs(eigenvalues))
-    assert rho > 0
-    return math.log(rho)
+    rho = eigenvalues[np.argmax(abs(eigenvalues))]
+    return np.log(rho)
 
 
 def perron_boundary_log_cgf(transition, initial, success, theta):
@@ -449,10 +467,11 @@ def perron_boundary_log_cgf(transition, initial, success, theta):
     return np.log(amplitude) - np.log(rho)
 
 
-def cauchy_derivatives(function, order, radius=0.025, points=128):
-    """Derivatives at zero of an analytic scalar function by Cauchy FFT."""
+def cauchy_derivatives(function, order, center=0.0,
+                       radius=0.025, points=128):
+    """Derivatives at ``center`` of an analytic scalar by Cauchy FFT."""
     angles = 2 * np.pi * np.arange(points) / points
-    values = np.asarray([function(radius * np.exp(1j * angle))
+    values = np.asarray([function(center + radius * np.exp(1j * angle))
                          for angle in angles])
     derivatives = []
     for k in range(1, order + 1):
@@ -537,21 +556,33 @@ def perron_tail_rate(transition, success, level):
     return -result.fun, result.x
 
 
-def perron_sharp_tail_approx(transition, initial, success, level):
-    """Return the n-free lattice prefactor, tilted variance and boundary."""
+def perron_sharp_tail_approx(transition, initial, success, level,
+                             radius=0.02):
+    """Return the lattice prefactor and its first relative correction."""
     _, theta = perron_tail_rate(transition, success, level)
-    step = 0.002
-    values = [perron_log_cgf(
-        transition, success, theta + j * step) for j in (-2, -1, 0, 1, 2)]
-    curvature = (-values[4] + 16 * values[3] - 30 * values[2]
-                 + 16 * values[1] - values[0]) / (12 * step ** 2)
+    lambda_derivatives = cauchy_derivatives(
+        lambda z: perron_log_cgf_analytic(transition, success, z),
+        4, center=theta, radius=radius, points=256)
+    curvature, third, fourth = lambda_derivatives[1:4]
     log_boundary = perron_boundary_log_cgf(
         transition, initial, success, theta).real
     boundary_factor = math.exp(log_boundary)
-    prefactor = (boundary_factor
-                 / ((1 - math.exp(-theta))
-                    * math.sqrt(2 * math.pi * curvature)))
-    return prefactor, curvature, boundary_factor
+
+    def tail_amplitude(z):
+        return (np.exp(perron_boundary_log_cgf(
+            transition, initial, success, z)) / (1 - np.exp(-z)))
+
+    amplitude = tail_amplitude(theta).real
+    amplitude_derivatives = cauchy_derivatives(
+        tail_amplitude, 2, center=theta, radius=radius, points=256)
+    first, second = amplitude_derivatives
+    correction = (
+        -second / (2 * curvature * amplitude)
+        + first * third / (2 * curvature ** 2 * amplitude)
+        + fourth / (8 * curvature ** 2)
+        - 5 * third ** 2 / (24 * curvature ** 3))
+    prefactor = amplitude / math.sqrt(2 * math.pi * curvature)
+    return prefactor, correction, curvature, boundary_factor
 
 
 def chernoff_tail_bound(count_law, k):
@@ -1018,7 +1049,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate and sharp prefactor, Green--Kubo"
+          " count law, Perron tail rate, sharp prefactor and first relative"
+          " saddle-point correction, Green--Kubo"
           " curvature, all-order"
           " cumulants, arbitrary-start boundary constants and local tail"
           " correction,"
