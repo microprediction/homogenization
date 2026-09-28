@@ -488,21 +488,64 @@
     $$I(0.9)=0.023859569,\qquad \theta_*=0.545570879.$$
     <div class="table-wrap">
     <table class="impl">
-      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th></tr></thead>
+      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th></tr></thead>
       <tbody>
-        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td></tr>
-        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td></tr>
-        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td></tr>
-        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td></tr>
-        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td></tr>
+        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td></tr>
+        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td></tr>
+        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td></tr>
+        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td></tr>
+        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td></tr>
+        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td></tr>
       </tbody>
     </table>
     </div>
     <p>The exact coefficients converge toward the predicted logarithmic rate;
-      the remaining finite-$n$ difference is a subexponential prefactor. This
+      the remaining finite-$n$ difference is resolved by the sharp prefactor
+      below. This
       theorem is for a fixed regular-grid transition matrix. The earlier
       polynomial recursion remains exact on irregular grids, but no
       single-matrix Perron rate is claimed there.</p>
+
+    <h3>The sharp lattice tail prefactor</h3>
+    <p>The boundary amplitude also identifies the leading finite-panel tail,
+      rather than only its logarithmic rate. Let $r_\theta,\ell_\theta$ be
+      right and left Perron eigenvectors normalized by
+      $\ell_\theta^\top r_\theta=1$, define
+      $A_\nu(\theta)=\{\nu D(e^\theta)r_\theta\}
+      \{\ell_\theta^\top{\bf1}\}$, and put
+      $B_\nu(\theta)=A_\nu(\theta)e^{-\Lambda(\theta)}$. For integer thresholds
+      $k_n$ such that $x_n=k_n/n$ stays in a compact subset of $(p,1)$, let
+      $\theta_n&gt;0$ solve $\Lambda'(\theta_n)=x_n$, set
+      $v_n=\Lambda''(\theta_n)$, and write
+      $I(x_n)=\theta_nx_n-\Lambda(\theta_n)$. Then</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{B_\nu(\theta_n)}{1-e^{-\theta_n}}
+       \frac{e^{-nI(x_n)}}{\sqrt{2\pi n v_n}}
+       \{1+o(1)\}.$$
+    </div>
+    <p>The proof is a finite-dimensional lattice saddle point. Fourier
+      inversion of the exact matrix MGF gives the central Gaussian factor.
+      Because every $0&lt;f_i&lt;1$ and $P$ is positive, the tilted Fourier matrix
+      has spectral radius strictly below its real Perron root away from
+      frequency zero, so the remaining integral is negligible. Successive
+      lattice masses above $k_n$ have limiting ratio $e^{-\theta_n}$; summing
+      them supplies the factor $(1-e^{-\theta_n})^{-1}$. Finally, the
+      replacement of $(n-1)\Lambda$ by $n\Lambda$ explains why the initial-law
+      factor is $B_\nu=A_\nu e^{-\Lambda}$ rather than $A_\nu$.</p>
+    <p>This is the finite-state Markov-additive counterpart of the sharp
+      lattice asymptotics of
+      <a href="./bibliography.html#BahadurRao1960">Bahadur and Ranga Rao
+      (1960)</a>; the Markov-additive large-deviation framework is due to
+      <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin
+      (1987)</a>. For the benchmark $x_n=0.9$,
+      $v_n=0.122606564$, $B_\pi(\theta_n)=0.984845741$, and the $n$-free
+      prefactor is $2.66849646$. The table's final column shows the exact tail
+      divided by this sharp approximation, converging to one. A pure
+      exponential approximation
+      omits both the $n^{-1/2}$ factor and the initial-law amplitude. The
+      theorem remains a fixed-$P$ result; it neither covers irregular grids
+      nor asserts a joint limit in panel size and switching rate.</p>
 
     <h3>Perron curvature is exactly Green&ndash;Kubo</h3>
     <p>The tilted eigenvalue is also consistent with the finite-panel variance
@@ -626,9 +669,9 @@
     <p>The quadratic term is the Green&ndash;Kubo Gaussian approximation; the
       cubic and quartic terms are the first skewness and kurtosis corrections
       for the dependent panel. This is a Taylor consequence of the same
-      G&auml;rtner&ndash;Ellis rate function above. It is not a
-      Bahadur&ndash;Rao prefactor, an Edgeworth approximation to a finite-panel
-      probability, or a joint limit in $n$ and $m$.</p>
+      G&auml;rtner&ndash;Ellis rate function above. It is distinct from the sharp
+      lattice prefactor proved above, and is not an Edgeworth approximation
+      to a finite-panel probability or a joint limit in $n$ and $m$.</p>
     <p>For the benchmark,
       $(\kappa_{3,P},\kappa_{4,P})
       =(-0.350878968118,0.328775644197)$. Richardson differentiation gives
