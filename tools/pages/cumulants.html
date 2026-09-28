@@ -4,7 +4,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a>
     &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a></span></p>
     <h1>Integrated-variance cumulants</h1>
-    <p class="subtitle">Exact fixed-order cumulant-rate recursions and an explicit European option correction for a positive switched CIR variance.</p>
+    <p class="subtitle">Exact fixed-order cumulant rates and boundary constants, plus an explicit European option correction for a positive switched CIR variance.</p>
 
     <p class="lead">The smile produced by uncorrelated stochastic volatility is often described through the variance
     of integrated variance. There are two points to keep separate. The Brownian return has a fourth cumulant exactly
@@ -518,8 +518,8 @@
       They converge to the averaged-CIR value $0.0000091070$ at measured order $1.003$.
       An independent degree-four semigroup agrees within $8.0\times10^{-13}$; a nonreversible three-state check
       agrees within $8.4\times10^{-15}$. Omitting $c_2\phi^\circ$ changes the $m=8$ rate by
-      $0.0000102515$, nearly the full correct value. This theorem identifies the exact fourth-cumulant slope only:
-      no fourth-cumulant intercept, uniform remainder, or price-level extension is claimed.</p>
+      $0.0000102515$, nearly the full correct value. The spectral-amplitude theorem below also identifies the
+      fourth-order intercept, although not by this three-solve formula.</p>
 
     <h2>Every fixed long-run cumulant rate</h2>
     <p>The fourth-order calculation is one step of a recursion that closes at every fixed order. For the normalized
@@ -563,8 +563,45 @@
       $3.7\times10^{-19}$; for the averaged one-state CIR model, orders two through eight agree with the closed
       formula within $8.9\times10^{-15}$ relative error.</p>
     <p>This is an all-<em>fixed</em>-order statement. It supplies neither constants uniform in $k$, nor convergence
-      of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits. Beyond third order it also
-      does not supply bounded intercepts or maturity-uniform remainders.</p>
+      of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits.</p>
+
+    <h2>Arbitrary-start boundary constants at every fixed order</h2>
+    <p>The same spectral representation also resolves the bounded term left open by the rate recursion. Normalize
+      the right eigenfunction by $\mathbb E_{\Pi_m}h_\theta=1$, and normalize the left eigenfunctional
+      $\ell_\theta$ by $\ell_\theta(h_\theta)=1$. For any admissible initial law $\nu$, define the Perron amplitude</p>
+    $$A_\nu(\theta)=(\nu h_\theta)\ell_\theta(1),\qquad A_\nu(0)=1.$$
+    <p>Assume the locally tilted semigroup has a simple analytic dominant eigenvalue separated by a spectral gap
+      in a common weighted space. This is the same multiplicative-ergodic hypothesis used to justify the local
+      cumulant-rate eigenpair; positive mean reversion and the local exponential moments of the switched CIR
+      invariant law provide the required neighborhood of zero. Then, locally uniformly in $\theta$,</p>
+    $$\nu P_T^\theta1=e^{T\lambda_m(\theta)}
+      \{A_\nu(\theta)+O_{m,\nu}(e^{-q_mT})\}.$$
+    <p>Taking a logarithm and differentiating a fixed number of times gives:</p>
+    <div class="equation-card">
+    $$\kappa_k(V_T)=T\gamma_k+\beta_{k,\nu}
+      +O_{k,m,\nu}(e^{-q_mT}),$$
+    $$\beta_{k,\nu}=
+      \left.\partial_\theta^k\log A_\nu(\theta)\right|_{\theta=0}.$$
+    </div>
+    <p>The statement holds for every fixed $k$ and includes nonstationary starts. For $k\ge2$, centering
+      $V_T$ by its invariant mean changes neither side. At orders two and three under a stationary start, the
+      amplitude derivatives recover exactly the explicit Poisson intercepts above. Unlike those special formulas,
+      the spectral form cleanly separates the initial-law contribution $\nu h_\theta$ from the terminal
+      eigenmeasure contribution $\ell_\theta(1)$.</p>
+    <p>An exact polynomial-semigroup certificate evaluates the constants through order six for the two-state model
+      at $m=8$. For the stationary start, orders one through six are</p>
+    $$0, -1.1137851042\times10^{-3}, -1.3593525482\times10^{-4},
+      -2.1619750404\times10^{-5}, -4.4958717104\times10^{-6},
+      -1.1745658712\times10^{-6}.$$
+    <p>For the point start $Y_0=0$, $v_0=0.04$, they are</p>
+    $$-2.4012500000\times10^{-2}, -2.1518297526\times10^{-3},
+      -2.1323845463\times10^{-4}, -3.1012738350\times10^{-5},
+      -6.1262794747\times10^{-6}, -1.5471882193\times10^{-6}.$$
+    <p>Computing $\kappa_k(V_T)-T\gamma_k$ independently at $T=20$ and $40$ changes these values by at most
+      $3.2\times10^{-14}$. The stationary order-two and order-three constants match the earlier explicit Poisson
+      formulas within $6.2\times10^{-16}$.</p>
+    <p>The constants and decay rate may depend on $k$, $m$, and $\nu$. No switching-rate-uniform higher-cumulant
+      remainder, finite-$1/m$ maturity-uniform approximation, or price-level theorem follows from this result.</p>
 
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
@@ -833,8 +870,9 @@
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
       polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
       fixed-$m$ exponentially decaying remainder. The centered-Poisson recursion identifies every fixed-order
-      long-run cumulant rate, but provides no order-uniform constants, fourth-or-higher intercept, or corresponding
-      remainder theorem. No switching-rate-uniform third-cumulant envelope or price-level extension is claimed.</li>
+      long-run cumulant rate, and the Perron amplitude identifies its arbitrary-start boundary constant with a
+      fixed-$m$ exponential remainder. These results provide no order-uniform constants or switching-rate-uniform
+      higher-cumulant envelope. No price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -855,7 +893,8 @@
     and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
     $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and exact
     finite-rate formulas for the stationary second-cumulant slope and intercept, third-cumulant slope and intercept,
-    and every fixed-order long-run cumulant rate in that simultaneous-switching model. The damped
+    and every fixed-order long-run cumulant rate and arbitrary-start boundary constant in that
+    simultaneous-switching model. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>

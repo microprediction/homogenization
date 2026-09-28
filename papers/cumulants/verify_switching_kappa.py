@@ -499,6 +499,85 @@ def integrated_variance_cumulant_rates(
     return rates[1:], derivatives
 
 
+def centered_integrated_cumulants(
+    max_order, maturity, speed, q0, pi, c, kappa, variance,
+    initial_regime=None, initial_variance=None,
+):
+    """Exact cumulants of int_0^T (v_s-E[v]) ds by polynomial closure.
+
+    With no initial state specified, the joint process starts in stationarity.
+    Otherwise ``initial_regime`` and ``initial_variance`` give a point start.
+    """
+    basis, a_c, a_kappa, v_d_vv, v_d_z = integrated_variance_operators(
+        max_order
+    )
+    index = {powers: position for position, powers in enumerate(basis)}
+    d_z = np.zeros((len(basis), len(basis)))
+    for column, (v_power, z_power) in enumerate(basis):
+        if z_power:
+            d_z[index[(v_power, z_power - 1)], column] = z_power
+
+    states = len(pi)
+    _, invariant, _, _ = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, max_order
+    )
+    width = max_order + 1
+    mean = sum(
+        invariant[state * width + 1] for state in range(states)
+    )
+    a_variance = 0.5 * v_d_vv
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+        + v_d_z
+        - mean * d_z
+    )
+    generator = full_generator(
+        speed * q0,
+        averaged,
+        [a_c, a_kappa, a_variance],
+        [c, kappa, variance],
+    )
+
+    initial = np.zeros(states * len(basis))
+    if initial_regime is None:
+        for state in range(states):
+            block = state * len(basis)
+            for position, (v_power, z_power) in enumerate(basis):
+                if z_power == 0:
+                    initial[block + position] = invariant[
+                        state * width + v_power
+                    ]
+    else:
+        if initial_variance is None:
+            raise ValueError("initial_variance is required for a point start")
+        block = initial_regime * len(basis)
+        for position, (v_power, z_power) in enumerate(basis):
+            if z_power == 0:
+                initial[block + position] = initial_variance**v_power
+
+    semigroup = expm(maturity * generator)
+    raw = []
+    for order in range(1, max_order + 1):
+        payoff = np.zeros(len(basis))
+        payoff[index[(0, order)]] = 1.0
+        raw.append(
+            initial @ semigroup @ np.kron(np.ones(states), payoff)
+        )
+    cumulant_values = []
+    for order, moment in enumerate(raw, start=1):
+        value = moment
+        for index_value in range(1, order):
+            value -= (
+                math.comb(order - 1, index_value - 1)
+                * cumulant_values[index_value - 1]
+                * raw[order - index_value - 1]
+            )
+        cumulant_values.append(value)
+    return np.array(cumulant_values)
+
+
 def integrated_variance_intercept(speed, q0, pi, c, kappa, variance):
     """Exact bounded intercept in the stationary long-time variance.
 
@@ -1698,6 +1777,66 @@ def verify_all_fixed_order_cumulant_rates(max_order=8):
     return low_order_error, averaged_relative_error
 
 
+def verify_all_fixed_order_cumulant_intercepts(max_order=6):
+    """Check fixed-order boundary constants for stationary and point starts."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speed = 8.0
+    rates, _ = integrated_variance_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance
+    )
+
+    intercepts = {}
+    discrepancies = {}
+    starts = {
+        "stationary": {},
+        "point": {"initial_regime": 0, "initial_variance": 0.04},
+    }
+    for name, start in starts.items():
+        cumulants_20 = centered_integrated_cumulants(
+            max_order, 20.0, speed, q0, pi, c, kappa, variance, **start
+        )
+        cumulants_40 = centered_integrated_cumulants(
+            max_order, 40.0, speed, q0, pi, c, kappa, variance, **start
+        )
+        intercept_20 = cumulants_20 - 20.0 * rates
+        intercept_40 = cumulants_40 - 40.0 * rates
+        intercepts[name] = intercept_40
+        discrepancies[name] = np.max(np.abs(intercept_40 - intercept_20))
+
+    second_intercept = integrated_variance_intercept(
+        speed, q0, pi, c, kappa, variance
+    )[0]
+    third_intercept = integrated_variance_third_intercept(
+        speed, q0, pi, c, kappa, variance
+    )[0]
+    known_error = np.max(
+        np.abs(
+            intercepts["stationary"][1:3]
+            - [second_intercept, third_intercept]
+        )
+    )
+    assert known_error < 2e-10
+    assert discrepancies["stationary"] < 2e-9
+    assert discrepancies["point"] < 2e-9
+
+    print("5g. all-fixed-order cumulant intercepts")
+    for name in starts:
+        print(
+            f"   {name} orders 1--{max_order}: "
+            + " ".join(f"{value:+.10e}" for value in intercepts[name])
+        )
+    print(
+        f"   T=20/40 discrepancy stationary/point "
+        f"{discrepancies['stationary']:.2e}/{discrepancies['point']:.2e}; "
+        f"known order-2/3 discrepancy {known_error:.2e}"
+    )
+    return intercepts, discrepancies, known_error
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -1767,6 +1906,7 @@ def main():
     third_rate_results = verify_long_run_third_cumulant_rate()
     fourth_rate_results = verify_long_run_fourth_cumulant_rate()
     all_order_rate_results = verify_all_fixed_order_cumulant_rates()
+    all_order_intercept_results = verify_all_fixed_order_cumulant_intercepts()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
