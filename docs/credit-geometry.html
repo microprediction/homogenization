@@ -105,7 +105,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">numerical certificate</a></span></p>
     <h1>Green&ndash;Kubo geometry of joint default</h1>
     <p class="subtitle">Positive CIR intensities, an identifiable instantaneous matrix, and a maturity-integrated rank trap.</p>
-    <p class="muted">Research note, 23 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
+    <p class="muted">Research note, 23 September 2026; extended 28 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
       gives the starting point; this note changes the loadings while retaining nonnegative intensities.</p>
 
     <h2>A positive-intensity model</h2>
@@ -357,7 +357,56 @@
       lower bound on the number of regimes. This distinction is absent
       for constant hazards: all $B_j(t)=1$ and $D(T)=TK$.</p>
 
-    <h2>Two regimes, rank two</h2>
+    <h3>The sharp Hadamard-rank theorem</h3>
+    <p>There is nevertheless an exact replacement for the false regime-count
+      bound. Let $r=\operatorname{rank}K$ and
+      $s=\operatorname{rank}J(T)$, where $s$ is the dimension of the span of
+      the loading functions $B_1,\ldots,B_d$ in $L^2[0,T]$. Then</p>
+    <div class="equation-card">
+    $$\operatorname{rank}D(T)
+      \le\min\{d,rs\}.$$
+    </div>
+    <p>Indeed, factor $K=UU^\top$ and $J=VV^\top$, and denote their $j$th
+      rows by $u_j$ and $v_j$. The Hadamard product has the Gram
+      factorization</p>
+    $$D_{jk}=\langle u_j,u_k\rangle\langle v_j,v_k\rangle
+      =\langle u_j\otimes v_j,u_k\otimes v_k\rangle.$$
+    <p>Thus the rank is exactly the dimension spanned by the $d$ rowwise
+      tensor products $u_j\otimes v_j$ in an $rs$-dimensional space. The
+      bound is sharp: generic factor pairs have rowwise tensor rank
+      $\min(d,rs)$.
+      Positivity of $D$ is the classical
+      <a href="./bibliography.html#Schur1911">Schur product theorem</a>; the
+      tensor factorization also supplies the rank statement directly.</p>
+
+    <h2>Two regimes can create arbitrarily large integrated rank</h2>
+    <p>The two-name example is not a dimension-two accident. For any number
+      $d$ of names and any $T&gt;0$, a two-regime model can have
+      $\operatorname{rank}K=1$ but $\operatorname{rank}D(T)=d$. Choose every
+      centered regime feature on the single two-state contrast, with nonzero
+      coefficient $a_j$, so $K=aa^\top$ up to scale. At zero vol-of-vol and
+      distinct $\kappa_j&gt;0$,</p>
+    $$B_j(t)=\frac{1-e^{-\kappa_jt}}{\kappa_j}.$$
+    <p>These functions are linearly independent on every positive interval:
+      differentiating a vanishing linear combination gives a vanishing
+      combination of distinct exponentials $e^{-\kappa_jt}$, whose
+      Vandermonde system is nonsingular. Hence $J(T)$ is positive definite and</p>
+    $$D(T)=\operatorname{diag}(a)J(T)\operatorname{diag}(a)$$
+    <p>has full rank $d$. The conclusion persists for sufficiently small
+      strictly positive CIR volatilities because the Riccati solutions and
+      the Gram determinant depend continuously on $\sigma_j^2$. Mean levels
+      can simultaneously be chosen with a uniform strict Feller margin.
+      Therefore no bound depending only on the number of regimes survives
+      after maturity integration.</p>
+    <p>The certificate uses positive volatilities $\sigma_j=0.02$, distinct
+      $\kappa_j$ between $0.2$ and $5$, and strict Feller mean levels for
+      $2\le d\le8$. Every integrated matrix is full rank. At $d=8$ its
+      smallest eigenvalue is $1.4691\times10^{-8}$ and its condition number is
+      $6.7541\times10^9$. This is an important distinction: algebraic rank can
+      be maximally amplified while statistical identification becomes
+      extremely ill-conditioned.</p>
+
+    <h3>The explicit two-name benchmark</h3>
     <p>Take a symmetric two-state generator
       $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,
       $\pi=(1/2,1/2)$, and two CIR names with</p>

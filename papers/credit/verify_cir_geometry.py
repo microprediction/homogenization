@@ -2,6 +2,9 @@
 
 The two-state chain has an instantaneous rank-one Green-Kubo matrix, but two
 different CIR Riccati loadings give a rank-two integrated correction matrix.
+More generally, the Hadamard-rank bound is checked at every feasible pair of
+ranks through dimension eight, and positive-volatility CIR loadings make the
+integrated correction full rank through eight names despite only two regimes.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -239,7 +242,83 @@ def page_prior_benchmark():
     return correlations
 
 
+def rank_amplification_checks():
+    """Check the sharp Hadamard-rank bound and many-name CIR amplification."""
+    rng = np.random.default_rng(20260928)
+    maximum_factor_error = 0.0
+    for d in range(2, 9):
+        for rank_k in range(1, min(3, d) + 1):
+            for rank_j in range(1, min(3, d) + 1):
+                u = rng.normal(size=(d, rank_k))
+                v = rng.normal(size=(d, rank_j))
+                k_matrix = u @ u.T
+                j_matrix = v @ v.T
+                integrated = k_matrix * j_matrix
+                tensor_rows = np.einsum("ir,is->irs", u, v).reshape(
+                    d, rank_k * rank_j
+                )
+                maximum_factor_error = max(
+                    maximum_factor_error,
+                    np.max(abs(integrated - tensor_rows @ tensor_rows.T)),
+                )
+                assert np.linalg.matrix_rank(integrated, tol=1e-10) == min(
+                    d, rank_k * rank_j
+                )
+
+    # With two regimes, choose centered hazard contrasts so that K=11'/2.
+    # Distinct mean-reversion rates make the zero-volatility loadings
+    # (1-exp(-kappa*t))/kappa linearly independent.  Small positive
+    # volatilities preserve the Gram determinant by continuity.
+    rows = []
+    horizon = 10.0
+    for d in range(2, 9):
+        kappas = np.geomspace(0.2, 5.0, d)
+        sigmas = np.full(d, 0.02)
+        contrasts = 1 / kappas
+        mean_levels = 1.2 * contrasts
+        theta = np.column_stack(
+            [mean_levels + contrasts, mean_levels - contrasts]
+        )
+        assert np.min(2 * kappas[:, None] * theta - sigmas[:, None] ** 2) > 0
+
+        loading_functions = []
+        for kappa, sigma in zip(kappas, sigmas):
+            solved = solve_ivp(
+                lambda t, b, k=kappa, s=sigma:
+                    1 - k * b - 0.5 * s**2 * b**2,
+                (0, horizon), [0.0], method="DOP853",
+                rtol=1e-12, atol=1e-14, dense_output=True,
+            )
+            assert solved.success
+            loading_functions.append(
+                lambda t, sol=solved.sol: float(sol(t)[0])
+            )
+        gram = np.array([
+            [quad(lambda t, fj=loading_functions[j], fk=loading_functions[k]:
+                  fj(t) * fk(t), 0, horizon,
+                  epsabs=1e-13, epsrel=1e-13)[0]
+             for k in range(d)]
+            for j in range(d)
+        ])
+        instantaneous = np.ones((d, d)) / 2
+        integrated = instantaneous * gram
+        eigenvalues = np.linalg.eigvalsh(integrated)
+        assert np.linalg.matrix_rank(instantaneous) == 1
+        assert np.linalg.matrix_rank(integrated, tol=1e-10) == d
+        assert eigenvalues[0] > 1e-8
+        rows.append((d, eigenvalues[0], eigenvalues[-1] / eigenvalues[0]))
+
+    assert maximum_factor_error < 5e-13
+    print("\nsharp maturity-loading rank amplification")
+    print(f"  tensor-factor identity error {maximum_factor_error:.2e}")
+    for d, smallest, condition in rows:
+        print(f"  d={d}: smallest eigenvalue {smallest:.9e}, "
+              f"condition {condition:.6e}")
+    return rows
+
+
 def main():
+    rank_amplification_checks()
     assert np.all(2 * KAPPA[:, None] * THETA > SIGMA[:, None] ** 2)
     Bs = loadings(T)
     J = np.array([[quad(lambda t: Bs[j](t) * Bs[k](t), 0, T,
@@ -576,7 +655,8 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, rank, prior memory, pair cancellation, and ordered default")
+    print("PASS: positivity, sharp rank amplification, prior memory, pair "
+          "cancellation, and ordered default")
 
 
 if __name__ == "__main__":
