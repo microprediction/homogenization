@@ -427,7 +427,7 @@
       $O(m^{-2})$ approximation to the whole variance curve. Replacing either coefficient by a finite expansion
       still leaves a joint-limit error.</p>
 
-    <h2>The exact long-run third-cumulant slope</h2>
+    <h2>The exact long-run third-cumulant slope and intercept</h2>
     <p>The Poisson hierarchy closes one level further. Let
       $t_i=\mathbb E_{\Pi_m}[v^3\mathbf1_{\{Y=i\}}]$ and
       $C_m=mQ_0-3D_\kappa$. Stationarity gives the additional finite system</p>
@@ -452,17 +452,42 @@
     $$\lim_{T\to\infty}{\kappa_3(V_T)\over T}=:\tau_m
       =6\left\{(t-\mu_ms)u+(s-\mu_mr)p+(r-\mu_m\pi)q\right\}.$$
     </div>
-    <p>The factor six is the number of strict time orderings; exponential ergodicity makes the boundary pieces
-      $o(T)$. This is the next member of the additive-functional Poisson hierarchy used above and in
-      <a href="./bibliography.html#PardouxVeretennikov2001">Pardoux and Veretennikov (2001)</a>.</p>
+    <p>The same ordered-correlation representation also determines the bounded term exactly. Let
+      $R_m=(-\mathcal L_m)^{-1}$ denote the centered Poisson inverse, use the joint-centered representatives
+      $\phi^\circ=R_mg$ and $\psi^\circ=R_m(g\phi^\circ-c_2)$, and define</p>
+    $$\eta=R_m\phi^\circ,\qquad
+      \zeta=R_m\psi^\circ,\qquad
+      \omega=R_m\{g\eta-\mathbb E_{\Pi_m}[g\eta]\}.$$
+    <p>If $C_m(a,b)=\mathbb E_{\Pi_m}[g_0g_ag_{a+b}]$, stationarity and the six strict time orderings give</p>
+    $$\kappa_3(V_T)=6\int_{a,b\ge0,\ a+b\le T}(T-a-b)C_m(a,b)\,da\,db.$$
+    <p>Integrating each time gap in turn yields the exact decomposition</p>
+    <div class="equation-card">
+    $$\kappa_3(V_T)=\tau_mT+\chi_m+\rho_{3,m}(T),\qquad
+      \chi_m=-6\mathbb E_{\Pi_m}[g(\zeta+\omega)],$$
+    $$\rho_{3,m}(T)=6\int_{a+b>T}(a+b-T)C_m(a,b)\,da\,db.$$
+    </div>
+    <p>For each fixed $m&gt;0$, stability of the nonconstant degree-two polynomial semigroup gives constants
+      $C_m,\gamma_m&gt;0$ with
+      $|\rho_{3,m}(T)|\le C_m(1+T)e^{-\gamma_mT}$. The two terms in $\chi_m$ are distinct: $\zeta$ weights the
+      first time gap and $\omega$ weights the second. This is the next member of the additive-functional Poisson
+      hierarchy used above and in
+      <a href="./bibliography.html#PardouxVeretennikov2001">Pardoux and Veretennikov (2001)</a>.
+      The broader analytic-cumulant framework via multiplicative Poisson equations is developed by
+      <a href="./bibliography.html#KontoyiannisMeyn2003">Kontoyiannis and Meyn (2003)</a>; the formula here is a
+      direct continuous-time correlation calculation using switched-CIR polynomial closure.</p>
     <p>For the positive two-state benchmark, at $m=8,16,32,64,128$ the exact rates are
       $0.0000936333$, $0.0000915632$, $0.0000904367$, $0.0000898504$, and $0.0000895514$.
       They converge to the averaged-CIR value $0.0000892485$ at measured first order $0.991$.
       An independent degree-three polynomial semigroup, differenced between maturities 20 and 40, agrees within
       $2.7\times10^{-13}$; a nonreversible three-state check agrees within $9.5\times10^{-14}$. Omitting the
-      joint-invariant centering would change the $m=8$ answer by $0.0002367787$, more than twice the true rate.
-      The result identifies the exact slope only: no third-cumulant intercept, exponentially decaying remainder,
-      or maturity-uniform finite-$1/m$ approximation is claimed.</p>
+      joint-invariant centering would change the $m=8$ answer by $0.0002367787$, more than twice the true rate.</p>
+    <p>At the same speeds the exact intercepts are
+      $-0.0001359353$, $-0.0001318630$, $-0.0001297164$, $-0.0001286160$, and $-0.0001280592$.
+      They converge to the averaged-CIR value $-0.0001274979$ at measured order $0.994$.
+      At maturity 20, the independent degree-three semigroup matches $\tau_mT+\chi_m$ within
+      $3.6\times10^{-13}$; at maturity 10 the nonreversible three-state residual is $7.1\times10^{-14}$.
+      These are exact coefficients for each fixed $m$: no switching-rate-uniform third-cumulant remainder bound or
+      maturity-uniform finite-$1/m$ truncation is claimed.</p>
 
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
@@ -728,9 +753,10 @@
       only. Truncating the Poisson recursion at order $p$ instead gives a joint-limit result only through
       $T=O(m^{p-1})$. The two affine Poisson solves identify the exact long-run second-cumulant slope and intercept
       under joint stationarity. For every $m\ge m_0&gt;0$, their exact remainder has one switching-rate-uniform
-      exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform, and the
-      nested quadratic Poisson solve identifies the exact third-cumulant slope only. No third-cumulant intercept or
-      uniform remainder, fourth-cumulant long-run formula, or price-level extension is claimed.</li>
+      exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
+      polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
+      fixed-$m$ exponentially decaying remainder. No switching-rate-uniform third-cumulant envelope,
+      fourth-cumulant long-run formula, or price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>

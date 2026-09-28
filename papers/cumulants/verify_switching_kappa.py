@@ -278,6 +278,95 @@ def integrated_variance_third_rate(speed, q0, pi, c, kappa, variance):
     )
 
 
+def _pointwise_polynomial_product(left, right, states, degree):
+    """Multiply regimewise coefficient vectors, truncated at ``degree``."""
+    width = degree + 1
+    left_blocks = left.reshape(states, width)
+    right_blocks = right.reshape(states, width)
+    product = np.zeros_like(left_blocks)
+    for state in range(states):
+        product[state] = np.convolve(
+            left_blocks[state], right_blocks[state]
+        )[:width]
+    return product.ravel()
+
+
+def _centered_polynomial_poisson(generator, invariant, constant, forcing):
+    """Solve -L u=forcing with invariant mean zero in coefficient space."""
+    size = len(forcing)
+    bordered = np.zeros((size + 1, size + 1))
+    bordered[:size, :size] = -generator
+    bordered[:size, size] = constant
+    bordered[size, :size] = invariant
+    solution = np.linalg.solve(bordered, np.r_[forcing, 0.0])
+    assert abs(solution[size]) < 2e-12
+    assert np.linalg.norm(-generator @ solution[:size] - forcing) < 2e-11
+    assert abs(invariant @ solution[:size]) < 2e-12
+    return solution[:size]
+
+
+def integrated_variance_third_intercept(speed, q0, pi, c, kappa, variance):
+    """Exact bounded intercept in the stationary third cumulant.
+
+    Write R for the centered Poisson inverse and g=v-E[v].  With
+
+        phi=R g,  psi=R(g phi-E[g phi]),
+        eta=R phi, zeta=R psi,
+        omega=R(g eta-E[g eta]),
+
+    the third cumulant equals tau*T+chi+an exponentially decaying remainder,
+    where tau=6 E[g psi] and chi=-6 E[g(zeta+omega)].  Degree-three
+    polynomial closure evaluates every expectation and Poisson solve exactly.
+    """
+    degree = 3
+    width = degree + 1
+    states = len(pi)
+    a_c, a_kappa, a_variance, _ = polynomial_operators(degree)
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+    )
+    generator = full_generator(
+        speed * q0,
+        averaged,
+        [a_c, a_kappa, a_variance],
+        [c, kappa, variance],
+    )
+    first, second, third = stationary_cir_third_moments(
+        speed, q0, pi, c, kappa, variance
+    )
+    invariant = np.zeros(states * width)
+    for power, moments in enumerate((pi, first, second, third)):
+        invariant[power::width] = moments
+    constant = np.zeros(states * width)
+    constant[::width] = 1.0
+    mean = first.sum()
+    g = np.tile(np.array([-mean, 1.0, 0.0, 0.0]), states)
+
+    def product(left, right):
+        return _pointwise_polynomial_product(
+            left, right, states, degree
+        )
+
+    def center(function):
+        return function - (invariant @ function) * constant
+
+    def poisson(forcing):
+        return _centered_polynomial_poisson(
+            generator, invariant, constant, forcing
+        )
+
+    phi = poisson(g)
+    psi = poisson(center(product(g, phi)))
+    eta = poisson(phi)
+    zeta = poisson(psi)
+    omega = poisson(center(product(g, eta)))
+    third_rate = 6 * (invariant @ product(g, psi))
+    intercept = -6 * (invariant @ product(g, zeta + omega))
+    return intercept, third_rate
+
+
 def integrated_variance_intercept(speed, q0, pi, c, kappa, variance):
     """Exact bounded intercept in the stationary long-time variance.
 
@@ -1115,7 +1204,7 @@ def verify_long_run_variance_rate():
 
 
 def verify_long_run_third_cumulant_rate():
-    """Check the nested Poisson formula against a degree-three semigroup."""
+    """Check the third-cumulant slope and intercept Poisson formulas."""
     q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
     pi = np.array([0.5, 0.5])
     c = np.array([0.04, 0.16])
@@ -1131,8 +1220,18 @@ def verify_long_run_third_cumulant_rate():
         np.array([pi @ kappa]),
         np.array([pi @ variance]),
     )[0]
+    averaged_intercept = integrated_variance_third_intercept(
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        np.array([pi @ c]),
+        np.array([pi @ kappa]),
+        np.array([pi @ variance]),
+    )[0]
     exact_rates = []
+    exact_intercepts = []
     semigroup_errors = []
+    intercept_semigroup_errors = []
     uncentered_errors = []
     for speed in speeds:
         result = integrated_variance_third_rate(
@@ -1152,6 +1251,11 @@ def verify_long_run_third_cumulant_rate():
             _,
         ) = result
         exact_rates.append(exact)
+        intercept, intercept_rate = integrated_variance_third_intercept(
+            speed, q0, pi, c, kappa, variance
+        )
+        exact_intercepts.append(intercept)
+        assert abs(intercept_rate - exact) < 3e-14
         half_variance_rate = (
             alpha @ (second - mean * first)
             + centered_beta @ (first - mean * pi)
@@ -1170,11 +1274,20 @@ def verify_long_run_third_cumulant_rate():
         )
         independent_slope = (cumulant_40 - cumulant_20) / 20.0
         semigroup_errors.append(abs(independent_slope - exact))
+        intercept_semigroup_errors.append(
+            abs(cumulant_20 - exact * 20.0 - intercept)
+        )
 
     averaged_errors = np.abs(np.array(exact_rates) - averaged_rate)
     convergence_rate = rate(averaged_errors)
+    intercept_errors = np.abs(
+        np.array(exact_intercepts) - averaged_intercept
+    )
+    intercept_convergence_rate = rate(intercept_errors)
     assert 0.9 < convergence_rate < 1.1
+    assert 0.9 < intercept_convergence_rate < 1.1
     assert max(semigroup_errors) < 5e-13
+    assert max(intercept_semigroup_errors) < 5e-13
     assert min(uncentered_errors) > 2e-4
 
     # Repeat the exact formula on a nonreversible chain.  This also checks
@@ -1194,6 +1307,12 @@ def verify_long_run_third_cumulant_rate():
     nonreversible_rate = integrated_variance_third_rate(
         32.0, q3, pi3, c3, kappa3, variance3
     )[0]
+    nonreversible_intercept, nonreversible_intercept_rate = (
+        integrated_variance_third_intercept(
+            32.0, q3, pi3, c3, kappa3, variance3
+        )
+    )
+    assert abs(nonreversible_intercept_rate - nonreversible_rate) < 3e-14
     nonreversible_20 = stationary_integrated_third_cumulant(
         32.0, 20.0, q3, pi3, c3, kappa3, variance3
     )
@@ -1204,7 +1323,16 @@ def verify_long_run_third_cumulant_rate():
         (nonreversible_40 - nonreversible_20) / 20.0
         - nonreversible_rate
     )
+    nonreversible_10 = stationary_integrated_third_cumulant(
+        32.0, 10.0, q3, pi3, c3, kappa3, variance3
+    )
+    nonreversible_intercept_error = abs(
+        nonreversible_10
+        - 10.0 * nonreversible_rate
+        - nonreversible_intercept
+    )
     assert nonreversible_error < 2e-13
+    assert nonreversible_intercept_error < 2e-13
 
     print("5c. exact long-run integrated-variance third-cumulant rate")
     print(
@@ -1222,7 +1350,27 @@ def verify_long_run_third_cumulant_rate():
         f"   omitting joint-invariant centering changes the m=8 rate by "
         f"{uncentered_errors[0]:.10f}"
     )
-    return convergence_rate, max(semigroup_errors), nonreversible_error
+    print("5d. exact bounded third-cumulant intercept")
+    print(
+        "   chi_m: "
+        + " ".join(f"{value:.10f}" for value in exact_intercepts)
+    )
+    print(
+        f"   averaged limit {averaged_intercept:.10f}; convergence rate "
+        f"{intercept_convergence_rate:.3f}"
+    )
+    print(
+        f"   T=20 residual {max(intercept_semigroup_errors):.2e}; "
+        f"nonreversible T=10 residual {nonreversible_intercept_error:.2e}"
+    )
+    return (
+        convergence_rate,
+        max(semigroup_errors),
+        nonreversible_error,
+        intercept_convergence_rate,
+        max(intercept_semigroup_errors),
+        nonreversible_intercept_error,
+    )
 
 
 def verify_averaged_admissibility(pi, c, xi, rho):
@@ -1690,8 +1838,8 @@ def main():
         f"growing-window rate {expansion_rates[1][3]:.3f}, "
         f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
-        f"{uniform_remainder_results[0]:.1f}, third-rate convergence "
-        f"{third_rate_results[0]:.3f}"
+        f"{uniform_remainder_results[0]:.1f}, third rate/intercept convergence "
+        f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}"
     )
 
 

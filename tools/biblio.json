@@ -606,6 +606,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "KontoyiannisMeyn2003",
+  "authors": "Kontoyiannis, I. and Meyn, S. P.",
+  "year": 2003,
+  "title": "Spectral Theory and Limit Theorems for Geometrically Ergodic Markov Processes",
+  "venue": "Annals of Applied Probability 13(1):304-362",
+  "doi": "10.1214/aoap/1042765670",
+  "url": "https://doi.org/10.1214/aoap/1042765670",
+  "annotation": "Develops multiplicative Poisson equations and analytic cumulant limits for geometrically ergodic Markov processes; the switched-CIR calculation here obtains its third-cumulant coefficients directly from ordered correlations and polynomial closure."
+ },
+ {
+  "role": "survey_theory",
   "key": "SkorokhodHoppensteadtSalehi2002",
   "authors": "Skorokhod, A. V., Hoppensteadt, F. C. and Salehi, H.",
   "year": 2002,
