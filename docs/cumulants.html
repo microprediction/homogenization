@@ -663,8 +663,50 @@
       $3.5037228249\times10^{-8}$. Orders two through four agree with the separately derived formulas within
       $3.7\times10^{-19}$; for the averaged one-state CIR model, orders two through eight agree with the closed
       formula within $8.9\times10^{-15}$ relative error.</p>
+
+    <h3>The first inverse-speed coefficient at every fixed order</h3>
+    <p>The numerical $O(m^{-1})$ convergence above has a common analytic coefficient. Let
+      $P=\mathbf1\pi$ act on the regime coordinate, let $N=I-P$, and let
+      $B_\theta$ denote the order-one part of the tilted polynomial generator, including multiplication by
+      $\theta v$. On the polynomial space of any fixed target degree, eliminating the $N$ block gives the slow
+      Schur complement</p>
+    $$\bar{\mathcal L}+\theta M_v+\frac1m\mathcal D+O(m^{-2}),\qquad
+      \mathcal D=\sum_{r,s}K^{(0)}_{rs}A_rA_s.$$
+    <p>Indeed, $(Q_0|_N)^{-1}$ is $Q_0^\#$ on the fast block, and the first Schur term is
+      $-PB_\theta Q_0^\#B_\theta P$. The regime-free pieces of $B_\theta$ preserve the $P$ and $N$ blocks, so
+      only the centered switched coefficients survive; the result is precisely the Green&ndash;Kubo effective
+      generator $\mathcal D$ already used in the fixed-maturity expansion.</p>
+    <p>Let $\bar\Lambda(\theta)$ be the eigenvalue continuing zero for
+      $\bar{\mathcal L}+\theta M_v$, and choose its right and left eigenvectors
+      $\bar h_\theta,\bar\ell_\theta$ with
+      $\bar\ell_\theta\bar h_\theta=1$. Simple-eigenvalue perturbation then gives, locally in $\theta$,</p>
+    $$\Lambda_m(\theta)=\bar\Lambda(\theta)
+      +\frac1m\bar\ell_\theta\mathcal D\bar h_\theta+O(m^{-2}).$$
+    <p>Consequently, for every fixed $k\ge2$,</p>
+    <div class="equation-card">
+    $$\gamma_k(m)=\bar\gamma_k+\frac{\eta_k}{m}+O_k(m^{-2}),\qquad
+      \eta_k=\left.\partial_\theta^k
+      \{\bar\ell_\theta\mathcal D\bar h_\theta\}\right|_{\theta=0}.$$
+    </div>
+    <p>This identifies the missing finite-rate coefficient without solving the switched model at large $m$.
+      It is the finite-dimensional slow-fast reduction of
+      <a href="./bibliography.html#PhillipsKokotovic1981">Phillips and Kokotovic (1981)</a>, followed by the
+      isolated-eigenvalue perturbation of <a href="./bibliography.html#Kato1949">Kato (1949)</a>.</p>
+    <p>For the two-state benchmark, the coefficients $\eta_2,\ldots,\eta_8$ are</p>
+    $$6.3723448563\times10^{-4},\ 3.9014356263\times10^{-5},\
+      9.6013721909\times10^{-6},\ 2.8627286964\times10^{-6},\
+      9.1204361063\times10^{-7},\ 3.1438479819\times10^{-7},\
+      1.1821327917\times10^{-7}.$$
+    <p>The uncorrected residuals at $m=128,256$ have measured orders
+      $0.9981,0.9954,1.0018,1.0052,1.0083,1.0119,1.0163$; after subtracting
+      $\eta_k/m$, the orders are
+      $1.9991,1.9996,1.9897,1.9973,2.0003,2.0042,2.0652$.
+      Independently derived rational formulas for the stationary mean and second-cumulant slope reproduce
+      $\eta_1=-9/2450$ and $\eta_2=153/240100$ within $6.0\times10^{-18}$.</p>
     <p>This is an all-<em>fixed</em>-order statement. It supplies neither constants uniform in $k$, nor convergence
-      of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits.</p>
+      of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits. The long-maturity limit is
+      taken first; the displayed $O_k(m^{-2})$ rate expansion is not a maturity-uniform finite-$1/m$ approximation
+      to the finite-$T$ cumulant.</p>
 
     <h2>Arbitrary-start boundary constants at every fixed order</h2>
     <p>The same spectral representation also resolves the bounded term left open by the rate recursion. Normalize
@@ -991,9 +1033,11 @@
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
       polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
       fixed-$m$ exponentially decaying remainder. The centered-Poisson recursion identifies every fixed-order
-      long-run cumulant rate, and the Perron amplitude identifies its arbitrary-start boundary constant with a
-      fixed-$m$ exponential remainder. These results provide no order-uniform constants or switching-rate-uniform
-      higher-cumulant envelope. No price-level extension is claimed.</li>
+      long-run cumulant rate, the Green&ndash;Kubo effective generator identifies its first inverse-speed
+      coefficient with a fixed-order $O(m^{-2})$ residual, and the Perron amplitude identifies its arbitrary-start
+      boundary constant with a fixed-$m$ exponential remainder. These results provide no order-uniform constants,
+      switching-rate-uniform higher-cumulant envelope, or maturity-uniform finite-$1/m$ cumulant approximation.
+      No price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>

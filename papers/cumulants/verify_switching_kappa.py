@@ -497,6 +497,76 @@ def integrated_variance_cumulant_rates(
     return rates[1:], derivatives
 
 
+def cumulant_rate_first_corrections(
+    max_order, q0, pi, c, kappa, variance, radius=0.25, samples=256
+):
+    """First inverse-speed coefficients of the long-run cumulant rates.
+
+    On polynomials through degree max_order, eliminate the mean-zero regime
+    block of the tilted generator.  Its slow Schur complement is
+
+        Lbar + theta*M_v + epsilon*D + O(epsilon**2),
+
+    where epsilon=1/m and D=sum K_rs A_r A_s is the usual Green--Kubo
+    effective-generator correction.  If Lambda(theta, epsilon) is the
+    eigenvalue continuing zero, the returned values are
+
+        eta_k = d_theta^k d_epsilon Lambda(0, 0),  1 <= k <= max_order.
+
+    A Cauchy integral extracts the theta derivatives of the simple averaged
+    eigenvalue's first-order perturbation l_theta D h_theta.  The radius must
+    remain inside a neighborhood where that eigenvalue is simple.
+    """
+    if max_order < 1:
+        raise ValueError("max_order must be positive")
+    if samples <= 2 * max_order:
+        raise ValueError("samples must exceed twice max_order")
+    if radius <= 0:
+        raise ValueError("radius must be positive")
+    if not np.allclose(stationary(q0), pi, atol=2e-13):
+        raise ValueError("pi must be stationary for q0")
+
+    a_c, a_kappa, a_variance, multiply_v = polynomial_operators(max_order)
+    operators = [a_c, a_kappa, a_variance]
+    features = [c, kappa, variance]
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+    )
+    correction = effective_generator(
+        np.zeros_like(averaged), operators, gk(q0, features)
+    )
+
+    angles = 2 * np.pi * np.arange(samples) / samples
+    boundary_values = np.zeros(samples, dtype=complex)
+    for index, angle in enumerate(angles):
+        theta = radius * np.exp(1j * angle)
+        tilted = averaged.astype(complex) + theta * multiply_v
+        eigenvalues, right_vectors = eig(tilted)
+        branch = np.argmin(np.abs(eigenvalues))
+        eigenvalue = eigenvalues[branch]
+        right = right_vectors[:, branch]
+        left_values, left_vectors = eig(tilted.T)
+        left_branch = np.argmin(np.abs(left_values - eigenvalue))
+        left = left_vectors[:, left_branch]
+        pairing = left @ right
+        assert abs(pairing) > 1e-8
+        boundary_values[index] = left @ correction @ right / pairing
+
+    derivatives = np.zeros(max_order + 1)
+    imaginary_errors = []
+    for order in range(max_order + 1):
+        coefficient = np.mean(
+            boundary_values * np.exp(-1j * order * angles)
+        ) / radius**order
+        derivative = math.factorial(order) * coefficient
+        derivatives[order] = derivative.real
+        imaginary_errors.append(abs(derivative.imag))
+    assert max(imaginary_errors) < 2e-10
+    return derivatives[1:], correction
+
+
 def integrated_variance_boundary_constants(
     max_order, speed, q0, pi, c, kappa, variance,
     initial_regime=None, initial_variance=None,
@@ -1854,6 +1924,90 @@ def verify_all_fixed_order_cumulant_rates(max_order=8):
     return low_order_error, averaged_relative_error
 
 
+def verify_all_fixed_order_rate_corrections(max_order=8):
+    """Check the Green--Kubo first coefficient through fixed order eight."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    corrections, _ = cumulant_rate_first_corrections(
+        max_order, q0, pi, c, kappa, variance
+    )
+
+    # These two coefficients were obtained independently above: the exact
+    # stationary mean is rational in m, and so is the exact variance rate.
+    mean_coefficient_error = abs(corrections[0] + 9.0 / 2450.0)
+    variance_coefficient_error = abs(
+        corrections[1] - 153.0 / 240100.0
+    )
+    assert mean_coefficient_error < 2e-14
+    assert variance_coefficient_error < 2e-14
+
+    averaged_rates, _ = integrated_variance_cumulant_rates(
+        max_order,
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        np.array([pi @ c]),
+        np.array([pi @ kappa]),
+        np.array([pi @ variance]),
+    )
+    speeds = np.array([16, 32, 64, 128, 256], dtype=float)
+    uncorrected_errors = []
+    corrected_errors = []
+    scaled_second_remainders = []
+    for speed in speeds:
+        exact_rates, _ = integrated_variance_cumulant_rates(
+            max_order, speed, q0, pi, c, kappa, variance
+        )
+        uncorrected_errors.append(
+            np.abs(exact_rates[1:] - averaged_rates[1:])
+        )
+        remainder = (
+            exact_rates[1:]
+            - averaged_rates[1:]
+            - corrections[1:] / speed
+        )
+        corrected_errors.append(np.abs(remainder))
+        scaled_second_remainders.append(speed**2 * remainder)
+
+    uncorrected_errors = np.array(uncorrected_errors)
+    corrected_errors = np.array(corrected_errors)
+    uncorrected_rates = np.log2(
+        uncorrected_errors[-2] / uncorrected_errors[-1]
+    )
+    corrected_rates = np.log2(
+        corrected_errors[-2] / corrected_errors[-1]
+    )
+    assert np.all((uncorrected_rates > 0.9) & (uncorrected_rates < 1.1))
+    assert np.all((corrected_rates > 1.85) & (corrected_rates < 2.15))
+
+    print("5g. first inverse-speed coefficient of every fixed-order rate")
+    print(
+        f"   eta_2--eta_{max_order}: "
+        + " ".join(f"{value:.10e}" for value in corrections[1:])
+    )
+    print(
+        "   uncorrected residual orders: "
+        + " ".join(f"{value:.6f}" for value in uncorrected_rates)
+    )
+    print(
+        "   corrected residual orders:   "
+        + " ".join(f"{value:.6f}" for value in corrected_rates)
+    )
+    print(
+        f"   independent eta_1/eta_2 errors "
+        f"{mean_coefficient_error:.2e}/{variance_coefficient_error:.2e}"
+    )
+    return (
+        corrections,
+        uncorrected_rates,
+        corrected_rates,
+        np.array(scaled_second_remainders),
+    )
+
+
 def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     """Check fixed-order boundary constants for stationary and point starts."""
     q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -1907,7 +2061,7 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     assert recursion_errors["stationary"] < 2e-9
     assert recursion_errors["point"] < 2e-9
 
-    print("5g. all-fixed-order cumulant intercepts")
+    print("5h. all-fixed-order cumulant intercepts")
     for name in starts:
         print(
             f"   {name} orders 1--{max_order}: "
@@ -1992,6 +2146,9 @@ def main():
     third_rate_results = verify_long_run_third_cumulant_rate()
     fourth_rate_results = verify_long_run_fourth_cumulant_rate()
     all_order_rate_results = verify_all_fixed_order_cumulant_rates()
+    all_order_rate_correction_results = (
+        verify_all_fixed_order_rate_corrections()
+    )
     all_order_intercept_results = verify_all_fixed_order_cumulant_intercepts()
     q0 = np.array(
         [
@@ -2393,7 +2550,9 @@ def main():
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
         f"{uniform_remainder_results[0]:.1f}, third rate/intercept convergence "
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
-        f"fourth-rate convergence {fourth_rate_results[0]:.3f}"
+        f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
+        f"all-order corrected-rate floor "
+        f"{min(all_order_rate_correction_results[2]):.3f}"
     )
 
 
