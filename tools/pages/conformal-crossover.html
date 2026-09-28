@@ -304,6 +304,56 @@
       nonvacuous where the Chebyshev conversion is one and approaches the iid
       regime without an effective-sample-size substitution.</p>
 
+    <h3>The exact finite-state count law</h3>
+    <p>For a finite hidden state space, the entire order-statistic failure law
+      is available by a polynomial matrix recursion. This is sharper than a
+      moment inequality and does not require enumerating $2^n$ binary paths.
+      On a deterministic grid $t_1&lt;\cdots&lt;t_n$, let
+      $P_j=e^{mQ_0(t_{j+1}-t_j)}$, let
+      $f_i=F_i(q_p)$, and put</p>
+    $$D(z)=\operatorname{diag}(1-f+zf).$$
+    <p>If $S_n=\sum_{j=1}^n{\bf1}\{R_{t_j}\le q_p\}$ and the initial state
+      law is the row vector $\nu$, then conditional independence of the
+      emissions and the Markov property give the exact probability-generating
+      function</p>
+    <div class="equation-card">
+    $$G_n(z)=\mathbb E_\nu z^{S_n}
+      =\nu D(z)P_1D(z)\cdots P_{n-1}D(z){\bf1},$$
+    $$\Pr_\nu\{C_0&lt;p\}=\Pr_\nu\{S_n\ge k\}
+      =\sum_{s=k}^n[z^s]G_n(z).$$
+    </div>
+    <p>The first identity follows by conditioning successively on the hidden
+      states; it is the discrete finite-state Feynman&ndash;Kac product associated
+      with the transform method introduced by
+      <a href="https://doi.org/10.1090/S0002-9947-1949-0027960-X">Kac (1949)</a>.
+      Multiplying polynomial state rows computes every coefficient in
+      $O(n^2d^2)$ operations and $O(nd)$ memory for $d$ hidden states. Thus the
+      formula handles arbitrary deterministic spacings and arbitrary initial
+      laws directly. For $k=n$, its highest coefficient is simply the exact
+      all-success probability; this is why each $n=k=9$ failure probability in
+      the preceding table can be recovered without binary-path enumeration.</p>
+    <p>The same generating function also gives the computable exponential
+      bound</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k\}
+      \le \inf_{z&gt;1}z^{-k}G_n(z)
+      =\inf_{\theta&gt;0}e^{-k\theta}G_n(e^\theta).$$
+    </div>
+    <p>This Chernoff consequence is distribution-specific, unlike the
+      spectral-Cantelli envelope, but it can be substantially sharper. In the
+      same nonreversible model with scaled spacing $0.1$, $p=0.8$, $n=30$, and
+      $k=27$, the coefficient recursion gives exact failure probability
+      $0.187906264$. The optimized generating-function bound is $0.481299437$
+      at $\theta=0.55627313$, compared with the spectral-Cantelli bound
+      $0.727691942$. Independent enumeration verifies every coefficient for
+      $n=9$ within $2\times10^{-15}$, while the $n=30$ computation replaces
+      more than one billion binary paths by 31 coefficient rows.</p>
+    <p>These are probabilities over random calibration panels. Even when the
+      count law is computed exactly, the conclusion remains
+      training-conditional/PAC rather than pointwise or feature-conditional
+      conformal validity. Nor does the calculation justify replacing $n$ by
+      an effective sample size in an iid beta law.</p>
+
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.
       There is an explicit transfer to any initial regime law. Let the chain

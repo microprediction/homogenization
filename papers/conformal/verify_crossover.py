@@ -10,15 +10,17 @@ arbitrary initial regime law to a stationary calibration panel.  It also
 checks exact transient mean and variance identities for the empirical CDF.
 Irregular observation grids check the pairwise-kernel variance bound and
 show that substituting the average spacing can be anti-conservative.
-Finally, exact order-statistic enumeration checks the one-sided Cantelli
-conversion from the spectral variance bound to a training-panel PAC bound.
+Finally, an exact polynomial Feynman--Kac recursion computes the full count
+law, checks the one-sided Cantelli conversion from the spectral variance bound
+to a training-panel PAC bound, and supplies a sharper Chernoff certificate.
 """
 import itertools
 import math
 
 import numpy as np
 from scipy.linalg import expm
-from scipy.optimize import brentq
+from scipy.optimize import brentq, minimize_scalar
+from scipy.special import logsumexp
 
 TARGET = 0.9
 EPS = 0.2
@@ -96,8 +98,9 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
 
     At the population p-quantile, the event that the kth calibration order
     statistic lies below that quantile is the event that at least k binary
-    indicators are one.  Exact hidden-state enumeration therefore supplies
-    the failure probability without simulating either scores or ranks.
+    indicators are one.  The polynomial Feynman--Kac recursion therefore
+    supplies the failure probability without simulating scores or ranks and
+    without enumerating all 2**n binary paths.
     """
     target = 0.8
     n = k = 9
@@ -107,14 +110,22 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         50.0,
     )
     success = cdf_vector(q, scales)
-    counts = np.asarray([
-        sum(pattern) for pattern in itertools.product((0, 1), repeat=n)
-    ])
     rows = []
     for spacing in (0.05, 0.1, 0.2, 0.4, 0.8, 1.5):
         transition = expm(spacing * Q)
+        transitions = [transition] * (n - 1)
+        count_law = binary_count_distribution(pi, transitions, success)
+        exact_failure = count_law[k:].sum()
+
+        # Independent path enumeration certifies every coefficient of the
+        # dynamic program at this deliberately small n.
         law = binary_panel_law(pi, transition, success, n)
-        exact_failure = law[counts >= k].sum()
+        enumerated_count_law = aggregate_binary_count_law(law, n)
+        assert np.max(abs(count_law - enumerated_count_law)) < 2e-15
+        z = 1.17
+        pgf_matrix = binary_count_pgf(pi, transitions, success, z)
+        pgf_polynomial = count_law @ z ** np.arange(n + 1)
+        assert abs(pgf_matrix - pgf_polynomial) < 2e-14
         panel_mean, panel_variance = panel_moments_from_law(law, n)
         assert abs(panel_mean - target) < 5e-15
 
@@ -139,6 +150,92 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
             f"    {cantelli:8.6f}    {chebyshev:8.6f}"
         )
     print(f"  iid Beta(9,1) failure: {iid_failure:.9f}")
+
+    # A non-extreme order statistic gives a genuinely interior Chernoff
+    # optimizer.  This larger panel is cheap for the O(n^2 d^2) coefficient
+    # recursion but would require more than a billion binary paths.
+    large_n, large_k, spacing = 30, 27, 0.1
+    transition = expm(spacing * Q)
+    transitions = [transition] * (large_n - 1)
+    count_law = binary_count_distribution(pi, transitions, success)
+    exact_failure = count_law[large_k:].sum()
+    chernoff, tilt = chernoff_tail_bound(count_law, large_k)
+    a = math.exp(-gamma_s * spacing)
+    factor = finite_variance_factor(a, large_n)
+    variance_bound = target * (1 - target) * factor / large_n
+    rank_gap = large_k / large_n - target
+    cantelli = variance_bound / (variance_bound + rank_gap ** 2)
+    assert exact_failure <= chernoff <= cantelli
+    print("polynomial Feynman--Kac count law:")
+    print(f"  n={large_n}, k={large_k}, spacing={spacing:.2f},"
+          f" exact {exact_failure:.9f}, Chernoff {chernoff:.9f},"
+          f" Cantelli {cantelli:.9f}, tilt {tilt:.8f}")
+
+
+def binary_count_distribution(initial, transitions, success):
+    """Count law for finite-state binary emissions on any deterministic grid.
+
+    If ``D(z)=diag(1-success+z*success)``, the returned coefficients are those
+    of ``initial D(z) P_1 D(z) ... P_{n-1} D(z) 1``.  The recursion stores one
+    state row for each possible count and so avoids binary-path enumeration.
+    """
+    initial = np.asarray(initial)
+    success = np.asarray(success)
+    n = len(transitions) + 1
+    states = np.zeros((n + 1, len(initial)))
+    states[0] = initial * (1 - success)
+    states[1] = initial * success
+    for observation, transition in enumerate(transitions, start=1):
+        predicted = states @ transition
+        updated = np.zeros_like(states)
+        updated[:observation + 1] += (
+            predicted[:observation + 1] * (1 - success))
+        updated[1:observation + 2] += (
+            predicted[:observation + 1] * success)
+        states = updated
+    count_law = states.sum(axis=1)
+    assert abs(count_law.sum() - 1) < 2e-14
+    assert count_law.min() > -2e-15
+    return count_law
+
+
+def binary_count_pgf(initial, transitions, success, z):
+    """Evaluate the finite-state count probability-generating matrix."""
+    emission = 1 - success + z * success
+    forward = initial * emission
+    for transition in transitions:
+        forward = (forward @ transition) * emission
+    return forward.sum()
+
+
+def chernoff_tail_bound(count_law, k):
+    """Return inf_{theta>0} E exp(theta(S-k)) and its optimizing tilt."""
+    count_law = np.asarray(count_law)
+    n = len(count_law) - 1
+    assert 0 <= k <= n
+    if k == 0:
+        return 1.0, 0.0
+    if k == n:
+        return count_law[-1], math.inf
+    positive = count_law > 0
+    counts = np.arange(n + 1)[positive]
+    log_probabilities = np.log(count_law[positive])
+
+    def log_bound(theta):
+        return logsumexp(log_probabilities + theta * (counts - k))
+
+    result = minimize_scalar(log_bound, bounds=(0.0, 50.0), method="bounded",
+                             options={"xatol": 1e-13})
+    assert result.success
+    return min(1.0, math.exp(result.fun)), result.x
+
+
+def aggregate_binary_count_law(law, n):
+    """Aggregate a lexicographic 2**n binary-path law by success count."""
+    counts = np.asarray([
+        sum(pattern) for pattern in itertools.product((0, 1), repeat=n)
+    ])
+    return np.bincount(counts, weights=law, minlength=n + 1)
 
 
 def binary_panel_law(initial, P, success, n):
@@ -234,6 +331,11 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
     variance_bound = p * (1 - p) / n * pairwise_factor
     assert exact_variance <= variance_bound + 2e-14
     enumerated = binary_irregular_panel_law(pi, Q, success, times)
+    transitions = [expm((times[j + 1] - times[j]) * Q)
+                   for j in range(n - 1)]
+    count_law = binary_count_distribution(pi, transitions, success)
+    assert np.max(abs(count_law - aggregate_binary_count_law(
+        enumerated, n))) < 2e-15
     enumerated_mean, enumerated_variance = panel_moments_from_law(
         enumerated, n)
     assert abs(enumerated_mean - p) < 2e-15
@@ -569,9 +671,9 @@ def main():
     assert abs(empirical_var - predicted_var) / predicted_var < 0.07
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
-          " regular and irregular calibration variance, one-sided"
-          " order-statistic PAC conversion, nonstationary burn-in transfer,"
-          " and transient panel moments")
+          " regular and irregular calibration variance, exact polynomial"
+          " count law, one-sided order-statistic PAC conversion,"
+          " nonstationary burn-in transfer, and transient panel moments")
 
 
 if __name__ == "__main__":
