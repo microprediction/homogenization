@@ -458,6 +458,38 @@
     <p>Thus distinct sufficiently small maturities do identify a cyclic prior, but their
       determinant collapses at a precisely polynomial rate. This small-$\tau$ loss is
       different from the exponential loss at fixed positive maturities as $m\to\infty$.</p>
+    <p>The determinant gives the product of the singular values but not the actual noise
+      amplification. That hierarchy is also exact. Put
+      $C_\epsilon=[R(\epsilon c_1)\ \cdots\ R(\epsilon c_r)]$ and
+      $A_\epsilon=[{\bf1}\ C_\epsilon]$, and order singular values from largest to
+      smallest. Then, as $\epsilon\downarrow0$,</p>
+    <div class="equation-card">
+    $$\sigma_k(C_\epsilon)\asymp\epsilon^k\quad(1\le k\le r),\qquad
+      \sigma_{k+1}(A_\epsilon)\asymp\epsilon^k\quad(0\le k\le r),$$
+    $$\kappa(C_\epsilon)\asymp\epsilon^{-(r-1)},\qquad
+      \kappa(A_\epsilon)\asymp\epsilon^{-r}.$$
+    </div>
+    <p>Here $x_\epsilon\asymp y_\epsilon$ means their ratio stays between positive
+      constants depending on $Q_0,F$ and the fixed distinct $c_j$, but not on
+      $\epsilon$. The smallest singular value is therefore order $\epsilon^r$.
+      Consequently any fixed coordinate chart on the zero-sum prior contrasts has
+      worst-case observation-noise amplification of order $\epsilon^{-r}$, even though
+      its relative condition number is only order $\epsilon^{-(r-1)}$ after the
+      normalization direction has been removed.</p>
+    <p>The proof exposes the confluent Vandermonde structure. Cayley&ndash;Hamilton gives
+      an exact analytic factorization</p>
+    $$A_\epsilon
+      =K\,\operatorname{diag}(1,\epsilon,\ldots,\epsilon^r)
+       \{V(c)+O(\epsilon)\},$$
+    <p>where the lower-right block of $V(c)$ is
+      $[c_j^k/k!]_{k,j=1}^r$. It is invertible because the $c_j$ are positive and
+      distinct. Both outer factors remain uniformly invertible, so the standard
+      singular-value inequalities transfer the powers on the diagonal to
+      $A_\epsilon$; deleting the normalization column and using the centered Krylov
+      block gives the statement for
+      $C_\epsilon$. This is the small-node instability of Vandermonde inversion studied
+      classically by <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>,
+      here pulled back through the Krylov basis.</p>
 
     <h3>The $T=O(m^{-1})$ boundary layer</h3>
     <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
@@ -506,7 +538,10 @@
       $(0.25,0.8,1.9)$ recover the prior $(0.10,0.25,0.40,0.25)$ to $2\times10^{-13}$,
       while 32 random finite-chain cases verify equality of the sampled response and Krylov
       ranks. The normalized small-maturity determinant approaches its Vandermonde coefficient
-      with measured order $0.946$. For a four-state complete-graph generator, whose nonzero
+      with measured order $0.9725$. The four augmented singular values have measured exponents
+      $(0.000005,0.9823,1.9790,2.9838)$, while the response-only condition number has exponent
+      $2.0015$, verifying the full hierarchy rather than only its product.
+      For a four-state complete-graph generator, whose nonzero
       eigenvalue has multiplicity three, the scalar-feature response rank remains exactly one
       at every maturity, confirming the spectral obstruction.</p>
     <p>The all-maturities certificate adds a circulation to a four-state reversible chain.

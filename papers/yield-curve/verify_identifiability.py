@@ -214,18 +214,54 @@ def verify_krylov_observability():
     exponent = 6
     determinant_errors = []
     determinant_ratios = []
-    for epsilon in (0.2, 0.1, 0.05, 0.025, 0.0125):
+    augmented_singular_values = []
+    response_singular_values = []
+    for epsilon in (0.2, 0.1, 0.05, 0.025, 0.0125, 0.00625):
         small_response = transient_response_matrix(
             Q, centered, epsilon * scales)
-        determinant = np.linalg.det(
-            np.column_stack([np.ones(4), small_response]))
+        small_augmented = np.column_stack([np.ones(4), small_response])
+        determinant = np.linalg.det(small_augmented)
         ratio = determinant / (epsilon ** exponent * leading)
         determinant_ratios.append(ratio)
         determinant_errors.append(abs(ratio - 1.0))
+        augmented_singular_values.append(
+            np.linalg.svd(small_augmented, compute_uv=False))
+        response_singular_values.append(
+            np.linalg.svd(small_response, compute_uv=False))
     determinant_rate = math.log(
         determinant_errors[-2] / determinant_errors[-1], 2)
     assert determinant_errors[-1] < 0.075
     assert determinant_rate > 0.9
+
+    # The determinant is only the product.  The analytic Krylov-Vandermonde
+    # factorization gives the individual augmented orders 1, eps, ..., eps^r
+    # and response-only orders eps, ..., eps^r.  Thus normalization-inclusive
+    # conditioning grows as eps^-r, response-relative conditioning as
+    # eps^-(r-1), and absolute prior-recovery noise amplification as eps^-r.
+    augmented_rates = np.log2(
+        augmented_singular_values[-2] / augmented_singular_values[-1])
+    response_rates = np.log2(
+        response_singular_values[-2] / response_singular_values[-1])
+    expected_augmented_rates = np.arange(4)
+    expected_response_rates = np.arange(1, 4)
+    assert np.max(abs(augmented_rates - expected_augmented_rates)) < 0.03
+    assert np.max(abs(response_rates - expected_response_rates)) < 0.03
+    augmented_condition_rate = math.log(
+        (augmented_singular_values[-1][0]
+         / augmented_singular_values[-1][-1])
+        / (augmented_singular_values[-2][0]
+           / augmented_singular_values[-2][-1]),
+        2,
+    )
+    response_condition_rate = math.log(
+        (response_singular_values[-1][0]
+         / response_singular_values[-1][-1])
+        / (response_singular_values[-2][0]
+           / response_singular_values[-2][-1]),
+        2,
+    )
+    assert abs(augmented_condition_rate - 3) < 0.03
+    assert abs(response_condition_rate - 2) < 0.03
 
     # A repeated nonzero eigenvalue is a genuine scalar-feature obstruction.
     # The complete-graph generator has a three-dimensional eigenspace at -4;
@@ -248,6 +284,12 @@ def verify_krylov_observability():
     print(f"small-maturity normalized determinant: "
           f"{determinant_ratios[-1]:.8f}")
     print(f"normalized determinant convergence rate: {determinant_rate:.6f}")
+    print("small-maturity augmented singular-value rates: "
+          + " ".join(f"{rate:.6f}" for rate in augmented_rates))
+    print("small-maturity response singular-value rates: "
+          + " ".join(f"{rate:.6f}" for rate in response_rates))
+    print(f"augmented/response condition-number rates: "
+          f"{augmented_condition_rate:.6f}/{response_condition_rate:.6f}")
     print("repeated-eigenvalue scalar observability rank: 1")
 
 
