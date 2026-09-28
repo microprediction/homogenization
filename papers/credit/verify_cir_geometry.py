@@ -5,6 +5,9 @@ different CIR Riccati loadings give a rank-two integrated correction matrix.
 More generally, the Hadamard-rank bound is checked at every feasible pair of
 ranks through dimension eight, and positive-volatility CIR loadings make the
 integrated correction full rank through eight names despite only two regimes.
+For four nearly coalescing mean-reversion rates, a high-precision certificate
+checks the confluent-Vandermonde determinant constant, the eigenvalue powers
+0, 2, 4, 6, and the resulting sixth-power condition-number blow-up.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -16,6 +19,7 @@ bound for minimally identifying designs.
 """
 import math
 
+import mpmath as mp
 import numpy as np
 from scipy.integrate import quad, solve_ivp
 from scipy.linalg import expm
@@ -317,8 +321,101 @@ def rank_amplification_checks():
     return rows
 
 
+def coalescing_loading_checks():
+    """Certify the confluent-Vandermonde law for nearly equal loadings.
+
+    High precision is essential here: the smallest eigenvalue of a four-name
+    loading Gram matrix is order epsilon^6, while its determinant is order
+    epsilon^12.
+    """
+    mp.mp.dps = 70
+    dimension = 4
+    horizon = mp.mpf("4")
+    kappa0 = mp.mpf("2")
+    sigma = mp.mpf("0.02")
+    nodes = [mp.mpf(value) for value in ("-1.5", "-0.5", "0.5", "1.5")]
+
+    def loading(t, kappa):
+        gamma = mp.sqrt(kappa * kappa + 2 * sigma * sigma)
+        growth = mp.expm1(gamma * t)
+        return 2 * growth / ((gamma + kappa) * growth + 2 * gamma)
+
+    derivatives = [
+        lambda t, order=order: mp.diff(
+            lambda kappa: loading(t, kappa), kappa0, order
+        )
+        for order in range(dimension)
+    ]
+    derivative_gram = mp.matrix([
+        [mp.quad(lambda t, r=r, s=s:
+                 derivatives[r](t) * derivatives[s](t), [0, horizon])
+         for s in range(dimension)]
+        for r in range(dimension)
+    ])
+    vandermonde = mp.mpf(1)
+    for j in range(dimension):
+        for i in range(j):
+            vandermonde *= nodes[j] - nodes[i]
+    determinant_constant = (
+        vandermonde**2 * mp.det(derivative_gram)
+        / mp.fprod(mp.factorial(r)**2 for r in range(dimension))
+    )
+    assert determinant_constant > 0
+
+    epsilons = [mp.mpf(2) ** (-power) for power in range(3, 9)]
+    spectra = []
+    determinant_ratios = []
+    for epsilon in epsilons:
+        kappas = [kappa0 + epsilon * node for node in nodes]
+        gram = mp.matrix([
+            [mp.quad(lambda t, j=j, k=k:
+                     loading(t, kappas[j]) * loading(t, kappas[k]),
+                     [0, horizon])
+             for k in range(dimension)]
+            for j in range(dimension)
+        ])
+        eigenvalues = sorted(mp.eigsy(gram, eigvals_only=True), reverse=True)
+        assert eigenvalues[-1] > 0
+        spectra.append(eigenvalues)
+        determinant_ratios.append(
+            mp.det(gram) /
+            (epsilon ** (dimension * (dimension - 1))
+             * determinant_constant)
+        )
+
+    log_eps = np.log(np.array([float(value) for value in epsilons[-4:]]))
+    slopes = []
+    for index in range(dimension):
+        log_eigenvalue = np.log(np.array([
+            float(spectrum[index]) for spectrum in spectra[-4:]
+        ]))
+        slopes.append(float(np.polyfit(log_eps, log_eigenvalue, 1)[0]))
+    expected = 2 * np.arange(dimension)
+    assert np.max(abs(np.array(slopes) - expected)) < 0.08
+    assert abs(float(determinant_ratios[-1]) - 1) < 2e-4
+
+    condition_slopes = []
+    for left, right, epsilon_left, epsilon_right in zip(
+            spectra[:-1], spectra[1:], epsilons[:-1], epsilons[1:]):
+        condition_left = left[0] / left[-1]
+        condition_right = right[0] / right[-1]
+        condition_slopes.append(
+            mp.log(condition_right / condition_left)
+            / mp.log(epsilon_right / epsilon_left)
+        )
+    assert abs(float(condition_slopes[-1]) + 2 * (dimension - 1)) < 0.08
+
+    print("\ncoalescing CIR loading certificate")
+    print("  eigenvalue log-log slopes "
+          + " ".join(f"{slope:.6f}" for slope in slopes))
+    print(f"  determinant ratio {float(determinant_ratios[-1]):.12f}")
+    print(f"  condition-number slope {float(condition_slopes[-1]):.6f}")
+    return slopes, determinant_ratios, condition_slopes
+
+
 def main():
     rank_amplification_checks()
+    coalescing_loading_checks()
     assert np.all(2 * KAPPA[:, None] * THETA > SIGMA[:, None] ** 2)
     Bs = loadings(T)
     J = np.array([[quad(lambda t: Bs[j](t) * Bs[k](t), 0, T,

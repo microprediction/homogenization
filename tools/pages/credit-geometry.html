@@ -297,13 +297,64 @@
       can simultaneously be chosen with a uniform strict Feller margin.
       Therefore no bound depending only on the number of regimes survives
       after maturity integration.</p>
+
+    <h3>Full rank becomes singular at a quantified rate</h3>
+    <p>Algebraic full rank does not make nearby loading parameters stably
+      identifiable. This can be made sharp. Fix $T&gt;0$, a common
+      $\sigma\ge0$, distinct real numbers $x_1,\ldots,x_d$, and put
+      $\kappa_j=\kappa_0+\epsilon x_j$. Let $B_\kappa$ solve</p>
+    $$B_\kappa'=1-\kappa B_\kappa-\tfrac12\sigma^2B_\kappa^2,
+      \qquad B_\kappa(0)=0,$$
+    <p>and define $J_\epsilon=(\langle B_{\kappa_i},B_{\kappa_j}\rangle_{L^2[0,T]})$.
+      If its eigenvalues are ordered $\lambda_1\ge\cdots\ge\lambda_d$, then,
+      for fixed $d$ as $\epsilon\downarrow0$,</p>
+    <div class="equation-card">
+    $$\lambda_j(J_\epsilon)=\Theta(\epsilon^{2(j-1)}),\qquad
+      \operatorname{cond}_2J_\epsilon=\Theta(\epsilon^{-2(d-1)}).$$
+    </div>
+    <p>The leading determinant is explicit. With indices $r,s=0,\ldots,d-1$,
+      set</p>
+    $$G^{(d)}_{rs}=\int_0^T
+      \partial_\kappa^rB_{\kappa_0}(t)
+      \partial_\kappa^sB_{\kappa_0}(t)\,dt.$$
+    <p>Then</p>
+    <div class="equation-card">
+    $$\det J_\epsilon
+      =\epsilon^{d(d-1)}
+      \frac{\prod_{i&lt;j}(x_j-x_i)^2}{\prod_{r=0}^{d-1}(r!)^2}
+      \det G^{(d)}\{1+O(\epsilon)\}.$$
+    </div>
+    <p>To prove it, Taylor-expand the $d$ vectors $B_{\kappa_0+\epsilon x_j}$
+      in $L^2[0,T]$ and take their exterior product. Its first nonzero term is
+      the Vandermonde determinant times
+      $B_{\kappa_0}\wedge\partial_\kappa B_{\kappa_0}\wedge\cdots\wedge
+      \partial_\kappa^{d-1}B_{\kappa_0}$, with power
+      $\epsilon^{d(d-1)/2}$; squaring its norm gives the formula.
+      The derivative vectors are independent because the Riccati equation gives</p>
+    $$\partial_\kappa^rB_{\kappa_0}(t)
+      =\frac{(-1)^r}{r+1}t^{r+1}+O(t^{r+2}).$$
+    <p>Divided-difference column operations then give singular values of the
+      loading synthesis map of orders $1,\epsilon,\ldots,\epsilon^{d-1}$,
+      which proves the individual eigenvalue powers. This is the confluent
+      counterpart of the classical Vandermonde conditioning studied by
+      <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a>.
+      If $K=aa^\top$ with fixed nonzero coordinates, the congruence
+      $D_\epsilon=\operatorname{diag}(a)J_\epsilon\operatorname{diag}(a)$
+      has the same powers. Thus two regimes still give full integrated rank
+      for every $\epsilon&gt;0$, while the weakest identified direction
+      vanishes as $\epsilon^{2(d-1)}$. This is a fixed-$d$, fixed-$T$
+      statement; it is not uniform in the number of names or maturity.</p>
     <p>The certificate uses positive volatilities $\sigma_j=0.02$, distinct
       $\kappa_j$ between $0.2$ and $5$, and strict Feller mean levels for
       $2\le d\le8$. Every integrated matrix is full rank. At $d=8$ its
       smallest eigenvalue is $1.4691\times10^{-8}$ and its condition number is
       $6.7541\times10^9$. This is an important distinction: algebraic rank can
       be maximally amplified while statistical identification becomes
-      extremely ill-conditioned.</p>
+      extremely ill-conditioned. A separate 70-digit coalescence check at
+      $d=4$ finds eigenvalue log--log slopes
+      $(0.000316,2.000484,4.000156,5.999654)$, determinant ratio
+      $1.000021036$ against the displayed constant, and condition-number slope
+      $-5.999901$.</p>
 
     <h3>The explicit two-name benchmark</h3>
     <p>Take a symmetric two-state generator
