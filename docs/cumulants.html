@@ -590,6 +590,38 @@
       These are exact coefficients for each fixed $m$: no switching-rate-uniform third-cumulant remainder bound or
       maturity-uniform finite-$1/m$ truncation is claimed.</p>
 
+    <h2>The exact long-run fourth-cumulant slope</h2>
+    <p>The hierarchy also gives the fourth coefficient, but with a lower-cumulant subtraction that is easy to miss.
+      Let $h_\theta$ and $\lambda_m(\theta)$ be the locally analytic, normalized Feynman&ndash;Kac eigenpair</p>
+    $$(\mathcal L_m+\theta g)h_\theta=\lambda_m(\theta)h_\theta,qquad
+      \mathbb E_{\Pi_m}[h_\theta]=1.$$
+    <p>With the centered Poisson solutions above, put
+      $c_2=\mathbb E_{\Pi_m}[g\phi^\circ]$ and
+      $c_3=\mathbb E_{\Pi_m}[g\psi^\circ]=\tau_m/6$, and solve</p>
+    $$-\mathcal L_m\xi=g\psi^\circ-c_2\phi^\circ-c_3,qquad
+      \mathbb E_{\Pi_m}[\xi]=0.$$
+    <p>Differentiating the eigenvalue equation gives
+      $h'_0=\phi^\circ$, $h''_0=2\psi^\circ$, and $h'''_0=6\xi$. Therefore</p>
+    <div class="equation-card">
+    $$\lim_{T\to\infty}{\kappa_4(V_T)\over T}=:\upsilon_m
+      =\lambda_m^{(4)}(0)=24\mathbb E_{\Pi_m}[g\xi].$$
+    </div>
+    <p>The term $c_2\phi^\circ$ comes from the $3\lambda_m''(0)h'_0$ term in the third eigenfunction derivative;
+      merely centering $g\psi^\circ$ is wrong. The solution $\xi$ is cubic. If
+      $w_i=\mathbb E_{\Pi_m}[v^4\mathbf1_{\{Y=i\}}]$, its required invariant moments close with</p>
+    $$w(mQ_0-4D_\kappa)=-tD_{4c+6a}.$$
+    <p>No reversibility is used. Local eigenpair analyticity follows the isolated-eigenvalue perturbation method of
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>; the multiplicative-Poisson and asymptotic-cumulant
+      setting is treated more generally by
+      <a href="./bibliography.html#KontoyiannisMeyn2003">Kontoyiannis and Meyn (2003)</a>.</p>
+    <p>For the positive two-state benchmark, at $m=8,16,32,64,128$ the exact rates are
+      $0.0000103442$, $0.0000097177$, $0.0000094099$, $0.0000092577$, and $0.0000091822$.
+      They converge to the averaged-CIR value $0.0000091070$ at measured order $1.003$.
+      An independent degree-four semigroup agrees within $8.0\times10^{-13}$; a nonreversible three-state check
+      agrees within $8.4\times10^{-15}$. Omitting $c_2\phi^\circ$ changes the $m=8$ rate by
+      $0.0000102515$, nearly the full correct value. This theorem identifies the exact fourth-cumulant slope only:
+      no fourth-cumulant intercept, uniform remainder, or price-level extension is claimed.</p>
+
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
     $$d\langle W,B\rangle_t=\rho_{Y_t}dt,\qquad |\rho_i|\le1,\qquad
@@ -856,8 +888,9 @@
       under joint stationarity. For every $m\ge m_0&gt;0$, their exact remainder has one switching-rate-uniform
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
       polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
-      fixed-$m$ exponentially decaying remainder. No switching-rate-uniform third-cumulant envelope,
-      fourth-cumulant long-run formula, or price-level extension is claimed.</li>
+      fixed-$m$ exponentially decaying remainder. One further cubic Poisson solve identifies the exact
+      fourth-cumulant slope for each fixed $m$, but no fourth-cumulant intercept or remainder theorem is claimed.
+      No switching-rate-uniform third-cumulant envelope or price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -876,9 +909,9 @@
     contribution here is the exact switched-CIR covariance decomposition, its finite-rate Green&ndash;Kubo bound, the
     explicit joint-cumulant benchmark showing precisely which terms leverage adds, full-transform European option
     and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
-    $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and an exact
-    finite-rate formulas for the stationary second-cumulant slope and intercept and the third-cumulant slope in that
-    simultaneous-switching model. The damped
+    $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and exact
+    finite-rate formulas for the stationary second-cumulant slope and intercept, third-cumulant slope and intercept,
+    and fourth-cumulant slope in that simultaneous-switching model. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>

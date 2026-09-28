@@ -183,6 +183,18 @@ def stationary_cir_third_moments(speed, q0, pi, c, kappa, variance):
     return first, second, third
 
 
+def stationary_cir_fourth_moments(speed, q0, pi, c, kappa, variance):
+    """Regime-resolved invariant moments through order four."""
+    first, second, third = stationary_cir_third_moments(
+        speed, q0, pi, c, kappa, variance
+    )
+    fourth_drift = speed * q0 - 4 * np.diag(kappa)
+    fourth = np.linalg.solve(
+        fourth_drift.T, -((4 * c + 6 * variance) * third)
+    )
+    return first, second, third, fourth
+
+
 def integrated_variance_rate(speed, q0, pi, c, kappa, variance):
     """Exact long-run variance rate of int_0^T v_s ds under stationarity.
 
@@ -305,20 +317,8 @@ def _centered_polynomial_poisson(generator, invariant, constant, forcing):
     return solution[:size]
 
 
-def integrated_variance_third_intercept(speed, q0, pi, c, kappa, variance):
-    """Exact bounded intercept in the stationary third cumulant.
-
-    Write R for the centered Poisson inverse and g=v-E[v].  With
-
-        phi=R g,  psi=R(g phi-E[g phi]),
-        eta=R phi, zeta=R psi,
-        omega=R(g eta-E[g eta]),
-
-    the third cumulant equals tau*T+chi+an exponentially decaying remainder,
-    where tau=6 E[g psi] and chi=-6 E[g(zeta+omega)].  Degree-three
-    polynomial closure evaluates every expectation and Poisson solve exactly.
-    """
-    degree = 3
+def _stationary_polynomial_context(speed, q0, pi, c, kappa, variance, degree):
+    """Coefficient generator, invariant functional, constant, and centered v."""
     width = degree + 1
     states = len(pi)
     a_c, a_kappa, a_variance, _ = polynomial_operators(degree)
@@ -333,16 +333,43 @@ def integrated_variance_third_intercept(speed, q0, pi, c, kappa, variance):
         [a_c, a_kappa, a_variance],
         [c, kappa, variance],
     )
-    first, second, third = stationary_cir_third_moments(
-        speed, q0, pi, c, kappa, variance
-    )
+    moments = [pi]
+    for power in range(1, degree + 1):
+        drift = speed * q0 - power * np.diag(kappa)
+        lower = (
+            power * (c + 0.5 * (power - 1) * variance) * moments[-1]
+        )
+        moments.append(np.linalg.solve(drift.T, -lower))
     invariant = np.zeros(states * width)
-    for power, moments in enumerate((pi, first, second, third)):
-        invariant[power::width] = moments
+    for power, values in enumerate(moments):
+        invariant[power::width] = values
     constant = np.zeros(states * width)
     constant[::width] = 1.0
-    mean = first.sum()
-    g = np.tile(np.array([-mean, 1.0, 0.0, 0.0]), states)
+    mean = moments[1].sum()
+    g_block = np.zeros(width)
+    g_block[:2] = (-mean, 1.0)
+    g = np.tile(g_block, states)
+    return generator, invariant, constant, g
+
+
+def integrated_variance_third_intercept(speed, q0, pi, c, kappa, variance):
+    """Exact bounded intercept in the stationary third cumulant.
+
+    Write R for the centered Poisson inverse and g=v-E[v].  With
+
+        phi=R g,  psi=R(g phi-E[g phi]),
+        eta=R phi, zeta=R psi,
+        omega=R(g eta-E[g eta]),
+
+    the third cumulant equals tau*T+chi+an exponentially decaying remainder,
+    where tau=6 E[g psi] and chi=-6 E[g(zeta+omega)].  Degree-three
+    polynomial closure evaluates every expectation and Poisson solve exactly.
+    """
+    degree = 3
+    states = len(pi)
+    generator, invariant, constant, g = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, degree
+    )
 
     def product(left, right):
         return _pointwise_polynomial_product(
@@ -365,6 +392,59 @@ def integrated_variance_third_intercept(speed, q0, pi, c, kappa, variance):
     third_rate = 6 * (invariant @ product(g, psi))
     intercept = -6 * (invariant @ product(g, zeta + omega))
     return intercept, third_rate
+
+
+def integrated_variance_fourth_rate(speed, q0, pi, c, kappa, variance):
+    """Exact long-run fourth-cumulant rate of the integrated variance.
+
+    If R is the centered Poisson inverse and g=v-E[v], define
+
+        phi=R g,
+        c2=E[g phi],
+        psi=R(g phi-c2),
+        c3=E[g psi],
+        xi=R(g psi-c2 phi-c3).
+
+    Differentiating the normalized Feynman--Kac eigenpair through fourth
+    order gives lim_T kappa_4(int_0^T v_s ds)/T=24 E[g xi].  The subtraction
+    c2*phi is the lower-cumulant partition term and cannot be dropped.
+    """
+    degree = 4
+    states = len(pi)
+    generator, invariant, constant, g = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, degree
+    )
+
+    def product(left, right):
+        return _pointwise_polynomial_product(
+            left, right, states, degree
+        )
+
+    def center(function):
+        return function - (invariant @ function) * constant
+
+    def poisson(forcing):
+        return _centered_polynomial_poisson(
+            generator, invariant, constant, forcing
+        )
+
+    phi = poisson(g)
+    c2 = invariant @ product(g, phi)
+    psi = poisson(center(product(g, phi)))
+    c3 = invariant @ product(g, psi)
+    forcing = product(g, psi) - c2 * phi - c3 * constant
+    assert abs(invariant @ forcing) < 2e-12
+    xi = poisson(forcing)
+    fourth_rate = 24 * (invariant @ product(g, xi))
+
+    # This intentionally incorrect variant is returned for the certificate:
+    # centering g*psi alone omits the lower-cumulant partition c2*phi.
+    naive_xi = poisson(center(product(g, psi)))
+    naive_rate = 24 * (invariant @ product(g, naive_xi))
+    assert abs(invariant @ phi) < 2e-12
+    assert abs(invariant @ psi) < 2e-12
+    assert abs(invariant @ xi) < 2e-12
+    return fourth_rate, naive_rate
 
 
 def integrated_variance_intercept(speed, q0, pi, c, kappa, variance):
@@ -619,6 +699,46 @@ def stationary_integrated_third_cumulant(
         - 3 * second_raw * first_raw
         + 2 * first_raw**3
     )
+
+
+def stationary_integrated_fourth_cumulant(
+    speed, maturity, q0, pi, c, kappa, variance
+):
+    """Exact fourth cumulant from an independent degree-four semigroup."""
+    first, second, third, fourth = stationary_cir_fourth_moments(
+        speed, q0, pi, c, kappa, variance
+    )
+    basis, a_c, a_kappa, v_d_vv, v_d_z = integrated_variance_operators(4)
+    a_variance = 0.5 * v_d_vv
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+        + v_d_z
+    )
+    generator = full_generator(
+        speed * q0,
+        averaged,
+        [a_c, a_kappa, a_variance],
+        [c, kappa, variance],
+    )
+    initial = np.zeros(len(pi) * len(basis))
+    invariant_moments = (pi, first, second, third, fourth)
+    for state in range(len(pi)):
+        block = slice(state * len(basis), (state + 1) * len(basis))
+        for position, (v_power, z_power) in enumerate(basis):
+            if z_power == 0:
+                initial[block][position] = invariant_moments[v_power][state]
+
+    semigroup = expm(maturity * generator)
+    raw = []
+    for order in (1, 2, 3, 4):
+        payoff = np.zeros(len(basis))
+        payoff[basis.index((0, order))] = 1.0
+        raw.append(
+            initial @ semigroup @ np.kron(np.ones(len(pi)), payoff)
+        )
+    return cumulants(raw)[3]
 
 
 def spectral_mean_composite(speed, maturity, initial_components, q0, pi, c, kappa):
@@ -1373,6 +1493,93 @@ def verify_long_run_third_cumulant_rate():
     )
 
 
+def verify_long_run_fourth_cumulant_rate():
+    """Check the fourth eigenvalue derivative against a degree-four semigroup."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speeds = np.array([8, 16, 32, 64, 128], dtype=float)
+
+    averaged_rate = integrated_variance_fourth_rate(
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        np.array([pi @ c]),
+        np.array([pi @ kappa]),
+        np.array([pi @ variance]),
+    )[0]
+    exact_rates = []
+    semigroup_errors = []
+    naive_errors = []
+    for speed in speeds:
+        exact, naive = integrated_variance_fourth_rate(
+            speed, q0, pi, c, kappa, variance
+        )
+        exact_rates.append(exact)
+        naive_errors.append(abs(naive - exact))
+        cumulant_20 = stationary_integrated_fourth_cumulant(
+            speed, 20.0, q0, pi, c, kappa, variance
+        )
+        cumulant_40 = stationary_integrated_fourth_cumulant(
+            speed, 40.0, q0, pi, c, kappa, variance
+        )
+        independent_slope = (cumulant_40 - cumulant_20) / 20.0
+        semigroup_errors.append(abs(independent_slope - exact))
+
+    averaged_errors = np.abs(np.array(exact_rates) - averaged_rate)
+    convergence_rate = rate(averaged_errors)
+    assert 0.9 < convergence_rate < 1.1
+    assert max(semigroup_errors) < 1e-12
+    assert min(naive_errors) > 7e-6
+
+    q3 = np.array(
+        [
+            [-3.0, 2.7, 0.3],
+            [0.2, -2.2, 2.0],
+            [2.4, 0.4, -2.8],
+        ]
+    )
+    pi3 = stationary(q3)
+    kappa3 = np.array([1.1, 2.3, 3.0])
+    c3 = kappa3 * np.array([0.035, 0.080, 0.050])
+    variance3 = np.array([0.20, 0.25, 0.22]) ** 2
+    nonreversible_rate = integrated_variance_fourth_rate(
+        32.0, q3, pi3, c3, kappa3, variance3
+    )[0]
+    nonreversible_10 = stationary_integrated_fourth_cumulant(
+        32.0, 10.0, q3, pi3, c3, kappa3, variance3
+    )
+    nonreversible_20 = stationary_integrated_fourth_cumulant(
+        32.0, 20.0, q3, pi3, c3, kappa3, variance3
+    )
+    nonreversible_error = abs(
+        (nonreversible_20 - nonreversible_10) / 10.0
+        - nonreversible_rate
+    )
+    assert nonreversible_error < 2e-13
+
+    print("5e. exact long-run integrated-variance fourth-cumulant rate")
+    print(
+        "   upsilon_m: "
+        + " ".join(f"{value:.10f}" for value in exact_rates)
+    )
+    print(
+        f"   averaged limit {averaged_rate:.10f}; convergence rate "
+        f"{convergence_rate:.3f}"
+    )
+    print(
+        f"   degree-four semigroup discrepancy {max(semigroup_errors):.2e}; "
+        f"nonreversible discrepancy {nonreversible_error:.2e}"
+    )
+    print(
+        f"   omitting c2*phi changes the m=8 rate by "
+        f"{naive_errors[0]:.10f}"
+    )
+    return convergence_rate, max(semigroup_errors), nonreversible_error
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -1440,6 +1647,7 @@ def main():
     variance_rate_results = verify_long_run_variance_rate()
     uniform_remainder_results = verify_uniform_variance_remainder()
     third_rate_results = verify_long_run_third_cumulant_rate()
+    fourth_rate_results = verify_long_run_fourth_cumulant_rate()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -1839,7 +2047,8 @@ def main():
         f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
         f"{uniform_remainder_results[0]:.1f}, third rate/intercept convergence "
-        f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}"
+        f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
+        f"fourth-rate convergence {fourth_rate_results[0]:.3f}"
     )
 
 
