@@ -464,7 +464,55 @@
       $\rho(\theta)=e^{\Lambda(\theta)}$; every step uses the same fundamental
       matrix $Z$. This is the finite-dimensional positive-matrix specialization
       of <a href="./bibliography.html#Kato1949">Kato's (1949)</a> regular
-      eigenvalue perturbation method. More importantly,
+      eigenvalue perturbation method.</p>
+
+    <h3>Every finite-panel cumulant has an explicit boundary constant</h3>
+    <p>The limiting slopes above do not describe the complete fixed-order
+      asymptotics. Let $r_\theta$ and $\ell_\theta$ be analytic right and left
+      Perron eigenvectors of $M_\theta$, normalized by
+      $\ell_\theta^\top r_\theta=1$, and put</p>
+    $$A_\nu(\theta)=
+      \{\nu D(e^\theta)r_\theta\}
+      \{\ell_\theta^\top{\bf1}\}.$$
+    <p>The scalar $A_\nu$ is independent of the reciprocal rescaling of the
+      two eigenvectors. Positivity and the spectral gap give a complex
+      neighborhood of zero and constants $C&lt;\infty$, $0&lt;q&lt;1$ such that,
+      uniformly there,</p>
+    <div class="equation-card">
+    $$\log\mathbb E_\nu e^{\theta S_n}
+      =(n-1)\Lambda(\theta)+\log A_\nu(\theta)+R_{n,\nu}(\theta),
+      \qquad |R_{n,\nu}(\theta)|\le Cq^n,$$
+    $$\kappa_k(S_n)=n\kappa_{k,P}+\beta_{k,\nu}+O_k(q^n),
+      \qquad
+      \beta_{k,\nu}=
+      \left.\frac{d^k}{d\theta^k}
+      \{\log A_\nu(\theta)-\Lambda(\theta)\}\right|_{\theta=0}.$$
+    </div>
+    <p>This holds for every fixed $k$ and every initial probability law
+      $\nu$. It follows directly by inserting the analytic Perron projector
+      $r_\theta\ell_\theta^\top$ into the exact matrix MGF and differentiating
+      the uniform analytic remainder by Cauchy's formula. Thus the start-up
+      effect is an explicit order-one constant, followed by geometric decay;
+      it is not hidden in an unspecified $o(n)$ term.</p>
+    <p>For the nonreversible certificate, the stationary boundary constants
+      through order four are</p>
+    $$\beta_{1:4,\pi}=(0,
+      -0.196956872111,
+      0.737447302168,
+      -1.805249335882),$$
+    <p>so the second entry exactly recovers the Green&ndash;Kubo endpoint
+      intercept $\chi_P$. Starting instead from state zero gives</p>
+    $$\beta_{1:4,e_0}=(0.653945953614,
+      -0.925371653715,
+      1.430373003343,
+      -1.538351359308).$$
+    <p>At $n=60$, all eight constants agree with cumulants extracted
+      independently from the exact coefficient law within
+      $1.17\times10^{-8}$. These are fixed-$P$ boundary corrections in panel
+      size; they are unrelated to a joint limit that changes the switching
+      rate.</p>
+
+    <p>Finally,
       writing $v=\Lambda''(0)&gt;0$, analytic Legendre duality gives the
       two-sided local expansion through fourth order</p>
     <div class="equation-card">

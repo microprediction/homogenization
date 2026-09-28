@@ -17,7 +17,9 @@ certificate and the exact Perron large-deviation rate for long regular panels.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
-rate and the local expansion of the large-deviation rate function.
+rate and the local expansion of the large-deviation rate function.  A
+spectral-projector calculation also identifies the complete order-one
+boundary correction for every fixed cumulant order and every initial law.
 """
 import itertools
 import math
@@ -255,6 +257,29 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     iid_error = np.max(abs(
         iid_rates - np.asarray(iid_cumulants[1:]) / iid_panel_size))
     assert iid_error < 5e-8
+
+    # The Perron projector gives the entire O(1) boundary correction, not
+    # merely the stationary variance intercept.  Cauchy differentiation of
+    # that projector amplitude is independent of the coefficient recursion.
+    boundary_order = 4
+    boundary_rows = []
+    for label, initial in (("stationary", pi),
+                           ("state zero", np.array([1.0, 0.0, 0.0]))):
+        boundary = cauchy_derivatives(
+            lambda theta: perron_boundary_log_cgf(
+                transition, initial, success, theta),
+            boundary_order)
+        panel_size = 60
+        law = binary_count_distribution(
+            initial, [transition] * (panel_size - 1), success)
+        exact = discrete_cumulants(law, boundary_order)
+        finite_intercept = exact - panel_size * cumulant_rates
+        error = np.max(abs(boundary - finite_intercept))
+        assert error < 3e-8
+        boundary_rows.append((label, boundary, error))
+    assert abs(boundary_rows[0][1][0]) < 2e-11
+    assert abs(boundary_rows[0][1][1] - variance_intercept) < 2e-10
+
     third_step = 0.005
 
     def third_difference(step_size):
@@ -338,6 +363,10 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
           f" quadratic error {local_rows[1][2]:.3e},"
           f" cubic error {local_rows[1][3]:.3e},"
           f" quartic error {local_rows[1][4]:.3e}")
+    print("Perron boundary cumulants through order four:")
+    for label, boundary, error in boundary_rows:
+        formatted = ", ".join(f"{value:.12f}" for value in boundary)
+        print(f"  {label}: ({formatted}), n=60 max error {error:.3e}")
 
 
 def binary_count_distribution(initial, transitions, success):
@@ -384,6 +413,52 @@ def perron_log_cgf(transition, success, theta):
     rho = max(abs(eigenvalues))
     assert rho > 0
     return math.log(rho)
+
+
+def perron_boundary_log_cgf(transition, initial, success, theta):
+    """Order-one log-MGF boundary term for a regular binary panel.
+
+    The transpose, rather than the conjugate transpose, is intentional:
+    this function is evaluated at complex arguments for Cauchy derivatives.
+    The returned invariant is ``log(A_nu(theta))-log(rho(theta))`` where
+    ``A_nu=(nu D r)(ell^T 1)`` and ``ell^T r=1``.
+    """
+    emission = 1 - success + np.exp(theta) * success
+    tilted = transition @ np.diag(emission)
+    eigenvalues, right_vectors = np.linalg.eig(tilted)
+    index = np.argmin(abs(eigenvalues - 1))
+    rho = eigenvalues[index]
+    right = right_vectors[:, index]
+    left_values, left_vectors = np.linalg.eig(tilted.T)
+    left = left_vectors[:, np.argmin(abs(left_values - rho))]
+    left /= left @ right
+    amplitude = ((initial * emission) @ right) * (left @ np.ones(len(initial)))
+    return np.log(amplitude) - np.log(rho)
+
+
+def cauchy_derivatives(function, order, radius=0.025, points=128):
+    """Derivatives at zero of an analytic scalar function by Cauchy FFT."""
+    angles = 2 * np.pi * np.arange(points) / points
+    values = np.asarray([function(radius * np.exp(1j * angle))
+                         for angle in angles])
+    derivatives = []
+    for k in range(1, order + 1):
+        coefficient = np.mean(values * np.exp(-1j * k * angles)) / radius ** k
+        derivatives.append(math.factorial(k) * coefficient.real)
+    return np.asarray(derivatives)
+
+
+def discrete_cumulants(probabilities, order):
+    """Cumulants through ``order`` of an integer-valued coefficient law."""
+    values = np.arange(len(probabilities), dtype=float)
+    moments = [1.0] + [probabilities @ values ** k
+                       for k in range(1, order + 1)]
+    cumulants = [0.0]
+    for k in range(1, order + 1):
+        cumulants.append(moments[k] - sum(
+            math.comb(k - 1, j - 1) * cumulants[j] * moments[k - j]
+            for j in range(1, k)))
+    return np.asarray(cumulants[1:])
 
 
 def perron_variance_terms(transition, pi, success):
@@ -914,7 +989,8 @@ def main():
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
           " count law, Perron tail rate, Green--Kubo curvature, all-order"
-          " cumulants and local tail correction,"
+          " cumulants, arbitrary-start boundary constants and local tail"
+          " correction,"
           " one-sided order-statistic PAC"
           " conversion,"
           " nonstationary burn-in transfer, and transient panel moments")
