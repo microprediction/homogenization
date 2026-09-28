@@ -16,6 +16,8 @@ to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
+Its third derivative supplies the dependent-panel skewness rate and the cubic
+term in the local expansion of the large-deviation rate function.
 """
 import itertools
 import math
@@ -232,6 +234,57 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         print(f"  n={panel_size:2d} variance/n {variance_per_score:.12f},"
               f" exact remainder {remainder:.3e}")
 
+    third_rate = perron_third_cumulant_rate(transition, pi, success)
+    third_step = 0.005
+
+    def third_difference(step_size):
+        values = {j: perron_log_cgf(
+            transition, success, j * step_size) for j in (-2, -1, 1, 2)}
+        return (values[2] - 2 * values[1] + 2 * values[-1] - values[-2]
+                ) / (2 * step_size ** 3)
+
+    third_fine = third_difference(third_step)
+    third_coarse = third_difference(2 * third_step)
+    numerical_third = third_fine + (third_fine - third_coarse) / 3
+    assert abs(numerical_third - third_rate) < 2e-8
+    finite_third_rows = []
+    for panel_size in (30, 60, 120, 240, 480):
+        law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), success)
+        counts = np.arange(panel_size + 1)
+        mean = law @ counts
+        finite_third = law @ (counts - mean) ** 3 / panel_size
+        finite_third_rows.append((panel_size, finite_third))
+    assert abs(finite_third_rows[-1][1] - third_rate) < 0.002
+
+    local_rows = []
+    for delta in (0.04, 0.02, 0.01, 0.005):
+        exact_rate, _ = perron_tail_rate(
+            transition, success, target + delta)
+        quadratic = delta ** 2 / (2 * variance_rate)
+        cubic = (quadratic
+                 - third_rate * delta ** 3 / (6 * variance_rate ** 3))
+        local_rows.append(
+            (delta, exact_rate, abs(exact_rate - quadratic),
+             abs(exact_rate - cubic)))
+    deltas = np.array([row[0] for row in local_rows])
+    quadratic_errors = np.array([row[2] for row in local_rows])
+    cubic_errors = np.array([row[3] for row in local_rows])
+    quadratic_order = np.polyfit(
+        np.log(deltas), np.log(quadratic_errors), 1)[0]
+    cubic_order = np.polyfit(
+        np.log(deltas), np.log(cubic_errors), 1)[0]
+    assert quadratic_order > 3.0 and cubic_order > 4.0
+    print("Perron third cumulant and local rate expansion:")
+    print(f"  Lambda'''(0) {numerical_third:.12f},"
+          f" perturbation rate {third_rate:.12f},"
+          f" n=480 rate {finite_third_rows[-1][1]:.12f}")
+    print(f"  quadratic/cubic residual orders"
+          f" {quadratic_order:.6f}/{cubic_order:.6f}")
+    print(f"  delta=0.02 exact {local_rows[1][1]:.12f},"
+          f" quadratic error {local_rows[1][2]:.3e},"
+          f" cubic error {local_rows[1][3]:.3e}")
+
 
 def binary_count_distribution(initial, transitions, success):
     """Count law for finite-state binary emissions on any deterministic grid.
@@ -294,6 +347,31 @@ def perron_variance_terms(transition, pi, success):
         centered * (
             transition @ fundamental @ fundamental @ centered))
     return variance_rate, variance_intercept, fundamental, centered
+
+
+def perron_third_cumulant_rate(transition, pi, success):
+    """Third cumulant per observation from simple-root perturbation."""
+    dimension = len(pi)
+    identity = np.eye(dimension)
+    one = np.ones(dimension)
+    projector = np.outer(one, pi)
+    fundamental = np.linalg.inv(identity - transition + projector)
+    derivative = transition @ np.diag(success)
+    probability = pi @ success
+    first_vector = fundamental @ (
+        (derivative - probability * identity) @ one)
+    second_eigenvalue_derivative = (
+        probability + 2 * pi @ (derivative @ first_vector))
+    second_rhs = (
+        (derivative - second_eigenvalue_derivative * identity) @ one
+        + 2 * (derivative - probability * identity) @ first_vector)
+    second_vector = fundamental @ second_rhs
+    third_eigenvalue_derivative = (
+        probability + 3 * pi @ (derivative @ first_vector)
+        + 3 * pi @ (derivative @ second_vector))
+    return (third_eigenvalue_derivative
+            - 3 * probability * second_eigenvalue_derivative
+            + 2 * probability ** 3)
 
 
 def perron_tail_rate(transition, success, level):
@@ -773,7 +851,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate and Green--Kubo curvature,"
+          " count law, Perron tail rate, Green--Kubo curvature and local"
+          " skewness correction,"
           " one-sided order-statistic PAC"
           " conversion,"
           " nonstationary burn-in transfer, and transient panel moments")

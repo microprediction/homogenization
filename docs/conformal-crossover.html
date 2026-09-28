@@ -543,6 +543,46 @@
       panel-size asymptotic at fixed $P$, distinct from the fast-switching
       limit obtained by changing $m$.</p>
 
+    <h3>The third cumulant controls near-mean tail asymmetry</h3>
+    <p>The same simple-root perturbation gives an explicit third cumulant
+      rate. Put $B=P\operatorname{diag}(f)$ and normalize the right Perron
+      vector so that $\pi h_j=0$. If $\lambda_j$ denotes the $j$th derivative
+      at zero of the Perron root itself, then</p>
+    <div class="equation-card">
+    $$h_1=Z(B-pI){\bf1},\qquad
+      \lambda_2=p+2\pi Bh_1,$$
+    $$h_2=Z\{(B-\lambda_2I){\bf1}+2(B-pI)h_1\},$$
+    $$\lambda_3=p+3\pi Bh_1+3\pi Bh_2,\qquad
+      \kappa_{3,P}=\Lambda'''(0)
+      =\lambda_3-3p\lambda_2+2p^3.$$
+    </div>
+    <p>Consequently
+      $\lim_{n\to\infty}\kappa_3(S_n)/n=\kappa_{3,P}$. More importantly,
+      writing $v=\Lambda''(0)&gt;0$, analytic Legendre duality gives the
+      two-sided local expansion</p>
+    <div class="equation-card">
+    $$\theta_*(p+\delta)
+      =\frac{\delta}{v}-\frac{\kappa_{3,P}}{2v^3}\delta^2
+      +O(\delta^3),$$
+    $$I(p+\delta)
+      =\frac{\delta^2}{2v}
+      -\frac{\kappa_{3,P}}{6v^3}\delta^3+O(\delta^4).$$
+    </div>
+    <p>The quadratic term is the Green&ndash;Kubo Gaussian approximation; the
+      cubic term is the first dependent-panel skewness correction. This is a
+      Taylor consequence of the same G&auml;rtner&ndash;Ellis rate function above.
+      It is not a Bahadur&ndash;Rao prefactor, an Edgeworth approximation to a
+      finite-panel probability, or a joint limit in $n$ and $m$.</p>
+    <p>For the benchmark, $\kappa_{3,P}=-0.350878968118$, while Richardson
+      differentiation of the Perron root gives $-0.350878967774$ and the
+      exact coefficient law gives
+      $\kappa_3(S_{480})/480=-0.349342619570$. At $\delta=0.02$, the exact
+      rate is $0.000793937413$; adding the cubic term reduces the quadratic
+      approximation error from $2.7942\times10^{-5}$ to
+      $1.6583\times10^{-6}$. Across $\delta=0.04,0.02,0.01,0.005$, the
+      measured quadratic and cubic residual orders are respectively
+      $3.052856$ and $4.054585$.</p>
+
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.
       There is an explicit transfer to any initial regime law. Let the chain
