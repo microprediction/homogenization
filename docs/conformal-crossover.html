@@ -543,45 +543,57 @@
       panel-size asymptotic at fixed $P$, distinct from the fast-switching
       limit obtained by changing $m$.</p>
 
-    <h3>The third cumulant controls near-mean tail asymmetry</h3>
-    <p>The same simple-root perturbation gives an explicit third cumulant
-      rate. Put $B=P\operatorname{diag}(f)$ and normalize the right Perron
-      vector so that $\pi h_j=0$. If $\lambda_j$ denotes the $j$th derivative
-      at zero of the Perron root itself, then</p>
+    <h3>All Perron cumulants and near-mean tail asymmetry</h3>
+    <p>The same simple-root perturbation gives every limiting cumulant rate
+      by finite-dimensional linear algebra. Put
+      $B=P\operatorname{diag}(f)$, $r_0={\bf1}$, $a_0=1$, and
+      $\kappa_0=0$. For $k\ge1$, recursively define</p>
     <div class="equation-card">
-    $$h_1=Z(B-pI){\bf1},\qquad
-      \lambda_2=p+2\pi Bh_1,$$
-    $$h_2=Z\{(B-\lambda_2I){\bf1}+2(B-pI)h_1\},$$
-    $$\lambda_3=p+3\pi Bh_1+3\pi Bh_2,\qquad
-      \kappa_{3,P}=\Lambda'''(0)
-      =\lambda_3-3p\lambda_2+2p^3.$$
+    $$a_k=\sum_{j=1}^k {k\choose j}\pi B r_{k-j},$$
+    $$r_k=Z\sum_{j=1}^k {k\choose j}(B-a_jI)r_{k-j},
+      \qquad \pi r_k=0,$$
+    $$\kappa_{k,P}
+      =a_k-\sum_{j=1}^{k-1}{k-1\choose j-1}
+        \kappa_{j,P}a_{k-j}.$$
     </div>
-    <p>Consequently
-      $\lim_{n\to\infty}\kappa_3(S_n)/n=\kappa_{3,P}$. More importantly,
+    <p>Here $a_k=\rho^{(k)}(0)$ and
+      $\kappa_{k,P}=\Lambda^{(k)}(0)$, so for every fixed $k$ and every
+      initial state law,</p>
+    $$\lim_{n\to\infty}\frac{\kappa_k(S_n)}n=\kappa_{k,P}.$$
+    <p>The recursion follows by differentiating
+      $M_\theta r(\theta)=\rho(\theta)r(\theta)$ and
+      $\rho(\theta)=e^{\Lambda(\theta)}$; every step uses the same fundamental
+      matrix $Z$. This is the finite-dimensional positive-matrix specialization
+      of <a href="./bibliography.html#Kato1949">Kato's (1949)</a> regular
+      eigenvalue perturbation method. More importantly,
       writing $v=\Lambda''(0)&gt;0$, analytic Legendre duality gives the
-      two-sided local expansion</p>
+      two-sided local expansion through fourth order</p>
     <div class="equation-card">
-    $$\theta_*(p+\delta)
-      =\frac{\delta}{v}-\frac{\kappa_{3,P}}{2v^3}\delta^2
-      +O(\delta^3),$$
     $$I(p+\delta)
       =\frac{\delta^2}{2v}
-      -\frac{\kappa_{3,P}}{6v^3}\delta^3+O(\delta^4).$$
+      -\frac{\kappa_{3,P}}{6v^3}\delta^3
+      +\frac{3\kappa_{3,P}^2-v\kappa_{4,P}}{24v^5}\delta^4
+      +O(\delta^5).$$
     </div>
     <p>The quadratic term is the Green&ndash;Kubo Gaussian approximation; the
-      cubic term is the first dependent-panel skewness correction. This is a
-      Taylor consequence of the same G&auml;rtner&ndash;Ellis rate function above.
-      It is not a Bahadur&ndash;Rao prefactor, an Edgeworth approximation to a
-      finite-panel probability, or a joint limit in $n$ and $m$.</p>
-    <p>For the benchmark, $\kappa_{3,P}=-0.350878968118$, while Richardson
-      differentiation of the Perron root gives $-0.350878967774$ and the
-      exact coefficient law gives
-      $\kappa_3(S_{480})/480=-0.349342619570$. At $\delta=0.02$, the exact
-      rate is $0.000793937413$; adding the cubic term reduces the quadratic
-      approximation error from $2.7942\times10^{-5}$ to
-      $1.6583\times10^{-6}$. Across $\delta=0.04,0.02,0.01,0.005$, the
-      measured quadratic and cubic residual orders are respectively
-      $3.052856$ and $4.054585$.</p>
+      cubic and quartic terms are the first skewness and kurtosis corrections
+      for the dependent panel. This is a Taylor consequence of the same
+      G&auml;rtner&ndash;Ellis rate function above. It is not a
+      Bahadur&ndash;Rao prefactor, an Edgeworth approximation to a finite-panel
+      probability, or a joint limit in $n$ and $m$.</p>
+    <p>For the benchmark,
+      $(\kappa_{3,P},\kappa_{4,P})
+      =(-0.350878968118,0.328775644197)$. Richardson differentiation gives
+      $(-0.350878967774,0.328775569108)$, while the exact coefficient law at
+      $n=480$ gives $(-0.349342619570,0.325014708079)$. At $\delta=0.02$,
+      the exact rate is $0.000793937413$; the quadratic, cubic and quartic
+      errors are respectively $2.7942\times10^{-5}$,
+      $1.6583\times10^{-6}$ and $1.0070\times10^{-7}$. Across
+      $\delta=0.04,0.02,0.01,0.005,0.0025$, their measured residual orders
+      are $3.041083$, $4.042367$ and $5.047594$. In the iid specialization,
+      the recursion agrees with cumulants extracted independently from the
+      exact coefficient law through order eight, with maximum discrepancy
+      $3.32\times10^{-8}$.</p>
 
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.

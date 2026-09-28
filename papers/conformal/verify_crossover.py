@@ -16,8 +16,8 @@ to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
-Its third derivative supplies the dependent-panel skewness rate and the cubic
-term in the local expansion of the large-deviation rate function.
+An all-order eigenvector recursion supplies every dependent-panel cumulant
+rate and the local expansion of the large-deviation rate function.
 """
 import itertools
 import math
@@ -234,7 +234,27 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         print(f"  n={panel_size:2d} variance/n {variance_per_score:.12f},"
               f" exact remainder {remainder:.3e}")
 
-    third_rate = perron_third_cumulant_rate(transition, pi, success)
+    cumulant_rates = perron_cumulant_rates(transition, pi, success, 4)
+    third_rate, fourth_rate = cumulant_rates[2:4]
+    iid_order = 8
+    iid_transition = np.outer(np.ones(len(pi)), pi)
+    iid_rates = perron_cumulant_rates(
+        iid_transition, pi, success, iid_order)
+    iid_panel_size = 12
+    iid_law = binary_count_distribution(
+        pi, [iid_transition] * (iid_panel_size - 1), success)
+    iid_counts = np.arange(iid_panel_size + 1, dtype=float)
+    iid_moments = [1.0] + [iid_law @ iid_counts ** k
+                           for k in range(1, iid_order + 1)]
+    iid_cumulants = [0.0]
+    for k in range(1, iid_order + 1):
+        iid_cumulants.append(iid_moments[k] - sum(
+            math.comb(k - 1, j - 1)
+            * iid_cumulants[j] * iid_moments[k - j]
+            for j in range(1, k)))
+    iid_error = np.max(abs(
+        iid_rates - np.asarray(iid_cumulants[1:]) / iid_panel_size))
+    assert iid_error < 5e-8
     third_step = 0.005
 
     def third_difference(step_size):
@@ -247,43 +267,77 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     third_coarse = third_difference(2 * third_step)
     numerical_third = third_fine + (third_fine - third_coarse) / 3
     assert abs(numerical_third - third_rate) < 2e-8
+    fourth_step = 0.03
+
+    def fourth_difference(step_size):
+        values = [perron_log_cgf(
+            transition, success, j * step_size) for j in (-2, -1, 0, 1, 2)]
+        return (values[0] - 4 * values[1] + 6 * values[2]
+                - 4 * values[3] + values[4]) / step_size ** 4
+
+    fourth_fine = fourth_difference(fourth_step)
+    fourth_coarse = fourth_difference(2 * fourth_step)
+    numerical_fourth = fourth_fine + (fourth_fine - fourth_coarse) / 3
+    assert abs(numerical_fourth - fourth_rate) < 2e-6
     finite_third_rows = []
+    finite_fourth_rows = []
     for panel_size in (30, 60, 120, 240, 480):
         law = binary_count_distribution(
             pi, [transition] * (panel_size - 1), success)
         counts = np.arange(panel_size + 1)
         mean = law @ counts
-        finite_third = law @ (counts - mean) ** 3 / panel_size
+        centered_counts = counts - mean
+        second_moment = law @ centered_counts ** 2
+        finite_third = law @ centered_counts ** 3 / panel_size
+        finite_fourth = (
+            law @ centered_counts ** 4 - 3 * second_moment ** 2
+        ) / panel_size
         finite_third_rows.append((panel_size, finite_third))
+        finite_fourth_rows.append((panel_size, finite_fourth))
     assert abs(finite_third_rows[-1][1] - third_rate) < 0.002
+    assert abs(finite_fourth_rows[-1][1] - fourth_rate) < 0.004
 
     local_rows = []
-    for delta in (0.04, 0.02, 0.01, 0.005):
+    for delta in (0.04, 0.02, 0.01, 0.005, 0.0025):
         exact_rate, _ = perron_tail_rate(
             transition, success, target + delta)
         quadratic = delta ** 2 / (2 * variance_rate)
         cubic = (quadratic
                  - third_rate * delta ** 3 / (6 * variance_rate ** 3))
+        quartic = (
+            cubic
+            + (3 * third_rate ** 2 - variance_rate * fourth_rate)
+            * delta ** 4 / (24 * variance_rate ** 5))
         local_rows.append(
             (delta, exact_rate, abs(exact_rate - quadratic),
-             abs(exact_rate - cubic)))
+             abs(exact_rate - cubic), abs(exact_rate - quartic)))
     deltas = np.array([row[0] for row in local_rows])
     quadratic_errors = np.array([row[2] for row in local_rows])
     cubic_errors = np.array([row[3] for row in local_rows])
+    quartic_errors = np.array([row[4] for row in local_rows])
     quadratic_order = np.polyfit(
         np.log(deltas), np.log(quadratic_errors), 1)[0]
     cubic_order = np.polyfit(
         np.log(deltas), np.log(cubic_errors), 1)[0]
-    assert quadratic_order > 3.0 and cubic_order > 4.0
-    print("Perron third cumulant and local rate expansion:")
+    quartic_order = np.polyfit(
+        np.log(deltas), np.log(quartic_errors), 1)[0]
+    assert (quadratic_order > 3.0 and cubic_order > 4.0
+            and quartic_order > 5.0)
+    print("Perron cumulant recursion and local rate expansion:")
+    print(f"  iid recursion through order {iid_order}:"
+          f" maximum error {iid_error:.3e}")
     print(f"  Lambda'''(0) {numerical_third:.12f},"
           f" perturbation rate {third_rate:.12f},"
           f" n=480 rate {finite_third_rows[-1][1]:.12f}")
-    print(f"  quadratic/cubic residual orders"
-          f" {quadratic_order:.6f}/{cubic_order:.6f}")
+    print(f"  Lambda''''(0) {numerical_fourth:.12f},"
+          f" perturbation rate {fourth_rate:.12f},"
+          f" n=480 rate {finite_fourth_rows[-1][1]:.12f}")
+    print(f"  quadratic/cubic/quartic residual orders"
+          f" {quadratic_order:.6f}/{cubic_order:.6f}/{quartic_order:.6f}")
     print(f"  delta=0.02 exact {local_rows[1][1]:.12f},"
           f" quadratic error {local_rows[1][2]:.3e},"
-          f" cubic error {local_rows[1][3]:.3e}")
+          f" cubic error {local_rows[1][3]:.3e},"
+          f" quartic error {local_rows[1][4]:.3e}")
 
 
 def binary_count_distribution(initial, transitions, success):
@@ -349,29 +403,37 @@ def perron_variance_terms(transition, pi, success):
     return variance_rate, variance_intercept, fundamental, centered
 
 
-def perron_third_cumulant_rate(transition, pi, success):
-    """Third cumulant per observation from simple-root perturbation."""
+def perron_cumulant_rates(transition, pi, success, order):
+    """Cumulants per observation through ``order`` by Perron recursion."""
+    assert order >= 1
     dimension = len(pi)
     identity = np.eye(dimension)
     one = np.ones(dimension)
     projector = np.outer(one, pi)
     fundamental = np.linalg.inv(identity - transition + projector)
     derivative = transition @ np.diag(success)
-    probability = pi @ success
-    first_vector = fundamental @ (
-        (derivative - probability * identity) @ one)
-    second_eigenvalue_derivative = (
-        probability + 2 * pi @ (derivative @ first_vector))
-    second_rhs = (
-        (derivative - second_eigenvalue_derivative * identity) @ one
-        + 2 * (derivative - probability * identity) @ first_vector)
-    second_vector = fundamental @ second_rhs
-    third_eigenvalue_derivative = (
-        probability + 3 * pi @ (derivative @ first_vector)
-        + 3 * pi @ (derivative @ second_vector))
-    return (third_eigenvalue_derivative
-            - 3 * probability * second_eigenvalue_derivative
-            + 2 * probability ** 3)
+    vectors = [one]
+    eigenvalue_derivatives = [1.0]
+    cumulants = [0.0]
+    for k in range(1, order + 1):
+        eigenvalue_derivative = sum(
+            math.comb(k, j) * pi @ (derivative @ vectors[k - j])
+            for j in range(1, k + 1))
+        eigenvalue_derivatives.append(eigenvalue_derivative)
+        rhs = sum(
+            math.comb(k, j)
+            * (derivative - eigenvalue_derivatives[j] * identity)
+            @ vectors[k - j]
+            for j in range(1, k + 1))
+        vector = fundamental @ rhs
+        vector -= one * (pi @ vector)
+        vectors.append(vector)
+        cumulant = eigenvalue_derivatives[k] - sum(
+            math.comb(k - 1, j - 1)
+            * cumulants[j] * eigenvalue_derivatives[k - j]
+            for j in range(1, k))
+        cumulants.append(cumulant)
+    return np.asarray(cumulants[1:])
 
 
 def perron_tail_rate(transition, success, level):
@@ -851,8 +913,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate, Green--Kubo curvature and local"
-          " skewness correction,"
+          " count law, Perron tail rate, Green--Kubo curvature, all-order"
+          " cumulants and local tail correction,"
           " one-sided order-statistic PAC"
           " conversion,"
           " nonstationary burn-in transfer, and transient panel moments")
