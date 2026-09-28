@@ -526,8 +526,44 @@
       $5.1\times10^{-14}$ and $3.2\times10^{-13}$.</p>
     <p>This theorem identifies the exact stationary long-time slope and intercept, not a maturity-uniform
       $O(m^{-2})$ approximation to the whole variance curve. Replacing either coefficient by a finite expansion
-      still leaves a joint-limit error, and no uniform theorem for the third or fourth integrated-variance
-      cumulant is asserted.</p>
+      still leaves a joint-limit error.</p>
+
+    <h2>The exact long-run third-cumulant slope</h2>
+    <p>The Poisson hierarchy closes one level further. Let
+      $t_i=\mathbb E_{\Pi_m}[v^3\mathbf1_{\{Y=i\}}]$ and
+      $C_m=mQ_0-3D_\kappa$. Stationarity gives the additional finite system</p>
+    $$tC_m=-sD_{3(c+a)}.$$
+    <p>Put $g=v-\mu_m$ and center the first Poisson solution under the <em>joint</em> invariant law:</p>
+    $$\phi_i^\circ(v)=\alpha_iv+\beta_i^\circ,\qquad
+      \bar\phi_m=r\alpha+\pi\beta,\qquad
+      \beta^\circ=\beta-\bar\phi_m\mathbf1.$$
+    <p>This centering is essential: the convenient normalization $\pi\beta=0$ does not imply
+      $\mathbb E_{\Pi_m}\phi=0$. Define
+      $c_2=\mathbb E_{\Pi_m}[g\phi^\circ]=\sigma_m^2/2$ and solve the nested Poisson equation</p>
+    $$-\mathcal L_m\psi=g\phi^\circ-c_2,qquad
+      \psi_i(v)=u_iv^2+p_iv+q_i.$$
+    <p>Its coefficients again require only finite linear solves:</p>
+    $$B_mu=-\alpha,$$
+    $$A_mp=-(\beta^\circ-\mu_m\alpha)-D_{2c+a}u,$$
+    $$mQ_0q=\mu_m\beta^\circ+c_2\mathbf1-D_cp,qquad \pi q=0.$$
+    <p>Solvability of the last equation follows by taking the invariant expectation of the nested Poisson
+      equation. Ordering the three time arguments in the stationary third-correlation integral then gives the
+      exact, nonreversible formula</p>
+    <div class="equation-card">
+    $$\lim_{T\to\infty}{\kappa_3(V_T)\over T}=:\tau_m
+      =6\left\{(t-\mu_ms)u+(s-\mu_mr)p+(r-\mu_m\pi)q\right\}.$$
+    </div>
+    <p>The factor six is the number of strict time orderings; exponential ergodicity makes the boundary pieces
+      $o(T)$. This is the next member of the additive-functional Poisson hierarchy used above and in
+      <a href="./bibliography.html#PardouxVeretennikov2001">Pardoux and Veretennikov (2001)</a>.</p>
+    <p>For the positive two-state benchmark, at $m=8,16,32,64,128$ the exact rates are
+      $0.0000936333$, $0.0000915632$, $0.0000904367$, $0.0000898504$, and $0.0000895514$.
+      They converge to the averaged-CIR value $0.0000892485$ at measured first order $0.991$.
+      An independent degree-three polynomial semigroup, differenced between maturities 20 and 40, agrees within
+      $2.7\times10^{-13}$; a nonreversible three-state check agrees within $9.5\times10^{-14}$. Omitting the
+      joint-invariant centering would change the $m=8$ answer by $0.0002367787$, more than twice the true rate.
+      The result identifies the exact slope only: no third-cumulant intercept, exponentially decaying remainder,
+      or maturity-uniform finite-$1/m$ approximation is claimed.</p>
 
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
@@ -794,7 +830,8 @@
       $T=O(m^{p-1})$. The two affine Poisson solves identify the exact long-run second-cumulant slope and intercept
       under joint stationarity. For every $m\ge m_0&gt;0$, their exact remainder has one switching-rate-uniform
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform, and the
-      result does not extend here to the third and fourth cumulants or prices.</li>
+      nested quadratic Poisson solve identifies the exact third-cumulant slope only. No third-cumulant intercept or
+      uniform remainder, fourth-cumulant long-run formula, or price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -814,7 +851,8 @@
     explicit joint-cumulant benchmark showing precisely which terms leverage adds, full-transform European option
     and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
     $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and an exact
-    finite-rate formula for the stationary second-cumulant slope in that simultaneous-switching model. The damped
+    finite-rate formulas for the stationary second-cumulant slope and intercept and the third-cumulant slope in that
+    simultaneous-switching model. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>
