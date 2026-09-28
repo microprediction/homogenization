@@ -583,6 +583,25 @@
     $$\beta_{k,\nu}=
       \left.\partial_\theta^k\log A_\nu(\theta)\right|_{\theta=0}.$$
     </div>
+    <p>This expression is directly computable to any fixed order. Let
+      $\ell_k=\left.\partial_\theta^k\ell_\theta\right|_{\theta=0}$,
+      let $M_g$ denote multiplication by $g$, and retain the right derivatives $h_k$ and rates $\gamma_k$ from
+      the preceding recursion. Differentiating the left eigen-equation and its normalization gives</p>
+    <div class="equation-card">
+    $$\ell_k\mathcal L_m=-k\ell_{k-1}M_g
+      +\sum_{j=1}^k{k\choose j}\gamma_j\ell_{k-j},$$
+    $$\ell_k(1)=-\sum_{j=0}^{k-1}{k\choose j}\ell_j(h_{k-j}).$$
+    </div>
+    <p>Put $a_{k,\nu}=A_\nu^{(k)}(0)$, with $a_{0,\nu}=1$. Leibniz' rule and the standard
+      moment-to-cumulant recursion then give</p>
+    <div class="equation-card">
+    $$a_{k,\nu}=\sum_{j=0}^k{k\choose j}(\nu h_j)\ell_{k-j}(1),$$
+    $$\beta_{k,\nu}=a_{k,\nu}
+      -\sum_{j=1}^{k-1}{k-1\choose j-1}\beta_{j,\nu}a_{k-j,\nu}.$$
+    </div>
+    <p>On the switched-CIR polynomial space these are finite bordered linear solves. For a target order $K$, the
+      $K$-jet of the tilted semigroup involves only polynomials of degree at most $K$; no transform inversion or
+      long-maturity extrapolation is required.</p>
     <p>The statement holds for every fixed $k$ and includes nonstationary starts. For $k\ge2$, centering
       $V_T$ by its invariant mean changes neither side. At orders two and three under a stationary start, the
       amplitude derivatives recover exactly the explicit Poisson intercepts above. Unlike those special formulas,
@@ -597,9 +616,10 @@
     $$-2.4012500000\times10^{-2}, -2.1518297526\times10^{-3},
       -2.1323845463\times10^{-4}, -3.1012738350\times10^{-5},
       -6.1262794747\times10^{-6}, -1.5471882193\times10^{-6}.$$
-    <p>Computing $\kappa_k(V_T)-T\gamma_k$ independently at $T=20$ and $40$ changes these values by at most
-      $3.2\times10^{-14}$. The stationary order-two and order-three constants match the earlier explicit Poisson
-      formulas within $6.2\times10^{-16}$.</p>
+    <p>The explicit Perron recursion agrees with the independent $T=40$ polynomial semigroup within
+      $2.7\times10^{-15}$ for the stationary start and $2.3\times10^{-15}$ for the point start. Computing
+      $\kappa_k(V_T)-T\gamma_k$ at $T=20$ and $40$ changes the values by at most $3.2\times10^{-14}$. The stationary
+      order-two and order-three constants match the earlier explicit Poisson formulas within $6.2\times10^{-16}$.</p>
     <p>The constants and decay rate may depend on $k$, $m$, and $\nu$. No switching-rate-uniform higher-cumulant
       remainder, finite-$1/m$ maturity-uniform approximation, or price-level theorem follows from this result.</p>
 

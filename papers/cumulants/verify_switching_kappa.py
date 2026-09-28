@@ -485,8 +485,6 @@ def integrated_variance_cumulant_rates(
     rates = np.zeros(max_order + 1)
     for order in range(1, max_order + 1):
         rates[order] = order * (invariant @ product(g, derivatives[order - 1]))
-        if order == max_order:
-            break
         forcing = order * product(g, derivatives[order - 1])
         for index in range(1, order + 1):
             forcing -= (
@@ -497,6 +495,85 @@ def integrated_variance_cumulant_rates(
         assert abs(invariant @ forcing) < 2e-11
         derivatives.append(poisson(forcing))
     return rates[1:], derivatives
+
+
+def integrated_variance_boundary_constants(
+    max_order, speed, q0, pi, c, kappa, variance,
+    initial_regime=None, initial_variance=None,
+):
+    """Perron-amplitude cumulants from right/left derivative recursions."""
+    states = len(pi)
+    degree = max_order
+    generator, invariant, constant, g = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, degree
+    )
+    rates, right = integrated_variance_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance
+    )
+    size = len(constant)
+    multiply_g = np.zeros((size, size))
+    for column in range(size):
+        basis_vector = np.zeros(size)
+        basis_vector[column] = 1.0
+        multiply_g[:, column] = _pointwise_polynomial_product(
+            g, basis_vector, states, degree
+        )
+
+    left = [invariant]
+    for order in range(1, max_order + 1):
+        forcing = -order * (left[order - 1] @ multiply_g)
+        for index in range(1, order + 1):
+            forcing += (
+                math.comb(order, index)
+                * rates[index - 1]
+                * left[order - index]
+            )
+        normalization = -sum(
+            math.comb(order, index) * (left[index] @ right[order - index])
+            for index in range(order)
+        )
+        bordered = np.zeros((size + 1, size + 1))
+        bordered[:size, :size] = generator.T
+        bordered[:size, size] = invariant
+        bordered[size, :size] = constant
+        solution = np.linalg.solve(
+            bordered, np.r_[forcing, normalization]
+        )
+        assert abs(solution[size]) < 3e-10
+        assert np.linalg.norm(
+            solution[:size] @ generator - forcing
+        ) < 3e-9
+        left.append(solution[:size])
+
+    if initial_regime is None:
+        initial = invariant
+    else:
+        if initial_variance is None:
+            raise ValueError("initial_variance is required for a point start")
+        initial = np.zeros(size)
+        width = degree + 1
+        block = initial_regime * width
+        initial[block:block + width] = initial_variance ** np.arange(width)
+
+    amplitude_derivatives = np.ones(max_order + 1)
+    amplitude_derivatives[0] = 1.0
+    for order in range(1, max_order + 1):
+        amplitude_derivatives[order] = sum(
+            math.comb(order, index)
+            * (initial @ right[index])
+            * (left[order - index] @ constant)
+            for index in range(order + 1)
+        )
+    boundary = np.zeros(max_order + 1)
+    for order in range(1, max_order + 1):
+        boundary[order] = amplitude_derivatives[order]
+        for index in range(1, order):
+            boundary[order] -= (
+                math.comb(order - 1, index - 1)
+                * boundary[index]
+                * amplitude_derivatives[order - index]
+            )
+    return boundary[1:], amplitude_derivatives[1:], right, left
 
 
 def centered_integrated_cumulants(
@@ -1791,6 +1868,7 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
 
     intercepts = {}
     discrepancies = {}
+    recursion_errors = {}
     starts = {
         "stationary": {},
         "point": {"initial_regime": 0, "initial_variance": 0.04},
@@ -1806,6 +1884,10 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
         intercept_40 = cumulants_40 - 40.0 * rates
         intercepts[name] = intercept_40
         discrepancies[name] = np.max(np.abs(intercept_40 - intercept_20))
+        recursive, _, _, _ = integrated_variance_boundary_constants(
+            max_order, speed, q0, pi, c, kappa, variance, **start
+        )
+        recursion_errors[name] = np.max(np.abs(recursive - intercept_40))
 
     second_intercept = integrated_variance_intercept(
         speed, q0, pi, c, kappa, variance
@@ -1822,6 +1904,8 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     assert known_error < 2e-10
     assert discrepancies["stationary"] < 2e-9
     assert discrepancies["point"] < 2e-9
+    assert recursion_errors["stationary"] < 2e-9
+    assert recursion_errors["point"] < 2e-9
 
     print("5g. all-fixed-order cumulant intercepts")
     for name in starts:
@@ -1832,9 +1916,11 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     print(
         f"   T=20/40 discrepancy stationary/point "
         f"{discrepancies['stationary']:.2e}/{discrepancies['point']:.2e}; "
+        f"Perron-recursion discrepancy "
+        f"{recursion_errors['stationary']:.2e}/{recursion_errors['point']:.2e}; "
         f"known order-2/3 discrepancy {known_error:.2e}"
     )
-    return intercepts, discrepancies, known_error
+    return intercepts, discrepancies, recursion_errors, known_error
 
 
 def verify_averaged_admissibility(pi, c, xi, rho):
