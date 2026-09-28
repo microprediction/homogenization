@@ -304,6 +304,86 @@
       checks orders 1 to 6 at $p = 0.3$ against a 30-digit numerical solution. The
       <a href="https://github.com/microprediction/homogenize">homogenize</a> package implements both cases.</p>
 
+    <h2 id="thesis-dynamic-mean-erratum">Thesis erratum: the dynamic-mean kernel</h2>
+    <p>Chapter 3 of the linked 2001 thesis contains two distinct errors in its ``Dynamic Mean Vasicek''
+      approximation. They are historical source errata; the equations on this page already use the unambiguous
+      convention that $\lambda$ is the jump rate <em>out of each state</em>.</p>
+    <p>First, the thesis uses two incompatible meanings of $\lambda$. The generator printed on p. 85 has
+      off-diagonal rate $\lambda/2$, for which the centered state decays as $e^{-\lambda s}$ and the mean holding
+      time is $2/\lambda$. The numerical examples on pp. 125&ndash;128 instead call $\lambda$ the number of switches
+      per year. That is the convention</p>
+    $$Q=\lambda\begin{pmatrix}-1&amp;1\\1&amp;-1\end{pmatrix},\qquad
+      \mathbb E_i[Y_s]=\pm e^{-2\lambda s},$$
+    <p>with mean holding time $1/\lambda$. The factor of two changes prices, not just notation.</p>
+
+    <h3>The corrected remaining-maturity formula</h3>
+    <p>There is a separate reversal of time in Eq. (3.7). Let
+      $\theta_{1,2}=\bar\theta\pm\delta\tilde\theta$ and
+      $\sigma_{1,2}^2=\bar s\pm\delta\tilde s$, with fixed
+      $\lambda,\kappa,T&gt;0$. Define</p>
+    $$\tilde g(u)=-\kappa\tilde\theta B(u)+\tfrac12\tilde s B(u)^2,$$
+    $$H_\lambda(T)=\int_0^T e^{-2\lambda s}\tilde g(T-s)\,ds.$$
+    <p>The argument of $B$ is the maturity remaining after calendar time $s$. If $P_i^\delta(T,x)$ is the exact
+      switched bond price, differentiation of the two-state affine ODE at $\delta=0$ gives, as
+      $\delta\to0$ with all displayed parameters fixed,</p>
+    <div class="equation-card">
+    $$\frac12\log\frac{P_1^\delta(T,x)}{P_2^\delta(T,x)}
+      =\delta H_\lambda(T)+O(\delta^3).$$
+    </div>
+    <p>Indeed, writing the time-to-maturity regime factors as a column $a^\delta(t)$ and
+      $c=(1,-1)^\top$, their exact affine reduction is</p>
+    $$\dot a^\delta(t)=\{Q+f_0(t)I+\delta\tilde g(t)\operatorname{diag}(c)\}a^\delta(t),
+      \qquad a^\delta(0)=\mathbf 1.$$
+    <p>At $\delta=0$, $a^0(t)=a_0(t)\mathbf1$. Therefore
+      $z(t)=a_0(t)^{-1}\partial_\delta a^\delta(t)|_{\delta=0}$ satisfies
+      $\dot z=Qz+\tilde g(t)c$, $z(0)=0$. Since $Qc=-2\lambda c$, variation of constants and
+      $s=T-t$ give $z(T)=cH_\lambda(T)$. The common short-rate factor $e^{-B(T)x}$ cancels
+      from the price ratio.</p>
+    <p>The remainder is cubic because changing $\delta$ to $-\delta$ swaps the two states, so the log ratio is odd.
+      Equivalently, conditional parameter averaging gives</p>
+    $$\mathbb E_i[\theta(Y_s)]=\bar\theta\pm\delta\tilde\theta e^{-2\lambda s},\qquad
+      \mathbb E_i[\sigma^2(Y_s)]=\bar s\pm\delta\tilde s e^{-2\lambda s},$$
+    <p>and the deterministic time-inhomogeneous Vasicek formula is
+      $P_i^{\rm DM}=P_{\rm av}\exp(\pm\delta H_\lambda)$. Thus the corrected dynamic-mean approximation has the
+      exact first derivative in the regime contrast at every fixed switching rate and maturity. It is not claimed
+      to be exact at finite contrast.</p>
+    <p>The required integrals are closed form. For $p=1,2$ and $c&gt;0$,</p>
+    <div class="equation-card">
+    $$I_p(c;T)=\int_0^T e^{-cs}B(T-s)^p\,ds
+      =\frac1{\kappa^p}\sum_{j=0}^p(-1)^j{p\choose j}
+      \frac{e^{-j\kappa T}-e^{-cT}}{c-j\kappa},$$
+    $$H_\lambda(T)=-\kappa\tilde\theta I_1(2\lambda;T)
+      +\tfrac12\tilde s I_2(2\lambda;T).$$
+    </div>
+    <p>At a removable resonance $c=j\kappa$, the quotient is interpreted as $Te^{-cT}$. Eq. (3.7) instead uses
+      $e^{-\lambda s}B(s)$: it combines the p. 85 half-rate convention with elapsed rather than remaining
+      maturity.</p>
+
+    <h3>Checks against the printed examples</h3>
+    <p>Both examples use $\bar\theta=0.25$, $\tilde\theta=0.10$ and essentially constant volatility. The table
+      compares the magnitude of the thesis's dynamic-mean correction, the corrected value
+      $\sinh(|H_\lambda|)$, and the exact two-state affine ODE correction
+      $|a_2-a_1|/(2a_{\rm av})$.</p>
+    <table>
+      <thead><tr><th>Printed pages</th><th>$\lambda,\kappa,T$</th><th>Eq. (3.7)</th><th>Corrected</th><th>Exact switched ODE</th><th>Thesis simulation</th></tr></thead>
+      <tbody>
+        <tr><td>125&ndash;126</td><td>$5,2,15$</td><td>0.00571432</td><td>0.01000017</td><td>0.01014190</td><td>0.010020</td></tr>
+        <tr><td>127&ndash;128</td><td>$1,25,5$</td><td>0.09562519</td><td>0.05001837</td><td>0.05099521</td><td>0.0516</td></tr>
+      </tbody>
+    </table>
+    <p>The corrected kernel is close to the exact switched calculation in both cases; the printed kernel is on the
+      wrong side by factors of about two. The p. 128 table also reverses the sign of the correction although regime
+      1 has the higher mean level and therefore the cheaper bond. The time-scale row on p. 127 is carried over from
+      the preceding example: the stated parameters imply $1/\kappa=0.04$ and $T=5$, not $0.5$ and $15$.</p>
+    <p>The
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
+      checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
+      measured orders $2.999910$ and $2.999950$, and solves both exact switched ODEs. The affine bond structure is
+      the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
+      Markov-modulated mean-level model is treated by
+      <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page
+      evidence are recorded in <a href="https://github.com/microprediction/homogenization/issues/68">Issue #68</a>.</p>
+
     <p class="next-steps">A note setting out the derivation is in preparation.
     Comments and corrections are welcome through
     <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
