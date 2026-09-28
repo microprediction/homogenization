@@ -455,6 +455,55 @@
       conformal validity. Nor does the calculation justify replacing $n$ by
       an effective sample size in an iid beta law.</p>
 
+    <h3>Long regular panels: the exact exponential rate</h3>
+    <p>The generating matrix also resolves the large-panel limit, but only
+      when the spacing is fixed. Let $P=e^{mQ_0h}$ for $h&gt;0$, assume the
+      finite CTMC is irreducible, and suppose $0&lt;f_i&lt;1$ in every state.
+      Then $P$ and the tilted matrix below are strictly positive. Put</p>
+    $$M_\theta=P D(e^\theta),\qquad
+      \Lambda(\theta)=\log\rho(M_\theta),$$
+    <p>where $\rho$ is the Perron root. Since</p>
+    $$G_n(e^\theta)=\nu D(e^\theta)M_\theta^{n-1}{\bf1},$$
+    <p>Perron&ndash;Frobenius theory gives, for every initial state law $\nu$,</p>
+    <div class="equation-card">
+    $$\lim_{n\to\infty}\frac1n
+      \log\mathbb E_\nu e^{\theta S_n}=\Lambda(\theta),$$
+    $$I(x)=\sup_{\theta\in\mathbb R}
+      \{\theta x-\Lambda(\theta)\},\qquad
+      \lim_{n\to\infty}\frac1n\log
+      \Pr_\nu\{S_n/n\ge x\}=-I(x),\quad p&lt;x&lt;1,$$
+    </div>
+    <p>with $p=\pi f=\Lambda'(0)$. Positivity makes the Perron root simple and
+      analytic for every real $\theta$, so the differentiability hypothesis
+      in the G&auml;rtner&ndash;Ellis theorem is automatic. This is the finite-state
+      specialization of the primary large-deviation results of
+      <a href="https://doi.org/10.1137/1122003">G&auml;rtner (1977)</a> and
+      <a href="https://doi.org/10.1214/aop/1176993370">Ellis (1984)</a>.
+      For $x&gt;p$, the optimizing tilt is positive, and the finite-panel
+      Chernoff exponent converges to $I(x)$. In the iid specialization,
+      $\Lambda(\theta)=\log(1-p+pe^\theta)$ and $I$ reduces to the Bernoulli
+      relative entropy.</p>
+    <p>For the nonreversible certificate at scaled spacing $0.1$, $p=0.8$ and
+      $x=0.9$, the Perron calculation gives</p>
+    $$I(0.9)=0.023859569,\qquad \theta_*=0.545570879.$$
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th></tr></thead>
+      <tbody>
+        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td></tr>
+        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td></tr>
+        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td></tr>
+        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td></tr>
+        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The exact coefficients converge toward the predicted logarithmic rate;
+      the remaining finite-$n$ difference is a subexponential prefactor. This
+      theorem is for a fixed regular-grid transition matrix. The earlier
+      polynomial recursion remains exact on irregular grids, but no
+      single-matrix Perron rate is claimed there.</p>
+
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.
       There is an explicit transfer to any initial regime law. Let the chain

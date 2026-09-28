@@ -12,7 +12,8 @@ Irregular observation grids check the pairwise-kernel variance bound and
 show that substituting the average spacing can be anti-conservative.
 Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
-to a training-panel PAC bound, and supplies a sharper Chernoff certificate.
+to a training-panel PAC bound, and supplies both a finite-panel Chernoff
+certificate and the exact Perron large-deviation rate for long regular panels.
 """
 import itertools
 import math
@@ -171,6 +172,32 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
           f" exact {exact_failure:.9f}, Chernoff {chernoff:.9f},"
           f" Cantelli {cantelli:.9f}, tilt {tilt:.8f}")
 
+    # The same tilted matrix has a Perron eigenvalue that gives the exact
+    # long-panel logarithmic moment-generating function and large-deviation
+    # rate.  Coefficient recursion supplies independent finite-n tails.
+    tail_level = 0.9
+    asymptotic_rate, asymptotic_tilt = perron_tail_rate(
+        transition, success, tail_level)
+    assert abs(perron_log_cgf(transition, success, 0.0)) < 2e-15
+    derivative = (perron_log_cgf(transition, success, 1e-5)
+                  - perron_log_cgf(transition, success, -1e-5)) / 2e-5
+    assert abs(derivative - target) < 2e-10
+    rate_rows = []
+    for panel_size in (30, 60, 120, 240, 480):
+        law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), success)
+        threshold = math.ceil(tail_level * panel_size)
+        tail = law[threshold:].sum()
+        finite_rate = -math.log(tail) / panel_size
+        rate_rows.append((panel_size, tail, finite_rate))
+    assert abs(rate_rows[-1][2] - asymptotic_rate) < 0.005
+    print("Perron large-deviation rate at success fraction 0.9:")
+    for panel_size, tail, finite_rate in rate_rows:
+        print(f"  n={panel_size:3d} tail {tail:.10f},"
+              f" -log(tail)/n {finite_rate:.9f}")
+    print(f"  limiting rate {asymptotic_rate:.9f},"
+          f" optimizing tilt {asymptotic_tilt:.9f}")
+
 
 def binary_count_distribution(initial, transitions, success):
     """Count law for finite-state binary emissions on any deterministic grid.
@@ -206,6 +233,29 @@ def binary_count_pgf(initial, transitions, success, z):
     for transition in transitions:
         forward = (forward @ transition) * emission
     return forward.sum()
+
+
+def perron_log_cgf(transition, success, theta):
+    """Long-panel log MGF per observation from the tilted Perron root."""
+    emission = 1 - success + math.exp(theta) * success
+    tilted = transition @ np.diag(emission)
+    eigenvalues = np.linalg.eigvals(tilted)
+    rho = max(abs(eigenvalues))
+    assert rho > 0
+    return math.log(rho)
+
+
+def perron_tail_rate(transition, success, level):
+    """Legendre rate for an upper-tail success fraction above its mean."""
+    assert 0 < level < 1
+
+    def negative_rate(theta):
+        return perron_log_cgf(transition, success, theta) - theta * level
+
+    result = minimize_scalar(negative_rate, bounds=(0.0, 50.0),
+                             method="bounded", options={"xatol": 1e-13})
+    assert result.success and result.x > 0
+    return -result.fun, result.x
 
 
 def chernoff_tail_bound(count_law, k):
@@ -672,7 +722,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, one-sided order-statistic PAC conversion,"
+          " count law and Perron tail rate, one-sided order-statistic PAC"
+          " conversion,"
           " nonstationary burn-in transfer, and transient panel moments")
 
 
