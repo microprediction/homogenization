@@ -202,9 +202,28 @@
       $b_r=y^{(r)}_r$ for $r<d$, $b_d=-\sum_{r<d}b_r$, and</p>
     $$Ae_r=\frac{y^{(r)}-b}{\epsilon}\quad(r<d),\qquad
       Ae_d=b-\sum_{r<d}Ae_r.$$
-    <p>The $1/\epsilon$ factor is the unavoidable noise amplification visible in the exact singular value.
-      The certificate verifies the full singular spectrum for every $3\le d\le7$ and $1\le q\le d-1$,
-      and the explicit condition number and inverse for $3\le d\le8$.</p>
+    <p>The spectrum also solves the optimal-design problem. For the minimally identifying case $q=d-1$,
+      ordering the nonzero frame eigenvalues gives</p>
+    <div class="equation-card">
+    $$\kappa(\mathcal M_W)^2
+      =\frac{\lambda_1+\lambda_2}{\lambda_{d-1}}\ge2.$$
+    </div>
+    <p>Equality holds exactly when all $d-1$ nonzero frame eigenvalues agree. Equivalently,
+      $W^\top W=cI_{d-1}$: the design vectors are orthogonal and have equal norm. Strictly positive vectors
+      have strictly positive pairwise inner products, so every strictly positive minimal design has
+      $\kappa(\mathcal M_W)>\sqrt2$. The bound is nevertheless sharp. The family above satisfies</p>
+    $$\kappa(\mathcal M_W)^2
+      =2+\frac{2(d-1)}{\epsilon}+\frac{d(d-1)}{\epsilon^2}
+      \longrightarrow2.$$
+    <p>The same result has a minimax noise interpretation. If the total squared exposure is fixed at
+      $\|W\|_F^2=B$, then</p>
+    $$\sigma_{\min}(\mathcal M_W)^2=\lambda_{d-1}\le\frac{B}{d-1}.$$
+    <p>Equality has the same tight-frame condition and is therefore unattainable under strict positivity but
+      approached by a common rescaling of the positive family as $\epsilon\to\infty$. Hence positivity creates
+      no gap in the infimum, only nonattainment at the boundary where distinct causes become coordinate-isolated.
+      The $1/\epsilon$ factor for small $\epsilon$ is the opposite, coalescing-design instability.</p>
+    <p>The certificate verifies the full singular spectrum for every $3\le d\le7$ and $1\le q\le d-1$,
+      the explicit condition number and inverse for $3\le d\le8$, and both sharp optimal-design bounds.</p>
     <p>A sharp three-cause example uses the same directed three-state cycle and cyclic hazards</p>
     $$h_1=(0.07,0.01,0.01),\quad h_2=(0.01,0.07,0.01),\quad
       h_3=(0.01,0.01,0.07).$$

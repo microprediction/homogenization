@@ -7,7 +7,9 @@ and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
 already identify the antisymmetric Green--Kubo component.  The multi-cause
 check proves that d-1 independent exposure designs are necessary and
-sufficient to identify a d-by-d antisymmetric component.
+sufficient to identify a d-by-d antisymmetric component.  It also verifies
+the sharp square-root-two conditioning infimum and the fixed-exposure minimax
+bound for minimally identifying designs.
 """
 import math
 
@@ -439,6 +441,8 @@ def main():
     # quantifies the instability as the designs collapse toward one vector.
     maximum_condition_error = 0.0
     maximum_recovery_error = 0.0
+    maximum_limit_error = 0.0
+    maximum_budget_error = 0.0
     example_condition = None
     for d in range(3, 9):
         random_matrix = rng.normal(size=(d, d))
@@ -462,9 +466,69 @@ def main():
             )
             if d == 6 and epsilon == 0.5:
                 example_condition = condition
+
+        # For q=d-1, kappa >= sqrt(2). Equality requires equal nonzero
+        # frame eigenvalues, hence equal-norm orthogonal design columns. No
+        # strictly positive columns can attain it, but the explicit family
+        # approaches it as epsilon grows. Under ||W||_F^2=1, the matching
+        # minimax bound is sigma_min <= 1/sqrt(d-1).
+        previous_condition = math.inf
+        previous_budget_sigma = 0.0
+        for epsilon in (1.0, 10.0, 100.0, 1000.0):
+            explicit_designs = near_simplex_designs(d, epsilon)
+            measurement, _ = skew_measurement_matrix(explicit_designs)
+            singular_values = np.linalg.svd(measurement, compute_uv=False)
+            condition = singular_values[0] / singular_values[-1]
+            assert condition > math.sqrt(2)
+            assert condition < previous_condition
+            previous_condition = condition
+            predicted_square = (
+                2
+                + 2 * (d - 1) / epsilon
+                + d * (d - 1) / epsilon**2
+            )
+            maximum_limit_error = max(
+                maximum_limit_error, abs(condition**2 - predicted_square)
+            )
+
+            design_matrix = np.column_stack(explicit_designs)
+            normalized_designs = [
+                w / np.linalg.norm(design_matrix) for w in explicit_designs
+            ]
+            normalized_measurement, _ = skew_measurement_matrix(
+                normalized_designs
+            )
+            budget_sigma = np.linalg.svd(
+                normalized_measurement, compute_uv=False
+            )[-1]
+            assert budget_sigma < 1 / math.sqrt(d - 1)
+            assert budget_sigma > previous_budget_sigma
+            previous_budget_sigma = budget_sigma
+            predicted_budget_sigma = epsilon / math.sqrt(
+                (d - 1) * (epsilon**2 + 2 * epsilon + d)
+            )
+            maximum_budget_error = max(
+                maximum_budget_error,
+                abs(budget_sigma - predicted_budget_sigma),
+            )
+
+        # The nonnegative boundary design e_1,...,e_{d-1} attains both
+        # bounds exactly. It is excluded only by strict positivity.
+        boundary_designs = [np.eye(d)[r] for r in range(d - 1)]
+        boundary_measurement, _ = skew_measurement_matrix(boundary_designs)
+        boundary_singular_values = np.linalg.svd(
+            boundary_measurement, compute_uv=False
+        )
+        assert abs(
+            boundary_singular_values[0] / boundary_singular_values[-1]
+            - math.sqrt(2)
+        ) < 2e-15
+        assert abs(boundary_singular_values[-1] - 1.0) < 2e-15
     assert maximum_spectrum_error < 2e-13
     assert maximum_condition_error < 2e-12
     assert maximum_recovery_error < 2e-13
+    assert maximum_limit_error < 2e-12
+    assert maximum_budget_error < 2e-13
 
     # In dimension three, two positive independent designs recover A.  The
     # single equal-weight design is already the sharp d-2 counterexample:
@@ -506,6 +570,10 @@ def main():
         f"   frame-spectrum error {maximum_spectrum_error:.2e}; "
         f"near-simplex recovery error {maximum_recovery_error:.2e}; "
         f"d=6, epsilon=0.5 condition {example_condition:.6f}"
+    )
+    print(
+        f"   optimal-design errors: condition {maximum_limit_error:.2e}; "
+        f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
     print("PASS: positivity, rank, prior memory, pair cancellation, and ordered default")
