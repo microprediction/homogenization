@@ -263,6 +263,47 @@ def verify_krylov_observability():
     assert abs(augmented_condition_rate - 3) < 0.03
     assert abs(response_condition_rate - 2) < 0.03
 
+    # The leading constants are explicit, not merely bounded.  If K=U R is
+    # a QR factorization and V=L W is an LQ factorization of the leading
+    # coefficient matrix, then sigma_{k+1}(K D_eps V)/eps^k tends to
+    # |R_kk L_kk|.  The same construction applies after deleting the
+    # normalization direction.
+    coefficient_block = np.vstack([
+        scales ** k / math.factorial(k) for k in range(1, 4)
+    ])
+    coefficient_matrix = np.zeros((4, 4))
+    coefficient_matrix[0, 0] = 1.0
+    coefficient_matrix[1:, 1:] = coefficient_block
+
+    _, augmented_krylov_triangular = np.linalg.qr(augmented_krylov)
+    _, augmented_coefficient_transpose_triangular = np.linalg.qr(
+        coefficient_matrix.T)
+    augmented_coefficient_lower = (
+        augmented_coefficient_transpose_triangular.T)
+    predicted_augmented_constants = abs(
+        np.diag(augmented_krylov_triangular)
+        * np.diag(augmented_coefficient_lower))
+
+    _, krylov_triangular = np.linalg.qr(krylov)
+    _, coefficient_transpose_triangular = np.linalg.qr(
+        coefficient_block.T)
+    coefficient_lower = coefficient_transpose_triangular.T
+    predicted_response_constants = abs(
+        np.diag(krylov_triangular) * np.diag(coefficient_lower))
+
+    measured_augmented_constants = (
+        augmented_singular_values[-1]
+        / (0.00625 ** np.arange(4)))
+    measured_response_constants = (
+        response_singular_values[-1]
+        / (0.00625 ** np.arange(1, 4)))
+    augmented_constant_relative_errors = abs(
+        measured_augmented_constants / predicted_augmented_constants - 1.0)
+    response_constant_relative_errors = abs(
+        measured_response_constants / predicted_response_constants - 1.0)
+    assert np.max(augmented_constant_relative_errors) < 0.015
+    assert np.max(response_constant_relative_errors) < 0.015
+
     # A repeated nonzero eigenvalue is a genuine scalar-feature obstruction.
     # The complete-graph generator has a three-dimensional eigenspace at -4;
     # every scalar Krylov iterate is therefore collinear with F.
@@ -290,6 +331,13 @@ def verify_krylov_observability():
           + " ".join(f"{rate:.6f}" for rate in response_rates))
     print(f"augmented/response condition-number rates: "
           f"{augmented_condition_rate:.6f}/{response_condition_rate:.6f}")
+    print("predicted augmented singular-value constants: "
+          + " ".join(f"{value:.9g}" for value in predicted_augmented_constants))
+    print("predicted response singular-value constants: "
+          + " ".join(f"{value:.9g}" for value in predicted_response_constants))
+    print("maximum leading-constant relative errors: "
+          f"{np.max(augmented_constant_relative_errors):.3e}/"
+          f"{np.max(response_constant_relative_errors):.3e}")
     print("repeated-eigenvalue scalar observability rank: 1")
 
 

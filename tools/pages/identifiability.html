@@ -389,6 +389,32 @@
       $C_\epsilon$. This is the small-node instability of Vandermonde inversion studied
       classically by <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>,
       here pulled back through the Krylov basis.</p>
+    <p>The hidden constants in $\asymp$ are also explicit. This matters when maturities
+      are chosen rather than merely proved to exist. Take a QR factorization $K=U_KR_K$
+      and an LQ factorization $V(c)=L_VU_V$, with positive or negative diagonal entries
+      allowed in the triangular factors. Then the separated powers in the diagonal imply</p>
+    <div class="equation-card">
+    $$\lim_{\epsilon\downarrow0}{\sigma_{k+1}(A_\epsilon)\over\epsilon^k}
+      =\left|(R_K)_{k+1,k+1}(L_V)_{k+1,k+1}\right|,
+      \qquad 0\le k\le r.$$
+    </div>
+    <p>The formula is independent of the sign conventions in QR and LQ. For
+      $C_\epsilon$, replace $K$ by the centered Krylov block
+      $K_c=[F\ Q_0F\ \cdots\ Q_0^{r-1}F]$ and $V(c)$ by
+      $V_c=[c_j^k/k!]_{k,j=1}^r$. If $K_c=U_cR_c$ and $V_c=L_cW_c$, then</p>
+    $$\lim_{\epsilon\downarrow0}{\sigma_k(C_\epsilon)\over\epsilon^k}
+      =\left|(R_c)_{kk}(L_c)_{kk}\right|,
+      \qquad 1\le k\le r.$$
+    <p>To prove the limit, orthogonal invariance reduces the matrix to
+      $R_KD_\epsilon\{L_V+E_\epsilon\}$, where
+      $D_\epsilon=\operatorname{diag}(1,\epsilon,\ldots,\epsilon^r)$ and
+      $\|E_\epsilon\|=O(\epsilon)$.
+      In its $j$th exterior power, the unique minor with the smallest exponent uses
+      the first $j$ rows and columns. Therefore the product of the largest $j$
+      singular values, divided by $\epsilon^{j(j-1)/2}$, converges to the product of
+      the first $j$ absolute diagonal pairs. Dividing consecutive product limits gives
+      the displayed individual constant. The analytic remainder has one additional
+      power in every flag row, so it cannot alter the limit.</p>
 
     <h3>The $T=O(m^{-1})$ boundary layer</h3>
     <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
@@ -437,6 +463,11 @@
       $(0.25,0.8,1.9)$ recover the prior $(0.10,0.25,0.40,0.25)$ to $2\times10^{-13}$,
       while 32 random finite-chain cases verify equality of the sampled response and Krylov
       ranks. The normalized small-maturity determinant approaches its Vandermonde coefficient
+      and the QR/LQ formula predicts all seven augmented and response-only leading singular-value
+      constants; at $\epsilon=0.00625$ the largest relative discrepancies are $1.44\%$ and
+      $1.44\%$ respectively. The augmented constants are
+      $(2,4.65744565,0.80736962,0.01315675)$ and the response-only constants are
+      $(4.68629884,0.80766818,0.01331125)$. The normalized determinant converges
       with measured order $0.9725$. The four augmented singular values have measured exponents
       $(0.000005,0.9823,1.9790,2.9838)$, while the response-only condition number has exponent
       $2.0015$, verifying the full hierarchy rather than only its product.
