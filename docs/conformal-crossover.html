@@ -504,6 +504,45 @@
       polynomial recursion remains exact on irregular grids, but no
       single-matrix Perron rate is claimed there.</p>
 
+    <h3>Perron curvature is exactly Green&ndash;Kubo</h3>
+    <p>The tilted eigenvalue is also consistent with the finite-panel variance
+      theorem, including its boundary term. Let
+      $\widetilde f=f-p{\bf1}$, $\Pi={\bf1}\pi$, and</p>
+    $$Z=(I-P+\Pi)^{-1}.$$
+    <p>On centered vectors, $Z=\sum_{\ell\ge0}P^\ell$. Differentiating the
+      Perron eigenvalue at zero, or equivalently summing the stationary
+      indicator covariances, gives</p>
+    <div class="equation-card">
+    $$\Lambda'(0)=p,\qquad
+      \Lambda''(0)=\sigma_P^2
+      =p(1-p)+2\langle\widetilde f,PZ\widetilde f\rangle_\pi,$$
+    $$\chi_P=-2\langle\widetilde f,PZ^2\widetilde f\rangle_\pi,$$
+    $$\operatorname{Var}_\pi(S_n)
+      =n\sigma_P^2+\chi_P
+      +2\langle\widetilde f,P^{n+1}Z^2\widetilde f\rangle_\pi.$$
+    </div>
+    <p>The first line is the discrete Green&ndash;Kubo formula. The second and
+      third lines are an exact finite-panel refinement: $\chi_P$ is the
+      persistent endpoint intercept, while the final term decays geometrically.
+      No reversibility is required. More generally, analyticity of the simple
+      Perron root gives
+      $\lim_{n\to\infty}\kappa_r(S_n)/n=\Lambda^{(r)}(0)$ for every fixed
+      cumulant order $r$. The covariance interpretation is the discrete
+      counterpart of the primary formulas of
+      <a href="./bibliography.html#Green1954">Green (1954)</a> and
+      <a href="./bibliography.html#Kubo1957">Kubo (1957)</a>.</p>
+    <p>For the same nonreversible benchmark,</p>
+    $$\sigma_P^2=0.261098129759,\qquad
+      \chi_P=-0.196956872111.$$
+    <p>A five-point numerical derivative gives
+      $\Lambda''(0)=0.261098129855$. The exact coefficient law has
+      $\operatorname{Var}(S_{30})/30=0.254532972569$ and
+      $\operatorname{Var}(S_{60})/60=0.257815515224$; the exact remaining
+      boundary terms after slope and intercept are respectively
+      $2.1564\times10^{-6}$ and $6.86\times10^{-12}$. This is a
+      panel-size asymptotic at fixed $P$, distinct from the fast-switching
+      limit obtained by changing $m$.</p>
+
     <h2>Arbitrary starts and burn-in</h2>
     <p>The preceding calibration confidence was stated for a stationary panel.
       There is an explicit transfer to any initial regime law. Let the chain

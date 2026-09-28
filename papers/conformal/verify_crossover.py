@@ -14,6 +14,8 @@ Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
+The curvature of that Perron eigenvalue is checked against the discrete
+Green--Kubo variance, including its exact finite-panel intercept and remainder.
 """
 import itertools
 import math
@@ -198,6 +200,38 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     print(f"  limiting rate {asymptotic_rate:.9f},"
           f" optimizing tilt {asymptotic_tilt:.9f}")
 
+    variance_rate, variance_intercept, fundamental, centered = (
+        perron_variance_terms(transition, pi, success))
+    step = 0.003
+    log_cgfs = [perron_log_cgf(transition, success, j * step)
+                for j in (-2, -1, 0, 1, 2)]
+    numerical_curvature = (
+        -log_cgfs[4] + 16 * log_cgfs[3] - 30 * log_cgfs[2]
+        + 16 * log_cgfs[1] - log_cgfs[0]) / (12 * step ** 2)
+    assert abs(numerical_curvature - variance_rate) < 5e-9
+    variance_rows = []
+    for panel_size in (1, 2, 4, 8, 16, 30, 60):
+        law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), success)
+        counts = np.arange(panel_size + 1)
+        exact_variance = law @ counts ** 2 - (law @ counts) ** 2
+        remainder = 2 * pi @ (
+            centered * (
+                np.linalg.matrix_power(transition, panel_size + 1)
+                @ fundamental @ fundamental @ centered))
+        reconstructed = (
+            panel_size * variance_rate + variance_intercept + remainder)
+        assert abs(exact_variance - reconstructed) < 2e-13
+        variance_rows.append(
+            (panel_size, exact_variance / panel_size, remainder))
+    print("Perron curvature and discrete Green--Kubo variance:")
+    print(f"  Lambda''(0) {numerical_curvature:.12f},"
+          f" Green--Kubo rate {variance_rate:.12f},"
+          f" intercept {variance_intercept:.12f}")
+    for panel_size, variance_per_score, remainder in variance_rows[-2:]:
+        print(f"  n={panel_size:2d} variance/n {variance_per_score:.12f},"
+              f" exact remainder {remainder:.3e}")
+
 
 def binary_count_distribution(initial, transitions, success):
     """Count law for finite-state binary emissions on any deterministic grid.
@@ -243,6 +277,23 @@ def perron_log_cgf(transition, success, theta):
     rho = max(abs(eigenvalues))
     assert rho > 0
     return math.log(rho)
+
+
+def perron_variance_terms(transition, pi, success):
+    """Green--Kubo variance rate and intercept for regular binary panels."""
+    dimension = len(pi)
+    projector = np.ones((dimension, 1)) @ pi.reshape(1, dimension)
+    fundamental = np.linalg.inv(
+        np.eye(dimension) - transition + projector)
+    probability = pi @ success
+    centered = success - probability
+    variance_rate = (
+        probability * (1 - probability)
+        + 2 * pi @ (centered * (transition @ fundamental @ centered)))
+    variance_intercept = -2 * pi @ (
+        centered * (
+            transition @ fundamental @ fundamental @ centered))
+    return variance_rate, variance_intercept, fundamental, centered
 
 
 def perron_tail_rate(transition, success, level):
@@ -722,7 +773,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law and Perron tail rate, one-sided order-statistic PAC"
+          " count law, Perron tail rate and Green--Kubo curvature,"
+          " one-sided order-statistic PAC"
           " conversion,"
           " nonstationary burn-in transfer, and transient panel moments")
 
