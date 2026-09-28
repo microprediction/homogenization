@@ -105,7 +105,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a>
     &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a></span></p>
     <h1>Integrated-variance cumulants</h1>
-    <p class="subtitle">Exact fourth-cumulant benchmarks and an explicit European option correction for a positive switched CIR variance.</p>
+    <p class="subtitle">Exact fixed-order cumulant-rate recursions and an explicit European option correction for a positive switched CIR variance.</p>
 
     <p class="lead">The smile produced by uncorrelated stochastic volatility is often described through the variance
     of integrated variance. There are two points to keep separate. The Brownian return has a fourth cumulant exactly
@@ -622,6 +622,51 @@
       $0.0000102515$, nearly the full correct value. This theorem identifies the exact fourth-cumulant slope only:
       no fourth-cumulant intercept, uniform remainder, or price-level extension is claimed.</p>
 
+    <h2>Every fixed long-run cumulant rate</h2>
+    <p>The fourth-order calculation is one step of a recursion that closes at every fixed order. For the normalized
+      eigenpair above, write</p>
+    $$h_k=\left.\partial_\theta^kh_\theta\right|_{\theta=0},\qquad
+      \gamma_k=\lambda_m^{(k)}(0),\qquad h_0=1.$$
+    <p>Normalization gives $\mathbb E_{\Pi_m}[h_k]=0$ for $k\ge1$. Differentiating the eigenvalue equation $k$
+      times, then taking invariant expectation, gives the exact triangular recursion</p>
+    <div class="equation-card">
+    $$\gamma_k=k\mathbb E_{\Pi_m}[g h_{k-1}],$$
+    $$-\mathcal L_mh_k=kg h_{k-1}
+      -\sum_{j=1}^k {k\choose j}\gamma_jh_{k-j},\qquad
+      \mathbb E_{\Pi_m}[h_k]=0.$$
+    </div>
+    <p>Consequently, for every fixed integer $k\ge2$ and every fixed switching rate $m&gt;0$,</p>
+    <div class="equation-card">
+    $$\lim_{T\to\infty}{\kappa_k(V_T)\over T}=\gamma_k.$$
+    </div>
+    <p>The deterministic mean term in $V_T$ does not affect orders $k\ge2$. The proof of the limit is the local
+      spectral representation of the Feynman&ndash;Kac semigroup: its logarithm is
+      $T\lambda_m(\theta)+O_{m,\theta}(1)$ near zero. The displayed equations then follow by Leibniz'
+      rule. In the switched CIR model $h_k$ is a regime-dependent polynomial of degree at most $k$, so each new
+      step is a finite centered Poisson solve. The cases $k=2,3,4$ recover respectively
+      $h_1=\phi^\circ$, $h_2=2\psi^\circ$, and $h_3=6\xi$, including the essential
+      $c_2\phi^\circ$ subtraction at fourth order.</p>
+    <p>The one-state CIR model provides an independent all-order benchmark. If</p>
+    $$dv_t=(c-\kappa v_t)dt+\sqrt{av_t}\,dB_t,$$
+    <p>the centered tilted eigenvalue follows from the stable Riccati root:</p>
+    $$\lambda(\theta)=\frac ca\{\kappa-\sqrt{\kappa^2-2a\theta}\}
+      -\frac c\kappa\theta.$$
+    <p>Thus, for every $k\ge2$,</p>
+    <div class="equation-card">
+    $$\gamma_k={c(2k-3)!!\,a^{k-1}\over\kappa^{2k-1}}.$$
+    </div>
+    <p>The certificate evaluates the Poisson recursion through order eight. In the switched benchmark at $m=8$,
+      the rates for orders two through eight are
+      $1.5340375000\times10^{-3}$, $9.3633346625\times10^{-5}$,
+      $1.0344200270\times10^{-5}$, $1.6980748064\times10^{-6}$,
+      $3.7402863486\times10^{-7}$, $1.0398724197\times10^{-7}$, and
+      $3.5037228249\times10^{-8}$. Orders two through four agree with the separately derived formulas within
+      $3.7\times10^{-19}$; for the averaged one-state CIR model, orders two through eight agree with the closed
+      formula within $8.9\times10^{-15}$ relative error.</p>
+    <p>This is an all-<em>fixed</em>-order statement. It supplies neither constants uniform in $k$, nor convergence
+      of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits. Beyond third order it also
+      does not supply bounded intercepts or maturity-uniform remainders.</p>
+
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
     $$d\langle W,B\rangle_t=\rho_{Y_t}dt,\qquad |\rho_i|\le1,\qquad
@@ -888,9 +933,9 @@
       under joint stationarity. For every $m\ge m_0&gt;0$, their exact remainder has one switching-rate-uniform
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
       polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
-      fixed-$m$ exponentially decaying remainder. One further cubic Poisson solve identifies the exact
-      fourth-cumulant slope for each fixed $m$, but no fourth-cumulant intercept or remainder theorem is claimed.
-      No switching-rate-uniform third-cumulant envelope or price-level extension is claimed.</li>
+      fixed-$m$ exponentially decaying remainder. The centered-Poisson recursion identifies every fixed-order
+      long-run cumulant rate, but provides no order-uniform constants, fourth-or-higher intercept, or corresponding
+      remainder theorem. No switching-rate-uniform third-cumulant envelope or price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -911,7 +956,7 @@
     and implied-volatility corrections, and fixed-maturity effective-generator and cumulant corrections when
     $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and exact
     finite-rate formulas for the stationary second-cumulant slope and intercept, third-cumulant slope and intercept,
-    and fourth-cumulant slope in that simultaneous-switching model. The damped
+    and every fixed-order long-run cumulant rate in that simultaneous-switching model. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>

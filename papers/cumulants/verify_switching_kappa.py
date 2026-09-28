@@ -447,6 +447,58 @@ def integrated_variance_fourth_rate(speed, q0, pi, c, kappa, variance):
     return fourth_rate, naive_rate
 
 
+def integrated_variance_cumulant_rates(
+    max_order, speed, q0, pi, c, kappa, variance
+):
+    """Exact long-run cumulant rates through any fixed polynomial order.
+
+    For centered g=v-E[v], differentiate the normalized eigenpair
+
+        (L + theta*g) h(theta) = lambda(theta) h(theta), E[h(theta)]=1.
+
+    If h_k and gamma_k are the kth derivatives at zero, then
+
+        gamma_k = k E[g h_{k-1}],
+        -L h_k = k g h_{k-1}
+                   - sum_{j=1}^k binom(k,j) gamma_j h_{k-j}.
+
+    Polynomial closure makes this an exact finite sequence of linear solves
+    for each fixed ``max_order``.  No uniformity in the order is asserted.
+    """
+    if max_order < 1:
+        raise ValueError("max_order must be positive")
+    degree = max_order
+    states = len(pi)
+    generator, invariant, constant, g = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, degree
+    )
+
+    def product(left, right):
+        return _pointwise_polynomial_product(left, right, states, degree)
+
+    def poisson(forcing):
+        return _centered_polynomial_poisson(
+            generator, invariant, constant, forcing
+        )
+
+    derivatives = [constant]
+    rates = np.zeros(max_order + 1)
+    for order in range(1, max_order + 1):
+        rates[order] = order * (invariant @ product(g, derivatives[order - 1]))
+        if order == max_order:
+            break
+        forcing = order * product(g, derivatives[order - 1])
+        for index in range(1, order + 1):
+            forcing -= (
+                math.comb(order, index)
+                * rates[index]
+                * derivatives[order - index]
+            )
+        assert abs(invariant @ forcing) < 2e-11
+        derivatives.append(poisson(forcing))
+    return rates[1:], derivatives
+
+
 def integrated_variance_intercept(speed, q0, pi, c, kappa, variance):
     """Exact bounded intercept in the stationary long-time variance.
 
@@ -1580,6 +1632,72 @@ def verify_long_run_fourth_cumulant_rate():
     return convergence_rate, max(semigroup_errors), nonreversible_error
 
 
+def verify_all_fixed_order_cumulant_rates(max_order=8):
+    """Check the all-fixed-order recursion against closed CIR coefficients."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speed = 8.0
+
+    switched_rates, _ = integrated_variance_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance
+    )
+    variance_rate = integrated_variance_rate(
+        speed, q0, pi, c, kappa, variance
+    )[0]
+    third_rate = integrated_variance_third_rate(
+        speed, q0, pi, c, kappa, variance
+    )[0]
+    fourth_rate = integrated_variance_fourth_rate(
+        speed, q0, pi, c, kappa, variance
+    )[0]
+    low_order_error = np.max(
+        np.abs(switched_rates[1:4] - [variance_rate, third_rate, fourth_rate])
+    )
+    assert low_order_error < 2e-13
+
+    averaged_c = np.array([pi @ c])
+    averaged_kappa = np.array([pi @ kappa])
+    averaged_variance = np.array([pi @ variance])
+    averaged_rates, _ = integrated_variance_cumulant_rates(
+        max_order,
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        averaged_c,
+        averaged_kappa,
+        averaged_variance,
+    )
+    closed_rates = np.zeros(max_order)
+    for order in range(2, max_order + 1):
+        odd_double_factorial = math.prod(range(1, 2 * order - 2, 2))
+        closed_rates[order - 1] = (
+            averaged_c[0]
+            * odd_double_factorial
+            * averaged_variance[0] ** (order - 1)
+            / averaged_kappa[0] ** (2 * order - 1)
+        )
+    positive = closed_rates > 0
+    averaged_relative_error = np.max(
+        np.abs(averaged_rates[positive] / closed_rates[positive] - 1.0)
+    )
+    assert averaged_relative_error < 3e-11
+
+    print("5f. all-fixed-order long-run cumulant recursion")
+    print(
+        "   switched m=8 orders 2--8: "
+        + " ".join(f"{value:.10e}" for value in switched_rates[1:])
+    )
+    print(
+        f"   low-order identity discrepancy {low_order_error:.2e}; "
+        f"closed CIR orders 2--{max_order} relative discrepancy "
+        f"{averaged_relative_error:.2e}"
+    )
+    return low_order_error, averaged_relative_error
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -1648,6 +1766,7 @@ def main():
     uniform_remainder_results = verify_uniform_variance_remainder()
     third_rate_results = verify_long_run_third_cumulant_rate()
     fourth_rate_results = verify_long_run_fourth_cumulant_rate()
+    all_order_rate_results = verify_all_fixed_order_cumulant_rates()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
