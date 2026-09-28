@@ -21,6 +21,10 @@ it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing, and the slack-free rearrangement
 bound available when the actual panel order-statistic law is known.
+It finally checks the sharp distinction between a predictor fitted on an
+independent training sample and a memorizing predictor fitted on the
+calibration labels, as well as the exact total-variation cost of separating a
+past training sigma-field from a future Markov panel.
 """
 
 from __future__ import annotations
@@ -603,6 +607,50 @@ def sampled_path_total_variation_irregular(
             joint *= sampled[index][previous, current]
             independent *= stationary[current]
         distance += abs(joint - independent)
+    return 0.5 * distance
+
+
+def training_future_total_variation(
+    transition: np.ndarray,
+    stationary: np.ndarray,
+    training_gap: int,
+    future_strides: tuple[int, ...],
+) -> float:
+    """TV cost of replacing a future Markov panel after training by a copy.
+
+    The first coordinate is the state available to training at time zero.
+    The future panel begins ``training_gap`` transitions later and then uses
+    ``future_strides``.  The comparison law preserves the complete Markov law
+    within that future panel, changing only its dependence on the training
+    state.  Because the first future state is retained, this TV distance is
+    exactly ``markov_beta(..., training_gap)``.
+    """
+    import itertools
+
+    if training_gap < 1 or min(future_strides, default=1) < 1:
+        raise ValueError("training gap and future strides must be positive")
+    training_transition = np.linalg.matrix_power(transition, training_gap)
+    panel_transitions = [
+        np.linalg.matrix_power(transition, stride)
+        for stride in future_strides
+    ]
+    state_count = len(stationary)
+    distance = 0.0
+    for path in itertools.product(
+        range(state_count), repeat=len(future_strides) + 2
+    ):
+        joint = (
+            stationary[path[0]]
+            * training_transition[path[0], path[1]]
+        )
+        decoupled = stationary[path[0]] * stationary[path[1]]
+        for index, (previous, current) in enumerate(
+            zip(path[1:-1], path[2:])
+        ):
+            probability = panel_transitions[index][previous, current]
+            joint *= probability
+            decoupled *= probability
+        distance += abs(joint - decoupled)
     return 0.5 * distance
 
 
@@ -2028,6 +2076,54 @@ def main() -> None:
             f"     {randomized:12.8f}     {calibration_count * beta:10.8f}"
         )
 
+    # Fitting on an independent sample makes the learned score map fixed after
+    # conditioning on that sample.  In contrast, a learner that memorizes the
+    # calibration labels has zero calibration residuals and positive test
+    # residual almost surely.  Continuous uniforms give a direct certificate:
+    # the honest residual ranks retain exact iid coverage, whereas leakage
+    # drives coverage to zero despite complete independence across examples.
+    fitted_draws = 400_000
+    fitted_calibration = rng.random((fitted_draws, calibration_count))
+    fitted_test = rng.random(fitted_draws)
+    fitted_thresholds = np.partition(
+        fitted_calibration, order - 1, axis=1
+    )[:, order - 1]
+    honest_fitted_coverage = float(np.mean(fitted_test <= fitted_thresholds))
+    leaky_fitted_coverage = float(np.mean(fitted_test <= 0.0))
+    assert abs(honest_fitted_coverage - iid_coverage) < 0.0015
+    assert leaky_fitted_coverage == 0.0
+
+    # The coefficient for a remote same-series training sample is one beta
+    # term, with no multiplier by the number of future blocks.  Enumerating the
+    # entire future path confirms that later within-panel dependence is kept in
+    # both laws and cancels from this training/future TV comparison.
+    training_gap = 7
+    future_strides = (3, 5, 2, 6)
+    training_tv = training_future_total_variation(
+        binary_transition,
+        np.array([0.5, 0.5]),
+        training_gap,
+        future_strides,
+    )
+    training_beta = markov_beta(
+        binary_transition, np.array([0.5, 0.5]), training_gap
+    )
+    assert abs(training_tv - training_beta) < 2e-15
+    assert abs(training_beta - 0.5 * 0.8**training_gap) < 2e-15
+    print("\nFitted-predictor split certificate")
+    print(
+        "independent training: empirical coverage="
+        f"{honest_fitted_coverage:.8f}; iid target={iid_coverage:.8f}"
+    )
+    print(
+        "calibration-label memorizer: exact coverage="
+        f"{leaky_fitted_coverage:.8f}"
+    )
+    print(
+        "remote training/future-panel TV: exact="
+        f"{training_tv:.8f}; beta(g)={training_beta:.8f}"
+    )
+
     # A predictor with an exponentially weighted internal state retains memory
     # at its own rate, even after the endpoint regime has mixed.
     switching_rate, predictor_rate = 1.0, 0.2
@@ -2069,6 +2165,8 @@ def main() -> None:
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
         "total-variation transfer with a slack-free rearrangement bound, "
+        "independent-training validity, calibration-leakage failure, "
+        "remote-training total-variation separation, "
         "exact transforms, and simulations"
     )
 
