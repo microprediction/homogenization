@@ -7,5 +7,14 @@
   "venue": "Finance and Stochastics 16(4):711-740",
   "doi": "10.1007/s00780-012-0188-x",
   "annotation": "Markov processes whose generator maps polynomials of degree n to polynomials of degree at most n, so that moments follow from a finite matrix exponential; the square-root process and its integral are examples, used here for exact cumulants under a switching level."
+ },
+ {
+  "key": "GemanElKarouiRochet1995",
+  "authors": "Geman, H., El Karoui, N. and Rochet, J.-C.",
+  "year": 1995,
+  "title": "Changes of numéraire, changes of probability measure and option pricing",
+  "venue": "Journal of Applied Probability 32(2):443-458",
+  "doi": "10.2307/3215299",
+  "annotation": "Establishes the general change-of-numeraire theorem and forward measures used here to fix the sign and normalization of the futures recursion."
  }
 ]
