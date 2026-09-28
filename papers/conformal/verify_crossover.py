@@ -14,8 +14,8 @@ Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
-It verifies the associated sharp lattice tail prefactor and its first relative
-saddle-point correction against exact coefficient tails through 960
+It verifies the associated sharp lattice tail prefactor and its first two
+relative saddle-point corrections against exact coefficient tails through 960
 observations.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
@@ -191,12 +191,13 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     derivative = (perron_log_cgf(transition, success, 1e-5)
                   - perron_log_cgf(transition, success, -1e-5)) / 2e-5
     assert abs(derivative - target) < 2e-10
-    sharp_prefactor, correction, curvature, boundary_factor = (
-        perron_sharp_tail_approx(
-            transition, pi, success, tail_level))
-    _, fine_correction, _, _ = perron_sharp_tail_approx(
-        transition, pi, success, tail_level, radius=0.015)
+    (sharp_prefactor, correction, second_correction, curvature,
+     boundary_factor) = perron_sharp_tail_approx(
+        transition, pi, success, tail_level)
+    _, fine_correction, fine_second_correction, _, _ = perron_sharp_tail_approx(
+        transition, pi, success, tail_level, radius=0.07)
     assert abs(correction - fine_correction) < 2e-6
+    assert abs(second_correction - fine_second_correction) < 2e-4
     rate_rows = []
     for panel_size in (30, 60, 120, 240, 480, 960):
         law = binary_count_distribution(
@@ -208,28 +209,36 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
                       * math.exp(-panel_size * asymptotic_rate)
                       / math.sqrt(panel_size))
         corrected_tail = sharp_tail * (1 + correction / panel_size)
+        second_corrected_tail = sharp_tail * (
+            1 + correction / panel_size
+            + second_correction / panel_size ** 2)
         rate_rows.append((panel_size, tail, finite_rate,
                           sharp_tail, tail / sharp_tail,
-                          tail / corrected_tail))
+                          tail / corrected_tail,
+                          tail / second_corrected_tail))
     assert abs(rate_rows[-1][2] - asymptotic_rate) < 0.005
     print("Perron large-deviation rate at success fraction 0.9:")
     for (panel_size, tail, finite_rate, sharp_tail,
-         sharp_ratio, corrected_ratio) in rate_rows:
+         sharp_ratio, corrected_ratio, second_corrected_ratio) in rate_rows:
         print(f"  n={panel_size:3d} tail {tail:.10e},"
               f" -log(tail)/n {finite_rate:.9f},"
-              f" sharp/corrected ratios"
-              f" {sharp_ratio:.9f}/{corrected_ratio:.9f}")
+              f" sharp/corrected/second ratios"
+              f" {sharp_ratio:.9f}/{corrected_ratio:.9f}/"
+              f"{second_corrected_ratio:.9f}")
     print(f"  limiting rate {asymptotic_rate:.9f},"
           f" optimizing tilt {asymptotic_tilt:.9f},"
           f" tilted variance {curvature:.9f},"
           f" boundary factor {boundary_factor:.9f},"
-          f" 1/n coefficient {correction:.9f}")
+          f" 1/n coefficient {correction:.9f},"
+          f" 1/n^2 coefficient {second_correction:.9f}")
     sharp_ratios = np.asarray([row[4] for row in rate_rows])
     corrected_ratios = np.asarray([row[5] for row in rate_rows])
+    second_corrected_ratios = np.asarray([row[6] for row in rate_rows])
     assert np.all(np.diff(sharp_ratios) > 0)
     assert abs(sharp_ratios[-1] - 1) < 0.02
     assert np.all(np.diff(corrected_ratios[1:]) < 0)
     assert np.max(abs(corrected_ratios[-2:] - 1)) < 0.004
+    assert abs(second_corrected_ratios[-1] - 1) < 2e-4
 
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
@@ -557,13 +566,13 @@ def perron_tail_rate(transition, success, level):
 
 
 def perron_sharp_tail_approx(transition, initial, success, level,
-                             radius=0.02):
-    """Return the lattice prefactor and its first relative correction."""
+                             radius=0.05):
+    """Return the lattice prefactor and its first two relative corrections."""
     _, theta = perron_tail_rate(transition, success, level)
     lambda_derivatives = cauchy_derivatives(
         lambda z: perron_log_cgf_analytic(transition, success, z),
-        4, center=theta, radius=radius, points=256)
-    curvature, third, fourth = lambda_derivatives[1:4]
+        6, center=theta, radius=radius, points=256)
+    curvature, third, fourth, fifth, sixth = lambda_derivatives[1:6]
     log_boundary = perron_boundary_log_cgf(
         transition, initial, success, theta).real
     boundary_factor = math.exp(log_boundary)
@@ -574,15 +583,30 @@ def perron_sharp_tail_approx(transition, initial, success, level,
 
     amplitude = tail_amplitude(theta).real
     amplitude_derivatives = cauchy_derivatives(
-        tail_amplitude, 2, center=theta, radius=radius, points=256)
-    first, second = amplitude_derivatives
+        tail_amplitude, 4, center=theta, radius=radius, points=256)
+    first, second, third_amplitude, fourth_amplitude = amplitude_derivatives
     correction = (
         -second / (2 * curvature * amplitude)
         + first * third / (2 * curvature ** 2 * amplitude)
         + fourth / (8 * curvature ** 2)
         - 5 * third ** 2 / (24 * curvature ** 3))
+    second_correction = (
+        385 * third ** 4
+        + 144 * fourth_amplitude * curvature ** 4 / amplitude
+        - 210 * third ** 2 * curvature
+        * (3 * fourth + 4 * first * third / amplitude)
+        - 24 * curvature ** 3
+        * (sixth + 6 * first * fifth / amplitude
+           + 15 * second * fourth / amplitude
+           + 20 * third_amplitude * third / amplitude)
+        + 21 * curvature ** 2
+        * (8 * third * fifth + 5 * fourth ** 2
+           + 40 * first * third * fourth / amplitude
+           + 40 * second * third ** 2 / amplitude)
+    ) / (1152 * curvature ** 6)
     prefactor = amplitude / math.sqrt(2 * math.pi * curvature)
-    return prefactor, correction, curvature, boundary_factor
+    return (prefactor, correction, second_correction, curvature,
+            boundary_factor)
 
 
 def chernoff_tail_bound(count_law, k):
@@ -1049,8 +1073,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate, sharp prefactor and first relative"
-          " saddle-point correction, Green--Kubo"
+          " count law, Perron tail rate, sharp prefactor and first two"
+          " relative saddle-point corrections, Green--Kubo"
           " curvature, all-order"
           " cumulants, arbitrary-start boundary constants and local tail"
           " correction,"

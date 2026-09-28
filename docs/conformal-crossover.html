@@ -488,14 +488,14 @@
     $$I(0.9)=0.023859569,\qquad \theta_*=0.545570879.$$
     <div class="table-wrap">
     <table class="impl">
-      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th><th>exact / corrected</th></tr></thead>
+      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th><th>exact / first</th><th>exact / second</th></tr></thead>
       <tbody>
-        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td><td>1.550044</td></tr>
-        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td><td>1.139470</td></tr>
-        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td><td>1.041074</td></tr>
-        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td><td>1.011992</td></tr>
-        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td><td>1.003353</td></tr>
-        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td><td>1.000899</td></tr>
+        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td><td>1.550044</td><td>0.522166</td></tr>
+        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td><td>1.139470</td><td>0.855449</td></tr>
+        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td><td>1.041074</td><td>0.971704</td></tr>
+        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td><td>1.011992</td><td>0.995388</td></tr>
+        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td><td>1.003353</td><td>0.999318</td></tr>
+        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td><td>1.000899</td><td>0.999906</td></tr>
       </tbody>
     </table>
     </div>
@@ -547,8 +547,8 @@
       theorem remains a fixed-$P$ result; it neither covers irregular grids
       nor asserts a joint limit in panel size and switching rate.</p>
 
-    <h3>The first relative saddle-point correction</h3>
-    <p>The same local Fourier calculation supplies the next term, including
+    <h3>The first two relative saddle-point corrections</h3>
+    <p>The same local Fourier calculation supplies the next two terms, including
       the derivatives of the initial-law and lattice amplitude. Write</p>
     <div class="equation-card">
     $$H_\nu(\theta)=\frac{B_\nu(\theta)}{1-e^{-\theta}},\qquad
@@ -560,23 +560,44 @@
     <div class="equation-card">
     $$\Pr_\nu\{S_n\ge k_n\}
       =\frac{H_\nu e^{-nI(x_n)}}{\sqrt{2\pi n v}}
-       \left\{1+\frac{C_1(\theta_n)}{n}+o(n^{-1})\right\},$$
+       \left\{1+\frac{C_1(\theta_n)}{n}
+       +\frac{C_2(\theta_n)}{n^2}+o(n^{-2})\right\},$$
     $$C_1=-\frac{H_\nu''}{2vH_\nu}
       +\frac{H_\nu'c_3}{2v^2H_\nu}
       +\frac{c_4}{8v^2}-\frac{5c_3^2}{24v^3}.$$
+    </div>
+    <p>Writing $H_j=H_\nu^{(j)}(\theta_n)$ and
+      $c_j=\Lambda^{(j)}(\theta_n)$, the second coefficient is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    C_2={}&\frac{H_4}{8v^2H_0}
+      -\frac{H_1c_5}{8v^3H_0}
+      -\frac{5H_2c_4}{16v^3H_0}
+      -\frac{5H_3c_3}{12v^3H_0}-\frac{c_6}{48v^3}\\
+      &+\frac{35H_2c_3^2}{48v^4H_0}
+      +\frac{35H_1c_3c_4}{48v^4H_0}
+      +\frac{7c_3c_5}{48v^4}+\frac{35c_4^2}{384v^4}\\
+      &-\frac{35H_1c_3^3}{48v^5H_0}
+      -\frac{35c_3^2c_4}{64v^5}
+      +\frac{385c_3^4}{1152v^6}.
+    \end{aligned}$$
     </div>
     <p>Indeed, after the saddle scaling $t=s/\sqrt n$, expand the analytic
       Fourier amplitude as $H_\nu+iH_\nu't-H_\nu''t^2/2$ and the Perron
       exponent as $-vt^2/2-ic_3t^3/6+c_4t^4/24$. Integrating the even terms
       against the centered Gaussian gives the four displayed contributions;
       the noncentral arc is exponentially smaller by the same Perron
-      separation used above. This is the finite-state Markov-additive version
+      separation used above. Retaining the even terms through order $n^{-2}$
+      gives $C_2$; analyticity makes the expansion uniform on compact tilt
+      intervals. This is the finite-state Markov-additive version
       of the asymptotic saddle-point expansion introduced by
       <a href="./bibliography.html#Daniels1954">Daniels (1954)</a>.</p>
-    <p>For the benchmark, $C_1=-14.728744578$. The table's final column divides
-      the exact probability by the corrected approximation. At $n=480$ and
-      $960$ the relative discrepancies are $0.3353\%$ and $0.0899\%$, compared
-      with $2.7434\%$ and $1.4457\%$ for the leading formula. The overshoot at
+    <p>For the benchmark, $C_1=-14.728744589$ and $C_2=901.839869479$.
+      The last two columns divide the exact probability by the first- and
+      second-order corrected approximations. At $n=480$ and $960$, the second
+      correction reduces the relative discrepancies to $0.0682\%$ and
+      $0.0094\%$, from $0.3353\%$ and $0.0899\%$ after the first correction and
+      $2.7434\%$ and $1.4457\%$ for the leading formula. The overshoot at
       small $n$ is deliberately retained: this is an asymptotic expansion, not
       a finite-panel error bound, and truncation is not guaranteed to improve
       every small panel. The statement is still for a fixed regular-grid $P$;
