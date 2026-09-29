@@ -416,6 +416,45 @@
       the displayed individual constant. The analytic remainder has one additional
       power in every flag row, so it cannot alter the limit.</p>
 
+    <h3>Determinant-optimal maturities under a cap</h3>
+    <p>The determinant formula also solves an exact local design problem. Fix a maximum
+      scaled maturity and write $	au_j=\epsilon T_{\max}c_j$, with
+      $0&lt;c_1&lt;\cdots&lt;c_r\le1$. All model-dependent factors are fixed, so maximizing
+      the magnitude of the leading determinant is equivalent to maximizing</p>
+    <div class="equation-card">
+    $$\Delta(0,c_1,\ldots,c_r)
+      =\left(\prod_{j=1}^r c_j\right)
+       \left(\prod_{1\le i&lt;j\le r}(c_j-c_i)\right).$$
+    </div>
+    <p>The unique maximizer is the affine Legendre&ndash;Gauss&ndash;Lobatto design. Let
+      $-1=x_0&lt;x_1&lt;\cdots&lt;x_r=1$, where the interior $x_j$ are the zeros of
+      $P_r'$, the derivative of the degree-$r$ Legendre polynomial. Then</p>
+    <div class="equation-card">
+    $$c_j^\star={1+x_j\over2},\qquad 1\le j\le r.$$
+    </div>
+    <p>Indeed, the last node must equal one, and the log Vandermonde is strictly concave
+      in the remaining ordered interior nodes. Its equilibrium equations are
+      $\sum_{j\ne i}(x_i-x_j)^{-1}=0$. If
+      $w(x)=\prod_{j=0}^r(x-x_j)=(x^2-1)p(x)$, these equations say that $w''$ vanishes
+      at every interior node. Degree and leading-coefficient comparison give
+      $w''=r(r+1)p$, whose polynomial solution is $p\propto P_r'$. Strict concavity
+      proves global uniqueness. This is the interval Fekete geometry originating in
+      <a href="./bibliography.html#Fejer1932">Fej&eacute;r's interpolation work</a>.</p>
+    <p>This is a determinant or local D-optimality statement. It does not claim that the
+      same nodes maximize the smallest singular value or minimize the condition number.
+      For four states ($r=3$), the normalized design is</p>
+    $$\left({1-1/\sqrt5\over2},
+             {1+1/\sqrt5\over2},1\right)
+      =(0.276393202,0.723606798,1).$$
+    <p>At the cap used in the certificate, it improves the leading determinant by
+      $1.250725436$ over the previous $(0.7,1.3,2.2)/2.2$ design, hence improves the
+      corresponding information determinant by the square, $1.564314115$. At
+      $\epsilon=0.0015625$, the exact response determinant ratio is $1.250158127$.
+      The equilibrium equations are verified through nine states with maximum residual
+      $2.4\times10^{-13}$; the exact gains over equally spaced nodes from three through
+      nine states are
+      $(1,1.086729,1.302945,1.733914,2.568915,4.244826,7.831480)$.</p>
+
     <h3>The $T=O(m^{-1})$ boundary layer</h3>
     <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
       trivial $1/m$ response scaling:</p>

@@ -157,6 +157,23 @@ def transient_response_matrix(Q, centered, taus):
     ])
 
 
+def capped_fekete_nodes(order):
+    """Positive nodes after fixing zero in the Fekete design on [0, 1]."""
+    legendre = np.polynomial.legendre.Legendre.basis(order)
+    interior = legendre.deriv().roots()
+    return (np.concatenate((interior, [1.0])) + 1.0) / 2.0
+
+
+def log_vandermonde_with_zero(nodes):
+    """Log of prod_j c_j prod_{i<j}(c_j-c_i) for ordered nodes."""
+    augmented = np.concatenate(([0.0], np.asarray(nodes, float)))
+    return sum(
+        math.log(augmented[j] - augmented[i])
+        for i in range(len(augmented))
+        for j in range(i + 1, len(augmented))
+    )
+
+
 def verify_krylov_observability():
     """The entire scaled-maturity curve spans exactly the Krylov space."""
     rng = np.random.default_rng(26092026)
@@ -304,6 +321,70 @@ def verify_krylov_observability():
     assert np.max(augmented_constant_relative_errors) < 0.015
     assert np.max(response_constant_relative_errors) < 0.015
 
+    # If the largest scaled maturity is capped, the leading determinant is a
+    # Vandermonde product on the nodes {0,c_1,...,c_r}.  Its unique maximizer
+    # is the Legendre--Gauss--Lobatto design: the endpoints together with the
+    # roots of P_r'.  Check the equilibrium equations, strict concavity, and
+    # the improvement over equally spaced nodes for dimensions 3 through 9.
+    design_ratios = []
+    maximum_gradient_residual = 0.0
+    least_hessian_gap = math.inf
+    for order in range(2, 9):
+        optimal_nodes = capped_fekete_nodes(order)
+        all_nodes = np.concatenate(([0.0], optimal_nodes))
+        free_nodes = optimal_nodes[:-1]
+        gradient = np.array([
+            sum(1.0 / (node - other)
+                for other in all_nodes if other != node)
+            for node in free_nodes
+        ])
+        maximum_gradient_residual = max(
+            maximum_gradient_residual, np.max(np.abs(gradient)))
+
+        hessian = np.empty((order - 1, order - 1))
+        for i, node_i in enumerate(free_nodes):
+            for j, node_j in enumerate(free_nodes):
+                if i == j:
+                    hessian[i, j] = -sum(
+                        1.0 / (node_i - other) ** 2
+                        for other in all_nodes if other != node_i)
+                else:
+                    hessian[i, j] = 1.0 / (node_i - node_j) ** 2
+        least_hessian_gap = min(
+            least_hessian_gap, -np.linalg.eigvalsh(hessian)[-1])
+        assert np.linalg.eigvalsh(hessian)[-1] < 0.0
+
+        equally_spaced = np.arange(1, order + 1) / order
+        design_ratios.append(math.exp(
+            log_vandermonde_with_zero(optimal_nodes)
+            - log_vandermonde_with_zero(equally_spaced)))
+        assert design_ratios[-1] >= 1.0 - 2e-14
+
+    assert maximum_gradient_residual < 3e-11
+    assert least_hessian_gap > 1.0
+
+    # In the four-state example, retain the previous cap 2.2 and compare the
+    # existing nodes with the exact capped optimum.  The actual determinant
+    # ratio at small epsilon converges to the ratio of leading coefficients.
+    maturity_cap = scales[-1]
+    optimal_scales = maturity_cap * capped_fekete_nodes(3)
+    optimal_design_gain = math.exp(
+        log_vandermonde_with_zero(optimal_scales / maturity_cap)
+        - log_vandermonde_with_zero(scales / maturity_cap))
+    epsilon = 0.0015625
+    current_small_augmented = np.column_stack([
+        np.ones(4),
+        transient_response_matrix(Q, centered, epsilon * scales),
+    ])
+    optimal_small_augmented = np.column_stack([
+        np.ones(4),
+        transient_response_matrix(Q, centered, epsilon * optimal_scales),
+    ])
+    measured_design_gain = (
+        abs(np.linalg.det(optimal_small_augmented))
+        / abs(np.linalg.det(current_small_augmented)))
+    assert abs(measured_design_gain / optimal_design_gain - 1.0) < 0.004
+
     # A repeated nonzero eigenvalue is a genuine scalar-feature obstruction.
     # The complete-graph generator has a three-dimensional eigenspace at -4;
     # every scalar Krylov iterate is therefore collinear with F.
@@ -338,6 +419,18 @@ def verify_krylov_observability():
     print("maximum leading-constant relative errors: "
           f"{np.max(augmented_constant_relative_errors):.3e}/"
           f"{np.max(response_constant_relative_errors):.3e}")
+    print("capped determinant-optimal nodes for four states: "
+          + " ".join(f"{value:.9f}" for value in capped_fekete_nodes(3)))
+    print(f"leading determinant gain over the existing capped design: "
+          f"{optimal_design_gain:.9f}")
+    print(f"measured determinant gain at epsilon={epsilon:g}: "
+          f"{measured_design_gain:.9f}")
+    print("optimal/equispaced determinant gains for 3--9 states: "
+          + " ".join(f"{value:.6f}" for value in design_ratios))
+    print(f"maximum Fekete equilibrium residual: "
+          f"{maximum_gradient_residual:.3e}")
+    print(f"smallest strict-concavity eigenvalue gap: "
+          f"{least_hessian_gap:.6f}")
     print("repeated-eigenvalue scalar observability rank: 1")
 
 
