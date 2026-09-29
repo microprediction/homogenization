@@ -3,8 +3,10 @@
 The reference calculation integrates the exact scalar equations induced by the
 original two-by-two pricing system.  A direct integration of that system on a
 finite interval and a constant-forcing closed form provide separate checks.
-The final calculation lets the switching generator itself vary and isolates
-the loss caused by its moving invariant distribution.
+The later calculations let the switching generator itself vary, isolate the
+loss caused by its moving invariant distribution, and certify an all-order
+periodic Floquet recursion through the third inverse-speed coefficient on a
+nonreversible three-state example.
 """
 
 from __future__ import annotations
@@ -1700,7 +1702,12 @@ def stationary_row(generator: np.ndarray) -> np.ndarray:
 
 
 def finite_chain_floquet_coefficients() -> tuple[float, float, float, float]:
-    """Mean and the first two finite-chain Floquet coefficients."""
+    """Mean and the first two finite-chain Floquet coefficients.
+
+    This deliberately uses differentiated pointwise formulas.  The independent
+    all-order recursion below instead differentiates complete periodic profiles
+    spectrally.
+    """
     integrands = []
     grid = np.linspace(0.0, PERIOD, 20000, endpoint=False)
     one = np.ones(3)
@@ -1781,6 +1788,114 @@ def finite_chain_floquet_coefficients() -> tuple[float, float, float, float]:
         float(averages[2]),
         float(averages[3]),
     )
+
+
+def finite_chain_floquet_recursion(
+    maximum_order: int = 3, grid_size: int = 8192
+) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
+    """All-order periodic solvability recursion on the moving three-state chain.
+
+    If ``u[0] = 1`` and ``pi(t) @ u[n](t) = 0`` for ``n >= 1``, the local
+    Floquet drifts and profiles obey
+
+        b_n = pi @ (D u_n - u_n'),
+        Q u_{n+1} = u_n' - (D - b_0 I) u_n
+                      + sum_{j=1}^n b_j u_{n-j}.
+
+    The returned coefficient ``lambda[n]`` is the period average of ``b_n``.
+    Periodic FFT differentiation makes this implementation independent of the
+    hand-differentiated first- and second-order formulas above.
+    """
+    if maximum_order < 1:
+        raise ValueError("maximum_order must be positive")
+    times = np.linspace(0.0, PERIOD, grid_size, endpoint=False)
+    one = np.ones(3)
+    generators = np.asarray(
+        [periodic_three_state_generator(float(time)) for time in times]
+    )
+    forcings = np.asarray(
+        [periodic_three_state_forcing(float(time)) for time in times]
+    )
+    stationary_rows = np.asarray(
+        [stationary_row(generator) for generator in generators]
+    )
+    group_inverses = []
+    for generator, pi in zip(generators, stationary_rows):
+        projection = np.outer(one, pi)
+        group_inverses.append(
+            np.linalg.inv(generator - projection) + projection
+        )
+    group_inverses = np.asarray(group_inverses)
+    frequencies = 2 * np.pi * np.fft.fftfreq(
+        grid_size, d=PERIOD / grid_size
+    )
+
+    def derivative(values: np.ndarray) -> np.ndarray:
+        transformed = np.fft.fft(values, axis=0)
+        return np.fft.ifft(
+            1j * frequencies[:, None] * transformed, axis=0
+        ).real
+
+    profiles = [np.tile(one, (grid_size, 1))]
+    local_drifts = [
+        np.einsum(
+            "ni,nij,nj->n", stationary_rows, forcings, profiles[0]
+        )
+    ]
+    identity = np.eye(3)
+    centered_residuals = []
+    gauge_residuals = []
+    for order in range(maximum_order):
+        profile = profiles[order]
+        profile_derivative = derivative(profile)
+        if order > 0:
+            local_drifts.append(
+                np.einsum(
+                    "ni,nij,nj->n", stationary_rows, forcings, profile
+                )
+                - np.einsum(
+                    "ni,ni->n", stationary_rows, profile_derivative
+                )
+            )
+        right_hand_side = profile_derivative - np.einsum(
+            "nij,nj->ni",
+            forcings - local_drifts[0][:, None, None] * identity,
+            profile,
+        )
+        for drift_order in range(1, order + 1):
+            right_hand_side += (
+                local_drifts[drift_order][:, None]
+                * profiles[order - drift_order]
+            )
+        centered_residuals.append(float(np.max(np.abs(np.einsum(
+            "ni,ni->n", stationary_rows, right_hand_side
+        )))))
+        next_profile = np.einsum(
+            "nij,nj->ni", group_inverses, right_hand_side
+        )
+        gauge_residuals.append(float(np.max(np.abs(np.einsum(
+            "ni,ni->n", stationary_rows, next_profile
+        )))))
+        profiles.append(next_profile)
+
+    last_profile_derivative = derivative(profiles[maximum_order])
+    local_drifts.append(
+        np.einsum(
+            "ni,nij,nj->n",
+            stationary_rows,
+            forcings,
+            profiles[maximum_order],
+        )
+        - np.einsum(
+            "ni,ni->n", stationary_rows, last_profile_derivative
+        )
+    )
+    assert max(centered_residuals) < 2e-12
+    assert max(gauge_residuals) < 2e-12
+    coefficients = np.asarray(
+        [float(np.mean(drift)) for drift in local_drifts]
+    )
+    return coefficients, profiles, local_drifts
 
 
 def finite_chain_periodic_errors(
@@ -1903,7 +2018,12 @@ def check_general_periodic_generator() -> None:
     leading_mean, dynamic_drift, geometric_drift, second_drift = (
         finite_chain_floquet_coefficients()
     )
+    recursive_coefficients, _, _ = finite_chain_floquet_recursion(3)
     predicted_drift = dynamic_drift + geometric_drift
+    assert abs(recursive_coefficients[0] - leading_mean) < 2e-12
+    assert abs(recursive_coefficients[1] - predicted_drift) < 2e-12
+    assert abs(recursive_coefficients[2] - second_drift) < 2e-12
+    third_drift = float(recursive_coefficients[3])
     moving_results = []
     fixed_results = []
     print("\nFinite-chain periodic Floquet profile")
@@ -1947,11 +2067,26 @@ def check_general_periodic_generator() -> None:
         )
         for m, result in zip((2.0, 4.0, 8.0, 16.0, 32.0, 64.0), moving_results)
     ]
+    third_order_exponent_errors = [
+        abs(
+            result["exponent"]
+            - leading_mean
+            - predicted_drift / m
+            - second_drift / m ** 2
+            - third_drift / m ** 3
+        )
+        for m, result in zip(
+            (2.0, 4.0, 8.0, 16.0, 32.0, 64.0), moving_results
+        )
+    ]
     first_order_exponent_rate = float(np.log2(
         first_order_exponent_errors[-2] / first_order_exponent_errors[-1]
     ))
     second_order_exponent_rate = float(np.log2(
         second_order_exponent_errors[-2] / second_order_exponent_errors[-1]
+    ))
+    third_order_exponent_rate = float(np.log2(
+        third_order_exponent_errors[-2] / third_order_exponent_errors[-1]
     ))
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
@@ -1974,6 +2109,7 @@ def check_general_periodic_generator() -> None:
     assert abs(measured_drift / predicted_drift - 1) < 0.02
     assert first_order_exponent_rate > 1.95
     assert second_order_exponent_rate > 2.95
+    assert third_order_exponent_rate > 3.9
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2013,14 +2149,20 @@ def check_general_periodic_generator() -> None:
         f"{richardson_second_drift:.10e}, predicted {second_drift:.10e}"
     )
     print(
+        "moving three-state third-order Floquet drift from the all-order "
+        f"recursion: {third_drift:.10e}"
+    )
+    print(
         "finite-chain exponent residual rates: first-order "
         f"{first_order_exponent_rate:.6f}, second-order "
-        f"{second_order_exponent_rate:.6f}"
+        f"{second_order_exponent_rate:.6f}, third-order "
+        f"{third_order_exponent_rate:.6f}"
     )
     print(
         "m=64 exponent residuals: first-order "
         f"{first_order_exponent_errors[-1]:.3e}, second-order "
-        f"{second_order_exponent_errors[-1]:.3e}"
+        f"{second_order_exponent_errors[-1]:.3e}, third-order "
+        f"{third_order_exponent_errors[-1]:.3e}"
     )
 
 

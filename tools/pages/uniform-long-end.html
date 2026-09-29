@@ -679,6 +679,30 @@
       has the same dynamic-plus-geometric form as the first, but acts on the transported
       second profile.</p>
 
+    <h3>All-order Floquet recursion</h3>
+    <p>The calculation is not limited to two corrections. Put $u_0=\mathbf1$ and
+      $b_0=\bar g$. For $n\geq1$, impose the moving gauge $\pi u_n=0$ and define the
+      local drift</p>
+    $$b_n=\pi(Du_n-u_n')=\pi(D-\bar gI)u_n+\pi'u_n.$$
+    <p>Having constructed $u_0,\ldots,u_n$ and $b_0,\ldots,b_n$, set</p>
+    <div class="equation-card">
+    $$R_n=u_n'-(D-b_0I)u_n+\sum_{j=1}^n b_j u_{n-j},
+      \qquad u_{n+1}=Q^\#R_n.$$
+    </div>
+    <p>The solvability identity $\pi R_n=0$ follows exactly from the definition of $b_n$,
+      the gauges, and $(\pi u_n)'=0$. Consequently, for every fixed $N$, if $Q,D$ are
+      $C^{N+1}$ and periodic and the finite-state generators have a uniform
+      spectral gap,</p>
+    $$\lambda_m=\sum_{n=0}^N{\langle b_n\rangle\over m^n}
+      +O_N(m^{-N-1}).$$
+    <p>This is a fixed-order statement: it neither asserts convergence of the infinite
+      series nor a remainder uniform in $N$. Substitution of the truncated periodic profile
+      leaves a centered residual of order $m^{-N}$; the uniform fast exponential dichotomy
+      gains the next factor $m^{-1}$, while period averaging selects
+      $\langle b_N\rangle$. Induction gives the displayed expansion. The exact Floquet
+      exponent should still be retained in a maturity-uniform price: any finite truncation
+      eventually accumulates secular error as $T$ grows.</p>
+
     <h3>Why the orders differ</h3>
     <p>Perron decomposition of the monodromy gives
     $\mathbf1=c_mv_m+z_{m,0}$ with $w_m^\top z_{m,0}=0$. Singular perturbation gives
@@ -732,6 +756,24 @@
       Richardson extrapolation from $m=32,64$ gives $0.0012053936$, within $0.049\%$ of
       the analytic $\lambda_2$. Including the second coefficient reduces the raw exponent
       error by a factor of about $56$.</p>
+    <p>An independent FFT implementation of the all-order recursion reproduces both
+      hand-differentiated coefficients within $2\times10^{-12}$ and gives</p>
+    $$\lambda_3=-0.0013369242873.$$
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>through $m^{-2}$</th><th>through $m^{-3}$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>2.90342e-6</td><td>2.92236e-7</td></tr>
+        <tr><td>16</td><td>3.44613e-7</td><td>1.82153e-8</td></tr>
+        <tr><td>32</td><td>4.19308e-8</td><td>1.13113e-9</td></tr>
+        <tr><td>64</td><td>5.17034e-9</td><td>7.03819e-11</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The third-corrected residual has measured order $4.0064$. Centering and gauge
+      residuals in every recursive solve are below $2\times10^{-12}$. This verifies the
+      recursion on a genuinely moving, nonreversible three-state generator rather than on
+      the two-state reduction.</p>
 
     <h2>What remains beyond this theorem</h2>
     <p>The fixed-generator theorem assumes a diagonal forcing of bounded total variation and $D(0)=0$ only when
@@ -739,8 +781,10 @@
     near-end forcing. The moving-generator extension requires a uniformly ergodic smooth family and integrable
     total variation. The Floquet theorems above separately cover smooth periodic forcing and smooth periodic
     two-state generators with a uniform rate gap; the exact-profile theorem extends maturity-uniform control to
-    every finite periodic chain and supplies its explicit first two coefficients. Rough nonperiodic coefficients with
-    infinite variation, generators that lose their gap, and infinite-state factors still require different estimates.</p>
+    every finite periodic chain and supplies an explicit fixed-order recursion. Rough nonperiodic coefficients with
+    infinite variation, generators that lose their gap, and infinite-state factors still require different estimates.
+    The all-order Floquet expansion is asymptotic at each fixed order; no convergence or
+    order-uniform remainder is claimed.</p>
     <p>The fixed-horizon expansion and its initial layers belong to the singular-perturbation framework summarized
     by <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a> and originate with
     <a href="https://www.mathnet.ru/eng/sm5548">Tikhonov&apos;s 1952 theorem</a>; the perturbed-semigroup viewpoint goes back to
