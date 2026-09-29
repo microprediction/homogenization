@@ -7,7 +7,8 @@ and the independent Feynman--Kac characteristic function check that
 representation.  A second matrix Feynman--Kac calculation treats unequal
 transition rates and checks the stationary-weighted cancellation of unequal
 conditional-coverage errors.  A nonreversible three-state calculation then
-checks the general Poisson-equation coefficient and its second-order residual.
+checks the general Poisson-equation coefficients through second order and the
+resulting third-order residual.
 The certificate also checks the exact covariance of overlapping occupation
 windows, its fast-switching effective-sample limit, and the exact finite-sample
 coverage of a sliding-window order-statistic threshold.  It additionally
@@ -1143,11 +1144,12 @@ def finite_chain_path_coefficients(
     state_values: np.ndarray,
     signal: float = MU,
     noise: float = SIGMA,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Poisson-equation coefficients of the conditional coverage gaps.
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]:
+    """First two Poisson-equation coefficients of the coverage gaps.
 
-    Returns the coefficient vector, stationary law, and group inverse Q#.
-    The convention is Q Q# = Q# Q = I - 1 pi.
+    Returns the first- and second-order coefficient vectors, stationary law,
+    group inverse Q#, and asymptotic variance rate.  The convention is
+    Q Q# = Q# Q = I - 1 pi.
     """
     generator = np.asarray(generator, dtype=float)
     state_values = np.asarray(state_values, dtype=float)
@@ -1156,13 +1158,27 @@ def finite_chain_path_coefficients(
     projection = np.outer(one, stationary)
     group_inverse = np.linalg.inv(generator - projection) + projection
     centered = state_values - stationary @ state_values
-    coefficients = (
-        signal
-        / noise
-        * norm.pdf(norm.ppf(TARGET))
-        * (group_inverse @ centered)
+    h = group_inverse @ centered
+    variance_rate = -2.0 * stationary @ (centered * h)
+    second_geometry = group_inverse @ (centered * h)
+    standardized_signal = signal / noise
+    z = norm.ppf(TARGET)
+    density = norm.pdf(z)
+    first_coefficients = standardized_signal * density * h
+    second_coefficients = -density * (
+        standardized_signal**2 * z * second_geometry
+        + 0.5 * standardized_signal**3 * variance_rate * h
     )
-    return coefficients, stationary, group_inverse
+    assert variance_rate >= -1e-14
+    assert abs(stationary @ first_coefficients) < 2e-15
+    assert abs(stationary @ second_coefficients) < 2e-15
+    return (
+        first_coefficients,
+        second_coefficients,
+        stationary,
+        group_inverse,
+        variance_rate,
+    )
 
 
 def mixture_characteristic(k: float, c: float, start: int) -> complex:
@@ -1418,7 +1434,13 @@ def main() -> None:
         ]
     )
     finite_values = np.array([-1.0, 0.35, 1.4])
-    finite_coefficients, finite_stationary, finite_group_inverse = (
+    (
+        finite_coefficients,
+        finite_second_coefficients,
+        finite_stationary,
+        finite_group_inverse,
+        finite_variance_rate,
+    ) = (
         finite_chain_path_coefficients(finite_generator, finite_values)
     )
     projection = np.outer(np.ones(3), finite_stationary)
@@ -1429,16 +1451,17 @@ def main() -> None:
         np.abs(finite_group_inverse @ finite_generator - (np.eye(3) - projection))
     ) < 2e-15
     assert abs(finite_stationary @ finite_coefficients) < 2e-15
+    assert abs(finite_stationary @ finite_second_coefficients) < 2e-15
     stationary_flux = finite_stationary[:, None] * finite_generator
     assert np.max(np.abs(stationary_flux - stationary_flux.T)) > 0.1
 
     # The general formula must reduce exactly to the unequal two-state result.
-    two_state_coefficients, _, _ = finite_chain_path_coefficients(
+    two_state_coefficients, _, _, _, _ = finite_chain_path_coefficients(
         np.array([[-alpha, alpha], [beta, -beta]]), state_values
     )
     assert np.max(np.abs(two_state_coefficients - unequal_coefficients)) < 3e-15
 
-    finite_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0])
+    finite_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0, 1024.0])
     finite_thresholds = []
     finite_gaps = []
     for c in finite_scales:
@@ -1455,6 +1478,35 @@ def main() -> None:
     )
     finite_rates = np.log2(finite_residuals[:-1] / finite_residuals[1:])
     assert np.min(finite_rates[-1]) > 1.95
+    finite_second_residuals = np.abs(
+        finite_gaps
+        - finite_coefficients[None, :] / finite_scales[:, None]
+        - finite_second_coefficients[None, :] / finite_scales[:, None] ** 2
+    )
+    finite_second_rates = np.log2(
+        finite_second_residuals[:-1] / finite_second_residuals[1:]
+    )
+    assert np.min(finite_second_rates[-1]) > 2.95
+    scaled_second_limit = finite_scales[-1] ** 2 * (
+        finite_gaps[-1] - finite_coefficients / finite_scales[-1]
+    )
+    assert np.max(
+        np.abs(scaled_second_limit - finite_second_coefficients)
+    ) < 0.005
+    limiting_threshold = (
+        MU * (finite_stationary @ finite_values)
+        + SIGMA * norm.ppf(TARGET)
+    )
+    threshold_coefficient = (
+        MU**2
+        * finite_variance_rate
+        * norm.ppf(TARGET)
+        / (2.0 * SIGMA)
+    )
+    scaled_threshold_shift = finite_scales[-1] * (
+        finite_thresholds[-1] - limiting_threshold
+    )
+    assert abs(scaled_threshold_shift - threshold_coefficient) < 0.005
     print("\nFinite-chain path-score crossover (nonreversible three-state example)")
     print("stationary law: " + ", ".join(f"{x:.8f}" for x in finite_stationary))
     print(" c       q_pool        c*gap 1        c*gap 2        c*gap 3")
@@ -1468,6 +1520,21 @@ def main() -> None:
         + ", ".join(f"{x:.8f}" for x in finite_coefficients)
         + "; last residual rates "
         + ", ".join(f"{x:.6f}" for x in finite_rates[-1])
+    )
+    print(
+        "variance rate: "
+        f"{finite_variance_rate:.8f}; predicted second coefficients: "
+        + ", ".join(f"{x:.8f}" for x in finite_second_coefficients)
+    )
+    print(
+        "scaled pooled-threshold shift at c=1024: "
+        f"{scaled_threshold_shift:.8f}; predicted {threshold_coefficient:.8f}"
+    )
+    print(
+        "scaled second-order residual at c=1024: "
+        + ", ".join(f"{x:.8f}" for x in scaled_second_limit)
+        + "; last third-order residual rates "
+        + ", ".join(f"{x:.6f}" for x in finite_second_rates[-1])
     )
 
     # The state-aware thresholds differ from the pooled threshold by +/-mu/(2c).
@@ -2333,6 +2400,7 @@ def main() -> None:
         "PASS: symmetric and unequal-rate path crossovers, predictor "
         "crossover, overlap covariance, "
         "finite-sample terminal and strided-window rank coverage, general "
+        "finite-chain path coefficients through second order, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
