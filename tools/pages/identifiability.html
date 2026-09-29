@@ -455,6 +455,43 @@
       nine states are
       $(1,1.086729,1.302945,1.733914,2.568915,4.244826,7.831480)$.</p>
 
+    <h3>Three states: D-, E-, and condition-optimal designs differ</h3>
+    <p>The caveat is substantive even in the smallest nontrivial case. For three states,
+      write the two normalized maturities as $(c,1)$, $0&lt;c&lt;1$. The response
+      coefficient matrix is</p>
+    $$V_c=\begin{pmatrix}c&amp;1\\ c^2/2&amp;1/2\end{pmatrix}.$$
+    <p>Its LQ diagonal entries, in absolute value, are</p>
+    <div class="equation-card">
+    $$\ell_1(c)=\sqrt{1+c^2},\qquad
+      \ell_2(c)={c(1-c)\over2\sqrt{1+c^2}}.$$
+    </div>
+    <p>The model-dependent Krylov QR factors multiply these quantities but do not change
+      their optimizers. Consequently three natural local criteria give three different
+      designs:</p>
+    <div class="equation-card">
+    $$\begin{array}{c|c|c}
+      \text{criterion}&amp;\text{objective}&amp;c^\star\\ \hline
+      \text{determinant (D)}&amp;|\det V_c|&amp;1/2\\
+      \text{weakest direction (E)}&amp;\ell_2(c)&amp;
+        c_E^3+2c_E-1=0\\
+      \text{response condition}&amp;\ell_1(c)/\ell_2(c)&amp;\sqrt2-1
+    \end{array}$$
+    </div>
+    <p>Here
+      $c_E=0.4533976515$. The cubic has exactly one root in $(0,1)$ because its
+      derivative is positive. Direct differentiation gives all three optima and shows
+      they are unique. The condition row concerns the response-only matrix
+      $C_\epsilon$; for the augmented matrix $A_\epsilon$, the largest normalization
+      singular value is node-independent to leading order, so its condition optimum
+      coincides with the E-optimum.</p>
+    <p>The E-design raises the weakest-direction constant by $0.941474\%$ relative to
+      the D-design. In a cyclic three-state certificate at $\epsilon=0.001$, the measured
+      weakest constants for the D/E/response-condition designs are respectively
+      $(0.0538838754,0.0543941976,0.0540253769)$, while the corresponding response
+      condition coefficients are $(22.5707789,21.9579293,21.7937489)$. Every measured
+      coefficient is within $0.3\%$ of its QR/LQ limit. Thus maximizing the determinant
+      cannot be silently reinterpreted as optimizing the hardest prior direction.</p>
+
     <h3>The $T=O(m^{-1})$ boundary layer</h3>
     <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
       trivial $1/m$ response scaling:</p>

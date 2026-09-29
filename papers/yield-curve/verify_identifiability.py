@@ -385,6 +385,78 @@ def verify_krylov_observability():
         / abs(np.linalg.det(current_small_augmented)))
     assert abs(measured_design_gain / optimal_design_gain - 1.0) < 0.004
 
+    # Determinant optimality, weakest-direction optimality, and condition
+    # optimality are genuinely different.  For three states the two maturity
+    # nodes can be written (c,1).  The last LQ diagonal of
+    # [[c,1],[c^2/2,1/2]] is
+    # c(1-c)/(2 sqrt(1+c^2)).  It is maximized at the unique root of
+    # c^3+2c-1=0, while the asymptotic condition coefficient is minimized at
+    # sqrt(2)-1.  The Vandermonde determinant is maximized at c=1/2.
+    e_optimal_node = next(
+        root.real for root in np.roots([1.0, 0.0, 2.0, -1.0])
+        if abs(root.imag) < 1e-12 and 0.0 < root.real < 1.0)
+    condition_optimal_node = math.sqrt(2.0) - 1.0
+    determinant_optimal_node = 0.5
+
+    def coefficient_constants(node):
+        first = math.sqrt(1.0 + node * node)
+        second = node * (1.0 - node) / (2.0 * first)
+        return first, second
+
+    d_constants = coefficient_constants(determinant_optimal_node)
+    e_constants = coefficient_constants(e_optimal_node)
+    c_constants = coefficient_constants(condition_optimal_node)
+    assert abs(e_optimal_node ** 3 + 2.0 * e_optimal_node - 1.0) < 1e-14
+    assert e_constants[1] > c_constants[1] > d_constants[1]
+    assert (c_constants[0] / c_constants[1]
+            < e_constants[0] / e_constants[1]
+            < d_constants[0] / d_constants[1])
+
+    # Pull the coefficient comparison back through a genuine cyclic
+    # three-state response.  The model QR factor is common to all designs, so
+    # the exact small-epsilon rankings must reproduce the analytic ones.
+    design_Q = np.array([
+        [-1.3, 1.0, 0.3],
+        [0.2, -0.9, 0.7],
+        [0.6, 0.4, -1.0],
+    ])
+    design_pi = stationary(design_Q)
+    design_feature = np.array([[1.0], [-0.5], [0.2]])
+    design_centered = (
+        design_feature - np.outer(np.ones(3), design_pi @ design_feature))
+    design_krylov = np.column_stack([
+        design_centered, design_Q @ design_centered])
+    assert np.linalg.matrix_rank(design_krylov, tol=1e-12) == 2
+    _, design_krylov_triangular = np.linalg.qr(design_krylov)
+    design_epsilon = 0.001
+    measured_minimum_constants = []
+    measured_condition_constants = []
+    predicted_minimum_constants = []
+    predicted_condition_constants = []
+    for node in (determinant_optimal_node,
+                 e_optimal_node, condition_optimal_node):
+        first, second = coefficient_constants(node)
+        predicted_minimum_constants.append(
+            abs(design_krylov_triangular[1, 1]) * second)
+        predicted_condition_constants.append(
+            abs(design_krylov_triangular[0, 0]) * first
+            / predicted_minimum_constants[-1])
+        design_response = transient_response_matrix(
+            design_Q, design_centered, design_epsilon * np.array([node, 1.0]))
+        singular_values = np.linalg.svd(design_response, compute_uv=False)
+        measured_minimum_constants.append(
+            singular_values[-1] / design_epsilon ** 2)
+        measured_condition_constants.append(
+            design_epsilon * singular_values[0] / singular_values[-1])
+    assert np.max(np.abs(
+        np.array(measured_minimum_constants)
+        / np.array(predicted_minimum_constants) - 1.0)) < 0.003
+    assert np.max(np.abs(
+        np.array(measured_condition_constants)
+        / np.array(predicted_condition_constants) - 1.0)) < 0.003
+    assert measured_minimum_constants[1] > measured_minimum_constants[0]
+    assert measured_condition_constants[2] < measured_condition_constants[1]
+
     # A repeated nonzero eigenvalue is a genuine scalar-feature obstruction.
     # The complete-graph generator has a three-dimensional eigenspace at -4;
     # every scalar Krylov iterate is therefore collinear with F.
@@ -431,6 +503,17 @@ def verify_krylov_observability():
           f"{maximum_gradient_residual:.3e}")
     print(f"smallest strict-concavity eigenvalue gap: "
           f"{least_hessian_gap:.6f}")
+    print("three-state D/E/condition-optimal interior nodes: "
+          f"{determinant_optimal_node:.9f} {e_optimal_node:.9f} "
+          f"{condition_optimal_node:.9f}")
+    print(f"E-optimal weakest-direction gain over D-optimal: "
+          f"{e_constants[1] / d_constants[1]:.9f}")
+    print("measured weakest-direction constants (D/E/condition): "
+          + " ".join(f"{value:.9g}"
+                     for value in measured_minimum_constants))
+    print("measured condition coefficients (D/E/condition): "
+          + " ".join(f"{value:.9g}"
+                     for value in measured_condition_constants))
     print("repeated-eigenvalue scalar observability rank: 1")
 
 
