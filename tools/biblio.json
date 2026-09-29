@@ -2418,5 +2418,16 @@
   "doi": "10.1007/bf01432880",
   "url": "https://doi.org/10.1007/bf01432880",
   "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices. The credit-geometry page uses the same coalescing-node structure to quantify how a full-rank maturity-loading Gram matrix becomes singular."
+ },
+ {
+  "role": "survey_finance",
+  "key": "Hermite1878",
+  "authors": "Hermite, C.",
+  "year": 1878,
+  "title": "Sur la formule d'interpolation de Lagrange",
+  "venue": "Journal für die reine und angewandte Mathematik 84:70-79",
+  "doi": "10.1515/crll.1878.84.70",
+  "url": "https://doi.org/10.1515/crll.1878.84.70",
+  "annotation": "Introduces the derivative-matching interpolation construction whose confluent Vandermonde structure underlies the clustered-loading collision theorem."
  }
 ]

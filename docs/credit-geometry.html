@@ -484,6 +484,63 @@
       the displayed constant, and the condition-number slope is
       $-5.999901$.</p>
 
+    <h3>Partial collisions have a cluster spectrum</h3>
+    <p>The one-center hierarchy has a precise multi-center extension. Let
+      $\alpha_1,\ldots,\alpha_g$ be distinct, let cluster $c$ contain
+      $m_c$ distinct fixed nodes $x_{c,1},\ldots,x_{c,m_c}$, and put
+      $\kappa_{c,j}=\alpha_c+\epsilon x_{c,j}$. Assume the finite jet family</p>
+    $$\left\{\partial_\kappa^rB_{\alpha_c}:
+      1\le c\le g,\ 0\le r&lt;m_c\right\}$$
+    <p>is linearly independent in $L^2[0,T]$. If
+      $r_1\le\cdots\le r_d$ is the sorted multiset
+      $\biguplus_{c=1}^g\{0,1,\ldots,m_c-1\}$, then the descending
+      eigenvalues of the loading Gram matrix satisfy, as $\epsilon\downarrow0$
+      with $g$, the cluster data, and $T$ fixed,</p>
+    <div class="equation-card">
+    $$\lambda_j(J_\epsilon)=\Theta(\epsilon^{2r_j}),
+      \qquad 1\le j\le d=\sum_c m_c.$$
+    </div>
+    <p>Thus exactly $g$ eigenvalues stay of constant order. If
+      $m_{\max}=\max_c m_c$, then</p>
+    <div class="equation-card">
+    $$\operatorname{cond}_2J_\epsilon
+      =\Theta(\epsilon^{-2(m_{\max}-1)}),\qquad
+      \det J_\epsilon
+      =\Theta\!\left(\epsilon^{2\sum_c {m_c\choose2}}\right).$$
+    </div>
+    <p>The determinant coefficient is explicit. Order the jet vectors by
+      $(c,r)$ and let $G_{\rm jet}$ be their Gram matrix. Then</p>
+    $$\det J_\epsilon=
+      \epsilon^{2\sum_c {m_c\choose2}}\det G_{\rm jet}
+      \prod_{c=1}^g
+      {\prod_{i&lt;j}(x_{c,j}-x_{c,i})^2
+       \over\prod_{r=0}^{m_c-1}(r!)^2}\{1+O(\epsilon)\}.$$
+    <p>For the proof, Taylor-expand separately at each $\alpha_c$ and
+      right-multiply each cluster by its fixed scaled-Vandermonde inverse.
+      The transformed columns are
+      $\epsilon^r\{\partial_\kappa^rB_{\alpha_c}+O(\epsilon)\}$.
+      Jet independence bounds the resulting synthesis map above and below
+      by the diagonal map with entries $\epsilon^r$, proving all singular
+      exponents; squaring gives the Gram exponents. Taking the exterior
+      product gives the coefficient above. This is the finite-dimensional
+      derivative-matching structure introduced by
+      <a href="./bibliography.html#Hermite1878">Hermite (1878)</a> and is
+      consistent with the confluent-Vandermonde bounds of
+      <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a>.</p>
+    <p>This theorem is conditional on the displayed joint jet independence;
+      distinct cluster centers alone are not asserted to guarantee it for an
+      arbitrary analytic loading family. The positive-CIR certificate checks
+      that condition at 80-digit precision for clusters of sizes $(3,2,1)$,
+      centers $(0.8,2,4)$, common volatility $0.02$, and $T=4$. It finds
+      eigenvalue slopes
+      $(0.000007,0.000058,0.000344,1.999615,2.000232,3.999713)$,
+      determinant slope $7.999970$, condition-number slope $-3.999706$, and
+      determinant ratio $0.999999999999953$ against the explicit coefficient.
+      Consequently, one rank-one fixed-feature Green--Kubo matrix with
+      nonzero loadings still yields full integrated rank for every
+      sufficiently small $\epsilon&gt;0$; cluster multiplicities, rather than the number of
+      regimes, determine the asymptotic conditioning.</p>
+
     <h3>The explicit two-name benchmark</h3>
     <p>Take a symmetric two-state generator
       $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,

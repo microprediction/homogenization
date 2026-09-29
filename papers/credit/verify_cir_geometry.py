@@ -9,6 +9,10 @@ For four nearly coalescing mean-reversion rates, a high-precision certificate
 checks the confluent-Vandermonde determinant constant, the eigenvalue powers
 0, 2, 4, 6 and their leading constants, and the resulting sixth-power
 condition-number blow-up.
+For partially coalescing rates in clusters of sizes three, two, and one, a
+second high-precision check verifies the Hermite-jet exponent multiset
+0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
+condition-number blow-up.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -446,9 +450,130 @@ def coalescing_loading_checks():
             eigenvalue_constants, constant_relative_errors)
 
 
+def clustered_loading_checks():
+    """Certify the partial-collision law for several distinct clusters.
+
+    The cluster sizes (3, 2, 1) predict squared singular-value powers
+    (0, 0, 0, 2, 2, 4), determinant power 8, and condition-number power -4.
+    The determinant coefficient is the jet Gram determinant times one
+    squared, factorial-scaled Vandermonde factor for each cluster.
+    """
+    mp.mp.dps = 80
+    horizon = mp.mpf("4")
+    sigma = mp.mpf("0.02")
+    centers = [mp.mpf(value) for value in ("0.8", "2.0", "4.0")]
+    nodes = [
+        [mp.mpf(value) for value in ("-1", "0", "1")],
+        [mp.mpf(value) for value in ("-0.75", "0.75")],
+        [mp.mpf("0")],
+    ]
+    dimension = sum(map(len, nodes))
+
+    def loading(t, kappa):
+        gamma = mp.sqrt(kappa * kappa + 2 * sigma * sigma)
+        growth = mp.expm1(gamma * t)
+        return 2 * growth / ((gamma + kappa) * growth + 2 * gamma)
+
+    jets = [
+        (center, order)
+        for center, cluster_nodes in zip(centers, nodes)
+        for order in range(len(cluster_nodes))
+    ]
+    jet_gram = mp.matrix([
+        [mp.quad(
+            lambda t, center_j=center_j, order_j=order_j,
+            center_k=center_k, order_k=order_k:
+            mp.diff(lambda kappa: loading(t, kappa), center_j, order_j)
+            * mp.diff(lambda kappa: loading(t, kappa), center_k, order_k),
+            [0, horizon],
+        ) for center_k, order_k in jets]
+        for center_j, order_j in jets
+    ])
+    jet_determinant = mp.det(jet_gram)
+    assert jet_determinant > mp.mpf("1e-19")
+
+    determinant_constant = jet_determinant
+    determinant_power = 0
+    expected_powers = []
+    for cluster_nodes in nodes:
+        cluster_size = len(cluster_nodes)
+        determinant_power += cluster_size * (cluster_size - 1)
+        expected_powers.extend(2 * order for order in range(cluster_size))
+        for j in range(cluster_size):
+            for i in range(j):
+                determinant_constant *= (cluster_nodes[j]
+                                         - cluster_nodes[i]) ** 2
+        determinant_constant /= mp.fprod(
+            mp.factorial(order) ** 2 for order in range(cluster_size)
+        )
+    expected_powers.sort()
+
+    epsilons = [mp.mpf(10) ** (-power) for power in range(2, 8)]
+    spectra = []
+    determinant_ratios = []
+    for epsilon in epsilons:
+        kappas = [
+            center + epsilon * node
+            for center, cluster_nodes in zip(centers, nodes)
+            for node in cluster_nodes
+        ]
+        gram = mp.matrix([
+            [mp.quad(lambda t, kappa_j=kappa_j, kappa_k=kappa_k:
+                     loading(t, kappa_j) * loading(t, kappa_k),
+                     [0, horizon])
+             for kappa_k in kappas]
+            for kappa_j in kappas
+        ])
+        eigenvalues = sorted(mp.eigsy(gram, eigvals_only=True), reverse=True)
+        assert eigenvalues[-1] > 0
+        spectra.append(eigenvalues)
+        determinant_ratios.append(
+            mp.det(gram)
+            / (epsilon ** determinant_power * determinant_constant)
+        )
+
+    log_eps = np.log(np.array([float(value) for value in epsilons]))
+    slopes = []
+    for index in range(dimension):
+        log_eigenvalue = np.log(np.array([
+            float(spectrum[index]) for spectrum in spectra
+        ]))
+        slopes.append(float(np.polyfit(log_eps, log_eigenvalue, 1)[0]))
+    determinant_slope = float(np.polyfit(
+        log_eps,
+        np.log(np.array([float(mp.fprod(spectrum))
+                         for spectrum in spectra])),
+        1,
+    )[0])
+    condition_slope = float(np.polyfit(
+        log_eps,
+        np.log(np.array([float(spectrum[0] / spectrum[-1])
+                         for spectrum in spectra])),
+        1,
+    )[0])
+
+    assert np.max(abs(np.array(slopes) - expected_powers)) < 5e-4
+    assert abs(determinant_slope - determinant_power) < 5e-4
+    assert abs(condition_slope + max(expected_powers)) < 5e-4
+    assert abs(float(determinant_ratios[-1]) - 1) < 1e-11
+
+    print("\nclustered CIR loading certificate")
+    print("  cluster sizes " + " ".join(str(len(cluster))
+                                          for cluster in nodes))
+    print("  eigenvalue log-log slopes "
+          + " ".join(f"{slope:.6f}" for slope in slopes))
+    print(f"  determinant slope {determinant_slope:.6f}")
+    print(f"  determinant ratio {float(determinant_ratios[-1]):.12f}")
+    print(f"  condition-number slope {condition_slope:.6f}")
+    print("  jet Gram determinant " + mp.nstr(jet_determinant, 12))
+    return (slopes, determinant_slope, determinant_ratios,
+            condition_slope, jet_determinant)
+
+
 def main():
     rank_amplification_checks()
     coalescing_loading_checks()
+    clustered_loading_checks()
     assert np.all(2 * KAPPA[:, None] * THETA > SIGMA[:, None] ** 2)
     Bs = loadings(T)
     J = np.array([[quad(lambda t: Bs[j](t) * Bs[k](t), 0, T,
