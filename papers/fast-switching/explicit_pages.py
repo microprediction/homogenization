@@ -422,9 +422,10 @@ def counts():
       =2\delta e^{-1}(1-e^{-1})^n\ne0.$$
     <p>For the certificate&apos;s $k=4$ construction, the maximum discrepancy among the first four factorial
       cumulants is ''' + f'{twins["factorial_gap"]:.2e}' + r''', while the zero-count probability differs by
-      ''' + f'{twins["zero_gap"]:.12f}' + r''' and the total-variation distance between the two count laws is
-      ''' + f'{twins["total_variation"]:.12f}' + r'''. Full-law identification, all-order analytic identification,
-      and finite-order cumulant identification are therefore distinct claims.</p>
+      ''' + f'{twins["zero_gap"]:.12f}' + r''' and the numerically summed total-variation distance is
+      ''' + f'{twins["total_variation"]:.12f}' + r''', with omitted contribution below
+      ''' + f'{twins["total_variation_tail_bound"]:.2e}' + r'''. Full-law identification, all-order analytic
+      identification, and finite-order cumulant identification are therefore distinct claims.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative

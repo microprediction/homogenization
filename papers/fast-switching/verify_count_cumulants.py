@@ -89,6 +89,7 @@ def finite_cumulant_twins(order=4, relative_perturbation=0.4):
     exact_zero_gap = (2.0 * delta * math.exp(-1.0)
                       * (1.0 - math.exp(-1.0)) ** n)
     total_variation = 0.5 * np.sum(np.abs(count_plus - count_minus))
+    total_variation_tail_bound = poisson.sf(count_grid[-1], support.max())
 
     assert np.all(plus > 0.0) and np.all(minus > 0.0)
     assert abs(plus.sum() - 1.0) < 1e-15
@@ -98,6 +99,7 @@ def finite_cumulant_twins(order=4, relative_perturbation=0.4):
     assert factorial_gap < 1e-9
     assert abs(zero_gap - exact_zero_gap) < 1e-15
     assert total_variation > 0.0
+    assert total_variation_tail_bound < 1e-50
     return {
         "support": support,
         "plus": plus,
@@ -106,6 +108,7 @@ def finite_cumulant_twins(order=4, relative_perturbation=0.4):
         "factorial_gap": factorial_gap,
         "zero_gap": zero_gap,
         "total_variation": total_variation,
+        "total_variation_tail_bound": total_variation_tail_bound,
     }
 
 
@@ -783,6 +786,8 @@ def main():
     print("finite-order twin zero-count gap", f"{twins['zero_gap']:.12f}")
     print("finite-order twin count total variation",
           f"{twins['total_variation']:.12f}")
+    print("finite-order twin total-variation tail bound",
+          f"{twins['total_variation_tail_bound']:.3e}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
