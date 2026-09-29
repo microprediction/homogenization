@@ -752,12 +752,69 @@ def verify_real_spectrum_all_maturities():
         np.ones(3), generic_response]))
     assert abs(generic_determinant) > 0.15
 
+    # In the three-state complex-spectrum case the complete exceptional set
+    # is the zero set of one explicit scalar kernel.  If the centered
+    # eigenvalues are -a +/- ib, the oriented area of the two complex response
+    # coordinates is, up to one nonzero model constant,
+    #
+    # e^{-a(t1+t2)} sin(b(t2-t1))
+    # - e^{-a t2} sin(b t2) + e^{-a t1} sin(b t1).
+    #
+    # For the directed cycle and chosen feature the constant is -2/sqrt(3).
+    decay = 1.5
+
+    def aliasing_kernel(t1, t2, a=decay, b=frequency):
+        return (
+            math.exp(-a * (t1 + t2)) * math.sin(b * (t2 - t1))
+            - math.exp(-a * t2) * math.sin(b * t2)
+            + math.exp(-a * t1) * math.sin(b * t1)
+        )
+
+    cycle_aliasing_constant = (
+        generic_determinant / aliasing_kernel(0.4, 1.7))
+    assert abs(cycle_aliasing_constant + 2.0 / math.sqrt(3.0)) < 2e-14
+    aliasing_rng = np.random.default_rng(29092026)
+    maximum_aliasing_formula_error = 0.0
+    for _ in range(200):
+        t1, t2 = np.sort(aliasing_rng.uniform(0.05, 8.0, size=2))
+        response = transient_response_matrix(
+            cycle_Q, cycle_feature, (t1, t2))
+        observed = np.linalg.det(np.column_stack([
+            np.ones(3), response]))
+        predicted = cycle_aliasing_constant * aliasing_kernel(t1, t2)
+        maximum_aliasing_formula_error = max(
+            maximum_aliasing_formula_error, abs(observed - predicted))
+    assert maximum_aliasing_formula_error < 2e-14
+
+    # Every pair (k*pi/b,l*pi/b), 1 <= k < l, is exceptional.  The scalar
+    # kernel derivative in the second maturity is nonzero there:
+    # b*(-1)^l*exp(-a*t_l)*((-1)^k*exp(-a*t_k)-1).
+    lattice_pairs = [
+        (k, ell) for k in range(1, 4) for ell in range(k + 1, 5)]
+    maximum_lattice_derivative_error = 0.0
+    for k, ell in ((1, 2), (1, 3), (2, 3)):
+        t1 = k * math.pi / frequency
+        t2 = ell * math.pi / frequency
+        response = transient_response_matrix(
+            cycle_Q, cycle_feature, (t1, t2))
+        derivative_column = expm(cycle_Q * t2) @ cycle_feature[:, 0]
+        observed_slope = np.linalg.det(np.column_stack([
+            np.ones(3), response[:, 0], derivative_column]))
+        kernel_slope = (
+            frequency * (-1) ** ell * math.exp(-decay * t2)
+            * ((-1) ** k * math.exp(-decay * t1) - 1.0))
+        predicted_slope = cycle_aliasing_constant * kernel_slope
+        maximum_lattice_derivative_error = max(
+            maximum_lattice_derivative_error,
+            abs(observed_slope / predicted_slope - 1.0))
+    assert maximum_lattice_derivative_error < 1e-8
+
     # The directed cycle is not exceptional: every three-state generator
-    # with a complex centered pair -a +/- ib has an exceptional pair at
-    # pi/b and 2pi/b.  In complex coordinates the response multiplier is
+    # with a complex centered pair -a +/- ib has an infinite exceptional
+    # lattice at k*pi/b and l*pi/b.  In complex coordinates the response is
     # (exp((-a+ib)t)-1)/(-a+ib), so the second response is exactly
-    # (1-exp(-a*pi/b)) times the first.  Verify this on 100 random
-    # irreducible generators with positive off-diagonal rates.
+    # a real multiple of the first on that lattice.  Verify six pairs on each
+    # of 100 random irreducible generators with positive off-diagonal rates.
     converse_rng = np.random.default_rng(27092027)
     converse_cases = 0
     converse_attempts = 0
@@ -787,24 +844,41 @@ def verify_real_spectrum_all_maturities():
         if abs(np.linalg.det(random_krylov)) < 1e-5:
             continue
 
-        random_exceptional_taus = (math.pi / b, 2.0 * math.pi / b)
-        random_exceptional_response = transient_response_matrix(
-            random_Q, random_feature, random_exceptional_taus)
-        exact_ratio = 1.0 - math.exp(-a * math.pi / b)
-        collinearity_error = np.linalg.norm(
-            random_exceptional_response[:, 1]
-            - exact_ratio * random_exceptional_response[:, 0]
-        ) / np.linalg.norm(random_exceptional_response[:, 1])
-        random_exceptional_augmented = np.column_stack([
-            np.ones(3), random_exceptional_response])
-        exceptional_column_norms = np.linalg.norm(
-            random_exceptional_augmented, axis=0)
-        relative_exceptional_determinant = abs(np.linalg.det(
-            random_exceptional_augmented)) / np.prod(exceptional_column_norms)
-        exceptional_singular_values = np.linalg.svd(
-            random_exceptional_augmented, compute_uv=False)
-        relative_exceptional_singular_value = (
-            exceptional_singular_values[-1] / exceptional_singular_values[0])
+        for k, ell in lattice_pairs:
+            random_exceptional_taus = (
+                k * math.pi / b, ell * math.pi / b)
+            random_exceptional_response = transient_response_matrix(
+                random_Q, random_feature, random_exceptional_taus)
+            exact_ratio = (
+                ((-1) ** ell * math.exp(-a * random_exceptional_taus[1])
+                 - 1.0)
+                / ((-1) ** k * math.exp(-a * random_exceptional_taus[0])
+                   - 1.0))
+            collinearity_error = np.linalg.norm(
+                random_exceptional_response[:, 1]
+                - exact_ratio * random_exceptional_response[:, 0]
+            ) / np.linalg.norm(random_exceptional_response[:, 1])
+            random_exceptional_augmented = np.column_stack([
+                np.ones(3), random_exceptional_response])
+            exceptional_column_norms = np.linalg.norm(
+                random_exceptional_augmented, axis=0)
+            relative_exceptional_determinant = abs(np.linalg.det(
+                random_exceptional_augmented)) / np.prod(
+                    exceptional_column_norms)
+            exceptional_singular_values = np.linalg.svd(
+                random_exceptional_augmented, compute_uv=False)
+            relative_exceptional_singular_value = (
+                exceptional_singular_values[-1]
+                / exceptional_singular_values[0])
+
+            maximum_collinearity_error = max(
+                maximum_collinearity_error, collinearity_error)
+            maximum_relative_exceptional_determinant = max(
+                maximum_relative_exceptional_determinant,
+                relative_exceptional_determinant)
+            maximum_relative_exceptional_singular_value = max(
+                maximum_relative_exceptional_singular_value,
+                relative_exceptional_singular_value)
 
         random_generic_response = transient_response_matrix(
             random_Q, random_feature, (0.4 / b, 1.7 / b))
@@ -814,14 +888,6 @@ def verify_real_spectrum_all_maturities():
             random_generic_augmented)) / np.prod(np.linalg.norm(
                 random_generic_augmented, axis=0))
 
-        maximum_collinearity_error = max(
-            maximum_collinearity_error, collinearity_error)
-        maximum_relative_exceptional_determinant = max(
-            maximum_relative_exceptional_determinant,
-            relative_exceptional_determinant)
-        maximum_relative_exceptional_singular_value = max(
-            maximum_relative_exceptional_singular_value,
-            relative_exceptional_singular_value)
         minimum_relative_generic_determinant = min(
             minimum_relative_generic_determinant,
             relative_generic_determinant)
@@ -877,8 +943,16 @@ def verify_real_spectrum_all_maturities():
     print("determinant-slope convergence orders: "
           f"{determinant_slope_orders}")
     print(f"generic response determinant: {generic_determinant:.9f}")
+    print(f"directed-cycle aliasing constant: "
+          f"{cycle_aliasing_constant:.12f}")
+    print(f"maximum exact aliasing-kernel error: "
+          f"{maximum_aliasing_formula_error:.3e}")
+    print(f"maximum lattice derivative relative error: "
+          f"{maximum_lattice_derivative_error:.3e}")
     print("\nSharp three-state complex-spectrum converse")
     print(f"random complex-spectrum chains checked: {converse_cases}")
+    print(f"exceptional lattice pairs checked: "
+          f"{converse_cases * len(lattice_pairs)}")
     print(f"maximum exact-ratio residual: "
           f"{maximum_collinearity_error:.3e}")
     print(f"maximum relative exceptional determinant: "

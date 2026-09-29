@@ -341,6 +341,45 @@
       maturity pair, not just the directed cycle. This converse is special to a two-dimensional
       centered space; in higher dimensions a complex pair does not by itself force two full
       response columns to be collinear.</p>
+    <h3>The complete three-state aliasing equation</h3>
+    <p>The obstruction is not a single accidental pair. In the same complex coordinate,
+      the real determinant is a nonzero model-dependent constant times the oriented area
+      $\operatorname{Im}\{\overline{z(\tau_1)}z(\tau_2)\}$. Consequently, for every
+      cyclic centered feature, its complete exceptional set is the zero set of</p>
+    <div class="equation-card">
+    $$\mathcal K_{a,b}(\tau_1,\tau_2)
+      =e^{-a(\tau_1+\tau_2)}\sin\{b(\tau_2-\tau_1)\}
+       -e^{-a\tau_2}\sin(b\tau_2)
+       +e^{-a\tau_1}\sin(b\tau_1).$$
+    </div>
+    <p>This formula gives a universal infinite aliasing lattice. Put
+      $\tau_k=k\pi/b$. Since</p>
+    $$\mathcal K_{a,b}(\tau_k,t)
+      =e^{-at}\left\{(-1)^ke^{-a\tau_k}-1\right\}\sin(bt),$$
+    <p>every pair $(\tau_k,\tau_\ell)$ with $1\le k&lt;\ell$ is exceptional.
+      Each lattice zero is simple in its second maturity, because</p>
+    $$\partial_{\tau_2}\mathcal K_{a,b}(\tau_k,\tau_\ell)
+      =b(-1)^\ell e^{-a\tau_\ell}
+       \left\{(-1)^ke^{-a\tau_k}-1\right\}\ne0.$$
+    <p>Thus each lattice point lies on a locally smooth exceptional curve. Conversely,
+      if $\sin(b\tau_1)\ne0$, every exceptional partner must satisfy the explicit bound</p>
+    $$\tau_2\le \tau_1+{1\over a}
+      \log\!\left({1+e^{-a\tau_1}\over|\sin(b\tau_1)|}\right).$$
+    <p>Indeed, beyond this bound the two terms multiplied by $e^{-a\tau_2}$ cannot
+      cancel the nonzero limit $e^{-a\tau_1}\sin(b\tau_1)$. Analyticity then implies
+      that a fixed off-lattice first maturity has only finitely many exceptional
+      partners. The lattice is therefore infinite but nongeneric. This is the same
+      eigenvalue-cycle aliasing mechanism that
+      <a href="./bibliography.html#ParkSahai2013">Park and Sahai</a> show can be broken
+      by nonuniform sampling in linear observation problems.</p>
+    <p>For the directed-cycle certificate,
+      $\det[{\bf1}\ R(\tau_1)\ R(\tau_2)]
+      =-(2/\sqrt3)\mathcal K_{3/2,\sqrt3/2}(\tau_1,\tau_2)$.
+      Two hundred arbitrary maturity pairs reproduce this identity within
+      $1.1\times10^{-14}$. Across 100 random positive-rate complex-spectrum
+      generators, all six lattice pairs with $1\le k&lt;\ell\le4$ are singular:
+      the maximum relative determinant is $3.7\times10^{-16}$ and the maximum
+      exact collinearity residual is $4.4\times10^{-16}$.</p>
     <h3>Generic maturity tuples and exceptional-set fragility</h3>
     <p>The word <em>generic</em> can be made measure-theoretic, for an arbitrary vector
       feature and any fixed number $q$ of maturity blocks. On the connected chamber</p>
