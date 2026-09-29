@@ -5,7 +5,7 @@ original two-by-two pricing system.  A direct integration of that system on a
 finite interval and a constant-forcing closed form provide separate checks.
 The later calculations let the switching generator itself vary, isolate the
 loss caused by its moving invariant distribution, and certify an all-order
-periodic Floquet recursion through the third inverse-speed coefficient on a
+periodic Floquet recursion through the fourth inverse-speed coefficient on a
 nonreversible three-state example.
 """
 
@@ -2018,12 +2018,13 @@ def check_general_periodic_generator() -> None:
     leading_mean, dynamic_drift, geometric_drift, second_drift = (
         finite_chain_floquet_coefficients()
     )
-    recursive_coefficients, _, _ = finite_chain_floquet_recursion(3)
+    recursive_coefficients, _, _ = finite_chain_floquet_recursion(4)
     predicted_drift = dynamic_drift + geometric_drift
     assert abs(recursive_coefficients[0] - leading_mean) < 2e-12
     assert abs(recursive_coefficients[1] - predicted_drift) < 2e-12
     assert abs(recursive_coefficients[2] - second_drift) < 2e-12
     third_drift = float(recursive_coefficients[3])
+    fourth_drift = float(recursive_coefficients[4])
     moving_results = []
     fixed_results = []
     print("\nFinite-chain periodic Floquet profile")
@@ -2088,6 +2089,29 @@ def check_general_periodic_generator() -> None:
     third_order_exponent_rate = float(np.log2(
         third_order_exponent_errors[-2] / third_order_exponent_errors[-1]
     ))
+    speeds = np.asarray((2.0, 4.0, 8.0, 16.0, 32.0, 64.0))
+    signed_first_remainders = np.asarray([
+        result["exponent"] - leading_mean - predicted_drift / m
+        for m, result in zip(speeds, moving_results)
+    ])
+    signed_second_remainders = np.asarray([
+        result["exponent"]
+        - leading_mean
+        - predicted_drift / m
+        - second_drift / m ** 2
+        for m, result in zip(speeds, moving_results)
+    ])
+    signed_third_remainders = np.asarray([
+        result["exponent"]
+        - leading_mean
+        - predicted_drift / m
+        - second_drift / m ** 2
+        - third_drift / m ** 3
+        for m, result in zip(speeds, moving_results)
+    ])
+    critical_first_errors = speeds ** 2 * signed_first_remainders
+    critical_second_errors = speeds ** 3 * signed_second_remainders
+    critical_third_errors = speeds ** 4 * signed_third_remainders
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
         - leading_mean
@@ -2110,6 +2134,9 @@ def check_general_periodic_generator() -> None:
     assert first_order_exponent_rate > 1.95
     assert second_order_exponent_rate > 2.95
     assert third_order_exponent_rate > 3.9
+    assert abs(critical_first_errors[-1] / second_drift - 1) < 0.02
+    assert abs(critical_second_errors[-1] / third_drift - 1) < 0.02
+    assert abs(critical_third_errors[-1] / fourth_drift - 1) < 0.02
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2153,6 +2180,10 @@ def check_general_periodic_generator() -> None:
         f"recursion: {third_drift:.10e}"
     )
     print(
+        "moving three-state fourth-order Floquet drift from the all-order "
+        f"recursion: {fourth_drift:.10e}"
+    )
+    print(
         "finite-chain exponent residual rates: first-order "
         f"{first_order_exponent_rate:.6f}, second-order "
         f"{second_order_exponent_rate:.6f}, third-order "
@@ -2163,6 +2194,16 @@ def check_general_periodic_generator() -> None:
         f"{first_order_exponent_errors[-1]:.3e}, second-order "
         f"{second_order_exponent_errors[-1]:.3e}, third-order "
         f"{third_order_exponent_errors[-1]:.3e}"
+    )
+    print(
+        "critical-horizon log errors at m=64: T=m^2 after first order "
+        f"{critical_first_errors[-1]:.10e}, T=m^3 after second order "
+        f"{critical_second_errors[-1]:.10e}, T=m^4 after third order "
+        f"{critical_third_errors[-1]:.10e}"
+    )
+    print(
+        "their limiting Floquet coefficients: "
+        f"{second_drift:.10e}, {third_drift:.10e}, {fourth_drift:.10e}"
     )
 
 

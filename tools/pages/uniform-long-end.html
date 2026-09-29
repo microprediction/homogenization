@@ -703,6 +703,59 @@
       exponent should still be retained in a maturity-uniform price: any finite truncation
       eventually accumulates secular error as $T$ grows.</p>
 
+    <h3>The sharp maturity crossover for a truncated exponent</h3>
+    <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,
+      for a fixed $N$,</p>
+    $$\lambda_m^{[N]}=\sum_{n=0}^N{\beta_n\over m^n},\qquad
+      \lambda_m-\lambda_m^{[N]}
+      ={\beta_{N+1}\over m^{N+1}}+O_N(m^{-N-2}).$$
+    <div class="equation-card">
+    <p><strong>Critical-maturity theorem.</strong> Suppose $\beta_{N+1}\ne0$ and let
+      $T_m/m^{N+1}\to\tau\in[0,\infty)$. Factor the exact positive price as
+      $P_m(T)=e^{\lambda_mT}A_m(T)$, where $A_m$ contains the complete Floquet profile
+      and complementary transient, and define
+      $P_m^{[N]}(T)=e^{\lambda_m^{[N]}T}A_m(T)$. Thus every nonsecular factor is kept
+      exact and only the exponent is truncated. Then</p>
+    $$\log{P_m(T_m)\over P_m^{[N]}(T_m)}
+      =T_m\{\lambda_m-\lambda_m^{[N]}\}
+      \longrightarrow \tau\beta_{N+1}.$$
+    <p>Hence $T=o(m^{N+1})$ is the largest general vanishing-error range for an
+      $N$th-order exponent. At $T\asymp m^{N+1}$ the relative price error has a
+      nontrivial limit $\exp(\tau\beta_{N+1})-1$; if
+      $T/m^{N+1}\to\infty$, its log magnitude diverges. A uniformly
+      $o(1)$ profile or matched-layer error does not change these conclusions.</p>
+    </div>
+    <p>The proof is immediate from the exact Floquet factorization: the common amplitude
+      cancels, whereas the exponent discrepancy is multiplied by $T_m$. This sharpens the scope distinction between a fixed-order
+      asymptotic exponent and an exact-exponent maturity-uniform price. It also explains
+      why increasing the expansion order moves, but never removes, the secular boundary.</p>
+
+    <h3>Critical-scale certificate</h3>
+    <p>On the moving nonreversible three-state example, the recursion gives</p>
+    $$\beta_2=0.0012048119,\qquad
+      \beta_3=-0.0013369243,\qquad
+      \beta_4=-0.0011746971.$$
+    <p>The table reports the exact log-price error caused by exponent truncation at its
+      critical maturity. Equivalently, it reports
+      $m^{N+1}(\lambda_m-\lambda_m^{[N]})$, which must converge to
+      $\beta_{N+1}$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$T=m^2$, through $m^{-1}$</th><th style="text-transform:none">$T=m^3$, through $m^{-2}$</th><th style="text-transform:none">$T=m^4$, through $m^{-3}$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>0.00101899</td><td>-0.00148655</td><td>-0.00119700</td></tr>
+        <tr><td>16</td><td>0.00111659</td><td>-0.00141153</td><td>-0.00119376</td></tr>
+        <tr><td>32</td><td>0.00116187</td><td>-0.00137399</td><td>-0.00118608</td></tr>
+        <tr><td>64</td><td>0.00118363</td><td>-0.00135537</td><td>-0.00118079</td></tr>
+        <tr><td>limit</td><td>0.00120481</td><td>-0.00133692</td><td>-0.00117470</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $m=64$ the three critical-scale errors are within $1.76\%$, $1.38\%$, and
+      $0.52\%$ of their predicted limits. This is a log-price statement. Dividing by
+      maturity instead yields the corresponding yield error, which remains the local
+      exponent error and does not accumulate.</p>
+
     <h3>Why the orders differ</h3>
     <p>Perron decomposition of the monodromy gives
     $\mathbf1=c_mv_m+z_{m,0}$ with $w_m^\top z_{m,0}=0$. Singular perturbation gives
