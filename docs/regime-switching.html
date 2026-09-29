@@ -359,6 +359,47 @@
       $e^{-\lambda s}B(s)$: it combines the p. 85 half-rate convention with elapsed rather than remaining
       maturity.</p>
 
+    <h3>Fixed contrast under fast switching</h3>
+    <p>The small-$\delta$ statement above holds at every fixed switching rate. A complementary result keeps the
+      regime contrast finite and lets $\lambda\to\infty$. Put $D_\lambda(T)=H_\lambda(T)$ with the unscaled
+      contrasts $\tilde\theta,\tilde s$, and write the exact affine amplitudes as
+      $a_1=m(1+\omega)$ and $a_2=m(1-\omega)$. Their equations are exactly</p>
+    $$\omega'=\tilde g(1-\omega^2)-2\lambda\omega,\qquad
+      (\log m)'=\bar g+\tilde g\,\omega,\qquad \omega(0)=0.$$
+    <p>The linear convolution $D_\lambda$ solves the first equation with the nonlinear term
+      $-\tilde g\omega^2$ removed. For fixed $T&gt;0$, integration by parts gives</p>
+    $$D_\lambda(T)=\frac{\tilde g(T)}{2\lambda}
+      -\frac{\tilde g'(T)}{4\lambda^2}+O(\lambda^{-3}).$$
+    <p>Because $\omega=O(\lambda^{-1})$, variation of constants in the difference equation gives
+      $\omega(T)-D_\lambda(T)=O(\lambda^{-3})$. Expanding
+      $\log((1+\omega)/(1-\omega))$ and integrating the equation for $m$ therefore yield</p>
+    <div class="equation-card">
+    $$\log\frac{a_1(T)}{a_2(T)}=2D_\lambda(T)+O(\lambda^{-3}),$$
+    $$\frac12\{\log a_1(T)+\log a_2(T)\}-\int_0^T\bar g(t)\,dt
+      =\frac1{2\lambda}\int_0^T\tilde g(t)^2\,dt+O(\lambda^{-2}).$$
+    </div>
+    <p>Thus the corrected dynamic mean captures the exact regime log-price contrast through second order in
+      $1/\lambda$, even at finite contrast. It does <em>not</em> give the full price to first order: it omits the
+      common positive Green&ndash;Kubo convexity term in the second display. This separates a relative-price result
+      from a common-level approximation.</p>
+    <p>The scope is fixed $T,\kappa,\theta_i,\sigma_i$ as $\lambda\to\infty$. The statement is not uniform over
+      unbounded maturities and makes no claim about a joint limit in switching rate and contrast.</p>
+    <p>A finite-contrast certificate with $\kappa=1.3$, $T=4$, $\theta=(0.18,0.04)$ and
+      $\sigma=(0.16,0.05)$ gives:</p>
+    <table>
+      <thead><tr><th>$\lambda$</th><th>Log-ratio residual</th><th>Common log shift</th><th>Residual after common term</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>$7.5152\times10^{-7}$</td><td>$1.5229\times10^{-3}$</td><td>$7.3460\times10^{-5}$</td></tr>
+        <tr><td>8</td><td>$9.4308\times10^{-8}$</td><td>$7.8038\times10^{-4}$</td><td>$1.7802\times10^{-5}$</td></tr>
+        <tr><td>16</td><td>$1.1807\times10^{-8}$</td><td>$3.9472\times10^{-4}$</td><td>$4.3709\times10^{-6}$</td></tr>
+        <tr><td>32</td><td>$1.4769\times10^{-9}$</td><td>$1.9846\times10^{-4}$</td><td>$1.0821\times10^{-6}$</td></tr>
+        <tr><td>64</td><td>$1.8468\times10^{-10}$</td><td>$9.9503\times10^{-5}$</td><td>$2.6916\times10^{-7}$</td></tr>
+        <tr><td>128</td><td>$2.3108\times10^{-11}$</td><td>$4.9819\times10^{-5}$</td><td>$6.7116\times10^{-8}$</td></tr>
+      </tbody>
+    </table>
+    <p>The last rate-doubling orders are $2.9986$ for the log-ratio residual, $0.9980$ for the omitted common
+      shift, and $2.0037$ after subtracting its displayed leading term.</p>
+
     <h3>Checks against the printed examples</h3>
     <p>Both examples use $\bar\theta=0.25$, $\tilde\theta=0.10$ and essentially constant volatility. The table
       compares the magnitude of the thesis's dynamic-mean correction, the corrected value
@@ -378,7 +419,8 @@
     <p>The
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
       checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
-      measured orders $2.999910$ and $2.999950$, and solves both exact switched ODEs. The affine bond structure is
+      measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders above, and solves
+      both exact switched ODEs. The affine bond structure is
       the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
       Markov-modulated mean-level model is treated by
       <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page

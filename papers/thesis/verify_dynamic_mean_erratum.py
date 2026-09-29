@@ -4,7 +4,10 @@ The 2001 thesis uses two incompatible conventions for the symmetric chain's
 switching parameter and reverses the Vasicek remaining-maturity loading in its
 dynamic-mean approximation.  This certificate checks the corrected kernel,
 its closed form, its first-order agreement with the exact switched bond ODE,
-and the two numerical examples printed in the thesis.
+and the two numerical examples printed in the thesis.  It also checks a
+fixed-contrast, fast-switching refinement: the corrected dynamic mean captures
+the regime log-price contrast through order lambda^-2, but omits the common
+order-lambda^-1 Green--Kubo convexity term.
 """
 
 from __future__ import annotations
@@ -230,6 +233,87 @@ def main() -> None:
     orders = np.log2(residuals[:-1] / residuals[1:])
     assert np.min(orders[-2:]) > 2.999
 
+    # Keep the regime contrast fixed and increase the switching rate.  If
+    # D_lambda is the corrected dynamic-mean contrast, the exact amplitude
+    # ratio satisfies log(a_1/a_2)=2 D_lambda+O(lambda^-3).  The geometric
+    # mean has a separate common O(lambda^-1) Green--Kubo correction that the
+    # deterministic dynamic-mean price omits.
+    kappa, horizon = 1.3, 4.0
+    theta = np.array([0.18, 0.04])
+    volatility = np.array([0.16, 0.05])
+    theta_mean = float(np.mean(theta))
+    theta_contrast = float((theta[0] - theta[1]) / 2.0)
+    variance = volatility**2
+    variance_mean = float(np.mean(variance))
+    variance_contrast = float((variance[0] - variance[1]) / 2.0)
+
+    def contrast_growth(time: float) -> float:
+        loading = vasicek_loading(time, kappa)
+        return (
+            -kappa * theta_contrast * loading
+            + 0.5 * variance_contrast * loading**2
+        )
+
+    log_averaged = math.log(
+        averaged_bond_factor(kappa, horizon, theta_mean, variance_mean)
+    )
+    green_kubo_integral = quad(
+        lambda time: contrast_growth(time) ** 2,
+        0.0,
+        horizon,
+        epsabs=2e-14,
+        epsrel=2e-14,
+    )[0]
+    fast_rates = np.array([4.0, 8.0, 16.0, 32.0, 64.0, 128.0])
+    fast_rows = []
+    ratio_errors = []
+    common_shifts = []
+    corrected_common_errors = []
+    for rate in fast_rates:
+        factors = switched_bond_factors(
+            rate,
+            kappa,
+            horizon,
+            theta_mean,
+            theta_contrast,
+            variance_mean,
+            variance_contrast,
+        )
+        log_factors = np.log(factors)
+        dynamic_contrast = response_coefficient(
+            rate,
+            kappa,
+            horizon,
+            theta_contrast,
+            variance_contrast,
+        )
+        ratio_error = abs(
+            log_factors[0] - log_factors[1] - 2.0 * dynamic_contrast
+        )
+        common_shift = 0.5 * float(np.sum(log_factors)) - log_averaged
+        corrected_common_error = abs(
+            common_shift - green_kubo_integral / (2.0 * rate)
+        )
+        ratio_errors.append(ratio_error)
+        common_shifts.append(abs(common_shift))
+        corrected_common_errors.append(corrected_common_error)
+        fast_rows.append(
+            (rate, ratio_error, common_shift, corrected_common_error)
+        )
+    ratio_orders = np.log2(
+        np.asarray(ratio_errors[:-1]) / ratio_errors[1:]
+    )
+    common_orders = np.log2(
+        np.asarray(common_shifts[:-1]) / common_shifts[1:]
+    )
+    corrected_common_orders = np.log2(
+        np.asarray(corrected_common_errors[:-1])
+        / corrected_common_errors[1:]
+    )
+    assert ratio_orders[-1] > 2.98
+    assert common_orders[-1] > 0.995
+    assert corrected_common_orders[-1] > 2.0
+
     # Reproduce the two thesis examples.  The reported dynamic-mean values use
     # exp(-lambda*s)B(s); the correction uses exp(-2lambda*s)B(T-s).
     examples = (
@@ -273,6 +357,19 @@ def main() -> None:
     print(f"maximum closed-form/quadrature error: {largest_loading_error:.3e}")
     print(f"linear response coefficient: {coefficient:.10f}")
     print(f"last two contrast-remainder orders: {orders[-2]:.6f}, {orders[-1]:.6f}")
+    print("fixed contrast, fast switching")
+    print("lambda  contrast error   common log shift   corrected common error")
+    for rate, ratio_error, common_shift, corrected_common_error in fast_rows:
+        print(
+            f" {rate:5.0f}   {ratio_error:13.7e}"
+            f"   {common_shift:16.7e}   {corrected_common_error:20.7e}"
+        )
+    print(
+        "last fast-switching orders: contrast "
+        f"{ratio_orders[-1]:.6f}, omitted common term "
+        f"{common_orders[-1]:.6f}, corrected common residual "
+        f"{corrected_common_orders[-1]:.6f}"
+    )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
         print(
@@ -281,7 +378,8 @@ def main() -> None:
         )
     print(
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
-        "forms, cubic contrast remainder, and both thesis examples"
+        "forms, cubic contrast remainder, fixed-contrast fast-switching "
+        "orders, and both thesis examples"
     )
 
 
