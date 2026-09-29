@@ -7,7 +7,8 @@ ranks through dimension eight, and positive-volatility CIR loadings make the
 integrated correction full rank through eight names despite only two regimes.
 For four nearly coalescing mean-reversion rates, a high-precision certificate
 checks the confluent-Vandermonde determinant constant, the eigenvalue powers
-0, 2, 4, 6, and the resulting sixth-power condition-number blow-up.
+0, 2, 4, 6 and their leading constants, and the resulting sixth-power
+condition-number blow-up.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -356,11 +357,27 @@ def coalescing_loading_checks():
     for j in range(dimension):
         for i in range(j):
             vandermonde *= nodes[j] - nodes[i]
+    coefficient_matrix = mp.matrix([
+        [nodes[j] ** order / mp.factorial(order)
+         for j in range(dimension)]
+        for order in range(dimension)
+    ])
+    derivative_cholesky = mp.cholesky(derivative_gram)
+    coefficient_cholesky = mp.cholesky(
+        coefficient_matrix * coefficient_matrix.T)
+    eigenvalue_constants = [
+        (derivative_cholesky[order, order]
+         * coefficient_cholesky[order, order]) ** 2
+        for order in range(dimension)
+    ]
+
     determinant_constant = (
         vandermonde**2 * mp.det(derivative_gram)
         / mp.fprod(mp.factorial(r)**2 for r in range(dimension))
     )
     assert determinant_constant > 0
+    assert (abs(mp.fprod(eigenvalue_constants) / determinant_constant - 1)
+            < mp.mpf("1e-60"))
 
     epsilons = [mp.mpf(2) ** (-power) for power in range(3, 9)]
     spectra = []
@@ -394,6 +411,17 @@ def coalescing_loading_checks():
     assert np.max(abs(np.array(slopes) - expected)) < 0.08
     assert abs(float(determinant_ratios[-1]) - 1) < 2e-4
 
+    measured_constants = [
+        spectra[-1][order] / epsilons[-1] ** (2 * order)
+        for order in range(dimension)
+    ]
+    constant_relative_errors = [
+        abs(measured / predicted - 1)
+        for measured, predicted in zip(measured_constants,
+                                       eigenvalue_constants)
+    ]
+    assert max(constant_relative_errors) < mp.mpf("2e-5")
+
     condition_slopes = []
     for left, right, epsilon_left, epsilon_right in zip(
             spectra[:-1], spectra[1:], epsilons[:-1], epsilons[1:]):
@@ -408,9 +436,14 @@ def coalescing_loading_checks():
     print("\ncoalescing CIR loading certificate")
     print("  eigenvalue log-log slopes "
           + " ".join(f"{slope:.6f}" for slope in slopes))
+    print("  predicted eigenvalue constants "
+          + " ".join(mp.nstr(value, 10) for value in eigenvalue_constants))
+    print("  maximum eigenvalue-constant relative error "
+          + mp.nstr(max(constant_relative_errors), 8))
     print(f"  determinant ratio {float(determinant_ratios[-1]):.12f}")
     print(f"  condition-number slope {float(condition_slopes[-1]):.6f}")
-    return slopes, determinant_ratios, condition_slopes
+    return (slopes, determinant_ratios, condition_slopes,
+            eigenvalue_constants, constant_relative_errors)
 
 
 def main():

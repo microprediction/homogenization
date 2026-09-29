@@ -445,6 +445,29 @@
       for every $\epsilon&gt;0$, while the weakest identified direction
       vanishes as $\epsilon^{2(d-1)}$. This is a fixed-$d$, fixed-$T$
       statement; it is not uniform in the number of names or maturity.</p>
+    <p>The constants multiplying those powers are explicit as well. Let
+      $W:L^2[0,T]\leftarrow\mathbb R^d$ have columns
+      $\partial_\kappa^rB_{\kappa_0}$, $0\le r&lt;d$, and define the scaled
+      Vandermonde matrix</p>
+    $$V_{rj}={x_j^r\over r!},\qquad 0\le r&lt;d,\quad 1\le j\le d.$$
+    <p>Take the Hilbert-space QR factorization $W=U_WR_W$ and the LQ
+      factorization $V=L_VU_V$. Equivalently, $R_W$ is the upper Cholesky
+      factor of $G^{(d)}$ and $L_V$ is the lower Cholesky factor of
+      $VV^\top$. Then</p>
+    <div class="equation-card">
+    $$\lim_{\epsilon\downarrow0}
+      {\lambda_{r+1}(J_\epsilon)\over\epsilon^{2r}}
+      =\left|(R_W)_{r+1,r+1}(L_V)_{r+1,r+1}\right|^2,
+      \qquad 0\le r&lt;d.$$
+    </div>
+    <p>Indeed, Taylor expansion gives the loading synthesis map as
+      $WD_\epsilon\{V+O(\epsilon)\}$, with
+      $D_\epsilon=\operatorname{diag}(1,\epsilon,\ldots,\epsilon^{d-1})$.
+      After the two orthogonal changes of basis, the unique lowest-power
+      minor in each exterior power uses the first rows and columns.
+      Consecutive exterior-product limits give the individual singular-value
+      constants; squaring gives the displayed Gram-eigenvalue constants.
+      Their product is exactly the determinant coefficient above.</p>
     <p>The certificate uses positive volatilities $\sigma_j=0.02$, distinct
       $\kappa_j$ between $0.2$ and $5$, and strict Feller mean levels for
       $2\le d\le8$. Every integrated matrix is full rank. At $d=8$ its
@@ -453,8 +476,12 @@
       be maximally amplified while statistical identification becomes
       extremely ill-conditioned. A separate 70-digit coalescence check at
       $d=4$ finds eigenvalue log--log slopes
-      $(0.000316,2.000484,4.000156,5.999654)$, determinant ratio
-      $1.000021036$ against the displayed constant, and condition-number slope
+      $(0.000316,2.000484,4.000156,5.999654)$. The explicit leading
+      eigenvalue constants are
+      $(3.250068477,0.02564049977,0.0007991812818,0.00001379064292)$;
+      at $\epsilon=1/256$ their largest relative error is
+      $1.67\times10^{-5}$. The determinant ratio is $1.000021036$ against
+      the displayed constant, and the condition-number slope is
       $-5.999901$.</p>
 
     <h3>The explicit two-name benchmark</h3>
