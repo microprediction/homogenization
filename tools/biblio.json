@@ -936,6 +936,17 @@
  },
  {
   "role": "survey_physics",
+  "key": "Nagasawa1964",
+  "authors": "Nagasawa, M.",
+  "year": 1964,
+  "title": "Time Reversions of Markov Processes",
+  "venue": "Nagoya Mathematical Journal 24:177-204",
+  "doi": "10.1017/S0027763000011405",
+  "url": "https://projecteuclid.org/euclid.nmj/1118801344",
+  "annotation": "Develops time reversal for general Markov processes; the stationary reversed semigroup is the adjoint used in the Green-Kubo transpose identity."
+ },
+ {
+  "role": "survey_physics",
   "key": "HaussmannPardoux1986",
   "authors": "Haussmann, U. G. and Pardoux, E.",
   "year": 1986,
@@ -2341,5 +2352,82 @@
   "doi": "",
   "url": "https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf",
   "annotation": "Claims that a smooth, compactly supported force and zero initial velocity give a three-dimensional Navier-Stokes solution with bounded energy whose velocity becomes unbounded in finite time, the forced alternatives of the Clay statement; under evaluation."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Lindsay1988",
+  "authors": "Lindsay, B. G.",
+  "year": 1988,
+  "title": "Composite likelihood methods",
+  "venue": "Contemporary Mathematics 80:221-239",
+  "doi": "10.1090/conm/080/999014",
+  "url": "https://doi.org/10.1090/conm/080/999014",
+  "annotation": "Defines composite likelihoods, sums of log likelihoods of marginal or conditional events, and their estimating equations; the product of pairwise transition densities used on the likelihood page is one."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "SelfLiang1987",
+  "authors": "Self, S. G. and Liang, K.-Y.",
+  "year": 1987,
+  "title": "Asymptotic properties of maximum likelihood estimators and likelihood ratio tests under nonstandard conditions",
+  "venue": "Journal of the American Statistical Association 82(398):605-610",
+  "doi": "10.1080/01621459.1987.10478472",
+  "url": "https://doi.org/10.1080/01621459.1987.10478472",
+  "annotation": "The asymptotic law of likelihood ratio and score tests when the true parameter is on the boundary of the parameter space: a mixture of chi-square laws from projecting the Gaussian score onto the tangent cone."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Shapiro1988",
+  "authors": "Shapiro, A.",
+  "year": 1988,
+  "title": "Towards a unified theory of inequality constrained testing in multivariate analysis",
+  "venue": "International Statistical Review 56(1):49-62",
+  "doi": "10.2307/1403361",
+  "url": "https://doi.org/10.2307/1403361",
+  "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
+ },
+ {
+  "role": "survey_finance",
+  "key": "CuchieroKellerResselTeichmann2012",
+  "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
+  "year": 2012,
+  "title": "Polynomial processes and their applications to mathematical finance",
+  "venue": "Finance and Stochastics 16(4):711-740",
+  "doi": "10.1007/s00780-012-0188-x",
+  "url": "https://doi.org/10.1007/s00780-012-0188-x",
+  "annotation": "Markov processes whose generator maps polynomials of degree n to polynomials of degree at most n, so that moments follow from a finite matrix exponential; the square-root process and its integral are examples, used here for exact cumulants under a switching level."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "NettasingheChatterjeeTipireddyHalappanavar2023",
+  "authors": "Nettasinghe, B., Chatterjee, S., Tipireddy, R. and Halappanavar, M.",
+  "year": 2023,
+  "title": "Extending conformal prediction to hidden Markov models with exact validity via de Finetti's theorem for Markov chains",
+  "venue": "Proceedings of the 40th International Conference on Machine Learning, PMLR 202:25890-25903",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v202/nettasinghe23a.html",
+  "annotation": "Conformal prediction for observations driven by a hidden Markov chain, with exact marginal validity from a block-randomization that restores exchangeability; the pooled-residual page quantifies instead the conditional error of the ordinary pooled threshold."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "ChernozhukovWuthrichZhu2018",
+  "authors": "Chernozhukov, V., Wüthrich, K. and Zhu, Y.",
+  "year": 2018,
+  "title": "Exact and robust conformal inference methods for predictive machine learning with dependent data",
+  "venue": "Proceedings of the 31st Conference on Learning Theory, PMLR 75:732-749",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v75/chernozhukov18a.html",
+  "annotation": "Conformal inference for time series through block permutations, exact under a block-exchangeability condition and approximately valid under mixing; the dependence between calibration residuals is the effect it addresses."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "OliveiraOrensteinRamosRomano2024",
+  "authors": "Oliveira, R. I., Orenstein, P., Ramos, T. and Romano, J. V.",
+  "year": 2024,
+  "title": "Split conformal prediction and non-exchangeable data",
+  "venue": "Journal of Machine Learning Research 25(225):1-38",
+  "doi": "",
+  "url": "https://jmlr.org/papers/v25/23-1553.html",
+  "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
  }
 ]

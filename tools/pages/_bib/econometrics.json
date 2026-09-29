@@ -1,0 +1,29 @@
+[
+ {
+  "key": "Lindsay1988",
+  "authors": "Lindsay, B. G.",
+  "year": 1988,
+  "title": "Composite likelihood methods",
+  "venue": "Contemporary Mathematics 80:221-239",
+  "doi": "10.1090/conm/080/999014",
+  "annotation": "Defines composite likelihoods, sums of log likelihoods of marginal or conditional events, and their estimating equations; the product of pairwise transition densities used on the likelihood page is one."
+ },
+ {
+  "key": "SelfLiang1987",
+  "authors": "Self, S. G. and Liang, K.-Y.",
+  "year": 1987,
+  "title": "Asymptotic properties of maximum likelihood estimators and likelihood ratio tests under nonstandard conditions",
+  "venue": "Journal of the American Statistical Association 82(398):605-610",
+  "doi": "10.1080/01621459.1987.10478472",
+  "annotation": "The asymptotic law of likelihood ratio and score tests when the true parameter is on the boundary of the parameter space: a mixture of chi-square laws from projecting the Gaussian score onto the tangent cone."
+ },
+ {
+  "key": "Shapiro1988",
+  "authors": "Shapiro, A.",
+  "year": 1988,
+  "title": "Towards a unified theory of inequality constrained testing in multivariate analysis",
+  "venue": "International Statistical Review 56(1):49-62",
+  "doi": "10.2307/1403361",
+  "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
+ }
+]

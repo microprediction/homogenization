@@ -1,11 +1,14 @@
-"""Certificate for an irreversible one-dimensional diffusion on a circle.
+"""Certificate for time reversal of Green--Kubo forms.
+
+The transpose identity is first checked for a nonreversible finite-state
+Markov chain with a nonuniform invariant law.  The same certificate records
+the important converse distinction: the full centered Green--Kubo form
+detects nonreversibility, whereas a selected feature block need not do so.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
-sin(nY)), the Green--Kubo matrix is available in closed form.  This file
-checks it three ways and verifies the resulting commutator correction against
-a finite-rate coupled evolution.  It also checks the general current
-decomposition of a scalar periodic diffusion with nonconstant invariant
-density and diffusivity.
+sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
+quadrature, and by a periodic chain approximation.  A final variable-
+coefficient circle example verifies the scalar-diffusion specialization.
 """
 import math
 import os
@@ -96,6 +99,90 @@ def variable_circle_chain(size, current=0.08):
     return q, features
 
 
+def reverse_generator(q):
+    """Stationary time reversal of a row-convention CTMC generator."""
+    pi = stationary(q)
+    return np.diag(1.0 / pi) @ q.T @ np.diag(pi)
+
+
+def general_reversal_check():
+    """Test transpose, full-space detection, and feature-level blindness."""
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    pi = stationary(q)
+    q_reverse = reverse_generator(q)
+    features = np.array(
+        [
+            [1.0, -0.4, 0.2, 0.7],
+            [-0.3, 0.8, 1.1, -0.5],
+            [0.6, 0.1, -0.9, 0.4],
+        ]
+    )
+    k = gk(q, features)
+    k_reverse = gk(q_reverse, features)
+    transpose_error = np.max(abs(k_reverse - k.T))
+
+    semigroup_error = 0.0
+    f, h = features[:2]
+    f, h = f - pi @ f, h - pi @ h
+    for time in (0.1, 0.7, 2.0):
+        lhs = pi @ (f * (expm(time * q_reverse) @ h))
+        rhs = pi @ (h * (expm(time * q) @ f))
+        semigroup_error = max(semigroup_error, abs(lhs - rhs))
+
+    # gk centers the coordinate indicators, which then span the full
+    # mean-zero subspace.
+    full_features = np.eye(len(pi))
+    k_full = gk(q, full_features)
+    full_asymmetry = np.max(abs(k_full - k_full.T))
+    flux_defect = np.max(
+        abs(np.diag(pi) @ q - q.T @ np.diag(pi))
+    )
+
+    # A one-feature block is necessarily symmetric, even for this chain.
+    scalar_asymmetry = np.max(abs(gk(q, features[:1]) - gk(q, features[:1]).T))
+
+    # A reversible chain with the same nonuniform invariant law is generated
+    # from symmetric edge conductances c_ij = pi_i q_ij.
+    conductance = np.array(
+        [
+            [0.0, 0.11, 0.07, 0.05],
+            [0.11, 0.0, 0.13, 0.09],
+            [0.07, 0.13, 0.0, 0.17],
+            [0.05, 0.09, 0.17, 0.0],
+        ]
+    )
+    q_reversible = conductance / pi[:, None]
+    np.fill_diagonal(q_reversible, 0.0)
+    np.fill_diagonal(q_reversible, -q_reversible.sum(axis=1))
+    k_reversible = gk(q_reversible, full_features)
+    reversible_asymmetry = np.max(abs(k_reversible - k_reversible.T))
+
+    assert np.max(abs(pi @ q)) < 2e-14
+    assert np.max(abs(pi @ q_reverse)) < 2e-14
+    assert transpose_error < 2e-14
+    assert semigroup_error < 2e-14
+    assert flux_defect > 1e-2
+    assert full_asymmetry > 1e-2
+    assert scalar_asymmetry == 0.0
+    assert reversible_asymmetry < 2e-14
+    return {
+        "pi": pi,
+        "transpose_error": transpose_error,
+        "semigroup_error": semigroup_error,
+        "flux_defect": flux_defect,
+        "full_asymmetry": full_asymmetry,
+        "scalar_asymmetry": scalar_asymmetry,
+        "reversible_asymmetry": reversible_asymmetry,
+    }
+
+
 def first_order(lbar, correction, maturity, payoff):
     """Duhamel correction exp(TL)f+int exp((T-s)L)D exp(sL)f ds."""
     n = len(payoff)
@@ -144,7 +231,20 @@ def rate(errors):
 
 
 def main():
-    print("1. exact Fourier blocks against direct correlation quadrature")
+    print("1. the stationary Markov reversal transposes the Green--Kubo form")
+    general = general_reversal_check()
+    print("   invariant law: " + " ".join(f"{x:.6f}" for x in general["pi"]))
+    print(
+        f"   semigroup adjoint error {general['semigroup_error']:.2e}; "
+        f"Green--Kubo transpose error {general['transpose_error']:.2e}"
+    )
+    print(
+        f"   irreversible full-form asymmetry {general['full_asymmetry']:.3e}; "
+        f"one-feature asymmetry {general['scalar_asymmetry']:.1e}; "
+        f"reversible full-form asymmetry {general['reversible_asymmetry']:.2e}"
+    )
+
+    print("2. exact Fourier blocks against direct correlation quadrature")
     for mode in range(1, 6):
         exact = exact_block(mode)
         numerical = quadrature_block(mode)
@@ -152,7 +252,7 @@ def main():
         print(f"   mode {mode}: max error {error:.2e}, anti entry {exact[0, 1]:+.8f}")
         assert error < 2e-11
 
-    print("2. periodic CTMC discretization converges to the diffusion block")
+    print("3. periodic CTMC discretization converges to the diffusion block")
     grid_errors = []
     for size in (32, 64, 128):
         q, phis = circle_chain(size)
@@ -163,14 +263,14 @@ def main():
     spatial_rate = rate(grid_errors)
     assert 1.9 < spatial_rate < 2.1
 
-    print("3. reversing current preserves the symmetric block and flips the antisymmetric block")
+    print("4. reversing current preserves the symmetric block and flips the antisymmetric block")
     forward = exact_block(1, C)
     reverse = exact_block(1, -C)
     assert np.max(abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))) < 1e-15
     assert np.max(abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))) < 1e-15
     print(f"   c=+{C:g}: K12={forward[0, 1]:+.6f}; c=-{C:g}: K12={reverse[0, 1]:+.6f}")
 
-    print("4. the full commutator rule has a second-order finite-rate residual")
+    print("5. the full commutator rule has a second-order finite-rate residual")
     k_forward, errors_forward, values_forward = effective_check(C)
     k_reverse, errors_reverse, values_reverse = effective_check(-C)
     for name in errors_forward:
@@ -198,7 +298,7 @@ def main():
     print("   forward-minus-reverse residual: " + " ".join(f"{x:.3e}" for x in direction_errors) + f"  rate {direction_rate:.3f}")
     assert 1.8 < direction_rate < 2.2
 
-    print("5. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
+    print("6. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
     blocks = []
     for size in (32, 64, 128, 256):
         q_forward, features = variable_circle_chain(size)

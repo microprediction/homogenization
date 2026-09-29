@@ -7,3 +7,5 @@ reading/
 research/pulsar/data/
 research/epidemic-hit/data/
 .claude/
+literature/*.pdf
+literature/*.txt

@@ -14,6 +14,7 @@ SECTION_TITLES = {
     'correlation': 'Correlation regimes and correlation risk',
     'lumping': 'Lumped chains and phase-type durations',
     'spatial': 'Spatial and nonlinear homogenization',
+    'conformal': 'Conformal prediction under dependence',
 }
 
 

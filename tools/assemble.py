@@ -29,6 +29,7 @@ HEADER = """<header class="site-header">
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
@@ -42,6 +43,7 @@ HEADER = """<header class="site-header">
         <a href="./clumpy-media.html">Light through clumpy media</a>
         <a href="./pulsars.html">Pulsar spin-down switching</a>
         <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
         <a href="./survey.html">Survey</a>

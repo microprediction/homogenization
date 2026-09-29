@@ -30,6 +30,7 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
         <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
@@ -43,6 +44,7 @@
         <a href="./clumpy-media.html">Light through clumpy media</a>
         <a href="./pulsars.html">Pulsar spin-down switching</a>
         <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
         <a href="./survey.html">Survey</a>
@@ -171,18 +173,20 @@
       <li>
         Cotton, P. (2026). <em>Three Numbers in a Yield Curve</em>. Working paper in preparation.
         <a href="./yield-curve.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_three_numbers.py">certificate</a>.
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_three_numbers.py">certificate</a>
+        &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_uniform_long_end.py">long maturities</a>.
         <em>To first order a yield curve sees a fast chain of any size only through a positive semidefinite
         Green&ndash;Kubo matrix, which bounds the curve&apos;s shape and leaves different chains indistinguishable; the long
-        end is a convergent eigenvalue series.</em>
+        end is a convergent eigenvalue series, and keeping it exact gives a formula uniform in maturity.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>The Likelihood of a Fast-Switching Short Rate</em>. Note in preparation.
         <a href="./likelihood.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">certificate</a>.
-        <em>The first-order likelihood of a discretely observed Vasicek rate with fast hidden regimes is a Hermite
-        correction with Green&ndash;Kubo coefficients; it identifies the same matrix as the yield curve, and its score
-        test is a one-sided Jarque&ndash;Bera test.</em>
+        <em>The first-order transition density of a discretely observed Vasicek rate with fast hidden regimes is a
+        Hermite correction with Green&ndash;Kubo coefficients, and its composite likelihood agrees with the filtered
+        likelihood to first order; it identifies the same matrix as the yield curve, and its score test is a
+        Jarque&ndash;Bera test with the kurtosis part projected onto positive excess kurtosis.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Fast Regimes in Any Pricing Equation</em>. Note in preparation.
@@ -192,13 +196,23 @@
         antisymmetric part of the Green&ndash;Kubo matrix enters through commutators.</em>
       </li>
       <li>
+        Cotton, P. (2026). <em>Cumulants of Integrated Variance Under a Fast Regime</em>. Note in preparation.
+        <a href="./cumulants.html">Summary</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">certificate</a>.
+        <em>The fourth cumulant of a return under a switched variance is three times the variance of integrated variance
+        only for independent Brownian noise, and that variance is its Green&ndash;Kubo term up to a remainder bounded
+        uniformly in maturity; for a CIR variance with a switching level the same holds with the maturity replaced
+        by an integral of the reversion weight, and the first-order rule gives every cumulant at fixed maturity.</em>
+      </li>
+      <li>
         Cotton, P. (2026). <em>The Direction of a Regime Cycle in the Heston Smile</em>. Note in preparation.
         <a href="./cycle-smile.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">chain certificate</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">circle certificate</a>.
         <em>A chain cycling through variance level and vol-of-vol moves the smile through an antisymmetric
-        Green&ndash;Kubo commutator. Every scalar periodic diffusion has the same current-reversal structure: reversing
-        its stationary current transposes the Green&ndash;Kubo form and flips only the commutator correction.</em>
+        Green&ndash;Kubo commutator. For every stationary Markov driver, time reversal transposes the Green&ndash;Kubo
+        form; symmetry on all centered observables characterizes reversibility under a resolvent-invertibility
+        hypothesis, but symmetry on selected features does not.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Switching Correlation: Correlation Smiles and Downside Co-Skewness</em>. Note in preparation.
@@ -211,6 +225,14 @@
         <a href="./portfolio.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_portfolio.py">certificate</a>.
         <em>Merton, the Markowitz frontier and a regime-blind investor with bull and bear regimes: each first correction is one Green&ndash;Kubo number, and observed-regime weights stay exactly myopic.</em>
+      </li>
+      <li>
+        Cotton, P. (2026). <em>Pooled Conformal Residuals Under a Fast Hidden Regime</em>. Note in preparation.
+        <a href="./conformal.html">Summary</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_pooled_residuals.py">certificate</a>.
+        <em>The conditional coverage of a threshold that pools residuals across a fast two-state regime: exponential in the
+        horizon for a terminal score, algebraic for a path average, decaying at the predictor&apos;s own rate for a
+        filtered state; calibration dependence at the sampling spacing as a separate, exactly computable effect.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Pulsar Spin-Down Switching and Timing Noise</em>. Note in preparation.

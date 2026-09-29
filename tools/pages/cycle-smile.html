@@ -46,7 +46,35 @@
       The physical interpretation of current and broken detailed balance is standard in periodic Brownian-motor
       models (<a href="./bibliography.html#Reimann2002">Reimann 2002</a>).</p>
 
-    <h2>The theorem for every scalar periodic diffusion</h2>
+    <h2>The theorem for every stationary Markov driver</h2>
+    <p>Let $P_t$ be a stationary Markov semigroup on the real space $L^2(\pi)$, and let
+    $P_t^{\leftarrow}=P_t^\dagger$ be its stationary time reversal. For centered observables $f,g$ whose
+    correlations are integrable, define</p>
+    $$K^{\rightarrow}(f,g)=\int_0^\infty\langle f,P_tg\rangle_\pi\,dt.$$
+    <p>Semigroup adjointness gives, without a diffusion or finite-state assumption,</p>
+    <div class="equation-card">
+    $$K^{\leftarrow}(f,g)=K^{\rightarrow}(g,f).$$
+    </div>
+    <p>Thus stationary time reversal preserves the symmetric Green&ndash;Kubo form and flips the antisymmetric form.
+    This is the integrated-correlation consequence of the general Markov time-reversal framework of
+    <a href="./bibliography.html#Nagasawa1964">Nagasawa (1964)</a>.</p>
+    <p>There is also a precise converse. Suppose $-L$ is invertible on the centered subspace with bounded inverse,
+    as for an irreducible finite chain and for the usual spectral-gap setting. Then
+    $K(f,g)=\langle f,(-L)^{-1}g\rangle_\pi$ is symmetric for <em>every</em> centered pair if and only if
+    $(-L)^{-1}$, hence $L$, is self-adjoint&mdash;equivalently, the process is reversible. This full-space statement
+    must not be inferred from a selected feature matrix: a one-feature Green&ndash;Kubo matrix is always symmetric,
+    even for an irreversible process.</p>
+    <p>If features $f_r$ multiply slow operators $A_r$, the first corrector decomposes exactly as</p>
+    <div class="equation-card">
+    $$\sum_{r,s}K_{rs}A_rA_s
+      =\frac12\sum_{r,s}K^{\rm sym}_{rs}\{A_r,A_s\}
+       +\sum_{r&lt;s}K^{\rm anti}_{rs}[A_r,A_s].$$
+    </div>
+    <p>Reversal leaves the anticommutator part unchanged and flips the commutator part. A chosen feature family can
+    therefore reveal direction only when its antisymmetric Green&ndash;Kubo block is nonzero and the corresponding
+    slow operators do not commute.</p>
+
+    <h2>The scalar periodic-diffusion specialization</h2>
     <p>The constant-coefficient example is not special. Let</p>
     $$dY_t=b(Y_t)\,dt+\sqrt{2a(Y_t)}\,dW_t\pmod {2\pi},\qquad a&gt;0,$$
     <p>have a smooth positive stationary density $p$. Its stationary probability current</p>
@@ -60,26 +88,17 @@
     scalar diffusion on the circle is reversible if and only if $J=0$. This is the periodic specialization of the
     diffusion time-reversal formula of
     <a href="./bibliography.html#HaussmannPardoux1986">Haussmann and Pardoux (1986)</a>.</p>
-    <p>For centered observables $f,g$, define</p>
-    $$K_L(f,g)=\int_0^\infty\langle f,e^{tL}g\rangle_p\,dt
-      =\langle f,(-L)^{-1}g\rangle_p.$$
-    <p>Adjointness gives the exact identity</p>
-    <div class="equation-card">
-    $$K_{L^\dagger}(f,g)=K_L(g,f).$$
-    </div>
-    <p>Thus time reversal preserves the entire symmetric Green&ndash;Kubo form and flips the entire antisymmetric form,
-    not merely the Fourier block above. If $J\ne0$, some smooth centered pair has a nonzero antisymmetric entry;
-    otherwise $(-L)^{-1}$, hence $L$, would be self-adjoint. A particular feature pair can still miss the current,
-    so this is an existence statement rather than universal detectability.</p>
-    <p>If features $f_r$ multiply slow operators $A_r$, the first corrector is
-    $\sum_{r,s}K_L(f_r,f_s)A_rA_s$. Reversal leaves its anticommutator part unchanged and flips
-    $\sum_{r&lt;s}K_L^{\rm anti}(f_r,f_s)[A_r,A_s]$. A feature pair can therefore contribute directional sensitivity
-    only when its antisymmetric Green&ndash;Kubo entry and operator commutator are both nonzero.</p>
+    <p>The general theorem now gives $K_{L^\dagger}(f,g)=K_L(g,f)$ for every integrable centered pair. If $J\ne0$,
+    the full form cannot be symmetric: under the invertibility assumption above that would make $L$ self-adjoint,
+    contradicting $A\ne0$. Hence some smooth centered pair detects the current, although a particular pair may miss
+    it.</p>
     <p>The certificate also uses a genuinely nonconstant example,
     $p(y)=(1+0.35\cos y)/(2\pi)$, $a(y)=0.8+0.2\sin y$, and $J=0.08$. A flux-form periodic CTMC preserves the
     self/skew-adjoint decomposition exactly. For $(\cos y,\sin y+0.25\cos2y)$, its $K_{12}-K_{21}$ converges to a
     nonzero limit at rate 2.001, while reversing $J$ transposes the full matrix with error below
-    $2.2\times10^{-13}$.</p>
+    $2.2\times10^{-13}$. The same certificate independently checks the general theorem on a four-state
+    nonreversible chain with a nonuniform invariant law: the reversed Green&ndash;Kubo matrix agrees with the transpose
+    to machine precision, the full centered form detects irreversibility, and a scalar feature does not.</p>
 
     <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
     whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.</p>
