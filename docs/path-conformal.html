@@ -220,6 +220,60 @@
     $-0.27060967$ and $0.06367286$; both residuals converge with measured order $1.9665$, consistent with the
     stated $O(c^{-2})$ remainder.</p>
 
+    <h3>Any finite irreducible chain: a Poisson-equation coefficient</h3>
+    <p>The two-state coefficient is not special. Let $Q$ be the row generator of a fixed finite irreducible
+    continuous-time chain, let $\pi Q=0$, and let $f$ be a real state observable. Write
+    $\bar f=\pi f$, $\widetilde f=f-\bar f\mathbf1$, and define the group inverse $Q^\#$ by</p>
+    $$QQ^\#=Q^\#Q=I-\mathbf1\pi,\qquad
+      \pi Q^\#=0,\qquad Q^\#\mathbf1=0.$$
+    <p>For $A_c=c^{-1}\int_0^c f(Y_s)\,ds$, $S_c=\mu A_c+\sigma Z$, and the stationary pooled
+    threshold $q_c$ satisfying $\sum_i\pi_i\Pr_i(S_c\le q_c)=1-\alpha$, the fixed-start gap obeys</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c\le q_c)-(1-\alpha)
+      =\frac{\mu}{\sigma}\phi(z_{1-\alpha})
+       \frac{(Q^\#\widetilde f)_i}{c}+O(c^{-2}).$$
+    </div>
+    <p>This is a fixed-$Q$, long-horizon statement: the state space, generator, observable, $\mu$, $\sigma&gt;0$,
+    and interior target level are held fixed as $c\to\infty$. It does not claim a remainder uniform over chains
+    whose spectral gap degenerates.</p>
+    <p>The proof separates the only first-order start-dependent term. With $h=Q^\#\widetilde f$, the semigroup
+    identity gives the exact conditional mean correction</p>
+    $$\mathbb E_i A_c-\bar f
+      =\frac{[(e^{cQ}-I)h]_i}{c}
+      =-\frac{h_i}{c}+O(e^{-\gamma c}/c),$$
+    <p>for any rate $\gamma$ below the spectral decay rate. Expanding the finite-dimensional Feynman&ndash;Kac
+    matrix $\exp\{cQ+ik\mu\operatorname{diag}(f)\}$ under the integrable Gaussian factor shows that all remaining
+    start-dependent terms enter at $O(c^{-2})$. The first term is a translation by
+    $-\mu h_i/c$ of the limiting $N(\mu\bar f,\sigma^2)$ law, which yields the displayed sign and coefficient.
+    Evaluating at $q_c=\mu\bar f+\sigma z_{1-\alpha}+O(c^{-1})$ changes only the second-order remainder.
+    This uses the classical Feynman&ndash;Kac framework of
+    <a href="https://doi.org/10.1090/S0002-9947-1949-0027960-X">Kac (1949)</a> and the finite-chain group-inverse
+    formalism of <a href="https://doi.org/10.1137/1017044">Meyer (1975)</a>.</p>
+    <p>Because $\pi Q^\#=0$, the leading coefficients have stationary weighted sum zero. More strongly, the
+    weighted coverage gaps cancel exactly at every $c$ by the definition of $q_c$. This remains a
+    model-conditional statement indexed by the initial latent state, not distribution-free conditional conformal
+    coverage. For the two-state generator above, $Q^\#\widetilde f=-\widetilde f/r$, so the formula reduces to the
+    unequal-rate coefficients already displayed.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$c$</th><th>pooled threshold</th><th style="text-transform:none">$c\,$ gap, state 1</th><th style="text-transform:none">$c\,$ gap, state 2</th><th style="text-transform:none">$c\,$ gap, state 3</th></tr></thead>
+      <tbody>
+        <tr><td>32</td><td>0.94583899</td><td>0.26312152</td><td>&minus;0.07126710</td><td>&minus;0.18965321</td></tr>
+        <tr><td>64</td><td>0.92445159</td><td>0.27411257</td><td>&minus;0.07718291</td><td>&minus;0.19490147</td></tr>
+        <tr><td>128</td><td>0.91332608</td><td>0.28015097</td><td>&minus;0.08042445</td><td>&minus;0.19779262</td></tr>
+        <tr><td>256</td><td>0.90764706</td><td>0.28332424</td><td>&minus;0.08212672</td><td>&minus;0.19931306</td></tr>
+        <tr><td>512</td><td>0.90477730</td><td>0.28495204</td><td>&minus;0.08299978</td><td>&minus;0.20009316</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The certificate uses the nonreversible generator
+    $Q=\left(\begin{smallmatrix}-1.1&amp;.8&amp;.3\\.4&amp;-1.4&amp;1\\.7&amp;.5&amp;-1.2\end{smallmatrix}\right)$,
+    $f=(-1,.35,1.4)$, $\mu=1$, and $\sigma=.5$. Exact matrix Feynman&ndash;Kac inversion predicts limits
+    $(0.28660839,-0.08388809,-0.20088698)$; the last measured residual orders are
+    $(1.9875,1.9876,1.9875)$. The stationary law
+    $(0.33618234,0.31623932,0.34757835)$ annihilates both the predicted coefficient vector and the exact pooled
+    coverage gap.</p>
+
     <h2>Regime-aware and locally weighted thresholds</h2>
     <p>Given posterior $p$, the model-conditional CDF is $F_p=pF_++(1-p)F_-$. Let $q_p(c)$ solve
     $F_p(q_p;c)=1-\alpha$. The implicit-function theorem gives the exact sensitivity</p>

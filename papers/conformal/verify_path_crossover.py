@@ -1,12 +1,13 @@
 """Certificate for conditional coverage of a path-dependent Markov score.
 
 The score is S = mu * A_c + sigma * Z, where A_c is the average of a
-two-state chain over c switching times.  In the symmetric case, exact CDFs are
+finite-state chain over c switching times.  In the symmetric two-state case, exact CDFs are
 computed from a Poisson--Beta occupation-time mixture.  Direct path simulation
 and the independent Feynman--Kac characteristic function check that
 representation.  A second matrix Feynman--Kac calculation treats unequal
 transition rates and checks the stationary-weighted cancellation of unequal
-conditional-coverage errors.
+conditional-coverage errors.  A nonreversible three-state calculation then
+checks the general Poisson-equation coefficient and its second-order residual.
 The certificate also checks the exact covariance of overlapping occupation
 windows, its fast-switching effective-sample limit, and the exact finite-sample
 coverage of a sliding-window order-statistic threshold.  It additionally
@@ -1057,6 +1058,113 @@ def asymmetric_path_threshold(
     )
 
 
+def generator_stationary_distribution(generator: np.ndarray) -> np.ndarray:
+    """Stationary row distribution of a finite irreducible generator."""
+    generator = np.asarray(generator, dtype=float)
+    states = generator.shape[0]
+    if generator.shape != (states, states):
+        raise ValueError("generator must be square")
+    if np.max(np.abs(generator @ np.ones(states))) > 2e-13:
+        raise ValueError("generator rows must sum to zero")
+    if np.min(generator - np.diag(np.diag(generator))) < -2e-13:
+        raise ValueError("generator off-diagonal entries must be nonnegative")
+    system = generator.T.copy()
+    system[-1] = 1.0
+    target = np.zeros(states)
+    target[-1] = 1.0
+    stationary = np.linalg.solve(system, target)
+    if np.min(stationary) <= 0:
+        raise ValueError("generator must have a strictly positive stationary law")
+    return stationary
+
+
+def finite_chain_path_cdfs(
+    q: float,
+    c: float,
+    generator: np.ndarray,
+    state_values: np.ndarray,
+    signal: float = MU,
+    noise: float = SIGMA,
+    quadrature_order: int = 300,
+) -> np.ndarray:
+    """Exact finite-chain path-score CDFs by Feynman--Kac inversion."""
+    generator = np.asarray(generator, dtype=float)
+    state_values = np.asarray(state_values, dtype=float)
+    states = len(state_values)
+    if generator.shape != (states, states):
+        raise ValueError("generator and state_values have incompatible sizes")
+    if min(c, noise) <= 0:
+        raise ValueError("c and noise must be positive")
+    generator_stationary_distribution(generator)
+    nodes, weights = roots_legendre(quadrature_order)
+    cutoff = 14.0 / noise
+    frequencies = (nodes + 1.0) * cutoff / 2.0
+    weights = weights * cutoff / 2.0
+    observable = np.diag(state_values)
+    one = np.ones(states)
+    transforms = np.stack(
+        [
+            expm(c * generator + 1j * frequency * signal * observable) @ one
+            for frequency in frequencies
+        ],
+        axis=1,
+    )
+    characteristics = transforms * np.exp(-0.5 * noise**2 * frequencies**2)
+    inversion = np.imag(
+        np.exp(-1j * frequencies * q)[None, :] * characteristics
+    ) / frequencies
+    return 0.5 - inversion @ weights / math.pi
+
+
+def finite_chain_path_threshold(
+    c: float,
+    generator: np.ndarray,
+    state_values: np.ndarray,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> float:
+    """Stationary pooled threshold for a finite-chain path score."""
+    stationary = generator_stationary_distribution(generator)
+    radius = abs(signal) * np.max(np.abs(state_values)) + 10.0 * noise
+    return brentq(
+        lambda q: stationary
+        @ finite_chain_path_cdfs(
+            q, c, generator, state_values, signal, noise
+        )
+        - TARGET,
+        -radius,
+        radius,
+        xtol=2e-13,
+    )
+
+
+def finite_chain_path_coefficients(
+    generator: np.ndarray,
+    state_values: np.ndarray,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Poisson-equation coefficients of the conditional coverage gaps.
+
+    Returns the coefficient vector, stationary law, and group inverse Q#.
+    The convention is Q Q# = Q# Q = I - 1 pi.
+    """
+    generator = np.asarray(generator, dtype=float)
+    state_values = np.asarray(state_values, dtype=float)
+    stationary = generator_stationary_distribution(generator)
+    one = np.ones(len(stationary))
+    projection = np.outer(one, stationary)
+    group_inverse = np.linalg.inv(generator - projection) + projection
+    centered = state_values - stationary @ state_values
+    coefficients = (
+        signal
+        / noise
+        * norm.pdf(norm.ppf(TARGET))
+        * (group_inverse @ centered)
+    )
+    return coefficients, stationary, group_inverse
+
+
 def mixture_characteristic(k: float, c: float, start: int) -> complex:
     values = conditional_values(c, lambda a: np.exp(1j * k * MU * a))
     return math.exp(-0.5 * SIGMA**2 * k**2) * values[0 if start == 1 else 1]
@@ -1296,6 +1404,70 @@ def main() -> None:
         f"{unequal_coefficients[1]:.8f}; "
         f"last residual rates {unequal_rates[-1, 0]:.6f}, "
         f"{unequal_rates[-1, 1]:.6f}"
+    )
+
+    # The same leading coefficient is a Poisson-equation object for every
+    # finite irreducible chain.  This deliberately nonreversible example
+    # checks all three state-specific coefficients by an exact matrix
+    # Feynman--Kac calculation and Fourier inversion.
+    finite_generator = np.array(
+        [
+            [-1.1, 0.8, 0.3],
+            [0.4, -1.4, 1.0],
+            [0.7, 0.5, -1.2],
+        ]
+    )
+    finite_values = np.array([-1.0, 0.35, 1.4])
+    finite_coefficients, finite_stationary, finite_group_inverse = (
+        finite_chain_path_coefficients(finite_generator, finite_values)
+    )
+    projection = np.outer(np.ones(3), finite_stationary)
+    assert np.max(
+        np.abs(finite_generator @ finite_group_inverse - (np.eye(3) - projection))
+    ) < 2e-15
+    assert np.max(
+        np.abs(finite_group_inverse @ finite_generator - (np.eye(3) - projection))
+    ) < 2e-15
+    assert abs(finite_stationary @ finite_coefficients) < 2e-15
+    stationary_flux = finite_stationary[:, None] * finite_generator
+    assert np.max(np.abs(stationary_flux - stationary_flux.T)) > 0.1
+
+    # The general formula must reduce exactly to the unequal two-state result.
+    two_state_coefficients, _, _ = finite_chain_path_coefficients(
+        np.array([[-alpha, alpha], [beta, -beta]]), state_values
+    )
+    assert np.max(np.abs(two_state_coefficients - unequal_coefficients)) < 3e-15
+
+    finite_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0])
+    finite_thresholds = []
+    finite_gaps = []
+    for c in finite_scales:
+        q = finite_chain_path_threshold(c, finite_generator, finite_values)
+        coverages = finite_chain_path_cdfs(
+            q, c, finite_generator, finite_values
+        )
+        assert abs(finite_stationary @ coverages - TARGET) < 5e-12
+        finite_thresholds.append(q)
+        finite_gaps.append(coverages - TARGET)
+    finite_gaps = np.asarray(finite_gaps)
+    finite_residuals = np.abs(
+        finite_gaps - finite_coefficients[None, :] / finite_scales[:, None]
+    )
+    finite_rates = np.log2(finite_residuals[:-1] / finite_residuals[1:])
+    assert np.min(finite_rates[-1]) > 1.95
+    print("\nFinite-chain path-score crossover (nonreversible three-state example)")
+    print("stationary law: " + ", ".join(f"{x:.8f}" for x in finite_stationary))
+    print(" c       q_pool        c*gap 1        c*gap 2        c*gap 3")
+    for c, q, gap in zip(finite_scales, finite_thresholds, finite_gaps):
+        print(
+            f"{c:4.0f}   {q:11.8f}   {c * gap[0]:12.8f}"
+            f"   {c * gap[1]:12.8f}   {c * gap[2]:12.8f}"
+        )
+    print(
+        "predicted limits: "
+        + ", ".join(f"{x:.8f}" for x in finite_coefficients)
+        + "; last residual rates "
+        + ", ".join(f"{x:.6f}" for x in finite_rates[-1])
     )
 
     # The state-aware thresholds differ from the pooled threshold by +/-mu/(2c).
