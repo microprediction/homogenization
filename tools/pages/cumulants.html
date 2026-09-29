@@ -604,8 +604,51 @@
       $\eta_1=-9/2450$ and $\eta_2=153/240100$ within $6.0\times10^{-18}$.</p>
     <p>This is an all-<em>fixed</em>-order statement. It supplies neither constants uniform in $k$, nor convergence
       of an infinite cumulant series, nor an interchange of $k$, $m$, and $T$ limits. The long-maturity limit is
-      taken first; the displayed $O_k(m^{-2})$ rate expansion is not a maturity-uniform finite-$1/m$ approximation
-      to the finite-$T$ cumulant.</p>
+      taken first; the displayed rate expansion is not a maturity-uniform finite-$1/m$ approximation to the
+      finite-$T$ cumulant.</p>
+
+    <h3>The second inverse-speed coefficient</h3>
+    <p>The $O_k(m^{-2})$ residual has a computable coefficient, but it is not obtained by simply taking the next
+      fast-block product. Let $\iota$ inject a regime-free polynomial, let $\mathsf E=\pi\otimes I$ average the
+      regime coordinate, and let $\mathsf S=Q_0^\#\otimes I$. With
+      $A_\theta=\bar{\mathcal L}+\theta M_v$, Schur elimination of the fast block gives the eigenvalue-dependent
+      slow pencil</p>
+    $$A_\theta+\frac1m\mathcal D+\frac1{m^2}\mathcal E_\theta(z)+O(m^{-3}),$$
+    $$\mathcal D=-\mathsf E B_\theta\mathsf S B_\theta\iota,\qquad
+      \mathcal E_\theta(z)=\mathsf E B_\theta\mathsf S(B_\theta-zI)\mathsf S B_\theta\iota.$$
+    <p>The first expression for $\mathcal D$ reduces to the Green&ndash;Kubo operator above. Put
+      $\eta(\theta)=\bar\ell_\theta\mathcal D\bar h_\theta$ and solve the reduced-resolvent equation</p>
+    $$(A_\theta-\bar\Lambda(\theta))u_\theta
+      =-(\mathcal D-\eta(\theta))\bar h_\theta,\qquad
+      \bar\ell_\theta u_\theta=0.$$
+    <p>Ordinary simple-eigenvalue perturbation, applied after the Schur reduction, gives</p>
+    <div class="equation-card">
+    $$\zeta(\theta)=\bar\ell_\theta\mathcal E_\theta(\bar\Lambda(\theta))\bar h_\theta
+      +\bar\ell_\theta\mathcal D u_\theta,$$
+    $$\gamma_k(m)=\bar\gamma_k+\frac{\eta_k}{m}+\frac{\zeta_k}{m^2}+O_k(m^{-3}),\qquad
+      \zeta_k=\left.\partial_\theta^k\zeta(\theta)\right|_{\theta=0}.$$
+    </div>
+    <p>The second term in $\zeta(\theta)$ is the response of the slow eigenvector to the first Green&ndash;Kubo
+      perturbation. Omitting it generally leaves an $O(m^{-2})$ error. This is the next finite-dimensional term in
+      the singular reduction of <a href="./bibliography.html#PhillipsKokotovic1981">Phillips and Kokotovic
+      (1981)</a> and the isolated-eigenvalue expansion of
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>.</p>
+    <p>For the two-state benchmark, $\zeta_2,\ldots,\zeta_8$ are</p>
+    $$-2.1955137740\times10^{-4},\ -3.1801618130\times10^{-5},\
+      3.0590573967\times10^{-6},\ 2.6891761906\times10^{-6},\
+      1.3566152002\times10^{-6},\ 6.6896448381\times10^{-7},\
+      3.4276389727\times10^{-7}.$$
+    <p>Between $m=12$ and $m=24$, the twice-corrected residual orders for cumulants two through eight are
+      $3.142,3.129,3.001,3.054,3.131,2.898,3.149$. If the eigenvector-response term is dropped, the corresponding
+      orders are only $2.012,2.041,1.953,1.974,1.997,2.025,2.061$.
+      Independently derived rational formulas give
+      $\zeta_1=18/8575$ for the stationary mean and
+      $\zeta_2=-369/1680700$ for the variance rate, agreeing within $3.2\times10^{-18}$. A nonreversible
+      three-state certificate gives twice-corrected orders $2.955,3.030,2.917,2.967,3.048$ for cumulants two
+      through six.</p>
+    <p>As before, the order, long-maturity limit, and coefficient data are fixed before $m\to\infty$. The
+      $O_k(m^{-3})$ statement is local in the cumulant-generating parameter and is neither order-uniform nor a
+      maturity-uniform approximation of the finite-$T$ cumulant.</p>
 
     <h2>Arbitrary-start boundary constants at every fixed order</h2>
     <p>The same spectral representation also resolves the bounded term left open by the rate recursion. Normalize
@@ -932,8 +975,8 @@
       exponential envelope. This does not make a finite $1/m$ truncation of the slope maturity-uniform. The nested
       polynomial Poisson solves identify the exact third-cumulant slope and intercept for each fixed $m$, with a
       fixed-$m$ exponentially decaying remainder. The centered-Poisson recursion identifies every fixed-order
-      long-run cumulant rate, the Green&ndash;Kubo effective generator identifies its first inverse-speed
-      coefficient with a fixed-order $O(m^{-2})$ residual, and the Perron amplitude identifies its arbitrary-start
+      long-run cumulant rate, the slow-fast Schur recursion identifies its first two inverse-speed
+      coefficients with a fixed-order $O(m^{-3})$ residual, and the Perron amplitude identifies its arbitrary-start
       boundary constant with a fixed-$m$ exponential remainder. These results provide no order-uniform constants,
       switching-rate-uniform higher-cumulant envelope, or maturity-uniform finite-$1/m$ cumulant approximation.
       No price-level extension is claimed.</li>

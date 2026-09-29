@@ -567,6 +567,160 @@ def cumulant_rate_first_corrections(
     return derivatives[1:], correction
 
 
+def cumulant_rate_second_corrections(
+    max_order, q0, pi, c, kappa, variance, radius=0.25, samples=256
+):
+    """Second inverse-speed coefficients of the long-run cumulant rates.
+
+    Put epsilon=1/m and split the regime coordinate into its stationary
+    subspace P=1*pi and the centered subspace N=I-P.  If B_theta is the
+    order-one tilted polynomial generator and S=Q_0^# on N, Schur
+    elimination gives the nonlinear slow pencil
+
+        A_theta + epsilon*D_theta + epsilon**2*E_theta(lambda)
+        + O(epsilon**3),
+
+    where
+
+        D_theta = -E B_theta S B_theta J,
+        E_theta(lambda) = E B_theta S(B_theta-lambda)S B_theta J.
+
+    Here J injects a regime-free polynomial and E averages it with pi.
+    For the simple eigenpair A_theta h=lambda_bar h, l h=1, let
+
+        eta=l D_theta h,
+        (A_theta-lambda_bar) h_1=-(D_theta-eta)h,  l h_1=0.
+
+    The second eigenvalue coefficient is then
+
+        zeta(theta)=l E_theta(lambda_bar)h+l D_theta h_1.
+
+    Cauchy extraction returns zeta_k=d_theta^k zeta(0), so that, for
+    every fixed k,
+
+        gamma_k(m)=gamma_bar_k+eta_k/m+zeta_k/m**2+O_k(m**-3).
+
+    The eigenvector-response term l D_theta h_1 is essential.  No
+    uniformity in cumulant order is asserted.
+    """
+    if max_order < 1:
+        raise ValueError("max_order must be positive")
+    if samples <= 2 * max_order:
+        raise ValueError("samples must exceed twice max_order")
+    if radius <= 0:
+        raise ValueError("radius must be positive")
+    if not np.allclose(stationary(q0), pi, atol=2e-13):
+        raise ValueError("pi must be stationary for q0")
+
+    a_c, a_kappa, a_variance, multiply_v = polynomial_operators(max_order)
+    operators = [a_c, a_kappa, a_variance]
+    features = [c, kappa, variance]
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+    )
+    states = len(pi)
+    width = max_order + 1
+    inject = np.kron(np.ones((states, 1)), np.eye(width))
+    average = np.kron(pi.reshape(1, states), np.eye(width))
+    fast_inverse = np.kron(group_inverse(q0), np.eye(width))
+    identity = np.eye(states * width)
+    green_kubo = effective_generator(
+        np.zeros_like(averaged), operators, gk(q0, features)
+    )
+
+    angles = 2 * np.pi * np.arange(samples) / samples
+    first_boundary = np.zeros(samples, dtype=complex)
+    second_boundary = np.zeros(samples, dtype=complex)
+    missing_response_boundary = np.zeros(samples, dtype=complex)
+    for index, angle in enumerate(angles):
+        theta = radius * np.exp(1j * angle)
+        slow = averaged.astype(complex) + theta * multiply_v
+        full_order_one = np.kron(np.eye(states), slow)
+        for feature, operator in zip(features, operators):
+            centered = feature - pi @ feature
+            full_order_one += np.kron(np.diag(centered), operator)
+
+        schur_first_operator = -(
+            average @ full_order_one @ fast_inverse
+            @ full_order_one @ inject
+        )
+        assert np.max(np.abs(schur_first_operator - green_kubo)) < 3e-13
+        # Use the algebraically identical Green--Kubo assembly below.  At
+        # high theta-derivative orders, Cauchy extraction would otherwise
+        # magnify roundoff from repeatedly forming the large Schur product.
+        first_operator = green_kubo.astype(complex)
+        eigenvalues, right_vectors = eig(slow)
+        branch = np.argmin(np.abs(eigenvalues))
+        eigenvalue = eigenvalues[branch]
+        right = right_vectors[:, branch]
+        left_values, left_vectors = eig(slow.T)
+        left_branch = np.argmin(np.abs(left_values - eigenvalue))
+        left = left_vectors[:, left_branch]
+        pairing = left @ right
+        assert abs(pairing) > 1e-8
+        left /= pairing
+
+        first_value = left @ first_operator @ right
+        second_operator = (
+            average @ full_order_one @ fast_inverse
+            @ (full_order_one - eigenvalue * identity)
+            @ fast_inverse @ full_order_one @ inject
+        )
+        bordered = np.zeros((width + 1, width + 1), dtype=complex)
+        bordered[:width, :width] = slow - eigenvalue * np.eye(width)
+        bordered[:width, width] = right
+        bordered[width, :width] = left
+        rhs = np.r_[-(first_operator - first_value * np.eye(width)) @ right, 0.0]
+        solution = np.linalg.solve(bordered, rhs)
+        right_first = solution[:width]
+        assert abs(left @ right_first) < 2e-10
+        assert abs(solution[width]) < 2e-9
+        first_boundary[index] = first_value
+        missing_response_boundary[index] = left @ second_operator @ right
+        second_boundary[index] = (
+            missing_response_boundary[index]
+            + left @ first_operator @ right_first
+        )
+
+    first_derivatives = np.zeros(max_order + 1)
+    second_derivatives = np.zeros(max_order + 1)
+    missing_response_derivatives = np.zeros(max_order + 1)
+    imaginary_errors = []
+    for order in range(max_order + 1):
+        phase = np.exp(-1j * order * angles) / radius**order
+        factor = math.factorial(order)
+        first_derivative = factor * np.mean(first_boundary * phase)
+        second_derivative = factor * np.mean(second_boundary * phase)
+        missing_derivative = factor * np.mean(
+            missing_response_boundary * phase
+        )
+        first_derivatives[order] = first_derivative.real
+        second_derivatives[order] = second_derivative.real
+        missing_response_derivatives[order] = missing_derivative.real
+        imaginary_errors.extend(
+            [
+                abs(first_derivative.imag),
+                abs(second_derivative.imag),
+                abs(missing_derivative.imag),
+            ]
+        )
+    assert max(imaginary_errors) < 2e-9
+    # Reuse the dedicated first-order extractor so the high-order Cauchy
+    # coefficients are bit-for-bit consistent with the preceding theorem.
+    # The Schur identity itself was checked at every boundary point above.
+    independent_first, _ = cumulant_rate_first_corrections(
+        max_order, q0, pi, c, kappa, variance, radius, samples
+    )
+    first_derivatives[1:] = independent_first
+    return (
+        first_derivatives[1:],
+        second_derivatives[1:],
+        missing_response_derivatives[1:],
+    )
+
+
 def integrated_variance_boundary_constants(
     max_order, speed, q0, pi, c, kappa, variance,
     initial_regime=None, initial_variance=None,
@@ -2008,6 +2162,167 @@ def verify_all_fixed_order_rate_corrections(max_order=8):
     )
 
 
+def verify_all_fixed_order_second_rate_corrections(max_order=8):
+    """Check the explicit second inverse-speed coefficient through order eight."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    first, second, missing_response = cumulant_rate_second_corrections(
+        max_order, q0, pi, c, kappa, variance
+    )
+    independent_first, _ = cumulant_rate_first_corrections(
+        max_order, q0, pi, c, kappa, variance
+    )
+    first_error = np.max(np.abs(first - independent_first))
+    assert first_error < 2e-11
+
+    # The exact stationary mean and variance-rate rational functions derived
+    # independently above supply the first two second-order coefficients.
+    mean_second_error = abs(second[0] - 18.0 / 8575.0)
+    variance_second_error = abs(second[1] + 369.0 / 1680700.0)
+    assert mean_second_error < 2e-13
+    assert variance_second_error < 2e-13
+
+    averaged_rates, _ = integrated_variance_cumulant_rates(
+        max_order,
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        np.array([pi @ c]),
+        np.array([pi @ kappa]),
+        np.array([pi @ variance]),
+    )
+    speeds = np.array([6.0, 12.0, 24.0])
+    corrected_errors = []
+    missing_response_errors = []
+    for speed in speeds:
+        exact_rates, _ = integrated_variance_cumulant_rates(
+            max_order, speed, q0, pi, c, kappa, variance
+        )
+        corrected_errors.append(
+            np.abs(
+                exact_rates[1:]
+                - averaged_rates[1:]
+                - first[1:] / speed
+                - second[1:] / speed**2
+            )
+        )
+        missing_response_errors.append(
+            np.abs(
+                exact_rates[1:]
+                - averaged_rates[1:]
+                - first[1:] / speed
+                - missing_response[1:] / speed**2
+            )
+        )
+    corrected_errors = np.array(corrected_errors)
+    missing_response_errors = np.array(missing_response_errors)
+    corrected_rates = np.log2(
+        corrected_errors[-2] / corrected_errors[-1]
+    )
+    missing_response_rates = np.log2(
+        missing_response_errors[-2] / missing_response_errors[-1]
+    )
+    assert np.all((corrected_rates > 2.75) & (corrected_rates < 3.35))
+    assert np.all(
+        (missing_response_rates > 1.8) & (missing_response_rates < 2.2)
+    )
+
+    # A nonreversible three-state chain checks that neither detailed balance
+    # nor the symmetric two-state coordinate was used in the Schur formula.
+    q_three = np.array(
+        [
+            [-3.0, 2.7, 0.3],
+            [0.2, -2.2, 2.0],
+            [2.4, 0.4, -2.8],
+        ]
+    )
+    pi_three = stationary(q_three)
+    kappa_three = np.array([1.1, 2.3, 3.0])
+    c_three = kappa_three * np.array([0.035, 0.080, 0.050])
+    variance_three = np.array([0.20, 0.25, 0.22]) ** 2
+    nonreversible_order = min(max_order, 6)
+    first_three, second_three, _ = cumulant_rate_second_corrections(
+        nonreversible_order,
+        q_three,
+        pi_three,
+        c_three,
+        kappa_three,
+        variance_three,
+        radius=0.18,
+        samples=384,
+    )
+    averaged_three, _ = integrated_variance_cumulant_rates(
+        nonreversible_order,
+        1.0,
+        np.zeros((1, 1)),
+        np.ones(1),
+        np.array([pi_three @ c_three]),
+        np.array([pi_three @ kappa_three]),
+        np.array([pi_three @ variance_three]),
+    )
+    nonreversible_errors = []
+    for speed in speeds:
+        exact_three, _ = integrated_variance_cumulant_rates(
+            nonreversible_order,
+            speed,
+            q_three,
+            pi_three,
+            c_three,
+            kappa_three,
+            variance_three,
+        )
+        nonreversible_errors.append(
+            np.abs(
+                exact_three[1:]
+                - averaged_three[1:]
+                - first_three[1:] / speed
+                - second_three[1:] / speed**2
+            )
+        )
+    nonreversible_errors = np.array(nonreversible_errors)
+    nonreversible_rates = np.log2(
+        nonreversible_errors[-2] / nonreversible_errors[-1]
+    )
+    assert np.all(
+        (nonreversible_rates > 2.75) & (nonreversible_rates < 3.25)
+    )
+
+    print("5h. second inverse-speed coefficient of every fixed-order rate")
+    print(
+        f"   zeta_2--zeta_{max_order}: "
+        + " ".join(f"{value:.10e}" for value in second[1:])
+    )
+    print(
+        "   twice-corrected residual orders: "
+        + " ".join(f"{value:.6f}" for value in corrected_rates)
+    )
+    print(
+        "   without eigenvector response:    "
+        + " ".join(f"{value:.6f}" for value in missing_response_rates)
+    )
+    print(
+        "   nonreversible orders 2--6:        "
+        + " ".join(f"{value:.6f}" for value in nonreversible_rates)
+    )
+    print(
+        f"   independent eta / zeta_1 / zeta_2 errors "
+        f"{first_error:.2e}/{mean_second_error:.2e}/"
+        f"{variance_second_error:.2e}"
+    )
+    return (
+        second,
+        corrected_rates,
+        missing_response_rates,
+        nonreversible_rates,
+        first_error,
+        mean_second_error,
+        variance_second_error,
+    )
+
+
 def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     """Check fixed-order boundary constants for stationary and point starts."""
     q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -2061,7 +2376,7 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     assert recursion_errors["stationary"] < 2e-9
     assert recursion_errors["point"] < 2e-9
 
-    print("5h. all-fixed-order cumulant intercepts")
+    print("5i. all-fixed-order cumulant intercepts")
     for name in starts:
         print(
             f"   {name} orders 1--{max_order}: "
@@ -2148,6 +2463,9 @@ def main():
     all_order_rate_results = verify_all_fixed_order_cumulant_rates()
     all_order_rate_correction_results = (
         verify_all_fixed_order_rate_corrections()
+    )
+    all_order_second_rate_results = (
+        verify_all_fixed_order_second_rate_corrections()
     )
     all_order_intercept_results = verify_all_fixed_order_cumulant_intercepts()
     q0 = np.array(
@@ -2552,7 +2870,9 @@ def main():
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
         f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
         f"all-order corrected-rate floor "
-        f"{min(all_order_rate_correction_results[2]):.3f}"
+        f"{min(all_order_rate_correction_results[2]):.3f}, "
+        f"twice-corrected floor "
+        f"{min(all_order_second_rate_results[1]):.3f}"
     )
 
 
