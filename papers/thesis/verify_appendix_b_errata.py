@@ -4,7 +4,10 @@ The 2001 thesis omits one deterministic discount factor in its shifted
 caplet/floorlet formula, applies one maturity's shift factor to both legs of a
 swaplet, and uses the wrong discount-exponent sign in a futures recursion.
 This script checks the corrected identities on exact finite scenario trees and
-reproduces the constant-rate counterexamples.
+reproduces the constant-rate counterexamples.  It also checks the master
+transport identity for an arbitrary nonlinear payoff on several bond
+maturities, which shows why different payment dates cannot share one shift
+factor.
 """
 
 from __future__ import annotations
@@ -135,17 +138,83 @@ def forward_measure_identity(
     return explicit, risk_neutral, printed
 
 
+def shifted_zero_bonds(
+    transition: np.ndarray,
+    rates: np.ndarray,
+    future_shifts: np.ndarray,
+) -> np.ndarray:
+    """Zero bonds with one deterministic shift for each future interval."""
+    bonds = np.ones(len(rates))
+    for shift in future_shifts[::-1]:
+        bonds = np.exp(-(rates + shift)) * (transition @ bonds)
+    return bonds
+
+
+def multibond_transport_identity(
+    transition: np.ndarray,
+    rates: np.ndarray,
+    shifts: np.ndarray,
+) -> tuple[float, float, float]:
+    """Direct and transported prices for a nonlinear three-bond payoff.
+
+    Dates are t=0 and T=1, and the underlying bonds mature one, two and
+    three intervals after T.  The direct calculation builds each shifted
+    bond independently.  The transported calculation rescales the three
+    unshifted bonds by their maturity-specific deterministic factors before
+    applying the same nonlinear payoff.
+    """
+    start = 0
+    base_bonds = np.column_stack(
+        [zero_bonds(transition, rates, steps) for steps in (1, 2, 3)]
+    )
+    direct_shifted_bonds = np.column_stack(
+        [
+            shifted_zero_bonds(
+                transition, rates, shifts[1 : 1 + steps]
+            )
+            for steps in (1, 2, 3)
+        ]
+    )
+    maturity_factors = np.exp(-np.cumsum(shifts[1:4]))
+    transported_bonds = base_bonds * maturity_factors[np.newaxis, :]
+
+    weights = np.array([0.80, -0.25, 0.15])
+    strike = 0.55
+
+    def payoff(bonds: np.ndarray) -> np.ndarray:
+        return np.maximum(bonds @ weights - strike, 0.0)
+
+    shifted_discount_to_fixing = math.exp(-(rates[start] + shifts[0]))
+    direct = shifted_discount_to_fixing * transition[start].dot(
+        payoff(direct_shifted_bonds)
+    )
+    transported = (
+        math.exp(-shifts[0])
+        * math.exp(-rates[start])
+        * transition[start].dot(payoff(transported_bonds))
+    )
+    bond_error = float(
+        np.max(np.abs(direct_shifted_bonds - transported_bonds))
+    )
+    return direct, transported, bond_error
+
+
 def main() -> None:
     rng = np.random.default_rng(20260928)
     largest_option_error = 0.0
     largest_forward_error = 0.0
     largest_printed_ratio_error = 0.0
+    largest_multibond_error = 0.0
+    largest_shifted_bond_error = 0.0
     positive_option_cases = 0
 
     for _ in range(500):
         transition = rng.dirichlet(np.ones(3), size=3)
         rates = rng.uniform(-0.01, 0.08, size=3)
         shifts = rng.uniform(-0.005, 0.04, size=3)
+        multibond_shifts = np.append(
+            shifts, 0.5 * (shifts[1] + shifts[2])
+        )
         raw_strike = rng.uniform(0.92, 1.12)
 
         for is_caplet in (True, False):
@@ -179,10 +248,28 @@ def main() -> None:
             float(np.max(np.abs(explicit - corrected_forward))),
         )
 
+        direct_basket, transported_basket, bond_error = (
+            multibond_transport_identity(
+                transition,
+                rates,
+                multibond_shifts,
+            )
+        )
+        largest_multibond_error = max(
+            largest_multibond_error,
+            abs(direct_basket - transported_basket),
+        )
+        largest_shifted_bond_error = max(
+            largest_shifted_bond_error,
+            bond_error,
+        )
+
     assert largest_option_error < 3e-15
     assert largest_forward_error < 3e-15
     assert positive_option_cases > 100
     assert largest_printed_ratio_error < 5e-13
+    assert largest_multibond_error < 3e-15
+    assert largest_shifted_bond_error < 3e-15
 
     # The constant-rate example from Issue #69: t=0, T=tau=1,
     # tau+Delta=2, K=0, beta X=0, and deterministic shift 5%.
@@ -237,6 +324,14 @@ def main() -> None:
     )
     print(f"maximum forward-measure identity error: {largest_forward_error:.3e}")
     print(
+        "maximum nonlinear multibond transport error: "
+        f"{largest_multibond_error:.3e}"
+    )
+    print(
+        "maximum independently shifted bond error: "
+        f"{largest_shifted_bond_error:.3e}"
+    )
+    print(
         "constant-rate caplet: "
         f"correct {caplet_correct:.10f}, printed {caplet_printed:.10f}"
     )
@@ -255,7 +350,7 @@ def main() -> None:
     )
     print(
         "PASS: maturity-specific shift factors and negative-exponent "
-        "change of numeraire"
+        "change of numeraire, including nonlinear multibond payoffs"
     )
 
 

@@ -9,6 +9,15 @@
   "annotation": "Markov processes whose generator maps polynomials of degree n to polynomials of degree at most n, so that moments follow from a finite matrix exponential; the square-root process and its integral are examples, used here for exact cumulants under a switching level."
  },
  {
+  "key": "BrigoMercurio2001",
+  "authors": "Brigo, D. and Mercurio, F.",
+  "year": 2001,
+  "title": "A deterministic-shift extension of analytically-tractable and time-homogeneous short-rate models",
+  "venue": "Finance and Stochastics 5(3):369-387",
+  "doi": "10.1007/PL00013541",
+  "annotation": "Develops deterministic-shift extensions of tractable short-rate models and derives analytical formulas for bonds and bond options; the payoff-transport theorem on the bond-options page isolates the underlying maturity-by-maturity scaling rule."
+ },
+ {
   "key": "GemanElKarouiRochet1995",
   "authors": "Geman, H., El Karoui, N. and Rochet, J.-C.",
   "year": 1995,

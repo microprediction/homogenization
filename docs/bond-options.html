@@ -234,6 +234,39 @@
     $$P^\phi(t,u)=A(t,u)P^0(t,u).$$
     <p>No Gaussian, affine or independence assumption is needed for this step.</p>
 
+    <h3>A payoff-transport theorem</h3>
+    <p>The same identity handles a nonlinear claim on several bond maturities at once. Let
+      $u_1,\ldots,u_d\ge T$ and let $\Psi$ be any Borel payoff for which the displayed expectations exist. Then</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      V_t^\phi[\Psi]
+      &amp;=\mathbb E_t^Q\!\left[D^\phi(t,T)
+        \Psi\!\left(P^\phi(T,u_1),\ldots,P^\phi(T,u_d)\right)\right]\\
+      &amp;=A(t,T)\,\mathbb E_t^Q\!\left[D^0(t,T)
+        \Psi\!\left(A(T,u_1)P^0(T,u_1),\ldots,
+        A(T,u_d)P^0(T,u_d)\right)\right].
+    \end{aligned}$$
+    </div>
+    <p>At the path level, if $\Gamma$ is any integrable functional of the short-rate trajectory up to $T$, the
+      corresponding identity is simply</p>
+    $$V_t^\phi[\Gamma]
+      =A(t,T)\,\mathbb E_t^Q\!\left[D^0(t,T)
+      \Gamma\!\left((r_s+\phi(s))_{t\le s\le T}\right)\right].$$
+    <p>Thus deterministic shifting preserves a path-dependent pricing problem after a deterministic translation
+      of every rate argument; it does not generally preserve the payoff unchanged.</p>
+    <p>This is an exact transport rule: discounting to exercise contributes $A(t,T)$, while every underlying
+      bond argument receives the factor for its own maturity. If $\Psi$ is positively homogeneous of degree one
+      and all arguments receive the same factor $a$, the result reduces to the common prefactor $A(t,T)a$.
+      With different maturities the factors are generally different, so they must instead be absorbed into the
+      payoff weights or strikes.</p>
+    <p>There is also a sharp converse. Suppose one scalar $c$ multiplied the unshifted value of <em>every</em>
+      linear portfolio of bonds maturing at $u_1,\ldots,u_d$. Applying that assertion to each single-bond
+      portfolio forces $c=A(t,u_j)$ for every $j$. Hence a universal common factor exists if and only if all
+      relevant maturity factors coincide. The swaplet error below is the two-maturity counterexample.</p>
+    <p>This payoff transport is the elementary pricing mechanism behind the deterministic-shift extensions
+      developed systematically by
+      <a href="./bibliography.html#BrigoMercurio2001">Brigo and Mercurio (2001)</a>.</p>
+
     <h3>Caplets and floorlets</h3>
     <p>Take $t\le T\le\tau&lt;\tau+\Delta$ and write $q=1+\Delta K$. For the generalized bond-option
       positive part used in Appendix B, define</p>
@@ -287,7 +320,8 @@
     <p>The printed caplet formula gives $1-e^{-0.05}=0.0487705755$, while the printed swaplet gives
       zero. With $q=1.1$, an in-the-money floorlet is $0.0440917353$ rather than $0.0463523670$.
       The <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_appendix_b_errata.py">certificate</a>
-      checks the caplet and floorlet factorization on 500 exact finite-state trees, verifies the
+      checks the caplet and floorlet factorization on 500 exact finite-state trees, verifies the general
+      transport theorem for a nonlinear option on three bond maturities to $2.2\times10^{-16}$, verifies the
       forward-measure identity independently, and records the thesis counterexamples. Details and
       source-page locations are in
       <a href="https://github.com/microprediction/homogenization/issues/69">Issue #69</a>.</p>
