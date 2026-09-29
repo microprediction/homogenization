@@ -16,7 +16,9 @@ to a training-panel PAC bound, and supplies both a finite-panel Chernoff
 certificate and the exact Perron large-deviation rate for long regular panels.
 It verifies the associated sharp lattice tail prefactor and its first two
 relative saddle-point corrections against exact coefficient tails through 960
-observations.
+observations.  A moderate-deviation certificate then lets the success fraction
+approach its mean while its standardized distance still diverges, checking the
+boundary where the lattice amplitude itself becomes singular.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
@@ -240,6 +242,62 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     assert np.max(abs(corrected_ratios[-2:] - 1)) < 0.004
     assert abs(second_corrected_ratios[-1] - 1) < 2e-4
 
+    # The compact-interior saddle theorem has a nontrivial boundary at the
+    # mean because (1-exp(-theta))^{-1} diverges.  In the moderate-deviation
+    # zone theta -> 0 but sqrt(n)*theta -> infinity, the same exact amplitude
+    # remains valid and collapses to the universal sigma/(delta*sqrt(2*pi*n))
+    # prefactor.  The n^(3/4) displacement makes delta asymptotic to n^(-1/4).
+    moderate_target = 0.5
+    moderate_quantile = brentq(
+        lambda x: pi @ cdf_vector(x, scales) - moderate_target,
+        0.0,
+        50.0,
+    )
+    moderate_success = cdf_vector(moderate_quantile, scales)
+    moderate_variance = perron_variance_terms(
+        transition, pi, moderate_success)[0]
+    moderate_rows = []
+    for panel_size in (120, 240, 480, 960, 1920, 3840):
+        threshold = math.ceil(
+            panel_size * moderate_target + 0.5 * panel_size ** 0.75)
+        level = threshold / panel_size
+        delta = level - moderate_target
+        law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), moderate_success,
+            renormalize=True)
+        exact_tail = law[threshold:].sum()
+        exact_rate, tilt = perron_tail_rate(
+            transition, moderate_success, level)
+        prefactor, _, _, _, _ = perron_sharp_tail_approx(
+            transition, pi, moderate_success, level,
+            radius=min(0.025, tilt / 4))
+        perron_tail = (
+            prefactor * math.exp(-panel_size * exact_rate)
+            / math.sqrt(panel_size))
+        gaussian_tail = (
+            math.sqrt(moderate_variance)
+            / (delta * math.sqrt(2 * math.pi * panel_size))
+            * math.exp(-panel_size * exact_rate))
+        moderate_rows.append((
+            panel_size, delta, panel_size * tilt ** 2,
+            exact_tail / perron_tail, exact_tail / gaussian_tail))
+
+    perron_ratios = np.asarray([row[3] for row in moderate_rows])
+    gaussian_ratios = np.asarray([row[4] for row in moderate_rows])
+    scaled_tilts = np.asarray([row[2] for row in moderate_rows])
+    assert np.all(np.diff(scaled_tilts) > 0)
+    assert np.all(np.diff(perron_ratios) > 0)
+    assert np.all(np.diff(gaussian_ratios) < 0)
+    assert abs(perron_ratios[-1] - 1) < 0.025
+    assert abs(gaussian_ratios[-1] - 1) < 0.065
+    print("moderate-deviation bridge to the mean:")
+    print("  n      delta       n*theta^2   exact/Perron   exact/Gaussian")
+    for (panel_size, delta, scaled_tilt,
+         perron_ratio, gaussian_ratio) in moderate_rows:
+        print(
+            f"  {panel_size:4d}  {delta:.8f}  {scaled_tilt:10.6f}"
+            f"    {perron_ratio:.9f}      {gaussian_ratio:.9f}")
+
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
     step = 0.003
@@ -405,7 +463,7 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         print(f"  {label}: ({formatted}), n=60 max error {error:.3e}")
 
 
-def binary_count_distribution(initial, transitions, success):
+def binary_count_distribution(initial, transitions, success, renormalize=False):
     """Count law for finite-state binary emissions on any deterministic grid.
 
     If ``D(z)=diag(1-success+z*success)``, the returned coefficients are those
@@ -427,7 +485,12 @@ def binary_count_distribution(initial, transitions, success):
             predicted[:observation + 1] * success)
         states = updated
     count_law = states.sum(axis=1)
-    assert abs(count_law.sum() - 1) < 2e-14
+    total_mass = count_law.sum()
+    if renormalize:
+        assert abs(total_mass - 1) < 2e-12
+        count_law /= total_mass
+    else:
+        assert abs(total_mass - 1) < 2e-14
     assert count_law.min() > -2e-15
     return count_law
 
@@ -1074,7 +1137,8 @@ def main():
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
           " count law, Perron tail rate, sharp prefactor and first two"
-          " relative saddle-point corrections, Green--Kubo"
+          " relative saddle-point corrections, the moderate-deviation"
+          " bridge to the mean, Green--Kubo"
           " curvature, all-order"
           " cumulants, arbitrary-start boundary constants and local tail"
           " correction,"

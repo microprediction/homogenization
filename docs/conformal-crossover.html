@@ -603,6 +603,60 @@
       every small panel. The statement is still for a fixed regular-grid $P$;
       it makes no irregular-grid or joint $n$--switching-rate claim.</p>
 
+    <h3>The moderate-deviation bridge to the mean</h3>
+    <p>The compact-interior hypothesis can be relaxed in one important
+      direction. Keep the regular-grid transition matrix $P$ fixed, let
+      $p=\Lambda'(0)$ and $\sigma_P^2=\Lambda''(0)&gt;0$, and take integer
+      thresholds $k_n$ with</p>
+    $$\delta_n=\frac{k_n}{n}-p\downarrow0,
+      \qquad \sqrt n\,\delta_n\longrightarrow\infty.$$
+    <p>If $\theta_n&gt;0$ solves
+      $\Lambda'(\theta_n)=p+\delta_n$, then
+      $\theta_n\sim\delta_n/\sigma_P^2$ and
+      $n\theta_n^2\to\infty$. For every fixed initial law $\nu$, the sharp
+      lattice formula continues to hold:</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{B_\nu(\theta_n)}{1-e^{-\theta_n}}
+       \frac{e^{-nI(p+\delta_n)}}
+       {\sqrt{2\pi n\Lambda''(\theta_n)}}
+       \left\{1+O\!\left(\frac1{n\theta_n^2}\right)\right\},$$
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{\sigma_P}{\delta_n\sqrt{2\pi n}}
+       e^{-nI(p+\delta_n)}
+       \left\{1+O(\delta_n)
+       +O\!\left(\frac1{n\delta_n^2}\right)\right\}.$$
+    </div>
+    <p>The singular lattice factor is essential: as the saddle approaches
+      zero, $(1-e^{-\theta_n})^{-1}\sim1/\theta_n$. After the Fourier scaling
+      $t=s/\sqrt n$, derivatives of that amplitude cost powers of
+      $1/\theta_n$; the first omitted even Gaussian term is therefore of
+      relative order $(n\theta_n^2)^{-1}$. The displayed condition is exactly
+      what makes it vanish. Analyticity gives
+      $B_\nu(\theta)=1+O(\theta)$,
+      $\Lambda''(\theta)=\sigma_P^2+O(\theta)$, and
+      $\theta=\delta/\sigma_P^2+O(\delta^2)$, yielding the second formula.
+      Thus the initial law disappears from the leading moderate-deviation
+      prefactor, though it remains in the exact finite-$n$ amplitude.</p>
+    <p>This is the near-mean boundary of the same Markov-additive saddle
+      argument of <a href="./bibliography.html#NeyNummelin1987">Ney and
+      Nummelin (1987)</a> and the lattice prefactor mechanism of
+      <a href="./bibliography.html#BahadurRao1960">Bahadur and Ranga Rao
+      (1960)</a>. It is not a central-limit theorem: when
+      $\sqrt n\,\delta_n=O(1)$, the pole and Gaussian saddle interact and a
+      normal-tail approximation is required instead.</p>
+    <p>In the certificate, $p=0.5$ and
+      $k_n=\lceil np+\tfrac12n^{3/4}\rceil$. From $n=120$ to $3840$,
+      $\delta_n$ falls from $0.15833333$ to $0.06354167$, while
+      $n\theta_n^2$ rises from $22.2914$ to $107.7808$. The exact-to-Perron
+      ratio rises from $0.923553$ to $0.978915$; after also replacing the
+      exact amplitude by the universal Gaussian prefactor, the ratio falls
+      from $1.133454$ to $1.062593$. The theorem is fixed-$P$ and gives no
+      irregular-grid, finite-$n$, central-zone, or joint switching-rate bound.</p>
+    <p class="muted">All $O(\cdot)$ constants above are fixed-model,
+      fixed-initial-law constants. No uniformity is asserted as the transition
+      matrix loses positivity or its spectral separation degenerates.</p>
+
     <h3>Perron curvature is exactly Green&ndash;Kubo</h3>
     <p>The tilted eigenvalue is also consistent with the finite-panel variance
       theorem, including its boundary term. Let
