@@ -15,7 +15,9 @@ nonreversible three-state chain.  A third calculation adds a regime-dependent
 common-shock stream and verifies the all-order correction through bidegree
 (3,3), first for unit jumps and then for arbitrary integer-valued bivariate
 marks.  It then verifies the closed two-state finite-horizon formula used on
-the counts page and its O(lambda^-2) first-order residual.
+the counts page and its O(lambda^-2) first-order residual.  Finally, an exact
+finite-difference construction gives two positive mixing laws with identical
+first four cumulants but different mixed-Poisson count laws.
 """
 
 import itertools
@@ -47,6 +49,64 @@ def factorial_cumulants4(ordinary):
         k3 - 3 * k2 + 2 * k1,
         k4 - 6 * k3 + 11 * k2 - 6 * k1,
     ])
+
+
+def finite_cumulant_twins(order=4, relative_perturbation=0.4):
+    """Positive mixing laws agreeing through ``order`` but not in law.
+
+    The certificate is specialized to four cumulants.  The construction on
+    the counts page works for every finite order by replacing four below with
+    the desired order.
+    """
+    if order != 4:
+        raise ValueError("the numerical certificate is specialized to order four")
+    n = order + 1
+    indices = np.arange(n + 1)
+    support = indices.astype(float) + 1.0
+    coefficients = np.array([math.comb(n, int(j)) for j in indices], float)
+    base = coefficients / 2.0 ** n
+    delta = relative_perturbation / 2.0 ** n
+    signed = coefficients * (-1.0) ** indices
+    plus = base + delta * signed
+    minus = base - delta * signed
+
+    raw_plus = np.array([plus @ support ** r for r in range(1, order + 1)])
+    raw_minus = np.array([minus @ support ** r for r in range(1, order + 1)])
+    intensity_gap = np.max(np.abs(cumulants4(raw_plus) - cumulants4(raw_minus)))
+
+    count_grid = np.arange(80, dtype=float)
+    count_plus = np.array([plus @ poisson.pmf(k, support) for k in count_grid])
+    count_minus = np.array([minus @ poisson.pmf(k, support) for k in count_grid])
+    count_raw_plus = np.array([
+        count_grid ** r @ count_plus for r in range(1, order + 1)])
+    count_raw_minus = np.array([
+        count_grid ** r @ count_minus for r in range(1, order + 1)])
+    factorial_plus = factorial_cumulants4(cumulants4(count_raw_plus))
+    factorial_minus = factorial_cumulants4(cumulants4(count_raw_minus))
+    factorial_gap = np.max(np.abs(factorial_plus - factorial_minus))
+
+    zero_gap = count_plus[0] - count_minus[0]
+    exact_zero_gap = (2.0 * delta * math.exp(-1.0)
+                      * (1.0 - math.exp(-1.0)) ** n)
+    total_variation = 0.5 * np.sum(np.abs(count_plus - count_minus))
+
+    assert np.all(plus > 0.0) and np.all(minus > 0.0)
+    assert abs(plus.sum() - 1.0) < 1e-15
+    assert abs(minus.sum() - 1.0) < 1e-15
+    assert np.max(np.abs(raw_plus - raw_minus)) < 1e-12
+    assert intensity_gap < 1e-10
+    assert factorial_gap < 1e-9
+    assert abs(zero_gap - exact_zero_gap) < 1e-15
+    assert total_variation > 0.0
+    return {
+        "support": support,
+        "plus": plus,
+        "minus": minus,
+        "intensity_gap": intensity_gap,
+        "factorial_gap": factorial_gap,
+        "zero_gap": zero_gap,
+        "total_variation": total_variation,
+    }
 
 
 def mixed_cumulants22(raw):
@@ -487,6 +547,8 @@ def two_state_exact(rates, T, lam, sign=1.0):
 
 
 def main():
+    twins = finite_cumulant_twins()
+
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
                   [1.0, -4.0, 3.0],
@@ -714,6 +776,13 @@ def main():
     intensity10 = integrated_intensity_cumulants(Q10, rates2, 1.0, [1.0, 0.0])
     count10, _ = count_cumulants(Q10, rates2, 1.0, [1.0, 0.0])
 
+    print("finite-order twin intensity-cumulant gap",
+          f"{twins['intensity_gap']:.3e}")
+    print("finite-order twin factorial-cumulant gap",
+          f"{twins['factorial_gap']:.3e}")
+    print("finite-order twin zero-count gap", f"{twins['zero_gap']:.12f}")
+    print("finite-order twin count total variation",
+          f"{twins['total_variation']:.12f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")

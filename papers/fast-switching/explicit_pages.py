@@ -10,6 +10,7 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     count_cumulants,
                                     common_shock_factorial_cumulant,
                                     common_shock_factorial_cumulants22,
+                                    finite_cumulant_twins,
                                     integrated_intensity_cumulants,
                                     integrated_intensity_mixed_cumulants,
                                     mark_factorial_moments,
@@ -269,6 +270,7 @@ def black_scholes():
 
 
 def counts():
+    twins = finite_cumulant_twins()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -395,6 +397,34 @@ def counts():
                  ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
                  mixed_count, mixed_factorial, mixed_intensity)],
             head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''
+    <h3>What the count law identifies</h3>
+    <p>At the level of the entire distribution there is a stronger, moment-free result. For a Cox count with
+      nonnegative integrated intensity $\Lambda$,</p>
+    $$G_N(z)=\mathbb E[z^N]=\mathbb E[e^{-(1-z)\Lambda}]
+      =\mathcal L_{\Lambda}(1-z),\qquad 0\le z\le1.$$
+    <p>Hence the full count law determines the Laplace transform of $\Lambda$ on $[0,1]$. Two count laws can agree
+      only if the corresponding Laplace transforms agree on $(0,1)$; analyticity on the positive half-plane and
+      uniqueness of Laplace transforms then imply equality of the mixing laws. Thus the mixed-Poisson family is
+      identifiable, with no moment-determinacy assumption. This is the Poisson-mixture case of
+      <a href="./bibliography.html#Teicher1961">Teicher&apos;s identifiability theorem</a>.</p>
+    <p>The multivariate statement is identical under conditional independence:</p>
+    $$G_{N_1,\ldots,N_d}(z_1,\ldots,z_d)
+      =\mathcal L_{\boldsymbol\Lambda}(1-z_1,\ldots,1-z_d),
+      \qquad 0\le z_j\le1.$$
+    <p>Finite cumulant lists are fundamentally weaker. Fix any order $k$, set $n=k+1$ and $x_j=j+1$ for
+      $j=0,\ldots,n$. For any $0&lt;\delta&lt;2^{-n}$, define two strictly positive probability laws by</p>
+    $$p_j^{\pm}={n\choose j}\left(2^{-n}\pm\delta(-1)^j\right).$$
+    <p>The $n$th finite-difference identity gives</p>
+    $$\sum_{j=0}^{n}(-1)^j{n\choose j}(j+1)^r=0,\qquad r&lt;n.$$
+    <p>Consequently the two intensities have the same first $k$ moments and cumulants, so their mixed-Poisson
+      counts have the same first $k$ factorial cumulants. They are nevertheless different count laws because</p>
+    $$\mathbb P_+(N=0)-\mathbb P_-(N=0)
+      =2\delta e^{-1}(1-e^{-1})^n\ne0.$$
+    <p>For the certificate&apos;s $k=4$ construction, the maximum discrepancy among the first four factorial
+      cumulants is ''' + f'{twins["factorial_gap"]:.2e}' + r''', while the zero-count probability differs by
+      ''' + f'{twins["zero_gap"]:.12f}' + r''' and the total-variation distance between the two count laws is
+      ''' + f'{twins["total_variation"]:.12f}' + r'''. Full-law identification, all-order analytic identification,
+      and finite-order cumulant identification are therefore distinct claims.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
