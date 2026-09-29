@@ -688,6 +688,64 @@ def verify_real_spectrum_all_maturities():
     assert abs(exceptional_determinant) < 8e-15
     assert exceptional_singular_value < 8e-15
 
+    # The exceptional pair is a simple analytic singularity.  Moving only
+    # tau_2 by delta differentiates its response column to exp(Q tau_2)F.
+    # For a rank-two 3 x 3 matrix A_0, det(A_delta) = d*delta+O(delta^2)
+    # implies sigma_min(A_delta) = |d|*|delta|/(sigma_1 sigma_2)
+    # +O(delta^2).  The condition number therefore blows up like 1/|delta|.
+    exceptional_singular_values = np.linalg.svd(
+        exceptional_augmented, compute_uv=False)
+    exceptional_derivative_column = (
+        expm(cycle_Q * exceptional_taus[1]) @ cycle_feature[:, 0])
+    exceptional_determinant_slope = np.linalg.det(np.column_stack([
+        np.ones(3), exceptional_response[:, 0],
+        exceptional_derivative_column,
+    ]))
+    predicted_singular_slope = (
+        abs(exceptional_determinant_slope)
+        / np.prod(exceptional_singular_values[:2]))
+    predicted_condition_coefficient = (
+        exceptional_singular_values[0] / predicted_singular_slope)
+    assert abs(exceptional_determinant_slope) > 1e-5
+
+    transverse_deltas = np.array([
+        0.04, 0.02, 0.01, 0.005, 0.0025, 0.00125,
+    ])
+    transverse_determinants = []
+    transverse_singular_values = []
+    transverse_condition_numbers = []
+    for delta in transverse_deltas:
+        transverse_response = transient_response_matrix(
+            cycle_Q, cycle_feature,
+            (exceptional_taus[0], exceptional_taus[1] + delta))
+        transverse_augmented = np.column_stack([
+            np.ones(3), transverse_response])
+        transverse_spectrum = np.linalg.svd(
+            transverse_augmented, compute_uv=False)
+        transverse_determinants.append(np.linalg.det(
+            transverse_augmented))
+        transverse_singular_values.append(transverse_spectrum[-1])
+        transverse_condition_numbers.append(
+            transverse_spectrum[0] / transverse_spectrum[-1])
+    transverse_determinants = np.array(transverse_determinants)
+    transverse_singular_values = np.array(transverse_singular_values)
+    transverse_condition_numbers = np.array(transverse_condition_numbers)
+    determinant_slope_errors = np.abs(
+        transverse_determinants / transverse_deltas
+        - exceptional_determinant_slope)
+    determinant_slope_orders = np.log2(
+        determinant_slope_errors[:-1] / determinant_slope_errors[1:])
+    assert abs(
+        transverse_determinants[-1] / transverse_deltas[-1]
+        / exceptional_determinant_slope - 1.0) < 0.002
+    assert abs(
+        transverse_singular_values[-1] / transverse_deltas[-1]
+        / predicted_singular_slope - 1.0) < 0.002
+    assert abs(
+        transverse_condition_numbers[-1] * transverse_deltas[-1]
+        / predicted_condition_coefficient - 1.0) < 0.002
+    assert determinant_slope_orders[-1] > 0.99
+
     generic_response = transient_response_matrix(
         cycle_Q, cycle_feature, (0.4, 1.7))
     generic_determinant = np.linalg.det(np.column_stack([
@@ -804,6 +862,20 @@ def verify_real_spectrum_all_maturities():
     print(f"exceptional response determinant: {exceptional_determinant:.3e}")
     print(f"exceptional smallest singular value: "
           f"{exceptional_singular_value:.3e}")
+    print(f"transverse determinant slope: "
+          f"{exceptional_determinant_slope:.12e}")
+    print(f"predicted smallest-singular-value slope: "
+          f"{predicted_singular_slope:.12e}")
+    print(f"predicted condition-number coefficient: "
+          f"{predicted_condition_coefficient:.9f}")
+    print("transverse determinant slopes: "
+          f"{transverse_determinants / transverse_deltas}")
+    print("transverse smallest-singular-value slopes: "
+          f"{transverse_singular_values / transverse_deltas}")
+    print("transverse condition-number coefficients: "
+          f"{transverse_condition_numbers * transverse_deltas}")
+    print("determinant-slope convergence orders: "
+          f"{determinant_slope_orders}")
     print(f"generic response determinant: {generic_determinant:.9f}")
     print("\nSharp three-state complex-spectrum converse")
     print(f"random complex-spectrum chains checked: {converse_cases}")
@@ -1198,8 +1270,8 @@ def main():
 
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
-        "exact integrated-loading rank, Krylov, real-spectrum and three-state-converse "
-        "observability, shape identities, "
+        "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
+        "three-state exceptional-set observability, shape identities, "
         "known-start expansion, and explicit bounds"
     )
 

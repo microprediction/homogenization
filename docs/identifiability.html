@@ -442,10 +442,62 @@
       maturity pair, not just the directed cycle. This converse is special to a two-dimensional
       centered space; in higher dimensions a complex pair does not by itself force two full
       response columns to be collinear.</p>
-    <p>The Krylov rank is attained by finitely many maturities. More precisely, whenever a
-      given number of maturity blocks can attain it, almost every such tuple does, because
-      the relevant minors are analytic and not identically zero. The scalar cyclic case
-      makes the near-zero conditioning explicit. Let $r=n-1$, let
+    <h3>Generic maturity tuples and exceptional-set fragility</h3>
+    <p>The word <em>generic</em> can be made measure-theoretic, for an arbitrary vector
+      feature and any fixed number $q$ of maturity blocks. On the connected chamber</p>
+    $$\mathcal C_q=\{(\tau_1,\ldots,\tau_q):0&lt;\tau_1&lt;\cdots&lt;\tau_q\},$$
+    <p>let</p>
+    $$\mathcal A(\tau_1,\ldots,\tau_q)
+      =[\,{\bf1}\ R(\tau_1)\ \cdots\ R(\tau_q)\,],
+      \qquad
+      \rho=\max_{\mathcal C_q}\operatorname{rank}\mathcal A.$$
+    <div class="equation-card">
+    <p><strong>Generic-rank theorem.</strong> The exceptional set</p>
+    $$\mathcal E_q=\{\tau\in\mathcal C_q:
+      \operatorname{rank}\mathcal A(\tau)&lt;\rho\}$$
+    <p>has empty interior and Lebesgue measure zero.</p>
+    </div>
+    <p>Indeed, every entry of $R(\tau)=H(I-e^{Q_0\tau})F$ is real analytic.
+      Choose a maturity tuple attaining rank $\rho$ and one nonzero
+      $\rho\times\rho$ minor there. That minor is a nontrivial real-analytic
+      function on $\mathcal C_q$, and every rank-deficient tuple lies in its zero
+      set. A nontrivial real-analytic function has a null zero set, by
+      <a href="./bibliography.html#Mityagin2020">Mityagin's short primary proof</a>;
+      it also cannot vanish on an open subset. This argument does not assert that
+      the exceptional set is empty, nor does it give a uniform conditioning bound.</p>
+    <p>For a cyclic scalar feature, the small-maturity expansion below supplies one
+      full-rank tuple with $q=r=n-1$. Consequently, for an arbitrary real or complex
+      spectrum, almost every ordered positive $r$-tuple identifies the initial prior.
+      The real-spectrum theorem is stronger: it says the exceptional set is empty.</p>
+    <p>The directed-cycle zero above is locally a smooth codimension-one obstruction,
+      and its numerical instability is sharp. Write</p>
+    $$\Delta(\tau_1,\tau_2)
+      =\det[\,{\bf1}\ R(\tau_1)\ R(\tau_2)\,],
+      \qquad (\tau_1^\star,\tau_2^\star)
+      =(2\pi/\sqrt3,4\pi/\sqrt3).$$
+    <p>Since $R'(t)=e^{Q_0t}F$ for the centered feature, direct evaluation gives</p>
+    <div class="equation-card">
+    $$\partial_{\tau_2}\Delta(\tau_1^\star,\tau_2^\star)
+      =1.885990859775\times10^{-5}\ne0.$$
+    </div>
+    <p>The implicit-function theorem therefore makes the nearby exceptional set a
+      smooth curve. If $A_0=\mathcal A(\tau_1^\star,\tau_2^\star)$ has nonzero
+      singular values $s_1\ge s_2&gt;0$, then a transverse displacement $\delta$ in
+      the second maturity satisfies</p>
+    $$\sigma_{\min}\!\left(\mathcal A(\tau_1^\star,
+        \tau_2^\star+\delta)\right)
+      ={|\partial_{\tau_2}\Delta|\over s_1s_2}|\delta|+O(\delta^2),$$
+    $$\kappa_2\!\left(\mathcal A(\tau_1^\star,
+        \tau_2^\star+\delta)\right)
+      ={s_1^2s_2\over|\partial_{\tau_2}\Delta|}
+       |\delta|^{-1}+O(1).$$
+    <p>The certified coefficients are $9.409632470013\times10^{-6}$ and
+      $184072.099850$, respectively. At $|\delta|=0.00125$, the measured
+      determinant slope, smallest-singular-value slope, and condition coefficient
+      are all within $0.2\%$ of these limits; the last determinant-slope convergence
+      order is $0.9988$. Thus measure-zero exceptions can still create an exact
+      reciprocal conditioning wall nearby.</p>
+    <p>The scalar cyclic case also makes the near-zero conditioning explicit. Let $r=n-1$, let
       $K=[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{r-1}F]$, and take
       $\tau_j=\epsilon c_j$ with $0&lt;c_1&lt;\cdots&lt;c_r$. Then</p>
     <div class="equation-card">
@@ -519,7 +571,7 @@
 
     <h3>Determinant-optimal maturities under a cap</h3>
     <p>The determinant formula also solves an exact local design problem. Fix a maximum
-      scaled maturity and write $	au_j=\epsilon T_{\max}c_j$, with
+      scaled maturity and write $\tau_j=\epsilon T_{\max}c_j$, with
       $0&lt;c_1&lt;\cdots&lt;c_r\le1$. All model-dependent factors are fixed, so maximizing
       the magnitude of the leading determinant is equivalent to maximizing</p>
     <div class="equation-card">
