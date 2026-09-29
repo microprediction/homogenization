@@ -46,6 +46,60 @@ def verify_integrable_case():
     return measured_order(exact)
 
 
+def verify_zero_frequency_atom():
+    """Check the invariant spectral atom omitted by the punctured integral.
+
+    Let X_t=Z+Y_t, where Var(Z)=atom_mass and Y has covariance exp(-|t|).
+    The random constant is the shift-invariant projection and contributes
+    atom_mass*T^2 at every acceleration rate.
+    """
+    atom_mass = 0.37
+    maturity = 1.3
+    quadrature_epsilons = 2.0 ** -np.arange(3, 11)
+
+    covariance_values = np.array([
+        integrated_variance(
+            lambda t: atom_mass + math.exp(-t), eps, maturity
+        )
+        for eps in quadrature_epsilons
+    ])
+    quadrature_exact = (
+        atom_mass * maturity ** 2
+        + 2.0 * maturity * quadrature_epsilons
+        - 2.0 * quadrature_epsilons ** 2
+        * (1.0 - np.exp(-maturity / quadrature_epsilons))
+    )
+    identity_error = float(np.max(np.abs(
+        covariance_values - quadrature_exact
+    )))
+    assert identity_error < 2e-12
+
+    epsilons = 2.0 ** -np.arange(3, 15)
+    exact = (
+        atom_mass * maturity ** 2
+        + 2.0 * maturity * epsilons
+        - 2.0 * epsilons ** 2
+        * (1.0 - np.exp(-maturity / epsilons))
+    )
+    invariant_variance = atom_mass * maturity ** 2
+    omitted_atom_error = float(np.max(np.abs(
+        exact
+        - (2.0 * maturity * epsilons
+           - 2.0 * epsilons ** 2
+           * (1.0 - np.exp(-maturity / epsilons)))
+        - invariant_variance
+    )))
+    assert omitted_atom_error < 2e-16
+
+    normalized_limit = exact[-1] / maturity ** 2
+    assert abs(normalized_limit - atom_mass) < 3e-4
+    remainder = exact - invariant_variance
+    green_kubo_ratio = remainder[-1] / (2.0 * maturity * epsilons[-1])
+    assert abs(green_kubo_ratio - 1.0) < 1e-4
+    return (identity_error, omitted_atom_error, normalized_limit,
+            green_kubo_ratio)
+
+
 def sign_gaussian_covariance(t, alpha, delta=1.0):
     correlation = (1.0 + t * t) ** (-alpha / 2.0)
     return 2.0 * delta * delta * math.asin(correlation) / math.pi
@@ -414,6 +468,7 @@ def verify_periodic_case():
 
 def main():
     short_order = verify_integrable_case()
+    zero_atom = verify_zero_frequency_atom()
     long_04 = verify_long_memory_case(0.4)
     long_07 = verify_long_memory_case(0.7)
     critical_ratio = verify_critical_case()
@@ -426,6 +481,10 @@ def main():
 
     print("Correlation-tail scaling certificate")
     print(f"integrable-correlation order: {short_order:.6f} (target 1)")
+    print("zero-frequency atom identity error, omitted-atom error, "
+          "normalized variance limit, residual Green--Kubo ratio: "
+          f"{zero_atom[0]:.3e}, {zero_atom[1]:.3e}, "
+          f"{zero_atom[2]:.9f}, {zero_atom[3]:.9f}")
     print(f"alpha=0.4 order, asymptotic ratio: {long_04[0]:.6f}, {long_04[1]:.6f}")
     print(f"alpha=0.7 order, asymptotic ratio: {long_07[0]:.6f}, {long_07[1]:.6f}")
     print(f"critical epsilon-log ratio: {critical_ratio:.6f}")
