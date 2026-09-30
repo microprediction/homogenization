@@ -2392,6 +2392,107 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     return intercepts, discrepancies, recursion_errors, known_error
 
 
+def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
+    """Illustrate one switching-rate-uniform envelope at every tested order.
+
+    The theorem is analytic and applies at each fixed order.  This finite
+    grid checks its ingredients independently: exact polynomial-semigroup
+    cumulants are compared with the Perron rate and boundary constant, for
+    reversible and nonreversible chains and for stationary and point starts.
+    """
+    q2 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    q3 = np.array(
+        [
+            [-3.0, 2.7, 0.3],
+            [0.2, -2.2, 2.0],
+            [2.4, 0.4, -2.8],
+        ]
+    )
+    pi3 = stationary(q3)
+    kappa3 = np.array([1.1, 2.3, 3.0])
+    cases = [
+        (
+            "two-state stationary",
+            q2,
+            np.array([0.5, 0.5]),
+            np.array([0.04, 0.16]),
+            np.array([0.8, 2.0]),
+            np.array([0.04, 0.04]),
+            {},
+        ),
+        (
+            "two-state point",
+            q2,
+            np.array([0.5, 0.5]),
+            np.array([0.04, 0.16]),
+            np.array([0.8, 2.0]),
+            np.array([0.04, 0.04]),
+            {"initial_regime": 0, "initial_variance": 0.04},
+        ),
+        (
+            "three-state nonreversible",
+            q3,
+            pi3,
+            kappa3 * np.array([0.035, 0.080, 0.050]),
+            kappa3,
+            np.array([0.20, 0.25, 0.22]) ** 2,
+            {},
+        ),
+    ]
+    speeds = 2.0 ** np.arange(7)
+    maturities = np.linspace(0.0, 10.0, 21)
+    gamma = 0.35
+    results = {}
+    for label, q0, pi, c, kappa, variance, start in cases:
+        order_envelopes = np.zeros(max_order)
+        terminal_remainders = np.zeros(max_order)
+        for speed in speeds:
+            rates, _ = integrated_variance_cumulant_rates(
+                max_order, speed, q0, pi, c, kappa, variance
+            )
+            boundary, _, _, _ = integrated_variance_boundary_constants(
+                max_order, speed, q0, pi, c, kappa, variance, **start
+            )
+            for maturity in maturities:
+                exact = centered_integrated_cumulants(
+                    max_order, maturity, speed, q0, pi, c, kappa,
+                    variance, **start
+                )
+                remainder = exact - maturity * rates - boundary
+                order_envelopes = np.maximum(
+                    order_envelopes,
+                    np.exp(gamma * maturity) * np.abs(remainder),
+                )
+                if maturity == maturities[-1]:
+                    terminal_remainders = np.maximum(
+                        terminal_remainders, np.abs(remainder)
+                    )
+        assert np.all(np.isfinite(order_envelopes))
+        results[label] = (order_envelopes, terminal_remainders)
+
+    # These are regression ceilings, not constants in the theorem.
+    assert np.max(results["two-state stationary"][0]) < 1.60e-3
+    assert np.max(results["two-state point"][0]) < 3.27e-2
+    assert np.max(results["three-state nonreversible"][0]) < 4.11e-4
+
+    print("5j. switching-rate-uniform fixed-order cumulant remainders")
+    print(
+        f"   tested orders 1--{max_order}, m=1,...,64, T in [0,10], "
+        f"gamma={gamma:.2f}"
+    )
+    for label in results:
+        envelope, terminal = results[label]
+        print(
+            f"   {label}: envelope "
+            + " ".join(f"{value:.3e}" for value in envelope)
+        )
+        print(
+            f"      T=10 remainder "
+            + " ".join(f"{value:.3e}" for value in terminal)
+        )
+    return gamma, results
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -2468,6 +2569,9 @@ def main():
         verify_all_fixed_order_second_rate_corrections()
     )
     all_order_intercept_results = verify_all_fixed_order_cumulant_intercepts()
+    uniform_all_order_results = (
+        verify_uniform_fixed_order_cumulant_remainders()
+    )
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -2866,7 +2970,8 @@ def main():
         f"growing-window rate {expansion_rates[1][3]:.3f}, "
         f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
-        f"{uniform_remainder_results[0]:.1f}, third rate/intercept convergence "
+        f"{uniform_remainder_results[0]:.1f}, fixed-order uniform gamma "
+        f"{uniform_all_order_results[0]:.2f}, third rate/intercept convergence "
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
         f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
         f"all-order corrected-rate floor "

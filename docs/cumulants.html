@@ -806,8 +806,39 @@
       $2.7\times10^{-15}$ for the stationary start and $2.3\times10^{-15}$ for the point start. Computing
       $\kappa_k(V_T)-T\gamma_k$ at $T=20$ and $40$ changes the values by at most $3.2\times10^{-14}$. The stationary
       order-two and order-three constants match the earlier explicit Poisson formulas within $6.2\times10^{-16}$.</p>
-    <p>The constants and decay rate may depend on $k$, $m$, and $\nu$. No switching-rate-uniform higher-cumulant
-      remainder, finite-$1/m$ maturity-uniform approximation, or price-level theorem follows from this result.</p>
+    <h3>A switching-rate-uniform remainder at every fixed order</h3>
+    <p>For switched CIR, the dependence on $m$ in the preceding remainder can be removed when the cumulant order
+      is fixed. Fix $K$, $m_0&gt;0$, and assume $\kappa_*:=\min_i\kappa_i&gt;0$. Let
+      $\lVert e^{tQ_0}-\mathbf1\pi\rVert\le M_Qe^{-\gamma_Qt}$, and consider either a fixed initial law or a
+      family of initial laws whose moments through degree $K$ are uniformly bounded. Then there are
+      $C_K&lt;\infty$ and</p>
+    <div class="equation-card">
+    $$\gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}&gt;0$$
+    $$\text{such that}\qquad
+      \sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}
+      \left|\kappa_k(V_T)-T\gamma_k(m)-\beta_{k,\nu}(m)\right|
+      \le C_K,qquad 1\le k\le K.$$
+    </div>
+    <p>Here both the slope $\gamma_k(m)$ and the boundary constant $\beta_{k,\nu}(m)$ are the exact
+      $m$-dependent quantities above. The proof is finite-dimensional. On polynomials of $v$ through degree
+      $K$, the degree-$j$ diagonal block is $mQ_0-jD_\kappa$. For $j\ge1$, its
+      <a href="./bibliography.html#Kac1949">Feynman&ndash;Kac</a> semigroup is
+      bounded by $e^{-j\kappa_*T}$; on the centered degree-zero block, finite-chain mixing gives
+      $M_Qe^{-m\gamma_QT}$. The tilted-semigroup jet through order $K$ is obtained by finitely many Duhamel
+      convolutions of these stable blocks. After the exact secular term and Perron amplitude are removed, every
+      remaining convolution contains a stable factor. Resonant polynomial factors are absorbed by halving the
+      exponent. The killed resolvents and the stationary CIR moment recursion are uniformly bounded for
+      $m\ge m_0$, completing the common-envelope estimate. This is a fixed-jet refinement of the preceding
+      multiplicative-Poisson expansion, within the same isolated-spectral-subspace framework as
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>.</p>
+    <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
+      $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
+      two-state model, $0.03264$ for its point start, and $0.0004104$ for the nonreversible three-state model.
+      At $T=10$, the largest absolute remainders are respectively $7.23\times10^{-9}$,
+      $1.94\times10^{-7}$, and $4.12\times10^{-13}$.</p>
+    <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
+      boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
+      truncation, nor a price-level theorem.</p>
 
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
