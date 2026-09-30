@@ -16,7 +16,7 @@ import sys
 
 import numpy as np
 from scipy.integrate import quad
-from scipy.linalg import expm
+from scipy.linalg import expm, null_space
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "general"))
 from effective_generator import effective_generator, full_generator, gk, stationary
@@ -183,6 +183,90 @@ def general_reversal_check():
     }
 
 
+def normalized_resolvent_check():
+    """Check the sharp energy-normalized resolvent factorization.
+
+    On the centered L2(pi) space write L=S+A, B=-S, and
+    C=B^(-1/2) A B^(-1/2).  Then
+
+        B^(1/2)(-L)^(-1)B^(1/2)=(I-C)^(-1),
+
+    whose symmetric and skew parts are (I-C^2)^(-1) and
+    C(I-C^2)^(-1), respectively.
+    """
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    pi = stationary(q)
+    weight = np.diag(pi)
+
+    # If y=sqrt(pi) f, centering is orthogonality to sqrt(pi).
+    euclidean_basis = null_space(np.sqrt(pi)[None, :])
+    basis = np.diag(1.0 / np.sqrt(pi)) @ euclidean_basis
+    assert np.max(abs(basis.T @ weight @ basis - np.eye(len(pi) - 1))) < 2e-14
+    assert np.max(abs(pi @ basis)) < 2e-14
+
+    generator = basis.T @ weight @ q @ basis
+    symmetric_generator = 0.5 * (generator + generator.T)
+    skew_generator = 0.5 * (generator - generator.T)
+    energy = -symmetric_generator
+    eigenvalues, eigenvectors = np.linalg.eigh(energy)
+    assert np.min(eigenvalues) > 0.0
+    energy_half = (eigenvectors * np.sqrt(eigenvalues)) @ eigenvectors.T
+    energy_inverse_half = (
+        eigenvectors * (1.0 / np.sqrt(eigenvalues))
+    ) @ eigenvectors.T
+
+    normalized_skew = energy_inverse_half @ skew_generator @ energy_inverse_half
+    resolvent = np.linalg.inv(-generator)
+    normalized_resolvent = energy_half @ resolvent @ energy_half
+    identity = np.eye(len(eigenvalues))
+    factorized = np.linalg.inv(identity - normalized_skew)
+    symmetric_factor = np.linalg.inv(
+        identity - normalized_skew @ normalized_skew
+    )
+    skew_factor = normalized_skew @ symmetric_factor
+
+    factorization_error = np.max(abs(normalized_resolvent - factorized))
+    symmetric_error = np.max(abs(
+        0.5 * (normalized_resolvent + normalized_resolvent.T)
+        - symmetric_factor
+    ))
+    skew_error = np.max(abs(
+        0.5 * (normalized_resolvent - normalized_resolvent.T)
+        - skew_factor
+    ))
+
+    eta = np.linalg.norm(normalized_skew, 2)
+    symmetric_eigenvalues = np.linalg.eigvalsh(symmetric_factor)
+    lower_bound = 1.0 / (1.0 + eta ** 2)
+    skew_bound = eta / (1.0 + eta ** 2) if eta <= 1.0 else 0.5
+    skew_norm = np.linalg.norm(skew_factor, 2)
+
+    assert factorization_error < 3e-14
+    assert symmetric_error < 3e-14
+    assert skew_error < 3e-14
+    assert np.min(symmetric_eigenvalues) >= lower_bound - 3e-14
+    assert np.max(symmetric_eigenvalues) <= 1.0 + 3e-14
+    assert skew_norm <= skew_bound + 3e-14
+    return {
+        "factorization_error": factorization_error,
+        "symmetric_error": symmetric_error,
+        "skew_error": skew_error,
+        "eta": eta,
+        "lower_bound": lower_bound,
+        "symmetric_min": np.min(symmetric_eigenvalues),
+        "symmetric_max": np.max(symmetric_eigenvalues),
+        "skew_norm": skew_norm,
+        "skew_bound": skew_bound,
+    }
+
+
 def first_order(lbar, correction, maturity, payoff):
     """Duhamel correction exp(TL)f+int exp((T-s)L)D exp(sL)f ds."""
     n = len(payoff)
@@ -244,7 +328,23 @@ def main():
         f"reversible full-form asymmetry {general['reversible_asymmetry']:.2e}"
     )
 
-    print("2. exact Fourier blocks against direct correlation quadrature")
+    print("2. the energy-normalized resolvent factorization gives sharp bounds")
+    normalized = normalized_resolvent_check()
+    print(
+        f"   factorization/symmetric/skew errors "
+        f"{normalized['factorization_error']:.2e}, "
+        f"{normalized['symmetric_error']:.2e}, "
+        f"{normalized['skew_error']:.2e}"
+    )
+    print(
+        f"   eta {normalized['eta']:.9f}; symmetric spectrum "
+        f"[{normalized['symmetric_min']:.9f}, "
+        f"{normalized['symmetric_max']:.9f}] versus lower bound "
+        f"{normalized['lower_bound']:.9f}; skew norm/bound "
+        f"{normalized['skew_norm']:.9f}/{normalized['skew_bound']:.9f}"
+    )
+
+    print("3. exact Fourier blocks against direct correlation quadrature")
     for mode in range(1, 6):
         exact = exact_block(mode)
         numerical = quadrature_block(mode)
@@ -252,7 +352,7 @@ def main():
         print(f"   mode {mode}: max error {error:.2e}, anti entry {exact[0, 1]:+.8f}")
         assert error < 2e-11
 
-    print("3. periodic CTMC discretization converges to the diffusion block")
+    print("4. periodic CTMC discretization converges to the diffusion block")
     grid_errors = []
     for size in (32, 64, 128):
         q, phis = circle_chain(size)
@@ -263,14 +363,14 @@ def main():
     spatial_rate = rate(grid_errors)
     assert 1.9 < spatial_rate < 2.1
 
-    print("4. reversing current preserves the symmetric block and flips the antisymmetric block")
+    print("5. reversing current preserves the symmetric block and flips the antisymmetric block")
     forward = exact_block(1, C)
     reverse = exact_block(1, -C)
     assert np.max(abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))) < 1e-15
     assert np.max(abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))) < 1e-15
     print(f"   c=+{C:g}: K12={forward[0, 1]:+.6f}; c=-{C:g}: K12={reverse[0, 1]:+.6f}")
 
-    print("5. the full commutator rule has a second-order finite-rate residual")
+    print("6. the full commutator rule has a second-order finite-rate residual")
     k_forward, errors_forward, values_forward = effective_check(C)
     k_reverse, errors_reverse, values_reverse = effective_check(-C)
     for name in errors_forward:
@@ -298,7 +398,7 @@ def main():
     print("   forward-minus-reverse residual: " + " ".join(f"{x:.3e}" for x in direction_errors) + f"  rate {direction_rate:.3f}")
     assert 1.8 < direction_rate < 2.2
 
-    print("6. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
+    print("7. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
     blocks = []
     for size in (32, 64, 128, 256):
         q_forward, features = variable_circle_chain(size)
