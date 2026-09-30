@@ -1167,6 +1167,17 @@
  },
  {
   "role": "survey_choice",
+  "key": "RoueffRyden2005",
+  "authors": "Roueff, F. and Rydén, T.",
+  "year": 2005,
+  "title": "Nonparametric estimation of mixing densities for discrete distributions",
+  "venue": "Annals of Statistics 33(5):2066-2108",
+  "doi": "10.1214/009053605000000381",
+  "url": "https://doi.org/10.1214/009053605000000381",
+  "annotation": "Develops nonparametric estimators and minimax theory for mixing densities in discrete mixture models, including Poisson mixtures, under explicit smoothness restrictions; it supplies the estimation context for the distinction between identifiability and stable inversion."
+ },
+ {
+  "role": "survey_choice",
   "key": "MarleyColonius1992",
   "authors": "Marley, A. A. J. and Colonius, H.",
   "year": 1992,

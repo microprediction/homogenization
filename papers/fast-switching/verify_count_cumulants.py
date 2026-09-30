@@ -112,6 +112,58 @@ def finite_cumulant_twins(order=4, relative_perturbation=0.4):
     }
 
 
+def poisson_inverse_instability():
+    """Quantify why mixed-Poisson identifiability is not TV stability.
+
+    Point masses at distinct intensities have total-variation distance one,
+    although their Poisson images become arbitrarily close when the two
+    intensities coalesce. Consecutive large intensities additionally keep
+    Wasserstein-1 distance one while their count laws converge in TV.
+    """
+    center = 4.5
+    steps = np.array([1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5])
+    local_tv = []
+    local_cutoffs = []
+    for step in steps:
+        upper = center + step
+        cutoff = math.floor(step / math.log(upper / center))
+        local_cutoffs.append(cutoff)
+        local_tv.append(
+            poisson.cdf(cutoff, center) - poisson.cdf(cutoff, upper))
+    local_tv = np.array(local_tv)
+    local_limit = poisson.pmf(math.floor(center), center)
+
+    means = np.array([10, 100, 1000, 10000, 100000, 1000000], int)
+    consecutive_tv = np.array([
+        poisson.cdf(int(mean), mean)
+        - poisson.cdf(int(mean), mean + 1.0)
+        for mean in means
+    ])
+    scaled_tv = np.sqrt(means) * consecutive_tv
+    asymptotic_constant = 1.0 / math.sqrt(2.0 * math.pi)
+    hellinger_bounds = np.array([
+        math.sqrt(-math.expm1(
+            -(math.sqrt(mean + 1.0) - math.sqrt(mean)) ** 2))
+        for mean in means
+    ])
+
+    assert set(local_cutoffs) == {4}
+    assert abs(local_tv[-1] / steps[-1] - local_limit) < 2e-7
+    assert abs(scaled_tv[-1] - asymptotic_constant) < 2e-7
+    assert np.all(consecutive_tv <= hellinger_bounds)
+    return {
+        "center": center,
+        "steps": steps,
+        "local_tv": local_tv,
+        "local_limit": local_limit,
+        "means": means,
+        "consecutive_tv": consecutive_tv,
+        "scaled_tv": scaled_tv,
+        "asymptotic_constant": asymptotic_constant,
+        "hellinger_bounds": hellinger_bounds,
+    }
+
+
 def mixed_cumulants22(raw):
     """Mixed cumulants kappa_11, kappa_21, kappa_12 and kappa_22.
 
@@ -551,6 +603,7 @@ def two_state_exact(rates, T, lam, sign=1.0):
 
 def main():
     twins = finite_cumulant_twins()
+    instability = poisson_inverse_instability()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -788,6 +841,15 @@ def main():
           f"{twins['total_variation']:.12f}")
     print("finite-order twin total-variation tail bound",
           f"{twins['total_variation_tail_bound']:.3e}")
+    print("local inverse-instability TV / step",
+          f"{instability['local_tv'][-1] / instability['steps'][-1]:.12f}",
+          "limit", f"{instability['local_limit']:.12f}")
+    print("large-intensity sqrt(m) TV",
+          f"{instability['scaled_tv'][-1]:.12f}",
+          "limit", f"{instability['asymptotic_constant']:.12f}")
+    print("large-intensity TV and Hellinger upper bound",
+          f"{instability['consecutive_tv'][-1]:.12e}",
+          f"{instability['hellinger_bounds'][-1]:.12e}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")

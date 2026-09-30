@@ -15,7 +15,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     integrated_intensity_mixed_cumulants,
                                     mark_factorial_moments,
                                     marked_common_shock_factorial_cumulant,
-                                    mixed_factorial_cumulants22)
+                                    mixed_factorial_cumulants22,
+                                    poisson_inverse_instability)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -271,6 +272,7 @@ def black_scholes():
 
 def counts():
     twins = finite_cumulant_twins()
+    instability = poisson_inverse_instability()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -426,6 +428,41 @@ def counts():
       ''' + f'{twins["total_variation"]:.12f}' + r''', with omitted contribution below
       ''' + f'{twins["total_variation_tail_bound"]:.2e}' + r'''. Full-law identification, all-order analytic
       identification, and finite-order cumulant identification are therefore distinct claims.</p>
+    <h3>Identification is not stable inversion</h3>
+    <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
+      variation. For two point-mass mixing laws $\delta_a$ and $\delta_b$,</p>
+    $$d_{\rm TV}(\delta_a,\delta_b)=1\qquad(a\ne b),$$
+    <p>whereas their count laws are $\operatorname{Pois}(a)$ and $\operatorname{Pois}(b)$. Their Hellinger affinity is</p>
+    $$\sum_{k\ge0}\sqrt{p_a(k)p_b(k)}
+      =\exp\!\left\{-\frac12(\sqrt a-\sqrt b)^2\right\},$$
+    <p>so</p>
+    $$d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(b))
+      \le \sqrt{1-e^{-(\sqrt a-\sqrt b)^2}}.$$
+    <p>For $0&lt;a&lt;b$, the likelihood ratio $p_a(k)/p_b(k)=e^{b-a}(a/b)^k$ crosses one once. Therefore the exact
+      total variation is</p>
+    $$d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(b))
+      =F_a(k_*)-F_b(k_*),\qquad
+      k_*=\left\lfloor\frac{b-a}{\log(b/a)}\right\rfloor.$$
+    <p>Thus even on a fixed compact intensity interval, taking $b\to a$ leaves mixing-law total variation equal to
+      one while count-law total variation tends to zero. More precisely, at a noninteger $a$ and for sufficiently
+      small $h&gt;0$, the likelihood-ratio crossing is $k=\lfloor a\rfloor$, and</p>
+    $$\frac{d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(a+h))}{h}
+      \longrightarrow \Pr\{\operatorname{Pois}(a)=\lfloor a\rfloor\}.$$
+    <p>There is no global Wasserstein rescue without an intensity bound. For integer $m$, the crossing of
+      $\operatorname{Pois}(m)$ and $\operatorname{Pois}(m+1)$ is exactly $k=m$, so</p>
+    $$d_{\rm TV}(\operatorname{Pois}(m),\operatorname{Pois}(m+1))
+      =F_m(m)-F_{m+1}(m)
+      \sim\frac1{\sqrt{2\pi m}},$$
+    <p>although $W_1(\delta_m,\delta_{m+1})=1$. At $a=4.5$ and $h=10^{-5}$ the certificate gives
+      $d_{\rm TV}/h=$ ''' + f'{instability["local_tv"][-1] / instability["steps"][-1]:.12f}' + r''',
+      against the limit ''' + f'{instability["local_limit"]:.12f}' + r'''. At $m=10^6$ it gives
+      $\sqrt m\,d_{\rm TV}=$ ''' + f'{instability["scaled_tv"][-1]:.12f}' + r''', against
+      $1/\sqrt{2\pi}=$ ''' + f'{instability["asymptotic_constant"]:.12f}' + r'''.</p>
+    <p>This does not contradict identifiability. It says that finite-sample recovery needs a weaker loss and/or
+      structural restrictions such as bounded support and smoothness. The nonparametric Poisson-mixture estimation
+      theory of <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n (2005)</a> makes such regularity
+      assumptions explicit. For a fixed finite-state intensity model, $\Lambda_T$ is bounded; that removes the
+      escaping-mass example but not the total-variation discontinuity created by moving atoms.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
