@@ -8,6 +8,7 @@ import math
 import numpy as np
 from scipy.integrate import quad_vec, solve_ivp
 from scipy.linalg import expm
+from scipy.optimize import brentq
 
 from three_numbers import (
     coefficients, g_funcs, group_inverse, int_Bk, stationary,
@@ -1040,6 +1041,133 @@ def verify_long_end_conditioning():
     print(f"terminal scaled determinant: {scaled_determinants[-1]:.9f}")
 
 
+def verify_complex_long_end_aliasing():
+    """Oscillatory modes create infinitely many translated rank losses."""
+    cycle_Q = np.array([
+        [-1.0, 1.0, 0.0],
+        [0.0, -1.0, 1.0],
+        [1.0, 0.0, -1.0],
+    ])
+    cycle_feature = np.array([[1.0], [-1.0], [0.0]])
+    decay = 1.5
+    frequency = math.sqrt(3.0) / 2.0
+    offsets = np.array([0.4, 1.7])
+    c1, c2 = offsets
+
+    # Substituting t_j=M+c_j into the exact three-state aliasing kernel gives
+    #
+    # K(M+c1,M+c2) = exp(-a M) L(M) + C exp(-2a M),
+    # L(M) = exp(-a c1) sin(b(M+c1))
+    #        -exp(-a c2) sin(b(M+c2)).
+    #
+    # Since c1 != c2, L is a nonzero sinusoid.  Its simple zeros therefore
+    # perturb to infinitely many exact zeros of the full determinant.
+    sine_coefficient = (
+        math.exp(-decay * c1) * math.cos(frequency * c1)
+        - math.exp(-decay * c2) * math.cos(frequency * c2)
+    )
+    cosine_coefficient = (
+        math.exp(-decay * c1) * math.sin(frequency * c1)
+        - math.exp(-decay * c2) * math.sin(frequency * c2)
+    )
+    amplitude = math.hypot(sine_coefficient, cosine_coefficient)
+    phase = math.atan2(cosine_coefficient, sine_coefficient)
+    correction = (
+        math.exp(-decay * (c1 + c2))
+        * math.sin(frequency * (c2 - c1))
+    )
+    assert amplitude > 0.5
+
+    def leading(translation):
+        return amplitude * math.sin(frequency * translation + phase)
+
+    def scaled_kernel(translation):
+        return leading(translation) + correction * math.exp(
+            -decay * translation)
+
+    def aliasing_kernel(t1, t2):
+        return (
+            math.exp(-decay * (t1 + t2))
+            * math.sin(frequency * (t2 - t1))
+            - math.exp(-decay * t2) * math.sin(frequency * t2)
+            + math.exp(-decay * t1) * math.sin(frequency * t1)
+        )
+
+    cycle_constant = -2.0 / math.sqrt(3.0)
+    maximum_factorization_error = 0.0
+    for translation in np.linspace(0.0, 10.0, 41):
+        taus = translation + offsets
+        response = transient_response_matrix(
+            cycle_Q, cycle_feature, taus)
+        observed = np.linalg.det(np.column_stack([
+            np.ones(3), response]))
+        predicted = cycle_constant * aliasing_kernel(*taus)
+        maximum_factorization_error = max(
+            maximum_factorization_error, abs(observed - predicted))
+        scaled_direct = aliasing_kernel(*taus) * math.exp(
+            decay * translation)
+        assert abs(scaled_direct - scaled_kernel(translation)) < 2e-14
+    assert maximum_factorization_error < 1e-14
+
+    # Locate four consecutive long-end singular translations.  If m_k is a
+    # zero of L, then M_k-m_k=O(exp(-a m_k)); the normalized shifts converge
+    # in magnitude to |C|/(b*amplitude).
+    leading_zeros = []
+    exact_zeros = []
+    normalized_shifts = []
+    for k in range(1, 5):
+        leading_zero = (k * math.pi - phase) / frequency
+        radius = math.pi / (4.0 * frequency)
+        exact_zero = brentq(
+            scaled_kernel,
+            leading_zero - radius,
+            leading_zero + radius,
+            xtol=1e-14,
+        )
+        leading_zeros.append(leading_zero)
+        exact_zeros.append(exact_zero)
+        normalized_shifts.append(
+            (exact_zero - leading_zero)
+            * math.exp(decay * leading_zero))
+        assert abs(scaled_kernel(exact_zero)) < 2e-15
+    leading_zeros = np.asarray(leading_zeros)
+    exact_zeros = np.asarray(exact_zeros)
+    normalized_shifts = np.asarray(normalized_shifts)
+    predicted_shift_magnitude = abs(correction) / (
+        frequency * amplitude)
+    assert abs(
+        abs(normalized_shifts[-2]) / predicted_shift_magnitude - 1.0
+    ) < 5e-5
+
+    # At a singular translation the response columns are exactly collinear.
+    # Direct matrix arithmetic remains reliable for the first two roots.
+    root_singular_values = []
+    root_relative_determinants = []
+    for exact_zero in exact_zeros[:2]:
+        response = transient_response_matrix(
+            cycle_Q, cycle_feature, exact_zero + offsets)
+        augmented = np.column_stack([np.ones(3), response])
+        spectrum = np.linalg.svd(augmented, compute_uv=False)
+        root_singular_values.append(spectrum[-1])
+        root_relative_determinants.append(
+            abs(np.linalg.det(augmented))
+            / np.prod(np.linalg.norm(augmented, axis=0)))
+    assert max(root_singular_values) < 2e-14
+    assert max(root_relative_determinants) < 2e-14
+
+    print("\nComplex-spectrum translated long-end aliasing")
+    print(f"offsets: {offsets}")
+    print(f"leading sinusoid amplitude: {amplitude:.12f}")
+    print(f"maximum exact factorization error: "
+          f"{maximum_factorization_error:.3e}")
+    print(f"leading zeros: {leading_zeros}")
+    print(f"exact singular translations: {exact_zeros}")
+    print(f"normalized root shifts: {normalized_shifts}")
+    print(f"predicted shift magnitude: {predicted_shift_magnitude:.12f}")
+    print(f"maximum root relative determinant: "
+          f"{max(root_relative_determinants):.3e}")
+
+
 def verify_initial_mixture_observability():
     """Boundary-layer maturities can identify more than the outer projection."""
     Q = np.array([
@@ -1399,6 +1527,7 @@ def main():
     verify_krylov_observability()
     verify_real_spectrum_all_maturities()
     verify_long_end_conditioning()
+    verify_complex_long_end_aliasing()
     verify_initial_mixture_observability()
 
     for T in (0.2, 1.0, 3.0, 5.0):
@@ -1423,7 +1552,8 @@ def main():
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
-        "three-state exceptional-set observability, sharp long-end conditioning, "
+        "three-state exceptional-set observability, sharp real-spectrum and "
+        "oscillatory long-end conditioning, "
         "shape identities, "
         "known-start expansion, and explicit bounds"
     )

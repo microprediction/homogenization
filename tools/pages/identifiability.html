@@ -342,6 +342,52 @@
       it is not a claim about fixed-feature Green&ndash;Kubo rank or rank created by
       integrating different contract loadings.</p>
 
+    <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
+    <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
+      In three states, suppose the centered eigenvalues are $-a\pm ib$, with $a,b&gt;0$,
+      and the scalar feature is cyclic. Fix any offsets $c_1&lt;c_2$, and write</p>
+    $$D(M)=\det[\,\mathbf1\ R(M+c_1)\ R(M+c_2)\,].$$
+    <p>Substitution in the exact aliasing kernel below gives, for a nonzero
+      model-dependent constant $C_0$, the identity</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      D(M)&amp;=C_0e^{-aM}\{L(M)+Ce^{-aM}\},\\
+      L(M)&amp;=e^{-ac_1}\sin\{b(M+c_1)\}
+             -e^{-ac_2}\sin\{b(M+c_2)\},\\
+      C&amp;=e^{-a(c_1+c_2)}\sin\{b(c_2-c_1)\}.
+    \end{aligned}$$
+    </div>
+    <p>The leading term is a nonzero sinusoid:
+      $L(M)=A\sin(bM+\phi)$ with</p>
+    $$A=\left|e^{(-a+ib)c_1}-e^{(-a+ib)c_2}\right|&gt;0.$$
+    <p>Consequently, if $\widehat M_k=(k\pi-\phi)/b$, then for every sufficiently
+      large $k$ there is an exact singular translation</p>
+    $$M_k=\widehat M_k+O(e^{-a\widehat M_k}),\qquad D(M_k)=0.$$
+    <p>This follows directly from the simple zeros of $L$ and the implicit-function
+      theorem (or a sign change on an $O(e^{-a\widehat M_k})$ neighborhood).
+      Hence a translated complex-spectrum design loses rank infinitely often; no
+      global claim $\sigma_3(A_M)=\Theta(e^{-aM})$ is possible. On any phase-separated
+      set $|L(M)|\ge\eta&gt;0$, however,</p>
+    $$\sigma_1(A_M),\sigma_2(A_M)=\Theta(1),\qquad
+      \sigma_3(A_M)=\Theta(e^{-aM}),\qquad
+      \kappa_2(A_M)=\Theta(e^{aM}).$$
+    <p>Locally at a sufficiently large $M_k$, the simple zero sharpens this to
+      $\sigma_3(A_M)=\Theta(e^{-aM_k}|M-M_k|)$ and
+      $\kappa_2(A_M)=\Theta(e^{aM_k}/|M-M_k|)$. Thus the ordinary exponential
+      deterioration is the regular-phase behavior, interrupted by reciprocal
+      conditioning walls and exact aliases. This is the translated-maturity form
+      of the eigenvalue-cycle aliasing mechanism studied for irregularly sampled
+      linear systems by <a href="./bibliography.html#ParkSahai2013">Park and
+      Sahai</a>.</p>
+    <p>For the directed-cycle certificate with offsets $(0.4,1.7)$,
+      $A=0.520001659599$. The first four asymptotic phase zeros are
+      $(3.384584565,7.012183293,10.639782022,14.267380750)$, while the exact
+      singular translations are
+      $(3.385120036,7.012180971,10.639782032,14.267380750)$.
+      The normalized root shift approaches the predicted magnitude
+      $|C|/(bA)=0.085890490311$, and the direct determinant factorization error
+      over 41 translations is below $8.2\times10^{-15}$.</p>
+
     <p>An exact defective example makes the confluent case explicit. Let</p>
     $$Q_J=\begin{pmatrix}
       -8/15&amp;1/15&amp;7/15\\1/3&amp;-2/3&amp;1/3\\1/5&amp;3/5&amp;-4/5
