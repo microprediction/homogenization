@@ -21,8 +21,9 @@ approach its mean while its standardized distance still diverges, checking the
 boundary where the lattice amplitude itself becomes singular.
 A lattice Edgeworth certificate covers the complementary central zone.  It
 retains both the half-integer continuity correction and the arbitrary-start
-mean hidden in the Perron boundary amplitude, and checks an order-n^{-1}
-residual against exact coefficient tails.
+mean and variance hidden in the Perron boundary amplitude.  Its explicit
+second-order lattice term includes the midpoint Euler--Maclaurin correction
+and leaves an order-n^{-3/2} residual against exact coefficient tails.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
@@ -306,24 +307,29 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     # the Gaussian saddle.  For P(S_n >= k), summing the local expansion puts
     # the normal coordinate at k-1/2.  The first derivative of log B_nu is an
     # order-one mean shift and therefore contributes at the same n^{-1/2}
-    # order as skewness.  A nonstationary point mass makes this boundary term
-    # visible; exact coefficient tails certify the signs and the O(n^{-1})
+    # order as skewness.  At the next order, the boundary variance, fourth
+    # cumulant, cross-products and the midpoint Euler--Maclaurin correction
+    # all contribute.  A nonstationary point mass makes these boundary terms
+    # visible; exact coefficient tails certify the signs and the O(n^{-3/2})
     # remainder on a fixed compact set of standardized thresholds.
     central_initial = np.array([1.0, 0.0, 0.0])
-    central_mean, central_variance, central_third = perron_cumulant_rates(
-        transition, pi, success, 3)
+    (central_mean, central_variance, central_third,
+     central_fourth) = perron_cumulant_rates(
+        transition, pi, success, 4)
     central_sigma = math.sqrt(central_variance)
-    central_boundary_mean = cauchy_derivatives(
+    (central_boundary_mean,
+     central_boundary_variance) = cauchy_derivatives(
         lambda theta: perron_boundary_log_cgf(
-            transition, central_initial, success, theta), 1)[0]
+            transition, central_initial, success, theta), 2)
     central_rows = []
-    for panel_size in (120, 240, 480, 960):
+    for panel_size in (120, 240, 480, 960, 1920, 3840):
         law = binary_count_distribution(
             central_initial, [transition] * (panel_size - 1), success,
             renormalize=True)
         gaussian_errors = []
         skew_only_errors = []
         corrected_errors = []
+        second_corrected_errors = []
         for target_x in (-1.0, 0.0, 1.0, 2.0):
             threshold = math.ceil(
                 panel_size * central_mean
@@ -342,36 +348,59 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
                 skew_only
                 + density / math.sqrt(panel_size)
                 * central_boundary_mean / central_sigma)
+            hermite_1 = x
+            hermite_3 = x ** 3 - 3 * x
+            hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
+            second_coefficient = (
+                ((central_boundary_variance + central_boundary_mean ** 2)
+                 / (2 * central_sigma ** 2)
+                 - 1 / (24 * central_sigma ** 2)) * hermite_1
+                + (central_fourth / (24 * central_sigma ** 4)
+                   + central_boundary_mean * central_third
+                   / (6 * central_sigma ** 4)) * hermite_3
+                + central_third ** 2 / (72 * central_sigma ** 6)
+                * hermite_5)
+            second_corrected = (
+                corrected + density * second_coefficient / panel_size)
             gaussian_errors.append(abs(exact_tail - gaussian_tail))
             skew_only_errors.append(abs(exact_tail - skew_only))
             corrected_errors.append(abs(exact_tail - corrected))
+            second_corrected_errors.append(
+                abs(exact_tail - second_corrected))
         central_rows.append((
             panel_size, max(gaussian_errors), max(skew_only_errors),
-            max(corrected_errors)))
+            max(corrected_errors), max(second_corrected_errors)))
 
     scaled_gaussian_errors = np.asarray([
         math.sqrt(row[0]) * row[1] for row in central_rows])
     scaled_corrected_errors = np.asarray([
         row[0] * row[3] for row in central_rows])
+    scaled_second_errors = np.asarray([
+        row[0] ** 1.5 * row[4] for row in central_rows])
     assert abs(central_mean - target) < 2e-14
     assert central_variance > 0
     assert central_boundary_mean > 0.6
+    assert central_boundary_variance < -0.9
     assert np.max(abs(
         scaled_gaussian_errors - scaled_gaussian_errors[-1])) < 0.005
     assert np.max(scaled_corrected_errors) < 0.31
     assert central_rows[-1][3] < central_rows[-1][2] / 50
-    print("central-zone lattice Edgeworth bridge (state-zero start):")
-    print("  n      Gaussian err   skew-only err   corrected err   n*corrected")
+    assert np.max(scaled_second_errors) < 0.58
+    assert central_rows[-1][4] < central_rows[-1][3] / 25
+    print("second-order central lattice Edgeworth bridge (state-zero start):")
+    print("  n      first-order err   second-order err   n^(3/2)*second")
     for (panel_size, gaussian_error, skew_only_error,
-         corrected_error) in central_rows:
+         corrected_error, second_corrected_error) in central_rows:
         print(
-            f"  {panel_size:4d}   {gaussian_error:.9f}"
-            f"    {skew_only_error:.9f}     {corrected_error:.9f}"
-            f"      {panel_size * corrected_error:.9f}")
+            f"  {panel_size:4d}      {corrected_error:.9f}"
+            f"       {second_corrected_error:.9f}"
+            f"          {panel_size ** 1.5 * second_corrected_error:.9f}")
     print(
         f"  sigma^2 {central_variance:.12f},"
         f" kappa_3 {central_third:.12f},"
-        f" boundary mean {central_boundary_mean:.12f}")
+        f" kappa_4 {central_fourth:.12f},"
+        f" boundary mean {central_boundary_mean:.12f},"
+        f" boundary variance {central_boundary_variance:.12f}")
 
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
@@ -1213,7 +1242,7 @@ def main():
           " regular and irregular calibration variance, exact polynomial"
           " count law, Perron tail rate, sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
-          " bridge to the mean, the central-zone lattice Edgeworth"
+          " bridge to the mean, the second-order central lattice Edgeworth"
           " correction, Green--Kubo"
           " curvature, all-order"
           " cumulants, arbitrary-start boundary constants and local tail"

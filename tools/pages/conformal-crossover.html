@@ -556,24 +556,33 @@
       fixed-initial-law constants. No uniformity is asserted as the transition
       matrix loses positivity or its spectral separation degenerates.</p>
 
-    <h3>The central-limit boundary: a lattice Edgeworth bridge</h3>
+    <h3>The central-limit boundary: a second-order lattice Edgeworth bridge</h3>
     <p>The complementary zone has a different uniform approximation. Assume
       $P$ is fixed and positive, every emission probability satisfies
       $0&lt;f_i&lt;1$, and the initial law $\nu$ is fixed. Put</p>
     $$p=\Lambda'(0),\qquad \sigma^2=\Lambda''(0)&gt;0,
       \qquad \kappa_3=\Lambda'''(0),\qquad
-      b_\nu=\left.\frac{d}{d\theta}\log B_\nu(\theta)
-      \right|_{\theta=0}.$$
+      \kappa_4=\Lambda^{(4)}(0),\qquad
+      b_\nu=(\log B_\nu)'(0),\qquad
+      d_\nu=(\log B_\nu)''(0).$$
     <p>For integer thresholds $k_n$, use the half-integer tail coordinate</p>
     $$x_n=\frac{k_n-\tfrac12-np}{\sigma\sqrt n}.$$
-    <p>Then, uniformly whenever $x_n$ stays in a fixed compact subset of
-      $\mathbb R$,</p>
+    <p>Write $H_1(x)=x$, $H_3(x)=x^3-3x$, and
+      $H_5(x)=x^5-10x^3+15x$. Then, uniformly whenever $x_n$ stays in a
+      fixed compact subset of $\mathbb R$,</p>
     <div class="equation-card">
     $$\Pr_\nu\{S_n\ge k_n\}
-      =\overline\Phi(x_n)+\frac{\phi(x_n)}{\sqrt n}
-       \left\{\frac{b_\nu}{\sigma}
-       +\frac{\kappa_3}{6\sigma^3}(x_n^2-1)\right\}
-       +O_K(n^{-1}).$$
+      =\overline\Phi(x_n)+\phi(x_n)
+       \left\{\frac{A_{1,\nu}(x_n)}{\sqrt n}
+       +\frac{A_{2,\nu}(x_n)}n\right\}+O_K(n^{-3/2}),$$
+    $$A_{1,\nu}(x)=\frac{b_\nu}{\sigma}
+       +\frac{\kappa_3}{6\sigma^3}(x^2-1),$$
+    $$A_{2,\nu}(x)=
+      \left\{\frac{d_\nu+b_\nu^2}{2\sigma^2}
+      -\frac1{24\sigma^2}\right\}H_1(x)
+      +\left\{\frac{\kappa_4}{24\sigma^4}
+      +\frac{b_\nu\kappa_3}{6\sigma^4}\right\}H_3(x)
+      +\frac{\kappa_3^2}{72\sigma^6}H_5(x).$$
     </div>
     <p>Both first-order terms are necessary. The skewness term comes from the
       cubic Taylor coefficient of the Perron eigenvalue. The boundary term is
@@ -590,27 +599,40 @@
       boundary-mean and skewness terms. Summing the lattice masses through
       $k_n-1$ places the discontinuity halfway between adjacent integers,
       producing $k_n-\tfrac12$; omitting this continuity correction leaves an
-      order-$n^{-1/2}$ periodic term. Positivity of $P$ and
-      $0&lt;f_i&lt;1$ give strict Fourier contraction away from zero, while one
-      additional local Taylor order makes the remainder $O_K(n^{-1})$.
+      order-$n^{-1/2}$ periodic term. At second order, expanding
+      $\log B_\nu$ through quadratic order and $n\Lambda$ through fourth
+      order gives the $d_\nu+b_\nu^2$, $\kappa_4$,
+      $b_\nu\kappa_3$, and $\kappa_3^2$ terms. The midpoint
+      Euler&ndash;Maclaurin formula contributes the separate
+      $-H_1/(24\sigma^2)$ lattice term. Positivity of $P$ and
+      $0&lt;f_i&lt;1$ give strict Fourier contraction away from zero, while the
+      next local Taylor order makes the remainder $O_K(n^{-3/2})$.
       This is the finite-matrix version of the lattice Fourier expansion of
       <a href="./bibliography.html#Esseen1945">Esseen (1945)</a> and the
       first-order Markov-chain Edgeworth theory of
       <a href="./bibliography.html#DattaMcCormick1993">Datta and McCormick
-      (1993)</a>.</p>
+      (1993)</a>; arbitrary-order local lattice expansions for finite Markov
+      chains are established by
+      <a href="./bibliography.html#Pudlo2010">Pudlo (2010)</a>.</p>
     <p>The exact-law certificate uses the nonstationary start concentrated in
       state zero, for which
-      $\sigma^2=0.261098129759$, $\kappa_3=-0.350878968118$, and
-      $b_\nu=0.653945953614$. Over target coordinates
+      $\sigma^2=0.261098129759$, $\kappa_3=-0.350878968118$,
+      $\kappa_4=0.328775644197$, $b_\nu=0.653945953614$, and
+      $d_\nu=-0.925371653715$. Over target coordinates
       $x\in\{-1,0,1,2\}$, the maximum uncorrected Gaussian error falls from
       $0.062972628$ at $n=120$ to $0.022139640$ at $n=960$, with
       $\sqrt n$ times that error nearly constant. Including skewness but
       omitting $b_\nu$ still leaves error $0.016504237$ at $n=960$. Including
-      both terms reduces the maximum errors to $0.002466128$, $0.001130799$,
+      both first-order terms reduces the maximum errors to $0.002466128$, $0.001130799$,
       $0.000576090$, and $0.000271427$ for
       $n=120,240,480,960$; the products by $n$ remain between $0.2606$ and
-      $0.2959$, as predicted by the displayed remainder.</p>
-    <p class="muted">The $O_K(n^{-1})$ statement is uniform only over a fixed
+      $0.2959$. Adding $A_{2,\nu}$ reduces the maximum errors to
+      $4.34444\times10^{-4}$, $1.37683\times10^{-4}$,
+      $5.32133\times10^{-5}$, $1.71588\times10^{-5}$,
+      $6.15325\times10^{-6}$, and $2.22912\times10^{-6}$ for
+      $n=120,240,480,960,1920,3840$. The corresponding
+      $n^{3/2}$-scaled errors stay between $0.510$ and $0.572$.</p>
+    <p class="muted">The $O_K(n^{-3/2})$ statement is uniform only over a fixed
       compact set of central coordinates for this fixed regular-grid model
       and fixed initial law. It is not an explicit finite-panel error bound,
       is not uniform as positivity, variance or the spectral gap degenerates,
