@@ -2,7 +2,9 @@
 
 The score is S = mu * A_c + sigma * Z, where A_c is the average of a
 finite-state chain over c switching times.  In the symmetric two-state case, exact CDFs are
-computed from a Poisson--Beta occupation-time mixture.  Direct path simulation
+computed from a Poisson--Beta occupation-time mixture.  A smooth nonlinear
+function of that occupation average checks the gradient/Hessian crossover.
+Direct path simulation
 and the independent Feynman--Kac characteristic function check that
 representation.  A second matrix Feynman--Kac calculation treats unequal
 transition rates and checks the stationary-weighted cancellation of unequal
@@ -997,6 +999,32 @@ def threshold(c: float, start_probability: float = 0.5) -> float:
     return brentq(equation, -4.0, 4.0, xtol=2e-13)
 
 
+def nonlinear_path_map(average: np.ndarray) -> np.ndarray:
+    """Smooth nonlinear path functional used by the exact certificate."""
+    return 0.4 * average + 0.6 * average**2
+
+
+def nonlinear_conditional_cdfs(q: float, c: float) -> tuple[float, float]:
+    """Exact CDFs for MU * nonlinear_path_map(A_c) + SIGMA * Z."""
+    values = conditional_values(
+        c,
+        lambda average: ndtr(
+            (q - MU * nonlinear_path_map(average)) / SIGMA
+        ),
+    )
+    return float(values[0]), float(values[1])
+
+
+def nonlinear_threshold(c: float) -> float:
+    """Stationary pooled threshold for the nonlinear path score."""
+    return brentq(
+        lambda q: 0.5 * sum(nonlinear_conditional_cdfs(q, c)) - TARGET,
+        -4.0,
+        4.0,
+        xtol=2e-13,
+    )
+
+
 def asymmetric_path_cdfs(
     q: float,
     c: float,
@@ -1366,6 +1394,56 @@ def main() -> None:
     limit = -MU * norm.pdf(norm.ppf(TARGET)) / (2 * SIGMA)
     assert abs(64 * gaps[-1] - limit) < 0.006
     print(f"Predicted limit of c times the + coverage gap: {limit:.8f}")
+
+    # A smooth nonlinear function of the same occupation average has the
+    # identical start-memory coefficient multiplied by its derivative at the
+    # stationary mean.  The quadratic term changes the pooled threshold at
+    # order 1/c, but that common shift cancels from the leading conditional
+    # coverage gap.
+    nonlinear_scales = np.array([16.0, 32.0, 64.0, 128.0])
+    nonlinear_gaps = []
+    nonlinear_thresholds = []
+    for c in nonlinear_scales:
+        q = nonlinear_threshold(c)
+        plus, minus = nonlinear_conditional_cdfs(q, c)
+        assert abs(0.5 * (plus + minus) - TARGET) < 3e-12
+        nonlinear_thresholds.append(q)
+        nonlinear_gaps.append(plus - TARGET)
+    nonlinear_gaps = np.asarray(nonlinear_gaps)
+    nonlinear_limit = 0.4 * limit
+    nonlinear_threshold_coefficient = (
+        MU * 1.2 / 2.0
+        + MU**2 * 0.4**2 * norm.ppf(TARGET) / (2.0 * SIGMA)
+    )
+    nonlinear_residuals = np.abs(
+        nonlinear_gaps - nonlinear_limit / nonlinear_scales
+    )
+    nonlinear_rates = np.log2(
+        nonlinear_residuals[:-1] / nonlinear_residuals[1:]
+    )
+    assert nonlinear_rates[-1] > 1.9
+    assert abs(
+        nonlinear_scales[-1] * nonlinear_gaps[-1] - nonlinear_limit
+    ) < 0.002
+    nonlinear_scaled_threshold = nonlinear_scales[-1] * (
+        nonlinear_thresholds[-1] - SIGMA * norm.ppf(TARGET)
+    )
+    assert abs(
+        nonlinear_scaled_threshold - nonlinear_threshold_coefficient
+    ) < 0.008
+    print("\nSmooth nonlinear path-score crossover")
+    print("psi(a)=0.4a+0.6a^2; psi'(0)=0.4")
+    print(" c       q_pool       c*(gap +)")
+    for c, q, gap in zip(
+        nonlinear_scales, nonlinear_thresholds, nonlinear_gaps
+    ):
+        print(f"{c:4.0f}   {q:11.8f}   {c * gap:12.8f}")
+    print(
+        f"predicted limit {nonlinear_limit:.8f}; "
+        f"last post-leading residual rate {nonlinear_rates[-1]:.6f}; "
+        f"scaled threshold shift {nonlinear_scaled_threshold:.8f} "
+        f"versus {nonlinear_threshold_coefficient:.8f}"
+    )
 
     # Unequal rates destroy the equal-and-opposite symmetry.  The conditional
     # errors instead cancel with the stationary weights.  Matrix
@@ -2400,7 +2478,8 @@ def main() -> None:
         "PASS: symmetric and unequal-rate path crossovers, predictor "
         "crossover, overlap covariance, "
         "finite-sample terminal and strided-window rank coverage, general "
-        "finite-chain path coefficients through second order, "
+        "finite-chain path coefficients through second order, smooth "
+        "nonlinear path maps, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
