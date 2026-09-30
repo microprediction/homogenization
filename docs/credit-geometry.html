@@ -501,6 +501,79 @@
       maturity-uniform pricing remainder, and it does not interchange the
       long-maturity and fast-switching limits.</p>
 
+    <h3>Fixed Green&ndash;Kubo rank determines the number of long-end directions</h3>
+    <p>The rank-one conclusion has a sharp finite-rank extension. Let $K$ be
+      any fixed positive semidefinite Green&ndash;Kubo matrix of rank $r$, put
+      $\Delta_t=\operatorname{diag}B(t)$ and
+      $\Delta_\infty=\operatorname{diag}b$, and consider the integrated
+      correction</p>
+    $$D(T)=K\circ J(T)=\int_0^T\Delta_tK\Delta_t\,dt.$$
+    <p>This Gram representation is the continuous loading version of the
+      <a href="./bibliography.html#Schur1911">Schur product theorem</a>.</p>
+    <p>Because every $b_j&gt;0$, the stationary matrix</p>
+    $$A=\Delta_\infty K\Delta_\infty$$
+    <p>also has rank $r$. Exponential loading convergence gives</p>
+    $$D(T)=TA+C_K+O(e^{-\rho T}),\qquad
+      C_K=K\circ C
+      =\int_0^\infty(\Delta_tK\Delta_t-A)\,dt.$$
+    <p>Let $Q$ project onto $\operatorname{ran}A$, put $P=I-Q$, and define
+      on $\ker A$</p>
+    $$H_K=PC_KP.$$
+    <div class="equation-card">
+    <p><strong>Rank-$r$ long-maturity theorem.</strong> Suppose $D(T_0)$ is
+      positive definite for some $T_0&gt;0$. If
+      $a_1\ge\cdots\ge a_r&gt;0$ are the positive eigenvalues of $A$ and
+      $\mu_1\ge\cdots\ge\mu_{d-r}&gt;0$ are the eigenvalues of $H_K$ on
+      $\ker A$, then</p>
+    $$\lambda_j(D(T))=Ta_j+O(1),\quad 1\le j\le r,$$
+    $$\lambda_{r+j}(D(T))=\mu_j+O(T^{-1}),
+      \quad 1\le j\le d-r,$$
+    $$\operatorname{cond}_2D(T)={a_1\over\mu_{d-r}}T+O(1),
+      \qquad
+      \det D(T)=T^r\det_+(A)\det(H_K)+O(T^{r-1}).$$
+    </div>
+    <p>The finite-maturity full-rank premise supplies the missing positivity,
+      rather than merely assuming it. For $z\in\ker A$,</p>
+    $$z^\top H_Kz
+      =\int_0^\infty(\Delta_tz)^\top K(\Delta_tz)\,dt\ge0.$$
+    <p>If this vanishes, analyticity of the CIR loadings implies
+      $\Delta_tz\in\ker K$ for every $t&gt;0$, hence $D(T_0)z=0$ and therefore
+      $z=0$. Thus $H_K$ is positive definite. The displayed spectrum and
+      determinant then follow from the $(\operatorname{ran}A,\ker A)$ block
+      Schur complement.</p>
+    <p>There is also a matrix-level inverse limit. Let $A^+$ and $H_K^+$ be
+      the Moore&ndash;Penrose inverses on their complementary supports and set</p>
+    $$L=Q-H_K^+PC_KQ.$$
+    <div class="equation-card">
+    $$D(T)^{-1}=H_K^++{1\over T}LA^+L^\top+O(T^{-2})$$
+    <p>in operator norm.</p>
+    </div>
+    <p>This follows by inverting the same two blocks: the Schur complement on
+      $\operatorname{ran}A$ is $TA+O(1)$, while the lower block tends to
+      $H_K$. The correction has rank $r$. Hence maturity integration may make
+      $D(T)$ exactly full rank at every finite maturity, but precisely
+      $\operatorname{rank}K$ information directions accumulate without bound
+      at the long end. The preceding theorem is the $r=1$ specialization.</p>
+    <p>A five-name certificate takes the rank-two matrix $K=FF^\top$ with
+      $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and distinct
+      positive-volatility CIR loadings with
+      $\kappa=(0.25,0.6,1.2,2.4,5)$ and $\sigma=0.18$, and obtains full
+      integrated rank five. The limiting transient eigenvalues are</p>
+    $$(7.28134479\times10^{-4},\ 2.20648314\times10^{-2},\
+       7.86025259\times10^{-1}),$$
+    <p>while the two stationary eigenvalues are
+      $(1.95826087,57.5035564)$. At $T=2048$, all five scaled convergence
+      orders lie between $0.999991$ and $1.006072$;
+      $\operatorname{cond}_2D(T)/T$ is $78840.4105$ versus limit $78973.8133$,
+      and $\det D(T)/T^2$ is $1.41432970\times10^{-3}$ versus limit
+      $1.42204704\times10^{-3}$. The inverse-expansion remainder is
+      $3.06155141\times10^{-3}$ with observed order $2.006827$.</p>
+    <p>The result concerns a fixed $K$ and fixed CIR parameters. It explicitly
+      distinguishes the $r$ stationary directions inherited from fixed
+      Green&ndash;Kubo rank from the additional finite information created by
+      heterogeneous maturity loadings; it asserts no switching-rate-uniform
+      price error and no interchange of maturity and switching limits.</p>
+
     <h3>Full rank becomes singular at a quantified rate</h3>
     <p>Algebraic full rank does not make nearby loading parameters stably
       identifiable. This can be made sharp. Fix $T&gt;0$, a common

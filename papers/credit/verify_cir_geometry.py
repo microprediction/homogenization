@@ -21,7 +21,10 @@ other three converge to positive transient-Gram limits, so its condition
 number grows linearly despite retaining full algebraic rank.  It also checks
 the rank-one-corrected inverse expansion in operator norm, including its
 second-order remainder and the finite inverse-information floor on the
-transient subspace.
+transient subspace.  A rank-two fixed Green--Kubo certificate then checks the
+general law: exactly r information eigenvalues grow linearly when the fixed
+matrix has rank r, while maturity integration can make every finite-maturity
+matrix full rank through a positive transient complement.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -491,6 +494,185 @@ def long_maturity_loading_checks():
             stationary_variances, transient_traces)
 
 
+def finite_rank_long_maturity_checks():
+    """Certify the rank-r long-maturity law for K Hadamard J(T).
+
+    The fixed positive semidefinite Green--Kubo matrix K has rank two, while
+    distinct CIR maturity loadings make D(T)=K Hadamard J(T) positive
+    definite.  The stationary matrix A=diag(b)Kdiag(b) therefore supplies
+    two order-T eigenvalues.  Compression of K Hadamard C to ker(A) supplies
+    the other three finite limits and the limiting inverse-information floor.
+    """
+    kappas = np.array([0.25, 0.6, 1.2, 2.4, 5.0])
+    sigma = 0.18
+    features = np.column_stack((
+        np.ones(len(kappas)),
+        np.array([-2.0, -0.7, 0.2, 1.1, 2.3]),
+    ))
+    green_kubo = features @ features.T
+    assert np.linalg.matrix_rank(green_kubo, tol=1e-11) == 2
+
+    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+    limiting_loadings = 2 / (gammas + kappas)
+
+    def loading_vector(time):
+        decay = np.exp(-gammas * time)
+        return 2 * (1 - decay) / (
+            (gammas + kappas) * (1 - decay) + 2 * gammas * decay
+        )
+
+    def loading_gram(horizon):
+        return np.array([
+            [quad(
+                lambda time, j=j, k=k:
+                loading_vector(time)[j] * loading_vector(time)[k],
+                0,
+                horizon,
+                epsabs=1e-11,
+                epsrel=1e-12,
+                limit=300,
+            )[0] for k in range(len(kappas))]
+            for j in range(len(kappas))
+        ])
+
+    def transient(time):
+        return loading_vector(time) - limiting_loadings
+
+    transient_integral = np.array([
+        quad(
+            lambda time, j=j: transient(time)[j],
+            0,
+            np.inf,
+            epsabs=1e-12,
+            epsrel=1e-12,
+            limit=300,
+        )[0] for j in range(len(kappas))
+    ])
+    transient_gram = np.array([
+        [quad(
+            lambda time, j=j, k=k:
+            transient(time)[j] * transient(time)[k],
+            0,
+            np.inf,
+            epsabs=1e-12,
+            epsrel=1e-12,
+            limit=300,
+        )[0] for k in range(len(kappas))]
+        for j in range(len(kappas))
+    ])
+    loading_constant = (
+        np.outer(limiting_loadings, transient_integral)
+        + np.outer(transient_integral, limiting_loadings)
+        + transient_gram
+    )
+    stationary_matrix = green_kubo * np.outer(
+        limiting_loadings, limiting_loadings
+    )
+    constant_matrix = green_kubo * loading_constant
+
+    stationary_values, stationary_vectors = np.linalg.eigh(stationary_matrix)
+    rank = np.count_nonzero(stationary_values > 1e-10)
+    assert rank == 2
+    null_basis = stationary_vectors[:, :-rank]
+    range_basis = stationary_vectors[:, -rank:]
+    compressed = null_basis.T @ constant_matrix @ null_basis
+    transient_values = np.linalg.eigvalsh(compressed)
+    assert transient_values[0] > 0
+
+    null_inverse = null_basis @ np.linalg.inv(compressed) @ null_basis.T
+    range_inverse = (
+        range_basis
+        @ np.linalg.inv(range_basis.T @ stationary_matrix @ range_basis)
+        @ range_basis.T
+    )
+    null_projector = null_basis @ null_basis.T
+    range_projector = range_basis @ range_basis.T
+    inverse_lift = (
+        range_projector
+        - null_inverse @ null_projector @ constant_matrix @ range_projector
+    )
+
+    horizons = 2.0 ** np.arange(5, 12)
+    values = []
+    conditions = []
+    determinants = []
+    inverse_errors = []
+    range_traces = []
+    null_traces = []
+    for horizon in horizons:
+        matrix = green_kubo * loading_gram(horizon)
+        eigenvalues = np.linalg.eigvalsh(matrix)
+        assert eigenvalues[0] > 0
+        values.append(np.r_[eigenvalues[:-rank], eigenvalues[-rank:] / horizon])
+        conditions.append(eigenvalues[-1] / eigenvalues[0] / horizon)
+        determinants.append(np.linalg.det(matrix) / horizon**rank)
+        matrix_inverse = np.linalg.inv(matrix)
+        inverse_approximation = (
+            null_inverse
+            + inverse_lift @ range_inverse @ inverse_lift.T / horizon
+        )
+        inverse_errors.append(np.linalg.norm(
+            matrix_inverse - inverse_approximation, ord=2
+        ))
+        range_traces.append(horizon * np.trace(
+            range_basis.T @ matrix_inverse @ range_basis
+        ))
+        null_traces.append(np.trace(
+            null_basis.T @ matrix_inverse @ null_basis
+        ))
+
+    values = np.asarray(values)
+    targets = np.r_[transient_values, stationary_values[-rank:]]
+    final_orders = np.log2(
+        np.abs(values[-2] - targets) / np.abs(values[-1] - targets)
+    )
+    assert np.min(final_orders) > 0.99
+    assert np.max(np.abs(values[-1] / targets - 1)) < 0.003
+
+    condition_target = stationary_values[-1] / transient_values[0]
+    determinant_target = (
+        np.prod(stationary_values[-rank:]) * np.linalg.det(compressed)
+    )
+    assert abs(conditions[-1] / condition_target - 1) < 0.002
+    assert abs(determinants[-1] / determinant_target - 1) < 0.006
+
+    inverse_orders = np.log2(
+        np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
+    )
+    range_trace_target = np.trace(
+        np.linalg.inv(range_basis.T @ stationary_matrix @ range_basis)
+    )
+    null_trace_target = np.trace(np.linalg.inv(compressed))
+    assert inverse_orders[-1] > 1.99
+    assert inverse_errors[-1] < 0.004
+    assert abs(range_traces[-1] / range_trace_target - 1) < 0.002
+    assert abs(null_traces[-1] / null_trace_target - 1) < 0.001
+
+    print("\nrank-r long-maturity CIR loading certificate")
+    print(f"  fixed Green-Kubo rank {rank}, integrated rank {len(kappas)}")
+    print("  limiting transient eigenvalues "
+          + " ".join(f"{value:.10e}" for value in transient_values))
+    print("  stationary eigenvalues "
+          + " ".join(f"{value:.10e}"
+                     for value in stationary_values[-rank:]))
+    print("  T=2048 scaled spectrum "
+          + " ".join(f"{value:.10e}" for value in values[-1]))
+    print("  convergence orders "
+          + " ".join(f"{order:.6f}" for order in final_orders))
+    print(f"  condition/T {conditions[-1]:.10e}, "
+          f"limit {condition_target:.10e}")
+    print(f"  determinant/T^{rank} {determinants[-1]:.10e}, "
+          f"limit {determinant_target:.10e}")
+    print(f"  inverse remainder {inverse_errors[-1]:.10e}, "
+          f"observed order {inverse_orders[-1]:.6f}")
+    print(f"  range inverse trace {range_traces[-1]:.10f}, "
+          f"limit {range_trace_target:.10f}")
+    print(f"  null inverse trace {null_traces[-1]:.10f}, "
+          f"limit {null_trace_target:.10f}")
+    return (transient_values, stationary_values[-rank:], values,
+            final_orders, inverse_errors, inverse_orders)
+
+
 def coalescing_loading_checks():
     """Certify the confluent-Vandermonde law for nearly equal loadings.
 
@@ -851,6 +1033,7 @@ def cir_jet_independence_checks():
 def main():
     rank_amplification_checks()
     long_maturity_loading_checks()
+    finite_rank_long_maturity_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()
