@@ -244,27 +244,32 @@
     <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. Ordinary Jarque&ndash;Bera remains the right omnibus
     score test for unrestricted nonnormality; $\mathrm{LM}_+$ is the directional test implied by the fast-switching
     variance-mixture model.</p>
-    <h3>General Fisher covariance</h3>
-    <p>The independent Hermite coordinates are convenient, but not essential. Let $Z=(Z_1,Z_2)$ be the unconstrained
-    Gaussian local estimator after profiling the regular nuisance parameters, with positive-definite covariance
-    $\Sigma$, where the local cone is $\{h:h_2\geq0\}$. Equivalently, $\Sigma^{-1}$ is the Fisher metric in these
-    coordinates. Put</p>
-    $$V=\frac{Z_2}{\sqrt{\Sigma_{22}}},\qquad
-      U=\frac{Z_1-\Sigma_{12}\Sigma_{22}^{-1}Z_2}
-      {\sqrt{\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}}}.$$
-    <p>Under the null, $U$ and $V$ are independent standard normals. The metric projection onto the half-space gives</p>
+    <h3>General half-space theorem</h3>
+    <p>The independent Hermite coordinates are convenient, but neither independence nor one-dimensionality of the
+    unrestricted score is essential. Let $Z=(X,Y)\in\mathbb R^p\times\mathbb R$ be the unconstrained Gaussian local
+    estimator after profiling the regular nuisance parameters, with positive-definite covariance</p>
+    $$\Sigma=\begin{pmatrix}A&b\\b^\top&s\end{pmatrix},\qquad s&gt;0,$$
+    <p>and local cone $\mathbb R^p\times\mathbb R_+$. Equivalently, $\Sigma^{-1}$ is the Fisher metric. Its Schur
+    complement $C=A-bb^\top/s$ is positive definite. Put</p>
+    $$V=Y/\sqrt{s},\qquad U=C^{-1/2}(X-bY/s).$$
+    <p>Under the null, $U\sim N_p(0,I_p)$ and $V\sim N(0,1)$ are independent. To see the projection explicitly, the
+    block inverse of $\Sigma$ has upper-left block $C^{-1}$ and upper-right block $-C^{-1}b/s$. If $Y&lt;0$, the
+    Karush&ndash;Kuhn&ndash;Tucker equations put the projected point on the face $Y=0$ and set its unrestricted coordinate to
+    $X-bY/s$; if $Y\geq0$, the point is already feasible. Its squared Fisher norm is therefore</p>
     <div class="equation-card">
-    $$\mathrm{LM}_{\Sigma}=U^2+\max(V,0)^2
+    $$\mathrm{LM}_{\Sigma}=\lVert U\rVert^2+\max(V,0)^2
       =\begin{cases}
-      Z^\top\Sigma^{-1}Z,& Z_2\geq0,\\[2pt]
-      \displaystyle\frac{(Z_1-\Sigma_{12}\Sigma_{22}^{-1}Z_2)^2}
-      {\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}},& Z_2&lt;0.
+      Z^\top\Sigma^{-1}Z,& Y\geq0,\\[2pt]
+      (X-bY/s)^\top C^{-1}(X-bY/s),&Y&lt;0.
       \end{cases}$$
     </div>
-    <p>Consequently the null law remains $\tfrac12\chi_1^2+\tfrac12\chi_2^2$ for every nonsingular $\Sigma$.
+    <p>Consequently, for every $p\geq1$ and every positive-definite $\Sigma$,</p>
+    $$\mathrm{LM}_{\Sigma}\ \Longrightarrow\
+      \tfrac12\chi_p^2+\tfrac12\chi_{p+1}^2.$$
+    <p>The proof is just the block-Gaussian regression identity: $X-bY/s$ is independent of $Y$ with covariance $C$.
     What is invariant is the Fisher-metric projection, not marginal standardization followed by coordinatewise
-    clipping. The latter generally has the wrong null law when the two coordinates are correlated. The simple
-    $Z_3^2+(Z_4^+)^2$ formula above is the special case $\Sigma=I$ supplied by Hermite orthogonality.</p>
+    clipping. The latter generally has the wrong null law when the coordinates are correlated. The skewness&ndash;kurtosis
+    statistic above is the $p=1$, $\Sigma=I$ specialization supplied by Hermite orthogonality.</p>
     <h3>Local alternatives and power</h3>
     <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
     alternatives, after the same nuisance-parameter profiling, satisfies</p>
@@ -274,27 +279,24 @@
     <p>Then, by continuous mapping,</p>
     $$\mathrm{LM}_+\ \Longrightarrow\
       (G_3+\delta_3)^2+\max(G_4+\delta_4,0)^2.$$
-    <p>This is generally not a noncentral chi-bar-square with fixed one-half weights: when $\delta_4&gt;0$, the
-    probability of landing on the boundary face is $\Phi(-\delta_4)$ rather than $1/2$. For a critical value $c$, put
-    $r=\sqrt c$ and
-    $H_{\delta}(a)=\Pr\{|G+\delta|&gt;a\}=\Phi(-a-\delta)+1-\Phi(a-\delta)$. The limiting power is the
-    one-dimensional formula</p>
+    <p>The general theorem also gives an exact one-dimensional power formula. If the raw local mean is
+    $(\delta_X,\delta_Y)$, put</p>
+    $$\eta=C^{-1/2}(\delta_X-b\delta_Y/s),\qquad d=\delta_Y/\sqrt{s},
+      \qquad \Lambda=\lVert\eta\rVert^2.$$
+    <p>Then $\lVert U\rVert^2$ is noncentral chi-square with $p$ degrees of freedom and noncentrality $\Lambda$,
+    independently of $V\sim N(d,1)$. Writing $\overline F_{p,\Lambda}$ for its survival function, the limiting power
+    at critical value $c$ is</p>
     <div class="equation-card">
-    $$\beta(\delta_3,\delta_4;c)=
-      \Phi(-\delta_4)H_{\delta_3}(r)
-      +\int_0^r H_{\delta_3}\!\left(\sqrt{c-y^2}\right)\phi(y-\delta_4)\,dy
-      +1-\Phi(r-\delta_4).$$
+    $$\beta_p(\eta,d;c)=\Phi(-d)\overline F_{p,\Lambda}(c)
+      +\int_0^{\sqrt c}\overline F_{p,\Lambda}(c-y^2)\phi(y-d)\,dy
+      +1-\Phi(\sqrt c-d).$$
     </div>
-    <p>At $(\delta_3,\delta_4)=(0,0)$ this reduces exactly to the chi-bar-square null law. The statement concerns
-    local power in the two-score Gaussian limit. It does not assert finite-sample optimality, a rate relating $n$ to
-    the switching speed, or equivalence to the full filtered-likelihood test.</p>
-    <p>For a general covariance and raw local mean $\delta=(\delta_1,\delta_2)$, the same formula applies after the
-    canonical transformation</p>
-    $$\eta_1=\frac{\delta_1-\Sigma_{12}\Sigma_{22}^{-1}\delta_2}
-      {\sqrt{\Sigma_{11}-\Sigma_{12}^2/\Sigma_{22}}},\qquad
-      \eta_2=\frac{\delta_2}{\sqrt{\Sigma_{22}}},$$
-    <p>with $(\delta_3,\delta_4)$ in $\beta$ replaced by $(\eta_1,\eta_2)$. In particular, the one-sided condition is
-    preserved: $\delta_2\geq0$ if and only if $\eta_2\geq0$.</p>
+    <p>For $p=1$, $\overline F_{1,\delta_3^2}(a^2)=\Pr\{|G+\delta_3|&gt;a\}$, so this is exactly the
+    skewness&ndash;kurtosis formula. It is generally not a noncentral chi-bar-square with fixed one-half weights: when
+    $d&gt;0$, the boundary-face probability is $\Phi(-d)$ rather than $1/2$. At $(\eta,d)=(0,0)$ the formula reduces
+    exactly to the chi-bar-square null law. The result is confined to the local Gaussian score experiment; it does not
+    assert finite-sample optimality, a rate relating $n$ to switching speed, or equivalence to the full filtered
+    likelihood test.</p>
     <p>This is an information-matrix-type construction, related to the full-likelihood test that
     <a href="./bibliography.html#CarrascoHuPloberger2014">Carrasco, Hu and Ploberger (2014)</a> show to be optimal for
     Markov switching, building on <a href="./bibliography.html#White1982">White (1982)</a> and
@@ -336,6 +338,12 @@
     metric statistic rejects $5.0056\%$ under the null, whereas marginal standardization followed by naive clipping
     rejects $5.9701\%$. For a raw mean shift corresponding to canonical shift $(1,1)$, simulated power is $0.283067$
     against the exact value $0.283486$.</p>
+    <p>For the general theorem, the certificate also uses three unrestricted coordinates and one one-sided coordinate
+    with a dense $4\times4$ covariance. The 95% point of
+    $\tfrac12\chi_3^2+\tfrac12\chi_4^2$ is $8.761053$. Across 1.5 million null draws, rejection is $4.9966\%$ and the
+    canonical statistic agrees with the direct piecewise Fisher projection within $4.98\times10^{-14}$. At canonical
+    mean $(0.6,-0.8,0.4,0.9)$, the noncentral-$\chi^2$ integral gives power $0.202280$ and simulation gives
+    $0.203155$.</p>
     <p>A separate matrix-kernel certificate propagates the exact two-state filter by Fourier inversion for a fixed
     six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
     log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s

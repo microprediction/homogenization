@@ -7,7 +7,8 @@ Gaussian limit is projected by replacing the kurtosis coordinate by its
 positive part.  The null law is 1/2 chi^2_1 + 1/2 chi^2_2.  Under a local
 Gaussian score shift, one-dimensional quadrature gives exact limiting power.
 For a general Fisher covariance the projection must first residualize and
-standardize the unrestricted score against the one-sided score.
+standardize the unrestricted scores against the one-sided score.  The same
+construction is checked below for three unrestricted coordinates.
 """
 import json
 import math
@@ -49,6 +50,33 @@ def local_power(delta_skew, delta_kurt, critical):
     return negative_face + curved + outside
 
 
+def halfspace_power(eta, delta, critical):
+    """Power for p unrestricted canonical scores and one one-sided score.
+
+    If U ~ N_p(eta, I), V ~ N(delta, 1), and U is independent of V, the
+    projected statistic is ||U||^2 + max(V, 0)^2.  Conditional on V, the
+    first term is noncentral chi-square with p degrees of freedom.
+    """
+    eta = np.asarray(eta, dtype=float)
+    degrees = eta.size
+    noncentrality = float(eta @ eta)
+    root = math.sqrt(critical)
+    negative_face = norm.cdf(-delta) * ncx2.sf(
+        critical, degrees, noncentrality
+    )
+    curved = quad(
+        lambda y: ncx2.sf(
+            max(0.0, critical - y * y), degrees, noncentrality
+        ) * norm.pdf(y - delta),
+        0.0,
+        root,
+        epsabs=2e-13,
+        epsrel=2e-13,
+    )[0]
+    outside = norm.sf(root - delta)
+    return negative_face + curved + outside
+
+
 def statistics(z):
     """Jarque--Bera coordinates after profiling Gaussian mean and variance."""
     z = z - z.mean(axis=1, keepdims=True)
@@ -72,6 +100,29 @@ def canonical_scores(scores, covariance):
     ) / math.sqrt(conditional_variance)
     one_sided = scores[:, 1] / sigma_2
     return unrestricted, one_sided
+
+
+def symmetric_root(matrix, inverse=False):
+    """Symmetric positive-definite square root or inverse square root."""
+    values, vectors = np.linalg.eigh(matrix)
+    if np.min(values) <= 0.0:
+        raise ValueError("matrix must be positive definite")
+    powers = values ** (-0.5 if inverse else 0.5)
+    return (vectors * powers) @ vectors.T
+
+
+def canonical_halfspace_scores(scores, covariance):
+    """Canonical coordinates for R^p x R_+ under a Fisher metric."""
+    scores = np.asarray(scores, dtype=float)
+    covariance = np.asarray(covariance, dtype=float)
+    covariance_x = covariance[:-1, :-1]
+    cross = covariance[:-1, -1]
+    variance_v = covariance[-1, -1]
+    schur = covariance_x - np.outer(cross, cross) / variance_v
+    residual = scores[:, :-1] - np.outer(scores[:, -1], cross / variance_v)
+    unrestricted = residual @ symmetric_root(schur, inverse=True)
+    one_sided = scores[:, -1] / math.sqrt(variance_v)
+    return unrestricted, one_sided, schur
 
 
 def main():
@@ -161,6 +212,78 @@ def main():
         eta_unrestricted, eta_one_sided, critical
     )
 
+    # Dimension-free half-space theorem.  Here p=3 unrestricted coordinates
+    # are correlated with each other and with the one-sided coordinate.  The
+    # Schur residualization whitens them, leaving the universal null law
+    # 1/2 chi^2_p + 1/2 chi^2_{p+1} and a one-dimensional power integral.
+    p = 3
+    covariance_p = np.array([
+        [1.50, 0.35, -0.15, 0.40],
+        [0.35, 1.20, 0.25, -0.20],
+        [-0.15, 0.25, 0.90, 0.30],
+        [0.40, -0.20, 0.30, 0.80],
+    ])
+    p_reps = 1500000
+    general = rng.multivariate_normal(
+        np.zeros(p + 1), covariance_p, size=p_reps
+    )
+    general_u, general_v, general_schur = canonical_halfspace_scores(
+        general, covariance_p
+    )
+    general_statistic = np.sum(general_u ** 2, axis=1) + np.maximum(
+        general_v, 0.0
+    ) ** 2
+    general_chibar_cdf = lambda x: (
+        0.5 * chi2.cdf(x, p) + 0.5 * chi2.cdf(x, p + 1)
+    )
+    general_critical = brentq(
+        lambda x: general_chibar_cdf(x) - (1.0 - alpha), 0.0, 30.0
+    )
+    general_null_rejection = float(np.mean(general_statistic > general_critical))
+
+    precision_p = np.linalg.inv(covariance_p)
+    interior_p = np.einsum("ni,ij,nj->n", general, precision_p, general)
+    residual_p = general[:, :-1] - np.outer(
+        general[:, -1], covariance_p[:-1, -1] / covariance_p[-1, -1]
+    )
+    face_p = np.einsum(
+        "ni,ij,nj->n", residual_p, np.linalg.inv(general_schur), residual_p
+    )
+    piecewise_p = np.where(general[:, -1] >= 0.0, interior_p, face_p)
+    general_identity_error = float(
+        np.max(np.abs(general_statistic - piecewise_p))
+    )
+
+    eta_p = np.array([0.6, -0.8, 0.4])
+    delta_p = 0.9
+    raw_delta_v = delta_p * math.sqrt(covariance_p[-1, -1])
+    raw_delta_x = (
+        covariance_p[:-1, -1] * raw_delta_v / covariance_p[-1, -1]
+        + symmetric_root(general_schur) @ eta_p
+    )
+    shifted_general = general + np.r_[raw_delta_x, raw_delta_v]
+    shifted_general_u, shifted_general_v, _ = canonical_halfspace_scores(
+        shifted_general, covariance_p
+    )
+    general_power_simulated = float(np.mean(
+        np.sum(shifted_general_u ** 2, axis=1)
+        + np.maximum(shifted_general_v, 0.0) ** 2
+        > general_critical
+    ))
+    general_power_exact = halfspace_power(
+        eta_p, delta_p, general_critical
+    )
+    general_null_size_exact = halfspace_power(
+        np.zeros(p), 0.0, general_critical
+    )
+    p1_reduction_error = max(
+        abs(
+            halfspace_power(np.array([delta_skew]), delta_kurt, critical)
+            - local_power(delta_skew, delta_kurt, critical)
+        )
+        for delta_skew, delta_kurt in scenarios
+    )
+
     out = {
         "n": n,
         "replications": reps,
@@ -186,6 +309,17 @@ def main():
         "correlated_local_canonical_mean": [eta_unrestricted, eta_one_sided],
         "correlated_local_power_exact": correlated_local_power_exact,
         "correlated_local_power_simulated": correlated_local_power,
+        "general_halfspace_unrestricted_dimension": p,
+        "general_halfspace_covariance": covariance_p.tolist(),
+        "general_halfspace_replications": p_reps,
+        "general_halfspace_chibar_95": general_critical,
+        "general_halfspace_exact_null_size": general_null_size_exact,
+        "general_halfspace_null_rejection": general_null_rejection,
+        "general_halfspace_projection_identity_max_error": general_identity_error,
+        "general_halfspace_p1_reduction_max_error": p1_reduction_error,
+        "general_halfspace_canonical_mean": [*eta_p.tolist(), delta_p],
+        "general_halfspace_power_exact": general_power_exact,
+        "general_halfspace_power_simulated": general_power_simulated,
     }
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cone_test_results.json")
     with open(path, "w") as f:
@@ -208,6 +342,13 @@ def main():
     print(f"metric/canonical projection identity error: {metric_identity_error:.3e}")
     print("correlated local power, exact/simulated: "
           f"{correlated_local_power_exact:.6f}/{correlated_local_power:.6f}")
+    print(f"general half-space (p={p}) 95% critical value: {general_critical:.6f}")
+    print("general half-space null size, exact/simulated: "
+          f"{general_null_size_exact:.6f}/{general_null_rejection:.6f}")
+    print(f"general half-space projection identity error: {general_identity_error:.3e}")
+    print(f"general formula p=1 reduction error: {p1_reduction_error:.3e}")
+    print("general half-space local power, exact/simulated: "
+          f"{general_power_exact:.6f}/{general_power_simulated:.6f}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -223,6 +364,11 @@ def main():
         and abs(correlated_null_rejection - alpha) < 0.0015
         and abs(naive_null_rejection - alpha) > 0.005
         and abs(correlated_local_power - correlated_local_power_exact) < 0.0015
+        and general_identity_error < 8e-14
+        and abs(general_null_size_exact - alpha) < 1e-12
+        and abs(general_null_rejection - alpha) < 0.0015
+        and p1_reduction_error < 1e-12
+        and abs(general_power_simulated - general_power_exact) < 0.0015
     )
     print("PASS" if ok else "FAIL")
     if not ok:
