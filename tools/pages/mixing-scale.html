@@ -67,10 +67,28 @@
       covers singular and pure-point spectra.</p>
     <p>This single formula includes long memory for $0&lt;\alpha&lt;1$, ordinary Green&ndash;Kubo scaling at
       $\alpha=1$ when $L$ tends to a positive constant, and zero-Green&ndash;Kubo antipersistence for
-      $1&lt;\alpha&lt;2$. At the endpoint $\alpha=2$, if
-      $f(\omega)\sim a\omega L(1/\omega)$ and
-      $H(x)=\int_1^xL(s)ds/s\to\infty$, the corresponding critical law is</p>
-    $$\operatorname{Var}A_\varepsilon(T)\sim2a\varepsilon^2H(T/\varepsilon).$$
+      $1&lt;\alpha&lt;2$. The cumulative formulation also survives at the critical endpoint. If</p>
+    $$F(x)\sim b x^2L(1/x),\qquad
+      H(x)=\int_1^xL(s)\frac{ds}{s}\longrightarrow\infty,$$
+    <p>then, still without assuming a density,</p>
+    <div class="equation-card">
+    $$\operatorname{Var}A_\varepsilon(T)\sim4b\varepsilon^2H(T/\varepsilon).$$
+    </div>
+    <p>For the proof, put $R=T/\varepsilon$ and
+      $I(R)=\int_{(0,\infty)}(1-\cos(R\omega))\omega^{-2}\mu(d\omega)$.
+      On $(0,R^{-1}]$, the inequality $1-\cos x\leq x^2/2$ gives an $O(L(R))$ contribution, while every
+      interval bounded away from zero contributes $O(1)$. On $[R^{-1},\eta]$, Stieltjes integration by parts,
+      followed by Dirichlet summation over the cosine half-periods, gives</p>
+    $$I(R)=2b\int_{R^{-1}}^\eta L(1/\omega)\frac{d\omega}{\omega}
+      +o(H(R))+O(L(R))+O(1).$$
+    <p>Potter bounds make the remainder uniform as $R\to\infty$ and then $\eta\downarrow0$.
+      Since the divergent borderline integral satisfies $L(R)=o(H(R))$, the last display is
+      $2bH(R){1+o(1)\}$; substitution in the exact Fej&eacute;r identity proves the factor $4b$.
+      If a density exists with
+      $f(\omega)\sim a\omega L(1/\omega)$, then $b=a/2$ and this reduces to the earlier
+      $2a\varepsilon^2H(T/\varepsilon)$ law. The divergence of $H$ is essential: when it stays bounded, the
+      global inverse spectral moment, not the local equivalent of $F$, determines the order-$\varepsilon^2$
+      coefficient.</p>
     <p>A concrete failure under mere stationarity is $X_t=Z+Y_t$, where $Z$ is a centered random constant with
       variance $\sigma_0^2$ and $Y$ is an independent stationary Ornstein&ndash;Uhlenbeck process with covariance
       $e^{-|t|}$. Then</p>
@@ -95,6 +113,14 @@
       the exact Fej&eacute;r sum using a direct finite sum and an independent Hurwitz-zeta tail. It finds order
       $1.300596$ and leading-constant ratio $1.000240$. The example also emphasizes that zero spectral mass at
       frequency zero is an observable-level averaging condition: atoms at nonzero frequencies need not disappear.</p>
+    <p>The same pure-point construction at the endpoint puts mass $n^{-3}$ at $1/n$. Then
+      $F(x)\sim x^2/2$, so the critical theorem predicts
+      $2\varepsilon^2\log(1/\varepsilon)$ at $T=1$. The direct Fej&eacute;r sum and an independently refined
+      Hurwitz-zeta tail agree within $2.71\times10^{-20}$. Regressing
+      $\operatorname{Var}A_\varepsilon/\varepsilon^2$ against $\log(1/\varepsilon)$ gives slope $1.966971$
+      against the limiting value $2$; at the smallest tested $\varepsilon=2^{-20}$ the leading-term ratio is
+      $1.025526$. The deliberately slow logarithmic convergence distinguishes this endpoint from the power-law
+      cases.</p>
 
     <h2>Four covariance regimes</h2>
     <h3>Integrable correlation</h3>
@@ -243,6 +269,9 @@
     <p>For the pure-point spectrum, the cumulative-mass ratio at $x=2^{-20}$ is $1.000000620$.
       Two independently truncated Fej&eacute;r sums agree within $8.67\times10^{-19}$; the measured variance order
       and asymptotic ratio are $1.300596$ and $1.000240$.</p>
+    <p>For the pure-point critical spectrum, the cumulative-mass ratio is $1.000000954$, the independent
+      summation discrepancy is $2.71\times10^{-20}$, the fitted logarithmic slope is $1.966971$, and the
+      smallest-$\varepsilon$ leading-term ratio is $1.025526$.</p>
 
     <h2>A bounded positive volatility counterexample</h2>
     <p>For $0&lt;\alpha&lt;1$, let $G_t$ be a centered stationary Gaussian process with correlation</p>

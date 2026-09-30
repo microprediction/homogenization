@@ -231,6 +231,54 @@ def verify_measure_level_spectral_theorem():
     return mass_ratio, summation_error, order, ratio
 
 
+def verify_measure_level_critical_theorem():
+    """Check the density-free alpha=2 endpoint on a pure-point spectrum.
+
+    Put mass n^(-3) at frequency 1/n.  Then
+
+        F(x) ~ x^2 / 2,
+
+    so b=1/2, L=1 and H(x)=log(x).  The cumulative-mass endpoint
+    predicts
+
+        Var A_epsilon(1) ~ 2 epsilon^2 log(1/epsilon).
+
+    The convergence is only logarithmic.  Accordingly, the certificate
+    records both the terminal ratio and the slope of Var/epsilon^2 against
+    log(1/epsilon), whose predicted value is two.
+    """
+    small_x = 2.0 ** -20
+    first_index = int(math.ceil(1.0 / small_x))
+    cumulative_mass = zeta(3.0, first_index)
+    mass_ratio = cumulative_mass / (small_x ** 2 / 2.0)
+
+    epsilons = 2.0 ** -np.arange(8, 21)
+    exact = np.array([
+        atomic_spectral_variance(
+            eps, 2.0, cutoff_multiple=6.0, tail_terms=10
+        )
+        for eps in epsilons
+    ])
+    independently_refined = np.array([
+        atomic_spectral_variance(
+            eps, 2.0, cutoff_multiple=8.0, tail_terms=12
+        )
+        for eps in epsilons
+    ])
+    summation_error = float(np.max(np.abs(exact - independently_refined)))
+
+    logarithm = np.log(1.0 / epsilons)
+    normalized = exact / epsilons ** 2
+    log_slope = float(np.polyfit(logarithm, normalized, 1)[0])
+    ratio = float(exact[-1] / (2.0 * epsilons[-1] ** 2 * logarithm[-1]))
+
+    assert abs(mass_ratio - 1.0) < 2e-6
+    assert summation_error < 2e-13
+    assert abs(log_slope - 2.0) < 0.05
+    assert abs(ratio - 1.0) < 0.03
+    return mass_ratio, summation_error, log_slope, ratio
+
+
 def band_variance(epsilon, weight, lower, upper, maturity=1.0):
     """Exact contribution from a flat spectral band.
 
@@ -540,6 +588,7 @@ def main():
     zero_gk_boundary = verify_zero_gk_boundary()
     spectral_abelian = verify_spectral_abelian_theorem()
     measure_level = verify_measure_level_spectral_theorem()
+    measure_level_critical = verify_measure_level_critical_theorem()
     regular_variation = verify_regular_variation()
     periodic_coefficient = verify_periodic_case()
 
@@ -574,6 +623,11 @@ def main():
     print("pure-point spectral mass ratio, summation error, order, ratio: "
           f"{measure_level[0]:.9f}, {measure_level[1]:.3e}, "
           f"{measure_level[2]:.6f}, {measure_level[3]:.6f}")
+    print("pure-point alpha=2 mass ratio, summation error, log slope, ratio: "
+          f"{measure_level_critical[0]:.9f}, "
+          f"{measure_level_critical[1]:.3e}, "
+          f"{measure_level_critical[2]:.6f}, "
+          f"{measure_level_critical[3]:.6f}")
     print("OU-mixture regular-variation ratios: "
           f"power-log {regular_variation[0]:.6f}, "
           f"critical-log^2 {regular_variation[1]:.6f}")
