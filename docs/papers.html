@@ -165,7 +165,10 @@
         every clustered jet matrix to a nonsingular confluent Vandermonde system. At long maturity the full-rank
         loading Gramian has one eigenvalue of order $T$ while the other $d-1$ converge to positive transient-Gram
         limits, so its condition number grows linearly: maturity integration creates exact rank without uniform
-        long-end conditioning.
+        long-end conditioning. Its inverse converges to the Moore&ndash;Penrose inverse of the transient Gramian,
+        with an explicit stationary&ndash;transient rank-one correction of order $T^{-1}$ and operator-norm
+        remainder $O(T^{-2})$; hence only one asymptotic exposure gains unbounded precision while the other
+        $d-1$ retain finite inverse-information floors.
         It also separates arbitrary-prior marginal memory from first-order pair dependence.
         Cause-specific first-default races identify cycle orientation: one unweighted multi-name race sees only
         antisymmetric row sums, while $d-1$ independent positive exposure designs are necessary and sufficient

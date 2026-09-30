@@ -348,14 +348,57 @@
       eigenvalues are</p>
     $$(2.74707297\times10^{-4},\quad 1.19392590\times10^{-2},\quad
        4.59242675\times10^{-1}).$$
-    <p>At $T=1024$ their measured values are
-      $(2.74433300\times10^{-4},1.19203959\times10^{-2},
-      4.57948772\times10^{-1})$. The four convergence orders, including the
+    <p>At $T=2048$ their measured values are
+      $(2.74570818\times10^{-4},1.19298558\times10^{-2},
+      4.58596743\times10^{-1})$. The four convergence orders, including the
       scaled leading eigenvalue, are
-      $(1.011023,1.008731,1.004560,0.999930)$. The measured and predicted
-      limits are respectively $30714.49668$ and $30780.38173$ for
-      $\operatorname{cond}_2J(T)/T$, and $1.26277099\times10^{-5}$ and
+      $(1.005479,1.004346,1.002275,0.999965)$. The measured and predicted
+      limits are respectively $30747.39631$ and $30780.38173$ for
+      $\operatorname{cond}_2J(T)/T$, and $1.26818689\times10^{-5}$ and
       $1.27360280\times10^{-5}$ for $\det J(T)/T$.</p>
+
+    <h3>The inverse information has a rank-one long-end correction</h3>
+    <p>The spectrum identifies the scales but not the limiting covariance or
+      the stationary&ndash;transient coupling. Write $\beta=\|b\|$,
+      $e=b/\beta$, $P=I-ee^\top$, and let $H^+$ denote the Moore&ndash;Penrose
+      inverse of $H$ on $\mathbb R^d$ (the inverse on $b^\perp$ and zero on
+      $\operatorname{span}\{b\}$). With $C$ as above, define</p>
+    $$g=PCe,\qquad w=e-H^+g.$$
+    <div class="equation-card">
+    <p><strong>Inverse-information expansion.</strong> For fixed distinct CIR
+      parameters and $T\to\infty$,</p>
+    $$J(T)^{-1}=H^++{ww^\top\over\beta^2T}+O(T^{-2})$$
+    <p>in operator norm. Consequently, for every fixed exposure $x$,</p>
+    $$x^\top J(T)^{-1}x
+      =x^\top H^+x+{(x^\top w)^2\over\beta^2T}+O(T^{-2}),
+      \qquad T\,b^\top J(T)^{-1}b\longrightarrow1.$$
+    </div>
+    <p>Indeed, in an orthonormal basis $(e,U)$ with columns of $U$ spanning
+      $b^\perp$, exponential convergence of $B(t)$ gives</p>
+    $$[e\ U]^\top J(T)[e\ U]
+      =\begin{pmatrix}
+        \beta^2T+c_{00}&amp;(U^\top g)^\top\\
+        U^\top g&amp;U^\top HU
+       \end{pmatrix}+O(e^{-\rho T}).$$
+    <p>The lower block is positive definite. Its block inverse is $H^+$ plus
+      the outer product of $e-H^+g$ divided by the scalar Schur complement
+      $\beta^2T+c_{00}-g^\top H^+g+O(e^{-\rho T})$. Expanding that reciprocal
+      proves the operator-norm remainder. Thus long maturity supplies
+      unbounded precision in only one asymptotic direction. Every orthogonal
+      exposure retains the finite transient-information floor $x^\top H^+x$;
+      the vector $w$, rather than $e$ alone, records the finite coupling to
+      the stationary direction.</p>
+    <p>For the four-name parameters above, the certificate evaluates the exact
+      finite-$T$ loading Gramian by quadrature. At $T=2048$, the operator-norm
+      error after the rank-one inverse correction is
+      $7.98785874\times10^{-3}$, with observed order $2.006271$ between the
+      last two doubled maturities. It also gives
+      $T b^\top J(T)^{-1}b=1.00427059$ versus limit $1$, and transient inverse
+      trace $3728.05152$ versus $\operatorname{tr}(H^+)=3726.17300$.</p>
+    <p>This is again a fixed-parameter deterministic loading-Gram statement.
+      It neither changes the fixed-parameter Green&ndash;Kubo rank nor asserts a
+      maturity-uniform pricing remainder, and it does not interchange the
+      long-maturity and fast-switching limits.</p>
 
     <h3>Full rank becomes singular at a quantified rate</h3>
     <p>Algebraic full rank does not make nearby loading parameters stably

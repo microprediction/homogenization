@@ -18,7 +18,10 @@ is automatic for the CIR Riccati loading at every set of distinct centers.
 At the opposite, long-maturity limit, a four-name certificate checks that the
 loading Gram matrix has one eigenvalue growing linearly in maturity while the
 other three converge to positive transient-Gram limits, so its condition
-number grows linearly despite retaining full algebraic rank.
+number grows linearly despite retaining full algebraic rank.  It also checks
+the rank-one-corrected inverse expansion in operator norm, including its
+second-order remainder and the finite inverse-information floor on the
+transient subspace.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -339,6 +342,7 @@ def long_maturity_loading_checks():
     If b is the vector of limiting Riccati loadings and r(t)=B(t)-b, then
     J(T)=T b b' + C + exponentially small terms.  On b-perp the cross terms
     in C vanish, leaving the positive transient Gramian int r(t)r(t)'dt.
+    Block inversion further gives J(T)^-1=H^+ + ww'/(|b|^2 T)+O(T^-2).
     """
     kappas = np.array([0.35, 0.8, 1.7, 3.2])
     sigma = 0.18
@@ -380,27 +384,67 @@ def long_maturity_loading_checks():
         )[0] for k in range(len(kappas))]
         for j in range(len(kappas))
     ])
+    transient_integral = np.array([
+        quad(
+            lambda time, j=j: transient(time)[j],
+            0,
+            np.inf,
+            epsabs=1e-12,
+            epsrel=1e-12,
+            limit=300,
+        )[0] for j in range(len(kappas))
+    ])
+    constant_matrix = (
+        np.outer(limiting_loadings, transient_integral)
+        + np.outer(transient_integral, limiting_loadings)
+        + transient_gram
+    )
+    loading_norm_squared = limiting_loadings @ limiting_loadings
+    unit_loading = limiting_loadings / np.sqrt(loading_norm_squared)
+    projector = np.eye(len(kappas)) - np.outer(unit_loading, unit_loading)
     _, _, right_vectors = np.linalg.svd(limiting_loadings[None, :])
     complement = right_vectors[1:].T
     compressed = complement.T @ transient_gram @ complement
     limiting_small_eigenvalues = np.linalg.eigvalsh(compressed)
     assert limiting_small_eigenvalues[0] > 0
+    transient_inverse = complement @ np.linalg.inv(compressed) @ complement.T
+    coupling = projector @ constant_matrix @ unit_loading
+    inverse_direction = unit_loading - transient_inverse @ coupling
+    inverse_floor_trace = np.trace(np.linalg.inv(compressed))
 
-    horizons = 2.0 ** np.arange(5, 11)
+    horizons = 2.0 ** np.arange(5, 12)
     values = []
     conditions = []
     determinants = []
+    inverse_errors = []
+    stationary_variances = []
+    transient_traces = []
     for horizon in horizons:
         matrix = gram(horizon)
         eigenvalues = np.linalg.eigvalsh(matrix)
         values.append(np.r_[eigenvalues[:-1], eigenvalues[-1] / horizon])
         conditions.append(eigenvalues[-1] / eigenvalues[0] / horizon)
         determinants.append(np.linalg.det(matrix) / horizon)
+        matrix_inverse = np.linalg.inv(matrix)
+        inverse_approximation = (
+            transient_inverse
+            + np.outer(inverse_direction, inverse_direction)
+            / (loading_norm_squared * horizon)
+        )
+        inverse_errors.append(np.linalg.norm(
+            matrix_inverse - inverse_approximation, ord=2
+        ))
+        stationary_variances.append(
+            horizon * limiting_loadings @ matrix_inverse @ limiting_loadings
+        )
+        transient_traces.append(np.trace(
+            complement.T @ matrix_inverse @ complement
+        ))
 
     values = np.asarray(values)
     targets = np.r_[
         limiting_small_eigenvalues,
-        limiting_loadings @ limiting_loadings,
+        loading_norm_squared,
     ]
     errors = np.abs(values - targets)
     final_orders = np.log2(errors[-2] / errors[-1])
@@ -417,11 +461,19 @@ def long_maturity_loading_checks():
     assert abs(conditions[-1] / condition_target - 1) < 0.003
     assert abs(determinants[-1] / determinant_target - 1) < 0.01
 
+    inverse_orders = np.log2(
+        np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
+    )
+    assert inverse_orders[-1] > 1.99
+    assert inverse_errors[-1] < 0.01
+    assert abs(stationary_variances[-1] - 1) < 0.005
+    assert abs(transient_traces[-1] / inverse_floor_trace - 1) < 0.001
+
     print("\nlong-maturity CIR loading certificate")
     print("  limiting bounded eigenvalues "
           + " ".join(f"{value:.10e}"
                      for value in limiting_small_eigenvalues))
-    print("  T=1024 bounded eigenvalues "
+    print("  T=2048 bounded eigenvalues "
           + " ".join(f"{value:.10e}" for value in values[-1, :-1]))
     print("  convergence orders "
           + " ".join(f"{order:.6f}" for order in final_orders))
@@ -429,8 +481,14 @@ def long_maturity_loading_checks():
           f"limit {condition_target:.10e}")
     print(f"  determinant/T {determinants[-1]:.10e}, "
           f"limit {determinant_target:.10e}")
+    print(f"  inverse remainder {inverse_errors[-1]:.10e}, "
+          f"observed order {inverse_orders[-1]:.6f}")
+    print(f"  T b'J^-1b {stationary_variances[-1]:.10f}, limit 1")
+    print(f"  transient inverse trace {transient_traces[-1]:.10f}, "
+          f"limit {inverse_floor_trace:.10f}")
     return (limiting_small_eigenvalues, values, final_orders,
-            conditions, determinants)
+            conditions, determinants, inverse_errors, inverse_orders,
+            stationary_variances, transient_traces)
 
 
 def coalescing_loading_checks():
