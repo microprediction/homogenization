@@ -6,7 +6,9 @@ finite interval and a constant-forcing closed form provide separate checks.
 The later calculations let the switching generator itself vary, isolate the
 loss caused by its moving invariant distribution, and certify an all-order
 periodic Floquet recursion through the fourth inverse-speed coefficient on a
-nonreversible three-state example.
+nonreversible three-state example.  A symmetric periodic certificate also
+checks that coefficient cancellations delay the critical maturity to the
+first nonzero omitted Floquet term.
 """
 
 from __future__ import annotations
@@ -884,8 +886,10 @@ def check_periodic_forcing() -> None:
     )
     errors = []
     drift_constants = []
+    signed_exponent_remainders = []
     monodromy_errors = []
-    for m in (2.0, 4.0, 8.0, 16.0, 32.0, 64.0):
+    periodic_speeds = (2.0, 4.0, 8.0, 16.0, 32.0, 64.0)
+    for m in periodic_speeds:
         exponent, orbit, monodromy_error = periodic_floquet_exponent(m)
         monodromy_errors.append(monodromy_error)
         first_order_exponent = (
@@ -893,6 +897,7 @@ def check_periodic_forcing() -> None:
         )
         drift_constant = m**3 * abs(exponent - first_order_exponent)
         drift_constants.append(drift_constant)
+        signed_exponent_remainders.append(exponent - first_order_exponent)
 
         def rhs(time: float, state: np.ndarray) -> np.ndarray:
             mean, delta = periodic_forcing(time)
@@ -944,11 +949,30 @@ def check_periodic_forcing() -> None:
     delta_derivative = 0.22 * np.cos(grid) + 0.16 * np.sin(2 * grid)
     predicted_drift = np.mean(delta_derivative**2 + delta**4) / 8
     assert abs(drift_constants[-1] / predicted_drift - 1) < 0.03
+    beta_3 = -predicted_drift
+    delayed_critical_errors = np.asarray(periodic_speeds) ** 3 * np.asarray(
+        signed_exponent_remainders
+    )
+    assert abs(delayed_critical_errors[-1] / beta_3 - 1) < 2e-4
+    # Symmetry plus integration over a full period kills the next even
+    # inverse-speed coefficient.  The remainder after beta_3/m^3 is therefore
+    # fifth order in this example.
+    post_beta_3 = np.abs(
+        np.asarray(signed_exponent_remainders)
+        - beta_3 / np.asarray(periodic_speeds) ** 3
+    )
+    post_beta_3_rates = np.log2(post_beta_3[:-1] / post_beta_3[1:])
+    assert post_beta_3_rates[-1] > 4.9
     print(f"periodic uniform-error rate: {rates[-1]:.6f}")
     print(f"maximum Riccati/monodromy discrepancy: {max(monodromy_errors):.3e}")
     print(
         "third-order drift: numerical "
         f"{drift_constants[-1]:.10e}, predicted {predicted_drift:.10e}"
+    )
+    print(
+        "delayed critical-scale log error at m=64: "
+        f"{delayed_critical_errors[-1]:.10e}, predicted {beta_3:.10e}; "
+        f"post-beta_3 rate {post_beta_3_rates[-1]:.6f}"
     )
 
 

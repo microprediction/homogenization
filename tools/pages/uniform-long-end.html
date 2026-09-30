@@ -725,10 +725,53 @@
       $T/m^{N+1}\to\infty$, its log magnitude diverges. A uniformly
       $o(1)$ profile or matched-layer error does not change these conclusions.</p>
     </div>
+    <div class="equation-card">
+    <p><strong>Delayed critical maturity under cancellations.</strong> The nonzero-coefficient
+      hypothesis matters. More generally, suppose that, for some finite $J&gt;N$,</p>
+    $$\beta_{N+1}=\cdots=\beta_{J-1}=0,\qquad \beta_J\ne0,$$
+    <p>and the fixed-order recursion is carried through order $J$. If
+      $T_m/m^J\to\tau\in[0,\infty)$, then</p>
+    $$\log{P_m(T_m)\over P_m^{[N]}(T_m)}
+      =T_m\{\lambda_m-\lambda_m^{[N]}\}
+      \longrightarrow\tau\beta_J.$$
+    <p>Thus cancellations genuinely extend the vanishing-log-error range from
+      $o(m^{N+1})$ to $o(m^J)$. At the delayed critical scale the relative-price
+      limit is $\exp(\tau\beta_J)-1$. If no finite first nonzero omitted
+      coefficient is known, the fixed-order expansion alone does not determine a
+      critical scale.</p>
+    </div>
     <p>The proof is immediate from the exact Floquet factorization: the common amplitude
       cancels, whereas the exponent discrepancy is multiplied by $T_m$. This sharpens the scope distinction between a fixed-order
-      asymptotic exponent and an exact-exponent maturity-uniform price. It also explains
-      why increasing the expansion order moves, but never removes, the secular boundary.</p>
+      asymptotic exponent and an exact-exponent maturity-uniform price. Whenever a later
+      nonzero coefficient exists, increasing the expansion order moves the secular boundary;
+      only the exact exponent supplies an unconditional all-maturity statement.</p>
+
+    <h3>Symmetric delayed-scale certificate</h3>
+    <p>The symmetric two-state periodic model above gives a non-generic but important
+      cancellation. Truncating after the $m^{-1}$ term has $\beta_2=0$ because
+      periodicity gives $\langle\delta\delta'\rangle=0$, while</p>
+    $$\beta_3=-{1\over8}\left\langle(\delta')^2+\delta^4\right\rangle
+      =-0.01473536375.$$
+    <p>The first omitted nonzero term is therefore third order, so the critical maturity
+      is $T=m^3$, not $m^2$. Since the nonsecular amplitude is retained exactly, the
+      following values are exactly the log-price errors caused by truncating the exponent
+      after $m^{-1}$:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$m^3(\lambda_m-\lambda_m^{[1]})$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;0.01461292130</td></tr>
+        <tr><td>16</td><td>&minus;0.01470442935</td></tr>
+        <tr><td>32</td><td>&minus;0.01472760957</td></tr>
+        <tr><td>64</td><td>&minus;0.01473342384</td></tr>
+        <tr><td>limit</td><td>&minus;0.01473536375</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $m=64$ the relative coefficient error is $1.32\times10^{-4}$. After
+      subtracting $\beta_3/m^3$, the measured local exponent remainder has order
+      $4.998987$; the fifth order reflects the next symmetry-plus-periodicity cancellation and is
+      stronger than the general fixed-order remainder needed by the theorem.</p>
 
     <h3>Critical-scale certificate</h3>
     <p>On the moving nonreversible three-state example, the recursion gives</p>
@@ -736,7 +779,7 @@
       \beta_3=-0.0013369243,\qquad
       \beta_4=-0.0011746971.$$
     <p>The table reports the exact log-price error caused by exponent truncation at its
-      critical maturity. Equivalently, it reports
+      generic critical maturity. Equivalently, it reports
       $m^{N+1}(\lambda_m-\lambda_m^{[N]})$, which must converge to
       $\beta_{N+1}$.</p>
     <div class="table-wrap">
