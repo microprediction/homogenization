@@ -7,7 +7,9 @@ This script checks the corrected identities on exact finite scenario trees and
 reproduces the constant-rate counterexamples.  It also checks the master
 transport identity for an arbitrary nonlinear payoff on several bond
 maturities, which shows why different payment dates cannot share one shift
-factor.
+factor.  Finally, it checks that deterministic shifts leave every bond-forward
+measure unchanged and therefore preserve Black implied volatility after the
+corresponding deterministic rescaling of forward and strike.
 """
 
 from __future__ import annotations
@@ -138,6 +140,135 @@ def forward_measure_identity(
     return explicit, risk_neutral, printed
 
 
+def forward_state_distribution(
+    transition: np.ndarray,
+    rates: np.ndarray,
+    shifts: np.ndarray,
+    horizon: int,
+    split: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Base and shifted U-forward state laws at an intermediate date.
+
+    The terminal numeraire date is ``horizon`` and the distribution is
+    evaluated at ``split``.  The deterministic shift may vary by interval.
+    Prefix, suffix and total shift factors are deliberately retained here so
+    the certificate tests their exact cancellation rather than simplifying it
+    in advance.
+    """
+    if not 0 <= split <= horizon <= len(shifts):
+        raise ValueError("require 0 <= split <= horizon <= len(shifts)")
+    kernel = np.diag(np.exp(-rates)) @ transition
+    initial = np.zeros(len(rates))
+    initial[0] = 1.0
+    prefix = initial @ np.linalg.matrix_power(kernel, split)
+    suffix = np.linalg.matrix_power(kernel, horizon - split) @ np.ones(
+        len(rates)
+    )
+    terminal_bond = float(
+        initial @ np.linalg.matrix_power(kernel, horizon) @ np.ones(len(rates))
+    )
+    base = prefix * suffix / terminal_bond
+
+    prefix_shift = math.exp(-float(np.sum(shifts[:split])))
+    suffix_shift = math.exp(-float(np.sum(shifts[split:horizon])))
+    total_shift = math.exp(-float(np.sum(shifts[:horizon])))
+    shifted = (
+        prefix_shift * prefix * suffix_shift * suffix
+        / (total_shift * terminal_bond)
+    )
+    return base, shifted
+
+
+def normal_cdf(value: float) -> float:
+    """Standard normal distribution function."""
+    return 0.5 * (1.0 + math.erf(value / math.sqrt(2.0)))
+
+
+def black_call(forward: float, strike: float, volatility: float) -> float:
+    """Unit-expiry undiscounted Black call."""
+    if volatility <= 0.0:
+        return max(forward - strike, 0.0)
+    d1 = math.log(forward / strike) / volatility + 0.5 * volatility
+    d2 = d1 - volatility
+    return forward * normal_cdf(d1) - strike * normal_cdf(d2)
+
+
+def black_implied_vol(forward: float, strike: float, price: float) -> float:
+    """Invert the unit-expiry Black call by monotone bisection."""
+    intrinsic = max(forward - strike, 0.0)
+    if price < intrinsic - 2e-14 or price > forward + 2e-14:
+        raise ValueError("price violates Black bounds")
+    if price <= intrinsic + 1e-15:
+        return 0.0
+    low, high = 0.0, 8.0
+    for _ in range(90):
+        middle = 0.5 * (low + high)
+        if black_call(forward, strike, middle) < price:
+            low = middle
+        else:
+            high = middle
+    return 0.5 * (low + high)
+
+
+def caplet_forward_invariance(
+    transition: np.ndarray,
+    rates: np.ndarray,
+    shifts: np.ndarray,
+) -> tuple[float, float, float]:
+    """Forward-law, normalized-price and implied-vol shift invariance.
+
+    Dates are t=0, fixing T=1, first bond maturity tau=2 and payment
+    maturity U=3.  The contractual strike is chosen at the shifted forward,
+    ensuring a nondegenerate implied volatility in every random case.
+    """
+    start = 0
+    bond_to_tau = zero_bonds(transition, rates, 1)
+    bond_to_payment = zero_bonds(transition, rates, 2)
+    discount_to_fixing = math.exp(-rates[start])
+    payment_bond = discount_to_fixing * transition[start].dot(
+        bond_to_payment
+    )
+    forward_weights = (
+        discount_to_fixing
+        * transition[start]
+        * bond_to_payment
+        / payment_bond
+    )
+    base_ratio = bond_to_tau / bond_to_payment
+    base_forward = float(forward_weights.dot(base_ratio))
+
+    a_T_tau = deterministic_discount(shifts[1:2])
+    a_T_payment = deterministic_discount(shifts[1:3])
+    ratio_scale = a_T_tau / a_T_payment
+    shifted_ratio = ratio_scale * base_ratio
+    shifted_forward = ratio_scale * base_forward
+    shifted_strike = shifted_forward
+    base_strike = shifted_strike / ratio_scale
+
+    base_normalized_call = float(
+        forward_weights.dot(np.maximum(base_ratio - base_strike, 0.0))
+    )
+    shifted_normalized_call = float(
+        forward_weights.dot(
+            np.maximum(shifted_ratio - shifted_strike, 0.0)
+        )
+    )
+    price_error = abs(
+        shifted_normalized_call - ratio_scale * base_normalized_call
+    )
+    base_iv = black_implied_vol(
+        base_forward, base_strike, base_normalized_call
+    )
+    shifted_iv = black_implied_vol(
+        shifted_forward, shifted_strike, shifted_normalized_call
+    )
+    return (
+        float(np.max(np.abs(np.sum(forward_weights) - 1.0))),
+        price_error,
+        abs(base_iv - shifted_iv),
+    )
+
+
 def shifted_zero_bonds(
     transition: np.ndarray,
     rates: np.ndarray,
@@ -206,6 +337,9 @@ def main() -> None:
     largest_printed_ratio_error = 0.0
     largest_multibond_error = 0.0
     largest_shifted_bond_error = 0.0
+    largest_forward_law_error = 0.0
+    largest_normalized_call_error = 0.0
+    largest_implied_vol_error = 0.0
     positive_option_cases = 0
 
     for _ in range(500):
@@ -264,12 +398,51 @@ def main() -> None:
             bond_error,
         )
 
+        for horizon in (2, 3):
+            for split in range(horizon + 1):
+                base_law, shifted_law = forward_state_distribution(
+                    transition,
+                    rates,
+                    multibond_shifts,
+                    horizon,
+                    split,
+                )
+                largest_forward_law_error = max(
+                    largest_forward_law_error,
+                    float(np.max(np.abs(base_law - shifted_law))),
+                    abs(float(np.sum(base_law)) - 1.0),
+                    abs(float(np.sum(shifted_law)) - 1.0),
+                )
+
+        weight_error, call_error, implied_vol_error = (
+            caplet_forward_invariance(
+                transition,
+                rates,
+                shifts,
+            )
+        )
+        largest_forward_law_error = max(
+            largest_forward_law_error,
+            weight_error,
+        )
+        largest_normalized_call_error = max(
+            largest_normalized_call_error,
+            call_error,
+        )
+        largest_implied_vol_error = max(
+            largest_implied_vol_error,
+            implied_vol_error,
+        )
+
     assert largest_option_error < 3e-15
     assert largest_forward_error < 3e-15
     assert positive_option_cases > 100
     assert largest_printed_ratio_error < 5e-13
     assert largest_multibond_error < 3e-15
     assert largest_shifted_bond_error < 3e-15
+    assert largest_forward_law_error < 3e-15
+    assert largest_normalized_call_error < 3e-15
+    assert largest_implied_vol_error < 3e-12
 
     # The constant-rate example from Issue #69: t=0, T=tau=1,
     # tau+Delta=2, K=0, beta X=0, and deterministic shift 5%.
@@ -332,6 +505,18 @@ def main() -> None:
         f"{largest_shifted_bond_error:.3e}"
     )
     print(
+        "maximum multi-step forward-law shift error: "
+        f"{largest_forward_law_error:.3e}"
+    )
+    print(
+        "maximum normalized-call scaling error: "
+        f"{largest_normalized_call_error:.3e}"
+    )
+    print(
+        "maximum shifted Black implied-vol error: "
+        f"{largest_implied_vol_error:.3e}"
+    )
+    print(
         "constant-rate caplet: "
         f"correct {caplet_correct:.10f}, printed {caplet_printed:.10f}"
     )
@@ -350,7 +535,8 @@ def main() -> None:
     )
     print(
         "PASS: maturity-specific shift factors and negative-exponent "
-        "change of numeraire, including nonlinear multibond payoffs"
+        "change of numeraire, including nonlinear multibond payoffs and "
+        "forward-measure/implied-vol invariance"
     )
 
 

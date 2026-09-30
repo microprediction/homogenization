@@ -96,6 +96,31 @@
       developed systematically by
       <a href="./bibliography.html#BrigoMercurio2001">Brigo and Mercurio (2001)</a>.</p>
 
+    <h3>Forward measures are invariant</h3>
+    <p>The deterministic shift changes bond levels but not the forward measures themselves. For any numeraire
+      maturity $U$ and $s\le U$, the density process relative to the common risk-neutral measure is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \left.\frac{dQ^{U,\phi}}{dQ}\right|_{\mathcal F_s}
+      &amp;=\frac{D^\phi(0,s)P^\phi(s,U)}{P^\phi(0,U)}\\
+      &amp;=\frac{A(0,s)A(s,U)}{A(0,U)}
+        \frac{D^0(0,s)P^0(s,U)}{P^0(0,U)}\\
+      &amp;=\left.\frac{dQ^{U,0}}{dQ}\right|_{\mathcal F_s}.
+    \end{aligned}$$
+    </div>
+    <p>The cancellation uses only the cocycle identity $A(0,s)A(s,U)=A(0,U)$. Thus every conditional law
+      under a bond-forward measure is exactly the same before and after a deterministic additive shift.</p>
+    <p>This gives a useful option corollary. For $T\le u,U$, put
+      $X_T^0=P^0(T,u)/P^0(T,U)$ and
+      $c=A(T,u)/A(T,U)$. Then $X_T^\phi=cX_T^0$. If the strike is transformed as
+      $K^\phi=cK^0$,</p>
+    $$\frac{V_t^\phi}{P^\phi(t,U)}
+      =\mathbb E^{Q^U}_t[(cX_T^0-cK^0)^+]
+      =c\frac{V_t^0}{P^0(t,U)}.$$
+    <p>Because the Black formula is homogeneous in forward, strike and option value, the corresponding Black
+      implied volatility is unchanged. This is an invariance at matched transformed moneyness; holding the
+      <em>numeric</em> strike fixed changes moneyness and need not preserve implied volatility.</p>
+
     <h3>Caplets and floorlets</h3>
     <p>Take $t\le T\le\tau&lt;\tau+\Delta$ and write $q=1+\Delta K$. For the generalized bond-option
       positive part used in Appendix B, define</p>
@@ -151,7 +176,9 @@
       The <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_appendix_b_errata.py">certificate</a>
       checks the caplet and floorlet factorization on 500 exact finite-state trees, verifies the general
       transport theorem for a nonlinear option on three bond maturities to $2.2\times10^{-16}$, verifies the
-      forward-measure identity independently, and records the thesis counterexamples. Details and
+      forward-measure identity independently, and records the thesis counterexamples. It also checks multi-step
+      forward-law invariance to $4.5\times10^{-16}$, normalized option scaling to $1.6\times10^{-16}$ and
+      transformed Black implied-volatility invariance to $8.4\times10^{-16}$. Details and
       source-page locations are in
       <a href="https://github.com/microprediction/homogenization/issues/69">Issue #69</a>.</p>
   </main>
