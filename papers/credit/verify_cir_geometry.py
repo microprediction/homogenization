@@ -15,6 +15,10 @@ second high-precision check verifies the Hermite-jet exponent multiset
 condition-number blow-up.  An exact rational Taylor-coefficient calculation
 proves that the joint jet independence assumed by the generic cluster theorem
 is automatic for the CIR Riccati loading at every set of distinct centers.
+At the opposite, long-maturity limit, a four-name certificate checks that the
+loading Gram matrix has one eigenvalue growing linearly in maturity while the
+other three converge to positive transient-Gram limits, so its condition
+number grows linearly despite retaining full algebraic rank.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -327,6 +331,106 @@ def rank_amplification_checks():
         print(f"  d={d}: smallest eigenvalue {smallest:.9e}, "
               f"condition {condition:.6e}")
     return rows
+
+
+def long_maturity_loading_checks():
+    """Certify the long-maturity rank-one collapse of CIR loading Gramians.
+
+    If b is the vector of limiting Riccati loadings and r(t)=B(t)-b, then
+    J(T)=T b b' + C + exponentially small terms.  On b-perp the cross terms
+    in C vanish, leaving the positive transient Gramian int r(t)r(t)'dt.
+    """
+    kappas = np.array([0.35, 0.8, 1.7, 3.2])
+    sigma = 0.18
+    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+    limiting_loadings = 2 / (gammas + kappas)
+
+    def loading_vector(time):
+        decay = np.exp(-gammas * time)
+        return 2 * (1 - decay) / (
+            (gammas + kappas) * (1 - decay) + 2 * gammas * decay
+        )
+
+    def gram(horizon):
+        return np.array([
+            [quad(
+                lambda time, j=j, k=k:
+                loading_vector(time)[j] * loading_vector(time)[k],
+                0,
+                horizon,
+                epsabs=1e-11,
+                epsrel=1e-12,
+                limit=300,
+            )[0] for k in range(len(kappas))]
+            for j in range(len(kappas))
+        ])
+
+    def transient(time):
+        return loading_vector(time) - limiting_loadings
+
+    transient_gram = np.array([
+        [quad(
+            lambda time, j=j, k=k:
+            transient(time)[j] * transient(time)[k],
+            0,
+            np.inf,
+            epsabs=1e-12,
+            epsrel=1e-12,
+            limit=300,
+        )[0] for k in range(len(kappas))]
+        for j in range(len(kappas))
+    ])
+    _, _, right_vectors = np.linalg.svd(limiting_loadings[None, :])
+    complement = right_vectors[1:].T
+    compressed = complement.T @ transient_gram @ complement
+    limiting_small_eigenvalues = np.linalg.eigvalsh(compressed)
+    assert limiting_small_eigenvalues[0] > 0
+
+    horizons = 2.0 ** np.arange(5, 11)
+    values = []
+    conditions = []
+    determinants = []
+    for horizon in horizons:
+        matrix = gram(horizon)
+        eigenvalues = np.linalg.eigvalsh(matrix)
+        values.append(np.r_[eigenvalues[:-1], eigenvalues[-1] / horizon])
+        conditions.append(eigenvalues[-1] / eigenvalues[0] / horizon)
+        determinants.append(np.linalg.det(matrix) / horizon)
+
+    values = np.asarray(values)
+    targets = np.r_[
+        limiting_small_eigenvalues,
+        limiting_loadings @ limiting_loadings,
+    ]
+    errors = np.abs(values - targets)
+    final_orders = np.log2(errors[-2] / errors[-1])
+    assert np.min(final_orders) > 0.98
+    assert np.max(np.abs(values[-1] / targets - 1)) < 0.004
+
+    condition_target = (
+        limiting_loadings @ limiting_loadings
+        / limiting_small_eigenvalues[0]
+    )
+    determinant_target = (
+        (limiting_loadings @ limiting_loadings) * np.linalg.det(compressed)
+    )
+    assert abs(conditions[-1] / condition_target - 1) < 0.003
+    assert abs(determinants[-1] / determinant_target - 1) < 0.01
+
+    print("\nlong-maturity CIR loading certificate")
+    print("  limiting bounded eigenvalues "
+          + " ".join(f"{value:.10e}"
+                     for value in limiting_small_eigenvalues))
+    print("  T=1024 bounded eigenvalues "
+          + " ".join(f"{value:.10e}" for value in values[-1, :-1]))
+    print("  convergence orders "
+          + " ".join(f"{order:.6f}" for order in final_orders))
+    print(f"  condition/T {conditions[-1]:.10e}, "
+          f"limit {condition_target:.10e}")
+    print(f"  determinant/T {determinants[-1]:.10e}, "
+          f"limit {determinant_target:.10e}")
+    return (limiting_small_eigenvalues, values, final_orders,
+            conditions, determinants)
 
 
 def coalescing_loading_checks():
@@ -688,6 +792,7 @@ def cir_jet_independence_checks():
 
 def main():
     rank_amplification_checks()
+    long_maturity_loading_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()

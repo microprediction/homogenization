@@ -4,7 +4,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">numerical certificate</a></span></p>
     <h1>Green&ndash;Kubo geometry of joint default</h1>
     <p class="subtitle">Positive CIR intensities, an identifiable instantaneous matrix, and a maturity-integrated rank trap.</p>
-    <p class="muted">Research note, 23 September 2026; extended 28 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
+    <p class="muted">Research note, 23 September 2026; extended 30 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
       gives the starting point; this note changes the loadings while retaining nonnegative intensities.</p>
 
     <h2>A positive-intensity model</h2>
@@ -12,7 +12,8 @@
       $X_j(t)$, $j=1,\ldots,d$. Specifically, let $E_j$ be independent unit-exponential variables,
       independent of the Brownian motions and the regime, and set
       $\tau_j=\inf\{t:\int_0^tX_j(s)ds\ge E_j\}$. A common irreducible $n$-state chain $y_t$
-      with stationary law $\pi$ switches their CIR mean levels:</p>
+      with stationary law $\pi$ switches their
+      <a href="./bibliography.html#CIR1985">CIR</a> mean levels:</p>
     $$dX_j=\kappa_j(\theta_{j,y_t}-X_j)dt+
       \sigma_j\sqrt{X_j}\,dW_j,\qquad
       y_t\ \text{has generator }mQ_0.$$
@@ -297,6 +298,64 @@
       can simultaneously be chosen with a uniform strict Feller margin.
       Therefore no bound depending only on the number of regimes survives
       after maturity integration.</p>
+
+    <h3>Long maturity restores effective rank one</h3>
+    <p>Full algebraic rank also does not mean uniform information across
+      maturities. Let the distinct CIR loadings have positive limits</p>
+    $$b_j=\lim_{t\to\infty}B_j(t)
+      ={2\over\sqrt{\kappa_j^2+2\sigma^2}+\kappa_j},
+      \qquad b=(b_1,\ldots,b_d)^\top,$$
+    <p>for a common fixed $\sigma\ge0$, and put $r(t)=B(t)-b$. The Riccati
+      formula gives $r(t)=O(e^{-\rho t})$ for some $\rho&gt;0$, hence</p>
+    $$J(T)=\int_0^TB(t)B(t)^\top dt
+      =Tbb^\top+C+O(e^{-\rho T}),\qquad
+      C=\int_0^\infty\{B(t)B(t)^\top-bb^\top\}\,dt.$$
+    <p>Let $P_b$ be orthogonal projection onto $b^\perp$ and define, on that
+      $(d-1)$-dimensional space,</p>
+    $$H=P_b\left\{\int_0^\infty r(t)r(t)^\top dt\right\}P_b.$$
+    <p>The cross terms in $C$ vanish after compression because $P_bb=0$.
+      Moreover $H$ is positive definite: if $z\perp b$ and $z^\top Hz=0$,
+      then $z^\top r(t)=0$ for every $t$, hence $z^\top B(t)=0$; the CIR
+      loading independence proved below forces $z=0$.</p>
+    <div class="equation-card">
+    <p><strong>Long-maturity spectrum.</strong> Order the eigenvalues of $J(T)$
+      as $\lambda_1(T)\ge\cdots\ge\lambda_d(T)$ and those of $H$ as
+      $\mu_1\ge\cdots\ge\mu_{d-1}&gt;0$. Then</p>
+    $$\lambda_1(T)=\|b\|^2T+O(1),\qquad
+      \lambda_{j+1}(T)=\mu_j+O(T^{-1}),$$
+    $$\operatorname{cond}_2J(T)
+      ={\|b\|^2\over\mu_{d-1}}T+O(1),\qquad
+      \det J(T)=\|b\|^2\det(H)T+O(1).$$
+    </div>
+    <p>In an orthonormal basis beginning with $b/\|b\|$, the first block of
+      $J(T)$ is $T\|b\|^2+O(1)$, the lower block tends to $H$, and the
+      off-diagonal block is bounded. A Schur complement gives the displayed
+      $O(T^{-1})$ bounded-eigenvalue corrections. The same theorem holds for
+      the rank-one Green&ndash;Kubo correction
+      $D(T)=\operatorname{diag}(a)J(T)\operatorname{diag}(a)$ when every
+      $a_j\ne0$, after replacing $B,b,r$ by their coordinatewise products
+      with $a$.</p>
+    <p>The conclusion is deliberately two-sided: heterogeneous maturity
+      loadings create exact full rank for every finite $T&gt;0$, but at the long
+      end only their common stationary levels accumulate linearly. The
+      remaining $d-1$ directions contain a finite amount of transient
+      information, so relative conditioning deteriorates like $T$. This is a
+      deterministic loading-Gram theorem at fixed CIR parameters. It does not
+      make the earlier $O_L(m^{-2})$ pricing remainder uniform as $T\to\infty$
+      and does not interchange the switching-speed and maturity limits.</p>
+    <p>For four positive-volatility loadings with
+      $\kappa=(0.35,0.8,1.7,3.2)$ and $\sigma=0.18$, the limiting bounded
+      eigenvalues are</p>
+    $$(2.74707297\times10^{-4},\quad 1.19392590\times10^{-2},\quad
+       4.59242675\times10^{-1}).$$
+    <p>At $T=1024$ their measured values are
+      $(2.74433300\times10^{-4},1.19203959\times10^{-2},
+      4.57948772\times10^{-1})$. The four convergence orders, including the
+      scaled leading eigenvalue, are
+      $(1.011023,1.008731,1.004560,0.999930)$. The measured and predicted
+      limits are respectively $30714.49668$ and $30780.38173$ for
+      $\operatorname{cond}_2J(T)/T$, and $1.26277099\times10^{-5}$ and
+      $1.27360280\times10^{-5}$ for $\det J(T)/T$.</p>
 
     <h3>Full rank becomes singular at a quantified rate</h3>
     <p>Algebraic full rank does not make nearby loading parameters stably
