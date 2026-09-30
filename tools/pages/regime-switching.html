@@ -251,6 +251,22 @@
     $$\frac12\{\log a_1(T)+\log a_2(T)\}-\int_0^T\bar g(t)\,dt
       =\frac1{2\lambda}\int_0^T\tilde g(t)^2\,dt+O(\lambda^{-2}).$$
     </div>
+    <p>For the analytic Vasicek forcing, these remainder orders are sharp and their first omitted coefficients
+      are explicit. Since $\tilde g(0)=0$, endpoint Laplace expansion and variation of constants give</p>
+    $$D_\lambda(T)=\frac{\tilde g(T)}{2\lambda}
+      -\frac{\tilde g'(T)}{(2\lambda)^2}+O(\lambda^{-3}),\qquad
+      \omega(T)-D_\lambda(T)=-\frac{\tilde g(T)^3}{(2\lambda)^3}+O(\lambda^{-4}).$$
+    <p>Using $2\operatorname{arctanh}\omega=2\omega+2\omega^3/3+O(\omega^5)$ therefore sharpens the
+      relative-price result to</p>
+    $$\log\frac{a_1(T)}{a_2(T)}-2D_\lambda(T)
+      =-\frac{\tilde g(T)^3}{6\lambda^3}+O(\lambda^{-4}).$$
+    <p>The common level needs one extra endpoint term: exactly</p>
+    $$C_\lambda:=\frac12\{\log a_1(T)+\log a_2(T)\}-\int_0^T\bar g(t)\,dt
+      =\int_0^T\tilde g(t)\omega(t)\,dt+\frac12\log(1-\omega(T)^2).$$
+    <p>Integration by parts in the first term contributes $-\tilde g(T)^2/(8\lambda^2)$, and the final
+      logarithm contributes the same amount. Hence</p>
+    $$C_\lambda-\frac1{2\lambda}\int_0^T\tilde g(t)^2\,dt
+      =-\frac{\tilde g(T)^2}{4\lambda^2}+O(\lambda^{-3}).$$
     <p>Thus the corrected dynamic mean captures the exact regime log-price contrast through second order in
       $1/\lambda$, even at finite contrast. It does <em>not</em> give the full price to first order: it omits the
       common positive Green&ndash;Kubo convexity term in the second display. This separates a relative-price result
@@ -271,7 +287,13 @@
       </tbody>
     </table>
     <p>The last rate-doubling orders are $2.9986$ for the log-ratio residual, $0.9980$ for the omitted common
-      shift, and $2.0037$ after subtracting its displayed leading term.</p>
+      shift, and $2.0037$ after subtracting its displayed leading term. At $\lambda=128$, the scaled remainders
+      are $\lambda^3R_\lambda=4.84610\times10^{-5}$ versus the predicted
+      $-\tilde g(T)^3/6=4.84281\times10^{-5}$, and
+      $\lambda^2\{C_\lambda-(2\lambda)^{-1}\int\tilde g^2\}=-1.09963\times10^{-3}$ versus
+      $-\tilde g(T)^2/4=-1.09674\times10^{-3}$. After subtracting these endpoint coefficients, the measured
+      orders are $4.0637$ for the contrast residual (the $32$-to-$64$ doubling, before the ODE solve reaches its
+      precision floor) and $2.9920$ for the common residual.</p>
 
     <h3>Checks against the printed examples</h3>
     <p>Both examples use $\bar\theta=0.25$, $\tilde\theta=0.10$ and essentially constant volatility. The table
@@ -292,8 +314,8 @@
     <p>The
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
       checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
-      measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders above, and solves
-      both exact switched ODEs. The affine bond structure is
+      measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders and sharp
+      endpoint coefficients above, and solves both exact switched ODEs. The affine bond structure is
       the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
       Markov-modulated mean-level model is treated by
       <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page

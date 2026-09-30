@@ -7,7 +7,8 @@ its closed form, its first-order agreement with the exact switched bond ODE,
 and the two numerical examples printed in the thesis.  It also checks a
 fixed-contrast, fast-switching refinement: the corrected dynamic mean captures
 the regime log-price contrast through order lambda^-2, but omits the common
-order-lambda^-1 Green--Kubo convexity term.
+order-lambda^-1 Green--Kubo convexity term.  The endpoint coefficients of both
+next remainders are also checked.
 """
 
 from __future__ import annotations
@@ -254,6 +255,10 @@ def main() -> None:
             + 0.5 * variance_contrast * loading**2
         )
 
+    endpoint_growth = contrast_growth(horizon)
+    ratio_cubic_coefficient = -(endpoint_growth**3) / 6.0
+    common_quadratic_coefficient = -(endpoint_growth**2) / 4.0
+
     log_averaged = math.log(
         averaged_bond_factor(kappa, horizon, theta_mean, variance_mean)
     )
@@ -266,9 +271,12 @@ def main() -> None:
     )[0]
     fast_rates = np.array([4.0, 8.0, 16.0, 32.0, 64.0, 128.0])
     fast_rows = []
-    ratio_errors = []
+    ratio_residuals = []
     common_shifts = []
+    corrected_common_residuals = []
     corrected_common_errors = []
+    refined_ratio_errors = []
+    refined_common_errors = []
     for rate in fast_rates:
         factors = switched_bond_factors(
             rate,
@@ -287,21 +295,36 @@ def main() -> None:
             theta_contrast,
             variance_contrast,
         )
-        ratio_error = abs(
+        ratio_residual = (
             log_factors[0] - log_factors[1] - 2.0 * dynamic_contrast
         )
         common_shift = 0.5 * float(np.sum(log_factors)) - log_averaged
-        corrected_common_error = abs(
+        corrected_common_residual = (
             common_shift - green_kubo_integral / (2.0 * rate)
         )
-        ratio_errors.append(ratio_error)
+        refined_ratio_error = abs(
+            ratio_residual - ratio_cubic_coefficient / rate**3
+        )
+        refined_common_error = abs(
+            corrected_common_residual
+            - common_quadratic_coefficient / rate**2
+        )
+        ratio_residuals.append(ratio_residual)
         common_shifts.append(abs(common_shift))
-        corrected_common_errors.append(corrected_common_error)
+        corrected_common_residuals.append(corrected_common_residual)
+        corrected_common_errors.append(abs(corrected_common_residual))
+        refined_ratio_errors.append(refined_ratio_error)
+        refined_common_errors.append(refined_common_error)
         fast_rows.append(
-            (rate, ratio_error, common_shift, corrected_common_error)
+            (
+                rate,
+                ratio_residual,
+                common_shift,
+                corrected_common_residual,
+            )
         )
     ratio_orders = np.log2(
-        np.asarray(ratio_errors[:-1]) / ratio_errors[1:]
+        np.abs(np.asarray(ratio_residuals[:-1]) / ratio_residuals[1:])
     )
     common_orders = np.log2(
         np.asarray(common_shifts[:-1]) / common_shifts[1:]
@@ -310,9 +333,28 @@ def main() -> None:
         np.asarray(corrected_common_errors[:-1])
         / corrected_common_errors[1:]
     )
+    refined_ratio_orders = np.log2(
+        np.asarray(refined_ratio_errors[:-1]) / refined_ratio_errors[1:]
+    )
+    refined_common_orders = np.log2(
+        np.asarray(refined_common_errors[:-1]) / refined_common_errors[1:]
+    )
     assert ratio_orders[-1] > 2.98
     assert common_orders[-1] > 0.995
     assert corrected_common_orders[-1] > 2.0
+    # The final ratio datum is at the ODE solver's double-precision floor;
+    # use the preceding 32-to-64 doubling for its fourth-order check.
+    assert refined_ratio_orders[-2] > 3.9
+    assert refined_common_orders[-1] > 2.98
+    assert abs(
+        fast_rates[-1] ** 3 * ratio_residuals[-1]
+        - ratio_cubic_coefficient
+    ) < 4e-8
+    assert abs(
+        fast_rates[-1] ** 2
+        * corrected_common_residuals[-1]
+        - common_quadratic_coefficient
+    ) < 4e-6
 
     # Reproduce the two thesis examples.  The reported dynamic-mean values use
     # exp(-lambda*s)B(s); the correction uses exp(-2lambda*s)B(T-s).
@@ -358,17 +400,29 @@ def main() -> None:
     print(f"linear response coefficient: {coefficient:.10f}")
     print(f"last two contrast-remainder orders: {orders[-2]:.6f}, {orders[-1]:.6f}")
     print("fixed contrast, fast switching")
-    print("lambda  contrast error   common log shift   corrected common error")
-    for rate, ratio_error, common_shift, corrected_common_error in fast_rows:
+    print("lambda  contrast residual   common log shift   corrected common residual")
+    for rate, ratio_residual, common_shift, corrected_common_residual in fast_rows:
         print(
-            f" {rate:5.0f}   {ratio_error:13.7e}"
-            f"   {common_shift:16.7e}   {corrected_common_error:20.7e}"
+            f" {rate:5.0f}   {ratio_residual:16.7e}"
+            f"   {common_shift:16.7e}   {corrected_common_residual:25.7e}"
         )
     print(
         "last fast-switching orders: contrast "
         f"{ratio_orders[-1]:.6f}, omitted common term "
         f"{common_orders[-1]:.6f}, corrected common residual "
         f"{corrected_common_orders[-1]:.6f}"
+    )
+    print(
+        "sharp endpoint limits: lambda^3 contrast residual "
+        f"{fast_rates[-1] ** 3 * ratio_residuals[-1]:.9e} -> "
+        f"{ratio_cubic_coefficient:.9e}; lambda^2 corrected common residual "
+        f"{fast_rates[-1] ** 2 * corrected_common_residuals[-1]:.9e} -> "
+        f"{common_quadratic_coefficient:.9e}"
+    )
+    print(
+        "orders after endpoint corrections: contrast "
+        f"{refined_ratio_orders[-2]:.6f} (32-to-64), common "
+        f"{refined_common_orders[-1]:.6f} (64-to-128)"
     )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
@@ -379,7 +433,7 @@ def main() -> None:
     print(
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
-        "orders, and both thesis examples"
+        "orders and endpoint coefficients, and both thesis examples"
     )
 
 
