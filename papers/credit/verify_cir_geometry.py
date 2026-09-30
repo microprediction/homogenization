@@ -12,7 +12,9 @@ condition-number blow-up.
 For partially coalescing rates in clusters of sizes three, two, and one, a
 second high-precision check verifies the Hermite-jet exponent multiset
 0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
-condition-number blow-up.
+condition-number blow-up.  An exact rational Taylor-coefficient calculation
+proves that the joint jet independence assumed by the generic cluster theorem
+is automatic for the CIR Riccati loading at every set of distinct centers.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -23,6 +25,7 @@ the sharp square-root-two conditioning infimum and the fixed-exposure minimax
 bound for minimally identifying designs.
 """
 import math
+from fractions import Fraction
 
 import mpmath as mp
 import numpy as np
@@ -570,9 +573,123 @@ def clustered_loading_checks():
             condition_slope, jet_determinant)
 
 
+def cir_jet_independence_checks():
+    """Certify the exact confluent determinant behind CIR jet independence.
+
+    If B_kappa(t)=sum_{n>=1} b_n(kappa)t^n, the Riccati recurrence makes
+    b_n a degree-(n-1) polynomial with leading coefficient
+    (-1)^(n-1)/n!.  Evaluation of these polynomials and their derivatives at
+    distinct cluster centers is therefore a nonsingular confluent
+    Vandermonde system.  Rational arithmetic checks both the recurrence and
+    its closed determinant for the (3,2,1) certificate.
+    """
+
+    def polynomial_add(left, right):
+        result = [Fraction(0)] * max(len(left), len(right))
+        for index, value in enumerate(left):
+            result[index] += value
+        for index, value in enumerate(right):
+            result[index] += value
+        return result
+
+    def polynomial_scale(polynomial, scalar):
+        return [scalar * value for value in polynomial]
+
+    def polynomial_product(left, right):
+        result = [Fraction(0)] * (len(left) + len(right) - 1)
+        for left_index, left_value in enumerate(left):
+            for right_index, right_value in enumerate(right):
+                result[left_index + right_index] += left_value * right_value
+        return result
+
+    def derivative_evaluation(polynomial, order, center):
+        return sum(
+            coefficient
+            * Fraction(math.factorial(degree),
+                       math.factorial(degree - order))
+            * center ** (degree - order)
+            for degree, coefficient in enumerate(polynomial)
+            if degree >= order
+        )
+
+    def exact_determinant(matrix):
+        matrix = [row[:] for row in matrix]
+        determinant = Fraction(1)
+        for column in range(len(matrix)):
+            pivot = next(row for row in range(column, len(matrix))
+                         if matrix[row][column])
+            if pivot != column:
+                matrix[column], matrix[pivot] = matrix[pivot], matrix[column]
+                determinant *= -1
+            pivot_value = matrix[column][column]
+            determinant *= pivot_value
+            for row in range(column + 1, len(matrix)):
+                multiplier = matrix[row][column] / pivot_value
+                for entry in range(column, len(matrix)):
+                    matrix[row][entry] -= multiplier * matrix[column][entry]
+        return determinant
+
+    centers = [Fraction(4, 5), Fraction(2), Fraction(4)]
+    multiplicities = [3, 2, 1]
+    dimension = sum(multiplicities)
+    sigma_squared = Fraction(1, 2500)
+
+    # coefficients[n] stores b_n(kappa) in increasing powers of kappa.
+    coefficients = [None, [Fraction(1)]]
+    for n in range(1, dimension):
+        quadratic = [Fraction(0)]
+        for left in range(1, n):
+            quadratic = polynomial_add(
+                quadratic,
+                polynomial_product(coefficients[left],
+                                   coefficients[n - left]),
+            )
+        recurrence = polynomial_add(
+            polynomial_scale([Fraction(0)] + coefficients[n], -1),
+            polynomial_scale(quadratic, -sigma_squared / 2),
+        )
+        coefficients.append(polynomial_scale(recurrence, Fraction(1, n + 1)))
+
+    for n in range(1, dimension + 1):
+        assert len(coefficients[n]) == n
+        assert coefficients[n][-1] == Fraction(
+            (-1) ** (n - 1), math.factorial(n))
+
+    jets = [
+        (center, order)
+        for center, multiplicity in zip(centers, multiplicities)
+        for order in range(multiplicity)
+    ]
+    coefficient_jet_matrix = [
+        [derivative_evaluation(coefficients[n], order, center)
+         for center, order in jets]
+        for n in range(1, dimension + 1)
+    ]
+    exact = exact_determinant(coefficient_jet_matrix)
+
+    predicted = Fraction(1)
+    for n in range(1, dimension + 1):
+        predicted *= Fraction((-1) ** (n - 1), math.factorial(n))
+    for left, left_center in enumerate(centers):
+        for right in range(left + 1, len(centers)):
+            predicted *= (centers[right] - left_center) ** (
+                multiplicities[left] * multiplicities[right])
+    for multiplicity in multiplicities:
+        for order in range(multiplicity):
+            predicted *= math.factorial(order)
+
+    assert exact == predicted == Fraction(-1536, 48828125)
+    print("\nCIR joint-jet independence certificate")
+    print("  cluster sizes " + " ".join(map(str, multiplicities)))
+    print(f"  exact Taylor-jet determinant {exact}")
+    print(f"  decimal determinant {float(exact):.12e}")
+    return exact
+
+
 def main():
     rank_amplification_checks()
     coalescing_loading_checks()
+    cir_jet_independence_checks()
     clustered_loading_checks()
     assert np.all(2 * KAPPA[:, None] * THETA > SIGMA[:, None] ** 2)
     Bs = loadings(T)
@@ -910,8 +1027,8 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification, prior memory, pair "
-          "cancellation, and ordered default")
+    print("PASS: positivity, sharp rank amplification, automatic CIR jet "
+          "independence, prior memory, pair cancellation, and ordered default")
 
 
 if __name__ == "__main__":

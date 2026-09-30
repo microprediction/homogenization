@@ -527,10 +527,44 @@
       <a href="./bibliography.html#Hermite1878">Hermite (1878)</a> and is
       consistent with the confluent-Vandermonde bounds of
       <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a>.</p>
-    <p>This theorem is conditional on the displayed joint jet independence;
-      distinct cluster centers alone are not asserted to guarantee it for an
-      arbitrary analytic loading family. The positive-CIR certificate checks
-      that condition at 80-digit precision for clusters of sizes $(3,2,1)$,
+    <p>For an arbitrary analytic loading family, the theorem remains
+      conditional on the displayed joint jet independence. For the CIR
+      Riccati family, however, that condition is automatic. Write</p>
+    $$B_\kappa(t)=\sum_{n\ge1}c_n(\kappa)t^n.$$
+    <p>Substitution in the Riccati equation gives $c_1=1$ and</p>
+    $$(n+1)c_{n+1}(\kappa)
+      =-\kappa c_n(\kappa)
+       -\frac{\sigma^2}{2}\sum_{j=1}^{n-1}
+          c_j(\kappa)c_{n-j}(\kappa).$$
+    <p>Induction shows that $c_n$ is a polynomial of degree $n-1$ with
+      leading coefficient $(-1)^{n-1}/n!$. For $d=\sum_cm_c$, form the
+      Taylor-jet matrix</p>
+    $$M_{n,(c,r)}=\partial_\kappa^r c_n(\alpha_c),qquad
+      1\le n\le d,\quad 0\le r&lt;m_c.$$
+    <p>If the distinct centers are ordered increasingly, triangular change of
+      polynomial basis and the confluent Vandermonde determinant give</p>
+    <div class="equation-card">
+    $$\det M=
+      \left\{\prod_{n=1}^d\frac{(-1)^{n-1}}{n!}\right\}
+      \left\{\prod_{c=1}^g\prod_{r=0}^{m_c-1}r!\right\}
+      \prod_{c&lt;e}(\alpha_e-\alpha_c)^{m_cm_e}\ne0.$$
+    </div>
+    <p>Any $L^2[0,T]$ relation among the CIR jets is an analytic identity in
+      $t$; its first $d$ Taylor coefficients are annihilated by $M$. The
+      displayed determinant therefore forces every coefficient in the
+      relation to vanish. Thus, for fixed common $\sigma\ge0$ and every
+      $T&gt;0$, distinct CIR cluster centers alone imply joint jet independence
+      and make $G_{\rm jet}$ positive definite. This is precisely the
+      derivative interpolation structure in
+      <a href="./bibliography.html#Hermite1878">Hermite's original 1878
+      paper</a>; no numerical genericity assumption is needed for CIR.</p>
+    <p>The exact rational certificate applies the recurrence to cluster sizes
+      $(3,2,1)$ and centers $(4/5,2,4)$. The resulting six-by-six Taylor-jet
+      determinant is
+      $-1536/48828125=-3.145728\times10^{-5}$, exactly equal to the formula
+      above and independent of the lower-degree volatility terms. The
+      positive-CIR quadrature certificate then checks the asymptotic constants
+      at 80-digit precision for the same cluster sizes,
       centers $(0.8,2,4)$, common volatility $0.02$, and $T=4$. It finds
       eigenvalue slopes
       $(0.000007,0.000058,0.000344,1.999615,2.000232,3.999713)$,
