@@ -9,7 +9,7 @@ import math
 
 import numpy as np
 from scipy.integrate import quad
-from scipy.special import sici
+from scipy.special import sici, zeta
 
 
 def integrated_variance(covariance, epsilon, maturity=1.0):
@@ -166,6 +166,69 @@ def spectral_abelian_constant(alpha, density_coefficient=1.0):
     return (density_coefficient * math.pi
             / (math.gamma(3.0 - alpha)
                * math.sin(math.pi * alpha / 2.0)))
+
+
+def atomic_spectral_variance(epsilon, alpha, maturity=1.0,
+                             cutoff_multiple=6.0, tail_terms=10):
+    """Integrated variance for a purely atomic low-frequency spectrum.
+
+    Put mass n^(-alpha-1) at frequency 1/n.  The direct sum is cut off
+    beyond ``cutoff_multiple * maturity / epsilon``.  There the cosine
+    series is absolutely convergent, and each remaining power sum is a
+    Hurwitz zeta value.
+    """
+    scale = maturity / epsilon
+    cutoff = int(math.ceil(cutoff_multiple * scale))
+    indices = np.arange(1, cutoff + 1, dtype=float)
+    direct = np.sum(
+        indices ** (1.0 - alpha) * (1.0 - np.cos(scale / indices))
+    )
+    tail = 0.0
+    for order in range(1, tail_terms + 1):
+        tail += ((-1.0) ** (order + 1)
+                 * scale ** (2 * order) / math.factorial(2 * order)
+                 * zeta(alpha + 2 * order - 1.0, cutoff + 1.0))
+    return 2.0 * epsilon ** 2 * (direct + tail)
+
+
+def verify_measure_level_spectral_theorem():
+    """Check the density-free theorem on a pure-point spectrum.
+
+    For masses w_n=n^(-alpha-1) at omega_n=1/n,
+
+        F(x)=sum_{n >= ceil(1/x)} w_n ~ x^alpha/alpha.
+
+    The measure has no density.  The general cumulative-mass theorem
+    nevertheless predicts the same constant as density coefficient one.
+    """
+    alpha = 1.3
+    small_x = 2.0 ** -20
+    first_index = int(math.ceil(1.0 / small_x))
+    cumulative_mass = zeta(alpha + 1.0, first_index)
+    mass_ratio = cumulative_mass / (small_x ** alpha / alpha)
+
+    epsilons = 2.0 ** -np.arange(7, 16)
+    exact = np.array([
+        atomic_spectral_variance(eps, alpha) for eps in epsilons
+    ])
+    independently_refined = np.array([
+        atomic_spectral_variance(
+            eps, alpha, cutoff_multiple=8.0, tail_terms=12
+        )
+        for eps in epsilons
+    ])
+    summation_error = float(np.max(np.abs(exact - independently_refined)))
+
+    coefficient = spectral_abelian_constant(alpha)
+    leading = coefficient * epsilons ** alpha
+    order = measured_order(exact)
+    ratio = exact[-1] / leading[-1]
+
+    assert abs(mass_ratio - 1.0) < 1e-6
+    assert summation_error < 2e-13
+    assert abs(order - alpha) < 0.004
+    assert abs(ratio - 1.0) < 0.002
+    return mass_ratio, summation_error, order, ratio
 
 
 def band_variance(epsilon, weight, lower, upper, maturity=1.0):
@@ -476,6 +539,7 @@ def main():
     antipersistent_17 = verify_antipersistent_case(1.7)
     zero_gk_boundary = verify_zero_gk_boundary()
     spectral_abelian = verify_spectral_abelian_theorem()
+    measure_level = verify_measure_level_spectral_theorem()
     regular_variation = verify_regular_variation()
     periodic_coefficient = verify_periodic_case()
 
@@ -507,6 +571,9 @@ def main():
           "sign changes: "
           f"{spectral_abelian[2]:.6f}, {spectral_abelian[3]:.6f}, "
           f"{spectral_abelian[4]:.3e}, {spectral_abelian[5]}")
+    print("pure-point spectral mass ratio, summation error, order, ratio: "
+          f"{measure_level[0]:.9f}, {measure_level[1]:.3e}, "
+          f"{measure_level[2]:.6f}, {measure_level[3]:.6f}")
     print("OU-mixture regular-variation ratios: "
           f"power-log {regular_variation[0]:.6f}, "
           f"critical-log^2 {regular_variation[1]:.6f}")

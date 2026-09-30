@@ -44,20 +44,27 @@
       $T^2\mu(\{0\})$ and no fluctuation rescaling can repair the failed averaging limit. This is the spectral
       projection underlying
       <a href="https://doi.org/10.1073/pnas.18.1.70">von Neumann&apos;s mean ergodic theorem (1932)</a>.</p>
-    <p>Assume now that $\mu(\{0\})=0$ and that near zero the spectral measure has density</p>
-    $$f(\omega)\sim a\,\omega^{\alpha-1}L(1/\omega),
-      \qquad a&gt;0,\quad0&lt;\alpha&lt;2,$$
-    <p>where $L$ is slowly varying. Then, for each fixed $T&gt;0$,</p>
+    <p>Assume now that $\mu(\{0\})=0$, put $F(x)=\mu((0,x])$, and suppose that the cumulative
+      spectral mass is regularly varying:</p>
+    $$F(x)\sim b\,x^\alpha L(1/x),
+      \qquad b&gt;0,\quad0&lt;\alpha&lt;2,$$
+    <p>where $L$ is slowly varying. No density is required. Then, for each fixed $T&gt;0$,</p>
     <div class="equation-card">
     $$\operatorname{Var}A_\varepsilon(T)
-      \sim\frac{a\pi}{\Gamma(3-\alpha)\sin(\pi\alpha/2)}
+      \sim\frac{\alpha b\pi}{\Gamma(3-\alpha)\sin(\pi\alpha/2)}
       T^{2-\alpha}\varepsilon^\alpha L(T/\varepsilon).$$
     </div>
-    <p>To prove it, substitute $x=\omega T/\varepsilon$ in the exact spectral identity. Potter bounds supply an
-      integrable majorant at zero and infinity, while frequencies bounded away from zero contribute only
-      $O(\varepsilon^2)$. Dominated convergence then uses</p>
+    <p>To prove it, scale the Stieltjes measures by
+      $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where $\lambda=\varepsilon/T$.
+      Regular variation gives vague convergence to $\alpha x^{\alpha-1}dx$. The kernel
+      $2(1-\cos x)/x^2$ is bounded at zero; Potter bounds and $\alpha&lt;2$ control its tail.
+      Frequencies bounded away from zero contribute only $O(\varepsilon^2)$, and the limit uses</p>
     $$\int_0^\infty(1-\cos x)x^{\alpha-3}dx
       =\frac{\pi}{2\Gamma(3-\alpha)\sin(\pi\alpha/2)}.$$
+    <p>If the measure has a density
+      $f(\omega)\sim a\omega^{\alpha-1}L(1/\omega)$, then $b=a/\alpha$ and the coefficient reduces to
+      $a\pi/[\Gamma(3-\alpha)\sin(\pi\alpha/2)]$, the density formula. The cumulative-mass theorem also
+      covers singular and pure-point spectra.</p>
     <p>This single formula includes long memory for $0&lt;\alpha&lt;1$, ordinary Green&ndash;Kubo scaling at
       $\alpha=1$ when $L$ tends to a positive constant, and zero-Green&ndash;Kubo antipersistence for
       $1&lt;\alpha&lt;2$. At the endpoint $\alpha=2$, if
@@ -82,6 +89,12 @@
       $\varepsilon^{1.7}$ variance. This is the continuous-time counterpart of the spectral regular-variation
       criterion for partial sums proved by
       <a href="./bibliography.html#DeligiannidisUtev2013">Deligiannidis and Utev (2013)</a>.</p>
+    <p>A density-free benchmark puts mass $n^{-\alpha-1}$ at frequency $1/n$. Its cumulative mass satisfies</p>
+    $$F(x)=\sum_{n\ge\lceil1/x\rceil}n^{-\alpha-1}\sim\frac{x^\alpha}{\alpha},$$
+    <p>so the theorem applies although the measure is purely atomic. For $\alpha=1.3$, the certificate evaluates
+      the exact Fej&eacute;r sum using a direct finite sum and an independent Hurwitz-zeta tail. It finds order
+      $1.300596$ and leading-constant ratio $1.000240$. The example also emphasizes that zero spectral mass at
+      frequency zero is an observable-level averaging condition: atoms at nonzero frequencies need not disappear.</p>
 
     <h2>Four covariance regimes</h2>
     <h3>Integrable correlation</h3>
@@ -227,6 +240,9 @@
       $5.33\times10^{-15}$. For the oscillatory-band example above, independent covariance and spectral integration
       agree within $2.95\times10^{-17}$; the measured order is $1.697454$, the asymptotic ratio is $0.992431$, and
       the covariance changes sign 3,151 times on the deterministic mesh $20\le t\le2000$.</p>
+    <p>For the pure-point spectrum, the cumulative-mass ratio at $x=2^{-20}$ is $1.000000620$.
+      Two independently truncated Fej&eacute;r sums agree within $8.67\times10^{-19}$; the measured variance order
+      and asymptotic ratio are $1.300596$ and $1.000240$.</p>
 
     <h2>A bounded positive volatility counterexample</h2>
     <p>For $0&lt;\alpha&lt;1$, let $G_t$ be a centered stationary Gaussian process with correlation</p>
