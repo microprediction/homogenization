@@ -963,6 +963,83 @@ def verify_real_spectrum_all_maturities():
           f"{minimum_relative_generic_determinant:.3e}")
 
 
+def verify_long_end_conditioning():
+    """Sharp singular-value rates when a maturity design is translated right."""
+    # Scale the real-spectrum nonreversible example so that all asymptotic
+    # directions remain resolvable in ordinary double precision.  The feature
+    # has a nonzero coefficient in each nonconstant eigenmode.
+    reversible_part = np.array([
+        [-1.0, 1.0, 0.0, 0.0],
+        [1.0, -3.0, 2.0, 0.0],
+        [0.0, 2.0, -5.0, 3.0],
+        [0.0, 0.0, 3.0, -3.0],
+    ]) + 0.2 * (np.ones((4, 4)) - 4.0 * np.eye(4))
+    circulation = 0.1 * np.array([
+        [0.0, 1.0, -1.0, 0.0],
+        [-1.0, 0.0, 1.0, 0.0],
+        [1.0, -1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+    ])
+    Q = 0.25 * (reversible_part + circulation)
+    eigenvalues, modes = np.linalg.eig(Q)
+    ordering = np.argsort(-eigenvalues.real)
+    eigenvalues = eigenvalues[ordering].real
+    modes = modes[:, ordering].real
+    modes[:, 0] = 1.0
+    rates = -eigenvalues[1:]
+    assert np.all(np.diff(rates) > 0.5)
+    feature = modes[:, 1:] @ np.array([1.0, 0.7, -0.4])
+
+    offsets = np.array([0.2, 0.8, 1.5])
+    translations = np.arange(4.0, 17.0, 2.0)
+    spectra = []
+    determinants = []
+    for translation in translations:
+        response = transient_response_matrix(
+            Q, feature[:, None], translation + offsets)
+        augmented = np.column_stack([np.ones(4), response])
+        spectra.append(np.linalg.svd(augmented, compute_uv=False))
+        determinants.append(abs(np.linalg.det(augmented)))
+        assert np.linalg.matrix_rank(augmented, tol=1e-13) == 4
+    spectra = np.asarray(spectra)
+    determinants = np.asarray(determinants)
+
+    # There are two O(1) directions: normalization and the common limiting
+    # response.  The remaining singular values have rates a_1 and a_2, not
+    # a_2 and a_3; the fastest mode is omitted from the leading determinant.
+    fitted_rates = -np.array([
+        np.polyfit(translations[-4:], np.log(spectra[-4:, index]), 1)[0]
+        for index in range(4)
+    ])
+    determinant_rate = -np.polyfit(
+        translations[-4:], np.log(determinants[-4:]), 1)[0]
+    condition_rate = np.polyfit(
+        translations[-4:],
+        np.log(spectra[-4:, 0] / spectra[-4:, -1]), 1)[0]
+    assert np.max(np.abs(fitted_rates[:2])) < 0.003
+    assert abs(fitted_rates[2] - rates[0]) < 0.002
+    assert abs(fitted_rates[3] - rates[1]) < 0.002
+    assert abs(determinant_rate - rates[:2].sum()) < 0.002
+    assert abs(condition_rate - rates[1]) < 0.003
+
+    scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
+    scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
+    scaled_determinants = determinants * np.exp(
+        rates[:2].sum() * translations)
+    assert abs(scaled_weak[-1] / scaled_weak[-2] - 1.0) < 0.002
+    assert abs(scaled_weakest[-1] / scaled_weakest[-2] - 1.0) < 0.002
+    assert abs(scaled_determinants[-1] / scaled_determinants[-2] - 1.0) < 1e-5
+
+    print("\nSharp long-end observability conditioning")
+    print(f"nonzero decay rates: {rates}")
+    print(f"measured singular-value rates: {fitted_rates}")
+    print(f"measured determinant rate: {determinant_rate:.9f}")
+    print(f"measured condition-number rate: {condition_rate:.9f}")
+    print("terminal scaled weak singular values: "
+          f"{scaled_weak[-1]:.9f}, {scaled_weakest[-1]:.9f}")
+    print(f"terminal scaled determinant: {scaled_determinants[-1]:.9f}")
+
+
 def verify_initial_mixture_observability():
     """Boundary-layer maturities can identify more than the outer projection."""
     Q = np.array([
@@ -1321,6 +1398,7 @@ def main():
     verify_arbitrary_prior_rank()
     verify_krylov_observability()
     verify_real_spectrum_all_maturities()
+    verify_long_end_conditioning()
     verify_initial_mixture_observability()
 
     for T in (0.2, 1.0, 3.0, 5.0):
@@ -1345,7 +1423,8 @@ def main():
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
-        "three-state exceptional-set observability, shape identities, "
+        "three-state exceptional-set observability, sharp long-end conditioning, "
+        "shape identities, "
         "known-start expansion, and explicit bounds"
     )
 

@@ -397,6 +397,52 @@
       The ordinary and confluent cases are the classical exponential
       Chebyshev/total-positivity mechanism developed by
       <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
+
+    <h3>Sharp conditioning when all maturities move to the long end</h3>
+    <p>Exact rank at every finite maturity does not imply a uniformly stable inverse.
+      The simple real-spectrum case above gives the sharp loss. Fix distinct offsets
+      $c_1&lt;\cdots&lt;c_r$ and translate the entire scaled-maturity design by $M$:</p>
+    $$A_M=[{\bf1}\ R(M+c_1)\ \cdots\ R(M+c_r)].$$
+    <p>Order its singular values as $\sigma_1(A_M)\ge\cdots\ge\sigma_n(A_M)$.
+      If $0&lt;a_1&lt;\cdots&lt;a_r$, the scalar feature is cyclic, and $M+c_1&gt;0$, then</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \sigma_1(A_M),\sigma_2(A_M)&amp;=\Theta(1),\\
+      \sigma_{j+2}(A_M)&amp;=\Theta(e^{-a_jM}),
+        &&j=1,\ldots,r-1,\\
+      |\det A_M|&amp;=\Theta\!\left(
+        e^{-M(a_1+\cdots+a_{r-1})}\right),\\
+      \kappa_2(A_M)&amp;=\Theta(e^{a_{r-1}M}).
+    \end{aligned}$$
+    </div>
+    <p>Thus all $r$ distinct maturities retain exact rank for every finite $M$, while
+      the weakest prior direction vanishes at the <em>second-fastest</em> decay rate.
+      The fastest rate $a_r$ does not enter the leading determinant.</p>
+    <p>To see why, use the eigenbasis and remove the fixed nonzero modal factors. The
+      response block becomes
+      $B_M=[1-e^{-a_k(M+c_j)}]_{k,j=1}^r$. Keep its first column and subtract it
+      from every other column. With
+      $D_M=\operatorname{diag}(e^{-a_1M},\ldots,e^{-a_rM})$, the result is</p>
+    $$\left[\,{\bf1}-D_Mz_1\ \middle|\
+      D_M(z_1-z_2)\ \middle|\ \cdots\ \middle|\ D_M(z_1-z_r)\,\right],
+      \qquad (z_j)_k=e^{-a_kc_j}.$$
+    <p>The exponential Chebyshev property makes every required leading minor of the
+      difference block nonzero. Exterior powers then have successive orders
+      $1,e^{-a_1M},e^{-M(a_1+a_2)},\ldots,
+      e^{-M(a_1+\cdots+a_{r-1})}$, which gives the singular-value hierarchy by
+      taking consecutive ratios. In the determinant the unscaled common column uses
+      the fastest row, leaving precisely the $r-1$ slower rates. Fixed eigenvector and
+      column transformations change constants, not these exponents.</p>
+    <p>A nonreversible four-state certificate has rates
+      $(0.43537897,1.02585656,2.13876447)$. Translating offsets
+      $(0.2,0.8,1.5)$ gives measured augmented singular-value rates
+      $(-0.00130,0,0.43609,1.02644)$, determinant rate $1.46123$, and
+      condition-number rate $1.02775$, against predictions
+      $(0,0,0.43538,1.02586)$, $1.46124$, and $1.02586$.
+      This result concerns transient initial-mixture observability across maturities;
+      it is not a claim about fixed-feature Green&ndash;Kubo rank or rank created by
+      integrating different contract loadings.</p>
+
     <p>An exact defective example makes the confluent case explicit. Let</p>
     $$Q_J=\begin{pmatrix}
       -8/15&amp;1/15&amp;7/15\\1/3&amp;-2/3&amp;1/3\\1/5&amp;3/5&amp;-4/5
@@ -694,7 +740,9 @@
       If $\|e^{Q_0t}R\|\le Ce^{-\delta t}$, then $\mathcal O_m$ lies within
       $O(e^{-m\delta T_{\min}})$ of $[HF\ \cdots\ HF]$. Hence every singular value beyond
       $\operatorname{rank}F$ is exponentially small: exact finite-$m$ rank can survive,
-      but the extra identification is exponentially ill-conditioned. This is why the
+      but the extra identification is exponentially ill-conditioned. The sharp theorem
+      above resolves every exponent when the scaled maturities have fixed gaps and a
+      simple real spectrum. This is why the
       fixed-maturity first-order theorem correctly retains only $\nu HF$.</p>
     <p>The actual bond curve has a compatible, but one order smaller, initial layer because
       $g(0)=0$. Put $T=\tau/m$, $u=\theta-\bar\theta{\bf1}$, and
