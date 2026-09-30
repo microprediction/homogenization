@@ -1,6 +1,6 @@
-"""Certificate for the maturity-uniform two-state initial-layer formulas.
+"""Certificate for maturity-uniform finite-state initial-layer formulas.
 
-The checks distinguish seven statements which are easy to conflate:
+The checks distinguish nine statements which are easy to conflate:
 
 1. For arbitrary q(0), adding the first layer makes the first-order error
    uniformly O(eps**2), while adding both layer orders makes the error
@@ -28,6 +28,9 @@ The checks distinguish seven statements which are easy to conflate:
    It covers arbitrary signed or complex initial vectors, including zero
    stationary mean, with the same gain of one power per Picard iterate and a
    computable a posteriori component bound.
+9. The direct construction extends to every irreducible finite-state chain.
+   A defective nonreversible three-state example checks one-power gains and
+   the semigroup-based a posteriori bound without diagonalizing the generator.
 """
 import json
 import math
@@ -81,6 +84,108 @@ def exact_curve_asymmetric(eps, g1, g2, rate12, rate21, grid, initial=(1.0, 1.0)
                     max_step=min(0.002, eps / (8 * (rate12 + rate21))))
     assert sol.success
     return sol.sol(grid)
+
+
+def stationary_distribution(generator):
+    """Stationary row vector of an irreducible finite-state generator."""
+    generator = np.asarray(generator, dtype=float)
+    system = generator.T.copy()
+    system[-1] = 1.0
+    right = np.zeros(generator.shape[0])
+    right[-1] = 1.0
+    return np.linalg.solve(system, right)
+
+
+def exact_curve_finite(eps, generator, forcing, initial, grid):
+    """Original finite-state linear system, integrated independently."""
+    generator = np.asarray(generator, dtype=float)
+    initial = np.asarray(initial, dtype=float)
+
+    def rhs(t, value):
+        g = np.array([function(t) for function in forcing])
+        return generator @ value / eps + g * value
+
+    solution = solve_ivp(
+        rhs, (0, float(grid[-1])), initial, method='DOP853',
+        rtol=3e-12, atol=3e-14, dense_output=True,
+        max_step=min(0.001, eps / 16),
+    )
+    assert solution.success
+    return solution.sol(grid)
+
+
+def finite_chain_picard_components(
+    eps, generator, forcing, initial, grid, iterations, return_details=False,
+):
+    """Direct stationary/centered Volterra iteration for a finite chain."""
+    generator = np.asarray(generator, dtype=float)
+    initial = np.asarray(initial, dtype=float)
+    dimension = generator.shape[0]
+    one = np.ones(dimension)
+    pi = stationary_distribution(generator)
+    projection = np.eye(dimension) - np.outer(one, pi)
+    mean0 = float(pi @ initial)
+    centered0 = projection @ initial
+
+    def g_vector(t):
+        return np.array([function(t) for function in forcing])
+
+    def centered_forcing(t):
+        g = g_vector(t)
+        return g - float(pi @ g)
+
+    layer_solution = solve_ivp(
+        lambda t, value: generator @ value / eps,
+        (0, float(grid[-1])), centered0, method='DOP853',
+        rtol=3e-13, atol=3e-15, dense_output=True,
+        max_step=min(0.001, eps / 18),
+    )
+    assert layer_solution.success
+    centered = lambda t: layer_solution.sol(t)
+
+    for _ in range(iterations):
+        previous = centered
+
+        mean_solution = solve_ivp(
+            lambda t, value: [float(pi @ (centered_forcing(t) * previous(t)))],
+            (0, float(grid[-1])), [mean0], method='DOP853',
+            rtol=3e-13, atol=3e-15, dense_output=True, max_step=0.001,
+        )
+        assert mean_solution.success
+
+        def centered_rhs(t, value):
+            argument = float(mean_solution.sol(t)[0]) * one + previous(t)
+            source = projection @ (centered_forcing(t) * argument)
+            return generator @ value / eps + source
+
+        centered_solution = solve_ivp(
+            centered_rhs, (0, float(grid[-1])), centered0, method='DOP853',
+            rtol=3e-13, atol=3e-15, dense_output=True,
+            max_step=min(0.001, eps / 18),
+        )
+        assert centered_solution.success
+        centered = lambda t, solution=centered_solution: solution.sol(t)
+
+    final_mean_solution = solve_ivp(
+        lambda t, value: [float(pi @ (centered_forcing(t) * centered(t)))],
+        (0, float(grid[-1])), [mean0], method='DOP853',
+        rtol=3e-13, atol=3e-15, dense_output=True, max_step=0.001,
+    )
+    assert final_mean_solution.success
+    common_solution = solve_ivp(
+        lambda t, value: [float(pi @ g_vector(t))],
+        (0, float(grid[-1])), [0.0], method='DOP853',
+        rtol=3e-13, atol=3e-15, dense_output=True, max_step=0.001,
+    )
+    assert common_solution.success
+
+    centered_values = centered(grid)
+    mean_values = final_mean_solution.sol(grid)[0]
+    common = np.exp(common_solution.sol(grid)[0])
+    components = common * (one[:, None] * mean_values + centered_values)
+    if return_details:
+        return components, centered_values, mean_values
+    return components
 
 
 def picard_components_asymmetric(
@@ -615,6 +720,108 @@ def zero_mean_initial_data():
     )
 
 
+def defective_finite_chain():
+    """Check the general direct theorem on a defective three-state chain."""
+    one = np.ones(3)
+    u = np.array([1.0, -1.0, 0.0])
+    w = np.array([1.0, 1.0, -2.0])
+    nilpotent = 0.1 * np.outer(u, w)
+    projection = np.ones((3, 3)) / 3.0
+    generator = projection - np.eye(3) + nilpotent
+    pi = stationary_distribution(generator)
+    centered_projection = np.eye(3) - np.outer(one, pi)
+    assert np.max(np.abs(generator @ one)) < 1e-14
+    assert np.max(np.abs(pi @ generator)) < 1e-14
+    assert np.max(np.abs(nilpotent @ nilpotent)) < 1e-14
+
+    forcing = (
+        lambda t: -0.30 + 0.20 * math.sin(1.1 * t),
+        lambda t: 0.40 - 0.10 * math.exp(-0.7 * t),
+        lambda t: 0.70 + 0.15 * math.cos(0.9 * t),
+    )
+    initial = np.array([1.0, -0.4, -0.6])
+    mean0 = float(pi @ initial)
+    centered0 = centered_projection @ initial
+    assert abs(mean0) < 1e-15
+
+    # On the centered space, Q = -I + N with N^2 = 0, hence
+    # exp(t Q)P = exp(-t)(P+tN).  With gamma=1/2,
+    # M=1+2||N||/e is an explicit Euclidean semigroup bound.
+    gamma = 0.5
+    semigroup_constant = 1.0 + 2.0 * np.linalg.norm(nilpotent, 2) / math.e
+    dimension_factor = np.linalg.norm(one)
+    # On 0 <= t <= T_MAX, the three diagonal entries lie respectively in
+    # [-0.30, -0.10], [0.30, 0.40], and [0.70, 0.85].  Therefore their
+    # range is at most 1.15.  These closed-form bounds deliberately avoid
+    # turning a sampled maximum into a purported rigorous certificate.
+    forcing_bound = 1.15
+    mean_functional_bound = forcing_bound / math.sqrt(3.0)
+    common_bound = 0.85
+    radius = 2.75
+    errors = [[], [], []]
+    bounds = [[], []]
+    rows = []
+    for eps in EPSILONS:
+        grid = np.unique(np.r_[
+            np.linspace(0, T_MAX, 3001),
+            eps * np.linspace(0, 10, 1201),
+        ])
+        grid = grid[grid <= T_MAX]
+        exact = exact_curve_finite(
+            eps, generator, forcing, initial, grid
+        )
+        details = [
+            finite_chain_picard_components(
+                eps, generator, forcing, initial, grid, iterations,
+                return_details=True,
+            )
+            for iterations in range(3)
+        ]
+        actual = [
+            float(np.max(np.linalg.norm(value[0] - exact, axis=0)))
+            for value in details
+        ]
+
+        history_factor = 1.0 + dimension_factor * mean_functional_bound * T_MAX
+        contraction = (
+            semigroup_constant * eps * forcing_bound * history_factor / gamma
+        )
+        invariant_margin = radius - semigroup_constant * np.linalg.norm(centered0) - (
+            semigroup_constant * eps * forcing_bound / gamma
+            * (abs(mean0) * dimension_factor + history_factor * radius)
+        )
+        assert invariant_margin > 0.0 and contraction < 1.0
+        component_factor = math.exp(T_MAX * common_bound) * history_factor
+        posterior = []
+        for k in (1, 2):
+            increment = float(np.max(np.linalg.norm(
+                details[k][1] - details[k - 1][1], axis=0
+            )))
+            posterior.append(
+                component_factor * contraction * increment / (1.0 - contraction)
+            )
+        for k in range(3):
+            errors[k].append(actual[k])
+        for k in range(2):
+            bounds[k].append(posterior[k])
+        rows.append(dict(
+            epsilon=float(eps), direct_0_sup=actual[0],
+            direct_1_sup=actual[1], direct_2_sup=actual[2],
+            direct_1_aposteriori_bound=posterior[0],
+            direct_2_aposteriori_bound=posterior[1],
+            contraction_factor=float(contraction),
+            invariant_margin=float(invariant_margin),
+            initial_match=float(max(
+                np.max(np.abs(value[0][:, 0] - initial)) for value in details
+            )),
+        ))
+    return (
+        rows, *(order(values) for values in errors),
+        *(order(values) for values in bounds), generator.tolist(), pi.tolist(),
+        initial.tolist(), mean0, semigroup_constant, gamma,
+    )
+
+
 def main():
     nz, nz_outer, nz_first, nz_second, nz_fixed = nonzero_start()
     z, z_outer, z_comp, cross = zero_start()
@@ -628,6 +835,10 @@ def main():
     (zero_mean_rows, zero_mean_direct0, zero_mean_direct1,
      zero_mean_direct2, zero_mean_bound1, zero_mean_bound2,
      zero_mean_initial, zero_mean_m0, zero_mean_d0) = zero_mean_initial_data()
+    (finite_rows, finite_direct0, finite_direct1, finite_direct2,
+     finite_bound1, finite_bound2, finite_generator, finite_pi,
+     finite_initial, finite_m0, finite_semigroup_constant,
+     finite_gamma) = defective_finite_chain()
     print('1. q(0) != 0: outer, first composite, and second composite')
     for row in nz:
         print(f"   eps={row['epsilon']:.6f} outer sup={row['outer_sup']:.3e} "
@@ -688,6 +899,19 @@ def main():
           f'{zero_mean_direct0:.6f}/{zero_mean_direct1:.6f}/'
           f'{zero_mean_direct2:.6f}, bounds 1/2 '
           f'{zero_mean_bound1:.6f}/{zero_mean_bound2:.6f}')
+    print('7. defective irreducible three-state direct recursion')
+    for row in finite_rows:
+        print(f"   eps={row['epsilon']:.6f} direct 0/1/2="
+              f"{row['direct_0_sup']:.3e}/{row['direct_1_sup']:.3e}/"
+              f"{row['direct_2_sup']:.3e} bounds 1/2="
+              f"{row['direct_1_aposteriori_bound']:.3e}/"
+              f"{row['direct_2_aposteriori_bound']:.3e} "
+              f"q={row['contraction_factor']:.6f} "
+              f"margin={row['invariant_margin']:.6f}")
+    print(f'   observed orders: direct 0/1/2 '
+          f'{finite_direct0:.6f}/{finite_direct1:.6f}/{finite_direct2:.6f}, '
+          f'bounds 1/2 {finite_bound1:.6f}/{finite_bound2:.6f}; '
+          f'M={finite_semigroup_constant:.6f}, gamma={finite_gamma:.2f}')
     assert 0.9 < nz_outer < 1.1
     assert 1.85 < nz_first < 2.15
     assert 2.8 < nz_second < 3.2
@@ -727,6 +951,16 @@ def main():
         and row['direct_2_sup'] <= row['direct_2_aposteriori_bound']
         for row in zero_mean_rows)
     assert max(row['initial_match'] for row in zero_mean_rows) < 1e-13
+    assert 0.8 < finite_direct0 < 1.2
+    assert 1.75 < finite_direct1 < 2.25
+    assert 2.7 < finite_direct2 < 3.3
+    assert 1.75 < finite_bound1 < 2.25
+    assert 2.7 < finite_bound2 < 3.3
+    assert all(
+        row['direct_1_sup'] <= row['direct_1_aposteriori_bound']
+        and row['direct_2_sup'] <= row['direct_2_aposteriori_bound']
+        for row in finite_rows)
+    assert max(row['initial_match'] for row in finite_rows) < 1e-12
     out = dict(nonzero_start=dict(
                    rows=nz, outer_sup_order=nz_outer,
                    first_composite_sup_order=nz_first,
@@ -762,6 +996,17 @@ def main():
         direct_2_sup_order=zero_mean_direct2,
         direct_1_bound_order=zero_mean_bound1,
         direct_2_bound_order=zero_mean_bound2)
+    out['defective_finite_chain'] = dict(
+        rows=finite_rows, generator=finite_generator,
+        stationary_distribution=finite_pi, initial=finite_initial,
+        weighted_mean=finite_m0,
+        semigroup_constant=finite_semigroup_constant,
+        semigroup_decay=finite_gamma,
+        direct_0_sup_order=finite_direct0,
+        direct_1_sup_order=finite_direct1,
+        direct_2_sup_order=finite_direct2,
+        direct_1_bound_order=finite_bound1,
+        direct_2_bound_order=finite_bound2)
     (HERE / 'uniform_layer_results.json').write_text(json.dumps(out, indent=2) + '\n')
     print('PASS')
 

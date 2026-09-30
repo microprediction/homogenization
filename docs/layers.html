@@ -421,7 +421,7 @@
     <p>If $M_\delta=\|\delta\|_\infty$ and</p>
     $$|d_0|+\frac{\varepsilon M_\delta}{\rho}
       \{|m_0|+(|s|+vM_\delta T)R\}\le R,
-      \qquad q_\varepsilon^{\rm dir}:=rac{\varepsilon M_\delta}{\rho}
+      \qquad q_\varepsilon^{\rm dir}:=\frac{\varepsilon M_\delta}{\rho}
       (|s|+vM_\delta T)<1,$$
     <p>the radius-$R$ ball is invariant and the same Banach estimate applies with
       $q_\varepsilon^{\rm dir}$. The component multiplier is now simply</p>
@@ -435,6 +435,54 @@
       $1.008$, $2.021$, and $3.040$. The computable bounds have orders $2.016$ and $3.028$, dominate every
       measured error, and use a maximum contraction factor $0.028468$. Every iterate still reproduces both
       terminal components to numerical precision.</p>
+
+    <h3>The direct theorem for any finite chain</h3>
+    <p>The nonsingular construction is not intrinsically two-state. Let $Q_0$ be any irreducible finite-state
+      generator with stationary row vector $\pi^\top$, and set
+      $\Pi={\bf1}\pi^\top$, $P=I-\Pi$. Assume that, in one fixed vector norm,</p>
+    $$\|e^{tQ_0}P\|\le M e^{-\gamma t},\qquad t\ge0,$$
+    <p>which always holds in finite dimension for some $M\ge1$ and $\gamma&gt;0$. For</p>
+    $$a'=\varepsilon^{-1}Q_0a+G(t)a,qquad G(t)=\operatorname{diag}g(t),$$
+    <p>put $\bar g=\pi^\top g$, $H=G-\bar g I$, $b(t)=\int_0^t\bar g$, and decompose
+      $u=e^{-b}a=m{\bf1}+z$, where $m=\pi^\top u$ and $z=Pu$. The exact equations are</p>
+    $$m'=\pi^\top H z,qquad
+      z'=\varepsilon^{-1}Q_0z+PH(m{\bf1}+z).$$
+    <p>Thus, for any continuous centered path $z$, define</p>
+    $$m_z(t)=m_0+\int_0^t\pi^\top H(s)z(s)ds,$$
+    <div class="equation-card">
+    $$(\mathcal T_\varepsilon z)(t)=e^{tQ_0/\varepsilon}z_0
+      +\int_0^t e^{(t-s)Q_0/\varepsilon}P H(s)
+      \{m_z(s){\bf1}+z(s)\}\,ds.$$
+    </div>
+    <p>Start with the exact order-zero layer $z^{[0]}=e^{tQ_0/\varepsilon}z_0$, iterate
+      $z^{[k+1]}=\mathcal T_\varepsilon z^{[k]}$, and reconstruct
+      $a^{[k]}=e^b(m_{z^{[k]}}{\bf1}+z^{[k]})$. No eigenvector basis and no division by $m$ is used.</p>
+    <p>Here is a finite-$\varepsilon$ stopping theorem. Put
+      $h=\|H\|_\infty$, $\ell=\|\pi^\top H\|_\infty$,
+      $c=\|{\bf1}\|$, and $B=\|\bar g\|_\infty$. If</p>
+    $$M\|z_0\|+\frac{M\varepsilon h}{\gamma}
+      \{|m_0|c+(1+c\ell T)R\}\le R,
+      \qquad q_\varepsilon:=\frac{M\varepsilon h}{\gamma}(1+c\ell T)<1,$$
+    <p>then $\mathcal T_\varepsilon$ preserves the radius-$R$ ball and contracts there by $q_\varepsilon$. Therefore,
+      for $k\ge1$,</p>
+    <div class="equation-card">
+    $$\|a-a^{[k]}\|_\infty\le
+      e^{BT}(1+c\ell T)\frac{q_\varepsilon}{1-q_\varepsilon}
+      \|z^{[k]}-z^{[k-1]}\|_\infty.$$
+    </div>
+    <p>The right-hand side is completely computable. Since $q_\varepsilon=O(\varepsilon)$ and the first Duhamel
+      correction is $O(\varepsilon)$, every fixed iterate satisfies
+      $\|a-a^{[k]}\|_\infty=O(\varepsilon^{k+1})$ on a bounded horizon. This includes nonreversible and defective
+      generators, arbitrary signed or complex terminal vectors, and paths on which the stationary component vanishes.
+      It is a bounded-horizon statement; neither $T$ nor the iteration count is allowed to grow silently with
+      $1/\varepsilon$.</p>
+    <p>The certificate uses an irreducible nonreversible three-state generator with a Jordan block,
+      $Q_0=\Pi-I+0.1uv^\top$, where $u=(1,-1,0)^\top$ and $v=(1,1,-2)^\top$. Since the nilpotent term $N=0.1uv^\top$
+      has $N^2=0$, the centered semigroup is exactly $e^{-t}(P+tN)$; the proof uses the explicit bound
+      $M=1+2\|N\|/e=1.254874$ and $\gamma=1/2$. For signed initial data with zero stationary mean, iterates
+      $k=0,1,2$ have measured component-error orders $0.995$, $1.983$, and $2.956$. Closed-form forcing bounds
+      (rather than sampled suprema) give computable error-bound orders $2.203$ and $3.185$; those bounds dominate
+      every measured error and have maximum contraction factor $0.393246$.</p>
   </main>
 
   <footer>
