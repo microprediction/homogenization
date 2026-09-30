@@ -2407,5 +2407,27 @@
   "doi": "",
   "url": "https://jmlr.org/papers/v25/23-1553.html",
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Esseen1945",
+  "authors": "Esseen, C.-G.",
+  "year": 1945,
+  "title": "Fourier analysis of distribution functions: A mathematical study of the Laplace-Gaussian law",
+  "venue": "Acta Mathematica 77:1-125",
+  "doi": "10.1007/bf02392223",
+  "url": "https://doi.org/10.1007/bf02392223",
+  "annotation": "Develops the Fourier method behind central-limit refinements for lattice laws, including the discontinuous lattice correction represented here by the half-integer tail coordinate."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "DattaMcCormick1993",
+  "authors": "Datta, S. and McCormick, W. P.",
+  "year": 1993,
+  "title": "On the first-order Edgeworth expansion for a Markov chain",
+  "venue": "Journal of Multivariate Analysis 44(2):345-359",
+  "doi": "10.1006/jmva.1993.1020",
+  "url": "https://doi.org/10.1006/jmva.1993.1020",
+  "annotation": "Establishes a first-order Edgeworth expansion for sums related to a homogeneous Markov chain and corrects inaccuracies in earlier Markov-chain formulations."
  }
 ]
