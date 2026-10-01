@@ -149,17 +149,31 @@
       spectral mass is regularly varying:</p>
     $$F(x)\sim b\,x^\alpha L(1/x),
       \qquad b&gt;0,\quad0&lt;\alpha&lt;2,$$
-    <p>where $L$ is slowly varying. No density is required. Then, for each fixed $T&gt;0$,</p>
+    <p>where $L$ is slowly varying. No density is required. More generally, as
+      $\varepsilon\downarrow0$, let the maturity $T_\varepsilon&gt;0$ vary and assume only that</p>
+    $$R_\varepsilon=T_\varepsilon/\varepsilon\longrightarrow\infty.$$
+    <p>Then</p>
     <div class="equation-card">
-    $$\operatorname{Var}A_\varepsilon(T)
+    $$\operatorname{Var}A_\varepsilon(T_\varepsilon)
       \sim\frac{\alpha b\pi}{\Gamma(3-\alpha)\sin(\pi\alpha/2)}
-      T^{2-\alpha}\varepsilon^\alpha L(T/\varepsilon).$$
+      T_\varepsilon^{2-\alpha}\varepsilon^\alpha
+      L(T_\varepsilon/\varepsilon).$$
     </div>
+    <p>This includes fixed maturity, shrinking maturity with many fast correlation times still observed, and growing
+      maturity. It is a joint-scale variance theorem, not a functional limit theorem.</p>
     <p>To prove it, scale the Stieltjes measures by
-      $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where $\lambda=\varepsilon/T$.
+      $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where
+      $\lambda=\varepsilon/T_\varepsilon=R_\varepsilon^{-1}$.
       Regular variation gives vague convergence to $\alpha x^{\alpha-1}dx$. The kernel
       $2(1-\cos x)/x^2$ is bounded at zero; Potter bounds and $\alpha&lt;2$ control its tail.
-      Frequencies bounded away from zero contribute only $O(\varepsilon^2)$, and the limit uses</p>
+      Equivalently, the exact scale-collapse identity</p>
+    $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{T_\varepsilon^2}
+      =\int_{(0,\infty)}
+      \frac{2\{1-\cos(R_\varepsilon\omega)\}}
+      {(R_\varepsilon\omega)^2}\,\mu(d\omega)$$
+    <p>shows that the normalized variance depends on $(T_\varepsilon,\varepsilon)$ only through
+      $R_\varepsilon$. Frequencies bounded away from zero are negligible relative to the regularly varying term,
+      and the limit uses</p>
     $$\int_0^\infty(1-\cos x)x^{\alpha-3}dx
       =\frac{\pi}{2\Gamma(3-\alpha)\sin(\pi\alpha/2)}.$$
     <p>If the measure has a density
@@ -171,11 +185,13 @@
       $1&lt;\alpha&lt;2$. The cumulative formulation also survives at the critical endpoint. If</p>
     $$F(x)\sim b x^2L(1/x),\qquad
       H(x)=\int_1^xL(s)\frac{ds}{s}\longrightarrow\infty,$$
-    <p>then, still without assuming a density,</p>
+    <p>then, still without assuming a density and for every joint path
+      $T_\varepsilon/\varepsilon\to\infty$,</p>
     <div class="equation-card">
-    $$\operatorname{Var}A_\varepsilon(T)\sim4b\varepsilon^2H(T/\varepsilon).$$
+    $$\operatorname{Var}A_\varepsilon(T_\varepsilon)
+      \sim4b\varepsilon^2H(T_\varepsilon/\varepsilon).$$
     </div>
-    <p>For the proof, put $R=T/\varepsilon$ and
+    <p>For the proof, put $R=T_\varepsilon/\varepsilon$ and
       $I(R)=\int_{(0,\infty)}(1-\cos(R\omega))\omega^{-2}\mu(d\omega)$.
       On $(0,R^{-1}]$, the inequality $1-\cos x\leq x^2/2$ gives an $O(L(R))$ contribution, while every
       interval bounded away from zero contributes $O(1)$. On $[R^{-1},\eta]$, Stieltjes integration by parts,
@@ -222,6 +238,11 @@
       against the limiting value $2$; at the smallest tested $\varepsilon=2^{-20}$ the leading-term ratio is
       $1.025526$. The deliberately slow logarithmic convergence distinguishes this endpoint from the power-law
       cases.</p>
+    <p>A separate joint-scale certificate evaluates the Gamma spectral benchmark along three paths with the same
+      $R=T_\varepsilon/\varepsilon$: fixed maturity, $T_\varepsilon=R^{-1/2}\downarrow0$, and
+      $T_\varepsilon=R^{1/2}\uparrow\infty$. After division by $T_\varepsilon^2$, all three exact variances agree
+      to machine precision. At $R=2^{24}$, the power-law leading ratio is $0.992367$ and the critical logarithmic
+      ratio is $1.000000000000$ on every path.</p>
 
     <h2>Four covariance regimes</h2>
     <h3>Integrable correlation</h3>

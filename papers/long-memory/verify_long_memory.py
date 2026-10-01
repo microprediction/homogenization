@@ -279,6 +279,74 @@ def verify_measure_level_critical_theorem():
     return mass_ratio, summation_error, log_slope, ratio
 
 
+def verify_joint_maturity_spectral_theorem():
+    """Check that the spectral asymptotic only needs T/epsilon -> infinity.
+
+    The exact normalized variance depends on epsilon and maturity only through
+    R=T/epsilon.  We evaluate the same R grid along fixed-, vanishing-, and
+    growing-maturity paths.  The paths therefore have to collapse before the
+    asymptotic approximation is even invoked.
+    """
+    scales = 2.0 ** np.arange(8, 25)
+    maturities = (
+        np.ones_like(scales),
+        scales ** -0.5,
+        scales ** 0.5,
+    )
+
+    alpha = 1.7
+    coefficient = spectral_abelian_constant(
+        alpha, density_coefficient=1.0 / math.gamma(alpha)
+    )
+    power_ratios = []
+    normalized_power = []
+    critical_ratios = []
+    normalized_critical = []
+    for maturity in maturities:
+        epsilon = maturity / scales
+        power_variance = np.array([
+            antipersistent_variance(eps, alpha, term)
+            for eps, term in zip(epsilon, maturity)
+        ])
+        power_leading = (
+            coefficient * maturity ** (2.0 - alpha)
+            * epsilon ** alpha
+        )
+        power_ratios.append(power_variance / power_leading)
+        normalized_power.append(power_variance / maturity ** 2)
+
+        critical_variance = np.array([
+            antipersistent_variance(eps, 2.0, term)
+            for eps, term in zip(epsilon, maturity)
+        ])
+        critical_leading = 2.0 * epsilon ** 2 * np.log(scales)
+        critical_ratios.append(critical_variance / critical_leading)
+        normalized_critical.append(critical_variance / maturity ** 2)
+
+    power_ratios = np.array(power_ratios)
+    normalized_power = np.array(normalized_power)
+    critical_ratios = np.array(critical_ratios)
+    normalized_critical = np.array(normalized_critical)
+    power_collapse_error = float(np.max(np.ptp(normalized_power, axis=0)))
+    critical_collapse_error = float(np.max(
+        np.ptp(normalized_critical, axis=0)
+    ))
+    power_terminal_spread = float(np.ptp(power_ratios[:, -1]))
+    critical_terminal_spread = float(np.ptp(critical_ratios[:, -1]))
+    power_terminal_ratio = float(power_ratios[0, -1])
+    critical_terminal_ratio = float(critical_ratios[0, -1])
+
+    assert power_collapse_error < 3e-15
+    assert critical_collapse_error < 3e-15
+    assert power_terminal_spread < 3e-15
+    assert critical_terminal_spread < 3e-15
+    assert abs(power_terminal_ratio - 1.0) < 0.009
+    assert abs(critical_terminal_ratio - 1.0) < 1e-12
+    return (power_collapse_error, critical_collapse_error,
+            power_terminal_spread, critical_terminal_spread,
+            power_terminal_ratio, critical_terminal_ratio)
+
+
 def band_variance(epsilon, weight, lower, upper, maturity=1.0):
     """Exact contribution from a flat spectral band.
 
@@ -589,6 +657,7 @@ def main():
     spectral_abelian = verify_spectral_abelian_theorem()
     measure_level = verify_measure_level_spectral_theorem()
     measure_level_critical = verify_measure_level_critical_theorem()
+    joint_maturity = verify_joint_maturity_spectral_theorem()
     regular_variation = verify_regular_variation()
     periodic_coefficient = verify_periodic_case()
 
@@ -628,6 +697,11 @@ def main():
           f"{measure_level_critical[1]:.3e}, "
           f"{measure_level_critical[2]:.6f}, "
           f"{measure_level_critical[3]:.6f}")
+    print("joint maturity power/critical collapse errors and terminal ratios: "
+          f"{joint_maturity[0]:.3e}, {joint_maturity[1]:.3e}, "
+          f"{joint_maturity[4]:.6f}, {joint_maturity[5]:.12f}")
+    print("joint maturity terminal-ratio spreads (power, critical): "
+          f"{joint_maturity[2]:.3e}, {joint_maturity[3]:.3e}")
     print("OU-mixture regular-variation ratios: "
           f"power-log {regular_variation[0]:.6f}, "
           f"critical-log^2 {regular_variation[1]:.6f}")
