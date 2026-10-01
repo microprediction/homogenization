@@ -121,6 +121,35 @@
       implied volatility is unchanged. This is an invariance at matched transformed moneyness; holding the
       <em>numeric</em> strike fixed changes moneyness and need not preserve implied volatility.</p>
 
+    <h3>Why annuity measures generally change</h3>
+    <p>The preceding cancellation is special to a single bond numeraire. Consider instead a positive bond-basket
+      numeraire, including a swap annuity,</p>
+    $$N_s^0=\sum_{j=1}^d w_jP^0(s,u_j),\qquad w_j&gt;0.$$
+    <p>Under the deterministic shift, its density relative to the common risk-neutral measure is</p>
+    <div class="equation-card">
+    $$\left.\frac{dQ^{N,\phi}}{dQ}\right|_{\mathcal F_s}
+      =\frac{A(0,s)D^0(0,s)
+      \sum_jw_jA(s,u_j)P^0(s,u_j)}
+      {\sum_jw_jA(0,u_j)P^0(0,u_j)}.$$
+    </div>
+    <p>If all maturity factors $A(s,u_j)$ coincide, the cocycle identity makes this exactly the unshifted
+      basket-measure density. Conversely, suppose invariance is to hold universally over base term-structure
+      models. Equality of the two density processes forces $N_s^\phi/N_s^0$ to be deterministic. But for a
+      positive bond-price vector $p$ that ratio is</p>
+    $$\frac{\sum_jw_jA(s,u_j)p_j}{\sum_jw_jp_j}.$$
+    <p>This weighted average is independent of $p$ if and only if all $A(s,u_j)$ are equal. Hence:</p>
+    <div class="equation-card">
+    $$\text{universal bond-basket measure invariance}
+      \quad\Longleftrightarrow\quad
+      A(s,u_1)=\cdots=A(s,u_d).$$
+    </div>
+    <p>The one-bond forward measure is the automatic $d=1$ case. A swap annuity normally contains several
+      payment dates with unequal factors, so its measure generally changes; accidental invariance in a particular
+      degenerate model is not excluded. Consequently there is no blanket deterministic-shift invariance theorem
+      for swaption distributions or their implied volatilities analogous to the bond-option result above. The
+      annuity numeraire and forward swap measure are the ones used in
+      <a href="https://doi.org/10.1007/s007800050026">Jamshidian (1997)</a>.</p>
+
     <h3>Caplets and floorlets</h3>
     <p>Take $t\le T\le\tau&lt;\tau+\Delta$ and write $q=1+\Delta K$. For the generalized bond-option
       positive part used in Appendix B, define</p>
@@ -178,7 +207,9 @@
       transport theorem for a nonlinear option on three bond maturities to $2.2\times10^{-16}$, verifies the
       forward-measure identity independently, and records the thesis counterexamples. It also checks multi-step
       forward-law invariance to $4.5\times10^{-16}$, normalized option scaling to $1.6\times10^{-16}$ and
-      transformed Black implied-volatility invariance to $8.4\times10^{-16}$. Details and
+      transformed Black implied-volatility invariance to $8.4\times10^{-16}$. For bond baskets it verifies
+      equal-factor invariance to $3.4\times10^{-16}$ and gives an explicit annuity-measure counterexample whose
+      state laws have total-variation distance $0.00289904$. Details and
       source-page locations are in
       <a href="https://github.com/microprediction/homogenization/issues/69">Issue #69</a>.</p>
   </main>

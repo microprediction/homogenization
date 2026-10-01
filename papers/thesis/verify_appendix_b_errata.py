@@ -9,7 +9,9 @@ transport identity for an arbitrary nonlinear payoff on several bond
 maturities, which shows why different payment dates cannot share one shift
 factor.  Finally, it checks that deterministic shifts leave every bond-forward
 measure unchanged and therefore preserve Black implied volatility after the
-corresponding deterministic rescaling of forward and strike.
+corresponding deterministic rescaling of forward and strike.  It also checks
+the sharp limitation: a positive bond-basket (in particular annuity) measure
+is shift-invariant only when all of its maturity factors coincide.
 """
 
 from __future__ import annotations
@@ -179,6 +181,45 @@ def forward_state_distribution(
     return base, shifted
 
 
+def basket_measure_state_distribution(
+    transition: np.ndarray,
+    rates: np.ndarray,
+    shifts: np.ndarray,
+    split: int,
+    maturities: tuple[int, ...],
+    weights: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Base and shifted state laws under a positive bond-basket numeraire."""
+    if split < 0 or any(maturity < split for maturity in maturities):
+        raise ValueError("payment maturities must not precede the split")
+    if max(maturities) > len(shifts) or np.min(weights) <= 0.0:
+        raise ValueError("need enough shifts and strictly positive weights")
+
+    kernel = np.diag(np.exp(-rates)) @ transition
+    initial = np.zeros(len(rates))
+    initial[0] = 1.0
+    prefix = initial @ np.linalg.matrix_power(kernel, split)
+    bonds = np.column_stack(
+        [
+            np.linalg.matrix_power(kernel, maturity - split)
+            @ np.ones(len(rates))
+            for maturity in maturities
+        ]
+    )
+    base_numeraire = bonds @ weights
+    base = prefix * base_numeraire / float(prefix @ base_numeraire)
+
+    maturity_factors = np.array(
+        [
+            deterministic_discount(shifts[split:maturity])
+            for maturity in maturities
+        ]
+    )
+    shifted_numeraire = bonds @ (weights * maturity_factors)
+    shifted = prefix * shifted_numeraire / float(prefix @ shifted_numeraire)
+    return base, shifted, maturity_factors
+
+
 def normal_cdf(value: float) -> float:
     """Standard normal distribution function."""
     return 0.5 * (1.0 + math.erf(value / math.sqrt(2.0)))
@@ -340,6 +381,8 @@ def main() -> None:
     largest_forward_law_error = 0.0
     largest_normalized_call_error = 0.0
     largest_implied_vol_error = 0.0
+    largest_equal_factor_basket_error = 0.0
+    largest_basket_measure_change = 0.0
     positive_option_cases = 0
 
     for _ in range(500):
@@ -434,6 +477,47 @@ def main() -> None:
             implied_vol_error,
         )
 
+        # A bond basket is not a single bond: its numeraire measure changes
+        # unless all maturity-specific shift factors coincide.  Setting the
+        # last two interval shifts to zero forces equality for maturities
+        # 2, 3 and 4 as viewed at split 1, and recovers exact invariance.
+        maturities = (2, 3, 4)
+        weights = np.array([0.7, 1.1, 0.9])
+        base_basket_law, shifted_basket_law, maturity_factors = (
+            basket_measure_state_distribution(
+                transition,
+                rates,
+                multibond_shifts,
+                1,
+                maturities,
+                weights,
+            )
+        )
+        largest_basket_measure_change = max(
+            largest_basket_measure_change,
+            0.5 * float(np.sum(np.abs(base_basket_law - shifted_basket_law))),
+        )
+        if not np.allclose(maturity_factors, maturity_factors[0]):
+            assert np.max(np.abs(base_basket_law - shifted_basket_law)) > 1e-12
+
+        equal_factor_shifts = multibond_shifts.copy()
+        equal_factor_shifts[2:] = 0.0
+        base_equal, shifted_equal, equal_factors = (
+            basket_measure_state_distribution(
+                transition,
+                rates,
+                equal_factor_shifts,
+                1,
+                maturities,
+                weights,
+            )
+        )
+        assert np.max(np.abs(equal_factors - equal_factors[0])) < 2e-16
+        largest_equal_factor_basket_error = max(
+            largest_equal_factor_basket_error,
+            float(np.max(np.abs(base_equal - shifted_equal))),
+        )
+
     assert largest_option_error < 3e-15
     assert largest_forward_error < 3e-15
     assert positive_option_cases > 100
@@ -443,6 +527,8 @@ def main() -> None:
     assert largest_forward_law_error < 3e-15
     assert largest_normalized_call_error < 3e-15
     assert largest_implied_vol_error < 3e-12
+    assert largest_equal_factor_basket_error < 3e-15
+    assert largest_basket_measure_change > 1e-5
 
     # The constant-rate example from Issue #69: t=0, T=tau=1,
     # tau+Delta=2, K=0, beta X=0, and deterministic shift 5%.
@@ -489,6 +575,23 @@ def main() -> None:
     assert np.max(np.abs(corrected_one - 1.0)) < 3e-16
     assert np.min(printed_one - 1.0) > 0.08
 
+    # A reproducible two-state annuity-measure counterexample.
+    annuity_transition = np.array([[0.50, 0.50], [0.05, 0.95]])
+    annuity_rates = np.array([0.00, 0.50])
+    annuity_shifts = np.array([0.02, 0.01, 0.30, -0.20])
+    annuity_base, annuity_shifted, annuity_factors = (
+        basket_measure_state_distribution(
+            annuity_transition,
+            annuity_rates,
+            annuity_shifts,
+            1,
+            (2, 3, 4),
+            np.ones(3),
+        )
+    )
+    annuity_tv = 0.5 * float(np.sum(np.abs(annuity_base - annuity_shifted)))
+    assert annuity_tv > 0.002
+
     print("Appendix B deterministic-shift pricing errata")
     print(f"maximum caplet/floorlet identity error: {largest_option_error:.3e}")
     print(
@@ -517,6 +620,19 @@ def main() -> None:
         f"{largest_implied_vol_error:.3e}"
     )
     print(
+        "maximum equal-factor basket-measure error: "
+        f"{largest_equal_factor_basket_error:.3e}"
+    )
+    print(
+        "largest random basket-measure change (TV): "
+        f"{largest_basket_measure_change:.9f}"
+    )
+    print(
+        "annuity counterexample: factors "
+        f"{annuity_factors}, base law {annuity_base}, "
+        f"shifted law {annuity_shifted}, TV {annuity_tv:.9f}"
+    )
+    print(
         "constant-rate caplet: "
         f"correct {caplet_correct:.10f}, printed {caplet_printed:.10f}"
     )
@@ -536,7 +652,8 @@ def main() -> None:
     print(
         "PASS: maturity-specific shift factors and negative-exponent "
         "change of numeraire, including nonlinear multibond payoffs and "
-        "forward-measure/implied-vol invariance"
+        "forward-measure/implied-vol invariance, with the exact limitation "
+        "for bond-basket numeraires"
     )
 
 
