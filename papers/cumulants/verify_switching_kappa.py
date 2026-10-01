@@ -724,8 +724,14 @@ def cumulant_rate_second_corrections(
 def integrated_variance_boundary_constants(
     max_order, speed, q0, pi, c, kappa, variance,
     initial_regime=None, initial_variance=None,
+    initial_moment_components=None,
 ):
-    """Perron-amplitude cumulants from right/left derivative recursions."""
+    """Boundary cumulants from right/left derivative recursions.
+
+    ``initial_moment_components[i, j]`` may supply
+    E[1_{Y_0=i} v_0^j] directly.  This permits initial laws with the required
+    finite moments but no positive moment-generating function.
+    """
     states = len(pi)
     degree = max_order
     generator, invariant, constant, g = _stationary_polynomial_context(
@@ -769,7 +775,21 @@ def integrated_variance_boundary_constants(
         ) < 3e-9
         left.append(solution[:size])
 
-    if initial_regime is None:
+    if initial_moment_components is not None:
+        if initial_regime is not None or initial_variance is not None:
+            raise ValueError(
+                "moment components and point-start arguments are exclusive"
+            )
+        components = np.asarray(initial_moment_components, dtype=float)
+        if components.shape != (states, degree + 1):
+            raise ValueError(
+                "initial_moment_components must have shape "
+                f"({states}, {degree + 1})"
+            )
+        initial = components.ravel()
+        if abs(np.sum(components[:, 0]) - 1.0) > 2e-12:
+            raise ValueError("zeroth initial moment must have total mass one")
+    elif initial_regime is None:
         initial = invariant
     else:
         if initial_variance is None:
@@ -803,11 +823,14 @@ def integrated_variance_boundary_constants(
 def centered_integrated_cumulants(
     max_order, maturity, speed, q0, pi, c, kappa, variance,
     initial_regime=None, initial_variance=None,
+    initial_moment_components=None,
 ):
     """Exact cumulants of int_0^T (v_s-E[v]) ds by polynomial closure.
 
     With no initial state specified, the joint process starts in stationarity.
-    Otherwise ``initial_regime`` and ``initial_variance`` give a point start.
+    Otherwise ``initial_regime`` and ``initial_variance`` give a point start,
+    or ``initial_moment_components[i, j]`` supplies
+    E[1_{Y_0=i} v_0^j].
     """
     basis, a_c, a_kappa, v_d_vv, v_d_z = integrated_variance_operators(
         max_order
@@ -842,7 +865,25 @@ def centered_integrated_cumulants(
     )
 
     initial = np.zeros(states * len(basis))
-    if initial_regime is None:
+    if initial_moment_components is not None:
+        if initial_regime is not None or initial_variance is not None:
+            raise ValueError(
+                "moment components and point-start arguments are exclusive"
+            )
+        components = np.asarray(initial_moment_components, dtype=float)
+        if components.shape != (states, max_order + 1):
+            raise ValueError(
+                "initial_moment_components must have shape "
+                f"({states}, {max_order + 1})"
+            )
+        if abs(np.sum(components[:, 0]) - 1.0) > 2e-12:
+            raise ValueError("zeroth initial moment must have total mass one")
+        for state in range(states):
+            block = state * len(basis)
+            for position, (v_power, z_power) in enumerate(basis):
+                if z_power == 0:
+                    initial[block + position] = components[state, v_power]
+    elif initial_regime is None:
         for state in range(states):
             block = state * len(basis)
             for position, (v_power, z_power) in enumerate(basis):
@@ -2493,6 +2534,89 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
     return gamma, results
 
 
+def verify_finite_moment_initial_jet(max_order=6):
+    """Certify fixed-order cumulants for an initial law with no MGF.
+
+    A Pareto initial variance with shape 13/2 has moments through degree six,
+    but its seventh moment and every positive exponential moment are infinite.
+    The finite polynomial jet nevertheless determines cumulants through order
+    six and their exact long-maturity slopes and boundary constants.
+    """
+    assert max_order <= 6
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speed = 8.0
+
+    # For a Pareto variable with lower endpoint x_min and shape alpha,
+    # E[X^j] = alpha*x_min^j/(alpha-j) for j < alpha.  This choice has
+    # mean 0.04 while retaining moments only through degree six.
+    alpha = 6.5
+    mean = 0.04
+    lower = mean * (alpha - 1.0) / alpha
+    moments = np.array(
+        [alpha * lower**order / (alpha - order)
+         for order in range(max_order + 1)]
+    )
+    moment_components = pi[:, None] * moments[None, :]
+    assert max_order < alpha < max_order + 1
+    assert abs(moments[1] - mean) < 2e-16
+
+    rates, _ = integrated_variance_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance
+    )
+    boundary, _, _, _ = integrated_variance_boundary_constants(
+        max_order,
+        speed,
+        q0,
+        pi,
+        c,
+        kappa,
+        variance,
+        initial_moment_components=moment_components,
+    )
+    maturities = np.arange(4.0, 13.0, 2.0)
+    remainders = []
+    terminal = None
+    for maturity in maturities:
+        exact = centered_integrated_cumulants(
+            max_order,
+            maturity,
+            speed,
+            q0,
+            pi,
+            c,
+            kappa,
+            variance,
+            initial_moment_components=moment_components,
+        )
+        terminal = exact - maturity * rates - boundary
+        remainders.append(np.max(np.abs(terminal)))
+    remainders = np.asarray(remainders)
+    fitted_decay = -np.polyfit(maturities, np.log(remainders), 1)[0]
+
+    assert np.all(np.diff(remainders) < 0.0)
+    assert fitted_decay > 1.35
+    assert remainders[3] < 2.4e-8
+
+    print("5k. finite-moment initial jet without an MGF")
+    print(
+        f"   Pareto shape {alpha:.1f}, mean {mean:.4f}; moments 1--{max_order} "
+        "finite, seventh moment and every positive MGF infinite"
+    )
+    print(
+        "   max remainders at T=4,6,8,10,12: "
+        + " ".join(f"{value:.3e}" for value in remainders)
+    )
+    print(
+        f"   fitted decay {fitted_decay:.3f}; T=12 orderwise remainder "
+        + " ".join(f"{value:.3e}" for value in np.abs(terminal))
+    )
+    return fitted_decay, remainders, terminal
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -2572,6 +2696,7 @@ def main():
     uniform_all_order_results = (
         verify_uniform_fixed_order_cumulant_remainders()
     )
+    finite_moment_jet_results = verify_finite_moment_initial_jet()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -2977,7 +3102,8 @@ def main():
         f"all-order corrected-rate floor "
         f"{min(all_order_rate_correction_results[2]):.3f}, "
         f"twice-corrected floor "
-        f"{min(all_order_second_rate_results[1]):.3f}"
+        f"{min(all_order_second_rate_results[1]):.3f}, finite-moment jet decay "
+        f"{finite_moment_jet_results[0]:.3f}"
     )
 
 

@@ -705,6 +705,44 @@
       $2.7\times10^{-15}$ for the stationary start and $2.3\times10^{-15}$ for the point start. Computing
       $\kappa_k(V_T)-T\gamma_k$ at $T=20$ and $40$ changes the values by at most $3.2\times10^{-14}$. The stationary
       order-two and order-three constants match the earlier explicit Poisson formulas within $6.2\times10^{-16}$.</p>
+
+    <h3>A finite-moment jet theorem: no MGF is needed</h3>
+    <p>The analytic Perron hypothesis above is useful when one wants an actual cumulant-generating function on a
+      neighborhood of zero, but it is stronger than necessary for any prescribed finite list of cumulants. Fix
+      $K$. Suppose only that the initial law has moments through degree $K$. In the truncated ring
+      $\mathbb R[\theta]/(\theta^{K+1})$, define the formal transform jet</p>
+    $$\mathcal U_T(\theta)=\sum_{j=0}^K {\theta^j\over j!}\mathbb E_\nu[V_T^j]
+      \pmod {\theta^{K+1}}.$$
+    <p>Polynomial closure makes this a finite-dimensional object: its coefficient vector evolves under the matrix
+      $\mathcal L_m+\theta M_g$ on polynomials of degree at most $K$. At $\theta=0$ the constant mode is the only
+      center direction. The centered degree-zero block and every positive-degree block are stable, with diagonal
+      blocks $mQ_0-jD_\kappa$ for $j\ge1$. Finite recursive Duhamel expansion, followed by the formal logarithm,
+      therefore gives</p>
+    <div class="equation-card">
+    $$\log\mathcal U_T(\theta)=
+      T\sum_{j=1}^K\gamma_j{\theta^j\over j!}
+      +\sum_{j=1}^K\beta_{j,\nu}{\theta^j\over j!}
+      +\sum_{j=1}^K r_{j,\nu}(T){\theta^j\over j!}
+      \pmod {\theta^{K+1}},$$
+    $$|r_{j,\nu}(T)|\le C_{K,m,\nu}e^{-q_{K,m}T},\qquad 1\le j\le K.$$
+    </div>
+    <p>The coefficients $\gamma_j$ and $\beta_{j,\nu}$ are exactly those produced by the right-left recursions
+      above: those recursions are identities of finite jets, not consequences of positive exponential moments.
+      If a local MGF does exist, this formal boundary jet agrees with the derivatives of the Perron amplitude.
+      Thus the fixed-order slope, boundary constant, and exponential remainder require only the corresponding
+      finite moments. The statement is for fixed $K$; it asserts neither convergence of an infinite cumulant
+      series nor any bound uniform in cumulant order.</p>
+    <p>A certificate makes the distinction concrete. Let $Y_0$ have its stationary two-state law and let $v_0$ be
+      independent Pareto with shape $13/2$ and mean $0.04$. Its first six moments are finite, while its seventh
+      moment and every positive exponential moment are infinite. At switching speed $m=8$, the exact polynomial
+      semigroup through degree six can still be compared with the recursively computed slope and boundary term.
+      The maximum absolute remainder over orders one through six at maturities $T=4,6,8,10,12$ is respectively</p>
+    $$9.080\times10^{-5},\quad5.776\times10^{-6},\quad3.674\times10^{-7},
+      \quad2.337\times10^{-8},\quad1.486\times10^{-9}.$$
+    <p>A log-linear fit gives decay rate $1.378$. This is a finite-order numerical certificate, not evidence for an
+      MGF: since the integrated CIR path retains a strictly positive affine loading on $v_0$ at every positive
+      maturity, its positive transform also diverges in this example.</p>
+
     <h3>A switching-rate-uniform remainder at every fixed order</h3>
     <p>For switched CIR, the dependence on $m$ in the preceding remainder can be removed when the cumulant order
       is fixed. Fix $K$, $m_0&gt;0$, and assume $\kappa_*:=\min_i\kappa_i&gt;0$. Let
@@ -728,7 +766,9 @@
       remaining convolution contains a stable factor. Resonant polynomial factors are absorbed by halving the
       exponent. The killed resolvents and the stationary CIR moment recursion are uniformly bounded for
       $m\ge m_0$, completing the common-envelope estimate. This is a fixed-jet refinement of the preceding
-      multiplicative-Poisson expansion, within the same isolated-spectral-subspace framework as
+      multiplicative-Poisson expansion. It can be read entirely in the finite polynomial jet just described;
+      when local exponential moments are available, it is also the finite-derivative consequence of the
+      isolated-spectral-subspace framework of
       <a href="./bibliography.html#Kato1949">Kato (1949)</a>.</p>
     <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
       $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
