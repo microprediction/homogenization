@@ -463,6 +463,49 @@ def counts():
       theory of <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n (2005)</a> makes such regularity
       assumptions explicit. For a fixed finite-state intensity model, $\Lambda_T$ is bounded; that removes the
       escaping-mass example but not the total-variation discontinuity created by moving atoms.</p>
+    <h3>A finite-sample impossibility theorem</h3>
+    <p>The discontinuity implies more than the absence of a convenient inverse bound. Suppose
+      $N_1,\ldots,N_n$ are iid mixed-Poisson observations with unknown mixing law $\mu$ supported on a fixed
+      compact interval containing more than one point. For any estimator $\widehat\mu_n$, including a randomized
+      estimator,</p>
+    <div class="equation-card">
+    $$\sup_{\mu}\mathbb E_\mu d_{\rm TV}(\widehat\mu_n,\mu)\ge\frac12,
+      \qquad n\ge1.$$
+    </div>
+    <p>Thus the unrestricted mixing law is not uniformly consistently estimable in total variation, even though it
+      is identified by the population count law and even though its support is compact.</p>
+    <p>The proof is a two-point coupling argument. For any two mixing laws $\mu_0,\mu_1$, let $P_i$ be the
+      corresponding one-count laws and put
+      $R_i=\mathbb E_i d_{\rm TV}(\widehat\mu_n,\mu_i)$. A maximal coupling of
+      $P_0^{\otimes n}$ and $P_1^{\otimes n}$, using the same estimator randomization when the samples agree, and
+      the triangle inequality give</p>
+    $$\max(R_0,R_1)\ge {d_{\rm TV}(\mu_0,\mu_1)\over2}
+      \{1-d_{\rm TV}(P_0^{\otimes n},P_1^{\otimes n})\}.$$
+    <p>Choose distinct point masses $\mu_0=\delta_a$ and $\mu_1=\delta_b$ inside the interval. Their distance is
+      one, while the product count distance tends to zero as $b\to a$. Letting $b$ approach $a$ proves the displayed
+      lower bound for every fixed $n$.</p>
+    <p>There is also an exact quantitative certificate. Take $a=4.5$, $b_n=a+1/n$, and even $n$. Under the two
+      hypotheses, the sufficient statistic $\sum_iN_i$ has laws
+      $\operatorname{Pois}(na)$ and $\operatorname{Pois}(na+1)$; conditional on the sum, the allocation among the
+      $n$ observations is the same multinomial law. Hence</p>
+    $$d_{\rm TV}\{P_a^{\otimes n},P_{a+1/n}^{\otimes n}\}
+      =F_{na}(na)-F_{na+1}(na)
+      \sim {1\over\sqrt{2\pi an}}.$$
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>$n$</th><th>product count TV</th><th>mixing-law TV risk lower bound</th></tr></thead>
+      <tbody>
+        <tr><td>10</td><td>0.059144045738</td><td>0.470427977131</td></tr>
+        <tr><td>100</td><td>0.018795883152</td><td>0.490602058424</td></tr>
+        <tr><td>1,000</td><td>0.005946750031</td><td>0.497026624985</td></tr>
+        <tr><td>10,000</td><td>0.001880621497</td><td>0.499059689251</td></tr>
+        <tr><td>1,000,000</td><td>0.000188063184</td><td>0.499905968408</td></tr>
+      </tbody>
+    </table></div>
+    <p>At $n=10^6$, $\sqrt n$ times the product distance is $0.188063184068$, versus
+      $1/\sqrt{2\pi a}=0.188063194516$. The lower bound concerns total-variation recovery of an unrestricted
+      measure. It does not rule out weak-loss consistency, parametric finite-state recovery under separation, or
+      density estimation on smoothness classes; those are precisely the kinds of restrictions used by
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative

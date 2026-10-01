@@ -18,6 +18,9 @@ marks.  It then verifies the closed two-state finite-horizon formula used on
 the counts page and its O(lambda^-2) first-order residual.  Finally, an exact
 finite-difference construction gives two positive mixing laws with identical
 first four cumulants but different mixed-Poisson count laws.
+The last calculation turns the inverse discontinuity into a finite-sample
+minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
+in total variation, even on a compact intensity interval.
 """
 
 import itertools
@@ -161,6 +164,72 @@ def poisson_inverse_instability():
         "scaled_tv": scaled_tv,
         "asymptotic_constant": asymptotic_constant,
         "hellinger_bounds": hellinger_bounds,
+    }
+
+
+def poisson_mixture_tv_minimax():
+    """Exact two-point lower bound for estimating a Poisson mixing law.
+
+    Under point-mass mixing at ``a`` or ``b``, ``n`` iid mixed-Poisson
+    observations are iid Poisson.  Their likelihood ratio depends only on
+    the sum, and the conditional allocation given the sum is the same under
+    both hypotheses.  Consequently their product total variation is exactly
+    that between Pois(n*a) and Pois(n*b).  We take b=a+1/n inside [4,5].
+
+    A maximal-coupling proof gives, for every mixing-law estimator,
+
+        max_i E_i TV(mu_hat, mu_i)
+          >= TV(mu_0,mu_1) * (1-TV(P_0^n,P_1^n)) / 2.
+
+    The mixing-law distance is one for the two distinct point masses.
+    """
+    intensity = 4.5
+    sample_sizes = np.array(
+        [10, 100, 1000, 10000, 100000, 1000000], dtype=int
+    )
+    product_tv = []
+    cutoffs = []
+    hellinger_bounds = []
+    for sample_size in sample_sizes:
+        lower_mean = sample_size * intensity
+        upper_intensity = intensity + 1.0 / sample_size
+        upper_mean = sample_size * upper_intensity
+        cutoff = math.floor(
+            (upper_mean - lower_mean) / math.log(upper_mean / lower_mean)
+        )
+        cutoffs.append(cutoff)
+        product_tv.append(
+            poisson.cdf(cutoff, lower_mean)
+            - poisson.cdf(cutoff, upper_mean)
+        )
+        hellinger_bounds.append(
+            math.sqrt(
+                -math.expm1(
+                    -sample_size
+                    * (math.sqrt(upper_intensity) - math.sqrt(intensity)) ** 2
+                )
+            )
+        )
+    product_tv = np.asarray(product_tv)
+    hellinger_bounds = np.asarray(hellinger_bounds)
+    risk_lower_bounds = 0.5 * (1.0 - product_tv)
+    scaled_tv = np.sqrt(sample_sizes) * product_tv
+    asymptotic_constant = 1.0 / math.sqrt(2.0 * math.pi * intensity)
+
+    assert np.all(np.asarray(cutoffs) == intensity * sample_sizes)
+    assert np.all(product_tv <= hellinger_bounds)
+    assert np.all(np.diff(product_tv) < 0.0)
+    assert np.all(np.diff(risk_lower_bounds) > 0.0)
+    assert abs(scaled_tv[-1] - asymptotic_constant) < 2e-8
+    assert risk_lower_bounds[-1] > 0.4999
+    return {
+        "intensity": intensity,
+        "sample_sizes": sample_sizes,
+        "product_tv": product_tv,
+        "hellinger_bounds": hellinger_bounds,
+        "risk_lower_bounds": risk_lower_bounds,
+        "scaled_tv": scaled_tv,
+        "asymptotic_constant": asymptotic_constant,
     }
 
 
@@ -604,6 +673,7 @@ def two_state_exact(rates, T, lam, sign=1.0):
 def main():
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
+    minimax = poisson_mixture_tv_minimax()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -850,6 +920,15 @@ def main():
     print("large-intensity TV and Hellinger upper bound",
           f"{instability['consecutive_tv'][-1]:.12e}",
           f"{instability['hellinger_bounds'][-1]:.12e}")
+    print("unrestricted mixing-law TV minimax certificate")
+    print(" n       product TV       Le Cam risk lower bound")
+    for sample_size, product_tv, risk_bound in zip(
+            minimax["sample_sizes"], minimax["product_tv"],
+            minimax["risk_lower_bounds"]):
+        print(f"{sample_size:7d}   {product_tv:.12f}       {risk_bound:.12f}")
+    print("sqrt(n) product TV",
+          f"{minimax['scaled_tv'][-1]:.12f}",
+          "limit", f"{minimax['asymptotic_constant']:.12f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
