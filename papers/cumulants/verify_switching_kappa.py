@@ -2451,6 +2451,16 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
     )
     pi3 = stationary(q3)
     kappa3 = np.array([1.1, 2.3, 3.0])
+    pareto_shape = 6.5
+    pareto_mean = 0.04
+    pareto_lower = pareto_mean * (pareto_shape - 1.0) / pareto_shape
+    pareto_moments = np.array(
+        [pareto_shape * pareto_lower**order / (pareto_shape - order)
+         for order in range(max_order + 1)]
+    )
+    pareto_components = np.array([0.5, 0.5])[:, None] * (
+        pareto_moments[None, :]
+    )
     cases = [
         (
             "two-state stationary",
@@ -2469,6 +2479,15 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
             np.array([0.8, 2.0]),
             np.array([0.04, 0.04]),
             {"initial_regime": 0, "initial_variance": 0.04},
+        ),
+        (
+            "two-state Pareto moments",
+            q2,
+            np.array([0.5, 0.5]),
+            np.array([0.04, 0.16]),
+            np.array([0.8, 2.0]),
+            np.array([0.04, 0.04]),
+            {"initial_moment_components": pareto_components},
         ),
         (
             "three-state nonreversible",
@@ -2514,6 +2533,7 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
     # These are regression ceilings, not constants in the theorem.
     assert np.max(results["two-state stationary"][0]) < 1.60e-3
     assert np.max(results["two-state point"][0]) < 3.27e-2
+    assert np.max(results["two-state Pareto moments"][0]) < 2.25e-2
     assert np.max(results["three-state nonreversible"][0]) < 4.11e-4
 
     print("5j. switching-rate-uniform fixed-order cumulant remainders")
