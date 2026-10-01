@@ -100,6 +100,17 @@
  },
  {
   "role": "classics",
+  "key": "Meyer1975",
+  "authors": "Carl D. Meyer, Jr.",
+  "year": 1975,
+  "title": "The Role of the Group Generalized Inverse in the Theory of Finite Markov Chains",
+  "venue": "SIAM Review 17(3):443-464",
+  "doi": "10.1137/1017044",
+  "url": "https://doi.org/10.1137/1017044",
+  "annotation": "Develops the group inverse for finite Markov chains and its normalization on the stationary and transient subspaces, the algebra used by the explicit finite-chain initial-layer corrector."
+ },
+ {
+  "role": "classics",
   "key": "IlinKhasminskiiYin1999",
   "authors": "A. M. Il'in, R. Z. Khasminskii, G. Yin",
   "year": 1999,

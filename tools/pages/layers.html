@@ -382,4 +382,37 @@
       $k=0,1,2$ have measured component-error orders $0.995$, $1.983$, and $2.956$. Closed-form forcing bounds
       (rather than sampled suprema) give computable error-bound orders $2.203$ and $3.185$; those bounds dominate
       every measured error and have maximum contraction factor $0.393246$.</p>
+
+    <h3>An explicit first composite for a finite chain</h3>
+    <p>For the regime-independent terminal vector $a(0)=m_0{\bf1}$, the first finite-chain composite can be written
+      without performing a Picard iteration. Let $Q_0^\#$ be the group inverse, normalized by</p>
+    $$Q_0Q_0^\#=Q_0^\#Q_0=P,\qquad Q_0^\#{\bf1}=0,\qquad \pi^\top Q_0^\#=0,$$
+    <p>and put $h(t)=H(t){\bf1}=g(t)-\bar g(t){\bf1}$ and</p>
+    $$K(t)=-\int_0^t\pi^\top H(s)Q_0^\#h(s)\,ds.$$
+    <p>If $g\in C^1[0,T]$ is real or complex valued, then uniformly for $0\le t\le T$,</p>
+    <div class="equation-card">
+    $$a(t)=m_0e^{b(t)}\left(
+      [1+\varepsilon K(t)]{\bf1}
+      -\varepsilon Q_0^\#h(t)
+      +\varepsilon e^{tQ_0/\varepsilon}Q_0^\#h(0)
+      \right)+O(\varepsilon^2).$$
+    </div>
+    <p>The two corrector terms cancel at $t=0$, so the formula returns the terminal vector exactly. The first is
+      the quasi-steady Poisson corrector; the second is its initial layer. The scalar term $K$ is the accumulated
+      feedback of that corrector into the stationary component.</p>
+    <p>For completeness, substitution gives a centered residual of order $\varepsilon$: it is the sum of
+      $-\varepsilon m_0Q_0^\#h'$, the $\varepsilon K h$ term, and $-PH$ applied to the displayed centered
+      corrector. Convolution against the centered semigroup contributes another factor $\varepsilon$. The scalar
+      residual is $-\varepsilon m_0\pi^\top H(t)e^{tQ_0/\varepsilon}Q_0^\#h(0)$, whose integral is
+      $O(\varepsilon^2)$. A coupled Gronwall estimate therefore gives the stated uniform component error. This is
+      the finite-chain Poisson-equation form of the matched expansion; the group-inverse normalization follows
+      <a href="./bibliography.html#Meyer1975">Meyer's primary finite-chain treatment</a>.</p>
+    <p>Deleting the exponential term produces the first outer formula. It is only uniformly $O(\varepsilon)$
+      because it misses the terminal condition, but it is $O(\varepsilon^2)$ on every fixed interval
+      $[t_0,T]$, $t_0&gt;0$. Under the displayed semigroup bound, the same order holds on the expanding interval</p>
+    $$\frac{\varepsilon}{\gamma}\log\frac1\varepsilon\le t\le T.$$
+    <p>The defective three-state certificate uses the same nonnormal generator as above. The unmatched outer
+      error has measured order $1.000000$, while the explicit composite and the outer formula after the logarithmic
+      crossover have orders $2.002876$ and $2.002876$. The composite matches all three terminal components to
+      $2.2\times10^{-16}$.</p>
   </main>

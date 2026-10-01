@@ -1,6 +1,6 @@
 """Certificate for maturity-uniform finite-state initial-layer formulas.
 
-The checks distinguish nine statements which are easy to conflate:
+The checks distinguish ten statements which are easy to conflate:
 
 1. For arbitrary q(0), adding the first layer makes the first-order error
    uniformly O(eps**2), while adding both layer orders makes the error
@@ -31,6 +31,10 @@ The checks distinguish nine statements which are easy to conflate:
 9. The direct construction extends to every irreducible finite-state chain.
    A defective nonreversible three-state example checks one-power gains and
    the semigroup-based a posteriori bound without diagonalizing the generator.
+10. For a regime-independent terminal vector, the finite-chain first composite is
+    explicit in the group inverse.  Its error is uniformly O(eps**2), whereas
+    deleting the layer is only uniformly O(eps) and recovers O(eps**2) after
+    the logarithmic crossover.
 """
 import json
 import math
@@ -38,6 +42,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, solve_ivp
+from scipy.linalg import expm
 
 from uniform_layer import (
     first_order,
@@ -94,6 +99,14 @@ def stationary_distribution(generator):
     right = np.zeros(generator.shape[0])
     right[-1] = 1.0
     return np.linalg.solve(system, right)
+
+
+def group_inverse_generator(generator, stationary):
+    """Group inverse Q# with QQ# = Q#Q = I - 1 pi^T."""
+    generator = np.asarray(generator, dtype=float)
+    stationary = np.asarray(stationary, dtype=float)
+    projection = np.outer(np.ones(generator.shape[0]), stationary)
+    return np.linalg.inv(generator + projection) - projection
 
 
 def exact_curve_finite(eps, generator, forcing, initial, grid):
@@ -186,6 +199,46 @@ def finite_chain_picard_components(
     if return_details:
         return components, centered_values, mean_values
     return components
+
+
+def finite_chain_stationary_first_composite(
+    eps, generator, forcing, grid, include_layer=True,
+):
+    """Explicit group-inverse composite for a regime-independent terminal vector."""
+    generator = np.asarray(generator, dtype=float)
+    dimension = generator.shape[0]
+    one = np.ones(dimension)
+    pi = stationary_distribution(generator)
+    group_inverse = group_inverse_generator(generator, pi)
+
+    def g_vector(t):
+        return np.array([function(t) for function in forcing])
+
+    def common_and_correction(t, _value):
+        g = g_vector(t)
+        common = float(pi @ g)
+        centered = g - common * one
+        correction = -float(pi @ (centered * (group_inverse @ centered)))
+        return [common, correction]
+
+    scalar_solution = solve_ivp(
+        common_and_correction, (0, float(grid[-1])), [0.0, 0.0],
+        method='DOP853', rtol=3e-13, atol=3e-15, dense_output=True,
+        max_step=0.001,
+    )
+    assert scalar_solution.success
+    common, correction = scalar_solution.sol(grid)
+    forcing_values = np.array([g_vector(t) for t in grid])
+    centered_values = forcing_values - (forcing_values @ pi)[:, None] * one
+    centered = -eps * (centered_values @ group_inverse.T)
+    if include_layer:
+        initial_corrector = group_inverse @ centered_values[0]
+        layer = np.array([
+            expm(t * generator / eps) @ initial_corrector for t in grid
+        ])
+        centered += eps * layer
+    mean = 1.0 + eps * correction
+    return np.exp(common)[None, :] * (mean[None, :] + centered.T)
 
 
 def picard_components_asymmetric(
@@ -822,6 +875,70 @@ def defective_finite_chain():
     )
 
 
+def defective_stationary_composite():
+    """Check the explicit common-terminal composite on the defective chain."""
+    one = np.ones(3)
+    u = np.array([1.0, -1.0, 0.0])
+    w = np.array([1.0, 1.0, -2.0])
+    nilpotent = 0.1 * np.outer(u, w)
+    stationary_projection = np.ones((3, 3)) / 3.0
+    generator = stationary_projection - np.eye(3) + nilpotent
+    pi = stationary_distribution(generator)
+    group_inverse = group_inverse_generator(generator, pi)
+    centered_projection = np.eye(3) - np.outer(one, pi)
+    assert np.max(np.abs(generator @ group_inverse - centered_projection)) < 1e-14
+    assert np.max(np.abs(group_inverse @ generator - centered_projection)) < 1e-14
+    assert np.max(np.abs(group_inverse @ one)) < 1e-14
+    assert np.max(np.abs(pi @ group_inverse)) < 1e-14
+
+    forcing = (
+        lambda t: -0.30 + 0.20 * math.sin(1.1 * t),
+        lambda t: 0.40 - 0.10 * math.exp(-0.7 * t),
+        lambda t: 0.70 + 0.15 * math.cos(0.9 * t),
+    )
+    initial = one.copy()
+    gamma = 0.5
+    composite_errors = []
+    outer_errors = []
+    post_crossover_errors = []
+    rows = []
+    for eps in EPSILONS:
+        grid = np.unique(np.r_[
+            np.linspace(0, T_MAX, 3001),
+            eps * np.linspace(0, 10, 1201),
+        ])
+        grid = grid[grid <= T_MAX]
+        exact = exact_curve_finite(eps, generator, forcing, initial, grid)
+        composite = finite_chain_stationary_first_composite(
+            eps, generator, forcing, grid, include_layer=True,
+        )
+        outer = finite_chain_stationary_first_composite(
+            eps, generator, forcing, grid, include_layer=False,
+        )
+        crossover = eps * math.log(1.0 / eps) / gamma
+        post_crossover = grid >= crossover
+        composite_error = float(np.max(np.linalg.norm(composite - exact, axis=0)))
+        outer_error = float(np.max(np.linalg.norm(outer - exact, axis=0)))
+        post_crossover_error = float(np.max(np.linalg.norm(
+            outer[:, post_crossover] - exact[:, post_crossover], axis=0
+        )))
+        composite_errors.append(composite_error)
+        outer_errors.append(outer_error)
+        post_crossover_errors.append(post_crossover_error)
+        rows.append(dict(
+            epsilon=float(eps),
+            composite_sup=composite_error,
+            outer_sup=outer_error,
+            outer_post_crossover_sup=post_crossover_error,
+            crossover=float(crossover),
+            initial_match=float(np.max(np.abs(composite[:, 0] - initial))),
+        ))
+    return (
+        rows, order(composite_errors), order(outer_errors),
+        order(post_crossover_errors), group_inverse.tolist(), gamma,
+    )
+
+
 def main():
     nz, nz_outer, nz_first, nz_second, nz_fixed = nonzero_start()
     z, z_outer, z_comp, cross = zero_start()
@@ -839,6 +956,9 @@ def main():
      finite_bound1, finite_bound2, finite_generator, finite_pi,
      finite_initial, finite_m0, finite_semigroup_constant,
      finite_gamma) = defective_finite_chain()
+    (stationary_rows, stationary_composite, stationary_outer,
+     stationary_post_crossover, finite_group_inverse,
+     stationary_gamma) = defective_stationary_composite()
     print('1. q(0) != 0: outer, first composite, and second composite')
     for row in nz:
         print(f"   eps={row['epsilon']:.6f} outer sup={row['outer_sup']:.3e} "
@@ -912,6 +1032,15 @@ def main():
           f'{finite_direct0:.6f}/{finite_direct1:.6f}/{finite_direct2:.6f}, '
           f'bounds 1/2 {finite_bound1:.6f}/{finite_bound2:.6f}; '
           f'M={finite_semigroup_constant:.6f}, gamma={finite_gamma:.2f}')
+    print('8. defective three-state explicit common-terminal first composite')
+    for row in stationary_rows:
+        print(f"   eps={row['epsilon']:.6f} composite={row['composite_sup']:.3e} "
+              f"outer={row['outer_sup']:.3e} "
+              f"post-crossover outer={row['outer_post_crossover_sup']:.3e} "
+              f"crossover={row['crossover']:.6f}")
+    print(f'   observed orders: composite {stationary_composite:.6f}, '
+          f'outer {stationary_outer:.6f}, post-crossover outer '
+          f'{stationary_post_crossover:.6f}')
     assert 0.9 < nz_outer < 1.1
     assert 1.85 < nz_first < 2.15
     assert 2.8 < nz_second < 3.2
@@ -961,6 +1090,10 @@ def main():
         and row['direct_2_sup'] <= row['direct_2_aposteriori_bound']
         for row in finite_rows)
     assert max(row['initial_match'] for row in finite_rows) < 1e-12
+    assert 1.85 < stationary_composite < 2.15
+    assert 0.9 < stationary_outer < 1.1
+    assert 1.85 < stationary_post_crossover < 2.15
+    assert max(row['initial_match'] for row in stationary_rows) < 1e-13
     out = dict(nonzero_start=dict(
                    rows=nz, outer_sup_order=nz_outer,
                    first_composite_sup_order=nz_first,
@@ -1007,6 +1140,13 @@ def main():
         direct_2_sup_order=finite_direct2,
         direct_1_bound_order=finite_bound1,
         direct_2_bound_order=finite_bound2)
+    out['defective_stationary_composite'] = dict(
+        rows=stationary_rows,
+        group_inverse=finite_group_inverse,
+        semigroup_decay=stationary_gamma,
+        composite_sup_order=stationary_composite,
+        outer_sup_order=stationary_outer,
+        outer_post_crossover_order=stationary_post_crossover)
     (HERE / 'uniform_layer_results.json').write_text(json.dumps(out, indent=2) + '\n')
     print('PASS')
 

@@ -350,5 +350,62 @@
     "direct_2_sup_order": 2.9559514542381846,
     "direct_1_bound_order": 2.203210820110491,
     "direct_2_bound_order": 3.1850976695638824
+  },
+  "defective_stationary_composite": {
+    "rows": [
+      {
+        "epsilon": 0.05,
+        "composite_sup": 0.0018241998670932736,
+        "outer_sup": 0.04804858652100676,
+        "outer_post_crossover_sup": 0.0018241998670855564,
+        "crossover": 0.2995732273553991,
+        "initial_match": 0.0
+      },
+      {
+        "epsilon": 0.025,
+        "composite_sup": 0.0004545787492909127,
+        "outer_sup": 0.02402429326050336,
+        "outer_post_crossover_sup": 0.0004545787492909127,
+        "crossover": 0.18444397270569682,
+        "initial_match": 0.0
+      },
+      {
+        "epsilon": 0.0125,
+        "composite_sup": 0.00011343666201458656,
+        "outer_sup": 0.012012146630251637,
+        "outer_post_crossover_sup": 0.00011343666201458656,
+        "crossover": 0.10955066586684703,
+        "initial_match": 0.0
+      },
+      {
+        "epsilon": 0.00625,
+        "composite_sup": 2.8331667205324783e-05,
+        "outer_sup": 0.006006073315125905,
+        "outer_post_crossover_sup": 2.8331667205324783e-05,
+        "crossover": 0.06343967269042283,
+        "initial_match": 0.0
+      }
+    ],
+    "group_inverse": [
+      [
+        -0.7666666666666665,
+        0.2333333333333334,
+        0.5333333333333337
+      ],
+      [
+        0.43333333333333324,
+        -0.5666666666666665,
+        0.13333333333333341
+      ],
+      [
+        0.33333333333333326,
+        0.33333333333333337,
+        -0.6666666666666665
+      ]
+    ],
+    "semigroup_decay": 0.5,
+    "composite_sup_order": 2.002875674090978,
+    "outer_sup_order": 0.9999999999999961,
+    "outer_post_crossover_order": 2.002875674089147
   }
 }
