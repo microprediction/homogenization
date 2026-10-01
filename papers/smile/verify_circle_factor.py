@@ -248,12 +248,38 @@ def normalized_resolvent_check():
     skew_bound = eta / (1.0 + eta ** 2) if eta <= 1.0 else 0.5
     skew_norm = np.linalg.norm(skew_factor, 2)
 
+    # Normalize instead by the actual symmetric Green--Kubo form.  Because
+    # symmetric_factor is a function of normalized_skew, all three matrices
+    # commute and the intrinsic skew operator is exactly C.  The full
+    # resolvent becomes I+C in this metric.
+    sym_values, sym_vectors = np.linalg.eigh(symmetric_factor)
+    symmetric_inverse_half = (
+        sym_vectors * (1.0 / np.sqrt(sym_values))
+    ) @ sym_vectors.T
+    intrinsic_skew = (
+        symmetric_inverse_half @ skew_factor @ symmetric_inverse_half
+    )
+    intrinsic_full = (
+        symmetric_inverse_half @ factorized @ symmetric_inverse_half
+    )
+    intrinsic_skew_error = np.max(abs(intrinsic_skew - normalized_skew))
+    intrinsic_full_error = np.max(
+        abs(intrinsic_full - (identity + normalized_skew))
+    )
+    intrinsic_skew_norm = np.linalg.norm(intrinsic_skew, 2)
+    intrinsic_full_norm = np.linalg.norm(intrinsic_full, 2)
+    intrinsic_full_bound = math.sqrt(1.0 + eta ** 2)
+
     assert factorization_error < 3e-14
     assert symmetric_error < 3e-14
     assert skew_error < 3e-14
     assert np.min(symmetric_eigenvalues) >= lower_bound - 3e-14
     assert np.max(symmetric_eigenvalues) <= 1.0 + 3e-14
     assert skew_norm <= skew_bound + 3e-14
+    assert intrinsic_skew_error < 3e-14
+    assert intrinsic_full_error < 3e-14
+    assert abs(intrinsic_skew_norm - eta) < 3e-14
+    assert abs(intrinsic_full_norm - intrinsic_full_bound) < 3e-14
     return {
         "factorization_error": factorization_error,
         "symmetric_error": symmetric_error,
@@ -264,6 +290,11 @@ def normalized_resolvent_check():
         "symmetric_max": np.max(symmetric_eigenvalues),
         "skew_norm": skew_norm,
         "skew_bound": skew_bound,
+        "intrinsic_skew_error": intrinsic_skew_error,
+        "intrinsic_full_error": intrinsic_full_error,
+        "intrinsic_skew_norm": intrinsic_skew_norm,
+        "intrinsic_full_norm": intrinsic_full_norm,
+        "intrinsic_full_bound": intrinsic_full_bound,
     }
 
 
@@ -342,6 +373,14 @@ def main():
         f"{normalized['symmetric_max']:.9f}] versus lower bound "
         f"{normalized['lower_bound']:.9f}; skew norm/bound "
         f"{normalized['skew_norm']:.9f}/{normalized['skew_bound']:.9f}"
+    )
+    print(
+        f"   intrinsic skew norm/eta "
+        f"{normalized['intrinsic_skew_norm']:.9f}/{normalized['eta']:.9f}; "
+        f"full norm/bound {normalized['intrinsic_full_norm']:.9f}/"
+        f"{normalized['intrinsic_full_bound']:.9f}; identity errors "
+        f"{normalized['intrinsic_skew_error']:.2e}/"
+        f"{normalized['intrinsic_full_error']:.2e}"
     )
 
     print("3. exact Fourier blocks against direct correlation quadrature")

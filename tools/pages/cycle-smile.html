@@ -87,7 +87,28 @@
     <p>Thus the energy-normalized directional response is universally at most one half. These are full-space
       operator bounds, not identification claims for a chosen feature block: its antisymmetric entry may still
       vanish. The variance-reduction side of this factorization is placed against the nonreversible-sampling analysis
-      of <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>.</p>
+      of <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>
+      and the symmetric/antisymmetric Green&ndash;Kubo analysis of
+      <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>.</p>
+    <p>There is a second sharp normalization, and the distinction matters. Let
+      $G=(I-C^2)^{-1}$ be the symmetric normalized Green&ndash;Kubo operator. Since $G$ is a function of $C$, the
+      two commute and</p>
+    <div class="equation-card">
+    $$G^{-1/2}\operatorname{Anti}(I-C)^{-1}G^{-1/2}=C,$$
+    $$G^{-1/2}(I-C)^{-1}G^{-1/2}=I+C.$$
+    </div>
+    <p>Consequently the intrinsic sector bounds, normalized by the <em>actual</em> symmetric Green&ndash;Kubo form,
+      are</p>
+    <div class="equation-card">
+    $$|K^{\rm anti}(f,g)|\le\eta
+      \sqrt{K^{\rm sym}(f,f)K^{\rm sym}(g,g)},$$
+    $$|K(f,g)|\le\sqrt{1+\eta^2}
+      \sqrt{K^{\rm sym}(f,f)K^{\rm sym}(g,g)}.$$
+    </div>
+    <p>Both constants are sharp in the spectral sense. The universal one-half bound above uses the reversible
+      energy norm $\|B^{-1/2}\cdot\|$; it is not a universal bound after normalization by the reduced, irreversible
+      Green&ndash;Kubo variance. This prevents the two natural notions of relative directional response from being
+      conflated.</p>
     <p>If features $f_r$ multiply slow operators $A_r$, the first corrector decomposes exactly as</p>
     <div class="equation-card">
     $$\sum_{r,s}K_{rs}A_rA_s
@@ -126,7 +147,9 @@
     <p>On that four-state chain, the normalized resolvent factorization, its symmetric part and its skew part agree
       with their closed forms within $1.23\times10^{-15}$. Here $\eta=0.535874194$; the symmetric spectrum is
       $[0.776903497,1]$, attaining the lower bound $1/(1+\eta^2)$, while the skew norm is $0.416322535$, attaining
-      $\eta/(1+\eta^2)$.</p>
+      $\eta/(1+\eta^2)$. In the intrinsic symmetric Green&ndash;Kubo metric, the measured skew norm is
+      $0.535874194=\eta$ and the full norm is $1.134531248=\sqrt{1+\eta^2}$; both matrix identities hold within
+      $4.5\times10^{-16}$.</p>
 
     <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
     whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.</p>
