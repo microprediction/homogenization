@@ -8,7 +8,9 @@ and the two numerical examples printed in the thesis.  It also checks a
 fixed-contrast, fast-switching refinement: the corrected dynamic mean captures
 the regime log-price contrast through order lambda^-2, but omits the common
 order-lambda^-1 Green--Kubo convexity term.  The endpoint coefficients of both
-next remainders are also checked.
+next remainders are also checked.  Finally, it checks a nonasymptotic error
+bound that is uniform over every maturity and permits the contrast to vary
+with the switching rate.
 """
 
 from __future__ import annotations
@@ -86,6 +88,58 @@ def response_coefficient(
         * variance_contrast
         * memory_loading(decay, kappa, horizon, 2)
     )
+
+
+def uniform_log_ratio_bound(
+    switching_rate: float, forcing_bound: float
+) -> tuple[float, float]:
+    """Return eta and a maturity-uniform bound for the log-ratio error.
+
+    If |q(t)| <= forcing_bound and eta=forcing_bound/(2*switching_rate)<1/2,
+    the exact Riccati contrast omega and its linearization D obey
+
+        sup_T |2*atanh(omega(T))-2*D(T)| <= returned bound.
+    """
+    if switching_rate <= 0.0 or forcing_bound < 0.0:
+        raise ValueError("switching rate must be positive and bound nonnegative")
+    eta = forcing_bound / (2.0 * switching_rate)
+    if eta >= 0.5:
+        raise ValueError("the certificate requires forcing_bound < switching_rate")
+    bound = 8.0 * eta**3 + 16.0 * eta**3 / (
+        3.0 * (1.0 - 4.0 * eta**2)
+    )
+    return eta, bound
+
+
+def riccati_log_ratio_error(
+    switching_rate: float,
+    horizon: float,
+    forcing,
+) -> float:
+    """Solve the exact and linear contrast equations and return their error."""
+
+    def rhs(time: float, state: np.ndarray) -> np.ndarray:
+        value = forcing(time)
+        omega, linear = state
+        return np.array(
+            [
+                value * (1.0 - omega**2) - 2.0 * switching_rate * omega,
+                value - 2.0 * switching_rate * linear,
+            ]
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, horizon),
+        np.zeros(2),
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    assert solution.success
+    omega, linear = solution.y[:, -1]
+    assert abs(omega) < 1.0
+    return abs(2.0 * math.atanh(omega) - 2.0 * linear)
 
 
 def switched_bond_factors(
@@ -356,6 +410,69 @@ def main() -> None:
         - common_quadratic_coefficient
     ) < 4e-6
 
+    # The Volterra fixed-point proof gives a genuinely nonasymptotic bound,
+    # uniform in T.  Exercise it first on constant forcing all the way to the
+    # equilibrium limit, then on bounded time-dependent forcings.  The latter
+    # are normalized by an analytic envelope, not by a sampled maximum.
+    utilization = []
+    for eta in np.linspace(0.02, 0.49, 60):
+        equilibrium = (
+            math.sqrt(1.0 + 4.0 * eta**2) - 1.0
+        ) / (2.0 * eta)
+        equilibrium_error = abs(2.0 * math.atanh(equilibrium) - 2.0 * eta)
+        _, bound = uniform_log_ratio_bound(1.0, 2.0 * eta)
+        assert equilibrium_error <= bound
+        utilization.append(equilibrium_error / bound)
+
+    rng = np.random.default_rng(20261001)
+    random_cases = 160
+    for _ in range(random_cases):
+        rate = float(10 ** rng.uniform(-0.5, 1.0))
+        eta = float(rng.uniform(0.02, 0.48))
+        forcing_bound = 2.0 * rate * eta
+        coefficients = rng.normal(size=3)
+        envelope = float(np.sum(np.abs(coefficients)))
+        frequencies = rate * 10 ** rng.uniform(-1.0, 1.0, size=2)
+
+        def bounded_forcing(time: float) -> float:
+            raw = (
+                coefficients[0]
+                + coefficients[1] * math.sin(frequencies[0] * time)
+                + coefficients[2] * math.cos(frequencies[1] * time)
+            )
+            return forcing_bound * raw / envelope
+
+        horizon = float(10 ** rng.uniform(-2.0, 1.0) / rate)
+        error = riccati_log_ratio_error(rate, horizon, bounded_forcing)
+        _, bound = uniform_log_ratio_bound(rate, forcing_bound)
+        assert error <= bound * (1.0 + 2e-11)
+        utilization.append(error / bound)
+
+    # A joint contrast/switching sequence: ||q_lambda|| grows like lambda^.6,
+    # while the theorem predicts a uniform O(lambda^-1.2) error.  A fixed
+    # smooth forcing exposes that rate without relying on the Vasicek endpoint.
+    joint_rates = 2.0 ** np.arange(4, 11)
+    joint_errors = []
+    joint_bounds = []
+    for rate in joint_rates:
+        scale = rate**0.6
+        forcing_bound = 0.9 * scale
+
+        def joint_forcing(time: float, scale: float = scale) -> float:
+            return scale * (0.6 + 0.3 * math.sin(time))
+
+        joint_errors.append(
+            riccati_log_ratio_error(rate, 1.7, joint_forcing)
+        )
+        joint_bounds.append(
+            uniform_log_ratio_bound(rate, forcing_bound)[1]
+        )
+    joint_errors = np.asarray(joint_errors)
+    joint_bounds = np.asarray(joint_bounds)
+    assert np.all(joint_errors <= joint_bounds)
+    joint_orders = np.log2(joint_errors[:-1] / joint_errors[1:])
+    assert joint_orders[-1] > 1.18
+
     # Reproduce the two thesis examples.  The reported dynamic-mean values use
     # exp(-lambda*s)B(s); the correction uses exp(-2lambda*s)B(T-s).
     examples = (
@@ -424,6 +541,12 @@ def main() -> None:
         f"{refined_ratio_orders[-2]:.6f} (32-to-64), common "
         f"{refined_common_orders[-1]:.6f} (64-to-128)"
     )
+    print(
+        "maturity-uniform bound: "
+        f"{60 + random_cases} constant/random cases, maximum utilization "
+        f"{max(utilization):.6f}; joint contrast/switching last order "
+        f"{joint_orders[-1]:.6f}"
+    )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
         print(
@@ -433,7 +556,8 @@ def main() -> None:
     print(
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
-        "orders and endpoint coefficients, and both thesis examples"
+        "orders and endpoint coefficients, maturity-uniform finite-rate "
+        "bound, joint contrast/switching rate, and both thesis examples"
     )
 
 

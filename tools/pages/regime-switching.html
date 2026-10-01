@@ -271,8 +271,41 @@
       $1/\lambda$, even at finite contrast. It does <em>not</em> give the full price to first order: it omits the
       common positive Green&ndash;Kubo convexity term in the second display. This separates a relative-price result
       from a common-level approximation.</p>
-    <p>The scope is fixed $T,\kappa,\theta_i,\sigma_i$ as $\lambda\to\infty$. The statement is not uniform over
-      unbounded maturities and makes no claim about a joint limit in switching rate and contrast.</p>
+    <p>The endpoint expansions and the common-level expansion above have fixed
+      $T,\kappa,\theta_i,\sigma_i$ as $\lambda\to\infty$. In particular, no maturity-uniform claim is being made
+      for the common Green&ndash;Kubo remainder.</p>
+
+    <h3>A nonasymptotic bound, uniform in maturity</h3>
+    <p>The relative-price statement has a stronger form that needs neither differentiability nor a fixed
+      contrast. Let $q:[0,\infty)\to\mathbb R$ be bounded and continuous, put
+      $M=\|q\|_\infty$ and $\eta=M/(2\lambda)$, and define</p>
+    $$D_\lambda(T)=\int_0^T e^{-2\lambda(T-s)}q(s)\,ds.$$
+    <p>If $\eta&lt;1/2$, then for every maturity simultaneously,</p>
+    <div class="equation-card">
+    $$\sup_{T\ge0}\left|\log\frac{a_1(T)}{a_2(T)}-2D_\lambda(T)\right|
+      \le 8\eta^3+\frac{16\eta^3}{3(1-4\eta^2)}.$$
+    </div>
+    <p>This is a finite-rate inequality, not asymptotic notation. To prove it, let
+      $(\mathcal Vh)(T)=\int_0^T e^{-2\lambda(T-s)}h(s)\,ds$. The exact Riccati equation is the Volterra fixed-point
+      problem</p>
+    $$\omega=D_\lambda-\mathcal V(q\omega^2).$$
+    <p>Because $\|\mathcal Vh\|_\infty\le\|h\|_\infty/(2\lambda)$, the right-hand side maps the ball
+      $\|\omega\|_\infty\le2\eta$ into itself and has Lipschitz constant $4\eta^2&lt;1$. The contraction theorem
+      therefore gives</p>
+    $$\|\omega\|_\infty\le2\eta,\qquad
+      \|\omega-D_\lambda\|_\infty\le4\eta^3.$$
+    <p>Finally, $\log(a_1/a_2)=2\operatorname{arctanh}\omega$ and
+      $|\operatorname{arctanh}x-x|\le |x|^3/[3(1-x^2)]$, which gives the displayed constant. This use of the
+      contraction principle goes back to
+      <a href="https://doi.org/10.4064/fm-3-1-133-181">Banach (1922)</a>; all constants here come directly from
+      this scalar switched-bond equation.</p>
+    <p>The bound also resolves a joint scaling that the fixed-contrast expansion does not cover. For a family
+      $q_\lambda$ with $M_\lambda=\|q_\lambda\|_\infty$ and $M_\lambda/\lambda\to0$,</p>
+    $$\sup_{T\ge0}\left|\log\frac{a_{1,\lambda}(T)}{a_{2,\lambda}(T)}
+      -2D_\lambda(T)\right|
+      =O\!\left((M_\lambda/\lambda)^3\right).$$
+    <p>This corollary concerns only the regime log-price contrast. It neither removes nor bounds the separate
+      common-level Green&ndash;Kubo correction.</p>
     <p>A finite-contrast certificate with $\kappa=1.3$, $T=4$, $\theta=(0.18,0.04)$ and
       $\sigma=(0.16,0.05)$ gives:</p>
     <table>
@@ -315,7 +348,9 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
       checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
       measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders and sharp
-      endpoint coefficients above, and solves both exact switched ODEs. The affine bond structure is
+      endpoint coefficients above, checks the maturity-uniform inequality on 220 constant and bounded
+      time-dependent cases (largest error/bound ratio $0.099864$), recovers order $1.198669$ when
+      $M_\lambda\asymp\lambda^{0.6}$, and solves both exact switched ODEs. The affine bond structure is
       the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
       Markov-modulated mean-level model is treated by
       <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page
