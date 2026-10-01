@@ -114,5 +114,77 @@
     0.9
   ],
   "general_halfspace_power_exact": 0.20227953428582043,
-  "general_halfspace_power_simulated": 0.20315533333333333
+  "general_halfspace_power_simulated": 0.20315533333333333,
+  "orthant_unrestricted_dimension": 2,
+  "orthant_one_sided_dimension": 3,
+  "orthant_covariance": [
+    [
+      1.4652462121212122,
+      0.23420454545454547,
+      0.25,
+      -0.15,
+      0.2
+    ],
+    [
+      0.23420454545454547,
+      0.9659545454545455,
+      -0.1,
+      0.18,
+      0.12
+    ],
+    [
+      0.25,
+      -0.1,
+      0.8,
+      0.0,
+      0.0
+    ],
+    [
+      -0.15,
+      0.18,
+      0.0,
+      1.1,
+      0.0
+    ],
+    [
+      0.2,
+      0.12,
+      0.0,
+      0.0,
+      0.6
+    ]
+  ],
+  "orthant_replications": 1000000,
+  "orthant_chibar_weights": [
+    0.125,
+    0.375,
+    0.375,
+    0.125
+  ],
+  "orthant_face_frequencies": [
+    0.125228,
+    0.374093,
+    0.374995,
+    0.125684
+  ],
+  "orthant_weight_max_error": 0.0009069999999999911,
+  "orthant_chibar_95": 8.946571633865318,
+  "orthant_null_rejection": 0.050178,
+  "correlated_constrained_correlation": 0.7,
+  "correlated_constrained_replications": 1000000,
+  "correlated_constrained_chibar_weights": [
+    0.1265916555533175,
+    0.5,
+    0.37340834444668247
+  ],
+  "correlated_constrained_face_frequencies": [
+    0.126609,
+    0.500049,
+    0.373342
+  ],
+  "correlated_constrained_weight_max_error": 6.634444668246475e-05,
+  "correlated_constrained_chibar_95": 4.72625321575952,
+  "correlated_constrained_null_rejection": 0.050003,
+  "correlated_constrained_binomial_95": 4.230599177831469,
+  "correlated_constrained_rejection_at_binomial": 0.064806
 }

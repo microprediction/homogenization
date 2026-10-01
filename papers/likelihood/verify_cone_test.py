@@ -9,6 +9,7 @@ Gaussian score shift, one-dimensional quadrature gives exact limiting power.
 For a general Fisher covariance the projection must first residualize and
 standardize the unrestricted scores against the one-sided score.  The same
 construction is checked below for three unrestricted coordinates.
+It is also checked for several Fisher-orthogonal one-sided coordinates.
 """
 import json
 import math
@@ -22,6 +23,53 @@ from scipy.stats import chi2, ncx2, norm
 
 def chibar_cdf(x):
     return 0.5 * chi2.cdf(x, 1) + 0.5 * chi2.cdf(x, 2)
+
+
+def orthant_chibar_cdf(x, unrestricted_dimension, one_sided_dimension):
+    """Null CDF for Fisher-orthogonal one-sided canonical coordinates."""
+    return sum(
+        math.comb(one_sided_dimension, active)
+        * chi2.cdf(x, unrestricted_dimension + active)
+        / 2.0 ** one_sided_dimension
+        for active in range(one_sided_dimension + 1)
+    )
+
+
+def project_correlated_orthant_2d(scores, correlation):
+    """Metric projection onto R_+^2 for unit variances and correlation rho.
+
+    The four candidates are the vertex, the two axis faces, and the
+    interior.  Selecting the candidate nearest in the inverse-covariance
+    metric also records the dimension of the face hit by the projection.
+    """
+    scores = np.asarray(scores, dtype=float)
+    covariance = np.array([
+        [1.0, correlation],
+        [correlation, 1.0],
+    ])
+    precision = np.linalg.inv(covariance)
+    candidates = np.zeros((scores.shape[0], 4, 2))
+    candidates[:, 1, 0] = np.maximum(
+        scores[:, 0] - correlation * scores[:, 1], 0.0
+    )
+    candidates[:, 2, 1] = np.maximum(
+        scores[:, 1] - correlation * scores[:, 0], 0.0
+    )
+    candidates[:, 3, :] = scores
+    feasible = np.ones((scores.shape[0], 4), dtype=bool)
+    feasible[:, 3] = np.all(scores >= 0.0, axis=1)
+    displacement = candidates - scores[:, None, :]
+    distances = np.einsum(
+        "nki,ij,nkj->nk", displacement, precision, displacement
+    )
+    distances[~feasible] = np.inf
+    selected = np.argmin(distances, axis=1)
+    projection = candidates[np.arange(scores.shape[0]), selected]
+    statistic = np.einsum(
+        "ni,ij,nj->n", projection, precision, projection
+    )
+    face_dimensions = np.array([0, 1, 1, 2])[selected]
+    return statistic, face_dimensions
 
 
 def normal_square_tail(delta, threshold):
@@ -284,6 +332,134 @@ def main():
         for delta_skew, delta_kurt in scenarios
     )
 
+    # The summaries above are scalar.  Release the large Monte Carlo arrays
+    # before allocating the two additional orthant experiments below.
+    del base_scores, correlated, shifted_correlated
+    del canonical_u, canonical_v, shifted_u, shifted_v
+    del general, shifted_general, general_u, general_v
+    del shifted_general_u, shifted_general_v
+
+    # Several one-sided scores.  After residualizing the unrestricted block,
+    # suppose the q constrained canonical coordinates are Fisher-orthogonal.
+    # Their signs are independent fair coins under the null.  Conditional on
+    # exactly j positive coordinates, the statistic is chi-square_(p+j), so
+    # the chi-bar weights are binomial.
+    orthant_p, orthant_q = 2, 3
+    orthant_c = np.array([[1.30, 0.25], [0.25, 0.90]])
+    orthant_s = np.diag([0.80, 1.10, 0.60])
+    orthant_b = np.array([
+        [0.25, -0.15, 0.20],
+        [-0.10, 0.18, 0.12],
+    ])
+    orthant_a = (
+        orthant_c
+        + orthant_b @ np.linalg.solve(orthant_s, orthant_b.T)
+    )
+    orthant_covariance = np.block([
+        [orthant_a, orthant_b],
+        [orthant_b.T, orthant_s],
+    ])
+    orthant_reps = 1000000
+    orthant_raw = rng.multivariate_normal(
+        np.zeros(orthant_p + orthant_q),
+        orthant_covariance,
+        size=orthant_reps,
+    )
+    orthant_y = orthant_raw[:, orthant_p:]
+    orthant_residual = (
+        orthant_raw[:, :orthant_p]
+        - orthant_y @ np.linalg.solve(orthant_s, orthant_b.T)
+    )
+    orthant_u = orthant_residual @ symmetric_root(
+        orthant_c, inverse=True
+    )
+    orthant_v = orthant_y @ symmetric_root(orthant_s, inverse=True)
+    orthant_statistic = (
+        np.sum(orthant_u ** 2, axis=1)
+        + np.sum(np.maximum(orthant_v, 0.0) ** 2, axis=1)
+    )
+    orthant_critical = brentq(
+        lambda x: orthant_chibar_cdf(
+            x, orthant_p, orthant_q
+        ) - (1.0 - alpha),
+        0.0,
+        40.0,
+    )
+    orthant_null_rejection = float(np.mean(
+        orthant_statistic > orthant_critical
+    ))
+    orthant_positive_count = np.sum(orthant_v > 0.0, axis=1)
+    orthant_face_frequencies = np.bincount(
+        orthant_positive_count, minlength=orthant_q + 1
+    ) / orthant_reps
+    orthant_weights = np.array([
+        math.comb(orthant_q, active) / 2.0 ** orthant_q
+        for active in range(orthant_q + 1)
+    ])
+    orthant_weight_error = float(np.max(np.abs(
+        orthant_face_frequencies - orthant_weights
+    )))
+
+    # Correlation among constrained coordinates changes the cone angles and
+    # hence the chi-bar weights.  For q=2 with unit variances and correlation
+    # rho, the exact weights are
+    # (1/4-asin(rho)/(2pi), 1/2, 1/4+asin(rho)/(2pi)).
+    constrained_rho = 0.70
+    constrained_reps = 1000000
+    constrained_covariance = np.array([
+        [1.0, constrained_rho],
+        [constrained_rho, 1.0],
+    ])
+    constrained_scores = rng.multivariate_normal(
+        np.zeros(2), constrained_covariance, size=constrained_reps
+    )
+    constrained_statistic, constrained_faces = (
+        project_correlated_orthant_2d(
+            constrained_scores, constrained_rho
+        )
+    )
+    angle_term = math.asin(constrained_rho) / (2.0 * math.pi)
+    constrained_weights = np.array([
+        0.25 - angle_term,
+        0.50,
+        0.25 + angle_term,
+    ])
+    constrained_face_frequencies = np.bincount(
+        constrained_faces, minlength=3
+    ) / constrained_reps
+    constrained_weight_error = float(np.max(np.abs(
+        constrained_face_frequencies - constrained_weights
+    )))
+
+    def constrained_chibar_cdf(x, weights):
+        return (
+            weights[0]
+            + weights[1] * chi2.cdf(x, 1)
+            + weights[2] * chi2.cdf(x, 2)
+        )
+
+    constrained_critical = brentq(
+        lambda x: constrained_chibar_cdf(
+            x, constrained_weights
+        ) - (1.0 - alpha),
+        0.0,
+        30.0,
+    )
+    constrained_null_rejection = float(np.mean(
+        constrained_statistic > constrained_critical
+    ))
+    binomial_q2_weights = np.array([0.25, 0.50, 0.25])
+    binomial_q2_critical = brentq(
+        lambda x: constrained_chibar_cdf(
+            x, binomial_q2_weights
+        ) - (1.0 - alpha),
+        0.0,
+        30.0,
+    )
+    constrained_rejection_at_binomial = float(np.mean(
+        constrained_statistic > binomial_q2_critical
+    ))
+
     out = {
         "n": n,
         "replications": reps,
@@ -320,6 +496,28 @@ def main():
         "general_halfspace_canonical_mean": [*eta_p.tolist(), delta_p],
         "general_halfspace_power_exact": general_power_exact,
         "general_halfspace_power_simulated": general_power_simulated,
+        "orthant_unrestricted_dimension": orthant_p,
+        "orthant_one_sided_dimension": orthant_q,
+        "orthant_covariance": orthant_covariance.tolist(),
+        "orthant_replications": orthant_reps,
+        "orthant_chibar_weights": orthant_weights.tolist(),
+        "orthant_face_frequencies": orthant_face_frequencies.tolist(),
+        "orthant_weight_max_error": orthant_weight_error,
+        "orthant_chibar_95": orthant_critical,
+        "orthant_null_rejection": orthant_null_rejection,
+        "correlated_constrained_correlation": constrained_rho,
+        "correlated_constrained_replications": constrained_reps,
+        "correlated_constrained_chibar_weights": constrained_weights.tolist(),
+        "correlated_constrained_face_frequencies":
+            constrained_face_frequencies.tolist(),
+        "correlated_constrained_weight_max_error":
+            constrained_weight_error,
+        "correlated_constrained_chibar_95": constrained_critical,
+        "correlated_constrained_null_rejection":
+            constrained_null_rejection,
+        "correlated_constrained_binomial_95": binomial_q2_critical,
+        "correlated_constrained_rejection_at_binomial":
+            constrained_rejection_at_binomial,
     }
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cone_test_results.json")
     with open(path, "w") as f:
@@ -349,6 +547,17 @@ def main():
     print(f"general formula p=1 reduction error: {p1_reduction_error:.3e}")
     print("general half-space local power, exact/simulated: "
           f"{general_power_exact:.6f}/{general_power_simulated:.6f}")
+    print(f"orthant p={orthant_p}, q={orthant_q} critical/null rejection: "
+          f"{orthant_critical:.6f}/{orthant_null_rejection:.6f}")
+    print("orthant exact/simulated face weights and max error: "
+          f"{orthant_weights}, {orthant_face_frequencies}, "
+          f"{orthant_weight_error:.3e}")
+    print("correlated constrained weights exact/simulated, max error: "
+          f"{constrained_weights}, {constrained_face_frequencies}, "
+          f"{constrained_weight_error:.3e}")
+    print("correlated constrained critical/correct rejection/binomial rejection: "
+          f"{constrained_critical:.6f}/{constrained_null_rejection:.6f}/"
+          f"{constrained_rejection_at_binomial:.6f}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -369,6 +578,11 @@ def main():
         and abs(general_null_rejection - alpha) < 0.0015
         and p1_reduction_error < 1e-12
         and abs(general_power_simulated - general_power_exact) < 0.0015
+        and abs(orthant_null_rejection - alpha) < 0.0015
+        and orthant_weight_error < 0.0015
+        and abs(constrained_null_rejection - alpha) < 0.0015
+        and constrained_weight_error < 0.0015
+        and abs(constrained_rejection_at_binomial - alpha) > 0.01
     )
     print("PASS" if ok else "FAIL")
     if not ok:
