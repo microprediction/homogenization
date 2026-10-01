@@ -219,6 +219,170 @@
     <p>At strike 0.90 this gives $0.00135639 \pm 0.00000007$, against the numerical 0.00135635, a gap of 0.7
     standard errors. The averaged model is off by about 45 standard errors. Certificate:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+
+    <h2 id="thesis-appendix-b-erratum">Thesis erratum: deterministic shifts and forward measures</h2>
+    <p>Appendix B, Section B.4 of the linked 2001 thesis has three source-formula errors: its shifted
+      caplet and floorlet omit discounting from today to the fixing date, its shifted swaplet applies one
+      maturity's deterministic factor to both legs, and its futures recursion has a positive discount exponent.
+      These are errata for the thesis; the bond-option implementation above does not use those formulas.</p>
+
+    <h3>A deterministic-shift identity</h3>
+    <p>Let $r^\phi_u=r_u+\phi(u)$, where $\phi$ is deterministic and integrable, and put</p>
+    $$A(t,u)=\exp\left\{-\int_t^u\phi(v)\,dv\right\}.$$
+    <p>Pathwise, the shifted discount factor is $D^\phi(t,u)=A(t,u)D^0(t,u)$. Consequently, under the
+      same risk-neutral measure, every shifted zero bond satisfies the exact identity</p>
+    $$P^\phi(t,u)=A(t,u)P^0(t,u).$$
+    <p>No Gaussian, affine or independence assumption is needed for this step.</p>
+
+    <h3>A payoff-transport theorem</h3>
+    <p>The same identity handles a nonlinear claim on several bond maturities at once. Let
+      $u_1,\ldots,u_d\ge T$ and let $\Psi$ be any Borel payoff for which the displayed expectations exist. Then</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      V_t^\phi[\Psi]
+      &amp;=\mathbb E_t^Q\!\left[D^\phi(t,T)
+        \Psi\!\left(P^\phi(T,u_1),\ldots,P^\phi(T,u_d)\right)\right]\\
+      &amp;=A(t,T)\,\mathbb E_t^Q\!\left[D^0(t,T)
+        \Psi\!\left(A(T,u_1)P^0(T,u_1),\ldots,
+        A(T,u_d)P^0(T,u_d)\right)\right].
+    \end{aligned}$$
+    </div>
+    <p>At the path level, if $\Gamma$ is any integrable functional of the short-rate trajectory up to $T$, the
+      corresponding identity is simply</p>
+    $$V_t^\phi[\Gamma]
+      =A(t,T)\,\mathbb E_t^Q\!\left[D^0(t,T)
+      \Gamma\!\left((r_s+\phi(s))_{t\le s\le T}\right)\right].$$
+    <p>Thus deterministic shifting preserves a path-dependent pricing problem after a deterministic translation
+      of every rate argument; it does not generally preserve the payoff unchanged.</p>
+    <p>This is an exact transport rule: discounting to exercise contributes $A(t,T)$, while every underlying
+      bond argument receives the factor for its own maturity. If $\Psi$ is positively homogeneous of degree one
+      and all arguments receive the same factor $a$, the result reduces to the common prefactor $A(t,T)a$.
+      With different maturities the factors are generally different, so they must instead be absorbed into the
+      payoff weights or strikes.</p>
+    <p>There is also a sharp converse. Suppose one scalar $c$ multiplied the unshifted value of <em>every</em>
+      linear portfolio of bonds maturing at $u_1,\ldots,u_d$. Applying that assertion to each single-bond
+      portfolio forces $c=A(t,u_j)$ for every $j$. Hence a universal common factor exists if and only if all
+      relevant maturity factors coincide. The swaplet error below is the two-maturity counterexample.</p>
+    <p>This payoff transport is the elementary pricing mechanism behind the deterministic-shift extensions
+      developed systematically by
+      <a href="./bibliography.html#BrigoMercurio2001">Brigo and Mercurio (2001)</a>.</p>
+
+    <h3>Forward measures are invariant</h3>
+    <p>The deterministic shift changes bond levels but not the forward measures themselves. For any numeraire
+      maturity $U$ and $s\le U$, the density process relative to the common risk-neutral measure is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \left.\frac{dQ^{U,\phi}}{dQ}\right|_{\mathcal F_s}
+      &amp;=\frac{D^\phi(0,s)P^\phi(s,U)}{P^\phi(0,U)}\\
+      &amp;=\frac{A(0,s)A(s,U)}{A(0,U)}
+        \frac{D^0(0,s)P^0(s,U)}{P^0(0,U)}\\
+      &amp;=\left.\frac{dQ^{U,0}}{dQ}\right|_{\mathcal F_s}.
+    \end{aligned}$$
+    </div>
+    <p>The cancellation uses only the cocycle identity $A(0,s)A(s,U)=A(0,U)$. Thus every conditional law
+      under a bond-forward measure is exactly the same before and after a deterministic additive shift.</p>
+    <p>This gives a useful option corollary. For $T\le u,U$, put
+      $X_T^0=P^0(T,u)/P^0(T,U)$ and
+      $c=A(T,u)/A(T,U)$. Then $X_T^\phi=cX_T^0$. If the strike is transformed as
+      $K^\phi=cK^0$,</p>
+    $$\frac{V_t^\phi}{P^\phi(t,U)}
+      =\mathbb E^{Q^U}_t[(cX_T^0-cK^0)^+]
+      =c\frac{V_t^0}{P^0(t,U)}.$$
+    <p>Because the Black formula is homogeneous in forward, strike and option value, the corresponding Black
+      implied volatility is unchanged. This is an invariance at matched transformed moneyness; holding the
+      <em>numeric</em> strike fixed changes moneyness and need not preserve implied volatility.</p>
+
+    <h3>Why annuity measures generally change</h3>
+    <p>The preceding cancellation is special to a single bond numeraire. Consider instead a positive bond-basket
+      numeraire, including a swap annuity,</p>
+    $$N_s^0=\sum_{j=1}^d w_jP^0(s,u_j),\qquad w_j&gt;0.$$
+    <p>Under the deterministic shift, its density relative to the common risk-neutral measure is</p>
+    <div class="equation-card">
+    $$\left.\frac{dQ^{N,\phi}}{dQ}\right|_{\mathcal F_s}
+      =\frac{A(0,s)D^0(0,s)
+      \sum_jw_jA(s,u_j)P^0(s,u_j)}
+      {\sum_jw_jA(0,u_j)P^0(0,u_j)}.$$
+    </div>
+    <p>If all maturity factors $A(s,u_j)$ coincide, the cocycle identity makes this exactly the unshifted
+      basket-measure density. Conversely, suppose invariance is to hold universally over base term-structure
+      models. Equality of the two density processes forces $N_s^\phi/N_s^0$ to be deterministic. But for a
+      positive bond-price vector $p$ that ratio is</p>
+    $$\frac{\sum_jw_jA(s,u_j)p_j}{\sum_jw_jp_j}.$$
+    <p>This weighted average is independent of $p$ if and only if all $A(s,u_j)$ are equal. Hence:</p>
+    <div class="equation-card">
+    $$\text{universal bond-basket measure invariance}
+      \quad\Longleftrightarrow\quad
+      A(s,u_1)=\cdots=A(s,u_d).$$
+    </div>
+    <p>The one-bond forward measure is the automatic $d=1$ case. A swap annuity normally contains several
+      payment dates with unequal factors, so its measure generally changes; accidental invariance in a particular
+      degenerate model is not excluded. Consequently there is no blanket deterministic-shift invariance theorem
+      for swaption distributions or their implied volatilities analogous to the bond-option result above. The
+      annuity numeraire and forward swap measure are the ones used in
+      <a href="https://doi.org/10.1007/s007800050026">Jamshidian (1997)</a>.</p>
+
+    <h3>Caplets and floorlets</h3>
+    <p>Take $t\le T\le\tau&lt;\tau+\Delta$ and write $q=1+\Delta K$. For the generalized bond-option
+      positive part used in Appendix B, define</p>
+    $$q^\phi=q\,\frac{A(T,\tau+\Delta)}{A(T,\tau)}.$$
+    <p>Substitution of the pathwise discount identity gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      C^\phi_t
+      &amp;=\mathbb E_t^Q\!\left[
+        D^\phi(t,T)\{P^\phi(T,\tau)-qP^\phi(T,\tau+\Delta)\}^+\right]\\
+      &amp;=A(t,T)A(T,\tau)\,
+        \mathbb E_t^Q\!\left[
+        D^0(t,T)\{P^0(T,\tau)-q^\phi P^0(T,\tau+\Delta)\}^+\right]\\
+      &amp;=A(t,\tau)\,C^0_t(q^\phi).
+    \end{aligned}$$
+    </div>
+    <p>The floorlet has the same prefactor with the positive part reversed. The formulas on printed
+      pp. 172&ndash;173 retain $A(T,\tau)$ but omit $A(t,T)$; whenever the corresponding generalized
+      option has positive value, they therefore differ by the factor $A(t,T)^{-1}$ and are too high
+      when the integrated shift from $t$ to $T$ is positive.</p>
+
+    <h3>Swaplets</h3>
+    <p>Linearity requires each zero bond to carry the factor for its own payment date:</p>
+    <div class="equation-card">
+    $$S^\phi_t=A(t,\tau)P^0(t,\tau)
+      -qA(t,\tau+\Delta)P^0(t,\tau+\Delta).$$
+    </div>
+    <p>Printed p. 175 instead multiplies both terms by $A(t,\tau)$. This cannot be a harmless common
+      normalization because the two cashflows occur at different dates.</p>
+
+    <h3>The futures recursion</h3>
+    <p>Let $Q^{T_i}$ denote the $T_i$-forward measure. Bayes' rule for the bond numeraire gives the
+      exact one-step identity</p>
+    <div class="equation-card">
+    $$\mathbb E^{Q^{T_i}}\!\left[f_i\mid\mathcal F_{T_{i-1}}\right]
+      =\frac{1}{P(T_{i-1},T_i)}
+       \mathbb E^Q\!\left[
+       e^{-\int_{T_{i-1}}^{T_i}r_u\,du}f_i
+       \,\middle|\,\mathcal F_{T_{i-1}}\right].$$
+    </div>
+    <p>The exponent is negative. Printed p. 177 uses a positive exponent while retaining
+      $P(T_{i-1},T_i)^{-1}$. If its expectation were already under $Q^{T_i}$, both the discount
+      factor and the outside bond normalization would instead be absent. This is precisely the
+      change-of-numeraire theorem formalized by
+      <a href="./bibliography.html#GemanElKarouiRochet1995">Geman, El Karoui and Rochet (1995)</a>.</p>
+
+    <h3>Exact regression checks</h3>
+    <p>For $t=0$, $T=\tau=1$, $\Delta=1$, $K=0$, zero base rate and
+      $\phi=0.05$, the correct caplet and swaplet value is</p>
+    $$e^{-0.05}-e^{-0.10}=0.0463920065.$$
+    <p>The printed caplet formula gives $1-e^{-0.05}=0.0487705755$, while the printed swaplet gives
+      zero. With $q=1.1$, an in-the-money floorlet is $0.0440917353$ rather than $0.0463523670$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_appendix_b_errata.py">certificate</a>
+      checks the caplet and floorlet factorization on 500 exact finite-state trees, verifies the general
+      transport theorem for a nonlinear option on three bond maturities to $2.2\times10^{-16}$, verifies the
+      forward-measure identity independently, and records the thesis counterexamples. It also checks multi-step
+      forward-law invariance to $4.5\times10^{-16}$, normalized option scaling to $1.6\times10^{-16}$ and
+      transformed Black implied-volatility invariance to $8.4\times10^{-16}$. For bond baskets it verifies
+      equal-factor invariance to $3.4\times10^{-16}$ and gives an explicit annuity-measure counterexample whose
+      state laws have total-variation distance $0.00289904$. Details and
+      source-page locations are in
+      <a href="https://github.com/microprediction/homogenization/issues/69">Issue #69</a>.</p>
   </main>
 
   <footer>

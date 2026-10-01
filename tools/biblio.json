@@ -2407,5 +2407,27 @@
   "doi": "",
   "url": "https://jmlr.org/papers/v25/23-1553.html",
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
+ },
+ {
+  "role": "survey_finance",
+  "key": "BrigoMercurio2001",
+  "authors": "Brigo, D. and Mercurio, F.",
+  "year": 2001,
+  "title": "A deterministic-shift extension of analytically-tractable and time-homogeneous short-rate models",
+  "venue": "Finance and Stochastics 5(3):369-387",
+  "doi": "10.1007/PL00013541",
+  "url": "https://doi.org/10.1007/PL00013541",
+  "annotation": "Develops deterministic-shift extensions of tractable short-rate models and derives analytical formulas for bonds and bond options; the payoff-transport theorem on the bond-options page isolates the underlying maturity-by-maturity scaling rule."
+ },
+ {
+  "role": "survey_finance",
+  "key": "GemanElKarouiRochet1995",
+  "authors": "Geman, H., El Karoui, N. and Rochet, J.-C.",
+  "year": 1995,
+  "title": "Changes of numéraire, changes of probability measure and option pricing",
+  "venue": "Journal of Applied Probability 32(2):443-458",
+  "doi": "10.2307/3215299",
+  "url": "https://doi.org/10.2307/3215299",
+  "annotation": "Establishes the general change-of-numeraire theorem and forward measures used here to fix the sign and normalization of the futures recursion."
  }
 ]
