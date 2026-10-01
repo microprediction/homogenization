@@ -2,8 +2,9 @@
 
 The score is S = mu * A_c + sigma * Z, where A_c is the average of a
 finite-state chain over c switching times.  In the symmetric two-state case, exact CDFs are
-computed from a Poisson--Beta occupation-time mixture.  A smooth nonlinear
-function of that occupation average checks the gradient/Hessian crossover.
+computed from a Poisson--Beta occupation-time mixture.  Smooth nonlinear
+functions of that occupation average check both the gradient/Hessian
+crossover and the second-order boundary term at a critical score point.
 Direct path simulation
 and the independent Feynman--Kac characteristic function check that
 representation.  A second matrix Feynman--Kac calculation treats unequal
@@ -41,7 +42,7 @@ import numpy as np
 from scipy.linalg import expm
 from scipy.integrate import quad, solve_ivp
 from scipy.optimize import brentq, minimize_scalar
-from scipy.special import ndtr, roots_hermite, roots_jacobi, roots_legendre
+from scipy.special import ive, ndtr, roots_hermite, roots_jacobi, roots_legendre
 from scipy.stats import beta as beta_distribution
 from scipy.stats import norm
 
@@ -1025,6 +1026,201 @@ def nonlinear_threshold(c: float) -> float:
     )
 
 
+def asymmetric_occupation_density(
+    fraction_plus: float,
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    start: int,
+) -> float:
+    """Continuous occupation-fraction density for an unequal two-state CTMC.
+
+    ``start`` is zero for the plus state and one for the minus state.  The
+    endpoint atoms are handled separately by
+    :func:`asymmetric_occupation_expectation`.  Exponentially scaled Bessel
+    functions keep the formula stable for the long horizons used below.
+    """
+    u = float(fraction_plus)
+    alpha, beta = rate_plus_to_minus, rate_minus_to_plus
+    if not 0.0 < u < 1.0:
+        return 0.0
+    root = math.sqrt(alpha * beta * u * (1.0 - u))
+    argument = 2.0 * c * root
+    exponent = -c * (
+        alpha * u + beta * (1.0 - u) - 2.0 * root
+    )
+    common = c * math.exp(exponent)
+    if start == 0:
+        return common * (
+            alpha * ive(0, argument)
+            + math.sqrt(alpha * beta * u / (1.0 - u))
+            * ive(1, argument)
+        )
+    if start == 1:
+        return common * (
+            beta * ive(0, argument)
+            + math.sqrt(alpha * beta * (1.0 - u) / u)
+            * ive(1, argument)
+        )
+    raise ValueError("start must be zero (plus) or one (minus)")
+
+
+def asymmetric_occupation_expectation(
+    function,
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    start: int,
+) -> float:
+    """Exact expectation of a function of the plus occupation fraction."""
+    alpha, beta = rate_plus_to_minus, rate_minus_to_plus
+    if min(c, alpha, beta) <= 0.0:
+        raise ValueError("c and both transition rates must be positive")
+    if start == 0:
+        atom = math.exp(-alpha * c) * function(1.0)
+    elif start == 1:
+        atom = math.exp(-beta * c) * function(0.0)
+    else:
+        raise ValueError("start must be zero (plus) or one (minus)")
+    stationary_plus = beta / (alpha + beta)
+    continuous = quad(
+        lambda u: function(u)
+        * asymmetric_occupation_density(u, c, alpha, beta, start),
+        0.0,
+        1.0,
+        points=[stationary_plus],
+        epsabs=2e-11,
+        epsrel=2e-11,
+        limit=300,
+    )[0]
+    return float(atom + continuous)
+
+
+def critical_quadratic_cdfs(
+    q: float,
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> np.ndarray:
+    """Exact CDFs when psi(A)=(A-E_pi A)^2 has zero gradient."""
+    alpha, beta = rate_plus_to_minus, rate_minus_to_plus
+    stationary_mean = (beta - alpha) / (alpha + beta)
+    answer = []
+    for start in (0, 1):
+        answer.append(
+            asymmetric_occupation_expectation(
+                lambda u: ndtr(
+                    (
+                        q
+                        - signal * ((2.0 * u - 1.0) - stationary_mean) ** 2
+                    )
+                    / noise
+                ),
+                c,
+                alpha,
+                beta,
+                start,
+            )
+        )
+    return np.asarray(answer)
+
+
+def critical_quadratic_threshold(
+    c: float,
+    rate_plus_to_minus: float,
+    rate_minus_to_plus: float,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> float:
+    """Stationary pooled quantile for the critical quadratic score."""
+    stationary = np.array([
+        rate_minus_to_plus,
+        rate_plus_to_minus,
+    ]) / (rate_plus_to_minus + rate_minus_to_plus)
+    return brentq(
+        lambda q: stationary
+        @ critical_quadratic_cdfs(
+            q,
+            c,
+            rate_plus_to_minus,
+            rate_minus_to_plus,
+            signal,
+            noise,
+        )
+        - TARGET,
+        -4.0 * noise,
+        4.0 * (abs(signal) + noise),
+        xtol=2e-13,
+    )
+
+
+def critical_score_coefficients(
+    generator: np.ndarray,
+    state_observables: np.ndarray,
+    hessian: np.ndarray,
+    third_derivative: np.ndarray,
+    signal: float = MU,
+    noise: float = SIGMA,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Second-order fixed-start coefficients at a critical score point.
+
+    The gradient of the score map at the stationary mean is assumed to be
+    zero.  Returns the coverage coefficients, boundary-covariance tensors,
+    Green--Kubo covariance, and Poisson corrector.
+    """
+    generator = np.asarray(generator, dtype=float)
+    state_observables = np.atleast_2d(state_observables).astype(float)
+    if state_observables.shape[0] != generator.shape[0]:
+        state_observables = state_observables.T
+    stationary = generator_stationary_distribution(generator)
+    projection = np.outer(np.ones(len(stationary)), stationary)
+    group_inverse = np.linalg.inv(generator - projection) + projection
+    centered = state_observables - np.outer(
+        np.ones(len(stationary)), stationary @ state_observables
+    )
+    corrector = group_inverse @ centered
+    weighted = stationary[:, None] * centered
+    covariance_rate = -(
+        centered.T @ (stationary[:, None] * corrector)
+        + corrector.T @ weighted
+    )
+    dimension = centered.shape[1]
+    boundary_covariance = np.empty(
+        (len(stationary), dimension, dimension)
+    )
+    for left in range(dimension):
+        for right in range(dimension):
+            forcing = (
+                centered[:, left] * corrector[:, right]
+                + centered[:, right] * corrector[:, left]
+            )
+            boundary_covariance[:, left, right] = group_inverse @ forcing
+    curvature = np.einsum(
+        "ab,iab->i", np.asarray(hessian), boundary_covariance
+    )
+    cubic = np.einsum(
+        "abc,ia,bc->i",
+        np.asarray(third_derivative),
+        corrector,
+        covariance_rate,
+    )
+    coefficients = -(
+        signal * norm.pdf(norm.ppf(TARGET)) / (2.0 * noise)
+    ) * (curvature - cubic)
+    assert np.max(
+        np.abs(np.einsum("i,iab->ab", stationary, boundary_covariance))
+    ) < 2e-14
+    assert np.max(np.abs(stationary @ coefficients)) < 2e-14
+    return (
+        coefficients,
+        boundary_covariance,
+        covariance_rate,
+        corrector,
+    )
+
+
 def asymmetric_path_cdfs(
     q: float,
     c: float,
@@ -1443,6 +1639,113 @@ def main() -> None:
         f"last post-leading residual rate {nonlinear_rates[-1]:.6f}; "
         f"scaled threshold shift {nonlinear_scaled_threshold:.8f} "
         f"versus {nonlinear_threshold_coefficient:.8f}"
+    )
+
+    # At a critical point of the score map the gradient coefficient vanishes.
+    # The first nonzero fixed-start discrepancy is then order c^-2.  An
+    # unequal-rate chain is essential here: the symmetric quadratic example
+    # would make the two conditional laws identical and conceal the boundary
+    # covariance.  The exact Bessel occupation law independently checks the
+    # Poisson-equation coefficient.
+    critical_alpha, critical_beta = 1.7, 0.4
+    critical_generator = np.array(
+        [
+            [-critical_alpha, critical_alpha],
+            [critical_beta, -critical_beta],
+        ]
+    )
+    critical_values = np.array([1.0, -1.0])
+    critical_stationary = np.array(
+        [critical_beta, critical_alpha]
+    ) / (critical_alpha + critical_beta)
+    (
+        critical_coefficients,
+        critical_boundary_covariance,
+        critical_covariance_rate,
+        critical_corrector,
+    ) = critical_score_coefficients(
+        critical_generator,
+        critical_values,
+        np.array([[2.0]]),
+        np.zeros((1, 1, 1)),
+    )
+    critical_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0])
+    critical_thresholds = []
+    critical_gaps = []
+    critical_mass_errors = []
+    for c in critical_scales:
+        q = critical_quadratic_threshold(
+            c, critical_alpha, critical_beta
+        )
+        coverages = critical_quadratic_cdfs(
+            q, c, critical_alpha, critical_beta
+        )
+        assert abs(critical_stationary @ coverages - TARGET) < 4e-11
+        critical_thresholds.append(q)
+        critical_gaps.append(coverages - TARGET)
+        critical_mass_errors.append(
+            max(
+                abs(
+                    asymmetric_occupation_expectation(
+                        lambda _: 1.0,
+                        c,
+                        critical_alpha,
+                        critical_beta,
+                        start,
+                    )
+                    - 1.0
+                )
+                for start in (0, 1)
+            )
+        )
+    critical_thresholds = np.asarray(critical_thresholds)
+    critical_gaps = np.asarray(critical_gaps)
+    critical_residuals = np.abs(
+        critical_gaps
+        - critical_coefficients[None, :] / critical_scales[:, None] ** 2
+    )
+    critical_rates = np.log2(
+        critical_residuals[:-1] / critical_residuals[1:]
+    )
+    assert np.min(critical_rates[-1]) > 2.8
+    assert abs(critical_stationary @ critical_coefficients) < 2e-15
+    assert max(critical_mass_errors) < 2e-10
+    critical_threshold_scaled = critical_scales[-1] * (
+        critical_thresholds[-1] - SIGMA * norm.ppf(TARGET)
+    )
+    critical_threshold_limit = MU * critical_covariance_rate[0, 0]
+    assert abs(
+        critical_threshold_scaled - critical_threshold_limit
+    ) < 0.002
+    print("\nCritical nonlinear path-score crossover")
+    print("psi(a)=(a-E_pi A)^2; psi'(E_pi A)=0")
+    print(" c       q_pool       c^2*gap +      c^2*gap -")
+    for c, q, gap in zip(
+        critical_scales, critical_thresholds, critical_gaps
+    ):
+        print(
+            f"{c:4.0f}   {q:11.8f}   {c**2 * gap[0]:12.8f}"
+            f"   {c**2 * gap[1]:12.8f}"
+        )
+    print(
+        "predicted c^2 limits: "
+        f"{critical_coefficients[0]:.8f}, "
+        f"{critical_coefficients[1]:.8f}; "
+        f"last residual rates {critical_rates[-1, 0]:.6f}, "
+        f"{critical_rates[-1, 1]:.6f}"
+    )
+    print(
+        "boundary covariance: "
+        f"{critical_boundary_covariance[:, 0, 0]}; "
+        "corrector: "
+        f"{critical_corrector[:, 0]}; "
+        "Green--Kubo variance: "
+        f"{critical_covariance_rate[0, 0]:.8f}"
+    )
+    print(
+        f"scaled threshold shift {critical_threshold_scaled:.8f} "
+        f"versus {critical_threshold_limit:.8f}; "
+        f"maximum occupation-mass error {max(critical_mass_errors):.3e}"
     )
 
     # Unequal rates destroy the equal-and-opposite symmetry.  The conditional
@@ -2479,7 +2782,7 @@ def main() -> None:
         "crossover, overlap covariance, "
         "finite-sample terminal and strided-window rank coverage, general "
         "finite-chain path coefficients through second order, smooth "
-        "nonlinear path maps, "
+        "nonlinear path maps including the critical-gradient second order, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "

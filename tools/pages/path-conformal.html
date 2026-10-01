@@ -195,7 +195,7 @@
       H=Q^\#\widetilde F.$$
     <p>Let $\psi:\mathbb R^d\to\mathbb R$ be $C^4$ on a neighborhood of the convex hull of the state values and
       consider the nonlinear path score</p>
-    $$S_c=\mu\psi(A_c)+\sigma Z,qquad Z\sim N(0,1),$$
+    $$S_c=\mu\psi(A_c)+\sigma Z,\qquad Z\sim N(0,1),$$
     <p>with independent Gaussian smoothing. The stationary Green&ndash;Kubo covariance rate is</p>
     $$\Gamma=-\widetilde F^\top D_\pi Q^\#\widetilde F
       -\widetilde F^\top(Q^\#)^\top D_\pi\widetilde F.$$
@@ -236,6 +236,65 @@
     <p>The post-leading residual has measured order $1.973546$. At $c=128$, the scaled pooled-threshold shift is
       $0.81052907$, versus the predicted curvature-plus-variance coefficient $0.80504825$. Thus the certificate is
       nonlinear in the occupation average and independently retains the exact stationary pooling identity.</p>
+
+    <h3>Critical score maps: the missing second order</h3>
+    <p>If $\nabla\psi(\bar f)=0$, the preceding $c^{-1}$ conditional coefficient vanishes, but this does not in
+      general make the fixed-start error exponentially small. For indices $a,b$, define the state-vector and its
+      Poisson solution</p>
+    $$G^{ab}_j=\widetilde F_{ja}H_{jb}+\widetilde F_{jb}H_{ja},\qquad
+      B_i^{ab}=[Q^\#G^{ab}]_i.$$
+    <p>Here $B_i$ is the second-moment boundary covariance. With the same fixed finite chain, Gaussian smoothing,
+      and $C^4$ score map as above, the critical-point expansion is</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c\le q_c)-(1-\alpha)
+      =-{\mu\phi(z)\over2\sigma c^2}
+      \left\{\nabla^2\psi(\bar f):B_i
+      -\nabla^3\psi(\bar f)[H_{i\cdot},\Gamma]\right\}
+      +o(c^{-2}),$$
+    $$\nabla^3\psi(\bar f)[H_{i\cdot},\Gamma]
+      =\sum_{a,b,d}\partial_{abd}\psi(\bar f)H_{ia}\Gamma_{bd}.$$
+    </div>
+    <p>The two terms have different meanings. The Hessian contracts with the fixed-start boundary correction to
+      the covariance; the third derivative contracts the initial mean boundary layer with the stationary
+      Green&ndash;Kubo covariance. Both coefficient vectors have stationary weighted sum zero. Thus integrating
+      over the stationary start still cancels a conditional discrepancy that is generally nonzero state by state.</p>
+    <p>A direct moment proof keeps the approximation scope visible. The backward equations for the first three
+      centered integral moments give</p>
+    <div class="equation-card">
+    $$\mathbb E_i[(A_c-\bar f)_a(A_c-\bar f)_b]
+      -\mathbb E_\pi[(A_c-\bar f)_a(A_c-\bar f)_b]
+      ={B_i^{ab}\over c^2}+o(c^{-2}),$$
+    $$\mathbb E_i[(A_c-\bar f)_a(A_c-\bar f)_b(A_c-\bar f)_d]
+      -\mathbb E_\pi[(A_c-\bar f)_a(A_c-\bar f)_b(A_c-\bar f)_d]
+      =-{H_{ia}\Gamma_{bd}+H_{ib}\Gamma_{ad}+H_{id}\Gamma_{ab}\over c^2}
+      +o(c^{-2}).$$
+    </div>
+    <p>Taylor-expanding $\psi$ and then the Gaussian-smoothed CDF gives the claimed coefficient; the common
+      stationary quantile terms cancel. This is the finite-state spectral/moment mechanism behind Edgeworth
+      expansions for additive Markov functionals; compare
+      <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010)</a>. The result holds for fixed
+      $Q,F,\mu,\sigma$ and an interior target as $c\to\infty$. No uniform remainder is claimed when the spectral
+      gap degenerates.</p>
+    <p>An exact unequal-rate two-state certificate makes the order visible. Take jump rates
+      $\alpha=1.7$ from $+$ to $-$ and $\beta=0.4$ in reverse, $F=(1,-1)$, $\mu=1$, $\sigma=.5$, and
+      $\psi(a)=(a-\bar f)^2$. Then $\bar f=-0.61904762$, $\psi'(\bar f)=0$, and the Poisson formula predicts
+      $c^2$-scaled gaps $(-0.31908624,0.07507911)$. The exact Bessel occupation-time law gives</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th style="text-transform:none">$c$</th><th>pooled threshold</th><th style="text-transform:none">$c^2\,$ gap, start +</th><th style="text-transform:none">$c^2\,$ gap, start &minus;</th></tr></thead>
+      <tbody>
+        <tr><td>32</td><td>0.65977143</td><td>&minus;0.39402241</td><td>0.09271116</td></tr>
+        <tr><td>64</td><td>0.65010819</td><td>&minus;0.35686033</td><td>0.08396714</td></tr>
+        <tr><td>128</td><td>0.64540265</td><td>&minus;0.33794246</td><td>0.07951587</td></tr>
+        <tr><td>256</td><td>0.64307968</td><td>&minus;0.32849520</td><td>0.07729299</td></tr>
+        <tr><td>512</td><td>0.64192539</td><td>&minus;0.32378464</td><td>0.07618462</td></tr>
+      </tbody>
+    </table></div>
+    <p>After subtracting the predicted $c^{-2}$ terms, the last measured convergence orders are
+      $(3.001863,3.001862)$. The stationary weights $(0.19047619,0.80952381)$ annihilate both the predicted
+      coefficient vector and every exact pooled gap. Also
+      $c\{q_c-0.5z_{.9}\}=0.58859718$ at $c=512$, versus the predicted curvature shift
+      $\mu\Gamma=0.58740957$. These are latent-start model-conditional errors, not distribution-free conditional
+      or feature-conditional conformal coverage.</p>
 
     <h2>Regime-aware and locally weighted thresholds</h2>
     <p>Given posterior $p$, the model-conditional CDF is $F_p=pF_++(1-p)F_-$. Let $q_p(c)$ solve
