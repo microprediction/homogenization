@@ -2440,5 +2440,16 @@
   "doi": "",
   "url": "https://real.mtak.hu/201426/",
   "annotation": "Proves that general information divergences cannot increase through a stochastic channel. The joint panel theorem uses this data-processing principle after comparing the hidden Markov path with the iid stationary path."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "LeCam1960",
+  "authors": "Le Cam, L.",
+  "year": 1960,
+  "title": "Locally asymptotically normal families of distributions",
+  "venue": "University of California Publications in Statistics 3(2):37-98",
+  "doi": "",
+  "url": "https://books.google.com/books?id=ytBUAAAAYAAJ",
+  "annotation": "Introduces local asymptotic normality. The joint burn-in/panel theorem uses the Bernoulli likelihood-ratio limit, while retaining the separate finite initial-state likelihood factor."
  }
 ]

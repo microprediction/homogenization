@@ -34,7 +34,9 @@ A relative-entropy comparison with the iid pooled panel gives an explicit
 joint panel-size/fast-switching total-variation bound.  A symmetric two-state
 example reduces exactly to biased versus fair Bernoulli products and proves
 that the resulting square-root panel scale is sharp, including its critical
-local-asymptotic-normal limit.
+local-asymptotic-normal limit.  The same factorization with an arbitrary
+burned-in start gives the exact two-parameter limit in which residual initial
+memory and the Gaussian transition experiment coexist.
 """
 import itertools
 import math
@@ -1081,6 +1083,46 @@ def bernoulli_product_tv(trials, correlation):
     return biased_tail - fair_tail
 
 
+def burned_bernoulli_product_tv(trials, correlation, initial_bias):
+    """Exact TV for one biased initial sign and biased transition signs.
+
+    Under the iid stationary reference law, the initial sign and all
+    transition signs are independent and fair.  Under the burned-in Markov
+    law they remain independent, with means initial_bias and correlation.
+    Aggregating the transition signs by their success count avoids enumerating
+    2**(trials + 1) paths.
+    """
+    counts = np.arange(trials + 1)
+    biased = binom.pmf(counts, trials, (1 + correlation) / 2)
+    fair = binom.pmf(counts, trials, 0.5)
+    return 0.25 * sum(
+        np.abs((1 + sign * initial_bias) * biased - fair).sum()
+        for sign in (-1, 1)
+    )
+
+
+def burned_panel_lan_limit(initial_bias, information):
+    """TV limit for a fixed initial bias and Bernoulli LAN information."""
+    if information == 0:
+        return abs(initial_bias) / 2
+
+    root_information = math.sqrt(information)
+
+    def absolute_lognormal_shift(scale):
+        if scale == 0:
+            return 1.0
+        log_scale = math.log(scale)
+        upper = ndtr(root_information / 2 + log_scale / root_information)
+        crossing = ndtr(-root_information / 2
+                        + log_scale / root_information)
+        return 2 * (scale * upper - crossing) - scale + 1
+
+    return 0.25 * sum(
+        absolute_lognormal_shift(1 + sign * initial_bias)
+        for sign in (-1, 1)
+    )
+
+
 def joint_panel_mixing_checks(Q, pi, gamma_s):
     """Check the joint long-panel/fast-switching TV theorem.
 
@@ -1163,6 +1205,49 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
         print(f" {a:8.6f}    {subcritical:10.8f}  {critical:10.8f}"
               f"  {supercritical:10.8f}")
     print(f"  critical LAN limit: {critical_limit:.8f}")
+
+    # Joint burn-in/panel sharpness.  For a symmetric two-state chain, a
+    # pre-panel imbalance eta becomes delta=eta*exp(-2*m*b).  The bijection
+    # from paths to (X_0, Z_1, ..., Z_N) turns the exact likelihood ratio into
+    # (1+delta*X_0) times the Bernoulli-product likelihood ratio.  If
+    # N*a^2 -> c, LAN sends the latter to exp(sqrt(c)G-c/2), independently of
+    # X_0.  The following checks both the finite factorization and its limit.
+    brute_initial_bias = 0.37
+    burned_path = []
+    iid_path = []
+    for signs in itertools.product((-1, 1), repeat=brute_trials + 1):
+        probability = (1 + brute_initial_bias * signs[0]) / 2
+        for left, right in zip(signs[:-1], signs[1:]):
+            probability *= (1 + brute_a * left * right) / 2
+        burned_path.append(probability)
+        iid_path.append(2 ** -(brute_trials + 1))
+    burned_brute_tv = 0.5 * np.abs(np.asarray(burned_path)
+                                   - np.asarray(iid_path)).sum()
+    burned_formula_tv = burned_bernoulli_product_tv(
+        brute_trials, brute_a, brute_initial_bias)
+    assert abs(burned_brute_tv - burned_formula_tv) < 3e-15
+
+    limiting_bias = 0.6
+    limiting_information = 1.0
+    joint_limit = burned_panel_lan_limit(
+        limiting_bias, limiting_information)
+    joint_rows = []
+    for exponent in (3, 4, 5, 6, 7):
+        a = 2.0 ** -exponent
+        trials = round(limiting_information / a ** 2)
+        joint_rows.append((
+            a,
+            burned_bernoulli_product_tv(trials, a, limiting_bias),
+        ))
+    assert abs(joint_rows[-1][1] - joint_limit) < 3e-5
+    assert abs(burned_panel_lan_limit(limiting_bias, 0)
+               - abs(limiting_bias) / 2) < 2e-15
+    assert abs(burned_panel_lan_limit(0, limiting_information)
+               - critical_limit) < 2e-15
+    print("sharp joint burn-in/panel limit (delta=0.6, c=1):")
+    for a, exact_tv in joint_rows:
+        print(f"  a={a:8.6f} exact TV {exact_tv:.9f}")
+    print(f"  mixed Bernoulli/lognormal limit: {joint_limit:.9f}")
 
 
 def nonreversible_contraction_checks():
@@ -1348,7 +1433,8 @@ def main():
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
           " count law, joint panel-size/fast-switching TV bound and sharp"
-          " two-state threshold, Perron tail rate, sharp prefactor and first two"
+          " stationary and burned-start two-state limits, Perron tail rate,"
+          " sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"
           " correction, Green--Kubo"

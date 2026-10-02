@@ -418,6 +418,48 @@
       bounds at scaled spacings $mh=1,1.5,2$ are respectively
       $0.35621999$, $0.05660622$, and $0.00899518$.</p>
 
+    <h3>Sharp joint burn-in and panel limit</h3>
+    <p>The additive burn-in term is not merely a proof artifact. In the same
+      symmetric two-state model, let the initial sign imbalance before burn-in
+      be $\eta$, put</p>
+    $$\delta_m=\eta e^{-2mb_m},\qquad a_m=e^{-2mh_m},$$
+    <p>and observe $n_m$ states after the burn-in. The path-to-sign map is a
+      bijection, and under the iid stationary reference law
+      $(X_0,Z_1,\ldots,Z_{n_m-1})$ are independent fair signs. Under the
+      Markov law they are still independent, but have means
+      $(\delta_m,a_m,\ldots,a_m)$. Consequently the likelihood ratio is exactly</p>
+    $$L_m=(1+\delta_mX_0)
+      \prod_{j=1}^{n_m-1}(1+a_mZ_j),\qquad
+      d_{\rm TV}=\frac12\mathbb E_0|L_m-1|.$$
+    <p>Suppose $a_m\to0$, $\delta_m\to\delta\in[-1,1]$, and
+      $(n_m-1)a_m^2\to c\in[0,\infty)$. The log of the product is locally
+      asymptotically normal, in the sense introduced by
+      <a href="./bibliography.html#LeCam1960">Le Cam (1960)</a>, and uniform
+      integrability follows from its bounded second moment. Hence</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\longrightarrow
+      \Psi(\delta,c):=\frac14\sum_{s=\pm1}
+      \mathbb E\left|(1+s\delta)
+      e^{\sqrt c\,G-c/2}-1\right|,\qquad G\sim N(0,1).$$
+    </div>
+    <p>This contains both boundary cases:
+      $\Psi(\delta,0)=|\delta|/2$ is the surviving initial-state memory, while
+      $\Psi(0,c)=2\Phi(\sqrt c/2)-1$ is the stationary panel limit above.
+      Therefore iid panel convergence holds in this sharp example if and only
+      if</p>
+    $$\delta_m\to0
+      \quad\hbox{and}\quad
+      (n_m-1)a_m^2\to0.$$
+    <p>A short within-panel spacing cannot compensate for insufficient burn-in,
+      nor can burn-in remove accumulated dependence among a growing number of
+      calibration scores. With $\delta=0.6$ and $c=1$, the exact finite-panel
+      distance at $a=2^{-7}$ is $0.451714292$, converging to
+      $\Psi(0.6,1)=0.451711767$. Full path enumeration independently verifies
+      the finite factorization. Continuous disjoint-support emissions again
+      preserve the hidden path and make the result a score-panel statement.
+      It remains a comparison of marginal random-panel laws, not a
+      training-conditional or feature-conditional coverage guarantee.</p>
+
     <h3>Long regular panels: the exact exponential rate</h3>
     <p>The generating matrix also resolves the large-panel limit, but only
       when the spacing is fixed. Let $P=e^{mQ_0h}$ for $h&gt;0$, assume the
