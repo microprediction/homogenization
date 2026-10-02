@@ -279,6 +279,29 @@
       <a href="./bibliography.html#Schur1911">Schur product theorem</a>; the
       tensor factorization also supplies the rank statement directly.</p>
 
+    <h3>The corrected regime-count lower bound</h3>
+    <p>If the fixed features are driven by an irreducible $n$-state chain,
+      then $r=\operatorname{rank}K\le n-1$.  Consequently the integrated
+      rank $R=\operatorname{rank}D(T)$ and the known loading-span dimension
+      $s=\operatorname{rank}J(T)$ imply</p>
+    <div class="equation-card">
+    $$n\ge 1+\left\lceil {R\over s}\right\rceil.$$
+    </div>
+    <p>If only an upper bound $s\le q$ is known, the still-valid conclusion is
+      $n\ge1+\lceil R/q\rceil$.  This is the strongest possible lower bound
+      from these ranks alone: for every $r,s\ge1$, generic Gram factors with
+      $d\ge rs$ attain $R=rs$, and hence equality with $n=r+1$.  A complete-graph
+      $n$-state chain realizes an arbitrary rank-$r$ centered feature Gramian,
+      while $s$ independent deterministic loading shapes realize the second
+      factor.</p>
+    <p>The endpoints explain the apparent contradiction.  With one common
+      loading shape, $s=1$ and the familiar rule $n\ge R+1$ survives.  With
+      $d$ independent loading shapes, a full-rank $d\times d$ integrated
+      matrix says only $n\ge2$, and the two-regime CIR construction below
+      attains that bound.  This inference uses the rank of the loading family;
+      it is not a claim that $D(T)$ itself is a fixed-feature Green&ndash;Kubo
+      matrix.</p>
+
     <h2>Two regimes can create arbitrarily large integrated rank</h2>
     <p>The two-name example is not a dimension-two accident. For any number
       $d$ of names and any $T&gt;0$, a two-regime model can have

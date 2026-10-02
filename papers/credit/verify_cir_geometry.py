@@ -268,6 +268,7 @@ def rank_amplification_checks():
     """Check the sharp Hadamard-rank bound and many-name CIR amplification."""
     rng = np.random.default_rng(20260928)
     maximum_factor_error = 0.0
+    sharp_regime_bounds = []
     for d in range(2, 9):
         for rank_k in range(1, min(3, d) + 1):
             for rank_j in range(1, min(3, d) + 1):
@@ -286,6 +287,24 @@ def rank_amplification_checks():
                 assert np.linalg.matrix_rank(integrated, tol=1e-10) == min(
                     d, rank_k * rank_j
                 )
+
+    # The corrected regime-count inference is
+    # n >= 1 + ceil(rank(K Hadamard J) / rank(J)).  It is algebraically sharp
+    # for every pair (rank(K), rank(J)): choose d >= rank(K) rank(J) and
+    # generic row factors, so the rowwise tensor products have full rank.
+    for rank_k in range(1, 5):
+        for rank_j in range(1, 5):
+            d = rank_k * rank_j
+            u = rng.normal(size=(d, rank_k))
+            v = rng.normal(size=(d, rank_j))
+            integrated = (u @ u.T) * (v @ v.T)
+            observed_rank = np.linalg.matrix_rank(integrated, tol=1e-10)
+            inferred_states = 1 + math.ceil(observed_rank / rank_j)
+            assert observed_rank == d
+            assert inferred_states == rank_k + 1
+            sharp_regime_bounds.append(
+                (rank_k, rank_j, observed_rank, inferred_states)
+            )
 
     # With two regimes, choose centered hazard contrasts so that K=11'/2.
     # Distinct mean-reversion rates make the zero-volatility loadings
@@ -333,6 +352,10 @@ def rank_amplification_checks():
     assert maximum_factor_error < 5e-13
     print("\nsharp maturity-loading rank amplification")
     print(f"  tensor-factor identity error {maximum_factor_error:.2e}")
+    print(
+        "  corrected regime bound sharp in "
+        f"{len(sharp_regime_bounds)} rank pairs through r=s=4"
+    )
     for d, smallest, condition in rows:
         print(f"  d={d}: smallest eigenvalue {smallest:.9e}, "
               f"condition {condition:.6e}")
