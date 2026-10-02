@@ -950,6 +950,25 @@ def check_periodic_forcing() -> None:
     predicted_drift = np.mean(delta_derivative**2 + delta**4) / 8
     assert abs(drift_constants[-1] / predicted_drift - 1) < 0.03
     beta_3 = -predicted_drift
+    # Write r=sum_{n>=1} a_n/(2m)^n in
+    # r'=delta-2mr-delta*r^2.  The recursion
+    #
+    #   a_1=delta,
+    #   a_n=-a_{n-1}'-delta*sum_{i+j=n-1} a_i*a_j
+    #
+    # gives, after periodic integration by parts,
+    #
+    #   beta_5 = <(delta'')^2 + 10 delta^2(delta')^2 + 2 delta^6>/32.
+    #
+    # The traceless two-component system is conjugate under m -> -m, so its
+    # large-m Floquet branch is odd.  Thus every even inverse-speed
+    # coefficient vanishes, not merely beta_2 and beta_4.
+    delta_second_derivative = -0.22 * np.sin(grid) + 0.32 * np.cos(2 * grid)
+    beta_5 = np.mean(
+        delta_second_derivative**2
+        + 10 * delta**2 * delta_derivative**2
+        + 2 * delta**6
+    ) / 32
     delayed_critical_errors = np.asarray(periodic_speeds) ** 3 * np.asarray(
         signed_exponent_remainders
     )
@@ -963,6 +982,11 @@ def check_periodic_forcing() -> None:
     )
     post_beta_3_rates = np.log2(post_beta_3[:-1] / post_beta_3[1:])
     assert post_beta_3_rates[-1] > 4.9
+    scaled_fifth_order = np.asarray(periodic_speeds) ** 5 * (
+        np.asarray(signed_exponent_remainders)
+        - beta_3 / np.asarray(periodic_speeds) ** 3
+    )
+    assert abs(scaled_fifth_order[-1] / beta_5 - 1) < 2e-4
     print(f"periodic uniform-error rate: {rates[-1]:.6f}")
     print(f"maximum Riccati/monodromy discrepancy: {max(monodromy_errors):.3e}")
     print(
@@ -973,6 +997,10 @@ def check_periodic_forcing() -> None:
         "delayed critical-scale log error at m=64: "
         f"{delayed_critical_errors[-1]:.10e}, predicted {beta_3:.10e}; "
         f"post-beta_3 rate {post_beta_3_rates[-1]:.6f}"
+    )
+    print(
+        "fifth-order drift after beta_3: numerical "
+        f"{scaled_fifth_order[-1]:.10e}, predicted {beta_5:.10e}"
     )
 
 

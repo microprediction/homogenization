@@ -752,6 +752,26 @@
       periodicity gives $\langle\delta\delta'\rangle=0$, while</p>
     $$\beta_3=-{1\over8}\left\langle(\delta')^2+\delta^4\right\rangle
       =-0.01473536375.$$
+    <p>In fact this cancellation persists at every even order. After removing the scalar
+      factor $\exp\{\int_0^t\bar g-mt\}$, the traceless system is</p>
+    $$y'=\{m\sigma_x+\delta(t)\sigma_z\}y.$$
+    <p>Conjugation by $\sigma_z$ sends $m$ to $-m$, so the monodromy trace is even in
+      $m$. The large-$m$ Floquet branch $\kappa_m\sim m$ is consequently odd as a
+      formal Laurent series. Since $\lambda_m=\langle\bar g\rangle-m+\kappa_m$, its
+      correction contains only $m^{-1},m^{-3},m^{-5},\ldots$. This is a statement
+      about the fixed-order asymptotic series; it does not assert convergence of that
+      series.</p>
+    <p>The coefficient after $\beta_3$ is explicit. Substituting
+      $r=\sum_{n\geq1}a_n/(2m)^n$ into
+      $r'=\delta-2mr-\delta r^2$ gives</p>
+    $$a_1=\delta,\qquad
+      a_n=-a_{n-1}'-\delta\!\sum_{i+j=n-1}a_i a_j.$$
+    <p>Periodic integration by parts at the fifth step yields</p>
+    <div class="equation-card">
+    $$\beta_5={1\over32}\left\langle
+      (\delta'')^2+10\delta^2(\delta')^2+2\delta^6
+      \right\rangle=0.0079473389503.$$
+    </div>
     <p>The first omitted nonzero term is therefore third order, so the critical maturity
       is $T=m^3$, not $m^2$. Since the nonsecular amplitude is retained exactly, the
       following values are exactly the log-price errors caused by truncating the exponent
@@ -770,8 +790,11 @@
     </div>
     <p>At $m=64$ the relative coefficient error is $1.32\times10^{-4}$. After
       subtracting $\beta_3/m^3$, the measured local exponent remainder has order
-      $4.998987$; the fifth order reflects the next symmetry-plus-periodicity cancellation and is
-      stronger than the general fixed-order remainder needed by the theorem.</p>
+      $4.998987$, and $m^5(\lambda_m-\lambda_m^{[3]})=0.0079458603038$, within
+      $1.86\times10^{-4}$ relative error of the analytic $\beta_5$. Thus truncating
+      through $m^{-3}$ moves the next critical maturity to $T=m^5$ in this symmetric
+      model. This parity conclusion is special to the symmetric two-state system; the
+      moving nonreversible chain below has generic even and odd coefficients.</p>
 
     <h3>Critical-scale certificate</h3>
     <p>On the moving nonreversible three-state example, the recursion gives</p>
