@@ -128,6 +128,47 @@ def cumulants(raw):
     )
 
 
+def cumulants_any_order(raw):
+    """Cumulants from raw moments E[Z],...,E[Z^K]."""
+    raw = np.asarray(raw, dtype=float)
+    values = []
+    for order, moment in enumerate(raw, start=1):
+        value = moment
+        for index in range(1, order):
+            value -= (
+                math.comb(order - 1, index - 1)
+                * values[index - 1]
+                * raw[order - index - 1]
+            )
+        values.append(value)
+    return np.asarray(values)
+
+
+def independent_logreturn_cumulants(variance_cumulants):
+    """Map cumulants of V to those of X=-V/2+sqrt(V)Z.
+
+    The identity is a finite-jet statement and therefore does not require an
+    MGF.  If ``variance_cumulants[j-1]`` is kappa_j(V), the kth return
+    cumulant is
+
+      sum_{j=ceil(k/2)}^k (-1)^k k!/(2^j j!) binom(j,k-j) kappa_j(V).
+    """
+    variance_cumulants = np.asarray(variance_cumulants, dtype=float)
+    result = np.zeros_like(variance_cumulants)
+    for order in range(1, len(result) + 1):
+        for index in range((order + 1) // 2, order + 1):
+            coefficient = (
+                (-1) ** order
+                * math.factorial(order)
+                * math.comb(index, order - index)
+                / (2**index * math.factorial(index))
+            )
+            result[order - 1] += (
+                coefficient * variance_cumulants[index - 1]
+            )
+    return result
+
+
 def cumulant_correction(raw, correction):
     """Directional derivative of the first four cumulants in the moment correction."""
     m1, m2, m3, m4 = raw
@@ -2637,6 +2678,185 @@ def verify_finite_moment_initial_jet(max_order=6):
     return fitted_decay, remainders, terminal
 
 
+def verify_independent_return_finite_jet(max_order=6):
+    """Transport the variance jet to an independent log return.
+
+    The initial variance is Pareto with moments only through order six, so
+    neither this check nor the theorem can rely on a two-sided MGF.  A direct
+    polynomial semigroup for (v, V, M) is compared with the triangular
+    cumulant map obtained by substituting (s^2-s)/2 in the formal variance
+    cumulant jet.
+    """
+    assert max_order <= 6
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speed = 8.0
+
+    alpha = 6.5
+    initial_mean = 0.04
+    lower = initial_mean * (alpha - 1.0) / alpha
+    initial_moments = np.array(
+        [alpha * lower**order / (alpha - order)
+         for order in range(max_order + 1)]
+    )
+    moment_components = pi[:, None] * initial_moments[None, :]
+
+    rates, _ = integrated_variance_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance
+    )
+    _, invariant, _, _ = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, max_order
+    )
+    width = max_order + 1
+    stationary_mean = sum(
+        invariant[state * width + 1] for state in range(len(pi))
+    )
+    rates[0] = stationary_mean
+    boundary, _, _, _ = integrated_variance_boundary_constants(
+        max_order,
+        speed,
+        q0,
+        pi,
+        c,
+        kappa,
+        variance,
+        initial_moment_components=moment_components,
+    )
+    return_rates = independent_logreturn_cumulants(rates)
+    return_boundary = independent_logreturn_cumulants(boundary)
+
+    (
+        basis,
+        a_c,
+        a_kappa,
+        v_d_vv,
+        v_d_mm,
+        v_d_mdv,
+        v_d_z,
+    ) = leveraged_operators(max_order)
+    a_variance = 0.5 * v_d_vv
+    averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + (pi @ variance) * a_variance
+        + 0.5 * v_d_mm
+        + v_d_z
+    )
+    generator = full_generator(
+        speed * q0,
+        averaged,
+        [a_c, a_kappa, a_variance, v_d_mdv],
+        [c, kappa, variance, np.zeros(len(pi))],
+    )
+    initial = np.zeros(len(pi) * len(basis))
+    for state in range(len(pi)):
+        block = state * len(basis)
+        for position, (m_power, v_power, z_power) in enumerate(basis):
+            if m_power == 0 and z_power == 0:
+                initial[block + position] = moment_components[
+                    state, v_power
+                ]
+
+    payoffs = []
+    for order in range(1, max_order + 1):
+        payoff = np.zeros(len(basis))
+        for z_power in range(order + 1):
+            m_power = order - z_power
+            payoff[basis.index((m_power, 0, z_power))] = (
+                math.comb(order, z_power) * (-0.5) ** z_power
+            )
+        payoffs.append(payoff)
+
+    direct_errors = []
+    transported_remainder_errors = []
+    return_remainders = []
+    maturities = np.array([4.0, 8.0, 12.0])
+    for maturity in maturities:
+        semigroup = expm(maturity * generator)
+        raw_return = np.array(
+            [
+                initial
+                @ semigroup
+                @ np.kron(np.ones(len(pi)), payoff)
+                for payoff in payoffs
+            ]
+        )
+        direct = cumulants_any_order(raw_return)
+        variance_cumulants = centered_integrated_cumulants(
+            max_order,
+            maturity,
+            speed,
+            q0,
+            pi,
+            c,
+            kappa,
+            variance,
+            initial_moment_components=moment_components,
+        )
+        variance_cumulants[0] += maturity * stationary_mean
+        transported = independent_logreturn_cumulants(variance_cumulants)
+        direct_errors.append(np.max(np.abs(direct - transported)))
+
+        variance_remainder = (
+            variance_cumulants - maturity * rates - boundary
+        )
+        return_remainder = (
+            direct - maturity * return_rates - return_boundary
+        )
+        transported_remainder_errors.append(
+            np.max(
+                np.abs(
+                    return_remainder
+                    - independent_logreturn_cumulants(variance_remainder)
+                )
+            )
+        )
+        return_remainders.append(np.max(np.abs(return_remainder)))
+
+    direct_errors = np.asarray(direct_errors)
+    transported_remainder_errors = np.asarray(
+        transported_remainder_errors
+    )
+    return_remainders = np.asarray(return_remainders)
+    assert np.max(direct_errors) < 2e-11
+    assert np.max(transported_remainder_errors) < 2e-11
+    assert np.all(np.diff(return_remainders) < 0.0)
+
+    # Recover the previously stated low-order formulas exactly.
+    trial = np.arange(1.0, max_order + 1.0)
+    mapped = independent_logreturn_cumulants(trial)
+    assert abs(mapped[1] - (trial[0] + trial[1] / 4.0)) < 2e-15
+    assert abs(mapped[2] - (-1.5 * trial[1] - trial[2] / 8.0)) < 2e-15
+    assert abs(
+        mapped[3]
+        - (3.0 * trial[1] + 1.5 * trial[2] + trial[3] / 16.0)
+    ) < 2e-15
+
+    print("5l. independent-return finite jet without an MGF")
+    print(
+        f"   Pareto shape {alpha:.1f}; orders 1--{max_order}; "
+        "formal substitution q(s)=(s^2-s)/2"
+    )
+    print(
+        "   direct-semigroup identity errors T=4,8,12: "
+        + " ".join(f"{value:.3e}" for value in direct_errors)
+    )
+    print(
+        "   transported-remainder errors: "
+        + " ".join(
+            f"{value:.3e}" for value in transported_remainder_errors
+        )
+    )
+    print(
+        "   max return remainders: "
+        + " ".join(f"{value:.3e}" for value in return_remainders)
+    )
+    return direct_errors, transported_remainder_errors, return_remainders
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -2717,6 +2937,7 @@ def main():
         verify_uniform_fixed_order_cumulant_remainders()
     )
     finite_moment_jet_results = verify_finite_moment_initial_jet()
+    independent_return_jet_results = verify_independent_return_finite_jet()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -3123,7 +3344,8 @@ def main():
         f"{min(all_order_rate_correction_results[2]):.3f}, "
         f"twice-corrected floor "
         f"{min(all_order_second_rate_results[1]):.3f}, finite-moment jet decay "
-        f"{finite_moment_jet_results[0]:.3f}"
+        f"{finite_moment_jet_results[0]:.3f}, independent-return identity "
+        f"{np.max(independent_return_jet_results[0]):.1e}"
     )
 
 

@@ -4,7 +4,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a>
     &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a></span></p>
     <h1>Integrated-variance cumulants</h1>
-    <p class="subtitle">Exact fixed-order cumulant rates and boundary constants, plus an explicit European option correction for a positive switched CIR variance.</p>
+    <p class="subtitle">Exact fixed-order integrated-variance and independent-return cumulant rates and boundary constants, plus an explicit European option correction for a positive switched CIR variance.</p>
 
     <p class="lead">The smile produced by uncorrelated stochastic volatility is often described through the variance
     of integrated variance. There are two points to keep separate. The Brownian return has a fourth cumulant exactly
@@ -743,6 +743,41 @@
       MGF: since the integrated CIR path retains a strictly positive affine loading on $v_0$ at every positive
       maturity, its positive transform also diverges in this example.</p>
 
+    <h3>Every independent-return cumulant inherits the finite-jet theorem</h3>
+    <p>The fourth-order log-return identity at the start of the page is one row of an exact triangular map. Fix
+      $K$, let $Z$ be standard normal and independent of $V_T$, and put
+      $X_T=-V_T/2+\sqrt{V_T}Z$. Conditional Gaussian moments give, in the truncated formal cumulant ring,</p>
+    $$\mathcal K_X^{[K]}(s)=\mathcal K_V^{[K]}\!\left({s^2-s\over2}\right)
+      \pmod {s^{K+1}}.$$
+    <p>This is a moment identity: it requires moments only through order $K$, not an MGF. Comparing the coefficient
+      of $s^k$ yields, for every $1\le k\le K$,</p>
+    <div class="equation-card">
+    $$\kappa_k(X_T)=\sum_{j=\lceil k/2\rceil}^k a_{kj}\kappa_j(V_T),\qquad
+      a_{kj}={(-1)^k k!\over 2^j j!}{j\choose k-j}.$$
+    </div>
+    <p>For $k=4$ the three nonzero coefficients are $3,3/2,1/16$, recovering the formula above. More
+      importantly, the map transports the entire long-maturity decomposition. If</p>
+    $$\kappa_j(V_T)=T\gamma_j(m)+\beta_{j,\nu}(m)+r_{j,\nu}(T,m),$$
+    <p>then exactly</p>
+    <div class="equation-card">
+    $$\kappa_k(X_T)=T\Gamma_k^X(m)+B_{k,\nu}^X(m)+R_{k,\nu}^X(T,m),$$
+    $$\Gamma_k^X=\sum_j a_{kj}\gamma_j,\qquad
+      B_{k,\nu}^X=\sum_j a_{kj}\beta_{j,\nu},\qquad
+      R_{k,\nu}^X=\sum_j a_{kj}r_{j,\nu},$$
+    </div>
+    <p>where every sum runs from $\lceil k/2\rceil$ to $k$. Thus the exact $m$-dependent slopes and
+      arbitrary-start boundary constants remain computable at every fixed return order. The same exponent in the
+      switching-rate-uniform remainder theorem is inherited: if the variance remainders through order $K$ are
+      bounded by $C_Ke^{-\gamma T}$, then the order-$k$ return remainder is bounded by
+      $C_Ke^{-\gamma T}\sum_j|a_{kj}|$. This remains fixed-order, not order-uniform, and says nothing about
+      leverage, for which conditional normality fails.</p>
+    <p>The degree-six certificate uses the Pareto initial variance above, so the return has no two-sided MGF near
+      zero. At $T=4,8,12$, an independent polynomial semigroup in $(v,V,M)$ agrees with the transported cumulants
+      through order six within $8.7\times10^{-17}$, $1.3\times10^{-15}$, and $1.5\times10^{-14}$. Transporting
+      the exact slope, boundary, and remainder separately gives the same errors. The largest absolute return
+      remainder across the six orders falls from $1.458\times10^{-4}$ to $1.801\times10^{-6}$ and then
+      $1.551\times10^{-8}$.</p>
+
     <h3>A switching-rate-uniform remainder at every fixed order</h3>
     <p>For switched CIR, the dependence on $m$ in the preceding remainder can be removed when the cumulant order
       is fixed. Fix $K$, $m_0&gt;0$, and assume $\kappa_*:=\min_i\kappa_i&gt;0$. Let
@@ -1054,14 +1089,16 @@
       fixed-$m$ exponentially decaying remainder. The centered-Poisson recursion identifies every fixed-order
       long-run cumulant rate, the slow-fast Schur recursion identifies its first two inverse-speed
       coefficients with a fixed-order $O(m^{-3})$ residual, and the Perron amplitude identifies its arbitrary-start
-      boundary constant with a fixed-$m$ exponential remainder. These results provide no order-uniform constants,
-      switching-rate-uniform higher-cumulant envelope, or maturity-uniform finite-$1/m$ cumulant approximation.
-      No price-level extension is claimed.</li>
+      boundary constant with a fixed-$m$ exponential remainder. At each fixed order, retaining the exact
+      $m$-dependent slope and boundary gives the switching-rate-uniform exponential envelope above; the triangular
+      finite-jet map transfers that statement to every independent-price return cumulant. These results provide no
+      order-uniform constants or maturity-uniform finite-$1/m$ cumulant approximation. No price-level extension is
+      claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
-      <li>The result identifies the fourth cumulant of the martingale return. The exact formula shows explicitly what
-      else is needed for the risk-neutral log return.</li>
+      <li>The finite-jet map identifies every fixed-order independent-price return cumulant. The leveraged-return
+      results are separate because conditional normality then fails and joint cumulants are required.</li>
     </ul>
     <p>The conditional integrated-variance viewpoint goes back to
     <a href="./bibliography.html#HullWhite1987">Hull and White (1987)</a>; the positive square-root model is from
@@ -1078,7 +1115,8 @@
     $\kappa\theta$, $\kappa$, and vol-of-vol switch, together with an exact long-maturity obstruction and exact
     finite-rate formulas for the stationary second-cumulant slope and intercept, third-cumulant slope and intercept,
     and every fixed-order long-run cumulant rate and arbitrary-start boundary constant in that
-    simultaneous-switching model. The damped
+    simultaneous-switching model, together with the exact triangular transfer of those quantities and their
+    exponential remainders to every fixed-order independent-price return cumulant. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>
