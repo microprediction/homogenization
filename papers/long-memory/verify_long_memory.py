@@ -100,6 +100,79 @@ def verify_zero_frequency_atom():
             green_kubo_ratio)
 
 
+def normalized_ou_variance(scale):
+    """Normalized integrated variance for covariance exp(-|t|).
+
+    The direct formula 2*(R - 1 + exp(-R))/R^2 loses digits at small R,
+    so use its Taylor expansion there.
+    """
+    scale = np.asarray(scale, dtype=float)
+    values = np.empty_like(scale)
+    small = scale < 1e-3
+    r = scale[small]
+    values[small] = (
+        1.0 - r / 3.0 + r ** 2 / 12.0
+        - r ** 3 / 60.0 + r ** 4 / 360.0
+    )
+    r = scale[~small]
+    values[~small] = 2.0 * (r + np.expm1(-r)) / r ** 2
+    return values
+
+
+def verify_all_scale_crossover():
+    """Check the complete T/epsilon crossover, including an invariant atom.
+
+    For C(t)=atom_mass+exp(-|t|), the normalized variance is exactly
+
+        atom_mass + 2*(R - 1 + exp(-R))/R^2,  R=T/epsilon.
+
+    It tends to C(0) as R->0, has a nontrivial finite-R crossover, and
+    tends to the invariant atom as R->infinity.  Independent covariance
+    quadrature also checks that maturity and epsilon enter only through R.
+    """
+    atom_mass = 0.37
+    scales = 2.0 ** np.arange(-8, 9)
+    maturities = (0.2, 1.3, 7.0)
+    exact = atom_mass + normalized_ou_variance(scales)
+
+    normalized_quadrature = []
+    for maturity in maturities:
+        normalized_quadrature.append(np.array([
+            integrated_variance(
+                lambda t: atom_mass + math.exp(-t),
+                maturity / scale,
+                maturity,
+            ) / maturity ** 2
+            for scale in scales
+        ]))
+    normalized_quadrature = np.array(normalized_quadrature)
+    quadrature_error = float(np.max(np.abs(
+        normalized_quadrature - exact[None, :]
+    )))
+    collapse_error = float(np.max(np.ptp(normalized_quadrature, axis=0)))
+
+    frozen_value = float(
+        atom_mass + normalized_ou_variance(np.array([2.0 ** -24]))[0]
+    )
+    finite_value = float(
+        atom_mass + normalized_ou_variance(np.array([1.0]))[0]
+    )
+    invariant_value = float(
+        atom_mass + normalized_ou_variance(np.array([2.0 ** 24]))[0]
+    )
+    frozen_error = abs(frozen_value - (atom_mass + 1.0))
+    finite_error = abs(finite_value - (atom_mass + 2.0 / math.e))
+    invariant_error = abs(invariant_value - atom_mass)
+
+    assert quadrature_error < 3e-12
+    assert collapse_error < 3e-12
+    assert frozen_error < 3e-8
+    assert finite_error < 2e-16
+    assert invariant_error < 2e-7
+    return (quadrature_error, collapse_error, frozen_value, finite_value,
+            invariant_value, frozen_error, invariant_error)
+
+
 def sign_gaussian_covariance(t, alpha, delta=1.0):
     correlation = (1.0 + t * t) ** (-alpha / 2.0)
     return 2.0 * delta * delta * math.asin(correlation) / math.pi
@@ -648,6 +721,7 @@ def verify_periodic_case():
 def main():
     short_order = verify_integrable_case()
     zero_atom = verify_zero_frequency_atom()
+    all_scale = verify_all_scale_crossover()
     long_04 = verify_long_memory_case(0.4)
     long_07 = verify_long_memory_case(0.7)
     critical_ratio = verify_critical_case()
@@ -667,6 +741,13 @@ def main():
           "normalized variance limit, residual Green--Kubo ratio: "
           f"{zero_atom[0]:.3e}, {zero_atom[1]:.3e}, "
           f"{zero_atom[2]:.9f}, {zero_atom[3]:.9f}")
+    print("all-scale crossover quadrature/collapse errors: "
+          f"{all_scale[0]:.3e}, {all_scale[1]:.3e}")
+    print("all-scale frozen/finite/invariant normalized variances: "
+          f"{all_scale[2]:.12f}, {all_scale[3]:.12f}, "
+          f"{all_scale[4]:.12f}")
+    print("all-scale frozen/invariant limit errors: "
+          f"{all_scale[5]:.3e}, {all_scale[6]:.3e}")
     print(f"alpha=0.4 order, asymptotic ratio: {long_04[0]:.6f}, {long_04[1]:.6f}")
     print(f"alpha=0.7 order, asymptotic ratio: {long_07[0]:.6f}, {long_07[1]:.6f}")
     print(f"critical epsilon-log ratio: {critical_ratio:.6f}")
