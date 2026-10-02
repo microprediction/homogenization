@@ -165,6 +165,33 @@
     $(-L)^{-1}$, hence $L$, is self-adjoint&mdash;equivalently, the process is reversible. This full-space statement
     must not be inferred from a selected feature matrix: a one-feature Green&ndash;Kubo matrix is always symmetric,
     even for an irreversible process.</p>
+    <h3>Two generic features detect every finite-state irreversible chain</h3>
+    <p>The preceding caveat is sharp for one feature but not generic for two. For an irreducible finite-state chain,
+      let $\mathcal H_0$ be the real centered $L^2(\pi)$ space, put
+      $R=(-L)^{-1}|_{\mathcal H_0}$, and define its skew-adjoint part</p>
+    $$J=\operatorname{Anti}R=\tfrac12(R-R^\dagger).$$
+    <p>Choose an orthonormal basis of $\mathcal H_0$ and draw two observables $F,G$ with independent standard
+      Gaussian coordinates in that basis. Their antisymmetric Green&ndash;Kubo signal is</p>
+    $$\Xi=K^{\rm anti}(F,G)=\langle F,JG\rangle_\pi.$$
+    <p>Then the chain is irreversible if and only if $J\ne0$, and in that case</p>
+    <div class="equation-card">
+    $$\Pr(\Xi=0)=0,\qquad
+      \mathbb E\Xi^2=\|J\|_{\rm HS}^2,$$
+    $$\mathbb E e^{it\Xi}
+      =\det(I+t^2J^\dagger J)^{-1/2}.$$
+    </div>
+    <p>Indeed, symmetry of $R$ is equivalent to symmetry of its inverse $-L$, hence to reversibility. If $J\ne0$,
+      its kernel is a proper subspace, so $JG\ne0$ almost surely; conditional on such a $G$, the scalar
+      $\langle F,JG\rangle$ is a nondegenerate Gaussian and is therefore nonzero almost surely. The moment and
+      characteristic-function formulas follow by conditioning first on $G$ and evaluating a Gaussian quadratic
+      form. Thus two generic continuous probes identify finite-state irreversibility almost surely, although a
+      deliberately chosen pair can still miss it. This is a population operator statement, not a finite-sample
+      test or a lower bound on the signal for prescribed features.</p>
+    <p>The squared-signal identity is a bilinear analogue of stochastic trace probing; compare
+      <a href="https://doi.org/10.1080/03610918908812806">Hutchinson (1989)</a>. In the four-state certificate,
+      $\|J\|_{\rm HS}=0.216796492$ and the exact second moment is $0.047000719$; 400,000 independent feature pairs
+      give $0.047160377$. At $t=0.75/\|J\|_{\rm op}$, the exact characteristic function is $0.64$ and the simulation gives
+      $0.640300132$ with imaginary part below $6.3\times10^{-4}$.</p>
     <h3>A sharp quantitative irreversibility bound</h3>
     <p>The same resolvent gives more than a yes-or-no test. On the centered space write
       $L=S+A$, where $S^\dagger=S$, $A^\dagger=-A$, and put $B=-S$. Assume $B$ is strictly positive and the

@@ -4,6 +4,10 @@ The transpose identity is first checked for a nonreversible finite-state
 Markov chain with a nonuniform invariant law.  The same certificate records
 the important converse distinction: the full centered Green--Kubo form
 detects nonreversibility, whereas a selected feature block need not do so.
+It then checks that two independent Gaussian feature probes detect every
+finite-state irreversible chain almost surely and that the mean-square
+antisymmetric signal is the squared Hilbert--Schmidt norm of the skew
+resolvent.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -183,6 +187,82 @@ def general_reversal_check():
     }
 
 
+def random_probe_detection_check(sample_count=400_000):
+    """Check the exact Gaussian two-feature identification law.
+
+    In an L2(pi)-orthonormal basis of the centered space, let R=(-Q)^(-1)
+    and J=(R-R.T)/2.  For independent standard Gaussian coordinates x,y,
+    the antisymmetric Green--Kubo entry is X=x.T J y.  Consequently
+
+        E X^2 = ||J||_F^2,
+        E exp(i t X) = det(I + t^2 J.T J)^(-1/2).
+
+    If the chain is irreversible, J is nonzero and X=0 has probability zero.
+    """
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    pi = stationary(q)
+    weight = np.diag(pi)
+    euclidean_basis = null_space(np.sqrt(pi)[None, :])
+    basis = np.diag(1.0 / np.sqrt(pi)) @ euclidean_basis
+    generator = basis.T @ weight @ q @ basis
+    resolvent = np.linalg.inv(-generator)
+    skew_resolvent = 0.5 * (resolvent - resolvent.T)
+    exact_second_moment = np.sum(skew_resolvent**2)
+    assert exact_second_moment > 1e-4
+
+    # Verify that the coordinate bilinear form is exactly the antisymmetric
+    # entry obtained from the original-state Green--Kubo calculation.
+    probe_x = np.array([0.4, -1.1, 0.7])
+    probe_y = np.array([-0.3, 0.8, 1.2])
+    features = np.array([basis @ probe_x, basis @ probe_y])
+    block = gk(q, features)
+    block_signal = 0.5 * (block[0, 1] - block[1, 0])
+    coordinate_signal = probe_x @ skew_resolvent @ probe_y
+    coordinate_error = abs(block_signal - coordinate_signal)
+
+    rng = np.random.default_rng(20261002)
+    x = rng.normal(size=(sample_count, len(probe_x)))
+    y = rng.normal(size=(sample_count, len(probe_x)))
+    signals = np.einsum("bi,ij,bj->b", x, skew_resolvent, y)
+    empirical_second_moment = np.mean(signals**2)
+    relative_second_moment_error = abs(
+        empirical_second_moment / exact_second_moment - 1.0
+    )
+
+    frequency = 0.75 / np.linalg.norm(skew_resolvent, 2)
+    empirical_characteristic = np.mean(np.exp(1j * frequency * signals))
+    exact_characteristic = np.linalg.det(
+        np.eye(len(probe_x))
+        + frequency**2 * skew_resolvent.T @ skew_resolvent
+    ) ** (-0.5)
+    characteristic_error = abs(
+        empirical_characteristic - exact_characteristic
+    )
+
+    assert coordinate_error < 2e-14
+    assert relative_second_moment_error < 8e-3
+    assert characteristic_error < 3e-3
+    assert np.count_nonzero(signals == 0.0) == 0
+    return {
+        "skew_hilbert_schmidt": math.sqrt(exact_second_moment),
+        "exact_second_moment": exact_second_moment,
+        "empirical_second_moment": empirical_second_moment,
+        "relative_second_moment_error": relative_second_moment_error,
+        "frequency": frequency,
+        "exact_characteristic": exact_characteristic,
+        "empirical_characteristic": empirical_characteristic,
+        "characteristic_error": characteristic_error,
+        "coordinate_error": coordinate_error,
+    }
+
+
 def normalized_resolvent_check():
     """Check the sharp energy-normalized resolvent factorization.
 
@@ -359,7 +439,22 @@ def main():
         f"reversible full-form asymmetry {general['reversible_asymmetry']:.2e}"
     )
 
-    print("2. the energy-normalized resolvent factorization gives sharp bounds")
+    print("2. two Gaussian features detect finite-state irreversibility almost surely")
+    probes = random_probe_detection_check()
+    print(
+        f"   skew Hilbert--Schmidt norm {probes['skew_hilbert_schmidt']:.9f}; "
+        f"second moment exact/simulated {probes['exact_second_moment']:.9f}/"
+        f"{probes['empirical_second_moment']:.9f}"
+    )
+    print(
+        f"   characteristic function exact/simulated "
+        f"{probes['exact_characteristic']:.9f}/"
+        f"{probes['empirical_characteristic'].real:.9f}; errors "
+        f"{probes['relative_second_moment_error']:.2e}/"
+        f"{probes['characteristic_error']:.2e}"
+    )
+
+    print("3. the energy-normalized resolvent factorization gives sharp bounds")
     normalized = normalized_resolvent_check()
     print(
         f"   factorization/symmetric/skew errors "
@@ -383,7 +478,7 @@ def main():
         f"{normalized['intrinsic_full_error']:.2e}"
     )
 
-    print("3. exact Fourier blocks against direct correlation quadrature")
+    print("4. exact Fourier blocks against direct correlation quadrature")
     for mode in range(1, 6):
         exact = exact_block(mode)
         numerical = quadrature_block(mode)
@@ -391,7 +486,7 @@ def main():
         print(f"   mode {mode}: max error {error:.2e}, anti entry {exact[0, 1]:+.8f}")
         assert error < 2e-11
 
-    print("4. periodic CTMC discretization converges to the diffusion block")
+    print("5. periodic CTMC discretization converges to the diffusion block")
     grid_errors = []
     for size in (32, 64, 128):
         q, phis = circle_chain(size)
@@ -402,14 +497,14 @@ def main():
     spatial_rate = rate(grid_errors)
     assert 1.9 < spatial_rate < 2.1
 
-    print("5. reversing current preserves the symmetric block and flips the antisymmetric block")
+    print("6. reversing current preserves the symmetric block and flips the antisymmetric block")
     forward = exact_block(1, C)
     reverse = exact_block(1, -C)
     assert np.max(abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))) < 1e-15
     assert np.max(abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))) < 1e-15
     print(f"   c=+{C:g}: K12={forward[0, 1]:+.6f}; c=-{C:g}: K12={reverse[0, 1]:+.6f}")
 
-    print("6. the full commutator rule has a second-order finite-rate residual")
+    print("7. the full commutator rule has a second-order finite-rate residual")
     k_forward, errors_forward, values_forward = effective_check(C)
     k_reverse, errors_reverse, values_reverse = effective_check(-C)
     for name in errors_forward:
@@ -437,7 +532,7 @@ def main():
     print("   forward-minus-reverse residual: " + " ".join(f"{x:.3e}" for x in direction_errors) + f"  rate {direction_rate:.3f}")
     assert 1.8 < direction_rate < 2.2
 
-    print("7. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
+    print("8. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
     blocks = []
     for size in (32, 64, 128, 256):
         q_forward, features = variable_circle_chain(size)
