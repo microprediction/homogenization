@@ -415,4 +415,51 @@
       error has measured order $1.000000$, while the explicit composite and the outer formula after the logarithmic
       crossover have orders $2.002876$ and $2.002876$. The composite matches all three terminal components to
       $2.2\times10^{-16}$.</p>
+
+    <h3>The explicit second composite</h3>
+    <p>The same Poisson construction can be carried through one more order without diagonalizing $Q_0$. Write
+      $R=Q_0^\#$, $E_\tau=e^{\tau Q_0}$, $H_0=H(0)$, and define</p>
+    $$z_1=-Rh,\qquad K_1(t)=-\int_0^t\pi^\top H(s)Rh(s)\,ds,$$
+    $$z_2=-R^2h'-K_1Rh+RPHRh,$$
+    $$K_2(t)=-\pi^\top H_0R^2h(0)+\int_0^t\pi^\top H(s)z_2(s)\,ds.$$
+    <p>The second boundary layer, with $\tau=t/\varepsilon$, is</p>
+    $$B_1(\tau)=E_\tau Rh(0),$$
+    <div class="equation-card">
+    $$B_2(\tau)=-E_\tau z_2(0)
+      +\int_0^\tau E_{\tau-s}PH_0E_sRh(0)\,ds
+      +\{\pi^\top H_0E_\tau R^2h(0)\}{\bf1}.$$
+    </div>
+    <p>The convolution is explicit and numerically stable: it is the upper-right block of</p>
+    $$\exp\!\left\{\tau
+      \begin{pmatrix}Q_0&amp;PH_0\\0&amp;Q_0\end{pmatrix}\right\}Rh(0).$$
+    <p>If $g\in C^2[0,T]$ is real or complex valued, then the second composite is</p>
+    <div class="equation-card">
+    $$a(t)=m_0e^{b(t)}\left(
+      [1+\varepsilon K_1(t)+\varepsilon^2K_2(t)]{\bf1}
+      +\varepsilon z_1(t)+\varepsilon^2z_2(t)
+      +\varepsilon B_1(t/\varepsilon)+\varepsilon^2B_2(t/\varepsilon)
+      \right)+O(\varepsilon^3),$$
+    </div>
+    <p>uniformly for $0\le t\le T$. This is a fixed bounded-horizon statement. The constant
+      $K_2(0)=-\pi^\top H_0R^2h(0)$ is not an arbitrary normalization: it is the permanent scalar trace of the
+      first boundary layer. Indeed $B_2(0)=-z_2(0)-K_2(0){\bf1}$, so both first- and second-order corrections
+      cancel at the terminal point. Omitting only this trace generically leaves $O(\varepsilon^2)$ error even at a
+      fixed positive maturity.</p>
+    <p>For the error estimate, the displayed terms make the scalar outer residual vanish through second order and
+      leave an $O(\varepsilon^2)$ centered residual; convolution against the centered semigroup gains the third
+      power of $\varepsilon$. The layer equations are
+      $(\partial_\tau-Q_0)B_1=0$ and $(\partial_\tau-Q_0)B_2=H_0B_1$. Replacing $H_0$ by $H(t)$ leaves only a
+      localized residual because $H(t)-H_0=O(\varepsilon\tau)$. A coupled variation-of-constants estimate then
+      gives the uniform remainder. This is the concrete second-order specialization of the matched expansions for
+      singular Markov generators developed by
+      <a href="./bibliography.html#KhasminskiiYinZhang1996">Khasminskii, Yin and Zhang</a>, with the Poisson solves
+      represented by <a href="./bibliography.html#Meyer1975">Meyer's group inverse</a>.</p>
+    <p>Deleting $B_1$ and $B_2$ gives a second outer formula whose full-interval error is still only
+      $O(\varepsilon)$ because it misses the terminal condition. Under the semigroup bound above, it regains
+      $O(\varepsilon^3)$ on the expanding interval</p>
+    $$\frac{2\varepsilon}{\gamma}\log\frac1\varepsilon\le t\le T.$$
+    <p>The defective three-state certificate measures orders $2.002876$ and $2.960961$ for the first and second
+      composites. The second outer formula has order $1.001913$ on the full interval and $2.833557$ after the
+      doubled crossover; omitting the permanent trace has fixed-maturity order $2.001789$. The second composite
+      matches all three terminal components to $2.2\times10^{-16}$.</p>
   </main>

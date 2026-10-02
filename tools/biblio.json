@@ -100,6 +100,17 @@
  },
  {
   "role": "classics",
+  "key": "KhasminskiiYinZhang1996",
+  "authors": "R. Z. Khasminskii, G. Yin, Q. Zhang",
+  "year": 1996,
+  "title": "Asymptotic Expansions of Singularly Perturbed Systems Involving Rapidly Fluctuating Markov Chains",
+  "venue": "SIAM Journal on Applied Mathematics 56(1):277-293",
+  "doi": "10.1137/S0036139993259933",
+  "url": "https://doi.org/10.1137/S0036139993259933",
+  "annotation": "Develops matched outer and boundary-layer expansions for time-varying systems whose singular fast matrix is a finite-state Markov generator, the primary general result underlying the explicit finite-chain composite."
+ },
+ {
+  "role": "classics",
   "key": "Meyer1975",
   "authors": "Carl D. Meyer, Jr.",
   "year": 1975,

@@ -1,6 +1,6 @@
 """Certificate for maturity-uniform finite-state initial-layer formulas.
 
-The checks distinguish ten statements which are easy to conflate:
+The checks distinguish eleven statements which are easy to conflate:
 
 1. For arbitrary q(0), adding the first layer makes the first-order error
    uniformly O(eps**2), while adding both layer orders makes the error
@@ -35,6 +35,10 @@ The checks distinguish ten statements which are easy to conflate:
     explicit in the group inverse.  Its error is uniformly O(eps**2), whereas
     deleting the layer is only uniformly O(eps) and recovers O(eps**2) after
     the logarithmic crossover.
+11. A second group-inverse composite is uniformly O(eps**3).  Its second layer
+    contains a block-exponential convolution and a permanent scalar trace.
+    Omitting that trace leaves O(eps**2) fixed-maturity error, and deleting the
+    layers recovers O(eps**3) only after the doubled logarithmic crossover.
 """
 import json
 import math
@@ -239,6 +243,113 @@ def finite_chain_stationary_first_composite(
         centered += eps * layer
     mean = 1.0 + eps * correction
     return np.exp(common)[None, :] * (mean[None, :] + centered.T)
+
+
+def finite_chain_stationary_second_composite(
+    eps, generator, forcing, forcing_derivative, grid, include_layer=True,
+    include_permanent_trace=True,
+):
+    """Explicit second group-inverse composite for common terminal data.
+
+    The common terminal vector is the all-ones vector.  The second boundary
+    layer is evaluated with one 2n-by-2n block exponential.  Setting
+    ``include_permanent_trace=False`` deliberately removes the scalar trace
+    left by the first layer; the certificate checks that this loses one order.
+    """
+    generator = np.asarray(generator, dtype=float)
+    dimension = generator.shape[0]
+    one = np.ones(dimension)
+    pi = stationary_distribution(generator)
+    projection = np.eye(dimension) - np.outer(one, pi)
+    group_inverse = group_inverse_generator(generator, pi)
+
+    def terms(t):
+        g = np.array([function(t) for function in forcing])
+        g_prime = np.array([function(t) for function in forcing_derivative])
+        common = float(pi @ g)
+        centered = g - common * one
+        centered_prime = g_prime - float(pi @ g_prime) * one
+        centered_matrix = np.diag(centered)
+        return common, centered, centered_prime, centered_matrix
+
+    _, centered0, centered_prime0, centered_matrix0 = terms(0.0)
+    inverse_centered0 = group_inverse @ centered0
+    inverse_squared_centered0 = group_inverse @ inverse_centered0
+    second_centered0 = (
+        -group_inverse @ group_inverse @ centered_prime0
+        + group_inverse @ projection @ centered_matrix0 @ inverse_centered0
+    )
+    permanent_trace = -float(
+        pi @ centered_matrix0 @ inverse_squared_centered0
+    )
+    second_initial = permanent_trace if include_permanent_trace else 0.0
+
+    def scalar_rhs(t, value):
+        common, centered, centered_prime, centered_matrix = terms(t)
+        first_scalar = value[1]
+        inverse_centered = group_inverse @ centered
+        second_centered = (
+            -group_inverse @ group_inverse @ centered_prime
+            - first_scalar * inverse_centered
+            + group_inverse @ projection @ centered_matrix @ inverse_centered
+        )
+        return [
+            common,
+            -float(pi @ centered_matrix @ inverse_centered),
+            float(pi @ centered_matrix @ second_centered),
+        ]
+
+    scalar_solution = solve_ivp(
+        scalar_rhs, (0, float(grid[-1])), [0.0, 0.0, second_initial],
+        method='DOP853', rtol=3e-13, atol=3e-15, dense_output=True,
+        max_step=0.001,
+    )
+    assert scalar_solution.success
+    common, first_scalar, second_scalar = scalar_solution.sol(grid)
+
+    first_centered = []
+    second_centered = []
+    for t, first_value in zip(grid, first_scalar):
+        _, centered, centered_prime, centered_matrix = terms(float(t))
+        inverse_centered = group_inverse @ centered
+        first_centered.append(-inverse_centered)
+        second_centered.append(
+            -group_inverse @ group_inverse @ centered_prime
+            - first_value * inverse_centered
+            + group_inverse @ projection @ centered_matrix @ inverse_centered
+        )
+    first_centered = np.asarray(first_centered)
+    second_centered = np.asarray(second_centered)
+
+    approximation = (
+        one[:, None] * (1.0 + eps * first_scalar + eps ** 2 * second_scalar)
+        + eps * first_centered.T + eps ** 2 * second_centered.T
+    )
+    if include_layer:
+        block_generator = np.block([
+            [generator, projection @ centered_matrix0],
+            [np.zeros_like(generator), generator],
+        ])
+        first_layer = []
+        second_layer = []
+        for t in grid:
+            scaled_time = float(t / eps)
+            semigroup = expm(scaled_time * generator)
+            block_semigroup = expm(scaled_time * block_generator)
+            convolution = block_semigroup[:dimension, dimension:] @ inverse_centered0
+            scalar_layer = float(
+                pi @ centered_matrix0 @ semigroup @ inverse_squared_centered0
+            )
+            first_layer.append(semigroup @ inverse_centered0)
+            second_layer.append(
+                -semigroup @ second_centered0
+                + convolution + scalar_layer * one
+            )
+        approximation += (
+            eps * np.asarray(first_layer).T
+            + eps ** 2 * np.asarray(second_layer).T
+        )
+    return np.exp(common)[None, :] * approximation
 
 
 def picard_components_asymmetric(
@@ -876,7 +987,7 @@ def defective_finite_chain():
 
 
 def defective_stationary_composite():
-    """Check the explicit common-terminal composite on the defective chain."""
+    """Check both explicit common-terminal composites on the defective chain."""
     one = np.ones(3)
     u = np.array([1.0, -1.0, 0.0])
     w = np.array([1.0, 1.0, -2.0])
@@ -896,11 +1007,20 @@ def defective_stationary_composite():
         lambda t: 0.40 - 0.10 * math.exp(-0.7 * t),
         lambda t: 0.70 + 0.15 * math.cos(0.9 * t),
     )
+    forcing_derivative = (
+        lambda t: 0.22 * math.cos(1.1 * t),
+        lambda t: 0.07 * math.exp(-0.7 * t),
+        lambda t: -0.135 * math.sin(0.9 * t),
+    )
     initial = one.copy()
     gamma = 0.5
-    composite_errors = []
-    outer_errors = []
-    post_crossover_errors = []
+    first_composite_errors = []
+    second_composite_errors = []
+    first_outer_errors = []
+    second_outer_errors = []
+    first_post_crossover_errors = []
+    second_post_crossover_errors = []
+    omitted_trace_fixed_errors = []
     rows = []
     for eps in EPSILONS:
         grid = np.unique(np.r_[
@@ -909,33 +1029,82 @@ def defective_stationary_composite():
         ])
         grid = grid[grid <= T_MAX]
         exact = exact_curve_finite(eps, generator, forcing, initial, grid)
-        composite = finite_chain_stationary_first_composite(
+        first_composite = finite_chain_stationary_first_composite(
             eps, generator, forcing, grid, include_layer=True,
         )
-        outer = finite_chain_stationary_first_composite(
+        first_outer = finite_chain_stationary_first_composite(
             eps, generator, forcing, grid, include_layer=False,
         )
-        crossover = eps * math.log(1.0 / eps) / gamma
-        post_crossover = grid >= crossover
-        composite_error = float(np.max(np.linalg.norm(composite - exact, axis=0)))
-        outer_error = float(np.max(np.linalg.norm(outer - exact, axis=0)))
-        post_crossover_error = float(np.max(np.linalg.norm(
-            outer[:, post_crossover] - exact[:, post_crossover], axis=0
+        second_composite = finite_chain_stationary_second_composite(
+            eps, generator, forcing, forcing_derivative, grid,
+            include_layer=True,
+        )
+        second_outer = finite_chain_stationary_second_composite(
+            eps, generator, forcing, forcing_derivative, grid,
+            include_layer=False,
+        )
+        omitted_trace = finite_chain_stationary_second_composite(
+            eps, generator, forcing, forcing_derivative, grid,
+            include_layer=True, include_permanent_trace=False,
+        )
+        first_crossover = eps * math.log(1.0 / eps) / gamma
+        second_crossover = 2.0 * eps * math.log(1.0 / eps) / gamma
+        first_post_crossover = grid >= first_crossover
+        second_post_crossover = grid >= second_crossover
+        first_composite_error = float(np.max(np.linalg.norm(
+            first_composite - exact, axis=0
         )))
-        composite_errors.append(composite_error)
-        outer_errors.append(outer_error)
-        post_crossover_errors.append(post_crossover_error)
+        second_composite_error = float(np.max(np.linalg.norm(
+            second_composite - exact, axis=0
+        )))
+        first_outer_error = float(np.max(np.linalg.norm(
+            first_outer - exact, axis=0
+        )))
+        second_outer_error = float(np.max(np.linalg.norm(
+            second_outer - exact, axis=0
+        )))
+        first_post_crossover_error = float(np.max(np.linalg.norm(
+            first_outer[:, first_post_crossover]
+            - exact[:, first_post_crossover], axis=0
+        )))
+        second_post_crossover_error = float(np.max(np.linalg.norm(
+            second_outer[:, second_post_crossover]
+            - exact[:, second_post_crossover], axis=0
+        )))
+        omitted_trace_fixed_error = float(np.linalg.norm(
+            omitted_trace[:, -1] - exact[:, -1]
+        ))
+        first_composite_errors.append(first_composite_error)
+        second_composite_errors.append(second_composite_error)
+        first_outer_errors.append(first_outer_error)
+        second_outer_errors.append(second_outer_error)
+        first_post_crossover_errors.append(first_post_crossover_error)
+        second_post_crossover_errors.append(second_post_crossover_error)
+        omitted_trace_fixed_errors.append(omitted_trace_fixed_error)
         rows.append(dict(
             epsilon=float(eps),
-            composite_sup=composite_error,
-            outer_sup=outer_error,
-            outer_post_crossover_sup=post_crossover_error,
-            crossover=float(crossover),
-            initial_match=float(np.max(np.abs(composite[:, 0] - initial))),
+            first_composite_sup=first_composite_error,
+            second_composite_sup=second_composite_error,
+            first_outer_sup=first_outer_error,
+            second_outer_sup=second_outer_error,
+            first_outer_post_crossover_sup=first_post_crossover_error,
+            second_outer_post_crossover_sup=second_post_crossover_error,
+            omitted_trace_fixed_error=omitted_trace_fixed_error,
+            first_crossover=float(first_crossover),
+            second_crossover=float(second_crossover),
+            first_initial_match=float(np.max(np.abs(
+                first_composite[:, 0] - initial
+            ))),
+            second_initial_match=float(np.max(np.abs(
+                second_composite[:, 0] - initial
+            ))),
         ))
     return (
-        rows, order(composite_errors), order(outer_errors),
-        order(post_crossover_errors), group_inverse.tolist(), gamma,
+        rows, order(first_composite_errors), order(second_composite_errors),
+        order(first_outer_errors), order(second_outer_errors),
+        order(first_post_crossover_errors),
+        order(second_post_crossover_errors),
+        order(omitted_trace_fixed_errors), group_inverse.tolist(), gamma,
     )
 
 
@@ -956,8 +1125,10 @@ def main():
      finite_bound1, finite_bound2, finite_generator, finite_pi,
      finite_initial, finite_m0, finite_semigroup_constant,
      finite_gamma) = defective_finite_chain()
-    (stationary_rows, stationary_composite, stationary_outer,
-     stationary_post_crossover, finite_group_inverse,
+    (stationary_rows, stationary_first_composite, stationary_second_composite,
+     stationary_first_outer, stationary_second_outer,
+     stationary_first_post_crossover, stationary_second_post_crossover,
+     stationary_omitted_trace_fixed, finite_group_inverse,
      stationary_gamma) = defective_stationary_composite()
     print('1. q(0) != 0: outer, first composite, and second composite')
     for row in nz:
@@ -1032,15 +1203,22 @@ def main():
           f'{finite_direct0:.6f}/{finite_direct1:.6f}/{finite_direct2:.6f}, '
           f'bounds 1/2 {finite_bound1:.6f}/{finite_bound2:.6f}; '
           f'M={finite_semigroup_constant:.6f}, gamma={finite_gamma:.2f}')
-    print('8. defective three-state explicit common-terminal first composite')
+    print('8. defective three-state explicit common-terminal composites')
     for row in stationary_rows:
-        print(f"   eps={row['epsilon']:.6f} composite={row['composite_sup']:.3e} "
-              f"outer={row['outer_sup']:.3e} "
-              f"post-crossover outer={row['outer_post_crossover_sup']:.3e} "
-              f"crossover={row['crossover']:.6f}")
-    print(f'   observed orders: composite {stationary_composite:.6f}, '
-          f'outer {stationary_outer:.6f}, post-crossover outer '
-          f'{stationary_post_crossover:.6f}')
+        print(f"   eps={row['epsilon']:.6f} first/second composite="
+              f"{row['first_composite_sup']:.3e}/"
+              f"{row['second_composite_sup']:.3e} first/second outer="
+              f"{row['first_outer_sup']:.3e}/{row['second_outer_sup']:.3e} "
+              f"post-crossover={row['first_outer_post_crossover_sup']:.3e}/"
+              f"{row['second_outer_post_crossover_sup']:.3e} "
+              f"trace omitted fixed={row['omitted_trace_fixed_error']:.3e}")
+    print(f'   observed orders: first/second composite '
+          f'{stationary_first_composite:.6f}/{stationary_second_composite:.6f}, '
+          f'first/second outer {stationary_first_outer:.6f}/'
+          f'{stationary_second_outer:.6f}, post-crossover '
+          f'{stationary_first_post_crossover:.6f}/'
+          f'{stationary_second_post_crossover:.6f}, trace omitted fixed '
+          f'{stationary_omitted_trace_fixed:.6f}')
     assert 0.9 < nz_outer < 1.1
     assert 1.85 < nz_first < 2.15
     assert 2.8 < nz_second < 3.2
@@ -1090,10 +1268,15 @@ def main():
         and row['direct_2_sup'] <= row['direct_2_aposteriori_bound']
         for row in finite_rows)
     assert max(row['initial_match'] for row in finite_rows) < 1e-12
-    assert 1.85 < stationary_composite < 2.15
-    assert 0.9 < stationary_outer < 1.1
-    assert 1.85 < stationary_post_crossover < 2.15
-    assert max(row['initial_match'] for row in stationary_rows) < 1e-13
+    assert 1.85 < stationary_first_composite < 2.15
+    assert 2.8 < stationary_second_composite < 3.2
+    assert 0.9 < stationary_first_outer < 1.1
+    assert 0.9 < stationary_second_outer < 1.1
+    assert 1.85 < stationary_first_post_crossover < 2.15
+    assert 2.65 < stationary_second_post_crossover < 3.3
+    assert 1.85 < stationary_omitted_trace_fixed < 2.15
+    assert max(row['first_initial_match'] for row in stationary_rows) < 1e-13
+    assert max(row['second_initial_match'] for row in stationary_rows) < 1e-13
     out = dict(nonzero_start=dict(
                    rows=nz, outer_sup_order=nz_outer,
                    first_composite_sup_order=nz_first,
@@ -1144,9 +1327,13 @@ def main():
         rows=stationary_rows,
         group_inverse=finite_group_inverse,
         semigroup_decay=stationary_gamma,
-        composite_sup_order=stationary_composite,
-        outer_sup_order=stationary_outer,
-        outer_post_crossover_order=stationary_post_crossover)
+        first_composite_sup_order=stationary_first_composite,
+        second_composite_sup_order=stationary_second_composite,
+        first_outer_sup_order=stationary_first_outer,
+        second_outer_sup_order=stationary_second_outer,
+        first_outer_post_crossover_order=stationary_first_post_crossover,
+        second_outer_post_crossover_order=stationary_second_post_crossover,
+        omitted_trace_fixed_order=stationary_omitted_trace_fixed)
     (HERE / 'uniform_layer_results.json').write_text(json.dumps(out, indent=2) + '\n')
     print('PASS')
 

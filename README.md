@@ -40,7 +40,7 @@ papers/fast-switching/
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
   uniform_layer.py          maturity-uniform two-state composite formulas
-  verify_uniform_layer.py   uniform first- and second-order bounds and crossover scale
+  verify_uniform_layer.py   uniform two-state and finite-chain composites, bounds and crossover scales
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
