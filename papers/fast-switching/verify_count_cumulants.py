@@ -20,16 +20,19 @@ finite-difference construction gives two positive mixing laws with identical
 first four cumulants but different mixed-Poisson count laws.
 The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
-in total variation, even on a compact intensity interval.
+in total variation, even on a compact intensity interval.  A local Poisson
+experiment then gives an optimized parametric-scale Wasserstein-1 lower bound,
+without asserting a matching upper rate for the unrestricted class.
 """
 
 import itertools
 import math
 import numpy as np
 from scipy.linalg import expm
+from scipy.optimize import brentq
 from scipy.sparse import diags, eye, kron
 from scipy.sparse.linalg import expm_multiply
-from scipy.stats import poisson
+from scipy.stats import norm, poisson
 
 
 def cumulants4(raw):
@@ -229,6 +232,73 @@ def poisson_mixture_tv_minimax():
         "hellinger_bounds": hellinger_bounds,
         "risk_lower_bounds": risk_lower_bounds,
         "scaled_tv": scaled_tv,
+        "asymptotic_constant": asymptotic_constant,
+    }
+
+
+def poisson_mixture_w1_local_minimax():
+    """Exact local two-point certificate for Wasserstein-1 risk.
+
+    Restrict the unknown mixing law to point masses on [4, 5].  At the two
+    local alternatives ``delta_a`` and ``delta_(a+h/sqrt(n))``, Wasserstein-1
+    distance is ``h/sqrt(n)`` and the sufficient statistic in the count
+    experiment is Poisson with means ``n*a`` and ``n*a+h*sqrt(n)``.
+
+    The two-point metric-loss inequality therefore gives
+
+        sqrt(n) R_n >= h/2 * (1 - TV(Pois(n*a), Pois(n*a+h*sqrt(n)))).
+
+    If ``z=h/(2*sqrt(a))``, the exact one-crossing formula and the normal
+    limit give TV -> 1-2*Phi(-z).  Thus the limiting lower-bound constant is
+    ``h*Phi(-z)``.  It is maximized by the unique positive solution of
+    ``Phi(-z)=z*phi(z)``.
+    """
+    intensity = 4.5
+    z_star = brentq(
+        lambda z: norm.cdf(-z) - z * norm.pdf(z), 0.01, 3.0
+    )
+    h_star = 2.0 * math.sqrt(intensity) * z_star
+    sample_sizes = np.array(
+        [100, 1000, 10000, 100000, 1000000], dtype=int
+    )
+    product_tv = []
+    cutoffs = []
+    upper_intensities = []
+    for sample_size in sample_sizes:
+        lower_mean = sample_size * intensity
+        upper_intensity = intensity + h_star / math.sqrt(sample_size)
+        upper_mean = sample_size * upper_intensity
+        cutoff = math.floor(
+            (upper_mean - lower_mean) / math.log(upper_mean / lower_mean)
+        )
+        cutoffs.append(cutoff)
+        upper_intensities.append(upper_intensity)
+        product_tv.append(
+            poisson.cdf(cutoff, lower_mean)
+            - poisson.cdf(cutoff, upper_mean)
+        )
+    product_tv = np.asarray(product_tv)
+    upper_intensities = np.asarray(upper_intensities)
+    scaled_risk_lower_bounds = 0.5 * h_star * (1.0 - product_tv)
+    asymptotic_product_tv = 1.0 - 2.0 * norm.cdf(-z_star)
+    asymptotic_constant = h_star * norm.cdf(-z_star)
+
+    assert np.all(upper_intensities <= 5.0)
+    assert np.all(np.diff(product_tv) > 0.0)
+    assert np.all(np.diff(scaled_risk_lower_bounds) < 0.0)
+    assert abs(norm.cdf(-z_star) - z_star * norm.pdf(z_star)) < 1e-14
+    assert abs(product_tv[-1] - asymptotic_product_tv) < 2e-4
+    assert abs(scaled_risk_lower_bounds[-1] - asymptotic_constant) < 2e-4
+    return {
+        "intensity": intensity,
+        "z_star": z_star,
+        "h_star": h_star,
+        "sample_sizes": sample_sizes,
+        "upper_intensities": upper_intensities,
+        "cutoffs": np.asarray(cutoffs),
+        "product_tv": product_tv,
+        "scaled_risk_lower_bounds": scaled_risk_lower_bounds,
+        "asymptotic_product_tv": asymptotic_product_tv,
         "asymptotic_constant": asymptotic_constant,
     }
 
@@ -674,6 +744,7 @@ def main():
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
     minimax = poisson_mixture_tv_minimax()
+    w1_minimax = poisson_mixture_w1_local_minimax()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -929,6 +1000,16 @@ def main():
     print("sqrt(n) product TV",
           f"{minimax['scaled_tv'][-1]:.12f}",
           "limit", f"{minimax['asymptotic_constant']:.12f}")
+    print("local Wasserstein-1 minimax certificate")
+    print(" n       product TV       sqrt(n) risk lower bound")
+    for sample_size, product_tv, risk_bound in zip(
+            w1_minimax["sample_sizes"], w1_minimax["product_tv"],
+            w1_minimax["scaled_risk_lower_bounds"]):
+        print(f"{sample_size:7d}   {product_tv:.12f}       {risk_bound:.12f}")
+    print("optimized z and h",
+          f"{w1_minimax['z_star']:.12f}", f"{w1_minimax['h_star']:.12f}")
+    print("sqrt(n) W1 risk lower-bound limit",
+          f"{w1_minimax['asymptotic_constant']:.12f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")

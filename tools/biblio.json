@@ -1163,7 +1163,18 @@
   "venue": "Annals of Mathematical Statistics 32(1):244-248",
   "doi": "10.1214/aoms/1177705155",
   "url": "https://doi.org/10.1214/aoms/1177705155",
-  "annotation": "Proves identifiability for mixtures from one-parameter additively closed families, including the Poisson-mixture setting used to recover the integrated-intensity law from the full count law."
+ "annotation": "Proves identifiability for mixtures from one-parameter additively closed families, including the Poisson-mixture setting used to recover the integrated-intensity law from the full count law."
+ },
+ {
+  "role": "survey_choice",
+  "key": "LeCam1973",
+  "authors": "Le Cam, L.",
+  "year": 1973,
+  "title": "Convergence of Estimates Under Dimensionality Restrictions",
+  "venue": "Annals of Statistics 1(1):38-53",
+  "doi": "10.1214/aos/1193342380",
+  "url": "https://doi.org/10.1214/aos/1193342380",
+  "annotation": "Develops lower-bound and convergence methods for statistical experiments under metric restrictions; the count-law note uses the corresponding two-point testing reduction to bound metric estimation risk."
  },
  {
   "role": "survey_choice",

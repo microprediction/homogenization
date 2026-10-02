@@ -16,7 +16,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     mark_factorial_moments,
                                     marked_common_shock_factorial_cumulant,
                                     mixed_factorial_cumulants22,
-                                    poisson_inverse_instability)
+                                    poisson_inverse_instability,
+                                    poisson_mixture_w1_local_minimax)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -273,6 +274,7 @@ def black_scholes():
 def counts():
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
+    w1_minimax = poisson_mixture_w1_local_minimax()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -506,6 +508,44 @@ def counts():
       measure. It does not rule out weak-loss consistency, parametric finite-state recovery under separation, or
       density estimation on smoothness classes; those are precisely the kinds of restrictions used by
       <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
+    <h3>A local Wasserstein lower bound</h3>
+    <p>Compact support does make Wasserstein loss qualitatively weaker than total variation, but it does not permit
+      a uniformly faster-than-parametric rate. Let $\mathcal M_{[4,5]}$ be all probability laws on $[4,5]$ and define</p>
+    $$R_n^{(1)}=\inf_{\widehat\mu_n}\sup_{\mu\in\mathcal M_{[4,5]}}
+      \mathbb E_\mu W_1(\widehat\mu_n,\mu).$$
+    <p>For any $a$ in the interior of the interval and any fixed $h&gt;0$, compare
+      $\mu_{0,n}=\delta_a$ with $\mu_{1,n}=\delta_{a+h/\sqrt n}$. They lie in the class for all sufficiently large
+      $n$ and have $W_1(\mu_{0,n},\mu_{1,n})=h/\sqrt n$. The same two-point coupling inequality used above gives</p>
+    $$\sqrt n R_n^{(1)}\ge {h\over2}
+      \left[1-d_{\rm TV}\{\operatorname{Pois}(na),
+      \operatorname{Pois}(na+h\sqrt n)\}\right].$$
+    <p>This is a restriction to the point-mass submodel, so it is a valid lower bound for the full class. It is the
+      classical two-point testing reduction of <a href="./bibliography.html#LeCam1973">Le Cam</a>, here with the
+      distance and testing affinity evaluated exactly.</p>
+    <p>Put $z=h/(2\sqrt a)$. The one-crossing formula has cutoff</p>
+    $$k_n=\left\lfloor {h\sqrt n\over
+      \log(1+h/(a\sqrt n))}\right\rfloor
+      =na+{h\over2}\sqrt n+O(1).$$
+    <p>Applying the normal limit to the two Poisson distribution functions at this cutoff yields</p>
+    $$d_{\rm TV}\{\operatorname{Pois}(na),\operatorname{Pois}(na+h\sqrt n)\}
+      \longrightarrow 2\Phi(z)-1,$$
+    <p>and therefore</p>
+    <div class="equation-card">
+    $$\liminf_{n\to\infty}\sqrt n R_n^{(1)}\ge h\Phi(-z).$$
+    </div>
+    <p>The right side is optimized by $h=2\sqrt a\,z_*$, where $z_*$ is the unique positive root of
+      $\Phi(-z)=z\phi(z)$. At $a=4.5$,</p>
+    $$z_*=''' + f'{w1_minimax["z_star"]:.12f}' + r''',\qquad
+      h_*=''' + f'{w1_minimax["h_star"]:.12f}' + r''',\qquad
+      h_*\Phi(-z_*)=''' + f'{w1_minimax["asymptotic_constant"]:.12f}' + r'''.$$
+''' + table([[f'{n:,}', f'{tv:.12f}', f'{bound:.12f}']
+             for n, tv, bound in zip(
+                 w1_minimax['sample_sizes'], w1_minimax['product_tv'],
+                 w1_minimax['scaled_risk_lower_bounds'])],
+            head=('$n$', 'product count TV', r'$\sqrt n$ times $W_1$ risk lower bound')) + r'''
+    <p>The final column tends to $0.721126760493$. This proves only a lower bound: it rules out uniform
+      $o(n^{-1/2})$ Wasserstein-1 recovery, even on the point-mass submodel, but it does not claim that the unrestricted
+      mixing class has an $O(n^{-1/2})$ estimator.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
