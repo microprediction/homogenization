@@ -91,6 +91,35 @@
       $\|J\|_{\rm HS}=0.216796492$ and the exact second moment is $0.047000719$; 400,000 independent feature pairs
       give $0.047160377$. At $t=0.75/\|J\|_{\rm op}$, the exact characteristic function is $0.64$ and the simulation gives
       $0.640300132$ with imaginary part below $6.3\times10^{-4}$.</p>
+    <h3>A finite random-probe certificate</h3>
+    <p>The almost-sure statement has a quantitative finite-probe version. Let $s_i$ be the singular values of $J$,
+      put $S_2=\sum_i s_i^2=\|J\|_{\rm HS}^2$ and $S_4=\sum_i s_i^4$, and retain independent standard Gaussian
+      probes. Direct expansion of the bilinear Gaussian form gives</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi^4=3S_2^2+6S_4.$$
+    </div>
+    <p>Because $J$ is real and skew-adjoint, its nonzero singular values occur in equal pairs. Hence
+      $S_4/S_2^2\le1/2$, so $\mathbb E\Xi^4\le6S_2^2$ and
+      $\operatorname{Var}(\Xi^2)\le5S_2^2$. Applying the inequality of
+      <a href="https://doi.org/10.1017/S0305004100010112">Paley and Zygmund (1932)</a> to $\Xi^2$ yields, for
+      $0\le\theta&lt;1$,</p>
+    <div class="equation-card">
+    $$\Pr\!\left(|\Xi|\ge\theta\|J\|_{\rm HS}\right)
+      \ge \frac{(1-\theta^2)^2}{6}.$$
+    </div>
+    <p>At $\theta=1/2$, each pair detects a signal of at least half the root-mean-square scale with probability at least
+      $3/32$. Thus $m$ independent pairs miss that threshold with probability at most $(29/32)^m$; in particular,
+      47 pairs give the explicit bound $(29/32)^{47}=0.0097872&lt;1\%$. The empirical energy
+      $m^{-1}\sum_{k=1}^m\Xi_k^2$ is unbiased for $\|J\|_{\rm HS}^2$, with relative variance at most $5/m$ and
+      consequently the Chebyshev bound</p>
+    $$\Pr\!\left(\left|m^{-1}\sum_{k=1}^m\Xi_k^2/S_2-1\right|\ge\varepsilon\right)
+      \le \frac{5}{m\varepsilon^2}.$$
+    <p>For the four-state certificate the paired-singular-value bound is attained: $S_4/S_2^2=1/2$ and the exact
+      relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
+      half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees
+      concern finitely many randomized probes of the exact population
+      operator $J$. They are neither conditional guarantees for prescribed features nor a statistical test based on
+      a finite, noisy trajectory; the latter also requires an estimation-error analysis.</p>
     <h3>A sharp quantitative irreversibility bound</h3>
     <p>The same resolvent gives more than a yes-or-no test. On the centered space write
       $L=S+A$, where $S^\dagger=S$, $A^\dagger=-A$, and put $B=-S$. Assume $B$ is strictly positive and the

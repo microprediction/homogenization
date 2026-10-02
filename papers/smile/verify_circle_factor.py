@@ -7,7 +7,9 @@ detects nonreversibility, whereas a selected feature block need not do so.
 It then checks that two independent Gaussian feature probes detect every
 finite-state irreversible chain almost surely and that the mean-square
 antisymmetric signal is the squared Hilbert--Schmidt norm of the skew
-resolvent.
+resolvent.  A fourth-moment calculation turns this population result into
+a finite random-probe certificate: 47 independent probe pairs give a
+universal one-percent miss bound at half the root-mean-square signal.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -195,7 +197,13 @@ def random_probe_detection_check(sample_count=400_000):
     the antisymmetric Green--Kubo entry is X=x.T J y.  Consequently
 
         E X^2 = ||J||_F^2,
+        E X^4 = 3 ||J||_F^4 + 6 ||J.T J||_F^2,
         E exp(i t X) = det(I + t^2 J.T J)^(-1/2).
+
+    The nonzero singular values of the real skew matrix J occur in equal
+    pairs, so E X^4 <= 6 (E X^2)^2.  Paley--Zygmund then gives
+
+        P(|X| >= theta ||J||_F) >= (1-theta^2)^2 / 6.
 
     If the chain is irreversible, J is nonzero and X=0 has probability zero.
     """
@@ -236,6 +244,34 @@ def random_probe_detection_check(sample_count=400_000):
         empirical_second_moment / exact_second_moment - 1.0
     )
 
+    singular_squares = np.linalg.svd(skew_resolvent, compute_uv=False) ** 2
+    fourth_spectral_sum = np.sum(singular_squares**2)
+    spectral_concentration = fourth_spectral_sum / exact_second_moment**2
+    exact_fourth_moment = (
+        3.0 * exact_second_moment**2 + 6.0 * fourth_spectral_sum
+    )
+    empirical_fourth_moment = np.mean(signals**4)
+    relative_fourth_moment_error = abs(
+        empirical_fourth_moment / exact_fourth_moment - 1.0
+    )
+    relative_energy_variance = (
+        exact_fourth_moment / exact_second_moment**2 - 1.0
+    )
+
+    threshold_fraction = 0.5
+    threshold = threshold_fraction * math.sqrt(exact_second_moment)
+    empirical_detection_probability = np.mean(abs(signals) >= threshold)
+    paley_zygmund_bound = (1.0 - threshold_fraction**2) ** 2 / (
+        3.0 + 6.0 * spectral_concentration
+    )
+    universal_detection_bound = (1.0 - threshold_fraction**2) ** 2 / 6.0
+    probes_for_one_percent = math.ceil(
+        math.log(0.01) / math.log1p(-universal_detection_bound)
+    )
+    one_percent_miss_bound = (
+        1.0 - universal_detection_bound
+    ) ** probes_for_one_percent
+
     frequency = 0.75 / np.linalg.norm(skew_resolvent, 2)
     empirical_characteristic = np.mean(np.exp(1j * frequency * signals))
     exact_characteristic = np.linalg.det(
@@ -248,6 +284,13 @@ def random_probe_detection_check(sample_count=400_000):
 
     assert coordinate_error < 2e-14
     assert relative_second_moment_error < 8e-3
+    assert spectral_concentration <= 0.5 + 2e-14
+    assert exact_fourth_moment <= 6.0 * exact_second_moment**2 * (1.0 + 2e-14)
+    assert relative_energy_variance <= 5.0 + 2e-14
+    assert relative_fourth_moment_error < 3e-2
+    assert empirical_detection_probability >= paley_zygmund_bound
+    assert probes_for_one_percent == 47
+    assert one_percent_miss_bound < 0.01
     assert characteristic_error < 3e-3
     assert np.count_nonzero(signals == 0.0) == 0
     return {
@@ -255,6 +298,17 @@ def random_probe_detection_check(sample_count=400_000):
         "exact_second_moment": exact_second_moment,
         "empirical_second_moment": empirical_second_moment,
         "relative_second_moment_error": relative_second_moment_error,
+        "spectral_concentration": spectral_concentration,
+        "exact_fourth_moment": exact_fourth_moment,
+        "empirical_fourth_moment": empirical_fourth_moment,
+        "relative_fourth_moment_error": relative_fourth_moment_error,
+        "relative_energy_variance": relative_energy_variance,
+        "threshold_fraction": threshold_fraction,
+        "empirical_detection_probability": empirical_detection_probability,
+        "paley_zygmund_bound": paley_zygmund_bound,
+        "universal_detection_bound": universal_detection_bound,
+        "probes_for_one_percent": probes_for_one_percent,
+        "one_percent_miss_bound": one_percent_miss_bound,
         "frequency": frequency,
         "exact_characteristic": exact_characteristic,
         "empirical_characteristic": empirical_characteristic,
@@ -452,6 +506,19 @@ def main():
         f"{probes['empirical_characteristic'].real:.9f}; errors "
         f"{probes['relative_second_moment_error']:.2e}/"
         f"{probes['characteristic_error']:.2e}"
+    )
+    print(
+        f"   fourth moment exact/simulated "
+        f"{probes['exact_fourth_moment']:.9f}/"
+        f"{probes['empirical_fourth_moment']:.9f}; relative energy-variance "
+        f"{probes['relative_energy_variance']:.9f}"
+    )
+    print(
+        f"   half-RMS detection probability simulated/bounded "
+        f"{probes['empirical_detection_probability']:.9f}/"
+        f"{probes['universal_detection_bound']:.9f}; "
+        f"{probes['probes_for_one_percent']} probes give miss bound "
+        f"{probes['one_percent_miss_bound']:.6f}"
     )
 
     print("3. the energy-normalized resolvent factorization gives sharp bounds")
