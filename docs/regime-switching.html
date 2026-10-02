@@ -304,6 +304,188 @@
       checks orders 1 to 6 at $p = 0.3$ against a 30-digit numerical solution. The
       <a href="https://github.com/microprediction/homogenize">homogenize</a> package implements both cases.</p>
 
+    <h2 id="thesis-dynamic-mean-erratum">Thesis erratum: the dynamic-mean kernel</h2>
+    <p>Chapter 3 of the linked 2001 thesis contains two distinct errors in its ``Dynamic Mean Vasicek''
+      approximation. They are historical source errata; the equations on this page already use the unambiguous
+      convention that $\lambda$ is the jump rate <em>out of each state</em>.</p>
+    <p>First, the thesis uses two incompatible meanings of $\lambda$. The generator printed on p. 85 has
+      off-diagonal rate $\lambda/2$, for which the centered state decays as $e^{-\lambda s}$ and the mean holding
+      time is $2/\lambda$. The numerical examples on pp. 125&ndash;128 instead call $\lambda$ the number of switches
+      per year. That is the convention</p>
+    $$Q=\lambda\begin{pmatrix}-1&amp;1\\1&amp;-1\end{pmatrix},\qquad
+      \mathbb E_i[Y_s]=\pm e^{-2\lambda s},$$
+    <p>with mean holding time $1/\lambda$. The factor of two changes prices, not just notation.</p>
+
+    <h3>The corrected remaining-maturity formula</h3>
+    <p>There is a separate reversal of time in Eq. (3.7). Let
+      $\theta_{1,2}=\bar\theta\pm\delta\tilde\theta$ and
+      $\sigma_{1,2}^2=\bar s\pm\delta\tilde s$, with fixed
+      $\lambda,\kappa,T&gt;0$. Define</p>
+    $$\tilde g(u)=-\kappa\tilde\theta B(u)+\tfrac12\tilde s B(u)^2,$$
+    $$H_\lambda(T)=\int_0^T e^{-2\lambda s}\tilde g(T-s)\,ds.$$
+    <p>The argument of $B$ is the maturity remaining after calendar time $s$. If $P_i^\delta(T,x)$ is the exact
+      switched bond price, differentiation of the two-state affine ODE at $\delta=0$ gives, as
+      $\delta\to0$ with all displayed parameters fixed,</p>
+    <div class="equation-card">
+    $$\frac12\log\frac{P_1^\delta(T,x)}{P_2^\delta(T,x)}
+      =\delta H_\lambda(T)+O(\delta^3).$$
+    </div>
+    <p>Indeed, writing the time-to-maturity regime factors as a column $a^\delta(t)$ and
+      $c=(1,-1)^\top$, their exact affine reduction is</p>
+    $$\dot a^\delta(t)=\{Q+f_0(t)I+\delta\tilde g(t)\operatorname{diag}(c)\}a^\delta(t),
+      \qquad a^\delta(0)=\mathbf 1.$$
+    <p>At $\delta=0$, $a^0(t)=a_0(t)\mathbf1$. Therefore
+      $z(t)=a_0(t)^{-1}\partial_\delta a^\delta(t)|_{\delta=0}$ satisfies
+      $\dot z=Qz+\tilde g(t)c$, $z(0)=0$. Since $Qc=-2\lambda c$, variation of constants and
+      $s=T-t$ give $z(T)=cH_\lambda(T)$. The common short-rate factor $e^{-B(T)x}$ cancels
+      from the price ratio.</p>
+    <p>The remainder is cubic because changing $\delta$ to $-\delta$ swaps the two states, so the log ratio is odd.
+      Equivalently, conditional parameter averaging gives</p>
+    $$\mathbb E_i[\theta(Y_s)]=\bar\theta\pm\delta\tilde\theta e^{-2\lambda s},\qquad
+      \mathbb E_i[\sigma^2(Y_s)]=\bar s\pm\delta\tilde s e^{-2\lambda s},$$
+    <p>and the deterministic time-inhomogeneous Vasicek formula is
+      $P_i^{\rm DM}=P_{\rm av}\exp(\pm\delta H_\lambda)$. Thus the corrected dynamic-mean approximation has the
+      exact first derivative in the regime contrast at every fixed switching rate and maturity. It is not claimed
+      to be exact at finite contrast.</p>
+    <p>The required integrals are closed form. For $p=1,2$ and $c&gt;0$,</p>
+    <div class="equation-card">
+    $$I_p(c;T)=\int_0^T e^{-cs}B(T-s)^p\,ds
+      =\frac1{\kappa^p}\sum_{j=0}^p(-1)^j{p\choose j}
+      \frac{e^{-j\kappa T}-e^{-cT}}{c-j\kappa},$$
+    $$H_\lambda(T)=-\kappa\tilde\theta I_1(2\lambda;T)
+      +\tfrac12\tilde s I_2(2\lambda;T).$$
+    </div>
+    <p>At a removable resonance $c=j\kappa$, the quotient is interpreted as $Te^{-cT}$. Eq. (3.7) instead uses
+      $e^{-\lambda s}B(s)$: it combines the p. 85 half-rate convention with elapsed rather than remaining
+      maturity.</p>
+
+    <h3>Fixed contrast under fast switching</h3>
+    <p>The small-$\delta$ statement above holds at every fixed switching rate. A complementary result keeps the
+      regime contrast finite and lets $\lambda\to\infty$. Put $D_\lambda(T)=H_\lambda(T)$ with the unscaled
+      contrasts $\tilde\theta,\tilde s$, and write the exact affine amplitudes as
+      $a_1=m(1+\omega)$ and $a_2=m(1-\omega)$. Their equations are exactly</p>
+    $$\omega'=\tilde g(1-\omega^2)-2\lambda\omega,\qquad
+      (\log m)'=\bar g+\tilde g\,\omega,\qquad \omega(0)=0.$$
+    <p>The linear convolution $D_\lambda$ solves the first equation with the nonlinear term
+      $-\tilde g\omega^2$ removed. For fixed $T&gt;0$, integration by parts gives</p>
+    $$D_\lambda(T)=\frac{\tilde g(T)}{2\lambda}
+      -\frac{\tilde g'(T)}{4\lambda^2}+O(\lambda^{-3}).$$
+    <p>Because $\omega=O(\lambda^{-1})$, variation of constants in the difference equation gives
+      $\omega(T)-D_\lambda(T)=O(\lambda^{-3})$. Expanding
+      $\log((1+\omega)/(1-\omega))$ and integrating the equation for $m$ therefore yield</p>
+    <div class="equation-card">
+    $$\log\frac{a_1(T)}{a_2(T)}=2D_\lambda(T)+O(\lambda^{-3}),$$
+    $$\frac12\{\log a_1(T)+\log a_2(T)\}-\int_0^T\bar g(t)\,dt
+      =\frac1{2\lambda}\int_0^T\tilde g(t)^2\,dt+O(\lambda^{-2}).$$
+    </div>
+    <p>For the analytic Vasicek forcing, these remainder orders are sharp and their first omitted coefficients
+      are explicit. Since $\tilde g(0)=0$, endpoint Laplace expansion and variation of constants give</p>
+    $$D_\lambda(T)=\frac{\tilde g(T)}{2\lambda}
+      -\frac{\tilde g'(T)}{(2\lambda)^2}+O(\lambda^{-3}),\qquad
+      \omega(T)-D_\lambda(T)=-\frac{\tilde g(T)^3}{(2\lambda)^3}+O(\lambda^{-4}).$$
+    <p>Using $2\operatorname{arctanh}\omega=2\omega+2\omega^3/3+O(\omega^5)$ therefore sharpens the
+      relative-price result to</p>
+    $$\log\frac{a_1(T)}{a_2(T)}-2D_\lambda(T)
+      =-\frac{\tilde g(T)^3}{6\lambda^3}+O(\lambda^{-4}).$$
+    <p>The common level needs one extra endpoint term: exactly</p>
+    $$C_\lambda:=\frac12\{\log a_1(T)+\log a_2(T)\}-\int_0^T\bar g(t)\,dt
+      =\int_0^T\tilde g(t)\omega(t)\,dt+\frac12\log(1-\omega(T)^2).$$
+    <p>Integration by parts in the first term contributes $-\tilde g(T)^2/(8\lambda^2)$, and the final
+      logarithm contributes the same amount. Hence</p>
+    $$C_\lambda-\frac1{2\lambda}\int_0^T\tilde g(t)^2\,dt
+      =-\frac{\tilde g(T)^2}{4\lambda^2}+O(\lambda^{-3}).$$
+    <p>Thus the corrected dynamic mean captures the exact regime log-price contrast through second order in
+      $1/\lambda$, even at finite contrast. It does <em>not</em> give the full price to first order: it omits the
+      common positive Green&ndash;Kubo convexity term in the second display. This separates a relative-price result
+      from a common-level approximation.</p>
+    <p>The endpoint expansions and the common-level expansion above have fixed
+      $T,\kappa,\theta_i,\sigma_i$ as $\lambda\to\infty$. In particular, no maturity-uniform claim is being made
+      for the common Green&ndash;Kubo remainder.</p>
+
+    <h3>A nonasymptotic bound, uniform in maturity</h3>
+    <p>The relative-price statement has a stronger form that needs neither differentiability nor a fixed
+      contrast. Let $q:[0,\infty)\to\mathbb R$ be bounded and continuous, put
+      $M=\|q\|_\infty$ and $\eta=M/(2\lambda)$, and define</p>
+    $$D_\lambda(T)=\int_0^T e^{-2\lambda(T-s)}q(s)\,ds.$$
+    <p>Define the invariant-radius function</p>
+    $$\rho(\eta)=\tanh\!\left\{\tfrac12\operatorname{arsinh}(2\eta)\right\}
+      =\frac{2\eta}{\sqrt{1+4\eta^2}+1},\qquad \rho(0)=0.$$
+    <p>For every finite $\eta\ge0$, with no small-contrast assumption, all maturities simultaneously satisfy</p>
+    <div class="equation-card">
+    $$\sup_{T\ge0}\left|\log\frac{a_1(T)}{a_2(T)}-2D_\lambda(T)\right|
+      \le 2\eta\rho(\eta)^2
+      +2\{\operatorname{arctanh}\rho(\eta)-\rho(\eta)\}.$$
+    </div>
+    <p>This is a finite-rate inequality, not asymptotic notation. Its proof is a direct scalar comparison.
+      At $\omega=\rho(\eta)$ the largest possible outward derivative is</p>
+    $$M\{1-\rho(\eta)^2\}-2\lambda\rho(\eta)=0,$$
+    <p>and the analogous inward inequality holds at $-\rho(\eta)$. Thus the Riccati flow leaves
+      $[-\rho(\eta),\rho(\eta)]$ invariant. If
+      $(\mathcal Vh)(T)=\int_0^T e^{-2\lambda(T-s)}h(s)\,ds$, variation of constants gives exactly</p>
+    $$\omega-D_\lambda=-\mathcal V(q\omega^2),\qquad
+      \|\omega-D_\lambda\|_\infty\le\eta\rho(\eta)^2.$$
+    <p>Finally, $\log(a_1/a_2)=2\operatorname{arctanh}\omega$, and
+      $\operatorname{arctanh}x-x$ is increasing for $x\ge0$. The triangle inequality gives the displayed bound.
+      As $\eta\downarrow0$, its right-hand side is
+      $\tfrac83\eta^3+O(\eta^5)$, so it retains the cubic perturbative rate while remaining finite and valid for
+      every contrast-to-switching ratio.</p>
+    <p>The bound also resolves a joint scaling that the fixed-contrast expansion does not cover. For a family
+      $q_\lambda$ with $M_\lambda=\|q_\lambda\|_\infty$ and $M_\lambda/\lambda\to0$,</p>
+    $$\sup_{T\ge0}\left|\log\frac{a_{1,\lambda}(T)}{a_{2,\lambda}(T)}
+      -2D_\lambda(T)\right|
+      =O\!\left((M_\lambda/\lambda)^3\right).$$
+    <p>This corollary concerns only the regime log-price contrast. It neither removes nor bounds the separate
+      common-level Green&ndash;Kubo correction.</p>
+    <p>A finite-contrast certificate with $\kappa=1.3$, $T=4$, $\theta=(0.18,0.04)$ and
+      $\sigma=(0.16,0.05)$ gives:</p>
+    <table>
+      <thead><tr><th>$\lambda$</th><th>Log-ratio residual</th><th>Common log shift</th><th>Residual after common term</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>$7.5152\times10^{-7}$</td><td>$1.5229\times10^{-3}$</td><td>$7.3460\times10^{-5}$</td></tr>
+        <tr><td>8</td><td>$9.4308\times10^{-8}$</td><td>$7.8038\times10^{-4}$</td><td>$1.7802\times10^{-5}$</td></tr>
+        <tr><td>16</td><td>$1.1807\times10^{-8}$</td><td>$3.9472\times10^{-4}$</td><td>$4.3709\times10^{-6}$</td></tr>
+        <tr><td>32</td><td>$1.4769\times10^{-9}$</td><td>$1.9846\times10^{-4}$</td><td>$1.0821\times10^{-6}$</td></tr>
+        <tr><td>64</td><td>$1.8468\times10^{-10}$</td><td>$9.9503\times10^{-5}$</td><td>$2.6916\times10^{-7}$</td></tr>
+        <tr><td>128</td><td>$2.3108\times10^{-11}$</td><td>$4.9819\times10^{-5}$</td><td>$6.7116\times10^{-8}$</td></tr>
+      </tbody>
+    </table>
+    <p>The last rate-doubling orders are $2.9986$ for the log-ratio residual, $0.9980$ for the omitted common
+      shift, and $2.0037$ after subtracting its displayed leading term. At $\lambda=128$, the scaled remainders
+      are $\lambda^3R_\lambda=4.84610\times10^{-5}$ versus the predicted
+      $-\tilde g(T)^3/6=4.84281\times10^{-5}$, and
+      $\lambda^2\{C_\lambda-(2\lambda)^{-1}\int\tilde g^2\}=-1.09963\times10^{-3}$ versus
+      $-\tilde g(T)^2/4=-1.09674\times10^{-3}$. After subtracting these endpoint coefficients, the measured
+      orders are $4.0637$ for the contrast residual (the $32$-to-$64$ doubling, before the ODE solve reaches its
+      precision floor) and $2.9920$ for the common residual.</p>
+
+    <h3>Checks against the printed examples</h3>
+    <p>Both examples use $\bar\theta=0.25$, $\tilde\theta=0.10$ and essentially constant volatility. The table
+      compares the magnitude of the thesis's dynamic-mean correction, the corrected value
+      $\sinh(|H_\lambda|)$, and the exact two-state affine ODE correction
+      $|a_2-a_1|/(2a_{\rm av})$.</p>
+    <table>
+      <thead><tr><th>Printed pages</th><th>$\lambda,\kappa,T$</th><th>Eq. (3.7)</th><th>Corrected</th><th>Exact switched ODE</th><th>Thesis simulation</th></tr></thead>
+      <tbody>
+        <tr><td>125&ndash;126</td><td>$5,2,15$</td><td>0.00571432</td><td>0.01000017</td><td>0.01014190</td><td>0.010020</td></tr>
+        <tr><td>127&ndash;128</td><td>$1,25,5$</td><td>0.09562519</td><td>0.05001837</td><td>0.05099521</td><td>0.0516</td></tr>
+      </tbody>
+    </table>
+    <p>The corrected kernel is close to the exact switched calculation in both cases; the printed kernel is on the
+      wrong side by factors of about two. The p. 128 table also reverses the sign of the correction although regime
+      1 has the higher mean level and therefore the cheaper bond. The time-scale row on p. 127 is carried over from
+      the preceding example: the stated parameters imply $1/\kappa=0.04$ and $T=5$, not $0.5$ and $15$.</p>
+    <p>The
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
+      checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
+      measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders and sharp
+      endpoint coefficients above, checks the all-ratio maturity-uniform inequality on 260 constant and bounded
+      time-dependent cases with $0.01\le\eta\le100$ (largest error/bound ratio $0.960384$), recovers order $1.198669$ when
+      $M_\lambda\asymp\lambda^{0.6}$, and solves both exact switched ODEs. The affine bond structure is
+      the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
+      Markov-modulated mean-level model is treated by
+      <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page
+      evidence are recorded in <a href="https://github.com/microprediction/homogenization/issues/68">Issue #68</a>.</p>
+
     <p class="next-steps">A note setting out the derivation is in preparation.
     Comments and corrections are welcome through
     <a href="https://github.com/microprediction/homogenization/issues">GitHub issues</a>.</p>
