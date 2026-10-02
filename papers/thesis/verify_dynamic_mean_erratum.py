@@ -9,8 +9,8 @@ fixed-contrast, fast-switching refinement: the corrected dynamic mean captures
 the regime log-price contrast through order lambda^-2, but omits the common
 order-lambda^-1 Green--Kubo convexity term.  The endpoint coefficients of both
 next remainders are also checked.  Finally, it checks a nonasymptotic error
-bound that is uniform over every maturity and permits the contrast to vary
-with the switching rate.
+bound that is uniform over every maturity and every finite contrast-to-
+switching ratio, and permits the contrast to vary with the switching rate.
 """
 
 from __future__ import annotations
@@ -93,20 +93,38 @@ def response_coefficient(
 def uniform_log_ratio_bound(
     switching_rate: float, forcing_bound: float
 ) -> tuple[float, float]:
-    """Return eta and a maturity-uniform bound for the log-ratio error.
+    """Return eta and an all-ratio, maturity-uniform log-ratio bound.
 
-    If |q(t)| <= forcing_bound and eta=forcing_bound/(2*switching_rate)<1/2,
-    the exact Riccati contrast omega and its linearization D obey
+    If |q(t)| <= forcing_bound and eta=forcing_bound/(2*switching_rate),
+    the exact Riccati contrast omega stays in [-rho,rho], where
+
+        rho = tanh(asinh(2*eta)/2).
+
+    Its linearization D then obeys
 
         sup_T |2*atanh(omega(T))-2*D(T)| <= returned bound.
+
+    No smallness assumption on eta is required.  The bound is asymptotic to
+    (8/3)*eta^3 as eta tends to zero.
     """
     if switching_rate <= 0.0 or forcing_bound < 0.0:
         raise ValueError("switching rate must be positive and bound nonnegative")
     eta = forcing_bound / (2.0 * switching_rate)
-    if eta >= 0.5:
-        raise ValueError("the certificate requires forcing_bound < switching_rate")
-    bound = 8.0 * eta**3 + 16.0 * eta**3 / (
-        3.0 * (1.0 - 4.0 * eta**2)
+    rho = math.tanh(0.5 * math.asinh(2.0 * eta))
+    if rho < 1e-3:
+        rho_squared = rho * rho
+        atanh_remainder = rho**3 * (
+            1.0 / 3.0
+            + rho_squared * (
+                1.0 / 5.0
+                + rho_squared * (1.0 / 7.0 + rho_squared / 9.0)
+            )
+        )
+    else:
+        atanh_remainder = math.atanh(rho) - rho
+    bound = (
+        2.0 * eta * rho**2
+        + 2.0 * atanh_remainder
     )
     return eta, bound
 
@@ -410,15 +428,21 @@ def main() -> None:
         - common_quadratic_coefficient
     ) < 4e-6
 
-    # The Volterra fixed-point proof gives a genuinely nonasymptotic bound,
-    # uniform in T.  Exercise it first on constant forcing all the way to the
+    # The Riccati invariant-interval proof gives a genuinely nonasymptotic
+    # bound, uniform in T and valid at every finite contrast-to-switching
+    # ratio.  Exercise it first on constant forcing all the way to the
     # equilibrium limit, then on bounded time-dependent forcings.  The latter
     # are normalized by an analytic envelope, not by a sampled maximum.
     utilization = []
-    for eta in np.linspace(0.02, 0.49, 60):
-        equilibrium = (
-            math.sqrt(1.0 + 4.0 * eta**2) - 1.0
-        ) / (2.0 * eta)
+    small_eta = 2.0 ** -16
+    small_eta_ratio = (
+        uniform_log_ratio_bound(1.0, 2.0 * small_eta)[1]
+        / small_eta**3
+    )
+    assert abs(small_eta_ratio - 8.0 / 3.0) < 2e-9
+    eta_grid = np.geomspace(0.01, 100.0, 100)
+    for eta in eta_grid:
+        equilibrium = math.tanh(0.5 * math.asinh(2.0 * eta))
         equilibrium_error = abs(2.0 * math.atanh(equilibrium) - 2.0 * eta)
         _, bound = uniform_log_ratio_bound(1.0, 2.0 * eta)
         assert equilibrium_error <= bound
@@ -428,7 +452,7 @@ def main() -> None:
     random_cases = 160
     for _ in range(random_cases):
         rate = float(10 ** rng.uniform(-0.5, 1.0))
-        eta = float(rng.uniform(0.02, 0.48))
+        eta = float(10 ** rng.uniform(-2.0, 2.0))
         forcing_bound = 2.0 * rate * eta
         coefficients = rng.normal(size=3)
         envelope = float(np.sum(np.abs(coefficients)))
@@ -543,9 +567,13 @@ def main() -> None:
     )
     print(
         "maturity-uniform bound: "
-        f"{60 + random_cases} constant/random cases, maximum utilization "
+        f"{len(eta_grid) + random_cases} constant/random cases, maximum utilization "
         f"{max(utilization):.6f}; joint contrast/switching last order "
         f"{joint_orders[-1]:.6f}"
+    )
+    print(
+        "uniform-bound small-eta coefficient: "
+        f"{small_eta_ratio:.9f} versus {8.0 / 3.0:.9f}"
     )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
@@ -557,7 +585,7 @@ def main() -> None:
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
         "orders and endpoint coefficients, maturity-uniform finite-rate "
-        "bound, joint contrast/switching rate, and both thesis examples"
+        "all-ratio bound, joint contrast/switching rate, and both thesis examples"
     )
 
 

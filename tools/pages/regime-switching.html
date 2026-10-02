@@ -280,25 +280,28 @@
       contrast. Let $q:[0,\infty)\to\mathbb R$ be bounded and continuous, put
       $M=\|q\|_\infty$ and $\eta=M/(2\lambda)$, and define</p>
     $$D_\lambda(T)=\int_0^T e^{-2\lambda(T-s)}q(s)\,ds.$$
-    <p>If $\eta&lt;1/2$, then for every maturity simultaneously,</p>
+    <p>Define the invariant-radius function</p>
+    $$\rho(\eta)=\tanh\!\left\{\tfrac12\operatorname{arsinh}(2\eta)\right\}
+      =\frac{2\eta}{\sqrt{1+4\eta^2}+1},\qquad \rho(0)=0.$$
+    <p>For every finite $\eta\ge0$, with no small-contrast assumption, all maturities simultaneously satisfy</p>
     <div class="equation-card">
     $$\sup_{T\ge0}\left|\log\frac{a_1(T)}{a_2(T)}-2D_\lambda(T)\right|
-      \le 8\eta^3+\frac{16\eta^3}{3(1-4\eta^2)}.$$
+      \le 2\eta\rho(\eta)^2
+      +2\{\operatorname{arctanh}\rho(\eta)-\rho(\eta)\}.$$
     </div>
-    <p>This is a finite-rate inequality, not asymptotic notation. To prove it, let
-      $(\mathcal Vh)(T)=\int_0^T e^{-2\lambda(T-s)}h(s)\,ds$. The exact Riccati equation is the Volterra fixed-point
-      problem</p>
-    $$\omega=D_\lambda-\mathcal V(q\omega^2).$$
-    <p>Because $\|\mathcal Vh\|_\infty\le\|h\|_\infty/(2\lambda)$, the right-hand side maps the ball
-      $\|\omega\|_\infty\le2\eta$ into itself and has Lipschitz constant $4\eta^2&lt;1$. The contraction theorem
-      therefore gives</p>
-    $$\|\omega\|_\infty\le2\eta,\qquad
-      \|\omega-D_\lambda\|_\infty\le4\eta^3.$$
-    <p>Finally, $\log(a_1/a_2)=2\operatorname{arctanh}\omega$ and
-      $|\operatorname{arctanh}x-x|\le |x|^3/[3(1-x^2)]$, which gives the displayed constant. This use of the
-      contraction principle goes back to
-      <a href="https://doi.org/10.4064/fm-3-1-133-181">Banach (1922)</a>; all constants here come directly from
-      this scalar switched-bond equation.</p>
+    <p>This is a finite-rate inequality, not asymptotic notation. Its proof is a direct scalar comparison.
+      At $\omega=\rho(\eta)$ the largest possible outward derivative is</p>
+    $$M\{1-\rho(\eta)^2\}-2\lambda\rho(\eta)=0,$$
+    <p>and the analogous inward inequality holds at $-\rho(\eta)$. Thus the Riccati flow leaves
+      $[-\rho(\eta),\rho(\eta)]$ invariant. If
+      $(\mathcal Vh)(T)=\int_0^T e^{-2\lambda(T-s)}h(s)\,ds$, variation of constants gives exactly</p>
+    $$\omega-D_\lambda=-\mathcal V(q\omega^2),\qquad
+      \|\omega-D_\lambda\|_\infty\le\eta\rho(\eta)^2.$$
+    <p>Finally, $\log(a_1/a_2)=2\operatorname{arctanh}\omega$, and
+      $\operatorname{arctanh}x-x$ is increasing for $x\ge0$. The triangle inequality gives the displayed bound.
+      As $\eta\downarrow0$, its right-hand side is
+      $\tfrac83\eta^3+O(\eta^5)$, so it retains the cubic perturbative rate while remaining finite and valid for
+      every contrast-to-switching ratio.</p>
     <p>The bound also resolves a joint scaling that the fixed-contrast expansion does not cover. For a family
       $q_\lambda$ with $M_\lambda=\|q_\lambda\|_\infty$ and $M_\lambda/\lambda\to0$,</p>
     $$\sup_{T\ge0}\left|\log\frac{a_{1,\lambda}(T)}{a_{2,\lambda}(T)}
@@ -348,8 +351,8 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_dynamic_mean_erratum.py">certificate</a>
       checks the closed forms against quadrature to $4.7\times10^{-14}$, verifies the cubic contrast remainder with
       measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders and sharp
-      endpoint coefficients above, checks the maturity-uniform inequality on 220 constant and bounded
-      time-dependent cases (largest error/bound ratio $0.099864$), recovers order $1.198669$ when
+      endpoint coefficients above, checks the all-ratio maturity-uniform inequality on 260 constant and bounded
+      time-dependent cases with $0.01\le\eta\le100$ (largest error/bound ratio $0.960384$), recovers order $1.198669$ when
       $M_\lambda\asymp\lambda^{0.6}$, and solves both exact switched ODEs. The affine bond structure is
       the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
       Markov-modulated mean-level model is treated by
