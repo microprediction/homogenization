@@ -354,6 +354,70 @@
       conformal validity. Nor does the calculation justify replacing $n$ by
       an effective sample size in an iid beta law.</p>
 
+    <h3>A joint long-panel and fast-switching theorem</h3>
+    <p>The preceding exact recursion permits any fixed pair $(n,m)$, while the
+      Perron asymptotics below send $n$ to infinity at fixed $m$. There is also
+      a uniform comparison in which both change. Let
+      ${\cal L}_{n,m}$ be the law of a stationary score panel on a regular grid
+      with $P=e^{mQ_0h}$, and let $\bar{\cal L}^{\otimes n}$ be $n$ independent
+      draws from the pooled score law. For a finite irreducible $d$-state
+      chain and $m,h&gt;0$,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left({\cal L}_{n,m},\bar{\cal L}^{\otimes n}\right)
+      \le \delta_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{(n-1)(d-1)}2}\,
+      e^{-m\gamma_s h}\right\}.$$
+    </div>
+    <p>To prove it, first compare the stationary hidden path with
+      $\pi^{\otimes n}$. The chain rule for relative entropy gives exactly</p>
+    $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
+      =(n-1)\sum_i\pi_iD(P(i,\cdot)\Vert\pi).$$
+    <p>The elementary inequality $D\le\chi^2$, applied row by row, and the
+      $L^2(\pi)$ contraction of the adjoint semigroup give</p>
+    $$\sum_i\pi_i\chi^2(P(i,\cdot),\pi)
+      \le e^{-2m\gamma_sh}\sum_i\pi_i(\pi_i^{-1}-1)
+      =(d-1)e^{-2m\gamma_sh}.$$
+    <p>Pinsker&apos;s inequality yields the displayed total-variation bound.
+      Passing the hidden path through arbitrary conditionally independent
+      state-specific emission kernels can only decrease divergence, the data
+      processing principle developed for general information divergences by
+      <a href="./bibliography.html#Csiszar1963">Csisz&aacute;r (1963)</a>.
+      Thus the conclusion is uniform over the score laws and over every panel
+      event; it is not merely a covariance or empirical-CDF statement.</p>
+    <p>For example, continuity of the pooled CDF gives the finite-panel iid
+      comparison</p>
+    <div class="equation-card">
+    $$\left|\Pr_\pi\{C_0&lt;p\}
+      -\Pr\{\operatorname{Bin}(n,p)\ge k\}\right|
+      \le\delta_{n,m}.$$
+    </div>
+    <p>Hence iid calibration-panel rank laws become uniformly accurate
+      whenever $n_me^{-2m\gamma_sh}\to0$. This remains a
+      <em>marginal law over calibration panels</em>; it does not turn ordinary
+      pooled conformal prediction into pointwise, training-conditional, or
+      feature-conditional coverage. From an initial law $\nu$ followed by a
+      burn-in $b$, the right side simply gains
+      $\tfrac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}$.</p>
+    <p>The scale cannot be improved in general. For the stationary symmetric
+      two-state chain, encode the states by $X_j\in\{-1,1\}$ and put
+      $a=e^{-2mh}$. The transition signs $Z_j=X_jX_{j+1}$ are independent with
+      $\Pr(Z_j=1)=(1+a)/2$; under an iid stationary panel they are independent
+      fair signs. The path total variation is therefore exactly the distance
+      between $n-1$ copies of $\operatorname{Bernoulli}((1+a)/2)$ and fair
+      Bernoulli variables. As $a\downarrow0$, it tends to zero if
+      $(n-1)a^2\to0$, to one if $(n-1)a^2\to\infty$, and, if
+      $(n-1)a^2\to c\in(0,\infty)$, to</p>
+    $$2\Phi(\sqrt c/2)-1.$$
+    <p>Continuous emissions on disjoint state-specific supports reveal the
+      state and preserve this distance exactly, so the example is a genuine
+      continuous-score counterexample outside the subcritical scale. The
+      certificate checks the exact Bernoulli-product formula by full path
+      enumeration and obtains $0.38292359$ at $a=2^{-7}$,
+      $n-1=a^{-2}$, against the critical limit $0.38292492$. For the
+      nonreversible three-state chain and a 200-score panel, the spectral
+      bounds at scaled spacings $mh=1,1.5,2$ are respectively
+      $0.35621999$, $0.05660622$, and $0.00899518$.</p>
+
     <h3>Long regular panels: the exact exponential rate</h3>
     <p>The generating matrix also resolves the large-panel limit, but only
       when the spacing is fixed. Let $P=e^{mQ_0h}$ for $h&gt;0$, assume the

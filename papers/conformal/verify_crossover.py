@@ -30,6 +30,11 @@ An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
 boundary correction for every fixed cumulant order and every initial law.
+A relative-entropy comparison with the iid pooled panel gives an explicit
+joint panel-size/fast-switching total-variation bound.  A symmetric two-state
+example reduces exactly to biased versus fair Bernoulli products and proves
+that the resulting square-root panel scale is sharp, including its critical
+local-asymptotic-normal limit.
 """
 import itertools
 import math
@@ -38,6 +43,7 @@ import numpy as np
 from scipy.linalg import expm
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import logsumexp, ndtr
+from scipy.stats import binom
 
 TARGET = 0.9
 EPS = 0.2
@@ -1059,6 +1065,106 @@ def burnin_transfer_checks(Q, pi, gamma_s, success):
     transient_panel_checks(Q, pi, gamma_s, success)
 
 
+def bernoulli_product_tv(trials, correlation):
+    """Exact TV between biased and fair Bernoulli product laws.
+
+    The likelihood ratio is increasing in the number of successes, so total
+    variation is the difference of the two upper tails at its crossing.
+    """
+    log_plus = math.log1p(correlation)
+    log_minus = math.log1p(-correlation)
+    crossing = -trials * log_minus / (log_plus - log_minus)
+    threshold = math.ceil(crossing - 2e-14)
+    biased_tail = binom.sf(threshold - 1, trials,
+                           (1 + correlation) / 2)
+    fair_tail = binom.sf(threshold - 1, trials, 0.5)
+    return biased_tail - fair_tail
+
+
+def joint_panel_mixing_checks(Q, pi, gamma_s):
+    """Check the joint long-panel/fast-switching TV theorem.
+
+    For a stationary hidden path, the KL divergence from an iid stationary
+    path is (n-1) times the stationary average one-step KL.  Rowwise
+    chi-square contraction for the adjoint semigroup, followed by Pinsker,
+    gives a score-panel bound uniform over every emission kernel and event.
+    """
+    dimension = len(pi)
+    panel_size = 200
+    rows = []
+    for scaled_spacing in (0.25, 0.5, 1.0, 1.5, 2.0):
+        transition = expm(scaled_spacing * Q)
+        density = transition / pi[None, :]
+        one_step_kl = np.sum(
+            pi[:, None] * transition * np.log(density))
+        one_step_chi = np.sum(
+            pi[:, None] * (transition - pi[None, :]) ** 2
+            / pi[None, :])
+        spectral_chi = ((dimension - 1)
+                        * math.exp(-2 * gamma_s * scaled_spacing))
+        assert 0 <= one_step_kl <= one_step_chi + 2e-14
+        assert one_step_chi <= spectral_chi + 3e-14
+        exact_pinsker = min(
+            1.0, math.sqrt((panel_size - 1) * one_step_kl / 2))
+        spectral_pinsker = min(
+            1.0,
+            math.sqrt((panel_size - 1) * (dimension - 1) / 2)
+            * math.exp(-gamma_s * scaled_spacing),
+        )
+        assert exact_pinsker <= spectral_pinsker + 2e-14
+        rows.append((scaled_spacing, one_step_kl, one_step_chi,
+                     spectral_chi, spectral_pinsker))
+
+    print("joint panel-size/switching-rate TV certificate:")
+    print("  mh     row KL       row chi2     spectral chi2   panel TV bound")
+    for spacing, kl, chi, spectral_chi, panel_tv in rows:
+        print(f" {spacing:4.2f}  {kl:11.8f}  {chi:11.8f}"
+              f"    {spectral_chi:11.8f}      {panel_tv:11.8f}")
+
+    # Sharpness.  For a stationary symmetric two-state chain, write the
+    # states as signs X_j and set Z_j=X_j X_{j+1}.  The Z_j are iid with
+    # P(Z_j=1)=(1+a)/2, while under an iid state panel they are fair.  Hence
+    # path TV is exactly the TV between these Bernoulli product laws.
+    # Disjoint-support continuous emissions preserve this TV exactly.
+    brute_trials = 7
+    brute_a = 0.23
+    markov_path = []
+    iid_path = []
+    for signs in itertools.product((-1, 1), repeat=brute_trials + 1):
+        probability = 0.5
+        for left, right in zip(signs[:-1], signs[1:]):
+            probability *= (1 + brute_a * left * right) / 2
+        markov_path.append(probability)
+        iid_path.append(2 ** -(brute_trials + 1))
+    brute_tv = 0.5 * np.abs(np.asarray(markov_path)
+                            - np.asarray(iid_path)).sum()
+    formula_tv = bernoulli_product_tv(brute_trials, brute_a)
+    assert abs(brute_tv - formula_tv) < 3e-15
+
+    critical_rows = []
+    for exponent in (3, 4, 5, 6, 7):
+        a = 2.0 ** -exponent
+        subcritical_trials = round(1 / a)
+        critical_trials = round(1 / a ** 2)
+        supercritical_trials = round(1 / a ** 3)
+        critical_rows.append((
+            a,
+            bernoulli_product_tv(subcritical_trials, a),
+            bernoulli_product_tv(critical_trials, a),
+            bernoulli_product_tv(supercritical_trials, a),
+        ))
+    critical_limit = 2 * ndtr(0.5) - 1
+    assert critical_rows[-1][1] < 0.04
+    assert abs(critical_rows[-1][2] - critical_limit) < 0.003
+    assert critical_rows[-1][3] > 0.999
+    print("sharp symmetric two-state threshold:")
+    print("    a       TV(n=a^-1)  TV(n=a^-2)  TV(n=a^-3)")
+    for a, subcritical, critical, supercritical in critical_rows:
+        print(f" {a:8.6f}    {subcritical:10.8f}  {critical:10.8f}"
+              f"  {supercritical:10.8f}")
+    print(f"  critical LAN limit: {critical_limit:.8f}")
+
+
 def nonreversible_contraction_checks():
     # This chain has a nonuniform invariant law and violates detailed balance.
     # Its additive reversibilization nevertheless gives an L2(pi) contraction
@@ -1133,6 +1239,7 @@ def nonreversible_contraction_checks():
     print("finite-n factor saturation:",
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
+    joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
     burnin_transfer_checks(Q, pi, gamma_s, f)
@@ -1240,7 +1347,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate, sharp prefactor and first two"
+          " count law, joint panel-size/fast-switching TV bound and sharp"
+          " two-state threshold, Perron tail rate, sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"
           " correction, Green--Kubo"

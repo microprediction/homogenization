@@ -1,5 +1,15 @@
 [
  {
+  "key": "Csiszar1963",
+  "authors": "Csiszár, I.",
+  "year": 1963,
+  "title": "Eine informationstheoretische Ungleichung und ihre Anwendung auf den Beweis der Ergodizität von Markoffschen Ketten",
+  "venue": "A Magyar Tudományos Akadémia Matematikai Kutató Intézetének Közleményei 8(1-2):85-108",
+  "doi": "",
+  "url": "https://real.mtak.hu/201426/",
+  "annotation": "Proves that general information divergences cannot increase through a stochastic channel. The joint panel theorem uses this data-processing principle after comparing the hidden Markov path with the iid stationary path."
+ },
+ {
   "key": "NettasingheChatterjeeTipireddyHalappanavar2023",
   "authors": "Nettasinghe, B., Chatterjee, S., Tipireddy, R. and Halappanavar, M.",
   "year": 2023,
