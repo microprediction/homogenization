@@ -8,7 +8,9 @@ loss caused by its moving invariant distribution, and certify an all-order
 periodic Floquet recursion through the fourth inverse-speed coefficient on a
 nonreversible three-state example.  A symmetric periodic certificate also
 checks that coefficient cancellations delay the critical maturity to the
-first nonzero omitted Floquet term.
+first nonzero omitted Floquet term.  Finally, a positive periodic trial
+profile supplies an a posteriori residual bracket for the exact Floquet
+exponent at a fixed, finite switching speed.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.linalg import eig, expm
 from scipy.optimize import root_scalar
+from scipy.signal import fftconvolve
 
 
 KAPPA = 1.0
@@ -1950,6 +1953,117 @@ def finite_chain_floquet_recursion(
     return coefficients, profiles, local_drifts
 
 
+def finite_chain_floquet_residual_diagnostic(
+    m: float,
+    exponent_order: int,
+    coefficients: np.ndarray,
+    profiles: list[np.ndarray],
+    local_drifts: list[np.ndarray],
+) -> dict[str, float]:
+    """Evaluate a Fourier-envelope a posteriori Floquet bracket.
+
+    The exponent is truncated through ``m**(-exponent_order)`` while the
+    periodic trial profile includes one additional corrector.  If ``u`` and
+    ``b`` denote those two truncations, the exact comparison theorem uses the
+    global extrema of
+
+        (u' - (m Q + D - b I) u)_i / u_i.
+
+    The returned symmetric radius uses the l1 norm of the Fourier coefficients
+    of the residual and a Fourier lower bound on every component of ``u``.
+    Thus it controls every phase of the trigonometric interpolants rather than
+    only the collocation nodes.  Floating-point operations are not
+    outward-rounded, so this remains a reproducibility diagnostic rather than
+    an interval-arithmetic proof.
+    """
+    if exponent_order < 0:
+        raise ValueError("exponent_order must be nonnegative")
+    if len(profiles) <= exponent_order + 1:
+        raise ValueError("one profile beyond the exponent order is required")
+    if len(local_drifts) <= exponent_order:
+        raise ValueError("missing local drift")
+
+    grid_size = profiles[0].shape[0]
+    times = np.linspace(0.0, PERIOD, grid_size, endpoint=False)
+    frequencies = 2 * np.pi * np.fft.fftfreq(
+        grid_size, d=PERIOD / grid_size
+    )
+
+    trial_profile = sum(
+        profiles[order] / m**order
+        for order in range(exponent_order + 2)
+    )
+    local_phase = sum(
+        local_drifts[order] / m**order
+        for order in range(exponent_order + 1)
+    )
+    approximate_exponent = float(sum(
+        coefficients[order] / m**order
+        for order in range(exponent_order + 1)
+    ))
+    assert np.min(trial_profile) > 0
+
+    generators = np.asarray(
+        [periodic_three_state_generator(float(time)) for time in times]
+    )
+    forcings = np.asarray(
+        [periodic_three_state_forcing(float(time)) for time in times]
+    )
+    matrices = m * generators + forcings
+
+    def fourier_coefficients(values: np.ndarray) -> np.ndarray:
+        return np.fft.fftshift(
+            np.fft.fft(values, axis=0) / grid_size, axes=0
+        )
+
+    profile_coefficients = fourier_coefficients(trial_profile)
+    phase_coefficients = fourier_coefficients(local_phase)
+    matrix_coefficients = fourier_coefficients(matrices)
+    shifted_frequencies = np.fft.fftshift(frequencies)
+    zero_index = int(np.argmin(np.abs(shifted_frequencies)))
+    profile_lower_bounds = (
+        profile_coefficients[zero_index].real
+        - np.sum(
+            np.abs(np.delete(profile_coefficients, zero_index, axis=0)),
+            axis=0,
+        )
+    )
+    assert np.min(profile_lower_bounds) > 0
+
+    convolution_size = 2 * grid_size - 1
+    residual_coefficients = np.zeros(
+        (convolution_size, trial_profile.shape[1]), dtype=complex
+    )
+    residual_coefficients[
+        zero_index : zero_index + grid_size
+    ] += 1j * shifted_frequencies[:, None] * profile_coefficients
+    for row in range(trial_profile.shape[1]):
+        for column in range(trial_profile.shape[1]):
+            residual_coefficients[:, row] -= fftconvolve(
+                matrix_coefficients[:, row, column],
+                profile_coefficients[:, column],
+                mode="full",
+            )
+        residual_coefficients[:, row] += fftconvolve(
+            phase_coefficients,
+            profile_coefficients[:, row],
+            mode="full",
+        )
+    residual_upper_bounds = np.sum(
+        np.abs(residual_coefficients), axis=0
+    )
+    radius = float(np.max(
+        residual_upper_bounds / profile_lower_bounds
+    ))
+    return {
+        "approximate_exponent": approximate_exponent,
+        "lower_error": -radius,
+        "upper_error": radius,
+        "radius": radius,
+        "minimum_profile": float(np.min(profile_lower_bounds)),
+    }
+
+
 def finite_chain_periodic_errors(
     m: float, moving_generator: bool
 ) -> dict[str, float]:
@@ -2070,7 +2184,9 @@ def check_general_periodic_generator() -> None:
     leading_mean, dynamic_drift, geometric_drift, second_drift = (
         finite_chain_floquet_coefficients()
     )
-    recursive_coefficients, _, _ = finite_chain_floquet_recursion(4)
+    recursive_coefficients, recursive_profiles, recursive_drifts = (
+        finite_chain_floquet_recursion(4)
+    )
     predicted_drift = dynamic_drift + geometric_drift
     assert abs(recursive_coefficients[0] - leading_mean) < 2e-12
     assert abs(recursive_coefficients[1] - predicted_drift) < 2e-12
@@ -2164,6 +2280,26 @@ def check_general_periodic_generator() -> None:
     critical_first_errors = speeds ** 2 * signed_first_remainders
     critical_second_errors = speeds ** 3 * signed_second_remainders
     critical_third_errors = speeds ** 4 * signed_third_remainders
+    residual_diagnostics = [
+        finite_chain_floquet_residual_diagnostic(
+            m,
+            3,
+            recursive_coefficients,
+            recursive_profiles,
+            recursive_drifts,
+        )
+        for m in speeds
+    ]
+    residual_radii = np.asarray([
+        result["radius"] for result in residual_diagnostics
+    ])
+    residual_exact_errors = np.asarray([
+        result["exponent"] - diagnostic["approximate_exponent"]
+        for result, diagnostic in zip(moving_results, residual_diagnostics)
+    ])
+    residual_rate = float(np.log2(
+        residual_radii[-2] / residual_radii[-1]
+    ))
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
         - leading_mean
@@ -2189,6 +2325,10 @@ def check_general_periodic_generator() -> None:
     assert abs(critical_first_errors[-1] / second_drift - 1) < 0.02
     assert abs(critical_second_errors[-1] / third_drift - 1) < 0.02
     assert abs(critical_third_errors[-1] / fourth_drift - 1) < 0.02
+    for exact, diagnostic in zip(residual_exact_errors, residual_diagnostics):
+        assert diagnostic["lower_error"] < exact < diagnostic["upper_error"]
+        assert diagnostic["minimum_profile"] > 0.9
+    assert residual_rate > 3.9
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2256,6 +2396,20 @@ def check_general_periodic_generator() -> None:
     print(
         "their limiting Floquet coefficients: "
         f"{second_drift:.10e}, {third_drift:.10e}, {fourth_drift:.10e}"
+    )
+    print("third-order a posteriori Fourier-residual diagnostic")
+    print(" m          lower error          exact error          upper error")
+    for m, exact, diagnostic in zip(
+        speeds, residual_exact_errors, residual_diagnostics
+    ):
+        print(
+            f"{m:3.0f}   {diagnostic['lower_error']:18.9e}"
+            f"   {exact:18.9e}   {diagnostic['upper_error']:18.9e}"
+        )
+    print(
+        "a posteriori residual-radius order: "
+        f"{residual_rate:.6f}; m=64 scaled radius "
+        f"{64.0**4 * residual_radii[-1]:.10e}"
     )
 
 

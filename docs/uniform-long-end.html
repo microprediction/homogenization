@@ -113,7 +113,9 @@
     If the fast generator itself varies, the same formula remains uniform but a moving invariant law generically
     lowers the stationary-observation order from three to two. Periodic forcing, despite having infinite total
     variation on the half-line, is also tractable after an exact Floquet renormalization. For unequal two-state
-    switching rates, an additional second-order Floquet drift and an explicit fast initial slip appear.</p>
+    switching rates, an additional second-order Floquet drift and an explicit fast initial slip appear. A positive
+    periodic trial profile also gives a computable a posteriori enclosure of the exact Floquet exponent at any fixed
+    switching speed.</p>
 
     <h2>The two-state reduction</h2>
     <p>Let the regimes switch in either direction at rate $m$, and write their time-dependent pricing forcings as
@@ -803,6 +805,63 @@
       $\langle b_N\rangle$. Induction gives the displayed expansion. The exact Floquet
       exponent should still be retained in a maturity-uniform price: any finite truncation
       eventually accumulates secular error as $T$ grows.</p>
+
+    <h3>An a posteriori finite-speed exponent enclosure</h3>
+    <p>The preceding expansion gives an asymptotic order but not a numerical error constant at a specified $m$.
+      Positivity supplies a separate, nonasymptotic answer. Let $A(t)$ be any continuous $P$-periodic cooperative
+      irreducible matrix, and let $\lambda$ be its principal Floquet exponent. Choose any positive $C^1$ periodic
+      trial profile $\widehat u(t)$ and any continuous periodic scalar phase $\widehat b(t)$. Put</p>
+    $$\widehat\lambda=\langle\widehat b\rangle,\qquad
+      e=\widehat u'-\{A-\widehat b I\}\widehat u,\qquad
+      \ell=\inf_{t,i}{e_i(t)\over\widehat u_i(t)},\quad
+      L=\sup_{t,i}{e_i(t)\over\widehat u_i(t)}.$$
+    <div class="equation-card">
+    <p><strong>A posteriori Floquet enclosure.</strong> The exact exponent obeys</p>
+    $$\boxed{\quad \widehat\lambda-L\leq\lambda\leq\widehat\lambda-\ell.\quad}$$
+    <p>In particular, if $|e_i(t)|\leq\eta\widehat u_i(t)$ for every component and phase, then
+      $|\lambda-\widehat\lambda|\leq\eta$.</p>
+    </div>
+    <p>For the proof, set
+      $q(t)=\exp\{\int_0^t(\widehat b-\widehat\lambda)ds\}\widehat u(t)$, which is positive and periodic.
+      Its residual in the constant-exponent equation is the same componentwise relative residual:
+      $q'-(A-\widehat\lambda I)q=e^{\int(\widehat b-\widehat\lambda)}e$.
+      The inequalities $e\geq\ell\widehat u$ and $e\leq L\widehat u$, followed by the cooperative comparison
+      principle over one period, give</p>
+    $$U(P,0)q(0)\leq e^{(\widehat\lambda-\ell)P}q(0),\qquad
+      U(P,0)q(0)\geq e^{(\widehat\lambda-L)P}q(0).$$
+    <p>The Collatz&ndash;Wielandt bounds for the positive monodromy matrix then give the enclosure. This is the
+      finite-dimensional ODE form of the positive sub- and supersolution characterization used for cooperative
+      periodic-parabolic systems by
+      <a href="https://doi.org/10.1016/j.na.2018.07.014">Ant&oacute;n and L&oacute;pez-G&oacute;mez (2019)</a>;
+      here the one-period comparison proof is self-contained.</p>
+    <p>The construction meshes directly with the all-order recursion. For an exponent truncated through
+      $m^{-N}$, use</p>
+    $$\widehat u_{m,N}=\sum_{n=0}^{N+1}{u_n\over m^n},\qquad
+      \widehat b_{m,N}=\sum_{n=0}^{N}{b_n\over m^n}.$$
+    <p>The extra profile corrector is essential: it makes the residual enclosure have the same
+      $O_N(m^{-N-1})$ order as the exponent remainder. It does not claim convergence uniformly in $N$.</p>
+
+    <h3>A posteriori three-state diagnostic</h3>
+    <p>For the moving nonreversible three-state example, the certificate truncates the exponent through $m^{-3}$
+      and the trial profile through $m^{-4}$. A Fourier-coefficient $\ell^1$ envelope bounds the residual at every
+      phase of the trigonometric interpolants, rather than merely at the 8192 collocation nodes. The table compares
+      that computable bracket with an independent monodromy exponent.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>lower error bound</th><th>monodromy error</th><th>upper error bound</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;1.35042e-4</td><td>&minus;2.92236e-7</td><td>1.35042e-4</td></tr>
+        <tr><td>16</td><td>&minus;8.38046e-6</td><td>&minus;1.82153e-8</td><td>8.38046e-6</td></tr>
+        <tr><td>32</td><td>&minus;5.21921e-7</td><td>&minus;1.13113e-9</td><td>5.21921e-7</td></tr>
+        <tr><td>64</td><td>&minus;3.25651e-8</td><td>&minus;7.03806e-11</td><td>3.25651e-8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The residual radius has measured order $4.00243$, and $m^4$ times that radius is $0.546352$ at $m=64$.
+      Thus the bound is finite-speed and has the predicted fourth order, although it is intentionally conservative.
+      The Fourier inequalities control the complete interpolants; the reported arithmetic is ordinary double
+      precision rather than outward-rounded interval arithmetic. A proof-grade computer enclosure therefore needs
+      the same calculation with directed rounding. This numerical scope is separate from the exact theorem above.</p>
 
     <h3>The sharp maturity crossover for a truncated exponent</h3>
     <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,
