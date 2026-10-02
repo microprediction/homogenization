@@ -342,6 +342,53 @@
       it is not a claim about fixed-feature Green&ndash;Kubo rank or rank created by
       integrating different contract loadings.</p>
 
+    <h3>Gaussian quote noise: exact rank is not statistical recovery</h3>
+    <p>The preceding condition number has a direct minimax consequence. Let
+      $C_M=[R(M+c_1)\ \cdots\ R(M+c_r)]$, let
+      $\mathcal H_0=\{h:h^\top\mathbf1=0\}$, and define the weakest prior signal</p>
+    $$s_M=\min_{h\in\mathcal H_0,\ \|h\|_2=1}\|C_M^\top h\|_2.$$
+    <p>Under the simple real-spectrum and cyclicity hypotheses of the long-end theorem,</p>
+    <div class="equation-card">
+    $$s_M=\Theta(e^{-a_{r-1}M}).$$
+    </div>
+    <p>Indeed, choose an orthonormal basis $U$ of $\mathcal H_0$. Orthogonally reducing
+      $[\mathbf1\ C_M]$ and eliminating its bounded normalization row turns it, through
+      uniformly bounded invertible transformations, into a block matrix with lower block
+      $U^\top C_M$. Hence its least singular value and $s_M$ have the same order.</p>
+    <p>Now idealize noisy curve measurements as</p>
+    $$Y=C_M^\top\nu+\sigma Z,\qquad Z\sim N(0,I_r),$$
+    <p>where $\nu$ is an unknown initial distribution and $\sigma$ is a quote-noise scale.
+      Fix $0&lt;\rho\le\min_i\pi_i$, choose a unit minimizer $h_M\in\mathcal H_0$, and put
+      $\nu_\pm=\pi\pm\rho h_M$. Both are probability vectors because
+      $\|h_M\|_\infty\le1$. For every estimator $\widehat\nu(Y)$, the exact Gaussian
+      two-point testing calculation gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \max_{\pm}\Pr_{\nu_\pm}\{\|\widehat\nu-\nu_\pm\|_2\ge\rho\}
+      &amp;\ge \Phi\!\left(-{\rho s_M\over\sigma}\right),\\
+      \max_{\pm}\mathbb E_{\nu_\pm}\|\widehat\nu-\nu_\pm\|_2^2
+      &amp;\ge \rho^2\Phi\!\left(-{\rho s_M\over\sigma}\right).
+    \end{aligned}$$
+    </div>
+    <p>The two Gaussian means are separated by $2\rho s_M$, so their optimal equal-prior
+      classification error is exactly the displayed normal tail. Any estimator with error
+      below $\rho$ induces the correct nearest-prior classifier, proving both bounds. Thus
+      fixed noise makes the lower bounds tend to $1/2$ and $\rho^2/2$ as the design moves
+      right. To make the first probability smaller than a fixed $\delta&lt;1/2$, it is
+      necessary that</p>
+    $$\sigma\le {\rho s_M\over\Phi^{-1}(1-\delta)}
+      =O(e^{-a_{r-1}M}).$$
+    <p>This is a local two-prior lower bound for the stated Gaussian observation model,
+      not a matching upper bound, a claim about market microstructure, or a change to
+      noiseless identifiability. It is the finite-dimensional two-point method originating
+      in <a href="./bibliography.html#LeCam1973">Le Cam (1973)</a>.</p>
+    <p>In the four-state certificate, the restricted least-singular-value rate is
+      $1.02644$ against $a_{r-1}=1.02586$. With $\rho=0.1$ and
+      $\sigma=10^{-5}$, the exact testing lower bound rises from $0.0709$ at $M=4$
+      to $0.499998$ at $M=16$. A Gaussian simulation with 200,000 draws per prior
+      at $M=4$ agrees
+      with the exact testing error within $0.002$.</p>
+
     <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
     <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
       In three states, suppose the centered eigenvalues are $-a\pm ib$, with $a,b&gt;0$,

@@ -9,6 +9,7 @@ import numpy as np
 from scipy.integrate import quad_vec, solve_ivp
 from scipy.linalg import expm
 from scipy.optimize import brentq
+from scipy.special import ndtr
 
 from three_numbers import (
     coefficients, g_funcs, group_inverse, int_Bk, stationary,
@@ -993,16 +994,23 @@ def verify_long_end_conditioning():
 
     offsets = np.array([0.2, 0.8, 1.5])
     translations = np.arange(4.0, 17.0, 2.0)
+    centered_basis = np.linalg.qr(np.column_stack([
+        np.ones(4), np.eye(4)[:, 1:]
+    ]))[0][:, 1:]
     spectra = []
+    statistical_spectra = []
     determinants = []
     for translation in translations:
         response = transient_response_matrix(
             Q, feature[:, None], translation + offsets)
         augmented = np.column_stack([np.ones(4), response])
         spectra.append(np.linalg.svd(augmented, compute_uv=False))
+        statistical_spectra.append(np.linalg.svd(
+            centered_basis.T @ response, compute_uv=False))
         determinants.append(abs(np.linalg.det(augmented)))
         assert np.linalg.matrix_rank(augmented, tol=1e-13) == 4
     spectra = np.asarray(spectra)
+    statistical_spectra = np.asarray(statistical_spectra)
     determinants = np.asarray(determinants)
 
     # There are two O(1) directions: normalization and the common limiting
@@ -1023,6 +1031,50 @@ def verify_long_end_conditioning():
     assert abs(determinant_rate - rates[:2].sum()) < 0.002
     assert abs(condition_rate - rates[1]) < 0.003
 
+    # The relevant inverse problem for an unknown prior is the restriction of
+    # C_M' to {h: h'1=0}.  Its least singular value has the same second-fastest
+    # exponential rate as the augmented matrix.  This turns exact noiseless
+    # rank into a statistical impossibility result under Gaussian quote noise.
+    statistical_rate = -np.polyfit(
+        translations[-4:],
+        np.log(statistical_spectra[-4:, -1]), 1)[0]
+    assert abs(statistical_rate - rates[1]) < 0.003
+
+    pi = stationary(Q)
+    prior_radius = 0.4 * np.min(pi)
+    quote_noise = 1e-5
+    testing_bounds = ndtr(
+        -prior_radius * statistical_spectra[:, -1] / quote_noise)
+    assert testing_bounds[-1] > 0.49999
+    assert np.all(np.diff(testing_bounds) > 0)
+
+    # Check the exact equal-prior Gaussian testing error independently by
+    # simulating the full vector observation at the first translation.
+    response = transient_response_matrix(
+        Q, feature[:, None], translations[0] + offsets)
+    left, _, _ = np.linalg.svd(centered_basis.T @ response)
+    weakest_prior_direction = centered_basis @ left[:, -1]
+    prior_plus = pi + prior_radius * weakest_prior_direction
+    prior_minus = pi - prior_radius * weakest_prior_direction
+    assert min(prior_plus.min(), prior_minus.min()) > 0
+    midpoint = response.T @ pi
+    half_difference = prior_radius * response.T @ weakest_prior_direction
+    rng = np.random.default_rng(2101973)
+    simulations = 200_000
+    plus_observations = (
+        response.T @ prior_plus
+        + quote_noise * rng.normal(size=(simulations, len(offsets))))
+    minus_observations = (
+        response.T @ prior_minus
+        + quote_noise * rng.normal(size=(simulations, len(offsets))))
+    plus_errors = ((plus_observations - midpoint) @ half_difference <= 0)
+    minus_errors = ((minus_observations - midpoint) @ half_difference >= 0)
+    empirical_testing_error = 0.5 * (
+        np.mean(plus_errors) + np.mean(minus_errors))
+    exact_testing_error = ndtr(
+        -np.linalg.norm(half_difference) / quote_noise)
+    assert abs(empirical_testing_error - exact_testing_error) < 0.002
+
     scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
     scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
     scaled_determinants = determinants * np.exp(
@@ -1036,9 +1088,15 @@ def verify_long_end_conditioning():
     print(f"measured singular-value rates: {fitted_rates}")
     print(f"measured determinant rate: {determinant_rate:.9f}")
     print(f"measured condition-number rate: {condition_rate:.9f}")
+    print(f"centered-prior least-singular-value rate: "
+          f"{statistical_rate:.9f}")
     print("terminal scaled weak singular values: "
           f"{scaled_weak[-1]:.9f}, {scaled_weakest[-1]:.9f}")
     print(f"terminal scaled determinant: {scaled_determinants[-1]:.9f}")
+    print("Gaussian two-prior testing lower bounds: "
+          + ", ".join(f"{value:.9f}" for value in testing_bounds))
+    print(f"Gaussian testing error, exact vs Monte Carlo: "
+          f"{exact_testing_error:.9f}, {empirical_testing_error:.9f}")
 
 
 def verify_complex_long_end_aliasing():
