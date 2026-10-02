@@ -27,8 +27,160 @@
     $$\frac{d\eta}{d\tau} = Q_0\,\eta ,$$
     <p>where $Q_0 = \varepsilon Q$ is the generator on the fast clock. Every direction orthogonal to the stationary
     distribution decays under $Q_0$, so the correction $\eta$ dies out exponentially in $\tau$.</p>
-    <p>For the two-state switch it decays like $e^{-2\tau} = e^{-2\lambda t}$, so it lives for a time of about
+    <p>For the symmetric two-state switch it decays like $e^{-2\tau} = e^{-2\lambda t}$, so it lives for a time of about
     $1/(2\lambda)$ in the original units. This short interval is the <em>initial layer</em>.</p>
+
+    <h2>A uniform two-state theorem</h2>
+    <p>The layer can be made quantitative. Put $\varepsilon=1/\lambda$, write
+    $a_{1,2}=m(1\pm\omega)$, and let $b=(g_1+g_2)/2$ and $q=(g_1-g_2)/2$. Then</p>
+    $$\omega'=q(t)(1-\omega^2)-\frac{2}{\varepsilon}\omega,\qquad
+      (\log m)'=b(t)+q(t)\omega,\qquad \omega(0)=0.$$
+    <p>If $q$ is real- or complex-valued and continuously differentiable on $[0,T]$, then, for sufficiently small
+    $\varepsilon$, uniformly for every $0\leq t\leq T$,</p>
+    $$\omega(t)=\frac{\varepsilon}{2}\Big(q(t)-q(0)e^{-2t/\varepsilon}\Big)+O(\varepsilon^2),$$
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon q(0)}{2}\int_0^tq(s)e^{-2s/\varepsilon}ds+O(\varepsilon^2).$$
+    <p>This is a uniform first-order composite approximation. It both satisfies the starting condition and retains
+    the small permanent shift left by the transient. The constants in the remainder may depend on $T$ and bounds
+    for $q$ and $q'$, but not on $t$ or sufficiently small $\varepsilon$.</p>
+
+    <h3>Unequal switching rates</h3>
+    <p>Symmetry is not needed. Let the fast-clock generator and its stationary law be</p>
+    $$Q_0=\begin{pmatrix}-\alpha&\alpha\\ \beta&-\beta\end{pmatrix},\qquad
+      \rho=\alpha+\beta,\qquad
+      \pi=\left(\frac\beta\rho,\frac\alpha\rho\right),$$
+    <p>with $\alpha,\beta>0$, and let the physical generator be $Q_0/\varepsilon$. Put
+      $m=\pi_1a_1+\pi_2a_2$, $r=(a_1-a_2)/m$, $\delta=g_1-g_2$,
+      $\bar g=\pi_1g_1+\pi_2g_2$, and $v=\pi_1\pi_2$. The two-dimensional linear system is exactly equivalent to</p>
+    $$r'=\delta+(\pi_2-\pi_1)\delta r-v\delta r^2-\frac\rho\varepsilon r,\qquad
+      (\log m)'=\bar g+v\delta r,\qquad r(0)=0.$$
+    <p>For $\delta\in C^1[0,T]$, real or complex valued, the uniform first-order composite is</p>
+    $$r(t)=\frac\varepsilon\rho\left\{\delta(t)-\delta(0)e^{-\rho t/\varepsilon}\right\}
+      +O(\varepsilon^2),$$
+    <div class="equation-card">
+    $$\log m(t)=\int_0^t\bar g
+      +\frac{\varepsilon v}{\rho}\int_0^t\delta^2
+      -\frac{\varepsilon v\delta(0)}{\rho}
+       \int_0^t\delta(s)e^{-\rho s/\varepsilon}ds
+      +O(\varepsilon^2).$$
+    </div>
+    <p>The components follow from $a_1=m(1+\pi_2r)$ and $a_2=m(1-\pi_1r)$. Substitution leaves an
+      $O(\varepsilon)$ residual in the ratio equation; the stable kernel has mass $\varepsilon/\rho$, so the ratio
+      and both components have uniform $O(\varepsilon^2)$ errors. For $\alpha=\beta=1$, one has
+      $\rho=2$, $\delta=2q$ and $r=2\omega$, recovering the preceding formula exactly. Thus the stationary weights
+      determine the amplitude correction, while the nonzero eigenvalue $-\rho$ determines the layer width.</p>
+
+    <p>There is a new feature at second order. Set
+      $s=\pi_2-\pi_1$, $D(t)=\int_0^t\delta(u)du$, $E(t)=e^{-\rho t/\varepsilon}$ and</p>
+    $$B(t)=\frac{s\delta(t)^2-\delta'(t)}{\rho^2}.$$
+    <p>If $\delta\in C^2[0,T]$, then the uniform second-order ratio is</p>
+    <div class="equation-card">
+    $$r(t)=\frac\varepsilon\rho\{\delta(t)-\delta(0)E(t)\}
+      +\varepsilon^2\{B(t)-B(0)E(t)\}
+      -\frac{\varepsilon s\delta(0)}\rho D(t)E(t)+O(\varepsilon^3).$$
+    </div>
+    <p>The last term is a resonant layer: the unequal stationary weights couple the leading transient back into
+      the linear term $s\delta r$. It vanishes for a symmetric chain. The accompanying amplitude is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log m(t)={}&\int_0^t\bar g
+      +\frac{\varepsilon v}{\rho}\int_0^t\delta^2
+      -\frac{\varepsilon v\delta(0)}\rho\int_0^t\delta(u)E(u)du\\
+      &+\frac{\varepsilon^2v}{\rho^2}
+      \left\{s\int_0^t\delta^3-\frac{\delta(t)^2-\delta(0)^2}{2}\right\}
+      +O(\varepsilon^3).
+    \end{aligned}$$
+    </div>
+    <p>Indeed, applying $d/dt+\rho/\varepsilon$ to the resonant term gives exactly
+      $-\varepsilon s\delta(0)\delta(t)E(t)/\rho$, cancelling the uncancelled layer contribution from
+      $s\delta r$. Substitution then leaves an
+      $O(\varepsilon^2)$ ratio residual, and the stable kernel again contributes its mass
+      $\varepsilon/\rho$, proving a uniform $O(\varepsilon^3)$ component error. When
+      $\alpha=\beta=1$, $s=0$, $\rho=2$, $\delta=2q$ and $r=2\omega$; the formula reduces to the symmetric
+      second-order composite below, up to terms already inside the stated remainder.</p>
+
+    <h3>The matched outer formula</h3>
+    <p>Simply deleting every exponential term does <em>not</em> give a second-order outer approximation when
+      $\delta(0)\ne0$. Indeed, Laplace expansion of the boundary integral gives, at fixed positive maturity,</p>
+    $$\int_0^t\delta(u)e^{-\rho u/\varepsilon}du
+      =\frac{\varepsilon\delta(0)}\rho+O(\varepsilon^2),$$
+    <p>so the initial layer leaves the permanent log-amplitude shift
+      $-\varepsilon^2v\delta(0)^2/\rho^2$. The correctly matched second-order outer formula is therefore</p>
+    $$r_{\mathrm{out},2}(t)=\frac{\varepsilon\delta(t)}\rho+\varepsilon^2B(t),$$
+    <div class="equation-card">
+    $$\log m_{\mathrm{out},2}(t)=\int_0^t\bar g
+      +\frac{\varepsilon v}{\rho}\int_0^t\delta^2
+      +\frac{\varepsilon^2v}{\rho^2}
+      \left\{s\int_0^t\delta^3-\frac{\delta(t)^2+\delta(0)^2}{2}\right\}.$$
+    </div>
+    <p>For every fixed $t_0>0$, this has $O(\varepsilon^3)$ error uniformly on $[t_0,T]$. More sharply, if
+      $\delta(0)\ne0$, the same bound holds on the expanding interval</p>
+    $$\frac{2\varepsilon}{\rho}\log\frac1\varepsilon\le t\le T.$$
+    <p>The factor two is sharp for generic components: the leading omitted layer is
+      $-\varepsilon\delta(0)e^{-\rho t/\varepsilon}/\rho$, which becomes $O(\varepsilon^3)$ exactly at that scale.
+      If $\delta(0)=0$, the permanent shift and leading layer vanish; the second-order layer then needs only
+      $t\ge(\varepsilon/\rho)\log(1/\varepsilon)$. These are outer-only statements. The composite formula above
+      remains uniformly $O(\varepsilon^3)$ all the way to $t=0$.</p>
+
+    <p>The expansion continues uniformly without assuming $q(0)=0$. If $q$ is twice continuously differentiable,
+      put $I_\varepsilon(t)=\int_0^tq(s)e^{-2s/\varepsilon}ds$. Then</p>
+    $$\omega(t)=\frac{\varepsilon}{2}\{q(t)-q(0)e^{-2t/\varepsilon}\}
+      -\frac{\varepsilon^2}{4}\{q'(t)-q'(0)e^{-2t/\varepsilon}\}
+      +O(\varepsilon^3),$$
+    <div class="equation-card">
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon q(0)}2I_\varepsilon(t)
+      -\frac{\varepsilon^2}{8}\{q(t)^2-q(0)^2\}
+      +\frac{\varepsilon^2q'(0)}4I_\varepsilon(t)+O(\varepsilon^3).$$
+    </div>
+    <p>Both orders of the exponential layer are needed to match $\omega(0)=0$ through second order. The integral
+      terms retain the permanent amplitude shift accumulated while the layer decays.</p>
+    <p>The short-rate and survival examples have the simplifying cancellation $q(0)=0$. There
+      $I_\varepsilon(t)=O(\varepsilon^2)$ uniformly, so the formula reduces, through order $\varepsilon^2$, to</p>
+    $$\omega(t)=\frac{\varepsilon}{2}q(t)-\frac{\varepsilon^2}{4}q'(t)
+      +\frac{\varepsilon^2}{4}q'(0)e^{-2t/\varepsilon}+O(\varepsilon^3),$$
+    $$\log m(t)=\int_0^t b+\frac{\varepsilon}{2}\int_0^tq^2
+      -\frac{\varepsilon^2}{8}q(t)^2+O(\varepsilon^3).$$
+
+    <h3>Why the bound is uniform</h3>
+    <p>Insert the first composite ratio into its Riccati equation. Its residual is</p>
+    $$R_1=\frac{\varepsilon}{2}q'(t)+q(t)\omega_1(t)^2=O(\varepsilon).$$
+    <p>The error equation has the stable leading operator $d/dt+2/\varepsilon$. Convolution with its kernel has
+    mass $\varepsilon/2$, turning this residual into an $O(\varepsilon^2)$ error uniformly, including at $t=0$.
+    The general second composite has residual</p>
+    $$R_2=-\frac{\varepsilon^2}{4}q''(t)+q(t)\omega_2(t)^2=O(\varepsilon^2),$$
+    <p>because the $q(0)e^{-2t/\varepsilon}$ and $q'(0)e^{-2t/\varepsilon}$ derivative terms cancel their stiff
+      contributions exactly. The same stable-kernel argument gives $O(\varepsilon^3)$ for arbitrary $q(0)$.
+      This is the finite-dimensional boundary-layer mechanism in the primary rapid-switching expansions of
+    <a href="./bibliography.html#IlinKhasminskiiYin1999">Il'in, Khasminskii and Yin</a> and
+    <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin</a>.</p>
+
+    <h2>The logarithmic crossover</h2>
+    <p>A fixed number of switching times is enough to make the layer numerically small, but not enough to recover
+    the next asymptotic order. When $q(0)\neq0$, the outer-only first-order error contains
+    $\varepsilon q(0)e^{-2t/\varepsilon}/2$. To make this $O(\varepsilon^2)$ requires</p>
+    $$t\geq\frac{\varepsilon}{2}\log\frac1\varepsilon+O(\varepsilon).$$
+    <p>When $q(0)=0$, exactly the same crossover makes the omitted second-order layer
+    $\varepsilon^2q'(0)e^{-2t/\varepsilon}/4$ as small as the nominal $O(\varepsilon^3)$ remainder. Thus “away from
+    a layer of width $O(\varepsilon)$” is correct for fixed positive maturity, but a uniform next-order claim needs
+    either the exponential correction or the logarithmic factor.</p>
+
+    <h3>Numerical certificate</h3>
+    <p>Direct integration of the original two-component system over the whole interval, with the fast layer resolved,
+    gives the following observed orders as $\varepsilon$ is halved:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>case</th><th>outer-only sup error</th><th>first composite</th><th>second composite</th></tr></thead><tbody>
+      <tr><td>$q(0)\neq0$</td><td>$\varepsilon^{1.000}$</td><td>$\varepsilon^{1.981}$</td><td>$\varepsilon^{3.010}$</td></tr>
+      <tr><td>$q(0)=0$</td><td>$\varepsilon^{2.000}$</td><td>&mdash;</td><td>$\varepsilon^{2.946}$</td></tr>
+      <tr><td>$\alpha=1.7$, $\beta=0.4$</td><td>$\varepsilon^{1.000}$</td><td>$\varepsilon^{2.004}$</td><td>$\varepsilon^{2.974}$</td></tr>
+    </tbody></table></div>
+    <p>For the unequal-rate case, naively deleting the second-order layer gives fixed-maturity error
+      $\varepsilon^{2.023}$. Including the permanent amplitude shift improves this to
+      $\varepsilon^{3.014}$ at fixed maturity and $\varepsilon^{3.011}$ uniformly beyond the sharp crossover.
+      At the smallest tested $\varepsilon$, the naive error divided by its predicted leading
+      $\varepsilon^2v\delta(0)^2e^{\int\bar g}/\rho^2$ coefficient is $1.006306$.</p>
+    <p>The code also evaluates the layer at $t=(\varepsilon/2)\log(1/\varepsilon)$ and obtains exactly a constant
+    times $\varepsilon^3$ in the second case. Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_uniform_layer.py">verify_uniform_layer.py</a>.</p>
 
     <h2>Higher orders of the layer</h2>
     <p>At higher orders the layer feels the slow forcing too. The forcing is evaluated at $t = \varepsilon\tau$, which is
@@ -39,7 +191,7 @@
     expansion needs: products, derivatives, integrals from $0$ to $\tau$, and solving $d\eta/d\tau = Q_0\eta + f$. So
     the layer can be computed order by order in closed form, just like the outer series.</p>
 
-    <h2>The size of the layer</h2>
+    <h2>The permanent part of the layer</h2>
     <p>Most of the layer disappears after a few multiples of $1/\lambda$. Only one part survives.</p>
     <p>The quantity $s$, the stationary average of the answer, is an integral over time. The transient contributes a
     fixed amount to that integral before it dies out, which leaves a permanent shift in $\log s$.</p>
@@ -77,7 +229,237 @@
     <h2>Layers at order zero</h2>
     <p>If the payoff itself depends on the final state of the fast process, the mismatch is of order one. This
     happens for an option on a bond whose price depends on the regime at expiry.</p>
-    <p>The terminal vector is then an indicator of one regime, far from the stationary mixture. The layer starts at
-    order zero: to leading order the indicator relaxes to the stationary weights like $e^{-2\lambda t}$, and the
-    corrections follow as above. The <a href="./bond-options.html">bond options</a> example uses this.</p>
+    <p>The unequal-rate coordinates make this case explicit. Let the initial vector be $c=(c_1,c_2)$ and suppose</p>
+    $$m_0=\pi_1c_1+\pi_2c_2\ne0,\qquad r_0=\frac{c_1-c_2}{m_0}.$$
+    <p>Put $D(t)=\int_0^t\delta(u)du$, $E(t)=e^{-\rho t/\varepsilon}$ and
+      $I_\varepsilon(t)=\int_0^t\delta(u)E(u)du$. For bounded $\delta\in C^1[0,T]$, the uniform first composite is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      r(t)={}&r_0E(t)+\frac\varepsilon\rho\{\delta(t)-\delta(0)E(t)\}
+      +s r_0D(t)E(t)-v r_0^2I_\varepsilon(t)E(t)+O(\varepsilon^2),\\
+      \log\frac{m(t)}{m_0}={}&\int_0^t\bar g+v r_0I_\varepsilon(t)
+      +\frac{\varepsilon v}\rho\int_0^t\delta^2+O(\varepsilon^2).
+    \end{aligned}$$
+    </div>
+    <p>The first term $r_0E$ is the order-zero layer. The next two layer terms are not optional when the rates are
+      unequal or the initial contrast is large: they are the first nonlinear Duhamel correction. Applying
+      $d/dt+\rho/\varepsilon$ to the displayed ratio leaves an $O(\varepsilon)$ residual; the stable kernel then
+      gives the stated $O(\varepsilon^2)$ error. The components remain
+      $a_1=m(1+\pi_2r)$ and $a_2=m(1-\pi_1r)$, so the formula reproduces $c_1,c_2$ exactly at $t=0$.</p>
+    <p>The certificate uses $(c_1,c_2)=(1.4,0.7)$ and $(\alpha,\beta)=(1.7,0.4)$. Immediate stationary projection
+      has error order $0.000$; retaining only $r_0E$ gives order $1.009$; the full first composite gives order
+      $2.005$ and matches the initial vector within $2.2\times10^{-16}$. Indicator payoffs are included whenever
+      $m_0\ne0$. For the error statement, take real bounded forcing and nonnegative terminal data, not both zero;
+      more generally it is enough that the exact weighted mean stay bounded away from zero. The singular case
+      $m_0=0$ requires direct vector coordinates rather than this ratio chart.
+      The <a href="./bond-options.html">bond-options</a> example is the motivating application.</p>
+
+    <h3>An all-order Volterra composite</h3>
+    <p>The first correction is not an isolated calculation. Define the stable convolution</p>
+    $$({\cal V}_\varepsilon f)(t)=\int_0^t e^{-\rho(t-u)/\varepsilon}f(u)\,du,$$
+    <p>and start from the order-zero layer $r^{[0]}(t)=r_0E(t)$. Successive nonlinear Duhamel iterates are</p>
+    $$r^{[k+1]}=r_0E+{\cal V}_\varepsilon\!\left[
+      \delta\{1+s r^{[k]}-v(r^{[k]})^2\}\right].$$
+    <p>Reconstruct the mean and the two components by</p>
+    $$m^{[k]}(t)=m_0\exp\!\left\{\int_0^t(\bar g+v\delta r^{[k]})\,du\right\},
+      \qquad a^{[k]}_1=m^{[k]}(1+\pi_2r^{[k]}),\quad
+      a^{[k]}_2=m^{[k]}(1-\pi_1r^{[k]}).$$
+    <div class="equation-card">
+    $$\|r-r^{[k]}\|_{\infty,[0,T]}+
+      \max_i\|a_i-a_i^{[k]}\|_{\infty,[0,T]}=O(\varepsilon^{k+1})$$
+    </div>
+    <p>for every fixed $k$ and $T$. Indeed, on any fixed bounded ratio ball the nonlinear source has Lipschitz
+      constant $L=\|\delta\|_\infty(|s|+2vR)$, whereas
+      $\|{\cal V}_\varepsilon\|_{\infty\to\infty}\le\varepsilon/\rho$. Thus the Volterra map contracts by at most
+      $\varepsilon L/\rho$. The starting error is $O(\varepsilon)$, so each iterate supplies one further power.
+      Integrating the exact mean equation preserves the same order. This is a constructive two-state,
+      bounded-horizon specialization of the full asymptotic-series framework of
+      <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin</a>.</p>
+    <p>The same argument supplies an error certificate that does not use the exact solution. Put
+      $M=\|\delta\|_\infty$, choose $R>|r_0|$, and suppose</p>
+    $$|r_0|+\frac{\varepsilon M}{\rho}(1+|s|R+vR^2)\le R,
+      \qquad q_\varepsilon:=\frac{\varepsilon M}{\rho}(|s|+2vR)<1.$$
+    <p>Then the Volterra map preserves the radius-$R$ ball and is a contraction there. Banach's successive-
+      approximation estimate gives, for $k\ge1$,</p>
+    <div class="equation-card">
+    $$\|r-r^{[k]}\|_\infty\le
+      \frac{q_\varepsilon}{1-q_\varepsilon}\,
+      \|r^{[k]}-r^{[k-1]}\|_\infty.$$
+    </div>
+    <p>This is directly computable. If $G=\|\bar g\|_\infty$ and $w=\max(\pi_1,\pi_2)$, the component error is at
+      most the right-hand side multiplied by</p>
+    $$C_a=|m_0|e^{T(G+vMR)}\{w+(1+wR)vMT\}.$$
+    <p>The estimate is the integral-equation contraction argument introduced in
+      <a href="https://doi.org/10.4064/fm-3-1-133-181">Banach's original 1922 paper</a>, here with the fast-kernel
+      norm making the contraction constant explicitly $O(\varepsilon)$.</p>
+    <p>The independent certificate solves the original two-component system and the scalar iterates separately.
+      Iterates $k=0,1,2$ have measured uniform component-error orders $1.010$, $2.006$, and $2.997$;
+      every iterate reproduces the terminal vector to numerical precision. With $R=2$, the maximum certified
+      contraction factor is $0.038252$ and the invariant-ball margin is at least $1.071635$. The computable bounds
+      dominate every measured error and have orders $2.016$ and $3.011$ for $k=1,2$. The explicit first composite
+      above is the closed asymptotic form of the $k=1$ iterate through its stated $O(\varepsilon^2)$ remainder.</p>
+
+    <h3>Removing the singular ratio chart</h3>
+    <p>The restriction $m_0\ne0$ belongs only to the ratio coordinate, not to the two-state problem. Put
+      $b(t)=\int_0^t\bar g(u)du$, $m=\pi_1a_1+\pi_2a_2$, $d=a_1-a_2$, and remove the common growth by</p>
+    $$M(t)=e^{-b(t)}m(t),\qquad D(t)=e^{-b(t)}d(t).$$
+    <p>These nonsingular slow and fast coordinates satisfy</p>
+    $$M'=v\delta D,\qquad
+      D'=\delta M+s\delta D-\frac\rho\varepsilon D.$$
+    <p>For arbitrary real or complex terminal data, including $m_0=0$, eliminate $M$ and iterate the linear
+      Volterra map</p>
+    <div class="equation-card">
+    $$D^{[k+1]}=d_0E+{\cal V}_\varepsilon\!\left[
+      \delta\left\{m_0+sD^{[k]}+v\int_0^{\,\cdot}\delta(u)D^{[k]}(u)du\right\}\right],
+      \qquad D^{[0]}=d_0E.$$
+    </div>
+    <p>Reconstruct</p>
+    $$M^{[k]}=m_0+v\int_0^t\delta(u)D^{[k]}(u)du,
+      \quad a_1^{[k]}=e^b(M^{[k]}+\pi_2D^{[k]}),
+      \quad a_2^{[k]}=e^b(M^{[k]}-\pi_1D^{[k]}).$$
+    <p>If $M_\delta=\|\delta\|_\infty$ and</p>
+    $$|d_0|+\frac{\varepsilon M_\delta}{\rho}
+      \{|m_0|+(|s|+vM_\delta T)R\}\le R,
+      \qquad q_\varepsilon^{\rm dir}:=\frac{\varepsilon M_\delta}{\rho}
+      (|s|+vM_\delta T)<1,$$
+    <p>the radius-$R$ ball is invariant and the same Banach estimate applies with
+      $q_\varepsilon^{\rm dir}$. The component multiplier is now simply</p>
+    $$C_a^{\rm dir}=e^{T\|\bar g\|_\infty}
+      \{\max(\pi_1,\pi_2)+vM_\delta T\}.$$
+    <p>Thus the $k$th iterate has uniform component error $O(\varepsilon^{k+1})$ without any positivity or
+      nonvanishing-mean assumption. The ratio recursion remains useful when available because it evolves one
+      normalized contrast, but it is no longer needed for the theorem.</p>
+    <p>The singular-chart certificate takes
+      $c=(1,-\pi_1/\pi_2)$, so $m_0=0$ exactly. Iterates $k=0,1,2$ have measured orders
+      $1.008$, $2.021$, and $3.040$. The computable bounds have orders $2.016$ and $3.028$, dominate every
+      measured error, and use a maximum contraction factor $0.028468$. Every iterate still reproduces both
+      terminal components to numerical precision.</p>
+
+    <h3>The direct theorem for any finite chain</h3>
+    <p>The nonsingular construction is not intrinsically two-state. Let $Q_0$ be any irreducible finite-state
+      generator with stationary row vector $\pi^\top$, and set
+      $\Pi={\bf1}\pi^\top$, $P=I-\Pi$. Assume that, in one fixed vector norm,</p>
+    $$\|e^{tQ_0}P\|\le M e^{-\gamma t},\qquad t\ge0,$$
+    <p>which always holds in finite dimension for some $M\ge1$ and $\gamma&gt;0$. For</p>
+    $$a'=\varepsilon^{-1}Q_0a+G(t)a,qquad G(t)=\operatorname{diag}g(t),$$
+    <p>put $\bar g=\pi^\top g$, $H=G-\bar g I$, $b(t)=\int_0^t\bar g$, and decompose
+      $u=e^{-b}a=m{\bf1}+z$, where $m=\pi^\top u$ and $z=Pu$. The exact equations are</p>
+    $$m'=\pi^\top H z,qquad
+      z'=\varepsilon^{-1}Q_0z+PH(m{\bf1}+z).$$
+    <p>Thus, for any continuous centered path $z$, define</p>
+    $$m_z(t)=m_0+\int_0^t\pi^\top H(s)z(s)ds,$$
+    <div class="equation-card">
+    $$(\mathcal T_\varepsilon z)(t)=e^{tQ_0/\varepsilon}z_0
+      +\int_0^t e^{(t-s)Q_0/\varepsilon}P H(s)
+      \{m_z(s){\bf1}+z(s)\}\,ds.$$
+    </div>
+    <p>Start with the exact order-zero layer $z^{[0]}=e^{tQ_0/\varepsilon}z_0$, iterate
+      $z^{[k+1]}=\mathcal T_\varepsilon z^{[k]}$, and reconstruct
+      $a^{[k]}=e^b(m_{z^{[k]}}{\bf1}+z^{[k]})$. No eigenvector basis and no division by $m$ is used.</p>
+    <p>Here is a finite-$\varepsilon$ stopping theorem. Put
+      $h=\|H\|_\infty$, $\ell=\|\pi^\top H\|_\infty$,
+      $c=\|{\bf1}\|$, and $B=\|\bar g\|_\infty$. If</p>
+    $$M\|z_0\|+\frac{M\varepsilon h}{\gamma}
+      \{|m_0|c+(1+c\ell T)R\}\le R,
+      \qquad q_\varepsilon:=\frac{M\varepsilon h}{\gamma}(1+c\ell T)<1,$$
+    <p>then $\mathcal T_\varepsilon$ preserves the radius-$R$ ball and contracts there by $q_\varepsilon$. Therefore,
+      for $k\ge1$,</p>
+    <div class="equation-card">
+    $$\|a-a^{[k]}\|_\infty\le
+      e^{BT}(1+c\ell T)\frac{q_\varepsilon}{1-q_\varepsilon}
+      \|z^{[k]}-z^{[k-1]}\|_\infty.$$
+    </div>
+    <p>The right-hand side is completely computable. Since $q_\varepsilon=O(\varepsilon)$ and the first Duhamel
+      correction is $O(\varepsilon)$, every fixed iterate satisfies
+      $\|a-a^{[k]}\|_\infty=O(\varepsilon^{k+1})$ on a bounded horizon. This includes nonreversible and defective
+      generators, arbitrary signed or complex terminal vectors, and paths on which the stationary component vanishes.
+      It is a bounded-horizon statement; neither $T$ nor the iteration count is allowed to grow silently with
+      $1/\varepsilon$.</p>
+    <p>The certificate uses an irreducible nonreversible three-state generator with a Jordan block,
+      $Q_0=\Pi-I+0.1uv^\top$, where $u=(1,-1,0)^\top$ and $v=(1,1,-2)^\top$. Since the nilpotent term $N=0.1uv^\top$
+      has $N^2=0$, the centered semigroup is exactly $e^{-t}(P+tN)$; the proof uses the explicit bound
+      $M=1+2\|N\|/e=1.254874$ and $\gamma=1/2$. For signed initial data with zero stationary mean, iterates
+      $k=0,1,2$ have measured component-error orders $0.995$, $1.983$, and $2.956$. Closed-form forcing bounds
+      (rather than sampled suprema) give computable error-bound orders $2.203$ and $3.185$; those bounds dominate
+      every measured error and have maximum contraction factor $0.393246$.</p>
+
+    <h3>An explicit first composite for a finite chain</h3>
+    <p>For the regime-independent terminal vector $a(0)=m_0{\bf1}$, the first finite-chain composite can be written
+      without performing a Picard iteration. Let $Q_0^\#$ be the group inverse, normalized by</p>
+    $$Q_0Q_0^\#=Q_0^\#Q_0=P,\qquad Q_0^\#{\bf1}=0,\qquad \pi^\top Q_0^\#=0,$$
+    <p>and put $h(t)=H(t){\bf1}=g(t)-\bar g(t){\bf1}$ and</p>
+    $$K(t)=-\int_0^t\pi^\top H(s)Q_0^\#h(s)\,ds.$$
+    <p>If $g\in C^1[0,T]$ is real or complex valued, then uniformly for $0\le t\le T$,</p>
+    <div class="equation-card">
+    $$a(t)=m_0e^{b(t)}\left(
+      [1+\varepsilon K(t)]{\bf1}
+      -\varepsilon Q_0^\#h(t)
+      +\varepsilon e^{tQ_0/\varepsilon}Q_0^\#h(0)
+      \right)+O(\varepsilon^2).$$
+    </div>
+    <p>The two corrector terms cancel at $t=0$, so the formula returns the terminal vector exactly. The first is
+      the quasi-steady Poisson corrector; the second is its initial layer. The scalar term $K$ is the accumulated
+      feedback of that corrector into the stationary component.</p>
+    <p>For completeness, substitution gives a centered residual of order $\varepsilon$: it is the sum of
+      $-\varepsilon m_0Q_0^\#h'$, the $\varepsilon K h$ term, and $-PH$ applied to the displayed centered
+      corrector. Convolution against the centered semigroup contributes another factor $\varepsilon$. The scalar
+      residual is $-\varepsilon m_0\pi^\top H(t)e^{tQ_0/\varepsilon}Q_0^\#h(0)$, whose integral is
+      $O(\varepsilon^2)$. A coupled Gronwall estimate therefore gives the stated uniform component error. This is
+      the finite-chain Poisson-equation form of the matched expansion; the group-inverse normalization follows
+      <a href="./bibliography.html#Meyer1975">Meyer's primary finite-chain treatment</a>.</p>
+    <p>Deleting the exponential term produces the first outer formula. It is only uniformly $O(\varepsilon)$
+      because it misses the terminal condition, but it is $O(\varepsilon^2)$ on every fixed interval
+      $[t_0,T]$, $t_0&gt;0$. Under the displayed semigroup bound, the same order holds on the expanding interval</p>
+    $$\frac{\varepsilon}{\gamma}\log\frac1\varepsilon\le t\le T.$$
+    <p>The defective three-state certificate uses the same nonnormal generator as above. The unmatched outer
+      error has measured order $1.000000$, while the explicit composite and the outer formula after the logarithmic
+      crossover have orders $2.002876$ and $2.002876$. The composite matches all three terminal components to
+      $2.2\times10^{-16}$.</p>
+
+    <h3>The explicit second composite</h3>
+    <p>The same Poisson construction can be carried through one more order without diagonalizing $Q_0$. Write
+      $R=Q_0^\#$, $E_\tau=e^{\tau Q_0}$, $H_0=H(0)$, and define</p>
+    $$z_1=-Rh,\qquad K_1(t)=-\int_0^t\pi^\top H(s)Rh(s)\,ds,$$
+    $$z_2=-R^2h'-K_1Rh+RPHRh,$$
+    $$K_2(t)=-\pi^\top H_0R^2h(0)+\int_0^t\pi^\top H(s)z_2(s)\,ds.$$
+    <p>The second boundary layer, with $\tau=t/\varepsilon$, is</p>
+    $$B_1(\tau)=E_\tau Rh(0),$$
+    <div class="equation-card">
+    $$B_2(\tau)=-E_\tau z_2(0)
+      +\int_0^\tau E_{\tau-s}PH_0E_sRh(0)\,ds
+      +\{\pi^\top H_0E_\tau R^2h(0)\}{\bf1}.$$
+    </div>
+    <p>The convolution is explicit and numerically stable: it is the upper-right block of</p>
+    $$\exp\!\left\{\tau
+      \begin{pmatrix}Q_0&amp;PH_0\\0&amp;Q_0\end{pmatrix}\right\}Rh(0).$$
+    <p>If $g\in C^2[0,T]$ is real or complex valued, then the second composite is</p>
+    <div class="equation-card">
+    $$a(t)=m_0e^{b(t)}\left(
+      [1+\varepsilon K_1(t)+\varepsilon^2K_2(t)]{\bf1}
+      +\varepsilon z_1(t)+\varepsilon^2z_2(t)
+      +\varepsilon B_1(t/\varepsilon)+\varepsilon^2B_2(t/\varepsilon)
+      \right)+O(\varepsilon^3),$$
+    </div>
+    <p>uniformly for $0\le t\le T$. This is a fixed bounded-horizon statement. The constant
+      $K_2(0)=-\pi^\top H_0R^2h(0)$ is not an arbitrary normalization: it is the permanent scalar trace of the
+      first boundary layer. Indeed $B_2(0)=-z_2(0)-K_2(0){\bf1}$, so both first- and second-order corrections
+      cancel at the terminal point. Omitting only this trace generically leaves $O(\varepsilon^2)$ error even at a
+      fixed positive maturity.</p>
+    <p>For the error estimate, the displayed terms make the scalar outer residual vanish through second order and
+      leave an $O(\varepsilon^2)$ centered residual; convolution against the centered semigroup gains the third
+      power of $\varepsilon$. The layer equations are
+      $(\partial_\tau-Q_0)B_1=0$ and $(\partial_\tau-Q_0)B_2=H_0B_1$. Replacing $H_0$ by $H(t)$ leaves only a
+      localized residual because $H(t)-H_0=O(\varepsilon\tau)$. A coupled variation-of-constants estimate then
+      gives the uniform remainder. This is the concrete second-order specialization of the matched expansions for
+      singular Markov generators developed by
+      <a href="./bibliography.html#KhasminskiiYinZhang1996">Khasminskii, Yin and Zhang</a>, with the Poisson solves
+      represented by <a href="./bibliography.html#Meyer1975">Meyer's group inverse</a>.</p>
+    <p>Deleting $B_1$ and $B_2$ gives a second outer formula whose full-interval error is still only
+      $O(\varepsilon)$ because it misses the terminal condition. Under the semigroup bound above, it regains
+      $O(\varepsilon^3)$ on the expanding interval</p>
+    $$\frac{2\varepsilon}{\gamma}\log\frac1\varepsilon\le t\le T.$$
+    <p>The defective three-state certificate measures orders $2.002876$ and $2.960961$ for the first and second
+      composites. The second outer formula has order $1.001913$ on the full interval and $2.833557$ after the
+      doubled crossover; omitting the permanent trace has fixed-maturity order $2.001789$. The second composite
+      matches all three terminal components to $2.2\times10^{-16}$.</p>
   </main>
