@@ -2,8 +2,8 @@
 
 The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
-long-memory, critical, and zero-Green--Kubo regimes and the periodic
-counterexample.
+long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
+periodic counterexamples.
 """
 import math
 
@@ -171,6 +171,63 @@ def verify_all_scale_crossover():
     assert invariant_error < 2e-7
     return (quadrature_error, collapse_error, frozen_value, finite_value,
             invariant_value, frozen_error, invariant_error)
+
+
+def fejer_kernel(scale, frequency):
+    """Normalized variance kernel K_R(omega)=sinc(R*omega/2)^2."""
+    return float(np.sinc(scale * frequency / (2.0 * math.pi)) ** 2)
+
+
+def verify_vector_rank_crossover():
+    """Check the matrix theorem and show that finite-R rank is nonmonotone.
+
+    With independent uniform phases U,V, the stationary ergodic torus flow
+
+        X_t=(sqrt(2) cos(U+t), sqrt(2) cos(V+sqrt(2)t))
+
+    has covariance diag(cos(t), cos(sqrt(2)t)).  The normalized covariance of
+    its time integral is diag(K_R(1), K_R(sqrt(2))).  Its rank is 2, 1, 2 at
+    R=pi, 2*pi, 3*pi: one frequency lands on a Fejer zero only in the middle.
+    """
+    scales = math.pi * np.arange(1.0, 4.0)
+    frequencies = (1.0, math.sqrt(2.0))
+    exact = np.array([
+        [fejer_kernel(scale, frequency) for frequency in frequencies]
+        for scale in scales
+    ])
+
+    maturity = 1.7
+
+    def normalized_covariance(scale, frequency):
+        value, error = quad(
+            lambda u: 2.0 * (maturity - u)
+            * math.cos(frequency * u * scale / maturity),
+            0.0,
+            maturity,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=400,
+        )
+        assert error < 5e-13
+        return value / maturity ** 2
+
+    quadrature = np.array([
+        [normalized_covariance(scale, frequency)
+         for frequency in frequencies]
+        for scale in scales
+    ])
+    identity_error = float(np.max(np.abs(quadrature - exact)))
+    ranks = tuple(
+        int(np.linalg.matrix_rank(np.diag(row), tol=1e-12))
+        for row in exact
+    )
+    resonant_eigenvalues = tuple(float(value) for value in exact[1])
+
+    assert identity_error < 2e-12
+    assert ranks == (2, 1, 2)
+    assert resonant_eigenvalues[0] < 1e-30
+    assert resonant_eigenvalues[1] > 0.01
+    return identity_error, ranks, resonant_eigenvalues
 
 
 def sign_gaussian_covariance(t, alpha, delta=1.0):
@@ -722,6 +779,7 @@ def main():
     short_order = verify_integrable_case()
     zero_atom = verify_zero_frequency_atom()
     all_scale = verify_all_scale_crossover()
+    vector_rank = verify_vector_rank_crossover()
     long_04 = verify_long_memory_case(0.4)
     long_07 = verify_long_memory_case(0.7)
     critical_ratio = verify_critical_case()
@@ -748,6 +806,10 @@ def main():
           f"{all_scale[4]:.12f}")
     print("all-scale frozen/invariant limit errors: "
           f"{all_scale[5]:.3e}, {all_scale[6]:.3e}")
+    print("vector spectral identity error and ranks at pi, 2pi, 3pi: "
+          f"{vector_rank[0]:.3e}, {vector_rank[1]}")
+    print("vector eigenvalues at the rank-drop scale 2pi: "
+          f"{vector_rank[2][0]:.3e}, {vector_rank[2][1]:.12f}")
     print(f"alpha=0.4 order, asymptotic ratio: {long_04[0]:.6f}, {long_04[1]:.6f}")
     print(f"alpha=0.7 order, asymptotic ratio: {long_07[0]:.6f}, {long_07[1]:.6f}")
     print(f"critical epsilon-log ratio: {critical_ratio:.6f}")

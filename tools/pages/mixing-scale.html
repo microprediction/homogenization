@@ -67,6 +67,35 @@
       Thus $T_\varepsilon\to0$ by itself does not imply a frozen or homogenized limit: the decisive quantity is
       the number $T_\varepsilon/\varepsilon$ of fast correlation times observed. The regularly varying theorem
       below is the quantitative refinement of the third row when $\mu(\{0\})=0$.</p>
+    <h3>Vector covariance and the rank caveat</h3>
+    <p>The same crossover holds for a centered second-order stationary vector $X_t\in\mathbb R^d$. Let
+      $\mathsf F$ be its finite nonnegative Hermitian matrix-valued spectral measure on $\mathbb R$, the matrix
+      extension of <a href="https://doi.org/10.2307/1968827">Cram&eacute;r&apos;s spectral representation (1940)</a>;
+      <a href="https://doi.org/10.1007/BF02392423">Wiener and Masani (1958)</a> give the classical multivariate theory.
+      For the vector integral $A_\varepsilon(T)$,</p>
+    <div class="equation-card">
+    $$\Sigma_R:=\frac{\operatorname{Cov}A_\varepsilon(T)}{T^2}
+      =\int_{\mathbb R}K_R(\omega)\,\mathsf F(d\omega).$$
+    </div>
+    <p>Applying scalar dominated convergence to $u^*\Sigma_Ru$ for every $u$ and then polarizing gives
+      matrix-norm convergence</p>
+    $$\Sigma_R\longrightarrow
+      \begin{cases}
+        \operatorname{Cov}(X_0)=\mathsf F(\mathbb R),&R\to0,\\
+        \int K_r\,d\mathsf F,&R\to r\in(0,\infty),\\
+        \mathsf F(\{0\})=\operatorname{Cov}(P_{\rm inv}X_0),&R\to\infty.
+      \end{cases}$$
+    <p>This does <em>not</em> make rank continuous or monotone in maturity. Let $U,V$ be independent uniform
+      phases and</p>
+    $$X_t=\left(\sqrt2\cos(U+t),\ \sqrt2\cos(V+\sqrt2t)\right).$$
+    <p>The irrational torus flow is stationary and ergodic, with covariance
+      $\operatorname{diag}\{\cos t,\cos(\sqrt2t)\}$, hence</p>
+    $$\Sigma_R=\operatorname{diag}\{K_R(1),K_R(\sqrt2)\}.$$
+    <p>Its ranks at $R=\pi,2\pi,3\pi$ are respectively $2,1,2$: at $2\pi$ the first frequency lands exactly
+      on a zero of the Fej&eacute;r kernel while the irrational frequency does not. Moreover, $\Sigma_R\to0$ as
+      $R\to\infty$ although its rank is two for generic finite $R$. This maturity-dependent spectral rank is
+      distinct from the fixed-feature Green&ndash;Kubo rank bound for a finite-state driver; neither statement
+      implies the other.</p>
     <p>Assume now that $\mu(\{0\})=0$, put $F(x)=\mu((0,x])$, and suppose that the cumulative
       spectral mass is regularly varying:</p>
     $$F(x)\sim b\,x^\alpha L(1/x),
@@ -170,7 +199,9 @@
       atom-plus-OU example checks the full $R$ crossover along maturities $0.2$, $1.3$, and $7$: normalized
       variances agree with the exact formula within $8\times10^{-15}$ and collapse across maturity paths within
       $5\times10^{-16}$, while the frozen, $R=1$, and invariant limits are respectively
-      $1.369999980132$, $1.105758882343$, and $0.370000119209$.</p>
+      $1.369999980132$, $1.105758882343$, and $0.370000119209$. For the vector periodic example, independent
+      covariance quadrature agrees with the matrix spectral formula within $2\times10^{-16}$ and verifies the
+      rank pattern $2,1,2$.</p>
 
     <h2>Four covariance regimes</h2>
     <h3>Integrable correlation</h3>
