@@ -1918,6 +1918,45 @@ def main() -> None:
         + ", ".join(f"{x:.6f}" for x in finite_second_rates[-1])
     )
 
+    # A coarsening of the initial state mixes the state-specific gaps.  In
+    # three or more states a nonstationary posterior can therefore annihilate
+    # the first coefficient without reproducing stationary-start coverage.
+    # Mix states 1 and 3 in the unique proportion that kills that coefficient.
+    posterior_weight = -finite_coefficients[2] / (
+        finite_coefficients[0] - finite_coefficients[2]
+    )
+    cancelling_posterior = np.array(
+        [posterior_weight, 0.0, 1.0 - posterior_weight]
+    )
+    assert np.max(np.abs(cancelling_posterior - finite_stationary)) > 0.2
+    assert abs(cancelling_posterior @ finite_coefficients) < 2e-17
+    posterior_second_coefficient = (
+        cancelling_posterior @ finite_second_coefficients
+    )
+    posterior_gaps = finite_gaps @ cancelling_posterior
+    posterior_second_residuals = np.abs(
+        posterior_gaps
+        - posterior_second_coefficient / finite_scales**2
+    )
+    posterior_third_rates = np.log2(
+        posterior_second_residuals[:-1] / posterior_second_residuals[1:]
+    )
+    assert posterior_second_coefficient < -0.1
+    assert posterior_third_rates[-1] > 2.95
+    print("\nNonstationary posterior with first-order cancellation")
+    print(
+        "posterior: "
+        + ", ".join(f"{x:.8f}" for x in cancelling_posterior)
+        + f"; predicted c^2 limit {posterior_second_coefficient:.8f}"
+    )
+    print(" c       c^2 mixed gap")
+    for c, gap in zip(finite_scales, posterior_gaps):
+        print(f"{c:4.0f}   {c**2 * gap:14.8f}")
+    print(
+        "last residual rate after subtracting c^-2 term: "
+        f"{posterior_third_rates[-1]:.6f}"
+    )
+
     # The state-aware thresholds differ from the pooled threshold by +/-mu/(2c).
     print("\nPopulation thresholds at c=4")
     print(" P(Y0=+)     threshold       conditional/model coverage")
@@ -2783,6 +2822,7 @@ def main() -> None:
         "finite-sample terminal and strided-window rank coverage, general "
         "finite-chain path coefficients through second order, smooth "
         "nonlinear path maps including the critical-gradient second order, "
+        "nonstationary-posterior first-order cancellation, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
