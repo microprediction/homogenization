@@ -535,7 +535,61 @@
       bound is the vacuous value $1$. The certificate also checks the
       weighted row-$\chi^2$, Frobenius, singular-value, and reversible
       eigenvalue formulas independently.</p>
-    <p>The scale cannot be improved in general. For the stationary symmetric
+
+    <h3>Irregular panels: the whole spacing vector matters</h3>
+    <p>The comparison is not restricted to a regular grid. Let the successive
+      spacings be $h_1,\ldots,h_{n-1}$ and put
+      $P_j=e^{mQ_0h_j}$. Stationarity is preserved across every unequal
+      transition, so the relative-entropy chain rule gives the exact identity</p>
+    <div class="equation-card">
+    $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
+      =\sum_{j=1}^{n-1}\sum_i\pi_i
+        D(P_j(i,\cdot)\Vert\pi).$$
+    </div>
+    <p>Applying data processing, Pinsker, and the same rowwise chi-square
+      comparison separately at every gap yields, for arbitrary conditionally
+      independent state-specific emission kernels,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left({\cal L}_{\boldsymbol h,m},
+       \bar{\cal L}^{\otimes n}\right)
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\mathfrak E(P_j)}\right\}
+      \le \min\!\left\{1,
+       \sqrt{\frac{d-1}{2}\sum_{j=1}^{n-1}
+       e^{-2m\gamma_sh_j}}\right\}.$$
+    </div>
+    <p>If $Q_0$ is reversible with relaxation rates $\lambda_r$, the exact
+      energy in the first bound is</p>
+    $$\sum_{j=1}^{n-1}\mathfrak E(P_j)
+      =\sum_{j=1}^{n-1}\sum_{r=2}^d e^{-2m\lambda_rh_j}.$$
+    <p>Thus an irregular triangular array is asymptotically iid whenever this
+      summed modal energy tends to zero. The whole spacing vector is essential:
+      Jensen&apos;s inequality gives
+      $\sum_j e^{-2m\gamma_sh_j}\ge
+      (n-1)e^{-2m\gamma_s\bar h}$. Replacing unequal gaps by their mean would
+      therefore make the displayed envelope smaller, not safer; a few short
+      gaps can dominate it.</p>
+    <p>The nonreversible three-state certificate uses scaled spacings
+      $(0.35,0.50,0.75,1.10,1.70)$. Full enumeration of all $3^6$ hidden paths
+      gives KL divergence $0.088542841901$ and TV distance $0.179564893897$.
+      The exact-KL, summed Hilbert--Schmidt, and gap-only bounds are respectively
+      $0.210407749264$, $0.289820479269$, and $0.325134088385$.</p>
+    <p>The information scale remains sharp with unequal gaps. In the symmetric
+      two-state chain set $a_j=e^{-2mh_j}$. The path-to-sign bijection now gives</p>
+    $$L=\prod_{j=1}^{n-1}(1+a_jZ_j),$$
+    <p>where the $Z_j$ are independent fair signs under the iid reference.
+      Hence path TV is exactly heterogeneous Bernoulli-product TV. If
+      $\max_j|a_j|\to0$ and $\sum_j a_j^2\to c$, the triangular-array
+      log-likelihood is locally asymptotically normal in the sense of
+      <a href="./bibliography.html#LeCam1960">Le Cam (1960)</a>, and the TV distance tends
+      to $2\Phi(\sqrt c/2)-1$. In particular it vanishes when the sum tends to
+      zero and tends to one when it diverges. With equally many correlations
+      $a$ and $2a$ and total squared correlation tending to one, the exact
+      certificate reaches $0.38297545$ at $a=2^{-6}$, versus the limit
+      $0.38292492$. This is still a marginal comparison of random panel laws,
+      not conditional conformal coverage.</p>
+
+    <p>The scale cannot be improved in general even on a regular grid. For the stationary symmetric
       two-state chain, encode the states by $X_j\in\{-1,1\}$ and put
       $a=e^{-2mh}$. The transition signs $Z_j=X_jX_{j+1}$ are independent with
       $\Pr(Z_j=1)=(1+a)/2$; under an iid stationary panel they are independent
