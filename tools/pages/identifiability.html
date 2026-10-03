@@ -379,8 +379,8 @@
     $$\sigma\le {\rho s_M\over\Phi^{-1}(1-\delta)}
       =O(e^{-a_{r-1}M}).$$
     <p>This is a local two-prior lower bound for the stated Gaussian observation model,
-      not a matching upper bound, a claim about market microstructure, or a change to
-      noiseless identifiability. It is the finite-dimensional two-point method originating
+      not a claim about market microstructure or a change to noiseless identifiability.
+      It is the finite-dimensional two-point method originating
       in <a href="./bibliography.html#LeCam1973">Le Cam (1973)</a>.</p>
     <p>In the four-state certificate, the restricted least-singular-value rate is
       $1.02644$ against $a_{r-1}=1.02586$. With $\rho=0.1$ and
@@ -388,6 +388,38 @@
       to $0.499998$ at $M=16$. A Gaussian simulation with 200,000 draws per prior
       at $M=4$ agrees
       with the exact testing error within $0.002$.</p>
+
+    <p>The exponential threshold is also sufficient. Let $U$ have orthonormal columns spanning
+      $\mathcal H_0$, put $A_M=C_M^\top U$, and let $\Pi_\Delta$ denote Euclidean projection onto
+      the probability simplex. Since $A_M$ is nonsingular, define the projected inverse estimator</p>
+    <div class="equation-card">
+    $$\widetilde\nu=\pi+UA_M^{-1}(Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\widetilde\nu).$$
+    </div>
+    <p>For every true prior $\nu\in\Delta$, exact inversion and nonexpansiveness of metric
+      projection relative to points in $\Delta$ give</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \mathbb E_\nu\|\widehat\nu-\nu\|_2^2
+      &amp;\le\sigma^2\|A_M^{-1}\|_F^2
+       \le {r\sigma^2\over s_M^2},\\
+      \Pr_\nu\{\|\widehat\nu-\nu\|_2\ge\rho\}
+      &amp;\le\Pr\{\chi_r\ge\rho s_M/\sigma\}.
+    \end{aligned}$$
+    </div>
+    <p>Here $s_M=\sigma_{\min}(A_M)$ and $\chi_r$ is the Euclidean norm of an
+      $r$-dimensional standard Gaussian. If $q_{r,1-\delta}$ is its
+      $(1-\delta)$ quantile, then</p>
+    $$\sigma\le {\rho s_M\over q_{r,1-\delta}}$$
+    <p>is sufficient for error probability at most $\delta$, uniformly over the entire
+      simplex. Together with the two-prior converse, this proves that the noise scale
+      $s_M=\Theta(e^{-a_{r-1}M})$ is sharp: uniform consistent recovery along a translated
+      long-end design is possible if $\sigma_M/s_M\to0$ and impossible if that ratio stays
+      bounded away from zero along a subsequence.</p>
+    <p>At $M=4$ the certificate directly inverts 200,000 Gaussian observations. The empirical
+      unconstrained mean-square error agrees with the exact trace formula within one percent;
+      simplex projection never increases the samplewise error, and the empirical projected tail
+      lies below the displayed $\chi_3$ bound.</p>
 
     <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
     <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.

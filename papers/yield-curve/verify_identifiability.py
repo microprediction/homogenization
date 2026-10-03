@@ -9,7 +9,7 @@ import numpy as np
 from scipy.integrate import quad_vec, solve_ivp
 from scipy.linalg import expm
 from scipy.optimize import brentq
-from scipy.special import ndtr
+from scipy.special import gammaincc, ndtr
 
 from three_numbers import (
     coefficients, g_funcs, group_inverse, int_Bk, stationary,
@@ -157,6 +157,21 @@ def transient_response_matrix(Q, centered, taus):
         H @ (identity - expm(Q * tau)) @ centered
         for tau in taus
     ])
+
+
+def project_simplex(values):
+    """Euclidean projection of one or many row vectors onto the simplex."""
+    values = np.asarray(values, dtype=float)
+    was_vector = values.ndim == 1
+    rows = values[None, :] if was_vector else values
+    ordered = np.sort(rows, axis=1)[:, ::-1]
+    cumulative = np.cumsum(ordered, axis=1) - 1.0
+    indices = np.arange(1, rows.shape[1] + 1)
+    active = ordered - cumulative / indices > 0.0
+    rho = np.sum(active, axis=1) - 1
+    thresholds = cumulative[np.arange(len(rows)), rho] / (rho + 1.0)
+    projected = np.maximum(rows - thresholds[:, None], 0.0)
+    return projected[0] if was_vector else projected
 
 
 def capped_fekete_nodes(order):
@@ -1075,6 +1090,42 @@ def verify_long_end_conditioning():
         -np.linalg.norm(half_difference) / quote_noise)
     assert abs(empirical_testing_error - exact_testing_error) < 0.002
 
+    # Invert on the centered subspace, then project onto the probability
+    # simplex.  Projection cannot increase distance from the true prior, so
+    # this supplies the constructive upper bound matching the testing rate.
+    inverse_problem = response.T @ centered_basis
+    singular_values = np.linalg.svd(inverse_problem, compute_uv=False)
+    recovery_noise = quote_noise * rng.normal(
+        size=(simulations, len(offsets)))
+    coordinate_errors = np.linalg.solve(
+        inverse_problem, recovery_noise.T).T
+    unconstrained = pi + coordinate_errors @ centered_basis.T
+    projected = project_simplex(unconstrained)
+    assert np.min(projected) >= 0.0
+    assert np.max(np.abs(np.sum(projected, axis=1) - 1.0)) < 5e-15
+    unconstrained_errors = np.linalg.norm(unconstrained - pi, axis=1)
+    projected_errors = np.linalg.norm(projected - pi, axis=1)
+    maximum_projection_inflation = float(np.max(
+        projected_errors - unconstrained_errors))
+    assert maximum_projection_inflation < 2e-15
+
+    empirical_unconstrained_mse = float(np.mean(
+        unconstrained_errors ** 2))
+    exact_unconstrained_mse = quote_noise ** 2 * np.sum(
+        singular_values ** -2)
+    mse_relative_error = abs(
+        empirical_unconstrained_mse / exact_unconstrained_mse - 1.0)
+    assert mse_relative_error < 0.01
+
+    least_signal = singular_values[-1]
+    chi_threshold = prior_radius * least_signal / quote_noise
+    chi_tail_bound = gammaincc(
+        len(offsets) / 2.0, chi_threshold ** 2 / 2.0)
+    empirical_projected_tail = float(np.mean(
+        projected_errors >= prior_radius))
+    assert empirical_projected_tail <= chi_tail_bound + 0.002
+    rms_upper_bound = math.sqrt(len(offsets)) * quote_noise / least_signal
+
     scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
     scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
     scaled_determinants = determinants * np.exp(
@@ -1097,6 +1148,14 @@ def verify_long_end_conditioning():
           + ", ".join(f"{value:.9f}" for value in testing_bounds))
     print(f"Gaussian testing error, exact vs Monte Carlo: "
           f"{exact_testing_error:.9f}, {empirical_testing_error:.9f}")
+    print("projected inverse exact/empirical unconstrained MSE: "
+          f"{exact_unconstrained_mse:.9e}, "
+          f"{empirical_unconstrained_mse:.9e}")
+    print("projected recovery tail and chi upper bound: "
+          f"{empirical_projected_tail:.9f}, {chi_tail_bound:.9f}")
+    print(f"projected recovery RMS upper bound: {rms_upper_bound:.9f}")
+    print(f"maximum simplex-projection inflation: "
+          f"{maximum_projection_inflation:.3e}")
 
 
 def verify_complex_long_end_aliasing():
@@ -1611,7 +1670,7 @@ def main():
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
         "three-state exceptional-set observability, sharp real-spectrum and "
-        "oscillatory long-end conditioning, "
+        "oscillatory long-end conditioning and noisy recovery, "
         "shape identities, "
         "known-start expansion, and explicit bounds"
     )
