@@ -280,7 +280,8 @@
       <li>The matrix is positive semidefinite. With constant hazards its rank is at most one less than the number
         of regimes, so a three-regime economy supports at most two independent patterns of default dependence,
         however many names there are. When hazards load on the regime with different maturity profiles, the
-        integrated matrix can have higher rank. The
+        integrated matrix can have higher rank, as the positive <a href="./credit-geometry.html">CIR construction</a>
+        shows. The
         same rank property appears for races on the kinetics site.</li>
     </ul>
     <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more.</p>
@@ -297,9 +298,13 @@
     $p_1$ by</p>
     $$\frac{K_{12} - K_{21}}{\bar h} .$$
     <p>An example: a three-state cycle with rate 2 one way round and 0.1 the other, hazards $h_1 = (0.07, 0.01, 0.01)$
-    and $h_2 = (0.01, 0.07, 0.01)$, and the generator multiplied by 10. Name 1 defaults first with probability
-    0.500150 with the cycle one way and 0.499850 the other way. Every single-name and joint survival probability
-    is the same for both directions.</p>
+      and $h_2 = (0.01, 0.07, 0.01)$, and the generator multiplied by 10. Name 1 defaults first with probability
+      0.500150 with the cycle one way and 0.499850 the other way. Every single-name and joint survival probability
+      is the same for both directions.</p>
+    <p>With three or more causes, however, one unweighted race sees only the row sums of the antisymmetric matrix
+      and can miss a nonzero cyclic current completely. The <a href="./credit-geometry.html">joint-default note</a>
+      proves that varying positive cause exposures recovers the full antisymmetric matrix and gives an exact
+      three-cause counterexample to identification from one unweighted race.</p>
     <p>The check uses four names and the three-state chain $Q_A$ from the smile example. The pairwise dependence over five years, in units
     of $10^{-4}$, is:</p>
     $$2t\,K^{\mathrm{sym}} \times 10^{4} = \begin{pmatrix} 25.3 & 16.8 & -8.5 & -6.3 \\ 16.8 & 11.9 & -4.0 & -4.9 \\ -8.5 & -4.0 & 7.1 & 0.2 \\ -6.3 & -4.9 & 0.2 & 2.4 \end{pmatrix}.$$

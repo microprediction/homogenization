@@ -1,0 +1,804 @@
+<!-- title: Green–Kubo geometry of joint default · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">numerical certificate</a></span></p>
+    <h1>Green&ndash;Kubo geometry of joint default</h1>
+    <p class="subtitle">Positive CIR intensities, an identifiable instantaneous matrix, and a maturity-integrated rank trap.</p>
+    <p class="muted">Research note, 23 September 2026; extended 30 September 2026. The <a href="./any-equation.html">constant-hazard example</a>
+      gives the starting point; this note changes the loadings while retaining nonnegative intensities.</p>
+
+    <h2>A positive-intensity model</h2>
+    <p>Conditionally independent <a href="./bibliography.html#Lando1998">Cox defaults</a> have intensities
+      $X_j(t)$, $j=1,\ldots,d$. Specifically, let $E_j$ be independent unit-exponential variables,
+      independent of the Brownian motions and the regime, and set
+      $\tau_j=\inf\{t:\int_0^tX_j(s)ds\ge E_j\}$. A common irreducible $n$-state chain $y_t$
+      with stationary law $\pi$ switches their
+      <a href="./bibliography.html#CIR1985">CIR</a> mean levels:</p>
+    $$dX_j=\kappa_j(\theta_{j,y_t}-X_j)dt+
+      \sigma_j\sqrt{X_j}\,dW_j,\qquad
+      y_t\ \text{has generator }mQ_0.$$
+    <p>Assume $\kappa_j>0$, $\sigma_j>0$, $X_j(0)=x_j>0$,
+      independent Brownian motions and the independent default triggers just defined. Taking
+      $2\kappa_j\min_i\theta_{j,i}>\sigma_j^2$ keeps each intensity strictly
+      positive over every finite time interval, even as regimes switch.
+      For a subset $A$ of names the joint survival price is
+      $S_A(T)=\mathbb E\exp(-\int_0^T\sum_{j\in A}X_j(t)\,dt)$.</p>
+    <p>The CIR Riccati loading $B_j$ and the regime-dependent factor obey</p>
+    $$B_j'=1-\kappa_jB_j-\tfrac12\sigma_j^2B_j^2,\qquad B_j(0)=0,$$
+    $$S_A^\nu(T)=e^{-\sum_{j\in A}B_j(T)x_j}\,\nu a_A(T),\qquad
+      a_A'=\left(mQ_0+\operatorname{diag}
+      \left[-\sum_{j\in A}\kappa_j\theta_j B_j(t)\right]\right)a_A,\quad a_A(0)={\bf1}.$$
+    <p>This is an exact finite-dimensional reduction for any initial regime prior $\nu$.
+      The loadings $B_j$ vary with maturity and can differ across names, although $Q_0$ is shared.</p>
+
+    <h2>The first-order matrix</h2>
+    <p>Let $h_j=-\kappa_j(\theta_j-\bar\theta_j{\bf1})$, where
+      $\bar\theta_j=\pi\theta_j$, and define the <em>fixed</em>
+      Green&ndash;Kubo matrix and the loading integrals</p>
+    $$K_{jk}=\frac1m\mathcal K^{\rm sym}_0(h_j,h_k),\qquad
+      J_{jk}(T)=\int_0^T B_j(t)B_k(t)\,dt.$$
+    <p>Here $\mathcal K^{\rm sym}_0$ uses $Q_0$ and is the half-asymptotic covariance
+      of the two centered additive functionals. On each fixed interval $0\le T\le L$,
+      the stationary-start fast-switching expansion gives</p>
+    <div class="equation-card">
+    $$\log S_A(T)=-\sum_{j\in A}
+      \left[B_j(T)x_j+\kappa_j\bar\theta_j\int_0^T B_j(t)\,dt\right]
+       +\sum_{j,k\in A}D_{jk}(T)+O_L(m^{-2}),\qquad
+       D_{jk}(T)=K_{jk}J_{jk}(T).$$
+    </div>
+    <p>The $O_L(m^{-2})$ error is uniform in $T$ for fixed model parameters.
+      It follows by separating the constant and centered regime components in the
+      $a_A$ equation: the centered component is
+      $-Q_0^\#\tilde g/m$ plus an $O_L(m^{-2})$ remainder. Since all
+      $B_j(0)=0$, the first-order initial-layer amplitude vanishes. Substitution
+      into the stationary component gives the quadratic Green&ndash;Kubo term.
+      This is an asymptotic statement, not an exact low-rank statement at finite $m$.</p>
+
+    <h2>An arbitrary initial regime prior</h2>
+    <p>Hiddenness does not imply a stationary start. Let $\nu$ be any initial prior for the regime;
+      if the displayed initial intensities are observed from an already-running system, $\nu$ can instead be the
+      posterior conditional on those observations. Put $H=-Q_0^\#$ and</p>
+    $$f_A(t)=\sum_{j\in A}B_j(t)h_j,\qquad
+      h_j=-\kappa_j(\theta_j-\bar\theta_j{\bf1}).$$
+    <p>The same outer expansion, now retained before multiplication by the initial prior, gives</p>
+    <div class="equation-card">
+    $$\log S_A^\nu(T)=\log S_A^\pi(T)+\frac1m\,\nu Hf_A(T)+O_L(m^{-2}).$$
+    </div>
+    <p>This estimate is uniform on every fixed $0\le T\le L$: because $B_j(0)=0$, one has
+      $f_A(0)=0$, so the first-order outer corrector already satisfies the initial condition and no
+      order-$m^{-1}$ boundary layer is needed. The term is genuine start-regime memory and vanishes for
+      $\nu=\pi$, since $\pi H=0$.</p>
+    <p>A useful cancellation follows from $f_{\{j,k\}}=f_{\{j\}}+f_{\{k\}}$:</p>
+    $$\log\frac{S_{\{j,k\}}^\nu(T)}{S_{\{j\}}^\nu(T)S_{\{k\}}^\nu(T)}
+      =2K_{jk}J_{jk}(T)+O_L(m^{-2}).$$
+    <p>Thus the first-order pairwise log-survival ratio and the identification of $K_{jk}$ are robust to
+      an unknown common prior, even though every marginal survival curve changes at order $m^{-1}$.
+      Since default correlation is itself order $m^{-1}$, its change with the prior begins at order $m^{-2}$.
+      The certificate checks all three statements directly against the finite-rate ODE: the measured rates are
+      $2.004$ for survival after the endpoint correction, $2.010$ for the prior-independent pair formula, and
+      $1.998$ for the prior effect on correlation.</p>
+    <p>For two distinct names, the observable pairwise survival ratio is</p>
+    $$\log\frac{S_{\{j,k\}}(T)}{S_{\{j\}}(T)S_{\{k\}}(T)}
+      =2K_{jk}J_{jk}(T)+O_L(m^{-2}).$$
+    <p>Its first-order sign is the sign of $K_{jk}$. Off-diagonal values can be
+      negative while the entire $K$ matrix remains positive semidefinite.
+      Different states having high instantaneous hazards do not, by themselves,
+      determine that sign: the integrated lagged covariance does.</p>
+
+    <h2>Two names suffice to detect cycle direction</h2>
+    <p>Unordered joint survival sees only the symmetric Green&ndash;Kubo matrix because hazard multiplication
+      operators commute. The identity of the first defaulter is different: it is an absorbing-channel label and
+      retains time orientation. Let two names have positive regime-dependent hazards $h_1,h_2$, put
+      $h=h_1+h_2$, and start the regime in stationarity. The exact probability that name 1 defaults first is</p>
+    $$p_1=\pi^\top(\operatorname{diag}h-mQ_0)^{-1}h_1.$$
+    <p>Define the unscaled oriented matrix</p>
+    $$K^{(0)}_{jk}=-\pi\cdot\left[(h_j-\bar h_j{\bf1})\odot
+      Q_0^\#(h_k-\bar h_k{\bf1})\right].$$
+    <p>A singular resolvent expansion gives</p>
+    <div class="equation-card">
+    $$p_1=\frac{\bar h_1}{\bar h}
+      +\frac1{m\bar h}\left\{
+      \frac{\bar h_1}{\bar h}K^{(0)}_{h,h}-K^{(0)}_{h,1}\right\}
+      +O(m^{-2}),$$
+    $$p_1(Q_0)-p_1(Q_0^{\rm rev})
+      =\frac{K^{(0)}_{12}-K^{(0)}_{21}}{m\bar h}+O(m^{-2}).$$
+    </div>
+    <p>For a direct proof, solve $(\operatorname{diag}h-mQ_0)x=h_1$ with
+      $x=x_0{\bf1}+m^{-1}x_1+\cdots$. Solvability at order one gives
+      $x_0=\bar h_1/\bar h$ and
+      $x_1=Q_0^\#(x_0h-h_1)+a_1{\bf1}$. Solvability at the next order,
+      $\pi\operatorname{diag}(h)x_1=0$, gives
+      $a_1=(x_0K^{(0)}_{h,h}-K^{(0)}_{h,1})/\bar h$. Since
+      $p_1=\pi x=x_0+a_1/m+O(m^{-2})$, this proves the first display. Time reversal transposes $K^{(0)}$ and gives
+      the second.</p>
+    <p>Here $K^{(0)}_{h,1}=K^{(0)}_{11}+K^{(0)}_{21}$ and
+      $K^{(0)}_{h,h}=\sum_{j,k}K^{(0)}_{jk}$. Thus only two event types are required; at least three hidden states
+      are needed for a finite irreducible chain to violate detailed balance.</p>
+    <p>For the three-state cycle with clockwise/backward rates $(2,0.1)$ and hazards</p>
+    $$h_1=(0.07,0.01,0.01),\qquad h_2=(0.01,0.07,0.01),$$
+    <p>one obtains $\bar h_1=\bar h_2=0.03$,
+      $K^{(0)}_{12}=-9.50119\times10^{-6}$ and
+      $K^{(0)}_{21}=-1.90024\times10^{-4}$. The predicted clockwise-minus-counterclockwise gap is therefore
+      $0.0030087094/m+O(m^{-2})$.</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>clockwise $p_1$</th><th>counterclockwise $p_1$</th><th>gap</th></tr></thead>
+      <tbody>
+        <tr><td>5</td><td>0.5002992766</td><td>0.4997007234</td><td>0.00059855</td></tr>
+        <tr><td>10</td><td>0.5001500361</td><td>0.4998499639</td><td>0.00030007</td></tr>
+        <tr><td>20</td><td>0.5000751178</td><td>0.4999248822</td><td>0.00015024</td></tr>
+        <tr><td>40</td><td>0.5000375839</td><td>0.4999624161</td><td>0.00007517</td></tr>
+      </tbody>
+    </table></div>
+    <p>The exact stationary Feynman&ndash;Kac survival probabilities for name 1, name 2, and the pair are unchanged
+      by reversing this cycle. In contrast, the ordered-default formula detects its current at first order. The
+      certificate checks both resolvents directly; the residual rates are 1.999 for $p_1$ and for the directional
+      gap.</p>
+
+    <h2>What a multi-name race identifies</h2>
+    <p>With $d$ competing causes, one unweighted race does not generally identify the whole oriented matrix.
+      Let $w_a>0$ scale cause $a$, put
+      $\bar h(w)=\sum_a w_a\bar h_a$, and decompose the unscaled oriented matrix as</p>
+    $$K^{(0)}=G+A,\qquad G=\tfrac12(K^{(0)}+K^{(0)\top}),\qquad
+      A=\tfrac12(K^{(0)}-K^{(0)\top}).$$
+    <p>The exact cause-probability vector is</p>
+    $$p_a(w)=\pi^\top\left(\operatorname{diag}\!\left\{\sum_jw_jh_j\right\}
+      -mQ_0\right)^{-1}w_ah_a.$$
+    <p>Applying the same singular-resolvent calculation componentwise gives</p>
+    $$p_a(w)=\frac{w_a\bar h_a}{\bar h(w)}+\frac{c_a(w)}m+O(m^{-2}),$$
+    $$c_a(w)=\frac1{\bar h(w)}\left\{
+      \frac{w_a\bar h_a}{\bar h(w)}w^\top Gw-w_a(w^\top K^{(0)})_a\right\}.$$
+    <p>Unordered marginal and joint survivals identify $G$. If $c_a^G(w)$ denotes the coefficient predicted by
+      setting $A=0$, the remaining cause-order signal is exactly</p>
+    <div class="equation-card">
+    $$c_a(w)-c_a^G(w)=\frac{w_a(Aw)_a}{\bar h(w)},$$
+    $$p_a(w;Q_0)-p_a(w;Q_0^{\rm rev})
+      =\frac{2w_a(Aw)_a}{m\bar h(w)}+O(m^{-2}).$$
+    </div>
+    <p>Thus one unweighted race sees only $A\mathbf1$, a $(d-1)$-dimensional contrast. For $d\ge3$ it can be
+      zero even when $A\ne0$. Antisymmetry makes the sharp multi-design result stronger than ordinary
+      column-by-column recovery. If the exposure designs span a $q$-dimensional subspace $W$, then the kernel of</p>
+    $$A\longmapsto(Aw^{(1)},\ldots,Aw^{(q)})$$
+    <p>is exactly the space of skew maps supported on $W^\perp$, and hence has dimension</p>
+    $$\binom{d-q}{2}.$$
+    <p>Indeed, a kernel element vanishes on $W$; skew-adjointness then makes $W^\perp$ invariant, while every
+      skew map on $W^\perp$ gives such an element. Therefore $q=d-1$ linearly independent positive designs
+      identify every antisymmetric $d\times d$ matrix, and this number is minimal: with $q\le d-2$ there is
+      always a nonzero invisible skew map on $W^\perp$. This identification result keeps the fixed oriented
+      parameter matrix separate from any maturity-integrated rank claim.</p>
+    <h3>Stability, not merely rank</h3>
+    <p>After subtracting the symmetric prediction and undoing the known positive factors
+      $w_a/\bar h(w)$, each design supplies $Aw$. The same calculation gives the complete conditioning theorem.
+      Equip $\mathfrak{so}(d)$ with the
+      coefficient norm $\|A\|_\wedge=(\sum_{i<j}a_{ij}^2)^{1/2}=\|A\|_F/\sqrt2$. Put the designs into
+      $W=[w^{(1)}\ \cdots\ w^{(q)}]$, and let
+      $\lambda_1\ge\cdots\ge\lambda_d\ge0$ be the eigenvalues of the frame operator $WW^\top$.
+      Then the singular values of</p>
+    $$\mathcal M_W:\mathfrak{so}(d)\longrightarrow(\mathbb R^d)^q,\qquad
+      \mathcal M_W(A)=(Aw^{(1)},\ldots,Aw^{(q)}),$$
+    <p>including zeros, are exactly</p>
+    <div class="equation-card">
+    $$\left\{\sqrt{\lambda_i+\lambda_j}:1\le i<j\le d\right\}.$$
+    </div>
+    <p>With the unscaled Frobenius norm on the domain, every displayed singular value is divided by $\sqrt2$;
+      the rank and condition number are unchanged.</p>
+    <p>To prove it, diagonalize $WW^\top$ and use the orthonormal skew basis for this coefficient norm,
+      $E_{ij}-E_{ji}$. If $A=(a_{ij})$ in that basis, then</p>
+    $$\|\mathcal M_W(A)\|_F^2
+      =\operatorname{tr}(A^\top AWW^\top)
+      =\sum_{i<j}(\lambda_i+\lambda_j)a_{ij}^2.$$
+    <p>The previous kernel dimension is the number of pairs of zero frame eigenvalues. When $q=d-1$, the
+      exact spectral condition number is</p>
+    $$\kappa(\mathcal M_W)
+      =\sqrt{\frac{\lambda_1+\lambda_2}{\lambda_{d-1}}}.$$
+    <p>Thus full rank can still be numerically useless when the design vectors nearly lie in a smaller
+      subspace. This is the finite-dimensional frame-operator viewpoint introduced by
+      <a href="./bibliography.html#DuffinSchaeffer1952">Duffin and Schaeffer (1952)</a>.</p>
+    <p>An explicit positive design avoids an existence-only theorem. For any $\epsilon>0$, take</p>
+    $$w^{(r)}=\mathbf1+\epsilon e_r,\qquad r=1,\ldots,d-1.$$
+    <p>Here $W^\top W=\epsilon^2I+(d+2\epsilon)\mathbf1\mathbf1^\top$, so</p>
+    $$\sigma_{\min}(\mathcal M_W)=\epsilon,\qquad
+      \kappa(\mathcal M_W)
+      =\frac{\sqrt{2\epsilon^2+(d-1)(d+2\epsilon)}}{\epsilon}.$$
+    <p>There is also a closed-form inverse. If $y^{(r)}=Aw^{(r)}$ and $b=A\mathbf1$, then
+      $b_r=y^{(r)}_r$ for $r<d$, $b_d=-\sum_{r<d}b_r$, and</p>
+    $$Ae_r=\frac{y^{(r)}-b}{\epsilon}\quad(r<d),\qquad
+      Ae_d=b-\sum_{r<d}Ae_r.$$
+    <p>The spectrum also solves the optimal-design problem. For the minimally identifying case $q=d-1$,
+      ordering the nonzero frame eigenvalues gives</p>
+    <div class="equation-card">
+    $$\kappa(\mathcal M_W)^2
+      =\frac{\lambda_1+\lambda_2}{\lambda_{d-1}}\ge2.$$
+    </div>
+    <p>Equality holds exactly when all $d-1$ nonzero frame eigenvalues agree. Equivalently,
+      $W^\top W=cI_{d-1}$: the design vectors are orthogonal and have equal norm. Strictly positive vectors
+      have strictly positive pairwise inner products, so every strictly positive minimal design has
+      $\kappa(\mathcal M_W)>\sqrt2$. The bound is nevertheless sharp. The family above satisfies</p>
+    $$\kappa(\mathcal M_W)^2
+      =2+\frac{2(d-1)}{\epsilon}+\frac{d(d-1)}{\epsilon^2}
+      \longrightarrow2.$$
+    <p>The same result has a minimax noise interpretation. If the total squared exposure is fixed at
+      $\|W\|_F^2=B$, then</p>
+    $$\sigma_{\min}(\mathcal M_W)^2=\lambda_{d-1}\le\frac{B}{d-1}.$$
+    <p>Equality has the same tight-frame condition and is therefore unattainable under strict positivity but
+      approached by a common rescaling of the positive family as $\epsilon\to\infty$. Hence positivity creates
+      no gap in the infimum, only nonattainment at the boundary where distinct causes become coordinate-isolated.
+      The $1/\epsilon$ factor for small $\epsilon$ is the opposite, coalescing-design instability.</p>
+    <p>The certificate verifies the full singular spectrum for every $3\le d\le7$ and $1\le q\le d-1$,
+      the explicit condition number and inverse for $3\le d\le8$, and both sharp optimal-design bounds.</p>
+    <p>A sharp three-cause example uses the same directed three-state cycle and cyclic hazards</p>
+    $$h_1=(0.07,0.01,0.01),\quad h_2=(0.01,0.07,0.01),\quad
+      h_3=(0.01,0.01,0.07).$$
+    <p>Here $\|A\|_F=2.21094\times10^{-4}$ but $A\mathbf1=0$, so the equal-weight race is exactly unchanged by
+      cycle reversal. At $w=(1,2,4)$ the predicted reversal-gap coefficients for the three causes are
+      $(-0.0017192625,0.0051577876,-0.0034385251)$. Exact resolvents give second-order residual rates
+      $1.998$ for both the probability vector and reversal gap. The equal-weight design alone is the sharp
+      $q=d-2$ counterexample. Adding just one further positive design recovers $A$ with maximum error
+      $1.36\times10^{-19}$. The certificate also verifies the kernel-dimension formula for every
+      $3\le d\le7$ and $1\le q\le d-1$, together with the complete frame spectrum.</p>
+
+    <h2>Which rank bound survives?</h2>
+    <p>For fixed centered feature vectors $h_1,\ldots,h_d$, the matrix
+      $K\succeq0$ has rank at most $n-1$. In fact its rank equals the
+      dimension spanned by those centered vectors for an irreducible
+      finite chain. At a <em>single maturity</em>, the matrix of correction
+      densities is $\operatorname{diag}(B(t))K\operatorname{diag}(B(t))$,
+      and it has the same rank for $t>0$.</p>
+    <p>For completeness, if $f$ is centered and $w=-Q_0^\#f$, then
+      $2\mathcal K_0(f,f)=\sum_{i,\ell\ne i}\pi_i(Q_0)_{i\ell}
+      (w_\ell-w_i)^2$. Irreducibility makes this zero only when
+      $w$ is constant, equivalently $f=0$. Thus the symmetric
+      Green&ndash;Kubo form is an inner product on the $(n-1)$-dimensional
+      centered space, which proves the claimed rank of $K$.</p>
+    <p>The integrated matrix $D(T)=K\circ J(T)$ is also positive semidefinite,
+      because it is a time integral of positive semidefinite matrices. Its
+      rank need <em>not</em> be at most $n-1$. Time-dependent diagonal
+      rescalings rotate a low-dimensional range as $t$ varies.
+      In particular, a rank test applied directly to $D(T)$ is not a
+      lower bound on the number of regimes. This distinction is absent
+      for constant hazards: all $B_j(t)=1$ and $D(T)=TK$.</p>
+
+    <h3>The sharp Hadamard-rank theorem</h3>
+    <p>There is nevertheless an exact replacement for the false regime-count
+      bound. Let $r=\operatorname{rank}K$ and
+      $s=\operatorname{rank}J(T)$, where $s$ is the dimension of the span of
+      the loading functions $B_1,\ldots,B_d$ in $L^2[0,T]$. Then</p>
+    <div class="equation-card">
+    $$\operatorname{rank}D(T)
+      \le\min\{d,rs\}.$$
+    </div>
+    <p>Indeed, factor $K=UU^\top$ and $J=VV^\top$, and denote their $j$th
+      rows by $u_j$ and $v_j$. The Hadamard product has the Gram
+      factorization</p>
+    $$D_{jk}=\langle u_j,u_k\rangle\langle v_j,v_k\rangle
+      =\langle u_j\otimes v_j,u_k\otimes v_k\rangle.$$
+    <p>Thus the rank is exactly the dimension spanned by the $d$ rowwise
+      tensor products $u_j\otimes v_j$ in an $rs$-dimensional space. The
+      bound is sharp: generic factor pairs have rowwise tensor rank
+      $\min(d,rs)$.
+      Positivity of $D$ is the classical
+      <a href="./bibliography.html#Schur1911">Schur product theorem</a>; the
+      tensor factorization also supplies the rank statement directly.</p>
+
+    <h3>The corrected regime-count lower bound</h3>
+    <p>If the fixed features are driven by an irreducible $n$-state chain,
+      then $r=\operatorname{rank}K\le n-1$.  Consequently the integrated
+      rank $R=\operatorname{rank}D(T)$ and the known loading-span dimension
+      $s=\operatorname{rank}J(T)$ imply</p>
+    <div class="equation-card">
+    $$n\ge 1+\left\lceil {R\over s}\right\rceil.$$
+    </div>
+    <p>If only an upper bound $s\le q$ is known, the still-valid conclusion is
+      $n\ge1+\lceil R/q\rceil$.  This is the strongest possible lower bound
+      from these ranks alone: for every $r,s\ge1$, generic Gram factors with
+      $d\ge rs$ attain $R=rs$, and hence equality with $n=r+1$.  A complete-graph
+      $n$-state chain realizes an arbitrary rank-$r$ centered feature Gramian,
+      while $s$ independent deterministic loading shapes realize the second
+      factor.</p>
+    <p>The endpoints explain the apparent contradiction.  With one common
+      loading shape, $s=1$ and the familiar rule $n\ge R+1$ survives.  With
+      $d$ independent loading shapes, a full-rank $d\times d$ integrated
+      matrix says only $n\ge2$, and the two-regime CIR construction below
+      attains that bound.  This inference uses the rank of the loading family;
+      it is not a claim that $D(T)$ itself is a fixed-feature Green&ndash;Kubo
+      matrix.</p>
+
+    <h2>Two regimes can create arbitrarily large integrated rank</h2>
+    <p>The two-name example is not a dimension-two accident. For any number
+      $d$ of names and any $T&gt;0$, a two-regime model can have
+      $\operatorname{rank}K=1$ but $\operatorname{rank}D(T)=d$. Choose every
+      centered regime feature on the single two-state contrast, with nonzero
+      coefficient $a_j$, so $K=aa^\top$ up to scale. At zero vol-of-vol and
+      distinct $\kappa_j&gt;0$,</p>
+    $$B_j(t)=\frac{1-e^{-\kappa_jt}}{\kappa_j}.$$
+    <p>These functions are linearly independent on every positive interval:
+      differentiating a vanishing linear combination gives a vanishing
+      combination of distinct exponentials $e^{-\kappa_jt}$, whose
+      Vandermonde system is nonsingular. Hence $J(T)$ is positive definite and</p>
+    $$D(T)=\operatorname{diag}(a)J(T)\operatorname{diag}(a)$$
+    <p>has full rank $d$. The conclusion persists for sufficiently small
+      strictly positive CIR volatilities because the Riccati solutions and
+      the Gram determinant depend continuously on $\sigma_j^2$. Mean levels
+      can simultaneously be chosen with a uniform strict Feller margin.
+      Therefore no bound depending only on the number of regimes survives
+      after maturity integration.</p>
+
+    <h3>An exact full-rank criterion</h3>
+    <p>The preceding rank-one construction is a special case of a sharp
+      criterion that removes any numerical genericity assumption. Fix a
+      common CIR volatility $\sigma\ge0$, pairwise distinct mean-reversion
+      rates $\kappa_1,\ldots,\kappa_d$, and any $T&gt;0$. The CIR loading
+      independence proved below makes $J(T)$ positive definite. For every
+      positive semidefinite fixed-parameter Green&ndash;Kubo matrix $K$,</p>
+    <div class="equation-card">
+    $$D(T)=K\circ J(T)\succ0
+      \quad\Longleftrightarrow\quad K_{ii}&gt;0
+      \text{ for every }i.$$
+    </div>
+    <p>To prove sufficiency, factor $K=FF^\top$ and write $f_\ell$ for the
+      columns of $F$. The Schur product has the exact decomposition</p>
+    $$K\circ J(T)=\sum_\ell
+      \operatorname{diag}(f_\ell)J(T)
+      \operatorname{diag}(f_\ell).$$
+    <p>If a vector $x$ has zero quadratic form, positivity of $J(T)$ forces
+      $\operatorname{diag}(f_\ell)x=0$ for every $\ell$. But
+      $K_{ii}=\sum_\ell f_{\ell i}^2&gt;0$, so some feature is nonzero in each
+      coordinate and hence $x=0$. Conversely, if $K_{ii}=0$, positive
+      semidefiniteness forces the entire $i$th row and column of $K$ to
+      vanish, making $D(T)$ singular.</p>
+    <p>Thus heterogeneous maturity loadings create exact full rank at every
+      positive maturity if and only if every name has nonzero fixed-parameter
+      Green&ndash;Kubo variance. The rank of $K$ itself may be one. This does not
+      increase fixed-feature Green&ndash;Kubo rank; it characterizes the rank
+      created only after integrating different deterministic maturity
+      loadings.</p>
+    <p>A five-name certificate uses the same positive CIR loading Gramian with
+      fixed Green&ndash;Kubo ranks one, two, and three. All three integrated
+      matrices have rank five; their smallest eigenvalues are respectively
+      $1.57035185\times10^{-7}$, $7.36817240\times10^{-5}$, and
+      $3.91143441\times10^{-2}$. Setting one feature row to zero makes the
+      corresponding diagonal entry vanish and reduces the integrated rank
+      exactly to four.</p>
+
+    <h3>Exact rank under repeated loading shapes</h3>
+    <p>The distinct-rate criterion has an exact extension when some names
+      share a mean-reversion rate. Partition the name indices into clusters
+      $C_1,\ldots,C_g$, where $\kappa_i=\alpha_c$ for $i\in C_c$, and assume
+      the cluster centers $\alpha_c$ are distinct. For common CIR volatility
+      and every $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\operatorname{rank}\{K\circ J(T)\}
+      =\sum_{c=1}^g\operatorname{rank}K_{C_c,C_c}.$$
+    </div>
+    <p>Indeed, factor $K=FF^\top$ and let $f_i$ be row $i$ of $F$. If
+      $b_c(t)=B_{\alpha_c}(t)$, then $K\circ J(T)$ is the Gram matrix in
+      $\mathbb R^r\otimes L^2[0,T]$ of the rowwise tensors</p>
+    $$f_i\otimes b_{c(i)}.$$
+    <p>The distinct CIR loading functions $b_1,\ldots,b_g$ are linearly
+      independent. Hence the tensor spans belonging to different clusters
+      form a direct sum. The span within cluster $C_c$ has dimension
+      $\operatorname{rank}F_{C_c}=\operatorname{rank}K_{C_c,C_c}$, proving
+      the formula. This rowwise tensor factorization is the transpose form of
+      the product introduced by <a href="./bibliography.html#KhatriRao1968">Khatri and Rao (1968)</a>.</p>
+    <p>Consequently, the integrated matrix is positive definite exactly when</p>
+    $$K_{C_c,C_c}\succ0\qquad(c=1,\ldots,g).$$
+    <p>The endpoints clarify the rank distinction. If every loading is
+      distinct, each cluster is a singleton and the condition reduces to
+      $K_{ii}&gt;0$. If every loading is identical, there is one cluster and
+      integration preserves $\operatorname{rank}K$. Thus positive diagonal
+      entries alone are not sufficient once loading shapes collide.</p>
+    <p>A six-name certificate with collision sizes $(3,2,1)$ uses fixed
+      Green&ndash;Kubo ranks one, two, and three. The within-cluster rank sums
+      are respectively $1+1+1$, $2+2+1$, and $3+2+1$, and the observed
+      integrated ranks are exactly $3,5,6$. In the rank-one case every
+      diagonal entry of $K$ is positive, yet the integrated rank is only the
+      number of distinct loading shapes, three.</p>
+
+    <h3>Long maturity restores effective rank one</h3>
+    <p>Full algebraic rank also does not mean uniform information across
+      maturities. Let the distinct CIR loadings have positive limits</p>
+    $$b_j=\lim_{t\to\infty}B_j(t)
+      ={2\over\sqrt{\kappa_j^2+2\sigma^2}+\kappa_j},
+      \qquad b=(b_1,\ldots,b_d)^\top,$$
+    <p>for a common fixed $\sigma\ge0$, and put $r(t)=B(t)-b$. The Riccati
+      formula gives $r(t)=O(e^{-\rho t})$ for some $\rho&gt;0$, hence</p>
+    $$J(T)=\int_0^TB(t)B(t)^\top dt
+      =Tbb^\top+C+O(e^{-\rho T}),\qquad
+      C=\int_0^\infty\{B(t)B(t)^\top-bb^\top\}\,dt.$$
+    <p>Let $P_b$ be orthogonal projection onto $b^\perp$ and define, on that
+      $(d-1)$-dimensional space,</p>
+    $$H=P_b\left\{\int_0^\infty r(t)r(t)^\top dt\right\}P_b.$$
+    <p>The cross terms in $C$ vanish after compression because $P_bb=0$.
+      Moreover $H$ is positive definite: if $z\perp b$ and $z^\top Hz=0$,
+      then $z^\top r(t)=0$ for every $t$, hence $z^\top B(t)=0$; the CIR
+      loading independence proved below forces $z=0$.</p>
+    <div class="equation-card">
+    <p><strong>Long-maturity spectrum.</strong> Order the eigenvalues of $J(T)$
+      as $\lambda_1(T)\ge\cdots\ge\lambda_d(T)$ and those of $H$ as
+      $\mu_1\ge\cdots\ge\mu_{d-1}&gt;0$. Then</p>
+    $$\lambda_1(T)=\|b\|^2T+O(1),\qquad
+      \lambda_{j+1}(T)=\mu_j+O(T^{-1}),$$
+    $$\operatorname{cond}_2J(T)
+      ={\|b\|^2\over\mu_{d-1}}T+O(1),\qquad
+      \det J(T)=\|b\|^2\det(H)T+O(1).$$
+    </div>
+    <p>In an orthonormal basis beginning with $b/\|b\|$, the first block of
+      $J(T)$ is $T\|b\|^2+O(1)$, the lower block tends to $H$, and the
+      off-diagonal block is bounded. A Schur complement gives the displayed
+      $O(T^{-1})$ bounded-eigenvalue corrections. The same theorem holds for
+      the rank-one Green&ndash;Kubo correction
+      $D(T)=\operatorname{diag}(a)J(T)\operatorname{diag}(a)$ when every
+      $a_j\ne0$, after replacing $B,b,r$ by their coordinatewise products
+      with $a$.</p>
+    <p>The conclusion is deliberately two-sided: heterogeneous maturity
+      loadings create exact full rank for every finite $T&gt;0$, but at the long
+      end only their common stationary levels accumulate linearly. The
+      remaining $d-1$ directions contain a finite amount of transient
+      information, so relative conditioning deteriorates like $T$. This is a
+      deterministic loading-Gram theorem at fixed CIR parameters. It does not
+      make the earlier $O_L(m^{-2})$ pricing remainder uniform as $T\to\infty$
+      and does not interchange the switching-speed and maturity limits.</p>
+    <p>For four positive-volatility loadings with
+      $\kappa=(0.35,0.8,1.7,3.2)$ and $\sigma=0.18$, the limiting bounded
+      eigenvalues are</p>
+    $$(2.74707297\times10^{-4},\quad 1.19392590\times10^{-2},\quad
+       4.59242675\times10^{-1}).$$
+    <p>At $T=2048$ their measured values are
+      $(2.74570818\times10^{-4},1.19298558\times10^{-2},
+      4.58596743\times10^{-1})$. The four convergence orders, including the
+      scaled leading eigenvalue, are
+      $(1.005479,1.004346,1.002275,0.999965)$. The measured and predicted
+      limits are respectively $30747.39631$ and $30780.38173$ for
+      $\operatorname{cond}_2J(T)/T$, and $1.26818689\times10^{-5}$ and
+      $1.27360280\times10^{-5}$ for $\det J(T)/T$.</p>
+
+    <h3>The inverse information has a rank-one long-end correction</h3>
+    <p>The spectrum identifies the scales but not the limiting covariance or
+      the stationary&ndash;transient coupling. Write $\beta=\|b\|$,
+      $e=b/\beta$, $P=I-ee^\top$, and let $H^+$ denote the Moore&ndash;Penrose
+      inverse of $H$ on $\mathbb R^d$ (the inverse on $b^\perp$ and zero on
+      $\operatorname{span}\{b\}$). With $C$ as above, define</p>
+    $$g=PCe,\qquad w=e-H^+g.$$
+    <div class="equation-card">
+    <p><strong>Inverse-information expansion.</strong> For fixed distinct CIR
+      parameters and $T\to\infty$,</p>
+    $$J(T)^{-1}=H^++{ww^\top\over\beta^2T}+O(T^{-2})$$
+    <p>in operator norm. Consequently, for every fixed exposure $x$,</p>
+    $$x^\top J(T)^{-1}x
+      =x^\top H^+x+{(x^\top w)^2\over\beta^2T}+O(T^{-2}),
+      \qquad T\,b^\top J(T)^{-1}b\longrightarrow1.$$
+    </div>
+    <p>Indeed, in an orthonormal basis $(e,U)$ with columns of $U$ spanning
+      $b^\perp$, exponential convergence of $B(t)$ gives</p>
+    $$[e\ U]^\top J(T)[e\ U]
+      =\begin{pmatrix}
+        \beta^2T+c_{00}&amp;(U^\top g)^\top\\
+        U^\top g&amp;U^\top HU
+       \end{pmatrix}+O(e^{-\rho T}).$$
+    <p>The lower block is positive definite. Its block inverse is $H^+$ plus
+      the outer product of $e-H^+g$ divided by the scalar Schur complement
+      $\beta^2T+c_{00}-g^\top H^+g+O(e^{-\rho T})$. Expanding that reciprocal
+      proves the operator-norm remainder. Thus long maturity supplies
+      unbounded precision in only one asymptotic direction. Every orthogonal
+      exposure retains the finite transient-information floor $x^\top H^+x$;
+      the vector $w$, rather than $e$ alone, records the finite coupling to
+      the stationary direction.</p>
+    <p>For the four-name parameters above, the certificate evaluates the exact
+      finite-$T$ loading Gramian by quadrature. At $T=2048$, the operator-norm
+      error after the rank-one inverse correction is
+      $7.98785874\times10^{-3}$, with observed order $2.006271$ between the
+      last two doubled maturities. It also gives
+      $T b^\top J(T)^{-1}b=1.00427059$ versus limit $1$, and transient inverse
+      trace $3728.05152$ versus $\operatorname{tr}(H^+)=3726.17300$.</p>
+    <p>This is again a fixed-parameter deterministic loading-Gram statement.
+      It neither changes the fixed-parameter Green&ndash;Kubo rank nor asserts a
+      maturity-uniform pricing remainder, and it does not interchange the
+      long-maturity and fast-switching limits.</p>
+
+    <h3>Fixed Green&ndash;Kubo rank determines the number of long-end directions</h3>
+    <p>The rank-one conclusion has a sharp finite-rank extension. Let $K$ be
+      any fixed positive semidefinite Green&ndash;Kubo matrix of rank $r$, put
+      $\Delta_t=\operatorname{diag}B(t)$ and
+      $\Delta_\infty=\operatorname{diag}b$, and consider the integrated
+      correction</p>
+    $$D(T)=K\circ J(T)=\int_0^T\Delta_tK\Delta_t\,dt.$$
+    <p>This Gram representation is the continuous loading version of the
+      <a href="./bibliography.html#Schur1911">Schur product theorem</a>.</p>
+    <p>Because every $b_j&gt;0$, the stationary matrix</p>
+    $$A=\Delta_\infty K\Delta_\infty$$
+    <p>also has rank $r$. Exponential loading convergence gives</p>
+    $$D(T)=TA+C_K+O(e^{-\rho T}),\qquad
+      C_K=K\circ C
+      =\int_0^\infty(\Delta_tK\Delta_t-A)\,dt.$$
+    <p>Let $Q$ project onto $\operatorname{ran}A$, put $P=I-Q$, and define
+      on $\ker A$</p>
+    $$H_K=PC_KP.$$
+    <div class="equation-card">
+    <p><strong>Rank-$r$ long-maturity theorem.</strong> Suppose $D(T_0)$ is
+      positive definite for some $T_0&gt;0$. If
+      $a_1\ge\cdots\ge a_r&gt;0$ are the positive eigenvalues of $A$ and
+      $\mu_1\ge\cdots\ge\mu_{d-r}&gt;0$ are the eigenvalues of $H_K$ on
+      $\ker A$, then</p>
+    $$\lambda_j(D(T))=Ta_j+O(1),\quad 1\le j\le r,$$
+    $$\lambda_{r+j}(D(T))=\mu_j+O(T^{-1}),
+      \quad 1\le j\le d-r,$$
+    $$\operatorname{cond}_2D(T)={a_1\over\mu_{d-r}}T+O(1),
+      \qquad
+      \det D(T)=T^r\det_+(A)\det(H_K)+O(T^{r-1}).$$
+    </div>
+    <p>Under the distinct-mean-reversion assumptions of the full-rank
+      criterion above, the premise $D(T_0)\succ0$ is equivalent simply to
+      $K_{ii}&gt;0$ for every name, and then holds for every $T_0&gt;0$.</p>
+    <p>The finite-maturity full-rank premise supplies the missing positivity,
+      rather than merely assuming it. For $z\in\ker A$,</p>
+    $$z^\top H_Kz
+      =\int_0^\infty(\Delta_tz)^\top K(\Delta_tz)\,dt\ge0.$$
+    <p>If this vanishes, analyticity of the CIR loadings implies
+      $\Delta_tz\in\ker K$ for every $t&gt;0$, hence $D(T_0)z=0$ and therefore
+      $z=0$. Thus $H_K$ is positive definite. The displayed spectrum and
+      determinant then follow from the $(\operatorname{ran}A,\ker A)$ block
+      Schur complement.</p>
+    <p>There is also a matrix-level inverse limit. Let $A^+$ and $H_K^+$ be
+      the Moore&ndash;Penrose inverses on their complementary supports and set</p>
+    $$L=Q-H_K^+PC_KQ.$$
+    <div class="equation-card">
+    $$D(T)^{-1}=H_K^++{1\over T}LA^+L^\top+O(T^{-2})$$
+    <p>in operator norm.</p>
+    </div>
+    <p>This follows by inverting the same two blocks: the Schur complement on
+      $\operatorname{ran}A$ is $TA+O(1)$, while the lower block tends to
+      $H_K$. The correction has rank $r$. Hence maturity integration may make
+      $D(T)$ exactly full rank at every finite maturity, but precisely
+      $\operatorname{rank}K$ information directions accumulate without bound
+      at the long end. The preceding theorem is the $r=1$ specialization.</p>
+    <p>A five-name certificate takes the rank-two matrix $K=FF^\top$ with
+      $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and distinct
+      positive-volatility CIR loadings with
+      $\kappa=(0.25,0.6,1.2,2.4,5)$ and $\sigma=0.18$, and obtains full
+      integrated rank five. The limiting transient eigenvalues are</p>
+    $$(7.28134479\times10^{-4},\ 2.20648314\times10^{-2},\
+       7.86025259\times10^{-1}),$$
+    <p>while the two stationary eigenvalues are
+      $(1.95826087,57.5035564)$. At $T=2048$, all five scaled convergence
+      orders lie between $0.999991$ and $1.006072$;
+      $\operatorname{cond}_2D(T)/T$ is $78840.4105$ versus limit $78973.8133$,
+      and $\det D(T)/T^2$ is $1.41432970\times10^{-3}$ versus limit
+      $1.42204704\times10^{-3}$. The inverse-expansion remainder is
+      $3.06155141\times10^{-3}$ with observed order $2.006827$.</p>
+    <p>The result concerns a fixed $K$ and fixed CIR parameters. It explicitly
+      distinguishes the $r$ stationary directions inherited from fixed
+      Green&ndash;Kubo rank from the additional finite information created by
+      heterogeneous maturity loadings; it asserts no switching-rate-uniform
+      price error and no interchange of maturity and switching limits.</p>
+
+    <h3>Full rank becomes singular at a quantified rate</h3>
+    <p>Algebraic full rank does not make nearby loading parameters stably
+      identifiable. This can be made sharp. Fix $T&gt;0$, a common
+      $\sigma\ge0$, distinct real numbers $x_1,\ldots,x_d$, and put
+      $\kappa_j=\kappa_0+\epsilon x_j$. Let $B_\kappa$ solve</p>
+    $$B_\kappa'=1-\kappa B_\kappa-\tfrac12\sigma^2B_\kappa^2,
+      \qquad B_\kappa(0)=0,$$
+    <p>and define $J_\epsilon=(\langle B_{\kappa_i},B_{\kappa_j}\rangle_{L^2[0,T]})$.
+      If its eigenvalues are ordered $\lambda_1\ge\cdots\ge\lambda_d$, then,
+      for fixed $d$ as $\epsilon\downarrow0$,</p>
+    <div class="equation-card">
+    $$\lambda_j(J_\epsilon)=\Theta(\epsilon^{2(j-1)}),\qquad
+      \operatorname{cond}_2J_\epsilon=\Theta(\epsilon^{-2(d-1)}).$$
+    </div>
+    <p>The leading determinant is explicit. With indices $r,s=0,\ldots,d-1$,
+      set</p>
+    $$G^{(d)}_{rs}=\int_0^T
+      \partial_\kappa^rB_{\kappa_0}(t)
+      \partial_\kappa^sB_{\kappa_0}(t)\,dt.$$
+    <p>Then</p>
+    <div class="equation-card">
+    $$\det J_\epsilon
+      =\epsilon^{d(d-1)}
+      \frac{\prod_{i&lt;j}(x_j-x_i)^2}{\prod_{r=0}^{d-1}(r!)^2}
+      \det G^{(d)}\{1+O(\epsilon)\}.$$
+    </div>
+    <p>To prove it, Taylor-expand the $d$ vectors $B_{\kappa_0+\epsilon x_j}$
+      in $L^2[0,T]$ and take their exterior product. Its first nonzero term is
+      the Vandermonde determinant times
+      $B_{\kappa_0}\wedge\partial_\kappa B_{\kappa_0}\wedge\cdots\wedge
+      \partial_\kappa^{d-1}B_{\kappa_0}$, with power
+      $\epsilon^{d(d-1)/2}$; squaring its norm gives the formula.
+      The derivative vectors are independent because the Riccati equation gives</p>
+    $$\partial_\kappa^rB_{\kappa_0}(t)
+      =\frac{(-1)^r}{r+1}t^{r+1}+O(t^{r+2}).$$
+    <p>Divided-difference column operations then give singular values of the
+      loading synthesis map of orders $1,\epsilon,\ldots,\epsilon^{d-1}$,
+      which proves the individual eigenvalue powers. This is the confluent
+      counterpart of the classical Vandermonde conditioning studied by
+      <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a>.
+      If $K=aa^\top$ with fixed nonzero coordinates, the congruence
+      $D_\epsilon=\operatorname{diag}(a)J_\epsilon\operatorname{diag}(a)$
+      has the same powers. Thus two regimes still give full integrated rank
+      for every $\epsilon&gt;0$, while the weakest identified direction
+      vanishes as $\epsilon^{2(d-1)}$. This is a fixed-$d$, fixed-$T$
+      statement; it is not uniform in the number of names or maturity.</p>
+    <p>The constants multiplying those powers are explicit as well. Let
+      $W:L^2[0,T]\leftarrow\mathbb R^d$ have columns
+      $\partial_\kappa^rB_{\kappa_0}$, $0\le r&lt;d$, and define the scaled
+      Vandermonde matrix</p>
+    $$V_{rj}={x_j^r\over r!},\qquad 0\le r&lt;d,\quad 1\le j\le d.$$
+    <p>Take the Hilbert-space QR factorization $W=U_WR_W$ and the LQ
+      factorization $V=L_VU_V$. Equivalently, $R_W$ is the upper Cholesky
+      factor of $G^{(d)}$ and $L_V$ is the lower Cholesky factor of
+      $VV^\top$. Then</p>
+    <div class="equation-card">
+    $$\lim_{\epsilon\downarrow0}
+      {\lambda_{r+1}(J_\epsilon)\over\epsilon^{2r}}
+      =\left|(R_W)_{r+1,r+1}(L_V)_{r+1,r+1}\right|^2,
+      \qquad 0\le r&lt;d.$$
+    </div>
+    <p>Indeed, Taylor expansion gives the loading synthesis map as
+      $WD_\epsilon\{V+O(\epsilon)\}$, with
+      $D_\epsilon=\operatorname{diag}(1,\epsilon,\ldots,\epsilon^{d-1})$.
+      After the two orthogonal changes of basis, the unique lowest-power
+      minor in each exterior power uses the first rows and columns.
+      Consecutive exterior-product limits give the individual singular-value
+      constants; squaring gives the displayed Gram-eigenvalue constants.
+      Their product is exactly the determinant coefficient above.</p>
+    <p>The certificate uses positive volatilities $\sigma_j=0.02$, distinct
+      $\kappa_j$ between $0.2$ and $5$, and strict Feller mean levels for
+      $2\le d\le8$. Every integrated matrix is full rank. At $d=8$ its
+      smallest eigenvalue is $1.4691\times10^{-8}$ and its condition number is
+      $6.7541\times10^9$. This is an important distinction: algebraic rank can
+      be maximally amplified while statistical identification becomes
+      extremely ill-conditioned. A separate 70-digit coalescence check at
+      $d=4$ finds eigenvalue log--log slopes
+      $(0.000316,2.000484,4.000156,5.999654)$. The explicit leading
+      eigenvalue constants are
+      $(3.250068477,0.02564049977,0.0007991812818,0.00001379064292)$;
+      at $\epsilon=1/256$ their largest relative error is
+      $1.67\times10^{-5}$. The determinant ratio is $1.000021036$ against
+      the displayed constant, and the condition-number slope is
+      $-5.999901$.</p>
+
+    <h3>Partial collisions have a cluster spectrum</h3>
+    <p>The one-center hierarchy has a precise multi-center extension. Let
+      $\alpha_1,\ldots,\alpha_g$ be distinct, let cluster $c$ contain
+      $m_c$ distinct fixed nodes $x_{c,1},\ldots,x_{c,m_c}$, and put
+      $\kappa_{c,j}=\alpha_c+\epsilon x_{c,j}$. Assume the finite jet family</p>
+    $$\left\{\partial_\kappa^rB_{\alpha_c}:
+      1\le c\le g,\ 0\le r&lt;m_c\right\}$$
+    <p>is linearly independent in $L^2[0,T]$. If
+      $r_1\le\cdots\le r_d$ is the sorted multiset
+      $\biguplus_{c=1}^g\{0,1,\ldots,m_c-1\}$, then the descending
+      eigenvalues of the loading Gram matrix satisfy, as $\epsilon\downarrow0$
+      with $g$, the cluster data, and $T$ fixed,</p>
+    <div class="equation-card">
+    $$\lambda_j(J_\epsilon)=\Theta(\epsilon^{2r_j}),
+      \qquad 1\le j\le d=\sum_c m_c.$$
+    </div>
+    <p>Thus exactly $g$ eigenvalues stay of constant order. If
+      $m_{\max}=\max_c m_c$, then</p>
+    <div class="equation-card">
+    $$\operatorname{cond}_2J_\epsilon
+      =\Theta(\epsilon^{-2(m_{\max}-1)}),\qquad
+      \det J_\epsilon
+      =\Theta\!\left(\epsilon^{2\sum_c {m_c\choose2}}\right).$$
+    </div>
+    <p>The determinant coefficient is explicit. Order the jet vectors by
+      $(c,r)$ and let $G_{\rm jet}$ be their Gram matrix. Then</p>
+    $$\det J_\epsilon=
+      \epsilon^{2\sum_c {m_c\choose2}}\det G_{\rm jet}
+      \prod_{c=1}^g
+      {\prod_{i&lt;j}(x_{c,j}-x_{c,i})^2
+       \over\prod_{r=0}^{m_c-1}(r!)^2}\{1+O(\epsilon)\}.$$
+    <p>For the proof, Taylor-expand separately at each $\alpha_c$ and
+      right-multiply each cluster by its fixed scaled-Vandermonde inverse.
+      The transformed columns are
+      $\epsilon^r\{\partial_\kappa^rB_{\alpha_c}+O(\epsilon)\}$.
+      Jet independence bounds the resulting synthesis map above and below
+      by the diagonal map with entries $\epsilon^r$, proving all singular
+      exponents; squaring gives the Gram exponents. Taking the exterior
+      product gives the coefficient above. This is the finite-dimensional
+      derivative-matching structure introduced by
+      <a href="./bibliography.html#Hermite1878">Hermite (1878)</a> and is
+      consistent with the confluent-Vandermonde bounds of
+      <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a>.</p>
+    <p>For an arbitrary analytic loading family, the theorem remains
+      conditional on the displayed joint jet independence. For the CIR
+      Riccati family, however, that condition is automatic. Write</p>
+    $$B_\kappa(t)=\sum_{n\ge1}c_n(\kappa)t^n.$$
+    <p>Substitution in the Riccati equation gives $c_1=1$ and</p>
+    $$(n+1)c_{n+1}(\kappa)
+      =-\kappa c_n(\kappa)
+       -\frac{\sigma^2}{2}\sum_{j=1}^{n-1}
+          c_j(\kappa)c_{n-j}(\kappa).$$
+    <p>Induction shows that $c_n$ is a polynomial of degree $n-1$ with
+      leading coefficient $(-1)^{n-1}/n!$. For $d=\sum_cm_c$, form the
+      Taylor-jet matrix</p>
+    $$M_{n,(c,r)}=\partial_\kappa^r c_n(\alpha_c),qquad
+      1\le n\le d,\quad 0\le r&lt;m_c.$$
+    <p>If the distinct centers are ordered increasingly, triangular change of
+      polynomial basis and the confluent Vandermonde determinant give</p>
+    <div class="equation-card">
+    $$\det M=
+      \left\{\prod_{n=1}^d\frac{(-1)^{n-1}}{n!}\right\}
+      \left\{\prod_{c=1}^g\prod_{r=0}^{m_c-1}r!\right\}
+      \prod_{c&lt;e}(\alpha_e-\alpha_c)^{m_cm_e}\ne0.$$
+    </div>
+    <p>Any $L^2[0,T]$ relation among the CIR jets is an analytic identity in
+      $t$; its first $d$ Taylor coefficients are annihilated by $M$. The
+      displayed determinant therefore forces every coefficient in the
+      relation to vanish. Thus, for fixed common $\sigma\ge0$ and every
+      $T&gt;0$, distinct CIR cluster centers alone imply joint jet independence
+      and make $G_{\rm jet}$ positive definite. This is precisely the
+      derivative interpolation structure in
+      <a href="./bibliography.html#Hermite1878">Hermite's original 1878
+      paper</a>; no numerical genericity assumption is needed for CIR.</p>
+    <p>The exact rational certificate applies the recurrence to cluster sizes
+      $(3,2,1)$ and centers $(4/5,2,4)$. The resulting six-by-six Taylor-jet
+      determinant is
+      $-1536/48828125=-3.145728\times10^{-5}$, exactly equal to the formula
+      above and independent of the lower-degree volatility terms. The
+      positive-CIR quadrature certificate then checks the asymptotic constants
+      at 80-digit precision for the same cluster sizes,
+      centers $(0.8,2,4)$, common volatility $0.02$, and $T=4$. It finds
+      eigenvalue slopes
+      $(0.000007,0.000058,0.000344,1.999615,2.000232,3.999713)$,
+      determinant slope $7.999970$, condition-number slope $-3.999706$, and
+      determinant ratio $0.999999999999953$ against the explicit coefficient.
+      Consequently, one rank-one fixed-feature Green--Kubo matrix with
+      nonzero loadings still yields full integrated rank for every
+      sufficiently small $\epsilon&gt;0$; cluster multiplicities, rather than the number of
+      regimes, determine the asymptotic conditioning.</p>
+
+    <h3>The explicit two-name benchmark</h3>
+    <p>Take a symmetric two-state generator
+      $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,
+      $\pi=(1/2,1/2)$, and two CIR names with</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>name</th><th>$\kappa_j$</th><th>$\sigma_j$</th><th>$(\theta_{j,1},\theta_{j,2})$</th><th>$x_j$</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td>0.1</td><td>$(0.06,0.02)$</td><td>0.03</td></tr>
+        <tr><td>2</td><td>2</td><td>0.1</td><td>$(0.05,0.015)$</td><td>0.03</td></tr>
+      </tbody>
+    </table></div>
+    <p>The smallest Feller margin
+      $\min_{i,j}(2\kappa_j\theta_{j,i}-\sigma_j^2)$ is $0.03>0$.
+      With $d_j=(\theta_{j,1}-\theta_{j,2})/2$, the one-dimensional
+      centered space gives $K_{jk}=\kappa_jd_j\kappa_kd_k/(2m)$.
+      Thus $K$ has rank one. Yet $B_1$ and $B_2$ are linearly independent
+      on <em>every</em> positive maturity interval: both have
+      $B_j'(0)=1$, while $B_j''(0)=-\kappa_j$ differ. Their Gram matrix
+      $J(T)$ is positive definite, and multiplication by the nonzero
+      diagonal $(\kappa_1d_1,\kappa_2d_2)$ proves $D(T)$ has rank two.</p>
+    <p>For $T=5$ and $m=1$, the eigenvalues of $K$ are
+      $(0,\,8.125\times10^{-4})$, whereas those of $D(5)$ are approximately
+      $(4.143\times10^{-6},\,1.343\times10^{-3})$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>
+      checks the Feller condition and eigenvalues, then solves the exact
+      joint-survival ODE. The residual of the pairwise formula multiplied
+      by $m^2$ stabilizes at approximately $-8.6\times10^{-5}$
+      as $m$ increases from 10 to 80.</p>
+
+    <h2>What the curves identify</h2>
+    <p>Suppose $x_j,\kappa_j,\sigma_j$ are known, every name shares the
+      same stationary-start chain, and ideal first-order marginal and
+      pairwise survival curves are available over a maturity interval.
+      The marginal curve for $j$, after subtracting $-B_jx_j$, has the
+      coefficients $-\kappa_j\bar\theta_j$ on $\int B_j$ and $K_{jj}$
+      on $\int B_j^2$. Those two functions are independent because $B_j$
+      is nonconstant. The pairwise log ratio then determines
+      $K_{jk}$ through $2K_{jk}J_{jk}(T)$, with $J_{jk}(T)>0$ for $T>0$.
+      Thus these curves identify $\bar\theta_j$ and the whole
+      rate-scaled matrix $K$ at first order, although they do not
+      identify $Q_0$, $\theta_{j,i}$, or $m$ separately.</p>
+    <p>After removing the known loadings, the correct regime-count
+      restriction is $\operatorname{rank}K\le n-1$, or equivalently
+      $\operatorname{rank}[\operatorname{diag}(B(t))^{-1}
+      D'(t)\operatorname{diag}(B(t))^{-1}]\le n-1$ for $t>0$.
+      The corresponding bound on $\operatorname{rank}D(T)$ is false.
+      Estimating derivatives from noisy curves may be unstable; the
+      entrywise division $K_{jk}=D_{jk}(T)/J_{jk}(T)$ uses integrated
+      loadings instead.</p>
+    <p class="muted">Scope: fixed CIR $\kappa_j,\sigma_j$, switching mean
+      levels, independent Brownian motions and Cox triggers, arbitrary initial regime prior independent of the
+      specified $x_j$, and
+      first-order fast-switching accuracy. Switching $\kappa$ or
+      $\sigma$ changes the Riccati reduction and requires its own
+      identification argument.</p>
+  </main>

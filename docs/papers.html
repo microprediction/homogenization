@@ -145,6 +145,46 @@
       </li>
     </ul>
 
+    <h2 id="credit-geometry">Joint default</h2>
+    <ul>
+      <li>
+        <em>Green&ndash;Kubo Geometry of Joint Default</em> (2026).
+        <a href="./credit-geometry.html">Full note</a> &middot;
+        <a href="./credit.html">Two-name CIR example</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>.
+        <em>A positive CIR construction separates fixed Green&ndash;Kubo rank from rank created by heterogeneous
+        maturity loadings: the sharp bound is $\operatorname{rank}(K\circ J)\le
+        \operatorname{rank}(K)\operatorname{rank}(J)$, yet two regimes can produce a full-rank integrated
+        correction for arbitrarily many names. For distinct CIR mean-reversion rates the exact criterion is
+        $K\circ J(T)\succ0$ at every $T&gt;0$ if and only if every diagonal entry of $K$ is positive, regardless
+        of the fixed rank of $K$. When loading shapes repeat in clusters $C_c$, the exact rank is instead
+        $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
+        within-cluster block. The resulting sharp regime-count inference is
+        $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
+        it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
+        the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
+        with explicit QR/LQ leading constants, so full rank coexists with condition number
+        $\Theta(\epsilon^{-2(d-1)})$. For several distinct collision centers, the exponent multiset is instead
+        twice the union of the within-cluster derivative orders; the largest cluster controls conditioning while
+        all clusters contribute to the explicit determinant power. The required joint jet independence is
+        automatic for CIR loadings: their time-Taylor coefficients form a polynomial basis in $\kappa$, reducing
+        every clustered jet matrix to a nonsingular confluent Vandermonde system. At long maturity the full-rank
+        the number of linearly growing information eigenvalues is exactly the fixed Green&ndash;Kubo rank $r$;
+        if maturity integration creates full rank, the other $d-r$ eigenvalues converge to a positive transient
+        complement, so conditioning still grows linearly. The inverse converges to the Moore&ndash;Penrose inverse
+        of that complement, with an explicit rank-$r$ stationary&ndash;transient correction of order $T^{-1}$ and
+        operator-norm remainder $O(T^{-2})$. Thus exact finite-maturity rank does not imply that every exposure
+        gains unbounded long-end precision.
+        It also separates arbitrary-prior marginal memory from first-order pair dependence.
+        Cause-specific first-default races identify cycle orientation: one unweighted multi-name race sees only
+        antisymmetric row sums, while $d-1$ independent positive exposure designs are necessary and sufficient
+        to identify every $d$-cause oriented matrix. The design-frame spectrum gives exact singular values and
+        an explicit positive, closed-form reconstruction with quantified noise amplification. Among minimal
+        designs the sharp condition-number infimum is $\sqrt2$; strict positivity approaches but cannot attain
+        the equal-norm orthogonal optimum.</em>
+      </li>
+    </ul>
+
     <h2>Working papers and notes</h2>
     <ul>
       <li>
