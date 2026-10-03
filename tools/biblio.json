@@ -2365,6 +2365,17 @@
   "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
  },
  {
+  "role": "survey_econometrics",
+  "key": "Kudo1963",
+  "authors": "Kudô, A.",
+  "year": 1963,
+  "title": "A multivariate analogue of the one-sided test",
+  "venue": "Biometrika 50(3/4):403-418",
+  "doi": "10.1093/biomet/50.3-4.403",
+  "url": "https://doi.org/10.1093/biomet/50.3-4.403",
+  "annotation": "Develops the multivariate one-sided Gaussian test. For several inequality constraints, its chi-bar-square weights depend on the covariance geometry; the independent orthant gives binomial weights as a special case."
+ },
+ {
   "role": "survey_finance",
   "key": "CuchieroKellerResselTeichmann2012",
   "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
