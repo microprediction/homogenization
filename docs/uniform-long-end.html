@@ -829,7 +829,8 @@
       principle over one period, give</p>
     $$U(P,0)q(0)\leq e^{(\widehat\lambda-\ell)P}q(0),\qquad
       U(P,0)q(0)\geq e^{(\widehat\lambda-L)P}q(0).$$
-    <p>The Collatz&ndash;Wielandt bounds for the positive monodromy matrix then give the enclosure. This is the
+    <p>The <a href="https://doi.org/10.1007/BF01180013">original Collatz enclosure</a>, applied to the positive
+      monodromy matrix, then gives the displayed bounds. This is the
       finite-dimensional ODE form of the positive sub- and supersolution characterization used for cooperative
       periodic-parabolic systems by
       <a href="https://doi.org/10.1016/j.na.2018.07.014">Ant&oacute;n and L&oacute;pez-G&oacute;mez (2019)</a>;
@@ -840,6 +841,17 @@
       \widehat b_{m,N}=\sum_{n=0}^{N}{b_n\over m^n}.$$
     <p>The extra profile corrector is essential: it makes the residual enclosure have the same
       $O_N(m^{-N-1})$ order as the exponent remainder. It does not claim convergence uniformly in $N$.</p>
+    <p>The Fourier certificate need not symmetrize the error. If
+      $\widehat u_i(t)=\sum_k u_{ik}e^{ikt}$ and
+      $e_i(t)=\sum_k e_{ik}e^{ikt}$ are the trigonometric interpolants, set</p>
+    $$u_i^\pm=u_{i0}\pm\sum_{k\ne0}|u_{ik}|,
+      \qquad e_i^\pm=e_{i0}\pm\sum_{k\ne0}|e_{ik}|.$$
+    <p>Whenever $u_i^-&gt;0$, ordinary interval division gives
+      $e_i(t)/\widehat u_i(t)\in[e_i^-,e_i^+]/[u_i^-,u_i^+]$ for every phase.
+      Taking the smallest lower endpoint and largest upper endpoint over the
+      components supplies separate computable values of $\ell$ and $L$. This
+      preserves the residual mean and is never weaker than replacing both by
+      the symmetric absolute envelope.</p>
 
     <h3>A posteriori three-state diagnostic</h3>
     <p>For the moving nonreversible three-state example, the certificate truncates the exponent through $m^{-3}$
@@ -850,14 +862,15 @@
     <table class="impl">
       <thead><tr><th style="text-transform:none">$m$</th><th>lower error bound</th><th>monodromy error</th><th>upper error bound</th></tr></thead>
       <tbody>
-        <tr><td>8</td><td>&minus;1.35042e-4</td><td>&minus;2.92236e-7</td><td>1.35042e-4</td></tr>
-        <tr><td>16</td><td>&minus;8.38046e-6</td><td>&minus;1.82153e-8</td><td>8.38046e-6</td></tr>
-        <tr><td>32</td><td>&minus;5.21921e-7</td><td>&minus;1.13113e-9</td><td>5.21921e-7</td></tr>
-        <tr><td>64</td><td>&minus;3.25651e-8</td><td>&minus;7.03806e-11</td><td>3.25651e-8</td></tr>
+        <tr><td>8</td><td>&minus;1.35042e-4</td><td>&minus;2.92236e-7</td><td>1.34689e-4</td></tr>
+        <tr><td>16</td><td>&minus;8.38046e-6</td><td>&minus;1.82153e-8</td><td>8.35901e-6</td></tr>
+        <tr><td>32</td><td>&minus;5.21921e-7</td><td>&minus;1.13113e-9</td><td>5.20599e-7</td></tr>
+        <tr><td>64</td><td>&minus;3.25651e-8</td><td>&minus;7.03820e-11</td><td>3.24832e-8</td></tr>
       </tbody>
     </table>
     </div>
-    <p>The residual radius has measured order $4.00243$, and $m^4$ times that radius is $0.546352$ at $m=64$.
+    <p>The larger absolute endpoint has measured order $4.00243$, and $m^4$ times it is $0.546352$ at $m=64$.
+      The independent monodromy error lies inside every asymmetric interval.
       Thus the bound is finite-speed and has the predicted fourth order, although it is intentionally conservative.
       The Fourier inequalities control the complete interpolants; the reported arithmetic is ordinary double
       precision rather than outward-rounded interval arithmetic. A proof-grade computer enclosure therefore needs

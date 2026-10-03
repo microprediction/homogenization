@@ -1969,12 +1969,14 @@ def finite_chain_floquet_residual_diagnostic(
 
         (u' - (m Q + D - b I) u)_i / u_i.
 
-    The returned symmetric radius uses the l1 norm of the Fourier coefficients
-    of the residual and a Fourier lower bound on every component of ``u``.
-    Thus it controls every phase of the trigonometric interpolants rather than
-    only the collocation nodes.  Floating-point operations are not
-    outward-rounded, so this remains a reproducibility diagnostic rather than
-    an interval-arithmetic proof.
+    Separate Fourier intervals are formed for the residual numerator and the
+    positive profile denominator.  Interval division then gives asymmetric
+    lower and upper relative-defect bounds component by component.  Thus the
+    enclosure controls every phase of the trigonometric interpolants rather
+    than only the collocation nodes, without discarding the sign of the
+    residual mean.  Floating-point operations are not outward-rounded, so this
+    remains a reproducibility diagnostic rather than an interval-arithmetic
+    proof.
     """
     if exponent_order < 0:
         raise ValueError("exponent_order must be nonnegative")
@@ -2021,13 +2023,13 @@ def finite_chain_floquet_residual_diagnostic(
     matrix_coefficients = fourier_coefficients(matrices)
     shifted_frequencies = np.fft.fftshift(frequencies)
     zero_index = int(np.argmin(np.abs(shifted_frequencies)))
-    profile_lower_bounds = (
-        profile_coefficients[zero_index].real
-        - np.sum(
-            np.abs(np.delete(profile_coefficients, zero_index, axis=0)),
-            axis=0,
-        )
+    profile_tails = np.sum(
+        np.abs(np.delete(profile_coefficients, zero_index, axis=0)),
+        axis=0,
     )
+    profile_means = profile_coefficients[zero_index].real
+    profile_lower_bounds = profile_means - profile_tails
+    profile_upper_bounds = profile_means + profile_tails
     assert np.min(profile_lower_bounds) > 0
 
     convolution_size = 2 * grid_size - 1
@@ -2049,16 +2051,43 @@ def finite_chain_floquet_residual_diagnostic(
             profile_coefficients[:, row],
             mode="full",
         )
-    residual_upper_bounds = np.sum(
-        np.abs(residual_coefficients), axis=0
+    residual_zero_index = grid_size
+    residual_means = residual_coefficients[residual_zero_index].real
+    residual_tails = np.sum(
+        np.abs(
+            np.delete(
+                residual_coefficients, residual_zero_index, axis=0
+            )
+        ),
+        axis=0,
     )
-    radius = float(np.max(
-        residual_upper_bounds / profile_lower_bounds
-    ))
+    residual_lower_bounds = residual_means - residual_tails
+    residual_upper_bounds = residual_means + residual_tails
+
+    relative_lower_bounds = np.empty_like(residual_lower_bounds)
+    relative_upper_bounds = np.empty_like(residual_upper_bounds)
+    for component, (lower, upper) in enumerate(zip(
+        residual_lower_bounds, residual_upper_bounds
+    )):
+        profile_lower = profile_lower_bounds[component]
+        profile_upper = profile_upper_bounds[component]
+        if lower >= 0.0:
+            relative_lower_bounds[component] = lower / profile_upper
+            relative_upper_bounds[component] = upper / profile_lower
+        elif upper <= 0.0:
+            relative_lower_bounds[component] = lower / profile_lower
+            relative_upper_bounds[component] = upper / profile_upper
+        else:
+            relative_lower_bounds[component] = lower / profile_lower
+            relative_upper_bounds[component] = upper / profile_lower
+
+    relative_lower = float(np.min(relative_lower_bounds))
+    relative_upper = float(np.max(relative_upper_bounds))
+    radius = max(abs(relative_lower), abs(relative_upper))
     return {
         "approximate_exponent": approximate_exponent,
-        "lower_error": -radius,
-        "upper_error": radius,
+        "lower_error": -relative_upper,
+        "upper_error": -relative_lower,
         "radius": radius,
         "minimum_profile": float(np.min(profile_lower_bounds)),
     }
