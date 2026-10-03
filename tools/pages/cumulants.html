@@ -95,6 +95,22 @@
     $$2c_i\ge\xi_i^2\qquad\text{for every }i.$$
     <p>For an irreducible finite chain this condition is also necessary.</p>
     </div>
+    <p>Irreducibility is not needed for the exact initial-law statement. For an initial regime law $\nu$, let
+      $\mathcal R(\nu)$ be the states reachable by a directed path of positive transition rates from
+      $\operatorname{supp}\nu$. Then, for every $v_0&gt;0$,</p>
+    <div class="equation-card">
+    $$\boxed{\quad 0\text{ is inaccessible under }\Pr_{\nu,v_0}
+      \quad\Longleftrightarrow\quad
+      2c_j\ge\xi_j^2\ \text{ for every }j\in\mathcal R(\nu).\quad}$$
+    </div>
+    <p>Sufficiency follows because the chain never leaves $\mathcal R(\nu)$, so the stopped-log argument below
+      applies along the whole realized path. For necessity, choose a positive-rate path from
+      $\operatorname{supp}\nu$ to a deficient state $j$. The event that the chain follows that path with holding
+      times in prescribed positive intervals has positive probability. Either zero is hit before arrival, or
+      continuity gives $v&gt;0$ on arrival. Conditional on the latter event, the frozen deficient CIR has positive
+      probability of hitting zero before the next jump. If $j$ is absorbing, ordinary CIR boundary accessibility
+      gives the same conclusion directly. Thus an unreachable deficient regime is harmless for that initial law,
+      but adding a single positive-rate path to it changes the answer.</p>
     <p>The result allows both mean reversion and vol-of-vol to switch. Put
       $K_t=\int_0^t\kappa_{Y_u}du$, $X_t=e^{K_t}v_t$, and introduce the strictly increasing clock</p>
     $$s(t)=\frac14\int_0^t e^{K_u}\xi_{Y_u}^2du.$$
@@ -128,7 +144,10 @@
       $2\bar c/\overline{\xi^2}=1.6$. Regime 1 nevertheless has $2c_1/\xi_1^2=0.5$. Starting from $v_0=0.04$ there, the
       exact probability of hitting zero before the next switch is $0.2341927683$. The
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_feller.py">boundary certificate</a>
-      independently evaluates the integral representation of $U$ and agrees below $9\times10^{-16}$.</p>
+      independently evaluates the integral representation of $U$ and agrees below $9\times10^{-16}$. It also checks
+      a reducible four-state example: from initial state $0$, a deficient state in a disjoint closed
+      class is irrelevant; after one edge of rate $0.5$ is added, it becomes reachable and its conditional
+      boundary probability before exit is again $0.2341927683$.</p>
 
     <p>Now let $K^{(0)}$ be the Green&ndash;Kubo matrix of the centered feature triple $(c,\kappa,a)$ for the unscaled
       generator $Q_0$. For a stationary-start chain with generator $mQ_0$, a regime-free polynomial payoff $f$,
