@@ -313,6 +313,31 @@
       =\frac{R_\varepsilon^2}{1+R_\varepsilon^2}\longrightarrow1=M_{-2}.$$
     <p>The numerical certificate evaluates this continuous identity independently by quadrature and checks both
       exact subsequences of the pure-tone counterexample.</p>
+    <p>Even when the pointwise coefficient fails to converge, averaging over the number of observed fast time units
+      has an exact limit. Put</p>
+    $$q(R)=M_{-2}-\operatorname{Re}\widehat\nu(R).$$
+    <p>Then <a href="./bibliography.html#Wiener1930">Wiener&apos;s continuous Fourier&ndash;Stieltjes lemma</a> gives</p>
+    <div class="equation-card">
+    $$\frac1S\int_0^S q(R)\,dR\longrightarrow M_{-2},\qquad
+      \frac1S\int_0^S\{q(R)-M_{-2}\}^2\,dR
+      \longrightarrow\frac12\sum_{\omega&gt;0}\nu(\{\omega\})^2.$$
+    </div>
+    <p>Here the sum is over the atoms of the finite weighted measure $\nu$. The proof is direct. The average of
+      $\cos(R\omega)$ tends to zero for each $\omega&gt;0$. For the square, expand the product and use</p>
+    $$\frac1S\int_0^S\cos(R\omega)\cos(R\lambda)\,dR
+      \longrightarrow\frac12\mathbf1_{\{\omega=\lambda\}}.$$
+    <p>Dominated convergence against $\nu\otimes\nu$ leaves half the mass of the diagonal, namely half the sum of
+      squared atom masses. Thus the normalized coefficient converges to $M_{-2}$ in Ces&agrave;ro mean square if and
+      only if $\nu$ is nonatomic. This is strictly weaker than pointwise Rajchman decay. For example, a shifted
+      middle-thirds Cantor measure is nonatomic. If
+      $Y=1+\sum_{k\geq1}2\xi_k3^{-k}$ for independent fair bits $\xi_k$, then</p>
+    $$\widehat\nu(R)=e^{3iR/2}\prod_{k\geq1}\cos(R/3^k).$$
+    <p>At $R=2\pi3^n$ this has the same nonzero absolute value for every $n$. Its pointwise coefficient therefore
+      fails to settle, while its Ces&agrave;ro mean-square error still vanishes.</p>
+    <p>For the pure tone, the ordinary coefficient $1-\cos R$ oscillates forever, but its Ces&agrave;ro mean is one and
+      its mean-square deviation from one is $1/2$. The certificate also uses atoms of masses $0.4$ and $0.25$ at
+      frequencies $1$ and $\sqrt2$: the predicted mean-square limit is
+      $(0.4^2+0.25^2)/2=0.11125$, independently of their incommensurate locations.</p>
     <p>The same Gamma-spectral benchmark makes both boundaries exact. At $\alpha=2$ and $\alpha&gt;2$, respectively,</p>
     $$\operatorname{Var}A_\varepsilon(T)
       =\varepsilon^2\log\{1+(T/\varepsilon)^2\},\qquad

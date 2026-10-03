@@ -3,8 +3,8 @@
 The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
-periodic counterexamples, including the sharp Fourier-decay condition at the
-saturated epsilon-squared boundary.
+periodic counterexamples, including the sharp Fourier-decay and Cesaro-mean
+conditions at the saturated epsilon-squared boundary.
 """
 import math
 
@@ -702,7 +702,7 @@ def verify_zero_gk_boundary():
 
 
 def verify_saturated_spectral_criterion():
-    """Check Fourier decay and failure at the saturated spectral boundary.
+    """Check pointwise and Cesaro laws at the saturated spectral boundary.
 
     Write nu(d omega)=omega^-2 mu(d omega).  If nu is finite, the exact
     normalized variance is M_-2-Re(nu_hat(R)).  An exponential density makes
@@ -748,9 +748,88 @@ def verify_saturated_spectral_criterion():
     assert np.max(np.abs(resonant)) < 2e-14
     assert np.max(np.abs(antiresonant - 2.0)) < 2e-14
 
+    # Pointwise convergence can fail while a sharp averaged law survives.
+    # For q(R)=M_-2-Re nu_hat(R), direct cosine averaging gives
+    #
+    #   average q -> M_-2,
+    #   average (q-M_-2)^2 -> (1/2) sum_x nu({x})^2.
+    #
+    # Check both constants for two incommensurate atoms.  The finite-window
+    # values below use the exact antiderivatives rather than a sampled grid.
+    frequencies = np.array([1.0, math.sqrt(2.0)])
+    masses = np.array([0.4, 0.25])
+    inverse_moment = float(np.sum(masses))
+
+    def exact_cesaro_values(window):
+        transform_mean = float(np.sum(
+            masses * np.sin(window * frequencies) / (window * frequencies)
+        ))
+        coefficient_mean = inverse_moment - transform_mean
+        transform_square_mean = float(np.sum(
+            masses ** 2 * (
+                0.5
+                + np.sin(2.0 * window * frequencies)
+                / (4.0 * window * frequencies)
+            )
+        ))
+        for first in range(len(frequencies)):
+            for second in range(first + 1, len(frequencies)):
+                omega_minus = frequencies[first] - frequencies[second]
+                omega_plus = frequencies[first] + frequencies[second]
+                transform_square_mean += (
+                    masses[first] * masses[second] / window
+                    * (
+                        math.sin(window * omega_minus) / omega_minus
+                        + math.sin(window * omega_plus) / omega_plus
+                    )
+                )
+        return coefficient_mean, transform_square_mean
+
+    # Independently integrate one finite window before using the closed forms
+    # at a much larger window to certify the limits.
+    check_window = 64.0
+    check_exact = exact_cesaro_values(check_window)
+    check_quadrature = (
+        quad(
+            lambda scale: inverse_moment - float(np.sum(
+                masses * np.cos(scale * frequencies)
+            )),
+            0.0,
+            check_window,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=800,
+        )[0] / check_window,
+        quad(
+            lambda scale: float(np.sum(
+                masses * np.cos(scale * frequencies)
+            )) ** 2,
+            0.0,
+            check_window,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=800,
+        )[0] / check_window,
+    )
+    cesaro_identity_error = max(
+        abs(check_exact[0] - check_quadrature[0]),
+        abs(check_exact[1] - check_quadrature[1]),
+    )
+    assert cesaro_identity_error < 2e-13
+
+    window = 2.0 ** 20
+    coefficient_mean, transform_square_mean = exact_cesaro_values(window)
+    cesaro_mean_error = abs(coefficient_mean - inverse_moment)
+    wiener_limit = 0.5 * float(np.sum(masses ** 2))
+    cesaro_square_error = abs(transform_square_mean - wiener_limit)
+    assert cesaro_mean_error < 1e-6
+    assert cesaro_square_error < 1e-6
+
     return (continuous_identity_error, continuous[-1],
             float(np.max(np.abs(resonant))),
-            float(np.max(np.abs(antiresonant - 2.0))))
+            float(np.max(np.abs(antiresonant - 2.0))),
+            cesaro_mean_error, transform_square_mean,
+            wiener_limit, cesaro_square_error, cesaro_identity_error)
 
 
 def exponential_mixture_variance(epsilon, alpha, maturity=1.0):
@@ -884,6 +963,11 @@ def main():
           f"{saturated_spectral[0]:.3e}, {saturated_spectral[1]:.12f}")
     print("saturated pure-tone resonant and antiresonant errors: "
           f"{saturated_spectral[2]:.3e}, {saturated_spectral[3]:.3e}")
+    print("saturated two-atom Cesaro mean error and mean-square limit: "
+          f"{saturated_spectral[4]:.3e}, {saturated_spectral[5]:.12f} "
+          f"(target {saturated_spectral[6]:.12f}, "
+          f"error {saturated_spectral[7]:.3e}, "
+          f"identity {saturated_spectral[8]:.3e})")
     print("spectral Abelian constant error, covariance/spectral identity error: "
           f"{spectral_abelian[0]:.3e}, {spectral_abelian[1]:.3e}")
     print("oscillatory-band alpha=1.7 order, ratio, remote-band fraction, "
