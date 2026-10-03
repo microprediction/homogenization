@@ -31,7 +31,9 @@ rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
 boundary correction for every fixed cumulant order and every initial law.
 A relative-entropy comparison with the iid pooled panel gives an explicit
-joint panel-size/fast-switching total-variation bound.  A symmetric two-state
+joint panel-size/fast-switching total-variation bound.  Its exact weighted
+Hilbert--Schmidt refinement retains every nonconstant singular mode instead
+of replacing them all by the slowest relaxation rate.  A symmetric two-state
 example reduces exactly to biased versus fair Bernoulli products and proves
 that the resulting square-root panel scale is sharp, including its critical
 local-asymptotic-normal limit.  The same factorization with an arbitrary
@@ -62,6 +64,27 @@ def stationary(Q):
     b = np.zeros(len(Q))
     b[-1] = 1
     return np.linalg.solve(A, b)
+
+
+def dependence_hilbert_schmidt_squared(P, pi):
+    """Weighted Hilbert--Schmidt dependence energy of a Markov kernel.
+
+    This is simultaneously the stationary average row chi-square divergence
+    from ``pi`` and the squared Frobenius norm of the L2(pi) similarity of
+    ``P - 1*pi``.
+    """
+    centered = P - pi[None, :]
+    row_chi_square = np.sum(
+        pi[:, None] * centered ** 2 / pi[None, :]
+    )
+    similarity = (
+        np.diag(np.sqrt(pi))
+        @ centered
+        @ np.diag(1 / np.sqrt(pi))
+    )
+    singular_energy = np.linalg.norm(similarity, ord="fro") ** 2
+    assert abs(row_chi_square - singular_energy) < 3e-13
+    return row_chi_square
 
 
 def cdf_vector(x, scales):
@@ -1127,9 +1150,11 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     """Check the joint long-panel/fast-switching TV theorem.
 
     For a stationary hidden path, the KL divergence from an iid stationary
-    path is (n-1) times the stationary average one-step KL.  Rowwise
-    chi-square contraction for the adjoint semigroup, followed by Pinsker,
-    gives a score-panel bound uniform over every emission kernel and event.
+    path is (n-1) times the stationary average one-step KL.  The exact
+    weighted Hilbert--Schmidt norm retains all singular modes.
+    Bounding every mode by the additive-gap contraction, then applying
+    Pinsker, gives the simpler dimension-only bound uniform over every
+    emission kernel and event.
     """
     dimension = len(pi)
     panel_size = 200
@@ -1142,9 +1167,13 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
         one_step_chi = np.sum(
             pi[:, None] * (transition - pi[None, :]) ** 2
             / pi[None, :])
+        hilbert_schmidt = dependence_hilbert_schmidt_squared(
+            transition, pi
+        )
         spectral_chi = ((dimension - 1)
                         * math.exp(-2 * gamma_s * scaled_spacing))
         assert 0 <= one_step_kl <= one_step_chi + 2e-14
+        assert abs(one_step_chi - hilbert_schmidt) < 3e-13
         assert one_step_chi <= spectral_chi + 3e-14
         exact_pinsker = min(
             1.0, math.sqrt((panel_size - 1) * one_step_kl / 2))
@@ -1162,6 +1191,64 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     for spacing, kl, chi, spectral_chi, panel_tv in rows:
         print(f" {spacing:4.2f}  {kl:11.8f}  {chi:11.8f}"
               f"    {spectral_chi:11.8f}      {panel_tv:11.8f}")
+
+    # Effective-rank example.  Two five-state clusters mix rapidly within
+    # themselves and slowly across a matched bridge.  Only one nonconstant
+    # mode remains visible at the chosen spacing, so replacing all nine modes
+    # by the gap mode loses a factor close to nine in squared dependence.
+    cluster_dimension = 10
+    clustered_Q = np.zeros((cluster_dimension, cluster_dimension))
+    for cluster in (range(5), range(5, 10)):
+        for left in cluster:
+            for right in cluster:
+                if left != right:
+                    clustered_Q[left, right] = 2.0
+    for left in range(5):
+        clustered_Q[left, left + 5] = 0.1
+        clustered_Q[left + 5, left] = 0.1
+    clustered_Q[np.diag_indices(cluster_dimension)] = (
+        -clustered_Q.sum(axis=1)
+    )
+    clustered_pi = np.ones(cluster_dimension) / cluster_dimension
+    clustered_time = 10.0
+    clustered_transition = expm(clustered_time * clustered_Q)
+    relaxation_rates = np.linalg.eigvalsh(-clustered_Q)
+    assert abs(relaxation_rates[0]) < 4e-14
+    exact_energy = dependence_hilbert_schmidt_squared(
+        clustered_transition, clustered_pi
+    )
+    modal_energy = np.exp(
+        -2 * clustered_time * relaxation_rates[1:]
+    ).sum()
+    gap_energy = (
+        (cluster_dimension - 1)
+        * math.exp(-2 * clustered_time * relaxation_rates[1])
+    )
+    assert abs(exact_energy - modal_energy) < 3e-14
+    effective_rank = (
+        exact_energy
+        / math.exp(-2 * clustered_time * relaxation_rates[1])
+    )
+    effective_panel_size = 20
+    exact_hs_bound = min(
+        1.0,
+        math.sqrt((effective_panel_size - 1) * exact_energy / 2),
+    )
+    gap_only_bound = min(
+        1.0,
+        math.sqrt((effective_panel_size - 1) * gap_energy / 2),
+    )
+    assert abs(effective_rank - 1.0) < 2e-13
+    assert exact_hs_bound < 0.42 and gap_only_bound == 1.0
+    print("Hilbert--Schmidt effective-rank refinement:")
+    print(
+        f"  exact energy {exact_energy:.12f}, gap envelope "
+        f"{gap_energy:.12f}, effective rank {effective_rank:.12f}"
+    )
+    print(
+        f"  n={effective_panel_size} exact-HS TV bound "
+        f"{exact_hs_bound:.12f}, gap-only bound {gap_only_bound:.1f}"
+    )
 
     # Sharpness.  For a stationary symmetric two-state chain, write the
     # states as signs X_j and set Z_j=X_j X_{j+1}.  The Z_j are iid with

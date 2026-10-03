@@ -361,10 +361,17 @@
       ${\cal L}_{n,m}$ be the law of a stationary score panel on a regular grid
       with $P=e^{mQ_0h}$, and let $\bar{\cal L}^{\otimes n}$ be $n$ independent
       draws from the pooled score law. For a finite irreducible $d$-state
-      chain and $m,h&gt;0$,</p>
+      chain and $m,h&gt;0$, put $\Pi={\bf1}\pi$ and define the exact
+      one-step dependence energy</p>
+    $$\mathfrak E(P):=
+      \left\|D_\pi^{1/2}(P-\Pi)D_\pi^{-1/2}\right\|_F^2
+      =\sum_i\pi_i\chi^2(P(i,\cdot),\pi).$$
+    <p>Then</p>
     <div class="equation-card">
     $$d_{\rm TV}\!\left({\cal L}_{n,m},\bar{\cal L}^{\otimes n}\right)
-      \le \delta_{n,m}:=
+      \le \delta^{\rm HS}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\,\mathfrak E(P)}\right\}
+      \le \delta^{\rm gap}_{n,m}:=
       \min\!\left\{1,\sqrt{\frac{(n-1)(d-1)}2}\,
       e^{-m\gamma_s h}\right\}.$$
     </div>
@@ -372,9 +379,13 @@
       $\pi^{\otimes n}$. The chain rule for relative entropy gives exactly</p>
     $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
       =(n-1)\sum_i\pi_iD(P(i,\cdot)\Vert\pi).$$
-    <p>The elementary inequality $D\le\chi^2$, applied row by row, and the
-      $L^2(\pi)$ contraction of the adjoint semigroup give</p>
-    $$\sum_i\pi_i\chi^2(P(i,\cdot),\pi)
+    <p>Pinsker already gives the still sharper computable bound obtained by
+      putting the exact stationary average row KL divergence inside the square
+      root. The elementary inequality $D\le\chi^2$, applied row by row, gives
+      the displayed Hilbert--Schmidt bound because the stationary average row
+      chi-square divergence is exactly $\mathfrak E(P)$. The $L^2(\pi)$
+      contraction of the adjoint semigroup then gives the gap-only corollary</p>
+    $$\mathfrak E(P)
       \le e^{-2m\gamma_sh}\sum_i\pi_i(\pi_i^{-1}-1)
       =(d-1)e^{-2m\gamma_sh}.$$
     <p>Pinsker&apos;s inequality yields the displayed total-variation bound.
@@ -389,15 +400,40 @@
     <div class="equation-card">
     $$\left|\Pr_\pi\{C_0&lt;p\}
       -\Pr\{\operatorname{Bin}(n,p)\ge k\}\right|
-      \le\delta_{n,m}.$$
+      \le\delta^{\rm HS}_{n,m}.$$
     </div>
-    <p>Hence iid calibration-panel rank laws become uniformly accurate
-      whenever $n_me^{-2m\gamma_sh}\to0$. This remains a
+    <p>The Hilbert--Schmidt expression is intrinsic: it is the sum of the
+      squared singular values of $P-\Pi$ on centered $L^2(\pi)$. If $Q_0$ is
+      reversible with relaxation rates
+      $0=\lambda_1&lt;\lambda_2\le\cdots\le\lambda_d$, the identity becomes</p>
+    <div class="equation-card">
+    $$\mathfrak E(e^{mQ_0h})
+      =\sum_{r=2}^d e^{-2m\lambda_rh}.$$
+    </div>
+    <p>Thus iid calibration-panel rank laws become uniformly accurate under
+      the intrinsic sufficient condition
+      $(n_m-1)\mathfrak E(P_m)\to0$. The simpler condition
+      $n_me^{-2m\gamma_sh}\to0$ remains sufficient, but can waste a factor
+      $d-1$ by treating every mode as if it relaxed at the gap. Equivalently,
+      the reversible effective rank
+      $r_{\rm eff}=e^{2m\lambda_2h}\mathfrak E(P)$ lies between $1$ and
+      $d-1$ and counts the modes still visible at the panel spacing. This
+      remains a
       <em>marginal law over calibration panels</em>; it does not turn ordinary
       pooled conformal prediction into pointwise, training-conditional, or
       feature-conditional coverage. From an initial law $\nu$ followed by a
-      burn-in $b$, the right side simply gains
+      burn-in $b$, either right side simply gains
       $\tfrac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}$.</p>
+    <p>A ten-state reversible certificate makes the improvement concrete.
+      Two five-state clusters mix rapidly internally but communicate through
+      one slow contrast. At scaled time $10$,</p>
+    $$\mathfrak E(P)=0.018315638889,
+      \qquad (d-1)e^{-2\gamma_s t}=0.164840749999,$$
+    <p>so $r_{\rm eff}=1$ to numerical precision. For $n=20$, the exact
+      Hilbert--Schmidt TV bound is $0.417131357540$, whereas the gap-only
+      bound is the vacuous value $1$. The certificate also checks the
+      weighted row-$\chi^2$, Frobenius, singular-value, and reversible
+      eigenvalue formulas independently.</p>
     <p>The scale cannot be improved in general. For the stationary symmetric
       two-state chain, encode the states by $X_j\in\{-1,1\}$ and put
       $a=e^{-2mh}$. The transition signs $Z_j=X_jX_{j+1}$ are independent with
