@@ -221,6 +221,33 @@
       concern finitely many randomized probes of the exact population
       operator $J$. They are neither conditional guarantees for prescribed features nor a statistical test based on
       a finite, noisy trajectory; the latter also requires an estimation-error analysis.</p>
+    <h3>Bounded sign probes: the same finite guarantee, not almost-sure detection</h3>
+    <p>Gaussian coordinates are convenient but not necessary for the finite certificate. Fix any orthonormal basis
+      of the centered space and instead let $X,Y$ have independent Rademacher coordinates, each uniformly distributed
+      on $\{-1,1\}$. For $\Xi_\pm=X^\top JY$, still</p>
+    $$\mathbb E\Xi_\pm^2=S_2=\|J\|_{\rm HS}^2.$$
+    <p>The fourth moment has an exact basis-dependent correction. If
+      $q_i=\sum_jJ_{ij}^2$, then direct sign expansion gives</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi_\pm^4
+      =3S_2^2+6S_4-12\sum_iq_i^2+4\sum_{i,j}J_{ij}^4
+      \le 3S_2^2+6S_4\le6S_2^2.$$
+    </div>
+    <p>The first inequality uses
+      $\sum_{i,j}J_{ij}^4\le\sum_iq_i^2$; the second again uses the paired singular values of a real skew matrix.
+      Therefore the same Paley&ndash;Zygmund bound, 47-pair one-percent miss certificate, unbiased energy estimator,
+      and relative-variance bound $5/m$ hold for bounded sign probes. This is the bilinear skew-form analogue of
+      <a href="./bibliography.html#Hutchinson1989">Hutchinson's Rademacher trace estimator</a>.</p>
+    <p>The almost-sure statement does <em>not</em> survive discretization. For
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$,
+      $\Xi_\pm=X_1Y_2-X_2Y_1$ vanishes with probability exactly $1/2$ despite $J\ne0$.
+      In the four-state certificate, exhaustive enumeration of all 64 sign pairs gives zero probability $1/4$,
+      half-RMS detection probability $1/2$, and fourth moment $0.005697493374$, exactly matching the formula above;
+      its relative energy variance is $1.579139476$, smaller than the Gaussian value $5$.
+      Exact enumeration for 100 additional random skew matrices in dimensions two through six verifies the fourth-moment
+      identity with maximum normalized error below $2.2\times10^{-15}$.
+      Thus bounded probes retain the finite detection guarantee but must not be described as almost-sure identifiers.
+      The law depends on the chosen orthonormal basis, while the displayed universal bounds do not.</p>
     <h3>A sharp quantitative irreversibility bound</h3>
     <p>The same resolvent gives more than a yes-or-no test. On the centered space write
       $L=S+A$, where $S^\dagger=S$, $A^\dagger=-A$, and put $B=-S$. Assume $B$ is strictly positive and the

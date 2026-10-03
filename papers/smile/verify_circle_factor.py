@@ -7,9 +7,11 @@ detects nonreversibility, whereas a selected feature block need not do so.
 It then checks that two independent Gaussian feature probes detect every
 finite-state irreversible chain almost surely and that the mean-square
 antisymmetric signal is the squared Hilbert--Schmidt norm of the skew
-resolvent.  A fourth-moment calculation turns this population result into
-a finite random-probe certificate: 47 independent probe pairs give a
-universal one-percent miss bound at half the root-mean-square signal.
+resolvent.  Fourth-moment calculations for both Gaussian and bounded
+Rademacher probes turn this population result into a finite random-probe
+certificate: 47 independent probe pairs give a universal one-percent miss
+bound at half the root-mean-square signal.  Unlike Gaussian probes, a single
+Rademacher pair can miss a nonzero skew form with positive probability.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -282,6 +284,99 @@ def random_probe_detection_check(sample_count=400_000):
         empirical_characteristic - exact_characteristic
     )
 
+    # Bounded sign probes have the same second moment and no larger fourth
+    # moment.  If q_i=sum_j J_ij^2, direct Rademacher expansion gives
+    #
+    # E (x'Jy)^4 = 3 S2^2 + 6 S4 - 12 sum_i q_i^2
+    #                + 4 sum_ij J_ij^4.
+    #
+    # The last two terms have nonpositive sum because sum_ij J_ij^4 is at
+    # most sum_i q_i^2.  Thus the Gaussian six-moment bound, and hence the
+    # same Paley--Zygmund certificate, hold for every orthonormal basis.
+    dimension = len(probe_x)
+    integers = np.arange(2**dimension, dtype=np.uint64)
+    bits = ((integers[:, None] >> np.arange(dimension, dtype=np.uint64))
+            & 1)
+    sign_vectors = 2.0 * bits.astype(float) - 1.0
+    rademacher_signals = np.einsum(
+        "ai,ij,bj->ab", sign_vectors, skew_resolvent, sign_vectors
+    ).ravel()
+    row_energies = np.sum(skew_resolvent**2, axis=1)
+    exact_rademacher_fourth_moment = (
+        3.0 * exact_second_moment**2
+        + 6.0 * fourth_spectral_sum
+        - 12.0 * np.sum(row_energies**2)
+        + 4.0 * np.sum(skew_resolvent**4)
+    )
+    enumerated_rademacher_second_moment = np.mean(rademacher_signals**2)
+    enumerated_rademacher_fourth_moment = np.mean(rademacher_signals**4)
+    rademacher_relative_energy_variance = (
+        exact_rademacher_fourth_moment / exact_second_moment**2 - 1.0
+    )
+    rademacher_detection_probability = np.mean(
+        abs(rademacher_signals) >= threshold
+    )
+    rademacher_zero_probability = np.mean(
+        abs(rademacher_signals) < 1e-14
+    )
+
+    canonical_skew = np.array([[0.0, 1.0], [-1.0, 0.0]])
+    canonical_signs = np.array([
+        [-1.0, -1.0], [-1.0, 1.0],
+        [1.0, -1.0], [1.0, 1.0],
+    ])
+    canonical_signals = np.einsum(
+        "ai,ij,bj->ab", canonical_signs, canonical_skew, canonical_signs
+    ).ravel()
+    canonical_zero_probability = np.mean(canonical_signals == 0.0)
+
+    # Independently enumerate sign pairs for random skew matrices in
+    # dimensions two through six.  Normalize errors by S2^2 so the test is
+    # insensitive to the random matrix scale.
+    moment_rng = np.random.default_rng(1989)
+    randomized_moment_cases = 0
+    maximum_rademacher_moment_error = 0.0
+    maximum_rademacher_moment_ratio = 0.0
+    for random_dimension in range(2, 7):
+        random_integers = np.arange(2**random_dimension, dtype=np.uint64)
+        random_bits = (
+            (random_integers[:, None]
+             >> np.arange(random_dimension, dtype=np.uint64)) & 1
+        )
+        random_signs = 2.0 * random_bits.astype(float) - 1.0
+        for _ in range(20):
+            raw = moment_rng.normal(
+                size=(random_dimension, random_dimension))
+            random_skew = 0.5 * (raw - raw.T)
+            random_second = np.sum(random_skew**2)
+            random_spectral_fourth = np.sum(
+                (random_skew @ random_skew.T)**2)
+            random_rows = np.sum(random_skew**2, axis=1)
+            random_fourth_formula = (
+                3.0 * random_second**2
+                + 6.0 * random_spectral_fourth
+                - 12.0 * np.sum(random_rows**2)
+                + 4.0 * np.sum(random_skew**4)
+            )
+            random_signals = np.einsum(
+                "ai,ij,bj->ab",
+                random_signs, random_skew, random_signs
+            ).ravel()
+            random_fourth_enumerated = np.mean(random_signals**4)
+            maximum_rademacher_moment_error = max(
+                maximum_rademacher_moment_error,
+                abs(random_fourth_enumerated - random_fourth_formula)
+                / random_second**2,
+            )
+            maximum_rademacher_moment_ratio = max(
+                maximum_rademacher_moment_ratio,
+                random_fourth_formula / random_second**2,
+            )
+            assert random_fourth_formula <= (
+                6.0 * random_second**2 * (1.0 + 2e-14)
+            )
+            randomized_moment_cases += 1
+
     assert coordinate_error < 2e-14
     assert relative_second_moment_error < 8e-3
     assert spectral_concentration <= 0.5 + 2e-14
@@ -293,6 +388,23 @@ def random_probe_detection_check(sample_count=400_000):
     assert one_percent_miss_bound < 0.01
     assert characteristic_error < 3e-3
     assert np.count_nonzero(signals == 0.0) == 0
+    assert abs(
+        enumerated_rademacher_second_moment / exact_second_moment - 1.0
+    ) < 2e-14
+    assert abs(
+        enumerated_rademacher_fourth_moment
+        / exact_rademacher_fourth_moment - 1.0
+    ) < 2e-14
+    assert exact_rademacher_fourth_moment <= exact_fourth_moment + 2e-14
+    assert exact_rademacher_fourth_moment <= (
+        6.0 * exact_second_moment**2 * (1.0 + 2e-14)
+    )
+    assert rademacher_relative_energy_variance <= 5.0 + 2e-14
+    assert rademacher_detection_probability >= universal_detection_bound
+    assert rademacher_zero_probability > 0.0
+    assert canonical_zero_probability == 0.5
+    assert randomized_moment_cases == 100
+    assert maximum_rademacher_moment_error < 2e-14
     return {
         "skew_hilbert_schmidt": math.sqrt(exact_second_moment),
         "exact_second_moment": exact_second_moment,
@@ -314,6 +426,25 @@ def random_probe_detection_check(sample_count=400_000):
         "empirical_characteristic": empirical_characteristic,
         "characteristic_error": characteristic_error,
         "coordinate_error": coordinate_error,
+        "exact_rademacher_fourth_moment": exact_rademacher_fourth_moment,
+        "enumerated_rademacher_fourth_moment": (
+            enumerated_rademacher_fourth_moment
+        ),
+        "rademacher_relative_energy_variance": (
+            rademacher_relative_energy_variance
+        ),
+        "rademacher_detection_probability": (
+            rademacher_detection_probability
+        ),
+        "rademacher_zero_probability": rademacher_zero_probability,
+        "canonical_zero_probability": canonical_zero_probability,
+        "randomized_moment_cases": randomized_moment_cases,
+        "maximum_rademacher_moment_error": (
+            maximum_rademacher_moment_error
+        ),
+        "maximum_rademacher_moment_ratio": (
+            maximum_rademacher_moment_ratio
+        ),
     }
 
 
@@ -519,6 +650,25 @@ def main():
         f"{probes['universal_detection_bound']:.9f}; "
         f"{probes['probes_for_one_percent']} probes give miss bound "
         f"{probes['one_percent_miss_bound']:.6f}"
+    )
+    print(
+        f"   Rademacher fourth moment exact/enumerated "
+        f"{probes['exact_rademacher_fourth_moment']:.9f}/"
+        f"{probes['enumerated_rademacher_fourth_moment']:.9f}; "
+        f"relative energy-variance "
+        f"{probes['rademacher_relative_energy_variance']:.9f}"
+    )
+    print(
+        f"   Rademacher half-RMS detection/zero probabilities "
+        f"{probes['rademacher_detection_probability']:.9f}/"
+        f"{probes['rademacher_zero_probability']:.9f}; canonical zero "
+        f"probability {probes['canonical_zero_probability']:.9f}"
+    )
+    print(
+        f"   random skew Rademacher moment cases/error/max ratio "
+        f"{probes['randomized_moment_cases']}/"
+        f"{probes['maximum_rademacher_moment_error']:.2e}/"
+        f"{probes['maximum_rademacher_moment_ratio']:.9f}"
     )
 
     print("3. the energy-normalized resolvent factorization gives sharp bounds")
