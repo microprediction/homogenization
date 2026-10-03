@@ -870,8 +870,9 @@
       arbitrary-start boundary constants remain computable at every fixed return order. The same exponent in the
       switching-rate-uniform remainder theorem is inherited: if the variance remainders through order $K$ are
       bounded by $C_Ke^{-\gamma T}$, then the order-$k$ return remainder is bounded by
-      $C_Ke^{-\gamma T}\sum_j|a_{kj}|$. This remains fixed-order, not order-uniform, and says nothing about
-      leverage, for which conditional normality fails.</p>
+      $C_Ke^{-\gamma T}\sum_j|a_{kj}|$. This remains fixed-order, not order-uniform. The triangular transfer
+      itself says nothing about leverage, for which conditional normality fails; the direct tilted-generator
+      theorem below handles that case separately.</p>
     <p>The degree-six certificate uses the Pareto initial variance above, so the return has no two-sided MGF near
       zero. At $T=4,8,12$, an independent polynomial semigroup in $(v,V,M)$ agrees with the transported cumulants
       through order six within $8.7\times10^{-17}$, $1.3\times10^{-15}$, and $1.5\times10^{-14}$. Transporting
@@ -920,6 +921,48 @@
     <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>
+
+    <h3>Every leveraged-return cumulant has the same exact long-maturity decomposition</h3>
+    <p>Conditional normality is unnecessary. Write $X_t=M_t-\tfrac12\int_0^t v_sds$ and
+      $eta_i=\rho_i\xi_i$. Exponential conjugation of the joint generator by $e^{\theta x}$ leaves a polynomial
+      operator on $v$ alone:</p>
+    <div class="equation-card">
+    $$H_m(\theta)=\mathcal L_m+\theta B_1+{\theta^2\over2}B_2,$$
+    $$B_1p(v)=\eta_i v p'(v)-{v\over2}p(v),\qquad B_2p(v)=vp(v).$$
+    </div>
+    <p>Consequently, on polynomials through degree $K$, the complete leveraged-return transform jet is finite
+      dimensional. If $h_n$ and $\Gamma_n$ denote the $n$th derivatives at zero of the normalized right
+      eigenvector and eigenvalue, respectively, then $h_0=1$ and</p>
+    $$\Gamma_n=\Pi_m\left\{nB_1h_{n-1}+{n\choose2}B_2h_{n-2}\right\},$$
+    $$-\mathcal L_mh_n=nB_1h_{n-1}+{n\choose2}B_2h_{n-2}
+      -\sum_{j=1}^n{n\choose j}\Gamma_jh_{n-j},\qquad \Pi_mh_n=0.$$
+    <p>The analogous left recursion gives the arbitrary-start Perron-amplitude jet and hence its formal logarithm.
+      It follows that, for every fixed $K$,</p>
+    <div class="equation-card">
+    $$\kappa_k(X_T)=T\Gamma_k(m)+B_{k,\nu}(m)+R_{k,\nu}(T,m),
+      \qquad 1\le k\le K.$$
+    <p>If $m\ge m_0&gt;0$, $\min_i\kappa_i&gt;0$, $\eta_i^2\le a_i=\xi_i^2$, and the initial component moments
+      through degree $K$ are uniformly bounded, then the same exponent as in the variance theorem may be used:</p>
+    $$\sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}|R_{k,\nu}(T,m)|\le C_K,
+      \qquad
+      \gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}.$$
+    </div>
+    <p>The reason is structural: leverage changes only $B_1$. At $\theta=0$ the centered degree-zero block still
+      mixes at rate $m\gamma_Q$, every positive-degree block is still killed at least at rate $\kappa_*$, and the
+      order-$K$ jet uses only finitely many convolutions with $B_1$ and $B_2$. Thus finite initial moments suffice;
+      no two-sided MGF is needed. This is the formal finite-jet version of the affine transform used in
+      <a href="https://doi.org/10.1093/rfs/6.2.327">Heston (1993)</a> and the general affine-process framework of
+      <a href="https://doi.org/10.1214/aoap/1060202835">Duffie, Filipović and Schachermayer (2003)</a>.</p>
+    <p>The certificate uses switching correlations $(-0.8,0.35)$ and an independent Pareto initial variance with
+      shape $13/2$, so moments through degree six exist but no positive MGF does. A separate joint polynomial
+      semigroup in $(M,v,z)$ agrees with the tilted-generator cumulants at $T=4,8,12$ within
+      $5.9\times10^{-17}$, $1.8\times10^{-15}$, and $1.1\times10^{-14}$. Over
+      $m=1,2,\ldots,64$ and $0\le T\le10$, the largest rescaled envelope among orders one through six is
+      $0.06671$ for $\gamma=0.35$; the orderwise $T=10$ remainders are</p>
+    $$4.55\times10^{-8},\ 2.15\times10^{-7},\ 6.96\times10^{-7},\
+      2.24\times10^{-6},\ 7.82\times10^{-6},\ 3.04\times10^{-5}.$$
+    <p>As before, the exact $m$-dependent slope and boundary are retained. The theorem is not a
+      maturity-uniform statement for a finite inverse-speed truncation and is not uniform in cumulant order.</p>
 
     <p>Leverage can be included without conditional normality by augmenting once more with
       $M_t=\int_0^t\sqrt{v_s}dW_s$. Allow the instantaneous correlation itself to switch:</p>
@@ -1198,8 +1241,10 @@
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
-      <li>The finite-jet map identifies every fixed-order independent-price return cumulant. The leveraged-return
-      results are separate because conditional normality then fails and joint cumulants are required.</li>
+      <li>The triangular finite-jet map identifies every fixed-order independent-price return cumulant. Under
+      leverage, conditional normality fails, but the separate tilted-generator jet above still supplies every exact
+      fixed-order long-run slope, arbitrary-start boundary constant, and switching-rate-uniform exponential
+      remainder. The fixed-maturity inverse-speed correction remains a distinct asymptotic statement.</li>
     </ul>
     <p>The conditional integrated-variance viewpoint goes back to
     <a href="./bibliography.html#HullWhite1987">Hull and White (1987)</a>; the positive square-root model is from

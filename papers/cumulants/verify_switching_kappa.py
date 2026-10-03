@@ -2857,6 +2857,362 @@ def verify_independent_return_finite_jet(max_order=6):
     return direct_errors, transported_remainder_errors, return_remainders
 
 
+def leveraged_return_jet_context(
+    max_order, speed, q0, pi, c, kappa, variance, eta
+):
+    """Polynomial generator and first two return-tilt derivatives.
+
+    For X=M-int(v)/2 and eta_i=rho_i*xi_i, exponential conjugation gives
+
+      H(theta)=L+theta B1+theta**2 B2/2,
+      B1=eta_i*v*d_v-v/2,  B2=v.
+
+    The matrices act on regime-resolved polynomials in v through degree
+    ``max_order``.  This identity is used only as a finite formal jet, so no
+    moment-generating function is required.
+    """
+    generator, invariant, constant, _ = _stationary_polynomial_context(
+        speed, q0, pi, c, kappa, variance, max_order
+    )
+    _, a_kappa, _, multiply_v = polynomial_operators(max_order)
+    states = len(pi)
+    identity = np.eye(states)
+    v_d_v = -a_kappa
+    first_tilt = (
+        np.kron(np.diag(eta), v_d_v)
+        - 0.5 * np.kron(identity, multiply_v)
+    )
+    second_tilt = np.kron(identity, multiply_v)
+    return generator, invariant, constant, first_tilt, second_tilt
+
+
+def leveraged_return_cumulant_rates(
+    max_order, speed, q0, pi, c, kappa, variance, eta
+):
+    """Exact long-run leveraged-return cumulant rates at fixed order."""
+    (
+        generator,
+        invariant,
+        constant,
+        first_tilt,
+        second_tilt,
+    ) = leveraged_return_jet_context(
+        max_order, speed, q0, pi, c, kappa, variance, eta
+    )
+
+    derivatives = [constant]
+    rates = np.zeros(max_order + 1)
+    for order in range(1, max_order + 1):
+        source = order * first_tilt @ derivatives[order - 1]
+        if order >= 2:
+            source += (
+                math.comb(order, 2)
+                * second_tilt @ derivatives[order - 2]
+            )
+        rates[order] = invariant @ source
+        forcing = source.copy()
+        for index in range(1, order + 1):
+            forcing -= (
+                math.comb(order, index)
+                * rates[index]
+                * derivatives[order - index]
+            )
+        assert abs(invariant @ forcing) < 3e-10
+        derivatives.append(
+            _centered_polynomial_poisson(
+                generator, invariant, constant, forcing
+            )
+        )
+    return rates[1:], derivatives
+
+
+def leveraged_return_boundary_constants(
+    max_order,
+    speed,
+    q0,
+    pi,
+    c,
+    kappa,
+    variance,
+    eta,
+    initial_moment_components,
+):
+    """Exact arbitrary-start boundary cumulants of the leveraged return."""
+    (
+        generator,
+        invariant,
+        constant,
+        first_tilt,
+        second_tilt,
+    ) = leveraged_return_jet_context(
+        max_order, speed, q0, pi, c, kappa, variance, eta
+    )
+    rates, right = leveraged_return_cumulant_rates(
+        max_order, speed, q0, pi, c, kappa, variance, eta
+    )
+    rates = np.r_[0.0, rates]
+    size = len(constant)
+    left = [invariant]
+    for order in range(1, max_order + 1):
+        forcing = -order * (left[order - 1] @ first_tilt)
+        if order >= 2:
+            forcing -= (
+                math.comb(order, 2)
+                * (left[order - 2] @ second_tilt)
+            )
+        for index in range(1, order + 1):
+            forcing += (
+                math.comb(order, index)
+                * rates[index]
+                * left[order - index]
+            )
+        normalization = -sum(
+            math.comb(order, index)
+            * (left[index] @ right[order - index])
+            for index in range(order)
+        )
+        bordered = np.zeros((size + 1, size + 1))
+        bordered[:size, :size] = generator.T
+        bordered[:size, size] = invariant
+        bordered[size, :size] = constant
+        solution = np.linalg.solve(
+            bordered, np.r_[forcing, normalization]
+        )
+        assert abs(solution[size]) < 2e-8
+        assert np.linalg.norm(
+            solution[:size] @ generator - forcing
+        ) < 2e-8
+        left.append(solution[:size])
+
+    components = np.asarray(initial_moment_components, dtype=float)
+    states = len(pi)
+    if components.shape != (states, max_order + 1):
+        raise ValueError("invalid initial moment-component array")
+    initial = components.ravel()
+    amplitude_derivatives = np.ones(max_order + 1)
+    for order in range(1, max_order + 1):
+        amplitude_derivatives[order] = sum(
+            math.comb(order, index)
+            * (initial @ right[index])
+            * (left[order - index] @ constant)
+            for index in range(order + 1)
+        )
+    boundary = np.zeros(max_order + 1)
+    for order in range(1, max_order + 1):
+        boundary[order] = amplitude_derivatives[order]
+        for index in range(1, order):
+            boundary[order] -= (
+                math.comb(order - 1, index - 1)
+                * boundary[index]
+                * amplitude_derivatives[order - index]
+            )
+    return boundary[1:], right, left
+
+
+def leveraged_return_cumulants(
+    max_order,
+    maturity,
+    speed,
+    q0,
+    pi,
+    c,
+    kappa,
+    variance,
+    eta,
+    initial_moment_components,
+):
+    """Exact finite return cumulants from the formal tilted polynomial jet."""
+    (
+        generator,
+        _,
+        constant,
+        first_tilt,
+        second_tilt,
+    ) = leveraged_return_jet_context(
+        max_order, speed, q0, pi, c, kappa, variance, eta
+    )
+    width = len(constant)
+    jet = np.zeros(
+        ((max_order + 1) * width, (max_order + 1) * width)
+    )
+    for order in range(max_order + 1):
+        block = slice(order * width, (order + 1) * width)
+        jet[block, block] = generator
+        if order:
+            previous = slice(
+                (order - 1) * width, order * width
+            )
+            jet[block, previous] = order * first_tilt
+        if order >= 2:
+            previous_two = slice(
+                (order - 2) * width, (order - 1) * width
+            )
+            jet[block, previous_two] = (
+                math.comb(order, 2) * second_tilt
+            )
+    initial_function = np.zeros((max_order + 1) * width)
+    initial_function[:width] = constant
+    solution = expm(maturity * jet) @ initial_function
+    initial = np.asarray(initial_moment_components, dtype=float).ravel()
+    raw = np.array([
+        initial @ solution[order * width:(order + 1) * width]
+        for order in range(1, max_order + 1)
+    ])
+    return cumulants_any_order(raw)
+
+
+def verify_leveraged_return_finite_jet(max_order=6):
+    """Certify the all-order leveraged-return slope/boundary theorem."""
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    xi = np.array([0.20, 0.20])
+    variance = xi**2
+    rho = np.array([-0.8, 0.35])
+    eta = rho * xi
+
+    alpha = 6.5
+    initial_mean = 0.04
+    lower = initial_mean * (alpha - 1.0) / alpha
+    initial_moments = np.array([
+        alpha * lower**order / (alpha - order)
+        for order in range(max_order + 1)
+    ])
+    initial_components = pi[:, None] * initial_moments[None, :]
+
+    # A separate joint (M,v,z) polynomial system checks the tilted-generator
+    # jet at one speed and three maturities.
+    (
+        basis,
+        a_c,
+        a_kappa,
+        v_d_vv,
+        v_d_mm,
+        v_d_mdv,
+        v_d_z,
+    ) = leveraged_operators(max_order)
+    joint_averaged = (
+        (pi @ c) * a_c
+        + (pi @ kappa) * a_kappa
+        + 0.5 * (pi @ variance) * v_d_vv
+        + (pi @ eta) * v_d_mdv
+        + 0.5 * v_d_mm
+        + v_d_z
+    )
+    joint_generator = full_generator(
+        8.0 * q0,
+        joint_averaged,
+        [a_c, a_kappa, 0.5 * v_d_vv, v_d_mdv],
+        [c, kappa, variance, eta],
+    )
+    joint_initial = np.zeros(len(pi) * len(basis))
+    for state in range(len(pi)):
+        offset = state * len(basis)
+        for position, (m_power, v_power, z_power) in enumerate(basis):
+            if m_power == 0 and z_power == 0:
+                joint_initial[offset + position] = initial_components[
+                    state, v_power
+                ]
+    payoffs = []
+    for order in range(1, max_order + 1):
+        payoff = np.zeros(len(basis))
+        for z_power in range(order + 1):
+            m_power = order - z_power
+            payoff[basis.index((m_power, 0, z_power))] = (
+                math.comb(order, z_power) * (-0.5) ** z_power
+            )
+        payoffs.append(np.kron(np.ones(len(pi)), payoff))
+
+    independent_errors = []
+    for maturity in (4.0, 8.0, 12.0):
+        semigroup = expm(maturity * joint_generator)
+        raw = np.array([
+            joint_initial @ semigroup @ payoff for payoff in payoffs
+        ])
+        joint_cumulants = cumulants_any_order(raw)
+        tilted_cumulants = leveraged_return_cumulants(
+            max_order,
+            maturity,
+            8.0,
+            q0,
+            pi,
+            c,
+            kappa,
+            variance,
+            eta,
+            initial_components,
+        )
+        independent_errors.append(
+            np.max(np.abs(joint_cumulants - tilted_cumulants))
+        )
+    independent_errors = np.asarray(independent_errors)
+    assert np.max(independent_errors) < 2e-13
+
+    speeds = 2.0 ** np.arange(7)
+    maturities = np.linspace(0.0, 10.0, 21)
+    gamma = 0.35
+    envelope = np.zeros(max_order)
+    terminal = np.zeros(max_order)
+    for speed in speeds:
+        rates, _ = leveraged_return_cumulant_rates(
+            max_order, speed, q0, pi, c, kappa, variance, eta
+        )
+        boundary, _, _ = leveraged_return_boundary_constants(
+            max_order,
+            speed,
+            q0,
+            pi,
+            c,
+            kappa,
+            variance,
+            eta,
+            initial_components,
+        )
+        for maturity in maturities:
+            exact = leveraged_return_cumulants(
+                max_order,
+                maturity,
+                speed,
+                q0,
+                pi,
+                c,
+                kappa,
+                variance,
+                eta,
+                initial_components,
+            )
+            remainder = exact - maturity * rates - boundary
+            envelope = np.maximum(
+                envelope,
+                np.exp(gamma * maturity) * np.abs(remainder),
+            )
+            if maturity == maturities[-1]:
+                terminal = np.maximum(terminal, np.abs(remainder))
+    assert np.all(np.isfinite(envelope))
+    assert np.max(envelope) < 0.068
+
+    print("5m. leveraged-return finite jet without an MGF")
+    print(
+        f"   switching rho={tuple(float(value) for value in rho)}; "
+        f"Pareto shape {alpha:.1f}; "
+        f"orders 1--{max_order}, m=1,...,64, T in [0,10]"
+    )
+    print(
+        "   joint/tilted identity errors T=4,8,12: "
+        + " ".join(f"{value:.3e}" for value in independent_errors)
+    )
+    print(
+        "   uniform rescaled envelope: "
+        + " ".join(f"{value:.3e}" for value in envelope)
+    )
+    print(
+        "   T=10 remainder: "
+        + " ".join(f"{value:.3e}" for value in terminal)
+    )
+    return independent_errors, envelope, terminal
+
+
 def verify_averaged_admissibility(pi, c, xi, rho):
     """Sharp Feller-margin and effective-correlation checks."""
     variance = xi**2
@@ -2938,6 +3294,7 @@ def main():
     )
     finite_moment_jet_results = verify_finite_moment_initial_jet()
     independent_return_jet_results = verify_independent_return_finite_jet()
+    leveraged_return_jet_results = verify_leveraged_return_finite_jet()
     q0 = np.array(
         [
             [-3.0, 2.7, 0.3],
@@ -3345,7 +3702,9 @@ def main():
         f"twice-corrected floor "
         f"{min(all_order_second_rate_results[1]):.3f}, finite-moment jet decay "
         f"{finite_moment_jet_results[0]:.3f}, independent-return identity "
-        f"{np.max(independent_return_jet_results[0]):.1e}"
+        f"{np.max(independent_return_jet_results[0]):.1e}, "
+        f"leveraged-return identity "
+        f"{np.max(leveraged_return_jet_results[0]):.1e}"
     )
 
 
