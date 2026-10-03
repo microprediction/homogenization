@@ -391,6 +391,35 @@
     <p>The final column tends to $0.721126760493$. This proves only a lower bound: it rules out uniform
       $o(n^{-1/2})$ Wasserstein-1 recovery, even on the point-mass submodel, but it does not claim that the unrestricted
       mixing class has an $O(n^{-1/2})$ estimator.</p>
+    <h3>The point-mass submodel has the parametric rate</h3>
+    <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
+    $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}
+      \mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda).$$
+    <p>When the truth is $\delta_\lambda$, the observations are iid $\operatorname{Pois}(\lambda)$. Put
+      $S_n=\sum_iN_i$, project $S_n/n$ onto $[4,5]$, and put a point mass at the projected value. Since projection
+      cannot increase distance to $\lambda$ and $S_n\sim\operatorname{Pois}(n\lambda)$,</p>
+    $$\mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda)
+      \le {1\over n}\mathbb E|S_n-n\lambda|
+      =2\lambda\Pr\{\operatorname{Pois}(n\lambda)=\lfloor n\lambda\rfloor\}
+      \le\sqrt{\lambda\over n}.$$
+    <p>The equality follows by splitting the centered Poisson variable at its mean and using
+      $k p_\mu(k)=\mu p_\mu(k-1)$; the inequality is Cauchy&ndash;Schwarz. Combining this estimator with the local
+      two-point lower bound gives the rigorous sandwich</p>
+    <div class="equation-card">
+    $$0.721126760493\le\liminf_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}
+      \le\limsup_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}\le\sqrt5.$$
+    </div>
+    <p>So $R_{n,\delta}^{(1)}=\Theta(n^{-1/2})$. At the certificate point $\lambda=4.5$, projection changes the
+      interior risk only by exponentially small tails, and the unprojected sample-mean benchmark has the sharper
+      pointwise limit</p>
+    $$\sqrt n\,\mathbb E_{4.5}|S_n/n-4.5|\longrightarrow
+      \sqrt{9/\pi}=1.692568750643.$$
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$n$</th><th>exact sample-mean risk</th><th>$\sqrt n$ times risk</th></tr></thead><tbody><tr><td>10</td><td>0.534246988258</td><td>1.689437315979</td></tr><tr><td>100</td><td>0.169225534106</td><td>1.692255341057</td></tr><tr><td>1,000</td><td>0.053522732314</td><td>1.692537407073</td></tr><tr><td>10,000</td><td>0.016925656162</td><td>1.692565616172</td></tr><tr><td>100,000</td><td>0.005352371360</td><td>1.692568438025</td></tr><tr><td>1,000,000</td><td>0.001692568709</td><td>1.692568708891</td></tr></tbody></table></div>
+
+    <p>This upper bound applies only to the one-parameter family of point masses. An arbitrary law in
+      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the unrestricted nonparametric upper rate
+      remains a separate inverse problem, consistent with the smoothness restrictions in
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative

@@ -17,7 +17,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     marked_common_shock_factorial_cumulant,
                                     mixed_factorial_cumulants22,
                                     poisson_inverse_instability,
-                                    poisson_mixture_w1_local_minimax)
+                                    poisson_mixture_w1_local_minimax,
+                                    poisson_point_mass_w1_upper)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -275,6 +276,7 @@ def counts():
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
     w1_minimax = poisson_mixture_w1_local_minimax()
+    w1_point_mass = poisson_point_mass_w1_upper()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -546,6 +548,38 @@ def counts():
     <p>The final column tends to $0.721126760493$. This proves only a lower bound: it rules out uniform
       $o(n^{-1/2})$ Wasserstein-1 recovery, even on the point-mass submodel, but it does not claim that the unrestricted
       mixing class has an $O(n^{-1/2})$ estimator.</p>
+    <h3>The point-mass submodel has the parametric rate</h3>
+    <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
+    $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}
+      \mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda).$$
+    <p>When the truth is $\delta_\lambda$, the observations are iid $\operatorname{Pois}(\lambda)$. Put
+      $S_n=\sum_iN_i$, project $S_n/n$ onto $[4,5]$, and put a point mass at the projected value. Since projection
+      cannot increase distance to $\lambda$ and $S_n\sim\operatorname{Pois}(n\lambda)$,</p>
+    $$\mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda)
+      \le {1\over n}\mathbb E|S_n-n\lambda|
+      =2\lambda\Pr\{\operatorname{Pois}(n\lambda)=\lfloor n\lambda\rfloor\}
+      \le\sqrt{\lambda\over n}.$$
+    <p>The equality follows by splitting the centered Poisson variable at its mean and using
+      $k p_\mu(k)=\mu p_\mu(k-1)$; the inequality is Cauchy&ndash;Schwarz. Combining this estimator with the local
+      two-point lower bound gives the rigorous sandwich</p>
+    <div class="equation-card">
+    $$0.721126760493\le\liminf_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}
+      \le\limsup_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}\le\sqrt5.$$
+    </div>
+    <p>So $R_{n,\delta}^{(1)}=\Theta(n^{-1/2})$. At the certificate point $\lambda=4.5$, projection changes the
+      interior risk only by exponentially small tails, and the unprojected sample-mean benchmark has the sharper
+      pointwise limit</p>
+    $$\sqrt n\,\mathbb E_{4.5}|S_n/n-4.5|\longrightarrow
+      \sqrt{9/\pi}=''' + f'{w1_point_mass["pointwise_limit"]:.12f}' + r'''.$$
+''' + table([[f'{n:,}', f'{risk:.12f}', f'{scaled:.12f}']
+             for n, risk, scaled in zip(
+                 w1_point_mass['sample_sizes'], w1_point_mass['exact_risks'],
+                 w1_point_mass['scaled_exact_risks'])],
+            head=('$n$', 'exact sample-mean risk', r'$\sqrt n$ times risk')) + r'''
+    <p>This upper bound applies only to the one-parameter family of point masses. An arbitrary law in
+      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the unrestricted nonparametric upper rate
+      remains a separate inverse problem, consistent with the smoothness restrictions in
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative

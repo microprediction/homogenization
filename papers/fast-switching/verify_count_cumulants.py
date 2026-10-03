@@ -22,7 +22,8 @@ The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
 in total variation, even on a compact intensity interval.  A local Poisson
 experiment then gives an optimized parametric-scale Wasserstein-1 lower bound,
-without asserting a matching upper rate for the unrestricted class.
+and the sample mean gives a matching n^-1/2 upper rate on the point-mass
+submodel, without asserting that rate for the unrestricted class.
 """
 
 import itertools
@@ -300,6 +301,49 @@ def poisson_mixture_w1_local_minimax():
         "scaled_risk_lower_bounds": scaled_risk_lower_bounds,
         "asymptotic_product_tv": asymptotic_product_tv,
         "asymptotic_constant": asymptotic_constant,
+    }
+
+
+def poisson_point_mass_w1_upper():
+    """Constructive Wasserstein-1 upper bound on the point-mass submodel.
+
+    If the mixing law is ``delta_lambda``, the observations are iid
+    ``Pois(lambda)`` and their sum S is ``Pois(n*lambda)``.  The estimator
+    projecting ``S/n`` to [4,5] and taking the point mass there cannot
+    increase its Wasserstein loss.  The unprojected benchmark satisfies
+
+        E abs(S/n-lambda)
+          = 2*lambda*P(Pois(n*lambda)=floor(n*lambda))
+          <= sqrt(lambda/n),
+
+    Equality follows by splitting the centered Poisson variable at its
+    mean and using k p_mu(k) = mu p_mu(k-1); the inequality is Cauchy--Schwarz.
+    On lambda in [4,5] this gives the uniform upper bound sqrt(5/n).
+    """
+    intensity = 4.5
+    sample_sizes = np.array(
+        [10, 100, 1000, 10000, 100000, 1000000], dtype=int
+    )
+    means = sample_sizes * intensity
+    exact_risks = np.array([
+        2.0 * intensity * poisson.pmf(math.floor(mean), mean)
+        for mean in means
+    ])
+    scaled_exact_risks = np.sqrt(sample_sizes) * exact_risks
+    pointwise_limit = math.sqrt(2.0 * intensity / math.pi)
+    uniform_upper_bounds = np.sqrt(5.0 / sample_sizes)
+
+    assert np.all(exact_risks <= np.sqrt(intensity / sample_sizes))
+    assert np.all(exact_risks <= uniform_upper_bounds)
+    assert abs(scaled_exact_risks[-1] - pointwise_limit) < 2e-7
+    return {
+        "intensity": intensity,
+        "sample_sizes": sample_sizes,
+        "exact_risks": exact_risks,
+        "scaled_exact_risks": scaled_exact_risks,
+        "pointwise_limit": pointwise_limit,
+        "uniform_upper_bounds": uniform_upper_bounds,
+        "uniform_scaled_bound": math.sqrt(5.0),
     }
 
 
@@ -745,6 +789,7 @@ def main():
     instability = poisson_inverse_instability()
     minimax = poisson_mixture_tv_minimax()
     w1_minimax = poisson_mixture_w1_local_minimax()
+    w1_point_mass = poisson_point_mass_w1_upper()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -1010,6 +1055,15 @@ def main():
           f"{w1_minimax['z_star']:.12f}", f"{w1_minimax['h_star']:.12f}")
     print("sqrt(n) W1 risk lower-bound limit",
           f"{w1_minimax['asymptotic_constant']:.12f}")
+    print("point-mass Wasserstein-1 sample-mean certificate")
+    print(" n       exact risk       sqrt(n) exact risk")
+    for sample_size, risk, scaled_risk in zip(
+            w1_point_mass["sample_sizes"], w1_point_mass["exact_risks"],
+            w1_point_mass["scaled_exact_risks"]):
+        print(f"{sample_size:7d}   {risk:.12f}       {scaled_risk:.12f}")
+    print("sqrt(n) point-mass risk limit",
+          f"{w1_point_mass['pointwise_limit']:.12f}",
+          "uniform upper bound", f"{w1_point_mass['uniform_scaled_bound']:.12f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
