@@ -853,24 +853,45 @@
       preserves the residual mean and is never weaker than replacing both by
       the symmetric absolute envelope.</p>
 
+    <div class="equation-card">
+    <p><strong>Phase-mesh refinement.</strong> Put $r_i=e_i/\widehat u_i$, sample a uniform periodic mesh
+      $t_j$ of spacing $h$, and suppose $B_i\geq\|r_i''\|_\infty$. Then the full-phase extrema obey</p>
+    $$\ell_h=\min_{i,j}\left\{r_i(t_j)-{h\over2}|r_i'(t_j)|-{h^2\over8}B_i\right\}
+      \leq\ell,$$
+    $$L\leq L_h=\max_{i,j}\left\{r_i(t_j)+{h\over2}|r_i'(t_j)|+{h^2\over8}B_i\right\}.$$
+    <p>Consequently $\widehat\lambda-L_h\leq\lambda\leq\widehat\lambda-\ell_h$.
+      Intersecting this interval with the global Fourier interval above can only sharpen the certificate.</p>
+    </div>
+    <p>Indeed, every phase is within $h/2$ of a mesh point, so the claim is Taylor's theorem with remainder.
+      It is fully computable from Fourier coefficients. If
+      $E_{ik}\geq\|e_i^{(k)}\|_\infty$, $U_{ik}\geq\|\widehat u_i^{(k)}\|_\infty$,
+      and $u_i^-\leq\inf_t\widehat u_i(t)$ is positive, quotient differentiation gives</p>
+    $$B_i={E_{i2}\over u_i^-}
+      +{E_{i0}U_{i2}+2E_{i1}U_{i1}\over(u_i^-)^2}
+      +{2E_{i0}U_{i1}^2\over(u_i^-)^3}.$$
+    <p>For a trigonometric polynomial, the coefficient $\ell^1$ sums
+      $\sum_k |k|^q|c_k|$ provide the required derivative bounds. This result makes the role of the mesh precise:
+      node values alone are not a certificate, but node values plus the displayed Taylor remainder are.</p>
+
     <h3>A posteriori three-state diagnostic</h3>
     <p>For the moving nonreversible three-state example, the certificate truncates the exponent through $m^{-3}$
       and the trial profile through $m^{-4}$. A Fourier-coefficient $\ell^1$ envelope bounds the residual at every
       phase of the trigonometric interpolants, rather than merely at the 8192 collocation nodes. The table compares
-      that computable bracket with an independent monodromy exponent.</p>
+      the sharper phase-mesh bracket with an independent monodromy exponent.</p>
     <div class="table-wrap">
     <table class="impl">
       <thead><tr><th style="text-transform:none">$m$</th><th>lower error bound</th><th>monodromy error</th><th>upper error bound</th></tr></thead>
       <tbody>
-        <tr><td>8</td><td>&minus;1.35042e-4</td><td>&minus;2.92236e-7</td><td>1.34689e-4</td></tr>
-        <tr><td>16</td><td>&minus;8.38046e-6</td><td>&minus;1.82153e-8</td><td>8.35901e-6</td></tr>
-        <tr><td>32</td><td>&minus;5.21921e-7</td><td>&minus;1.13113e-9</td><td>5.20599e-7</td></tr>
-        <tr><td>64</td><td>&minus;3.25651e-8</td><td>&minus;7.03820e-11</td><td>3.24832e-8</td></tr>
+        <tr><td>8</td><td>&minus;1.19398e-4</td><td>&minus;2.92236e-7</td><td>9.66905e-5</td></tr>
+        <tr><td>16</td><td>&minus;7.42020e-6</td><td>&minus;1.82153e-8</td><td>6.02394e-6</td></tr>
+        <tr><td>32</td><td>&minus;4.62455e-7</td><td>&minus;1.13113e-9</td><td>3.75969e-7</td></tr>
+        <tr><td>64</td><td>&minus;2.88662e-8</td><td>&minus;7.03820e-11</td><td>2.34851e-8</td></tr>
       </tbody>
     </table>
     </div>
-    <p>The larger absolute endpoint has measured order $4.00243$, and $m^4$ times it is $0.546352$ at $m=64$.
+    <p>The larger absolute endpoint has measured order $4.00186$, and $m^4$ times it is $0.484295$ at $m=64$.
       The independent monodromy error lies inside every asymmetric interval.
+      The phase-mesh radius is $11.4\%$ smaller than the global interval-division radius at $m=64$.
       Thus the bound is finite-speed and has the predicted fourth order, although it is intentionally conservative.
       The Fourier inequalities control the complete interpolants; the reported arithmetic is ordinary double
       precision rather than outward-rounded interval arithmetic. A proof-grade computer enclosure therefore needs

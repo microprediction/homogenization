@@ -1960,7 +1960,7 @@ def finite_chain_floquet_residual_diagnostic(
     profiles: list[np.ndarray],
     local_drifts: list[np.ndarray],
 ) -> dict[str, float]:
-    """Evaluate a Fourier-envelope a posteriori Floquet bracket.
+    """Evaluate two Fourier a posteriori Floquet brackets.
 
     The exponent is truncated through ``m**(-exponent_order)`` while the
     periodic trial profile includes one additional corrector.  If ``u`` and
@@ -1969,14 +1969,15 @@ def finite_chain_floquet_residual_diagnostic(
 
         (u' - (m Q + D - b I) u)_i / u_i.
 
-    Separate Fourier intervals are formed for the residual numerator and the
-    positive profile denominator.  Interval division then gives asymmetric
-    lower and upper relative-defect bounds component by component.  Thus the
-    enclosure controls every phase of the trigonometric interpolants rather
-    than only the collocation nodes, without discarding the sign of the
-    residual mean.  Floating-point operations are not outward-rounded, so this
-    remains a reproducibility diagnostic rather than an interval-arithmetic
-    proof.
+    The first bracket forms separate global Fourier intervals for the residual
+    numerator and the positive profile denominator.  The second evaluates the
+    relative defect and its derivative at every collocation phase, then applies
+    Taylor's theorem with a Fourier bound on the quotient's second derivative.
+    Both enclosures therefore control every phase of the trigonometric
+    interpolants, rather than only the nodes, without discarding the sign of
+    the defect.
+    Floating-point operations are not outward-rounded, so these remain
+    reproducibility diagnostics rather than interval-arithmetic proofs.
     """
     if exponent_order < 0:
         raise ValueError("exponent_order must be nonnegative")
@@ -2084,11 +2085,105 @@ def finite_chain_floquet_residual_diagnostic(
     relative_lower = float(np.min(relative_lower_bounds))
     relative_upper = float(np.max(relative_upper_bounds))
     radius = max(abs(relative_lower), abs(relative_upper))
+
+    # A second exact-in-principle enclosure retains the phase information at
+    # the collocation nodes.  Every phase on the periodic circle is at distance
+    # at most h/2 from a node.  Taylor's theorem therefore bounds r=e/u there
+    # by r(t_j) + r'(t_j) d plus ||r''||_inf d^2/2.  Fourier coefficient l1
+    # norms bound every derivative of the complete trigonometric interpolants,
+    # including the convolution frequencies in e.
+    profile_derivative = np.fft.ifft(
+        1j * frequencies[:, None] * np.fft.fft(trial_profile, axis=0),
+        axis=0,
+    ).real
+    residual_nodes = (
+        profile_derivative
+        - np.einsum("nij,nj->ni", matrices, trial_profile)
+        + local_phase[:, None] * trial_profile
+    )
+    relative_nodes = residual_nodes / trial_profile
+    profile_second_derivative = np.fft.ifft(
+        -(frequencies[:, None] ** 2)
+        * np.fft.fft(trial_profile, axis=0),
+        axis=0,
+    ).real
+    matrix_derivative = np.fft.ifft(
+        1j * frequencies[:, None, None]
+        * np.fft.fft(matrices, axis=0),
+        axis=0,
+    ).real
+    phase_derivative = np.fft.ifft(
+        1j * frequencies * np.fft.fft(local_phase)
+    ).real
+    residual_derivative_nodes = (
+        profile_second_derivative
+        - np.einsum("nij,nj->ni", matrix_derivative, trial_profile)
+        - np.einsum("nij,nj->ni", matrices, profile_derivative)
+        + phase_derivative[:, None] * trial_profile
+        + local_phase[:, None] * profile_derivative
+    )
+    relative_derivative_nodes = (
+        residual_derivative_nodes * trial_profile
+        - residual_nodes * profile_derivative
+    ) / trial_profile**2
+    residual_frequencies = (
+        np.arange(convolution_size) - residual_zero_index
+    ) * (2 * np.pi / PERIOD)
+    residual_derivative_bounds = np.sum(
+        np.abs(residual_frequencies[:, None] * residual_coefficients),
+        axis=0,
+    )
+    profile_derivative_bounds = np.sum(
+        np.abs(shifted_frequencies[:, None] * profile_coefficients),
+        axis=0,
+    )
+    residual_second_derivative_bounds = np.sum(
+        np.abs(
+            residual_frequencies[:, None] ** 2 * residual_coefficients
+        ),
+        axis=0,
+    )
+    profile_second_derivative_bounds = np.sum(
+        np.abs(
+            shifted_frequencies[:, None] ** 2 * profile_coefficients
+        ),
+        axis=0,
+    )
+    residual_absolute_bounds = np.maximum(
+        np.abs(residual_lower_bounds), np.abs(residual_upper_bounds)
+    )
+    quotient_second_derivative_bounds = (
+        residual_second_derivative_bounds / profile_lower_bounds
+        + residual_absolute_bounds
+        * profile_second_derivative_bounds / profile_lower_bounds**2
+        + 2.0 * residual_derivative_bounds
+        * profile_derivative_bounds / profile_lower_bounds**2
+        + 2.0 * residual_absolute_bounds
+        * profile_derivative_bounds**2 / profile_lower_bounds**3
+    )
+    half_mesh = 0.5 * PERIOD / grid_size
+    mesh_padding = (
+        np.max(np.abs(relative_derivative_nodes), axis=0) * half_mesh
+        + 0.5 * quotient_second_derivative_bounds * half_mesh**2
+    )
+    mesh_relative_lower = max(relative_lower, float(np.min(
+        np.min(relative_nodes, axis=0) - mesh_padding
+    )))
+    mesh_relative_upper = min(relative_upper, float(np.max(
+        np.max(relative_nodes, axis=0) + mesh_padding
+    )))
+    mesh_radius = max(abs(mesh_relative_lower), abs(mesh_relative_upper))
     return {
         "approximate_exponent": approximate_exponent,
         "lower_error": -relative_upper,
         "upper_error": -relative_lower,
         "radius": radius,
+        "mesh_lower_error": -mesh_relative_upper,
+        "mesh_upper_error": -mesh_relative_lower,
+        "mesh_radius": mesh_radius,
+        "maximum_quotient_second_derivative": float(np.max(
+            quotient_second_derivative_bounds
+        )),
         "minimum_profile": float(np.min(profile_lower_bounds)),
     }
 
@@ -2322,12 +2417,18 @@ def check_general_periodic_generator() -> None:
     residual_radii = np.asarray([
         result["radius"] for result in residual_diagnostics
     ])
+    mesh_residual_radii = np.asarray([
+        result["mesh_radius"] for result in residual_diagnostics
+    ])
     residual_exact_errors = np.asarray([
         result["exponent"] - diagnostic["approximate_exponent"]
         for result, diagnostic in zip(moving_results, residual_diagnostics)
     ])
     residual_rate = float(np.log2(
         residual_radii[-2] / residual_radii[-1]
+    ))
+    mesh_residual_rate = float(np.log2(
+        mesh_residual_radii[-2] / mesh_residual_radii[-1]
     ))
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
@@ -2356,8 +2457,15 @@ def check_general_periodic_generator() -> None:
     assert abs(critical_third_errors[-1] / fourth_drift - 1) < 0.02
     for exact, diagnostic in zip(residual_exact_errors, residual_diagnostics):
         assert diagnostic["lower_error"] < exact < diagnostic["upper_error"]
+        assert (
+            diagnostic["mesh_lower_error"]
+            < exact
+            < diagnostic["mesh_upper_error"]
+        )
+        assert diagnostic["mesh_radius"] < diagnostic["radius"]
         assert diagnostic["minimum_profile"] > 0.9
     assert residual_rate > 3.9
+    assert mesh_residual_rate > 3.9
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2439,6 +2547,22 @@ def check_general_periodic_generator() -> None:
         "a posteriori residual-radius order: "
         f"{residual_rate:.6f}; m=64 scaled radius "
         f"{64.0**4 * residual_radii[-1]:.10e}"
+    )
+    print("phase-mesh/derivative refinement")
+    print(" m          lower error          exact error          upper error")
+    for m, exact, diagnostic in zip(
+        speeds, residual_exact_errors, residual_diagnostics
+    ):
+        print(
+            f"{m:3.0f}   {diagnostic['mesh_lower_error']:18.9e}"
+            f"   {exact:18.9e}   {diagnostic['mesh_upper_error']:18.9e}"
+        )
+    print(
+        "phase-mesh residual-radius order: "
+        f"{mesh_residual_rate:.6f}; m=64 scaled radius "
+        f"{64.0**4 * mesh_residual_radii[-1]:.10e}; "
+        "improvement factor "
+        f"{residual_radii[-1] / mesh_residual_radii[-1]:.3f}"
     )
 
 
