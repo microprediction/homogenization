@@ -11,7 +11,10 @@ representation.  A second matrix Feynman--Kac calculation treats unequal
 transition rates and checks the stationary-weighted cancellation of unequal
 conditional-coverage errors.  A nonreversible three-state calculation then
 checks the general Poisson-equation coefficients through second order and the
-resulting third-order residual.
+resulting third-order residual.  Three- and four-state examples also check the
+affine dimension of the posterior-cancellation sets: first-order cancellation
+need not imply stationarity, and in four states even the first two terms can
+vanish at a nonstationary full-support posterior.
 The certificate also checks the exact covariance of overlapping occupation
 windows, its fast-switching effective-sample limit, and the exact finite-sample
 coverage of a sliding-window order-statistic threshold.  It additionally
@@ -1957,6 +1960,85 @@ def main() -> None:
         f"{posterior_third_rates[-1]:.6f}"
     )
 
+    # If coefficient vectors c_1,...,c_k have stationary mean zero, the
+    # posterior slice annihilating them has affine dimension
+    # n-rank[1,c_1,...,c_k].  In four states the first two independent
+    # coefficient vectors therefore leave a one-dimensional cancellation
+    # family through the stationary posterior.  Choose a full-support
+    # nonstationary point on that line and verify the resulting O(c^-3) gap.
+    four_generator = np.array(
+        [
+            [-1.5, 0.7, 0.5, 0.3],
+            [0.2, -1.3, 0.6, 0.5],
+            [0.4, 0.3, -1.2, 0.5],
+            [0.8, 0.2, 0.4, -1.4],
+        ]
+    )
+    four_values = np.array([-1.2, -0.1, 0.7, 1.6])
+    (
+        four_first,
+        four_second,
+        four_stationary,
+        _,
+        _,
+    ) = finite_chain_path_coefficients(four_generator, four_values)
+    constraints = np.vstack([np.ones(4), four_first, four_second])
+    assert np.linalg.matrix_rank(constraints, tol=1e-12) == 3
+    _, _, right_vectors = np.linalg.svd(constraints)
+    cancellation_direction = right_vectors[-1]
+    if cancellation_direction[0] > 0.0:
+        cancellation_direction *= -1.0
+    negative = cancellation_direction < 0.0
+    boundary_step = np.min(
+        four_stationary[negative] / -cancellation_direction[negative]
+    )
+    double_cancelling_posterior = (
+        four_stationary + 0.7 * boundary_step * cancellation_direction
+    )
+    assert np.min(double_cancelling_posterior) > 0.08
+    assert abs(np.sum(double_cancelling_posterior) - 1.0) < 2e-15
+    assert abs(double_cancelling_posterior @ four_first) < 2e-15
+    assert abs(double_cancelling_posterior @ four_second) < 2e-15
+    assert np.max(
+        np.abs(double_cancelling_posterior - four_stationary)
+    ) > 0.2
+
+    four_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0, 1024.0])
+    double_cancellation_gaps = []
+    for c in four_scales:
+        q = finite_chain_path_threshold(c, four_generator, four_values)
+        coverages = finite_chain_path_cdfs(
+            q, c, four_generator, four_values
+        )
+        assert abs(four_stationary @ coverages - TARGET) < 5e-12
+        double_cancellation_gaps.append(
+            double_cancelling_posterior @ (coverages - TARGET)
+        )
+    double_cancellation_gaps = np.asarray(double_cancellation_gaps)
+    double_cancellation_rates = np.log2(
+        np.abs(
+            double_cancellation_gaps[:-1]
+            / double_cancellation_gaps[1:]
+        )
+    )
+    assert double_cancellation_rates[-1] > 2.98
+    print("\nFour-state posterior with first- and second-order cancellation")
+    print(
+        "stationary: "
+        + ", ".join(f"{x:.8f}" for x in four_stationary)
+    )
+    print(
+        "posterior:  "
+        + ", ".join(f"{x:.8f}" for x in double_cancelling_posterior)
+    )
+    print(" c       c^3 mixed gap")
+    for c, gap in zip(four_scales, double_cancellation_gaps):
+        print(f"{c:4.0f}   {c**3 * gap:14.8f}")
+    print(
+        "last mixed-gap order after two cancellations: "
+        f"{double_cancellation_rates[-1]:.6f}"
+    )
+
     # The state-aware thresholds differ from the pooled threshold by +/-mu/(2c).
     print("\nPopulation thresholds at c=4")
     print(" P(Y0=+)     threshold       conditional/model coverage")
@@ -2822,7 +2904,7 @@ def main() -> None:
         "finite-sample terminal and strided-window rank coverage, general "
         "finite-chain path coefficients through second order, smooth "
         "nonlinear path maps including the critical-gradient second order, "
-        "nonstationary-posterior first-order cancellation, "
+        "posterior cancellation geometry through second order, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
