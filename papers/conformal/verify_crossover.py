@@ -23,7 +23,8 @@ A lattice Edgeworth certificate covers the complementary central zone.  It
 retains both the half-integer continuity correction and the arbitrary-start
 mean and variance hidden in the Perron boundary amplitude.  Its explicit
 second-order lattice term includes the midpoint Euler--Maclaurin correction
-and leaves an order-n^{-3/2} residual against exact coefficient tails.
+and leaves an order-n^{-3/2} residual against exact coefficient tails.  An
+all-vertices check certifies uniformity over every initial regime law.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
@@ -401,6 +402,69 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         f" kappa_4 {central_fourth:.12f},"
         f" boundary mean {central_boundary_mean:.12f},"
         f" boundary variance {central_boundary_variance:.12f}")
+
+    # The exact tail is linear in the initial law.  The approximation is also
+    # linear once its boundary coefficients are written as B_nu'(0) and
+    # B_nu''(0)=d_nu+b_nu^2.  Hence the largest absolute remainder over the
+    # entire probability simplex is attained at a point-mass start.  Check
+    # every vertex independently at three panel sizes.
+    uniform_initial_rows = []
+    for panel_size in (120, 480, 1920):
+        vertex_errors = []
+        for initial_state in range(len(pi)):
+            initial = np.eye(len(pi))[initial_state]
+            boundary_mean, boundary_log_variance = cauchy_derivatives(
+                lambda theta: perron_boundary_log_cgf(
+                    transition, initial, success, theta), 2)
+            boundary_second = (
+                boundary_log_variance + boundary_mean ** 2
+            )
+            law = binary_count_distribution(
+                initial, [transition] * (panel_size - 1), success,
+                renormalize=True)
+            for target_x in (-1.0, 0.0, 1.0, 2.0):
+                threshold = math.ceil(
+                    panel_size * central_mean
+                    + central_sigma * math.sqrt(panel_size) * target_x
+                    + 0.5)
+                x = ((threshold - 0.5 - panel_size * central_mean)
+                     / (central_sigma * math.sqrt(panel_size)))
+                exact_tail = law[threshold:].sum()
+                density = math.exp(-0.5 * x ** 2) / math.sqrt(2 * math.pi)
+                hermite_1 = x
+                hermite_3 = x ** 3 - 3 * x
+                hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
+                first_coefficient = (
+                    boundary_mean / central_sigma
+                    + central_third / (6 * central_sigma ** 3)
+                    * (x ** 2 - 1))
+                second_coefficient = (
+                    (boundary_second / (2 * central_sigma ** 2)
+                     - 1 / (24 * central_sigma ** 2)) * hermite_1
+                    + (central_fourth / (24 * central_sigma ** 4)
+                       + boundary_mean * central_third
+                       / (6 * central_sigma ** 4)) * hermite_3
+                    + central_third ** 2 / (72 * central_sigma ** 6)
+                    * hermite_5)
+                approximation = (
+                    ndtr(-x)
+                    + density * first_coefficient / math.sqrt(panel_size)
+                    + density * second_coefficient / panel_size)
+                vertex_errors.append(abs(exact_tail - approximation))
+        uniform_initial_rows.append((panel_size, max(vertex_errors)))
+
+    uniform_scaled_errors = np.asarray([
+        panel_size ** 1.5 * error
+        for panel_size, error in uniform_initial_rows
+    ])
+    assert np.all(np.isfinite(uniform_scaled_errors))
+    assert uniform_initial_rows[-1][1] < uniform_initial_rows[0][1] / 12
+    print("uniform-in-initial-law second-order Edgeworth certificate:")
+    print("  n      worst vertex error   n^(3/2)*worst")
+    for panel_size, error in uniform_initial_rows:
+        print(
+            f"  {panel_size:4d}       {error:.9f}"
+            f"          {panel_size ** 1.5 * error:.9f}")
 
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
