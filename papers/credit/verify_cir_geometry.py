@@ -28,7 +28,9 @@ matrix full rank through a positive transient complement.  An additional
 certificate checks the exact full-rank criterion: for distinct CIR
 mean-reversion rates, K Hadamard J(T) is positive definite at every positive
 maturity if and only if every diagonal entry of the positive semidefinite K
-is positive, irrespective of the rank of K.
+is positive, irrespective of the rank of K.  For repeated loading shapes it
+checks the exact cluster formula: the integrated rank is the sum of the ranks
+of the within-cluster principal blocks of K.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -784,6 +786,96 @@ def integrated_full_rank_criterion_checks():
     return loading_eigenvalues, np.asarray(minimum_eigenvalues)
 
 
+def repeated_loading_rank_checks():
+    """Check the exact rank formula when CIR loading shapes repeat.
+
+    Partition names by equal mean-reversion rates.  Factoring K = F F' and
+    the loading Gramian shows that K Hadamard J is the Gram matrix of the
+    rowwise tensors f_i tensor g_{c(i)}.  Distinct CIR loading functions
+    g_c are linearly independent, so the tensor spans for different clusters
+    form a direct sum.  The integrated rank is therefore the sum of the
+    ranks of the within-cluster principal blocks of K.
+    """
+    cluster_sizes = (3, 2, 1)
+    cluster_ids = np.repeat(np.arange(len(cluster_sizes)), cluster_sizes)
+    centers = np.array([0.4, 1.1, 2.3])
+    kappas = centers[cluster_ids]
+    sigma = 0.25
+    horizon = 4.0
+    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+
+    def loadings_at(time):
+        decay = np.exp(-gammas * time)
+        return 2 * (1 - decay) / (
+            (gammas + kappas) * (1 - decay) + 2 * gammas * decay
+        )
+
+    loading_gram = np.array([
+        [quad(
+            lambda time, j=j, k=k:
+            loadings_at(time)[j] * loadings_at(time)[k],
+            0,
+            horizon,
+            epsabs=1e-13,
+            epsrel=1e-13,
+            limit=300,
+        )[0] for k in range(len(kappas))]
+        for j in range(len(kappas))
+    ])
+    assert np.linalg.matrix_rank(loading_gram, tol=1e-10) == len(centers)
+
+    features = [
+        np.array([[1.0], [-0.7], [0.3], [1.2], [-2.0], [0.5]]),
+        np.column_stack((
+            np.ones(6),
+            np.array([-2.0, -0.7, 0.2, 1.1, 2.3, -1.4]),
+        )),
+        np.column_stack((
+            np.ones(6),
+            np.array([-2.0, -0.7, 0.2, 1.1, 2.3, -1.4]),
+            np.array([0.5, -1.3, 0.8, 2.2, -0.4, 1.7]),
+        )),
+    ]
+    observed_ranks = []
+    predicted_ranks = []
+    block_rank_rows = []
+    for feature in features:
+        green_kubo = feature @ feature.T
+        block_ranks = []
+        start = 0
+        for size in cluster_sizes:
+            indices = slice(start, start + size)
+            block_ranks.append(np.linalg.matrix_rank(
+                green_kubo[indices, indices], tol=1e-11
+            ))
+            start += size
+        integrated = green_kubo * loading_gram
+        observed = np.linalg.matrix_rank(integrated, tol=1e-10)
+        predicted = sum(block_ranks)
+        assert observed == predicted
+        observed_ranks.append(observed)
+        predicted_ranks.append(predicted)
+        block_rank_rows.append(tuple(block_ranks))
+
+    assert observed_ranks == [3, 5, 6]
+    assert block_rank_rows == [(1, 1, 1), (2, 2, 1), (3, 2, 1)]
+    # Positive diagonal entries alone cease to imply full rank when loading
+    # shapes collide: the rank-one K has positive diagonal but integrated
+    # rank equal only to the number of distinct loading clusters.
+    assert np.all(np.diag(features[0] @ features[0].T) > 0)
+    assert observed_ranks[0] < len(kappas)
+
+    print("\nfinite-maturity rank with repeated CIR loadings")
+    print("  cluster sizes " + " ".join(map(str, cluster_sizes)))
+    print("  fixed Green-Kubo ranks 1 2 3")
+    print("  within-cluster ranks " + "; ".join(
+        "+".join(map(str, row)) for row in block_rank_rows
+    ))
+    print("  predicted/observed integrated ranks "
+          + " ".join(map(str, observed_ranks)))
+    return tuple(observed_ranks), tuple(block_rank_rows)
+
+
 def coalescing_loading_checks():
     """Certify the confluent-Vandermonde law for nearly equal loadings.
 
@@ -1146,6 +1238,7 @@ def main():
     long_maturity_loading_checks()
     finite_rank_long_maturity_checks()
     integrated_full_rank_criterion_checks()
+    repeated_loading_rank_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()
@@ -1485,9 +1578,9 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification and full-rank criterion, "
-          "automatic CIR jet independence, prior memory, pair cancellation, "
-          "and ordered default")
+    print("PASS: positivity, sharp rank amplification, distinct and repeated-"
+          "loading rank criteria, automatic CIR jet independence, prior "
+          "memory, pair cancellation, and ordered default")
 
 
 if __name__ == "__main__":

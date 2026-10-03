@@ -460,6 +460,40 @@
       corresponding diagonal entry vanish and reduces the integrated rank
       exactly to four.</p>
 
+    <h3>Exact rank under repeated loading shapes</h3>
+    <p>The distinct-rate criterion has an exact extension when some names
+      share a mean-reversion rate. Partition the name indices into clusters
+      $C_1,\ldots,C_g$, where $\kappa_i=\alpha_c$ for $i\in C_c$, and assume
+      the cluster centers $\alpha_c$ are distinct. For common CIR volatility
+      and every $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\operatorname{rank}\{K\circ J(T)\}
+      =\sum_{c=1}^g\operatorname{rank}K_{C_c,C_c}.$$
+    </div>
+    <p>Indeed, factor $K=FF^\top$ and let $f_i$ be row $i$ of $F$. If
+      $b_c(t)=B_{\alpha_c}(t)$, then $K\circ J(T)$ is the Gram matrix in
+      $\mathbb R^r\otimes L^2[0,T]$ of the rowwise tensors</p>
+    $$f_i\otimes b_{c(i)}.$$
+    <p>The distinct CIR loading functions $b_1,\ldots,b_g$ are linearly
+      independent. Hence the tensor spans belonging to different clusters
+      form a direct sum. The span within cluster $C_c$ has dimension
+      $\operatorname{rank}F_{C_c}=\operatorname{rank}K_{C_c,C_c}$, proving
+      the formula. This rowwise tensor factorization is the transpose form of
+      the product introduced by <a href="./bibliography.html#KhatriRao1968">Khatri and Rao (1968)</a>.</p>
+    <p>Consequently, the integrated matrix is positive definite exactly when</p>
+    $$K_{C_c,C_c}\succ0\qquad(c=1,\ldots,g).$$
+    <p>The endpoints clarify the rank distinction. If every loading is
+      distinct, each cluster is a singleton and the condition reduces to
+      $K_{ii}&gt;0$. If every loading is identical, there is one cluster and
+      integration preserves $\operatorname{rank}K$. Thus positive diagonal
+      entries alone are not sufficient once loading shapes collide.</p>
+    <p>A six-name certificate with collision sizes $(3,2,1)$ uses fixed
+      Green&ndash;Kubo ranks one, two, and three. The within-cluster rank sums
+      are respectively $1+1+1$, $2+2+1$, and $3+2+1$, and the observed
+      integrated ranks are exactly $3,5,6$. In the rank-one case every
+      diagonal entry of $K$ is positive, yet the integrated rank is only the
+      number of distinct loading shapes, three.</p>
+
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>

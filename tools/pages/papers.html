@@ -61,7 +61,9 @@
         \operatorname{rank}(K)\operatorname{rank}(J)$, yet two regimes can produce a full-rank integrated
         correction for arbitrarily many names. For distinct CIR mean-reversion rates the exact criterion is
         $K\circ J(T)\succ0$ at every $T&gt;0$ if and only if every diagonal entry of $K$ is positive, regardless
-        of the fixed rank of $K$. The resulting sharp regime-count inference is
+        of the fixed rank of $K$. When loading shapes repeat in clusters $C_c$, the exact rank is instead
+        $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
+        within-cluster block. The resulting sharp regime-count inference is
         $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
         it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
         the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
