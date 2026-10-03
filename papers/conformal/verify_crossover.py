@@ -1133,6 +1133,16 @@ def two_level_bernoulli_product_tv(trials_a, correlation_a,
     return 0.5 * np.sum(reference * np.abs(likelihood - 1))
 
 
+def biased_sign_product_affinity(correlations):
+    """Hellinger affinity of biased independent signs against fair signs."""
+    correlations = np.asarray(correlations)
+    assert np.all(np.abs(correlations) <= 1)
+    factors = (
+        np.sqrt(1 + correlations) + np.sqrt(1 - correlations)
+    ) / 2
+    return math.exp(np.log(factors).sum())
+
+
 def burned_bernoulli_product_tv(trials, correlation, initial_bias):
     """Exact TV for one biased initial sign and biased transition signs.
 
@@ -1423,6 +1433,9 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     two_state_path_tv = 0.5 * np.abs(
         np.asarray(two_state_markov) - np.asarray(two_state_iid)
     ).sum()
+    two_state_affinity = np.sqrt(
+        np.asarray(two_state_markov) * np.asarray(two_state_iid)
+    ).sum()
     transition_sign_tv = 0.0
     for signs in itertools.product((-1, 1), repeat=len(correlations)):
         likelihood = np.prod(1 + correlations * np.asarray(signs))
@@ -1430,6 +1443,12 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
             likelihood - 1
         )
     assert abs(two_state_path_tv - transition_sign_tv) < 3e-15
+    product_affinity = biased_sign_product_affinity(correlations)
+    assert abs(two_state_affinity - product_affinity) < 3e-15
+    assert 1 - product_affinity <= two_state_path_tv + 2e-15
+    assert two_state_path_tv <= math.sqrt(
+        1 - product_affinity ** 2
+    ) + 2e-15
 
     # Heterogeneous triangular array: half the correlations are a, half 2a,
     # with the common group size chosen so sum_j a_j^2 -> 1.  The exact
@@ -1451,18 +1470,48 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     critical_limit = 2 * ndtr(0.5) - 1
     assert abs(critical_rows[-1][3] - critical_limit) < 1e-4
 
+    # Sum of squared correlations determines the zero and one TV phases, but
+    # not an interior critical value unless the largest correlation vanishes.
+    # A single persistent correlation and a diffuse triangular array can have
+    # the same squared information and different limiting TV distances.
+    profile_information = 0.25
+    persistent_tv = bernoulli_product_tv(
+        1, math.sqrt(profile_information)
+    )
+    diffuse_trials = 2 ** 16
+    diffuse_correlation = math.sqrt(
+        profile_information / diffuse_trials
+    )
+    diffuse_tv = bernoulli_product_tv(
+        diffuse_trials, diffuse_correlation
+    )
+    profile_lan_limit = 2 * ndtr(
+        math.sqrt(profile_information) / 2
+    ) - 1
+    assert abs(persistent_tv - 0.25) < 2e-15
+    assert abs(diffuse_tv - profile_lan_limit) < 1e-6
+    assert persistent_tv - diffuse_tv > 0.05
+
     print("irregular-grid joint path-TV certificate:")
     print(f"  exact path KL {path_kl:.12f}, exact path TV {path_tv:.12f}")
     print(f"  Pinsker(KL) {kl_bound:.12f}, HS bound {energy_bound:.12f},"
           f" gap bound {gap_bound:.12f}")
     print("  unequal two-state path/sign TV identity:"
           f" {two_state_path_tv:.12f}")
+    print("  exact product Hellinger affinity:"
+          f" {product_affinity:.12f}, TV interval"
+          f" [{1 - product_affinity:.12f},"
+          f" {math.sqrt(1 - product_affinity ** 2):.12f}]")
     print("heterogeneous critical scale (correlations a and 2a):")
     print("    a       trials/group  sum correlation^2    exact TV")
     for correlation_a, trials, information, exact_tv in critical_rows:
         print(f" {correlation_a:8.6f}   {trials:7d}"
               f"         {information:10.8f}      {exact_tv:10.8f}")
     print(f"  heterogeneous LAN limit: {critical_limit:.8f}")
+    print("critical-profile counterexample at sum correlation^2 = 0.25:")
+    print(f"  one persistent correlation: TV {persistent_tv:.9f}")
+    print(f"  {diffuse_trials} diffuse correlations: TV {diffuse_tv:.9f},"
+          f" LAN limit {profile_lan_limit:.9f}")
 
 
 def nonreversible_contraction_checks():

@@ -578,12 +578,37 @@
       two-state chain set $a_j=e^{-2mh_j}$. The path-to-sign bijection now gives</p>
     $$L=\prod_{j=1}^{n-1}(1+a_jZ_j),$$
     <p>where the $Z_j$ are independent fair signs under the iid reference.
-      Hence path TV is exactly heterogeneous Bernoulli-product TV. If
+      Hence path TV is exactly heterogeneous Bernoulli-product TV. Its
+      Hellinger affinity with the iid law is also exact:</p>
+    <div class="equation-card">
+    $$\rho_{\boldsymbol a}
+      =\prod_{j=1}^{n-1}\frac{\sqrt{1+a_j}+\sqrt{1-a_j}}2,
+      \qquad
+      1-\rho_{\boldsymbol a}\le d_{\rm TV}
+      \le\sqrt{1-\rho_{\boldsymbol a}^2}.$$
+    </div>
+    <p>Writing $\psi(a)=-\log[(\sqrt{1+a}+\sqrt{1-a})/2]$, the ratio
+      $\psi(a)/a^2$ extends to a strictly positive continuous function on
+      $[0,1]$, with endpoint values $1/8$ and $(\log2)/2$. Consequently, for
+      any triangular array of gaps, without an infinitesimal-gap assumption,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\to0\quad\Longleftrightarrow\quad\sum_j a_j^2\to0,
+      \qquad
+      d_{\rm TV}\to1\quad\Longleftrightarrow\quad\sum_j a_j^2\to\infty.$$
+    </div>
+    <p>This finite-product calculation is the Bernoulli specialization of the
+      affinity criterion in
+      <a href="./bibliography.html#Kakutani1948">Kakutani&apos;s (1948)</a>
+      equivalence--singularity theorem. The interior critical value needs more
+      information than the sum of squares. If
       $\max_j|a_j|\to0$ and $\sum_j a_j^2\to c$, the triangular-array
       log-likelihood is locally asymptotically normal in the sense of
       <a href="./bibliography.html#LeCam1960">Le Cam (1960)</a>, and the TV distance tends
-      to $2\Phi(\sqrt c/2)-1$. In particular it vanishes when the sum tends to
-      zero and tends to one when it diverges. With equally many correlations
+      to $2\Phi(\sqrt c/2)-1$. Without the maximum condition, the same
+      $c$ need not give that limit: at $c=1/4$, one persistent correlation
+      $a=1/2$ has TV $0.25$, while $65{,}536$ equal correlations with the same
+      total squared correlation give $0.19741205$, approaching the diffuse LAN
+      limit $0.19741265$. With equally many correlations
       $a$ and $2a$ and total squared correlation tending to one, the exact
       certificate reaches $0.38297545$ at $a=2^{-6}$, versus the limit
       $0.38292492$. This is still a marginal comparison of random panel laws,
