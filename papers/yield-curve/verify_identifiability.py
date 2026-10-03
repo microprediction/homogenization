@@ -1009,11 +1009,22 @@ def verify_long_end_conditioning():
 
     offsets = np.array([0.2, 0.8, 1.5])
     translations = np.arange(4.0, 17.0, 2.0)
+    quote_standard_deviations = np.array([1.0, 1.4, 0.8])
+    quote_correlation = 0.55 ** np.abs(
+        np.subtract.outer(np.arange(len(offsets)), np.arange(len(offsets))))
+    quote_covariance = (
+        quote_standard_deviations[:, None]
+        * quote_correlation
+        * quote_standard_deviations[None, :])
+    quote_covariance_root = np.linalg.cholesky(quote_covariance)
+    quote_covariance_eigenvalues = np.linalg.eigvalsh(quote_covariance)
+    assert quote_covariance_eigenvalues[0] > 0.0
     centered_basis = np.linalg.qr(np.column_stack([
         np.ones(4), np.eye(4)[:, 1:]
     ]))[0][:, 1:]
     spectra = []
     statistical_spectra = []
+    correlated_statistical_spectra = []
     determinants = []
     for translation in translations:
         response = transient_response_matrix(
@@ -1022,10 +1033,16 @@ def verify_long_end_conditioning():
         spectra.append(np.linalg.svd(augmented, compute_uv=False))
         statistical_spectra.append(np.linalg.svd(
             centered_basis.T @ response, compute_uv=False))
+        correlated_statistical_spectra.append(np.linalg.svd(
+            np.linalg.solve(
+                quote_covariance_root, response.T @ centered_basis),
+            compute_uv=False))
         determinants.append(abs(np.linalg.det(augmented)))
         assert np.linalg.matrix_rank(augmented, tol=1e-13) == 4
     spectra = np.asarray(spectra)
     statistical_spectra = np.asarray(statistical_spectra)
+    correlated_statistical_spectra = np.asarray(
+        correlated_statistical_spectra)
     determinants = np.asarray(determinants)
 
     # There are two O(1) directions: normalization and the common limiting
@@ -1054,6 +1071,24 @@ def verify_long_end_conditioning():
         translations[-4:],
         np.log(statistical_spectra[-4:, -1]), 1)[0]
     assert abs(statistical_rate - rates[1]) < 0.003
+    correlated_statistical_rate = -np.polyfit(
+        translations[-4:],
+        np.log(correlated_statistical_spectra[-4:, -1]), 1)[0]
+    assert abs(correlated_statistical_rate - rates[1]) < 0.003
+
+    # A known nonspherical quote covariance changes the relevant geometry from
+    # Euclidean to Mahalanobis.  Uniform eigenvalue bounds compare the whitened
+    # and unwhitened weakest signals and therefore preserve the long-end rate.
+    covariance_lower = quote_covariance_eigenvalues[0]
+    covariance_upper = quote_covariance_eigenvalues[-1]
+    assert np.all(
+        correlated_statistical_spectra[:, -1]
+        >= statistical_spectra[:, -1] / math.sqrt(covariance_upper)
+        - 5e-15)
+    assert np.all(
+        correlated_statistical_spectra[:, -1]
+        <= statistical_spectra[:, -1] / math.sqrt(covariance_lower)
+        + 5e-15)
 
     pi = stationary(Q)
     prior_radius = 0.4 * np.min(pi)
@@ -1126,6 +1161,80 @@ def verify_long_end_conditioning():
     assert empirical_projected_tail <= chi_tail_bound + 0.002
     rms_upper_bound = math.sqrt(len(offsets)) * quote_noise / least_signal
 
+    # Repeat the two-point and constructive calculations with correlated and
+    # heteroskedastic Gaussian quote noise.  The weakest prior direction is now
+    # the right singular vector of the whitened inverse problem.
+    whitened_inverse_problem = np.linalg.solve(
+        quote_covariance_root, inverse_problem)
+    _, correlated_singular_values, correlated_right = np.linalg.svd(
+        whitened_inverse_problem)
+    correlated_weakest_coordinate = correlated_right[-1]
+    correlated_weakest_direction = (
+        centered_basis @ correlated_weakest_coordinate)
+    correlated_prior_plus = (
+        pi + prior_radius * correlated_weakest_direction)
+    correlated_prior_minus = (
+        pi - prior_radius * correlated_weakest_direction)
+    assert min(
+        correlated_prior_plus.min(), correlated_prior_minus.min()) > 0
+    correlated_half_difference = (
+        prior_radius * response.T @ correlated_weakest_direction)
+    correlated_noise = (
+        quote_noise
+        * rng.normal(size=(simulations, len(offsets)))
+        @ quote_covariance_root.T)
+    correlated_plus_observations = (
+        response.T @ correlated_prior_plus + correlated_noise)
+    correlated_minus_observations = (
+        response.T @ correlated_prior_minus
+        + quote_noise
+        * rng.normal(size=(simulations, len(offsets)))
+        @ quote_covariance_root.T)
+    discriminant_direction = np.linalg.solve(
+        quote_covariance, correlated_half_difference)
+    correlated_plus_errors = (
+        (correlated_plus_observations - midpoint)
+        @ discriminant_direction <= 0)
+    correlated_minus_errors = (
+        (correlated_minus_observations - midpoint)
+        @ discriminant_direction >= 0)
+    correlated_empirical_testing_error = 0.5 * (
+        np.mean(correlated_plus_errors)
+        + np.mean(correlated_minus_errors))
+    correlated_exact_testing_error = ndtr(
+        -prior_radius * correlated_singular_values[-1] / quote_noise)
+    assert abs(
+        correlated_empirical_testing_error
+        - correlated_exact_testing_error) < 0.002
+
+    whitened_noise = np.linalg.solve(
+        quote_covariance_root, correlated_noise.T).T
+    correlated_coordinate_errors = np.linalg.solve(
+        whitened_inverse_problem, whitened_noise.T).T
+    correlated_unconstrained = (
+        pi + correlated_coordinate_errors @ centered_basis.T)
+    correlated_projected = project_simplex(correlated_unconstrained)
+    correlated_unconstrained_errors = np.linalg.norm(
+        correlated_unconstrained - pi, axis=1)
+    correlated_projected_errors = np.linalg.norm(
+        correlated_projected - pi, axis=1)
+    assert np.max(
+        correlated_projected_errors
+        - correlated_unconstrained_errors) < 2e-15
+    correlated_exact_mse = quote_noise ** 2 * np.sum(
+        correlated_singular_values ** -2)
+    correlated_empirical_mse = float(np.mean(
+        correlated_unconstrained_errors ** 2))
+    assert abs(
+        correlated_empirical_mse / correlated_exact_mse - 1.0) < 0.01
+    correlated_chi_threshold = (
+        prior_radius * correlated_singular_values[-1] / quote_noise)
+    correlated_chi_tail_bound = gammaincc(
+        len(offsets) / 2.0, correlated_chi_threshold ** 2 / 2.0)
+    correlated_empirical_tail = float(np.mean(
+        correlated_projected_errors >= prior_radius))
+    assert correlated_empirical_tail <= correlated_chi_tail_bound + 0.002
+
     scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
     scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
     scaled_determinants = determinants * np.exp(
@@ -1141,6 +1250,8 @@ def verify_long_end_conditioning():
     print(f"measured condition-number rate: {condition_rate:.9f}")
     print(f"centered-prior least-singular-value rate: "
           f"{statistical_rate:.9f}")
+    print(f"correlated-noise whitened rate: "
+          f"{correlated_statistical_rate:.9f}")
     print("terminal scaled weak singular values: "
           f"{scaled_weak[-1]:.9f}, {scaled_weakest[-1]:.9f}")
     print(f"terminal scaled determinant: {scaled_determinants[-1]:.9f}")
@@ -1156,6 +1267,16 @@ def verify_long_end_conditioning():
     print(f"projected recovery RMS upper bound: {rms_upper_bound:.9f}")
     print(f"maximum simplex-projection inflation: "
           f"{maximum_projection_inflation:.3e}")
+    print("correlated quote-covariance eigenvalues: "
+          f"{quote_covariance_eigenvalues}")
+    print("correlated Gaussian testing error, exact vs Monte Carlo: "
+          f"{correlated_exact_testing_error:.9f}, "
+          f"{correlated_empirical_testing_error:.9f}")
+    print("correlated GLS exact/empirical unconstrained MSE: "
+          f"{correlated_exact_mse:.9e}, {correlated_empirical_mse:.9e}")
+    print("correlated projected tail and chi upper bound: "
+          f"{correlated_empirical_tail:.9f}, "
+          f"{correlated_chi_tail_bound:.9f}")
 
 
 def verify_complex_long_end_aliasing():
@@ -1670,7 +1791,7 @@ def main():
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
         "three-state exceptional-set observability, sharp real-spectrum and "
-        "oscillatory long-end conditioning and noisy recovery, "
+        "oscillatory long-end conditioning and whitened noisy recovery, "
         "shape identities, "
         "known-start expansion, and explicit bounds"
     )

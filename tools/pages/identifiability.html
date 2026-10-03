@@ -421,6 +421,60 @@
       simplex projection never increases the samplewise error, and the empirical projected tail
       lies below the displayed $\chi_3$ bound.</p>
 
+    <h3>Correlated quote noise: whitened observability</h3>
+    <p>Independence and equal quote variances are not essential. Let $\Gamma_M$ be a known
+      positive-definite covariance across the $r$ maturity quotes and consider</p>
+    $$Y=C_M^\top\nu+\sigma\Gamma_M^{1/2}Z,
+      \qquad Z\sim N(0,I_r).$$
+    <p>With $U$ as above, put</p>
+    $$B_M=\Gamma_M^{-1/2}C_M^\top U,
+      \qquad s_{M,\Gamma}=\sigma_{\min}(B_M).$$
+    <p>The entire two-point argument holds in this whitened geometry. Choosing a right
+      singular vector of $B_M$ for its weakest direction gives, for every estimator,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \max_{\pm}\Pr_{\nu_\pm}
+        \{\|\widehat\nu-\nu_\pm\|_2\ge\rho\}
+        &amp;\ge\Phi\!\left(-{\rho s_{M,\Gamma}\over\sigma}\right),\\
+      \max_{\pm}\mathbb E_{\nu_\pm}
+        \|\widehat\nu-\nu_\pm\|_2^2
+        &amp;\ge\rho^2\Phi\!\left(
+          -{\rho s_{M,\Gamma}\over\sigma}\right).
+    \end{aligned}$$
+    </div>
+    <p>Conversely, the generalized least-squares coordinate estimator</p>
+    $$\widehat x=B_M^\dagger\Gamma_M^{-1/2}
+      (Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\pi+U\widehat x)$$
+    <p>satisfies the matching bounds</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \mathbb E_\nu\|\widehat\nu-\nu\|_2^2
+      &amp;\le \sigma^2\operatorname{tr}
+        \{(B_M^\top B_M)^{-1}\}
+       \le {r\sigma^2\over s_{M,\Gamma}^2},\\
+      \Pr_\nu\{\|\widehat\nu-\nu\|_2\ge\rho\}
+      &amp;\le\Pr\{\chi_r\ge\rho s_{M,\Gamma}/\sigma\}.
+    \end{aligned}$$
+    </div>
+    <p>Thus $s_{M,\Gamma}$, not the unweighted condition number, is the exact noise scale.
+      If constants $0&lt;\gamma_-\le\gamma_+&lt;\infty$ satisfy
+      $\gamma_-I\preceq\Gamma_M\preceq\gamma_+I$ uniformly in $M$, then</p>
+    $$ {s_M\over\sqrt{\gamma_+}}
+       \le s_{M,\Gamma}\le
+       {s_M\over\sqrt{\gamma_-}},$$
+    <p>so the sharp exponent remains $a_{r-1}$. No such conclusion is made when the quote
+      covariance itself becomes ill-conditioned with maturity: in that case its eigenvalue
+      scale is part of the inverse problem. Whitening and generalized least squares go back
+      to <a href="./bibliography.html#Aitken1936">Aitken's original treatment</a>; here the
+      calculation is finite dimensional and exact because $\Gamma_M$ is assumed known.</p>
+    <p>The certificate uses a correlated, heteroskedastic three-quote covariance with
+      eigenvalues $(0.3846,0.6088,2.6066)$. Its whitened weakest-signal decay rate is
+      $1.02644$, against $a_{r-1}=1.02586$. At $M=4$, 200,000 Gaussian draws reproduce
+      the exact two-prior testing error and generalized least-squares mean-square error
+      within $0.002$ and one percent respectively; simplex projection again obeys the
+      $\chi_3$ tail bound.</p>
+
     <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
     <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
       In three states, suppose the centered eigenvalues are $-a\pm ib$, with $a,b&gt;0$,
