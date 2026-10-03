@@ -30,6 +30,17 @@ An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
 boundary correction for every fixed cumulant order and every initial law.
+A relative-entropy comparison with the iid pooled panel gives explicit
+joint panel-size/fast-switching total-variation bounds on regular and
+irregular observation grids.  Their exact weighted Hilbert--Schmidt
+refinement retains every nonconstant singular mode instead of replacing them
+all by the slowest relaxation rate.  A symmetric two-state example reduces
+exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
+and proves that the resulting square-root information scale is sharp,
+including its critical local-asymptotic-normal and persistent-plus-diffuse
+limits.  The same factorization
+with an arbitrary burned-in start gives the exact two-parameter limit in which
+residual initial memory and the Gaussian transition experiment coexist.
 """
 import itertools
 import math
@@ -38,6 +49,7 @@ import numpy as np
 from scipy.linalg import expm
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import logsumexp, ndtr
+from scipy.stats import binom
 
 TARGET = 0.9
 EPS = 0.2
@@ -54,6 +66,27 @@ def stationary(Q):
     b = np.zeros(len(Q))
     b[-1] = 1
     return np.linalg.solve(A, b)
+
+
+def dependence_hilbert_schmidt_squared(P, pi):
+    """Weighted Hilbert--Schmidt dependence energy of a Markov kernel.
+
+    This is simultaneously the stationary average row chi-square divergence
+    from ``pi`` and the squared Frobenius norm of the L2(pi) similarity of
+    ``P - 1*pi``.
+    """
+    centered = P - pi[None, :]
+    row_chi_square = np.sum(
+        pi[:, None] * centered ** 2 / pi[None, :]
+    )
+    similarity = (
+        np.diag(np.sqrt(pi))
+        @ centered
+        @ np.diag(1 / np.sqrt(pi))
+    )
+    singular_energy = np.linalg.norm(similarity, ord="fro") ** 2
+    assert abs(row_chi_square - singular_energy) < 3e-13
+    return row_chi_square
 
 
 def cdf_vector(x, scales):
@@ -1059,6 +1092,497 @@ def burnin_transfer_checks(Q, pi, gamma_s, success):
     transient_panel_checks(Q, pi, gamma_s, success)
 
 
+def bernoulli_product_tv(trials, correlation):
+    """Exact TV between biased and fair Bernoulli product laws.
+
+    The likelihood ratio is increasing in the number of successes, so total
+    variation is the difference of the two upper tails at its crossing.
+    """
+    log_plus = math.log1p(correlation)
+    log_minus = math.log1p(-correlation)
+    crossing = -trials * log_minus / (log_plus - log_minus)
+    threshold = math.ceil(crossing - 2e-14)
+    biased_tail = binom.sf(threshold - 1, trials,
+                           (1 + correlation) / 2)
+    fair_tail = binom.sf(threshold - 1, trials, 0.5)
+    return biased_tail - fair_tail
+
+
+def two_level_bernoulli_product_tv(trials_a, correlation_a,
+                                   trials_b, correlation_b):
+    """Exact TV for two groups of biased signs against fair signs.
+
+    Aggregating each group by its success count evaluates the heterogeneous
+    product experiment without enumerating 2**(trials_a + trials_b) signs.
+    """
+    counts_a = np.arange(trials_a + 1)
+    counts_b = np.arange(trials_b + 1)
+    fair_a = binom.pmf(counts_a, trials_a, 0.5)
+    fair_b = binom.pmf(counts_b, trials_b, 0.5)
+    log_likelihood_a = (
+        counts_a * math.log1p(correlation_a)
+        + (trials_a - counts_a) * math.log1p(-correlation_a)
+    )
+    log_likelihood_b = (
+        counts_b * math.log1p(correlation_b)
+        + (trials_b - counts_b) * math.log1p(-correlation_b)
+    )
+    reference = fair_a[:, None] * fair_b[None, :]
+    likelihood = np.exp(
+        log_likelihood_a[:, None] + log_likelihood_b[None, :]
+    )
+    return 0.5 * np.sum(reference * np.abs(likelihood - 1))
+
+
+def biased_sign_product_affinity(correlations):
+    """Hellinger affinity of biased independent signs against fair signs."""
+    correlations = np.asarray(correlations)
+    assert np.all(np.abs(correlations) <= 1)
+    factors = (
+        np.sqrt(1 + correlations) + np.sqrt(1 - correlations)
+    ) / 2
+    return math.exp(np.log(factors).sum())
+
+
+def burned_bernoulli_product_tv(trials, correlation, initial_bias):
+    """Exact TV for one biased initial sign and biased transition signs.
+
+    Under the iid stationary reference law, the initial sign and all
+    transition signs are independent and fair.  Under the burned-in Markov
+    law they remain independent, with means initial_bias and correlation.
+    Aggregating the transition signs by their success count avoids enumerating
+    2**(trials + 1) paths.
+    """
+    counts = np.arange(trials + 1)
+    biased = binom.pmf(counts, trials, (1 + correlation) / 2)
+    fair = binom.pmf(counts, trials, 0.5)
+    return 0.25 * sum(
+        np.abs((1 + sign * initial_bias) * biased - fair).sum()
+        for sign in (-1, 1)
+    )
+
+
+def absolute_scaled_lognormal_deviation(scale, information):
+    """E|scale*exp(sqrt(c)G-c/2)-1| for c=information."""
+    if information == 0:
+        return abs(scale - 1)
+    if scale == 0:
+        return 1.0
+    root_information = math.sqrt(information)
+    log_scale = math.log(scale)
+    upper = ndtr(root_information / 2 + log_scale / root_information)
+    crossing = ndtr(-root_information / 2
+                    + log_scale / root_information)
+    return 2 * (scale * upper - crossing) - scale + 1
+
+
+def burned_panel_lan_limit(initial_bias, information):
+    """TV limit for a fixed initial bias and Bernoulli LAN information."""
+    return 0.25 * sum(
+        absolute_scaled_lognormal_deviation(
+            1 + sign * initial_bias, information
+        )
+        for sign in (-1, 1)
+    )
+
+
+def persistent_diffuse_product_tv(persistent_correlations, trials,
+                                  diffuse_correlation):
+    """Exact TV for fixed biased signs followed by equal diffuse signs."""
+    counts = np.arange(trials + 1)
+    fair = binom.pmf(counts, trials, 0.5)
+    log_likelihood = (
+        counts * math.log1p(diffuse_correlation)
+        + (trials - counts) * math.log1p(-diffuse_correlation)
+    )
+    diffuse_likelihood = np.exp(log_likelihood)
+    persistent_correlations = np.asarray(persistent_correlations)
+    total = 0.0
+    for signs in itertools.product(
+            (-1, 1), repeat=len(persistent_correlations)):
+        scale = np.prod(
+            1 + persistent_correlations * np.asarray(signs)
+        )
+        total += np.sum(fair * np.abs(scale * diffuse_likelihood - 1))
+    return 0.5 * total / 2 ** len(persistent_correlations)
+
+
+def persistent_diffuse_lan_limit(persistent_correlations, information):
+    """TV limit for fixed biased signs times diffuse Bernoulli LAN noise."""
+    persistent_correlations = np.asarray(persistent_correlations)
+    total = 0.0
+    for signs in itertools.product(
+            (-1, 1), repeat=len(persistent_correlations)):
+        scale = np.prod(
+            1 + persistent_correlations * np.asarray(signs)
+        )
+        total += absolute_scaled_lognormal_deviation(scale, information)
+    return 0.5 * total / 2 ** len(persistent_correlations)
+
+
+def joint_panel_mixing_checks(Q, pi, gamma_s):
+    """Check the joint long-panel/fast-switching TV theorem.
+
+    For a stationary hidden path, the KL divergence from an iid stationary
+    path is (n-1) times the stationary average one-step KL.  The exact
+    weighted Hilbert--Schmidt norm retains all singular modes.
+    Bounding every mode by the additive-gap contraction, then applying
+    Pinsker, gives the simpler dimension-only bound uniform over every
+    emission kernel and event.
+    """
+    dimension = len(pi)
+    panel_size = 200
+    rows = []
+    for scaled_spacing in (0.25, 0.5, 1.0, 1.5, 2.0):
+        transition = expm(scaled_spacing * Q)
+        density = transition / pi[None, :]
+        one_step_kl = np.sum(
+            pi[:, None] * transition * np.log(density))
+        one_step_chi = np.sum(
+            pi[:, None] * (transition - pi[None, :]) ** 2
+            / pi[None, :])
+        hilbert_schmidt = dependence_hilbert_schmidt_squared(
+            transition, pi
+        )
+        spectral_chi = ((dimension - 1)
+                        * math.exp(-2 * gamma_s * scaled_spacing))
+        assert 0 <= one_step_kl <= one_step_chi + 2e-14
+        assert abs(one_step_chi - hilbert_schmidt) < 3e-13
+        assert one_step_chi <= spectral_chi + 3e-14
+        exact_pinsker = min(
+            1.0, math.sqrt((panel_size - 1) * one_step_kl / 2))
+        spectral_pinsker = min(
+            1.0,
+            math.sqrt((panel_size - 1) * (dimension - 1) / 2)
+            * math.exp(-gamma_s * scaled_spacing),
+        )
+        assert exact_pinsker <= spectral_pinsker + 2e-14
+        rows.append((scaled_spacing, one_step_kl, one_step_chi,
+                     spectral_chi, spectral_pinsker))
+
+    print("joint panel-size/switching-rate TV certificate:")
+    print("  mh     row KL       row chi2     spectral chi2   panel TV bound")
+    for spacing, kl, chi, spectral_chi, panel_tv in rows:
+        print(f" {spacing:4.2f}  {kl:11.8f}  {chi:11.8f}"
+              f"    {spectral_chi:11.8f}      {panel_tv:11.8f}")
+
+    # Effective-rank example.  Two five-state clusters mix rapidly within
+    # themselves and slowly across a matched bridge.  Only one nonconstant
+    # mode remains visible at the chosen spacing, so replacing all nine modes
+    # by the gap mode loses a factor close to nine in squared dependence.
+    cluster_dimension = 10
+    clustered_Q = np.zeros((cluster_dimension, cluster_dimension))
+    for cluster in (range(5), range(5, 10)):
+        for left in cluster:
+            for right in cluster:
+                if left != right:
+                    clustered_Q[left, right] = 2.0
+    for left in range(5):
+        clustered_Q[left, left + 5] = 0.1
+        clustered_Q[left + 5, left] = 0.1
+    clustered_Q[np.diag_indices(cluster_dimension)] = (
+        -clustered_Q.sum(axis=1)
+    )
+    clustered_pi = np.ones(cluster_dimension) / cluster_dimension
+    clustered_time = 10.0
+    clustered_transition = expm(clustered_time * clustered_Q)
+    relaxation_rates = np.linalg.eigvalsh(-clustered_Q)
+    assert abs(relaxation_rates[0]) < 4e-14
+    exact_energy = dependence_hilbert_schmidt_squared(
+        clustered_transition, clustered_pi
+    )
+    modal_energy = np.exp(
+        -2 * clustered_time * relaxation_rates[1:]
+    ).sum()
+    gap_energy = (
+        (cluster_dimension - 1)
+        * math.exp(-2 * clustered_time * relaxation_rates[1])
+    )
+    assert abs(exact_energy - modal_energy) < 3e-14
+    effective_rank = (
+        exact_energy
+        / math.exp(-2 * clustered_time * relaxation_rates[1])
+    )
+    effective_panel_size = 20
+    exact_hs_bound = min(
+        1.0,
+        math.sqrt((effective_panel_size - 1) * exact_energy / 2),
+    )
+    gap_only_bound = min(
+        1.0,
+        math.sqrt((effective_panel_size - 1) * gap_energy / 2),
+    )
+    assert abs(effective_rank - 1.0) < 2e-13
+    assert exact_hs_bound < 0.42 and gap_only_bound == 1.0
+    print("Hilbert--Schmidt effective-rank refinement:")
+    print(
+        f"  exact energy {exact_energy:.12f}, gap envelope "
+        f"{gap_energy:.12f}, effective rank {effective_rank:.12f}"
+    )
+    print(
+        f"  n={effective_panel_size} exact-HS TV bound "
+        f"{exact_hs_bound:.12f}, gap-only bound {gap_only_bound:.1f}"
+    )
+
+    # Sharpness.  For a stationary symmetric two-state chain, write the
+    # states as signs X_j and set Z_j=X_j X_{j+1}.  The Z_j are iid with
+    # P(Z_j=1)=(1+a)/2, while under an iid state panel they are fair.  Hence
+    # path TV is exactly the TV between these Bernoulli product laws.
+    # Disjoint-support continuous emissions preserve this TV exactly.
+    brute_trials = 7
+    brute_a = 0.23
+    markov_path = []
+    iid_path = []
+    for signs in itertools.product((-1, 1), repeat=brute_trials + 1):
+        probability = 0.5
+        for left, right in zip(signs[:-1], signs[1:]):
+            probability *= (1 + brute_a * left * right) / 2
+        markov_path.append(probability)
+        iid_path.append(2 ** -(brute_trials + 1))
+    brute_tv = 0.5 * np.abs(np.asarray(markov_path)
+                            - np.asarray(iid_path)).sum()
+    formula_tv = bernoulli_product_tv(brute_trials, brute_a)
+    assert abs(brute_tv - formula_tv) < 3e-15
+
+    critical_rows = []
+    for exponent in (3, 4, 5, 6, 7):
+        a = 2.0 ** -exponent
+        subcritical_trials = round(1 / a)
+        critical_trials = round(1 / a ** 2)
+        supercritical_trials = round(1 / a ** 3)
+        critical_rows.append((
+            a,
+            bernoulli_product_tv(subcritical_trials, a),
+            bernoulli_product_tv(critical_trials, a),
+            bernoulli_product_tv(supercritical_trials, a),
+        ))
+    critical_limit = 2 * ndtr(0.5) - 1
+    assert critical_rows[-1][1] < 0.04
+    assert abs(critical_rows[-1][2] - critical_limit) < 0.003
+    assert critical_rows[-1][3] > 0.999
+    print("sharp symmetric two-state threshold:")
+    print("    a       TV(n=a^-1)  TV(n=a^-2)  TV(n=a^-3)")
+    for a, subcritical, critical, supercritical in critical_rows:
+        print(f" {a:8.6f}    {subcritical:10.8f}  {critical:10.8f}"
+              f"  {supercritical:10.8f}")
+    print(f"  critical LAN limit: {critical_limit:.8f}")
+
+    # Joint burn-in/panel sharpness.  For a symmetric two-state chain, a
+    # pre-panel imbalance eta becomes delta=eta*exp(-2*m*b).  The bijection
+    # from paths to (X_0, Z_1, ..., Z_N) turns the exact likelihood ratio into
+    # (1+delta*X_0) times the Bernoulli-product likelihood ratio.  If
+    # N*a^2 -> c, LAN sends the latter to exp(sqrt(c)G-c/2), independently of
+    # X_0.  The following checks both the finite factorization and its limit.
+    brute_initial_bias = 0.37
+    burned_path = []
+    iid_path = []
+    for signs in itertools.product((-1, 1), repeat=brute_trials + 1):
+        probability = (1 + brute_initial_bias * signs[0]) / 2
+        for left, right in zip(signs[:-1], signs[1:]):
+            probability *= (1 + brute_a * left * right) / 2
+        burned_path.append(probability)
+        iid_path.append(2 ** -(brute_trials + 1))
+    burned_brute_tv = 0.5 * np.abs(np.asarray(burned_path)
+                                   - np.asarray(iid_path)).sum()
+    burned_formula_tv = burned_bernoulli_product_tv(
+        brute_trials, brute_a, brute_initial_bias)
+    assert abs(burned_brute_tv - burned_formula_tv) < 3e-15
+
+    limiting_bias = 0.6
+    limiting_information = 1.0
+    joint_limit = burned_panel_lan_limit(
+        limiting_bias, limiting_information)
+    joint_rows = []
+    for exponent in (3, 4, 5, 6, 7):
+        a = 2.0 ** -exponent
+        trials = round(limiting_information / a ** 2)
+        joint_rows.append((
+            a,
+            burned_bernoulli_product_tv(trials, a, limiting_bias),
+        ))
+    assert abs(joint_rows[-1][1] - joint_limit) < 3e-5
+    assert abs(burned_panel_lan_limit(limiting_bias, 0)
+               - abs(limiting_bias) / 2) < 2e-15
+    assert abs(burned_panel_lan_limit(0, limiting_information)
+               - critical_limit) < 2e-15
+    print("sharp joint burn-in/panel limit (delta=0.6, c=1):")
+    for a, exact_tv in joint_rows:
+        print(f"  a={a:8.6f} exact TV {exact_tv:.9f}")
+    print(f"  mixed Bernoulli/lognormal limit: {joint_limit:.9f}")
+
+
+def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
+    """Check the irregular-grid path-TV theorem and its sharp scale.
+
+    Stationarity makes relative entropy additive over unequal transitions.
+    Pinsker and rowwise D <= chi-square therefore depend on the sum of the
+    individual Hilbert--Schmidt energies, not on the average spacing.
+    """
+    dimension = len(pi)
+    spacings = np.array([0.35, 0.50, 0.75, 1.10, 1.70])
+    transitions = [expm(spacing * Q) for spacing in spacings]
+    row_kl_sum = 0.0
+    energy_sum = 0.0
+    for transition in transitions:
+        density = transition / pi[None, :]
+        row_kl_sum += np.sum(
+            pi[:, None] * transition * np.log(density)
+        )
+        energy_sum += dependence_hilbert_schmidt_squared(transition, pi)
+    gap_energy_sum = (dimension - 1) * np.exp(
+        -2 * gamma_s * spacings
+    ).sum()
+
+    markov_path = []
+    iid_path = []
+    for path in itertools.product(range(dimension), repeat=len(spacings) + 1):
+        probability = pi[path[0]]
+        for transition, left, right in zip(
+                transitions, path[:-1], path[1:]):
+            probability *= transition[left, right]
+        markov_path.append(probability)
+        iid_path.append(np.prod(pi[list(path)]))
+    markov_path = np.asarray(markov_path)
+    iid_path = np.asarray(iid_path)
+    path_kl = np.sum(markov_path * np.log(markov_path / iid_path))
+    path_tv = 0.5 * np.abs(markov_path - iid_path).sum()
+    kl_bound = min(1.0, math.sqrt(row_kl_sum / 2))
+    energy_bound = min(1.0, math.sqrt(energy_sum / 2))
+    gap_bound = min(1.0, math.sqrt(gap_energy_sum / 2))
+    assert abs(path_kl - row_kl_sum) < 5e-14
+    assert path_tv <= kl_bound + 2e-14
+    assert kl_bound <= energy_bound + 2e-14
+    assert energy_bound <= gap_bound + 2e-14
+
+    # The path-to-transition-sign bijection remains exact when each gap has
+    # a different correlation.  This verifies it independently by enumerating
+    # all state paths and all transition signs.
+    correlations = np.array([0.10, 0.20, 0.05, 0.30, 0.12])
+    two_state_markov = []
+    two_state_iid = []
+    for signs in itertools.product((-1, 1), repeat=len(correlations) + 1):
+        probability = 0.5
+        for correlation, left, right in zip(
+                correlations, signs[:-1], signs[1:]):
+            probability *= (1 + correlation * left * right) / 2
+        two_state_markov.append(probability)
+        two_state_iid.append(2 ** -(len(correlations) + 1))
+    two_state_path_tv = 0.5 * np.abs(
+        np.asarray(two_state_markov) - np.asarray(two_state_iid)
+    ).sum()
+    two_state_affinity = np.sqrt(
+        np.asarray(two_state_markov) * np.asarray(two_state_iid)
+    ).sum()
+    transition_sign_tv = 0.0
+    for signs in itertools.product((-1, 1), repeat=len(correlations)):
+        likelihood = np.prod(1 + correlations * np.asarray(signs))
+        transition_sign_tv += 0.5 * 2 ** -len(correlations) * abs(
+            likelihood - 1
+        )
+    assert abs(two_state_path_tv - transition_sign_tv) < 3e-15
+    product_affinity = biased_sign_product_affinity(correlations)
+    assert abs(two_state_affinity - product_affinity) < 3e-15
+    assert 1 - product_affinity <= two_state_path_tv + 2e-15
+    assert two_state_path_tv <= math.sqrt(
+        1 - product_affinity ** 2
+    ) + 2e-15
+
+    # Heterogeneous triangular array: half the correlations are a, half 2a,
+    # with the common group size chosen so sum_j a_j^2 -> 1.  The exact
+    # product TV converges to the same LAN limit 2 Phi(1/2)-1.
+    critical_rows = []
+    for exponent in (3, 4, 5, 6):
+        correlation_a = 2.0 ** -exponent
+        correlation_b = 2 * correlation_a
+        trials = round(1 / (5 * correlation_a ** 2))
+        information = trials * (correlation_a ** 2 + correlation_b ** 2)
+        critical_rows.append((
+            correlation_a,
+            trials,
+            information,
+            two_level_bernoulli_product_tv(
+                trials, correlation_a, trials, correlation_b
+            ),
+        ))
+    critical_limit = 2 * ndtr(0.5) - 1
+    assert abs(critical_rows[-1][3] - critical_limit) < 1e-4
+
+    # Sum of squared correlations determines the zero and one TV phases, but
+    # not an interior critical value unless the largest correlation vanishes.
+    # A single persistent correlation and a diffuse triangular array can have
+    # the same squared information and different limiting TV distances.
+    profile_information = 0.25
+    persistent_tv = bernoulli_product_tv(
+        1, math.sqrt(profile_information)
+    )
+    diffuse_trials = 2 ** 16
+    diffuse_correlation = math.sqrt(
+        profile_information / diffuse_trials
+    )
+    diffuse_tv = bernoulli_product_tv(
+        diffuse_trials, diffuse_correlation
+    )
+    profile_lan_limit = 2 * ndtr(
+        math.sqrt(profile_information) / 2
+    ) - 1
+    assert abs(persistent_tv - 0.25) < 2e-15
+    assert abs(diffuse_tv - profile_lan_limit) < 1e-6
+    assert persistent_tv - diffuse_tv > 0.05
+
+    # General critical profile: finitely many correlations can persist while
+    # the remaining infinitesimal correlations converge to Gaussian
+    # likelihood noise.  The limit is their independent likelihood product,
+    # not a function of total squared correlation alone.
+    persistent_correlations = np.array([0.5, 0.3])
+    diffuse_information = 0.25
+    persistent_diffuse_limit = persistent_diffuse_lan_limit(
+        persistent_correlations, diffuse_information
+    )
+    persistent_diffuse_rows = []
+    for tail_trials in (64, 256, 1024, 4096, 16384):
+        tail_correlation = math.sqrt(
+            diffuse_information / tail_trials
+        )
+        persistent_diffuse_rows.append((
+            tail_trials,
+            persistent_diffuse_product_tv(
+                persistent_correlations,
+                tail_trials,
+                tail_correlation,
+            ),
+        ))
+    assert abs(
+        persistent_diffuse_rows[-1][1] - persistent_diffuse_limit
+    ) < 1e-6
+
+    print("irregular-grid joint path-TV certificate:")
+    print(f"  exact path KL {path_kl:.12f}, exact path TV {path_tv:.12f}")
+    print(f"  Pinsker(KL) {kl_bound:.12f}, HS bound {energy_bound:.12f},"
+          f" gap bound {gap_bound:.12f}")
+    print("  unequal two-state path/sign TV identity:"
+          f" {two_state_path_tv:.12f}")
+    print("  exact product Hellinger affinity:"
+          f" {product_affinity:.12f}, TV interval"
+          f" [{1 - product_affinity:.12f},"
+          f" {math.sqrt(1 - product_affinity ** 2):.12f}]")
+    print("heterogeneous critical scale (correlations a and 2a):")
+    print("    a       trials/group  sum correlation^2    exact TV")
+    for correlation_a, trials, information, exact_tv in critical_rows:
+        print(f" {correlation_a:8.6f}   {trials:7d}"
+              f"         {information:10.8f}      {exact_tv:10.8f}")
+    print(f"  heterogeneous LAN limit: {critical_limit:.8f}")
+    print("critical-profile counterexample at sum correlation^2 = 0.25:")
+    print(f"  one persistent correlation: TV {persistent_tv:.9f}")
+    print(f"  {diffuse_trials} diffuse correlations: TV {diffuse_tv:.9f},"
+          f" LAN limit {profile_lan_limit:.9f}")
+    print("persistent-plus-diffuse critical profile"
+          " (persistent correlations 0.5, 0.3; diffuse c=0.25):")
+    for diffuse_trials, exact_tv in persistent_diffuse_rows:
+        print(f"  {diffuse_trials:5d} diffuse signs: exact TV {exact_tv:.9f}")
+    print(f"  product Bernoulli/lognormal limit:"
+          f" {persistent_diffuse_limit:.9f}")
+
+
 def nonreversible_contraction_checks():
     # This chain has a nonuniform invariant law and violates detailed balance.
     # Its additive reversibilization nevertheless gives an L2(pi) contraction
@@ -1133,6 +1657,8 @@ def nonreversible_contraction_checks():
     print("finite-n factor saturation:",
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
+    joint_panel_mixing_checks(Q, pi, gamma_s)
+    irregular_joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
     burnin_transfer_checks(Q, pi, gamma_s, f)
@@ -1240,7 +1766,11 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate, sharp prefactor and first two"
+          " count law, regular- and irregular-grid joint panel-size/"
+          "fast-switching TV bounds and sharp stationary, heterogeneous,"
+          " persistent-plus-diffuse, and burned-start two-state limits,"
+          " Perron tail rate,"
+          " sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"
           " correction, Green--Kubo"

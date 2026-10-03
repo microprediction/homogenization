@@ -2429,5 +2429,27 @@
   "doi": "10.1006/jmva.1993.1020",
   "url": "https://doi.org/10.1006/jmva.1993.1020",
   "annotation": "Establishes a first-order Edgeworth expansion for sums related to a homogeneous Markov chain and corrects inaccuracies in earlier Markov-chain formulations."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Csiszar1963",
+  "authors": "Csiszár, I.",
+  "year": 1963,
+  "title": "Eine informationstheoretische Ungleichung und ihre Anwendung auf den Beweis der Ergodizität von Markoffschen Ketten",
+  "venue": "A Magyar Tudományos Akadémia Matematikai Kutató Intézetének Közleményei 8(1-2):85-108",
+  "doi": "",
+  "url": "https://real.mtak.hu/201426/",
+  "annotation": "Proves that general information divergences cannot increase through a stochastic channel. The joint panel theorem uses this data-processing principle after comparing the hidden Markov path with the iid stationary path."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "LeCam1960",
+  "authors": "Le Cam, L.",
+  "year": 1960,
+  "title": "Locally asymptotically normal families of distributions",
+  "venue": "University of California Publications in Statistics 3(2):37-98",
+  "doi": "",
+  "url": "https://books.google.com/books?id=ytBUAAAAYAAJ",
+  "annotation": "Introduces local asymptotic normality. The joint burn-in/panel theorem uses the Bernoulli likelihood-ratio limit, while retaining the separate finite initial-state likelihood factor."
  }
 ]
