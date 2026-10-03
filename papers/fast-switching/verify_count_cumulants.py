@@ -372,6 +372,8 @@ def poisson_mixture_w1_nonparametric_lower(lower=4.0, width=1.0):
     Taking L just above log(n)/log(log(n)) proves
     liminf log(n)/log(log(n)) R_n >= width/2.
     """
+    if lower < 0.0 or width <= 0.0:
+        raise ValueError("Poisson intensities require lower >= 0 and width > 0")
     # At much larger orders the exact count-law difference falls below
     # double-precision resolution, so the direct pmf check stops at 12.
     check_orders = np.array([4, 8, 12], dtype=int)
