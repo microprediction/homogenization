@@ -134,9 +134,26 @@
     </div>
     <p>The first inequality uses
       $\sum_{i,j}J_{ij}^4\le\sum_iq_i^2$; the second again uses the paired singular values of a real skew matrix.
-      Therefore the same Paley&ndash;Zygmund bound, 47-pair one-percent miss certificate, unbiased energy estimator,
-      and relative-variance bound $5/m$ hold for bounded sign probes. This is the bilinear skew-form analogue of
+      Therefore the same dimension-free Paley&ndash;Zygmund bound, 47-pair one-percent miss certificate, unbiased
+      energy estimator, and relative-variance bound $5/m$ hold for bounded sign probes. This is the bilinear skew-form analogue of
       <a href="./bibliography.html#Hutchinson1989">Hutchinson's Rademacher trace estimator</a>.</p>
+    <p>There is a sharper finite-dimensional result. If $d\ge2$ is the dimension of the centered feature space, then
+      $\sum_iq_i=S_2$ and Cauchy&ndash;Schwarz gives $\sum_iq_i^2\ge S_2^2/d$. Hence</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi_\pm^4\le(6-8/d)S_2^2,$$
+    $$\Pr\!\left(|\Xi_\pm|\ge\theta\|J\|_{\rm HS}\right)
+      \ge\frac{(1-\theta^2)^2}{6-8/d}.$$
+    </div>
+    <p>For the four-state certificate the centered dimension is $d=3$, so the fourth-moment constant improves
+      from $6$ to $10/3$. At half RMS, 25 independent sign pairs now suffice for a one-percent miss bound,
+      compared with the dimension-free count 47.</p>
+    <p>The constant $6$ nevertheless cannot be reduced uniformly over dimensions. For $d\ge5$, take normalized
+      sine and cosine vectors $a,b$ on the $d$-cycle and
+      $J_d=(ab^\top-ba^\top)/\sqrt2$. Then $\|J_d\|_{\rm HS}=1$ and direct substitution gives</p>
+    $$\mathbb E(X^\top J_dY)^4=6-\frac{12}{d}+\frac{6}{d^2}\longrightarrow6.$$
+    <p>Thus the dimension-free fourth-moment constant is asymptotically sharp, even though every fixed dimension
+      receives a strict improvement. The certificate checks this identity through $d=128$, where the ratio is
+      $5.906616211$.</p>
     <p>The almost-sure statement does <em>not</em> survive discretization. For
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$,
       $\Xi_\pm=X_1Y_2-X_2Y_1$ vanishes with probability exactly $1/2$ despite $J\ne0$.

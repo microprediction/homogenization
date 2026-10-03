@@ -291,9 +291,11 @@ def random_probe_detection_check(sample_count=400_000):
     #                + 4 sum_ij J_ij^4.
     #
     # The last two terms have nonpositive sum because sum_ij J_ij^4 is at
-    # most sum_i q_i^2.  Thus the Gaussian six-moment bound, and hence the
-    # same Paley--Zygmund certificate, hold for every orthonormal basis.
+    # most sum_i q_i^2.  More sharply, sum_i q_i^2 >= S2^2/d, so the fourth
+    # moment is at most (6-8/d)S2^2.  The dimension-free constant six is
+    # asymptotically sharp for the dense rank-two harmonic family below.
     dimension = len(probe_x)
+    assert dimension >= 2
     integers = np.arange(2**dimension, dtype=np.uint64)
     bits = ((integers[:, None] >> np.arange(dimension, dtype=np.uint64))
             & 1)
@@ -313,6 +315,16 @@ def random_probe_detection_check(sample_count=400_000):
     rademacher_relative_energy_variance = (
         exact_rademacher_fourth_moment / exact_second_moment**2 - 1.0
     )
+    dimension_moment_constant = 6.0 - 8.0 / dimension
+    dimension_detection_bound = (
+        (1.0 - threshold_fraction**2) ** 2 / dimension_moment_constant
+    )
+    dimension_probes_for_one_percent = math.ceil(
+        math.log(0.01) / math.log1p(-dimension_detection_bound)
+    )
+    dimension_one_percent_miss_bound = (
+        1.0 - dimension_detection_bound
+    ) ** dimension_probes_for_one_percent
     rademacher_detection_probability = np.mean(
         abs(rademacher_signals) >= threshold
     )
@@ -329,6 +341,49 @@ def random_probe_detection_check(sample_count=400_000):
         "ai,ij,bj->ab", canonical_signs, canonical_skew, canonical_signs
     ).ravel()
     canonical_zero_probability = np.mean(canonical_signals == 0.0)
+
+    # Dense rank-two harmonic skew matrices prove that the dimension-free
+    # constant six cannot be lowered.  For d >= 5, let a_j and b_j be the
+    # normalized cosine and sine vectors on the d-cycle and put
+    # J=(ab'-ba')/sqrt(2).  Then S2=1, S4=1/2, q_i=1/d, and
+    # sum_ij J_ij^4=3/(2d^2), so the exact ratio is
+    # 6-12/d+6/d^2 -> 6.
+    harmonic_dimensions = (5, 8, 16, 32, 64, 128)
+    maximum_harmonic_formula_error = 0.0
+    harmonic_moment_ratios = []
+    for harmonic_dimension in harmonic_dimensions:
+        angles = (
+            2.0 * math.pi * np.arange(harmonic_dimension)
+            / harmonic_dimension
+        )
+        harmonic_a = math.sqrt(2.0 / harmonic_dimension) * np.cos(angles)
+        harmonic_b = math.sqrt(2.0 / harmonic_dimension) * np.sin(angles)
+        harmonic_skew = (
+            np.outer(harmonic_a, harmonic_b)
+            - np.outer(harmonic_b, harmonic_a)
+        ) / math.sqrt(2.0)
+        harmonic_second = np.sum(harmonic_skew**2)
+        harmonic_singular_squares = (
+            np.linalg.svd(harmonic_skew, compute_uv=False) ** 2
+        )
+        harmonic_spectral_fourth = np.sum(harmonic_singular_squares**2)
+        harmonic_rows = np.sum(harmonic_skew**2, axis=1)
+        harmonic_fourth = (
+            3.0 * harmonic_second**2
+            + 6.0 * harmonic_spectral_fourth
+            - 12.0 * np.sum(harmonic_rows**2)
+            + 4.0 * np.sum(harmonic_skew**4)
+        )
+        harmonic_ratio = harmonic_fourth / harmonic_second**2
+        predicted_harmonic_ratio = (
+            6.0 - 12.0 / harmonic_dimension
+            + 6.0 / harmonic_dimension**2
+        )
+        maximum_harmonic_formula_error = max(
+            maximum_harmonic_formula_error,
+            abs(harmonic_ratio - predicted_harmonic_ratio),
+        )
+        harmonic_moment_ratios.append(harmonic_ratio)
 
     # Independently enumerate sign pairs for random skew matrices in
     # dimensions two through six.  Normalize errors by S2^2 so the test is
@@ -399,10 +454,19 @@ def random_probe_detection_check(sample_count=400_000):
     assert exact_rademacher_fourth_moment <= (
         6.0 * exact_second_moment**2 * (1.0 + 2e-14)
     )
+    assert exact_rademacher_fourth_moment <= (
+        dimension_moment_constant
+        * exact_second_moment**2 * (1.0 + 2e-14)
+    )
     assert rademacher_relative_energy_variance <= 5.0 + 2e-14
     assert rademacher_detection_probability >= universal_detection_bound
+    assert rademacher_detection_probability >= dimension_detection_bound
+    assert dimension_probes_for_one_percent == 25
+    assert dimension_one_percent_miss_bound < 0.01
     assert rademacher_zero_probability > 0.0
     assert canonical_zero_probability == 0.5
+    assert maximum_harmonic_formula_error < 2e-13
+    assert harmonic_moment_ratios[-1] > 5.9
     assert randomized_moment_cases == 100
     assert maximum_rademacher_moment_error < 2e-14
     return {
@@ -433,11 +497,22 @@ def random_probe_detection_check(sample_count=400_000):
         "rademacher_relative_energy_variance": (
             rademacher_relative_energy_variance
         ),
+        "dimension_moment_constant": dimension_moment_constant,
+        "dimension_detection_bound": dimension_detection_bound,
+        "dimension_probes_for_one_percent": (
+            dimension_probes_for_one_percent
+        ),
+        "dimension_one_percent_miss_bound": (
+            dimension_one_percent_miss_bound
+        ),
         "rademacher_detection_probability": (
             rademacher_detection_probability
         ),
         "rademacher_zero_probability": rademacher_zero_probability,
         "canonical_zero_probability": canonical_zero_probability,
+        "maximum_harmonic_formula_error": maximum_harmonic_formula_error,
+        "largest_harmonic_dimension": harmonic_dimensions[-1],
+        "largest_harmonic_moment_ratio": harmonic_moment_ratios[-1],
         "randomized_moment_cases": randomized_moment_cases,
         "maximum_rademacher_moment_error": (
             maximum_rademacher_moment_error
@@ -663,6 +738,19 @@ def main():
         f"{probes['rademacher_detection_probability']:.9f}/"
         f"{probes['rademacher_zero_probability']:.9f}; canonical zero "
         f"probability {probes['canonical_zero_probability']:.9f}"
+    )
+    print(
+        f"   dimension-aware fourth-moment/detection bounds "
+        f"{probes['dimension_moment_constant']:.9f}/"
+        f"{probes['dimension_detection_bound']:.9f}; "
+        f"{probes['dimension_probes_for_one_percent']} probes give miss "
+        f"bound {probes['dimension_one_percent_miss_bound']:.6f}"
+    )
+    print(
+        f"   harmonic sharpness dimension/ratio/error "
+        f"{probes['largest_harmonic_dimension']}/"
+        f"{probes['largest_harmonic_moment_ratio']:.9f}/"
+        f"{probes['maximum_harmonic_formula_error']:.2e}"
     )
     print(
         f"   random skew Rademacher moment cases/error/max ratio "
