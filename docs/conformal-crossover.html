@@ -608,7 +608,27 @@
       $c$ need not give that limit: at $c=1/4$, one persistent correlation
       $a=1/2$ has TV $0.25$, while $65{,}536$ equal correlations with the same
       total squared correlation give $0.19741205$, approaching the diffuse LAN
-      limit $0.19741265$. With equally many correlations
+      limit $0.19741265$.</p>
+    <p>There is nevertheless a complete mixed-profile limit. Suppose a fixed
+      number $q$ of correlations converge to $b_1,\ldots,b_q$, while among the
+      remaining correlations the maximum tends to zero and the sum of squares
+      tends to $c$. For independent fair signs $Z_1,\ldots,Z_q$ and an
+      independent $G\sim N(0,1)$, put
+      $B=\prod_{\ell=1}^q(1+b_\ell Z_\ell)$. Then</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\longrightarrow
+      \frac12\mathbb E\left|B e^{\sqrt cG-c/2}-1\right|.$$
+    </div>
+    <p>The proof factors the likelihood into persistent and diffuse parts,
+      applies the Bernoulli triangular-array LAN limit only to the latter, and
+      uses
+      $\mathbb E_0L^2=\prod_j(1+a_j^2)$ for uniform integrability. Thus the
+      entire finite-information profile, not merely its squared norm, is the
+      invariant. With persistent correlations $0.5$ and $0.3$ and diffuse
+      information $c=0.25$, the exact TV at $16{,}384$ diffuse signs is
+      $0.312896499$, versus the product Bernoulli/lognormal limit
+      $0.312895750$.</p>
+    <p>With equally many correlations
       $a$ and $2a$ and total squared correlation tending to one, the exact
       certificate reaches $0.38297545$ at $a=2^{-6}$, versus the limit
       $0.38292492$. This is still a marginal comparison of random panel laws,

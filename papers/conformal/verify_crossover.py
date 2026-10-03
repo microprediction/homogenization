@@ -37,7 +37,8 @@ refinement retains every nonconstant singular mode instead of replacing them
 all by the slowest relaxation rate.  A symmetric two-state example reduces
 exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
 and proves that the resulting square-root information scale is sharp,
-including its critical local-asymptotic-normal limit.  The same factorization
+including its critical local-asymptotic-normal and persistent-plus-diffuse
+limits.  The same factorization
 with an arbitrary burned-in start gives the exact two-parameter limit in which
 residual initial memory and the Gaussian transition experiment coexist.
 """
@@ -1161,26 +1162,62 @@ def burned_bernoulli_product_tv(trials, correlation, initial_bias):
     )
 
 
+def absolute_scaled_lognormal_deviation(scale, information):
+    """E|scale*exp(sqrt(c)G-c/2)-1| for c=information."""
+    if information == 0:
+        return abs(scale - 1)
+    if scale == 0:
+        return 1.0
+    root_information = math.sqrt(information)
+    log_scale = math.log(scale)
+    upper = ndtr(root_information / 2 + log_scale / root_information)
+    crossing = ndtr(-root_information / 2
+                    + log_scale / root_information)
+    return 2 * (scale * upper - crossing) - scale + 1
+
+
 def burned_panel_lan_limit(initial_bias, information):
     """TV limit for a fixed initial bias and Bernoulli LAN information."""
-    if information == 0:
-        return abs(initial_bias) / 2
-
-    root_information = math.sqrt(information)
-
-    def absolute_lognormal_shift(scale):
-        if scale == 0:
-            return 1.0
-        log_scale = math.log(scale)
-        upper = ndtr(root_information / 2 + log_scale / root_information)
-        crossing = ndtr(-root_information / 2
-                        + log_scale / root_information)
-        return 2 * (scale * upper - crossing) - scale + 1
-
     return 0.25 * sum(
-        absolute_lognormal_shift(1 + sign * initial_bias)
+        absolute_scaled_lognormal_deviation(
+            1 + sign * initial_bias, information
+        )
         for sign in (-1, 1)
     )
+
+
+def persistent_diffuse_product_tv(persistent_correlations, trials,
+                                  diffuse_correlation):
+    """Exact TV for fixed biased signs followed by equal diffuse signs."""
+    counts = np.arange(trials + 1)
+    fair = binom.pmf(counts, trials, 0.5)
+    log_likelihood = (
+        counts * math.log1p(diffuse_correlation)
+        + (trials - counts) * math.log1p(-diffuse_correlation)
+    )
+    diffuse_likelihood = np.exp(log_likelihood)
+    persistent_correlations = np.asarray(persistent_correlations)
+    total = 0.0
+    for signs in itertools.product(
+            (-1, 1), repeat=len(persistent_correlations)):
+        scale = np.prod(
+            1 + persistent_correlations * np.asarray(signs)
+        )
+        total += np.sum(fair * np.abs(scale * diffuse_likelihood - 1))
+    return 0.5 * total / 2 ** len(persistent_correlations)
+
+
+def persistent_diffuse_lan_limit(persistent_correlations, information):
+    """TV limit for fixed biased signs times diffuse Bernoulli LAN noise."""
+    persistent_correlations = np.asarray(persistent_correlations)
+    total = 0.0
+    for signs in itertools.product(
+            (-1, 1), repeat=len(persistent_correlations)):
+        scale = np.prod(
+            1 + persistent_correlations * np.asarray(signs)
+        )
+        total += absolute_scaled_lognormal_deviation(scale, information)
+    return 0.5 * total / 2 ** len(persistent_correlations)
 
 
 def joint_panel_mixing_checks(Q, pi, gamma_s):
@@ -1492,6 +1529,32 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     assert abs(diffuse_tv - profile_lan_limit) < 1e-6
     assert persistent_tv - diffuse_tv > 0.05
 
+    # General critical profile: finitely many correlations can persist while
+    # the remaining infinitesimal correlations converge to Gaussian
+    # likelihood noise.  The limit is their independent likelihood product,
+    # not a function of total squared correlation alone.
+    persistent_correlations = np.array([0.5, 0.3])
+    diffuse_information = 0.25
+    persistent_diffuse_limit = persistent_diffuse_lan_limit(
+        persistent_correlations, diffuse_information
+    )
+    persistent_diffuse_rows = []
+    for tail_trials in (64, 256, 1024, 4096, 16384):
+        tail_correlation = math.sqrt(
+            diffuse_information / tail_trials
+        )
+        persistent_diffuse_rows.append((
+            tail_trials,
+            persistent_diffuse_product_tv(
+                persistent_correlations,
+                tail_trials,
+                tail_correlation,
+            ),
+        ))
+    assert abs(
+        persistent_diffuse_rows[-1][1] - persistent_diffuse_limit
+    ) < 1e-6
+
     print("irregular-grid joint path-TV certificate:")
     print(f"  exact path KL {path_kl:.12f}, exact path TV {path_tv:.12f}")
     print(f"  Pinsker(KL) {kl_bound:.12f}, HS bound {energy_bound:.12f},"
@@ -1512,6 +1575,12 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     print(f"  one persistent correlation: TV {persistent_tv:.9f}")
     print(f"  {diffuse_trials} diffuse correlations: TV {diffuse_tv:.9f},"
           f" LAN limit {profile_lan_limit:.9f}")
+    print("persistent-plus-diffuse critical profile"
+          " (persistent correlations 0.5, 0.3; diffuse c=0.25):")
+    for diffuse_trials, exact_tv in persistent_diffuse_rows:
+        print(f"  {diffuse_trials:5d} diffuse signs: exact TV {exact_tv:.9f}")
+    print(f"  product Bernoulli/lognormal limit:"
+          f" {persistent_diffuse_limit:.9f}")
 
 
 def nonreversible_contraction_checks():
@@ -1699,7 +1768,8 @@ def main():
           " regular and irregular calibration variance, exact polynomial"
           " count law, regular- and irregular-grid joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
-          " and burned-start two-state limits, Perron tail rate,"
+          " persistent-plus-diffuse, and burned-start two-state limits,"
+          " Perron tail rate,"
           " sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"
