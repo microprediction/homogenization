@@ -1,7 +1,7 @@
 <!-- title: Cycle direction in the smile · homogenization | math -->
   <main>
     <h1>The direction of a regime cycle in the Heston smile</h1>
-    <p class="subtitle">A chain that cycles through regimes in one direction moves the smile, although its averages and covariances do not depend on the direction.</p>
+    <p class="subtitle">A chain or continuous periodic factor that cycles in one direction contributes a commutator correction invisible to averages and symmetric covariances.</p>
 
     <h2>The smile from fast volatility</h2>
     <p>When volatility fluctuates fast and independently of the stock, the option price is Black&ndash;Scholes averaged
@@ -13,16 +13,244 @@
     variance of integrated variance.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
     expansion to second order with correlation and a terminal layer.</p>
-    <p>In that work the fast driver is a scalar diffusion on the line, or a generic ergodic process that enters only
-    through a variance. A stationary scalar diffusion on the line or on an interval carries no probability current,
-    so it is reversible and its Green&ndash;Kubo matrix is symmetric. The antisymmetric part, which measures the
-    direction of a cycle, does not appear.</p>
-    <p>The symmetry comes from reversibility, not from the dimension. A scalar diffusion on the circle with a drift,
-    $dY = c\,dt + \sqrt{2D}\,dW$ modulo $2\pi$, has the uniform stationary law but a current $c/2\pi$, and for the
-    features $(\cos Y, \sin Y)$ its Green&ndash;Kubo matrix is</p>
-    $$K = \frac{1}{2(D^2 + c^2)}\begin{pmatrix} D & c \\ -c & D \end{pmatrix},$$
-    <p>whose antisymmetric part changes sign with the current, as it does below when the chain&apos;s cycle is
-    reversed.</p>
+    <p>In that work the fast driver is a one-dimensional diffusion or a generic ergodic process whose correlation
+    function enters through a variance. A stationary scalar diffusion on an interval or the line is reversible under
+    the usual zero-current boundary conditions. Dimension alone is not enough: a diffusion on a periodic domain can
+    carry stationary current, break detailed balance, and have an antisymmetric Green&ndash;Kubo matrix.</p>
+
+    <h2>A continuous cycle in closed form</h2>
+    <p>Let the fast factor be drifted Brownian motion on the circle,</p>
+    $$dY_t=c\,dt+\sqrt{2D}\,dW_t\pmod {2\pi},\qquad D&gt;0.$$
+    <p>Its stationary law is uniform, but its stationary current is $c/(2\pi)$ and time reversal changes $c$ to
+    $-c$. For every Fourier mode $n\ge1$, use the centered feature pair
+    $\phi_{n,c}(y)=\cos(ny)$ and $\phi_{n,s}(y)=\sin(ny)$. Fourier orthogonality makes every cross-mode entry vanish,
+    while the block for mode $n$ is exactly</p>
+    <div class="equation-card">
+    $$K_n=\frac1{2\{D^2n^4+c^2n^2\}}
+      \begin{pmatrix}Dn^2&amp;cn\\-cn&amp;Dn^2\end{pmatrix}.$$
+    </div>
+    <p>Indeed, the off-diagonal correlation is
+    $\mathbb E[\cos(nY_0)\sin(nY_t)]=\tfrac12e^{-Dn^2t}\sin(cnt)$; the reverse ordering has the opposite sign.
+    Thus $c\mapsto-c$ preserves $K_n^{\rm sym}$ and flips $K_n^{\rm anti}$ for every mode.</p>
+    <p>If $\cos Y$ and $\sin Y$ multiply two fixed operators $A_c,A_s$, their first correction is</p>
+    $$\frac{D}{2(D^2+c^2)}(A_c^2+A_s^2)
+      +\frac{c}{2(D^2+c^2)}[A_c,A_s].$$
+    <p>For $D=1,c=2$, the block is
+    $K_1=\left(\begin{smallmatrix}0.1&amp;0.2\\-0.2&amp;0.1\end{smallmatrix}\right)$.
+    Direct correlation quadrature agrees below $9\times10^{-16}$. A periodic CTMC discretization converges to this
+    block at rate 2.001, and an independent coupled-operator evolution gives a 2.002 rate for the residual after the
+    full first-order rule. Keeping only the symmetric block leaves a first-order error; the
+    forward-minus-reverse residual after the commutator correction converges at rate 2.000.</p>
+    <p class="muted">Continuous-factor certificate:
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">verify_circle_factor.py</a>.
+      The physical interpretation of current and broken detailed balance is standard in periodic Brownian-motor
+      models (<a href="./bibliography.html#Reimann2002">Reimann 2002</a>).</p>
+
+    <h2>The theorem for every stationary Markov driver</h2>
+    <p>Let $P_t$ be a stationary Markov semigroup on the real space $L^2(\pi)$, and let
+    $P_t^{\leftarrow}=P_t^\dagger$ be its stationary time reversal. For centered observables $f,g$ whose
+    correlations are integrable, define</p>
+    $$K^{\rightarrow}(f,g)=\int_0^\infty\langle f,P_tg\rangle_\pi\,dt.$$
+    <p>Semigroup adjointness gives, without a diffusion or finite-state assumption,</p>
+    <div class="equation-card">
+    $$K^{\leftarrow}(f,g)=K^{\rightarrow}(g,f).$$
+    </div>
+    <p>Thus stationary time reversal preserves the symmetric Green&ndash;Kubo form and flips the antisymmetric form.
+    This is the integrated-correlation consequence of the general Markov time-reversal framework of
+    <a href="./bibliography.html#Nagasawa1964">Nagasawa (1964)</a>.</p>
+    <p>There is also a precise converse. Suppose $-L$ is invertible on the centered subspace with bounded inverse,
+    as for an irreducible finite chain and for the usual spectral-gap setting. Then
+    $K(f,g)=\langle f,(-L)^{-1}g\rangle_\pi$ is symmetric for <em>every</em> centered pair if and only if
+    $(-L)^{-1}$, hence $L$, is self-adjoint&mdash;equivalently, the process is reversible. This full-space statement
+    must not be inferred from a selected feature matrix: a one-feature Green&ndash;Kubo matrix is always symmetric,
+    even for an irreversible process.</p>
+    <h3>Two generic features detect every finite-state irreversible chain</h3>
+    <p>The preceding caveat is sharp for one feature but not generic for two. For an irreducible finite-state chain,
+      let $\mathcal H_0$ be the real centered $L^2(\pi)$ space, put
+      $R=(-L)^{-1}|_{\mathcal H_0}$, and define its skew-adjoint part</p>
+    $$J=\operatorname{Anti}R=\tfrac12(R-R^\dagger).$$
+    <p>Choose an orthonormal basis of $\mathcal H_0$ and draw two observables $F,G$ with independent standard
+      Gaussian coordinates in that basis. Their antisymmetric Green&ndash;Kubo signal is</p>
+    $$\Xi=K^{\rm anti}(F,G)=\langle F,JG\rangle_\pi.$$
+    <p>Then the chain is irreversible if and only if $J\ne0$, and in that case</p>
+    <div class="equation-card">
+    $$\Pr(\Xi=0)=0,\qquad
+      \mathbb E\Xi^2=\|J\|_{\rm HS}^2,$$
+    $$\mathbb E e^{it\Xi}
+      =\det(I+t^2J^\dagger J)^{-1/2}.$$
+    </div>
+    <p>Indeed, symmetry of $R$ is equivalent to symmetry of its inverse $-L$, hence to reversibility. If $J\ne0$,
+      its kernel is a proper subspace, so $JG\ne0$ almost surely; conditional on such a $G$, the scalar
+      $\langle F,JG\rangle$ is a nondegenerate Gaussian and is therefore nonzero almost surely. The moment and
+      characteristic-function formulas follow by conditioning first on $G$ and evaluating a Gaussian quadratic
+      form. Thus two generic continuous probes identify finite-state irreversibility almost surely, although a
+      deliberately chosen pair can still miss it. This is a population operator statement, not a finite-sample
+      test or a lower bound on the signal for prescribed features.</p>
+    <p>The squared-signal identity is a bilinear analogue of stochastic trace probing; compare
+      <a href="https://doi.org/10.1080/03610918908812806">Hutchinson (1989)</a>. In the four-state certificate,
+      $\|J\|_{\rm HS}=0.216796492$ and the exact second moment is $0.047000719$; 400,000 independent feature pairs
+      give $0.047160377$. At $t=0.75/\|J\|_{\rm op}$, the exact characteristic function is $0.64$ and the simulation gives
+      $0.640300132$ with imaginary part below $6.3\times10^{-4}$.</p>
+    <h3>A finite random-probe certificate</h3>
+    <p>The almost-sure statement has a quantitative finite-probe version. Let $s_i$ be the singular values of $J$,
+      put $S_2=\sum_i s_i^2=\|J\|_{\rm HS}^2$ and $S_4=\sum_i s_i^4$, and retain independent standard Gaussian
+      probes. Direct expansion of the bilinear Gaussian form gives</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi^4=3S_2^2+6S_4.$$
+    </div>
+    <p>Because $J$ is real and skew-adjoint, its nonzero singular values occur in equal pairs. Hence
+      $S_4/S_2^2\le1/2$, so $\mathbb E\Xi^4\le6S_2^2$ and
+      $\operatorname{Var}(\Xi^2)\le5S_2^2$. Applying the inequality of
+      <a href="https://doi.org/10.1017/S0305004100010112">Paley and Zygmund (1932)</a> to $\Xi^2$ yields, for
+      $0\le\theta&lt;1$,</p>
+    <div class="equation-card">
+    $$\Pr\!\left(|\Xi|\ge\theta\|J\|_{\rm HS}\right)
+      \ge \frac{(1-\theta^2)^2}{6}.$$
+    </div>
+    <p>At $\theta=1/2$, each pair detects a signal of at least half the root-mean-square scale with probability at least
+      $3/32$. Thus $m$ independent pairs miss that threshold with probability at most $(29/32)^m$; in particular,
+      47 pairs give the explicit bound $(29/32)^{47}=0.0097872&lt;1\%$. The empirical energy
+      $m^{-1}\sum_{k=1}^m\Xi_k^2$ is unbiased for $\|J\|_{\rm HS}^2$, with relative variance at most $5/m$ and
+      consequently the Chebyshev bound</p>
+    $$\Pr\!\left(\left|m^{-1}\sum_{k=1}^m\Xi_k^2/S_2-1\right|\ge\varepsilon\right)
+      \le \frac{5}{m\varepsilon^2}.$$
+    <p>For the four-state certificate the paired-singular-value bound is attained: $S_4/S_2^2=1/2$ and the exact
+      relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
+      half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees
+      concern finitely many randomized probes of the exact population
+      operator $J$. They are neither conditional guarantees for prescribed features nor a statistical test based on
+      a finite, noisy trajectory; the latter also requires an estimation-error analysis.</p>
+    <h3>Bounded sign probes: the same finite guarantee, not almost-sure detection</h3>
+    <p>Gaussian coordinates are convenient but not necessary for the finite certificate. Fix any orthonormal basis
+      of the centered space and instead let $X,Y$ have independent Rademacher coordinates, each uniformly distributed
+      on $\{-1,1\}$. For $\Xi_\pm=X^\top JY$, still</p>
+    $$\mathbb E\Xi_\pm^2=S_2=\|J\|_{\rm HS}^2.$$
+    <p>The fourth moment has an exact basis-dependent correction. If
+      $q_i=\sum_jJ_{ij}^2$, then direct sign expansion gives</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi_\pm^4
+      =3S_2^2+6S_4-12\sum_iq_i^2+4\sum_{i,j}J_{ij}^4
+      \le 3S_2^2+6S_4\le6S_2^2.$$
+    </div>
+    <p>The first inequality uses
+      $\sum_{i,j}J_{ij}^4\le\sum_iq_i^2$; the second again uses the paired singular values of a real skew matrix.
+      Therefore the same dimension-free Paley&ndash;Zygmund bound, 47-pair one-percent miss certificate, unbiased
+      energy estimator, and relative-variance bound $5/m$ hold for bounded sign probes. This is the bilinear skew-form analogue of
+      <a href="./bibliography.html#Hutchinson1989">Hutchinson's Rademacher trace estimator</a>.</p>
+    <p>There is a sharper finite-dimensional result. If $d\ge2$ is the dimension of the centered feature space, then
+      $\sum_iq_i=S_2$ and Cauchy&ndash;Schwarz gives $\sum_iq_i^2\ge S_2^2/d$. Hence</p>
+    <div class="equation-card">
+    $$\mathbb E\Xi_\pm^4\le(6-8/d)S_2^2,$$
+    $$\Pr\!\left(|\Xi_\pm|\ge\theta\|J\|_{\rm HS}\right)
+      \ge\frac{(1-\theta^2)^2}{6-8/d}.$$
+    </div>
+    <p>For the four-state certificate the centered dimension is $d=3$, so the fourth-moment constant improves
+      from $6$ to $10/3$. At half RMS, 25 independent sign pairs now suffice for a one-percent miss bound,
+      compared with the dimension-free count 47.</p>
+    <p>The constant $6$ nevertheless cannot be reduced uniformly over dimensions. For $d\ge5$, take normalized
+      sine and cosine vectors $a,b$ on the $d$-cycle and
+      $J_d=(ab^\top-ba^\top)/\sqrt2$. Then $\|J_d\|_{\rm HS}=1$ and direct substitution gives</p>
+    $$\mathbb E(X^\top J_dY)^4=6-\frac{12}{d}+\frac{6}{d^2}\longrightarrow6.$$
+    <p>Thus the dimension-free fourth-moment constant is asymptotically sharp, even though every fixed dimension
+      receives a strict improvement. The certificate checks this identity through $d=128$, where the ratio is
+      $5.906616211$.</p>
+    <p>The almost-sure statement does <em>not</em> survive discretization. For
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$,
+      $\Xi_\pm=X_1Y_2-X_2Y_1$ vanishes with probability exactly $1/2$ despite $J\ne0$.
+      In the four-state certificate, exhaustive enumeration of all 64 sign pairs gives zero probability $1/4$,
+      half-RMS detection probability $1/2$, and fourth moment $0.005697493374$, exactly matching the formula above;
+      its relative energy variance is $1.579139476$, smaller than the Gaussian value $5$.
+      Exact enumeration for 100 additional random skew matrices in dimensions two through six verifies the fourth-moment
+      identity with maximum normalized error below $2.2\times10^{-15}$.
+      Thus bounded probes retain the finite detection guarantee but must not be described as almost-sure identifiers.
+      The law depends on the chosen orthonormal basis, while the displayed universal bounds do not.</p>
+    <h3>A sharp quantitative irreversibility bound</h3>
+    <p>The same resolvent gives more than a yes-or-no test. On the centered space write
+      $L=S+A$, where $S^\dagger=S$, $A^\dagger=-A$, and put $B=-S$. Assume $B$ is strictly positive and the
+      energy-normalized skew operator</p>
+    $$C=B^{-1/2}AB^{-1/2}$$
+    <p>is bounded. Then $C^\dagger=-C$ and the Green&ndash;Kubo resolvent has the exact factorization</p>
+    <div class="equation-card">
+    $$B^{1/2}(-L)^{-1}B^{1/2}=(I-C)^{-1},$$
+    $$\operatorname{Sym}(I-C)^{-1}=(I-C^2)^{-1},\qquad
+      \operatorname{Anti}(I-C)^{-1}=C(I-C^2)^{-1}.$$
+    </div>
+    <p>Let $\eta=\|C\|$ and $u=B^{-1/2}f$. Spectral calculus for the skew-adjoint $C$ gives the sharp comparison</p>
+    $$\frac1{1+\eta^2}\|u\|^2
+      \le K^{\rm sym}(f,f)\le\|u\|^2.$$
+    <p>The upper bound is the reversible Green&ndash;Kubo value generated by $S$ alone: a skew perturbation cannot
+      increase the diagonal integrated covariance. For two observables,</p>
+    $$|K^{\rm anti}(f,g)|\le \rho(\eta)
+      \|B^{-1/2}f\|\,\|B^{-1/2}g\|,\qquad
+      \rho(\eta)=\begin{cases}\eta/(1+\eta^2),&\eta\le1,\\1/2,&\eta\ge1.
+      \end{cases}$$
+    <p>Thus the energy-normalized directional response is universally at most one half. These are full-space
+      operator bounds, not identification claims for a chosen feature block: its antisymmetric entry may still
+      vanish. The variance-reduction side of this factorization is placed against the nonreversible-sampling analysis
+      of <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>
+      and the symmetric/antisymmetric Green&ndash;Kubo analysis of
+      <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>.</p>
+    <p>There is a second sharp normalization, and the distinction matters. Let
+      $G=(I-C^2)^{-1}$ be the symmetric normalized Green&ndash;Kubo operator. Since $G$ is a function of $C$, the
+      two commute and</p>
+    <div class="equation-card">
+    $$G^{-1/2}\operatorname{Anti}(I-C)^{-1}G^{-1/2}=C,$$
+    $$G^{-1/2}(I-C)^{-1}G^{-1/2}=I+C.$$
+    </div>
+    <p>Consequently the intrinsic sector bounds, normalized by the <em>actual</em> symmetric Green&ndash;Kubo form,
+      are</p>
+    <div class="equation-card">
+    $$|K^{\rm anti}(f,g)|\le\eta
+      \sqrt{K^{\rm sym}(f,f)K^{\rm sym}(g,g)},$$
+    $$|K(f,g)|\le\sqrt{1+\eta^2}
+      \sqrt{K^{\rm sym}(f,f)K^{\rm sym}(g,g)}.$$
+    </div>
+    <p>Both constants are sharp in the spectral sense. The universal one-half bound above uses the reversible
+      energy norm $\|B^{-1/2}\cdot\|$; it is not a universal bound after normalization by the reduced, irreversible
+      Green&ndash;Kubo variance. This prevents the two natural notions of relative directional response from being
+      conflated.</p>
+    <p>If features $f_r$ multiply slow operators $A_r$, the first corrector decomposes exactly as</p>
+    <div class="equation-card">
+    $$\sum_{r,s}K_{rs}A_rA_s
+      =\frac12\sum_{r,s}K^{\rm sym}_{rs}\{A_r,A_s\}
+       +\sum_{r&lt;s}K^{\rm anti}_{rs}[A_r,A_s].$$
+    </div>
+    <p>Reversal leaves the anticommutator part unchanged and flips the commutator part. A chosen feature family can
+    therefore reveal direction only when its antisymmetric Green&ndash;Kubo block is nonzero and the corresponding
+    slow operators do not commute.</p>
+
+    <h2>The scalar periodic-diffusion specialization</h2>
+    <p>The constant-coefficient example is not special. Let</p>
+    $$dY_t=b(Y_t)\,dt+\sqrt{2a(Y_t)}\,dW_t\pmod {2\pi},\qquad a&gt;0,$$
+    <p>have a smooth positive stationary density $p$. Its stationary probability current</p>
+    $$J=b(y)p(y)-(a(y)p(y))'$$
+    <p>is constant around the circle, and its generator has the exact decomposition</p>
+    <div class="equation-card">
+    $$L=p^{-1}\partial_y(ap\,\partial_y)+Jp^{-1}\partial_y=:S+A.$$
+    </div>
+    <p>In $L^2(p)$, $S$ is self-adjoint and $A$ is skew-adjoint. Consequently the stationary time-reversed
+    diffusion has generator $L^\dagger=S-A$, current $-J$, and drift $b^\dagger=b-2J/p$. In particular, a regular
+    scalar diffusion on the circle is reversible if and only if $J=0$. This is the periodic specialization of the
+    diffusion time-reversal formula of
+    <a href="./bibliography.html#HaussmannPardoux1986">Haussmann and Pardoux (1986)</a>.</p>
+    <p>The general theorem now gives $K_{L^\dagger}(f,g)=K_L(g,f)$ for every integrable centered pair. If $J\ne0$,
+    the full form cannot be symmetric: under the invertibility assumption above that would make $L$ self-adjoint,
+    contradicting $A\ne0$. Hence some smooth centered pair detects the current, although a particular pair may miss
+    it.</p>
+    <p>The certificate also uses a genuinely nonconstant example,
+    $p(y)=(1+0.35\cos y)/(2\pi)$, $a(y)=0.8+0.2\sin y$, and $J=0.08$. A flux-form periodic CTMC preserves the
+    self/skew-adjoint decomposition exactly. For $(\cos y,\sin y+0.25\cos2y)$, its $K_{12}-K_{21}$ converges to a
+    nonzero limit at rate 2.001, while reversing $J$ transposes the full matrix with error below
+    $2.2\times10^{-13}$. The same certificate independently checks the general theorem on a four-state
+    nonreversible chain with a nonuniform invariant law: the reversed Green&ndash;Kubo matrix agrees with the transpose
+    to machine precision, the full centered form detects irreversibility, and a scalar feature does not.</p>
+    <p>On that four-state chain, the normalized resolvent factorization, its symmetric part and its skew part agree
+      with their closed forms within $1.23\times10^{-15}$. Here $\eta=0.535874194$; the symmetric spectrum is
+      $[0.776903497,1]$, attaining the lower bound $1/(1+\eta^2)$, while the skew norm is $0.416322535$, attaining
+      $\eta/(1+\eta^2)$. In the intrinsic symmetric Green&ndash;Kubo metric, the measured skew norm is
+      $0.535874194=\eta$ and the full norm is $1.134531248=\sqrt{1+\eta^2}$; both matrix identities hold within
+      $4.5\times10^{-16}$.</p>
+
     <p>The central limit condition sets the order of the correction. A stationary ergodic driver with long memory,
     whose correlation decays like $t^{-\alpha}$ with $0 &lt; \alpha &lt; 1$, has no finite Green&ndash;Kubo integral.</p>
     <p>With $\varepsilon$ the fluctuation time scale, the variance of its integrated variance scales like
@@ -106,5 +334,5 @@
     <p>Keeping only the symmetric part is worse than no correction. In the forward direction the symmetric and
     antisymmetric parts of the correction largely cancel, so either one alone misses by more than the average
     does.</p>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">verify_cycle_smile.py</a>.</p>
+    <p class="muted">Discrete-cycle certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">verify_cycle_smile.py</a>.</p>
   </main>

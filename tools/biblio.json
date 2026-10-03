@@ -936,6 +936,28 @@
  },
  {
   "role": "survey_physics",
+  "key": "Nagasawa1964",
+  "authors": "Nagasawa, M.",
+  "year": 1964,
+  "title": "Time Reversions of Markov Processes",
+  "venue": "Nagoya Mathematical Journal 24:177-204",
+  "doi": "10.1017/S0027763000011405",
+  "url": "https://projecteuclid.org/euclid.nmj/1118801344",
+  "annotation": "Develops time reversal for general Markov processes; the stationary reversed semigroup is the adjoint used in the Green-Kubo transpose identity."
+ },
+ {
+  "role": "survey_physics",
+  "key": "HaussmannPardoux1986",
+  "authors": "Haussmann, U. G. and Pardoux, E.",
+  "year": 1986,
+  "title": "Time Reversal of Diffusions",
+  "venue": "Annals of Probability 14(4):1188-1205",
+  "doi": "10.1214/aop/1176992362",
+  "url": "https://doi.org/10.1214/aop/1176992362",
+  "annotation": "Derives the reverse-time drift and generator of a diffusion; on a stationary circle it flips the probability current."
+ },
+ {
+  "role": "survey_physics",
   "key": "Reimann2002",
   "authors": "Reimann, P.",
   "year": 2002,
