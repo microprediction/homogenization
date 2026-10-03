@@ -17,6 +17,7 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     marked_common_shock_factorial_cumulant,
                                     mixed_factorial_cumulants22,
                                     poisson_inverse_instability,
+                                    poisson_mixture_w1_nonparametric_lower,
                                     poisson_mixture_w1_local_minimax,
                                     poisson_point_mass_w1_upper)
 
@@ -277,6 +278,7 @@ def counts():
     instability = poisson_inverse_instability()
     w1_minimax = poisson_mixture_w1_local_minimax()
     w1_point_mass = poisson_point_mass_w1_upper()
+    w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -548,6 +550,66 @@ def counts():
     <p>The final column tends to $0.721126760493$. This proves only a lower bound: it rules out uniform
       $o(n^{-1/2})$ Wasserstein-1 recovery, even on the point-mass submodel, but it does not claim that the unrestricted
       mixing class has an $O(n^{-1/2})$ estimator.</p>
+    <h3>A nonparametric logarithmic obstruction</h3>
+    <p>The unrestricted compact class is substantially harder than its point-mass submodel. More generally, put
+      $mathcal M_{[a,a+B]}$ for all laws on an interval of width $B&gt;0$, and let $R_n^{(1)}(a,B)$ denote the same
+      minimax risk with this class. Then</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \liminf_{n\to\infty}{\log n\over\log\log n}R_n^{(1)}(a,B)\ge {B\over2}.}$$
+    </div>
+    <p>Thus no estimator has worst-case $W_1$ risk
+      $o((\log\log n)/\log n)$ on the unrestricted class. This is a lower bound, not a matching upper-rate claim.</p>
+    <p>The construction is explicit. Fix an integer $L\ge2$, let $J\sim\operatorname{Bin}(L,1/2)$, put
+      $h=B/L$, and define</p>
+    $$\mu_{L,+}=\mathcal L(a+hJ\mid J\ {m even}),\qquad
+      \mu_{L,-}=\mathcal L(a+hJ\mid J\ {m odd}).$$
+    <p>The finite-difference identity</p>
+    $$\sum_{j=0}^L(-1)^j{L\choose j}(a+hj)^r=0,\qquad 0\le r&lt;L,$$
+    <p>shows that the two laws have identical first $L-1$ moments. Yet on
+      $[a+kh,a+(k+1)h)$ their CDF difference is</p>
+    $$2^{1-L}\sum_{j=0}^k(-1)^j{L\choose j}
+      =2^{1-L}(-1)^k{L-1\choose k},$$
+    <p>so summing the absolute areas gives the exact separation</p>
+    $$W_1(\mu_{L,+},\mu_{L,-})={B\over L}.$$
+    <p>The induced mixed-Poisson count laws are nevertheless exponentially close in $L$. To see this without an
+      analytic inversion bound, write a count as</p>
+    $$N=Z+\sum_{i=1}^L B_iX_i,$$
+    <p>where $Z\sim\operatorname{Pois}(a)$, the $B_i$ are fair Bernoulli variables conditioned on even or odd
+      parity, and the independent $X_i\sim\operatorname{Pois}(h)$. Whenever some $X_i=0$, flipping the first
+      corresponding $B_i$ changes parity without changing $N$ and maps the uniform even-parity law bijectively to
+      the uniform odd-parity law. Therefore, for the one-count laws $P_{L,+},P_{L,-}$,</p>
+    $$d_{\rm TV}(P_{L,+},P_{L,-})\le\Pr\{X_1&gt;0,\ldots,X_L&gt;0\}
+      =(1-e^{-B/L})^L,$$
+    <p>and product coupling gives</p>
+    $$d_{\rm TV}(P_{L,+}^{\otimes n},P_{L,-}^{\otimes n})
+      \le n(1-e^{-B/L})^L.$$
+    <p>Le Cam&apos;s two-point metric inequality now yields, for every $L\ge2$,</p>
+    $$R_n^{(1)}(a,B)\ge {B\over2L}
+      \left[1-n(1-e^{-B/L})^L\right].$$
+    <p>For fixed $\epsilon&gt;0$, take
+      $L=\lceil(1+\epsilon)\log n/\log\log n\rceil$. Since
+      $n(1-e^{-B/L})^L\le n(B/L)^L\to0$, the scaled lower limit is at least
+      $B/[2(1+\epsilon)]$; letting $\epsilon$ decrease to zero proves the boxed result.</p>
+    <p>The certificate below first checks exact moment matching, exact $W_1$, and the count-law coupling for
+      $[a,a+B]=[4,5]$. It then optimizes the displayed finite-$n$ lower bound over integer $L$.</p>
+''' + table([[f'{order}', f'{w1:.12f}', f'{tv:.3e}', f'{coupling:.3e}']
+             for order, w1, tv, coupling in zip(
+                 w1_nonparametric['check_orders'], w1_nonparametric['exact_w1'],
+                 w1_nonparametric['count_tv'], w1_nonparametric['coupling_bounds'])],
+            head=('$L$', 'exact $W_1$', 'count TV', 'coupling upper bound')) + r'''
+''' + table([[label, f'{order}', f'{risk:.12e}', f'{scaled:.12f}']
+             for label, order, risk, scaled in zip(
+                 w1_nonparametric['sample_labels'], w1_nonparametric['optimal_orders'],
+                 w1_nonparametric['risk_lower_bounds'],
+                 w1_nonparametric['scaled_lower_bounds'])],
+            head=('$n$', 'optimizing $L$', '$W_1$ risk lower bound',
+                  r'$(\log n/\log\log n)$ times bound')) + r'''
+    <p>The scaled certificate approaches its proved asymptotic lower constant $1/2$ slowly. This ordinary,
+      unsmoothed $W_1$ obstruction is consistent with the smoothness-class theory of
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a> and contrasts with the nearly
+      root-$n$ guarantees that <a href="./bibliography.html#LimHan2024">Lim and Han</a> obtain after replacing
+      ordinary transport by Gaussian-smoothed optimal transport.</p>
     <h3>The point-mass submodel has the parametric rate</h3>
     <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
     $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}

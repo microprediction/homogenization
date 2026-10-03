@@ -1189,6 +1189,17 @@
  },
  {
   "role": "survey_choice",
+  "key": "LimHan2024",
+  "authors": "Lim, K. and Han, F.",
+  "year": 2024,
+  "title": "Smoothed NPMLEs in nonparametric Poisson mixtures and beyond",
+  "venue": "arXiv:2406.08808",
+  "doi": "10.48550/arXiv.2406.08808",
+  "url": "https://arxiv.org/abs/2406.08808",
+  "annotation": "Proves nearly root-n convergence for Poisson-mixture NPMLE and minimum-distance estimators under Gaussian-smoothed optimal transport, providing a precise contrast with the ordinary unsmoothed Wasserstein obstruction derived on the count-law page."
+ },
+ {
+  "role": "survey_choice",
   "key": "MarleyColonius1992",
   "authors": "Marley, A. A. J. and Colonius, H.",
   "year": 1992,

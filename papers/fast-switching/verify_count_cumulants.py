@@ -21,9 +21,11 @@ first four cumulants but different mixed-Poisson count laws.
 The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
 in total variation, even on a compact intensity interval.  A local Poisson
-experiment then gives an optimized parametric-scale Wasserstein-1 lower bound,
-and the sample mean gives a matching n^-1/2 upper rate on the point-mass
-submodel, without asserting that rate for the unrestricted class.
+experiment gives an optimized parametric-scale Wasserstein-1 lower bound, and
+the sample mean gives a matching n^-1/2 upper rate on the point-mass submodel.
+For the unrestricted compact class, a parity-conditioned binomial construction
+instead proves the genuinely nonparametric lower obstruction
+``(log log n)/(log n)``.  The two rates are deliberately kept distinct.
 """
 
 import itertools
@@ -344,6 +346,143 @@ def poisson_point_mass_w1_upper():
         "pointwise_limit": pointwise_limit,
         "uniform_upper_bounds": uniform_upper_bounds,
         "uniform_scaled_bound": math.sqrt(5.0),
+    }
+
+
+def poisson_mixture_w1_nonparametric_lower(lower=4.0, width=1.0):
+    """Parity-binomial lower bound for unrestricted compact Poisson mixtures.
+
+    Let J have a Binomial(L, 1/2) law and condition it on even or odd parity.
+    The two mixing laws of ``lower + width*J/L`` agree in their first L-1
+    moments, while the alternating-binomial CDF identity gives their exact
+    Wasserstein distance ``width/L``.
+
+    A useful probabilistic proof controls the induced count laws.  Write the
+    count as ``Z + sum_i B_i X_i``, where ``Z`` is Pois(lower), the B_i are
+    iid Bernoulli(1/2) conditioned on parity, and the X_i are iid
+    Pois(width/L).  If any X_i is zero, flipping the first such B_i changes
+    parity without changing the count.  Hence
+
+        TV(P_even, P_odd) <= (1-exp(-width/L))**L.
+
+    Tensorization and the two-point metric-loss inequality then yield
+
+        R_n >= width/(2L) * (1-n*(1-exp(-width/L))**L).
+
+    Taking L just above log(n)/log(log(n)) proves
+    liminf log(n)/log(log(n)) R_n >= width/2.
+    """
+    # At much larger orders the exact count-law difference falls below
+    # double-precision resolution, so the direct pmf check stops at 12.
+    check_orders = np.array([4, 8, 12], dtype=int)
+    exact_w1 = []
+    count_tv = []
+    coupling_bounds = []
+    moment_gaps = []
+    count_grid = np.arange(80, dtype=float)
+
+    for order in check_orders:
+        indices = np.arange(order + 1, dtype=int)
+        binomial = np.array(
+            [math.comb(int(order), int(j)) for j in indices], dtype=float
+        )
+        parity_weights = binomial / 2.0 ** (order - 1)
+        even = np.where(indices % 2 == 0, parity_weights, 0.0)
+        odd = np.where(indices % 2 == 1, parity_weights, 0.0)
+        support = lower + width * indices / order
+
+        # The integer finite-difference identity is exact before the affine
+        # change of support, and hence proves equality of all lower moments.
+        exact_differences = [
+            sum((-1) ** int(j) * math.comb(int(order), int(j))
+                * int(j) ** degree for j in indices)
+            for degree in range(order)
+        ]
+        moment_gap = max(abs(x) for x in exact_differences)
+        moment_gaps.append(moment_gap)
+
+        cdf_difference = np.cumsum(even - odd)
+        w1 = width / order * np.sum(np.abs(cdf_difference[:-1]))
+        exact_w1.append(w1)
+
+        count_even = np.array([
+            even @ poisson.pmf(k, support) for k in count_grid
+        ])
+        count_odd = np.array([
+            odd @ poisson.pmf(k, support) for k in count_grid
+        ])
+        tv = 0.5 * np.sum(np.abs(count_even - count_odd))
+        coupling = (-math.expm1(-width / order)) ** order
+        count_tv.append(tv)
+        coupling_bounds.append(coupling)
+
+        assert abs(even.sum() - 1.0) < 1e-15
+        assert abs(odd.sum() - 1.0) < 1e-15
+        assert moment_gap == 0
+        assert abs(w1 - width / order) < 2e-15
+        assert tv <= coupling * (1.0 + 2e-12)
+
+    # Optimize the explicit finite-n lower bound over integer L.  The last
+    # rows use log(n) directly so that the asymptotic regime can be certified
+    # without overflowing floating-point sample sizes.
+    log_sample_sizes = np.array([
+        math.log(1e3), math.log(1e6), math.log(1e12),
+        math.log(1e24), math.log(1e48), 1000.0,
+    ])
+    sample_labels = ("10^3", "10^6", "10^12", "10^24", "10^48", "e^1000")
+    optimal_orders = []
+    risk_lower_bounds = []
+    scaled_lower_bounds = []
+    product_tv_bounds = []
+    for log_n in log_sample_sizes:
+        best = (-1.0, None, None)
+        order = 2
+        while True:
+            log_one_count_bound = (
+                order * math.log(-math.expm1(-width / order))
+            )
+            log_product_bound = log_n + log_one_count_bound
+            product_bound = (
+                math.exp(log_product_bound)
+                if log_product_bound < 0.0 else 1.0
+            )
+            lower_bound = width / (2.0 * order) * (1.0 - product_bound)
+            if lower_bound > best[0]:
+                best = (lower_bound, order, product_bound)
+            # Every later candidate is at most width/(2*(order+1)), so this
+            # certifies that the integer optimizer has been found globally.
+            if width / (2.0 * (order + 1)) <= best[0]:
+                break
+            order += 1
+        lower_bound, order, product_bound = best
+        optimal_orders.append(order)
+        risk_lower_bounds.append(lower_bound)
+        product_tv_bounds.append(product_bound)
+        scaled_lower_bounds.append(
+            log_n / math.log(log_n) * lower_bound
+        )
+
+    risk_lower_bounds = np.asarray(risk_lower_bounds)
+    scaled_lower_bounds = np.asarray(scaled_lower_bounds)
+    product_tv_bounds = np.asarray(product_tv_bounds)
+    assert np.all(risk_lower_bounds > 0.0)
+    assert scaled_lower_bounds[-1] > 0.37
+    assert product_tv_bounds[-1] < 0.2
+    return {
+        "lower": lower,
+        "width": width,
+        "check_orders": check_orders,
+        "moment_gaps": np.asarray(moment_gaps),
+        "exact_w1": np.asarray(exact_w1),
+        "count_tv": np.asarray(count_tv),
+        "coupling_bounds": np.asarray(coupling_bounds),
+        "sample_labels": sample_labels,
+        "log_sample_sizes": log_sample_sizes,
+        "optimal_orders": np.asarray(optimal_orders),
+        "risk_lower_bounds": risk_lower_bounds,
+        "scaled_lower_bounds": scaled_lower_bounds,
+        "product_tv_bounds": product_tv_bounds,
+        "asymptotic_scaled_lower_bound": width / 2.0,
     }
 
 
@@ -790,6 +929,7 @@ def main():
     minimax = poisson_mixture_tv_minimax()
     w1_minimax = poisson_mixture_w1_local_minimax()
     w1_point_mass = poisson_point_mass_w1_upper()
+    w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -1064,6 +1204,22 @@ def main():
     print("sqrt(n) point-mass risk limit",
           f"{w1_point_mass['pointwise_limit']:.12f}",
           "uniform upper bound", f"{w1_point_mass['uniform_scaled_bound']:.12f}")
+    print("unrestricted compact-mixture Wasserstein-1 lower certificate")
+    print(" L       exact W1         count TV          coupling bound")
+    for order, w1, tv, coupling in zip(
+            w1_nonparametric["check_orders"], w1_nonparametric["exact_w1"],
+            w1_nonparametric["count_tv"],
+            w1_nonparametric["coupling_bounds"]):
+        print(f"{order:2d}   {w1:.12f}   {tv:.3e}   {coupling:.3e}")
+    print(" n       optimal L       risk lower bound   scaled lower bound")
+    for label, order, risk, scaled in zip(
+            w1_nonparametric["sample_labels"],
+            w1_nonparametric["optimal_orders"],
+            w1_nonparametric["risk_lower_bounds"],
+            w1_nonparametric["scaled_lower_bounds"]):
+        print(f"{label:>7s}   {order:5d}           {risk:.12e}   {scaled:.12f}")
+    print("asymptotic log(n)/loglog(n) lower constant",
+          f"{w1_nonparametric['asymptotic_scaled_lower_bound']:.12f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
