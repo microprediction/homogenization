@@ -24,7 +24,11 @@ second-order remainder and the finite inverse-information floor on the
 transient subspace.  A rank-two fixed Green--Kubo certificate then checks the
 general law: exactly r information eigenvalues grow linearly when the fixed
 matrix has rank r, while maturity integration can make every finite-maturity
-matrix full rank through a positive transient complement.
+matrix full rank through a positive transient complement.  An additional
+certificate checks the exact full-rank criterion: for distinct CIR
+mean-reversion rates, K Hadamard J(T) is positive definite at every positive
+maturity if and only if every diagonal entry of the positive semidefinite K
+is positive, irrespective of the rank of K.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -696,6 +700,90 @@ def finite_rank_long_maturity_checks():
             final_orders, inverse_errors, inverse_orders)
 
 
+def integrated_full_rank_criterion_checks():
+    """Check the sharp finite-maturity full-rank criterion.
+
+    Distinct CIR mean-reversion rates make the loading Gramian J(T) positive
+    definite for every T > 0.  If K = F F' is positive semidefinite, then
+    K Hadamard J is the sum over feature columns f of
+    diag(f) J diag(f).  It is therefore positive definite exactly when every
+    row of F is nonzero, equivalently when every diagonal entry of K is
+    positive.  The check uses fixed matrices of ranks one, two, and three,
+    followed by a zero-diagonal counterexample.
+    """
+    kappas = np.array([0.3, 0.6, 1.1, 2.0, 3.7])
+    sigma = 0.25
+    horizon = 4.0
+    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+
+    def loadings_at(time):
+        decay = np.exp(-gammas * time)
+        return 2 * (1 - decay) / (
+            (gammas + kappas) * (1 - decay) + 2 * gammas * decay
+        )
+
+    loading_gram = np.array([
+        [quad(
+            lambda time, j=j, k=k:
+            loadings_at(time)[j] * loadings_at(time)[k],
+            0,
+            horizon,
+            epsabs=1e-13,
+            epsrel=1e-13,
+            limit=300,
+        )[0] for k in range(len(kappas))]
+        for j in range(len(kappas))
+    ])
+    loading_eigenvalues = np.linalg.eigvalsh(loading_gram)
+    assert loading_eigenvalues[0] > 8e-7
+
+    features = [
+        np.array([[1.0], [-0.7], [0.3], [1.2], [-2.0]]),
+        np.column_stack((
+            np.ones(5),
+            np.array([-2.0, -0.7, 0.2, 1.1, 2.3]),
+        )),
+        np.column_stack((
+            np.ones(5),
+            np.array([-2.0, -0.7, 0.2, 1.1, 2.3]),
+            np.array([0.5, -1.3, 0.8, 2.2, -0.4]),
+        )),
+    ]
+    minimum_eigenvalues = []
+    for rank, feature in enumerate(features, start=1):
+        green_kubo = feature @ feature.T
+        assert np.linalg.matrix_rank(green_kubo, tol=1e-11) == rank
+        integrated = green_kubo * loading_gram
+        decomposition = sum(
+            np.diag(feature[:, column])
+            @ loading_gram
+            @ np.diag(feature[:, column])
+            for column in range(rank)
+        )
+        assert np.max(np.abs(integrated - decomposition)) < 2e-15
+        eigenvalues = np.linalg.eigvalsh(integrated)
+        assert eigenvalues[0] > 1e-7
+        assert np.linalg.matrix_rank(integrated, tol=1e-10) == 5
+        minimum_eigenvalues.append(eigenvalues[0])
+
+    zero_row_feature = features[-1].copy()
+    zero_row_feature[0] = 0.0
+    zero_diagonal_matrix = zero_row_feature @ zero_row_feature.T
+    assert zero_diagonal_matrix[0, 0] == 0.0
+    singular_integrated = zero_diagonal_matrix * loading_gram
+    singular_eigenvalues = np.linalg.eigvalsh(singular_integrated)
+    assert singular_eigenvalues[0] == 0.0
+    assert np.linalg.matrix_rank(singular_integrated, tol=1e-10) == 4
+
+    print("\nfinite-maturity full-rank criterion")
+    print(f"  loading-Gram minimum eigenvalue "
+          f"{loading_eigenvalues[0]:.10e}")
+    print("  integrated minimum eigenvalues at fixed ranks 1, 2, 3 "
+          + " ".join(f"{value:.10e}" for value in minimum_eigenvalues))
+    print("  one zero Green-Kubo diagonal gives integrated rank 4 of 5")
+    return loading_eigenvalues, np.asarray(minimum_eigenvalues)
+
+
 def coalescing_loading_checks():
     """Certify the confluent-Vandermonde law for nearly equal loadings.
 
@@ -1057,6 +1145,7 @@ def main():
     rank_amplification_checks()
     long_maturity_loading_checks()
     finite_rank_long_maturity_checks()
+    integrated_full_rank_criterion_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()
@@ -1396,8 +1485,9 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification, automatic CIR jet "
-          "independence, prior memory, pair cancellation, and ordered default")
+    print("PASS: positivity, sharp rank amplification and full-rank criterion, "
+          "automatic CIR jet independence, prior memory, pair cancellation, "
+          "and ordered default")
 
 
 if __name__ == "__main__":

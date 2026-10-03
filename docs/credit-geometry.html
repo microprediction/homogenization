@@ -423,6 +423,43 @@
       Therefore no bound depending only on the number of regimes survives
       after maturity integration.</p>
 
+    <h3>An exact full-rank criterion</h3>
+    <p>The preceding rank-one construction is a special case of a sharp
+      criterion that removes any numerical genericity assumption. Fix a
+      common CIR volatility $\sigma\ge0$, pairwise distinct mean-reversion
+      rates $\kappa_1,\ldots,\kappa_d$, and any $T&gt;0$. The CIR loading
+      independence proved below makes $J(T)$ positive definite. For every
+      positive semidefinite fixed-parameter Green&ndash;Kubo matrix $K$,</p>
+    <div class="equation-card">
+    $$D(T)=K\circ J(T)\succ0
+      \quad\Longleftrightarrow\quad K_{ii}&gt;0
+      \text{ for every }i.$$
+    </div>
+    <p>To prove sufficiency, factor $K=FF^\top$ and write $f_\ell$ for the
+      columns of $F$. The Schur product has the exact decomposition</p>
+    $$K\circ J(T)=\sum_\ell
+      \operatorname{diag}(f_\ell)J(T)
+      \operatorname{diag}(f_\ell).$$
+    <p>If a vector $x$ has zero quadratic form, positivity of $J(T)$ forces
+      $\operatorname{diag}(f_\ell)x=0$ for every $\ell$. But
+      $K_{ii}=\sum_\ell f_{\ell i}^2&gt;0$, so some feature is nonzero in each
+      coordinate and hence $x=0$. Conversely, if $K_{ii}=0$, positive
+      semidefiniteness forces the entire $i$th row and column of $K$ to
+      vanish, making $D(T)$ singular.</p>
+    <p>Thus heterogeneous maturity loadings create exact full rank at every
+      positive maturity if and only if every name has nonzero fixed-parameter
+      Green&ndash;Kubo variance. The rank of $K$ itself may be one. This does not
+      increase fixed-feature Green&ndash;Kubo rank; it characterizes the rank
+      created only after integrating different deterministic maturity
+      loadings.</p>
+    <p>A five-name certificate uses the same positive CIR loading Gramian with
+      fixed Green&ndash;Kubo ranks one, two, and three. All three integrated
+      matrices have rank five; their smallest eigenvalues are respectively
+      $1.57035185\times10^{-7}$, $7.36817240\times10^{-5}$, and
+      $3.91143441\times10^{-2}$. Setting one feature row to zero makes the
+      corresponding diagonal entry vanish and reduces the integrated rank
+      exactly to four.</p>
+
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>
@@ -555,6 +592,9 @@
       \qquad
       \det D(T)=T^r\det_+(A)\det(H_K)+O(T^{r-1}).$$
     </div>
+    <p>Under the distinct-mean-reversion assumptions of the full-rank
+      criterion above, the premise $D(T_0)\succ0$ is equivalent simply to
+      $K_{ii}&gt;0$ for every name, and then holds for every $T_0&gt;0$.</p>
     <p>The finite-maturity full-rank premise supplies the missing positivity,
       rather than merely assuming it. For $z\in\ker A$,</p>
     $$z^\top H_Kz
