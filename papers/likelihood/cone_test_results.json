@@ -171,6 +171,34 @@
   "orthant_chibar_95": 8.946571633865318,
   "orthant_null_rejection": 0.050178,
   "correlated_constrained_correlation": 0.7,
+  "correlated_constrained_unrestricted_dimension": 2,
+  "correlated_constrained_covariance": [
+    [
+      3.3456700452520116,
+      -2.0456700452520113,
+      1.4,
+      1.3
+    ],
+    [
+      -2.0456700452520113,
+      3.1456700452520114,
+      -1.4,
+      -1.3
+    ],
+    [
+      1.4,
+      -1.4,
+      1.2,
+      0.6858571279792898
+    ],
+    [
+      1.3,
+      -1.3,
+      0.6858571279792898,
+      0.8
+    ]
+  ],
+  "correlated_constrained_conditional_correlation": -0.011608185365861836,
   "correlated_constrained_replications": 1000000,
   "correlated_constrained_chibar_weights": [
     0.1265916555533175,
@@ -178,13 +206,15 @@
     0.37340834444668247
   ],
   "correlated_constrained_face_frequencies": [
-    0.126609,
-    0.500049,
-    0.373342
+    0.126491,
+    0.499893,
+    0.373616
   ],
-  "correlated_constrained_weight_max_error": 6.634444668246475e-05,
-  "correlated_constrained_chibar_95": 4.72625321575952,
-  "correlated_constrained_null_rejection": 0.050003,
-  "correlated_constrained_binomial_95": 4.230599177831469,
-  "correlated_constrained_rejection_at_binomial": 0.064806
+  "correlated_constrained_weight_max_error": 0.00020765555331753172,
+  "correlated_constrained_chibar_95": 8.410794002767757,
+  "correlated_constrained_null_rejection": 0.05032,
+  "correlated_constrained_binomial_95": 8.022107968221023,
+  "correlated_constrained_rejection_at_binomial": 0.059396,
+  "correlated_constrained_conditional_95": 8.015881197711415,
+  "correlated_constrained_rejection_at_conditional": 0.05954
 }

@@ -9,7 +9,8 @@ Gaussian score shift, one-dimensional quadrature gives exact limiting power.
 For a general Fisher covariance the projection must first residualize and
 standardize the unrestricted scores against the one-sided score.  The same
 construction is checked below for three unrestricted coordinates.
-It is also checked for several Fisher-orthogonal one-sided coordinates.
+It is also checked for several Fisher-orthogonal one-sided coordinates and
+for two correlated one-sided coordinates with a dense unrestricted block.
 """
 import json
 import math
@@ -400,23 +401,56 @@ def main():
         orthant_face_frequencies - orthant_weights
     )))
 
-    # Correlation among constrained coordinates changes the cone angles and
-    # hence the chi-bar weights.  For q=2 with unit variances and correlation
-    # rho, the exact weights are
+    # Correlation among two constrained coordinates changes the cone angles
+    # and hence the chi-bar weights.  A dense unrestricted block contributes
+    # an independent chi-square_p term after regression on the constrained
+    # block.  Importantly, rho is the marginal correlation in that block,
+    # not the conditional correlation after regressing it on X.
+    # The exact weights are
     # (1/4-asin(rho)/(2pi), 1/2, 1/4+asin(rho)/(2pi)).
+    constrained_p = 2
     constrained_rho = 0.70
     constrained_reps = 1000000
-    constrained_covariance = np.array([
-        [1.0, constrained_rho],
-        [constrained_rho, 1.0],
+    constrained_s = np.array([
+        [1.20, constrained_rho * math.sqrt(1.20 * 0.80)],
+        [constrained_rho * math.sqrt(1.20 * 0.80), 0.80],
     ])
-    constrained_scores = rng.multivariate_normal(
-        np.zeros(2), constrained_covariance, size=constrained_reps
-    )
-    constrained_statistic, constrained_faces = (
-        project_correlated_orthant_2d(
-            constrained_scores, constrained_rho
+    constrained_c = np.array([[1.10, 0.20], [0.20, 0.90]])
+    constrained_b = np.array([[1.40, 1.30], [-1.40, -1.30]])
+    constrained_a = (
+        constrained_c
+        + constrained_b @ np.linalg.solve(
+            constrained_s, constrained_b.T
         )
+    )
+    constrained_covariance = np.block([
+        [constrained_a, constrained_b],
+        [constrained_b.T, constrained_s],
+    ])
+    constrained_raw = rng.multivariate_normal(
+        np.zeros(constrained_p + 2),
+        constrained_covariance,
+        size=constrained_reps,
+    )
+    constrained_y = constrained_raw[:, constrained_p:]
+    constrained_residual = (
+        constrained_raw[:, :constrained_p]
+        - constrained_y @ np.linalg.solve(
+            constrained_s, constrained_b.T
+        )
+    )
+    constrained_u = constrained_residual @ symmetric_root(
+        constrained_c, inverse=True
+    )
+    constrained_v = constrained_y / np.sqrt(np.diag(constrained_s))
+    constrained_orthant_statistic, constrained_faces = (
+        project_correlated_orthant_2d(
+            constrained_v, constrained_rho
+        )
+    )
+    constrained_statistic = (
+        np.sum(constrained_u ** 2, axis=1)
+        + constrained_orthant_statistic
     )
     angle_term = math.asin(constrained_rho) / (2.0 * math.pi)
     constrained_weights = np.array([
@@ -431,11 +465,24 @@ def main():
         constrained_face_frequencies - constrained_weights
     )))
 
+    constrained_conditional_s = (
+        constrained_s
+        - constrained_b.T @ np.linalg.solve(
+            constrained_a, constrained_b
+        )
+    )
+    constrained_conditional_rho = (
+        constrained_conditional_s[0, 1]
+        / math.sqrt(
+            constrained_conditional_s[0, 0]
+            * constrained_conditional_s[1, 1]
+        )
+    )
+
     def constrained_chibar_cdf(x, weights):
-        return (
-            weights[0]
-            + weights[1] * chi2.cdf(x, 1)
-            + weights[2] * chi2.cdf(x, 2)
+        return sum(
+            weight * chi2.cdf(x, constrained_p + face_dimension)
+            for face_dimension, weight in enumerate(weights)
         )
 
     constrained_critical = brentq(
@@ -458,6 +505,24 @@ def main():
     )
     constrained_rejection_at_binomial = float(np.mean(
         constrained_statistic > binomial_q2_critical
+    ))
+    conditional_angle_term = (
+        math.asin(constrained_conditional_rho) / (2.0 * math.pi)
+    )
+    conditional_q2_weights = np.array([
+        0.25 - conditional_angle_term,
+        0.50,
+        0.25 + conditional_angle_term,
+    ])
+    conditional_q2_critical = brentq(
+        lambda x: constrained_chibar_cdf(
+            x, conditional_q2_weights
+        ) - (1.0 - alpha),
+        0.0,
+        40.0,
+    )
+    constrained_rejection_at_conditional = float(np.mean(
+        constrained_statistic > conditional_q2_critical
     ))
 
     out = {
@@ -506,6 +571,10 @@ def main():
         "orthant_chibar_95": orthant_critical,
         "orthant_null_rejection": orthant_null_rejection,
         "correlated_constrained_correlation": constrained_rho,
+        "correlated_constrained_unrestricted_dimension": constrained_p,
+        "correlated_constrained_covariance": constrained_covariance.tolist(),
+        "correlated_constrained_conditional_correlation":
+            constrained_conditional_rho,
         "correlated_constrained_replications": constrained_reps,
         "correlated_constrained_chibar_weights": constrained_weights.tolist(),
         "correlated_constrained_face_frequencies":
@@ -518,6 +587,9 @@ def main():
         "correlated_constrained_binomial_95": binomial_q2_critical,
         "correlated_constrained_rejection_at_binomial":
             constrained_rejection_at_binomial,
+        "correlated_constrained_conditional_95": conditional_q2_critical,
+        "correlated_constrained_rejection_at_conditional":
+            constrained_rejection_at_conditional,
     }
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cone_test_results.json")
     with open(path, "w") as f:
@@ -555,9 +627,12 @@ def main():
     print("correlated constrained weights exact/simulated, max error: "
           f"{constrained_weights}, {constrained_face_frequencies}, "
           f"{constrained_weight_error:.3e}")
-    print("correlated constrained critical/correct rejection/binomial rejection: "
-          f"{constrained_critical:.6f}/{constrained_null_rejection:.6f}/"
-          f"{constrained_rejection_at_binomial:.6f}")
+    print("correlated constrained p+2 critical/correct rejection: "
+          f"{constrained_critical:.6f}/{constrained_null_rejection:.6f}")
+    print("marginal/conditional constrained correlations and wrong rejections: "
+          f"{constrained_rho:.6f}/{constrained_conditional_rho:.6f}, "
+          f"binomial {constrained_rejection_at_binomial:.6f}, "
+          f"conditional {constrained_rejection_at_conditional:.6f}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -582,7 +657,8 @@ def main():
         and orthant_weight_error < 0.0015
         and abs(constrained_null_rejection - alpha) < 0.0015
         and constrained_weight_error < 0.0015
-        and abs(constrained_rejection_at_binomial - alpha) > 0.01
+        and abs(constrained_rejection_at_binomial - alpha) > 0.008
+        and abs(constrained_rejection_at_conditional - alpha) > 0.008
     )
     print("PASS" if ok else "FAIL")
     if not ok:

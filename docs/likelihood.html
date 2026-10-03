@@ -288,13 +288,28 @@
     <p>The binomial weights are <strong>not</strong> universal once $q\geq2$. Correlation within the constrained block
     changes the cone angles and therefore the chi-bar-square weights, as in the multivariate one-sided tests of
     <a href="./bibliography.html#Kudo1963">Kudô (1963)</a> and the cone formulation of
-    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. For two unit-variance constrained scores with
-    correlation $\rho$, direct two-dimensional projection gives</p>
+    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. The two-constraint case remains explicit even with
+    unrestricted scores. Partition the profiled Gaussian covariance as</p>
+    $$\Sigma=\begin{pmatrix}A&B\\B^\top&S\end{pmatrix},\qquad
+      C=A-BS^{-1}B^\top,$$
+    <p>where $X\in\mathbb R^p$ is unrestricted and $Y\in\mathbb R^2$ is constrained to the positive orthant. Then
+    $U=C^{-1/2}(X-BS^{-1}Y)$ is independent of $Y$, and the projected Fisher norm splits as</p>
+    $$\mathrm{LM}_{p,2}=\lVert U\rVert^2+
+      \left\lVert\Pi_{\mathbb R_+^2}^{S^{-1}}(Y)\right\rVert_{S^{-1}}^2.$$
+    <p>Let $\rho=S_{12}/\sqrt{S_{11}S_{22}}$ be the <em>marginal</em> correlation of the constrained block. Positive
+    diagonal rescaling reduces $S$ to a correlation matrix without changing the orthant. Direct two-dimensional
+    projection gives</p>
     $$w_0=\frac14-\frac{\arcsin\rho}{2\pi},\qquad
       w_1=\frac12,\qquad
       w_2=\frac14+\frac{\arcsin\rho}{2\pi},$$
-    <p>rather than $(1/4,1/2,1/4)$ unless $\rho=0$. This restriction separates the universal one-constraint
-    half-space theorem from its genuinely covariance-dependent multi-constraint extension.</p>
+    <p>and hence the exact null law</p>
+    $$\mathrm{LM}_{p,2}\ \Longrightarrow\
+      w_0\chi_p^2+w_1\chi_{p+1}^2+w_2\chi_{p+2}^2.$$
+    <p>The cross block $B$ changes the residualized unrestricted score but not these weights. In particular, replacing
+    $\rho$ by the correlation of $Y$ conditional on $X$ is wrong: minimizing over the unrestricted cone coordinates
+    leaves the marginal metric $S^{-1}$ on $Y$, not the conditional covariance. This theorem includes the
+    $(1/4,1/2,1/4)$ law when $\rho=0$ and separates the universal one-constraint result from its genuinely
+    covariance-dependent multi-constraint extension.</p>
     <h3>Local alternatives and power</h3>
     <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
     alternatives, after the same nuisance-parameter profiling, satisfies</p>
