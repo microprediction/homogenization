@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>One curve from short to long maturities · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./yield-curve.html">&larr; three numbers in a yield curve</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_uniform_long_end.py">certificate</a></span></p>
+    <h1>One curve from short to long maturities</h1>
+    <p class="subtitle">Exact Perron growth removes secular error; a moving invariant law has a sharp second-order cost.</p>
+
+    <p class="lead">A fixed-maturity expansion need not remain accurate at long maturities. In a general chain an
+    omitted term of size $T/m^2$ is order one when $T$ is comparable to $m^2$; in the symmetric two-state case below,
+    symmetry cancels that coefficient and the first secular omission is $T/m^3$. Matched formulas are uniformly
+    accurate for every $T\geq0$, and a moving-projection formula extends the result to any finite irreducible chain.
+    If the fast generator itself varies, the same formula remains uniform but a moving invariant law generically
+    lowers the stationary-observation order from three to two. Periodic forcing, despite having infinite total
+    variation on the half-line, is also tractable after an exact Floquet renormalization. For unequal two-state
+    switching rates, an additional second-order Floquet drift and an explicit fast initial slip appear. A positive
+    periodic trial profile also gives a computable a posteriori enclosure of the exact Floquet exponent at any fixed
+    switching speed.</p>
+
+    <h2>The two-state reduction</h2>
+    <p>Let the regimes switch in either direction at rate $m$, and write their time-dependent pricing forcings as
+    $g_1=\bar g+\delta$ and $g_2=\bar g-\delta$. If $a'=(Q+\operatorname{diag}g)a$ with $a(0)=\mathbf1$, put</p>
+    $$s=\tfrac12(a_1+a_2),\qquad d=\tfrac12(a_1-a_2),\qquad r=d/s.$$
+    <p>Positivity of the pricing system gives $|r|&lt;1$, and the two linear equations reduce exactly to</p>
+    $$\frac{d}{dt}\log s=\bar g+\delta r,\qquad
+      r'=\delta-2mr-\delta r^2,\qquad r(0)=0.$$
+    <p>Suppose $\bar g(t)\to\bar g_\infty$ and $\delta(t)\to\delta_\infty$. The exact principal eigenvalue of the
+    limiting matrix is</p>
+    $$\Lambda(m)=\bar g_\infty+\sqrt{m^2+\delta_\infty^2}-m.$$
+
+    <h2>The matched formula</h2>
+    <p>For a stationary initial regime, the uniformly matched log amplitude is</p>
+    <div class="equation-card">
+    $$L_c(T)=\Lambda(m)T+\int_0^T(\bar g(t)-\bar g_\infty)dt
+      +\frac1{2m}\int_0^T(\delta(t)^2-\delta_\infty^2)dt.$$
+    </div>
+    <p>The last integral is precisely the transient Green&ndash;Kubo correction. For the unscaled generator
+    $Q_0=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$, its quadratic form satisfies
+    $\mathcal K_0((\delta,-\delta),(\delta,-\delta))=\delta^2/2$. At fixed maturity, expanding $\Lambda$ recovers
+    $\int\bar g+(2m)^{-1}\int\delta^2$. At long maturity, keeping $\Lambda$ exact prevents the omitted
+    $T/m^3,T/m^5,\ldots$ eigenvalue terms from accumulating.</p>
+
+    <h2>A uniform theorem</h2>
+    <p>Assume $\delta$ is continuously differentiable, $G=\sup_t|\delta(t)|&lt;m$,</p>
+    $$V_\delta=\int_0^\infty|\delta'(t)|dt&lt;\infty,qquad
+      L_\delta=\int_0^\infty|\delta(t)-\delta_\infty|dt&lt;\infty.$$
+    <p>Then, simultaneously for every maturity $T\geq0$,</p>
+    <div class="equation-card">
+    $$|\log s(T)-L_c(T)|\leq
+      \frac{G(G+V_\delta)}{4m(m-G)}+\frac{G^3L_\delta}{2m^3}.$$
+    </div>
+    <p>The right-hand side is $O(m^{-2})$ and does not grow with $T$. The average forcing $\bar g$ contributes no
+    error because its transient is retained exactly.</p>
+
+    <h3>Proof</h3>
+    <p>Set</p>
+    $$R(x)=\frac{x}{m+\sqrt{m^2+x^2}},\qquad h(x)=xR(x)=\sqrt{m^2+x^2}-m.$$
+    <p>The value $R(\delta)$ is the stable algebraic root of the Riccati equation. For $z=r-R(\delta)$,</p>
+    $$z'=-\{2m+\delta(r+R)\}z-\frac{d}{dt}R(\delta).$$
+    <p>Because $|r|,|R|&lt;1$, the damping is at least $2(m-G)$. Also
+    $|R(x)|\leq |x|/(2m)$ and $|R'(x)|\leq1/(2m)$. Variation of constants therefore gives</p>
+    $$\int_0^T|z(t)|dt\leq\frac{G+V_\delta}{4m(m-G)}.$$
+    <p>The exact correction is $\int\delta r$. Its difference from the composite is the sum of
+    $\int\delta z$ and</p>
+    $$\int_0^T\left[q_m(\delta(t))-q_m(\delta_\infty)\right]dt,qquad
+      q_m(x)=h(x)-\frac{x^2}{2m}.$$
+    <p>Finally $|q_m'(x)|\leq |x|^3/(2m^3)$ for $|x|\leq G$. The two displayed bounds prove the result.</p>
+
+    <h2>Known starting regimes and the initial layer</h2>
+    <p>If regime 1 has initial probability $p$, put $\eta=2p-1$. The exact log amplitude is
+    $\log s+\log(1+\eta r)$. When $D=\sup|\delta'|&lt;\infty$, define</p>
+    $$r_b(T)=\frac{\delta(T)-\delta(0)e^{-2mT}}{2m}.$$
+    <p>The second term is the fast initial layer: it makes $r_b(0)=0$. Adding
+    $\log(1+\eta r_b(T))$ to $L_c$ gives another maturity-uniform approximation. Indeed,</p>
+    $$|r(T)-r_b(T)|\leq\frac{D}{4m^2}+\frac{G^3}{8m^3}.$$
+    <p>Thus its additional log error is at most the right-hand side divided by $1-G/m$. In the Vasicek bond
+    problem $g_i(0)=0$, hence $\delta(0)=0$ and the explicit initial-layer term vanishes; the state correction
+    still approaches the correct eigenvector weight at the far end.</p>
+
+    <h2>The constant spectral projection</h2>
+    <p>For constant $\bar g$ and $\delta$, let $\omega=\sqrt{m^2+\delta^2}$. The stationary-start solution is</p>
+    $$s(T)=e^{(\bar g-m)T}\left\{\cosh(\omega T)+\frac m\omega\sinh(\omega T)\right\}.$$
+    <p>Its slow-mode coefficient is not one:</p>
+    $$s(T)\sim \frac{m+\omega}{2\omega}e^{\Lambda T}.$$
+    <p>The corresponding constant $\log((m+\omega)/(2\omega))$ is $O(m^{-2})$. This is why the composite has a
+    uniform $O(m^{-2})$ remainder rather than tending exactly to zero at the far end. For a known starting mixture,
+    the coefficient is multiplied by $1+\eta R(\delta)$.</p>
+
+    <h2>Vasicek certificate</h2>
+    <p>The certificate uses $\kappa=1$, levels $(8\%,2\%)$, and variances $(0.004,0.001)$. It integrates the exact
+    Riccati system out to $\max(20,m^2)$, checks both known starting regimes, compares the reduction with the original
+    two-component ODE, and separately checks the constant-forcing spectral projection.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>maximum log error</th><th>proved bound</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1.4264e-4</td><td>4.4103e-4</td><td>1.4264e-4</td></tr>
+        <tr><td>2</td><td>3.2118e-5</td><td>1.0858e-4</td><td>1.2847e-4</td></tr>
+        <tr><td>4</td><td>7.4339e-6</td><td>2.6939e-5</td><td>1.1894e-4</td></tr>
+        <tr><td>8</td><td>1.7704e-6</td><td>6.7093e-6</td><td>1.1331e-4</td></tr>
+        <tr><td>16</td><td>4.3057e-7</td><td>1.6742e-6</td><td>1.1023e-4</td></tr>
+        <tr><td>32</td><td>1.0607e-7</td><td>4.1815e-7</td><td>1.0861e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The horizons include $T=O(1)$, $T=O(m)$, and $T=O(m^2)$. The scaled error settles, while a fixed-maturity
+    formula with the eigenvalue truncated at first order would eventually accumulate error.</p>
+
+    <h2>Constant forcing for any irreducible finite chain</h2>
+    <p>The stationary-start result extends cleanly without diagonalizing the generator when the forcing has already
+    reached its limit. Let $Q_0$ be any irreducible finite-state generator, possibly defective, with stationary row
+    vector $\pi$. For a real diagonal matrix $D=\operatorname{diag}g$, set</p>
+    $$A_m=mQ_0+D,$$
+    <p>and let $\Lambda_m$ be its principal eigenvalue and $P_m$ its rank-one Riesz spectral projection. Define the
+    exact slow-mode weight $c_m=\pi P_m\mathbf1$.</p>
+    <div class="equation-card">
+    <p><strong>Finite-chain theorem.</strong> There are constants $m_0,C,c&gt;0$, depending only on $Q_0$ and $D$,
+    such that for every $m\ge m_0$ and every $T\ge0$,</p>
+    $$\left|e^{-\Lambda_mT}\pi e^{A_mT}\mathbf1-c_m\right|
+      \le \frac{C}{m^2}e^{-cmT},\qquad
+      c_m=1+O(m^{-2}).$$
+    <p>Consequently, after increasing $m_0$ if necessary,</p>
+    $$\sup_{T\ge0}\left|\log\!\left(\pi e^{A_mT}\mathbf1\right)-\Lambda_mT\right|
+      \le\frac{C'}{m^2}.$$
+    </div>
+    <p>This theorem retains the exact eigenvalue but does not even need an explicit projection correction to achieve
+    uniform second order for a stationary start. The projection explains the limiting constant:
+    $\log(\pi e^{A_mT}\mathbf1)-\Lambda_mT\to\log c_m=O(m^{-2})$ as $T\to\infty$.</p>
+
+    <h3>Proof without diagonalizability</h3>
+    <p>Put $\varepsilon=1/m$ and $B_\varepsilon=Q_0+\varepsilon D$. The zero eigenvalue of $Q_0$ is simple and
+    isolated. Analytic perturbation of its Riesz projection gives a simple eigenvalue
+    $\lambda_\varepsilon=\Lambda_m/m$ and an analytic projection $P_\varepsilon$, with
+    $P_0=\mathbf1\pi$. The rest of the spectrum stays uniformly separated, so finite-dimensional contour calculus
+    gives</p>
+    $$\left\|e^{\tau(B_\varepsilon-\lambda_\varepsilon I)}
+      (I-P_\varepsilon)\right\|\le M e^{-c\tau},\qquad \tau\ge0,$$
+    <p>uniformly for small $\varepsilon$. This estimate permits Jordan blocks; no eigenbasis is used.</p>
+    <p>Both endpoint factors vanish at $\varepsilon=0$:</p>
+    $$\pi(I-P_\varepsilon)=O(\varepsilon),\qquad
+      (I-P_\varepsilon)\mathbf1=O(\varepsilon).$$
+    <p>Since $P_\varepsilon$ commutes with $B_\varepsilon$, the complementary contribution factors as</p>
+    $$\pi(I-P_\varepsilon)e^{mT(B_\varepsilon-\lambda_\varepsilon I)}
+      (I-P_\varepsilon)\mathbf1,$$
+    <p>which is $O(\varepsilon^2e^{-cmT})$. Differentiating
+    $P_\varepsilon^2=P_\varepsilon$ and multiplying by $P_0$ on both sides gives
+    $P_0P'_0P_0=0$, hence $\pi P'_0\mathbf1=0$ and $c_m=1+O(\varepsilon^2)$. Positivity of the irreducible
+    Feynman&ndash;Kac semigroup and $c_m\to1$ then convert the relative estimate into the logarithmic bound.</p>
+
+    <h3>A defective three-state certificate</h3>
+    <p>The certificate uses</p>
+    $$Q_0=\frac{\mathbf1\mathbf1^\top}{3}-I+0.1\,uv^\top,\qquad
+      u=(1,-1,0)^\top,\quad v=(1,1,-2)^\top,$$
+    <p>with $g=(-0.2,0.3,0.6)$. Every off-diagonal rate is positive. On the mean-zero space the eigenvalue $-1$
+    has a nontrivial Jordan block because $(uv^\top)^2=0$ but $uv^\top\ne0$. The certificate evaluates the exact
+    matrix exponential after subtracting $\Lambda_m$, rather than diagonalizing $Q_0$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>principal eigenvalue</th><th style="text-transform:none">$c_m$</th><th>maximum log error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>0.26393665</td><td>0.99166255</td><td>8.3724e-3</td><td>0.13396</td></tr>
+        <tr><td>8</td><td>0.24895180</td><td>0.99781432</td><td>2.1881e-3</td><td>0.14004</td></tr>
+        <tr><td>16</td><td>0.24121597</td><td>0.99944202</td><td>5.5814e-4</td><td>0.14288</td></tr>
+        <tr><td>32</td><td>0.23729215</td><td>0.99985915</td><td>1.4086e-4</td><td>0.14424</td></tr>
+        <tr><td>64</td><td>0.23531700</td><td>0.99996462</td><td>3.5377e-5</td><td>0.14491</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The last measured convergence rate is $1.9934$. Independently, the residual after the first Green&ndash;Kubo
+    eigenvalue term converges at rate $2.0137$.</p>
+
+    <h2>Time-dependent forcing for any finite chain</h2>
+    <p>The moving-projection problem also has a clean answer. Let $D(t)$ be a bounded $C^1$ diagonal matrix with
+    $D(0)=0$, $\|D'\|_\infty&lt;\infty$, and $\int_0^\infty\|D'(t)\|dt&lt;\infty$. The last condition implies a limit
+    $D_\infty$. Set $A_m(t)=mQ_0+D(t)$ and let $\lambda_m(t)$ be its instantaneous Perron eigenvalue. For all
+    sufficiently large $m$, choose positive right and left eigenvectors $r_m(t),\ell_m(t)$ by</p>
+    $$A_mr_m=\lambda_mr_m,\qquad \ell_m^\top A_m=\lambda_m\ell_m^\top,\qquad
+      \pi r_m=1,\qquad \ell_m^\top r_m=1.$$
+    <p>The normalization fixes the gauge. Its scalar transport connection is</p>
+    $$\gamma_m(t)=\ell_m(t)^\top r_m'(t),\qquad
+      L_m(T)=\int_0^T\{\lambda_m(t)-\gamma_m(t)\}\,dt.$$
+    <div class="equation-card">
+    <p><strong>Moving-projection theorem.</strong> Let $u_m'=A_m(t)u_m$ and $u_m(0)=\mathbf1$. There are constants
+    $m_0,C&lt;infty$ such that, for every $m\ge m_0$,</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-L_m(T)\right|\le \frac{C}{m^3}.$$
+    <p>For any fixed regime prior $\nu$, the endpoint-corrected approximation satisfies</p>
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-L_m(T)-\log(\nu r_m(T))\right|
+      \le \frac{C_\nu}{m^2}.$$
+    </div>
+    <p>The connection term is essential for a nonreversible chain: integrating only the instantaneous eigenvalue
+    omits transport of the moving slow eigenspace. The formula is gauge invariant when the matching endpoint
+    factors are retained; $\pi r_m=1$ is simply the most convenient gauge. The factor $\log(\nu r_m(T))$ is the
+    finite-chain version of the two-state known-start layer above.</p>
+
+    <h3>Why the orders improve</h3>
+    <p>Write $P_m=r_m\ell_m^\top$, $a=\ell_m^\top u_m$, and $z=(I-P_m)u_m$. Then</p>
+    $$a'=(\lambda_m-\gamma_m)a+\ell_m'{}^\top z,\qquad
+      z'=(A_m-P_m')z-aP_m'r_m.$$
+    <p>Uniform spectral separation gives a complementary decay rate $cm$. Analytic resolvent bounds give
+    $P_m'=O(m^{-1}\|D'\|)$, so variation of constants and a standard large-$m$ bootstrap yield</p>
+    $$\sup_T\left\|{z(T)\over a(T)}\right\|=O(m^{-2}),qquad
+      \int_0^\infty\left|\ell_m'{}^\top{z\over a}\right|dt=O(m^{-3}).$$
+    <p>Finally $\ell_m-\pi=O(m^{-1})$ and $\ell_m^\top z=0$. Hence
+    $\pi z=(\pi-\ell_m^\top)z=O(m^{-3})$, proving the stationary rate. A general $\nu$ does not have that last
+    cancellation and retains $O(m^{-2})$. The assumption $D(0)=0$ makes $u_m(0)=r_m(0)=\mathbf1$ exactly; if the
+    forcing is already regime-dependent at the near endpoint, an additional decaying initial-slip term is required.</p>
+
+    <h3>Nonzero near-end forcing: the sharp loss without a slip</h3>
+    <p>The same transport formula remains uniformly useful when $D(0)\ne0$, but its initial slow projection must be
+    retained. Define</p>
+    $$a_{m,0}=\ell_m(0)^\top\mathbf1,\qquad
+      \widetilde L_m(T)=\log a_{m,0}+L_m(T).$$
+    <div class="equation-card">
+    <p><strong>Endpoint-mismatch theorem.</strong> Under the preceding boundedness and integrability assumptions,
+    but with arbitrary fixed $D(0)$, there are constants $m_0,C,C_\nu$ such that</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-\widetilde L_m(T)\right|
+      \le \frac{C}{m^2},$$
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-\widetilde L_m(T)-\log(\nu r_m(T))\right|
+      \le \frac{C_\nu}{m}.$$
+    </div>
+    <p>These orders are generically sharp for this formula. At $T=0$ the exact logarithm is zero, whereas the two
+    approximations equal $\log a_{m,0}=O(m^{-2})$ and
+    $\log\{a_{m,0}\nu r_m(0)\}=O(m^{-1})$, respectively. A decaying fast-mode slip is therefore necessary to
+    recover the $O(m^{-3})$ stationary and $O(m^{-2})$ specified-start orders through the near endpoint.</p>
+
+    <h3>Proof of the endpoint-mismatch orders</h3>
+    <p>At time zero put $z_0=\mathbf1-a_{m,0}r_m(0)$. Analytic perturbation and the two normalizations give</p>
+    $$r_m(0)-\mathbf1=O(m^{-1}),\qquad \ell_m(0)-\pi=O(m^{-1}),\qquad
+      a_{m,0}-1=O(m^{-2}),\qquad z_0=O(m^{-1}).$$
+    <p>The cancellation in $a_{m,0}$ follows by differentiating
+    $\pi r_m=\ell_m^\top r_m=1$ at $m^{-1}=0$. Complementary spectral decay and variation of constants then give</p>
+    $$\left\|\frac{z(T)}{a(T)}\right\|
+      \le C\{m^{-1}e^{-cmT}+m^{-2}\},\qquad
+      \left|\log\frac{a(T)}{a_{m,0}}-L_m(T)\right|\le \frac{C}{m^3}.$$
+    <p>For stationary observation, $\pi z=(\pi-\ell_m^\top)z$ supplies one more factor $m^{-1}$; a general prior
+    has no such cancellation. Taking logarithms, uniformly away from zero for sufficiently large $m$, proves the
+    two bounds.</p>
+
+    <h3>The frozen initial slip restores the higher orders</h3>
+    <p>The missing boundary layer is explicit. With $A_{m,0}=A_m(0)$ and
+    $\lambda_{m,0}=\lambda_m(0)$, define</p>
+    $$b_{m,0}(T)=e^{(A_{m,0}-\lambda_{m,0}I)T}z_0,$$
+    <p>and, for any fixed prior $\nu$, set</p>
+    $$L^{\mathrm{slip}}_{m,\nu}(T)=L_m(T)+
+      \log\{a_{m,0}\nu r_m(T)+\nu b_{m,0}(T)\}.$$
+    <p>Because $\ell_m(0)^\top z_0=0$, the frozen semigroup contains only fast modes and
+    $b_{m,0}(T)=O(m^{-1}e^{-cmT})$. At $T=0$ the vector inside braces reconstructs the exact initial condition:</p>
+    $$a_{m,0}r_m(0)+b_{m,0}(0)=\mathbf1.$$
+    <div class="equation-card">
+    <p><strong>Initial-slip theorem.</strong> Under the same assumptions as the endpoint-mismatch theorem,</p>
+    $$\sup_{T\ge0}\left|\log(\pi u_m(T))-L^{\mathrm{slip}}_{m,\pi}(T)\right|
+      \le \frac{C}{m^3},$$
+    <p>and, for every fixed prior $\nu$,</p>
+    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-L^{\mathrm{slip}}_{m,\nu}(T)\right|
+      \le \frac{C_\nu}{m^2}.$$
+    </div>
+    <p>Thus a frozen fast semigroup is enough: no time-ordered exponential is needed in the boundary layer.</p>
+
+    <h3>Proof of the slip theorem</h3>
+    <p>Scale out the transported slow exponential by writing
+    $\alpha=e^{-L_m}a$ and $y=e^{-L_m}z$. Then $\alpha(0)=a_{m,0}$, $y(0)=z_0$, and</p>
+    $$\alpha'=\ell_m'{}^\top y,\qquad
+      y'=\{A_m-\lambda_mI-P_m'+\gamma_mI\}y-\alpha P_m'r_m.$$
+    <p>The frozen slip solves $b_{m,0}'=(A_{m,0}-\lambda_{m,0}I)b_{m,0}$. Since
+    $D(T)-D(0)=O(T)$ in the $T=O(m^{-1})$ layer, variation of constants, the complementary spectral gap, and
+    $P_m'=O(m^{-1}\|D'\|)$ give, uniformly in $T$,</p>
+    $$\|y-b_{m,0}\|=O(m^{-2}),\qquad
+      |\alpha-a_{m,0}|=O(m^{-3}).$$
+    <p>For stationary observation there is one further cancellation. Both $y$ and the frozen slip lie in their
+    respective left-eigenvector complements, and
+    $\ell_m(T)-\ell_m(0)=O(m^{-1}\min\{T,1\})$ inside the layer. Hence</p>
+    $$|\pi(y-b_{m,0})|=O(m^{-3}).$$
+    <p>Finally
+    $e^{-L_m}\nu u_m=\alpha\nu r_m+\nu y$. Subtracting the slip approximation gives $O(m^{-2})$ for a general
+    prior and $O(m^{-3})$ for $\nu=\pi$; positivity for sufficiently large $m$ converts these relative estimates
+    into the displayed logarithmic bounds.</p>
+
+    <h3>A moving defective-chain certificate</h3>
+    <p>Using the same defective $Q_0$, the certificate takes
+    $D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2,-0.4)$. It computes $r_m'$ from the bordered differentiated
+    eigenvalue equation rather than differencing eigenvectors, and checks that calculation independently by a
+    centered difference. The exact nonautonomous system is also integrated independently.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>stationary error</th><th style="text-transform:none">$m^3\times$error</th><th>largest specified-start error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>1.60990e-4</td><td>0.010303</td><td>7.86282e-3</td><td>0.125805</td></tr>
+        <tr><td>8</td><td>2.27545e-5</td><td>0.011650</td><td>2.31939e-3</td><td>0.148441</td></tr>
+        <tr><td>16</td><td>3.03784e-6</td><td>0.012443</td><td>6.47891e-4</td><td>0.165860</td></tr>
+        <tr><td>32</td><td>3.92914e-7</td><td>0.012875</td><td>1.74182e-4</td><td>0.178363</td></tr>
+        <tr><td>64</td><td>4.99833e-8</td><td>0.013103</td><td>4.51604e-5</td><td>0.184977</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured rates are $2.9747$ and $1.9475$, respectively. The test covers
+    $T=O(1),O(m),O(m^2)$ and the far-end limit; reconstructing the original three-component ODE from the normalized
+    calculation agrees below $5\times10^{-12}$.</p>
+
+    <h3>Endpoint-mismatch certificate</h3>
+    <p>To test the sharp loss, the same defective generator is paired with
+    $D(0)=\operatorname{diag}(-0.25,0.12,-0.02)$ and
+    $D(\infty)=\operatorname{diag}(-0.6,-0.2,-0.4)$. The approximation includes $\log a_{m,0}$ but no fast-mode
+    slip. Over $T=O(1),O(m),O(m^2)$, the stationary and specified-start residuals have measured orders
+    $1.9957$ and $1.0024$. At $m=64$ they are $6.2040\times10^{-6}$ and $3.2712\times10^{-3}$, with scaled
+    errors $m^2E=0.02541$ and $mE=0.20936$.</p>
+    <p>Adding the frozen slip restores measured orders $2.9322$ and $1.9478$. At $m=64$ the corrected residuals
+    are $1.2922\times10^{-8}$ and $6.7756\times10^{-6}$, with $m^3E=0.00339$ and $m^2E=0.02775$.</p>
+
+    <h2>When the fast generator moves</h2>
+    <p>The third-order stationary cancellation above uses more than a spectral gap: it uses the fixed invariant
+    row $\pi$. Let $Q(t)$ now be a $C^1$ family of finite-state generators with a common state space,
+    $Q(t)\mathbf1=0$, invariant rows $\pi(t)$, and uniform exponential ergodicity on the complementary
+    subspace. Assume $Q$ and $D$ are bounded and have finite total variation,</p>
+    $$\int_0^\infty\{\|Q'(t)\|+\|D'(t)\|\}\,dt&lt;\infty,$$
+    <p>and put $A_m(t)=mQ(t)+D(t)$. Take $D(0)=0$ and fix the gauge row $q=\pi(0)$. For the Perron eigenvectors use</p>
+    $$A_mr_m=\lambda_mr_m,\qquad \ell_m^\top A_m=\lambda_m\ell_m^\top,\qquad
+      q r_m=1,\qquad \ell_m^\top r_m=1,$$
+    <p>and retain the same connection and transported exponent</p>
+    $$\gamma_m=\ell_m^\top r_m',\qquad
+      L_m(T)=\int_0^T(\lambda_m-\gamma_m)\,dt.$$
+    <div class="equation-card">
+    <p><strong>Moving-generator theorem.</strong> For every fixed regime prior $\nu$, there are
+    $m_0,C_\nu&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log(\nu u_m(T))-L_m(T)-\log\{\nu r_m(T)\}\right|
+      \leq {C_\nu\over m^2},\qquad m\geq m_0.$$
+    <p>The order is generically sharp even for the initial stationary observation $\nu=q$. Thus the fixed-$Q$
+    $O(m^{-3})$ statement must not be transferred to state-dependent or time-dependent switching rates.</p>
+    </div>
+
+    <h3>Why one order disappears</h3>
+    <p>Although $\ell_m'=\pi'(t)+O(m^{-1})$ is now order one, $Q'(t)\mathbf1=0$ still gives
+    $r_m'=O(m^{-1})$. Hence the full projector derivative $P_m'$ is order one, but its only forcing of the fast
+    component satisfies</p>
+    $$P_m'r_m=r_m'-\gamma_mr_m=O(m^{-1}).$$
+    <p>The $O(m)$ complementary gap therefore still yields $z/a=O(m^{-2})$. The slow-amplitude feedback is now</p>
+    $$\int_0^\infty \ell_m'{}^\top{z\over a}\,dt=O(m^{-2}),$$
+    <p>because the total variation is finite. This term was $O(m^{-3})$ for fixed $Q$, where
+    $\ell_m'=O(m^{-1})$. In addition, $q-\ell_m(t)$ is generally order one, so observing with the initial
+    stationary row supplies no extra cancellation. These two changes prove the bound and identify the mechanism
+    behind its sharpness.</p>
+
+    <h3>A sharp two-state certificate</h3>
+    <p>The certificate takes</p>
+    $$Q(t)=\begin{pmatrix}-a(t)&amp;a(t)\\b(t)&amp;-b(t)\end{pmatrix},\quad
+      a(t)=1+0.4(1-e^{-t}),\quad b(t)=0.7+0.5(1-e^{-t}),$$
+    $$D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2),\qquad q=\pi(0)=(0.7,1)/1.7.$$
+    <p>It integrates the exact normalized pricing system through
+    $T=\max(20,m^2)$ and computes $r_m'$ from the bordered differentiated eigenvalue equation. A centered
+    difference checks the connection independently. Freezing $Q$ at $Q(0)$ while retaining the same $D(t)$
+    isolates the effect of the moving invariant law.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>moving-$Q$ error</th><th style="text-transform:none">$m^2\times$error</th><th>fixed-$Q$ error</th><th style="text-transform:none">$m^3\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>2.81912e-4</td><td>0.001128</td><td>3.63739e-4</td><td>0.002910</td></tr>
+        <tr><td>4</td><td>1.09118e-4</td><td>0.001746</td><td>5.26324e-5</td><td>0.003368</td></tr>
+        <tr><td>8</td><td>3.38371e-5</td><td>0.002166</td><td>7.10761e-6</td><td>0.003639</td></tr>
+        <tr><td>16</td><td>9.45377e-6</td><td>0.002420</td><td>9.24541e-7</td><td>0.003787</td></tr>
+        <tr><td>32</td><td>2.50280e-6</td><td>0.002563</td><td>1.17928e-7</td><td>0.003864</td></tr>
+        <tr><td>64</td><td>6.44281e-7</td><td>0.002639</td><td>1.49032e-8</td><td>0.003907</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured orders are $1.9578$ for the moving generator and $2.9842$ for its fixed-generator
+    control. This is a counterexample to carrying the fixed-generator stationary $O(m^{-3})$ rate over to a
+    moving invariant law.</p>
+
+    <h2>Periodic forcing: exact Floquet growth plus a bounded phase</h2>
+    <p>Finite total variation is sufficient for the preceding transport estimates, but it is not necessary.
+    Return to the symmetric two-state reduction and suppose that $\bar g,\delta$ are $P$-periodic, with
+    $\delta\in C^2$. Write $\langle f\rangle=P^{-1}\int_0^P f(t)dt$. For all sufficiently large $m$, the Riccati
+    equation has a unique attracting periodic solution $r_m^*$, and set</p>
+    $$\lambda_m=\left\langle\bar g+\delta r_m^*\right\rangle,$$
+    $$\Phi_{m,1}(T)=\int_0^T\left\{\bar g(t)-\langle\bar g\rangle+
+      {\delta(t)^2-\langle\delta^2\rangle\over2m}\right\}dt.$$
+    <p>The integrand defining $\Phi_{m,1}$ has zero period mean, so the phase is bounded and periodic. The number
+    $\lambda_m$ is the exact principal Floquet exponent: it is equivalently $P^{-1}$ times the logarithm of the
+    Perron eigenvalue of the one-period monodromy matrix.</p>
+    <div class="equation-card">
+    <p><strong>Periodic Floquet theorem.</strong> For the stationary initial regime, $r(0)=0$, there are
+    $m_0,C&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log s(T)-\lambda_mT-\Phi_{m,1}(T)\right|
+      \leq {C\over m^2},\qquad m\geq m_0.$$
+    <p>This is genuinely uniform over arbitrarily many periods. Replacing $\lambda_m$ by only its first-order
+    expansion generally destroys that statement.</p>
+    </div>
+
+    <h3>Proof and the secular term</h3>
+    <p>The interval $(-1,1)$ is invariant for the Riccati flow. If $M=\|\delta\|_\infty$ and $m&gt;M$, its
+    derivative with respect to the initial value contracts over one period by at most
+    $e^{-2(m-M)P}$. The Poincar&eacute; map therefore has one fixed point. Substitution and the same contraction give</p>
+    $$r_m^*(t)={\delta(t)\over2m}-{\delta'(t)\over4m^2}+O(m^{-3})$$
+    <p>uniformly in $t$. For $q=r-r_m^*$, exact subtraction gives</p>
+    $$q'=-\{2m+\delta(r+r_m^*)\}q,\qquad
+      |q(t)|\leq {C\over m}e^{-2(m-M)t}.$$
+    <p>Thus the initial transient contributes only $\int_0^T\delta q\,dt=O(m^{-2})$, uniformly in $T$. On the
+    periodic orbit, subtracting $\lambda_m$ and the derivative of $\Phi_{m,1}$ leaves a periodic, zero-mean
+    function of size $O(m^{-2})$; its integral over any number of complete periods cancels, and the final partial
+    period is also $O(m^{-2})$. This proves the bound.</p>
+    <p>If $\delta\in C^3$, one further substitution gives</p>
+    $$\lambda_m=\langle\bar g\rangle+{\langle\delta^2\rangle\over2m}
+      -{\langle(\delta')^2+\delta^4\rangle\over8m^3}+O(m^{-4}).$$
+    <p>The absent $m^{-2}$ mean follows from $\langle\delta\delta'\rangle=0$. Unless the displayed third-order
+    coefficient vanishes, the first-order exponent accumulates an order-one error at $T\asymp m^3$; retaining
+    the exact Floquet exponent is therefore the periodic analogue of retaining the exact far-end Perron root.</p>
+
+    <h3>Periodic certificate</h3>
+    <p>The certificate uses period $2\pi$ and</p>
+    $$\bar g(t)=-0.35+0.08\cos t+0.03\sin2t,\qquad
+      \delta(t)=0.45+0.22\sin t-0.08\cos2t.$$
+    <p>It solves the Riccati Poincar&eacute; fixed-point equation, computes the exponent independently from the
+    two-dimensional monodromy matrix, and then starts the exact system from $r(0)=0$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>maximum Floquet-phase error</th><th style="text-transform:none">$m^2\times$error</th><th style="text-transform:none">$m^3|\lambda_m-\lambda_{m,1}|$</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>2.42113e-2</td><td>0.096845</td><td>0.013102</td></tr>
+        <tr><td>4</td><td>5.85259e-3</td><td>0.093641</td><td>0.014265</td></tr>
+        <tr><td>8</td><td>1.42001e-3</td><td>0.090881</td><td>0.014613</td></tr>
+        <tr><td>16</td><td>3.48562e-4</td><td>0.089232</td><td>0.014704</td></tr>
+        <tr><td>32</td><td>8.62764e-5</td><td>0.088347</td><td>0.014728</td></tr>
+        <tr><td>64</td><td>2.14576e-5</td><td>0.087891</td><td>0.014733</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The measured uniform-error order is $2.0075$, and the Riccati and monodromy exponents agree within
+    $8.9\times10^{-16}$. The limiting drift predicted by the expansion is
+    $0.01473536$, versus $0.01473342$ numerically at $m=64$. This construction is the classical decomposition of
+    a periodic linear system into exponential growth and a periodic factor, originating in
+    <a href="https://doi.org/10.24033/asens.220">Floquet&apos;s 1883 paper</a>; here the fast-switching expansion
+    supplies the explicit bounded phase and uniform remainder.</p>
+
+    <h3>Unequal rates: second-order drift and an explicit slip</h3>
+    <p>The symmetric chain hides a cancellation. Let</p>
+    $$Q_0=\begin{pmatrix}-\alpha&amp;\alpha\\\beta&amp;-\beta\end{pmatrix},\qquad
+      \rho=\alpha+\beta,\qquad
+      \pi_1={\beta\over\rho},\quad \pi_2={\alpha\over\rho},$$
+    <p>and write $v=\pi_1\pi_2$, $\sigma=\pi_2-\pi_1$ and</p>
+    $$g_1=\bar g+\pi_2\delta,\qquad g_2=\bar g-\pi_1\delta.$$
+    <p>For $M=\pi_1a_1+\pi_2a_2$ and $r=(a_1-a_2)/M$, the exact reduction is</p>
+    $$({\log M})'=\bar g+v\delta r,\qquad
+      r'=\delta+(\sigma\delta-m\rho)r-v\delta r^2,\qquad r(0)=0.$$
+    <p>If $\bar g,\delta$ are smooth and $P$-periodic, the unique attracting periodic orbit satisfies</p>
+    $$r_m^*(t)={\delta(t)\over m\rho}
+      +{\sigma\delta(t)^2-\delta'(t)\over m^2\rho^2}+O(m^{-3}),$$
+    <p>and its exact principal Floquet exponent therefore has the expansion</p>
+    $$\lambda_m=\langle\bar g\rangle+{v\langle\delta^2\rangle\over m\rho}
+      +{v\sigma\langle\delta^3\rangle\over m^2\rho^2}+O(m^{-3}).$$
+    <p>The $m^{-2}$ secular coefficient is generically nonzero when $\alpha\ne\beta$. It vanishes for equal rates
+    because then $\sigma=0$; periodicity also gives $\langle\delta\delta'\rangle=0$.</p>
+
+    <p>Define the bounded second-order phase</p>
+    $$\Phi_{m,2}(T)=\int_0^T\left[\bar g-\langle\bar g\rangle
+      +{v\over m\rho}(\delta^2-\langle\delta^2\rangle)
+      +{v\over m^2\rho^2}\{\sigma(\delta^3-\langle\delta^3\rangle)-\delta\delta'\}\right]dt$$
+    <p>and the frozen initial slip</p>
+    $$B_{m,2}(T)=-{v\delta(0)^2\over m^2\rho^2}(1-e^{-m\rho T}).$$
+    <div class="equation-card">
+    <p><strong>Unequal-rate periodic theorem.</strong> There are $m_0,C&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log M(T)-\lambda_mT-\Phi_{m,2}(T)-B_{m,2}(T)\right|
+      \leq {C\over m^3},\qquad m\geq m_0.$$
+    <p>Without the slip and the second-order phase, the preceding first-order Floquet formula has only a uniform
+    $O(m^{-2})$ error. The exponent remains exact: substituting a finite expansion for $\lambda_m$ would again
+    produce secular error over sufficiently many periods.</p>
+    </div>
+
+    <p>For the proof, subtract the periodic orbit. The difference $q=r-r_m^*$ obeys exactly</p>
+    $$q'=\{\sigma\delta-m\rho-v\delta(r+r_m^*)\}q.$$
+    <p>Uniform contraction gives the leading boundary layer
+    $q_{\rm bl}(t)=-\delta(0)(m\rho)^{-1}e^{-m\rho t}$ and, by variation of constants,</p>
+    $$|q(t)-q_{\rm bl}(t)|\leq C(m^{-2}+t/m)e^{-cmt}.$$
+    <p>Because $\delta(t)-\delta(0)=O(t)$, integrating $v\delta q$ differs from $B_{m,2}$ by $O(m^{-3})$
+    uniformly in its upper limit. On the periodic orbit, subtracting the exact exponent and the displayed phase
+    leaves a zero-mean periodic function of size $O(m^{-3})$; its primitive is uniformly $O(m^{-3})$. These two
+    estimates prove the theorem.</p>
+
+    <h3>Unequal-rate certificate</h3>
+    <p>With $\alpha=1.7$, $\beta=0.4$ and the same forcing as above, the certificate compares the reduced Riccati
+    system with an independently integrated two-dimensional monodromy matrix.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>first-phase error</th><th style="text-transform:none">$m^2\times$error</th><th>phase-plus-slip error</th><th style="text-transform:none">$m^3\times$error</th><th style="text-transform:none">$m^2$ exponent drift</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>2.98804e-3</td><td>0.011952</td><td>1.06429e-3</td><td>0.008514</td><td>0.00258457</td></tr>
+        <tr><td>4</td><td>6.90282e-4</td><td>0.011045</td><td>1.29779e-4</td><td>0.008306</td><td>0.00273030</td></tr>
+        <tr><td>8</td><td>1.64942e-4</td><td>0.010556</td><td>1.57937e-5</td><td>0.008086</td><td>0.00278988</td></tr>
+        <tr><td>16</td><td>4.02581e-5</td><td>0.010306</td><td>1.94108e-6</td><td>0.007951</td><td>0.00281474</td></tr>
+        <tr><td>32</td><td>9.94131e-6</td><td>0.010180</td><td>2.40392e-7</td><td>0.007877</td><td>0.00282580</td></tr>
+        <tr><td>64</td><td>2.46988e-6</td><td>0.010117</td><td>2.99038e-8</td><td>0.007839</td><td>0.00283097</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured orders are $2.0090$ before the correction and $3.0070$ after it. The numerical
+    second-order drift is $0.00283097$, against the predicted $0.00283589$, and the independent exponents agree
+    within $9.5\times10^{-16}$. This is a concrete asymmetric-chain instance of the rapidly fluctuating Markov-chain
+    expansions developed by
+    <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang (1996)</a>, with the additional
+    Floquet resummation and initial layer needed for a maturity-uniform statement.</p>
+
+    <h2>Periodic switching rates and the geometric drift</h2>
+    <p>The Floquet construction also survives when the fast generator itself is periodic. Let
+    $\alpha(t),\beta(t)&gt;0$ be smooth and $P$-periodic, and define</p>
+    $$Q(t)=\begin{pmatrix}-\alpha(t)&amp;\alpha(t)\\\beta(t)&amp;-\beta(t)\end{pmatrix},\qquad
+      \rho=\alpha+\beta,\qquad p={\beta\over\rho},\quad 1-p={\alpha\over\rho},$$
+    $$v=p(1-p),\qquad \sigma=1-2p,\qquad
+      g_1=\bar g+(1-p)\delta,\quad g_2=\bar g-p\delta.$$
+    <p>The moving stationary average $M=pa_1+(1-p)a_2$ and ratio $r=(a_1-a_2)/M$ satisfy exactly</p>
+    $$({\log M})'=\bar g+h r,\qquad
+      r'=\delta+(\sigma\delta-m\rho)r-h r^2,\qquad h=v\delta+p'.$$
+    <p>The $p'$ term is geometric: it comes from differentiating the moving stationary weights. Omitting it is not
+    an innocuous choice of coordinates; its period mean against the first fast corrector can be nonzero and then
+    changes the Floquet exponent at order $m^{-1}$.</p>
+
+    <p>Put</p>
+    $$R_1={\delta\over\rho},\qquad
+      R_2={\sigma\delta R_1-R_1'\over\rho}.$$
+    <p>The attracting periodic orbit and exact exponent have the expansions</p>
+    $$r_m^*={R_1\over m}+{R_2\over m^2}+O(m^{-3}),$$
+    $$\lambda_m=\langle\bar g\rangle
+      +{\langle hR_1\rangle\over m}
+      +{\langle hR_2\rangle\over m^2}+O(m^{-3}).$$
+    <p>Define the bounded moving-average phase</p>
+    $$\Phi^{\rm mov}_{m,2}(T)=\int_0^T\left[
+      \bar g-\langle\bar g\rangle
+      +{hR_1-\langle hR_1\rangle\over m}
+      +{hR_2-\langle hR_2\rangle\over m^2}
+      \right]dt$$
+    <p>and its frozen slip</p>
+    $$B^{\rm mov}_{m,2}(T)=-{h(0)\delta(0)\over m^2\rho(0)^2}
+      (1-e^{-m\rho(0)T}).$$
+    <p>The pricing observation is fixed at the initial stationary prior, not at the moving row $\pi(T)$. Put</p>
+    $$P_m(T)=\pi(0)a(T)=M(T)\{1+c(T)r(T)\},\qquad c(T)=p(0)-p(T),$$
+    $$\Theta^{\rm obs}_{m,2}(T)={cR_1\over m}
+      +{cR_2-\tfrac12c^2R_1^2\over m^2},\qquad
+      C^{\rm obs}_{m,2}(T)=-{c(T)\delta(0)\over m\rho(0)}e^{-m\rho(0)T}.$$
+    <p>The first two terms are the periodic observation phase. The last term is a separate fast correction caused
+    by holding the observation row fixed while $\pi(t)$ starts to move; it is uniformly $O(m^{-2})$ because
+    $c(0)=0$.</p>
+    <div class="equation-card">
+    <p><strong>Moving-generator Floquet theorem.</strong> There are $m_0,C&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log P_m(T)-\lambda_mT
+      -\Phi^{\rm mov}_{m,2}(T)-\Theta^{\rm obs}_{m,2}(T)
+      -B^{\rm mov}_{m,2}(T)-C^{\rm obs}_{m,2}(T)\right|
+      \leq {C\over m^3},\qquad m\geq m_0.$$
+    <p>This covers a periodic generator of infinite total variation on the half-line. It does not contradict the
+    earlier sharp $O(m^{-2})$ result for a general moving generator: periodicity permits the remaining local error
+    to be split into its exact mean, absorbed by $\lambda_m$, and a bounded zero-mean phase.</p>
+    </div>
+
+    <h3>An arbitrary fixed initial prior</h3>
+    <p>The stationary initial row is special. For a fixed prior $\nu=(q,1-q)$, set</p>
+    $$P_{m,\nu}(T)=\nu a(T)=M(T)\{1+c_\nu(T)r(T)\},
+      \qquad c_\nu(T)=q-p(T),$$
+    $$\Phi^{\rm mov}_{m,1}(T)=\int_0^T\left[
+      \bar g-\langle\bar g\rangle
+      +{hR_1-\langle hR_1\rangle\over m}\right]dt,$$
+    $$\Theta^{\rm obs}_{m,1}(T)={c_\nu(T)R_1(T)\over m},\qquad
+      C^{\rm obs}_{m,1}(T)=-{c_\nu(T)R_1(0)\over m}e^{-m\rho(0)T}.$$
+    <div class="equation-card">
+    <p><strong>Arbitrary-prior Floquet theorem.</strong> For every fixed $\nu$, there are
+    $m_0,C&lt;\infty$ such that</p>
+    $$\sup_{T\geq0}\left|\log P_{m,\nu}(T)-\lambda_mT
+      -\Phi^{\rm mov}_{m,1}(T)-\Theta^{\rm obs}_{m,1}(T)
+      -C^{\rm obs}_{m,1}(T)\right|\leq {C\over m^2}.$$
+    <p>The observation slip is necessary. If $q\ne p(0)$ and $R_1(0)\ne0$, omitting it leaves the near-end
+    error $|q-p(0)|\,|R_1(0)|/m+O(m^{-2})$ already at $T=0$. When $q=p(0)$, that coefficient vanishes;
+    the observation layer is then only $O(m^{-2})$, which is precisely the extra cancellation used by the
+    preceding stationary-prior third-order theorem.</p>
+    </div>
+
+    <h3>Proof</h3>
+    <p>Uniform positivity of $\alpha,\beta$ makes the Riccati Poincar&eacute; map a contraction for large $m$.
+    Substitution gives the displayed expansion of $r_m^*$. For $q=r-r_m^*$, exact subtraction yields</p>
+    $$q'=\{\sigma\delta-m\rho-h(r+r_m^*)\}q.$$
+    <p>Its leading initial layer is
+    $q_{\rm bl}=-\delta(0)[m\rho(0)]^{-1}e^{-m\rho(0)t}$. Smoothness of all coefficients gives</p>
+    $$|q(t)-q_{\rm bl}(t)|\leq C(m^{-2}+t/m)e^{-cmt}.$$
+    <p>Consequently $\int_0^T hq-B^{\rm mov}_{m,2}(T)=O(m^{-3})$ uniformly in $T$. For general $c_\nu=O(1)$,
+    the same layer estimate first gives, uniformly in $T$,</p>
+    $$\log\{1+c_\nu(r_m^*+q)\}
+      ={c_\nu R_1\over m}-{c_\nu R_1(0)\over m}e^{-m\rho(0)T}+O(m^{-2}),$$
+    <p>which proves the arbitrary-prior theorem after combining it with the first-order moving-average phase.
+    For $q=p(0)$, $c_\nu(T)=O(T)$ at the near end; expanding one order further gives the observation phase and
+    $C^{\rm obs}_{m,2}$ with a uniform $O(m^{-3})$ remainder. On the periodic orbit, the
+    exact exponent removes the mean of $\bar g+hr_m^*$, while the two displayed correctors leave a zero-mean
+    periodic remainder of size $O(m^{-3})$. Its primitive is bounded uniformly over arbitrarily many periods.</p>
+
+    <h3>Moving-generator periodic certificate</h3>
+    <p>The certificate uses the preceding $\bar g,\delta$ and</p>
+    $$\alpha(t)=1.4+0.25\sin t+0.08\cos2t,\qquad
+      \beta(t)=0.7+0.18\cos t-0.06\sin2t.$$
+    <p>It evaluates the fixed initial observation $\pi(0)a(T)$ and independently integrates the full two-dimensional
+    monodromy matrix. The first-order Floquet coefficient
+    is $0.02164779$; its geometric part $\langle p'\delta/\rho\rangle=-0.00101852$ would be missed by freezing the
+    stationary weights.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>first-phase error</th><th style="text-transform:none">$m^2\times$error</th><th>phase-plus-slip error</th><th style="text-transform:none">$m^3\times$error</th><th style="text-transform:none">$m^2$ exponent drift</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>2.31724e-3</td><td>0.009269</td><td>1.30704e-3</td><td>0.010456</td><td>0.00167352</td></tr>
+        <tr><td>4</td><td>5.06203e-4</td><td>0.008099</td><td>1.53141e-4</td><td>0.009801</td><td>0.00180856</td></tr>
+        <tr><td>8</td><td>1.18136e-4</td><td>0.007561</td><td>1.82208e-5</td><td>0.009329</td><td>0.00191921</td></tr>
+        <tr><td>16</td><td>3.04168e-5</td><td>0.007787</td><td>2.21399e-6</td><td>0.009069</td><td>0.00198336</td></tr>
+        <tr><td>32</td><td>7.69780e-6</td><td>0.007882</td><td>2.72638e-7</td><td>0.008934</td><td>0.00201695</td></tr>
+        <tr><td>64</td><td>1.93513e-6</td><td>0.007926</td><td>3.38192e-8</td><td>0.008866</td><td>0.00203401</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The measured stationary-prior orders are $1.9920$ before the second correction and $3.0111$ after it.
+    For the nonstationary prior $\nu_1=0.86$, omitting the leading observation slip gives order $1.0000$;
+    retaining it restores order $1.9995$. The numerical
+    second-order drift is $0.00203401$, versus $0.00205120$ predicted. The independent exponents agree within
+    $2.4\times10^{-15}$, while the reduced and full two-component prices agree within $2.8\times10^{-12}$.
+    Time-inhomogeneous rapidly switching chains and their occupation expansions are treated by
+    <a href="https://doi.org/10.1214/105051606000000682">Yin and Zhang (2007)</a>; the theorem here adds the exact
+    Floquet resummation, explicit geometric coefficient, and maturity-uniform initial slip. The arbitrary-start
+    layer is also the finite-dimensional boundary-layer mechanism appearing in the full asymptotic series of
+    <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang (1996)</a>.</p>
+
+    <h2>Any finite periodic chain: the Floquet projection</h2>
+    <p>The two-state Riccati equation supplies explicit coefficients, but it is not needed for a maturity-uniform
+    theorem. Let $Q(t)$ and the real diagonal forcing $D(t)$ be $C^2$ and $P$-periodic, with $Q(t)$ a uniformly
+    irreducible finite-state generator having a uniform fast spectral gap. Write
+    $A_m(t)=mQ(t)+D(t)$ and let $U_m(t,s)$ be its evolution family.
+    The positive monodromy $F_m=U_m(P,0)$ has a Perron multiplier $\mu_m$, right and left vectors $v_m,w_m$,
+    and exact Floquet exponent</p>
+    $$\lambda_m=P^{-1}\log\mu_m,\qquad
+      w_m^\top v_m=1,\qquad \pi(0)v_m=1.$$
+    <p>Define the periodic principal profile, its initial coefficient, and the frozen fast layer by</p>
+    $$r_m(t)=e^{-\lambda_mt}U_m(t,0)v_m,\qquad
+      c_m=w_m^\top\mathbf1,\qquad z_{m,0}=\mathbf1-c_mv_m,$$
+    $$b_{m,0}(t)=e^{\{A_m(0)-\lambda_mI\}t}z_{m,0}.$$
+    <p>Thus $r_m(t+P)=r_m(t)$. The profile and exponent are exact Floquet quantities; only the short initial
+    transient is approximated.</p>
+    <div class="equation-card">
+    <p><strong>Finite-chain periodic theorem.</strong> For every fixed probability row $\nu$,</p>
+    $$\sup_{T\geq0}\left|
+      \log\{\nu U_m(T,0)\mathbf1\}-\lambda_mT
+      -\log\{c_m\nu r_m(T)+\nu b_{m,0}(T)\}
+      \right|\leq {C_\nu\over m^2}.$$
+    <p>For the stationary initial row $\nu=\pi(0)$, the slip may be omitted while retaining $O(m^{-2})$.
+    For a general fixed prior, omitting it is generically only $O(m^{-1})$. If $Q(t)\equiv Q_0$ is fixed, the
+    stationary-prior formula with the frozen slip improves to $O(m^{-3})$ even when $Q_0$ is defective.</p>
+    </div>
+
+    <h3>Explicit first-order coefficient</h3>
+    <p>The exact Floquet exponent also has an explicit first correction in any number of states. Let
+    $g(t)=\operatorname{diag}D(t)$, $\bar g(t)=\pi(t)g(t)$, and
+    $\widetilde g(t)=g(t)-\bar g(t)\mathbf1$. With $Q(t)^\#$ the group inverse, normalize the first profile
+    correction by $\pi(t)u_1(t)=0$ and set</p>
+    $$u_1(t)=-Q(t)^\#\widetilde g(t).$$
+    <p>Expanding the periodic Floquet equation and applying the instantaneous stationary row gives</p>
+    $$\lambda_m=\langle\bar g\rangle+{1\over m}\lambda_1+O(m^{-2}),\qquad
+      \lambda_1=\left\langle
+      \pi(D-\bar g I)u_1+\pi'u_1
+      \right\rangle,$$
+    <p>where $\langle\cdot\rangle$ denotes the period average. The first summand is the dynamic
+    Green&ndash;Kubo contribution. The second is a geometric contribution caused by transport of the invariant row;
+    it vanishes for a fixed generator but need not vanish when $Q(t)$ moves. The identity follows because the
+    next-order solvability condition contains $-\pi u_1'$, while differentiating the gauge
+    $\pi u_1=0$ gives $-\pi u_1'=\pi'u_1$. In two states the formula reduces exactly to the earlier
+    $\langle(v\delta+p')R_1\rangle$. Thus this multi-state coefficient remains distinct from a
+    fixed-parameter Green&ndash;Kubo rank calculation: moving stationary weights add a separate geometric term.</p>
+
+    <h3>Explicit second-order coefficient</h3>
+    <p>If $Q,D$ are $C^3$, the same periodic solvability calculation continues one order.
+      Write the local first drift as</p>
+    $$\gamma_1(t)=\pi(D-\bar gI)u_1+\pi'u_1,$$
+    <p>and choose the second profile correction in the gauge $\pi u_2=0$:</p>
+    $$u_2=Q^\#\left\{u_1'-(D-\bar gI)u_1+\gamma_1{\bf1}\right\}.$$
+    <p>The expression in braces is centered under $\pi$ precisely because of the definition
+      of $\gamma_1$. The next solvability condition gives</p>
+    <div class="equation-card">
+    $$\lambda_m=\langle\bar g\rangle+{\lambda_1\over m}
+      +{\lambda_2\over m^2}+O(m^{-3}),\qquad
+      \lambda_2=\left\langle
+      \pi(D-\bar gI)u_2+\pi'u_2
+      \right\rangle.$$
+    </div>
+    <p>The apparent $-\gamma_1u_1$ contribution vanishes from the solvability condition
+      because $\pi u_1=0$; it remains indirectly inside $u_2$. Thus the second coefficient
+      has the same dynamic-plus-geometric form as the first, but acts on the transported
+      second profile.</p>
+
+    <h3>All-order Floquet recursion</h3>
+    <p>The calculation is not limited to two corrections. Put $u_0=\mathbf1$ and
+      $b_0=\bar g$. For $n\geq1$, impose the moving gauge $\pi u_n=0$ and define the
+      local drift</p>
+    $$b_n=\pi(Du_n-u_n')=\pi(D-\bar gI)u_n+\pi'u_n.$$
+    <p>Having constructed $u_0,\ldots,u_n$ and $b_0,\ldots,b_n$, set</p>
+    <div class="equation-card">
+    $$R_n=u_n'-(D-b_0I)u_n+\sum_{j=1}^n b_j u_{n-j},
+      \qquad u_{n+1}=Q^\#R_n.$$
+    </div>
+    <p>The solvability identity $\pi R_n=0$ follows exactly from the definition of $b_n$,
+      the gauges, and $(\pi u_n)'=0$. Consequently, for every fixed $N$, if $Q,D$ are
+      $C^{N+1}$ and periodic and the finite-state generators have a uniform
+      spectral gap,</p>
+    $$\lambda_m=\sum_{n=0}^N{\langle b_n\rangle\over m^n}
+      +O_N(m^{-N-1}).$$
+    <p>This is a fixed-order statement: it neither asserts convergence of the infinite
+      series nor a remainder uniform in $N$. Substitution of the truncated periodic profile
+      leaves a centered residual of order $m^{-N}$; the uniform fast exponential dichotomy
+      gains the next factor $m^{-1}$, while period averaging selects
+      $\langle b_N\rangle$. Induction gives the displayed expansion. The exact Floquet
+      exponent should still be retained in a maturity-uniform price: any finite truncation
+      eventually accumulates secular error as $T$ grows.</p>
+
+    <h3>An a posteriori finite-speed exponent enclosure</h3>
+    <p>The preceding expansion gives an asymptotic order but not a numerical error constant at a specified $m$.
+      Positivity supplies a separate, nonasymptotic answer. Let $A(t)$ be any continuous $P$-periodic cooperative
+      irreducible matrix, and let $\lambda$ be its principal Floquet exponent. Choose any positive $C^1$ periodic
+      trial profile $\widehat u(t)$ and any continuous periodic scalar phase $\widehat b(t)$. Put</p>
+    $$\widehat\lambda=\langle\widehat b\rangle,\qquad
+      e=\widehat u'-\{A-\widehat b I\}\widehat u,\qquad
+      \ell=\inf_{t,i}{e_i(t)\over\widehat u_i(t)},\quad
+      L=\sup_{t,i}{e_i(t)\over\widehat u_i(t)}.$$
+    <div class="equation-card">
+    <p><strong>A posteriori Floquet enclosure.</strong> The exact exponent obeys</p>
+    $$\boxed{\quad \widehat\lambda-L\leq\lambda\leq\widehat\lambda-\ell.\quad}$$
+    <p>In particular, if $|e_i(t)|\leq\eta\widehat u_i(t)$ for every component and phase, then
+      $|\lambda-\widehat\lambda|\leq\eta$.</p>
+    </div>
+    <p>For the proof, set
+      $q(t)=\exp\{\int_0^t(\widehat b-\widehat\lambda)ds\}\widehat u(t)$, which is positive and periodic.
+      Its residual in the constant-exponent equation is the same componentwise relative residual:
+      $q'-(A-\widehat\lambda I)q=e^{\int(\widehat b-\widehat\lambda)}e$.
+      The inequalities $e\geq\ell\widehat u$ and $e\leq L\widehat u$, followed by the cooperative comparison
+      principle over one period, give</p>
+    $$U(P,0)q(0)\leq e^{(\widehat\lambda-\ell)P}q(0),\qquad
+      U(P,0)q(0)\geq e^{(\widehat\lambda-L)P}q(0).$$
+    <p>The <a href="https://doi.org/10.1007/BF01180013">original Collatz enclosure</a>, applied to the positive
+      monodromy matrix, then gives the displayed bounds. This is the
+      finite-dimensional ODE form of the positive sub- and supersolution characterization used for cooperative
+      periodic-parabolic systems by
+      <a href="https://doi.org/10.1016/j.na.2018.07.014">Ant&oacute;n and L&oacute;pez-G&oacute;mez (2019)</a>;
+      here the one-period comparison proof is self-contained.</p>
+    <p>The construction meshes directly with the all-order recursion. For an exponent truncated through
+      $m^{-N}$, use</p>
+    $$\widehat u_{m,N}=\sum_{n=0}^{N+1}{u_n\over m^n},\qquad
+      \widehat b_{m,N}=\sum_{n=0}^{N}{b_n\over m^n}.$$
+    <p>The extra profile corrector is essential: it makes the residual enclosure have the same
+      $O_N(m^{-N-1})$ order as the exponent remainder. It does not claim convergence uniformly in $N$.</p>
+    <p>The Fourier certificate need not symmetrize the error. If
+      $\widehat u_i(t)=\sum_k u_{ik}e^{ikt}$ and
+      $e_i(t)=\sum_k e_{ik}e^{ikt}$ are the trigonometric interpolants, set</p>
+    $$u_i^\pm=u_{i0}\pm\sum_{k\ne0}|u_{ik}|,
+      \qquad e_i^\pm=e_{i0}\pm\sum_{k\ne0}|e_{ik}|.$$
+    <p>Whenever $u_i^-&gt;0$, ordinary interval division gives
+      $e_i(t)/\widehat u_i(t)\in[e_i^-,e_i^+]/[u_i^-,u_i^+]$ for every phase.
+      Taking the smallest lower endpoint and largest upper endpoint over the
+      components supplies separate computable values of $\ell$ and $L$. This
+      preserves the residual mean and is never weaker than replacing both by
+      the symmetric absolute envelope.</p>
+
+    <div class="equation-card">
+    <p><strong>Phase-mesh refinement.</strong> Put $r_i=e_i/\widehat u_i$, sample a uniform periodic mesh
+      $t_j$ of spacing $h$, and suppose $B_i\geq\|r_i''\|_\infty$. Then the full-phase extrema obey</p>
+    $$\ell_h=\min_{i,j}\left\{r_i(t_j)-{h\over2}|r_i'(t_j)|-{h^2\over8}B_i\right\}
+      \leq\ell,$$
+    $$L\leq L_h=\max_{i,j}\left\{r_i(t_j)+{h\over2}|r_i'(t_j)|+{h^2\over8}B_i\right\}.$$
+    <p>Consequently $\widehat\lambda-L_h\leq\lambda\leq\widehat\lambda-\ell_h$.
+      Intersecting this interval with the global Fourier interval above can only sharpen the certificate.</p>
+    </div>
+    <p>Indeed, every phase is within $h/2$ of a mesh point, so the claim is Taylor's theorem with remainder.
+      It is fully computable from Fourier coefficients. If
+      $E_{ik}\geq\|e_i^{(k)}\|_\infty$, $U_{ik}\geq\|\widehat u_i^{(k)}\|_\infty$,
+      and $u_i^-\leq\inf_t\widehat u_i(t)$ is positive, quotient differentiation gives</p>
+    $$B_i={E_{i2}\over u_i^-}
+      +{E_{i0}U_{i2}+2E_{i1}U_{i1}\over(u_i^-)^2}
+      +{2E_{i0}U_{i1}^2\over(u_i^-)^3}.$$
+    <p>For a trigonometric polynomial, the coefficient $\ell^1$ sums
+      $\sum_k |k|^q|c_k|$ provide the required derivative bounds. This result makes the role of the mesh precise:
+      node values alone are not a certificate, but node values plus the displayed Taylor remainder are.</p>
+
+    <h3>A posteriori three-state diagnostic</h3>
+    <p>For the moving nonreversible three-state example, the certificate truncates the exponent through $m^{-3}$
+      and the trial profile through $m^{-4}$. A Fourier-coefficient $\ell^1$ envelope bounds the residual at every
+      phase of the trigonometric interpolants, rather than merely at the 8192 collocation nodes. The table compares
+      the sharper phase-mesh bracket with an independent monodromy exponent.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>lower error bound</th><th>monodromy error</th><th>upper error bound</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;1.19398e-4</td><td>&minus;2.92236e-7</td><td>9.66905e-5</td></tr>
+        <tr><td>16</td><td>&minus;7.42020e-6</td><td>&minus;1.82153e-8</td><td>6.02394e-6</td></tr>
+        <tr><td>32</td><td>&minus;4.62455e-7</td><td>&minus;1.13113e-9</td><td>3.75969e-7</td></tr>
+        <tr><td>64</td><td>&minus;2.88662e-8</td><td>&minus;7.03820e-11</td><td>2.34851e-8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The larger absolute endpoint has measured order $4.00186$, and $m^4$ times it is $0.484295$ at $m=64$.
+      The independent monodromy error lies inside every asymmetric interval.
+      The phase-mesh radius is $11.4\%$ smaller than the global interval-division radius at $m=64$.
+      Thus the bound is finite-speed and has the predicted fourth order, although it is intentionally conservative.
+      The Fourier inequalities control the complete interpolants; the reported arithmetic is ordinary double
+      precision rather than outward-rounded interval arithmetic. A proof-grade computer enclosure therefore needs
+      the same calculation with directed rounding. This numerical scope is separate from the exact theorem above.</p>
+
+    <h3>The sharp maturity crossover for a truncated exponent</h3>
+    <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,
+      for a fixed $N$,</p>
+    $$\lambda_m^{[N]}=\sum_{n=0}^N{\beta_n\over m^n},\qquad
+      \lambda_m-\lambda_m^{[N]}
+      ={\beta_{N+1}\over m^{N+1}}+O_N(m^{-N-2}).$$
+    <div class="equation-card">
+    <p><strong>Critical-maturity theorem.</strong> Suppose $\beta_{N+1}\ne0$ and let
+      $T_m/m^{N+1}\to\tau\in[0,\infty)$. Factor the exact positive price as
+      $P_m(T)=e^{\lambda_mT}A_m(T)$, where $A_m$ contains the complete Floquet profile
+      and complementary transient, and define
+      $P_m^{[N]}(T)=e^{\lambda_m^{[N]}T}A_m(T)$. Thus every nonsecular factor is kept
+      exact and only the exponent is truncated. Then</p>
+    $$\log{P_m(T_m)\over P_m^{[N]}(T_m)}
+      =T_m\{\lambda_m-\lambda_m^{[N]}\}
+      \longrightarrow \tau\beta_{N+1}.$$
+    <p>Hence $T=o(m^{N+1})$ is the largest general vanishing-error range for an
+      $N$th-order exponent. At $T\asymp m^{N+1}$ the relative price error has a
+      nontrivial limit $\exp(\tau\beta_{N+1})-1$; if
+      $T/m^{N+1}\to\infty$, its log magnitude diverges. A uniformly
+      $o(1)$ profile or matched-layer error does not change these conclusions.</p>
+    </div>
+    <div class="equation-card">
+    <p><strong>Delayed critical maturity under cancellations.</strong> The nonzero-coefficient
+      hypothesis matters. More generally, suppose that, for some finite $J&gt;N$,</p>
+    $$\beta_{N+1}=\cdots=\beta_{J-1}=0,\qquad \beta_J\ne0,$$
+    <p>and the fixed-order recursion is carried through order $J$. If
+      $T_m/m^J\to\tau\in[0,\infty)$, then</p>
+    $$\log{P_m(T_m)\over P_m^{[N]}(T_m)}
+      =T_m\{\lambda_m-\lambda_m^{[N]}\}
+      \longrightarrow\tau\beta_J.$$
+    <p>Thus cancellations genuinely extend the vanishing-log-error range from
+      $o(m^{N+1})$ to $o(m^J)$. At the delayed critical scale the relative-price
+      limit is $\exp(\tau\beta_J)-1$. If no finite first nonzero omitted
+      coefficient is known, the fixed-order expansion alone does not determine a
+      critical scale.</p>
+    </div>
+    <p>The proof is immediate from the exact Floquet factorization: the common amplitude
+      cancels, whereas the exponent discrepancy is multiplied by $T_m$. This sharpens the scope distinction between a fixed-order
+      asymptotic exponent and an exact-exponent maturity-uniform price. Whenever a later
+      nonzero coefficient exists, increasing the expansion order moves the secular boundary;
+      only the exact exponent supplies an unconditional all-maturity statement.</p>
+
+    <h3>Symmetric delayed-scale certificate</h3>
+    <p>The symmetric two-state periodic model above gives a non-generic but important
+      cancellation. Truncating after the $m^{-1}$ term has $\beta_2=0$ because
+      periodicity gives $\langle\delta\delta'\rangle=0$, while</p>
+    $$\beta_3=-{1\over8}\left\langle(\delta')^2+\delta^4\right\rangle
+      =-0.01473536375.$$
+    <p>In fact this cancellation persists at every even order. After removing the scalar
+      factor $\exp\{\int_0^t\bar g-mt\}$, the traceless system is</p>
+    $$y'=\{m\sigma_x+\delta(t)\sigma_z\}y.$$
+    <p>Conjugation by $\sigma_z$ sends $m$ to $-m$, so the monodromy trace is even in
+      $m$. The large-$m$ Floquet branch $\kappa_m\sim m$ is consequently odd as a
+      formal Laurent series. Since $\lambda_m=\langle\bar g\rangle-m+\kappa_m$, its
+      correction contains only $m^{-1},m^{-3},m^{-5},\ldots$. This is a statement
+      about the fixed-order asymptotic series; it does not assert convergence of that
+      series.</p>
+    <p>The coefficient after $\beta_3$ is explicit. Substituting
+      $r=\sum_{n\geq1}a_n/(2m)^n$ into
+      $r'=\delta-2mr-\delta r^2$ gives</p>
+    $$a_1=\delta,\qquad
+      a_n=-a_{n-1}'-\delta\!\sum_{i+j=n-1}a_i a_j.$$
+    <p>Periodic integration by parts at the fifth step yields</p>
+    <div class="equation-card">
+    $$\beta_5={1\over32}\left\langle
+      (\delta'')^2+10\delta^2(\delta')^2+2\delta^6
+      \right\rangle=0.0079473389503.$$
+    </div>
+    <p>The first omitted nonzero term is therefore third order, so the critical maturity
+      is $T=m^3$, not $m^2$. Since the nonsecular amplitude is retained exactly, the
+      following values are exactly the log-price errors caused by truncating the exponent
+      after $m^{-1}$:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$m^3(\lambda_m-\lambda_m^{[1]})$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;0.01461292130</td></tr>
+        <tr><td>16</td><td>&minus;0.01470442935</td></tr>
+        <tr><td>32</td><td>&minus;0.01472760957</td></tr>
+        <tr><td>64</td><td>&minus;0.01473342384</td></tr>
+        <tr><td>limit</td><td>&minus;0.01473536375</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $m=64$ the relative coefficient error is $1.32\times10^{-4}$. After
+      subtracting $\beta_3/m^3$, the measured local exponent remainder has order
+      $4.998987$, and $m^5(\lambda_m-\lambda_m^{[3]})=0.0079458603038$, within
+      $1.86\times10^{-4}$ relative error of the analytic $\beta_5$. Thus truncating
+      through $m^{-3}$ moves the next critical maturity to $T=m^5$ in this symmetric
+      model. This parity conclusion is special to the symmetric two-state system; the
+      moving nonreversible chain below has generic even and odd coefficients.</p>
+
+    <h3>Critical-scale certificate</h3>
+    <p>On the moving nonreversible three-state example, the recursion gives</p>
+    $$\beta_2=0.0012048119,\qquad
+      \beta_3=-0.0013369243,\qquad
+      \beta_4=-0.0011746971.$$
+    <p>The table reports the exact log-price error caused by exponent truncation at its
+      generic critical maturity. Equivalently, it reports
+      $m^{N+1}(\lambda_m-\lambda_m^{[N]})$, which must converge to
+      $\beta_{N+1}$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$T=m^2$, through $m^{-1}$</th><th style="text-transform:none">$T=m^3$, through $m^{-2}$</th><th style="text-transform:none">$T=m^4$, through $m^{-3}$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>0.00101899</td><td>-0.00148655</td><td>-0.00119700</td></tr>
+        <tr><td>16</td><td>0.00111659</td><td>-0.00141153</td><td>-0.00119376</td></tr>
+        <tr><td>32</td><td>0.00116187</td><td>-0.00137399</td><td>-0.00118608</td></tr>
+        <tr><td>64</td><td>0.00118363</td><td>-0.00135537</td><td>-0.00118079</td></tr>
+        <tr><td>limit</td><td>0.00120481</td><td>-0.00133692</td><td>-0.00117470</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>At $m=64$ the three critical-scale errors are within $1.76\%$, $1.38\%$, and
+      $0.52\%$ of their predicted limits. This is a log-price statement. Dividing by
+      maturity instead yields the corresponding yield error, which remains the local
+      exponent error and does not accumulate.</p>
+
+    <h3>Why the orders differ</h3>
+    <p>Perron decomposition of the monodromy gives
+    $\mathbf1=c_mv_m+z_{m,0}$ with $w_m^\top z_{m,0}=0$. Singular perturbation gives
+    $v_m=\mathbf1+O(m^{-1})$, $w_m=\pi(0)+O(m^{-1})$, and $z_{m,0}=O(m^{-1})$.
+    The normalization produces the extra stationary cancellation
+    $\pi(0)z_{m,0}=O(m^{-2})$; an arbitrary observation row does not have it. The complementary Floquet
+    evolution decays at rate $cm$. On that $t=O(m^{-1})$ layer,</p>
+    $$m\{Q(t)-Q(0)\}=O(mt),$$
+    <p>so Duhamel&apos;s formula replaces the exact fast evolution by $b_{m,0}$ with a uniform $O(m^{-2})$
+    error. When $Q$ is fixed, only $D(t)-D(0)=O(t)$ remains and the same calculation gains one further power
+    of $m^{-1}$. This is the periodic finite-chain counterpart of the fixed-horizon matched expansions of
+    <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang</a>, with the secular
+    growth resummed by <a href="https://doi.org/10.24033/asens.220">Floquet&apos;s monodromy exponent</a>.</p>
+
+    <h3>Three-state certificate</h3>
+    <p>The moving example uses six independently varying transition rates, so its invariant row genuinely moves.
+    The control holds the earlier defective three-state generator fixed while retaining periodic diagonal forcing.
+    Both use an arbitrary prior $(0.8,0.1,0.1)$ in addition to the stationary observation.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>moving arbitrary, raw</th><th>moving arbitrary, slip</th><th>moving stationary, raw</th><th>fixed defective stationary, slip</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>7.14468e-3</td><td>2.57957e-3</td><td>1.35413e-3</td><td>6.27623e-3</td></tr>
+        <tr><td>4</td><td>2.02500e-3</td><td>5.17941e-4</td><td>3.19607e-4</td><td>6.74642e-4</td></tr>
+        <tr><td>8</td><td>7.61885e-4</td><td>1.11641e-4</td><td>7.81039e-5</td><td>7.99348e-5</td></tr>
+        <tr><td>16</td><td>3.30768e-4</td><td>2.55795e-5</td><td>1.93491e-5</td><td>9.59891e-6</td></tr>
+        <tr><td>32</td><td>1.54353e-4</td><td>6.09895e-6</td><td>4.81786e-6</td><td>1.16550e-6</td></tr>
+        <tr><td>64</td><td>7.52553e-5</td><td>1.48755e-6</td><td>1.20218e-6</td><td>1.43144e-7</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final measured orders are $1.0364$ for the moving arbitrary-prior profile without the slip,
+    $2.0356$ after adding it, and $2.0027$ for the moving stationary-prior profile without a slip.
+    The fixed defective-chain control has order $2.0058$ without the slip and $3.0254$ with it.
+    The principal profile closes after one period within $2.8\times10^{-13}$. For the moving chain, the
+    first coefficient is $\lambda_1=0.0104925059$: its dynamic part is $0.0107582179$ and its geometric part is
+    $-0.0002657120$. The second solvability coefficient is $\lambda_2=0.0012048119$.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>residual after $\lambda_1/m$</th><th>residual after $\lambda_1/m+\lambda_2/m^2$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>1.59218e-5</td><td>2.90342e-6</td></tr>
+        <tr><td>16</td><td>4.36168e-6</td><td>3.44614e-7</td></tr>
+        <tr><td>32</td><td>1.13464e-6</td><td>4.19314e-8</td></tr>
+        <tr><td>64</td><td>2.88973e-7</td><td>5.17063e-9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The measured residual orders are $1.9732$ and $3.0197$, respectively. At $m=64$,
+      $m^2\{\lambda_m-\langle\bar g\rangle-\lambda_1/m\}=0.0011836342$;
+      Richardson extrapolation from $m=32,64$ gives $0.0012053936$, within $0.049\%$ of
+      the analytic $\lambda_2$. Including the second coefficient reduces the raw exponent
+      error by a factor of about $56$.</p>
+    <p>An independent FFT implementation of the all-order recursion reproduces both
+      hand-differentiated coefficients within $2\times10^{-12}$ and gives</p>
+    $$\lambda_3=-0.0013369242873.$$
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>through $m^{-2}$</th><th>through $m^{-3}$</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>2.90342e-6</td><td>2.92236e-7</td></tr>
+        <tr><td>16</td><td>3.44613e-7</td><td>1.82153e-8</td></tr>
+        <tr><td>32</td><td>4.19308e-8</td><td>1.13113e-9</td></tr>
+        <tr><td>64</td><td>5.17034e-9</td><td>7.03819e-11</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The third-corrected residual has measured order $4.0064$. Centering and gauge
+      residuals in every recursive solve are below $2\times10^{-12}$. This verifies the
+      recursion on a genuinely moving, nonreversible three-state generator rather than on
+      the two-state reduction.</p>
+
+    <h2>What remains beyond this theorem</h2>
+    <p>The fixed-generator theorem assumes a diagonal forcing of bounded total variation and $D(0)=0$ only when
+    the boundary-layer term is omitted. The frozen-slip theorem restores the higher orders for arbitrary fixed
+    near-end forcing. The moving-generator extension requires a uniformly ergodic smooth family and integrable
+    total variation. The Floquet theorems above separately cover smooth periodic forcing and smooth periodic
+    two-state generators with a uniform rate gap; the exact-profile theorem extends maturity-uniform control to
+    every finite periodic chain and supplies an explicit fixed-order recursion. Rough nonperiodic coefficients with
+    infinite variation, generators that lose their gap, and infinite-state factors still require different estimates.
+    The all-order Floquet expansion is asymptotic at each fixed order; no convergence or
+    order-uniform remainder is claimed.</p>
+    <p>The fixed-horizon expansion and its initial layers belong to the singular-perturbation framework summarized
+    by <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a> and originate with
+    <a href="https://www.mathnet.ru/eng/sm5548">Tikhonov&apos;s 1952 theorem</a>; the perturbed-semigroup viewpoint goes back to
+    <a href="./bibliography.html#Kurtz1973">Kurtz</a>. Analytic Riesz projections and the
+    non-diagonalizable perturbation argument follows
+    <a href="https://doi.org/10.1007/978-3-642-66282-9">Kato&apos;s perturbation theory</a>; the connection term is the
+    finite-dimensional spectral transport introduced in
+    <a href="https://doi.org/10.1143/JPSJ.5.435">Kato&apos;s original adiabatic theorem</a>. The
+    exact-eigenvalue resummation here addresses the additional growing-maturity scale. State-dependent fast
+    generators and their boundary layers are treated, at fixed horizons, by
+    <a href="https://doi.org/10.1090/S0033-569X-2013-01277-X">Nguyen and Yin (2013)</a>; the theorem here shows
+    what changes when the maturity horizon is also required to be uniform.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
