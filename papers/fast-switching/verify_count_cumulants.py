@@ -25,7 +25,11 @@ experiment gives an optimized parametric-scale Wasserstein-1 lower bound, and
 the sample mean gives a matching n^-1/2 upper rate on the point-mass submodel.
 For the unrestricted compact class, a parity-conditioned binomial construction
 instead proves the genuinely nonparametric lower obstruction
-``(log log n)/(log n)``.  The two rates are deliberately kept distinct.
+``(log log n)/(log n)``.  A normalized-factorial-moment estimator and Jackson
+approximation give the matching upper order.  The certificate checks the
+factorial-moment second-moment identity, the shifted-Chebyshev coefficient
+bound, and decay of the resulting stochastic remainder.  The parametric and
+unrestricted rates are deliberately kept distinct.
 """
 
 import itertools
@@ -488,6 +492,92 @@ def poisson_mixture_w1_nonparametric_lower(lower=4.0, width=1.0):
     }
 
 
+def poisson_mixture_w1_moment_upper(max_intensity=5.0, degree_fraction=0.5):
+    """Certificate for the ingredients of the moment-estimator upper bound.
+
+    If ``N | theta`` is Poisson, the unbiased normalized moment statistic is
+    ``(N)_k / M^k``.  The exact product identity
+
+        (N)_k^2 = sum_j binom(k,j)^2 j! (N)_{2k-j}
+
+    gives the uniform variance bound used on the page.  Shifted Chebyshev
+    polynomials obey ``q_{j+1}=(4x-2)q_j-q_{j-1}``, so their monomial
+    coefficient l1 norms are at most ``7^j``.  Finally we report the logarithm
+    of the stochastic factor for ``L=floor(c log(n)/loglog(n))``; this avoids
+    constructing astronomically large sample sizes.
+    """
+    if max_intensity <= 0.0:
+        raise ValueError("max_intensity must be positive")
+    if not 0.0 < degree_fraction < 1.0:
+        raise ValueError("degree_fraction must lie in (0,1)")
+
+    orders = np.arange(1, 9, dtype=int)
+    count_grid = np.arange(180, dtype=int)
+    pmf = poisson.pmf(count_grid, max_intensity)
+    direct_second_moments = []
+    formula_second_moments = []
+    for order in orders:
+        falling = np.zeros_like(count_grid, dtype=float)
+        eligible = count_grid >= order
+        falling[eligible] = np.array([
+            math.prod(range(int(n - order + 1), int(n + 1)))
+            for n in count_grid[eligible]
+        ], dtype=float)
+        direct_second_moments.append(float((falling * falling) @ pmf))
+        formula_second_moments.append(sum(
+            math.comb(int(order), j) ** 2 * math.factorial(j)
+            * max_intensity ** (2 * int(order) - j)
+            for j in range(int(order) + 1)
+        ))
+    direct_second_moments = np.asarray(direct_second_moments)
+    formula_second_moments = np.asarray(formula_second_moments)
+    relative_second_moment_error = np.max(np.abs(
+        direct_second_moments / formula_second_moments - 1.0))
+
+    # Coefficients are stored in ascending monomial order.
+    chebyshev_l1 = [1, 3]
+    q_previous = np.array([1], dtype=object)
+    q_current = np.array([-1, 2], dtype=object)
+    for degree in range(1, 12):
+        scaled = np.pad(-2 * q_current, (0, 1))
+        shifted = np.pad(4 * q_current, (1, 0))
+        previous = np.pad(q_previous, (0, len(q_current) + 1 - len(q_previous)))
+        q_next = scaled + shifted - previous
+        chebyshev_l1.append(sum(abs(int(x)) for x in q_next))
+        q_previous, q_current = q_current, q_next
+    chebyshev_l1 = np.asarray(chebyshev_l1, dtype=float)
+    degrees = np.arange(len(chebyshev_l1))
+
+    log_sample_sizes = np.array([100.0, 300.0, 1000.0, 3000.0])
+    moment_degrees = np.maximum(1, np.floor(
+        degree_fraction * log_sample_sizes / np.log(log_sample_sizes)
+    ).astype(int))
+    inverse_scale = max(1.0, 1.0 / max_intensity)
+    log_stochastic_factors = (
+        -0.5 * log_sample_sizes
+        + 1.5 * np.log(moment_degrees + 1.0)
+        + moment_degrees * np.log(
+            14.0 * np.sqrt(inverse_scale * moment_degrees)
+        )
+    )
+
+    assert relative_second_moment_error < 3e-13
+    assert np.all(chebyshev_l1 <= 7.0 ** degrees)
+    assert np.all(np.diff(log_stochastic_factors) < 0.0)
+    assert log_stochastic_factors[-1] < -400.0
+    return {
+        "orders": orders,
+        "relative_second_moment_error": relative_second_moment_error,
+        "chebyshev_degrees": degrees,
+        "chebyshev_l1": chebyshev_l1,
+        "log_sample_sizes": log_sample_sizes,
+        "moment_degrees": moment_degrees,
+        "log_stochastic_factors": log_stochastic_factors,
+        "degree_fraction": degree_fraction,
+        "max_intensity": max_intensity,
+    }
+
+
 def mixed_cumulants22(raw):
     """Mixed cumulants kappa_11, kappa_21, kappa_12 and kappa_22.
 
@@ -932,6 +1022,7 @@ def main():
     w1_minimax = poisson_mixture_w1_local_minimax()
     w1_point_mass = poisson_point_mass_w1_upper()
     w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
+    w1_moment_upper = poisson_mixture_w1_moment_upper()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -1222,6 +1313,15 @@ def main():
         print(f"{label:>7s}   {order:5d}           {risk:.12e}   {scaled:.12f}")
     print("asymptotic log(n)/loglog(n) lower constant",
           f"{w1_nonparametric['asymptotic_scaled_lower_bound']:.12f}")
+    print("factorial-moment W1 upper-bound certificate")
+    print("maximum relative second-moment identity error",
+          f"{w1_moment_upper['relative_second_moment_error']:.3e}")
+    print(" log(n)   degree L   log stochastic factor")
+    for log_n, degree, log_factor in zip(
+            w1_moment_upper["log_sample_sizes"],
+            w1_moment_upper["moment_degrees"],
+            w1_moment_upper["log_stochastic_factors"]):
+        print(f"{log_n:7.0f}   {degree:8d}   {log_factor:21.6f}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")

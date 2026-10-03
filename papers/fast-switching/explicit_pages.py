@@ -17,6 +17,7 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     marked_common_shock_factorial_cumulant,
                                     mixed_factorial_cumulants22,
                                     poisson_inverse_instability,
+                                    poisson_mixture_w1_moment_upper,
                                     poisson_mixture_w1_nonparametric_lower,
                                     poisson_mixture_w1_local_minimax,
                                     poisson_point_mass_w1_upper)
@@ -279,6 +280,7 @@ def counts():
     w1_minimax = poisson_mixture_w1_local_minimax()
     w1_point_mass = poisson_point_mass_w1_upper()
     w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
+    w1_moment_upper = poisson_mixture_w1_moment_upper()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -559,7 +561,7 @@ def counts():
       \liminf_{n\to\infty}{\log n\over\log\log n}R_n^{(1)}(a,B)\ge {B\over2}.}$$
     </div>
     <p>Thus no estimator has worst-case $W_1$ risk
-      $o((\log\log n)/\log n)$ on the unrestricted class. This is a lower bound, not a matching upper-rate claim.</p>
+      $o((\log\log n)/\log n)$ on the unrestricted class.</p>
     <p>The construction is explicit. Fix an integer $L\ge2$, let $J\sim\operatorname{Bin}(L,1/2)$, put
       $h=B/L$, and define</p>
     $$\mu_{L,+}=\mathcal L(a+hJ\mid J\ {\rm even}),\qquad
@@ -607,9 +609,61 @@ def counts():
                   r'$(\log n/\log\log n)$ times bound')) + r'''
     <p>The scaled certificate approaches its proved asymptotic lower constant $1/2$ slowly. This ordinary,
       unsmoothed $W_1$ obstruction is consistent with the smoothness-class theory of
-      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a> and contrasts with the nearly
-      root-$n$ guarantees that <a href="./bibliography.html#LimHan2024">Lim and Han</a> obtain after replacing
-      ordinary transport by Gaussian-smoothed optimal transport.</p>
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>. For support $[0,B]$,
+      <a href="./bibliography.html#MiaoEtAl2024">Miao et al.</a> prove the matching upper order for the NPMLE and a
+      matching minimax lower order; <a href="./bibliography.html#LimHan2024">Lim and Han</a> obtain a nearly
+      root-$n$ rate only after replacing ordinary transport by Gaussian-smoothed optimal transport.</p>
+    <h3>A matching moment-estimator upper rate</h3>
+    <p>The upper order can also be recovered by a direct estimator on any fixed interval $[a,a+B]$. Put
+      $M=a+B$ and, from iid counts $N_1,\ldots,N_n$, define the unbiased normalized factorial-moment estimates</p>
+    $$\widehat m_k={1\over n}\sum_{i=1}^n{(N_i)_k\over M^k},\qquad 1\le k\le L.$$
+    <p>Choose any probability law on $[a,M]$ minimizing the largest moment residual,</p>
+    $$\widehat\mu_{n,L}\in\arg\min_{\nu\in\mathcal P([a,M])}
+      \max_{1\le k\le L}\left|\int(\theta/M)^k\,d\nu(\theta)-\widehat m_k\right|.$$
+    <p>A minimizer exists by weak compactness. If
+      $\epsilon_L=\max_{k\le L}|\widehat m_k-m_k|$, comparison with the true law gives a discrepancy of at most
+      $2\epsilon_L$ in every fitted moment.</p>
+    <p>For every $n,L\ge1$, the following nonasymptotic bound is explicit up to the universal Jackson constant
+      $C_J$:</p>
+    <div class="equation-card">
+    $$\sup_{\mu\in\mathcal P([a,a+B])}\mathbb E_\mu W_1(\widehat\mu_{n,L},\mu)
+      \le {2C_JM\over L}
+      +{6(B+C_JM)(L+1)^{3/2}\over\sqrt n}
+       \{14\sqrt{A_ML}\}^{L},$$
+    $$A_M=\max(1,M^{-1}).$$
+    </div>
+    <p>To prove it, use Kantorovich duality and subtract the value of each Lipschitz test function at $a$. Extend it
+      constantly to $[0,a]$, rescale to $[0,1]$, and apply
+      <a href="./bibliography.html#Jackson1921">Jackson&apos;s polynomial approximation theorem</a>. A degree-$L$
+      polynomial approximates the test function within $C_JM/L$. In the shifted Chebyshev basis
+      $q_j(x)=T_j(2x-1)$, the recurrence
+      $q_{j+1}=(4x-2)q_j-q_{j-1}$ implies that the monomial coefficient $\ell^1$ norm of $q_j$ is at most $7^j$.
+      The Chebyshev coefficients of a bounded polynomial are at most twice its sup norm, so the approximant&apos;s
+      monomial coefficient norm is at most $3(B+C_JM)7^L$.</p>
+    <p>The stochastic term follows from the exact falling-factorial product identity</p>
+    $$(N)_k^2=\sum_{j=0}^k{k\choose j}^2j!(N)_{2k-j}.$$
+    <p>Since $N\mid\theta\sim\operatorname{Pois}(\theta)$ and $\theta\le M$, it gives</p>
+    $$\mathbb E\epsilon_L\le { (L+1)^{3/2}\over\sqrt n}
+      \{2\sqrt{A_ML}\}^{L}.$$
+    <p>Combining the approximation and moment errors proves the displayed bound. For any fixed $0&lt;c&lt;1$, take
+      $L_n=\lfloor c\log n/\log\log n\rfloor$. The logarithm of the stochastic factor is
+      $-\tfrac12(1-c)\log n+o(\log n)$, while the approximation term is $O(\log\log n/\log n)$. Consequently,</p>
+    <div class="equation-card">
+    $$\sup_{\mu\in\mathcal P([a,a+B])}\mathbb E_\mu
+      W_1(\widehat\mu_{n,L_n},\mu)
+      =O\!\left({\log\log n\over\log n}\right).$$
+    </div>
+    <p>Together with the preceding lower theorem, this proves that the unrestricted compact minimax rate is exactly
+      $\Theta((\log\log n)/\log n)$ for every fixed $a\ge0$ and $B&gt;0$. The certificate checks the factorial
+      second-moment identity through order eight to relative error
+      ''' + f'{w1_moment_upper["relative_second_moment_error"]:.2e}' + r''' and verifies the coefficient recurrence.
+      For $M=5$ and $c=1/2$, the derived stochastic factor decays as follows.</p>
+''' + table([[f'$e^{{{log_n:.0f}}}$', f'{degree}', f'{log_factor:.6f}']
+             for log_n, degree, log_factor in zip(
+                 w1_moment_upper['log_sample_sizes'],
+                 w1_moment_upper['moment_degrees'],
+                 w1_moment_upper['log_stochastic_factors'])],
+            head=('$n$', '$L_n$', 'log stochastic factor')) + r'''
     <h3>The point-mass submodel has the parametric rate</h3>
     <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
     $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}

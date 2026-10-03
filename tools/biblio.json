@@ -1189,6 +1189,27 @@
  },
  {
   "role": "survey_choice",
+  "key": "MiaoEtAl2024",
+  "authors": "Miao, Z., Kong, W., Vinayak, R. K., Sun, W. and Han, F.",
+  "year": 2024,
+  "title": "Fisher-Pitman permutation tests based on nonparametric Poisson mixtures with application to single cell genomics",
+  "venue": "Journal of the American Statistical Association 119(545):394-406",
+  "doi": "10.1080/01621459.2022.2120401",
+  "url": "https://doi.org/10.1080/01621459.2022.2120401",
+  "annotation": "Proves that the Poisson-mixture NPMLE is minimax-rate optimal under ordinary Wasserstein-1 loss. On a fixed support [0,B], the upper and lower orders are both B loglog(n)/log(n)."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Jackson1921",
+  "authors": "Jackson, D.",
+  "year": 1921,
+  "title": "The general theory of approximation by polynomials and trigonometric sums",
+  "venue": "Bulletin of the American Mathematical Society 27(9-10):415-431",
+  "url": "https://projecteuclid.org/euclid.bams/1183425725",
+  "annotation": "Establishes the polynomial approximation inequality used to approximate Lipschitz Kantorovich test functions with uniform error of order one over the degree."
+ },
+ {
+  "role": "survey_choice",
   "key": "LimHan2024",
   "authors": "Lim, K. and Han, F.",
   "year": 2024,
