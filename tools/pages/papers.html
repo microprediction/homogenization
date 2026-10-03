@@ -100,13 +100,30 @@
         antisymmetric part of the Green&ndash;Kubo matrix enters through commutators.</em>
       </li>
       <li>
-        Cotton, P. (2026). <em>Cumulants of Integrated Variance Under a Fast Regime</em>. Note in preparation.
+        Cotton, P. (2026). <em>Integrated-Variance Cumulants Under Fast Regime Switching</em>. Note in preparation.
         <a href="./cumulants.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">certificate</a>.
-        <em>The fourth cumulant of a return under a switched variance is three times the variance of integrated variance
-        only for independent Brownian noise, and that variance is its Green&ndash;Kubo term up to a remainder bounded
-        uniformly in maturity; for a CIR variance with a switching level the same holds with the maturity replaced
-        by an integral of the reversion weight, and the first-order rule gives every cumulant at fixed maturity.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_feller.py">boundary certificate</a>.
+        <em>Exact integrated-variance and return cumulants for a positive switched CIR variance, with a
+        maturity-uniform Green&ndash;Kubo bound, fixed-maturity leverage and simultaneous-coefficient corrections,
+        uniform and growing-window first-moment composites, exact long-run second-cumulant slope and intercept with a
+        switching-rate-uniform exponential remainder, exact nested-Poisson third-cumulant slope and intercept, an
+        exact centered-Poisson recursion for every fixed long-run cumulant rate, explicit slow-fast formulas for
+        every fixed-order first and second inverse-speed coefficient with $O(m^{-3})$ residual, and computable
+        arbitrary-start boundary constants with fixed-order switching-rate-uniform exponential remainders. An
+        MGF-free finite-moment jet theorem shows that these fixed-order conclusions need only the corresponding
+        initial moments, including for the switching-rate-uniform envelope when those moments are uniformly
+        bounded. An exact triangular finite-jet map transfers every slope, arbitrary-start boundary constant, and
+        exponential remainder to the corresponding fixed-order independent-price return cumulant, without adding
+        an MGF assumption. A separate tilted-generator recursion proves the same exact-slope, arbitrary-start
+        boundary, and switching-rate-uniform remainder theorem for every fixed-order leveraged-return cumulant,
+        even with switching correlation and only finitely many initial moments. The note also gives a sharp
+        initial-law-specific boundary criterion for reducible chains: the statewise Feller test is necessary and
+        sufficient exactly on regimes reachable from the initial support. It also gives sharp
+        homogenized-correlation admissibility criteria. Vol-of-vol
+        heterogeneity contracts the attainable effective-correlation interval to
+        $|\rho_{\rm eff}|\le1/\sqrt{1+\operatorname{CV}_\pi(\xi)^2}$.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>The Direction of a Regime Cycle in the Heston Smile</em>. Note in preparation.
