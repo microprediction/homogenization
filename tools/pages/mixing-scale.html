@@ -155,8 +155,9 @@
       If a density exists with
       $f(\omega)\sim a\omega L(1/\omega)$, then $b=a/2$ and this reduces to the earlier
       $2a\varepsilon^2H(T/\varepsilon)$ law. The divergence of $H$ is essential: when it stays bounded, the
-      global inverse spectral moment, not the local equivalent of $F$, determines the order-$\varepsilon^2$
-      coefficient.</p>
+      local equivalent of $F$ no longer determines a limiting coefficient. A finite global inverse spectral
+      moment gives an order-$\varepsilon^2$ bound, but the coefficient converges only under the Fourier-decay
+      condition stated below.</p>
     <p>A concrete failure under mere stationarity is $X_t=Z+Y_t$, where $Z$ is a centered random constant with
       variance $\sigma_0^2$ and $Y$ is an independent stationary Ornstein&ndash;Uhlenbeck process with covariance
       $e^{-|t|}$. Then</p>
@@ -282,6 +283,36 @@
     <p>The right side is positive unless $\mu=0$, equivalently unless $X$ is zero in $L^2$. Thus the
       order-$\varepsilon^2$ coefficient cannot vanish under the stated assumptions. This includes regularly varying
       tails with $\alpha&gt;2$, and the $\alpha=2$ case when $H(\infty)&lt;\infty$.</p>
+    <p>There is a sharper purely spectral statement, and it identifies exactly what the absolute covariance-moment
+      assumption supplies. Suppose only that the inverse spectral moment is finite,</p>
+    $$M_{-2}=\int_{(0,\infty)}\omega^{-2}\mu(d\omega)&lt;\infty,
+      \qquad \nu(d\omega)=\omega^{-2}\mu(d\omega).$$
+    <p>For every joint path $R_\varepsilon=T_\varepsilon/\varepsilon\to\infty$, the Fej&eacute;r identity is exactly</p>
+    <div class="equation-card">
+    $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{2\varepsilon^2}
+      =M_{-2}-\operatorname{Re}\widehat\nu(R_\varepsilon),\qquad
+      \widehat\nu(R)=\int_{(0,\infty)}e^{iR\omega}\nu(d\omega).$$
+    </div>
+    <p>Consequently $0\leq\operatorname{Var}A_\varepsilon/(2\varepsilon^2)\leq2M_{-2}$, and convergence to
+      $M_{-2}$ along every long-window path is equivalent to
+      $\operatorname{Re}\widehat\nu(R)\to0$. It is sufficient that $\nu$ be Rajchman, meaning that its
+      Fourier&ndash;Stieltjes transform vanishes at infinity. In particular this holds whenever $\nu$ has an
+      $L^1$ density, by the Riemann&ndash;Lebesgue lemma. The stronger time-domain assumptions above therefore imply
+      a coefficient, but finiteness of $M_{-2}$ alone does not.</p>
+    <p>The obstruction is already a stationary Gaussian process with no zero-frequency atom. Let
+      $X_t=U\cos t+V\sin t$ with independent standard Gaussian $U,V$. Its one-sided spectral measure is
+      $\delta_1$, so $M_{-2}=1$, but</p>
+    $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{2\varepsilon^2}
+      =1-\cos R_\varepsilon.$$
+    <p>The normalized coefficient equals zero on $R_\varepsilon=2\pi n$ and two on
+      $R_\varepsilon=(2n+1)\pi$. Thus a nonzero-frequency atom can survive at leading order at the saturated
+      boundary even though it is negligible in the divergent $0&lt;\alpha\leq2$ regimes. For comparison, if
+      $\nu(d\omega)=e^{-\omega}d\omega$ (equivalently
+      $\mu(d\omega)=\omega^2e^{-\omega}d\omega$), then</p>
+    $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{2\varepsilon^2}
+      =\frac{R_\varepsilon^2}{1+R_\varepsilon^2}\longrightarrow1=M_{-2}.$$
+    <p>The numerical certificate evaluates this continuous identity independently by quadrature and checks both
+      exact subsequences of the pure-tone counterexample.</p>
     <p>The same Gamma-spectral benchmark makes both boundaries exact. At $\alpha=2$ and $\alpha&gt;2$, respectively,</p>
     $$\operatorname{Var}A_\varepsilon(T)
       =\varepsilon^2\log\{1+(T/\varepsilon)^2\},\qquad

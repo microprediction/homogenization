@@ -3,7 +3,8 @@
 The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
-periodic counterexamples.
+periodic counterexamples, including the sharp Fourier-decay condition at the
+saturated epsilon-squared boundary.
 """
 import math
 
@@ -700,6 +701,58 @@ def verify_zero_gk_boundary():
             finite_order, finite_ratio, finite_identity_error)
 
 
+def verify_saturated_spectral_criterion():
+    """Check Fourier decay and failure at the saturated spectral boundary.
+
+    Write nu(d omega)=omega^-2 mu(d omega).  If nu is finite, the exact
+    normalized variance is M_-2-Re(nu_hat(R)).  An exponential density makes
+    the transform vanish, whereas one nonzero atom makes the coefficient
+    oscillate forever despite having the same finite inverse moment.
+    """
+    scales = 2.0 ** np.arange(2, 21)
+
+    # Let nu have density exp(-omega), so mu has density omega^2 exp(-omega).
+    # Then M_-2=1 and Re nu_hat(R)=1/(1+R^2).
+    continuous = scales ** 2 / (1.0 + scales ** 2)
+    continuous_mass = quad(
+        lambda omega: math.exp(-omega), 0.0, np.inf,
+        epsabs=2e-13, epsrel=2e-13,
+    )[0]
+    continuous_exact = np.array([
+        continuous_mass - quad(
+            lambda omega: math.exp(-omega),
+            0.0,
+            np.inf,
+            weight="cos",
+            wvar=scale,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=800,
+        )[0]
+        for scale in scales[:8]
+    ])
+    continuous_identity_error = float(np.max(np.abs(
+        continuous_exact - continuous[:8]
+    )))
+    assert continuous_identity_error < 2e-11
+    assert abs(continuous[-1] - 1.0) < 1e-12
+
+    # The stationary Gaussian process X_t=U cos(t)+V sin(t) has one-sided
+    # spectral measure delta_1.  Its inverse moment is also one, but the
+    # normalized variance 1-cos(R) has distinct subsequential limits.
+    indices = np.arange(1, 9, dtype=float)
+    resonant_scales = 2.0 * math.pi * indices
+    antiresonant_scales = (2.0 * indices + 1.0) * math.pi
+    resonant = 1.0 - np.cos(resonant_scales)
+    antiresonant = 1.0 - np.cos(antiresonant_scales)
+    assert np.max(np.abs(resonant)) < 2e-14
+    assert np.max(np.abs(antiresonant - 2.0)) < 2e-14
+
+    return (continuous_identity_error, continuous[-1],
+            float(np.max(np.abs(resonant))),
+            float(np.max(np.abs(antiresonant - 2.0))))
+
+
 def exponential_mixture_variance(epsilon, alpha, maturity=1.0):
     """Exact variance for a valid logarithmically modified covariance.
 
@@ -786,6 +839,7 @@ def main():
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
     zero_gk_boundary = verify_zero_gk_boundary()
+    saturated_spectral = verify_saturated_spectral_criterion()
     spectral_abelian = verify_spectral_abelian_theorem()
     measure_level = verify_measure_level_spectral_theorem()
     measure_level_critical = verify_measure_level_critical_theorem()
@@ -826,6 +880,10 @@ def main():
           f"{zero_gk_boundary[6]:.12f}, {zero_gk_boundary[7]:.3e}")
     print("alpha=3 inverse spectral moment, spectral identity error: "
           f"{zero_gk_boundary[3]:.12f}, {zero_gk_boundary[4]:.3e}")
+    print("saturated continuous-spectrum identity error and terminal ratio: "
+          f"{saturated_spectral[0]:.3e}, {saturated_spectral[1]:.12f}")
+    print("saturated pure-tone resonant and antiresonant errors: "
+          f"{saturated_spectral[2]:.3e}, {saturated_spectral[3]:.3e}")
     print("spectral Abelian constant error, covariance/spectral identity error: "
           f"{spectral_abelian[0]:.3e}, {spectral_abelian[1]:.3e}")
     print("oscillatory-band alpha=1.7 order, ratio, remote-band fraction, "
