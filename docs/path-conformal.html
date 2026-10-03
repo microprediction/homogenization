@@ -817,7 +817,38 @@
       distance equals $\beta$ in this chain. The conservatism is visible, but so is convergence to the exact iid
       training-conditional law.</p>
 
-    <h3>A slack-free bound when the panel law is known</h3>
+    <h3>A coefficient-only slack-free rearrangement bound</h3>
+    <p>The slack can in fact be removed without knowing the actual panel order-statistic law. Let
+      $U_0\sim\operatorname{Beta}(k,N+1-k)$, put $W_0=(U_0-p)_+$, and write $Q_0$ for the lower quantile
+      function of $W_0$. Then the two separated total-variation budgets alone imply</p>
+    <div class="equation-card">
+    $$P_X\{C_P(X)&lt;p\}\le
+      \min\left\{1,\eta_{\rm cal}+
+      \sup\left\{a\in[0,1]:\int_0^aQ_0(s)\,ds\le\eta_{\rm test}\right\}\right\}.$$
+    </div>
+    <p>Take a maximal coupling $(X,X_0)$ of the actual panel law $\mu$ and the iid law $\nu$, so
+      $P(X\ne X_0)=\eta_{\rm cal}$. On the failure set $A=\{C_P&lt;p\}$, disintegration gives</p>
+    $$\int_A(C_0-p)_+\,d\mu\le\eta_{\rm test}.$$
+    <p>The matched part of $A$ has mass at least $(\mu(A)-\eta_{\rm cal})_+$. Among all subprobabilities of the
+      iid panel law with that mass, the lower rearrangement inequality says that the smallest possible integral
+      of $(C_0-p)_+$ is the corresponding lower-quantile integral. This proves the display. The rearrangement step
+      is the probability-space form of the inequality of
+      <a href="./bibliography.html#HardyLittlewood1930">Hardy and Littlewood (1930)</a>.</p>
+    <p>If $G(u)=I_u(k,N+1-k)$ and the test budget is below $E[(U_0-p)_+]$, let $q\ge p$ solve</p>
+    $$\int_p^q(u-p)\,dG(u)=\eta_{\rm test};$$
+    <p>then the bound is $\min\{1,\eta_{\rm cal}+G(q)\}$. It is strictly sharper than optimizing the free-slack
+      theorem at small test budgets. If $g(p)$ is the beta density at the target, the excess above the iid failure
+      probability plus $\eta_{\rm cal}$ is</p>
+    $$\sqrt{2g(p)\eta_{\rm test}}+O(\eta_{\rm test}),$$
+    <p>whereas the optimized slack bound has leading excess
+      $2\sqrt{g(p)\eta_{\rm test}}+O(\eta_{\rm test})$. For $N=k=9$ and $p=.8$, the certificate obtains the
+      constants $1.737788959$ and $2.457605000$, versus the exact limits $1.737785625$ and $2.457600000$.</p>
+    <p>Using only Berbee's coefficient bounds at strides $28,40,48$, the new slack-free bounds are
+      $0.19910268$, $0.14913574$, and $0.14014678$, improving the optimized slack bounds
+      $0.22299480$, $0.15511260$, and $0.14256883$. Replacing the coefficient budgets by the exact two TV
+      distances improves them further to $0.19348321$, $0.14874945$, and $0.14008197$.</p>
+
+    <h3>A sharper slack-free bound when the panel law is known</h3>
     <p>The free slack is unnecessary if the distribution of the random independent-test coverage under the actual
       panel law can be computed. Let $U=C_0(X)$ under $\mu$, put $W=(U-p)_+$, and write
       $Q_W(s)=\inf\{w:\Pr(W\le w)\ge s\}$ for its quantile function. Disintegration of total variation, using the
@@ -834,8 +865,9 @@
       with $U$ closest to, but above, $p$ are the cheapest ones on which to lose coverage. If $U$ has continuous CDF
       $G$ and the budget is not already large enough to make the bound one, let $q\ge p$ solve</p>
     $$\int_p^q(u-p)\,dG(u)=\eta_{\rm test};$$
-    <p>then the bound is simply $G(q)$. This refinement requires the actual panel order-statistic law; a mixing
-      coefficient alone generally supplies only the preceding slack bound.</p>
+    <p>then the bound is simply $G(q)$. This actual-law refinement improves the coefficient-only rearrangement
+      because it uses the dependent order-statistic distribution rather than merely a TV neighborhood of the iid
+      beta law.</p>
     <p>For the binary-chain certificate, that panel law is an exact finite mixture of affine beta order statistics.
       At strides $28,40,48$, the rearrangement bounds are $0.19149163$, $0.14861292$, and $0.14005907$, improving
       the corresponding exact-TV slack bounds $0.21737533$, $0.15472630$, and $0.14250402$. They remain above the

@@ -28,7 +28,8 @@ one-sided tolerance-limit/PAC choice of calibration order statistic.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing, and the slack-free rearrangement
-bound available when the actual panel order-statistic law is known.
+bound obtained from the iid beta baseline and the two separated TV budgets,
+with a sharper version when the actual panel order-statistic law is known.
 It finally checks the sharp distinction between a predictor fitted on an
 independent training sample and a memorizing predictor fitted on the
 calibration labels, as well as the exact total-variation cost of separating a
@@ -180,6 +181,65 @@ def training_conditional_transfer_bound(
         + panel_total_variation
         + test_decoupling_total_variation / slack,
     )
+
+
+def iid_panel_order_lower_cost(
+    target: float,
+    upper: float,
+    calibration_count: int,
+    order: int,
+) -> float:
+    """Lower-tail deficit cost for the iid beta order-statistic law."""
+    if upper <= target:
+        return 0.0
+    alpha = order
+    beta = calibration_count + 1 - order
+    right = min(upper, 1.0)
+    return float(
+        quad(
+            lambda value: (value - target)
+            * beta_distribution.pdf(value, alpha, beta),
+            target,
+            right,
+            epsabs=2e-14,
+            epsrel=2e-13,
+        )[0]
+    )
+
+
+def iid_robust_rearrangement_bound(
+    calibration_count: int,
+    order: int,
+    target: float,
+    panel_total_variation: float,
+    test_decoupling_total_variation: float,
+) -> tuple[float, float]:
+    """Slack-free conditional-failure bound from the iid beta baseline.
+
+    A maximal coupling matches the actual and iid calibration panels outside
+    a set of mass ``panel_total_variation``.  On the matched part, the lower
+    rearrangement cost is computed under the exact iid beta law.  The result
+    therefore needs only the two separated TV budgets, not the actual panel
+    order-statistic distribution.
+    """
+    alpha = order
+    beta = calibration_count + 1 - order
+    maximum_cost = iid_panel_order_lower_cost(
+        target, 1.0, calibration_count, order
+    )
+    if test_decoupling_total_variation >= maximum_cost:
+        return 1.0, 1.0
+    cutoff = brentq(
+        lambda upper: iid_panel_order_lower_cost(
+            target, upper, calibration_count, order
+        )
+        - test_decoupling_total_variation,
+        target,
+        1.0,
+        xtol=2e-14,
+    )
+    iid_mass = beta_distribution.cdf(cutoff, alpha, beta)
+    return min(1.0, panel_total_variation + iid_mass), cutoff
 
 
 def exact_binary_training_failure(
@@ -2390,9 +2450,32 @@ def main() -> None:
                 exact_test_tv,
             )
         )
+        robust_exact_tv_bound, robust_exact_tv_cutoff = (
+            iid_robust_rearrangement_bound(
+                calibration_count,
+                order,
+                transfer_target,
+                exact_panel_tv,
+                exact_test_tv,
+            )
+        )
+        robust_berbee_bound, robust_berbee_cutoff = (
+            iid_robust_rearrangement_bound(
+                calibration_count,
+                order,
+                transfer_target,
+                berbee_panel_tv,
+                berbee_test_tv,
+            )
+        )
         assert exact_failure <= exact_tv_bound + 2e-14
         assert exact_failure <= rearrangement_bound + 2e-14
+        assert exact_failure <= robust_exact_tv_bound + 2e-14
+        assert exact_failure <= robust_berbee_bound + 2e-14
         assert rearrangement_bound <= exact_tv_bound + 2e-14
+        assert rearrangement_bound <= robust_exact_tv_bound + 2e-14
+        assert robust_exact_tv_bound <= exact_tv_bound + 2e-14
+        assert robust_berbee_bound <= berbee_bound + 2e-14
         assert exact_tv_bound <= berbee_bound + 2e-14
         assert exact_panel_tv <= berbee_panel_tv + 2e-14
         assert abs(exact_test_tv - beta) < 2e-14
@@ -2414,6 +2497,10 @@ def main() -> None:
             berbee_slack,
             rearrangement_bound,
             rearrangement_cutoff,
+            robust_exact_tv_bound,
+            robust_exact_tv_cutoff,
+            robust_berbee_bound,
+            robust_berbee_cutoff,
         ))
 
     expected_transfer_failures = (
@@ -2440,16 +2527,67 @@ def main() -> None:
     print("randomized binary score, N=k=9, target 0.8")
     print(
         "stride   exact failure   panel TV   test TV   "
-        "rearranged   exact-TV   separated-beta"
+        "actual-law   iid-robust   exact-TV   robust-beta   slack-beta"
     )
     for row in transfer_rows:
         print(
             f" {row[0]:3d}      {row[1]:.8f}   {row[2]:.8f} "
-            f"{row[3]:.8f}   {row[9]:.8f}  {row[5]:.8f}     {row[7]:.8f}"
+            f"{row[3]:.8f}   {row[9]:.8f}    {row[11]:.8f}  "
+            f"{row[5]:.8f}    {row[13]:.8f}    {row[7]:.8f}"
         )
     print(
         "iid beta failure at target 0.8: "
         f"{integer_beta_cdf(0.8, order, calibration_count + 1 - order):.9f}"
+    )
+
+    # The iid-baseline rearrangement has a sharp square-root small-budget
+    # law.  If g is the beta density at p, its excess above the iid failure
+    # probability is sqrt(2*g*eta)+O(eta), whereas optimizing the slack bound
+    # gives 2*sqrt(g*eta)+O(eta).
+    beta_density_at_target = beta_distribution.pdf(
+        transfer_target, order, calibration_count + 1 - order
+    )
+    small_budgets = np.array([1e-8, 1e-10, 1e-12])
+    iid_failure = integer_beta_cdf(
+        transfer_target, order, calibration_count + 1 - order
+    )
+    robust_ratios = []
+    slack_ratios = []
+    for budget in small_budgets:
+        robust_bound, _ = iid_robust_rearrangement_bound(
+            calibration_count,
+            order,
+            transfer_target,
+            0.0,
+            budget,
+        )
+        slack_result = minimize_scalar(
+            lambda slack: training_conditional_transfer_bound(
+                calibration_count,
+                order,
+                transfer_target,
+                0.0,
+                budget,
+                slack,
+            ),
+            bounds=(1e-14, 1.0 - transfer_target - 1e-14),
+            method="bounded",
+            options={"xatol": 1e-15},
+        )
+        robust_ratios.append(
+            (robust_bound - iid_failure) / math.sqrt(budget)
+        )
+        slack_ratios.append(
+            (slack_result.fun - iid_failure) / math.sqrt(budget)
+        )
+    robust_limit = math.sqrt(2.0 * beta_density_at_target)
+    slack_limit = 2.0 * math.sqrt(beta_density_at_target)
+    assert abs(robust_ratios[-1] - robust_limit) < 4e-6
+    assert abs(slack_ratios[-1] - slack_limit) < 6e-6
+    print(
+        "small-TV excess constants (robust/slack): "
+        f"{robust_ratios[-1]:.9f}/{slack_ratios[-1]:.9f}; "
+        f"limits {robust_limit:.9f}/{slack_limit:.9f}"
     )
 
     # Sliding path scores share latent states even when the sampled states are
@@ -2908,7 +3046,8 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
         "iid training-conditional beta law, sharp PAC design, and dependent "
-        "total-variation transfer with a slack-free rearrangement bound, "
+        "total-variation transfer with coefficient-only and actual-law "
+        "slack-free rearrangement bounds, "
         "independent-training validity, calibration-leakage failure, "
         "remote-training total-variation separation, "
         "exact transforms, and simulations"
