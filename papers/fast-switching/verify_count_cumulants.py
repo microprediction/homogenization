@@ -15,9 +15,13 @@ nonreversible three-state chain.  A third calculation adds a regime-dependent
 common-shock stream and verifies the all-order correction through bidegree
 (3,3), first for unit jumps and then for arbitrary integer-valued bivariate
 marks.  It then verifies the closed two-state finite-horizon formula used on
-the counts page and its O(lambda^-2) first-order residual.  Finally, an exact
-finite-difference construction gives two positive mixing laws with identical
-first four cumulants but different mixed-Poisson count laws.
+the counts page and its O(lambda^-2) first-order residual.  A Stieltjes-moment
+certificate next characterizes exactly which count laws are mixed Poisson. It
+checks both Hankel families for an actual finite mixture and gives a
+full-support, overdispersed count law that passes the first two-by-two tests
+but fails the next Hankel determinant.  Finally, an exact finite-difference
+construction gives two positive mixing laws with identical first four
+cumulants but different mixed-Poisson count laws.
 The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
 in total variation, even on a compact intensity interval.  A local Poisson
@@ -62,6 +66,79 @@ def factorial_cumulants4(ordinary):
         k3 - 3 * k2 + 2 * k1,
         k4 - 6 * k3 + 11 * k2 - 6 * k1,
     ])
+
+
+def mixed_poisson_hankel_certificate():
+    """Check the Stieltjes-Hankel characterization of mixed Poisson laws.
+
+    If ``p_n`` is a count pmf and ``q_n = n! p_n``, then the law is mixed
+    Poisson exactly when ``q`` is a Stieltjes moment sequence: every Hankel
+    matrix ``(q_{i+j})`` and shifted Hankel matrix ``(q_{i+j+1})`` is positive
+    semidefinite.  The first example below is generated from a four-atom
+    mixing law.  The second is a full-support mixture of a finite-support law
+    and a geometric law; it is overdispersed and passes both order-one Hankel
+    tests, but its order-two unshifted determinant is negative.
+    """
+    support = np.array([0.4, 1.2, 2.5, 5.0])
+    weights = np.array([0.15, 0.25, 0.35, 0.25])
+    valid_q = np.array([
+        np.sum(weights * np.exp(-support) * support ** n)
+        for n in range(6)
+    ])
+
+    def hankel(q, order, shift=0):
+        return np.array([
+            [q[i + j + shift] for j in range(order + 1)]
+            for i in range(order + 1)
+        ])
+
+    def correlation_scaled(matrix):
+        scale = np.sqrt(np.diag(matrix))
+        return matrix / np.outer(scale, scale)
+
+    valid_hankel = hankel(valid_q, 2)
+    valid_shifted = hankel(valid_q, 2, shift=1)
+    valid_min_eigenvalues = np.array([
+        np.linalg.eigvalsh(correlation_scaled(valid_hankel))[0],
+        np.linalg.eigvalsh(correlation_scaled(valid_shifted))[0],
+    ])
+
+    base = np.array([0.3, 0.1, 0.1, 0.2, 0.3])
+    geometric = np.array([0.5 ** (n + 1) for n in range(5)])
+    counterexample_p = 0.9 * base + 0.1 * geometric
+    counterexample_q = np.array([
+        math.factorial(n) * counterexample_p[n] for n in range(5)
+    ])
+    counterexample_hankel = hankel(counterexample_q, 2)
+    order_one_determinants = np.array([
+        np.linalg.det(hankel(counterexample_q, 1)),
+        np.linalg.det(hankel(counterexample_q, 1, shift=1)),
+    ])
+    order_two_determinant = np.linalg.det(counterexample_hankel)
+    counterexample_min_eigenvalue = np.linalg.eigvalsh(
+        correlation_scaled(counterexample_hankel))[0]
+
+    # The finite component has mean 2.1 and second moment 7.1; the geometric
+    # component P(G=n)=2^(-n-1) has mean 1 and second moment 3.
+    counterexample_mean = 0.9 * 2.1 + 0.1
+    counterexample_second_moment = 0.9 * 7.1 + 0.1 * 3.0
+    counterexample_variance = (
+        counterexample_second_moment - counterexample_mean ** 2)
+
+    assert np.all(valid_min_eigenvalues > 0.02)
+    assert np.all(order_one_determinants > 0.05)
+    assert order_two_determinant < -0.012
+    assert counterexample_min_eigenvalue < -0.015
+    assert counterexample_variance > counterexample_mean
+    return {
+        "valid_min_eigenvalues": valid_min_eigenvalues,
+        "counterexample_p": counterexample_p,
+        "counterexample_mean": counterexample_mean,
+        "counterexample_variance": counterexample_variance,
+        "order_one_determinants": order_one_determinants,
+        "order_two_determinant": order_two_determinant,
+        "counterexample_min_eigenvalue": counterexample_min_eigenvalue,
+    }
 
 
 def finite_cumulant_twins(order=4, relative_perturbation=0.4):
@@ -1016,6 +1093,7 @@ def two_state_exact(rates, T, lam, sign=1.0):
 
 
 def main():
+    hankel = mixed_poisson_hankel_certificate()
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
     minimax = poisson_mixture_tv_minimax()
@@ -1251,6 +1329,16 @@ def main():
     intensity10 = integrated_intensity_cumulants(Q10, rates2, 1.0, [1.0, 0.0])
     count10, _ = count_cumulants(Q10, rates2, 1.0, [1.0, 0.0])
 
+    print("mixed-Poisson valid normalized Hankel minimum eigenvalues",
+          " ".join(f"{x:.12f}" for x in hankel["valid_min_eigenvalues"]))
+    print("overdispersed counterexample mean and variance",
+          f"{hankel['counterexample_mean']:.12f}",
+          f"{hankel['counterexample_variance']:.12f}")
+    print("counterexample order-one Hankel determinants",
+          " ".join(f"{x:.12f}" for x in hankel["order_one_determinants"]))
+    print("counterexample order-two Hankel determinant and normalized min eigenvalue",
+          f"{hankel['order_two_determinant']:.12f}",
+          f"{hankel['counterexample_min_eigenvalue']:.12f}")
     print("finite-order twin intensity-cumulant gap",
           f"{twins['intensity_gap']:.3e}")
     print("finite-order twin factorial-cumulant gap",

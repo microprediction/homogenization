@@ -16,6 +16,7 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     mark_factorial_moments,
                                     marked_common_shock_factorial_cumulant,
                                     mixed_factorial_cumulants22,
+                                    mixed_poisson_hankel_certificate,
                                     poisson_inverse_instability,
                                     poisson_mixture_w1_moment_upper,
                                     poisson_mixture_w1_nonparametric_lower,
@@ -275,6 +276,7 @@ def black_scholes():
 
 
 def counts():
+    hankel = mixed_poisson_hankel_certificate()
     twins = finite_cumulant_twins()
     instability = poisson_inverse_instability()
     w1_minimax = poisson_mixture_w1_local_minimax()
@@ -417,6 +419,43 @@ def counts():
       uniqueness of Laplace transforms then imply equality of the mixing laws. Thus the mixed-Poisson family is
       identifiable, with no moment-determinacy assumption. This is the Poisson-mixture case of
       <a href="./bibliography.html#Teicher1961">Teicher&apos;s identifiability theorem</a>.</p>
+    <h3>Which count laws are mixed Poisson?</h3>
+    <p>Injectivity answers uniqueness after a mixed-Poisson representation is known to exist. Existence itself has
+      an exact test. Let $p_n=\Pr\{N=n\}$ and $q_n=n!p_n$. Then $N$ is mixed Poisson if and only if, for every
+      $r\ge0$, both Hankel matrices</p>
+    $$H_r^{(0)}=(q_{i+j})_{i,j=0}^r,\qquad
+      H_r^{(1)}=(q_{i+j+1})_{i,j=0}^r$$
+    <p>are positive semidefinite. This is precisely the classical
+      <a href="./bibliography.html#Stieltjes1894">Stieltjes moment criterion</a>; its connection with mixed Poisson
+      laws and factorial moments is also discussed by
+      <a href="./bibliography.html#KubaPanholzer2016">Kuba and Panholzer</a>.</p>
+    <p>The proof is short and also explains the factorial weighting. If
+      $p_n=\int e^{-\lambda}\lambda^n/n!\,\mu(d\lambda)$, then</p>
+    $$q_n=\int_0^\infty \lambda^n\,\rho(d\lambda),\qquad
+      \rho(d\lambda)=e^{-\lambda}\mu(d\lambda),$$
+    <p>so both matrix families are Gram matrices of polynomials in $L^2(\rho)$ and hence are positive
+      semidefinite. Conversely, the two Hankel conditions give a measure $\rho$ on $[0,\infty)$ with moments
+      $q_n$. Since $\sum_nq_n/n!=\sum_np_n=1$, monotone convergence gives
+      $\int e^\lambda\rho(d\lambda)=1$. Therefore
+      $\mu(d\lambda)=e^\lambda\rho(d\lambda)$ is a probability measure and reproduces $p_n$. The same exponential
+      moment makes $\rho$ moment-determinate, so the mixing law is unique.</p>
+    <p>This yields a nested falsification hierarchy. The first two nontrivial minors require</p>
+    $$2p_0p_2\ge p_1^2,\qquad 3p_1p_3\ge2p_2^2,$$
+    <p>but finitely many such inequalities are not sufficient. For example, let $B$ have probabilities
+      $(0.3,0.1,0.1,0.2,0.3)$ on $\{0,1,2,3,4\}$, let
+      $\Pr\{G=n\}=2^{-n-1}$, and take $N$ to have law $0.9\mathcal L(B)+0.1\mathcal L(G)$. This law has full
+      support and is overdispersed:</p>
+    $$\mathbb E N=''' + f'{hankel["counterexample_mean"]:.4f}' + r''',\qquad
+      \operatorname{Var}(N)=''' + f'{hankel["counterexample_variance"]:.4f}' + r'''>\mathbb E N.$$
+    <p>Its two order-one Hankel determinants are
+      ''' + f'{hankel["order_one_determinants"][0]:.7f}' + r''' and
+      ''' + f'{hankel["order_one_determinants"][1]:.7f}' + r''', yet</p>
+    $$\det H_2^{(0)}=''' + f'{hankel["order_two_determinant"]:.9f}' + r'''<0,$$
+    <p>which proves it is not mixed Poisson. As a positive control, the certificate constructs a four-atom mixing
+      law; after diagonal normalization, the smallest eigenvalues of $H_2^{(0)}$ and $H_2^{(1)}$ are
+      ''' + f'{hankel["valid_min_eigenvalues"][0]:.8f}' + r''' and
+      ''' + f'{hankel["valid_min_eigenvalues"][1]:.8f}' + r'''. Thus overdispersion is only the first coarse
+      necessary condition, while the full Hankel hierarchy is necessary and sufficient.</p>
     <p>The multivariate statement is identical under conditional independence:</p>
     $$G_{N_1,\ldots,N_d}(z_1,\ldots,z_d)
       =\mathcal L_{\boldsymbol\Lambda}(1-z_1,\ldots,1-z_d),

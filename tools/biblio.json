@@ -1162,8 +1162,30 @@
   "title": "Identifiability of Mixtures",
   "venue": "Annals of Mathematical Statistics 32(1):244-248",
   "doi": "10.1214/aoms/1177705155",
-  "url": "https://doi.org/10.1214/aoms/1177705155",
+ "url": "https://doi.org/10.1214/aoms/1177705155",
  "annotation": "Proves identifiability for mixtures from one-parameter additively closed families, including the Poisson-mixture setting used to recover the integrated-intensity law from the full count law."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Stieltjes1894",
+  "authors": "Stieltjes, T.-J.",
+  "year": 1894,
+  "title": "Recherches sur les fractions continues",
+  "venue": "Annales de la Faculté des sciences de Toulouse 8(4):J1-J122; continuation 9(1):A5-A47 (1895)",
+  "doi": "",
+  "url": "https://www.numdam.org/item/AFST_1894_1_8_4_J1_0/",
+  "annotation": "Introduces the moment problem on the positive half-line. The resulting Hankel and shifted-Hankel positivity criterion gives the exact mixed-Poisson membership test used on the counts page."
+ },
+ {
+  "role": "survey_choice",
+  "key": "KubaPanholzer2016",
+  "authors": "Kuba, M. and Panholzer, A.",
+  "year": 2016,
+  "title": "On moment sequences and mixed Poisson distributions",
+  "venue": "Probability Surveys 13:89-155",
+  "doi": "10.1214/14-PS244",
+  "url": "https://doi.org/10.1214/14-PS244",
+  "annotation": "Surveys mixed Poisson laws through factorial moments and the Stirling transform, linking nonnegative moment sequences to mixed-Poisson distributions."
  },
  {
   "role": "survey_choice",
