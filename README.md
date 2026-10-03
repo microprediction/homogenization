@@ -54,6 +54,7 @@ papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
   verify_counts.py         factorial cumulants of a switched Poisson count equal the cumulants of the integrated rate
+  verify_count_cumulants.py  joint Cox-count identities, common shocks, law identification and minimax inverse bounds
 papers/layers/
   verify_layer.py          the two-state initial layer to second order with a forcing that does not vanish at the start
 papers/general/

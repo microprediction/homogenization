@@ -1156,6 +1156,71 @@
  },
  {
   "role": "survey_choice",
+  "key": "Teicher1961",
+  "authors": "Teicher, H.",
+  "year": 1961,
+  "title": "Identifiability of Mixtures",
+  "venue": "Annals of Mathematical Statistics 32(1):244-248",
+  "doi": "10.1214/aoms/1177705155",
+  "url": "https://doi.org/10.1214/aoms/1177705155",
+ "annotation": "Proves identifiability for mixtures from one-parameter additively closed families, including the Poisson-mixture setting used to recover the integrated-intensity law from the full count law."
+ },
+ {
+  "role": "survey_choice",
+  "key": "LeCam1973",
+  "authors": "Le Cam, L.",
+  "year": 1973,
+  "title": "Convergence of Estimates Under Dimensionality Restrictions",
+  "venue": "Annals of Statistics 1(1):38-53",
+  "doi": "10.1214/aos/1193342380",
+  "url": "https://doi.org/10.1214/aos/1193342380",
+  "annotation": "Develops lower-bound and convergence methods for statistical experiments under metric restrictions; the count-law note uses the corresponding two-point testing reduction to bound metric estimation risk."
+ },
+ {
+  "role": "survey_choice",
+  "key": "RoueffRyden2005",
+  "authors": "Roueff, F. and Rydén, T.",
+  "year": 2005,
+  "title": "Nonparametric estimation of mixing densities for discrete distributions",
+  "venue": "Annals of Statistics 33(5):2066-2108",
+  "doi": "10.1214/009053605000000381",
+  "url": "https://doi.org/10.1214/009053605000000381",
+  "annotation": "Develops nonparametric estimators and minimax theory for mixing densities in discrete mixture models, including Poisson mixtures, under explicit smoothness restrictions; it supplies the estimation context for the distinction between identifiability and stable inversion."
+ },
+ {
+  "role": "survey_choice",
+  "key": "MiaoEtAl2024",
+  "authors": "Miao, Z., Kong, W., Vinayak, R. K., Sun, W. and Han, F.",
+  "year": 2024,
+  "title": "Fisher-Pitman permutation tests based on nonparametric Poisson mixtures with application to single cell genomics",
+  "venue": "Journal of the American Statistical Association 119(545):394-406",
+  "doi": "10.1080/01621459.2022.2120401",
+  "url": "https://doi.org/10.1080/01621459.2022.2120401",
+  "annotation": "Proves that the Poisson-mixture NPMLE is minimax-rate optimal under ordinary Wasserstein-1 loss. On a fixed support [0,B], the upper and lower orders are both B loglog(n)/log(n)."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Jackson1921",
+  "authors": "Jackson, D.",
+  "year": 1921,
+  "title": "The general theory of approximation by polynomials and trigonometric sums",
+  "venue": "Bulletin of the American Mathematical Society 27(9-10):415-431",
+  "url": "https://projecteuclid.org/euclid.bams/1183425725",
+  "annotation": "Establishes the polynomial approximation inequality used to approximate Lipschitz Kantorovich test functions with uniform error of order one over the degree."
+ },
+ {
+  "role": "survey_choice",
+  "key": "LimHan2024",
+  "authors": "Lim, K. and Han, F.",
+  "year": 2024,
+  "title": "Smoothed NPMLEs in nonparametric Poisson mixtures and beyond",
+  "venue": "arXiv:2406.08808",
+  "doi": "10.48550/arXiv.2406.08808",
+  "url": "https://arxiv.org/abs/2406.08808",
+  "annotation": "Proves nearly root-n convergence for Poisson-mixture NPMLE and minimum-distance estimators under Gaussian-smoothed optimal transport, providing a precise contrast with the ordinary unsmoothed Wasserstein obstruction derived on the count-law page."
+ },
+ {
+  "role": "survey_choice",
   "key": "MarleyColonius1992",
   "authors": "Marley, A. A. J. and Colonius, H.",
   "year": 1992,
