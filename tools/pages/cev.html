@@ -177,6 +177,32 @@
     $$\mathbb E_iW_T=pR(0)+d_iR(\kappa),$$
     $$\mathbb E_iW_T^2=p^2R(0)^2+2pqA+2d_ipB+2d_iqD.$$
     </div>
+    <p>The entire finite-rate Laplace transform is also explicit. For $z\ge0$, let
+    $F_i(\tau;z)=\mathbb E_i\exp[-zW_\tau]$. Feynman&ndash;Kac gives</p>
+    $$F'=\begin{pmatrix}-a-ze^{h\tau}&a\\b&-b\end{pmatrix}F,
+      \qquad F(0;z)=\mathbf1.$$
+    <p>When $h\ne0$, put $\alpha=b/h$, $\gamma=1+(a+b)/h$, and
+    $w_\tau=-(z/h)e^{h\tau}$. If $M(\alpha,\gamma,w)$ and $U(\alpha,\gamma,w)$ are Kummer&apos;s and Tricomi&apos;s
+    confluent hypergeometric functions, with primes denoting derivatives in $w$, define</p>
+    $$\mathcal Y(w)=
+      \frac{U'(w_0)M(w)-M'(w_0)U(w)}{M(w_0)U'(w_0)-M'(w_0)U(w_0)}.$$
+    <p>Eliminating $F_1$ shows that $F_2$ solves
+    $F_2''+(a+b+ze^{h\tau})F_2'+bze^{h\tau}F_2=0$, which becomes Kummer&apos;s equation. The initial conditions
+    $F_2(0)=1$, $F_2'(0)=0$ therefore give the exact transform</p>
+    <div class="equation-card">
+    $$F_2(T;z)=\mathcal Y(w_T),\qquad
+      F_1(T;z)=\mathcal Y(w_T)+\frac{hw_T}{b}\mathcal Y'(w_T).$$
+    </div>
+    <p>At isolated parameter values where this particular fundamental pair degenerates, the formula is read by
+    analytic continuation; uniqueness of the two-state system fixes the limit. For $h=0$ it reduces continuously to
+    $F(T;z)=\exp\{T(Q-z\operatorname{diag}(1,0))\}\mathbf1$. On the negative $w$ axis the individual principal-branch
+    $U$ terms can be complex, but their Wronskian combination is real. Finally, the full CEV-clock transform is</p>
+    $$\mathbb E_i e^{-zV}=e^{-z\sigma_2^2R(0)}F_i(T;z\Delta),$$
+    <p>with analytic continuation in the bounded-clock transform if $\Delta&lt;0$.</p>
+    <p>This is an exact transform benchmark for nonzero carry, not an atom-plus-Bessel density or a direct
+    one-dimensional price quadrature. Across positive carry $h=0.032$ and a negative-$h$ test, 14 state/argument
+    cases agree with an independently integrated Feynman&ndash;Kac system within $8\times10^{-15}$; the largest cancelled
+    imaginary part is below $10^{-94}$.</p>
     <p>Therefore the mean-clock bound remains valid after replacing $\Delta^2\operatorname{Var}(U_T)$ by
     $\Delta^2\operatorname{Var}(W_T)$. For the stationary clock
     $\bar v=(\sigma_2^2+\Delta p)R(0)$, the separate memory term becomes
@@ -184,7 +210,8 @@
     $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
       \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
       R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
-    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
+    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry. The exact transform above also survives, although the
+    zero-carry atom-plus-Bessel density and direct price integral do not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
     estimates agree to $10^{-7}$ and are rounded upward to $M_1=2.58$, $M_2=0.87$ for this illustrative plug-in

@@ -16,11 +16,14 @@ used by the model page and verifies the certified Poisson-tail truncation bound.
 For unequal rates it also checks the exact first two occupation moments and the
 resulting finite-rate Taylor bounds for the CEV price.  Exponentially weighted
 occupation moments extend those bounds to nonzero carry without asserting an
-occupation-time representation for the full clock law.
+occupation-time representation for the full clock law.  For nonzero carry, an
+exact Kummer-function Laplace transform of the weighted occupation clock is
+also checked against the independent time-inhomogeneous Feynman--Kac system.
 """
 
 import math
 
+import mpmath as mp
 import numpy as np
 from numpy.polynomial import chebyshev as ch
 from scipy.integrate import quad, solve_ivp
@@ -261,6 +264,77 @@ def weighted_occupation_moments(start, rate_12, rate_21, clock_growth):
     return mean, second - mean * mean
 
 
+def weighted_laplace_kummer(start, rate_12, rate_21, clock_growth, transform_argument):
+    """Exact Laplace transform of the exponentially weighted occupation clock.
+
+    For h != 0 and z > 0, eliminate the state-1 component from the two-state
+    Feynman--Kac system.  With w=-(z/h)exp(h*tau), the state-2 component solves
+    Kummer's equation with parameters b/h and 1+(a+b)/h.  On the negative real
+    axis the individual Tricomi terms are complex on their principal branches,
+    but the Wronskian combination below is real.  Exceptional Kummer parameters
+    are interpreted by continuation; the certificate avoids those isolated
+    representations.
+    """
+    if transform_argument == 0.0:
+        return mp.mpf(1.0)
+    with mp.workdps(80):
+        h = mp.mpf(clock_growth)
+        if h == 0.0:
+            raise ValueError("use the constant-coefficient matrix exponential when h=0")
+        a = mp.mpf(rate_12)
+        b = mp.mpf(rate_21)
+        z = mp.mpf(transform_argument)
+        alpha = b / h
+        gamma = 1.0 + (a + b) / h
+        w0 = -z / h
+        wT = w0 * mp.exp(h * T)
+
+        def kummer_m(w):
+            return mp.hyp1f1(alpha, gamma, w)
+
+        def kummer_m_prime(w):
+            return alpha * mp.hyp1f1(alpha + 1.0, gamma + 1.0, w) / gamma
+
+        def kummer_u(w):
+            return mp.hyperu(alpha, gamma, w)
+
+        def kummer_u_prime(w):
+            return -alpha * mp.hyperu(alpha + 1.0, gamma + 1.0, w)
+
+        m0 = kummer_m(w0)
+        mp0 = kummer_m_prime(w0)
+        u0 = kummer_u(w0)
+        up0 = kummer_u_prime(w0)
+        denominator = m0 * up0 - mp0 * u0
+        state_two = (up0 * kummer_m(wT) - mp0 * kummer_u(wT)) / denominator
+        state_two_w = (
+            up0 * kummer_m_prime(wT) - mp0 * kummer_u_prime(wT)
+        ) / denominator
+        result = state_two + h * wT * state_two_w / b if start == 0 else state_two
+    return result
+
+
+def weighted_laplace_ode(start, rate_12, rate_21, clock_growth, transform_argument):
+    """Independent Feynman--Kac evaluation of the weighted-clock transform."""
+
+    def rhs(tau, values):
+        penalty = transform_argument * math.exp(clock_growth * tau)
+        return [
+            -(rate_12 + penalty) * values[0] + rate_12 * values[1],
+            rate_21 * values[0] - rate_21 * values[1],
+        ]
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        [1.0, 1.0],
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    return float(solution.y[start, -1])
+
+
 def cev_derivative_estimates(rate=R, dividend=Q, degree=56):
     """Numerical derivative-supremum estimates for the finite-rate table.
 
@@ -497,6 +571,26 @@ def main():
         f"nonzero carry r-q={carry_rate-carry_dividend:g}, h={clock_growth:g}; "
         f"derivative estimates (rounded up): M1={m1:g}, M2={m2:g}"
     )
+    transform_error = 0.0
+    transform_imaginary = 0.0
+    transform_cases = (
+        (rate_12, rate_21, clock_growth, (0.01, 0.1, 1.0, 5.0)),
+        (0.8, 1.1, -0.7, (0.1, 1.0, 3.0)),
+    )
+    for a, b, h, arguments in transform_cases:
+        for argument in arguments:
+            for start in (0, 1):
+                kummer = weighted_laplace_kummer(start, a, b, h, argument)
+                ode = weighted_laplace_ode(start, a, b, h, argument)
+                transform_error = max(transform_error, float(abs(mp.re(kummer) - ode)))
+                transform_imaginary = max(transform_imaginary, float(abs(mp.im(kummer))))
+                assert 0.0 < mp.re(kummer) <= 1.0
+    print(
+        f"weighted-clock Kummer/Feynman--Kac max error={transform_error:.3e}; "
+        f"max cancelled imaginary part={transform_imaginary:.3e}"
+    )
+    assert transform_error < 4e-12
+    assert transform_imaginary < 1e-20
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21
         total_rate = a + b
