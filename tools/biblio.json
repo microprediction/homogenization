@@ -2376,6 +2376,17 @@
   "annotation": "Develops the multivariate one-sided Gaussian test. For several inequality constraints, its chi-bar-square weights depend on the covariance geometry; the independent orthant gives binomial weights as a special case."
  },
  {
+  "role": "survey_econometrics",
+  "key": "Sheppard1899",
+  "authors": "Sheppard, W. F.",
+  "year": 1899,
+  "title": "On the application of the theory of error to cases of normal distribution and normal correlation",
+  "venue": "Philosophical Transactions of the Royal Society of London A 192:101-167",
+  "doi": "10.1098/rsta.1899.0003",
+  "url": "https://doi.org/10.1098/rsta.1899.0003",
+  "annotation": "Derives Gaussian orthant probabilities, including the trivariate arcsine formula used for the exact three-constraint chi-bar-square weights."
+ },
+ {
   "role": "survey_finance",
   "key": "CuchieroKellerResselTeichmann2012",
   "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",

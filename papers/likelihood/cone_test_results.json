@@ -216,5 +216,95 @@
   "correlated_constrained_binomial_95": 8.022107968221023,
   "correlated_constrained_rejection_at_binomial": 0.059396,
   "correlated_constrained_conditional_95": 8.015881197711415,
-  "correlated_constrained_rejection_at_conditional": 0.05954
+  "correlated_constrained_rejection_at_conditional": 0.05954,
+  "trivariate_constrained_correlation": [
+    [
+      1.0,
+      0.55,
+      -0.25
+    ],
+    [
+      0.55,
+      1.0,
+      0.35
+    ],
+    [
+      -0.25,
+      0.35,
+      1.0
+    ]
+  ],
+  "trivariate_constrained_precision_correlation": [
+    [
+      0.9999999999999998,
+      -0.7028634960055146,
+      0.565610686734
+    ],
+    [
+      -0.7028634960055146,
+      1.0,
+      -0.6028605644882187
+    ],
+    [
+      0.565610686734,
+      -0.6028605644882187,
+      0.9999999999999999
+    ]
+  ],
+  "trivariate_constrained_unrestricted_dimension": 2,
+  "trivariate_constrained_covariance": [
+    [
+      3.404826679997533,
+      -0.9912195611698738,
+      0.55,
+      -0.35,
+      0.4
+    ],
+    [
+      -0.9912195611698735,
+      1.6623315910895249,
+      -0.45,
+      0.3,
+      0.25
+    ],
+    [
+      0.55,
+      -0.45,
+      1.1999999999999997,
+      0.5388877434122992,
+      -0.3354101966249684
+    ],
+    [
+      -0.35,
+      0.3,
+      0.5388877434122992,
+      0.7999999999999999,
+      0.3834057902536162
+    ],
+    [
+      0.4,
+      0.25,
+      -0.3354101966249684,
+      0.3834057902536162,
+      1.4999999999999998
+    ]
+  ],
+  "trivariate_constrained_replications": 1000000,
+  "trivariate_constrained_chibar_weights": [
+    0.05932286986751306,
+    0.3203099779194104,
+    0.44067713013248694,
+    0.17969002208058957
+  ],
+  "trivariate_constrained_face_frequencies": [
+    0.059344,
+    0.320617,
+    0.440516,
+    0.179523
+  ],
+  "trivariate_constrained_weight_max_error": 0.0003070220805895807,
+  "trivariate_constrained_chibar_95": 9.305539028635852,
+  "trivariate_constrained_null_rejection": 0.049824,
+  "trivariate_constrained_binomial_95": 8.946571633865318,
+  "trivariate_constrained_rejection_at_binomial": 0.057718
 }

@@ -10,7 +10,9 @@ For a general Fisher covariance the projection must first residualize and
 standardize the unrestricted scores against the one-sided score.  The same
 construction is checked below for three unrestricted coordinates.
 It is also checked for several Fisher-orthogonal one-sided coordinates and
-for two correlated one-sided coordinates with a dense unrestricted block.
+for two and three correlated one-sided coordinates with dense unrestricted
+blocks.  In three dimensions the exact weights use orthant probabilities of
+both the constrained correlation and its precision correlation.
 """
 import json
 import math
@@ -71,6 +73,72 @@ def project_correlated_orthant_2d(scores, correlation):
     )
     face_dimensions = np.array([0, 1, 1, 2])[selected]
     return statistic, face_dimensions
+
+
+def project_correlated_orthant(scores, correlation):
+    """Metric projection onto a low-dimensional correlated orthant.
+
+    Each subset of positive coordinates defines a face.  On that face the
+    inverse-correlation metric has an explicit unconstrained minimizer.  We
+    enumerate the faces, discard minimizers outside their relative closures,
+    and retain the nearest candidate.  This is exponential in q and is used
+    here only as a transparent q=3 certificate, not as a production solver.
+    """
+    scores = np.asarray(scores, dtype=float)
+    correlation = np.asarray(correlation, dtype=float)
+    q = correlation.shape[0]
+    precision = np.linalg.inv(correlation)
+    best_distance = np.full(scores.shape[0], np.inf)
+    best_projection = np.zeros_like(scores)
+    best_dimension = np.zeros(scores.shape[0], dtype=int)
+    indices = np.arange(q)
+    for mask in range(1 << q):
+        active = indices[(mask & (1 << indices)) != 0]
+        inactive = indices[(mask & (1 << indices)) == 0]
+        candidate = np.zeros_like(scores)
+        if active.size:
+            candidate[:, active] = scores[:, active]
+            if inactive.size:
+                candidate[:, active] += scores[:, inactive] @ (
+                    np.linalg.solve(
+                        precision[np.ix_(active, active)],
+                        precision[np.ix_(active, inactive)],
+                    ).T
+                )
+            feasible = np.all(candidate[:, active] >= -1e-12, axis=1)
+        else:
+            feasible = np.ones(scores.shape[0], dtype=bool)
+        displacement = candidate - scores
+        distance = np.einsum(
+            "ni,ij,nj->n", displacement, precision, displacement
+        )
+        improve = feasible & (distance < best_distance)
+        best_distance[improve] = distance[improve]
+        best_projection[improve] = candidate[improve]
+        best_dimension[improve] = active.size
+    statistic = np.einsum(
+        "ni,ij,nj->n", best_projection, precision, best_projection
+    )
+    return statistic, best_dimension
+
+
+def trivariate_orthant_weights(correlation):
+    """Exact chi-bar weights for a three-dimensional Gaussian orthant."""
+    correlation = np.asarray(correlation, dtype=float)
+    precision = np.linalg.inv(correlation)
+    scales = np.sqrt(np.diag(precision))
+    precision_correlation = precision / np.outer(scales, scales)
+
+    def positive_orthant_probability(matrix):
+        return 0.125 + sum(
+            math.asin(matrix[i, j])
+            for i, j in ((0, 1), (0, 2), (1, 2))
+        ) / (4.0 * math.pi)
+
+    w3 = positive_orthant_probability(correlation)
+    w0 = positive_orthant_probability(precision_correlation)
+    weights = np.array([w0, 0.5 - w3, 0.5 - w0, w3])
+    return weights, precision_correlation
 
 
 def normal_square_tail(delta, threshold):
@@ -525,6 +593,99 @@ def main():
         constrained_statistic > conditional_q2_critical
     ))
 
+    # Three correlated constraints admit another closed form.  The weight of
+    # the full-dimensional face is the positive-orthant probability under R;
+    # the vertex weight is the same probability under corr(R^{-1}).  Conic
+    # Gauss--Bonnet then gives w1=1/2-w3 and w2=1/2-w0.  Enumerating all eight
+    # faces supplies an independent metric-projection check.
+    del constrained_raw, constrained_y, constrained_residual
+    del constrained_u, constrained_v, constrained_statistic
+    trivariate_p, trivariate_q = 2, 3
+    trivariate_reps = 1000000
+    trivariate_correlation = np.array([
+        [1.00, 0.55, -0.25],
+        [0.55, 1.00, 0.35],
+        [-0.25, 0.35, 1.00],
+    ])
+    trivariate_scales = np.sqrt(np.array([1.20, 0.80, 1.50]))
+    trivariate_s = (
+        trivariate_correlation
+        * np.outer(trivariate_scales, trivariate_scales)
+    )
+    trivariate_c = np.array([[1.10, 0.20], [0.20, 0.90]])
+    trivariate_b = np.array([
+        [0.55, -0.35, 0.40],
+        [-0.45, 0.30, 0.25],
+    ])
+    trivariate_a = (
+        trivariate_c
+        + trivariate_b @ np.linalg.solve(trivariate_s, trivariate_b.T)
+    )
+    trivariate_covariance = np.block([
+        [trivariate_a, trivariate_b],
+        [trivariate_b.T, trivariate_s],
+    ])
+    trivariate_raw = rng.multivariate_normal(
+        np.zeros(trivariate_p + trivariate_q),
+        trivariate_covariance,
+        size=trivariate_reps,
+    )
+    trivariate_y = trivariate_raw[:, trivariate_p:]
+    trivariate_residual = (
+        trivariate_raw[:, :trivariate_p]
+        - trivariate_y @ np.linalg.solve(trivariate_s, trivariate_b.T)
+    )
+    trivariate_u = trivariate_residual @ symmetric_root(
+        trivariate_c, inverse=True
+    )
+    trivariate_v = trivariate_y / trivariate_scales
+    trivariate_orthant_statistic, trivariate_faces = (
+        project_correlated_orthant(
+            trivariate_v, trivariate_correlation
+        )
+    )
+    trivariate_statistic = (
+        np.sum(trivariate_u ** 2, axis=1)
+        + trivariate_orthant_statistic
+    )
+    trivariate_weights, trivariate_precision_correlation = (
+        trivariate_orthant_weights(trivariate_correlation)
+    )
+    trivariate_face_frequencies = np.bincount(
+        trivariate_faces, minlength=trivariate_q + 1
+    ) / trivariate_reps
+    trivariate_weight_error = float(np.max(np.abs(
+        trivariate_face_frequencies - trivariate_weights
+    )))
+
+    def trivariate_chibar_cdf(x, weights):
+        return sum(
+            weight * chi2.cdf(x, trivariate_p + face_dimension)
+            for face_dimension, weight in enumerate(weights)
+        )
+
+    trivariate_critical = brentq(
+        lambda x: trivariate_chibar_cdf(
+            x, trivariate_weights
+        ) - (1.0 - alpha),
+        0.0,
+        40.0,
+    )
+    trivariate_null_rejection = float(np.mean(
+        trivariate_statistic > trivariate_critical
+    ))
+    binomial_q3_weights = np.array([0.125, 0.375, 0.375, 0.125])
+    binomial_q3_critical = brentq(
+        lambda x: trivariate_chibar_cdf(
+            x, binomial_q3_weights
+        ) - (1.0 - alpha),
+        0.0,
+        40.0,
+    )
+    trivariate_rejection_at_binomial = float(np.mean(
+        trivariate_statistic > binomial_q3_critical
+    ))
+
     out = {
         "n": n,
         "replications": reps,
@@ -590,6 +751,25 @@ def main():
         "correlated_constrained_conditional_95": conditional_q2_critical,
         "correlated_constrained_rejection_at_conditional":
             constrained_rejection_at_conditional,
+        "trivariate_constrained_correlation":
+            trivariate_correlation.tolist(),
+        "trivariate_constrained_precision_correlation":
+            trivariate_precision_correlation.tolist(),
+        "trivariate_constrained_unrestricted_dimension": trivariate_p,
+        "trivariate_constrained_covariance": trivariate_covariance.tolist(),
+        "trivariate_constrained_replications": trivariate_reps,
+        "trivariate_constrained_chibar_weights":
+            trivariate_weights.tolist(),
+        "trivariate_constrained_face_frequencies":
+            trivariate_face_frequencies.tolist(),
+        "trivariate_constrained_weight_max_error":
+            trivariate_weight_error,
+        "trivariate_constrained_chibar_95": trivariate_critical,
+        "trivariate_constrained_null_rejection":
+            trivariate_null_rejection,
+        "trivariate_constrained_binomial_95": binomial_q3_critical,
+        "trivariate_constrained_rejection_at_binomial":
+            trivariate_rejection_at_binomial,
     }
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cone_test_results.json")
     with open(path, "w") as f:
@@ -633,6 +813,12 @@ def main():
           f"{constrained_rho:.6f}/{constrained_conditional_rho:.6f}, "
           f"binomial {constrained_rejection_at_binomial:.6f}, "
           f"conditional {constrained_rejection_at_conditional:.6f}")
+    print("three-constraint weights exact/simulated, max error: "
+          f"{trivariate_weights}, {trivariate_face_frequencies}, "
+          f"{trivariate_weight_error:.3e}")
+    print("three-constraint critical/correct/binomial rejection: "
+          f"{trivariate_critical:.6f}/{trivariate_null_rejection:.6f}/"
+          f"{trivariate_rejection_at_binomial:.6f}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -659,6 +845,9 @@ def main():
         and constrained_weight_error < 0.0015
         and abs(constrained_rejection_at_binomial - alpha) > 0.008
         and abs(constrained_rejection_at_conditional - alpha) > 0.008
+        and abs(trivariate_null_rejection - alpha) < 0.0015
+        and trivariate_weight_error < 0.0015
+        and abs(trivariate_rejection_at_binomial - alpha) > 0.005
     )
     print("PASS" if ok else "FAIL")
     if not ok:

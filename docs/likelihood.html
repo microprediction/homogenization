@@ -310,6 +310,27 @@
     leaves the marginal metric $S^{-1}$ on $Y$, not the conditional covariance. This theorem includes the
     $(1/4,1/2,1/4)$ law when $\rho=0$ and separates the universal one-constraint result from its genuinely
     covariance-dependent multi-constraint extension.</p>
+    <h3>Three correlated one-sided directions: exact weights</h3>
+    <p>The first higher-dimensional correlated case is still closed form. Let $Y\in\mathbb R^3$ be the constrained
+    block in the same partition, let $R$ be the correlation matrix of its <em>marginal</em> covariance $S$, and let
+    $R^\#$ be the correlation matrix obtained by standardizing $S^{-1}$. Define</p>
+    $$\Omega(M)=\frac18+\frac{\arcsin M_{12}+\arcsin M_{13}+\arcsin M_{23}}{4\pi}.$$
+    <p>Then the four chi-bar-square weights, ordered by face dimension, are</p>
+    <div class="equation-card">
+    $$w_0=\Omega(R^\#),\qquad w_1=\frac12-\Omega(R),\qquad
+      w_2=\frac12-\Omega(R^\#),\qquad w_3=\Omega(R),$$
+    $$\mathrm{LM}_{p,3}\ \Longrightarrow\ \sum_{j=0}^3w_j\chi_{p+j}^2.$$
+    </div>
+    <p>To prove the endpoint formulas, positively rescale $Y$ so its covariance is $R$. Projection lands in the
+    interior exactly when $Y>0$, so $w_3=\Pr(Y>0)=\Omega(R)$ by the trivariate Gaussian orthant formula of
+    <a href="./bibliography.html#Sheppard1899">Sheppard (1899)</a>. It lands at the vertex exactly when
+    $S^{-1}Y\leq0$; this vector has covariance $S^{-1}$, so symmetry gives $w_0=\Omega(R^\#)$. The conic
+    Gauss&ndash;Bonnet identities $w_0+w_2=w_1+w_3=1/2$ give the two remaining weights. As before, $B$ affects only
+    the independent residualized unrestricted block. The precision correlation enters only the vertex weight: neither
+    $R^\#$ nor $R$ may be replaced by the correlation of $Y$ conditional on the unrestricted scores.</p>
+    <p>When $R=I_3$, both endpoint probabilities are $1/8$ and the formula reduces to the orthogonal binomial weights
+    $(1,3,3,1)/8$. For four or more correlated constraints, the face-probability characterization remains valid but
+    this elementary arcsine closure no longer follows from the trivariate orthant identity.</p>
     <h3>Local alternatives and power</h3>
     <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
     alternatives, after the same nuisance-parameter profiling, satisfies</p>
@@ -388,9 +409,15 @@
     constrained covariance block give face frequencies $(0.125228,0.374093,0.374995,0.125684)$ against exact binomial
     weights $(1,3,3,1)/8$. The 95% critical value is $8.946572$ and null rejection is $5.0178\%$. A second million-draw
     experiment deliberately correlates two constrained scores at $\rho=0.70$. Its exact weights are
-    $(0.126592,0.5,0.373408)$ and its correctly calibrated 95% critical value $4.726253$ gives $5.0003\%$ rejection.
-    Incorrectly imposing the independent-binomial cutoff $4.230599$ raises rejection to $6.4806\%$, a numerical
-    counterexample to covariance-invariant binomial weights for multiple constraints.</p>
+    $(0.126592,0.5,0.373408)$; the simulated face frequencies are $(0.126491,0.499893,0.373616)$. With $p=2$, its
+    correctly calibrated 95% critical value $8.410794$ gives $5.0320\%$ rejection. Incorrectly imposing the
+    independent-binomial cutoff $8.022108$ raises rejection to $5.9396\%$. The conditional constrained correlation is
+    $-0.011608$ and its cutoff gives $5.9540\%$ rejection, directly checking that the theorem uses marginal $S$.</p>
+    <p>A third million-draw experiment uses $p=2$, three correlated constraints, and a dense cross block. The exact
+    weights $(0.059323,0.320310,0.440677,0.179690)$ agree with simulated face frequencies
+    $(0.059344,0.320617,0.440516,0.179523)$ to $3.1\times10^{-4}$. The exact critical value $9.305539$ gives
+    $4.9824\%$ rejection, while the independent-binomial cutoff $8.946572$ gives $5.7718\%$. Thus the new formula is
+    numerically calibrated and the binomial shortcut is again rejected.</p>
     <p>A separate matrix-kernel certificate propagates the exact two-state filter by Fourier inversion for a fixed
     six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
     log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s
