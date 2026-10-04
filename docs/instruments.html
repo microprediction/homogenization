@@ -145,7 +145,7 @@
     $\partial_Ta(T) = (Q + \operatorname{diag} g(T))\,a(T)$.</p>
 
     <h2>Options on bonds, swaptions and caps</h2>
-    <p>Under a Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
+    <p>Under a one-factor Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
     $A_j\,e^{-b\,x_T}$ with $A_j = a_j(S - T)$ and $b = B(S - T)$. The call pays $(A_je^{-bx_T} - K)^+$, which is positive
     when $x_T < x_j^* = \log(A_j/K)/b$: one exercise boundary per regime. Its value is a sum over the regime at
     expiry of two terms of the form</p>
@@ -155,7 +155,7 @@
     terminal exponent changes the coefficient of the state from $B$ to
     $B_c(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa$ and leaves the form of the forcing alone. The derivation,
     and the closed forms, are on the <a href="./bond-options.html">bond options</a> page.</p>
-    <p>A coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
+    <p>In the same one-factor model, a coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
     <a href="./bibliography.html#Jamshidian1989">Jamshidian&apos;s decomposition</a> holds regime by regime. In regime $j$
     there is one $x_j^*$ at which the coupon bond equals the strike, and the option on the coupon bond is the sum of
     options on its zero-coupon parts with strikes $K_{kj} = A_{kj}e^{-b_kx_j^*}$:</p>
@@ -168,9 +168,27 @@
         struck at $1/(1 + \tau_kK)$ and expiring at $t_{k-1}$;</li>
       <li>under <a href="./hull-white.html">Hull&ndash;White</a> the deterministic shift scales each cash flow by
         $e^{-\int\varphi}$ and the rest is unchanged;</li>
-      <li>under <a href="./g2.html">G2++</a> a zero-coupon bond depends on the factors through the single Gaussian variable
-        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor.</li>
+      <li>under <a href="./g2.html">G2++</a> a single zero-coupon bond still depends on one Gaussian linear combination,
+        so its option remains one-dimensional; this does not extend to a coupon bond.</li>
     </ul>
+    <h3>Why G2++ swaptions are not Jamshidian decompositions</h3>
+    <p>At expiry, a cash flow with residual maturity $\tau_k$ has loading vector</p>
+    $$b_k = \big(B_a(\tau_k), B_b(\tau_k)\big), \qquad
+      B_c(\tau) = \frac{1-e^{-c\tau}}{c}.$$
+    <p>Thus the regime-$j$ coupon bond is
+    $C_j(x,z)=\sum_k c_kA_{kj}\exp(-b_k\cdot(x,z))$. A linear scalar-Gaussian reduction of Jamshidian&apos;s kind exists
+    exactly when all of the $b_k$ are collinear. For two distinct residual maturities this fails when $a\ne b$, because</p>
+    $$R(\tau)=\frac{B_a(\tau)}{B_b(\tau)}, \qquad
+      \frac{d}{d\tau}\log R(\tau)=\frac{a}{e^{a\tau}-1}-\frac{b}{e^{b\tau}-1},$$
+    <p>and $c/(e^{c\tau}-1)$ is strictly decreasing in $c>0$. With the G2++ parameters on this site,
+    $a=0.5$, $b=0.1$, and residual maturities one and four years,</p>
+    $$\det(b_1,b_2)=0.94870454.$$
+    <p>The exercise boundary is therefore curved rather than a Gaussian half-space. For two unit cash flows struck at
+    two, the boundary through the origin has</p>
+    $$z''(0)=\frac{2\det(b_1,b_2)^2}{(B_b(1)+B_b(4))^3}=0.02347513.$$
+    <p>G2++ coupon-bond options and swaptions consequently require a two-dimensional Gaussian integral, or conditioning
+    on one factor and solving the monotone boundary in the other. The one-factor decomposition above remains valid for
+    Vasicek and Hull&ndash;White, while zero-coupon bond options and caplets remain one-dimensional under G2++.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
@@ -273,7 +291,9 @@
     using $QQ^\# = I - \mathbf 1\pi$ and $d\pi\,\mathbf 1 = 0$. The Green&ndash;Kubo matrix
     $K_{jk} = -\pi\cdot(\tilde f_j\odot Q^\#\tilde f_k)$ and the memory vector $m = Q^\#\tilde g$ then vary by the
     product rule.</p>
-    <p>Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a>. The instruments are implemented in
+    <p>Certificates: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a> and
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">verify_g2_coupon_geometry.py</a>.
+    The instruments are implemented in
     <a href="https://github.com/microprediction/regimelib">regimelib</a>.</p>
   </main>
 
