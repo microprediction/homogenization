@@ -2429,5 +2429,93 @@
   "doi": "10.1515/crelle-1878-18788405",
   "url": "https://doi.org/10.1515/crelle-1878-18788405",
   "annotation": "Introduces the derivative-matching interpolation construction whose confluent Vandermonde structure underlies the clustered-loading collision theorem."
+ },
+ {
+  "role": "examples",
+  "key": "Merton1976",
+  "authors": "Merton, R. C.",
+  "year": 1976,
+  "title": "Option pricing when underlying stock returns are discontinuous",
+  "venue": "Journal of Financial Economics 3(1-2):125-144",
+  "doi": "10.1016/0304-405x(76)90022-2",
+  "url": "https://doi.org/10.1016/0304-405x(76)90022-2",
+  "annotation": "Adds lognormal jumps at a Poisson rate to geometric Brownian motion and prices options as a Poisson mixture of Black-Scholes prices; the Merton example lets the volatility and the jump intensity switch."
+ },
+ {
+  "role": "examples",
+  "key": "Bates1996",
+  "authors": "Bates, D. S.",
+  "year": 1996,
+  "title": "Jumps and Stochastic Volatility: Exchange Rate Processes Implicit in Deutsche Mark Options",
+  "venue": "Review of Financial Studies 9(1):69-107",
+  "doi": "10.1093/rfs/9.1.69",
+  "url": "https://doi.org/10.1093/rfs/9.1.69",
+  "annotation": "Combines square-root stochastic variance with lognormal jumps; the Bates example lets the long-run variance and the jump intensity switch together."
+ },
+ {
+  "role": "examples",
+  "key": "MadanCarrChang1998",
+  "authors": "Madan, D. B., Carr, P. P. and Chang, E. C.",
+  "year": 1998,
+  "title": "The Variance Gamma Process and Option Pricing",
+  "venue": "European Finance Review 2(1):79-105",
+  "doi": "10.1023/a:1009703431535",
+  "url": "https://doi.org/10.1023/a:1009703431535",
+  "annotation": "Brownian motion with drift run on a gamma clock, with closed-form characteristic function; the variance gamma example lets all three parameters switch."
+ },
+ {
+  "role": "examples",
+  "key": "HullWhite1990",
+  "authors": "Hull, J. and White, A.",
+  "year": 1990,
+  "title": "Pricing Interest-Rate-Derivative Securities",
+  "venue": "Review of Financial Studies 3(4):573-592",
+  "doi": "10.1093/rfs/3.4.573",
+  "url": "https://doi.org/10.1093/rfs/3.4.573",
+  "annotation": "Extends the Vasicek short rate with a time-dependent drift fitted to the initial term structure; the Hull-White example lets the volatility switch and measures how far each regime moves from the fitted curve."
+ },
+ {
+  "role": "examples",
+  "key": "BrigoMercurio2006",
+  "authors": "Brigo, D. and Mercurio, F.",
+  "year": 2006,
+  "title": "Interest Rate Models - Theory and Practice: With Smile, Inflation and Credit",
+  "venue": "Springer, 2nd edition",
+  "doi": "10.1007/978-3-540-34604-3",
+  "url": "https://doi.org/10.1007/978-3-540-34604-3",
+  "annotation": "The standard reference for the two-additive-factor Gaussian model G2++ and its bond, cap and swaption formulas; the G2++ example lets both volatilities and the correlation switch."
+ },
+ {
+  "role": "examples",
+  "key": "Schroder1989",
+  "authors": "Schroder, M.",
+  "year": 1989,
+  "title": "Computing the Constant Elasticity of Variance Option Pricing Formula",
+  "venue": "Journal of Finance 44(1):211-219",
+  "doi": "10.1111/j.1540-6261.1989.tb02414.x",
+  "url": "https://doi.org/10.1111/j.1540-6261.1989.tb02414.x",
+  "annotation": "Writes the constant elasticity of variance option price in terms of the noncentral chi-square distribution; the CEV example mixes that formula over a random total variance."
+ },
+ {
+  "role": "examples",
+  "key": "Jamshidian1989",
+  "authors": "Jamshidian, F.",
+  "year": 1989,
+  "title": "An Exact Bond Option Formula",
+  "venue": "Journal of Finance 44(1):205-209",
+  "doi": "10.1111/j.1540-6261.1989.tb02413.x",
+  "url": "https://doi.org/10.1111/j.1540-6261.1989.tb02413.x",
+  "annotation": "Prices options on zero-coupon bonds under a Gaussian short rate and decomposes an option on a coupon bond into options on its zero-coupon parts; the decomposition holds regime by regime under switching."
+ },
+ {
+  "role": "examples",
+  "key": "KemnaVorst1990",
+  "authors": "Kemna, A. G. Z. and Vorst, A. C. F.",
+  "year": 1990,
+  "title": "A pricing method for options based on average asset values",
+  "venue": "Journal of Banking and Finance 14(1):113-129",
+  "doi": "10.1016/0378-4266(90)90039-5",
+  "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
+  "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
  }
 ]

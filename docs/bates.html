@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Heston with a switching long-run variance · homogenization</title>
+  <title>Bates with a switching variance level and jump intensity · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -109,18 +109,22 @@
 </header>
 
   <main>
-    <h1>Heston with a switching long-run variance</h1>
-    <p class="subtitle">Stochastic volatility whose long-run level follows a hidden regime, and the option prices it implies.</p>
+    <h1>Bates with a switching variance level and jump intensity</h1>
+    <p class="subtitle">Stochastic volatility with jumps, where a hidden regime sets both the long-run variance and how often the price jumps.</p>
 
     <h2>The model</h2>
-    <p>A stock price $S_t = e^{X_t}$ has stochastic variance $v_t$, as in
-    <a href="./bibliography.html#Heston1993">Heston&apos;s model</a>, except that the level to which the variance
-    reverts is set by a hidden regime $y_t \in \{1, 2\}$, a calm market and a turbulent one:</p>
-    $$dX_t = -\tfrac12 v_t\,dt + \sqrt{v_t}\,dW_t, \qquad dv_t = \kappa\,(\theta_{y_t} - v_t)\,dt + \xi\sqrt{v_t}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
+    <p><a href="./bibliography.html#Bates1996">Bates&apos;s model</a> adds Merton&apos;s lognormal jumps to
+    Heston&apos;s stochastic variance. Here the long-run variance and the jump intensity are set by a hidden regime
+    $y_t \in \{1, 2\}$, a turbulent market and a calm one. With $S_t = e^{X_t}$,</p>
+    $$dX_t = \big(-\tfrac12 v_t - \ell_{y_t}\bar k\big)\,dt + \sqrt{v_t}\,dW_t + J\,dN_t, \qquad
+      dv_t = \kappa\,(\theta_{y_t} - v_t)\,dt + \xi\sqrt{v_t}\,dZ_t, \qquad d\langle W, Z\rangle = \rho\,dt .$$
+    <p>While $y_t = i$ the Poisson process $N$ jumps at rate $\ell_i$, by normal amounts $J$ with mean $\mu_J$ and
+    standard deviation $\delta$, and $\bar k = e^{\mu_J + \delta^2/2} - 1$.</p>
     <p>The regime switches at rate $\lambda$ in each direction. The variance reverts over $1/\kappa$; the regime
     changes every $1/\lambda$.</p>
     <p class="muted">Parameters: $\kappa = 2$, $\theta = (0.09, 0.02)$, $\xi = 0.4$, $\rho = -0.6$, $v_0 = 0.04$,
-    $S_0 = 100$, zero interest, one year to expiry, $\lambda = 10$, and a start in the turbulent regime.</p>
+    $\ell = (2, 0.2)$, $\mu_J = -0.08$, $\delta = 0.10$, $S_0 = 100$, zero interest, one year to expiry,
+    $\lambda = 10$, and a start in the turbulent regime.</p>
 
     <h2>The quantity</h2>
     <p>European call prices, through the characteristic function</p>
@@ -129,25 +133,36 @@
     <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a></p>
     $$C = S_0 - \frac{\sqrt{S_0K}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}.$$
     <h2>Averaging</h2>
-    <p>When the regime switches infinitely fast the limit is Heston&apos;s model with long-run variance
-    $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and its closed-form characteristic function.</p>
+    <p>When the regime switches infinitely fast the limit is Bates&apos;s model with long-run variance
+    $\bar\theta = \tfrac12(\theta_1 + \theta_2)$ and jump intensity $\bar\ell = \tfrac12(\ell_1 + \ell_2)$, and its
+    closed-form characteristic function.</p>
 
     <h2>Reduction to a linear system</h2>
-    <p>The characteristic function solves a Feynman&ndash;Kac equation in the log price, the variance and the regime.
-    Try the Heston form $\phi_i = e^{D(t)v_0}\,a_i(t)$. The terms in $v_0$ cancel when</p>
+    <p>The characteristic function $\phi_i(t, v)$, over a remaining time $t$ and from variance $v$, solves the
+    Feynman&ndash;Kac equations</p>
+    $$\begin{aligned}\partial_t\phi_i = \;&\kappa(\theta_i - v)\,\partial_v\phi_i + \tfrac12\xi^2v\,\partial_{vv}\phi_i
+      + iu\rho\xi v\,\partial_v\phi_i - \tfrac12(u^2 + iu)\,v\,\phi_i \\
+      &+ \ell_i\big(\phi_J(u) - 1 - iu\bar k\big)\,\phi_i + \sum_j Q_{ij}\,\phi_j, \qquad \phi_i(0, v) = 1 .\end{aligned}$$
+    <p>The first line is Heston&apos;s. The jump term is a multiple of $\phi_i$ because a jump in the log price
+    multiplies $e^{iuX}$ by $e^{iuJ}$ and leaves the variance alone, with</p>
+    $$\phi_J(u) = \exp\big(iu\mu_J - \tfrac12u^2\delta^2\big) .$$
+    <p>Try the Heston form $\phi_i = e^{D(t)v}\,a_i(t)$. The terms in $v$ cancel when</p>
     $$D' = -\tfrac12(u^2 + iu) + (\rho\xi iu - \kappa)\,D + \tfrac12\xi^2D^2, \qquad D(0) = 0 .$$
-    <p>This Riccati equation involves $\kappa$, $\xi$ and $\rho$ but not $\theta$, so one $D$ serves both regimes. Its
-    solution is</p>
+    <p>This Riccati equation involves $\kappa$, $\xi$ and $\rho$ but neither $\theta$ nor $\ell$, so one $D$ serves both
+    regimes. Its solution is</p>
     $$D(t) = \frac{\kappa - \rho\xi iu - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad d = \sqrt{(\rho\xi iu - \kappa)^2 + \xi^2(iu + u^2)},$$
     <p>with</p>
     $$\gamma = (\kappa - \rho\xi iu - d)/(\kappa - \rho\xi iu + d).$$
-    <p>So $\phi_i = e^{D(T)v_0}a_i(T)$ with
-    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and $g_i(t) = \kappa\,\theta_i\,D(t)$, which is complex.</p>
+    <p>What remains involves $t$ only. So $\phi_i = e^{D(T)v_0}a_i(T)$ with
+    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and the complex</p>
+    $$g_i(t) = \kappa\,\theta_i\,D(t) + \ell_i\,c_J, \qquad c_J = \phi_J(u) - 1 - iu\bar k .$$
+    <p>The first term is the <a href="./heston.html">Heston</a> forcing and the second the compensated jump exponent of
+    the <a href="./merton.html">Merton</a> page. The first vanishes at $t = 0$ and the second does not.</p>
     <h2>The expansion</h2>
     <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
     $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
     <p>Here</p>
-    $$g_i = \kappa\theta_i D, \qquad \tilde g = \kappa\tilde\theta D .$$
+    $$\tilde g = \kappa\tilde\theta\,D + \tilde\ell\,c_J, \qquad \tilde\theta = \tfrac12(\theta_1 - \theta_2), \quad \tilde\ell = \tfrac12(\ell_1 - \ell_2) .$$
     <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
     half-difference $\tilde g$ measures how much the two regimes disagree.</p>
 
@@ -190,40 +205,55 @@
     <p>The engine holds the complex $g_i$ as Chebyshev series.</p>
 
     <h2>Explicit formulas</h2>
-    <p>For Heston every term up to second order is in closed form. Write</p>
+    <p>For Bates every term up to second order is in closed form. Write</p>
     $$b = \kappa - \rho\xi iu, \qquad d = \sqrt{b^2 + \xi^2(iu + u^2)}, \qquad \gamma = \frac{b - d}{b + d},$$
     <p>so that the regime-free coefficient and its derivative are</p>
     $$D(t) = \frac{b - d}{\xi^2}\;\frac{1 - e^{-dt}}{1 - \gamma e^{-dt}}, \qquad D'(t) = -\tfrac12(u^2 + iu) - b\,D(t) + \tfrac12\xi^2 D(t)^2 .$$
+    <h3>Second order</h3>
+    <p>Two more steps give the next order. The recursion gives $\omega_2 = -\omega_1'/2 = -\tilde g'/4$, which adds
+    $-\tfrac14\varepsilon^2\int_0^T\tilde g\,\tilde g' = -\tfrac18\varepsilon^2\big(\tilde g(T)^2 - \tilde g(0)^2\big)$ to
+    the exponent. The initial layer subtracts $\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ from $\omega$, and
+    through $\int\tilde g\,\omega$ that adds $-\tfrac14\varepsilon^2\,\tilde g(0)^2$. Together, up to terms of size
+    $e^{-2\lambda T}$,</p>
+    <div class="equation-card">
+    $$a_{1,2}(T) = \exp\Big(\int_0^T \bar g + \frac{\varepsilon}{2}\int_0^T \tilde g^{\,2}
+      - \frac{\varepsilon^2}{8}\big(\tilde g(T)^2 + \tilde g(0)^2\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(T) \mp \frac{\varepsilon^2}{4}\,\tilde g'(T)\Big) + O(\varepsilon^3).$$
+    </div>
+    <p>What remains is to evaluate $\int\bar g$, $\int\tilde g^{\,2}$, $\tilde g$ and $\tilde g'$ for this model.</p>
 
     <h3>Step 1: the forcing</h3>
-    <p>The forcing is proportional to $D$, so its average and half-difference are</p>
-    $$\bar g(t) = \kappa\,\bar\theta\,D(t), \qquad \tilde g(t) = \kappa\,\tilde\theta\,D(t), \qquad
-      \bar\theta = \tfrac12(\theta_1 + \theta_2),\quad \tilde\theta = \tfrac12(\theta_1 - \theta_2).$$
+    <p>The forcing is a multiple of $D$ plus a constant, so its average and half-difference are</p>
+    $$\bar g(t) = \kappa\,\bar\theta\,D(t) + \bar\ell\,c_J, \qquad \tilde g(t) = \kappa\,\tilde\theta\,D(t) + \tilde\ell\,c_J, \qquad
+      \bar\theta, \tilde\theta = \frac{\theta_1 \pm \theta_2}{2}, \quad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2}.$$
+    <p>At the ends, $\tilde g(0) = \tilde\ell\,c_J$ because $D(0) = 0$, and $\tilde g'(T) = \kappa\tilde\theta\,D'(T)$.</p>
 
-    <h3>Step 2: the two integrals</h3>
+    <h3>Step 2: the integrals</h3>
     <p>The averaged exponent needs $\int D$, the Heston integral. With $L(t) = \log\big((1 - \gamma e^{-dt})/(1 - \gamma)\big)$,</p>
-    $$\int_0^t D(s)\,ds = \frac{1}{\xi^2}\Big((b - d)\,t - 2L(t)\Big).$$
-    <p>The first correction needs $\int D^2$. Substituting $E = e^{-ds}$ and splitting into partial fractions gives</p>
-    $$\int_0^t D(s)^2\,ds = \Big(\frac{b-d}{\xi^2}\Big)^2\Big[t + \frac{\alpha}{\gamma d}\,L(t)
-      - \frac{\beta}{\gamma d}\Big(\frac{1}{1 - \gamma e^{-dt}} - \frac{1}{1 - \gamma}\Big)\Big],$$
-    $$\alpha = \frac{\gamma^2 - 1}{\gamma}, \qquad \beta = 2\gamma - 2 - \alpha .$$
+    $$I_1 = \int_0^T D(s)\,ds = \frac{1}{\xi^2}\Big((b - d)\,T - 2L(T)\Big).$$
+    <p>The first correction needs $\int\tilde g^{\,2}$, and the square has three parts:</p>
+    $$\int_0^T\tilde g^{\,2} = \kappa^2\tilde\theta^2\,I_2 + 2\kappa\tilde\theta\,\tilde\ell\,c_J\,I_1 + \tilde\ell^{\,2}c_J^2\,T .$$
+    <p>The first is Heston&apos;s, with</p>
+    $$I_2 = \int_0^T D(s)^2\,ds = \Big(\frac{b-d}{\xi^2}\Big)^2\Big[T + \frac{\alpha}{\gamma d}\,L(T)
+      - \frac{\beta}{\gamma d}\Big(\frac{1}{1 - \gamma e^{-dT}} - \frac{1}{1 - \gamma}\Big)\Big], \qquad
+      \alpha = \frac{\gamma^2 - 1}{\gamma}, \quad \beta = 2\gamma - 2 - \alpha .$$
+    <p>The last is the fluctuation of the jump count. The middle one is the covariance of the two, which is there
+    because the turbulent regime has both the higher variance level and the higher jump intensity. It needs no new
+    integral.</p>
 
-    <h3>Step 3: the recursion to second order</h3>
-    <p>The recursion gives $\omega_1 = \tilde g/2$ and $\omega_2 = -\omega_1'/2 = -\tilde g'/4$. The second-order term of
-    the exponent is</p>
-    $$\int_0^t \tilde g\,\omega_2 = -\frac14\int_0^t \tilde g\,\tilde g' = -\frac18\,\tilde g(t)^2,$$
-    <p>because $\tilde g(0) = \kappa\tilde\theta D(0) = 0$.</p>
-
-    <h3>Step 4: the result</h3>
+    <h3>Step 3: the result</h3>
     <p>Every term, written out in the model&apos;s parameters:</p>
     <div class="equation-card">
     $$\begin{aligned}
-    \phi_{1,2}(u) = \;&\exp\Big(v_0\,D + \kappa\bar\theta\,I_1 + \frac{\varepsilon}{2}\,\kappa^2\tilde\theta^2\,I_2
-      - \frac{\varepsilon^2}{8}\,\kappa^2\tilde\theta^2\,D^2\Big) \\
-    &\times\Big(1 \pm \frac{\varepsilon}{2}\,\kappa\tilde\theta\,D \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta\,D'\Big)
+    \phi_{1,2}(u) = \;&\exp\Big(v_0\,D + \kappa\bar\theta\,I_1 + \bar\ell\,c_J\,T + \frac{\varepsilon}{2}\,A
+      - \frac{\varepsilon^2}{8}\big(G^2 + G_0^2\big)\Big) \\
+    &\times\Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,\kappa\tilde\theta\,D'\Big)
       + O(\varepsilon^3),
     \end{aligned}$$
     $$\begin{aligned}
+    A &= \kappa^2\tilde\theta^2\,I_2 + 2\kappa\tilde\theta\,\tilde\ell\,c_J\,I_1 + \tilde\ell^{\,2}c_J^2\,T, \\
+    G &= \kappa\tilde\theta\,D + \tilde\ell\,c_J, \qquad G_0 = \tilde\ell\,c_J, \\
+    c_J &= e^{iu\mu_J - u^2\delta^2/2} - 1 - iu\,\big(e^{\mu_J + \delta^2/2} - 1\big), \\
     D &= \frac{b - d}{\xi^2}\,\frac{1 - E}{1 - \gamma E}, \\
     D' &= -\tfrac12(u^2 + iu) - b\,D + \tfrac12\xi^2 D^2, \\
     I_1 &= \frac{(b - d)\,T - 2L}{\xi^2}, \\
@@ -233,56 +263,31 @@
     \alpha &= \frac{\gamma^2 - 1}{\gamma}, \qquad \beta = 2\gamma - 2 - \alpha .
     \end{aligned}$$
     </div>
-    <p>Here $D = D(T)$ is the coefficient of the starting variance in the log characteristic function, the same as in
-    Heston&apos;s model. $I_1$ and $I_2$ are the closed forms of $\int_0^T D$ and $\int_0^T D^2$.</p>
-    <p>The upper sign is for a
-    start in regime 1. The initial layer adds a term of size $\varepsilon^2 e^{-2\lambda T}$ to the bracket, which is
-    below $10^{-10}$ here.</p>
+    <p>Here $D = D(T)$. The first three terms of the exponent are the log characteristic function of Bates&apos;s
+    model at the averaged level and intensity. $A$ is the Green&ndash;Kubo correction and the bracket is the memory of
+    the starting regime. The upper sign is for a start in regime 1. Setting $\tilde\ell = 0$ returns the
+    <a href="./heston.html">Heston</a> card.</p>
 
     <h3>A worked example</h3>
     <p>With the parameters above, $\varepsilon = 0.1$, a start in the turbulent regime, and the Lewis frequency
     $u = 1 - i/2$:</p>
-    <div class="table-wrap">
-    <table class="impl">
-      <thead><tr><th>quantity</th><th>value</th></tr></thead>
-      <tbody>
-        <tr><td>$d$</td><td>2.16610 + 0.23489 i</td></tr>
-        <tr><td>$\gamma$</td><td>&minus;0.010494 + 0.002354 i</td></tr>
-        <tr><td>$D$, $D'$</td><td>&minus;0.256566 + 0.020515 i, &nbsp; &minus;0.070925 + 0.017241 i</td></tr>
-        <tr><td>$I_1$, $I_2$</td><td>&minus;0.171410 + 0.009570 i, &nbsp; 0.034359 &minus; 0.004175 i</td></tr>
-        <tr><td>averaged exponent $\kappa\bar\theta I_1$</td><td>&minus;0.0188551 + 0.0010527 i</td></tr>
-        <tr><td>first-order exponent $\frac\varepsilon2\kappa^2\tilde\theta^2 I_2$</td><td>8.418e-6 &minus; 1.023e-6 i</td></tr>
-        <tr><td>second-order exponent $-\frac{\varepsilon^2}8\kappa^2\tilde\theta^2 D^2$</td><td>&minus;4.006e-7 + 6.45e-8 i</td></tr>
-        <tr><td>memory, first order $\frac\varepsilon2\kappa\tilde\theta D$</td><td>&minus;8.980e-4 + 7.18e-5 i</td></tr>
-        <tr><td>memory, second order $-\frac{\varepsilon^2}4\kappa\tilde\theta D'$</td><td>1.241e-5 &minus; 3.02e-6 i</td></tr>
-      </tbody>
-    </table>
-    </div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$d$</td><td>2.16610 + 0.23489 i</td></tr><tr><td>$\gamma$</td><td>&minus;0.010494 + 0.002354 i</td></tr><tr><td>$D$, $D'$</td><td>&minus;0.256566 + 0.020515 i, &nbsp; &minus;0.070925 + 0.017241 i</td></tr><tr><td>$I_1$, $I_2$</td><td>&minus;0.171410 + 0.009570 i, &nbsp; 0.034359 &minus; 0.004175 i</td></tr><tr><td>$c_J$</td><td>&minus;0.009369 + 0.000534 i</td></tr><tr><td>averaged exponent $v_0D + \kappa\bar\theta I_1 + \bar\ell c_JT$</td><td>&minus;0.0394240 + 0.0024611 i</td></tr><tr><td>$A$</td><td>0.0004409 &minus; 5.141e-05 i</td></tr><tr><td>$G$, $G_0$</td><td>&minus;0.026392 + 0.001917 i, &nbsp; &minus;0.008432 + 0.000481 i</td></tr><tr><td>first-order exponent $\frac\varepsilon2 A$</td><td>2.205e&minus;05 &minus; 2.57e-06 i</td></tr><tr><td>second-order exponent $-\frac{\varepsilon^2}8(G^2 + G_0^2)$</td><td>&minus;9.547e&minus;07 + 1.366e-07 i</td></tr><tr><td>memory, first order $\frac\varepsilon2 G$</td><td>&minus;0.00132 + 9.585e-05 i</td></tr><tr><td>memory, second order $-\frac{\varepsilon^2}4\kappa\tilde\theta D'$</td><td>1.241e&minus;05 &minus; 3.017e-06 i</td></tr></tbody></table></div>
     <p>Assembling the terms gives the characteristic function at each order, against the numerical solution
-    $0.9704494 + 0.0018837\,i$:</p>
-    <div class="table-wrap">
-    <table class="impl">
-      <thead><tr><th>order</th><th>$\phi_1(1 - i/2)$</th><th>error</th></tr></thead>
-      <tbody>
-        <tr><td>0 (averaged Heston)</td><td>0.9713004 + 0.0018196 i</td><td>8.5e-4</td></tr>
-        <tr><td>1</td><td>0.9704363 + 0.0018867 i</td><td>1.3e-5</td></tr>
-        <tr><td>2</td><td>0.9704479 + 0.0018839 i</td><td>1.5e-6</td></tr>
-      </tbody>
-    </table>
-    </div>
+    $0.9601049 + 0.0024496\,i$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>order</th><th>$\phi_1(1 - i/2)$</th><th>error</th></tr></thead><tbody><tr><td>0 (averaged Bates)</td><td>0.9613401 + 0.0023659 i</td><td>1.2e-3</td></tr><tr><td>1</td><td>0.9600925 + 0.0024525 i</td><td>1.3e-5</td></tr><tr><td>2</td><td>0.9601035 + 0.0024498 i</td><td>1.4e-6</td></tr></tbody></table></div>
     <p>Integrating these characteristic functions over $u$ with Lewis&apos;s formula gives the call prices below.</p>
 
     <h2>Results</h2>
-    <p>Call prices from the numerical characteristic function and after each order:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th></tr></thead><tbody><tr><td>80</td><td>22.13369</td><td>22.06371</td><td>22.13501</td><td>22.13388</td><td>22.13369</td></tr><tr><td>90</td><td>14.47902</td><td>14.38309</td><td>14.47998</td><td>14.47922</td><td>14.47903</td></tr><tr><td>100</td><td>8.40280</td><td>8.29383</td><td>8.40317</td><td>8.40289</td><td>8.40281</td></tr><tr><td>110</td><td>4.22012</td><td>4.11250</td><td>4.22051</td><td>4.22017</td><td>4.22012</td></tr><tr><td>120</td><td>1.82993</td><td>1.73643</td><td>1.83091</td><td>1.83003</td><td>1.82992</td></tr></tbody></table></div>
-    <p>A Monte Carlo check samples 200,000 regime paths exactly, from exponential holding times. Given its path the
-    long-run level is piecewise constant, and the conditional characteristic function is</p>
-    $$\exp\Big(D(T)\,v_0 + \kappa\int_0^T \theta_{y_s}\,D(T - s)\,ds\Big),$$
-    <p>whose integral is in closed form, so each path is priced by Lewis&apos;s formula with no time steps.</p>
-    <p>At strikes 80, 100 and 120 this gives 22.1335 &plusmn; 0.0007, 8.4025 &plusmn; 0.0013 and
-    1.8297 &plusmn; 0.0010, each within a third of a standard error of the numerical prices. The averaged model is
-    off by more than 80 standard errors. Certificate:
-    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+    <p>Call prices from the numerical characteristic function, from the closed form above at orders 0, 1 and 2, and
+    from the engine at order 4:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 4</th></tr></thead><tbody><tr><td>80</td><td>22.93715</td><td>22.84294</td><td>22.93817</td><td>22.93733</td><td>22.93715</td></tr><tr><td>90</td><td>15.70647</td><td>15.58848</td><td>15.70680</td><td>15.70662</td><td>15.70647</td></tr><tr><td>100</td><td>9.92241</td><td>9.79282</td><td>9.92199</td><td>9.92245</td><td>9.92242</td></tr><tr><td>110</td><td>5.71629</td><td>5.58414</td><td>5.71593</td><td>5.71629</td><td>5.71629</td></tr><tr><td>120</td><td>2.99190</td><td>2.86262</td><td>2.99256</td><td>2.99202</td><td>2.99189</td></tr></tbody></table></div>
+    <p>Certificates:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
+    checks the closed form against the numerical solution, and
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_quantlib_models.py">verify_quantlib_models.py</a>
+    the convergence orders.</p>
+    <p>In <a href="https://github.com/microprediction/regimelib">regimelib</a> this model is
+    <code>SwitchingBatesModel</code>.</p>
   </main>
 
   <footer>
