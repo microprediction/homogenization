@@ -9,6 +9,7 @@ from pages_examples import table, e, write, sym, two_state_expansion, error_rows
 from model_pages import cz, cg, half, lewis, SECOND_ORDER, U0
 
 SRC = 'https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py'
+SRC_CEV_OCC = 'https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_cev_occupation.py'
 
 
 def Is(k, T):
@@ -526,9 +527,10 @@ def equity_rates_page():
 
 # ====================================================================================== CEV
 def cev_page():
-    from scipy.stats import ncx2
+    from scipy.stats import ncx2, poisson
     from scipy.integrate import solve_ivp
     from numpy.polynomial import chebyshev as ch
+    from verify_cev_occupation import poisson_beta_price
     S0, r, q, beta, K, T, sig = 100.0, 0.02, 0.0, 0.6, 100.0, 1.0, [2.5, 1.2]
     F = S0 * math.exp((r - q) * T)
 
@@ -586,6 +588,12 @@ def cev_page():
               [r'memory term $\frac\varepsilon2\tilde sh_TC_v$, before discounting', f'{eps / 2 * st * hT * D[1]:.6f}']]
     o_rows = [[lab, f'{order(10.0, 1, o):.6f}', e(abs(order(10.0, 1, o) - ex10))] for o, lab in ((0, 'averaged CEV'), (1, 'first order'), (2, 'second order'))]
     o_rows.append(['exact mixture', f'{ex10:.6f}', ''])
+    occ_rows = []
+    occ_bound = S0 * math.exp(-0.02 * T) * poisson.sf(30, 10.0)
+    for start in (0, 1):
+        partial = poisson_beta_price(start, 30)
+        reference = poisson_beta_price(start, 70)
+        occ_rows.append([str(start + 1), f'{partial:.10f}', e(reference - partial), e(occ_bound)])
 
     body = r'''    <h1>CEV with a switching volatility</h1>
     <p class="subtitle">A model that is not affine, in which the regime nevertheless factors out: the price is a mixture of CEV prices over one random variance.</p>
@@ -643,6 +651,35 @@ def cev_page():
     <p>with $\chi^2(\cdot\,;\ d,\ \nu)$ the noncentral chi-square distribution function with $d$ degrees of freedom and
     noncentrality $\nu$. This is exact for any chain and any number of regimes. When $r = q$ the weight $h$ is one and
     $V$ depends on the path only through the time spent in each regime.</p>
+
+    <h2>An exact finite-rate occupation mixture</h2>
+    <p>In the zero-carry case $r=q$, the two-state benchmark can be made fully explicit, without reconstructing the
+    clock law from moments. Let $N$ be the number of switches, $U_T=\int_0^T\mathbf 1_{\{y_t=1\}}dt$, and
+    $B=U_T/T$. Equal transition rates imply $N\sim\operatorname{Poisson}(\lambda T)$. Conditional on $N=n$, the switch
+    times are the order statistics of $n$ independent uniforms, so their $n+1$ spacings are Dirichlet; this is the
+    classical uniform-spacing result of <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>. Summing the alternating
+    spacings gives, for a start in regime 1,</p>
+    <div class="equation-card">
+    $$B\mid N=n,\ y_0=1\ \sim\
+      \begin{cases}
+        1, & n=0,\\
+        \operatorname{Beta}(k+1,k), & n=2k\ge2,\\
+        \operatorname{Beta}(k+1,k+1), & n=2k+1.
+      \end{cases}$$
+    </div>
+    <p>For a start in regime 2, reflect this distribution: $B\mapsto1-B$. Since
+    $V=T[\sigma_2^2+(\sigma_1^2-\sigma_2^2)B]$, the exact price is the absolutely convergent Poisson&ndash;Beta series</p>
+    $$u_i=e^{-rT}\sum_{n=0}^{\infty}e^{-\lambda T}\frac{(\lambda T)^n}{n!}
+      \;\mathbb E\!\left[C\!\left(F_0,T\{\sigma_2^2+(\sigma_1^2-\sigma_2^2)B_{n,i}\}\right)\right].$$
+    <p>This is a finite-rate identity, not a fast-switching approximation. It also supplies a deterministic numerical
+    certificate. Because $0\le C(F,v)\le F$, truncating after $m$ switches has absolute error at most</p>
+    $$S_0e^{-qT}\,\mathbb P\{\operatorname{Poisson}(\lambda T)>m\}.$$
+    <p>At $r=q=2\%$, with the other page parameters unchanged, 80-node Gauss&ndash;Jacobi quadrature evaluates each Beta
+    expectation. At $\lambda T=10$ and $m=30$:</p>
+''' + table(['starting regime', 'partial price', 'actual omitted tail', 'certified bound'], occ_rows) + r'''    <p>The corresponding values summed through $n=70$ are 12.2433793024 and 11.8617426114. They agree to
+    $1.3\times10^{-14}$ with the independent moment-ODE/Chebyshev reconstruction. The same certificate checks
+    $\mathbb E[U_T\mid y_0=1]=T/2+(1-e^{-2\lambda T})/(4\lambda)$ and the reflected formula for regime 2.
+    Certificate: <a href="''' + SRC_CEV_OCC + r'''">verify_cev_occupation.py</a>.</p>
 
     <h2>Reduction to a linear system</h2>
     <p>All that is needed about the regime is the law of $V$, and its Laplace transform is a reduced system of the

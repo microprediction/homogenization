@@ -2476,6 +2476,17 @@
  },
  {
   "role": "examples",
+  "key": "Pyke1965",
+  "authors": "Pyke, R.",
+  "year": 1965,
+  "title": "Spacings",
+  "venue": "Journal of the Royal Statistical Society, Series B 27(3):395-449",
+  "doi": "10.1111/j.2517-6161.1965.tb00602.x",
+  "url": "https://doi.org/10.1111/j.2517-6161.1965.tb00602.x",
+  "annotation": "Develops the distribution theory of uniform order-statistic spacings; conditional on a fixed jump count, these Dirichlet spacings yield the Beta occupation-time law used in the exact CEV mixture."
+ },
+ {
+  "role": "examples",
   "key": "Jamshidian1989",
   "authors": "Jamshidian, F.",
   "year": 1989,
