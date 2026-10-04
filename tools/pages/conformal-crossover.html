@@ -362,13 +362,18 @@
       with $P=e^{mQ_0h}$, and let $\bar{\cal L}^{\otimes n}$ be $n$ independent
       draws from the pooled score law. For a finite irreducible $d$-state
       chain and $m,h&gt;0$, put $\Pi={\bf1}\pi$ and define the exact
-      one-step dependence energy</p>
+      one-step mutual information and dependence energy</p>
+    $$\mathfrak I(P):=\sum_i\pi_iD(P(i,\cdot)\Vert\pi),$$
     $$\mathfrak E(P):=
       \left\|D_\pi^{1/2}(P-\Pi)D_\pi^{-1/2}\right\|_F^2
       =\sum_i\pi_i\chi^2(P(i,\cdot),\pi).$$
     <p>Then</p>
     <div class="equation-card">
     $$d_{\rm TV}\!\left({\cal L}_{n,m},\bar{\cal L}^{\otimes n}\right)
+      \le \delta^{\rm KL}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\,\mathfrak I(P)}\right\}
+      \le \delta^{(2)}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\log\{1+\mathfrak E(P)\}}\right\}
       \le \delta^{\rm HS}_{n,m}:=
       \min\!\left\{1,\sqrt{\frac{n-1}{2}\,\mathfrak E(P)}\right\}
       \le \delta^{\rm gap}_{n,m}:=
@@ -379,11 +384,18 @@
       $\pi^{\otimes n}$. The chain rule for relative entropy gives exactly</p>
     $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
       =(n-1)\sum_i\pi_iD(P(i,\cdot)\Vert\pi).$$
-    <p>Pinsker already gives the still sharper computable bound obtained by
-      putting the exact stationary average row KL divergence inside the square
-      root. The elementary inequality $D\le\chi^2$, applied row by row, gives
-      the displayed Hilbert--Schmidt bound because the stationary average row
-      chi-square divergence is exactly $\mathfrak E(P)$. The $L^2(\pi)$
+    <p>Pinsker gives $\delta^{\rm KL}$. Regarding the stationary pair law
+      $\pi_iP_{ij}$ relative to $\pi_i\pi_j$, monotonicity of R&eacute;nyi
+      divergence in its order gives</p>
+    $$\mathfrak I(P)\le D_2(\pi_iP_{ij}\Vert\pi_i\pi_j)
+      =\log\{1+\mathfrak E(P)\}.$$
+    <p>This is the middle bound $\delta^{(2)}$; it is always at least as sharp
+      as replacing relative entropy directly by chi-square divergence because
+      $\log(1+x)\le x$. R&eacute;nyi&apos;s original family of information measures
+      is introduced by
+      <a href="./bibliography.html#Renyi1961">R&eacute;nyi (1961)</a>.
+      The stationary average row chi-square divergence is exactly
+      $\mathfrak E(P)$. The $L^2(\pi)$
       contraction of the adjoint semigroup then gives the gap-only corollary</p>
     $$\mathfrak E(P)
       \le e^{-2m\gamma_sh}\sum_i\pi_i(\pi_i^{-1}-1)
@@ -400,6 +412,7 @@
     <div class="equation-card">
     $$\left|\Pr_\pi\{C_0&lt;p\}
       -\Pr\{\operatorname{Bin}(n,p)\ge k\}\right|
+      \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
       \le\delta^{\rm HS}_{n,m}.$$
     </div>
     <p>The Hilbert--Schmidt expression is intrinsic: it is the sum of the
@@ -434,6 +447,12 @@
       bound is the vacuous value $1$. The certificate also checks the
       weighted row-$\chi^2$, Frobenius, singular-value, and reversible
       eigenvalue formulas independently.</p>
+    <p>The R&eacute;nyi step matters away from the weak-dependence limit. For the
+      same ten-state chain at scaled time $0.2$ and a two-observation panel,
+      the exact-KL, R&eacute;nyi-2, and direct Hilbert--Schmidt bounds are
+      respectively $0.560996559452$, $0.601934420847$, and $0.729386305243$.
+      The middle quantity is a rigorous transform of the same computable
+      dependence energy, not a new mixing assumption.</p>
 
     <h3>Irregular panels: the whole spacing vector matters</h3>
     <p>The comparison is not restricted to a regular grid. Let the successive
@@ -451,6 +470,10 @@
     <div class="equation-card">
     $$d_{\rm TV}\!\left({\cal L}_{\boldsymbol h,m},
        \bar{\cal L}^{\otimes n}\right)
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\mathfrak I(P_j)}\right\}
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\log\{1+\mathfrak E(P_j)\}}\right\}
       \le \min\!\left\{1,
        \sqrt{\frac12\sum_{j=1}^{n-1}\mathfrak E(P_j)}\right\}
       \le \min\!\left\{1,
@@ -471,8 +494,9 @@
     <p>The nonreversible three-state certificate uses scaled spacings
       $(0.35,0.50,0.75,1.10,1.70)$. Full enumeration of all $3^6$ hidden paths
       gives KL divergence $0.088542841901$ and TV distance $0.179564893897$.
-      The exact-KL, summed Hilbert--Schmidt, and gap-only bounds are respectively
-      $0.210407749264$, $0.289820479269$, and $0.325134088385$.</p>
+      The exact-KL, summed R&eacute;nyi-2, Hilbert--Schmidt, and gap-only bounds are
+      respectively $0.210407749264$, $0.282956573231$, $0.289820479269$, and
+      $0.325134088385$.</p>
     <p>The information scale remains sharp with unequal gaps. In the symmetric
       two-state chain set $a_j=e^{-2mh_j}$. The path-to-sign bijection now gives</p>
     $$L=\prod_{j=1}^{n-1}(1+a_jZ_j),$$

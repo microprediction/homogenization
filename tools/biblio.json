@@ -2443,6 +2443,17 @@
  },
  {
   "role": "survey_conformal",
+  "key": "Renyi1961",
+  "authors": "Rényi, A.",
+  "year": 1961,
+  "title": "On Measures of Entropy and Information",
+  "venue": "Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability, Volume I:547-561",
+  "doi": "",
+  "url": "https://projecteuclid.org/ebook/PreviewFirstPage?urlId=bsmsp%2F1200512181",
+  "annotation": "Introduces the order-indexed information measures. Monotonicity from order one to order two gives the logarithmic refinement between the exact mutual-information and Hilbert--Schmidt panel bounds."
+ },
+ {
+  "role": "survey_conformal",
   "key": "LeCam1960",
   "authors": "Le Cam, L.",
   "year": 1960,

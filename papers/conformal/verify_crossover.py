@@ -32,9 +32,10 @@ spectral-projector calculation also identifies the complete order-one
 boundary correction for every fixed cumulant order and every initial law.
 A relative-entropy comparison with the iid pooled panel gives explicit
 joint panel-size/fast-switching total-variation bounds on regular and
-irregular observation grids.  Their exact weighted Hilbert--Schmidt
-refinement retains every nonconstant singular mode instead of replacing them
-all by the slowest relaxation rate.  A symmetric two-state example reduces
+irregular observation grids.  Their exact mutual-information and Renyi-2/
+weighted-Hilbert--Schmidt refinements retain every nonconstant singular mode
+instead of replacing them all by the slowest relaxation rate.  A symmetric
+two-state example reduces
 exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
 and proves that the resulting square-root information scale is sharp,
 including its critical local-asymptotic-normal and persistent-plus-diffuse
@@ -1249,14 +1250,25 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
         assert 0 <= one_step_kl <= one_step_chi + 2e-14
         assert abs(one_step_chi - hilbert_schmidt) < 3e-13
         assert one_step_chi <= spectral_chi + 3e-14
+        one_step_renyi = math.log1p(one_step_chi)
+        assert one_step_kl <= one_step_renyi + 2e-14
+        assert one_step_renyi <= one_step_chi + 2e-14
         exact_pinsker = min(
             1.0, math.sqrt((panel_size - 1) * one_step_kl / 2))
+        renyi_pinsker = min(
+            1.0,
+            math.sqrt((panel_size - 1) * one_step_renyi / 2),
+        )
+        hs_pinsker = min(
+            1.0, math.sqrt((panel_size - 1) * one_step_chi / 2))
         spectral_pinsker = min(
             1.0,
             math.sqrt((panel_size - 1) * (dimension - 1) / 2)
             * math.exp(-gamma_s * scaled_spacing),
         )
-        assert exact_pinsker <= spectral_pinsker + 2e-14
+        assert exact_pinsker <= renyi_pinsker + 2e-14
+        assert renyi_pinsker <= hs_pinsker + 2e-14
+        assert hs_pinsker <= spectral_pinsker + 2e-14
         rows.append((scaled_spacing, one_step_kl, one_step_chi,
                      spectral_chi, spectral_pinsker))
 
@@ -1322,6 +1334,34 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     print(
         f"  n={effective_panel_size} exact-HS TV bound "
         f"{exact_hs_bound:.12f}, gap-only bound {gap_only_bound:.1f}"
+    )
+
+    # At moderate dependence, D_1 <= D_2 = log(1+chi^2) is visibly sharper
+    # than the direct D_1 <= chi^2 substitution.
+    moderate_time = 0.2
+    moderate_transition = expm(moderate_time * clustered_Q)
+    moderate_density = moderate_transition / clustered_pi[None, :]
+    moderate_kl = np.sum(
+        clustered_pi[:, None] * moderate_transition
+        * np.log(moderate_density)
+    )
+    moderate_energy = dependence_hilbert_schmidt_squared(
+        moderate_transition, clustered_pi
+    )
+    moderate_renyi = math.log1p(moderate_energy)
+    moderate_bounds = (
+        math.sqrt(moderate_kl / 2),
+        math.sqrt(moderate_renyi / 2),
+        math.sqrt(moderate_energy / 2),
+    )
+    assert moderate_kl <= moderate_renyi <= moderate_energy
+    assert abs(moderate_bounds[0] - 0.5609965594516808) < 2e-14
+    assert abs(moderate_bounds[1] - 0.6019344208474726) < 2e-14
+    assert abs(moderate_bounds[2] - 0.7293863052431115) < 2e-14
+    print("moderate-dependence information refinements (n=2):")
+    print(
+        f"  exact-KL {moderate_bounds[0]:.12f}, Renyi-2 "
+        f"{moderate_bounds[1]:.12f}, HS {moderate_bounds[2]:.12f}"
     )
 
     # Sharpness.  For a stationary symmetric two-state chain, write the
@@ -1423,12 +1463,15 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     transitions = [expm(spacing * Q) for spacing in spacings]
     row_kl_sum = 0.0
     energy_sum = 0.0
+    renyi_sum = 0.0
     for transition in transitions:
         density = transition / pi[None, :]
         row_kl_sum += np.sum(
             pi[:, None] * transition * np.log(density)
         )
-        energy_sum += dependence_hilbert_schmidt_squared(transition, pi)
+        energy = dependence_hilbert_schmidt_squared(transition, pi)
+        energy_sum += energy
+        renyi_sum += math.log1p(energy)
     gap_energy_sum = (dimension - 1) * np.exp(
         -2 * gamma_s * spacings
     ).sum()
@@ -1447,11 +1490,13 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     path_kl = np.sum(markov_path * np.log(markov_path / iid_path))
     path_tv = 0.5 * np.abs(markov_path - iid_path).sum()
     kl_bound = min(1.0, math.sqrt(row_kl_sum / 2))
+    renyi_bound = min(1.0, math.sqrt(renyi_sum / 2))
     energy_bound = min(1.0, math.sqrt(energy_sum / 2))
     gap_bound = min(1.0, math.sqrt(gap_energy_sum / 2))
     assert abs(path_kl - row_kl_sum) < 5e-14
     assert path_tv <= kl_bound + 2e-14
-    assert kl_bound <= energy_bound + 2e-14
+    assert kl_bound <= renyi_bound + 2e-14
+    assert renyi_bound <= energy_bound + 2e-14
     assert energy_bound <= gap_bound + 2e-14
 
     # The path-to-transition-sign bijection remains exact when each gap has
@@ -1557,8 +1602,8 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
 
     print("irregular-grid joint path-TV certificate:")
     print(f"  exact path KL {path_kl:.12f}, exact path TV {path_tv:.12f}")
-    print(f"  Pinsker(KL) {kl_bound:.12f}, HS bound {energy_bound:.12f},"
-          f" gap bound {gap_bound:.12f}")
+    print(f"  Pinsker(KL) {kl_bound:.12f}, Renyi-2 {renyi_bound:.12f},"
+          f" HS bound {energy_bound:.12f}, gap bound {gap_bound:.12f}")
     print("  unequal two-state path/sign TV identity:"
           f" {two_state_path_tv:.12f}")
     print("  exact product Hellinger affinity:"
