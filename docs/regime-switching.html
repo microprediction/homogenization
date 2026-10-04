@@ -35,9 +35,17 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./bates.html">Bates</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./merton.html">Merton</a>
+        <a href="./variance-gamma.html">Variance gamma</a>
+        <a href="./cev.html">CEV</a>
+        <a href="./equity-rates.html">Equity with rates</a>
         <a href="./bond-options.html">Bond options</a>
+        <a href="./hull-white.html">Hull&ndash;White</a>
+        <a href="./g2.html">G2++</a>
+        <a href="./instruments.html">Instruments</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -436,6 +444,37 @@
       =O\!\left((M_\lambda/\lambda)^3\right).$$
     <p>This corollary concerns only the regime log-price contrast. It neither removes nor bounds the separate
       common-level Green&ndash;Kubo correction.</p>
+
+    <h3>Unequal transition rates: the quadratic term returns</h3>
+    <p>The cubic rate above is a symmetry cancellation, not a generic two-state fact. Let the transition rates
+      be $r_{12},r_{21}&gt;0$, let $g_i(t)$ be the two affine amplitude forcings, put
+      $q=g_1-g_2$, and write $\ell=\log(a_1/a_2)$. Directly from the two amplitude equations,</p>
+    $$\ell'=q+r_{12}(e^{-\ell}-1)-r_{21}(e^\ell-1),\qquad \ell(0)=0.$$
+    <p>Set $s=r_{12}+r_{21}$ and let the unequal-rate dynamic-mean approximation solve</p>
+    $$D'=q-sD,\qquad D(0)=0,qquad
+      D(T)=\int_0^T e^{-s(T-u)}q(u)\,du.$$
+    <p>For a constant value $z$, define the positive equilibrium ratio</p>
+    $$y_*(z)=\frac{z-r_{12}+r_{21}+
+      \sqrt{(z-r_{12}+r_{21})^2+4r_{12}r_{21}}}{2r_{21}}.$$
+    <p>If $|q(t)|\le M$, the interval
+      $[\log y_*(-M),\log y_*(M)]$ is invariant. With</p>
+    $$L=\max\{\log y_*(M),-\log y_*(-M)\},\qquad
+      \delta_r=\frac{|r_{12}-r_{21}|}{r_{12}+r_{21}},$$
+    <p>every maturity simultaneously obeys the explicit finite-rate bound</p>
+    <div class="equation-card">
+    $$\sup_{T\ge0}|\ell(T)-D(T)|
+      \le \delta_r\{\cosh L-1\}+\sinh L-L.$$
+    </div>
+    <p>Indeed, after subtracting the linear term the exact nonlinearity is</p>
+    $$N(\ell)=(r_{12}-r_{21})(\cosh\ell-1)
+      +(r_{12}+r_{21})(\ell-\sinh\ell).$$
+    <p>Variation of constants and $|\ell|\le L$ give the bound. Since
+      $L=O(M/s)$, the first term is generally quadratic:</p>
+    $$\sup_T|\ell-D|=O\!\left(\delta_r(M/s)^2+(M/s)^3\right).$$
+    <p>Thus fixed unequal rate proportions give a quadratic error, whereas $r_{12}=r_{21}$ removes the
+      $\cosh\ell-1$ term exactly and restores the cubic order. Under the symmetric convention
+      $r_{12}=r_{21}=\lambda$ and $q=2\tilde g$, this is the same cancellation used above. The statement is
+      again only about the relative log price, not the common price level.</p>
     <p>A finite-contrast certificate with $\kappa=1.3$, $T=4$, $\theta=(0.18,0.04)$ and
       $\sigma=(0.16,0.05)$ gives:</p>
     <table>
@@ -480,7 +519,10 @@
       measured orders $2.999910$ and $2.999950$, verifies the fixed-contrast fast-switching orders and sharp
       endpoint coefficients above, checks the all-ratio maturity-uniform inequality on 260 constant and bounded
       time-dependent cases with $0.01\le\eta\le100$ (largest error/bound ratio $0.960384$), recovers order $1.198669$ when
-      $M_\lambda\asymp\lambda^{0.6}$, and solves both exact switched ODEs. The affine bond structure is
+      $M_\lambda\asymp\lambda^{0.6}$, and checks the unequal-rate theorem on 200 additional bounded forcings
+      (largest error/bound ratio $0.780043$). Constant forcing gives orders $1.999923$ for unequal rates and
+      $3.000000$ for equal rates; the scaled unequal-rate coefficient is $0.324982574$ versus the predicted
+      $0.325000000$. The certificate also solves both exact switched ODEs. The affine bond structure is
       the one introduced by <a href="./bibliography.html#Vasicek1977">Vasicek (1977)</a>; the exact
       Markov-modulated mean-level model is treated by
       <a href="./bibliography.html#ElliottMamon2002">Elliott and Mamon (2002)</a>. Details and the source-page

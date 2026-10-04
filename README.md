@@ -33,7 +33,7 @@ papers/regime-switching-survival/
   general_orders.py        any switching rates (unequal occupancy), all orders
   verify_general_orders.py symmetric reduction; orders 1 to 6 at p = 0.3
 papers/thesis/
-  verify_dynamic_mean_erratum.py  corrected Chapter 3 kernel, all-ratio uniform log-ratio bound and thesis-table checks
+  verify_dynamic_mean_erratum.py  corrected Chapter 3 kernel, equal/unequal-rate uniform log-ratio bounds and thesis-table checks
 papers/fast-switching/
   fastswitch.py            the engine: any finite chain, all orders, exponential-sum or Chebyshev coefficients
   fastswitch_op.py         a general coupling operator (a continuous fast factor in the Hermite basis)

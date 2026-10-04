@@ -11,6 +11,9 @@ order-lambda^-1 Green--Kubo convexity term.  The endpoint coefficients of both
 next remainders are also checked.  Finally, it checks a nonasymptotic error
 bound that is uniform over every maturity and every finite contrast-to-
 switching ratio, and permits the contrast to vary with the switching rate.
+An unequal-rate extension makes the cancellation mechanism precise: the
+linear log-ratio error is generally quadratic in contrast/switching speed,
+and improves to cubic exactly when the two transition rates coincide.
 """
 
 from __future__ import annotations
@@ -158,6 +161,108 @@ def riccati_log_ratio_error(
     omega, linear = solution.y[:, -1]
     assert abs(omega) < 1.0
     return abs(2.0 * math.atanh(omega) - 2.0 * linear)
+
+
+def positive_ratio_equilibrium(
+    rate_12: float, rate_21: float, forcing: float
+) -> float:
+    """Positive equilibrium y=exp(ell) for constant log-ratio forcing.
+
+    The exact log ratio solves
+
+        ell' = q + rate_12(exp(-ell)-1) - rate_21(exp(ell)-1).
+
+    Hence y is the positive root of
+
+        rate_21*y^2 - (q-rate_12+rate_21)*y - rate_12 = 0.
+
+    The alternate quadratic formula avoids cancellation when the linear
+    coefficient is negative.
+    """
+    if rate_12 <= 0.0 or rate_21 <= 0.0:
+        raise ValueError("transition rates must be positive")
+    linear = forcing - rate_12 + rate_21
+    radical = math.hypot(linear, 2.0 * math.sqrt(rate_12 * rate_21))
+    if linear >= 0.0:
+        return (linear + radical) / (2.0 * rate_21)
+    return 2.0 * rate_12 / (radical - linear)
+
+
+def unequal_rate_log_ratio_bound(
+    rate_12: float, rate_21: float, forcing_bound: float
+) -> tuple[float, float, float]:
+    """Return invariant radius, rate asymmetry, and a uniform error bound.
+
+    If ``|q(t)| <= forcing_bound``, the exact log ratio ``ell`` is compared
+    with ``D' = q-(rate_12+rate_21)D``.  The interval obtained from the two
+    extremal constant forcings is invariant.  On that interval,
+
+        |ell-D| <= delta*(cosh(L)-1) + sinh(L)-L,
+
+    where ``delta=|rate_12-rate_21|/(rate_12+rate_21)``.  The first term is
+    quadratic for unequal rates; it vanishes exactly for symmetric rates.
+    """
+    if rate_12 <= 0.0 or rate_21 <= 0.0 or forcing_bound < 0.0:
+        raise ValueError("transition rates must be positive and bound nonnegative")
+    upper = math.log(
+        positive_ratio_equilibrium(rate_12, rate_21, forcing_bound)
+    )
+    lower = math.log(
+        positive_ratio_equilibrium(rate_12, rate_21, -forcing_bound)
+    )
+    assert lower <= 1e-14 and upper >= -1e-14
+    radius = max(upper, -lower)
+    asymmetry = abs(rate_12 - rate_21) / (rate_12 + rate_21)
+    cosh_remainder = 2.0 * math.sinh(0.5 * radius) ** 2
+    if radius < 1e-3:
+        radius_squared = radius * radius
+        sinh_remainder = radius**3 * (
+            1.0 / 6.0
+            + radius_squared * (
+                1.0 / 120.0
+                + radius_squared * (1.0 / 5040.0 + radius_squared / 362880.0)
+            )
+        )
+    else:
+        sinh_remainder = math.sinh(radius) - radius
+    bound = (
+        asymmetry * cosh_remainder
+        + sinh_remainder
+    )
+    return radius, asymmetry, bound
+
+
+def unequal_rate_log_ratio_error(
+    rate_12: float,
+    rate_21: float,
+    horizon: float,
+    forcing,
+) -> float:
+    """Solve the exact unequal-rate log ratio and its linearization."""
+    total_rate = rate_12 + rate_21
+
+    def rhs(time: float, state: np.ndarray) -> np.ndarray:
+        value = forcing(time)
+        log_ratio, linear = state
+        return np.array(
+            [
+                value
+                + rate_12 * math.expm1(-log_ratio)
+                - rate_21 * math.expm1(log_ratio),
+                value - total_rate * linear,
+            ]
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, horizon),
+        np.zeros(2),
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    assert solution.success
+    return abs(solution.y[0, -1] - solution.y[1, -1])
 
 
 def switched_bond_factors(
@@ -497,6 +602,116 @@ def main() -> None:
     joint_orders = np.log2(joint_errors[:-1] / joint_errors[1:])
     assert joint_orders[-1] > 1.18
 
+    # Unequal transition rates break the odd symmetry responsible for the
+    # cubic error.  Work directly with ell=log(a_1/a_2).  The extremal
+    # constant-forcing equilibria provide an invariant interval, and the
+    # nonlinear remainder splits exactly into an asymmetric quadratic term
+    # plus the symmetric cubic term.
+    unequal_utilization = []
+    rng = np.random.default_rng(20261004)
+    unequal_random_cases = 200
+    for _ in range(unequal_random_cases):
+        rate_12 = float(10 ** rng.uniform(-1.0, 1.5))
+        rate_21 = float(10 ** rng.uniform(-1.0, 1.5))
+        total_rate = rate_12 + rate_21
+        eta = float(10 ** rng.uniform(-2.0, 1.0))
+        forcing_bound = eta * total_rate
+        coefficients = rng.normal(size=3)
+        envelope = float(np.sum(np.abs(coefficients)))
+        frequencies = total_rate * 10 ** rng.uniform(-1.0, 1.0, size=2)
+
+        def unequal_forcing(time: float) -> float:
+            raw = (
+                coefficients[0]
+                + coefficients[1] * math.sin(frequencies[0] * time)
+                + coefficients[2] * math.cos(frequencies[1] * time)
+            )
+            return forcing_bound * raw / envelope
+
+        horizon = float(10 ** rng.uniform(-2.0, 1.0) / total_rate)
+        error = unequal_rate_log_ratio_error(
+            rate_12, rate_21, horizon, unequal_forcing
+        )
+        radius, _, bound = unequal_rate_log_ratio_bound(
+            rate_12, rate_21, forcing_bound
+        )
+        assert radius >= 0.0 and error <= bound * (1.0 + 3e-11)
+        if bound > 0.0:
+            unequal_utilization.append(error / bound)
+
+    # Constant forcing reaches the exact equilibrium and exposes the sharp
+    # change of order.  Hold the rate proportions fixed while multiplying
+    # both rates by lambda.
+    forcing_level = 0.8
+    asymmetry_scales = 2.0 ** np.arange(2, 11)
+    asymmetric_errors = []
+    symmetric_errors = []
+    asymmetric_bounds = []
+    symmetric_bounds = []
+    for scale in asymmetry_scales:
+        asymmetric_rates = (0.35 * scale, 1.65 * scale)
+        symmetric_rates = (scale, scale)
+        for rates, errors_out, bounds_out in (
+            (asymmetric_rates, asymmetric_errors, asymmetric_bounds),
+            (symmetric_rates, symmetric_errors, symmetric_bounds),
+        ):
+            if rates[0] == rates[1]:
+                eta_here = forcing_level / sum(rates)
+                # Stable value of eta-asinh(eta) on this small-eta grid.
+                error = eta_here**3 * (
+                    1.0 / 6.0
+                    - eta_here**2 * (
+                        3.0 / 40.0
+                        - eta_here**2 * (
+                            5.0 / 112.0
+                            - eta_here**2 * (
+                                35.0 / 1152.0 - eta_here**2 * 63.0 / 2816.0
+                            )
+                        )
+                    )
+                )
+            else:
+                equilibrium = math.log(
+                    positive_ratio_equilibrium(*rates, forcing_level)
+                )
+                linear_equilibrium = forcing_level / sum(rates)
+                error = abs(equilibrium - linear_equilibrium)
+            errors_out.append(error)
+            bounds_out.append(
+                unequal_rate_log_ratio_bound(*rates, forcing_level)[2]
+            )
+    asymmetric_errors = np.asarray(asymmetric_errors)
+    symmetric_errors = np.asarray(symmetric_errors)
+    asymmetric_bounds = np.asarray(asymmetric_bounds)
+    symmetric_bounds = np.asarray(symmetric_bounds)
+    assert np.all(asymmetric_errors <= asymmetric_bounds * (1.0 + 2e-13))
+    assert np.all(symmetric_errors <= symmetric_bounds * (1.0 + 1e-10))
+    asymmetric_orders = np.log2(
+        asymmetric_errors[:-1] / asymmetric_errors[1:]
+    )
+    symmetric_orders = np.log2(symmetric_errors[:-1] / symmetric_errors[1:])
+    assert asymmetric_orders[-1] > 1.998
+    assert symmetric_orders[-1] > 2.998
+
+    final_scale = asymmetry_scales[-1]
+    final_eta = forcing_level / (2.0 * final_scale)
+    final_asymmetry = abs(0.35 - 1.65) / (0.35 + 1.65)
+    scaled_asymmetric_error = asymmetric_errors[-1] / final_eta**2
+    assert abs(scaled_asymmetric_error - final_asymmetry / 2.0) < 4e-4
+
+    # At equal rates the general log-ratio theorem has no quadratic term.
+    # Its radius and bound reduce to asinh(M/S) and sinh(L)-L exactly.
+    symmetric_radius, symmetric_asymmetry, symmetric_general_bound = (
+        unequal_rate_log_ratio_bound(3.0, 3.0, 1.7)
+    )
+    expected_radius = math.asinh(1.7 / 6.0)
+    assert symmetric_asymmetry == 0.0
+    assert abs(symmetric_radius - expected_radius) < 2e-15
+    assert abs(
+        symmetric_general_bound
+        - (math.sinh(expected_radius) - expected_radius)
+    ) < 2e-15
+
     # Reproduce the two thesis examples.  The reported dynamic-mean values use
     # exp(-lambda*s)B(s); the correction uses exp(-2lambda*s)B(T-s).
     examples = (
@@ -575,6 +790,18 @@ def main() -> None:
         "uniform-bound small-eta coefficient: "
         f"{small_eta_ratio:.9f} versus {8.0 / 3.0:.9f}"
     )
+    print(
+        "unequal-rate bound: "
+        f"{unequal_random_cases} random cases, maximum utilization "
+        f"{max(unequal_utilization):.6f}; last constant-forcing orders "
+        f"{asymmetric_orders[-1]:.6f} unequal and "
+        f"{symmetric_orders[-1]:.6f} symmetric"
+    )
+    print(
+        "unequal-rate quadratic coefficient: "
+        f"{scaled_asymmetric_error:.9f} versus "
+        f"{final_asymmetry / 2.0:.9f}"
+    )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
         print(
@@ -585,7 +812,8 @@ def main() -> None:
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
         "orders and endpoint coefficients, maturity-uniform finite-rate "
-        "all-ratio bound, joint contrast/switching rate, and both thesis examples"
+        "all-ratio bound, unequal-rate quadratic/cubic transition, joint "
+        "contrast/switching rate, and both thesis examples"
     )
 
 
