@@ -28,24 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
-        <a href="./bates.html">Bates</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./merton.html">Merton</a>
-        <a href="./variance-gamma.html">Variance gamma</a>
-        <a href="./cev.html">CEV</a>
-        <a href="./equity-rates.html">Equity with rates</a>
-        <a href="./bond-options.html">Bond options</a>
-        <a href="./hull-white.html">Hull&ndash;White</a>
-        <a href="./g2.html">G2++</a>
-        <a href="./instruments.html">Instruments</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -773,6 +761,46 @@
       convex. For the same nine gaps, $N\beta_X(21)=0.04150517$, but exact enumeration of the ten sampled terminal
       states gives joint total variation $0.16384000$ from iid draws. Hence the average-gap surrogate is smaller
       than the quantity it purports to bound; the gapwise sum $0.27741672$ remains valid.</p>
+
+    <h3>Optimal allocation of a fixed spacing budget</h3>
+    <p>The preceding warning concerns evaluating an already unequal grid. It also has a positive design
+      counterpart. Suppose a usable envelope is</p>
+    $$\beta_X(h)\le Ce^{-\lambda h},\qquad C,\lambda&gt;0,$$
+    <p>and every one of the $N$ gaps must be at least $h_0$. Write
+      $x_i=h_i-h_0\ge0$ and fix the total excess spacing $\sum_i x_i=H$. The uncapped marginal-coupling envelope is</p>
+    $$\mathcal E(x)=Ce^{-\lambda h_0}\sum_{i=0}^{N-1}e^{-\lambda x_i}.$$
+    <p>Strict convexity and Jensen&apos;s inequality give the exact design solution</p>
+    <div class="equation-card">
+    $$\min_{x_i\ge0,\ \sum x_i=H}\mathcal E(x)
+      =NCe^{-\lambda(h_0+H/N)},$$
+    </div>
+    <p>attained uniquely by equal gaps in continuous time. For integer gaps, the minimizers differ by at most one.
+      This minimizes the certified exponential envelope, not necessarily the unknown exact coverage error. It does
+      not license replacing unequal observed gaps by their average: Jensen gives the opposite inequality for such
+      a substitution.</p>
+    <p>The training-conditional bound has unequal gap roles. For a fixed slack $\gamma$, its dependence penalty is
+      bounded by</p>
+    $$Ce^{-\lambda h_0}\left\{
+      \sum_{i=0}^{N-2}e^{-\lambda x_i}
+      +\gamma^{-1}e^{-\lambda x_{N-1}}\right\}.$$
+    <p>More generally, for positive weights $w_i$, the exact convex solution is the logarithmic water fill</p>
+    <div class="equation-card">
+    $$x_i^*=\frac1\lambda\left[\log\frac{w_i}{\tau}\right]_+,qquad
+      \sum_i\left[\log\frac{w_i}{\tau}\right]_+=\lambda H.$$
+    </div>
+    <p>For $w_0=\cdots=w_{N-2}=1$ and $w_{N-1}=1/\gamma$, if
+      $H\ge\lambda^{-1}\log(1/\gamma)$ all gaps are active and</p>
+    $$x_i^*=\frac HN-\frac{\log(1/\gamma)}{N\lambda}\quad(i&lt;N-1),
+      \qquad
+      x_{N-1}^*=\frac HN+\frac{N-1}{N\lambda}\log(1/\gamma).$$
+    <p>Below that threshold, all excess spacing goes to the final test gap. Thus equal spacing is optimal for the
+      marginal rank-event envelope, while the PAC transfer deliberately leaves a larger last gap because test
+      decoupling is multiplied by $1/\gamma$.</p>
+    <p>For the nine-gap binary example, $h_0=1$, $H=180$, $C=1/2$, and
+      $\lambda=-\log0.8$. Equal gaps reduce the marginal envelope from $0.27741672$ on the displayed irregular
+      grid to $0.04150517$. With $\gamma=0.05$, the weighted optimum uses eight calibration gaps
+      $19.50831835$ and a final test gap $32.93345322$; its dependence penalty is $0.05789768$, versus
+      $0.12912721$ under equal gaps with the same total span.</p>
 
     <h3>A sharper training-conditional transfer</h3>
     <p>A PAC statement follows by separating two kinds of dependence instead of coupling all $N+1$ scores at

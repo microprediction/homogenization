@@ -28,7 +28,9 @@ for arbitrary score distributions, and the sharp one-sided tolerance-limit/PAC
 choice of calibration order statistic.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
-and irregular deterministic block spacing, and the slack-free rearrangement
+and irregular deterministic block spacing.  It checks the exact convex
+allocation of a fixed spacing budget for marginal and separated-PAC mixing
+envelopes, and the slack-free rearrangement
 bound obtained from the iid beta baseline and the two separated TV budgets,
 with a sharper version when the actual panel order-statistic law is known.
 It finally checks the sharp distinction between a predictor fitted on an
@@ -224,6 +226,40 @@ def training_conditional_transfer_bound(
         + panel_total_variation
         + test_decoupling_total_variation / slack,
     )
+
+
+def optimal_exponential_gap_allocation(
+    weights: np.ndarray, excess_gap_budget: float, decay_rate: float
+) -> np.ndarray:
+    """Minimize sum_i weights_i exp(-decay_rate*x_i).
+
+    The constraints are x_i >= 0 and sum_i x_i = excess_gap_budget.  The
+    logarithmic water level implements the exact KKT solution and also covers
+    coordinates that optimally remain at their minimum gap.
+    """
+    weights = np.asarray(weights, dtype=float)
+    if (
+        weights.ndim != 1
+        or len(weights) == 0
+        or np.any(weights <= 0.0)
+        or excess_gap_budget < 0.0
+        or decay_rate <= 0.0
+    ):
+        raise ValueError("positive weights/rate and nonnegative budget required")
+    if excess_gap_budget == 0.0:
+        return np.zeros_like(weights)
+
+    log_weights = np.log(weights)
+    target = decay_rate * excess_gap_budget
+    log_water = brentq(
+        lambda level: np.maximum(log_weights - level, 0.0).sum() - target,
+        float(log_weights.min() - target - 1.0),
+        float(log_weights.max()),
+        xtol=1e-14,
+    )
+    allocation = np.maximum(log_weights - log_water, 0.0) / decay_rate
+    assert abs(allocation.sum() - excess_gap_budget) < 2e-12
+    return allocation
 
 
 def iid_panel_order_lower_cost(
@@ -2864,6 +2900,75 @@ def main() -> None:
     assert abs(irregular_path_tv - 0.16384) < 2e-14
     assert abs(irregular_training_failure - 0.13934751885262905) < 2e-14
 
+    # With an exponential beta envelope and a fixed total spacing budget,
+    # equal gaps minimize the marginal coupling envelope.  The separated PAC
+    # penalty instead assigns weight 1/gamma to the final test gap and has the
+    # exact logarithmic water-filling solution.
+    gap_floor = 1.0
+    excess_gap_budget = (
+        sum(irregular_mixing_gaps)
+        - calibration_count * gap_floor
+    )
+    exponential_decay = -math.log(0.8)
+    equal_gaps = np.full(
+        calibration_count,
+        gap_floor + excess_gap_budget / calibration_count,
+    )
+    equal_marginal_envelope = 0.5 * np.sum(
+        np.exp(-exponential_decay * equal_gaps)
+    )
+    assert abs(equal_marginal_envelope - average_gap_beta) < 2e-15
+    assert equal_marginal_envelope < irregular_beta_sum
+
+    design_slack = 0.05
+    design_weights = np.ones(calibration_count)
+    design_weights[-1] = 1.0 / design_slack
+    equal_excess = optimal_exponential_gap_allocation(
+        np.ones(calibration_count), excess_gap_budget, exponential_decay
+    )
+    assert np.max(np.abs(
+        equal_excess - excess_gap_budget / calibration_count
+    )) < 2e-13
+    low_budget = 0.5 * math.log(1.0 / design_slack) / exponential_decay
+    low_budget_allocation = optimal_exponential_gap_allocation(
+        design_weights, low_budget, exponential_decay
+    )
+    assert np.max(np.abs(low_budget_allocation[:-1])) < 2e-13
+    assert abs(low_budget_allocation[-1] - low_budget) < 2e-13
+    optimal_excess = optimal_exponential_gap_allocation(
+        design_weights, excess_gap_budget, exponential_decay
+    )
+    optimal_gaps = gap_floor + optimal_excess
+    weighted_terms = design_weights * np.exp(
+        -exponential_decay * optimal_excess
+    )
+    assert np.max(weighted_terms) - np.min(weighted_terms) < 2e-13
+    optimal_penalty = 0.5 * math.exp(
+        -exponential_decay * gap_floor
+    ) * weighted_terms.sum()
+    equal_weighted_penalty = 0.5 * np.sum(
+        design_weights * np.exp(-exponential_decay * equal_gaps)
+    )
+    assert optimal_penalty < 0.45 * equal_weighted_penalty
+
+    # An independent random feasible-design check guards the KKT
+    # implementation without treating numerical optimization as the proof.
+    random_allocations = rng.dirichlet(
+        np.ones(calibration_count), size=2000
+    ) * excess_gap_budget
+    random_objectives = 0.5 * math.exp(
+        -exponential_decay * gap_floor
+    ) * np.sum(
+        design_weights[None, :]
+        * np.exp(-exponential_decay * random_allocations),
+        axis=1,
+    )
+    assert float(random_objectives.min()) > optimal_penalty
+    assert abs(optimal_gaps[0] - 19.50831835) < 5e-9
+    assert abs(optimal_gaps[-1] - 32.93345322) < 5e-9
+    assert abs(optimal_penalty - 0.05789767565619619) < 2e-14
+    assert abs(equal_weighted_penalty - 0.12912720851596698) < 2e-14
+
     print("\nIrregularly spaced nonoverlapping path scores")
     print("block-start strides: " + str(irregular_start_strides))
     print("mixing gaps: " + str(irregular_mixing_gaps))
@@ -2881,6 +2986,18 @@ def main() -> None:
         f"training failure={irregular_training_failure:.8f}; "
         f"optimized PAC bound={irregular_transfer.fun:.8f}; "
         f"slack={irregular_transfer.x:.8f}"
+    )
+    print(
+        "fixed-span marginal envelope, irregular/equal: "
+        f"{irregular_beta_sum:.8f}, {equal_marginal_envelope:.8f}"
+    )
+    print(
+        "fixed-span PAC-weighted optimal calibration/test gaps: "
+        f"{optimal_gaps[0]:.8f}, {optimal_gaps[-1]:.8f}"
+    )
+    print(
+        "fixed-span PAC-weighted penalty, optimal/equal: "
+        f"{optimal_penalty:.8f}, {equal_weighted_penalty:.8f}"
     )
 
     # The same rank-event argument is not specific to a binary chain.  For a
@@ -3118,8 +3235,8 @@ def main() -> None:
         "finite-chain path coefficients through second order, smooth "
         "nonlinear path maps including the critical-gradient second order, "
         "posterior cancellation geometry through second order, "
-        "regular and irregular absolute-regularity coupling with "
-        "discrete-score tie handling, "
+        "regular and irregular absolute-regularity coupling with optimal "
+        "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
         "sharp PAC design, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
