@@ -896,6 +896,32 @@ def instruments_page():
     <p>G2++ coupon-bond options and swaptions consequently require a two-dimensional Gaussian integral, or conditioning
     on one factor and solving the monotone boundary in the other. The one-factor decomposition above remains valid for
     Vasicek and Hull&ndash;White, while zero-coupon bond options and caplets remain one-dimensional under G2++.</p>
+    <h3>An exact one-dimensional G2++ price</h3>
+    <p>The curved boundary does not require two-dimensional numerical quadrature. In ordinary fixed-parameter G2++,
+      work under the $T$-forward measure and write $(X,Z)$ for the bivariate Gaussian factors at option expiry. Put
+      $w_k=c_kA_k&gt;0$, $p_k=B_a(\tau_k)$ and $q_k=B_b(\tau_k)$. For every fixed $x$,</p>
+    $$C(x,z)=\sum_kw_k e^{-p_kx-q_kz}$$
+    <p>decreases continuously from infinity to zero as $z$ increases, so there is a unique root
+      $z=\zeta(x)$ of $C(x,z)=K$. If $Z\mid X=x\sim N(m(x),s^2)$, Gaussian exponential tilting gives the exact receiver
+      forward value</p>
+    $$\int \phi_X(x)\left[\sum_k w_k e^{-p_kx-q_km(x)+q_k^2s^2/2}
+      \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
+      -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
+    <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. This is exact one-dimensional
+      quadrature, not a Jamshidian sum. Implicit differentiation also quantifies the geometry. With
+      $d_k=w_ke^{-p_kx-q_k\zeta(x)}$,</p>
+    $$\zeta'(x)=-{\sum_kd_kp_k\over\sum_kd_kq_k},\qquad
+      \zeta''(x)={\sum_kd_k(p_k+q_k\zeta'(x))^2\over\sum_kd_kq_k}\ge0.$$
+    <p>The inequality is strict exactly when the positive-cash-flow loading vectors are not collinear. Thus unequal
+      G2++ reversion speeds and at least two distinct payment maturities give a strictly convex boundary, while $a=b$
+      recovers the one-factor Jamshidian limit.
+      This direct Gaussian formula is narrower than the general affine approximations of
+      <a href="./bibliography.html#SchragerPelsser2006">Schrager and Pelsser (2006)</a>: it assumes a fixed-parameter
+      Gaussian expiry law. It is exact for standard G2++ and its averaged fast-switching limit, not for the full
+      finite-rate switching model.</p>
+    <p>For the two-cash-flow certificate, conditional quadrature gives $0.669351292291$ and independent nested Gaussian
+      quadrature gives the same value within $2.22\times10^{-16}$. In the $a=b$ limit it agrees with the scalar
+      Jamshidian price within $1.67\times10^{-16}$.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>

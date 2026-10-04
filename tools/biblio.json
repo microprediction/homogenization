@@ -2465,6 +2465,17 @@
  },
  {
   "role": "examples",
+  "key": "SchragerPelsser2006",
+  "authors": "Schrager, D. F. and Pelsser, A. A. J.",
+  "year": 2006,
+  "title": "Pricing Swaptions and Coupon Bond Options in Affine Term Structure Models",
+  "venue": "Mathematical Finance 16(4):673-694",
+  "doi": "10.1111/j.1467-9965.2006.00289.x",
+  "url": "https://doi.org/10.1111/j.1467-9965.2006.00289.x",
+  "annotation": "Develops a general affine approximation for swaptions and coupon-bond options. The exact one-dimensional G2++ conditional-Gaussian quadrature here is narrower and does not claim an exact formula for general affine or finite-rate switching models."
+ },
+ {
+  "role": "examples",
   "key": "Schroder1989",
   "authors": "Schroder, M.",
   "year": 1989,
