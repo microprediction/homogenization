@@ -3,8 +3,9 @@
 The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
-periodic counterexamples, including the sharp Fourier-decay and Cesaro-mean
-conditions at the saturated epsilon-squared boundary.
+periodic counterexamples, including the Gaussian fractional-Brownian functional
+limit and the sharp Fourier-decay and Cesaro-mean conditions at the saturated
+epsilon-squared boundary.
 """
 import math
 
@@ -615,6 +616,56 @@ def verify_antipersistent_case(alpha):
     return order, ratio, identity_error
 
 
+def verify_gaussian_fractional_limit():
+    """Check covariance convergence to fractional Brownian motion.
+
+    A centered Gaussian process is determined by its covariance.  For the
+    Gamma spectral benchmark, the exact variance of every integrated increment
+    therefore gives an exact finite-dimensional certificate for the functional
+    limit.  We check both persistent and antipersistent exponents.
+    """
+    times = np.array([0.0, 0.1, 0.25, 0.5, 0.75, 1.0])
+    results = []
+    for alpha, powers in ((0.7, (8, 12, 16, 20)),
+                          (1.7, (10, 20, 30))):
+        hurst = 1.0 - alpha / 2.0
+        target = np.array([
+            [0.5 * (s ** (2.0 * hurst) + t ** (2.0 * hurst)
+                    - abs(t - s) ** (2.0 * hurst))
+             for t in times]
+            for s in times
+        ])
+        errors = []
+        for power in powers:
+            epsilon = 2.0 ** -power
+            variances = np.array([
+                antipersistent_variance(epsilon, alpha, t)
+                if t > 0.0 else 0.0
+                for t in times
+            ])
+            terminal_variance = variances[-1]
+            covariance = np.empty_like(target)
+            for i, s in enumerate(times):
+                for j, t in enumerate(times):
+                    lag_variance = (
+                        antipersistent_variance(
+                            epsilon, alpha, abs(t - s)
+                        ) if t != s else 0.0
+                    )
+                    covariance[i, j] = (
+                        variances[i] + variances[j] - lag_variance
+                    ) / (2.0 * terminal_variance)
+            errors.append(float(np.max(np.abs(covariance - target))))
+
+        assert all(x > y for x, y in zip(errors, errors[1:]))
+        if alpha < 1.0:
+            assert errors[-1] < 1.3e-6
+        else:
+            assert errors[-1] < 1.2e-3
+        results.append((alpha, hurst, tuple(errors), powers[-1]))
+    return tuple(results)
+
+
 def verify_zero_gk_boundary():
     """Check the second critical index and finite-first-moment limit."""
     # At alpha=2 the exact formula is epsilon^2 log(1+epsilon^-2),
@@ -917,6 +968,7 @@ def main():
     critical_ratio = verify_critical_case()
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
+    gaussian_fclt = verify_gaussian_fractional_limit()
     zero_gk_boundary = verify_zero_gk_boundary()
     saturated_spectral = verify_saturated_spectral_criterion()
     spectral_abelian = verify_spectral_abelian_theorem()
@@ -952,6 +1004,10 @@ def main():
     print("zero-Green--Kubo antipersistent alpha=1.7 order, ratio, identity error: "
           f"{antipersistent_17[0]:.6f}, {antipersistent_17[1]:.6f}, "
           f"{antipersistent_17[2]:.3e}")
+    for alpha, hurst, errors, terminal_power in gaussian_fclt:
+        print("Gaussian fractional limit alpha/H, covariance errors, "
+              f"terminal R=2^{terminal_power}: {alpha:.1f}, {hurst:.2f}, "
+              f"{tuple(f'{error:.3e}' for error in errors)}")
     print("zero-Green--Kubo alpha=2 log-corrected ratio, identity error: "
           f"{zero_gk_boundary[0]:.12f}, {zero_gk_boundary[1]:.3e}")
     print("zero-Green--Kubo alpha=3 first moment, order, ratio, identity error: "

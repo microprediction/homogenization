@@ -1,0 +1,160 @@
+<!-- title: Hull-White with a switching volatility · homogenization | math -->
+  <main>
+    <h1>Hull&ndash;White with a switching volatility</h1>
+    <p class="subtitle">A short rate fitted to today&apos;s curve whose volatility follows a hidden regime, and how far the regime moves the curve.</p>
+
+    <h2>The model</h2>
+    <p>In the <a href="./bibliography.html#HullWhite1990">Hull&ndash;White model</a> the short rate is a Gaussian
+    factor plus a deterministic shift chosen to reproduce today&apos;s discount curve. Here the factor&apos;s volatility
+    is set by a hidden regime $y_t \in \{1, 2\}$:</p>
+    $$r_t = x_t + \varphi(t), \qquad dx_t = -a\,x_t\,dt + \sigma_{y_t}\,dW_t, \qquad x_0 = 0 .$$
+    <p>The regime switches at rate $\lambda$ in each direction. The factor reverts over $1/a$ and the regime changes
+    every $1/\lambda$. The market supplies the discount curve $P^M(0,T)$ and its instantaneous forward rate
+    $f^M(0,t)$.</p>
+    <p class="muted">Parameters: $a = 0.3$, $\sigma = (0.02, 0.008)$, a flat curve at 3%, and bonds of maturity
+    $T = 5$ unless stated.</p>
+
+    <h2>The quantity</h2>
+    <p>The zero-coupon bond seen from each starting regime,</p>
+    $$P_i(0,T) = \mathbb{E}\big[e^{-\int_0^T r_s\,ds} \mid y_0 = i\big]
+      = e^{-\int_0^T\varphi}\;\mathbb{E}\big[e^{-\int_0^T x_s\,ds} \mid x_0 = 0,\ y_0 = i\big],$$
+    <p>and its ratio to the market bond $P^M(0,T)$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the limit is Hull&ndash;White with the average variance
+    $\bar\sigma^2 = \tfrac12(\sigma_1^2 + \sigma_2^2)$. That model reproduces the curve when the shift is</p>
+    $$\varphi(t) = f^M(0,t) + \tfrac12\bar\sigma^2\,B(t)^2, \qquad B(t) = \frac{1 - e^{-at}}{a},$$
+    <p>and this is the shift used throughout: the averaged model fits the curve exactly, and the switching then moves
+    each regime&apos;s bond away from it by an amount the expansion computes.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>By the Feynman&ndash;Kac formula the functions
+    $u_i(t,x) = \mathbb{E}[e^{-\int_0^t x_s\,ds} \mid x_0 = x,\ y_0 = i]$ solve the coupled equations</p>
+    $$\partial_t u_i = -a\,x\,\partial_x u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i - x\,u_i + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x) = 1.$$
+    <p>Try the Vasicek form $u_i = e^{-B(t)x}a_i(t)$. Then $\partial_x u_i = -B\,u_i$ and $\partial_{xx}u_i = B^2u_i$, and
+    after dividing by $e^{-Bx}$ the terms proportional to $x$ are</p>
+    $$-B'\,x = a B\,x - x .$$
+    <p>They cancel when $B' = 1 - aB$, that is $B(t) = (1 - e^{-at})/a$, the same $B$ as in the shift. The reversion
+    speed does not switch, so one $B$ works for both regimes. What remains involves $t$ only:
+    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and</p>
+    $$g_i(t) = \tfrac12\sigma_i^2\,B(t)^2 .$$
+    <p>The factor starts at $x_0 = 0$, so the prefactor $e^{-Bx_0}$ is one. Integrating the shift,
+    $\int_0^T\varphi = -\log P^M(0,T) + \tfrac12\bar\sigma^2\int_0^TB^2$, and the bond is</p>
+    $$P_i(0,T) = P^M(0,T)\;e^{-\frac12\bar\sigma^2\int_0^TB^2}\;a_i(T) .$$
+    <p>The middle factor is $e^{-\int\bar g}$: it cancels the averaged part of $a_i$, which is how the averaged model
+    returns the curve. Everything left over is the effect of the switching.</p>
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>Here</p>
+    $$\tilde g = \tfrac12\,\tilde s\,B^2, \qquad \tilde s = \tfrac12(\sigma_1^2 - \sigma_2^2) .$$
+    <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$, at fixed $t > 0$,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>The factor below is the averaged model:
+        $$e^{\int_0^t \bar g} .$$</li>
+      <li>The term below is half the variance of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        It is the same for both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Write</p>
+    $$\omega = \sum_n \varepsilon^n\omega_n$$
+    <p>and match powers of $\varepsilon$:</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$.</p>
+    <p>An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. Its leading term adds
+    $\mp\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ to the first-order bracket, which returns the bracket to $1$
+    at $t = 0$; when $\tilde g(0) \ne 0$ the first-order formula above is therefore accurate to $O(\varepsilon^2)$ only
+    at fixed $t > 0$. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+
+    <h2>The bond in closed form</h2>
+    <h3>Second order</h3>
+    <p>Two more steps give the next order. The recursion gives $\omega_2 = -\omega_1'/2 = -\tilde g'/4$, which adds
+    $-\tfrac14\varepsilon^2\int_0^T\tilde g\,\tilde g' = -\tfrac18\varepsilon^2\big(\tilde g(T)^2 - \tilde g(0)^2\big)$ to
+    the exponent. The initial layer subtracts $\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ from $\omega$, and
+    through $\int\tilde g\,\omega$ that adds $-\tfrac14\varepsilon^2\,\tilde g(0)^2$. Together, up to terms of size
+    $e^{-2\lambda T}$,</p>
+    <div class="equation-card">
+    $$a_{1,2}(T) = \exp\Big(\int_0^T \bar g + \frac{\varepsilon}{2}\int_0^T \tilde g^{\,2}
+      - \frac{\varepsilon^2}{8}\big(\tilde g(T)^2 + \tilde g(0)^2\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(T) \mp \frac{\varepsilon^2}{4}\,\tilde g'(T)\Big) + O(\varepsilon^3).$$
+    </div>
+    <p>What remains is to evaluate $\int\bar g$, $\int\tilde g^{\,2}$, $\tilde g$ and $\tilde g'$ for this model.</p>
+
+    <h3>Step 1: the forcing</h3>
+    <p>With $\bar s, \tilde s = \tfrac12(\sigma_1^2 \pm \sigma_2^2)$,</p>
+    $$\bar g = \tfrac12\bar s\,B^2, \qquad \tilde g = \tfrac12\tilde s\,B^2, \qquad \tilde g(0) = 0, \qquad
+      \tilde g' = \tilde s\,B\,B' = \tilde s\,B\,e^{-at} .$$
+
+    <h3>Step 2: the integrals</h3>
+    <p>Powers of $B$ are sums of exponentials, so with $I_n = \int_0^TB^n$,</p>
+    $$\int_0^T\bar g = \tfrac12\bar s\,I_2, \qquad \int_0^T\tilde g^{\,2} = \tfrac14\tilde s^2\,I_4 .$$
+    <p>The first is cancelled by the shift. The second is the Green&ndash;Kubo term.</p>
+
+    <h3>Step 3: the result</h3>
+    <div class="equation-card">
+    $$\frac{P_{1,2}(0,T)}{P^M(0,T)} = \exp\Big(\frac{\varepsilon}{8}\,\tilde s^2\,I_4 - \frac{\varepsilon^2}{32}\,\tilde s^2\,B^4\Big)
+      \Big(1 \pm \frac{\varepsilon}{4}\,\tilde s\,B^2 \mp \frac{\varepsilon^2}{4}\,\tilde s\,B\,E\Big) + O(\varepsilon^3),$$
+    $$\begin{aligned}
+    B &= \frac{1 - E}{a}, \qquad E = e^{-aT}, \\
+    I_1 &= \frac{1}{a}\Big(T - \frac{1 - E}{a}\Big), \\
+    I_2 &= \frac{1}{a^2}\Big(T - \frac{2(1 - E)}{a} + \frac{1 - E^2}{2a}\Big), \\
+    I_3 &= \frac{1}{a^3}\Big(T - \frac{3(1 - E)}{a} + \frac{3(1 - E^2)}{2a} - \frac{1 - E^3}{3a}\Big), \\
+    I_4 &= \frac{1}{a^4}\Big(T - \frac{4(1 - E)}{a} + \frac{3(1 - E^2)}{a} - \frac{4(1 - E^3)}{3a} + \frac{1 - E^4}{4a}\Big) .
+    \end{aligned}$$
+    </div>
+    <p>The upper sign is for a start in regime 1, the volatile one. Three things can be read from the card.</p>
+    <ul>
+      <li>At order zero the ratio is one: every regime sees the market curve.</li>
+      <li>At first order the two regimes move in opposite directions by $\tfrac14\varepsilon\tilde sB^2$. A start in the
+        volatile regime means more variance in $\int r$ over the next $1/(2\lambda)$, more convexity, and a higher bond
+        price.</li>
+      <li>The Green&ndash;Kubo term raises both bonds, by $\tfrac18\varepsilon\tilde s^2I_4$. It is quadratic in the small
+        number $\tilde s$, and at these parameters it is a thousand times smaller than the memory term.</li>
+    </ul>
+    <p>At $\lambda = 5$ and $T = 5$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$E$, $B$</td><td>0.223130, &nbsp; 2.589566</td></tr><tr><td>$I_2$, $I_4$</td><td>15.60618, &nbsp; 71.61251</td></tr><tr><td>$\bar s$, $\tilde s$</td><td>0.000232, &nbsp; 0.000168</td></tr><tr><td>Green&ndash;Kubo exponent $\frac\varepsilon8\tilde s^2I_4$</td><td>5.053e&minus;8</td></tr><tr><td>second-order exponent $-\frac{\varepsilon^2}{32}\tilde s^2B^4$</td><td>&minus;1.586e&minus;9</td></tr><tr><td>memory, first order $\frac\varepsilon4\tilde sB^2$</td><td>5.633e&minus;5</td></tr><tr><td>memory, second order $-\frac{\varepsilon^2}4\tilde sBE$</td><td>&minus;9.707e&minus;7</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>bond ratio, regime 1</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>1.0000000000</td><td>5.5e-5</td></tr><tr><td>first order</td><td>1.0000563797</td><td>9.9e-7</td></tr><tr><td>second order</td><td>1.0000554074</td><td>2.1e-8</td></tr><tr><td>numerical solution</td><td>1.0000553865</td><td></td></tr></tbody></table></div>
+
+    <h2>Fitting the curve from the starting regime</h2>
+    <p>The shift above fits the averaged model. If the starting regime $i$ is known, the fit can be made exact for
+    that regime instead, because $a_i$ is known: choose</p>
+    $$\varphi_i(t) = f^M(0,t) + \frac{d}{dt}\log a_i(t), \qquad\text{so that}\qquad e^{-\int_0^T\varphi_i}\,a_i(T) = P^M(0,T) \text{ for every } T.$$
+    <p>To first order this is the averaged shift plus two corrections,</p>
+    $$\varphi_{1,2}(t) = f^M(0,t) + \tfrac12\bar s\,B^2 + \frac{\varepsilon}{8}\,\tilde s^2B^4 \pm \frac{\varepsilon}{2}\,\tilde s\,B\,e^{-at} + O(\varepsilon^2),$$
+    <p>the derivative of the exponent and of the bracket in the card. <a href="https://github.com/microprediction/regimelib">regimelib</a>&apos;s
+    <code>SwitchingHullWhite</code> uses the averaged shift, so that the model is QuantLib&apos;s when the regimes coincide.</p>
+
+    <h2>Results</h2>
+    <p>The ratio of the regime-1 bond to the market bond at $T = 5$, and the error of each order of the card:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th></tr></thead><tbody><tr><td>2</td><td>1.0001345465</td><td>1.3e-4</td><td>6.4e-6</td><td>3.3e-7</td></tr><tr><td>5</td><td>1.0000553865</td><td>5.5e-5</td><td>9.9e-7</td><td>2.1e-8</td></tr><tr><td>10</td><td>1.0000279442</td><td>2.8e-5</td><td>2.5e-7</td><td>2.6e-9</td></tr><tr><td>20</td><td>1.0000140338</td><td>1.4e-5</td><td>6.1e-8</td><td>3.2e-10</td></tr></tbody></table></div>
+    <p>The error in $a_1(5)$ after each order of the <a href="./engine.html">engine</a>, against a numerical solution:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>2</td><td>1.3e-4</td><td>6.4e-6</td><td>3.3e-7</td><td>1.3e-9</td><td>3.4e-9</td><td>7.7e-10</td><td>1.4e-10</td></tr><tr><td>5</td><td>5.5e-5</td><td>9.9e-7</td><td>2.1e-8</td><td>9.0e-11</td><td>2.9e-11</td><td>2.8e-12</td><td>2.0e-13</td></tr><tr><td>10</td><td>2.8e-5</td><td>2.5e-7</td><td>2.6e-9</td><td>6.6e-12</td><td>8.8e-13</td><td>4.3e-14</td><td>2.4e-15</td></tr><tr><td>20</td><td>1.4e-5</td><td>6.1e-8</td><td>3.3e-10</td><td>4.4e-13</td><td>2.6e-14</td><td>2.2e-16</td><td>4.4e-16</td></tr></tbody></table></div>
+    <p>In yield terms the effect is small. The shift of the zero rate away from the market curve at $\lambda = 5$, in
+    basis points, from the numerical solution and from the card:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>maturity</th><th>regime 1, numerical</th><th>regime 1, card</th><th>regime 2, numerical</th><th>regime 2, card</th></tr></thead><tbody><tr><td>1</td><td>&minus;0.0526</td><td>&minus;0.0519</td><td>0.0526</td><td>0.0519</td></tr><tr><td>2</td><td>&minus;0.0881</td><td>&minus;0.0881</td><td>0.0881</td><td>0.0881</td></tr><tr><td>5</td><td>&minus;0.1108</td><td>&minus;0.1108</td><td>0.1106</td><td>0.1106</td></tr><tr><td>10</td><td>&minus;0.0843</td><td>&minus;0.0843</td><td>0.0837</td><td>0.0837</td></tr><tr><td>30</td><td>&minus;0.0318</td><td>&minus;0.0318</td><td>0.0304</td><td>0.0304</td></tr></tbody></table></div>
+    <p>The shift peaks near five years and then falls, because the memory of the starting regime is a fixed amount
+    of extra variance spread over a longer bond. Options are a different matter: a bond option depends on the
+    volatility over its life, and there the regimes differ at leading order, as on the
+    <a href="./bond-options.html">bond options</a> page.</p>
+    <p>Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a>.</p>
+  </main>

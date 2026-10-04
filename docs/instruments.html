@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Instruments · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./bates.html">Bates</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./merton.html">Merton</a>
+        <a href="./variance-gamma.html">Variance gamma</a>
+        <a href="./cev.html">CEV</a>
+        <a href="./equity-rates.html">Equity with rates</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./hull-white.html">Hull&ndash;White</a>
+        <a href="./g2.html">G2++</a>
+        <a href="./instruments.html">Instruments</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <h1>Instruments</h1>
+    <p class="subtitle">How each instrument is priced from the reduced system: what is solved, with which terminal vector, and what is then integrated.</p>
+
+    <p class="lead">Every model page ends in the same object, the vector $a(t)$ solving
+    $a' = (Q + \operatorname{diag} g)\,a$. This page lists what each instrument needs from it. The notation follows the
+    model pages: a symmetric two-state chain switching at rate $\lambda = 1/\varepsilon$ where closed forms are written
+    out, and any chain otherwise.</p>
+
+    <h2>Bonds and claims on the regime</h2>
+    <p>A zero-coupon bond, or a survival probability when the state is a default intensity, is</p>
+    $$P_i(0,T) = e^{-B(T)\cdot x_0}\,a_i(T), \qquad a(0) = \mathbf 1 .$$
+    <p>The terminal vector says what is paid in each regime at $T$. Starting from $a(0) = e_j$, the $j$-th unit vector,
+    gives the value of one unit paid only if the regime at $T$ is $j$:</p>
+    $$\mathbb{E}\big[e^{-\int_0^Tr}\,\mathbf 1\{y_T = j\} \mid y_0 = i\big] = e^{-B(T)\cdot x_0}\,a^{(j)}_i(T), \qquad a^{(j)}(0) = e_j .$$
+    <p>The system is linear, so these add up to the bond. A payoff $\Phi_j$ that depends on the final regime is priced
+    with $a(0) = \Phi$. For a two-state chain the closed forms for the bond are on the
+    <a href="./regime-switching.html">regime-switching</a>, <a href="./jumps.html">jumps</a>, <a href="./cir.html">CIR</a>,
+    <a href="./hull-white.html">Hull&ndash;White</a> and <a href="./g2.html">G2++</a> pages.</p>
+
+    <h2>European options on equity</h2>
+    <p>With $\phi_i(u)$ the characteristic function of the log return from regime $i$, a call is
+    <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a></p>
+    $$C = S_0e^{-qT} - \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4},$$
+    <p>and a put follows by parity. The characteristic function is $\phi_i(u) = c(u)\,a_i(T; u)$, one solve of the
+    reduced system per frequency, with the prefactor $c(u)$ and the forcing given on each model&apos;s page:
+    <a href="./black-scholes.html">Black&ndash;Scholes</a>, <a href="./merton.html">Merton</a>,
+    <a href="./variance-gamma.html">variance gamma</a>, <a href="./heston.html">Heston</a> and
+    <a href="./bates.html">Bates</a>. Under stochastic rates the discounted form on the
+    <a href="./equity-rates.html">equity with rates</a> page replaces it.</p>
+    <p>A digital call paying one if $S_T > K$ is the Gil&ndash;Pelaez inversion of the same function,</p>
+    $$e^{-rT}\,\mathbb{P}(S_T > K) = e^{-rT}\Big[\frac12 + \frac1\pi\int_0^\infty \operatorname{Re}\Big(\frac{e^{iu\log(S_0/K)}\,\phi(u)}{iu}\Big)\,du\Big].$$
+    <p>The sensitivities to $S_0$ follow by differentiating under the integral. The derivative in $T$ needs
+    $\partial_T\phi$, and the reduced system supplies it without a further solve:
+    $\partial_Ta(T) = (Q + \operatorname{diag} g(T))\,a(T)$.</p>
+
+    <h2>Options on bonds, swaptions and caps</h2>
+    <p>Under a Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
+    $A_j\,e^{-b\,x_T}$ with $A_j = a_j(S - T)$ and $b = B(S - T)$. The call pays $(A_je^{-bx_T} - K)^+$, which is positive
+    when $x_T < x_j^* = \log(A_j/K)/b$: one exercise boundary per regime. Its value is a sum over the regime at
+    expiry of two terms of the form</p>
+    $$\mathbb{E}\big[e^{-\int_0^Tr}\,e^{-c\,x_T}\,\mathbf 1\{x_T < x_j^*\}\,\mathbf 1\{y_T = j\}\big]
+      = \tfrac12\Psi_j(c) - \frac1\pi\int_0^\infty \operatorname{Im}\big(e^{-iux_j^*}\,\Psi_j(c - iu)\big)\,\frac{du}{u},$$
+    <p>where $\Psi_j(c)$ is the reduced system with the terminal exponent $c$ and the terminal vector $e_j$. The
+    terminal exponent changes the coefficient of the state from $B$ to
+    $B_c(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa$ and leaves the form of the forcing alone. The derivation,
+    and the closed forms, are on the <a href="./bond-options.html">bond options</a> page.</p>
+    <p>A coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
+    <a href="./bibliography.html#Jamshidian1989">Jamshidian&apos;s decomposition</a> holds regime by regime. In regime $j$
+    there is one $x_j^*$ at which the coupon bond equals the strike, and the option on the coupon bond is the sum of
+    options on its zero-coupon parts with strikes $K_{kj} = A_{kj}e^{-b_kx_j^*}$:</p>
+    $$\Big(\sum_k c_kA_{kj}e^{-b_kx_T} - K\Big)^+ = \sum_k c_k\,\big(A_{kj}e^{-b_kx_T} - K_{kj}\big)^+ \qquad\text{on } \{y_T = j\} .$$
+    <p>The strikes differ by regime, which is the only change from the model without regimes. From there:</p>
+    <ul>
+      <li>a receiver swaption is a call on the coupon bond with coupons $\tau_kK$ and the notional at the end, struck at
+        par, and a payer swaption is the put;</li>
+      <li>a caplet on the period $[t_{k-1}, t_k]$ with strike $K$ is $1 + \tau_kK$ puts on the bond maturing at $t_k$,
+        struck at $1/(1 + \tau_kK)$ and expiring at $t_{k-1}$;</li>
+      <li>under <a href="./hull-white.html">Hull&ndash;White</a> the deterministic shift scales each cash flow by
+        $e^{-\int\varphi}$ and the rest is unchanged;</li>
+      <li>under <a href="./g2.html">G2++</a> a zero-coupon bond depends on the factors through the single Gaussian variable
+        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor.</li>
+    </ul>
+    <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
+    and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
+    time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$\varepsilon$</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 6</th></tr></thead><tbody><tr><td>0.050</td><td>7.2e-3</td><td>4.5e-5</td><td>1.1e-7</td><td>1.4e-7</td><td>1.9e-9</td><td>8.5e-11</td></tr><tr><td>0.100</td><td>1.5e-2</td><td>1.7e-4</td><td>9.9e-7</td><td>2.5e-6</td><td>1.9e-8</td><td>1.9e-8</td></tr><tr><td>0.200</td><td>3.1e-2</td><td>5.5e-4</td><td>1.5e-5</td><td>4.6e-5</td><td>3.1e-6</td><td>diverged</td></tr><tr><td>0.333</td><td>5.3e-2</td><td>5.9e-3</td><td>1.6e-4</td><td>diverged</td><td>diverged</td><td>diverged</td></tr></tbody></table></div>
+    <p>The series is asymptotic. At a holding time of four months it is best stopped at second order.</p>
+
+    <h2>Credit default swaps</h2>
+    <p>When $x_t$ is a default intensity, $Q(t) = e^{-B(t)x_0}a_i(t)$ is the survival probability. A swap paying the
+    spread $s$ on the dates $t_1 < \dots < t_n$, with accrued premium paid at default and recovery $R$, has the legs</p>
+    $$\text{premium} = s\sum_k\Big[\tau_k\,D(t_k)\,Q(t_k) + \tfrac12\tau_k\,D(t_k^m)\,\big(Q(t_{k-1}) - Q(t_k)\big)\Big],
+      \qquad \text{protection} = (1 - R)\sum_k D(t_k^m)\,\big(Q(t_{k-1}) - Q(t_k)\big),$$
+    <p>with $\tau_k = t_k - t_{k-1}$, $t_k^m$ the midpoint of the period and $D$ the discount curve. The fair spread is
+    the ratio of the protection leg to the premium leg per unit spread. Only survival probabilities are needed, so the
+    closed form is that of the bond. For a Vasicek intensity $dx = \kappa(\theta_y - x)dt + \sigma_y dW$,</p>
+    <div class="equation-card">
+    $$Q_{1,2}(t) = \exp\Big(-Bx_0 - \kappa\bar\theta\,I_1 + \tfrac12\bar s\,I_2 + \frac\varepsilon2A - \frac{\varepsilon^2}{8}G^2\Big)
+      \Big(1 \pm \frac\varepsilon2G \mp \frac{\varepsilon^2}{4}G'\Big) + O(\varepsilon^3),$$
+    $$A = \kappa^2\tilde\theta^2I_2 - \kappa\tilde\theta\,\tilde s\,I_3 + \tfrac14\tilde s^2I_4, \qquad
+      G = -\kappa\tilde\theta\,B + \tfrac12\tilde s\,B^2, \qquad G' = \big(-\kappa\tilde\theta + \tilde s\,B\big)\,e^{-\kappa t},$$
+    </div>
+    <p>with $B$ and $I_n = \int_0^tB^n$ evaluated at each payment date, as on the <a href="./jumps.html">jumps</a> page.
+    A five-year swap with quarterly premiums, $x_0 = 0.02$, $\kappa = 0.5$, $\theta = (0.06, 0.01)$,
+    $\sigma = (0.01, 0.004)$, recovery 40% and a flat 3% discount curve, from the high-intensity regime; the fair
+    spread in basis points and the error of each order, also in basis points:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>fair spread, numerical</th><th>order 0</th><th>order 1</th><th>order 2</th></tr></thead><tbody><tr><td>2</td><td>182.1309</td><td>6.7e0</td><td>1.6e-1</td><td>1.2e-2</td></tr><tr><td>5</td><td>178.1437</td><td>2.7e0</td><td>2.4e-2</td><td>1.0e-3</td></tr><tr><td>10</td><td>176.7925</td><td>1.4e0</td><td>6.0e-3</td><td>1.5e-4</td></tr><tr><td>20</td><td>176.1130</td><td>6.8e-1</td><td>1.5e-3</td><td>1.9e-5</td></tr></tbody></table></div>
+    <p>Several names on one chain have joint survival equal to the bond of the summed forcing, so a first-to-default
+    swap is a single-name swap on the sum, as on the <a href="./credit.html">two-name credit</a> page.</p>
+
+    <h2>Geometric Asian options</h2>
+    <p>Under <a href="./black-scholes.html">Black&ndash;Scholes</a> with a switching volatility, the continuous geometric
+    average is $G = S_0e^{Y}$ with</p>
+    $$Y = \frac1T\int_0^T\log\frac{S_t}{S_0}\,dt = \int_0^T\Big(1 - \frac tT\Big)\,d\log S_t .$$
+    <p>The second form comes from exchanging the order of integration: the increment of $\log S$ at time $t$ is counted
+    in the average for the remaining fraction $1 - t/T$ of the life. Each increment therefore enters $Y$ scaled by a
+    deterministic weight, and in time to maturity $\tau = T - t$ that weight is $\tau/T$. The characteristic function
+    $\mathbb{E}[e^{iuY} \mid y_0 = i] = a_i(T)$ solves the reduced system with</p>
+    $$g_i(\tau) = iu\,\big(r - q - \tfrac12\sigma_i^2\big)\,\frac{\tau}{T} - \tfrac12u^2\sigma_i^2\,\frac{\tau^2}{T^2} .$$
+    <p>The forcing is a polynomial in $\tau$, so every integral is elementary. With
+    $\bar s, \tilde s = \tfrac12(\sigma_1^2 \pm \sigma_2^2)$ the half-difference is
+    $\tilde g = -\tfrac12\tilde s\,\big(iu\,\tau/T + u^2\tau^2/T^2\big)$, which vanishes at $\tau = 0$, and</p>
+    <div class="equation-card">
+    $$\mathbb{E}\big[e^{iuY}\big]_{1,2} = \exp\Big(\int_0^T\bar g + \frac\varepsilon2A - \frac{\varepsilon^2}8G^2\Big)
+      \Big(1 \pm \frac\varepsilon2G \mp \frac{\varepsilon^2}4G'\Big) + O(\varepsilon^3),$$
+    $$\begin{aligned}
+    \int_0^T\bar g &= \tfrac12\,iu\,\big(r - q - \tfrac12\bar s\big)\,T - \tfrac16u^2\,\bar s\,T, \\
+    A &= \tfrac14\tilde s^2\,T\,\Big(-\frac{u^2}{3} + \frac{iu^3}{2} + \frac{u^4}{5}\Big), \\
+    G &= -\tfrac12\tilde s\,(iu + u^2), \qquad G' = -\frac{\tilde s}{2T}\,(iu + 2u^2) .
+    \end{aligned}$$
+    </div>
+    <p>The first line of the list is the Kemna&ndash;Vorst result: the average of a lognormal path has half the drift and a
+    third of the variance. The option is then Lewis&apos;s formula on $G$, whose forward is
+    $F_G = S_0\,\mathbb{E}[e^{Y}]$, the function above at $u = -i$:</p>
+    $$C = e^{-rT}\Big[F_G - \frac{\sqrt{F_GK}}{\pi}\int_0^\infty\operatorname{Re}\Big(e^{iu\log(F_G/K)}\,\frac{\phi_Y(u - \tfrac i2)}{(F_G/S_0)^{\,i(u - i/2)}}\Big)\frac{du}{u^2 + 1/4}\Big].$$
+    <p>With $\sigma = (0.30, 0.15)$, $r = 0.03$, $q = 0$, $T = 1$, $\lambda = 25$ and $u = 1 - i/2$, from the volatile
+    regime:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$\mathbb{E}[e^{iuY}]$</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>0.99340616 + 0.01024486 i</td><td>4.0e-4</td></tr><tr><td>first order</td><td>0.99298904 + 0.01024146 i</td><td>1.5e-5</td></tr><tr><td>second order</td><td>0.99300243 + 0.01023489 i</td><td>3.3e-7</td></tr><tr><td>numerical solution</td><td>0.99300223 + 0.01023515 i</td><td></td></tr></tbody></table></div>
+    <p>Call prices on the geometric average with $S_0 = 100$, and the error of the card after each order:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>strike</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th></tr></thead><tbody><tr><td>25</td><td>95</td><td>8.706765</td><td>7.0e-2</td><td>3.2e-3</td><td>4.0e-5</td></tr><tr><td>25</td><td>105</td><td>3.822991</td><td>7.5e-2</td><td>3.3e-3</td><td>2.7e-5</td></tr><tr><td>50</td><td>95</td><td>8.672626</td><td>3.6e-2</td><td>8.1e-4</td><td>4.7e-6</td></tr><tr><td>50</td><td>105</td><td>3.785979</td><td>3.8e-2</td><td>8.2e-4</td><td>3.2e-6</td></tr><tr><td>100</td><td>95</td><td>8.655022</td><td>1.8e-2</td><td>2.0e-4</td><td>5.7e-7</td></tr><tr><td>100</td><td>105</td><td>3.766951</td><td>1.9e-2</td><td>2.0e-4</td><td>3.9e-7</td></tr></tbody></table></div>
+    <p>The characteristic function of the average decays three times more slowly in $u^2$ than that of the terminal
+    price, so the expansion is asked to work at higher frequencies than for a vanilla option, where $|\tilde g|/\lambda$
+    is larger. At slower chains the series should be replaced by the numerical solution at the high frequencies.</p>
+
+    <h2>Barrier, American and Bermudan instruments</h2>
+    <p>These depend on the path of the state and not only on its terminal value, so the state does not factor out and
+    there is no reduced system. They are priced on the coupled equations themselves, one unknown function per regime,</p>
+    $$\partial_t u_i + L_iu_i + \sum_jQ_{ij}u_j = 0,$$
+    <p>on a grid in the state with one block per regime:</p>
+    <ul>
+      <li>a knock-out barrier is the condition $u_i = \text{rebate}$ at the barrier in every regime, and a knock-in is the
+        vanilla less the knock-out;</li>
+      <li>an American option is the variational inequality
+        $\max\big(\partial_t u_i + L_iu_i + \sum_jQ_{ij}u_j,\ \Phi - u_i\big) = 0$, with an exercise boundary that
+        differs by regime;</li>
+      <li>a Bermudan swaption projects onto the exercise value at each exercise date, and that value is the coupon bond
+        in each regime from the reduced system.</li>
+    </ul>
+    <p>The <a href="./any-equation.html">first-order rule</a> still describes the operator, but the boundary adds layers
+    that these pages do not treat, so no closed form is offered.</p>
+
+    <h2>Sensitivities to the parameters</h2>
+    <p>The closed forms are explicit in the parameters, so their derivatives are formulas. To first order the log price
+    from a symmetric two-state chain is $\int\bar g + \tfrac12\varepsilon\int\tilde g^{\,2} + \log(1 \pm \tfrac12\varepsilon\tilde g(T))$.
+    If a parameter $p_i$ of regime $i$ enters the forcing linearly, $g_i = p_i\,f(t) + \dots$, then
+    $\partial\bar g/\partial p_1 = \partial\tilde g/\partial p_1 = \tfrac12f$ and</p>
+    <div class="equation-card">
+    $$\frac{\partial\log a_{1,2}}{\partial p_1} = \frac12\int_0^Tf + \frac\varepsilon2\int_0^T\tilde g\,f \pm \frac\varepsilon4\,f(T), \qquad
+      \frac{\partial\log a_{1,2}}{\partial p_2} = \frac12\int_0^Tf - \frac\varepsilon2\int_0^T\tilde g\,f \mp \frac\varepsilon4\,f(T),$$
+    $$\frac{\partial\log a_{1,2}}{\partial\lambda} = -\varepsilon^2\Big(\frac12\int_0^T\tilde g^{\,2} \pm \frac12\,\tilde g(T)\Big),$$
+    </div>
+    <p>each up to $O(\varepsilon^2)$, and $O(\varepsilon^3)$ for the last. The first term is the sensitivity of the
+    averaged model, shared equally between the regimes. The second moves it towards the regime whose parameter matters
+    more, and the third is the memory of the start. For the Vasicek mean level, $f = -\kappa B$ and
+    $\int\tilde g\,f = -\kappa\,(-\kappa\tilde\theta I_2 + \tfrac12\tilde sI_3)$. With the intensity parameters of the
+    swap above, $T = 5$ and $\lambda = 5$, against central differences of the numerical solution:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>sensitivity</th><th>formula</th><th>finite difference</th><th>difference</th></tr></thead><tbody><tr><td>$\partial\log P_1/\partial\theta_1$</td><td>&minus;1.622192</td><td>&minus;1.622189</td><td>2.5e-6</td></tr><tr><td>$\partial\log P_1/\partial\theta_2$</td><td>&minus;1.541978</td><td>&minus;1.541981</td><td>2.5e-6</td></tr><tr><td>$\partial\log P_1/\partial\lambda$</td><td>4.287e&minus;04</td><td>4.264e&minus;04</td><td>2.3e-6</td></tr></tbody></table></div>
+    <p>For a general chain the first-order price depends on the chain through the stationary distribution $\pi$ and
+    the group inverse $Q^\#$, and both have exact derivatives. For a perturbation $dQ$ with zero row sums,</p>
+    $$d\pi = -\pi\,dQ\,Q^\#, \qquad dQ^\# = -Q^\#\,dQ\,Q^\# + \mathbf 1\,\pi\,dQ\,(Q^\#)^2 + (Q^\#)^2\,dQ\,\mathbf 1\,\pi .$$
+    <p>To see the first, differentiate $\pi Q = 0$ to get $d\pi\,Q = -\pi\,dQ$ and multiply on the right by $Q^\#$,
+    using $QQ^\# = I - \mathbf 1\pi$ and $d\pi\,\mathbf 1 = 0$. The Green&ndash;Kubo matrix
+    $K_{jk} = -\pi\cdot(\tilde f_j\odot Q^\#\tilde f_k)$ and the memory vector $m = Q^\#\tilde g$ then vary by the
+    product rule.</p>
+    <p>Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a>. The instruments are implemented in
+    <a href="https://github.com/microprediction/regimelib">regimelib</a>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
