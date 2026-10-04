@@ -23,8 +23,9 @@ finite-sample coupling bound for residual Markov dependence.  A separate
 nonreversible-chain calculation checks the corresponding absolute-regularity
 bound beyond the symmetric binary example, including discrete scores with
 deterministic or randomized tie handling.  It also checks the exact beta law
-of iid coverage conditional on the realized calibration sample and the sharp
-one-sided tolerance-limit/PAC choice of calibration order statistic.  Finally,
+of iid coverage conditional on the realized, tie-augmented calibration sample
+for arbitrary score distributions, and the sharp one-sided tolerance-limit/PAC
+choice of calibration order statistic.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing, and the slack-free rearrangement
@@ -153,6 +154,48 @@ def integer_beta_cdf(value: float, alpha: int, beta: int) -> float:
     return sum(
         binomial_mass(degree, count, value)
         for count in range(alpha, degree + 1)
+    )
+
+
+def atomic_lex_order_cdf(
+    value: float,
+    probabilities: tuple[float, ...],
+    calibration_count: int,
+    order: int,
+) -> float:
+    """CDF of randomized conditional coverage for an atomic iid score.
+
+    Attach an independent uniform tie variable to each score and order the
+    pairs lexicographically.  If the atom masses are ``probabilities``, the
+    randomized distributional transform maps atom j onto its cumulative-mass
+    interval.  This routine computes the probability below ``value`` by first
+    locating that interval and then applying the order-statistic binomial
+    formula.  It deliberately works atom by atom rather than calling a beta
+    CDF, providing a certificate of the arbitrary-score extension.
+    """
+    if not 1 <= order <= calibration_count:
+        raise ValueError("order must be between one and calibration_count")
+    if any(probability <= 0.0 for probability in probabilities):
+        raise ValueError("atom probabilities must be positive")
+    if abs(sum(probabilities) - 1.0) > 1e-13:
+        raise ValueError("atom probabilities must sum to one")
+    if value <= 0.0:
+        transformed_cdf = 0.0
+    elif value >= 1.0:
+        transformed_cdf = 1.0
+    else:
+        transformed_cdf = 0.0
+        for probability in probabilities:
+            interval_right = transformed_cdf + probability
+            if value >= interval_right:
+                transformed_cdf = interval_right
+                continue
+            tie_fraction = (value - transformed_cdf) / probability
+            transformed_cdf += probability * tie_fraction
+            break
+    return sum(
+        binomial_mass(calibration_count, count, transformed_cdf)
+        for count in range(order, calibration_count + 1)
     )
 
 
@@ -2290,6 +2333,38 @@ def main() -> None:
         f"exact={beta_lower_tail:.9f}, simulation={empirical_tail:.9f}"
     )
 
+    # Continuity is unnecessary if ties are resolved by independent uniforms.
+    # For an atomic score, H(s,v)=F(s-)+v P(S=s) maps each atom onto its own
+    # cumulative-mass interval and the mixture of those intervals is exactly
+    # uniform.  Evaluate the resulting kth-order CDF atom by atom for an
+    # asymmetric three-atom law and compare with the beta formula.
+    atomic_probabilities = (0.17, 0.46, 0.37)
+    atomic_grid = np.unique(np.concatenate([
+        np.linspace(0.0, 1.0, 101),
+        np.cumsum(atomic_probabilities),
+    ]))
+    atomic_designs = ((9, 9), (9, 5), (20, 7))
+    atomic_beta_error = max(
+        abs(
+            atomic_lex_order_cdf(
+                float(value),
+                atomic_probabilities,
+                atomic_count,
+                atomic_order,
+            )
+            - integer_beta_cdf(
+                float(value), atomic_order, atomic_count + 1 - atomic_order
+            )
+        )
+        for atomic_count, atomic_order in atomic_designs
+        for value in atomic_grid
+    )
+    assert atomic_beta_error < 3e-15
+    print(
+        "randomized three-atom beta-CDF maximum grid error: "
+        f"{atomic_beta_error:.3e}"
+    )
+
     # The beta law gives the sharp one-sided tolerance-limit design.  To have
     # conditional coverage at least p with calibration-sample probability at
     # least 1-delta, the kth order statistic must satisfy a binomial CDF
@@ -3045,7 +3120,8 @@ def main() -> None:
         "posterior cancellation geometry through second order, "
         "regular and irregular absolute-regularity coupling with "
         "discrete-score tie handling, "
-        "iid training-conditional beta law, sharp PAC design, and dependent "
+        "iid training-conditional beta law including randomized atoms, "
+        "sharp PAC design, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
         "slack-free rearrangement bounds, "
         "independent-training validity, calibration-leakage failure, "

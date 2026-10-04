@@ -35,9 +35,17 @@
         <a href="./cir.html">CIR</a>
         <a href="./jumps.html">Jumps</a>
         <a href="./heston.html">Heston</a>
+        <a href="./bates.html">Bates</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
         <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./merton.html">Merton</a>
+        <a href="./variance-gamma.html">Variance gamma</a>
+        <a href="./cev.html">CEV</a>
+        <a href="./equity-rates.html">Equity with rates</a>
         <a href="./bond-options.html">Bond options</a>
+        <a href="./hull-white.html">Hull&ndash;White</a>
+        <a href="./g2.html">G2++</a>
+        <a href="./instruments.html">Instruments</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -581,14 +589,29 @@
 
     <h3>What iid marginal coverage does not say</h3>
     <p>Even at $\rho=0$, the value $k/(N+1)$ is not the coverage conditional on the realized calibration sample.
-      Let $Q_k$ be the $k$th order statistic of $N$ iid scores with continuous CDF $F$. Once those calibration
+      First let $Q_k$ be the $k$th order statistic of $N$ iid scores with continuous CDF $F$. Once those calibration
       scores are fixed, an independent test score has conditional coverage</p>
     <div class="equation-card">
     $$C_{N,k}=\Pr(S_{N+1}\le Q_k\mid S_1,\ldots,S_N)=F(Q_k),$$
     $$C_{N,k}\sim\operatorname{Beta}(k,N+1-k).$$
     </div>
     <p>The proof is immediate but important: the probability integral transforms $F(S_i)$ are iid uniform, and
-      $F(Q_k)$ is their $k$th order statistic. Consequently</p>
+      $F(Q_k)$ is their $k$th order statistic. Continuity is not essential. For an arbitrary score law, attach
+      independent $V_i\sim\operatorname{Unif}(0,1)$ and order $(S_i,V_i)$ lexicographically. Writing</p>
+    <div class="equation-card">
+    $$F_-(s)=\Pr(S&lt;s),\qquad p_s=\Pr(S=s),\qquad
+      H(s,v)=F_-(s)+vp_s,$$
+    </div>
+    <p>the randomized distributional transform $H(S_i,V_i)$ is exactly uniform, including when $S_i$ is discrete.
+      If $\widetilde Q_k$ is the $k$th ordered pair, then conditional on the realized augmented calibration panel,</p>
+    <div class="equation-card">
+    $$\Pr\{(S_{N+1},V_{N+1})\le_{\rm lex}\widetilde Q_k
+      \mid (S_1,V_1),\ldots,(S_N,V_N)\}=H(\widetilde Q_k)
+      \sim\operatorname{Beta}(k,N+1-k).$$
+    </div>
+    <p>Thus the following identities hold either for continuous scores or for arbitrary scores with randomized
+      lexicographic ties. This is the distributional transform studied by
+      <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>:</p>
     <div class="equation-card">
     $$\mathbb E C_{N,k}=\frac{k}{N+1},\qquad
       \operatorname{Var}(C_{N,k})=
@@ -601,7 +624,12 @@
     $$\Pr(C_{9,9}&lt;0.8)=0.8^9=0.134217728.$$
     <p>This is an exact <em>training-conditional</em> statement about the random threshold, not a failure of
       marginal conformal validity and not feature-conditional validity. It also gives the iid reference law before
-      considering overlap or serial dependence. The distinction and high-probability training-conditional goals
+      considering overlap or serial dependence. In the atomic case the conditioning includes the realized auxiliary
+      tie variables. Conditioning only on the original tied scores averages over those variables and need not have
+      the beta law. The certificate evaluates the transform interval by interval for the asymmetric atomic law
+      $(0.17,0.46,0.37)$ and recovers the beta CDF on a grid to roundoff for interior and extreme order statistics.
+      The distinction and high-probability
+      training-conditional goals
       are studied more generally by
       <a href="https://doi.org/10.1214/23-EJS2145">Bian and Barber (2023)</a>.</p>
 
@@ -749,7 +777,9 @@
     <h3>A sharper training-conditional transfer</h3>
     <p>A PAC statement follows by separating two kinds of dependence instead of coupling all $N+1$ scores at
       once. Let $P$ be the joint law of the calibration vector $X=(S_1,\ldots,S_N)$ and test score $S_{N+1}$,
-      let $\mu=P_X$, let $F$ be their common continuous marginal, and put $\nu=F^{\otimes N}$. Define</p>
+      let $\mu=P_X$, let $F$ be their common continuous marginal, and put $\nu=F^{\otimes N}$. This notation treats
+      scalar continuous scores; for arbitrary scores, replace each score by its lexicographic pair, $F$ by the
+      pair's common marginal law, and $F(Q_k)$ by the randomized transform $H(\widetilde Q_k)$ above. Define</p>
     <div class="equation-card">
     $$\eta_{\rm cal}=\|\mu-\nu\|_{\rm TV},\qquad
       \eta_{\rm test}=\|P-\mu\otimes F\|_{\rm TV}.$$
@@ -885,6 +915,11 @@
     <p>The iid coupled pairs have no ties, so exchangeability makes the test rank exactly uniform. This is the
       randomized tie-breaking used in exact conformal validity; see
       <a href="https://doi.org/10.1007/b106715">Vovk, Gammerman, and Shafer (2005)</a>.</p>
+    <p>More strongly, the randomized-transform argument above gives the exact
+      $\operatorname{Beta}(k,N+1-k)$ law for coverage conditional on the realized augmented iid calibration panel.
+      Consequently the sharp iid PAC design and both separated-TV training-conditional transfers above apply
+      verbatim to arbitrary score distributions after augmenting the panel and test score with their tie variables.
+      This is distinct from deterministic tie retention and from conditioning only on the unaugmented scores.</p>
     <p>If ties are instead retained and the event is $S_N\le Q_k$, the dependence bound remains valid but its iid
       center is generally not $k/(N+1)$. Writing $F_-(s)=\Pr(S&lt;s)$, the exact iid center is</p>
     <div class="equation-card">

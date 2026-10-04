@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>G2++ with switching volatilities and correlation · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cir.html">CIR</a>
+        <a href="./jumps.html">Jumps</a>
+        <a href="./heston.html">Heston</a>
+        <a href="./bates.html">Bates</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./black-scholes.html">Black&ndash;Scholes</a>
+        <a href="./merton.html">Merton</a>
+        <a href="./variance-gamma.html">Variance gamma</a>
+        <a href="./cev.html">CEV</a>
+        <a href="./equity-rates.html">Equity with rates</a>
+        <a href="./bond-options.html">Bond options</a>
+        <a href="./hull-white.html">Hull&ndash;White</a>
+        <a href="./g2.html">G2++</a>
+        <a href="./instruments.html">Instruments</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <h1>G2++ with switching volatilities and correlation</h1>
+    <p class="subtitle">Two Gaussian factors fitted to today&apos;s curve, with both volatilities and their correlation set by a hidden regime.</p>
+
+    <h2>The model</h2>
+    <p>In the two-factor Gaussian model <a href="./bibliography.html#BrigoMercurio2006">G2++</a> the short rate is the
+    sum of two correlated mean-reverting factors and a deterministic shift. Here the two volatilities and the
+    correlation are set by a hidden regime $y_t \in \{1, 2\}$:</p>
+    $$r_t = x_t + z_t + \varphi(t), \qquad dx_t = -a\,x_t\,dt + \sigma_{y_t}\,dW^1_t, \qquad dz_t = -b\,z_t\,dt + \eta_{y_t}\,dW^2_t,
+      \qquad d\langle W^1, W^2\rangle = \rho_{y_t}\,dt,$$
+    <p>with $x_0 = z_0 = 0$. The regime switches at rate $\lambda$ in each direction. The factors revert over $1/a$
+    and $1/b$; the regime changes every $1/\lambda$.</p>
+    <p class="muted">Parameters: $a = 0.5$, $b = 0.1$, $\sigma = (0.015, 0.006)$, $\eta = (0.012, 0.008)$,
+    $\rho = (-0.4, -0.7)$, a flat curve at 3%, and bonds of maturity $T = 5$.</p>
+
+    <h2>The quantity</h2>
+    <p>The zero-coupon bond seen from each starting regime,</p>
+    $$P_i(0,T) = e^{-\int_0^T\varphi}\;\mathbb{E}\big[e^{-\int_0^T (x_s + z_s)\,ds} \mid x_0 = z_0 = 0,\ y_0 = i\big],$$
+    <p>and its ratio to the market bond $P^M(0,T)$.</p>
+
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the limit is G2++ with the averaged covariance matrix: variances
+    $\bar s = \tfrac12(\sigma_1^2 + \sigma_2^2)$ and $\bar h = \tfrac12(\eta_1^2 + \eta_2^2)$, and covariance
+    $\bar c = \tfrac12(\rho_1\sigma_1\eta_1 + \rho_2\sigma_2\eta_2)$. The average is taken of the covariance
+    $c_i = \rho_i\sigma_i\eta_i$, not of the correlation. That model reproduces the curve when</p>
+    $$\varphi(t) = f^M(0,t) + \tfrac12\bar s\,B_a(t)^2 + \tfrac12\bar h\,B_b(t)^2 + \bar c\,B_a(t)B_b(t),
+      \qquad B_a(t) = \frac{1 - e^{-at}}{a}, \quad B_b(t) = \frac{1 - e^{-bt}}{b} .$$
+
+    <h2>Reduction to a linear system</h2>
+    <p>The functions $u_i(t,x,z) = \mathbb{E}[e^{-\int_0^t (x_s + z_s)ds} \mid x_0 = x, z_0 = z, y_0 = i]$ solve</p>
+    $$\begin{aligned}\partial_t u_i = \;&-a\,x\,\partial_x u_i - b\,z\,\partial_z u_i + \tfrac12\sigma_i^2\,\partial_{xx}u_i
+      + \tfrac12\eta_i^2\,\partial_{zz}u_i + \rho_i\sigma_i\eta_i\,\partial_{xz}u_i \\
+      &- (x + z)\,u_i + \sum_j Q_{ij}\,u_j, \qquad u_i(0,x,z) = 1.\end{aligned}$$
+    <p>Try $u_i = e^{-B_a(t)x - B_b(t)z}a_i(t)$. The terms proportional to $x$ and to $z$ cancel separately when
+    $B_a' = 1 - aB_a$ and $B_b' = 1 - bB_b$, which give the two functions above. Neither reversion speed switches, so
+    they serve both regimes. What remains involves $t$ only: $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$
+    and</p>
+    $$g_i(t) = \tfrac12\sigma_i^2\,B_a^2 + \tfrac12\eta_i^2\,B_b^2 + \rho_i\sigma_i\eta_i\,B_aB_b .$$
+    <p>This is half the variance rate of $\int r$ in regime $i$. As for
+    <a href="./hull-white.html">Hull&ndash;White</a>, the shift cancels the averaged part:</p>
+    $$P_i(0,T) = P^M(0,T)\;e^{-\int_0^T\bar g}\;a_i(T) .$$
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>Here</p>
+    $$\tilde g = \tfrac12\tilde s\,B_a^2 + \tfrac12\tilde h\,B_b^2 + \tilde c\,B_aB_b .$$
+    <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$, at fixed $t > 0$,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>The factor below is the averaged model:
+        $$e^{\int_0^t \bar g} .$$</li>
+      <li>The term below is half the variance of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        It is the same for both starting regimes, and it grows with $t$.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Write</p>
+    $$\omega = \sum_n \varepsilon^n\omega_n$$
+    <p>and match powers of $\varepsilon$:</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$.</p>
+    <p>An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. Its leading term adds
+    $\mp\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ to the first-order bracket, which returns the bracket to $1$
+    at $t = 0$; when $\tilde g(0) \ne 0$ the first-order formula above is therefore accurate to $O(\varepsilon^2)$ only
+    at fixed $t > 0$. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+
+    <h2>The bond in closed form</h2>
+    <h3>Second order</h3>
+    <p>Two more steps give the next order. The recursion gives $\omega_2 = -\omega_1'/2 = -\tilde g'/4$, which adds
+    $-\tfrac14\varepsilon^2\int_0^T\tilde g\,\tilde g' = -\tfrac18\varepsilon^2\big(\tilde g(T)^2 - \tilde g(0)^2\big)$ to
+    the exponent. The initial layer subtracts $\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ from $\omega$, and
+    through $\int\tilde g\,\omega$ that adds $-\tfrac14\varepsilon^2\,\tilde g(0)^2$. Together, up to terms of size
+    $e^{-2\lambda T}$,</p>
+    <div class="equation-card">
+    $$a_{1,2}(T) = \exp\Big(\int_0^T \bar g + \frac{\varepsilon}{2}\int_0^T \tilde g^{\,2}
+      - \frac{\varepsilon^2}{8}\big(\tilde g(T)^2 + \tilde g(0)^2\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(T) \mp \frac{\varepsilon^2}{4}\,\tilde g'(T)\Big) + O(\varepsilon^3).$$
+    </div>
+    <p>What remains is to evaluate $\int\bar g$, $\int\tilde g^{\,2}$, $\tilde g$ and $\tilde g'$ for this model.</p>
+
+    <h3>Step 1: the forcing</h3>
+    <p>The three switched quantities are the two variances and the covariance. Write their half-differences</p>
+    $$\tilde s = \tfrac12(\sigma_1^2 - \sigma_2^2), \qquad \tilde h = \tfrac12(\eta_1^2 - \eta_2^2), \qquad
+      \tilde c = \tfrac12(\rho_1\sigma_1\eta_1 - \rho_2\sigma_2\eta_2),$$
+    <p>so that $\tilde g = \tfrac12\tilde s\,B_a^2 + \tfrac12\tilde h\,B_b^2 + \tilde c\,B_aB_b$, with $\tilde g(0) = 0$ and,
+    since $B_a' = e^{-at}$ and $B_b' = e^{-bt}$,</p>
+    $$\tilde g' = \tilde s\,B_a\,e^{-at} + \tilde h\,B_b\,e^{-bt} + \tilde c\,\big(e^{-at}B_b + B_a\,e^{-bt}\big).$$
+
+    <h3>Step 2: the integrals</h3>
+    <p>The square of $\tilde g$ is a quartic in $B_a$ and $B_b$, so it needs the integrals</p>
+    $$M_{pq} = \int_0^T B_a^p\,B_b^q\,dt .$$
+    <p>Expanding both powers by the binomial theorem gives a sum of exponentials, each integrated at once:</p>
+    $$M_{pq} = \frac{1}{a^p\,b^q}\sum_{j=0}^{p}\sum_{k=0}^{q}(-1)^{j+k}\binom pj\binom qk\,\Phi(ja + kb), \qquad
+      \Phi(0) = T, \quad \Phi(\kappa) = \frac{1 - e^{-\kappa T}}{\kappa} .$$
+    <p>Collecting the six products in $\tilde g^{\,2}$,</p>
+    $$\int_0^T\tilde g^{\,2} = \tfrac14\tilde s^2M_{40} + \tfrac14\tilde h^2M_{04} + \big(\tilde c^2 + \tfrac12\tilde s\tilde h\big)M_{22}
+      + \tilde s\,\tilde c\,M_{31} + \tilde h\,\tilde c\,M_{13} .$$
+
+    <h3>Step 3: the result</h3>
+    <div class="equation-card">
+    $$\frac{P_{1,2}(0,T)}{P^M(0,T)} = \exp\Big(\frac{\varepsilon}{2}\,A - \frac{\varepsilon^2}{8}\,G^2\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,G \mp \frac{\varepsilon^2}{4}\,G'\Big) + O(\varepsilon^3),$$
+    $$\begin{aligned}
+    A &= \tfrac14\tilde s^2M_{40} + \tfrac14\tilde h^2M_{04} + \big(\tilde c^2 + \tfrac12\tilde s\tilde h\big)M_{22}
+      + \tilde s\,\tilde c\,M_{31} + \tilde h\,\tilde c\,M_{13}, \\
+    G &= \tfrac12\tilde s\,B_a^2 + \tfrac12\tilde h\,B_b^2 + \tilde c\,B_aB_b, \\
+    G' &= \tilde s\,B_aE_a + \tilde h\,B_bE_b + \tilde c\,\big(E_aB_b + B_aE_b\big), \\
+    B_a &= \frac{1 - E_a}{a}, \quad E_a = e^{-aT}, \qquad B_b = \frac{1 - E_b}{b}, \quad E_b = e^{-bT}, \\
+    M_{pq} &= \frac{1}{a^p\,b^q}\sum_{j=0}^{p}\sum_{k=0}^{q}(-1)^{j+k}\binom pj\binom qk\,\Phi(ja + kb), \qquad
+      \Phi(0) = T, \quad \Phi(\kappa) = \frac{1 - e^{-\kappa T}}{\kappa} .
+    \end{aligned}$$
+    </div>
+    <p>The upper sign is for a start in regime 1. With $\tilde h = \tilde c = 0$ the card is the
+    <a href="./hull-white.html">Hull&ndash;White</a> one, since $M_{40} = I_4$.</p>
+    <p>The memory term $G$ is the half-difference of the variance of $\int r$ between the regimes. With negative
+    correlation its covariance part $\tilde c\,B_aB_b$ works against the two variance parts, and for some parameters
+    $G$ passes through zero at a particular maturity. There the regimes price that bond alike at first order, and the
+    second-order term $G'$ leads. This is the bond-price face of the effect on the
+    <a href="./correlation.html">switching correlation</a> page.</p>
+    <p>At $\lambda = 5$ and $T = 5$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$E_a$, $E_b$</td><td>0.082085, &nbsp; 0.606531</td></tr><tr><td>$B_a$, $B_b$</td><td>1.835830, &nbsp; 3.934693</td></tr><tr><td>$M_{40}$, $M_{31}$, $M_{22}$, $M_{13}$, $M_{04}$</td><td>23.2166, &nbsp; 42.4826, &nbsp; 78.8891, &nbsp; 148.4104, &nbsp; 282.4041</td></tr><tr><td>$\tilde s$, $\tilde h$, $\tilde c$</td><td>9.45e&minus;5, &nbsp; 4e&minus;5, &nbsp; &minus;1.92e&minus;5</td></tr><tr><td>$A$</td><td>1.5192e&minus;7</td></tr><tr><td>$G$, $G'$</td><td>0.00033019, &nbsp; 8.2121e&minus;5</td></tr><tr><td>Green&ndash;Kubo exponent $\frac\varepsilon2A$</td><td>1.519e&minus;8</td></tr><tr><td>second-order exponent $-\frac{\varepsilon^2}8G^2$</td><td>&minus;5.451e&minus;10</td></tr><tr><td>memory, first order $\frac\varepsilon2G$</td><td>3.302e&minus;5</td></tr><tr><td>memory, second order $-\frac{\varepsilon^2}4G'$</td><td>&minus;8.212e&minus;7</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>bond ratio, regime 1</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>averaged model</td><td>1.0000000000</td><td>3.2e-5</td></tr><tr><td>first order</td><td>1.0000330344</td><td>8.2e-7</td></tr><tr><td>second order</td><td>1.0000322126</td><td>2.1e-9</td></tr><tr><td>numerical solution</td><td>1.0000322147</td><td></td></tr></tbody></table></div>
+
+    <h2>Results</h2>
+    <p>The ratio of the regime-1 bond to the market bond at $T = 5$, and the error of each order of the card:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>numerical</th><th>order 0</th><th>order 1</th><th>order 2</th></tr></thead><tbody><tr><td>2</td><td>1.0000774848</td><td>7.7e-5</td><td>5.1e-6</td><td>3.5e-8</td></tr><tr><td>5</td><td>1.0000322147</td><td>3.2e-5</td><td>8.2e-7</td><td>2.1e-9</td></tr><tr><td>10</td><td>1.0000163120</td><td>1.6e-5</td><td>2.1e-7</td><td>2.6e-10</td></tr><tr><td>20</td><td>1.0000082073</td><td>8.2e-6</td><td>5.1e-8</td><td>3.2e-11</td></tr></tbody></table></div>
+    <p>The error in $a_1(5)$ after each order of the <a href="./engine.html">engine</a>, against a numerical solution:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>order 0</th><th>order 1</th><th>order 2</th><th>order 3</th><th>order 4</th><th>order 5</th><th>order 6</th></tr></thead><tbody><tr><td>2</td><td>7.8e-5</td><td>5.1e-6</td><td>3.5e-8</td><td>3.4e-9</td><td>1.6e-10</td><td>4.6e-11</td><td>4.3e-11</td></tr><tr><td>5</td><td>3.2e-5</td><td>8.2e-7</td><td>2.1e-9</td><td>8.8e-11</td><td>2.1e-12</td><td>6.7e-14</td><td>5.6e-14</td></tr><tr><td>10</td><td>1.6e-5</td><td>2.1e-7</td><td>2.6e-10</td><td>5.6e-12</td><td>6.3e-14</td><td>4.0e-15</td><td>3.8e-15</td></tr><tr><td>20</td><td>8.2e-6</td><td>5.1e-8</td><td>3.2e-11</td><td>3.5e-13</td><td>6.7e-16</td><td>1.3e-15</td><td>1.3e-15</td></tr></tbody></table></div>
+    <p>Options on bonds use the same forcing with a terminal exponent in each factor, and the single variable
+    $B_ax_T + B_bz_T$ in place of the short rate; see the <a href="./instruments.html">instruments</a> page.</p>
+    <p>Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a>. In
+    <a href="https://github.com/microprediction/regimelib">regimelib</a> this model is <code>SwitchingG2</code>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
