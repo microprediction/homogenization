@@ -30,7 +30,10 @@ mean-reversion rates, K Hadamard J(T) is positive definite at every positive
 maturity if and only if every diagonal entry of the positive semidefinite K
 is positive, irrespective of the rank of K.  For repeated loading shapes it
 checks the exact cluster formula: the integrated rank is the sum of the ranks
-of the within-cluster principal blocks of K.
+of the within-cluster principal blocks of K.  A separate heterogeneous-CIR
+check gives the complete two-name criterion: equal mean reversion alone does
+not collapse rank when vol-of-vol differs; the loading Gramian is singular
+exactly when both Riccati parameter pairs coincide.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -876,6 +879,84 @@ def repeated_loading_rank_checks():
     return tuple(observed_ranks), tuple(block_rank_rows)
 
 
+def heterogeneous_two_name_rank_checks():
+    """Check the complete two-name criterion with heterogeneous CIR inputs.
+
+    The Riccati loading B_{kappa,sigma} satisfies
+
+        B' = 1 - kappa B - sigma^2 B^2 / 2,  B(0) = 0.
+
+    Hence B'(0)=1, B''(0)=-kappa, and
+    B'''(0)=kappa^2-sigma^2.  Two loadings are proportional only if the
+    proportionality constant is one, and they are then equal only if both
+    (kappa, sigma) pairs coincide.  Their two-by-two Gramian is therefore
+    positive definite for every positive horizon exactly when the pairs are
+    distinct.
+
+    The certificate deliberately keeps kappa equal and changes only sigma.
+    A rank-one positive-diagonal K then acquires rank two after maturity
+    integration.  Repeating the full pair collapses the loading Gramian and
+    leaves the rank of K unchanged.
+    """
+    horizon = 4.0
+    kappas = np.array([1.1, 1.1])
+    sigmas = np.array([0.18, 0.46])
+
+    def loading_gram(volatilities):
+        gammas = np.sqrt(kappas**2 + 2 * volatilities**2)
+
+        def loadings_at(time):
+            decay = np.exp(-gammas * time)
+            return 2 * (1 - decay) / (
+                (gammas + kappas) * (1 - decay) + 2 * gammas * decay
+            )
+
+        return np.array([
+            [quad(
+                lambda time, j=j, k=k:
+                loadings_at(time)[j] * loadings_at(time)[k],
+                0,
+                horizon,
+                epsabs=1e-13,
+                epsrel=1e-13,
+                limit=300,
+            )[0] for k in range(2)]
+            for j in range(2)
+        ])
+
+    distinct_gram = loading_gram(sigmas)
+    gram_determinant = np.linalg.det(distinct_gram)
+    assert gram_determinant > 9e-4
+    assert np.linalg.eigvalsh(distinct_gram)[0] > 2e-4
+
+    feature = np.array([1.0, -0.8])
+    rank_one_k = np.outer(feature, feature)
+    distinct_integrated = rank_one_k * distinct_gram
+    distinct_eigenvalues = np.linalg.eigvalsh(distinct_integrated)
+    assert distinct_eigenvalues[0] > 1.7e-4
+    assert np.linalg.matrix_rank(distinct_integrated, tol=1e-10) == 2
+
+    repeated_gram = loading_gram(np.array([0.18, 0.18]))
+    assert np.max(np.abs(repeated_gram - repeated_gram[0, 0])) < 2e-15
+    repeated_integrated = rank_one_k * repeated_gram
+    assert np.linalg.matrix_rank(repeated_integrated, tol=1e-10) == 1
+
+    full_rank_k = np.array([[1.0, 0.3], [0.3, 0.7]])
+    repeated_full_integrated = full_rank_k * repeated_gram
+    assert np.linalg.matrix_rank(repeated_full_integrated, tol=1e-10) == 2
+    assert np.max(np.abs(
+        repeated_full_integrated - repeated_gram[0, 0] * full_rank_k
+    )) < 2e-15
+
+    print("\nheterogeneous two-name CIR loading criterion")
+    print(f"  equal-kappa, unequal-sigma Gram determinant "
+          f"{gram_determinant:.10e}")
+    print("  rank-one K integrated eigenvalues "
+          + " ".join(f"{value:.10e}" for value in distinct_eigenvalues))
+    print("  identical-pair integrated ranks for rank-one/full-rank K: 1/2")
+    return gram_determinant, distinct_eigenvalues
+
+
 def coalescing_loading_checks():
     """Certify the confluent-Vandermonde law for nearly equal loadings.
 
@@ -1239,6 +1320,7 @@ def main():
     finite_rank_long_maturity_checks()
     integrated_full_rank_criterion_checks()
     repeated_loading_rank_checks()
+    heterogeneous_two_name_rank_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()
@@ -1578,9 +1660,10 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification, distinct and repeated-"
-          "loading rank criteria, automatic CIR jet independence, prior "
-          "memory, pair cancellation, and ordered default")
+    print("PASS: positivity, sharp rank amplification, distinct, repeated, "
+          "and heterogeneous two-name loading rank criteria, automatic CIR "
+          "jet independence, prior memory, pair cancellation, and ordered "
+          "default")
 
 
 if __name__ == "__main__":

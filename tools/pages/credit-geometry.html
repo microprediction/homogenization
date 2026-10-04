@@ -393,6 +393,47 @@
       diagonal entry of $K$ is positive, yet the integrated rank is only the
       number of distinct loading shapes, three.</p>
 
+    <h3>A complete heterogeneous two-name criterion</h3>
+    <p>Clustering by mean reversion alone is valid only under the preceding
+      common-volatility assumption. For two names allow separate CIR
+      parameter pairs $(\kappa_i,\sigma_i)$, with $\kappa_i&gt;0$ and
+      $\sigma_i\ge0$, and let $B_i$ solve</p>
+    $$B_i'=1-\kappa_iB_i-\tfrac12\sigma_i^2B_i^2,
+      \qquad B_i(0)=0.$$
+    <p>For every $T&gt;0$, the two-name loading Gramian $J(T)$ is positive
+      definite exactly when</p>
+    $$(\kappa_1,\sigma_1)\ne(\kappa_2,\sigma_2).$$
+    <p>Indeed, a singular two-function Gramian makes the analytic loadings
+      proportional on $[0,T]$. Since $B_i'(0)=1$, the proportionality constant
+      must be one. The next two derivatives are</p>
+    $$B_i''(0)=-\kappa_i,\qquad
+      B_i'''(0)=\kappa_i^2-\sigma_i^2,$$
+    <p>so equality of the loadings forces equality of both parameter pairs;
+      the converse follows from uniqueness of the Riccati equation.</p>
+    <div class="equation-card">
+    <p><strong>Exact two-name rank law.</strong> If the parameter pairs are
+      distinct and $K\succeq0$, then</p>
+    $$\operatorname{rank}\{K\circ J(T)\}
+      =\#\{i:K_{ii}&gt;0\}.$$
+    <p>If the pairs coincide, then $J(T)=j_T\mathbf1\mathbf1^\top$ with
+      $j_T&gt;0$, and therefore</p>
+    $$K\circ J(T)=j_TK,\qquad
+      \operatorname{rank}\{K\circ J(T)\}=\operatorname{rank}K.$$
+    </div>
+    <p>For the distinct-pair case, positive diagonal entries and the Schur
+      decomposition above imply positive definiteness; a zero diagonal in a
+      positive semidefinite matrix removes that coordinate. Equivalently,
+      strict Cauchy&ndash;Schwarz for the two different loadings makes the
+      determinant positive. This gives the complete heterogeneous-parameter
+      answer in dimension two without assuming a common volatility.</p>
+    <p>The certificate fixes $\kappa_1=\kappa_2=1.1$ but takes
+      $(\sigma_1,\sigma_2)=(0.18,0.46)$. The loading-Gram determinant is
+      $9.27359551\times10^{-4}$. A rank-one positive-diagonal $K$ produces
+      integrated eigenvalues $(1.73191413\times10^{-4},3.42690265)$, hence
+      rank two. When the entire parameter pair is repeated, the same $K$
+      remains rank one, while a positive-definite $K$ remains rank two.
+      Equal mean reversion by itself is therefore not a loading collision.</p>
+
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>

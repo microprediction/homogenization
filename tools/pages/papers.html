@@ -63,7 +63,9 @@
         $K\circ J(T)\succ0$ at every $T&gt;0$ if and only if every diagonal entry of $K$ is positive, regardless
         of the fixed rank of $K$. When loading shapes repeat in clusters $C_c$, the exact rank is instead
         $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
-        within-cluster block. The resulting sharp regime-count inference is
+        within-cluster block. For two names with heterogeneous CIR parameters, the loading Gramian is singular
+        exactly when both $(\kappa,\sigma)$ pairs coincide: equal mean reversion alone does not collapse rank
+        when vol-of-vol differs. The resulting sharp regime-count inference is
         $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
         it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
         the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
