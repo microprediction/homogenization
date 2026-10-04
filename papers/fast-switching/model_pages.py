@@ -138,6 +138,42 @@ CONSTANT_SCOPE = r'''    <h3>Where the expansion applies</h3>
     layer. A Fourier price needs the separate frequency-envelope condition
     $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
     not uniform over all frequencies.</p>
+
+    <h3>Unequal transition rates</h3>
+    <p>The radius-one conclusion is not an artifact of symmetric switching. Let the generator be
+    $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ with $a,b&gt;0$, put
+    $\kappa=a+b$, $\vartheta=(a-b)/\kappa$, $\varepsilon=(m\kappa)^{-1}$,
+    $\delta=g_1-g_2$, $z=\varepsilon\delta$, and
+    $\bar g_\pi=(bg_1+ag_2)/\kappa$. Direct diagonalization gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_\pm={}&e^{\bar g_\pi T}\left[A_\pm(z)
+      e^{\{d(z)-1+\vartheta z\}T/(2\varepsilon)}
+      +B_\pm(z)e^{-\{d(z)+1-\vartheta z\}T/(2\varepsilon)}\right],\\
+    d(z)={}&\sqrt{1-2\vartheta z+z^2},\qquad
+    A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+    B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).
+    \end{aligned}$$
+    </div>
+    <p>The branch points are
+    $z=\vartheta\pm i\sqrt{1-\vartheta^2}$, again on the unit circle. Thus the slow mode is analytic for
+    $|z|&lt;1$. On every closed disk $|z|\leq\rho&lt;1$,
+    $\eta_{\vartheta,\rho}=\min\operatorname{Re}d(z)&gt;0$ and
+    $|B_\pm(z)|\leq(1-\rho)^{-1}$, so the second term is bounded by</p>
+    $$\frac{e^{\operatorname{Re}\bar g_\pi T}}{1-\rho}
+      \exp\left[-\frac{\eta_{\vartheta,\rho}+1-|\vartheta|\rho}
+      {2\varepsilon}T\right].$$
+    <p>The quadratic slow-mode polynomial therefore has an $O((m\kappa)^{-3})$ fixed-frequency remainder plus this
+    exponential layer by Cauchy&apos;s estimate on nested disks. Explicitly, if
+    $c_1=T\delta(1-\vartheta^2)/4$, $c_2=T\delta\vartheta(1-\vartheta^2)/4$,
+    $a_{1,\pm}=(\vartheta\pm1)/2$, and
+    $a_{2,\pm}=(3\vartheta^2-1)/4\pm\vartheta/2$, the slow multiplier after
+    $e^{\bar g_\pi T}$ is</p>
+    $$P_{2,\pm}(z)=1+(a_{1,\pm}+c_1)z+
+      \left(a_{2,\pm}+c_2+a_{1,\pm}c_1+\tfrac12c_1^2\right)z^2+O(z^3).$$
+    <p>Symmetric switching is the special case $\vartheta=0$, $\delta=2\tilde g$. This transform is
+    the finite-state Feynman&ndash;Kac counterpart of the two-state occupation transforms studied by
+    <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
 '''
 
 

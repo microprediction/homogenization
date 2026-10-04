@@ -76,6 +76,38 @@
     the back substitution. The result is $a_i = s\,(1 + w_i + \eta_i)$, with error $O(\varepsilon^{N+1})$ after $N$
     orders.</p>
 
+    <h2>Exact constant forcing with unequal rates</h2>
+    <p>For a two-state generator
+    $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ and constant complex forcing
+    $(g_1,g_2)$, the outer/layer split can be written without assuming $a=b$. Put
+    $\kappa=a+b$, $\vartheta=(a-b)/\kappa$, $\varepsilon=(m\kappa)^{-1}$,
+    $\delta=g_1-g_2$, $z=\varepsilon\delta$, and $\bar g_\pi=(bg_1+ag_2)/\kappa$. Then</p>
+    <div class="equation-card">
+    $$\phi_\pm=e^{\bar g_\pi T}\left[
+      \frac12\left(1+\frac{1\pm z}{d}\right)e^{(d-1+\vartheta z)T/(2\varepsilon)}+
+      \frac12\left(1-\frac{1\pm z}{d}\right)e^{-(d+1-\vartheta z)T/(2\varepsilon)}
+      \right],\qquad d=\sqrt{1-2\vartheta z+z^2}.$$
+    </div>
+    <p>The two branch points $\vartheta\pm i\sqrt{1-\vartheta^2}$ have modulus one. Consequently the slow mode has
+    the same radius-one expansion as in the symmetric chain, now in forcing contrast divided by total switching
+    rate. More explicitly, put</p>
+    $$c_1=\frac{T\delta(1-\vartheta^2)}4,\quad
+      c_2=\frac{T\delta\vartheta(1-\vartheta^2)}4,\quad
+      a_{1,\pm}=\frac{\vartheta\pm1}{2},\quad
+      a_{2,\pm}=\frac{3\vartheta^2-1}{4}\pm\frac\vartheta2.$$
+    <p>The slow multiplier after $e^{\bar g_\pi T}$ has quadratic Taylor polynomial</p>
+    $$P_{2,\pm}(z)=1+(a_{1,\pm}+c_1)z+
+      \left(a_{2,\pm}+c_2+a_{1,\pm}c_1+\tfrac12c_1^2\right)z^2.$$
+    <p>Cauchy&apos;s estimate on nested disks $|z|\leq r&lt;\rho&lt;1$ makes its remainder $O(z^3)$. Also
+    $|d(z)|\geq1-\rho$, so $|B_\pm(z)|\leq(1-\rho)^{-1}$; continuity and absence of a branch point give
+    $\eta_{\vartheta,\rho}=\min_{|z|\leq\rho}\operatorname{Re}d(z)&gt;0$. Hence the layer is at most</p>
+    $$\frac{e^{\operatorname{Re}\bar g_\pi T}}{1-\rho}
+      \exp\left[-\frac{\eta_{\vartheta,\rho}+1-|\vartheta|\rho}{2\varepsilon}T\right].$$
+    <p>This proves a fixed-frequency $O((m\kappa)^{-3})$ quadratic error plus an exponential layer. The claim is pointwise in a
+    Fourier frequency: using it under an inversion integral still requires $|g_1(u)-g_2(u)|/(m\kappa)\leq\rho$
+    over the approximated frequency window. This is the matrix-transform form of the two-state occupation problem
+    studied by <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
+
     <h2>Other inputs</h2>
     <p>Time-dependent parameters, such as a Hull&ndash;White mean level $\theta(t)$ fitted to a yield curve, change only
     the functions $g_i$, which the engine then holds as Chebyshev series. A terminal exponential payoff
@@ -95,6 +127,7 @@
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch.py">fastswitch.py</a>: the engine, for any irreducible finite chain including defective generators, real or complex coefficients, any terminal vector.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a> and <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, and variance-gamma frequency growth.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>
