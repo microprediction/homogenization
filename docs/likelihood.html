@@ -334,6 +334,33 @@
     <p>When $R=I_3$, both endpoint probabilities are $1/8$ and the formula reduces to the orthogonal binomial weights
     $(1,3,3,1)/8$. For four or more correlated constraints, the face-probability characterization remains valid but
     this elementary arcsine closure no longer follows from the sign expansion.</p>
+    <h3>Arbitrarily many correlated directions: an exact face formula</h3>
+    <p>The individual face probabilities factor in every dimension, giving an active-set form of the multivariate
+    one-sided weights studied by <a href="./bibliography.html#Kudo1963">Kudô (1963)</a> and the cone probabilities of
+    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. Continue to use the marginal constrained covariance
+    $S$, let $A\subseteq\{1,\ldots,q\}$ be the coordinates active in the projection, and let $I=A^c$. Write</p>
+    $$S_{A\mid I}=S_{AA}-S_{AI}S_{II}^{-1}S_{IA},\qquad
+      \omega(C)=\Pr\{N(0,C)>0\},$$
+    <p>with the empty-dimensional orthant probability equal to one. Then the probability of landing in the relative
+    interior of face $A$ is exactly</p>
+    <div class="equation-card">
+    $$w_A=\omega(S_{A\mid I})\,\omega(S_{II}^{-1}),\qquad
+      w_j=\sum_{|A|=j}w_A,$$
+    $$\mathrm{LM}_{p,q}\ \Longrightarrow\ \sum_{j=0}^q w_j\chi_{p+j}^2.$$
+    </div>
+    <p>Here $S_{A\mid I}=S_{AA}$ when $I$ is empty, and the second factor is one when $I$ is empty. To prove the
+    factorization, put $P=S^{-1}$ and solve the KKT equations on face $A$. The active projected coordinates are</p>
+    $$Z_A=Y_A+P_{AA}^{-1}P_{AI}Y_I
+      =Y_A-S_{AI}S_{II}^{-1}Y_I,$$
+    <p>while the inactive multiplier condition is $S_{II}^{-1}Y_I<0$. The first vector is the Gaussian regression
+    residual with covariance $S_{A\mid I}$ and is independent of $Y_I$; the second has covariance $S_{II}^{-1}$.
+    Central symmetry turns its negative-orthant probability into $\omega(S_{II}^{-1})$, proving the product.</p>
+    <p>This use of a conditional covariance <em>inside a specified constrained face</em> should not be confused with
+    replacing the entire marginal constrained covariance $S$ by $\operatorname{Cov}(Y\mid X)$ after looking at the
+    unrestricted scores. The latter remains wrong. The cross block $B$ disappears only because $X-BS^{-1}Y$ is
+    first residualized and contributes an independent $\chi_p^2$ term. The formula is exact for every finite $q$;
+    its computational cost is the evaluation of Gaussian orthant probabilities and a sum over $2^q$ faces. It
+    reduces to the preceding $q=2$ and $q=3$ formulas and to binomial weights when $S$ is diagonal.</p>
     <h3>Local alternatives and power</h3>
     <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
     alternatives, after the same nuisance-parameter profiling, satisfies</p>
@@ -421,6 +448,14 @@
     $(0.059344,0.320617,0.440516,0.179523)$ to $3.1\times10^{-4}$. The exact critical value $9.305539$ gives
     $4.9824\%$ rejection, while the independent-binomial cutoff $8.946572$ gives $5.7718\%$. Thus the new formula is
     numerically calibrated and the binomial shortcut is again rejected.</p>
+    <p>Finally, a dense four-constraint experiment checks all 16 active sets in the general formula. Its exact weights
+    are $(0.018400,0.156882,0.363697,0.343118,0.117902)$ and the simulated frequencies are
+    $(0.018262,0.157558,0.362940,0.343282,0.117958)$, with maximum dimension-weight error
+    $7.57\times10^{-4}$; the maximum error over the 16 individual face probabilities is $5.33\times10^{-4}$. The
+    exact 95% cutoff $10.398896$ rejects at $5.0215\%$; imposing the independent-binomial weights rejects at
+    $6.2549\%$. Repeating the only numerical four-dimensional orthant integrations with four randomizations changes
+    any weight by at most $7.1\times10^{-8}$, and the even/odd Gauss&ndash;Bonnet sums equal $1/2$ within
+    $3.5\times10^{-8}$.</p>
     <p>A separate matrix-kernel certificate propagates the exact two-state filter by Fourier inversion for a fixed
     six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
     log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s

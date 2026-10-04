@@ -10,9 +10,10 @@ For a general Fisher covariance the projection must first residualize and
 standardize the unrestricted scores against the one-sided score.  The same
 construction is checked below for three unrestricted coordinates.
 It is also checked for several Fisher-orthogonal one-sided coordinates and
-for two and three correlated one-sided coordinates with dense unrestricted
-blocks.  In three dimensions the exact weights use orthant probabilities of
-both the constrained correlation and its precision correlation.
+for two, three, and four correlated one-sided coordinates with dense
+unrestricted blocks.  An arbitrary-dimensional active-set formula factors
+each chi-bar weight into conditional-residual and precision orthant
+probabilities.
 """
 import json
 import math
@@ -21,7 +22,7 @@ import os
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq
-from scipy.stats import chi2, ncx2, norm
+from scipy.stats import chi2, multivariate_normal, ncx2, norm
 
 
 def chibar_cdf(x):
@@ -91,6 +92,7 @@ def project_correlated_orthant(scores, correlation):
     best_distance = np.full(scores.shape[0], np.inf)
     best_projection = np.zeros_like(scores)
     best_dimension = np.zeros(scores.shape[0], dtype=int)
+    best_mask = np.zeros(scores.shape[0], dtype=int)
     indices = np.arange(q)
     for mask in range(1 << q):
         active = indices[(mask & (1 << indices)) != 0]
@@ -116,10 +118,11 @@ def project_correlated_orthant(scores, correlation):
         best_distance[improve] = distance[improve]
         best_projection[improve] = candidate[improve]
         best_dimension[improve] = active.size
+        best_mask[improve] = mask
     statistic = np.einsum(
         "ni,ij,nj->n", best_projection, precision, best_projection
     )
-    return statistic, best_dimension
+    return statistic, best_dimension, best_mask
 
 
 def trivariate_orthant_weights(correlation):
@@ -139,6 +142,89 @@ def trivariate_orthant_weights(correlation):
     w0 = positive_orthant_probability(precision_correlation)
     weights = np.array([w0, 0.5 - w3, 0.5 - w0, w3])
     return weights, precision_correlation
+
+
+def gaussian_positive_orthant_probability(covariance, rng_seed=20261004):
+    """Centered Gaussian positive-orthant probability through dimension four.
+
+    Dimensions at most three use exact arcsine formulas.  Dimension four uses
+    SciPy's randomized quasi-Monte Carlo normal CDF with an explicit seed and
+    strict integration tolerances; central symmetry identifies the negative
+    and positive orthants.
+    """
+    covariance = np.asarray(covariance, dtype=float)
+    dimension = covariance.shape[0]
+    if dimension == 0:
+        return 1.0
+    scales = np.sqrt(np.diag(covariance))
+    correlation = covariance / np.outer(scales, scales)
+    if dimension == 1:
+        return 0.5
+    if dimension == 2:
+        return 0.25 + math.asin(correlation[0, 1]) / (2.0 * math.pi)
+    if dimension == 3:
+        return 0.125 + sum(
+            math.asin(correlation[i, j])
+            for i, j in ((0, 1), (0, 2), (1, 2))
+        ) / (4.0 * math.pi)
+    if dimension != 4:
+        raise ValueError("certificate integrates orthants only through q=4")
+    return float(multivariate_normal.cdf(
+        np.zeros(dimension),
+        mean=np.zeros(dimension),
+        cov=correlation,
+        maxpts=4000000,
+        abseps=1e-10,
+        releps=1e-10,
+        rng=np.random.default_rng(rng_seed),
+    ))
+
+
+def correlated_orthant_face_weights(covariance, rng_seed=20261004):
+    """Exact active-face formula for a correlated Gaussian orthant.
+
+    Numerical normal integration is needed only when one of the orthant
+    factors has dimension four.  The subset formula itself is exact.
+    """
+    covariance = np.asarray(covariance, dtype=float)
+    q = covariance.shape[0]
+    indices = np.arange(q)
+    weights = np.zeros(q + 1)
+    face_probabilities = {}
+    for mask in range(1 << q):
+        active = indices[(mask & (1 << indices)) != 0]
+        inactive = indices[(mask & (1 << indices)) == 0]
+        if active.size == 0:
+            active_probability = 1.0
+        elif inactive.size == 0:
+            active_probability = gaussian_positive_orthant_probability(
+                covariance[np.ix_(active, active)], rng_seed + mask
+            )
+        else:
+            covariance_aa = covariance[np.ix_(active, active)]
+            covariance_ai = covariance[np.ix_(active, inactive)]
+            covariance_ii = covariance[np.ix_(inactive, inactive)]
+            conditional = (
+                covariance_aa
+                - covariance_ai
+                @ np.linalg.solve(covariance_ii, covariance_ai.T)
+            )
+            active_probability = gaussian_positive_orthant_probability(
+                conditional, rng_seed + mask
+            )
+        if inactive.size == 0:
+            inactive_probability = 1.0
+        else:
+            inactive_precision = np.linalg.inv(
+                covariance[np.ix_(inactive, inactive)]
+            )
+            inactive_probability = gaussian_positive_orthant_probability(
+                inactive_precision, rng_seed + 1000 + mask
+            )
+        probability = active_probability * inactive_probability
+        face_probabilities[tuple(active.tolist())] = probability
+        weights[active.size] += probability
+    return weights, face_probabilities
 
 
 def normal_square_tail(delta, threshold):
@@ -639,7 +725,7 @@ def main():
         trivariate_c, inverse=True
     )
     trivariate_v = trivariate_y / trivariate_scales
-    trivariate_orthant_statistic, trivariate_faces = (
+    trivariate_orthant_statistic, trivariate_faces, _ = (
         project_correlated_orthant(
             trivariate_v, trivariate_correlation
         )
@@ -651,6 +737,12 @@ def main():
     trivariate_weights, trivariate_precision_correlation = (
         trivariate_orthant_weights(trivariate_correlation)
     )
+    trivariate_general_weights, _ = correlated_orthant_face_weights(
+        trivariate_correlation
+    )
+    trivariate_general_formula_error = float(np.max(np.abs(
+        trivariate_general_weights - trivariate_weights
+    )))
     trivariate_face_frequencies = np.bincount(
         trivariate_faces, minlength=trivariate_q + 1
     ) / trivariate_reps
@@ -684,6 +776,111 @@ def main():
     )
     trivariate_rejection_at_binomial = float(np.mean(
         trivariate_statistic > binomial_q3_critical
+    ))
+
+    # Arbitrarily many correlated constraints have an exact active-set
+    # factorization.  For each active subset A and inactive complement I, the
+    # face event is the product of a conditional-residual orthant probability
+    # and a precision orthant probability.  A dense q=4 example tests all 16
+    # active sets; only the two four-dimensional endpoint probabilities need
+    # numerical normal integration.
+    del trivariate_raw, trivariate_y, trivariate_residual
+    del trivariate_u, trivariate_v, trivariate_statistic
+    four_p, four_q = 2, 4
+    four_reps = 1000000
+    four_correlation = np.array([
+        [1.00, 0.45, -0.20, 0.25],
+        [0.45, 1.00, 0.30, -0.15],
+        [-0.20, 0.30, 1.00, 0.40],
+        [0.25, -0.15, 0.40, 1.00],
+    ])
+    four_scales = np.sqrt(np.array([1.10, 0.85, 1.30, 0.95]))
+    four_s = four_correlation * np.outer(four_scales, four_scales)
+    four_c = np.array([[1.00, 0.15], [0.15, 0.80]])
+    four_b = np.array([
+        [0.40, -0.20, 0.35, 0.25],
+        [-0.30, 0.28, 0.10, -0.22],
+    ])
+    four_a = four_c + four_b @ np.linalg.solve(four_s, four_b.T)
+    four_covariance = np.block([
+        [four_a, four_b],
+        [four_b.T, four_s],
+    ])
+    four_raw = rng.multivariate_normal(
+        np.zeros(four_p + four_q), four_covariance, size=four_reps
+    )
+    four_y = four_raw[:, four_p:]
+    four_residual = (
+        four_raw[:, :four_p]
+        - four_y @ np.linalg.solve(four_s, four_b.T)
+    )
+    four_u = four_residual @ symmetric_root(four_c, inverse=True)
+    four_v = four_y / four_scales
+    four_orthant_statistic, four_faces, four_masks = project_correlated_orthant(
+        four_v, four_correlation
+    )
+    four_statistic = np.sum(four_u ** 2, axis=1) + four_orthant_statistic
+    four_weights, four_face_probabilities = correlated_orthant_face_weights(
+        four_correlation
+    )
+    four_face_frequencies = np.bincount(
+        four_faces, minlength=four_q + 1
+    ) / four_reps
+    four_weight_error = float(np.max(np.abs(
+        four_face_frequencies - four_weights
+    )))
+    four_active_set_frequencies = np.bincount(
+        four_masks, minlength=1 << four_q
+    ) / four_reps
+    four_active_set_probabilities = np.zeros(1 << four_q)
+    four_indices = np.arange(four_q)
+    for mask in range(1 << four_q):
+        active = tuple(four_indices[
+            (mask & (1 << four_indices)) != 0
+        ].tolist())
+        four_active_set_probabilities[mask] = four_face_probabilities[active]
+    four_active_set_error = float(np.max(np.abs(
+        four_active_set_frequencies - four_active_set_probabilities
+    )))
+    four_gauss_bonnet_error = float(max(
+        abs(np.sum(four_weights[::2]) - 0.5),
+        abs(np.sum(four_weights[1::2]) - 0.5),
+    ))
+    four_integration_replicates = np.array([
+        correlated_orthant_face_weights(
+            four_correlation, rng_seed=20261004 + seed
+        )[0]
+        for seed in range(4)
+    ])
+    four_integration_spread = float(np.max(np.ptp(
+        four_integration_replicates, axis=0
+    )))
+
+    def four_chibar_cdf(x, weights):
+        return sum(
+            weight * chi2.cdf(x, four_p + face_dimension)
+            for face_dimension, weight in enumerate(weights)
+        )
+
+    four_critical = brentq(
+        lambda x: four_chibar_cdf(x, four_weights) - (1.0 - alpha),
+        0.0,
+        50.0,
+    )
+    four_null_rejection = float(np.mean(four_statistic > four_critical))
+    binomial_q4_weights = np.array([
+        math.comb(four_q, active) / 2.0 ** four_q
+        for active in range(four_q + 1)
+    ])
+    binomial_q4_critical = brentq(
+        lambda x: four_chibar_cdf(
+            x, binomial_q4_weights
+        ) - (1.0 - alpha),
+        0.0,
+        50.0,
+    )
+    four_rejection_at_binomial = float(np.mean(
+        four_statistic > binomial_q4_critical
     ))
 
     out = {
@@ -770,6 +967,31 @@ def main():
         "trivariate_constrained_binomial_95": binomial_q3_critical,
         "trivariate_constrained_rejection_at_binomial":
             trivariate_rejection_at_binomial,
+        "trivariate_general_face_formula_max_error":
+            trivariate_general_formula_error,
+        "four_constrained_correlation": four_correlation.tolist(),
+        "four_constrained_unrestricted_dimension": four_p,
+        "four_constrained_covariance": four_covariance.tolist(),
+        "four_constrained_replications": four_reps,
+        "four_constrained_chibar_weights": four_weights.tolist(),
+        "four_constrained_face_probabilities": {
+            ",".join(map(str, active)): probability
+            for active, probability in four_face_probabilities.items()
+        },
+        "four_constrained_face_frequencies": four_face_frequencies.tolist(),
+        "four_constrained_weight_max_error": four_weight_error,
+        "four_constrained_active_set_frequencies":
+            four_active_set_frequencies.tolist(),
+        "four_constrained_active_set_max_error": four_active_set_error,
+        "four_constrained_gauss_bonnet_max_error":
+            four_gauss_bonnet_error,
+        "four_constrained_integration_seed_max_spread":
+            four_integration_spread,
+        "four_constrained_chibar_95": four_critical,
+        "four_constrained_null_rejection": four_null_rejection,
+        "four_constrained_binomial_95": binomial_q4_critical,
+        "four_constrained_rejection_at_binomial":
+            four_rejection_at_binomial,
     }
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cone_test_results.json")
     with open(path, "w") as f:
@@ -819,6 +1041,18 @@ def main():
     print("three-constraint critical/correct/binomial rejection: "
           f"{trivariate_critical:.6f}/{trivariate_null_rejection:.6f}/"
           f"{trivariate_rejection_at_binomial:.6f}")
+    print("general face formula q=3 closed-form error: "
+          f"{trivariate_general_formula_error:.3e}")
+    print("four-constraint weights exact/simulated, max error: "
+          f"{four_weights}, {four_face_frequencies}, "
+          f"{four_weight_error:.3e}")
+    print("four-constraint max error over all 16 active sets: "
+          f"{four_active_set_error:.3e}")
+    print("four-constraint critical/correct/binomial rejection: "
+          f"{four_critical:.6f}/{four_null_rejection:.6f}/"
+          f"{four_rejection_at_binomial:.6f}")
+    print("four-constraint Gauss-Bonnet error/integration spread: "
+          f"{four_gauss_bonnet_error:.3e}/{four_integration_spread:.3e}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -848,6 +1082,13 @@ def main():
         and abs(trivariate_null_rejection - alpha) < 0.0015
         and trivariate_weight_error < 0.0015
         and abs(trivariate_rejection_at_binomial - alpha) > 0.005
+        and trivariate_general_formula_error < 1e-12
+        and abs(four_null_rejection - alpha) < 0.0015
+        and four_weight_error < 0.0015
+        and four_active_set_error < 0.001
+        and four_gauss_bonnet_error < 5e-7
+        and four_integration_spread < 5e-7
+        and abs(four_rejection_at_binomial - alpha) > 0.005
     )
     print("PASS" if ok else "FAIL")
     if not ok:
