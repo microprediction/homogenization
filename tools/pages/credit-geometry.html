@@ -434,6 +434,46 @@
       remains rank one, while a positive-definite $K$ remains rank two.
       Equal mean reversion by itself is therefore not a loading collision.</p>
 
+    <h3>A heterogeneous many-name family</h3>
+    <p>There is also an exact $d$-name extension away from common volatility.
+      Hold the full Riccati decay rate</p>
+    $$\gamma=\sqrt{\kappa_i^2+2\sigma_i^2}$$
+    <p>fixed across names, allow both $\kappa_i$ and $\sigma_i$ to vary, and
+      put $q_i=(\gamma-\kappa_i)/(\gamma+\kappa_i)$. Then</p>
+    $$B_i(t)={1+q_i\over\gamma}
+      {1-e^{-\gamma t}\over1+q_i e^{-\gamma t}}.$$
+    <p>Distinct full parameter pairs give distinct $q_i$. These loading
+      functions are linearly independent on every positive interval. Indeed,
+      with $z=e^{-\gamma t}$, a vanishing linear combination becomes, after
+      removing the common factor $1-z$,</p>
+    $$\sum_i{d_i\over1+q_i z}=0.$$
+    <p>Multiplying by $\prod_j(1+q_jz)$ gives a polynomial that vanishes on
+      an interval, hence identically. Evaluating that identity at the distinct
+      poles $z=-1/q_i$ kills every coefficient with $q_i&gt;0$; a possible
+      $q_i=0$ coefficient then also vanishes. This elementary partial-fraction
+      proof avoids a genericity assumption.</p>
+    <div class="equation-card">
+    <p><strong>Iso-decay cluster law.</strong> Partition names into clusters
+      $C_c$ having identical full pairs $(\kappa_i,\sigma_i)$. If all names
+      share $\gamma$ and $K\succeq0$, then for every $T&gt;0$,</p>
+    $$\operatorname{rank}\{K\circ J(T)\}
+      =\sum_c\operatorname{rank}K_{C_c,C_c}.$$
+    </div>
+    <p>The proof is the same rowwise tensor direct-sum argument as for the
+      common-volatility cluster law, now justified by the rational loading
+      family above. In particular, if every full pair is distinct, positive
+      diagonal entries of $K$ are necessary and sufficient for full
+      integrated rank. This theorem is restricted to a common $\gamma$; it
+      does not claim arbitrary collections of heterogeneous CIR loadings are
+      linearly independent.</p>
+    <p>The four-name certificate takes $\gamma=2$ and
+      $\kappa=(0.2,0.2,1.0,1.8)$, with
+      $\sigma_i=\sqrt{(4-\kappa_i^2)/2}$. Thus there are three distinct full
+      parameter pairs although both parameters vary. Fixed Green&ndash;Kubo
+      ranks one and two give predicted and observed integrated ranks three
+      and four. Their smallest positive eigenvalues are respectively
+      $8.45331965\times10^{-7}$ and $1.74806811\times10^{-3}$.</p>
+
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>
