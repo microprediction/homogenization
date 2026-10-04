@@ -14,7 +14,9 @@ clock is affine in this occupation fraction.  The script compares the resulting
 Poisson--Beta price with the independent moment-ODE/Chebyshev reconstruction
 used by the model page and verifies the certified Poisson-tail truncation bound.
 For unequal rates it also checks the exact first two occupation moments and the
-resulting finite-rate Taylor bounds for the CEV price.
+resulting finite-rate Taylor bounds for the CEV price.  Exponentially weighted
+occupation moments extend those bounds to nonzero carry without asserting an
+occupation-time representation for the full clock law.
 """
 
 import math
@@ -35,9 +37,9 @@ SIGMA = (2.5, 1.2)
 LAM = 10.0
 
 
-def cev_call(total_variance):
-    """Undiscounted driftless-forward CEV call at the zero-carry benchmark."""
-    forward = S0 * math.exp((R - Q) * T)
+def cev_call(total_variance, rate=R, dividend=Q):
+    """Undiscounted driftless-forward CEV call for a given total variance."""
+    forward = S0 * math.exp((rate - dividend) * T)
     den = (1.0 - BETA) ** 2 * total_variance
     x = K ** (2.0 * (1.0 - BETA)) / den
     y = forward ** (2.0 * (1.0 - BETA)) / den
@@ -204,7 +206,62 @@ def unequal_occupation_moments(start, rate_12, rate_21):
     return mean, second - mean * mean
 
 
-def cev_derivative_estimates(degree=56):
+def _exp_integral(decay):
+    """Integral of exp(-decay*t) on [0,T], with its continuous limit."""
+    if abs(decay) < 1e-10:
+        return T
+    return -math.expm1(-decay * T) / decay
+
+
+def weighted_occupation_moments(start, rate_12, rate_21, clock_growth):
+    """Exact moments of W=integral exp(h(T-t)) 1_{Y_t=1} dt.
+
+    The displayed closed form has removable singularities at h=0 and h=kappa.
+    The zero-growth limit is evaluated by the occupation formula above; the
+    certificate stays away from the second isolated representation singularity.
+    """
+    if abs(clock_growth) < 1e-8:
+        return unequal_occupation_moments(start, rate_12, rate_21)
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    q = rate_12 / total_rate
+    d = q if start == 0 else -p
+    h = clock_growth
+    exp_h = math.exp(h * T)
+    r0 = exp_h * _exp_integral(h)
+    rk = exp_h * _exp_integral(h + total_rate)
+    if abs(total_rate - h) < 1e-8:
+        a_term = quad(
+            lambda s: math.exp(h * (T - s))
+            * quad(
+                lambda t: math.exp(h * (T - t)) * math.exp(-total_rate * (t - s)),
+                s,
+                T,
+                epsabs=2e-13,
+                epsrel=2e-13,
+            )[0],
+            0.0,
+            T,
+            epsabs=2e-13,
+            epsrel=2e-13,
+        )[0]
+    else:
+        a_term = math.exp(2.0 * h * T) * (
+            _exp_integral(2.0 * h) - _exp_integral(h + total_rate)
+        ) / (total_rate - h)
+    b_term = (
+        math.exp(2.0 * h * T) * _exp_integral(2.0 * h + total_rate)
+        - exp_h * _exp_integral(h + total_rate)
+    ) / h
+    c_term = math.exp(2.0 * h * T) * (
+        _exp_integral(h + total_rate) - _exp_integral(2.0 * h + total_rate)
+    ) / h
+    mean = p * r0 + d * rk
+    second = p * p * r0 * r0 + 2.0 * p * q * a_term + 2.0 * d * p * b_term + 2.0 * d * q * c_term
+    return mean, second - mean * mean
+
+
+def cev_derivative_estimates(rate=R, dividend=Q, degree=56):
     """Numerical derivative-supremum estimates for the finite-rate table.
 
     The theorem uses the true suprema M_1 and M_2.  Here two stable Chebyshev
@@ -212,12 +269,18 @@ def cev_derivative_estimates(degree=56):
     that are rounded upward for the illustrative table; this is not an interval
     proof of the derivative suprema.
     """
-    lower = min(SIGMA) ** 2 * T
-    upper = max(SIGMA) ** 2 * T
+    clock_growth = 2.0 * (1.0 - BETA) * (rate - dividend)
+    clock_mass = math.expm1(clock_growth * T) / clock_growth if abs(clock_growth) > 1e-10 else T
+    lower = min(SIGMA) ** 2 * clock_mass
+    upper = max(SIGMA) ** 2 * clock_mass
     center = 0.5 * (lower + upper)
     half_width = 0.5 * (upper - lower)
     nodes = np.cos(np.pi * (np.arange(3 * degree) + 0.5) / (3 * degree))
-    coefficients = ch.chebfit(nodes, [cev_call(center + half_width * x) for x in nodes], degree)
+    coefficients = ch.chebfit(
+        nodes,
+        [cev_call(center + half_width * x, rate, dividend) for x in nodes],
+        degree,
+    )
     grid = np.linspace(-1.0, 1.0, 20001)
     first = ch.chebval(grid, ch.chebder(coefficients, 1)) / half_width
     second = ch.chebval(grid, ch.chebder(coefficients, 2)) / half_width ** 2
@@ -241,6 +304,65 @@ def finite_rate_bounds(start, rate_12, rate_21, m1, m2):
     centered_bound = 0.5 * discount * m2 * delta ** 2 * variance
     stationary_bound = discount * (
         m1 * abs(delta * d) * transient + 0.5 * m2 * delta ** 2 * variance
+    )
+    return exact, centered, centered_bound, stationary, stationary_bound
+
+
+def weighted_moment_ode_price(start, rate_12, rate_21, rate, dividend, degree=32):
+    """Independent clock-moment reconstruction at nonzero carry."""
+    clock_growth = 2.0 * (1.0 - BETA) * (rate - dividend)
+    clock_mass = math.expm1(clock_growth * T) / clock_growth if abs(clock_growth) > 1e-10 else T
+    s1, s2 = SIGMA[0] ** 2, SIGMA[1] ** 2
+    sbar = 0.5 * (s1 + s2)
+    half_difference = 0.5 * (s1 - s2)
+    center = sbar * clock_mass
+    half_width = half_difference * clock_mass
+    nodes = np.cos(np.pi * (np.arange(72) + 0.5) / 72)
+    coefficients = ch.chebfit(
+        nodes,
+        [cev_call(center + half_width * x, rate, dividend) for x in nodes],
+        degree,
+    )
+    polynomial = ch.cheb2poly(coefficients)
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+    signs = np.array([1.0, -1.0])
+
+    def rhs(tau, flat):
+        moments = flat.reshape(degree + 1, 2)
+        out = np.zeros_like(moments)
+        rho = signs * math.exp(clock_growth * tau) / clock_mass
+        for order in range(degree + 1):
+            out[order] = generator @ moments[order]
+            if order:
+                out[order] += order * rho * moments[order - 1]
+        return out.ravel()
+
+    initial = np.zeros((degree + 1, 2))
+    initial[0] = 1.0
+    moments = solve_ivp(rhs, (0.0, T), initial.ravel(), method="DOP853", rtol=2e-13, atol=2e-15).y[:, -1]
+    moments = moments.reshape(degree + 1, 2)
+    return math.exp(-rate * T) * float(polynomial @ moments[:, start])
+
+
+def weighted_finite_rate_bounds(start, rate_12, rate_21, rate, dividend, m1, m2):
+    """Price approximations and bounds for the exponentially weighted clock."""
+    clock_growth = 2.0 * (1.0 - BETA) * (rate - dividend)
+    clock_mass = math.expm1(clock_growth * T) / clock_growth if abs(clock_growth) > 1e-10 else T
+    mean, variance = weighted_occupation_moments(start, rate_12, rate_21, clock_growth)
+    total_rate = rate_12 + rate_21
+    stationary_one = rate_21 / total_rate
+    d = rate_12 / total_rate if start == 0 else -stationary_one
+    weighted_memory = math.exp(clock_growth * T) * _exp_integral(clock_growth + total_rate)
+    delta = SIGMA[0] ** 2 - SIGMA[1] ** 2
+    mean_clock = SIGMA[1] ** 2 * clock_mass + delta * mean
+    stationary_clock = (SIGMA[1] ** 2 + delta * stationary_one) * clock_mass
+    discount = math.exp(-rate * T)
+    exact = weighted_moment_ode_price(start, rate_12, rate_21, rate, dividend)
+    centered = discount * cev_call(mean_clock, rate, dividend)
+    stationary = discount * cev_call(stationary_clock, rate, dividend)
+    centered_bound = 0.5 * discount * m2 * delta ** 2 * variance
+    stationary_bound = discount * (
+        m1 * abs(delta * d) * weighted_memory + 0.5 * m2 * delta ** 2 * variance
     )
     return exact, centered, centered_bound, stationary, stationary_bound
 
@@ -329,7 +451,7 @@ def main():
         assert abs(bessel - moment) < 5e-12
 
     m1_raw, m2_raw = cev_derivative_estimates()
-    m1_check, m2_check = cev_derivative_estimates(48)
+    m1_check, m2_check = cev_derivative_estimates(degree=48)
     assert abs(m1_raw - m1_check) < 1e-7
     assert abs(m2_raw - m2_check) < 1e-7
     # Rounded upward from the stable dense-grid Chebyshev calculations above.
@@ -357,6 +479,62 @@ def main():
             stationary_error = abs(exact - stationary)
             print(
                 f"kappa={a+b:g}, start {start+1}: Var(U)={variance:.10f}; "
+                f"mean-clock error/bound={centered_error:.3e}/{centered_bound:.3e}; "
+                f"stationary-clock error/bound={stationary_error:.3e}/{stationary_bound:.3e}"
+            )
+            assert centered_error <= centered_bound
+            assert stationary_error <= stationary_bound
+
+    carry_rate, carry_dividend = 0.05, 0.01
+    clock_growth = 2.0 * (1.0 - BETA) * (carry_rate - carry_dividend)
+    m1_raw, m2_raw = cev_derivative_estimates(carry_rate, carry_dividend)
+    m1_check, m2_check = cev_derivative_estimates(carry_rate, carry_dividend, degree=48)
+    assert abs(m1_raw - m1_check) < 1e-7
+    assert abs(m2_raw - m2_check) < 1e-7
+    m1, m2 = 2.58, 0.87
+    assert m1_raw < m1 and m2_raw < m2
+    print(
+        f"nonzero carry r-q={carry_rate-carry_dividend:g}, h={clock_growth:g}; "
+        f"derivative estimates (rounded up): M1={m1:g}, M2={m2:g}"
+    )
+    for multiplier in (1, 2, 4, 8):
+        a, b = multiplier * rate_12, multiplier * rate_21
+        total_rate = a + b
+        p = b / total_rate
+        q = a / total_rate
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            probability = lambda t: p + d * math.exp(-total_rate * t)
+            transition = lambda lag: p + q * math.exp(-total_rate * lag)
+            weight = lambda t: math.exp(clock_growth * (T - t))
+            mean_numeric = quad(
+                lambda t: weight(t) * probability(t), 0.0, T, epsabs=2e-13, epsrel=2e-13
+            )[0]
+            second_numeric = 2.0 * quad(
+                lambda s: weight(s)
+                * probability(s)
+                * quad(
+                    lambda t: weight(t) * transition(t - s),
+                    s,
+                    T,
+                    epsabs=2e-13,
+                    epsrel=2e-13,
+                )[0],
+                0.0,
+                T,
+                epsabs=2e-13,
+                epsrel=2e-13,
+            )[0]
+            mean, variance = weighted_occupation_moments(start, a, b, clock_growth)
+            assert abs(mean - mean_numeric) < 2e-13
+            assert abs(variance + mean * mean - second_numeric) < 3e-13
+            exact, centered, centered_bound, stationary, stationary_bound = weighted_finite_rate_bounds(
+                start, a, b, carry_rate, carry_dividend, m1, m2
+            )
+            centered_error = abs(exact - centered)
+            stationary_error = abs(exact - stationary)
+            print(
+                f"weighted kappa={total_rate:g}, start {start+1}: Var(W)={variance:.10f}; "
                 f"mean-clock error/bound={centered_error:.3e}/{centered_bound:.3e}; "
                 f"stationary-clock error/bound={stationary_error:.3e}/{stationary_bound:.3e}"
             )

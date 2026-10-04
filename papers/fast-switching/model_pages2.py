@@ -536,6 +536,8 @@ def cev_page():
         poisson_beta_price,
         unequal_moment_ode_price,
         unequal_occupation_moments,
+        weighted_finite_rate_bounds,
+        weighted_occupation_moments,
     )
     S0, r, q, beta, K, T, sig = 100.0, 0.02, 0.0, 0.6, 100.0, 1.0, [2.5, 1.2]
     F = S0 * math.exp((r - q) * T)
@@ -614,6 +616,23 @@ def cev_page():
                 start, a, b, 2.625, 0.919
             )
             finite_rows.append([
+                f'{a+b:g}',
+                str(start + 1),
+                f'{variance:.8f}',
+                f'{abs(exact_-centered):.3e} / {centered_bound:.3e}',
+                f'{abs(exact_-stationary):.3e} / {stationary_bound:.3e}',
+            ])
+    weighted_rows = []
+    carry_rate, carry_dividend = 0.05, 0.01
+    carry_growth = 2.0 * (1.0 - beta) * (carry_rate - carry_dividend)
+    for multiplier in (1, 2, 4, 8):
+        a, b = 7.0 * multiplier, 13.0 * multiplier
+        for start in (0, 1):
+            _, variance = weighted_occupation_moments(start, a, b, carry_growth)
+            exact_, centered, centered_bound, stationary, stationary_bound = weighted_finite_rate_bounds(
+                start, a, b, carry_rate, carry_dividend, 2.58, 0.87
+            )
+            weighted_rows.append([
                 f'{a+b:g}',
                 str(start + 1),
                 f'{variance:.8f}',
@@ -764,13 +783,50 @@ def cev_page():
     <p>The first approximation retains the known-start memory in its mean; the second uses the stationary averaged
     clock and displays that memory as a separate term. If $a$ and $b$ grow proportionally, then at fixed $T$,
     $v_i=2pqT/\kappa+O(\kappa^{-2})$ and $L=\kappa^{-1}+O(e^{-\kappa T}/\kappa)$, so both bounds are
-    $O(\kappa^{-1})$. This is a fixed-maturity, zero-carry statement: it is not asserted uniformly in $T$, and at
-    nonzero carry the weighted clock requires different moments.</p>
+    $O(\kappa^{-1})$. This is a fixed-maturity statement, not a maturity-uniform one. These particular formulas use
+    zero carry; nonzero carry requires the weighted moments below.</p>
     <p>For the parameters on this page, degree-48 and degree-56 Chebyshev differentiations agree to $10^{-7}$ on a
     20,001-point grid; rounding those numerical supremum estimates upward gives $M_1=2.625$ and $M_2=0.919$.
     This derivative calculation is a numerical check, not interval arithmetic. Each table entry is observed error /
     plug-in right-hand side:</p>
 ''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(U_T)$', 'mean clock', 'stationary clock'], finite_rows) + r'''
+
+    <h3>Nonzero carry: exact weighted moments</h3>
+    <p>Although occupation time alone no longer determines the clock when $r\ne q$, its exponentially weighted
+    counterpart still has elementary first two moments. This is a time-inhomogeneous
+    <a href="./bibliography.html#ReibmanSmithTrivedi1989">Markov reward functional</a>. Put
+    $h=2(1-\beta)(r-q)$ and</p>
+    $$W_T=\int_0^T e^{h(T-t)}\mathbf 1_{\{y_t=1\}}dt,\qquad
+      V=\sigma_2^2R(0)+\Delta W_T,$$
+    $$R(c)=e^{hT}\frac{1-e^{-(h+c)T}}{h+c}.$$
+    <p>With $\kappa,p,q,d_i$ as above, define</p>
+    $$\begin{aligned}
+    A&=\frac{e^{2hT}}{\kappa-h}\left(\frac{1-e^{-2hT}}{2h}
+       -\frac{1-e^{-(h+\kappa)T}}{h+\kappa}\right),\\
+    B&=\frac1h\left(e^{2hT}\frac{1-e^{-(2h+\kappa)T}}{2h+\kappa}
+       -e^{hT}\frac{1-e^{-(h+\kappa)T}}{h+\kappa}\right),\\
+    D&=\frac{e^{2hT}}h\left(\frac{1-e^{-(h+\kappa)T}}{h+\kappa}
+       -\frac{1-e^{-(2h+\kappa)T}}{2h+\kappa}\right).
+    \end{aligned}$$
+    <p>The apparent singularities have continuous limits. Directly integrating the same two-time transition
+    probability as above gives</p>
+    <div class="equation-card">
+    $$\mathbb E_iW_T=pR(0)+d_iR(\kappa),$$
+    $$\mathbb E_iW_T^2=p^2R(0)^2+2pqA+2d_ipB+2d_iqD.$$
+    </div>
+    <p>Therefore the mean-clock bound remains valid after replacing $\Delta^2\operatorname{Var}(U_T)$ by
+    $\Delta^2\operatorname{Var}(W_T)$. For the stationary clock
+    $\bar v=(\sigma_2^2+\Delta p)R(0)$, the separate memory term becomes
+    $M_1|\Delta d_i|R(\kappa)$. At fixed $T$ and $h$, proportional rate scaling gives</p>
+    $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
+      \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
+      R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
+    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
+    For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
+    $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
+    estimates agree to $10^{-7}$ and are rounded upward to $M_1=2.58$, $M_2=0.87$ for this illustrative plug-in
+    table:</p>
+''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(W_T)$', 'mean clock', 'stationary clock'], weighted_rows) + r'''
 
     <h2>Reduction to a linear system</h2>
     <p>All that is needed about the regime is the law of $V$, and its Laplace transform is a reduced system of the
