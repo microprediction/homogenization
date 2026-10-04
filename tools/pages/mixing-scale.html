@@ -138,6 +138,43 @@
       case of <a href="https://doi.org/10.1007/BF00532868">Taqqu&apos;s weak-convergence theorem (1975)</a>; the limit is the
       fractional Brownian motion introduced by
       <a href="https://doi.org/10.1137/1010093">Mandelbrot and Van Ness (1968)</a>.</p>
+    <h3>Why Gaussianity is essential: an ergodic counterexample</h3>
+    <p>The warning above is not merely about a hidden invariant random offset. Fix $0&lt;\beta&lt;1/2$ and let $G$ be
+      a centered stationary unit-variance Gaussian process with covariance</p>
+    $$r(t)=(1+|t|)^{-\beta}.$$
+    <p>This is a valid covariance because</p>
+    $$r(t)=\frac1{\Gamma(\beta)}\int_0^\infty e^{-u}u^{\beta-1}e^{-u|t|}\,du,$$
+    <p>a positive mixture of Ornstein&ndash;Uhlenbeck covariances. Since $r(t)\to0$, the Gaussian shift is mixing, hence
+      ergodic. Its measurable transform</p>
+    $$X_t=G_t^2-1$$
+    <p>is therefore also stationary and ergodic. Wick&apos;s formula gives</p>
+    $$\operatorname{Cov}(X_0,X_t)=2r(t)^2=2(1+|t|)^{-2\beta}.$$
+    <p>Thus $X$ has the same covariance regular-variation exponent $\alpha=2\beta$ and the same candidate Hurst
+      index $H=1-\beta$ as the Gaussian theorem. If $I_R=\int_0^R X_t\,dt$, then</p>
+    $$\operatorname{Var}I_R
+      \sim \frac{4}{(1-2\beta)(2-2\beta)}R^{2-2\beta}.$$
+    <p>Nevertheless the normalized limit cannot be Gaussian. A second Wick calculation gives</p>
+    $$\operatorname{cum}(X_s,X_t,X_u)=8r(s-t)r(t-u)r(u-s),$$
+    <p>and symmetry of the ordered simplex yields</p>
+    $$\operatorname{cum}_3(I_R)
+      =48\!\int_{x,y\ge0,\ x+y\le R}
+      (R-x-y)r(x)r(y)r(x+y)\,dx\,dy.$$
+    <p>After $x=Rwq$, $y=Rw(1-q)$, dominated convergence gives</p>
+    $$\operatorname{cum}_3(I_R)\sim48J_\beta R^{3-3\beta},\qquad
+      J_\beta=\frac{B(1-\beta,1-\beta)}{(2-3\beta)(3-3\beta)}.$$
+    <p>Consequently the standardized third cumulant converges to the strictly positive constant</p>
+    <div class="equation-card">
+    $$\gamma_\beta=
+      \frac{48J_\beta}
+      {\{4/[(1-2\beta)(2-2\beta)]\}^{3/2}}>0.$$
+    </div>
+    <p>Each normalized $I_R$ lies in the second Wiener chaos. Hypercontractivity therefore bounds its fourth
+      moment uniformly, so convergence to a standard Gaussian would force its third moment to converge to zero,
+      contradicting the display. The covariance exponent and even ergodicity do not identify the functional limit;
+      the Hermite rank matters. In the corresponding long-memory rank-two setting,
+      <a href="https://doi.org/10.1007/BF00532868">Taqqu (1975)</a> identifies the non-Gaussian Rosenblatt limit.
+      For $\beta=0.3$, the deterministic certificate evaluates the finite-horizon variance and triple integral:
+      its normalized third cumulant approaches $\gamma_{0.3}=2.067068891$ rather than zero.</p>
     <p>To prove it, scale the Stieltjes measures by
       $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where
       $\lambda=\varepsilon/T_\varepsilon=R_\varepsilon^{-1}$.

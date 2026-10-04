@@ -4,8 +4,9 @@ The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
 periodic counterexamples, including the Gaussian fractional-Brownian functional
-limit and the sharp Fourier-decay and Cesaro-mean conditions at the saturated
-epsilon-squared boundary.
+limit, an ergodic second-chaos counterexample with nonvanishing limiting
+skewness, and the sharp Fourier-decay and Cesaro-mean conditions at the
+saturated epsilon-squared boundary.
 """
 import math
 
@@ -666,6 +667,97 @@ def verify_gaussian_fractional_limit():
     return tuple(results)
 
 
+def verify_ergodic_second_chaos_counterexample():
+    """Certify that matching covariance scaling need not give an fBm limit.
+
+    Let G be stationary standard Gaussian with covariance
+    r(t)=(1+|t|)^(-beta), and put X=G^2-1.  The variance and third cumulant of
+    I_R=int_0^R X_t dt reduce to one- and two-dimensional deterministic
+    integrals.  Their normalized ratio tends to a strictly positive constant,
+    whereas every centered Gaussian has zero third cumulant.
+    """
+    beta = 0.3
+    horizons = (16.0, 256.0, 4096.0, 65536.0)
+
+    variance_constant = (
+        4.0 / ((1.0 - 2.0 * beta) * (2.0 - 2.0 * beta))
+    )
+    simplex_constant = (
+        math.gamma(1.0 - beta) ** 2
+        / math.gamma(2.0 - 2.0 * beta)
+        / ((2.0 - 3.0 * beta) * (3.0 - 3.0 * beta))
+    )
+    limiting_skewness = (
+        48.0 * simplex_constant / variance_constant ** 1.5
+    )
+
+    skewnesses = []
+    variance_ratios = []
+    cumulant_ratios = []
+    for horizon in horizons:
+        variance = 4.0 * quad(
+            lambda lag: (
+                (horizon - lag) * (1.0 + lag) ** (-2.0 * beta)
+            ),
+            0.0,
+            horizon,
+            epsabs=1e-7,
+            epsrel=2e-10,
+            limit=500,
+        )[0]
+
+        # On the ordered simplex, set x=t-s, y=u-t, w=x+y and
+        # q=x/(x+y).  The Jacobian is w and the six orderings are equal.
+        def cumulant_integrand(total_lag):
+            split_integral = quad(
+                lambda split: (
+                    (1.0 + total_lag * split) ** (-beta)
+                    * (1.0 + total_lag * (1.0 - split)) ** (-beta)
+                ),
+                0.0,
+                1.0,
+                epsabs=1e-10,
+                epsrel=2e-10,
+            )[0]
+            return (
+                (horizon - total_lag)
+                * (1.0 + total_lag) ** (-beta)
+                * total_lag
+                * split_integral
+            )
+
+        third_cumulant = 48.0 * quad(
+            cumulant_integrand,
+            0.0,
+            horizon,
+            epsabs=1e-4,
+            epsrel=2e-8,
+            limit=500,
+        )[0]
+        skewnesses.append(third_cumulant / variance ** 1.5)
+        variance_ratios.append(
+            variance
+            / (variance_constant * horizon ** (2.0 - 2.0 * beta))
+        )
+        cumulant_ratios.append(
+            third_cumulant
+            / (48.0 * simplex_constant * horizon ** (3.0 - 3.0 * beta))
+        )
+
+    assert all(x > y for x, y in zip(skewnesses, skewnesses[1:]))
+    assert abs(skewnesses[-1] / limiting_skewness - 1.0) < 0.024
+    assert variance_ratios[-1] > 0.96
+    assert cumulant_ratios[-1] > 0.98
+    assert limiting_skewness > 2.0
+    return (
+        beta,
+        limiting_skewness,
+        tuple(skewnesses),
+        variance_ratios[-1],
+        cumulant_ratios[-1],
+    )
+
+
 def verify_zero_gk_boundary():
     """Check the second critical index and finite-first-moment limit."""
     # At alpha=2 the exact formula is epsilon^2 log(1+epsilon^-2),
@@ -969,6 +1061,7 @@ def main():
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
     gaussian_fclt = verify_gaussian_fractional_limit()
+    second_chaos = verify_ergodic_second_chaos_counterexample()
     zero_gk_boundary = verify_zero_gk_boundary()
     saturated_spectral = verify_saturated_spectral_criterion()
     spectral_abelian = verify_spectral_abelian_theorem()
@@ -1008,6 +1101,12 @@ def main():
         print("Gaussian fractional limit alpha/H, covariance errors, "
               f"terminal R=2^{terminal_power}: {alpha:.1f}, {hurst:.2f}, "
               f"{tuple(f'{error:.3e}' for error in errors)}")
+    print("ergodic second-chaos beta, limiting/finite normalized third "
+          "cumulants: "
+          f"{second_chaos[0]:.1f}, {second_chaos[1]:.9f}, "
+          f"{tuple(f'{value:.9f}' for value in second_chaos[2])}")
+    print("ergodic second-chaos terminal variance/cumulant leading ratios: "
+          f"{second_chaos[3]:.9f}, {second_chaos[4]:.9f}")
     print("zero-Green--Kubo alpha=2 log-corrected ratio, identity error: "
           f"{zero_gk_boundary[0]:.12f}, {zero_gk_boundary[1]:.3e}")
     print("zero-Green--Kubo alpha=3 first moment, order, ratio, identity error: "
