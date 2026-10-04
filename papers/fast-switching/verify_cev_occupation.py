@@ -19,8 +19,8 @@ import math
 
 import numpy as np
 from numpy.polynomial import chebyshev as ch
-from scipy.integrate import solve_ivp
-from scipy.special import roots_jacobi
+from scipy.integrate import quad, solve_ivp
+from scipy.special import iv, roots_jacobi
 from scipy.stats import ncx2, poisson
 
 
@@ -106,6 +106,79 @@ def moment_ode_price(start, degree=32):
     return math.exp(-R * T) * float(polynomial @ moments[:, start])
 
 
+def unequal_occupation_density(u, start, rate_12, rate_21):
+    """Interior density of state-1 occupation time for arbitrary two-state rates."""
+    z = rate_12 * rate_21 * u * (T - u)
+    root = math.sqrt(max(z, 0.0))
+    i0 = iv(0, 2.0 * root)
+    i1_over_root = iv(1, 2.0 * root) / root if root > 1e-10 else 1.0 + 0.5 * z
+    exponential = math.exp(-rate_12 * u - rate_21 * (T - u))
+    if start == 0:
+        bracket = rate_12 * i0 + rate_12 * rate_21 * u * i1_over_root
+    else:
+        bracket = rate_21 * i0 + rate_12 * rate_21 * (T - u) * i1_over_root
+    return exponential * bracket
+
+
+def bessel_price(start, rate_12, rate_21):
+    """Exact zero-carry price from the unequal-rate Bessel occupation density."""
+    s1, s2 = SIGMA[0] ** 2, SIGMA[1] ** 2
+
+    def clock_price(u):
+        return cev_call(s2 * T + (s1 - s2) * u)
+
+    atom = math.exp(-(rate_12 if start == 0 else rate_21) * T)
+    atom_price = clock_price(T if start == 0 else 0.0)
+    interior = quad(
+        lambda u: unequal_occupation_density(u, start, rate_12, rate_21) * clock_price(u),
+        0.0,
+        T,
+        epsabs=2e-12,
+        epsrel=2e-12,
+        limit=250,
+    )[0]
+    return math.exp(-R * T) * (atom * atom_price + interior)
+
+
+def unequal_moment_ode_price(start, rate_12, rate_21, degree=28):
+    """Independent polynomial-moment reconstruction for arbitrary transition rates."""
+    s1, s2 = SIGMA[0] ** 2, SIGMA[1] ** 2
+    nodes = np.cos(np.pi * (np.arange(72) + 0.5) / 72)
+    coefficients = ch.chebfit(
+        nodes,
+        [cev_call(T * (s2 + 0.5 * (s1 - s2) * (x + 1.0))) for x in nodes],
+        degree,
+    )
+    polynomial = ch.cheb2poly(coefficients)
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+    state_one = np.array([1.0, 0.0])
+
+    def rhs(_, flat):
+        moments = flat.reshape(degree + 1, 2)
+        out = np.zeros_like(moments)
+        for order in range(degree + 1):
+            out[order] = generator @ moments[order]
+            if order:
+                out[order] += order * (2.0 / T) * state_one * moments[order - 1]
+        return out.ravel()
+
+    initial = np.empty((degree + 1, 2))
+    for order in range(degree + 1):
+        initial[order] = (-1.0) ** order
+    moments = solve_ivp(rhs, (0.0, T), initial.ravel(), method="DOP853", rtol=2e-13, atol=2e-15).y[:, -1]
+    moments = moments.reshape(degree + 1, 2)
+    return math.exp(-R * T) * float(polynomial @ moments[:, start])
+
+
+def unequal_occupation_mean(start, rate_12, rate_21):
+    total_rate = rate_12 + rate_21
+    stationary_one = rate_21 / total_rate
+    transient = (1.0 - math.exp(-total_rate * T)) / total_rate
+    if start == 0:
+        return stationary_one * T + (1.0 - stationary_one) * transient
+    return stationary_one * T - stationary_one * transient
+
+
 def occupation_mean(start):
     """Closed-form E[U_T] for the symmetric chain."""
     memory = (1.0 - math.exp(-2.0 * LAM * T)) / (4.0 * LAM)
@@ -150,6 +223,44 @@ def main():
         assert abs(reference - moment) < 2e-9
         assert actual_tail <= tail_bound
         assert mean_error < 2e-14
+
+    equal_rate_reduction = max(
+        abs(bessel_price(start, LAM, LAM) - poisson_beta_price(start, reference_cutoff))
+        for start in (0, 1)
+    )
+    print(f"equal-rate Bessel/Poisson-Beta difference={equal_rate_reduction:.3e}")
+    assert equal_rate_reduction < 2e-13
+
+    rate_12, rate_21 = 7.0, 13.0
+    print(f"unequal rates: q12={rate_12:g}, q21={rate_21:g}")
+    for start in (0, 1):
+        atom = math.exp(-(rate_12 if start == 0 else rate_21) * T)
+        mass = atom + quad(
+            lambda u: unequal_occupation_density(u, start, rate_12, rate_21),
+            0.0,
+            T,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=250,
+        )[0]
+        mean = quad(
+            lambda u: u * unequal_occupation_density(u, start, rate_12, rate_21),
+            0.0,
+            T,
+            epsabs=2e-13,
+            epsrel=2e-13,
+            limit=250,
+        )[0] + atom * (T if start == 0 else 0.0)
+        bessel = bessel_price(start, rate_12, rate_21)
+        moment = unequal_moment_ode_price(start, rate_12, rate_21)
+        print(
+            f"start {start + 1}: mass error={abs(mass-1):.3e}; "
+            f"mean error={abs(mean-unequal_occupation_mean(start, rate_12, rate_21)):.3e}; "
+            f"Bessel={bessel:.10f}; moment ODE={moment:.10f}; difference={abs(bessel-moment):.3e}"
+        )
+        assert abs(mass - 1.0) < 3e-13
+        assert abs(mean - unequal_occupation_mean(start, rate_12, rate_21)) < 3e-13
+        assert abs(bessel - moment) < 5e-12
 
 
 if __name__ == "__main__":
