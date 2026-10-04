@@ -322,15 +322,18 @@
     $$\mathrm{LM}_{p,3}\ \Longrightarrow\ \sum_{j=0}^3w_j\chi_{p+j}^2.$$
     </div>
     <p>To prove the endpoint formulas, positively rescale $Y$ so its covariance is $R$. Projection lands in the
-    interior exactly when $Y>0$, so $w_3=\Pr(Y>0)=\Omega(R)$ by the trivariate Gaussian orthant formula of
-    <a href="./bibliography.html#Sheppard1899">Sheppard (1899)</a>. It lands at the vertex exactly when
+    interior exactly when $Y>0$. Expanding
+    $\mathbf1_{\{Y>0\}}=\prod_{i=1}^3(1+\operatorname{sgn}Y_i)/8$, central symmetry kills the odd sign moments, and
+    the bivariate quadrant identity of <a href="./bibliography.html#Sheppard1899">Sheppard (1899)</a> gives
+    $\mathbb E[\operatorname{sgn}Y_i\operatorname{sgn}Y_j]=2\arcsin(R_{ij})/\pi$. Hence
+    $w_3=\Pr(Y>0)=\Omega(R)$. Projection lands at the vertex exactly when
     $S^{-1}Y\leq0$; this vector has covariance $S^{-1}$, so symmetry gives $w_0=\Omega(R^\#)$. The conic
     Gauss&ndash;Bonnet identities $w_0+w_2=w_1+w_3=1/2$ give the two remaining weights. As before, $B$ affects only
     the independent residualized unrestricted block. The precision correlation enters only the vertex weight: neither
     $R^\#$ nor $R$ may be replaced by the correlation of $Y$ conditional on the unrestricted scores.</p>
     <p>When $R=I_3$, both endpoint probabilities are $1/8$ and the formula reduces to the orthogonal binomial weights
     $(1,3,3,1)/8$. For four or more correlated constraints, the face-probability characterization remains valid but
-    this elementary arcsine closure no longer follows from the trivariate orthant identity.</p>
+    this elementary arcsine closure no longer follows from the sign expansion.</p>
     <h3>Local alternatives and power</h3>
     <p>The same projection gives an exact local-asymptotic power calculation. Suppose a triangular sequence of
     alternatives, after the same nuisance-parameter profiling, satisfies</p>
