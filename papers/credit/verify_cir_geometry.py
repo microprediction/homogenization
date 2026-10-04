@@ -34,10 +34,10 @@ of the within-cluster principal blocks of K.  A separate heterogeneous-CIR
 check gives the complete two-name criterion: equal mean reversion alone does
 not collapse rank when vol-of-vol differs; the loading Gramian is singular
 exactly when both Riccati parameter pairs coincide.  A further many-name
-check keeps the full Riccati decay rate gamma=sqrt(kappa^2+2 sigma^2)
-constant while varying both kappa and sigma.  On this iso-decay family the
-distinct loading shapes are linearly independent by an elementary partial-
-fraction argument, so the exact within-cluster rank formula remains valid.
+check allows unrestricted decay rates gamma=sqrt(kappa^2+2 sigma^2).
+Distinct loading shapes are linearly independent by a prime-harmonic
+isolation argument, so the exact within-cluster rank formula remains valid
+for arbitrary finite heterogeneous parameter collections.
 The direct pricing ODE independently checks the pairwise first-order formula
 and the endpoint-memory correction for an arbitrary initial regime prior.  A
 separate constant-hazard example verifies that two competing default channels
@@ -961,70 +961,100 @@ def heterogeneous_two_name_rank_checks():
     return gram_determinant, distinct_eigenvalues
 
 
-def heterogeneous_iso_decay_rank_checks():
-    """Check the many-name heterogeneous theorem on an iso-decay family.
+def heterogeneous_unrestricted_rank_checks():
+    """Check the unrestricted finite heterogeneous-CIR cluster theorem.
 
     Write gamma=sqrt(kappa^2+2 sigma^2) and
 
         q=(gamma-kappa)/(gamma+kappa).
 
-    If gamma is common, the CIR loading is
+    The exact loading has the absolutely convergent harmonic expansion
 
-        B_q(t)=(1+q)/gamma * (1-z)/(1+q z),  z=exp(-gamma t).
+        B(t)=(1+q)/gamma
+             -(1+q)^2/gamma sum_{n>=1} (-q)^(n-1) exp(-n gamma t).
 
-    Distinct parameter pairs give distinct q values.  After removing the
-    common factor 1-z, the functions 1/(1+q z) are linearly independent by
-    partial fractions.  Thus, after clustering identical full parameter
-    pairs, rank(K Hadamard J) is the sum of the ranks of the corresponding
-    principal blocks of K.  This is a genuine heterogeneous many-name result:
-    both kappa and sigma vary, while gamma alone is held fixed.
+    For a putative linear relation, take the smallest active gamma.  Relative
+    to every larger gamma, all but a divisibility class of its harmonics are
+    collision-free.  Arbitrarily large prime indices avoid all finitely many
+    such classes.  Along those primes, dominance of the largest q successively
+    kills every coefficient in the smallest-gamma group; the first harmonic
+    also kills a possible q=0 term.  Induction over the distinct gammas proves
+    independence without a common-gamma restriction.
+
+    The first certificate deliberately uses rationally related gammas, so
+    several harmonics do collide.  The second checks the exact within-cluster
+    rank formula for unrestricted decay rates and cluster sizes (3,2,1).
     """
-    gamma = 2.0
     horizon = 4.0
-    kappas = np.array([0.2, 0.2, 1.0, 1.8])
-    sigmas = np.sqrt((gamma**2 - kappas**2) / 2)
-    cluster_indices = ([0, 1], [2], [3])
-    q_values = (gamma - kappas) / (gamma + kappas)
 
-    assert np.max(abs(np.sqrt(kappas**2 + 2 * sigmas**2) - gamma)) < 3e-16
-    assert len(np.unique(q_values)) == len(cluster_indices)
+    def cir_parameters(gammas, q_values):
+        kappas = gammas * (1 - q_values) / (1 + q_values)
+        sigmas = gammas * np.sqrt(2 * q_values) / (1 + q_values)
+        reconstructed = np.sqrt(kappas**2 + 2 * sigmas**2)
+        assert np.max(abs(reconstructed - gammas)) < 9e-16
+        return kappas, sigmas
 
-    def loadings_at(time):
-        z = np.exp(-gamma * time)
-        rational_form = (1 + q_values) / gamma * (1 - z) / (
-            1 + q_values * z
-        )
-        riccati_form = 2 * (1 - z) / (
-            (gamma + kappas) * (1 - z) + 2 * gamma * z
-        )
-        assert np.max(abs(rational_form - riccati_form)) < 5e-16
-        return rational_form
+    def loading_gram(gammas, q_values):
+        kappas, _ = cir_parameters(gammas, q_values)
 
-    loading_gram = np.array([
-        [quad(
-            lambda time, j=j, k=k:
-            loadings_at(time)[j] * loadings_at(time)[k],
-            0,
-            horizon,
-            epsabs=1e-13,
-            epsrel=1e-13,
-            limit=300,
-        )[0] for k in range(len(kappas))]
-        for j in range(len(kappas))
-    ])
-    loading_eigenvalues = np.linalg.eigvalsh(loading_gram)
-    assert np.linalg.matrix_rank(loading_gram, tol=1e-11) == 3
-    assert loading_eigenvalues[1] > 2.4e-6
+        def loadings_at(time):
+            decay = np.exp(-gammas * time)
+            rational_form = (1 + q_values) / gammas * (1 - decay) / (
+                1 + q_values * decay
+            )
+            riccati_form = 2 * (1 - decay) / (
+                (gammas + kappas) + (gammas - kappas) * decay
+            )
+            assert np.max(abs(rational_form - riccati_form)) < 8e-16
+            return rational_form
 
+        return np.array([
+            [quad(
+                lambda time, j=j, k=k:
+                loadings_at(time)[j] * loadings_at(time)[k],
+                0,
+                horizon,
+                epsabs=1e-13,
+                epsrel=1e-13,
+                limit=300,
+            )[0] for k in range(len(gammas))]
+            for j in range(len(gammas))
+        ])
+
+    # The rates 1, 1, 2, 3 create many exact harmonic collisions.  Distinct
+    # q values within the repeated rate and different (gamma,q) pairs across
+    # rates nevertheless give four independent loadings.
+    distinct_gammas = np.array([1.0, 1.0, 2.0, 3.0])
+    distinct_q = np.array([0.0, 0.35, 0.20, 0.55])
+    distinct_kappas, distinct_sigmas = cir_parameters(
+        distinct_gammas, distinct_q
+    )
+    distinct_gram = loading_gram(distinct_gammas, distinct_q)
+    distinct_eigenvalues = np.linalg.eigvalsh(distinct_gram)
+    assert np.linalg.matrix_rank(distinct_gram, tol=1e-9) == 4
+    assert distinct_eigenvalues[0] > 5.7e-7
+
+    # Three arbitrary full-pair clusters with different decay rates.  Their
+    # sizes are 3, 2, and 1; fixed feature ranks 1, 2, and 3 therefore predict
+    # integrated ranks 3, 5, and 6.
+    cluster_gammas = np.array([1.0, 1.0, 1.0, 2.0, 2.0, 3.0])
+    cluster_q = np.array([0.15, 0.15, 0.15, 0.55, 0.55, 0.0])
+    cluster_indices = ([0, 1, 2], [3, 4], [5])
+    cluster_gram = loading_gram(cluster_gammas, cluster_q)
     features = [
-        np.array([[1.0], [-0.7], [0.5], [-1.1]]),
+        np.array([[1.0], [-0.7], [0.5], [-1.1], [0.8], [-0.4]]),
         np.column_stack((
-            np.ones(4),
-            np.array([-2.0, 0.4, 1.1, -1.3]),
+            np.ones(6),
+            np.array([-2.0, 0.4, 1.1, -1.3, 0.8, 2.2]),
+        )),
+        np.column_stack((
+            np.ones(6),
+            np.array([-2.0, 0.4, 1.1, -1.3, 0.8, 2.2]),
+            np.array([0.1, 1.3, -0.8, 0.6, -1.1, 2.4]),
         )),
     ]
     observed_ranks = []
-    predicted_ranks = []
+    block_rank_rows = []
     minimum_positive_eigenvalues = []
     for feature in features:
         green_kubo = feature @ feature.T
@@ -1034,30 +1064,38 @@ def heterogeneous_iso_decay_rank_checks():
             )
             for indices in cluster_indices
         ]
-        integrated = green_kubo * loading_gram
+        integrated = green_kubo * cluster_gram
         observed = np.linalg.matrix_rank(integrated, tol=1e-11)
         eigenvalues = np.linalg.eigvalsh(integrated)
         positive = eigenvalues[eigenvalues > 1e-11]
         predicted = sum(block_ranks)
         assert observed == predicted
         observed_ranks.append(observed)
-        predicted_ranks.append(predicted)
+        block_rank_rows.append(tuple(block_ranks))
         minimum_positive_eigenvalues.append(positive[0])
 
-    assert observed_ranks == predicted_ranks == [3, 4]
-    assert minimum_positive_eigenvalues[0] > 8e-7
-    assert minimum_positive_eigenvalues[1] > 1.7e-3
+    assert observed_ranks == [3, 5, 6]
+    assert block_rank_rows == [(1, 1, 1), (2, 2, 1), (3, 2, 1)]
+    assert minimum_positive_eigenvalues[0] > 2.2e-4
+    assert minimum_positive_eigenvalues[1] > 2.2e-3
+    assert minimum_positive_eigenvalues[2] > 2.4e-2
 
-    print("\nheterogeneous many-name CIR iso-decay criterion")
-    print("  common gamma " + f"{gamma:.1f}; kappas "
-          + " ".join(f"{value:.1f}" for value in kappas))
-    print("  sigmas " + " ".join(f"{value:.8f}" for value in sigmas))
-    print("  loading-Gram rank 3 for three distinct full parameter pairs")
-    print("  predicted/observed integrated ranks 3 4")
+    print("\nunrestricted heterogeneous many-name CIR criterion")
+    print("  collision-heavy gammas "
+          + " ".join(f"{value:.1f}" for value in distinct_gammas))
+    print("  q values " + " ".join(f"{value:.2f}" for value in distinct_q))
+    print("  kappas "
+          + " ".join(f"{value:.8f}" for value in distinct_kappas))
+    print("  sigmas "
+          + " ".join(f"{value:.8f}" for value in distinct_sigmas))
+    print("  loading-Gram eigenvalues "
+          + " ".join(f"{value:.10e}" for value in distinct_eigenvalues))
+    print("  unrestricted cluster sizes 3 2 1")
+    print("  predicted/observed integrated ranks 3 5 6")
     print("  minimum positive eigenvalues "
           + " ".join(f"{value:.10e}"
                      for value in minimum_positive_eigenvalues))
-    return (tuple(observed_ranks), loading_eigenvalues,
+    return (tuple(observed_ranks), distinct_eigenvalues,
             tuple(minimum_positive_eigenvalues))
 
 
@@ -1425,7 +1463,7 @@ def main():
     integrated_full_rank_criterion_checks()
     repeated_loading_rank_checks()
     heterogeneous_two_name_rank_checks()
-    heterogeneous_iso_decay_rank_checks()
+    heterogeneous_unrestricted_rank_checks()
     coalescing_loading_checks()
     cir_jet_independence_checks()
     clustered_loading_checks()
@@ -1766,7 +1804,7 @@ def main():
     )
 
     print("PASS: positivity, sharp rank amplification, distinct, repeated, "
-          "heterogeneous two-name, and heterogeneous iso-decay loading rank "
+          "heterogeneous two-name, and unrestricted heterogeneous loading rank "
           "criteria, automatic CIR jet independence, prior memory, pair "
           "cancellation, and ordered default")
 

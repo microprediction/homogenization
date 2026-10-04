@@ -434,45 +434,68 @@
       remains rank one, while a positive-definite $K$ remains rank two.
       Equal mean reversion by itself is therefore not a loading collision.</p>
 
-    <h3>A heterogeneous many-name family</h3>
-    <p>There is also an exact $d$-name extension away from common volatility.
-      Hold the full Riccati decay rate</p>
-    $$\gamma=\sqrt{\kappa_i^2+2\sigma_i^2}$$
-    <p>fixed across names, allow both $\kappa_i$ and $\sigma_i$ to vary, and
-      put $q_i=(\gamma-\kappa_i)/(\gamma+\kappa_i)$. Then</p>
-    $$B_i(t)={1+q_i\over\gamma}
-      {1-e^{-\gamma t}\over1+q_i e^{-\gamma t}}.$$
-    <p>Distinct full parameter pairs give distinct $q_i$. These loading
-      functions are linearly independent on every positive interval. Indeed,
-      with $z=e^{-\gamma t}$, a vanishing linear combination becomes, after
-      removing the common factor $1-z$,</p>
-    $$\sum_i{d_i\over1+q_i z}=0.$$
-    <p>Multiplying by $\prod_j(1+q_jz)$ gives a polynomial that vanishes on
-      an interval, hence identically. Evaluating that identity at the distinct
-      poles $z=-1/q_i$ kills every coefficient with $q_i&gt;0$; a possible
-      $q_i=0$ coefficient then also vanishes. This elementary partial-fraction
-      proof avoids a genericity assumption.</p>
+    <h3>The unrestricted heterogeneous many-name criterion</h3>
+    <p>The two-name result in fact extends to every finite collection without
+      a common-volatility or common-decay assumption. Put</p>
+    $$\gamma_i=\sqrt{\kappa_i^2+2\sigma_i^2},\qquad
+      q_i={\gamma_i-\kappa_i\over\gamma_i+\kappa_i}\in[0,1),$$
+    <p>so that</p>
+    $$B_i(t)={1+q_i\over\gamma_i}
+      {1-e^{-\gamma_i t}\over1+q_i e^{-\gamma_i t}}.$$
+    <p>The coordinates $(\gamma_i,q_i)$ retain the full pair because</p>
+    $$\kappa_i=\gamma_i{1-q_i\over1+q_i},\qquad
+      \sigma_i={\gamma_i\sqrt{2q_i}\over1+q_i}.$$
+    <p><strong>Loading theorem.</strong> The distinct functions
+      $B_{\kappa_i,\sigma_i}$ are linearly independent on every interval of
+      positive length. To prove it, expand for $t&gt;0$:</p>
+    $$B_i(t)={1+q_i\over\gamma_i}
+      -{(1+q_i)^2\over\gamma_i}
+       \sum_{n\ge1}(-q_i)^{n-1}e^{-n\gamma_i t}.$$
+    <p>After its constant term is removed by letting $t\to\infty$, this is an
+      absolutely convergent generalized Dirichlet series whose rates are
+      locally finite. Its coefficients are unique: order the rates, multiply
+      by the exponential of the smallest remaining rate, let $t\to\infty$,
+      and iterate. Now suppose a nontrivial linear combination
+      vanishes and let $\gamma_*$ be the smallest decay among its active
+      terms. For any larger decay $\gamma_j$, a collision
+      $n\gamma_*=m\gamma_j$ is impossible when
+      $\gamma_j/\gamma_*$ is irrational; when that ratio is $a_j/b_j$ in
+      lowest terms, it requires $a_j\mid n$.</p>
+    <p>Choose arbitrarily large primes $n$ exceeding every such numerator
+      $a_j$. At rate $n\gamma_*$ only the slowest-decay group contributes, so
+      coefficient uniqueness gives</p>
+    $$\sum_{i:\gamma_i=\gamma_*}d_i q_i^{n-1}=0.$$
+    <p>Here the harmless nonzero factors have been absorbed into $d_i$, and
+      large primes are odd. Within a fixed decay, distinct full parameter
+      pairs have distinct $q_i$. Letting these primes tend to infinity and
+      successively dividing by the largest positive $q_i^{n-1}$ kills every
+      $q_i&gt;0$ coefficient. There can be at most one $q_i=0$ term; the
+      coefficient at the collision-free first rate $\gamma_*$ kills it.
+      Removing this decay group and repeating proves independence. A relation
+      on a finite interval extends to all $t&gt;0$ by analyticity, completing
+      the argument.</p>
     <div class="equation-card">
-    <p><strong>Iso-decay cluster law.</strong> Partition names into clusters
-      $C_c$ having identical full pairs $(\kappa_i,\sigma_i)$. If all names
-      share $\gamma$ and $K\succeq0$, then for every $T&gt;0$,</p>
+    <p><strong>Unrestricted cluster law.</strong> Partition names into clusters
+      $C_c$ having identical full pairs $(\kappa_i,\sigma_i)$. For arbitrary
+      positive $\kappa_i$, nonnegative $\sigma_i$, $K\succeq0$, and every
+      $T&gt;0$,</p>
     $$\operatorname{rank}\{K\circ J(T)\}
       =\sum_c\operatorname{rank}K_{C_c,C_c}.$$
     </div>
     <p>The proof is the same rowwise tensor direct-sum argument as for the
-      common-volatility cluster law, now justified by the rational loading
-      family above. In particular, if every full pair is distinct, positive
+      common-volatility cluster law, now justified without a parameter
+      restriction. In particular, if every full pair is distinct, positive
       diagonal entries of $K$ are necessary and sufficient for full
-      integrated rank. This theorem is restricted to a common $\gamma$; it
-      does not claim arbitrary collections of heterogeneous CIR loadings are
-      linearly independent.</p>
-    <p>The four-name certificate takes $\gamma=2$ and
-      $\kappa=(0.2,0.2,1.0,1.8)$, with
-      $\sigma_i=\sqrt{(4-\kappa_i^2)/2}$. Thus there are three distinct full
-      parameter pairs although both parameters vary. Fixed Green&ndash;Kubo
-      ranks one and two give predicted and observed integrated ranks three
-      and four. Their smallest positive eigenvalues are respectively
-      $8.45331965\times10^{-7}$ and $1.74806811\times10^{-3}$.</p>
+      integrated rank, whatever the fixed rank of $K$.</p>
+    <p>The first numerical certificate deliberately creates harmonic
+      collisions, taking $\gamma=(1,1,2,3)$ and
+      $q=(0,0.35,0.20,0.55)$. All four full parameter pairs are distinct and
+      the loading-Gram eigenvalues are
+      $(5.7326\times10^{-7},6.3707\times10^{-5},
+      3.6423\times10^{-2},8.8222)$, hence full rank. A second certificate has
+      unrestricted decay rates and full-pair cluster sizes $(3,2,1)$.
+      Fixed Green&ndash;Kubo ranks one, two, and three give the predicted and
+      observed integrated ranks $3,5,6$.</p>
 
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across

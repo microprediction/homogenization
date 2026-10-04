@@ -169,10 +169,11 @@
         $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
         within-cluster block. For two names with heterogeneous CIR parameters, the loading Gramian is singular
         exactly when both $(\kappa,\sigma)$ pairs coincide: equal mean reversion alone does not collapse rank
-        when vol-of-vol differs. For arbitrarily many heterogeneous names, the same exact cluster formula holds
-        on every iso-decay family $\sqrt{\kappa_i^2+2\sigma_i^2}=\gamma$: after the change
-        $q_i=(\gamma-\kappa_i)/(\gamma+\kappa_i)$, loading independence reduces to uniqueness of partial fractions.
-        This is deliberately not a claim for unrestricted heterogeneous parameter collections. The resulting sharp regime-count inference is
+        when vol-of-vol differs. For arbitrarily many heterogeneous names, distinct full parameter pairs always
+        give linearly independent loadings, with no common-volatility or common-decay restriction. Expanding each
+        loading in exponential harmonics and using prime-indexed harmonics isolates the slowest decay group even
+        when rational decay ratios create collisions. Consequently the same exact cluster formula holds for
+        unrestricted heterogeneous parameter collections. The resulting sharp regime-count inference is
         $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
         it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
         the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
