@@ -13,6 +13,8 @@ Starting in state 2 reflects the fraction about 1/2.  When r=q, the CEV random
 clock is affine in this occupation fraction.  The script compares the resulting
 Poisson--Beta price with the independent moment-ODE/Chebyshev reconstruction
 used by the model page and verifies the certified Poisson-tail truncation bound.
+For unequal rates it also checks the exact first two occupation moments and the
+resulting finite-rate Taylor bounds for the CEV price.
 """
 
 import math
@@ -179,6 +181,70 @@ def unequal_occupation_mean(start, rate_12, rate_21):
     return stationary_one * T - stationary_one * transient
 
 
+def unequal_occupation_moments(start, rate_12, rate_21):
+    """Exact mean and variance of U_T for arbitrary two-state rates.
+
+    Write kappa=a+b, p=b/kappa, q=a/kappa, and d=q or -p according
+    as the chain starts in state 1 or 2.  Integrating
+
+        P_i(Y_s=1,Y_t=1)=P_i(Y_s=1)P_1(Y_{t-s}=1),  s<t,
+
+    gives the second moment below.
+    """
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    q = rate_12 / total_rate
+    d = q if start == 0 else -p
+    exponential = math.exp(-total_rate * T)
+    transient = (1.0 - exponential) / total_rate
+    j = T / total_rate - (1.0 - exponential) / total_rate ** 2
+    h = (1.0 - exponential * (1.0 + total_rate * T)) / total_rate ** 2
+    mean = p * T + d * transient
+    second = p * p * T * T + 2.0 * p * (q + d) * j + 2.0 * d * q * h
+    return mean, second - mean * mean
+
+
+def cev_derivative_estimates(degree=56):
+    """Numerical derivative-supremum estimates for the finite-rate table.
+
+    The theorem uses the true suprema M_1 and M_2.  Here two stable Chebyshev
+    reconstructions on the compact attainable-clock interval supply estimates
+    that are rounded upward for the illustrative table; this is not an interval
+    proof of the derivative suprema.
+    """
+    lower = min(SIGMA) ** 2 * T
+    upper = max(SIGMA) ** 2 * T
+    center = 0.5 * (lower + upper)
+    half_width = 0.5 * (upper - lower)
+    nodes = np.cos(np.pi * (np.arange(3 * degree) + 0.5) / (3 * degree))
+    coefficients = ch.chebfit(nodes, [cev_call(center + half_width * x) for x in nodes], degree)
+    grid = np.linspace(-1.0, 1.0, 20001)
+    first = ch.chebval(grid, ch.chebder(coefficients, 1)) / half_width
+    second = ch.chebval(grid, ch.chebder(coefficients, 2)) / half_width ** 2
+    return float(np.max(np.abs(first))), float(np.max(np.abs(second)))
+
+
+def finite_rate_bounds(start, rate_12, rate_21, m1, m2):
+    """Exact prices, two approximations, and their fixed-maturity bounds."""
+    mean, variance = unequal_occupation_moments(start, rate_12, rate_21)
+    total_rate = rate_12 + rate_21
+    stationary_one = rate_21 / total_rate
+    d = rate_12 / total_rate if start == 0 else -stationary_one
+    transient = (1.0 - math.exp(-total_rate * T)) / total_rate
+    delta = SIGMA[0] ** 2 - SIGMA[1] ** 2
+    mean_clock = SIGMA[1] ** 2 * T + delta * mean
+    stationary_clock = SIGMA[1] ** 2 * T + delta * stationary_one * T
+    discount = math.exp(-R * T)
+    exact = bessel_price(start, rate_12, rate_21)
+    centered = discount * cev_call(mean_clock)
+    stationary = discount * cev_call(stationary_clock)
+    centered_bound = 0.5 * discount * m2 * delta ** 2 * variance
+    stationary_bound = discount * (
+        m1 * abs(delta * d) * transient + 0.5 * m2 * delta ** 2 * variance
+    )
+    return exact, centered, centered_bound, stationary, stationary_bound
+
+
 def occupation_mean(start):
     """Closed-form E[U_T] for the symmetric chain."""
     memory = (1.0 - math.exp(-2.0 * LAM * T)) / (4.0 * LAM)
@@ -261,6 +327,41 @@ def main():
         assert abs(mass - 1.0) < 3e-13
         assert abs(mean - unequal_occupation_mean(start, rate_12, rate_21)) < 3e-13
         assert abs(bessel - moment) < 5e-12
+
+    m1_raw, m2_raw = cev_derivative_estimates()
+    m1_check, m2_check = cev_derivative_estimates(48)
+    assert abs(m1_raw - m1_check) < 1e-7
+    assert abs(m2_raw - m2_check) < 1e-7
+    # Rounded upward from the stable dense-grid Chebyshev calculations above.
+    m1, m2 = 2.625, 0.919
+    assert m1_raw < m1 and m2_raw < m2
+    print(f"finite-rate derivative estimates (rounded up): M1={m1:g}, M2={m2:g}")
+    for multiplier in (1, 2, 4, 8):
+        a, b = multiplier * rate_12, multiplier * rate_21
+        for start in (0, 1):
+            atom = math.exp(-(a if start == 0 else b) * T)
+            second = quad(
+                lambda u: u * u * unequal_occupation_density(u, start, a, b),
+                0.0,
+                T,
+                epsabs=2e-13,
+                epsrel=2e-13,
+                limit=250,
+            )[0] + atom * (T * T if start == 0 else 0.0)
+            mean, variance = unequal_occupation_moments(start, a, b)
+            assert abs(second - (variance + mean * mean)) < 4e-13
+            exact, centered, centered_bound, stationary, stationary_bound = finite_rate_bounds(
+                start, a, b, m1, m2
+            )
+            centered_error = abs(exact - centered)
+            stationary_error = abs(exact - stationary)
+            print(
+                f"kappa={a+b:g}, start {start+1}: Var(U)={variance:.10f}; "
+                f"mean-clock error/bound={centered_error:.3e}/{centered_bound:.3e}; "
+                f"stationary-clock error/bound={stationary_error:.3e}/{stationary_bound:.3e}"
+            )
+            assert centered_error <= centered_bound
+            assert stationary_error <= stationary_bound
 
 
 if __name__ == "__main__":

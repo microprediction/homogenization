@@ -227,6 +227,42 @@
     when $r\ne q$, the clock contains the nonconstant weight $h(T-t)$ and is no longer determined by occupation time
     alone.</p>
 
+    <h3>Finite-rate bounds for the averaged clock</h3>
+    <p>The same occupation law gives a deterministic approximation bound, not only an exact quadrature. Put
+    $\kappa=a+b$, $p=b/\kappa$, $q=a/\kappa$, and $d_1=q$, $d_2=-p$. Define</p>
+    $$L=\frac{1-e^{-\kappa T}}{\kappa},\qquad
+      J=\frac{T}{\kappa}-\frac{1-e^{-\kappa T}}{\kappa^2},\qquad
+      H=\frac{1-e^{-\kappa T}(1+\kappa T)}{\kappa^2}.$$
+    <p>For either known starting regime $i$, direct integration of
+    $\mathbb P_i(y_s=1,y_t=1)=\mathbb P_i(y_s=1)\mathbb P_1(y_{t-s}=1)$ gives</p>
+    <div class="equation-card">
+    $$m_i:=\mathbb E_iU_T=pT+d_iL,$$
+    $$\mathbb E_iU_T^2=p^2T^2+2p(q+d_i)J+2d_iqH,\qquad
+      v_i:=\operatorname{Var}_i(U_T)=\mathbb E_iU_T^2-m_i^2.$$
+    </div>
+    <p>Let $\Delta=\sigma_1^2-\sigma_2^2$, $G(v)=C(F_0,v)$, and let
+    $M_j=\sup_{v\in I}|G^{(j)}(v)|$ on the attainable interval
+    $I=[T\min_i\sigma_i^2,T\max_i\sigma_i^2]$. Taylor&apos;s theorem around the exact mean clock
+    $\mu_i=T\sigma_2^2+\Delta m_i$ and then the mean-value theorem give the two bounds</p>
+    <div class="equation-card">
+    $$\left|u_i-e^{-rT}G(\mu_i)\right|\le
+      \frac{e^{-rT}}2M_2\Delta^2v_i,$$
+    $$\left|u_i-e^{-rT}G(\bar v)\right|\le e^{-rT}
+      \left(M_1|\Delta d_i|L+\frac12M_2\Delta^2v_i\right),\qquad
+      \bar v=T(\sigma_2^2+\Delta p).$$
+    </div>
+    <p>The first approximation retains the known-start memory in its mean; the second uses the stationary averaged
+    clock and displays that memory as a separate term. If $a$ and $b$ grow proportionally, then at fixed $T$,
+    $v_i=2pqT/\kappa+O(\kappa^{-2})$ and $L=\kappa^{-1}+O(e^{-\kappa T}/\kappa)$, so both bounds are
+    $O(\kappa^{-1})$. This is a fixed-maturity, zero-carry statement: it is not asserted uniformly in $T$, and at
+    nonzero carry the weighted clock requires different moments.</p>
+    <p>For the parameters on this page, degree-48 and degree-56 Chebyshev differentiations agree to $10^{-7}$ on a
+    20,001-point grid; rounding those numerical supremum estimates upward gives $M_1=2.625$ and $M_2=0.919$.
+    This derivative calculation is a numerical check, not interval arithmetic. Each table entry is observed error /
+    plug-in right-hand side:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>$\kappa$</th><th>start</th><th>$\operatorname{Var}(U_T)$</th><th>mean clock</th><th>stationary clock</th></tr></thead><tbody><tr><td>20</td><td>1</td><td>0.02078125</td><td>3.931e-02 / 2.166e-01</td><td>8.072e-02 / 4.331e-01</td></tr><tr><td>20</td><td>2</td><td>0.02153125</td><td>4.414e-02 / 2.244e-01</td><td>2.701e-01 / 6.266e-01</td></tr><tr><td>40</td><td>1</td><td>0.01088281</td><td>2.042e-02 / 1.134e-01</td><td>3.973e-02 / 2.217e-01</td></tr><tr><td>40</td><td>2</td><td>0.01107031</td><td>2.161e-02 / 1.154e-01</td><td>1.341e-01 / 3.165e-01</td></tr><tr><td>80</td><td>1</td><td>0.00556445</td><td>1.039e-02 / 5.798e-02</td><td>1.972e-02 / 1.121e-01</td></tr><tr><td>80</td><td>2</td><td>0.00561133</td><td>1.069e-02 / 5.847e-02</td><td>6.680e-02 / 1.590e-01</td></tr><tr><td>160</td><td>1</td><td>0.00281299</td><td>5.242e-03 / 2.931e-02</td><td>9.822e-03 / 5.639e-02</td></tr><tr><td>160</td><td>2</td><td>0.00282471</td><td>5.316e-03 / 2.943e-02</td><td>3.334e-02 / 7.971e-02</td></tr></tbody></table></div>
+
+
     <h2>Reduction to a linear system</h2>
     <p>All that is needed about the regime is the law of $V$, and its Laplace transform is a reduced system of the
     usual kind. In time to maturity $\tau$, the functions

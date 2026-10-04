@@ -530,7 +530,13 @@ def cev_page():
     from scipy.stats import ncx2, poisson
     from scipy.integrate import solve_ivp
     from numpy.polynomial import chebyshev as ch
-    from verify_cev_occupation import bessel_price, poisson_beta_price, unequal_moment_ode_price
+    from verify_cev_occupation import (
+        bessel_price,
+        finite_rate_bounds,
+        poisson_beta_price,
+        unequal_moment_ode_price,
+        unequal_occupation_moments,
+    )
     S0, r, q, beta, K, T, sig = 100.0, 0.02, 0.0, 0.6, 100.0, 1.0, [2.5, 1.2]
     F = S0 * math.exp((r - q) * T)
 
@@ -599,6 +605,21 @@ def cev_page():
         bessel = bessel_price(start, 7.0, 13.0)
         moment = unequal_moment_ode_price(start, 7.0, 13.0)
         unequal_rows.append([str(start + 1), f'{bessel:.10f}', f'{moment:.10f}', e(abs(bessel - moment))])
+    finite_rows = []
+    for multiplier in (1, 2, 4, 8):
+        a, b = 7.0 * multiplier, 13.0 * multiplier
+        for start in (0, 1):
+            _, variance = unequal_occupation_moments(start, a, b)
+            exact_, centered, centered_bound, stationary, stationary_bound = finite_rate_bounds(
+                start, a, b, 2.625, 0.919
+            )
+            finite_rows.append([
+                f'{a+b:g}',
+                str(start + 1),
+                f'{variance:.8f}',
+                f'{abs(exact_-centered):.3e} / {centered_bound:.3e}',
+                f'{abs(exact_-stationary):.3e} / {stationary_bound:.3e}',
+            ])
 
     body = r'''    <h1>CEV with a switching volatility</h1>
     <p class="subtitle">A model that is not affine, in which the regime nevertheless factors out: the price is a mixture of CEV prices over one random variance.</p>
@@ -715,6 +736,41 @@ def cev_page():
 ''' + table(['starting regime', 'Bessel density', 'moment ODE', 'difference'], unequal_rows) + r'''    <p>This removes the equal-rate restriction from the exact finite-rate benchmark. The zero-carry restriction remains:
     when $r\ne q$, the clock contains the nonconstant weight $h(T-t)$ and is no longer determined by occupation time
     alone.</p>
+
+    <h3>Finite-rate bounds for the averaged clock</h3>
+    <p>The same occupation law gives a deterministic approximation bound, not only an exact quadrature. Put
+    $\kappa=a+b$, $p=b/\kappa$, $q=a/\kappa$, and $d_1=q$, $d_2=-p$. Define</p>
+    $$L=\frac{1-e^{-\kappa T}}{\kappa},\qquad
+      J=\frac{T}{\kappa}-\frac{1-e^{-\kappa T}}{\kappa^2},\qquad
+      H=\frac{1-e^{-\kappa T}(1+\kappa T)}{\kappa^2}.$$
+    <p>For either known starting regime $i$, direct integration of
+    $\mathbb P_i(y_s=1,y_t=1)=\mathbb P_i(y_s=1)\mathbb P_1(y_{t-s}=1)$ gives</p>
+    <div class="equation-card">
+    $$m_i:=\mathbb E_iU_T=pT+d_iL,$$
+    $$\mathbb E_iU_T^2=p^2T^2+2p(q+d_i)J+2d_iqH,\qquad
+      v_i:=\operatorname{Var}_i(U_T)=\mathbb E_iU_T^2-m_i^2.$$
+    </div>
+    <p>Let $\Delta=\sigma_1^2-\sigma_2^2$, $G(v)=C(F_0,v)$, and let
+    $M_j=\sup_{v\in I}|G^{(j)}(v)|$ on the attainable interval
+    $I=[T\min_i\sigma_i^2,T\max_i\sigma_i^2]$. Taylor&apos;s theorem around the exact mean clock
+    $\mu_i=T\sigma_2^2+\Delta m_i$ and then the mean-value theorem give the two bounds</p>
+    <div class="equation-card">
+    $$\left|u_i-e^{-rT}G(\mu_i)\right|\le
+      \frac{e^{-rT}}2M_2\Delta^2v_i,$$
+    $$\left|u_i-e^{-rT}G(\bar v)\right|\le e^{-rT}
+      \left(M_1|\Delta d_i|L+\frac12M_2\Delta^2v_i\right),\qquad
+      \bar v=T(\sigma_2^2+\Delta p).$$
+    </div>
+    <p>The first approximation retains the known-start memory in its mean; the second uses the stationary averaged
+    clock and displays that memory as a separate term. If $a$ and $b$ grow proportionally, then at fixed $T$,
+    $v_i=2pqT/\kappa+O(\kappa^{-2})$ and $L=\kappa^{-1}+O(e^{-\kappa T}/\kappa)$, so both bounds are
+    $O(\kappa^{-1})$. This is a fixed-maturity, zero-carry statement: it is not asserted uniformly in $T$, and at
+    nonzero carry the weighted clock requires different moments.</p>
+    <p>For the parameters on this page, degree-48 and degree-56 Chebyshev differentiations agree to $10^{-7}$ on a
+    20,001-point grid; rounding those numerical supremum estimates upward gives $M_1=2.625$ and $M_2=0.919$.
+    This derivative calculation is a numerical check, not interval arithmetic. Each table entry is observed error /
+    plug-in right-hand side:</p>
+''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(U_T)$', 'mean clock', 'stationary clock'], finite_rows) + r'''
 
     <h2>Reduction to a linear system</h2>
     <p>All that is needed about the regime is the law of $V$, and its Laplace transform is a reduced system of the
