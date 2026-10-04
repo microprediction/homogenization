@@ -610,10 +610,11 @@
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>
     $$b_j=\lim_{t\to\infty}B_j(t)
-      ={2\over\sqrt{\kappa_j^2+2\sigma^2}+\kappa_j},
+      ={2\over\sqrt{\kappa_j^2+2\sigma_j^2}+\kappa_j},
       \qquad b=(b_1,\ldots,b_d)^\top,$$
-    <p>for a common fixed $\sigma\ge0$, and put $r(t)=B(t)-b$. The Riccati
-      formula gives $r(t)=O(e^{-\rho t})$ for some $\rho&gt;0$, hence</p>
+    <p>for arbitrary fixed $\kappa_j&gt;0$, $\sigma_j\ge0$, and pairwise
+      distinct full pairs $(\kappa_j,\sigma_j)$. Put $r(t)=B(t)-b$. The
+      Riccati formula gives $r(t)=O(e^{-\rho t})$ for some $\rho&gt;0$, hence</p>
     $$J(T)=\int_0^TB(t)B(t)^\top dt
       =Tbb^\top+C+O(e^{-\rho T}),\qquad
       C=\int_0^\infty\{B(t)B(t)^\top-bb^\top\}\,dt.$$
@@ -622,8 +623,8 @@
     $$H=P_b\left\{\int_0^\infty r(t)r(t)^\top dt\right\}P_b.$$
     <p>The cross terms in $C$ vanish after compression because $P_bb=0$.
       Moreover $H$ is positive definite: if $z\perp b$ and $z^\top Hz=0$,
-      then $z^\top r(t)=0$ for every $t$, hence $z^\top B(t)=0$; the CIR
-      loading independence proved below forces $z=0$.</p>
+      then $z^\top r(t)=0$ for every $t$, hence $z^\top B(t)=0$; the
+      unrestricted CIR loading independence proved above forces $z=0$.</p>
     <div class="equation-card">
     <p><strong>Long-maturity spectrum.</strong> Order the eigenvalues of $J(T)$
       as $\lambda_1(T)\ge\cdots\ge\lambda_d(T)$ and those of $H$ as
@@ -651,18 +652,18 @@
       make the earlier $O_L(m^{-2})$ pricing remainder uniform as $T\to\infty$
       and does not interchange the switching-speed and maturity limits.</p>
     <p>For four positive-volatility loadings with
-      $\kappa=(0.35,0.8,1.7,3.2)$ and $\sigma=0.18$, the limiting bounded
-      eigenvalues are</p>
-    $$(2.74707297\times10^{-4},\quad 1.19392590\times10^{-2},\quad
-       4.59242675\times10^{-1}).$$
+      $\kappa=(0.35,0.8,1.7,3.2)$ and
+      $\sigma=(0.12,0.31,0.18,0.44)$, the limiting bounded eigenvalues are</p>
+    $$(2.66684012\times10^{-4},\quad 1.28558983\times10^{-2},\quad
+       5.83305163\times10^{-1}).$$
     <p>At $T=2048$ their measured values are
-      $(2.74570818\times10^{-4},1.19298558\times10^{-2},
-      4.58596743\times10^{-1})$. The four convergence orders, including the
+      $(2.66554908\times10^{-4},1.28466530\times10^{-2},
+      5.82430527\times10^{-1})$. The four convergence orders, including the
       scaled leading eigenvalue, are
-      $(1.005479,1.004346,1.002275,0.999965)$. The measured and predicted
-      limits are respectively $30747.39631$ and $30780.38173$ for
-      $\operatorname{cond}_2J(T)/T$, and $1.26818689\times10^{-5}$ and
-      $1.27360280\times10^{-5}$ for $\det J(T)/T$.</p>
+      $(1.005735,1.004698,1.002508,0.999960)$. The measured and predicted
+      limits are respectively $34182.90668$ and $34225.20992$ for
+      $\operatorname{cond}_2J(T)/T$, and $1.81725753\times10^{-5}$ and
+      $1.82531713\times10^{-5}$ for $\det J(T)/T$.</p>
 
     <h3>The inverse information has a rank-one long-end correction</h3>
     <p>The spectrum identifies the scales but not the limiting covariance or
@@ -738,9 +739,11 @@
       \qquad
       \det D(T)=T^r\det_+(A)\det(H_K)+O(T^{r-1}).$$
     </div>
-    <p>Under the distinct-mean-reversion assumptions of the full-rank
-      criterion above, the premise $D(T_0)\succ0$ is equivalent simply to
-      $K_{ii}&gt;0$ for every name, and then holds for every $T_0&gt;0$.</p>
+    <p>The unrestricted full-pair cluster law above makes the premise exact.
+      If $C_c$ are the clusters of identical pairs $(\kappa_i,\sigma_i)$,
+      then $D(T_0)\succ0$ for one, equivalently every, $T_0&gt;0$ exactly when
+      every $K_{C_c,C_c}$ is positive definite. For distinct full pairs this
+      reduces to $K_{ii}&gt;0$ for every name.</p>
     <p>The finite-maturity full-rank premise supplies the missing positivity,
       rather than merely assuming it. For $z\in\ker A$,</p>
     $$z^\top H_Kz
@@ -764,19 +767,21 @@
       $\operatorname{rank}K$ information directions accumulate without bound
       at the long end. The preceding theorem is the $r=1$ specialization.</p>
     <p>A five-name certificate takes the rank-two matrix $K=FF^\top$ with
-      $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and distinct
-      positive-volatility CIR loadings with
-      $\kappa=(0.25,0.6,1.2,2.4,5)$ and $\sigma=0.18$, and obtains full
-      integrated rank five. The limiting transient eigenvalues are</p>
-    $$(7.28134479\times10^{-4},\ 2.20648314\times10^{-2},\
-       7.86025259\times10^{-1}),$$
+      $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and heterogeneous
+      positive-volatility CIR loadings with one repeated full pair:
+      $\kappa=(0.35,0.35,1.2,2.4,5)$ and
+      $\sigma=(0.12,0.12,0.30,0.08,0.50)$. The repeated-pair $2\times2$
+      block of $K$ is positive definite, so the exact cluster criterion gives
+      full integrated rank five. The limiting transient eigenvalues are</p>
+    $$(1.80392831\times10^{-3},\ 1.41216288\times10^{-1},\
+       5.06198737\times10^{-1}),$$
     <p>while the two stationary eigenvalues are
-      $(1.95826087,57.5035564)$. At $T=2048$, all five scaled convergence
-      orders lie between $0.999991$ and $1.006072$;
-      $\operatorname{cond}_2D(T)/T$ is $78840.4105$ versus limit $78973.8133$,
-      and $\det D(T)/T^2$ is $1.41432970\times10^{-3}$ versus limit
-      $1.42204704\times10^{-3}$. The inverse-expansion remainder is
-      $3.06155141\times10^{-3}$ with observed order $2.006827$.</p>
+      $(3.11016825,45.7412552)$. At $T=2048$, all five scaled convergence
+      orders lie between $0.999888$ and $1.004244$;
+      $\operatorname{cond}_2D(T)/T$ is $25317.3875$ versus limit $25356.4705$,
+      and $\det D(T)/T^2$ is $1.82305073\times10^{-2}$ versus limit
+      $1.83449734\times10^{-2}$. The inverse-expansion remainder is
+      $7.20040338\times10^{-4}$ with observed order $2.004872$.</p>
     <p>The result concerns a fixed $K$ and fixed CIR parameters. It explicitly
       distinguishes the $r$ stationary directions inherited from fixed
       Green&ndash;Kubo rank from the additional finite information created by

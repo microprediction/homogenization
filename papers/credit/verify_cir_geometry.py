@@ -15,13 +15,14 @@ second high-precision check verifies the Hermite-jet exponent multiset
 condition-number blow-up.  An exact rational Taylor-coefficient calculation
 proves that the joint jet independence assumed by the generic cluster theorem
 is automatic for the CIR Riccati loading at every set of distinct centers.
-At the opposite, long-maturity limit, a four-name certificate checks that the
-loading Gram matrix has one eigenvalue growing linearly in maturity while the
-other three converge to positive transient-Gram limits, so its condition
-number grows linearly despite retaining full algebraic rank.  It also checks
-the rank-one-corrected inverse expansion in operator norm, including its
-second-order remainder and the finite inverse-information floor on the
-transient subspace.  A rank-two fixed Green--Kubo certificate then checks the
+At the opposite, long-maturity limit, a four-name heterogeneous-parameter
+certificate checks that the loading Gram matrix has one eigenvalue growing
+linearly in maturity while the other three converge to positive
+transient-Gram limits, so its condition number grows linearly despite
+retaining full algebraic rank.  It also checks the rank-one-corrected inverse
+expansion in operator norm, including its second-order remainder and the
+finite inverse-information floor on the transient subspace.  A rank-two fixed
+Green--Kubo certificate with one repeated full parameter pair then checks the
 general law: exactly r information eigenvalues grow linearly when the fixed
 matrix has rank r, while maturity integration can make every finite-maturity
 matrix full rank through a positive transient complement.  An additional
@@ -376,7 +377,7 @@ def rank_amplification_checks():
 
 
 def long_maturity_loading_checks():
-    """Certify the long-maturity rank-one collapse of CIR loading Gramians.
+    """Certify the heterogeneous long-maturity CIR loading theorem.
 
     If b is the vector of limiting Riccati loadings and r(t)=B(t)-b, then
     J(T)=T b b' + C + exponentially small terms.  On b-perp the cross terms
@@ -384,8 +385,8 @@ def long_maturity_loading_checks():
     Block inversion further gives J(T)^-1=H^+ + ww'/(|b|^2 T)+O(T^-2).
     """
     kappas = np.array([0.35, 0.8, 1.7, 3.2])
-    sigma = 0.18
-    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+    sigmas = np.array([0.12, 0.31, 0.18, 0.44])
+    gammas = np.sqrt(kappas**2 + 2 * sigmas**2)
     limiting_loadings = 2 / (gammas + kappas)
 
     def loading_vector(time):
@@ -534,21 +535,24 @@ def finite_rank_long_maturity_checks():
     """Certify the rank-r long-maturity law for K Hadamard J(T).
 
     The fixed positive semidefinite Green--Kubo matrix K has rank two, while
-    distinct CIR maturity loadings make D(T)=K Hadamard J(T) positive
-    definite.  The stationary matrix A=diag(b)Kdiag(b) therefore supplies
-    two order-T eigenvalues.  Compression of K Hadamard C to ker(A) supplies
-    the other three finite limits and the limiting inverse-information floor.
+    unrestricted CIR maturity loadings, including one repeated full pair,
+    make D(T)=K Hadamard J(T) positive definite because every full-pair
+    cluster block of K is positive definite.  The stationary matrix
+    A=diag(b)Kdiag(b) therefore supplies two order-T eigenvalues.  Compression
+    of K Hadamard C to ker(A) supplies the other three finite limits and the
+    limiting inverse-information floor.
     """
-    kappas = np.array([0.25, 0.6, 1.2, 2.4, 5.0])
-    sigma = 0.18
+    kappas = np.array([0.35, 0.35, 1.2, 2.4, 5.0])
+    sigmas = np.array([0.12, 0.12, 0.30, 0.08, 0.50])
     features = np.column_stack((
         np.ones(len(kappas)),
         np.array([-2.0, -0.7, 0.2, 1.1, 2.3]),
     ))
     green_kubo = features @ features.T
     assert np.linalg.matrix_rank(green_kubo, tol=1e-11) == 2
+    assert np.linalg.matrix_rank(green_kubo[:2, :2], tol=1e-11) == 2
 
-    gammas = np.sqrt(kappas**2 + 2 * sigma**2)
+    gammas = np.sqrt(kappas**2 + 2 * sigmas**2)
     limiting_loadings = 2 / (gammas + kappas)
 
     def loading_vector(time):
@@ -670,7 +674,7 @@ def finite_rank_long_maturity_checks():
         np.prod(stationary_values[-rank:]) * np.linalg.det(compressed)
     )
     assert abs(conditions[-1] / condition_target - 1) < 0.002
-    assert abs(determinants[-1] / determinant_target - 1) < 0.006
+    assert abs(determinants[-1] / determinant_target - 1) < 0.01
 
     inverse_orders = np.log2(
         np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
@@ -681,7 +685,7 @@ def finite_rank_long_maturity_checks():
     null_trace_target = np.trace(np.linalg.inv(compressed))
     assert inverse_orders[-1] > 1.99
     assert inverse_errors[-1] < 0.004
-    assert abs(range_traces[-1] / range_trace_target - 1) < 0.002
+    assert abs(range_traces[-1] / range_trace_target - 1) < 0.004
     assert abs(null_traces[-1] / null_trace_target - 1) < 0.001
 
     print("\nrank-r long-maturity CIR loading certificate")
