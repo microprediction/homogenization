@@ -103,6 +103,43 @@ CONSTANT_PROOF = r'''    <p>The first line follows from the matrix exponential. 
     Green&ndash;Kubo factor, and expand the remaining bracket in $\varepsilon$.</p>
 '''
 
+CONSTANT_SCOPE = r'''    <h3>Where the expansion applies</h3>
+    <p>This expansion is pointwise in the Fourier frequency. Put $z = \varepsilon\tilde g$ and take the principal
+    square root $d(z) = \sqrt{1 + z^2}$. The exact answer separates into its slow outer mode and its fast initial
+    layer:</p>
+    <div class="equation-card">
+    $$\phi_\pm=e^{\bar gT}\left[A_\pm(z)e^{(d(z)-1)T/\varepsilon}
+      +B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right],\qquad
+      A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+      B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).$$
+    </div>
+    <p>The branch points $z=\pm i$ give the natural radius one. More quantitatively, fix $0&lt;\rho&lt;1$. If
+    $|z|\leq\rho$, then the principal-root identity
+    $(\operatorname{Re}d)^2=(|1+z^2|+\operatorname{Re}(1+z^2))/2$ gives
+    $\operatorname{Re}d(z)\geq\sqrt{1-\rho^2}$, and hence</p>
+    $$\left|e^{\bar gT}B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right|
+      \leq e^{\operatorname{Re}\bar gT}
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}.$$
+    <p>For fixed $\tilde g$, the outer factor is analytic for $|z|&lt;1$. If $P_{2,\pm}$ is its quadratic Taylor
+    polynomial,</p>
+    $$P_{2,\pm}(z)=1+\frac{T\tilde g\pm1}{2}z+
+      \left(\frac{(T\tilde g)^2}{8}\pm\frac{T\tilde g}{4}-\frac14\right)z^2,$$
+    <p>then for $|z|\leq r&lt;\rho&lt;1$, Cauchy&apos;s estimate gives the explicit remainder</p>
+    $$\left|A_\pm(z)e^{T\tilde g(d(z)-1)/z}-P_{2,\pm}(z)\right|
+      \leq \frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3,\qquad
+      M_\rho=\max_{|w|=\rho}\left|A_\pm(w)e^{T\tilde g(d(w)-1)/w}\right|.$$
+    <p>Combining the two estimates gives the absolute error bound</p>
+    $$\left|\phi_\pm-e^{\bar gT}P_{2,\pm}(z)\right|\leq e^{\operatorname{Re}\bar gT}
+      \left[\frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3+
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}\right].$$
+    <p>Thus the fixed-frequency second-order error is $O(\lambda^{-3})$ plus an explicitly bounded exponential
+    layer. A Fourier price needs the separate frequency-envelope condition
+    $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
+    not uniform over all frequencies.</p>
+'''
+
 
 # ====================================================================================== Merton
 def merton_mc(S0, K, T, r, sig, ell, mu, de, lam, N=400000, seed=7):
@@ -235,7 +272,7 @@ def merton_page():
     \phi_J(u) &= \exp\big(iu\mu_J - \tfrac12u^2\delta^2\big), \qquad \bar k = e^{\mu_J + \delta^2/2} - 1, \\
     \bar s, \tilde s &= \frac{\sigma_1^2 \pm \sigma_2^2}{2}, \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .
     \end{aligned}$$
-''' + CONSTANT_PROOF + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
+''' + CONSTANT_PROOF + CONSTANT_SCOPE + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
     function at the averaged variance and intensity, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$
     and the memory of the starting regime. The upper sign is for a start in the stressed regime.</p>
     <p>The Green&ndash;Kubo exponent has three parts, from the square of $\tilde g$:</p>
@@ -309,7 +346,8 @@ def variance_gamma_page():
             ref = call(K, lam_, None)
             rows.append([f'{lam_:g}', f'{K}', f'{ref:.6f}'] + [e(abs(call(K, lam_, o) - ref)) for o in (0, 1, 2)])
     gbig = gparts(200 - 0.5j)
-    print('VG: |g~| at u = 200:', abs(gbig[1]))
+    omtilde = (om[0] - om[1]) / 2
+    print('VG: |g~| at u = 200:', abs(gbig[1]), '|g~|/u:', abs(gbig[1]) / 200, 'omega~:', omtilde)
 
     body = r'''    <h1>Variance gamma with switching parameters</h1>
     <p class="subtitle">A pure-jump stock whose volatility, kurtosis and skew all change with a hidden regime; European option prices in closed form.</p>
@@ -355,10 +393,15 @@ def variance_gamma_page():
 '''
     body += two_state_expansion(r'$\tilde g = \tfrac12\,iu\,(\omega_1 - \omega_2) + \tfrac12\big(\psi_1(u) - \psi_2(u)\big)$',
                                 complex_g='here $g$ is complex for every $u$',
-                                extra=r''' The half-difference $\tilde g$ grows only like $\log u$, because each exponent does: at $u = 200$, $|\tilde g|$ is '''
-                                + f'{abs(gbig[1]):.1f}' + r''', where the <a href="./black-scholes.html">Black&ndash;Scholes</a> forcing would have grown like $u^2$. The
-    price of that is slow decay. The characteristic function falls like a power of $u$, not like a Gaussian, so the
-    Fourier integral is carried to $u = 600$, and the closed form below is used along all of it.''')
+                                extra=r''' The L&eacute;vy-exponent difference grows logarithmically, but the martingale
+    correction $iu\tilde\omega$ is linear unless $\omega_1=\omega_2$. Here $\tilde\omega = '''
+                                + f'{omtilde:.8f}' + r'''$, and at $u=200-i/2$, $|\tilde g| = '''
+                                + f'{abs(gbig[1]):.2f}' + r'''$. Thus the pointwise condition $|\tilde g|/\lambda&lt;1$
+    gives a frequency window of order $\lambda$, wider than the order-$\sqrt{\lambda}$ window for the $u^2$ forcing
+    in <a href="./black-scholes.html">Black&ndash;Scholes</a>, but not an exponentially wide window. The
+    characteristic function falls like a power of $u$, not like a Gaussian, so the exact closed form below is used
+    along the whole Fourier integral. The asymptotic price columns are finite-$\lambda$ diagnostics, not a uniform
+    term-by-term expansion out to $u=600$.''')
     body += r'''
     <h2>The characteristic function in closed form</h2>
     <p>The forcing is constant, so the two-state system can be solved exactly. The characteristic function of the log
@@ -371,7 +414,7 @@ def variance_gamma_page():
     \omega_i &= \frac{1}{\nu_i}\log\big(1 - \theta_i\nu_i - \tfrac12\sigma_i^2\nu_i\big), \qquad
     \bar\omega, \tilde\omega = \frac{\omega_1 \pm \omega_2}{2} .
     \end{aligned}$$
-''' + CONSTANT_PROOF + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: the averaged L&eacute;vy
+''' + CONSTANT_PROOF + CONSTANT_SCOPE + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: the averaged L&eacute;vy
     process, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$ and the memory of the starting regime.
     The upper sign is for a start in the first regime.</p>
     <p>Written out, the characteristic function of the averaged process is</p>
@@ -386,7 +429,9 @@ def variance_gamma_page():
 ''' + table(['switching rate', 'strike', 'exact', 'order 0', 'order 1', 'order 2'], rows) + r'''    <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
     Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
-    and, for the convergence orders,
+    for the prices,
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>
+    for the analytic envelope, and
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_quantlib_models.py">verify_quantlib_models.py</a>.</p>
     <p>In <a href="https://github.com/microprediction/regimelib">regimelib</a> this model is
     <code>SwitchingVarianceGammaProcess</code>.</p>

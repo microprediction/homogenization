@@ -223,6 +223,41 @@
     gives the two rows $\lambda \pm \tilde g$. For the second line write $s = \lambda\sqrt{1 + \varepsilon^2\tilde g^2}
     = \lambda + \tfrac12\varepsilon\tilde g^2 + O(\varepsilon^3)$, so that $e^{(s - \lambda)T}$ supplies the
     Green&ndash;Kubo factor, and expand the remaining bracket in $\varepsilon$.</p>
+    <h3>Where the expansion applies</h3>
+    <p>This expansion is pointwise in the Fourier frequency. Put $z = \varepsilon\tilde g$ and take the principal
+    square root $d(z) = \sqrt{1 + z^2}$. The exact answer separates into its slow outer mode and its fast initial
+    layer:</p>
+    <div class="equation-card">
+    $$\phi_\pm=e^{\bar gT}\left[A_\pm(z)e^{(d(z)-1)T/\varepsilon}
+      +B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right],\qquad
+      A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+      B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).$$
+    </div>
+    <p>The branch points $z=\pm i$ give the natural radius one. More quantitatively, fix $0&lt;\rho&lt;1$. If
+    $|z|\leq\rho$, then the principal-root identity
+    $(\operatorname{Re}d)^2=(|1+z^2|+\operatorname{Re}(1+z^2))/2$ gives
+    $\operatorname{Re}d(z)\geq\sqrt{1-\rho^2}$, and hence</p>
+    $$\left|e^{\bar gT}B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right|
+      \leq e^{\operatorname{Re}\bar gT}
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}.$$
+    <p>For fixed $\tilde g$, the outer factor is analytic for $|z|&lt;1$. If $P_{2,\pm}$ is its quadratic Taylor
+    polynomial,</p>
+    $$P_{2,\pm}(z)=1+\frac{T\tilde g\pm1}{2}z+
+      \left(\frac{(T\tilde g)^2}{8}\pm\frac{T\tilde g}{4}-\frac14\right)z^2,$$
+    <p>then for $|z|\leq r&lt;\rho&lt;1$, Cauchy&apos;s estimate gives the explicit remainder</p>
+    $$\left|A_\pm(z)e^{T\tilde g(d(z)-1)/z}-P_{2,\pm}(z)\right|
+      \leq \frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3,\qquad
+      M_\rho=\max_{|w|=\rho}\left|A_\pm(w)e^{T\tilde g(d(w)-1)/w}\right|.$$
+    <p>Combining the two estimates gives the absolute error bound</p>
+    $$\left|\phi_\pm-e^{\bar gT}P_{2,\pm}(z)\right|\leq e^{\operatorname{Re}\bar gT}
+      \left[\frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3+
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}\right].$$
+    <p>Thus the fixed-frequency second-order error is $O(\lambda^{-3})$ plus an explicitly bounded exponential
+    layer. A Fourier price needs the separate frequency-envelope condition
+    $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
+    not uniform over all frequencies.</p>
     <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
     function at the averaged variance and intensity, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$
     and the memory of the starting regime. The upper sign is for a start in the stressed regime.</p>
