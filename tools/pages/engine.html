@@ -119,7 +119,9 @@
     compact-frequency transform error does not by itself imply a cubic price error. An admissible window
     $R=O(\lambda)$ gives only an $O(\lambda^{-1})$ model-independent tail certificate; the diffusive window
     $R=O(\sqrt\lambda)$ gives only $O(\lambda^{-1/2})$. Better price rates need model-specific transform decay.
-    The <a href="./variance-gamma.html">variance-gamma certificate</a> checks this split directly.</p>
+    The <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">switched variance-gamma certificate</a>
+    proves the sharper, generator-uniform tail $O(R^{-(2T/\nu_{\max}+1)})$; for its posted parameters this is
+    $O(R^{-5})$.</p>
 
     <h2>Other inputs</h2>
     <p>Time-dependent parameters, such as a Hull&ndash;White mean level $\theta(t)$ fitted to a yield curve, change only
@@ -140,7 +142,7 @@
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/fastswitch.py">fastswitch.py</a>: the engine, for any irreducible finite chain including defective generators, real or complex coefficients, any terminal vector.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a> and <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
-      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, Lewis inversion tail control, and variance-gamma frequency growth.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, Lewis inversion tail control, and the variance-gamma frequency envelope and polynomial-decay certificate.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>

@@ -106,6 +106,37 @@ def variance_gamma_forcing(u):
     return forcing, omega_tilde
 
 
+def variance_gamma_shifted_decay(rate=0.03):
+    """Constants in a switching-rate-uniform bound on phi(u-i/2).
+
+    For regime i, put a_i=sigma_i^2*nu_i/2, b_i=theta_i*nu_i,
+    and c_i=1-b_i/2-a_i/4.  On the Lewis line z=u-i/2,
+
+        Re(1-i*b_i*z+a_i*z^2) = c_i+a_i*u^2.
+
+    If c_i>0, conditioning on the regime path therefore gives
+
+        |phi(u-i/2)| <= exp(H*T) (1+q*u^2)^(-alpha*T),
+
+    where q=min_i a_i/c_i, alpha=min_i 1/nu_i, and H is below.
+    The estimate is independent of the transition generator.
+    """
+    sigma = (0.25, 0.12)
+    nu = (0.5, 0.2)
+    theta = (-0.25, -0.10)
+    omega = tuple(math.log(1.0 - t * n - 0.5 * s * s * n) / n
+                  for s, n, t in zip(sigma, nu, theta))
+    a = tuple(0.5 * s * s * n for s, n in zip(sigma, nu))
+    b = tuple(t * n for t, n in zip(theta, nu))
+    c = tuple(1.0 - bi / 2.0 - ai / 4.0 for ai, bi in zip(a, b))
+    assert min(c) > 0.0
+    q = min(ai / ci for ai, ci in zip(a, c))
+    alpha = min(1.0 / n for n in nu)
+    h = max(0.5 * (rate + oi) - math.log(ci) / n
+            for oi, ci, n in zip(omega, c, nu))
+    return q, alpha, h, c
+
+
 def main():
     rng = np.random.default_rng(31004)
     rho = 0.72
@@ -213,11 +244,23 @@ def main():
     #   int_R^infty |phi(u-i/2)|/(u^2+1/4) du
     #     <= M_{1/2} {pi - 2 atan(2R)}.
     #
+    # Variance gamma supplies a sharper certificate.  On the Lewis line the
+    # real part of each regime's quadratic denominator is c_i+a_i*u^2.
+    # Conditioning on the regime path then yields, uniformly in its generator,
+    #
+    # |phi(u-i/2)| <= exp(H*T)*(1+q*u^2)^(-alpha*T).
+    #
+    # Thus its Lewis tail is at most
+    #
+    # exp(H*T)*q^(-alpha*T)*R^(-(2*alpha*T+1))/(2*alpha*T+1).
+    #
     # We independently integrate the exact full transform and the quadratic
     # slow mode stopped at the largest R for which |g_tilde|/lambda <= r.
     # The calculation illustrates both parts of the rigorous triangle bound.
     rate, maturity, spot, strike = 0.03, 1.0, 100.0, 100.0
     envelope_ratio = 0.35
+    decay_q, decay_alpha, decay_h, decay_c = variance_gamma_shifted_decay(rate)
+    decay_power = 2.0 * decay_alpha * maturity + 1.0
 
     def vg_cf(u, lam, approximate=False):
         gbar, gtilde, _ = variance_gamma_parts(u - 0.5j, rate)
@@ -261,26 +304,53 @@ def main():
         universal_tail = half_moment * (
             math.pi - 2.0 * math.atan(2.0 * window)
         )
+        vg_tail = (math.exp(decay_h * maturity)
+                   * decay_q ** (-decay_alpha * maturity)
+                   * window ** (-decay_power) / decay_power)
+        assert vg_tail < universal_tail
+
+        # Direct pointwise checks are not part of the proof, but guard the
+        # implementation of its constants over five frequency decades.
+        for u in np.geomspace(1.0e-2, 1.0e4, 200):
+            decay_bound = (math.exp(decay_h * maturity)
+                           * (1.0 + decay_q * u * u)
+                           ** (-decay_alpha * maturity))
+            assert abs(vg_cf(u, lam)) <= decay_bound * (1.0 + 2e-11)
+
         price_error = price_prefactor * abs(exact_full - approx_window)
-        price_bound = price_prefactor * (interior_l1 + universal_tail)
+        price_bound = price_prefactor * (interior_l1 + vg_tail)
         assert price_error <= price_bound * (1.0 + 2e-10)
         inversion_rows.append((lam, window, price_error, price_bound,
                                price_prefactor * interior_l1,
+                               price_prefactor * vg_tail,
                                price_prefactor * universal_tail))
 
     inversion_orders = [
         math.log(inversion_rows[j][2] / inversion_rows[j + 1][2], 2.0)
         for j in range(len(inversion_rows) - 1)
     ]
+    interior_orders = [
+        math.log(inversion_rows[j][4] / inversion_rows[j + 1][4], 2.0)
+        for j in range(len(inversion_rows) - 1)
+    ]
     assert min(inversion_orders) > 2.8
+    assert min(interior_orders) > 2.8
     # The universal tail certificate is only first order when R is linear in
-    # lambda.  Faster observed convergence uses model-specific Fourier decay.
-    tail_orders = [
+    # lambda.  The VG-specific certificate is fifth order here because
+    # alpha=2 and T=1.  The computed triangle bound is consequently dominated
+    # by its numerically integrated third-order interior term at large lambda.
+    vg_tail_orders = [
         math.log(inversion_rows[j][5] / inversion_rows[j + 1][5], 2.0)
         for j in range(len(inversion_rows) - 1)
     ]
-    assert min(tail_orders) > 0.8
-    assert max(tail_orders) < 1.2
+    universal_tail_orders = [
+        math.log(inversion_rows[j][6] / inversion_rows[j + 1][6], 2.0)
+        for j in range(len(inversion_rows) - 1)
+    ]
+    assert min(vg_tail_orders) > 4.8
+    assert max(vg_tail_orders) < 5.3
+    assert min(universal_tail_orders) > 0.8
+    assert max(universal_tail_orders) < 1.2
 
     print('exact split max error:', f'{max_identity_error:.3e}')
     print('largest layer / rigorous bound:', f'{max_layer_ratio:.6f}')
@@ -297,14 +367,23 @@ def main():
     print('VG omega_tilde:', f'{omega_tilde:.11f}')
     for u, size, ratio in rows:
         print(f'  u={u:8.0f}  |g_tilde|={size:12.6f}  g_tilde/(iu)={ratio.real:.9f}{ratio.imag:+.9f}i')
-    print('Lewis inversion certificate (lambda, R, error, bound, interior, tail):')
+    print('VG shifted-decay constants (c, q, alpha, H, tail power):',
+          [f'{x:.9f}' for x in decay_c], f'{decay_q:.12f}',
+          f'{decay_alpha:.6f}', f'{decay_h:.12f}',
+          f'{decay_power:.6f}')
+    print('Lewis inversion certificate '
+          '(lambda, R, error, bound, interior, VG tail, universal tail):')
     for row in inversion_rows:
         print(' ', f'{row[0]:5.0f}', f'{row[1]:10.4f}',
               *(f'{x:.6e}' for x in row[2:]))
     print('windowed-price observed orders:',
           [f'{x:.4f}' for x in inversion_orders])
+    print('interior-L1 observed orders:',
+          [f'{x:.4f}' for x in interior_orders])
+    print('VG-tail-bound observed orders:',
+          [f'{x:.4f}' for x in vg_tail_orders])
     print('universal-tail-bound observed orders:',
-          [f'{x:.4f}' for x in tail_orders])
+          [f'{x:.4f}' for x in universal_tail_orders])
     print('PASS')
 
 

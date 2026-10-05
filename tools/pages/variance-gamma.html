@@ -180,6 +180,31 @@
     $R=O(\sqrt\lambda)$ it is only $O(\lambda^{-1/2})$. Faster price rates require a model-specific decay bound for
     the shifted characteristic function. These are upper-bound limitations, not lower bounds on the actual error.</p>
 
+    <h3>A variance-gamma tail certificate</h3>
+    <p>For variance gamma the missing decay can be bounded directly, uniformly in the switching rate and, in fact,
+    uniformly over the generator of any finite-state regime chain. Put</p>
+    $$a_i=\tfrac12\sigma_i^2\nu_i,\qquad b_i=\theta_i\nu_i,\qquad
+      c_i=1-\tfrac12b_i-\tfrac14a_i,$$
+    <p>and assume $c_i&gt;0$ in every regime. On the Lewis line $z=u-i/2$,</p>
+    $$\operatorname{Re}\big(1-ib_i z+a_i z^2\big)=c_i+a_i u^2.$$
+    <p>Therefore, with</p>
+    $$q=\min_i\frac{a_i}{c_i},\qquad \alpha=\min_i\frac1{\nu_i},\qquad
+      H=\max_i\left\{\frac{r+\omega_i}{2}-\frac{\log c_i}{\nu_i}\right\},$$
+    <p>the real part of every regime exponent obeys</p>
+    $$\operatorname{Re}g_i(u-i/2)\leq H-\alpha\log(1+qu^2).$$
+    <p>Conditional on the whole regime path, the transform is the exponential of the time integral of the active
+    exponent. Taking absolute values before averaging consequently proves the generator-uniform estimate</p>
+    <div class="equation-card">
+    $$|\phi_i(u-i/2)|\leq e^{HT}(1+qu^2)^{-\alpha T},$$
+    $$\int_R^\infty\frac{|\phi_i(u-i/2)|}{u^2+1/4}\,du
+      \leq\frac{e^{HT}q^{-\alpha T}}{2\alpha T+1}\,R^{-(2\alpha T+1)}.$$
+    </div>
+    <p>The last line uses $u^2+1/4\geq u^2$ and $1+qu^2\geq qu^2$. Thus an admissible
+    $R=O(\lambda)$ window has a variance-gamma tail certificate of order
+    $O(\lambda^{-(2\alpha T+1)})$, rather than the model-independent $O(\lambda^{-1})$.
+    This transfers a compact-frequency cubic rate whenever its weighted interior bound is $O(\lambda^{-3})$ and
+    $2\alpha T+1\geq3$; it does not assert such an interior bound by itself.</p>
+
     <h3>Unequal transition rates</h3>
     <p>The radius-one conclusion is not an artifact of symmetric switching. Let the generator be
     $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ with $a,b&gt;0$, put
@@ -232,11 +257,16 @@
     <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
     The inversion certificate stops the quadratic slow mode at the largest window satisfying
     $|\tilde g|/\lambda\leq0.35$. For $\lambda=25,50,100,200$, those windows are
-    $140.64,289.28,592.38,1199.97$. The observed windowed-price errors are
-    $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$, while the rigorous
-    half-moment tail ceilings fall only with measured orders $1.040,1.034,1.018$. The example therefore displays
-    third-order accuracy, but the model-independent theorem certifies only a first-order tail until
-    variance-gamma-specific Fourier decay is used.</p>
+    $140.64,289.28,592.38,1199.97$. Here $c=(1.05859375,1.00964)$,
+    $q=0.001426250941$, $\alpha=2$, and $H=0.013005504422$, so the new tail exponent is five. The corresponding
+    rigorous price-tail ceilings are
+    $5.59\times10^{-5},1.52\times10^{-6},4.22\times10^{-8},1.24\times10^{-9}$, with measured orders
+    $5.203,5.170,5.092$. After adding the numerically integrated interior absolute errors, the full triangle
+    ceilings are $6.94\times10^{-5},3.25\times10^{-6},2.62\times10^{-7},2.88\times10^{-8}$ and dominate the
+    observed windowed-price errors
+    $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$. The model-specific theorem thus
+    removes the first-order tail obstruction; the remaining analytic task for a completely uniform cubic theorem
+    is an integrated bound on the expanding interior window.</p>
     <p>Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
     for the prices,
