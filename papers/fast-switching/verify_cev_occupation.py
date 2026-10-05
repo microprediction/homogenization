@@ -19,6 +19,9 @@ occupation moments extend those bounds to nonzero carry without asserting an
 occupation-time representation for the full clock law.  For nonzero carry, an
 exact Kummer-function Laplace transform of the weighted occupation clock is
 also checked against the independent time-inhomogeneous Feynman--Kac system.
+Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
+Wasserstein rate for merely Lipschitz clock payoffs, in contrast to the
+``kappa**(-1)`` centered Taylor bound for twice differentiable payoffs.
 """
 
 import math
@@ -207,6 +210,30 @@ def unequal_occupation_moments(start, rate_12, rate_21):
     mean = p * T + d * transient
     second = p * p * T * T + 2.0 * p * (q + d) * j + 2.0 * d * q * h
     return mean, second - mean * mean
+
+
+def occupation_wasserstein_distance(start, rate_12, rate_21):
+    """W_1 distance from U_T to its exact-mean point mass.
+
+    For a point mass at m=E[U_T], the transport cost and the Kantorovich dual
+    both equal E|U_T-m|.  The endpoint atom is retained explicitly and the
+    interior expectation is evaluated from the unequal-rate Bessel density.
+    """
+    mean, variance = unequal_occupation_moments(start, rate_12, rate_21)
+    exit_rate = rate_12 if start == 0 else rate_21
+    endpoint = T if start == 0 else 0.0
+    atom_cost = math.exp(-exit_rate * T) * abs(endpoint - mean)
+    interior_cost = quad(
+        lambda u: abs(u - mean)
+        * unequal_occupation_density(u, start, rate_12, rate_21),
+        0.0,
+        T,
+        points=[mean],
+        epsabs=2e-13,
+        epsrel=2e-13,
+        limit=250,
+    )[0]
+    return atom_cost + interior_cost, variance
 
 
 def _exp_integral(decay):
@@ -558,6 +585,34 @@ def main():
             )
             assert centered_error <= centered_bound
             assert stationary_error <= stationary_bound
+
+    # Sharp Lipschitz regularity gap.  Under a=kappa*q, b=kappa*p,
+    # sqrt(kappa)(U_T-EU_T) converges to N(0,2*p*q*T), so
+    # E|U_T-EU_T| ~ sqrt(4*p*q*T/(pi*kappa)).
+    p, q = 0.65, 0.35
+    kappas = (20.0, 40.0, 80.0, 160.0, 320.0, 640.0, 1280.0)
+    wasserstein_ratios = {0: [], 1: []}
+    variance_ratios = {0: [], 1: []}
+    for kappa in kappas:
+        a, b = kappa * q, kappa * p
+        normal_absolute_mean = math.sqrt(4.0 * p * q * T / (math.pi * kappa))
+        for start in (0, 1):
+            distance, variance = occupation_wasserstein_distance(start, a, b)
+            assert distance <= math.sqrt(variance) * (1.0 + 2e-12)
+            wasserstein_ratios[start].append(distance / normal_absolute_mean)
+            variance_ratios[start].append(distance / math.sqrt(variance))
+    for start in (0, 1):
+        assert all(
+            later > earlier
+            for earlier, later in zip(wasserstein_ratios[start], wasserstein_ratios[start][1:])
+        )
+        assert abs(wasserstein_ratios[start][-1] - 1.0) < 6e-4
+        assert abs(variance_ratios[start][-1] - math.sqrt(2.0 / math.pi)) < 2e-4
+        print(
+            f"Wasserstein start {start+1}: ratios to sharp normal asymptotic="
+            + ", ".join(f"{value:.7f}" for value in wasserstein_ratios[start])
+            + f"; terminal W1/sd={variance_ratios[start][-1]:.7f}"
+        )
 
     carry_rate, carry_dividend = 0.05, 0.01
     clock_growth = 2.0 * (1.0 - BETA) * (carry_rate - carry_dividend)

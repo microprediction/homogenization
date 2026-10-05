@@ -2517,5 +2517,16 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Rebolledo1980",
+  "authors": "Rebolledo, R.",
+  "year": 1980,
+  "title": "Central limit theorems for local martingales",
+  "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
+  "doi": "10.1007/bf00587353",
+  "url": "https://doi.org/10.1007/bf00587353",
+  "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
  }
 ]
