@@ -512,47 +512,69 @@
       \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
       \le\delta^{\rm HS}_{n,m}.$$
     </div>
-    <h4>The whole realized-coverage law, not only one tail</h4>
+    <h4>The whole realized-coverage law, including ties</h4>
     <p>The preceding event comparison is one projection of a stronger exact
-      consequence. Under the iid pooled panel, the probability integral
-      transform sends every score to a uniform random variable, so the
-      transformed $k$th order statistic is
-      $\operatorname{Beta}(k,n+1-k)$. Since
-      $C_0=\bar F(R_{(k)})$ is a measurable function of the score panel,
-      total variation contracts once more:</p>
+      consequence. Continuity is unnecessary if ties are randomized. For a
+      pooled score with CDF $\bar F$, attach an independent
+      $V\sim\operatorname{Unif}(0,1)$ and use the distributional transform</p>
+    $$U=\bar F(R^-)+V\{\bar F(R)-\bar F(R^-)\}.$$
+    <p>This $U$ is exactly uniform for an arbitrary pooled score law
+      (<a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf,
+      2009</a>), and ordering $U$ is equivalent to lexicographically ordering
+      $(R,V)$. Adding the same independent tie-breaking kernel to the
+      dependent and iid panels cannot increase total variation. Hence, if
+      $C_0^\circ=U_{(k)}$,</p>
     <div class="equation-card">
     $$d_{\rm TV}\!\left(
-      {\cal L}_{n,m}(C_0),\operatorname{Beta}(k,n+1-k)
+      {\cal L}_{n,m}(C_0^\circ),\operatorname{Beta}(k,n+1-k)
       \right)
       \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
       \le\delta^{\rm HS}_{n,m}\le\delta^{\rm gap}_{n,m}.$$
     </div>
     <p>Thus, writing $I_x(k,n+1-k)$ for the beta CDF,</p>
     $$\sup_{0\le x\le1}\left|
-      \Pr_\pi\{C_0\le x\}-I_x(k,n+1-k)\right|
+      \Pr_\pi\{C_0^\circ\le x\}-I_x(k,n+1-k)\right|
       \le\delta^{\rm KL}_{n,m}.$$
     <p>More generally, every measurable $\phi:[0,1]\to[0,1]$ obeys</p>
-    $$\left|\mathbb E_\pi\phi(C_0)
+    $$\left|\mathbb E_\pi\phi(C_0^\circ)
        -\mathbb E\phi(B_{k,n+1-k})\right|
        \le\delta^{\rm KL}_{n,m}.$$
     <p>For example, for every integer $r\ge1$,</p>
-    $$\left|\mathbb E_\pi C_0^r
+    $$\left|\mathbb E_\pi (C_0^\circ)^r
        -\frac{(k)^{\overline r}}{(n+1)^{\overline r}}\right|
        \le\delta^{\rm KL}_{n,m},$$
     <p>where the overline denotes a rising factorial. In particular the
       randomized pooled coverage mean differs from $k/(n+1)$ by at most the
       same panel-law error. This is a distributional finite-sample result;
       it does not substitute an effective sample size into a beta law.</p>
+    <p>If ties are instead retained deterministically, let
+      $C_0=\bar F(R_{(k)})$ and define
+      $H_{\bar F}(c)=\Pr_{R\sim\bar F}\{\bar F(R)\le c\}$. Under the iid
+      pooled panel, the exact atomic comparator is</p>
+    $$\Pr\{C_0\le c\}=I_{H_{\bar F}(c)}(k,n+1-k).$$
+    <p>Consequently the dependent panel obeys</p>
+    <div class="equation-card">
+    $$\sup_{0\le c\le1}\left|
+      \Pr_\pi\{C_0\le c\}
+      -I_{H_{\bar F}(c)}(k,n+1-k)\right|
+      \le\delta^{\rm KL}_{n,m}.$$
+    </div>
+    <p>Because $H_{\bar F}(c)\le c$, deterministic tie retention is
+      conservative in the iid comparator and also gives the simpler bound
+      $\Pr_\pi\{C_0\le c\}\le I_c(k,n+1-k)+\delta^{\rm KL}_{n,m}$.
+      The exact $H_{\bar F}$ formula separates that discreteness effect from
+      calibration dependence and can be much sharper than this envelope.</p>
     <p>The terminal-state relaxation bound converts this marginal law into a
       transparent state-specific PAC statement without claiming conditional
       conformal validity. For a specified current state $i$, define the
-      realized future coverage</p>
-    $$D_i(\widehat q)=\Pr(R_\Delta\le\widehat q
-       \mid\text{calibration history},Y_0=i).$$
-    <p>Since $|D_i(\widehat q)-C_0|\le H_i(\Delta)$ for every panel, putting
+      randomized realized future coverage $D_i^\circ(\widehat q)$, using an
+      independent tie uniform for the future score as well as the calibration
+      scores. Since
+      $|D_i^\circ(\widehat q)-C_0^\circ|\le H_i(\Delta)$ for every panel,
+      putting
       $u_i=\min\{1,p+H_i(\Delta)\}$ gives</p>
     <div class="equation-card">
-    $$\Pr_\pi\{D_i(\widehat q)&lt;p\}
+    $$\Pr_\pi\{D_i^\circ(\widehat q)&lt;p\}
       \le\min\left\{1,
         I_{u_i}(k,n+1-k)+\delta^{\rm KL}_{n,m}\right\}.$$
     </div>
@@ -563,15 +585,21 @@
       $\nu$ after burn-in $b$, replace the right-side panel error by</p>
     $$\min\left\{1,\delta^{\rm KL}_{n,m}
       +\frac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}\right\}.$$
-    <p>An exact nonreversible three-state certificate with continuous
-      exponential score laws, $n=12$, $k=10$, and scaled spacing $mh=1$
+    <p>An exact nonreversible three-state certificate with $n=12$, $k=10$,
+      and scaled spacing $mh=1$
       obtains $\delta^{\rm KL}_{n,m}=0.044220298466$. Across 97 pooled-CDF
       levels, the largest exact beta-CDF discrepancy is $0.000384664522$;
       the exact first three moment discrepancies are respectively
       $7.319\times10^{-5}$, $8.519\times10^{-5}$, and
       $7.268\times10^{-5}$. The count recursion evaluates each dependent
       CDF value without Monte Carlo, and numerical tail integration checks
-      the moment consequences independently.</p>
+      the moment consequences independently. A separate three-atom score
+      law gives a maximum randomized-transform beta-CDF discrepancy of
+      $0.000419796730$ on 99 levels and a maximum deterministic
+      atomic-comparator discrepancy of $0.000420433415$. At $c=0.8$,
+      $H_{\bar F}(c)=0.649319371728$: the dependent lower tail is
+      $0.149730544921$, the exact iid atomic comparator is $0.150150978336$,
+      and the looser continuous-beta envelope is $0.558345748480$.</p>
     <p>The Hilbert--Schmidt expression is intrinsic: it is the sum of the
       squared singular values of $P-\Pi$ on centered $L^2(\pi)$. If $Q_0$ is
       reversible with relaxation rates

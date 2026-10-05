@@ -2443,6 +2443,17 @@
  },
  {
   "role": "survey_conformal",
+  "key": "Ruschendorf2009",
+  "authors": "Rüschendorf, L.",
+  "year": 2009,
+  "title": "On the distributional transform, Sklar's theorem, and the empirical copula process",
+  "venue": "Journal of Statistical Planning and Inference 139(11):3921-3927",
+  "doi": "10.1016/j.jspi.2009.05.030",
+  "url": "https://doi.org/10.1016/j.jspi.2009.05.030",
+  "annotation": "Develops the randomized distributional transform for arbitrary, possibly discontinuous distributions. It supplies the exact uniformization used to transfer the full beta order-statistic law when pooled conformity scores have ties."
+ },
+ {
+  "role": "survey_conformal",
   "key": "Renyi1961",
   "authors": "Rényi, A.",
   "year": 1961,

@@ -1456,7 +1456,7 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
 
 
 def beta_order_statistic_transfer_checks(Q, pi, scales):
-    """Check the full Beta-law transfer for realized pooled coverage.
+    """Check the full coverage-law transfer, including atomic scores.
 
     Under the iid pooled comparator, applying the continuous pooled CDF to
     the kth score order statistic gives Beta(k,n+1-k).  Data processing
@@ -1464,7 +1464,9 @@ def beta_order_statistic_transfer_checks(Q, pi, scales):
     the random coverage C_0, not only to a selected lower-tail event.
     The dependent CDF below is computed exactly from the finite-state count
     recursion at each pooled probability; quadrature then checks the first
-    three moment consequences independently.
+    three moment consequences independently.  A second exact recursion checks
+    the randomized distributional transform for a three-atom score law and
+    the sharper iid atomic comparator for deterministic tie retention.
     """
     panel_size = 12
     rank = 10
@@ -1525,6 +1527,82 @@ def beta_order_statistic_transfer_checks(Q, pi, scales):
         moment_rows.append((order, dependent_moment, beta_moment,
                             discrepancy))
 
+    # Atomic-score certificate.  Randomized PIT makes the pooled transform
+    # exactly uniform even at atoms.  Conditional on each hidden state its CDF
+    # is piecewise linear; the same finite-state count recursion therefore
+    # gives the dependent kth-order CDF without simulation.
+    atom_probabilities = np.array([
+        [0.65, 0.25, 0.10],
+        [0.20, 0.55, 0.25],
+        [0.05, 0.25, 0.70],
+    ])
+    pooled_masses = pi @ atom_probabilities
+    pooled_right = np.cumsum(pooled_masses)
+    pooled_left = pooled_right - pooled_masses
+
+    def randomized_atomic_cdf(probability):
+        fractions = np.clip(
+            (probability - pooled_left) / pooled_masses, 0.0, 1.0
+        )
+        state_success = atom_probabilities @ fractions
+        count_law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), state_success
+        )
+        return count_law[rank:].sum()
+
+    atomic_grid = np.linspace(0.01, 0.99, 99)
+    atomic_discrepancies = np.array([
+        abs(
+            randomized_atomic_cdf(probability)
+            - betainc(rank, panel_size + 1 - rank, probability)
+        )
+        for probability in atomic_grid
+    ])
+    maximum_atomic_discrepancy = atomic_discrepancies.max()
+    maximizing_atomic_probability = atomic_grid[
+        atomic_discrepancies.argmax()
+    ]
+    assert maximum_atomic_discrepancy <= panel_tv_bound + 2e-14
+
+    # With deterministic ties, C_0=F(R_(k)) is discrete.  At a reported level
+    # c, its exact iid comparator is I_{H_F(c)}, where
+    # H_F(c)=P{F(R)<=c}; replacing H_F(c) by c is valid but often very loose.
+    deterministic_rows = []
+    for atom_index, coverage_level in enumerate(pooled_right):
+        state_success = atom_probabilities[:, :atom_index + 1].sum(axis=1)
+        count_law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), state_success
+        )
+        dependent_probability = count_law[rank:].sum()
+        iid_probability = betainc(
+            rank, panel_size + 1 - rank, coverage_level
+        )
+        deterministic_rows.append((
+            coverage_level, dependent_probability, iid_probability,
+            abs(dependent_probability - iid_probability),
+        ))
+    maximum_deterministic_discrepancy = max(
+        row[3] for row in deterministic_rows
+    )
+    assert maximum_deterministic_discrepancy <= panel_tv_bound + 2e-14
+
+    demonstration_level = 0.80
+    included_atoms = pooled_right <= demonstration_level
+    atomic_sublevel_probability = pooled_masses[included_atoms].sum()
+    state_success = atom_probabilities[:, included_atoms].sum(axis=1)
+    count_law = binary_count_distribution(
+        pi, [transition] * (panel_size - 1), state_success
+    )
+    dependent_sublevel = count_law[rank:].sum()
+    exact_iid_sublevel = betainc(
+        rank, panel_size + 1 - rank, atomic_sublevel_probability
+    )
+    continuous_beta_envelope = betainc(
+        rank, panel_size + 1 - rank, demonstration_level
+    )
+    assert atomic_sublevel_probability <= demonstration_level
+    assert dependent_sublevel <= continuous_beta_envelope + panel_tv_bound
+
     print("full Beta order-statistic transfer certificate:")
     print(
         f"  n={panel_size}, k={rank}, mh={scaled_spacing:.1f}: "
@@ -1540,6 +1618,22 @@ def beta_order_statistic_transfer_checks(Q, pi, scales):
             f"    {order:d}       {dependent:.12f}   {beta:.12f}"
             f"   {discrepancy:.3e}"
         )
+    print("  atomic randomized-PIT check:")
+    print(
+        f"    maximum exact Beta-CDF discrepancy on 99 points: "
+        f"{maximum_atomic_discrepancy:.12f} "
+        f"at u={maximizing_atomic_probability:.2f}"
+    )
+    print(
+        f"    maximum deterministic atomic-comparator discrepancy: "
+        f"{maximum_deterministic_discrepancy:.12f}"
+    )
+    print(
+        f"    at c={demonstration_level:.2f}, H_F(c)="
+        f"{atomic_sublevel_probability:.12f}: dependent "
+        f"{dependent_sublevel:.12f}, exact iid {exact_iid_sublevel:.12f}, "
+        f"continuous-Beta envelope {continuous_beta_envelope:.12f}"
+    )
 
 
 def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
