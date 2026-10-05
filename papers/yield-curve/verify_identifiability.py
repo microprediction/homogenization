@@ -1166,7 +1166,7 @@ def verify_long_end_conditioning():
     # the right singular vector of the whitened inverse problem.
     whitened_inverse_problem = np.linalg.solve(
         quote_covariance_root, inverse_problem)
-    _, correlated_singular_values, correlated_right = np.linalg.svd(
+    correlated_left, correlated_singular_values, correlated_right = np.linalg.svd(
         whitened_inverse_problem)
     correlated_weakest_coordinate = correlated_right[-1]
     correlated_weakest_direction = (
@@ -1235,6 +1235,71 @@ def verify_long_end_conditioning():
         correlated_projected_errors >= prior_radius))
     assert correlated_empirical_tail <= correlated_chi_tail_bound + 0.002
 
+    # Deterministic Mahalanobis error balls have the same exact recovery scale.
+    # At delta=rho*s_min the balls about the two weakest-direction priors touch
+    # at the common midpoint, so no estimator can be closer than rho to both.
+    robust_touching_radius = (
+        prior_radius * correlated_singular_values[-1])
+    robust_plus_error = (
+        midpoint - response.T @ correlated_prior_plus)
+    robust_minus_error = (
+        midpoint - response.T @ correlated_prior_minus)
+    robust_plus_whitened_norm = np.linalg.norm(np.linalg.solve(
+        quote_covariance_root, robust_plus_error))
+    robust_minus_whitened_norm = np.linalg.norm(np.linalg.solve(
+        quote_covariance_root, robust_minus_error))
+    assert abs(
+        robust_plus_whitened_norm / robust_touching_radius - 1.0
+    ) < 2e-10
+    assert abs(
+        robust_minus_whitened_norm / robust_touching_radius - 1.0
+    ) < 2e-10
+    midpoint_gls_coordinates = np.linalg.solve(
+        whitened_inverse_problem,
+        np.linalg.solve(
+            quote_covariance_root,
+            midpoint - response.T @ pi))
+    midpoint_gls_prior = project_simplex(
+        (pi + centered_basis @ midpoint_gls_coordinates)[None, :])[0]
+    assert abs(
+        np.linalg.norm(midpoint_gls_prior - correlated_prior_plus)
+        - prior_radius) < 2e-15
+    assert abs(
+        np.linalg.norm(midpoint_gls_prior - correlated_prior_minus)
+        - prior_radius) < 2e-15
+
+    # The upper bound delta/s_min is attained before simplex projection by
+    # choosing the weakest left-singular direction.  Random points throughout
+    # a smaller ball independently check the uniform inequality.
+    robust_delta = 0.37 * robust_touching_radius
+    robust_upper_bound = (
+        robust_delta / correlated_singular_values[-1])
+    worst_whitened_error = robust_delta * correlated_left[:, -1]
+    worst_coordinate_error = np.linalg.solve(
+        whitened_inverse_problem, worst_whitened_error)
+    exact_robust_ratio = (
+        np.linalg.norm(worst_coordinate_error) / robust_upper_bound)
+    assert abs(exact_robust_ratio - 1.0) < 2e-12
+
+    robust_samples = 10_000
+    ball_directions = rng.normal(
+        size=(robust_samples, len(offsets)))
+    ball_directions /= np.linalg.norm(
+        ball_directions, axis=1)[:, None]
+    ball_radii = rng.random(robust_samples) ** (1.0 / len(offsets))
+    whitened_ball_errors = (
+        robust_delta * ball_radii[:, None] * ball_directions)
+    robust_coordinate_errors = np.linalg.solve(
+        whitened_inverse_problem, whitened_ball_errors.T).T
+    robust_unconstrained = (
+        pi + robust_coordinate_errors @ centered_basis.T)
+    robust_projected = project_simplex(robust_unconstrained)
+    robust_projected_errors = np.linalg.norm(
+        robust_projected - pi, axis=1)
+    maximum_robust_ratio = float(np.max(
+        robust_projected_errors / robust_upper_bound))
+    assert maximum_robust_ratio <= 1.0 + 2e-12
+
     scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
     scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
     scaled_determinants = determinants * np.exp(
@@ -1277,6 +1342,12 @@ def verify_long_end_conditioning():
     print("correlated projected tail and chi upper bound: "
           f"{correlated_empirical_tail:.9f}, "
           f"{correlated_chi_tail_bound:.9f}")
+    print("deterministic touching-ball radius and midpoint losses: "
+          f"{robust_touching_radius:.9e}, "
+          f"{np.linalg.norm(midpoint_gls_prior - correlated_prior_plus):.9e}, "
+          f"{np.linalg.norm(midpoint_gls_prior - correlated_prior_minus):.9e}")
+    print("deterministic inverse exact/random upper-bound ratios: "
+          f"{exact_robust_ratio:.12f}, {maximum_robust_ratio:.12f}")
 
 
 def verify_complex_long_end_aliasing():

@@ -475,6 +475,58 @@
       within $0.002$ and one percent respectively; simplex projection again obeys the
       $\chi_3$ tail bound.</p>
 
+    <h3>Deterministic quote-error balls: the same sharp scale</h3>
+    <p>The singular-value threshold is not an artifact of Gaussian tails. Consider the
+      adversarial observation model</p>
+    $$Y=C_M^\top\nu+e,\qquad
+      \|\Gamma_M^{-1/2}e\|_2\le\delta,$$
+    <p>with no probability law for $e$. Keep the definitions
+      $B_M=\Gamma_M^{-1/2}C_M^\top U$ and
+      $s_{M,\Gamma}=\sigma_{\min}(B_M)&gt;0$. The projected generalized inverse</p>
+    $$\widehat x=B_M^\dagger\Gamma_M^{-1/2}
+      (Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\pi+U\widehat x)$$
+    <p>obeys the deterministic, uniform bound</p>
+    <div class="equation-card">
+    $$\sup_{\nu\in\Delta}\ \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+      \|\widehat\nu-\nu\|_2
+      \le {\delta\over s_{M,\Gamma}}.$$
+    </div>
+    <p>To see this, write $\nu=\pi+Ux$. Full column rank gives
+      $\widehat x-x=B_M^\dagger\Gamma_M^{-1/2}e$; the operator norm of
+      $B_M^\dagger$ is $1/s_{M,\Gamma}$, $U$ is an isometry, and projection onto
+      the simplex cannot increase distance from the true $\nu\in\Delta$.</p>
+    <p>The scale is also necessary, with no constants hidden. Fix
+      $0&lt;\rho\le\min_i\pi_i$ and let $x_M$ be a unit right singular vector for
+      $s_{M,\Gamma}$, $h_M=Ux_M$, and $\nu_\pm=\pi\pm\rho h_M$. If
+      $\delta\ge\rho s_{M,\Gamma}$, the two admissible observation sets intersect
+      at $y_*=C_M^\top\pi$: the errors
+      $e_\pm=y_*-C_M^\top\nu_\pm$ have whitened norm exactly
+      $\rho s_{M,\Gamma}$. Since $\|\nu_+-\nu_-\|_2=2\rho$, every estimator
+      evaluated at $y_*$ is at distance at least $\rho$ from one of the two priors.
+      Therefore</p>
+    <div class="equation-card">
+    $$\inf_{\widehat\nu}\ \sup_{\nu\in\Delta}\
+      \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+      \|\widehat\nu(Y)-\nu\|_2\ge\rho
+      \quad\text{whenever}\quad
+      \delta\ge\rho s_{M,\Gamma}.$$
+    </div>
+    <p>Thus uniform robust consistency holds when
+      $\delta_M/s_{M,\Gamma}\to0$ and fails whenever
+      $\delta_M\ge\rho s_{M,\Gamma}$ along a subsequence for some fixed feasible
+      $\rho$. Under the uniformly bounded covariance hypothesis above, the real-spectrum
+      long-end tolerance is again
+      $\Theta(e^{-a_{r-1}M})$. This is a worst-case deterministic statement, distinct
+      from the preceding Gaussian probability statements. The comparison belongs
+      to the optimal-recovery/statistical-estimation correspondence developed by
+      <a href="./bibliography.html#Donoho1994">Donoho (1994)</a>; the constants here are
+      exact because the finite-dimensional ellipsoid is resolved directly by the SVD.</p>
+    <p>For the correlated four-state certificate at $M=4$, the two adversarial
+      Mahalanobis balls touch exactly at the common midpoint. Direct generalized
+      inversion attains $\delta/s_{M,\Gamma}$ in the weakest left-singular direction,
+      and 10,000 errors sampled throughout a smaller ball all satisfy the uniform bound.</p>
+
     <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
     <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
       In three states, suppose the centered eigenvalues are $-a\pm ib$, with $a,b&gt;0$,
