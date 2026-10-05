@@ -22,16 +22,12 @@ HEADER = """<header class="site-header">
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -104,7 +100,29 @@ FOOTER = """  <footer>
     Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
   </footer>"""
 
+# The model-by-model pricing pages live at regimelib.org, beside the Python that evaluates them. Their sources and
+# generators stay in this repository; the published page is a redirect.
+MOVED = {'black-scholes': 'black_scholes', 'heston': 'heston', 'merton': 'merton', 'bates': 'bates', 'variance-gamma': 'variance_gamma', 'hull-white': 'hull_white', 'g2': 'g2', 'equity-rates': 'equity_rates', 'cev': 'cev', 'cir': 'cir', 'jumps': 'vasicek_jumps', 'bond-options': 'bond_options', 'instruments': 'instruments'}
+REDIRECT = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Moved to regimelib.org</title>
+  <link rel="canonical" href="{url}" />
+  <meta http-equiv="refresh" content="0; url={url}" />
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <p>This page has moved to <a href="{url}">{url}</a>.</p>
+</body>
+</html>
+"""
+
 for src in sorted((ROOT / "tools" / "pages").glob("*.html")):
+    if src.stem in MOVED:
+        (ROOT / "docs" / src.name).write_text(REDIRECT.format(url=f"https://regimelib.org/models/{MOVED[src.stem]}.html"))
+        print("redirect docs/" + src.name)
+        continue
     text = src.read_text()
     m = re.match(r"<!-- title: (.*?)( \| math)?( \| extra: (.*?))? -->\n", text)
     title, math, extra = m.group(1), bool(m.group(2)), m.group(4) or ""

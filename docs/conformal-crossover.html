@@ -28,16 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -665,8 +661,8 @@
     $$p=\Lambda'(0),\qquad \sigma^2=\Lambda''(0)&gt;0,
       \qquad \kappa_3=\Lambda'''(0),\qquad
       \kappa_4=\Lambda^{(4)}(0),\qquad
-      \beta_{1,\nu}=B_\nu'(0),\qquad
-      \beta_{2,\nu}=B_\nu''(0).$$
+      b_{1,\nu}=B_\nu'(0),\qquad
+      b_{2,\nu}=B_\nu''(0).$$
     <p>For integer thresholds $k_n$, use the half-integer tail coordinate</p>
     $$x_n=\frac{k_n-\tfrac12-np}{\sigma\sqrt n}.$$
     <p>Write $H_1(x)=x$, $H_3(x)=x^3-3x$, and
@@ -677,13 +673,13 @@
       =\overline\Phi(x_n)+\phi(x_n)
        \left\{\frac{A_{1,\nu}(x_n)}{\sqrt n}
        +\frac{A_{2,\nu}(x_n)}n\right\}+O_K(n^{-3/2}),$$
-    $$A_{1,\nu}(x)=\frac{\beta_{1,\nu}}{\sigma}
+    $$A_{1,\nu}(x)=\frac{b_{1,\nu}}{\sigma}
        +\frac{\kappa_3}{6\sigma^3}(x^2-1),$$
     $$A_{2,\nu}(x)=
-      \left\{\frac{\beta_{2,\nu}}{2\sigma^2}
+      \left\{\frac{b_{2,\nu}}{2\sigma^2}
       -\frac1{24\sigma^2}\right\}H_1(x)
       +\left\{\frac{\kappa_4}{24\sigma^4}
-      +\frac{\beta_{1,\nu}\kappa_3}{6\sigma^4}\right\}H_3(x)
+      +\frac{b_{1,\nu}\kappa_3}{6\sigma^4}\right\}H_3(x)
       +\frac{\kappa_3^2}{72\sigma^6}H_5(x).$$
     </div>
     <p>Both first-order terms are necessary. The skewness term comes from the
@@ -691,9 +687,9 @@
       the order-one mean shift: the spectral decomposition
       $\mathbb E_\nu e^{\theta S_n}
       =B_\nu(\theta)e^{n\Lambda(\theta)}+O(\rho^n)$ implies
-      $\mathbb E_\nu S_n=np+\beta_{1,\nu}+O(\rho^n)$. Hence a positive
-      $\beta_{1,\nu}$ raises the upper tail. For a stationary start,
-      $\beta_{1,\pi}=0$ because the finite-panel mean is exactly $np$.</p>
+      $\mathbb E_\nu S_n=np+b_{1,\nu}+O(\rho^n)$. Hence a positive
+      $b_{1,\nu}$ raises the upper tail. For a stationary start,
+      $b_{1,\pi}=0$ because the finite-panel mean is exactly $np$.</p>
     <p>For completeness, the proof is a local Fourier expansion rather than a
       continuation of the singular large-deviation prefactor. At frequency
       $t/(\sigma\sqrt n)$, expand $\log B_\nu$ through first order and
@@ -703,8 +699,10 @@
       producing $k_n-\tfrac12$; omitting this continuity correction leaves an
       order-$n^{-1/2}$ periodic term. At second order, expanding
       $\log B_\nu$ through quadratic order and $n\Lambda$ through fourth
-      order gives the $\beta_{2,\nu}$, $\kappa_4$,
-      $\beta_{1,\nu}\kappa_3$, and $\kappa_3^2$ terms. The midpoint
+      order and then exponentiating recombines
+      $(\log B_\nu)''(0)$ with $\{(\log B_\nu)'(0)\}^2$ into
+      $b_{2,\nu}=B_\nu''(0)$. This gives the $b_{2,\nu}$, $\kappa_4$,
+      $b_{1,\nu}\kappa_3$, and $\kappa_3^2$ terms. The midpoint
       Euler&ndash;Maclaurin formula contributes the separate
       $-H_1/(24\sigma^2)$ lattice term. Positivity of $P$ and
       $0&lt;f_i&lt;1$ give strict Fourier contraction away from zero, while the
@@ -717,8 +715,9 @@
       chains are established by
       <a href="./bibliography.html#Pudlo2010">Pudlo (2010)</a>.</p>
     <p>The remainder is uniform over the entire initial-law simplex. Indeed,
-      $B_\nu$, $B_\nu'(0)$ and $B_\nu''(0)$ are linear in $\nu$ because the
-      exact matrix MGF is linear in its starting law. The exact tail and the
+      $B_\nu$, $b_{1,\nu}=B_\nu'(0)$ and
+      $b_{2,\nu}=B_\nu''(0)$ are linear in $\nu$ because the exact matrix MGF
+      is linear in its starting law. The exact tail and the
       displayed truncated expansion are therefore both affine in $\nu$.
       Their signed difference is affine too, so</p>
     $$\sup_{\nu\in\mathcal P(\{1,\ldots,d\})}
@@ -730,8 +729,8 @@
     <p>The exact-law certificate uses the nonstationary start concentrated in
       state zero, for which
       $\sigma^2=0.261098129759$, $\kappa_3=-0.350878968118$,
-      $\kappa_4=0.328775644197$, $\beta_{1,\nu}=0.653945953614$, and
-      $\beta_{2,\nu}=-0.497726343467$. Over target coordinates
+      $\kappa_4=0.328775644197$, $b_{1,\nu}=0.653945953614$, and
+      $b_{2,\nu}=-0.497726343467$. Over target coordinates
       $x\in\{-1,0,1,2\}$, the maximum uncorrected Gaussian error falls from
       $0.062972628$ at $n=120$ to $0.022139640$ at $n=960$, with
       $\sqrt n$ times that error nearly constant. Including skewness but
@@ -861,6 +860,16 @@
       -0.925371653715,
       1.430373003343,
       -1.538351359308).$$
+    <p>These $\beta_{k,\nu}$ are boundary <em>cumulants</em>, hence
+      derivatives of $\log B_\nu=\log A_\nu-\Lambda$. They are deliberately
+      distinct from the ordinary amplitude derivatives $b_{k,\nu}$ in the
+      Edgeworth theorem. In particular,</p>
+    $$b_{1,\nu}=\beta_{1,\nu},\qquad
+      b_{2,\nu}=\beta_{2,\nu}+\beta_{1,\nu}^2.$$
+    <p>For the state-zero start, this gives
+      $b_{2,e_0}=-0.925371653715+(0.653945953614)^2
+      =-0.497726343467$, exactly the coefficient used in the second-order
+      Edgeworth term.</p>
     <p>At $n=60$, all eight constants agree with cumulants extracted
       independently from the exact coefficient law within
       $1.17\times10^{-8}$. These are fixed-$P$ boundary corrections in panel

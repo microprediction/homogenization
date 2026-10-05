@@ -308,20 +308,24 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     # the Gaussian saddle.  For P(S_n >= k), summing the local expansion puts
     # the normal coordinate at k-1/2.  The first derivative of log B_nu is an
     # order-one mean shift and therefore contributes at the same n^{-1/2}
-    # order as skewness.  At the next order, the boundary variance, fourth
-    # cumulant, cross-products and the midpoint Euler--Maclaurin correction
-    # all contribute.  A nonstationary point mass makes these boundary terms
-    # visible; exact coefficient tails certify the signs and the O(n^{-3/2})
-    # remainder on a fixed compact set of standardized thresholds.
+    # order as skewness.  At the next order, the ordinary second derivative
+    # B_nu''(0), the fourth cumulant, cross-products and the midpoint
+    # Euler--Maclaurin correction all contribute.  A nonstationary point mass
+    # makes these boundary terms visible; exact coefficient tails certify the
+    # signs and the O(n^{-3/2}) remainder on a fixed compact set of
+    # standardized thresholds.
     central_initial = np.array([1.0, 0.0, 0.0])
     (central_mean, central_variance, central_third,
      central_fourth) = perron_cumulant_rates(
         transition, pi, success, 4)
     central_sigma = math.sqrt(central_variance)
-    (central_boundary_mean,
-     central_boundary_variance) = cauchy_derivatives(
+    (central_boundary_first,
+     central_boundary_log_second) = cauchy_derivatives(
         lambda theta: perron_boundary_log_cgf(
             transition, central_initial, success, theta), 2)
+    central_boundary_second = (
+        central_boundary_log_second + central_boundary_first ** 2
+    )
     central_rows = []
     for panel_size in (120, 240, 480, 960, 1920, 3840):
         law = binary_count_distribution(
@@ -348,16 +352,15 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
             corrected = (
                 skew_only
                 + density / math.sqrt(panel_size)
-                * central_boundary_mean / central_sigma)
+                * central_boundary_first / central_sigma)
             hermite_1 = x
             hermite_3 = x ** 3 - 3 * x
             hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
             second_coefficient = (
-                ((central_boundary_variance + central_boundary_mean ** 2)
-                 / (2 * central_sigma ** 2)
+                (central_boundary_second / (2 * central_sigma ** 2)
                  - 1 / (24 * central_sigma ** 2)) * hermite_1
                 + (central_fourth / (24 * central_sigma ** 4)
-                   + central_boundary_mean * central_third
+                   + central_boundary_first * central_third
                    / (6 * central_sigma ** 4)) * hermite_3
                 + central_third ** 2 / (72 * central_sigma ** 6)
                 * hermite_5)
@@ -380,8 +383,12 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         row[0] ** 1.5 * row[4] for row in central_rows])
     assert abs(central_mean - target) < 2e-14
     assert central_variance > 0
-    assert central_boundary_mean > 0.6
-    assert central_boundary_variance < -0.9
+    assert central_boundary_first > 0.6
+    assert central_boundary_log_second < -0.9
+    assert abs(
+        central_boundary_second
+        - (central_boundary_log_second + central_boundary_first ** 2)
+    ) < 1e-15
     assert np.max(abs(
         scaled_gaussian_errors - scaled_gaussian_errors[-1])) < 0.005
     assert np.max(scaled_corrected_errors) < 0.31
@@ -400,8 +407,9 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         f"  sigma^2 {central_variance:.12f},"
         f" kappa_3 {central_third:.12f},"
         f" kappa_4 {central_fourth:.12f},"
-        f" boundary mean {central_boundary_mean:.12f},"
-        f" boundary variance {central_boundary_variance:.12f}")
+        f" B'(0) {central_boundary_first:.12f},"
+        f" B''(0) {central_boundary_second:.12f},"
+        f" (log B)''(0) {central_boundary_log_second:.12f}")
 
     # The exact tail is linear in the initial law.  The approximation is also
     # linear once its boundary coefficients are written as B_nu'(0) and
@@ -413,11 +421,11 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         vertex_errors = []
         for initial_state in range(len(pi)):
             initial = np.eye(len(pi))[initial_state]
-            boundary_mean, boundary_log_variance = cauchy_derivatives(
+            boundary_first, boundary_log_second = cauchy_derivatives(
                 lambda theta: perron_boundary_log_cgf(
                     transition, initial, success, theta), 2)
             boundary_second = (
-                boundary_log_variance + boundary_mean ** 2
+                boundary_log_second + boundary_first ** 2
             )
             law = binary_count_distribution(
                 initial, [transition] * (panel_size - 1), success,
@@ -435,14 +443,14 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
                 hermite_3 = x ** 3 - 3 * x
                 hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
                 first_coefficient = (
-                    boundary_mean / central_sigma
+                    boundary_first / central_sigma
                     + central_third / (6 * central_sigma ** 3)
                     * (x ** 2 - 1))
                 second_coefficient = (
                     (boundary_second / (2 * central_sigma ** 2)
                      - 1 / (24 * central_sigma ** 2)) * hermite_1
                     + (central_fourth / (24 * central_sigma ** 4)
-                       + boundary_mean * central_third
+                       + boundary_first * central_third
                        / (6 * central_sigma ** 4)) * hermite_3
                     + central_third ** 2 / (72 * central_sigma ** 6)
                     * hermite_5)
