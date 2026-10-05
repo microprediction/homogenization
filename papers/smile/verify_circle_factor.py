@@ -12,6 +12,8 @@ Rademacher probes turn this population result into a finite random-probe
 certificate: 47 independent probe pairs give a universal one-percent miss
 bound at half the root-mean-square signal.  Unlike Gaussian probes, a single
 Rademacher pair can miss a nonzero skew form with positive probability.
+Median-of-means aggregation upgrades the finite-variance energy identity to
+an explicit relative-error confidence bound logarithmic in the failure level.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -260,6 +262,43 @@ def random_probe_detection_check(sample_count=400_000):
         exact_fourth_moment / exact_second_moment**2 - 1.0
     )
 
+    # The finite relative-variance bound becomes an exponential-confidence
+    # energy estimate by median amplification.  A block mean of b squared
+    # signals is outside relative error eps with probability at most
+    # v/(b eps^2).  Taking b >= 4v/eps^2 makes that probability at most 1/4;
+    # the median of k independent block means then fails with probability at
+    # most exp(-k/8).  Use the worst-case Gaussian constant v=5 here.
+    mom_epsilon = 0.5
+    mom_delta = 0.05
+    mom_blocks = math.ceil(8.0 * math.log(1.0 / mom_delta))
+    if mom_blocks % 2 == 0:
+        mom_blocks += 1
+    gaussian_mom_block_size = math.ceil(
+        4.0 * 5.0 / mom_epsilon**2
+    )
+    gaussian_mom_sample_size = (
+        mom_blocks * gaussian_mom_block_size
+    )
+    mom_failure_bound = math.exp(-mom_blocks / 8.0)
+    gaussian_mom_trials = sample_count // gaussian_mom_sample_size
+    gaussian_mom_values = signals[
+        :gaussian_mom_trials * gaussian_mom_sample_size
+    ] ** 2
+    gaussian_mom_estimates = np.median(
+        gaussian_mom_values.reshape(
+            gaussian_mom_trials,
+            mom_blocks,
+            gaussian_mom_block_size,
+        ).mean(axis=2),
+        axis=1,
+    )
+    gaussian_mom_relative_errors = np.abs(
+        gaussian_mom_estimates / exact_second_moment - 1.0
+    )
+    gaussian_mom_failure_frequency = np.mean(
+        gaussian_mom_relative_errors > mom_epsilon
+    )
+
     threshold_fraction = 0.5
     threshold = threshold_fraction * math.sqrt(exact_second_moment)
     empirical_detection_probability = np.mean(abs(signals) >= threshold)
@@ -316,6 +355,32 @@ def random_probe_detection_check(sample_count=400_000):
         exact_rademacher_fourth_moment / exact_second_moment**2 - 1.0
     )
     dimension_moment_constant = 6.0 - 8.0 / dimension
+    rademacher_variance_constant = 5.0 - 8.0 / dimension
+    rademacher_mom_block_size = math.ceil(
+        4.0 * rademacher_variance_constant / mom_epsilon**2
+    )
+    rademacher_mom_sample_size = (
+        mom_blocks * rademacher_mom_block_size
+    )
+    mom_rng = np.random.default_rng(20261005)
+    rademacher_mom_trials = 400
+    rademacher_mom_values = mom_rng.choice(
+        rademacher_signals,
+        size=rademacher_mom_trials * rademacher_mom_sample_size,
+    ).reshape(
+        rademacher_mom_trials,
+        mom_blocks,
+        rademacher_mom_block_size,
+    ) ** 2
+    rademacher_mom_estimates = np.median(
+        rademacher_mom_values.mean(axis=2), axis=1
+    )
+    rademacher_mom_relative_errors = np.abs(
+        rademacher_mom_estimates / exact_second_moment - 1.0
+    )
+    rademacher_mom_failure_frequency = np.mean(
+        rademacher_mom_relative_errors > mom_epsilon
+    )
     dimension_detection_bound = (
         (1.0 - threshold_fraction**2) ** 2 / dimension_moment_constant
     )
@@ -437,6 +502,12 @@ def random_probe_detection_check(sample_count=400_000):
     assert spectral_concentration <= 0.5 + 2e-14
     assert exact_fourth_moment <= 6.0 * exact_second_moment**2 * (1.0 + 2e-14)
     assert relative_energy_variance <= 5.0 + 2e-14
+    assert mom_blocks == 25
+    assert gaussian_mom_block_size == 80
+    assert gaussian_mom_sample_size == 2000
+    assert mom_failure_bound < mom_delta
+    assert gaussian_mom_trials == 200
+    assert gaussian_mom_failure_frequency < 0.02
     assert relative_fourth_moment_error < 3e-2
     assert empirical_detection_probability >= paley_zygmund_bound
     assert probes_for_one_percent == 47
@@ -463,6 +534,10 @@ def random_probe_detection_check(sample_count=400_000):
     assert rademacher_detection_probability >= dimension_detection_bound
     assert dimension_probes_for_one_percent == 25
     assert dimension_one_percent_miss_bound < 0.01
+    assert rademacher_variance_constant == 7.0 / 3.0
+    assert rademacher_mom_block_size == 38
+    assert rademacher_mom_sample_size == 950
+    assert rademacher_mom_failure_frequency < 0.02
     assert rademacher_zero_probability > 0.0
     assert canonical_zero_probability == 0.5
     assert maximum_harmonic_formula_error < 2e-13
@@ -479,6 +554,19 @@ def random_probe_detection_check(sample_count=400_000):
         "empirical_fourth_moment": empirical_fourth_moment,
         "relative_fourth_moment_error": relative_fourth_moment_error,
         "relative_energy_variance": relative_energy_variance,
+        "mom_epsilon": mom_epsilon,
+        "mom_delta": mom_delta,
+        "mom_blocks": mom_blocks,
+        "mom_failure_bound": mom_failure_bound,
+        "gaussian_mom_block_size": gaussian_mom_block_size,
+        "gaussian_mom_sample_size": gaussian_mom_sample_size,
+        "gaussian_mom_trials": gaussian_mom_trials,
+        "gaussian_mom_failure_frequency": (
+            gaussian_mom_failure_frequency
+        ),
+        "gaussian_mom_maximum_relative_error": np.max(
+            gaussian_mom_relative_errors
+        ),
         "threshold_fraction": threshold_fraction,
         "empirical_detection_probability": empirical_detection_probability,
         "paley_zygmund_bound": paley_zygmund_bound,
@@ -498,6 +586,16 @@ def random_probe_detection_check(sample_count=400_000):
             rademacher_relative_energy_variance
         ),
         "dimension_moment_constant": dimension_moment_constant,
+        "rademacher_variance_constant": rademacher_variance_constant,
+        "rademacher_mom_block_size": rademacher_mom_block_size,
+        "rademacher_mom_sample_size": rademacher_mom_sample_size,
+        "rademacher_mom_trials": rademacher_mom_trials,
+        "rademacher_mom_failure_frequency": (
+            rademacher_mom_failure_frequency
+        ),
+        "rademacher_mom_maximum_relative_error": np.max(
+            rademacher_mom_relative_errors
+        ),
         "dimension_detection_bound": dimension_detection_bound,
         "dimension_probes_for_one_percent": (
             dimension_probes_for_one_percent
@@ -727,6 +825,13 @@ def main():
         f"{probes['one_percent_miss_bound']:.6f}"
     )
     print(
+        f"   Gaussian median-of-means blocks/size/failure bound "
+        f"{probes['mom_blocks']}/{probes['gaussian_mom_block_size']}/"
+        f"{probes['mom_failure_bound']:.6f}; empirical failures/max error "
+        f"{probes['gaussian_mom_failure_frequency']:.6f}/"
+        f"{probes['gaussian_mom_maximum_relative_error']:.6f}"
+    )
+    print(
         f"   Rademacher fourth moment exact/enumerated "
         f"{probes['exact_rademacher_fourth_moment']:.9f}/"
         f"{probes['enumerated_rademacher_fourth_moment']:.9f}; "
@@ -745,6 +850,13 @@ def main():
         f"{probes['dimension_detection_bound']:.9f}; "
         f"{probes['dimension_probes_for_one_percent']} probes give miss "
         f"bound {probes['dimension_one_percent_miss_bound']:.6f}"
+    )
+    print(
+        f"   Rademacher median-of-means blocks/size/failure bound "
+        f"{probes['mom_blocks']}/{probes['rademacher_mom_block_size']}/"
+        f"{probes['mom_failure_bound']:.6f}; empirical failures/max error "
+        f"{probes['rademacher_mom_failure_frequency']:.6f}/"
+        f"{probes['rademacher_mom_maximum_relative_error']:.6f}"
     )
     print(
         f"   harmonic sharpness dimension/ratio/error "

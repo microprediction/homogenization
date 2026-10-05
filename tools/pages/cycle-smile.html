@@ -114,6 +114,34 @@
       consequently the Chebyshev bound</p>
     $$\Pr\!\left(\left|m^{-1}\sum_{k=1}^m\Xi_k^2/S_2-1\right|\ge\varepsilon\right)
       \le \frac{5}{m\varepsilon^2}.$$
+    <h3>Exponential confidence from median block means</h3>
+    <p>The polynomial Chebyshev tail can be amplified without assuming any
+      higher moments. Split the squared signals into $k$ independent blocks
+      of size $b$, take the mean inside each block, and let $\widehat S_2$ be
+      the median of those block means. If</p>
+    $$b\ge {4v\over\varepsilon^2},\qquad
+      k\ge8\log(1/\delta),$$
+    <p>with $k$ odd, where $v=5$ for Gaussian probes, then</p>
+    <div class="equation-card">
+    $$\Pr\!\left(\left|{\widehat S_2\over S_2}-1\right|
+      &gt;\varepsilon\right)\le e^{-k/8}\le\delta.$$
+    </div>
+    <p>Indeed, the variance calculation above and Chebyshev make each block
+      bad with probability at most $1/4$. The median is bad only if at least
+      half the blocks are bad, and Hoeffding's Bernoulli bound gives
+      $e^{-k/8}$. This is the classical repeat-and-take-the-median confidence
+      amplification used by
+      <a href="./bibliography.html#JerrumValiantVazirani1986">Jerrum, Valiant
+      and Vazirani (1986)</a>, applied here to squared skew-resolvent probes.</p>
+    <p>For Rademacher probes in centered dimension $d$, the sharper variance
+      constant is $v_d=5-8/d$, so the same theorem uses
+      $b\ge4v_d/\varepsilon^2$. At $\varepsilon=1/2$ and $\delta=0.05$,
+      $k=25$ gives the rigorous failure bound $e^{-25/8}=0.0439369$.
+      The Gaussian design uses $b=80$ and 2,000 probes in total. For the
+      four-state example, $d=3$, so bounded sign probes use $b=38$ and 950
+      probes. Across 200 Gaussian and 400 sign-probe certificate repetitions,
+      the observed failure frequencies are both zero; maximum relative errors
+      are $0.158228$ and $0.188130$, respectively.</p>
     <p>For the four-state certificate the paired-singular-value bound is attained: $S_4/S_2^2=1/2$ and the exact
       relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
       half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees
