@@ -673,8 +673,28 @@ def finite_rank_long_maturity_checks():
     determinant_target = (
         np.prod(stationary_values[-rank:]) * np.linalg.det(compressed)
     )
+    stationary_block = range_basis.T @ stationary_matrix @ range_basis
+    range_constant = range_basis.T @ constant_matrix @ range_basis
+    range_null_constant = range_basis.T @ constant_matrix @ null_basis
+    determinant_schur_constant = (
+        range_constant
+        - range_null_constant
+        @ np.linalg.solve(compressed, range_null_constant.T)
+    )
+    determinant_correction = np.trace(np.linalg.solve(
+        stationary_block, determinant_schur_constant
+    ))
+    determinant_ratios = np.asarray(determinants) / determinant_target
+    determinant_remainders = np.abs(
+        determinant_ratios - 1 - determinant_correction / horizons
+    )
+    determinant_remainder_orders = np.log2(
+        determinant_remainders[:-1] / determinant_remainders[1:]
+    )
     assert abs(conditions[-1] / condition_target - 1) < 0.002
     assert abs(determinants[-1] / determinant_target - 1) < 0.01
+    assert determinant_remainder_orders[-1] > 1.99
+    assert determinant_remainders[-1] < 2e-5
 
     inverse_orders = np.log2(
         np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
@@ -703,6 +723,11 @@ def finite_rank_long_maturity_checks():
           f"limit {condition_target:.10e}")
     print(f"  determinant/T^{rank} {determinants[-1]:.10e}, "
           f"limit {determinant_target:.10e}")
+    print(f"  determinant relative 1/T coefficient "
+          f"{determinant_correction:.10e}")
+    print(f"  corrected determinant remainder "
+          f"{determinant_remainders[-1]:.10e}, observed order "
+          f"{determinant_remainder_orders[-1]:.6f}")
     print(f"  inverse remainder {inverse_errors[-1]:.10e}, "
           f"observed order {inverse_orders[-1]:.6f}")
     print(f"  range inverse trace {range_traces[-1]:.10f}, "
