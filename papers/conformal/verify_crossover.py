@@ -23,7 +23,8 @@ A lattice Edgeworth certificate covers the complementary central zone.  It
 retains both the half-integer continuity correction and the arbitrary-start
 mean and variance hidden in the Perron boundary amplitude.  Its explicit
 second-order lattice term includes the midpoint Euler--Maclaurin correction
-and leaves an order-n^{-3/2} residual against exact coefficient tails.
+and leaves an order-n^{-3/2} residual against exact coefficient tails.  An
+all-vertices check certifies uniformity over every initial regime law.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
@@ -35,6 +36,11 @@ joint panel-size/fast-switching total-variation bounds on regular and
 irregular observation grids.  Their exact mutual-information and Renyi-2/
 weighted-Hilbert--Schmidt refinements retain every nonconstant singular mode
 instead of replacing them all by the slowest relaxation rate.  The same
+chain rule gives one exact arbitrary-start path entropy, combining residual
+initial memory and all within-panel transitions before Pinsker is applied.
+The resulting emitted-panel comparison is a marginal law over random panels,
+not a pointwise, feature-conditional, or training-conditional guarantee.  The
+same
 data-processing argument transfers the entire realized pooled
 coverage law to its finite-sample Beta order-statistic benchmark, controlling
 all bounded diagnostics and moments rather than only one failure event.  A
@@ -92,6 +98,38 @@ def dependence_hilbert_schmidt_squared(P, pi):
     singular_energy = np.linalg.norm(similarity, ord="fro") ** 2
     assert abs(row_chi_square - singular_energy) < 3e-13
     return row_chi_square
+
+
+def nonstationary_path_relative_entropy(initial, transitions, pi):
+    """Exact KL of a nonstationary Markov path from ``pi`` product measure.
+
+    The initial marginal is ``initial``.  ``transitions[t]`` carries the
+    marginal at time t to time t+1.  The returned transition terms retain the
+    changing pre-transition marginal rather than replacing it by stationarity.
+    """
+    initial = np.asarray(initial, dtype=float)
+    pi = np.asarray(pi, dtype=float)
+    assert initial.shape == pi.shape and np.all(pi > 0)
+
+    positive = initial > 0
+    initial_kl = float(np.sum(
+        initial[positive] * np.log(initial[positive] / pi[positive])
+    ))
+    marginal = initial.copy()
+    transition_terms = []
+    for transition in transitions:
+        transition = np.asarray(transition, dtype=float)
+        row_kl = np.zeros(len(pi))
+        positive_entries = transition > 0
+        log_density = np.zeros_like(transition)
+        log_density[positive_entries] = np.log(
+            transition[positive_entries]
+            / np.broadcast_to(pi, transition.shape)[positive_entries]
+        )
+        row_kl = np.sum(transition * log_density, axis=1)
+        transition_terms.append(float(marginal @ row_kl))
+        marginal = marginal @ transition
+    return initial_kl + sum(transition_terms), np.asarray(transition_terms)
 
 
 def cdf_vector(x, scales):
@@ -345,20 +383,24 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     # the Gaussian saddle.  For P(S_n >= k), summing the local expansion puts
     # the normal coordinate at k-1/2.  The first derivative of log B_nu is an
     # order-one mean shift and therefore contributes at the same n^{-1/2}
-    # order as skewness.  At the next order, the boundary variance, fourth
-    # cumulant, cross-products and the midpoint Euler--Maclaurin correction
-    # all contribute.  A nonstationary point mass makes these boundary terms
-    # visible; exact coefficient tails certify the signs and the O(n^{-3/2})
-    # remainder on a fixed compact set of standardized thresholds.
+    # order as skewness.  At the next order, the ordinary second derivative
+    # B_nu''(0), the fourth cumulant, cross-products and the midpoint
+    # Euler--Maclaurin correction all contribute.  A nonstationary point mass
+    # makes these boundary terms visible; exact coefficient tails certify the
+    # signs and the O(n^{-3/2}) remainder on a fixed compact set of
+    # standardized thresholds.
     central_initial = np.array([1.0, 0.0, 0.0])
     (central_mean, central_variance, central_third,
      central_fourth) = perron_cumulant_rates(
         transition, pi, success, 4)
     central_sigma = math.sqrt(central_variance)
-    (central_boundary_mean,
-     central_boundary_variance) = cauchy_derivatives(
+    (central_boundary_first,
+     central_boundary_log_second) = cauchy_derivatives(
         lambda theta: perron_boundary_log_cgf(
             transition, central_initial, success, theta), 2)
+    central_boundary_second = (
+        central_boundary_log_second + central_boundary_first ** 2
+    )
     central_rows = []
     for panel_size in (120, 240, 480, 960, 1920, 3840):
         law = binary_count_distribution(
@@ -385,16 +427,15 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
             corrected = (
                 skew_only
                 + density / math.sqrt(panel_size)
-                * central_boundary_mean / central_sigma)
+                * central_boundary_first / central_sigma)
             hermite_1 = x
             hermite_3 = x ** 3 - 3 * x
             hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
             second_coefficient = (
-                ((central_boundary_variance + central_boundary_mean ** 2)
-                 / (2 * central_sigma ** 2)
+                (central_boundary_second / (2 * central_sigma ** 2)
                  - 1 / (24 * central_sigma ** 2)) * hermite_1
                 + (central_fourth / (24 * central_sigma ** 4)
-                   + central_boundary_mean * central_third
+                   + central_boundary_first * central_third
                    / (6 * central_sigma ** 4)) * hermite_3
                 + central_third ** 2 / (72 * central_sigma ** 6)
                 * hermite_5)
@@ -417,8 +458,12 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         row[0] ** 1.5 * row[4] for row in central_rows])
     assert abs(central_mean - target) < 2e-14
     assert central_variance > 0
-    assert central_boundary_mean > 0.6
-    assert central_boundary_variance < -0.9
+    assert central_boundary_first > 0.6
+    assert central_boundary_log_second < -0.9
+    assert abs(
+        central_boundary_second
+        - (central_boundary_log_second + central_boundary_first ** 2)
+    ) < 1e-15
     assert np.max(abs(
         scaled_gaussian_errors - scaled_gaussian_errors[-1])) < 0.005
     assert np.max(scaled_corrected_errors) < 0.31
@@ -437,8 +482,72 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         f"  sigma^2 {central_variance:.12f},"
         f" kappa_3 {central_third:.12f},"
         f" kappa_4 {central_fourth:.12f},"
-        f" boundary mean {central_boundary_mean:.12f},"
-        f" boundary variance {central_boundary_variance:.12f}")
+        f" B'(0) {central_boundary_first:.12f},"
+        f" B''(0) {central_boundary_second:.12f},"
+        f" (log B)''(0) {central_boundary_log_second:.12f}")
+
+    # The exact tail is linear in the initial law.  The approximation is also
+    # linear once its boundary coefficients are written as B_nu'(0) and
+    # B_nu''(0)=d_nu+b_nu^2.  Hence the largest absolute remainder over the
+    # entire probability simplex is attained at a point-mass start.  Check
+    # every vertex independently at three panel sizes.
+    uniform_initial_rows = []
+    for panel_size in (120, 480, 1920):
+        vertex_errors = []
+        for initial_state in range(len(pi)):
+            initial = np.eye(len(pi))[initial_state]
+            boundary_first, boundary_log_second = cauchy_derivatives(
+                lambda theta: perron_boundary_log_cgf(
+                    transition, initial, success, theta), 2)
+            boundary_second = (
+                boundary_log_second + boundary_first ** 2
+            )
+            law = binary_count_distribution(
+                initial, [transition] * (panel_size - 1), success,
+                renormalize=True)
+            for target_x in (-1.0, 0.0, 1.0, 2.0):
+                threshold = math.ceil(
+                    panel_size * central_mean
+                    + central_sigma * math.sqrt(panel_size) * target_x
+                    + 0.5)
+                x = ((threshold - 0.5 - panel_size * central_mean)
+                     / (central_sigma * math.sqrt(panel_size)))
+                exact_tail = law[threshold:].sum()
+                density = math.exp(-0.5 * x ** 2) / math.sqrt(2 * math.pi)
+                hermite_1 = x
+                hermite_3 = x ** 3 - 3 * x
+                hermite_5 = x ** 5 - 10 * x ** 3 + 15 * x
+                first_coefficient = (
+                    boundary_first / central_sigma
+                    + central_third / (6 * central_sigma ** 3)
+                    * (x ** 2 - 1))
+                second_coefficient = (
+                    (boundary_second / (2 * central_sigma ** 2)
+                     - 1 / (24 * central_sigma ** 2)) * hermite_1
+                    + (central_fourth / (24 * central_sigma ** 4)
+                       + boundary_first * central_third
+                       / (6 * central_sigma ** 4)) * hermite_3
+                    + central_third ** 2 / (72 * central_sigma ** 6)
+                    * hermite_5)
+                approximation = (
+                    ndtr(-x)
+                    + density * first_coefficient / math.sqrt(panel_size)
+                    + density * second_coefficient / panel_size)
+                vertex_errors.append(abs(exact_tail - approximation))
+        uniform_initial_rows.append((panel_size, max(vertex_errors)))
+
+    uniform_scaled_errors = np.asarray([
+        panel_size ** 1.5 * error
+        for panel_size, error in uniform_initial_rows
+    ])
+    assert np.all(np.isfinite(uniform_scaled_errors))
+    assert uniform_initial_rows[-1][1] < uniform_initial_rows[0][1] / 12
+    print("uniform-in-initial-law second-order Edgeworth certificate:")
+    print("  n      worst vertex error   n^(3/2)*worst")
+    for panel_size, error in uniform_initial_rows:
+        print(
+            f"  {panel_size:4d}       {error:.9f}"
+            f"          {panel_size ** 1.5 * error:.9f}")
 
     variance_rate, variance_intercept, fundamental, centered = (
         perron_variance_terms(transition, pi, success))
@@ -1455,6 +1564,88 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     print(f"  mixed Bernoulli/lognormal limit: {joint_limit:.9f}")
 
 
+def nonstationary_joint_entropy_checks(Q, pi):
+    """Enumerate the exact arbitrary-start path-entropy comparison.
+
+    This deliberately nonreversible example checks the relative-entropy
+    chain rule independently by enumerating every hidden path.  A binary
+    emission then checks data processing and shows that applying Pinsker once
+    to the joint entropy can improve the usual burn-in-plus-stationary-panel
+    triangle bound.
+    """
+    initial = np.array([1.0, 0.0, 0.0])
+    burn_in = 0.2
+    spacing = 0.3
+    panel_size = 8
+    initial_after_burn_in = initial @ expm(burn_in * Q)
+    transition = expm(spacing * Q)
+    transitions = [transition] * (panel_size - 1)
+
+    path_kl, transition_terms = nonstationary_path_relative_entropy(
+        initial_after_burn_in, transitions, pi
+    )
+
+    path_law = []
+    iid_path_law = []
+    for path in itertools.product(range(len(pi)), repeat=panel_size):
+        probability = initial_after_burn_in[path[0]]
+        iid_probability = pi[path[0]]
+        for t in range(panel_size - 1):
+            probability *= transition[path[t], path[t + 1]]
+            iid_probability *= pi[path[t + 1]]
+        path_law.append(probability)
+        iid_path_law.append(iid_probability)
+    path_law = np.asarray(path_law)
+    iid_path_law = np.asarray(iid_path_law)
+    enumerated_kl = float(np.sum(path_law * np.log(
+        path_law / iid_path_law
+    )))
+    path_tv = 0.5 * np.sum(abs(path_law - iid_path_law))
+    joint_pinsker = min(1.0, math.sqrt(path_kl / 2))
+    assert abs(path_law.sum() - 1) < 3e-14
+    assert abs(iid_path_law.sum() - 1) < 3e-14
+    assert abs(path_kl - enumerated_kl) < 3e-14
+    assert path_tv <= joint_pinsker + 2e-14
+
+    success = np.array([0.15, 0.65, 0.90])
+    emitted_law = binary_panel_law(
+        initial_after_burn_in, transition, success, panel_size
+    )
+    pooled_success = float(pi @ success)
+    iid_emitted_law = np.asarray([
+        np.prod([
+            pooled_success if bit else 1 - pooled_success
+            for bit in pattern
+        ])
+        for pattern in itertools.product((0, 1), repeat=panel_size)
+    ])
+    emitted_tv = 0.5 * np.sum(abs(emitted_law - iid_emitted_law))
+    assert emitted_tv <= path_tv + 2e-14
+
+    density = transition / pi[None, :]
+    stationary_one_step_kl = float(np.sum(
+        pi[:, None] * transition * np.log(density)
+    ))
+    state_tv = 0.5 * np.sum(abs(initial_after_burn_in - pi))
+    additive_bound = min(
+        1.0,
+        state_tv
+        + math.sqrt((panel_size - 1) * stationary_one_step_kl / 2),
+    )
+    assert joint_pinsker < additive_bound
+
+    print("nonstationary joint path-entropy certificate:")
+    print(f"  initial KL {path_kl - transition_terms.sum():.12f},"
+          f" transition KL {transition_terms.sum():.12f},"
+          f" joint KL {path_kl:.12f}")
+    print(f"  enumerated hidden-path KL {enumerated_kl:.12f},"
+          f" hidden-path TV {path_tv:.12f}")
+    print(f"  emitted binary-panel TV {emitted_tv:.12f},"
+          f" joint Pinsker {joint_pinsker:.12f}")
+    print(f"  burn-in plus stationary-panel triangle bound"
+          f" {additive_bound:.12f}")
+
+
 def beta_order_statistic_transfer_checks(Q, pi, scales):
     """Check the full coverage-law transfer, including atomic scores.
 
@@ -1888,6 +2079,7 @@ def nonreversible_contraction_checks():
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
     joint_panel_mixing_checks(Q, pi, gamma_s)
+    nonstationary_joint_entropy_checks(Q, pi)
     beta_order_statistic_transfer_checks(Q, pi, scales)
     irregular_joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
@@ -1998,7 +2190,7 @@ def main():
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
           " count law, full Beta order-statistic transfer, regular- and"
-          " irregular-grid joint panel-size/"
+          " irregular-grid and arbitrary-start joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
           " persistent-plus-diffuse, and burned-start two-state limits,"
           " Perron tail rate,"

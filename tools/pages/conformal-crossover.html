@@ -415,6 +415,53 @@
       \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
       \le\delta^{\rm HS}_{n,m}.$$
     </div>
+    <h4>A single joint bound for an arbitrary start</h4>
+    <p>The initial-law and within-panel errors need not be separated by a
+      triangle inequality. Let $Y_1\sim\mu_1$, let $P_t$ carry $Y_t$ to
+      $Y_{t+1}$, and put $\mu_{t+1}=\mu_tP_t$. Assume each $P_t$ preserves the
+      same strictly positive law $\pi$. The relative-entropy chain rule gives
+      the exact nonstationary identity</p>
+    <div class="equation-card">
+    $$D\!\left\{{\cal L}_{\mu_1}(Y_{1:n})\Vert\pi^{\otimes n}\right\}
+      =D(\mu_1\Vert\pi)
+       +\sum_{t=1}^{n-1}\sum_i\mu_t(i)
+          D\!\left(P_t(i,\cdot)\Vert\pi\right)=:{\cal J}_{\mu,\boldsymbol P}.$$
+    </div>
+    <p>Indeed, the path log-likelihood ratio is the initial density ratio
+      plus the $n-1$ transition density ratios. Taking expectation under the
+      nonstationary path law produces the changing pre-transition marginal
+      $\mu_t$ in every summand. Passing this hidden path through arbitrary
+      conditionally independent state-specific emission kernels and applying
+      Pinsker once therefore yields</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{\mu_1}(R_{1:n}),
+          \bar{\cal L}^{\otimes n}\right\}
+       \le\delta^{\rm KL}_{\mu,\boldsymbol P}:=
+       \min\!\left\{1,\sqrt{\frac{{\cal J}_{\mu,\boldsymbol P}}2}\right\}.$$
+    </div>
+    <p>For a burn-in $b$ from $\nu$, take
+      $\mu_1=\nu e^{mQ_0b}$ and
+      $P_t=e^{mQ_0h_t}$. The formula allows unequal panel spacings and combines
+      residual start-up memory with every subsequent transition before the
+      square root is taken. At $\mu_1=\pi$ it reduces exactly to the
+      stationary regular- or irregular-grid identities above. The simpler
+      additive burn-in transfer remains a useful gap-only envelope, but it can
+      be looser because it applies total variation and a triangle inequality
+      before combining the two effects.</p>
+    <p>An eight-observation nonreversible three-state certificate starts from
+      state zero, uses scaled burn-in $0.2$ and spacing $0.3$, and enumerates
+      all $3^8$ hidden paths. The chain-rule and enumerated entropies both equal
+      $0.905666166906$ (initial contribution $0.227966925401$ and transition
+      contribution $0.677699241505$). Hidden-path TV is $0.518315896318$ and
+      the joint Pinsker bound is $0.672928735791$, compared with
+      $0.875891326846$ for exact initial-state TV plus the stationary-panel
+      Pinsker bound. After binary emissions with state success probabilities
+      $(0.15,0.65,0.90)$, data processing lowers the exact panel TV to
+      $0.204334689360$.</p>
+    <p>This is a comparison of <em>marginal laws over random panels</em>.
+      It controls every panel event and bounded panel functional, but it is
+      not pointwise, feature-conditional, or training-conditional conformal
+      coverage.</p>
     <h4>The whole realized-coverage law, including ties</h4>
     <p>The preceding event comparison is one projection of a stronger exact
       consequence. Continuity is unnecessary if ties are randomized. For a
@@ -485,7 +532,9 @@
       $i$ and $\Delta$ are fixed. It is therefore a PAC guarantee for a
       state-specific future coverage functional, not pointwise or
       feature-conditional coverage. If the panel follows an initial law
-      $\nu$ after burn-in $b$, replace the right-side panel error by</p>
+      $\nu$ after burn-in $b$, one may replace the right-side panel error by
+      the joint $\delta^{\rm KL}_{\mu,\boldsymbol P}$ above. A simpler
+      gap-only envelope is</p>
     $$\min\left\{1,\delta^{\rm KL}_{n,m}
       +\frac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}\right\}.$$
     <p>An exact nonreversible three-state certificate with $n=12$, $k=10$,
@@ -523,7 +572,10 @@
       <em>marginal law over calibration panels</em>; it does not turn ordinary
       pooled conformal prediction into pointwise, training-conditional, or
       feature-conditional coverage. From an initial law $\nu$ followed by a
-      burn-in $b$, either right side simply gains
+      burn-in $b$, the exact joint entropy bound
+      $\delta^{\rm KL}_{\mu,\boldsymbol P}$ can be used directly. If only the
+      stationary Hilbert&ndash;Schmidt or gap envelope is desired, the simpler
+      triangle bound adds
       $\tfrac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}$.</p>
     <p>A ten-state reversible certificate makes the improvement concrete.
       Two five-state clusters mix rapidly internally but communicate through
@@ -912,12 +964,13 @@
     <h3>The central-limit boundary: a second-order lattice Edgeworth bridge</h3>
     <p>The complementary zone has a different uniform approximation. Assume
       $P$ is fixed and positive, every emission probability satisfies
-      $0&lt;f_i&lt;1$, and the initial law $\nu$ is fixed. Put</p>
+      $0&lt;f_i&lt;1$. The initial law may be any probability vector $\nu$,
+      and may even vary with $n$. Put</p>
     $$p=\Lambda'(0),\qquad \sigma^2=\Lambda''(0)&gt;0,
       \qquad \kappa_3=\Lambda'''(0),\qquad
       \kappa_4=\Lambda^{(4)}(0),\qquad
-      b_\nu=(\log B_\nu)'(0),\qquad
-      d_\nu=(\log B_\nu)''(0).$$
+      b_{1,\nu}=B_\nu'(0),\qquad
+      b_{2,\nu}=B_\nu''(0).$$
     <p>For integer thresholds $k_n$, use the half-integer tail coordinate</p>
     $$x_n=\frac{k_n-\tfrac12-np}{\sigma\sqrt n}.$$
     <p>Write $H_1(x)=x$, $H_3(x)=x^3-3x$, and
@@ -928,13 +981,13 @@
       =\overline\Phi(x_n)+\phi(x_n)
        \left\{\frac{A_{1,\nu}(x_n)}{\sqrt n}
        +\frac{A_{2,\nu}(x_n)}n\right\}+O_K(n^{-3/2}),$$
-    $$A_{1,\nu}(x)=\frac{b_\nu}{\sigma}
+    $$A_{1,\nu}(x)=\frac{b_{1,\nu}}{\sigma}
        +\frac{\kappa_3}{6\sigma^3}(x^2-1),$$
     $$A_{2,\nu}(x)=
-      \left\{\frac{d_\nu+b_\nu^2}{2\sigma^2}
+      \left\{\frac{b_{2,\nu}}{2\sigma^2}
       -\frac1{24\sigma^2}\right\}H_1(x)
       +\left\{\frac{\kappa_4}{24\sigma^4}
-      +\frac{b_\nu\kappa_3}{6\sigma^4}\right\}H_3(x)
+      +\frac{b_{1,\nu}\kappa_3}{6\sigma^4}\right\}H_3(x)
       +\frac{\kappa_3^2}{72\sigma^6}H_5(x).$$
     </div>
     <p>Both first-order terms are necessary. The skewness term comes from the
@@ -942,9 +995,9 @@
       the order-one mean shift: the spectral decomposition
       $\mathbb E_\nu e^{\theta S_n}
       =B_\nu(\theta)e^{n\Lambda(\theta)}+O(\rho^n)$ implies
-      $\mathbb E_\nu S_n=np+b_\nu+O(\rho^n)$. Hence a positive $b_\nu$
-      raises the upper tail. For a stationary start, $b_\pi=0$ because the
-      finite-panel mean is exactly $np$.</p>
+      $\mathbb E_\nu S_n=np+b_{1,\nu}+O(\rho^n)$. Hence a positive
+      $b_{1,\nu}$ raises the upper tail. For a stationary start,
+      $b_{1,\pi}=0$ because the finite-panel mean is exactly $np$.</p>
     <p>For completeness, the proof is a local Fourier expansion rather than a
       continuation of the singular large-deviation prefactor. At frequency
       $t/(\sigma\sqrt n)$, expand $\log B_\nu$ through first order and
@@ -954,8 +1007,10 @@
       producing $k_n-\tfrac12$; omitting this continuity correction leaves an
       order-$n^{-1/2}$ periodic term. At second order, expanding
       $\log B_\nu$ through quadratic order and $n\Lambda$ through fourth
-      order gives the $d_\nu+b_\nu^2$, $\kappa_4$,
-      $b_\nu\kappa_3$, and $\kappa_3^2$ terms. The midpoint
+      order and then exponentiating recombines
+      $(\log B_\nu)''(0)$ with $\{(\log B_\nu)'(0)\}^2$ into
+      $b_{2,\nu}=B_\nu''(0)$. This gives the $b_{2,\nu}$, $\kappa_4$,
+      $b_{1,\nu}\kappa_3$, and $\kappa_3^2$ terms. The midpoint
       Euler&ndash;Maclaurin formula contributes the separate
       $-H_1/(24\sigma^2)$ lattice term. Positivity of $P$ and
       $0&lt;f_i&lt;1$ give strict Fourier contraction away from zero, while the
@@ -967,16 +1022,29 @@
       (1993)</a>; arbitrary-order local lattice expansions for finite Markov
       chains are established by
       <a href="./bibliography.html#Pudlo2010">Pudlo (2010)</a>.</p>
+    <p>The remainder is uniform over the entire initial-law simplex. Indeed,
+      $B_\nu$, $b_{1,\nu}=B_\nu'(0)$ and
+      $b_{2,\nu}=B_\nu''(0)$ are linear in $\nu$ because the exact matrix MGF
+      is linear in its starting law. The exact tail and the
+      displayed truncated expansion are therefore both affine in $\nu$.
+      Their signed difference is affine too, so</p>
+    $$\sup_{\nu\in\mathcal P(\{1,\ldots,d\})}
+      |R_{n,\nu}(x)|=\max_{1\le i\le d}|R_{n,e_i}(x)|.$$
+    <p>Thus the same $O_K(n^{-3/2})$ constant works simultaneously for every
+      start, including an adversarial sequence $\nu_n$. This conclusion uses
+      finiteness of the regime set; it is stronger than pointwise uniformity
+      over a preselected family of starts.</p>
     <p>The exact-law certificate uses the nonstationary start concentrated in
       state zero, for which
       $\sigma^2=0.261098129759$, $\kappa_3=-0.350878968118$,
-      $\kappa_4=0.328775644197$, $b_\nu=0.653945953614$, and
-      $d_\nu=-0.925371653715$. Over target coordinates
+      $\kappa_4=0.328775644197$, $b_{1,\nu}=0.653945953614$, and
+      $b_{2,\nu}=-0.497726343467$. Over target coordinates
       $x\in\{-1,0,1,2\}$, the maximum uncorrected Gaussian error falls from
       $0.062972628$ at $n=120$ to $0.022139640$ at $n=960$, with
       $\sqrt n$ times that error nearly constant. Including skewness but
-      omitting $b_\nu$ still leaves error $0.016504237$ at $n=960$. Including
-      both first-order terms reduces the maximum errors to $0.002466128$, $0.001130799$,
+      omitting the boundary-mean term still leaves error $0.016504237$ at
+      $n=960$. Including both first-order terms reduces the maximum errors to
+      $0.002466128$, $0.001130799$,
       $0.000576090$, and $0.000271427$ for
       $n=120,240,480,960$; the products by $n$ remain between $0.2606$ and
       $0.2959$. Adding $A_{2,\nu}$ reduces the maximum errors to
@@ -984,10 +1052,14 @@
       $5.32133\times10^{-5}$, $1.71588\times10^{-5}$,
       $6.15325\times10^{-6}$, and $2.22912\times10^{-6}$ for
       $n=120,240,480,960,1920,3840$. The corresponding
-      $n^{3/2}$-scaled errors stay between $0.510$ and $0.572$.</p>
+      $n^{3/2}$-scaled errors stay between $0.510$ and $0.572$. Checking all
+      three pure-state starts shows that this same state-zero error is the
+      simplex-wide maximum at $n=120,480,1920$: the worst errors are
+      $4.34444\times10^{-4}$, $5.3213\times10^{-5}$, and
+      $6.153\times10^{-6}$, respectively.</p>
     <p class="muted">The $O_K(n^{-3/2})$ statement is uniform only over a fixed
       compact set of central coordinates for this fixed regular-grid model
-      and fixed initial law. It is not an explicit finite-panel error bound,
+      and all initial laws. It is not an explicit finite-panel error bound,
       is not uniform as positivity, variance or the spectral gap degenerates,
       and makes no irregular-grid or joint panel-size/switching-rate claim.
       It concerns the calibration-count law and does not upgrade marginal
@@ -1096,6 +1168,16 @@
       -0.925371653715,
       1.430373003343,
       -1.538351359308).$$
+    <p>These $\beta_{k,\nu}$ are boundary <em>cumulants</em>, hence
+      derivatives of $\log B_\nu=\log A_\nu-\Lambda$. They are deliberately
+      distinct from the ordinary amplitude derivatives $b_{k,\nu}$ in the
+      Edgeworth theorem. In particular,</p>
+    $$b_{1,\nu}=\beta_{1,\nu},\qquad
+      b_{2,\nu}=\beta_{2,\nu}+\beta_{1,\nu}^2.$$
+    <p>For the state-zero start, this gives
+      $b_{2,e_0}=-0.925371653715+(0.653945953614)^2
+      =-0.497726343467$, exactly the coefficient used in the second-order
+      Edgeworth term.</p>
     <p>At $n=60$, all eight constants agree with cumulants extracted
       independently from the exact coefficient law within
       $1.17\times10^{-8}$. These are fixed-$P$ boundary corrections in panel
@@ -1161,6 +1243,10 @@
       $1-\delta-\zeta_b$. In particular, the uniform empirical-CDF event and
       the conditional-coverage inequality above remain unchanged on the good
       event, but their confidence becomes $1-\delta-\zeta_b$.
+      When the comparator is specifically the iid pooled panel, the exact
+      nonstationary path-entropy identity above combines start-up and
+      within-panel errors before Pinsker and can be sharper than this general
+      transfer.
       To make the start-up penalty at most $\epsilon$, it is sufficient that</p>
     $$b\ge\frac1{m\gamma_s}
        \left[\log\frac{\|\nu/\pi-1\|_{L^2(\pi)}}{2\epsilon}\right]_+.$$
