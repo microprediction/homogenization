@@ -163,6 +163,42 @@
       order-seven moment and cumulant gap $-78.75$. This result is purely about exact identification: Hankel and
       Vandermonde systems can become arbitrarily ill-conditioned as atoms collide or weights vanish, so it does not
       assert uniform stable recovery.</p>
+    <h3>Exact local conditioning geometry</h3>
+    <p>The instability boundary has an exact algebraic description. For an exactly $r$-atomic law, eliminate the
+      last weight by $w_r=1-\sum_{j&lt;r}w_j$ and define the square parameter-to-moment map</p>
+    $$\Phi(w_1,\ldots,w_{r-1},x_1,\ldots,x_r)=(m_1,\ldots,m_{2r-1}).$$
+    <p>On the ordered interior $w_j&gt;0$ and $x_1&lt;\cdots&lt;x_r$, its Jacobian satisfies</p>
+    <div class="equation-card">
+    $$\left|\det D\Phi\right|
+      =\left(\prod_{j=1}^r w_j\right)
+       \left(\prod_{1\le i&lt;j\le r}(x_j-x_i)^4\right).$$
+    </div>
+    <p>The moment-to-cumulant transformation is unit triangular, so the parameter-to-factorial-cumulant map has
+      the same determinant.</p>
+    <p>To prove the identity, temporarily retain all $r$ weights and include $m_0$. The $j$th weight and atom
+      columns of the full Jacobian are respectively</p>
+    $$v(x_j)=(1,x_j,\ldots,x_j^{2r-1})^\top,\qquad
+      w_jv'(x_j).$$
+    <p>After interlacing these columns, this is a weighted confluent Vandermonde matrix, whose determinant is the
+      fourth power of the ordinary Vandermonde product times $\prod_jw_j$. Changing coordinates from the weights
+      to $(w_1,\ldots,w_{r-1},m_0)$ and expanding along $m_0=1$ leaves the displayed reduced determinant. The
+      classical inverse and conditioning analysis of these matrices goes back to
+      <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>.</p>
+    <p>The inverse-function theorem now gives a locally analytic inverse everywhere in the ordered interior. It
+      also yields an explicit differential bound. Put $d=2r-1$, suppose $0\le x_j\le R$,
+      $w_j\ge w_*$, and $x_{j+1}-x_j\ge\delta$, and set
+      $A_R=\max\{1,R^{2r-1}\}$. Every entry of $D\Phi$ is bounded by $dA_R$, so</p>
+    $$\|D\Phi\|_2\le d^2A_R,\qquad
+      \sigma_{\min}(D\Phi)
+      \ge {w_*^r\delta^{2r(r-1)}\over(d^2A_R)^{d-1}}.$$
+    <p>Thus separated atoms with weights bounded away from zero have uniformly bounded infinitesimal inverse
+      sensitivity. The determinant formula also pinpoints both degeneracies: it vanishes linearly with a disappearing
+      weight and to fourth order for each colliding pair. This is a local parameter-stability statement, not a claim
+      of total-variation stability for unrestricted mixing measures.</p>
+    <p>The certificate evaluates the reduced Jacobian directly for two through five atoms. Its maximum relative
+      determinant error is 2.03e-11; a centered directional derivative agrees within 8.83e-09;
+      and after removing the noncolliding factors, a shrinking pair has measured volume-collapse order
+      4.000000001.</p>
     <h3>Identification is not stable inversion</h3>
     <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
       variation. For two point-mass mixing laws $\delta_a$ and $\delta_b$,</p>

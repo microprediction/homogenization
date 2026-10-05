@@ -2593,5 +2593,16 @@
   "doi": "",
   "url": "",
   "annotation": "Introduces the annihilating-polynomial reconstruction now known as Prony's method; the finite-atomic Cox-mixture result uses its Hankel and Vandermonde steps."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Gautschi1962",
+  "authors": "Gautschi, W.",
+  "year": 1962,
+  "title": "On inverses of Vandermonde and confluent Vandermonde matrices",
+  "venue": "Numerische Mathematik 4:117-123",
+  "doi": "10.1007/bf01386302",
+  "url": "https://doi.org/10.1007/bf01386302",
+  "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
  }
 ]

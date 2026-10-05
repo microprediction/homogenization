@@ -23,7 +23,9 @@ but fails the next Hankel determinant.  Finally, an exact finite-difference
 construction gives two positive mixing laws with identical first four
 cumulants but different mixed-Poisson count laws.  A Hankel--Prony calculation
 then recovers a four-atom mixing law from moments through order seven, while
-an exact parity split proves that order seven is sharp for four atoms.
+an exact parity split proves that order seven is sharp for four atoms.  Its
+confluent-Vandermonde Jacobian further gives the exact local conditioning
+geometry and the fourth-order volume collapse at an atom collision.
 The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
 in total variation, even on a compact intensity interval.  A local Poisson
@@ -311,6 +313,108 @@ def finite_atomic_prony_certificate(atom_count=4):
         "annihilation_residual": annihilation_residual,
         "sharp_moment_gap": float(sharp_moment_gap),
         "sharp_cumulant_gap": float(sharp_cumulant_gap),
+    }
+
+
+def finite_atomic_jacobian_certificate():
+    """Check the exact conditioning geometry of the atomic moment map.
+
+    With the last weight eliminated by the unit-mass constraint, the map from
+    ``(w_1,...,w_{r-1}, x_1,...,x_r)`` to ``(m_1,...,m_{2r-1})`` has Jacobian
+    determinant, in absolute value,
+
+        prod_j w_j prod_{i<j} (x_j-x_i)^4.
+
+    This is the confluent-Vandermonde determinant.  The checks below compare
+    direct determinants for two through five atoms, verify the differential
+    by a centered finite difference, and isolate the fourth-power volume
+    collapse when one pair of atoms coalesces.
+    """
+
+    def moment_jacobian(weights, support):
+        r = len(support)
+        jacobian = np.empty((2 * r - 1, 2 * r - 1))
+        for degree in range(1, 2 * r):
+            jacobian[degree - 1, :r - 1] = (
+                support[:r - 1] ** degree - support[-1] ** degree)
+            jacobian[degree - 1, r - 1:] = (
+                degree * weights * support ** (degree - 1))
+        return jacobian
+
+    def determinant_formula(weights, support):
+        gaps = [
+            support[j] - support[i]
+            for i in range(len(support))
+            for j in range(i + 1, len(support))
+        ]
+        return np.prod(weights) * np.prod(np.asarray(gaps) ** 4)
+
+    determinant_relative_errors = []
+    for r in range(2, 6):
+        support = np.linspace(0.25, 2.5, r) ** 1.15
+        weights = np.arange(1, r + 1, dtype=float)
+        weights /= weights.sum()
+        direct = abs(np.linalg.det(moment_jacobian(weights, support)))
+        exact = determinant_formula(weights, support)
+        determinant_relative_errors.append(abs(direct / exact - 1.0))
+
+    support = np.array([0.25, 0.9, 2.0, 3.4])
+    weights = np.array([0.12, 0.23, 0.31, 0.34])
+    theta = np.r_[weights[:-1], support]
+    direction = np.array([0.10, -0.05, 0.03, 0.02, -0.04, 0.01, 0.03])
+    direction /= np.linalg.norm(direction)
+    jacobian = moment_jacobian(weights, support)
+
+    def moments_from_theta(parameters):
+        free_weights = parameters[:3]
+        local_weights = np.r_[free_weights, 1.0 - free_weights.sum()]
+        local_support = parameters[3:]
+        return np.array([
+            local_weights @ local_support ** degree
+            for degree in range(1, 8)
+        ])
+
+    step = 1e-5
+    centered_derivative = (
+        moments_from_theta(theta + step * direction)
+        - moments_from_theta(theta - step * direction)
+    ) / (2.0 * step)
+    derivative_error = np.max(np.abs(
+        centered_derivative - jacobian @ direction))
+    inverse_identity_error = np.max(np.abs(
+        np.linalg.solve(jacobian, jacobian @ direction) - direction))
+
+    # Divide away every noncolliding factor.  What remains is exactly h^4
+    # for the pair x_2-x_1=h.
+    weights3 = np.array([0.2, 0.3, 0.5])
+    collision_gaps = 2.0 ** -np.arange(2, 7)
+    normalized_volumes = []
+    for gap in collision_gaps:
+        support3 = np.array([0.5, 0.5 + gap, 2.0])
+        direct = abs(np.linalg.det(moment_jacobian(weights3, support3)))
+        smooth_factor = (
+            np.prod(weights3)
+            * (support3[2] - support3[0]) ** 4
+            * (support3[2] - support3[1]) ** 4
+        )
+        normalized_volumes.append(direct / smooth_factor)
+    normalized_volumes = np.asarray(normalized_volumes)
+    collision_relative_error = np.max(np.abs(
+        normalized_volumes / collision_gaps ** 4 - 1.0))
+    collision_order = np.log(
+        normalized_volumes[-2] / normalized_volumes[-1]) / np.log(2.0)
+
+    assert max(determinant_relative_errors) < 3e-10
+    assert derivative_error < 2e-8
+    assert inverse_identity_error < 2e-10
+    assert collision_relative_error < 2e-8
+    assert abs(collision_order - 4.0) < 2e-8
+    return {
+        "determinant_relative_error": max(determinant_relative_errors),
+        "derivative_error": derivative_error,
+        "inverse_identity_error": inverse_identity_error,
+        "collision_relative_error": collision_relative_error,
+        "collision_order": collision_order,
     }
 
 
@@ -1208,6 +1312,7 @@ def main():
     hankel = mixed_poisson_hankel_certificate()
     twins = finite_cumulant_twins()
     atomic = finite_atomic_prony_certificate()
+    atomic_jacobian = finite_atomic_jacobian_certificate()
     instability = poisson_inverse_instability()
     minimax = poisson_mixture_tv_minimax()
     w1_minimax = poisson_mixture_w1_local_minimax()
@@ -1469,6 +1574,14 @@ def main():
     print("sharp r=4 order-seven moment and cumulant gaps",
           f"{atomic['sharp_moment_gap']:.12f}",
           f"{atomic['sharp_cumulant_gap']:.12f}")
+    print("atomic moment-map determinant relative error",
+          f"{atomic_jacobian['determinant_relative_error']:.3e}")
+    print("atomic moment-map derivative and inverse identity errors",
+          f"{atomic_jacobian['derivative_error']:.3e}",
+          f"{atomic_jacobian['inverse_identity_error']:.3e}")
+    print("atomic collision volume order and relative error",
+          f"{atomic_jacobian['collision_order']:.9f}",
+          f"{atomic_jacobian['collision_relative_error']:.3e}")
     print("local inverse-instability TV / step",
           f"{instability['local_tv'][-1] / instability['steps'][-1]:.12f}",
           "limit", f"{instability['local_limit']:.12f}")
