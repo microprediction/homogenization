@@ -28,16 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -483,6 +479,44 @@
       $k=0,1,2$ have measured component-error orders $0.995$, $1.983$, and $2.956$. Closed-form forcing bounds
       (rather than sampled suprema) give computable error-bound orders $2.203$ and $3.185$; those bounds dominate
       every measured error and have maximum contraction factor $0.393246$.</p>
+
+    <h3>An explicit first composite for arbitrary terminal data</h3>
+    <p>The first direct iterate can also be reduced to a closed matched formula. Keep
+      $R=Q_0^\#$, $E_\tau=e^{\tau Q_0}$, $m_0=\pi^\top c$, $z_0=Pc$,
+      $h(t)=H(t){\bf1}$, and</p>
+    $$K_1(t)=-\int_0^t\pi^\top H(s)Rh(s)\,ds.$$
+    <p>The order-zero layer interacts once with the forcing through</p>
+    $$L_1(\tau)=\int_0^\tau E_{\tau-s}PH(0)E_s z_0\,ds.$$
+    <p>This is the upper-right block of
+      $\exp\{\tau\left(\begin{smallmatrix}Q_0&amp;PH(0)\\0&amp;Q_0\end{smallmatrix}\right)\}z_0$.
+      Define</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \widehat z(t)={}&E_{t/\varepsilon}z_0+\varepsilon\{
+        -m_0Rh(t)+m_0E_{t/\varepsilon}Rh(0)+L_1(t/\varepsilon)\},\\
+      \widehat m(t)={}&m_0+\varepsilon\{-\pi^\top H(0)Rz_0
+        +\pi^\top H(t)E_{t/\varepsilon}Rz_0+m_0K_1(t)\}.
+    \end{aligned}$$
+    </div>
+    <p>For $g\in C^1[0,T]$ and arbitrary real or complex $c$,</p>
+    <div class="equation-card">
+    $$a(t)=e^{b(t)}\{\widehat m(t){\bf1}+\widehat z(t)\}+O(\varepsilon^2)$$
+    </div>
+    <p>uniformly on a fixed bounded horizon. Every displayed correction cancels appropriately at $t=0$, so the
+      terminal vector is reproduced exactly even when $m_0=0$. The three first-order effects are distinct:
+      the slow Poisson corrector, the layer that matches it at the terminal point, and the block-exponential
+      interaction of the order-zero layer with $H(0)$.</p>
+    <p>The proof follows by integration by parts on the centered semigroup:
+      $\int_0^t\pi^\top H(s)E_{s/\varepsilon}z_0\,ds
+      =\varepsilon\{\pi^\top H(t)E_{t/\varepsilon}Rz_0-\pi^\top H(0)Rz_0\}
+      +O(\varepsilon^2)$. Freezing $H(\varepsilon\tau)$ at $H(0)$ in the fast convolution also costs
+      $O(\varepsilon^2)$; the remaining slow convolution gives the two matched Poisson terms.
+      This is the arbitrary-terminal-data first-order specialization of the matched finite-chain expansions of
+      <a href="./bibliography.html#KhasminskiiYinZhang1996">Khasminskii, Yin and Zhang</a>, expressed with
+      <a href="./bibliography.html#Meyer1975">Meyer&apos;s group inverse</a>.</p>
+    <p>On the defective nonreversible three-state certificate with signed zero-mean terminal data, the uniform
+      error has observed order $2.004210$ and the terminal discrepancy is below $10^{-12}$. The calculation uses
+      no eigendecomposition.</p>
 
     <h3>An explicit first composite for a finite chain</h3>
     <p>For the regime-independent terminal vector $a(0)=m_0{\bf1}$, the first finite-chain composite can be written

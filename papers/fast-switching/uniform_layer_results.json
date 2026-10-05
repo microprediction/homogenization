@@ -275,44 +275,52 @@
         "direct_0_sup": 0.008033730828488881,
         "direct_1_sup": 0.00010911515774928048,
         "direct_2_sup": 1.4541501276610957e-06,
+        "explicit_first_composite_sup": 0.00107360973932114,
         "direct_1_aposteriori_bound": 0.05037758419380045,
         "direct_2_aposteriori_bound": 0.0006748712772254729,
         "contraction_factor": 0.39324625045523215,
         "invariant_margin": 0.12145980419823332,
-        "initial_match": 1.1102230246251565e-16
+        "initial_match": 1.1102230246251565e-16,
+        "explicit_initial_match": 1.1102230246251565e-16
       },
       {
         "epsilon": 0.025,
         "direct_0_sup": 0.0040385465675060635,
         "direct_1_sup": 2.782417425575215e-05,
         "direct_2_sup": 1.9130987565721629e-07,
+        "explicit_first_composite_sup": 0.00026700680440519244,
         "direct_1_aposteriori_bound": 0.009601624907377091,
         "direct_2_aposteriori_bound": 6.570368984536318e-05,
         "contraction_factor": 0.19662312522761607,
         "invariant_margin": 0.6621733985741775,
-        "initial_match": 1.1102230246251565e-16
+        "initial_match": 1.1102230246251565e-16,
+        "explicit_initial_match": 1.1102230246251565e-16
       },
       {
         "epsilon": 0.0125,
         "direct_0_sup": 0.002025005993676819,
         "direct_1_sup": 7.02955861257942e-06,
         "direct_2_sup": 2.4576809053133766e-08,
+        "explicit_first_composite_sup": 6.656414974936966e-05,
         "direct_1_aposteriori_bound": 0.0021489640582629532,
         "direct_2_aposteriori_bound": 7.434709621702379e-06,
         "contraction_factor": 0.09831156261380804,
         "invariant_margin": 0.9325301957621495,
-        "initial_match": 1.1102230246251565e-16
+        "initial_match": 1.1102230246251565e-16,
+        "explicit_initial_match": 1.1102230246251565e-16
       },
       {
         "epsilon": 0.00625,
         "direct_0_sup": 0.0010139759755551315,
         "direct_1_sup": 1.7669343608781831e-06,
         "direct_2_sup": 3.115872648682714e-09,
+        "explicit_first_composite_sup": 1.6628345775990418e-05,
         "direct_1_aposteriori_bound": 0.0005107017979276659,
         "direct_2_aposteriori_bound": 8.884433388217108e-07,
         "contraction_factor": 0.04915578130690402,
         "invariant_margin": 1.0677085943561355,
-        "initial_match": 1.1102230246251565e-16
+        "initial_match": 1.1102230246251565e-16,
+        "explicit_initial_match": 1.1102230246251565e-16
       }
     ],
     "generator": [
@@ -348,6 +356,7 @@
     "direct_0_sup_order": 0.9954049958507883,
     "direct_1_sup_order": 1.9830210675187416,
     "direct_2_sup_order": 2.9559514542381846,
+    "explicit_first_composite_sup_order": 2.0042102827992094,
     "direct_1_bound_order": 2.203210820110491,
     "direct_2_bound_order": 3.1850976695638824
   },

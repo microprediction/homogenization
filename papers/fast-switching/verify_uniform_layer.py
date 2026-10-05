@@ -31,11 +31,14 @@ The checks distinguish eleven statements which are easy to conflate:
 9. The direct construction extends to every irreducible finite-state chain.
    A defective nonreversible three-state example checks one-power gains and
    the semigroup-based a posteriori bound without diagonalizing the generator.
-10. For a regime-independent terminal vector, the finite-chain first composite is
-    explicit in the group inverse.  Its error is uniformly O(eps**2), whereas
-    deleting the layer is only uniformly O(eps) and recovers O(eps**2) after
-    the logarithmic crossover.
-11. A second group-inverse composite is uniformly O(eps**3).  Its second layer
+10. For arbitrary finite-chain terminal data, the first composite is explicit
+    in the group inverse and one block exponential.  Its error is uniformly
+    O(eps**2), even when the stationary initial mean is zero.
+11. For a regime-independent terminal vector, the finite-chain first composite
+    simplifies to the usual Poisson corrector and matched layer.  Its error is
+    uniformly O(eps**2), whereas deleting the layer is only uniformly O(eps)
+    and recovers O(eps**2) after the logarithmic crossover.
+12. A second group-inverse composite is uniformly O(eps**3).  Its second layer
     contains a block-exponential convolution and a permanent scalar trace.
     Omitting that trace leaves O(eps**2) fixed-maturity error, and deleting the
     layers recovers O(eps**3) only after the doubled logarithmic crossover.
@@ -202,6 +205,77 @@ def finite_chain_picard_components(
     components = common * (one[:, None] * mean_values + centered_values)
     if return_details:
         return components, centered_values, mean_values
+    return components
+
+
+def finite_chain_arbitrary_first_composite(
+    eps, generator, forcing, initial, grid,
+):
+    """Explicit uniform first composite for arbitrary terminal data.
+
+    The formula uses the group inverse for the slow Poisson corrector and one
+    2n-by-2n block exponential for the first interaction of the order-zero
+    terminal layer with the frozen forcing.  No stationary-mean division is
+    used, so signed, complex, and zero-mean terminal vectors are admissible.
+    """
+    generator = np.asarray(generator, dtype=float)
+    initial = np.asarray(initial, dtype=float)
+    dimension = generator.shape[0]
+    one = np.ones(dimension)
+    pi = stationary_distribution(generator)
+    projection = np.eye(dimension) - np.outer(one, pi)
+    group_inverse = group_inverse_generator(generator, pi)
+    mean0 = float(pi @ initial)
+    centered0 = projection @ initial
+
+    def g_vector(t):
+        return np.array([function(t) for function in forcing])
+
+    def scalar_rhs(t, _value):
+        g = g_vector(t)
+        common = float(pi @ g)
+        h = g - common * one
+        return [common, -float(pi @ (h * (group_inverse @ h)))]
+
+    scalar_solution = solve_ivp(
+        scalar_rhs, (0, float(grid[-1])), [0.0, 0.0],
+        method='DOP853', rtol=3e-13, atol=3e-15, dense_output=True,
+        max_step=0.001,
+    )
+    assert scalar_solution.success
+    common_values, poisson_feedback = scalar_solution.sol(grid)
+
+    g0 = g_vector(0.0)
+    h0 = g0 - float(pi @ g0) * one
+    h0_matrix = np.diag(h0)
+    layer_coupling = projection @ h0_matrix
+    block_generator = np.block([
+        [generator, layer_coupling],
+        [np.zeros_like(generator), generator],
+    ])
+    initial_mean_shift = float(pi @ (h0 * (group_inverse @ centered0)))
+
+    components = np.empty((dimension, len(grid)))
+    for index, t in enumerate(grid):
+        g = g_vector(float(t))
+        h = g - float(pi @ g) * one
+        h_matrix = np.diag(h)
+        fast = expm(float(t) * generator / eps)
+        block = expm(float(t) * block_generator / eps)
+        first_layer_interaction = block[:dimension, dimension:] @ centered0
+        centered = fast @ centered0 + eps * (
+            -mean0 * group_inverse @ h
+            + mean0 * fast @ group_inverse @ h0
+            + first_layer_interaction
+        )
+        mean = mean0 + eps * (
+            -initial_mean_shift
+            + float(pi @ (h_matrix @ fast @ group_inverse @ centered0))
+            + mean0 * poisson_feedback[index]
+        )
+        components[:, index] = math.exp(common_values[index]) * (
+            mean * one + centered
+        )
     return components
 
 
@@ -924,6 +998,7 @@ def defective_finite_chain():
     radius = 2.75
     errors = [[], [], []]
     bounds = [[], []]
+    explicit_errors = []
     rows = []
     for eps in EPSILONS:
         grid = np.unique(np.r_[
@@ -945,6 +1020,12 @@ def defective_finite_chain():
             float(np.max(np.linalg.norm(value[0] - exact, axis=0)))
             for value in details
         ]
+        explicit = finite_chain_arbitrary_first_composite(
+            eps, generator, forcing, initial, grid
+        )
+        explicit_error = float(np.max(np.linalg.norm(
+            explicit - exact, axis=0
+        )))
 
         history_factor = 1.0 + dimension_factor * mean_functional_bound * T_MAX
         contraction = (
@@ -968,9 +1049,11 @@ def defective_finite_chain():
             errors[k].append(actual[k])
         for k in range(2):
             bounds[k].append(posterior[k])
+        explicit_errors.append(explicit_error)
         rows.append(dict(
             epsilon=float(eps), direct_0_sup=actual[0],
             direct_1_sup=actual[1], direct_2_sup=actual[2],
+            explicit_first_composite_sup=explicit_error,
             direct_1_aposteriori_bound=posterior[0],
             direct_2_aposteriori_bound=posterior[1],
             contraction_factor=float(contraction),
@@ -978,11 +1061,15 @@ def defective_finite_chain():
             initial_match=float(max(
                 np.max(np.abs(value[0][:, 0] - initial)) for value in details
             )),
+            explicit_initial_match=float(np.max(np.abs(
+                explicit[:, 0] - initial
+            ))),
         ))
     return (
         rows, *(order(values) for values in errors),
-        *(order(values) for values in bounds), generator.tolist(), pi.tolist(),
-        initial.tolist(), mean0, semigroup_constant, gamma,
+        *(order(values) for values in bounds), order(explicit_errors),
+        generator.tolist(), pi.tolist(), initial.tolist(), mean0,
+        semigroup_constant, gamma,
     )
 
 
@@ -1122,8 +1209,8 @@ def main():
      zero_mean_direct2, zero_mean_bound1, zero_mean_bound2,
      zero_mean_initial, zero_mean_m0, zero_mean_d0) = zero_mean_initial_data()
     (finite_rows, finite_direct0, finite_direct1, finite_direct2,
-     finite_bound1, finite_bound2, finite_generator, finite_pi,
-     finite_initial, finite_m0, finite_semigroup_constant,
+     finite_bound1, finite_bound2, finite_explicit_first, finite_generator,
+     finite_pi, finite_initial, finite_m0, finite_semigroup_constant,
      finite_gamma) = defective_finite_chain()
     (stationary_rows, stationary_first_composite, stationary_second_composite,
      stationary_first_outer, stationary_second_outer,
@@ -1194,13 +1281,15 @@ def main():
     for row in finite_rows:
         print(f"   eps={row['epsilon']:.6f} direct 0/1/2="
               f"{row['direct_0_sup']:.3e}/{row['direct_1_sup']:.3e}/"
-              f"{row['direct_2_sup']:.3e} bounds 1/2="
+              f"{row['direct_2_sup']:.3e} explicit first="
+              f"{row['explicit_first_composite_sup']:.3e} bounds 1/2="
               f"{row['direct_1_aposteriori_bound']:.3e}/"
               f"{row['direct_2_aposteriori_bound']:.3e} "
               f"q={row['contraction_factor']:.6f} "
               f"margin={row['invariant_margin']:.6f}")
     print(f'   observed orders: direct 0/1/2 '
           f'{finite_direct0:.6f}/{finite_direct1:.6f}/{finite_direct2:.6f}, '
+          f'explicit first {finite_explicit_first:.6f}, '
           f'bounds 1/2 {finite_bound1:.6f}/{finite_bound2:.6f}; '
           f'M={finite_semigroup_constant:.6f}, gamma={finite_gamma:.2f}')
     print('8. defective three-state explicit common-terminal composites')
@@ -1261,6 +1350,7 @@ def main():
     assert 0.8 < finite_direct0 < 1.2
     assert 1.75 < finite_direct1 < 2.25
     assert 2.7 < finite_direct2 < 3.3
+    assert 1.8 < finite_explicit_first < 2.2
     assert 1.75 < finite_bound1 < 2.25
     assert 2.7 < finite_bound2 < 3.3
     assert all(
@@ -1268,6 +1358,7 @@ def main():
         and row['direct_2_sup'] <= row['direct_2_aposteriori_bound']
         for row in finite_rows)
     assert max(row['initial_match'] for row in finite_rows) < 1e-12
+    assert max(row['explicit_initial_match'] for row in finite_rows) < 1e-12
     assert 1.85 < stationary_first_composite < 2.15
     assert 2.8 < stationary_second_composite < 3.2
     assert 0.9 < stationary_first_outer < 1.1
@@ -1321,6 +1412,7 @@ def main():
         direct_0_sup_order=finite_direct0,
         direct_1_sup_order=finite_direct1,
         direct_2_sup_order=finite_direct2,
+        explicit_first_composite_sup_order=finite_explicit_first,
         direct_1_bound_order=finite_bound1,
         direct_2_bound_order=finite_bound2)
     out['defective_stationary_composite'] = dict(

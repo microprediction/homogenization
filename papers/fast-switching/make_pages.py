@@ -35,6 +35,13 @@ def engine_page():
         ['<a href="./heston.html">Heston</a>', 'long-run variance', r'$\kappa\theta_i D(t)$, complex'],
         ['<a href="./black-scholes.html">Black&ndash;Scholes</a>', 'volatility', r'$iu(r - \tfrac12\sigma_i^2) - \tfrac12u^2\sigma_i^2$'],
         ['<a href="./bond-options.html">Bond options</a>', 'mean level, volatility', r'$-\kappa\theta_i \tilde B + \tfrac12\sigma_i^2\tilde B^2$, indicator terminal vector'],
+        ['<a href="./merton.html">Merton</a>', 'volatility, jump intensity', r'$iu(r - \tfrac12\sigma_i^2) - \tfrac12u^2\sigma_i^2 + \ell_i(\phi_J(u) - 1 - iu\bar k)$'],
+        ['<a href="./variance-gamma.html">Variance gamma</a>', r'$\sigma$, $\nu$, $\theta$', r'$iu(r + \omega_i) + \psi_i(u)$, the regime&apos;s L&eacute;vy exponent'],
+        ['<a href="./bates.html">Bates</a>', 'long-run variance, jump intensity', r'$\kappa\theta_i D(t) + \ell_i(\phi_J(u) - 1 - iu\bar k)$'],
+        ['<a href="./hull-white.html">Hull&ndash;White</a>', 'volatility', r'$\tfrac12\sigma_i^2 B^2$'],
+        ['<a href="./g2.html">G2++</a>', 'volatilities, correlation', r'$\tfrac12\sigma_i^2B_a^2 + \tfrac12\eta_i^2B_b^2 + \rho_i\sigma_i\eta_iB_aB_b$'],
+        ['<a href="./equity-rates.html">Equity with rates</a>', 'both parts&apos; parameters', r'the rates forcing at weight $1 - iw$ plus the equity forcing at $w$'],
+        ['<a href="./cev.html">CEV</a>', 'volatility scale', r'$-z\,\sigma_i^2\,h(\tau)$, for the transform of the total variance'],
         ['<a href="./fast-factor.html">Fast mean-reverting factor</a>', 'mean level and volatility, continuously', 'an operator in the Hermite basis, with correlation'],
     ])
     body += r'''
