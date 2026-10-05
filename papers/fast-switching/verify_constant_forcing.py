@@ -4,13 +4,15 @@ The two-state characteristic function has an exact slow outer mode plus a fast i
 analytic in z = g_tilde/lambda for |z| < 1, while the fast mode is exponentially small uniformly on |z| <= rho < 1.
 The same statements are checked for unequal transition rates after replacing
 z by the forcing contrast divided by the total switching rate.  The final
-check records the large-frequency growth of the variance-gamma forcing used
-by model_pages.py.
+checks record the large-frequency growth of the variance-gamma forcing and
+the separate compact-frequency and tail terms in Lewis inversion.
 """
 import cmath
 import math
 import numpy as np
 from scipy.linalg import expm
+from scipy.integrate import quad
+from scipy.optimize import brentq
 
 
 def exact(gbar, gtilde, eps, maturity, sign):
@@ -83,7 +85,7 @@ def unequal_outer_quadratic(g1, g2, rate12, rate21, speed,
     return cmath.exp(gbar * maturity) * (1.0 + p1 * z + p2 * z * z)
 
 
-def variance_gamma_forcing(u):
+def variance_gamma_parts(u, rate=0.03):
     sigma = (0.25, 0.12)
     nu = (0.5, 0.2)
     theta = (-0.25, -0.10)
@@ -94,9 +96,14 @@ def variance_gamma_forcing(u):
     omega = tuple(math.log(1.0 - t * n - 0.5 * s * s * n) / n
                   for s, n, t in zip(sigma, nu, theta))
     omega_tilde = 0.5 * (omega[0] - omega[1])
-    z = u - 0.5j
-    psi_tilde = 0.5 * (psi(z, sigma[0], nu[0], theta[0]) - psi(z, sigma[1], nu[1], theta[1]))
-    return 1j * z * omega_tilde + psi_tilde, omega_tilde
+    g = tuple(1j * u * (rate + o) + psi(u, s, n, t)
+              for s, n, t, o in zip(sigma, nu, theta, omega))
+    return 0.5 * (g[0] + g[1]), 0.5 * (g[0] - g[1]), omega_tilde
+
+
+def variance_gamma_forcing(u):
+    _, forcing, omega_tilde = variance_gamma_parts(u - 0.5j)
+    return forcing, omega_tilde
 
 
 def main():
@@ -199,6 +206,82 @@ def main():
     assert abs(rows[-1][2] - omega_tilde) < 2e-4
     assert abs(rows[-1][1] / rows[-1][0] - abs(omega_tilde)) < 2e-4
 
+    # A pointwise transform estimate becomes a Lewis-price estimate only after
+    # accounting for the omitted frequency tail.  If X is the log return,
+    # |phi(u-i/2)| <= E exp(X/2) gives the model-independent bound
+    #
+    #   int_R^infty |phi(u-i/2)|/(u^2+1/4) du
+    #     <= M_{1/2} {pi - 2 atan(2R)}.
+    #
+    # We independently integrate the exact full transform and the quadratic
+    # slow mode stopped at the largest R for which |g_tilde|/lambda <= r.
+    # The calculation illustrates both parts of the rigorous triangle bound.
+    rate, maturity, spot, strike = 0.03, 1.0, 100.0, 100.0
+    envelope_ratio = 0.35
+
+    def vg_cf(u, lam, approximate=False):
+        gbar, gtilde, _ = variance_gamma_parts(u - 0.5j, rate)
+        if approximate:
+            return outer_quadratic(gbar, gtilde, 1.0 / lam,
+                                   maturity, +1)
+        return exact(gbar, gtilde, 1.0 / lam, maturity, +1)
+
+    def lewis_integral(fun, upper):
+        return quad(lambda u: (fun(u) / (u * u + 0.25)).real,
+                    0.0, upper, epsabs=2e-11, epsrel=2e-11,
+                    limit=1000)[0]
+
+    price_prefactor = math.sqrt(spot * strike) * math.exp(-rate * maturity) / math.pi
+    inversion_rows = []
+    for lam in (25.0, 50.0, 100.0, 200.0):
+        window = brentq(
+            lambda u: abs(variance_gamma_parts(u - 0.5j, rate)[1]) / lam
+            - envelope_ratio,
+            1.0, 10_000.0,
+        )
+        grid_envelope = max(
+            abs(variance_gamma_parts(window * j / 2000 - 0.5j, rate)[1]) / lam
+            for j in range(2001)
+        )
+        assert grid_envelope <= envelope_ratio * (1.0 + 2e-12)
+
+        exact_full = lewis_integral(lambda u: vg_cf(u, lam), np.inf)
+        approx_window = lewis_integral(
+            lambda u: vg_cf(u, lam, approximate=True), window
+        )
+        interior_l1 = quad(
+            lambda u: abs(vg_cf(u, lam)
+                          - vg_cf(u, lam, approximate=True))
+            / (u * u + 0.25),
+            0.0, window, epsabs=2e-10, epsrel=2e-10,
+            limit=1000,
+        )[0]
+        half_moment = vg_cf(0.0, lam).real
+        assert half_moment > 0.0
+        universal_tail = half_moment * (
+            math.pi - 2.0 * math.atan(2.0 * window)
+        )
+        price_error = price_prefactor * abs(exact_full - approx_window)
+        price_bound = price_prefactor * (interior_l1 + universal_tail)
+        assert price_error <= price_bound * (1.0 + 2e-10)
+        inversion_rows.append((lam, window, price_error, price_bound,
+                               price_prefactor * interior_l1,
+                               price_prefactor * universal_tail))
+
+    inversion_orders = [
+        math.log(inversion_rows[j][2] / inversion_rows[j + 1][2], 2.0)
+        for j in range(len(inversion_rows) - 1)
+    ]
+    assert min(inversion_orders) > 2.8
+    # The universal tail certificate is only first order when R is linear in
+    # lambda.  Faster observed convergence uses model-specific Fourier decay.
+    tail_orders = [
+        math.log(inversion_rows[j][5] / inversion_rows[j + 1][5], 2.0)
+        for j in range(len(inversion_rows) - 1)
+    ]
+    assert min(tail_orders) > 0.8
+    assert max(tail_orders) < 1.2
+
     print('exact split max error:', f'{max_identity_error:.3e}')
     print('largest layer / rigorous bound:', f'{max_layer_ratio:.6f}')
     print('outer Taylor errors:', [f'{x:.3e}' for x in errors])
@@ -214,6 +297,14 @@ def main():
     print('VG omega_tilde:', f'{omega_tilde:.11f}')
     for u, size, ratio in rows:
         print(f'  u={u:8.0f}  |g_tilde|={size:12.6f}  g_tilde/(iu)={ratio.real:.9f}{ratio.imag:+.9f}i')
+    print('Lewis inversion certificate (lambda, R, error, bound, interior, tail):')
+    for row in inversion_rows:
+        print(' ', f'{row[0]:5.0f}', f'{row[1]:10.4f}',
+              *(f'{x:.6e}' for x in row[2:]))
+    print('windowed-price observed orders:',
+          [f'{x:.4f}' for x in inversion_orders])
+    print('universal-tail-bound observed orders:',
+          [f'{x:.4f}' for x in tail_orders])
     print('PASS')
 
 

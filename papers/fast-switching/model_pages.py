@@ -139,6 +139,30 @@ CONSTANT_SCOPE = r'''    <h3>Where the expansion applies</h3>
     $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
     not uniform over all frequencies.</p>
 
+    <h3>From a transform bound to a price bound</h3>
+    <p>The passage through Lewis inversion can be made exact, but it introduces a separate tail term. Let
+    $\phi_\lambda$ be the exact log-return transform, let $\widehat\phi_\lambda$ be any approximation used only on
+    $0\leq u\leq R$, and suppose
+    $|\phi_\lambda(u-i/2)-\widehat\phi_\lambda(u-i/2)|\leq E_\lambda(u)$ there. If
+    $M_{1/2,\lambda}=\mathbb E[e^{X_\lambda/2}]&lt;\infty$, then the Lewis call with the approximate transform
+    stopped at $R$ satisfies</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    |C_\lambda-\widehat C_{\lambda,R}|
+    \leq \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\left[
+    \int_0^R\frac{E_\lambda(u)}{u^2+1/4}\,du
+\mathrel{+}M_{1/2,\lambda}\{\pi-2\arctan(2R)\}\right].
+    \end{aligned}$$
+    </div>
+    <p>Indeed, $|\phi_\lambda(u-i/2)|\leq M_{1/2,\lambda}$ and
+    $\int_R^\infty(u^2+1/4)^{-1}du=\pi-2\arctan(2R)$. This proves convergence by first fixing $R$, taking the
+    fast-switching limit on that compact interval, and then sending $R$ to infinity, provided the half-moments are
+    uniformly bounded. It does <em>not</em> transfer the compact-frequency order automatically. If the forcing
+    condition permits only $R=O(\lambda)$, as for variance gamma with switching martingale corrections, this
+    model-independent tail certificate is only $O(\lambda^{-1})$; for a diffusive $u^2$ contrast and
+    $R=O(\sqrt\lambda)$ it is only $O(\lambda^{-1/2})$. Faster price rates require a model-specific decay bound for
+    the shifted characteristic function. These are upper-bound limitations, not lower bounds on the actual error.</p>
+
     <h3>Unequal transition rates</h3>
     <p>The radius-one conclusion is not an artifact of symmetric switching. Let the generator be
     $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ with $a,b&gt;0$, put
@@ -463,7 +487,14 @@ def variance_gamma_page():
     <h2>Results</h2>
     <p>Call prices from the exact characteristic function, and the error of the expansion after each order:</p>
 ''' + table(['switching rate', 'strike', 'exact', 'order 0', 'order 1', 'order 2'], rows) + r'''    <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
-    Certificates:
+    The inversion certificate stops the quadratic slow mode at the largest window satisfying
+    $|\tilde g|/\lambda\leq0.35$. For $\lambda=25,50,100,200$, those windows are
+    $140.64,289.28,592.38,1199.97$. The observed windowed-price errors are
+    $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$, while the rigorous
+    half-moment tail ceilings fall only with measured orders $1.040,1.034,1.018$. The example therefore displays
+    third-order accuracy, but the model-independent theorem certifies only a first-order tail until
+    variance-gamma-specific Fourier decay is used.</p>
+    <p>Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
     for the prices,
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>
