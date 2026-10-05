@@ -28,16 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -207,6 +203,16 @@
         <p class="go"><a href="https://skaters.microprediction.org/homogenization.html">homogenization in skaters</a></p>
       </div>
     </div>
+
+    <p>The model-by-model pricing pages (Black&ndash;Scholes, Heston, Merton, Bates, variance gamma, CIR, Vasicek with
+
+    jumps, Hull&ndash;White, G2++, CEV, equity with stochastic rates, options on bonds and the other instruments) have
+
+    moved to <a href="https://regimelib.org/models/index.html">regimelib.org</a>, where each model&apos;s mathematics sits
+
+    beside the Python that evaluates it. Their old addresses here redirect. This site keeps the general theory and the
+
+    examples that are not about one pricing model.</p>
 
     <p>All of the finance examples follow one first-order rule: a fast chain adds a Green&ndash;Kubo-weighted
       second-order term to the pricing operator, and an irreversible chain enters through commutators. See

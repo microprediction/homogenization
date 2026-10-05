@@ -21,7 +21,9 @@ checks both Hankel families for an actual finite mixture and gives a
 full-support, overdispersed count law that passes the first two-by-two tests
 but fails the next Hankel determinant.  Finally, an exact finite-difference
 construction gives two positive mixing laws with identical first four
-cumulants but different mixed-Poisson count laws.
+cumulants but different mixed-Poisson count laws.  A Hankel--Prony calculation
+then recovers a four-atom mixing law from moments through order seven, while
+an exact parity split proves that order seven is sharp for four atoms.
 The last calculation turns the inverse discontinuity into a finite-sample
 minimax obstruction: unrestricted mixing laws cannot be recovered uniformly
 in total variation, even on a compact intensity interval.  A local Poisson
@@ -38,6 +40,7 @@ unrestricted rates are deliberately kept distinct.
 
 import itertools
 import math
+from fractions import Fraction
 import numpy as np
 from scipy.linalg import expm
 from scipy.optimize import brentq
@@ -199,6 +202,115 @@ def finite_cumulant_twins(order=4, relative_perturbation=0.4):
         "zero_gap": zero_gap,
         "total_variation": total_variation,
         "total_variation_tail_bound": total_variation_tail_bound,
+    }
+
+
+def finite_atomic_prony_certificate(atom_count=4):
+    """Recover an atomic mixing law and certify the sharp moment threshold.
+
+    An intensity law with at most ``r`` atoms is determined by moments
+    ``m_0,...,m_{2r-1}``.  For an exactly ``r``-atomic law the coefficients
+    of its monic support polynomial solve a Hankel system; its roots recover
+    the atoms and a Vandermonde solve then recovers the weights.
+
+    Sharpness is exact, not numerical.  Splitting the signed binomial measure
+    of order ``2r-1`` into its positive and negative parts gives two
+    ``r``-atomic probability laws with equal moments through order ``2r-2``
+    and unequal next moment (and hence unequal next cumulant).
+    """
+    r = atom_count
+    support = np.array([0.25, 0.9, 2.0, 3.4])
+    weights = np.array([0.12, 0.23, 0.31, 0.34])
+    if r != len(support):
+        raise ValueError("the numerical certificate is specialized to four atoms")
+
+    moments = np.array([
+        weights @ support ** degree for degree in range(2 * r)
+    ])
+    hankel = np.array([
+        [moments[i + j] for j in range(r)] for i in range(r)
+    ])
+    coefficients_ascending = np.linalg.solve(hankel, -moments[r:2 * r])
+    polynomial_descending = np.r_[1.0, coefficients_ascending[::-1]]
+    recovered_roots = np.roots(polynomial_descending)
+    root_imaginary_error = np.max(np.abs(recovered_roots.imag))
+    recovered_support = np.sort(recovered_roots.real)
+    vandermonde = np.array([
+        recovered_support ** degree for degree in range(r)
+    ])
+    recovered_weights = np.linalg.solve(vandermonde, moments[:r])
+    factorization = vandermonde @ np.diag(recovered_weights) @ vandermonde.T
+    annihilation_residual = np.max(np.abs(
+        hankel @ coefficients_ascending + moments[r:2 * r]))
+    support_error = np.max(np.abs(recovered_support - support))
+    weight_error = np.max(np.abs(recovered_weights - weights))
+    factorization_error = np.max(np.abs(factorization - hankel))
+
+    # Exact lower-bound pair on nodes 1,...,2r.  Even and odd binomial
+    # coefficients each sum to 2^(2r-2), so each parity class normalizes to
+    # an r-atomic probability law.
+    order = 2 * r - 1
+    nodes = list(range(1, 2 * r + 1))
+    normalizer = 2 ** (order - 1)
+    plus = [
+        (node, Fraction(math.comb(order, j), normalizer))
+        for j, node in enumerate(nodes) if j % 2 == 0
+    ]
+    minus = [
+        (node, Fraction(math.comb(order, j), normalizer))
+        for j, node in enumerate(nodes) if j % 2 == 1
+    ]
+
+    def exact_moments(law):
+        return [
+            sum(weight * node ** degree for node, weight in law)
+            for degree in range(order + 1)
+        ]
+
+    def exact_cumulants(raw_moments):
+        cumulants = [Fraction(0)] * (len(raw_moments) - 1)
+        for degree in range(1, len(raw_moments)):
+            cumulants[degree - 1] = raw_moments[degree] - sum(
+                math.comb(degree - 1, j - 1)
+                * cumulants[j - 1] * raw_moments[degree - j]
+                for j in range(1, degree)
+            )
+        return cumulants
+
+    plus_moments = exact_moments(plus)
+    minus_moments = exact_moments(minus)
+    plus_cumulants = exact_cumulants(plus_moments)
+    minus_cumulants = exact_cumulants(minus_moments)
+    lower_moment_gaps = [
+        plus_moments[k] - minus_moments[k] for k in range(order)
+    ]
+    lower_cumulant_gaps = [
+        plus_cumulants[k] - minus_cumulants[k] for k in range(order - 1)
+    ]
+    sharp_moment_gap = plus_moments[order] - minus_moments[order]
+    sharp_cumulant_gap = plus_cumulants[-1] - minus_cumulants[-1]
+
+    assert np.linalg.matrix_rank(hankel) == r
+    assert root_imaginary_error < 2e-12
+    assert np.all(recovered_weights > 0.0)
+    assert support_error < 2e-11
+    assert weight_error < 2e-11
+    assert factorization_error < 2e-11
+    assert annihilation_residual < 2e-12
+    assert sum(weight for _, weight in plus) == 1
+    assert sum(weight for _, weight in minus) == 1
+    assert lower_moment_gaps == [0] * order
+    assert lower_cumulant_gaps == [0] * (order - 1)
+    assert sharp_moment_gap != 0
+    assert sharp_cumulant_gap == sharp_moment_gap
+    return {
+        "support_error": support_error,
+        "root_imaginary_error": root_imaginary_error,
+        "weight_error": weight_error,
+        "factorization_error": factorization_error,
+        "annihilation_residual": annihilation_residual,
+        "sharp_moment_gap": float(sharp_moment_gap),
+        "sharp_cumulant_gap": float(sharp_cumulant_gap),
     }
 
 
@@ -1095,6 +1207,7 @@ def two_state_exact(rates, T, lam, sign=1.0):
 def main():
     hankel = mixed_poisson_hankel_certificate()
     twins = finite_cumulant_twins()
+    atomic = finite_atomic_prony_certificate()
     instability = poisson_inverse_instability()
     minimax = poisson_mixture_tv_minimax()
     w1_minimax = poisson_mixture_w1_local_minimax()
@@ -1348,6 +1461,14 @@ def main():
           f"{twins['total_variation']:.12f}")
     print("finite-order twin total-variation tail bound",
           f"{twins['total_variation_tail_bound']:.3e}")
+    print("four-atom Prony support and weight errors",
+          f"{atomic['support_error']:.3e}", f"{atomic['weight_error']:.3e}")
+    print("four-atom Hankel factorization and annihilation residuals",
+          f"{atomic['factorization_error']:.3e}",
+          f"{atomic['annihilation_residual']:.3e}")
+    print("sharp r=4 order-seven moment and cumulant gaps",
+          f"{atomic['sharp_moment_gap']:.12f}",
+          f"{atomic['sharp_cumulant_gap']:.12f}")
     print("local inverse-instability TV / step",
           f"{instability['local_tv'][-1] / instability['steps'][-1]:.12f}",
           "limit", f"{instability['local_limit']:.12f}")

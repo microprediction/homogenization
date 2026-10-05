@@ -28,16 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -315,6 +311,37 @@
       0.003607864895, with omitted contribution below
       6.68e-60. Full-law identification, all-order analytic
       identification, and finite-order cumulant identification are therefore distinct claims.</p>
+    <h3>The sharp finite-atomic exception</h3>
+    <p>A sparsity assumption changes the last conclusion completely. Suppose the mixing law has at most $r$ atoms,</p>
+    $$\mu=\sum_{j=1}^{s}w_j\delta_{x_j},\qquad
+      1\le s\le r,\quad 0\le x_1&lt;\cdots&lt;x_s,\quad w_j&gt;0.$$
+    <p>Then factorial cumulants of orders $1,\ldots,2r-1$ identify $\mu$, and this order is sharp without
+      additional separation or weight assumptions. Indeed, factorial cumulants of the count are ordinary
+      cumulants of $\Lambda$, and the triangular moment-cumulant relations recover
+      $m_k=\mathbb E[\Lambda^k]$ for $0\le k\le2r-1$, with $m_0=1$.</p>
+    <p>To reconstruct the law, first read $s$ as the rank of
+      $H_{r-1}=(m_{i+j})_{i,j=0}^{r-1}$. For the actual support size,</p>
+    $$H_{s-1}=V\operatorname{diag}(w_1,\ldots,w_s)V^\top\succ0,
+      \qquad V_{ij}=x_j^i.$$
+    <p>Let $P(x)=x^s+c_{s-1}x^{s-1}+\cdots+c_0$ be the monic support polynomial. Since
+      $P(x_j)=0$, its coefficients are the unique solution of the Hankel system</p>
+    $$H_{s-1}\begin{pmatrix}c_0\\ \vdots\\ c_{s-1}\end{pmatrix}
+      =-\begin{pmatrix}m_s\\ \vdots\\ m_{2s-1}\end{pmatrix}.$$
+    <p>The roots of $P$ are the atoms $x_j$, after which the first $s$ moment equations form a nonsingular
+      Vandermonde system for the weights. This is the classical annihilating-polynomial mechanism behind
+      <a href="./bibliography.html#Prony1795">Prony&apos;s method</a>.</p>
+    <p>The count $2r-1$ cannot be reduced. On the $2r$ nodes $x_j=j+1$, split the signed coefficients</p>
+    $$a_j=(-1)^j{2r-1\choose j},\qquad j=0,\ldots,2r-1,$$
+    <p>into their positive and negative parts and normalize each by $2^{2r-2}$. Each part is an $r$-atomic
+      probability law. The finite-difference identity makes their moments, and hence cumulants, identical through
+      order $2r-2$, while their order-$(2r-1)$ moment gap is</p>
+    $$\frac{1}{2^{2r-2}}\sum_{j=0}^{2r-1}(-1)^j{2r-1\choose j}(j+1)^{2r-1}
+      =-\frac{(2r-1)!}{2^{2r-2}}\ne0.$$
+    <p>For $r=4$, the certificate recovers a four-atom law with maximum support and weight errors
+      1.76e-12 and 5.96e-13. Its exact sharpness pair agrees through order six and has
+      order-seven moment and cumulant gap $-78.75$. This result is purely about exact identification: Hankel and
+      Vandermonde systems can become arbitrarily ill-conditioned as atoms collide or weights vanish, so it does not
+      assert uniform stable recovery.</p>
     <h3>Identification is not stable inversion</h3>
     <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
       variation. For two point-mass mixing laws $\delta_a$ and $\delta_b$,</p>
