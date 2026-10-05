@@ -2476,6 +2476,17 @@
  },
  {
   "role": "examples",
+  "key": "ChoiShin2016",
+  "authors": "Choi, J. and Shin, S.",
+  "year": 2016,
+  "title": "Fast Swaption Pricing in Gaussian Term Structure Models",
+  "venue": "Mathematical Finance 26(4):962-982",
+  "doi": "10.1111/mafi.12077",
+  "url": "https://doi.org/10.1111/mafi.12077",
+  "annotation": "Treats the nonlinear exercise boundary in multi-factor Gaussian term-structure models, combining exact lower-dimensional numerical integration with a fast tangent-hyperplane approximation."
+ },
+ {
+  "role": "examples",
   "key": "Schroder1989",
   "authors": "Schroder, M.",
   "year": 1989,

@@ -914,7 +914,55 @@ def instruments_page():
       \zeta''(x)={\sum_kd_k(p_k+q_k\zeta'(x))^2\over\sum_kd_kq_k}\ge0.$$
     <p>The inequality is strict exactly when the positive-cash-flow loading vectors are not collinear. Thus unequal
       G2++ reversion speeds and at least two distinct payment maturities give a strictly convex boundary, while $a=b$
-      recovers the one-factor Jamshidian limit.
+      recovers the one-factor Jamshidian limit.</p>
+    <h3>The global boundary and its exact wings</h3>
+    <p>Convexity is global and the two wings are determined by different cash flows. Put
+      $r_k=p_k/q_k$, $r_{\min}=\min_kr_k$ and $r_{\max}=\max_kr_k$. Since</p>
+    $$-\zeta'(x)={\sum_kd_kq_kr_k\over\sum_kd_kq_k},$$
+    <p>the slope obeys
+      $-r_{\max}\leq\zeta'(x)\leq-r_{\min}$, strictly between the endpoints whenever the loading directions differ.
+      More precisely, if $I_R=\{k:r_k=r_{\min}\}$ and $I_L=\{k:r_k=r_{\max}\}$, let $c_R,c_L$ be the unique
+      solutions of</p>
+    $$\sum_{k\in I_R}w_ke^{-q_kc_R}=K,\qquad
+      \sum_{k\in I_L}w_ke^{-q_kc_L}=K.$$
+    <p>Then the exact asymptotes are</p>
+    $$\zeta(x)+r_{\min}x\longrightarrow c_R\quad(x\to+\infty),\qquad
+      \zeta(x)+r_{\max}x\longrightarrow c_L\quad(x\to-\infty).$$
+    <p>To prove this, substitute $z=-r_{\min}x+c$ in $C(x,z)=K$. Terms outside $I_R$ acquire the factor
+      $\exp[-q_k(r_k-r_{\min})x]$ and vanish locally uniformly in $c$; the limiting left-hand side is continuous,
+      strictly decreasing and crosses $K$ once. Monotonicity therefore carries its root to $c_R$. The left wing is
+      identical after substituting $z=-r_{\max}x+c$ and sending $x$ to minus infinity.</p>
+    <p>If each extreme is unique, attained at $i_R$ and $i_L$, this also supplies convergence rates:</p>
+    $$\begin{aligned}
+      \zeta(x)&=-r_{\min}x+{1\over q_{i_R}}\log{w_{i_R}\over K}
+        +O(e^{-\delta_Rx}),
+        &\delta_R&=\min_{k\ne i_R}q_k(r_k-r_{\min}),\\
+      \zeta(x)&=-r_{\max}x+{1\over q_{i_L}}\log{w_{i_L}\over K}
+        +O(e^{-\delta_L|x|}),
+        &\delta_L&=\min_{k\ne i_L}q_k(r_{\max}-r_k).
+    \end{aligned}$$
+    <p>There is also an explicit finite-$x$ bound. Set
+      $A_R=\sum_{k\ne i_R}w_ke^{-q_kc_R}$ and $u_R(x)=(A_R/K)e^{-\delta_Rx}$. Whenever $x\ge0$ and $u_R(x)&lt;1$,</p>
+    $$0\leq \zeta(x)+r_{\min}x-c_R
+      \leq-{1\over q_{i_R}}\log(1-u_R(x)).$$
+    <p>The analogous left-wing bound has
+      $A_L=\sum_{k\ne i_L}w_ke^{-q_kc_L}$ and $u_L(x)=(A_L/K)e^{-\delta_L|x|}$ for $x\le0$.
+      Indeed the dominant term equals $K e^{-q_i\eta(x)}$ after subtracting the stated line. Positivity gives
+      $\eta\ge0$, and bounding every competing exponential by $e^{-\delta|x|}$ gives the displayed inequality.
+      For $a&gt;b$, the
+      ratio $B_a(\tau)/B_b(\tau)$ decreases with residual maturity. Hence the longest payment determines the right
+      wing and the shortest payment the left wing&mdash;a global obstruction to replacing the boundary by one
+      Gaussian half-space.</p>
+    <p>For the certificate above, $(r_{\min},c_R,\delta_R)=(0.524547948012,-0.119219437938,0.287765309607)$ and
+      $(r_{\max},c_L,\delta_L)=(0.826941287566,-1.181063053835,0.996930222634)$. Boundary roots at increasing
+      magnitudes recover exponential rates $0.287766603132$ and $0.996923880456$, respectively. At $x=20$ the
+      right-wing error is $3.496798408893\times10^{-4}$ against the rigorous bound
+      $3.497962883732\times10^{-4}$; at $x=-10$ the left-wing error is $1.622785325623\times10^{-3}$ against
+      $1.631497250470\times10^{-3}$.</p>
+    <p><a href="./bibliography.html#ChoiShin2016">Choi and Shin (2016)</a> likewise formulate exact pricing in
+      multi-factor Gaussian term-structure models by root-finding on the nonlinear boundary and integrating in the
+      remaining dimensions, alongside a tangent-hyperplane approximation. Here the two-factor monotonicity makes
+      the root unique for every conditioning value and the Gaussian tilting evaluates the other dimension exactly.
       This direct Gaussian formula is narrower than the general affine approximations of
       <a href="./bibliography.html#SchragerPelsser2006">Schrager and Pelsser (2006)</a>: it assumes a fixed-parameter
       Gaussian expiry law. It is exact for standard G2++ and its averaged fast-switching limit, not for the full
