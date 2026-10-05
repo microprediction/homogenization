@@ -644,26 +644,34 @@
       $z=0$. Thus $H_K$ is positive definite. The displayed spectrum and
       determinant then follow from the $(\operatorname{ran}A,\ker A)$ block
       Schur complement.</p>
-    <p>The same block calculation gives the first relative correction to the
+    <p>The same block calculation gives every algebraic correction to the
       identification volume. Write restrictions to $\operatorname{ran}A$ as
       $A_R=QAQ$ and define on that subspace</p>
     $$G_K=QC_KQ-QC_KP H_K^+PC_KQ,\qquad
-      \vartheta_K=\operatorname{tr}(A^+G_K).$$
+      M_K=A_R^{-1/2}G_KA_R^{-1/2}.$$
+    <p>Let $e_j(M_K)$ be the $j$th elementary symmetric polynomial of the
+      eigenvalues of $M_K$, with $e_0=1$. In particular,</p>
+    $$\vartheta_K=e_1(M_K)=\operatorname{tr}(A^+G_K),\qquad
+      e_2(M_K)={\vartheta_K^2-\operatorname{tr}(M_K^2)\over2}.$$
     <div class="equation-card">
-    <p><strong>Second-order determinant law.</strong> Under the hypotheses of
+    <p><strong>Full determinant polynomial.</strong> Under the hypotheses of
       the rank-$r$ theorem,</p>
     $$\det D(T)=T^r\det_+(A)\det(H_K)
-      \left(1+{\vartheta_K\over T}+O(T^{-2})\right),$$
+      \left\{\sum_{j=0}^r{e_j(M_K)\over T^j}
+      +O(e^{-\rho T})\right\},$$
     $$\log\det D(T)=r\log T+\log\det_+(A)+\log\det(H_K)
-      +{\vartheta_K\over T}+O(T^{-2}).$$
+      +{\vartheta_K\over T}
+      -{\operatorname{tr}(M_K^2)\over2T^2}+O(T^{-3}).$$
     </div>
     <p>Indeed, in the orthogonal decomposition
       $\operatorname{ran}A\oplus\ker A$, the lower block tends exponentially
       to $H_K$, while its Schur complement in the upper block is
       $TA_R+G_K+O(e^{-\rho T})$. Factoring $TA_R$ and using
-      $\det(I+X/T)=1+\operatorname{tr}(X)/T+O(T^{-2})$ proves both formulas.
-      The coefficient includes the stationary&ndash;transient coupling term;
-      replacing it by $\operatorname{tr}(A^+QC_KQ)$ is generally wrong.</p>
+      $\det(I+M_K/T)=\sum_{j=0}^re_j(M_K)T^{-j}$ proves the determinant
+      formula. Expanding $\operatorname{tr}\log(I+M_K/T)$ gives the displayed
+      log-volume terms and, similarly, any fixed algebraic order. The matrix
+      $M_K$ includes the stationary&ndash;transient coupling through $H_K$;
+      replacing $G_K$ by $QC_KQ$ is generally wrong.</p>
     <p>There is also a matrix-level inverse limit. Let $A^+$ and $H_K^+$ be
       the Moore&ndash;Penrose inverses on their complementary supports and set</p>
     $$L=Q-H_K^+PC_KQ.$$
@@ -692,7 +700,9 @@
       $\operatorname{cond}_2D(T)/T$ is $25317.3875$ versus limit $25356.4705$,
       and $\det D(T)/T^2$ is $1.82305073\times10^{-2}$ versus limit
       $1.83449734\times10^{-2}$. Here
-      $\vartheta_K=-12.7986046$; after subtracting
+      $\vartheta_K=-12.7986046$ and $e_2(M_K)=40.5617550$. At $T=64$, the
+      scaled quantity $T^2\{\det D/(T^2\det_+(A)\det H_K)-1-
+      \vartheta_K/T\}$ is $40.5617551$. After subtracting only
       $\vartheta_K/T$, the normalized determinant remainder at $T=2048$ is
       $9.67074\times10^{-6}$ with observed dyadic order $1.999992$. The
       inverse-expansion remainder is

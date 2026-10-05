@@ -540,7 +540,8 @@ def finite_rank_long_maturity_checks():
     cluster block of K is positive definite.  The stationary matrix
     A=diag(b)Kdiag(b) therefore supplies two order-T eigenvalues.  Compression
     of K Hadamard C to ker(A) supplies the other three finite limits and the
-    limiting inverse-information floor.
+    limiting inverse-information floor.  The same block reduction checks the
+    full inverse-maturity determinant polynomial and its second coefficient.
     """
     kappas = np.array([0.35, 0.35, 1.2, 2.4, 5.0])
     sigmas = np.array([0.12, 0.12, 0.30, 0.08, 0.50])
@@ -684,6 +685,13 @@ def finite_rank_long_maturity_checks():
     determinant_correction = np.trace(np.linalg.solve(
         stationary_block, determinant_schur_constant
     ))
+    determinant_reduced = np.linalg.solve(
+        stationary_block, determinant_schur_constant
+    )
+    determinant_second_correction = 0.5 * (
+        np.trace(determinant_reduced) ** 2
+        - np.trace(determinant_reduced @ determinant_reduced)
+    )
     determinant_ratios = np.asarray(determinants) / determinant_target
     determinant_remainders = np.abs(
         determinant_ratios - 1 - determinant_correction / horizons
@@ -695,6 +703,15 @@ def finite_rank_long_maturity_checks():
     assert abs(determinants[-1] / determinant_target - 1) < 0.01
     assert determinant_remainder_orders[-1] > 1.99
     assert determinant_remainders[-1] < 2e-5
+    determinant_second_scaled = horizons**2 * (
+        determinant_ratios - 1 - determinant_correction / horizons
+    )
+    assert abs(
+        determinant_second_correction - np.linalg.det(determinant_reduced)
+    ) < 2e-12
+    assert abs(
+        determinant_second_scaled[1] - determinant_second_correction
+    ) < 1e-6
 
     inverse_orders = np.log2(
         np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
@@ -725,9 +742,13 @@ def finite_rank_long_maturity_checks():
           f"limit {determinant_target:.10e}")
     print(f"  determinant relative 1/T coefficient "
           f"{determinant_correction:.10e}")
+    print(f"  determinant relative 1/T^2 coefficient "
+          f"{determinant_second_correction:.10e}")
     print(f"  corrected determinant remainder "
           f"{determinant_remainders[-1]:.10e}, observed order "
           f"{determinant_remainder_orders[-1]:.6f}")
+    print(f"  scaled second coefficient at T=64 "
+          f"{determinant_second_scaled[1]:.10e}")
     print(f"  inverse remainder {inverse_errors[-1]:.10e}, "
           f"observed order {inverse_orders[-1]:.6f}")
     print(f"  range inverse trace {range_traces[-1]:.10f}, "

@@ -176,9 +176,10 @@
         if maturity integration creates full rank, the other $d-r$ eigenvalues converge to a positive transient
         complement, so conditioning still grows linearly. The inverse converges to the Moore&ndash;Penrose inverse
         of that complement, with an explicit rank-$r$ stationary&ndash;transient correction of order $T^{-1}$ and
-        operator-norm remainder $O(T^{-2})$. The normalized determinant and log-determinant also have an explicit
-        first relative correction: its coefficient is the trace of the stationary Schur-complement correction,
-        including the cross-coupling through the transient block, with relative remainder $O(T^{-2})$.
+        operator-norm remainder $O(T^{-2})$. The normalized determinant has a complete degree-$r$ inverse-maturity
+        polynomial: its coefficients are the elementary symmetric polynomials of the stationary Schur-complement
+        correction after whitening by the stationary block. This includes the cross-coupling through the transient
+        block; the log-determinant follows to every fixed algebraic order from the corresponding trace-power series.
         Thus exact finite-maturity rank does not imply that every exposure
         gains unbounded long-end precision.
         It also separates arbitrary-prior marginal memory from first-order pair dependence.
