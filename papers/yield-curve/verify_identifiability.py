@@ -1300,6 +1300,67 @@ def verify_long_end_conditioning():
         robust_projected_errors / robust_upper_bound))
     assert maximum_robust_ratio <= 1.0 + 2e-12
 
+    # On the local prior ball {pi + Ux: ||x|| <= rho}, the deterministic
+    # minimax risk is exactly min(rho, delta/s_min).  The lower certificate
+    # uses two weakest-direction priors at amplitude min(rho, delta/s_min),
+    # whose admissible error balls meet at the midpoint.  The upper certificate
+    # uses inverse recovery followed by projection onto the coordinate ball
+    # below the touching radius, and the constant center above it.
+    local_noise_ratios = np.array([0.0, 0.2, 0.7, 1.0, 1.4, 3.0])
+    local_minimax_risks = (
+        prior_radius * np.minimum(1.0, local_noise_ratios))
+    for noise_ratio, local_risk in zip(
+            local_noise_ratios, local_minimax_risks):
+        local_delta = noise_ratio * robust_touching_radius
+        local_plus = (
+            pi + local_risk * correlated_weakest_direction)
+        local_minus = (
+            pi - local_risk * correlated_weakest_direction)
+        assert min(local_plus.min(), local_minus.min()) > 0.0
+        local_plus_error = midpoint - response.T @ local_plus
+        local_minus_error = midpoint - response.T @ local_minus
+        local_plus_norm = np.linalg.norm(np.linalg.solve(
+            quote_covariance_root, local_plus_error))
+        local_minus_norm = np.linalg.norm(np.linalg.solve(
+            quote_covariance_root, local_minus_error))
+        assert local_plus_norm <= local_delta + 2e-12
+        assert local_minus_norm <= local_delta + 2e-12
+        assert abs(np.linalg.norm(local_plus - local_minus) / 2.0
+                   - local_risk) < 2e-12
+        upper_risk = min(
+            prior_radius,
+            local_delta / correlated_singular_values[-1])
+        assert abs(upper_risk - local_risk) < 2e-12
+
+    # Check the projected-inverse side uniformly over random true local priors
+    # and random admissible errors.  Projection onto the local coordinate ball
+    # is explicit because U is an isometry and this ball lies in the simplex.
+    local_coordinates = rng.normal(
+        size=(robust_samples, len(offsets)))
+    local_coordinates /= np.linalg.norm(
+        local_coordinates, axis=1)[:, None]
+    local_coordinate_radii = (
+        prior_radius
+        * rng.random(robust_samples) ** (1.0 / len(offsets)))
+    local_coordinates *= local_coordinate_radii[:, None]
+    local_inverse_coordinates = (
+        local_coordinates + robust_coordinate_errors)
+    local_inverse_norms = np.linalg.norm(
+        local_inverse_coordinates, axis=1)
+    local_projection_scales = np.minimum(
+        1.0,
+        prior_radius / np.maximum(local_inverse_norms, 1e-300))
+    local_projected_coordinates = (
+        local_inverse_coordinates * local_projection_scales[:, None])
+    local_projected_priors = (
+        pi + local_projected_coordinates @ centered_basis.T)
+    assert np.min(local_projected_priors) >= -2e-15
+    local_projected_errors = np.linalg.norm(
+        local_projected_coordinates - local_coordinates, axis=1)
+    maximum_local_minimax_ratio = float(np.max(
+        local_projected_errors / robust_upper_bound))
+    assert maximum_local_minimax_ratio <= 1.0 + 2e-12
+
     scaled_weak = spectra[:, -2] * np.exp(rates[0] * translations)
     scaled_weakest = spectra[:, -1] * np.exp(rates[1] * translations)
     scaled_determinants = determinants * np.exp(
@@ -1348,6 +1409,12 @@ def verify_long_end_conditioning():
           f"{np.linalg.norm(midpoint_gls_prior - correlated_prior_minus):.9e}")
     print("deterministic inverse exact/random upper-bound ratios: "
           f"{exact_robust_ratio:.12f}, {maximum_robust_ratio:.12f}")
+    print("local deterministic noise ratios: "
+          f"{local_noise_ratios}")
+    print("local exact minimax risks: "
+          f"{local_minimax_risks}")
+    print("local projected-inverse maximum risk ratio: "
+          f"{maximum_local_minimax_ratio:.12f}")
 
 
 def verify_complex_long_end_aliasing():

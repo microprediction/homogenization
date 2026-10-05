@@ -609,6 +609,32 @@
       \quad\text{whenever}\quad
       \delta\ge\rho s_{M,\Gamma}.$$
     </div>
+    <p>A local parameter ball makes the whole phase transition exact, not only its
+      threshold. Define</p>
+    $$\Theta_\rho=\{\pi+Ux:\|x\|_2\le\rho\},
+      \qquad 0&lt;\rho\le\min_i\pi_i.$$
+    <p>The displayed restriction on $\rho$ is sufficient for
+      $\Theta_\rho\subset\Delta$, since every row of the isometry $U$ has norm at
+      most one. For estimators allowed to depend on the known radii $\rho$ and
+      $\delta$, the deterministic local minimax risk is exactly</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      R^*_{M,\Gamma}(\rho,\delta)
+      &amp;:=\inf_{\widehat\nu}\ \sup_{\nu\in\Theta_\rho}\
+        \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+        \|\widehat\nu(C_M^\top\nu+e)-\nu\|_2\\
+      &amp;=\min\!\left\{\rho,{\delta\over s_{M,\Gamma}}\right\}.
+    \end{aligned}$$
+    </div>
+    <p>For the upper bound, use the constant estimator $\pi$ when
+      $\delta\ge\rho s_{M,\Gamma}$. Below that threshold, apply the generalized
+      inverse and project onto the convex set $\Theta_\rho$; metric projection
+      cannot increase its distance from the true point, so its error is at most
+      $\delta/s_{M,\Gamma}$. For the converse, put
+      $a=\min\{\rho,\delta/s_{M,\Gamma}\}$ and replace $\rho$ by $a$ in the two
+      weakest-direction priors above. Their error balls meet at $C_M^\top\pi$,
+      and the triangle inequality forces loss at least $a$ for one of them. This
+      proves the identity at every noise radius, including the saturation regime.</p>
     <p>Thus uniform robust consistency holds when
       $\delta_M/s_{M,\Gamma}\to0$ and fails whenever
       $\delta_M\ge\rho s_{M,\Gamma}$ along a subsequence for some fixed feasible
@@ -622,7 +648,10 @@
     <p>For the correlated four-state certificate at $M=4$, the two adversarial
       Mahalanobis balls touch exactly at the common midpoint. Direct generalized
       inversion attains $\delta/s_{M,\Gamma}$ in the weakest left-singular direction,
-      and 10,000 errors sampled throughout a smaller ball all satisfy the uniform bound.</p>
+      and 10,000 errors sampled throughout a smaller ball all satisfy the uniform bound.
+      The local-ball certificate also checks six noise-to-threshold ratios from zero to
+      three: the two-point lower certificate and the projected-inverse/constant upper
+      certificate both equal $\rho\min\{1,\delta/(\rho s_{M,\Gamma})\}$.</p>
 
     <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
     <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
