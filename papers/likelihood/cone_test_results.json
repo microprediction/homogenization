@@ -440,6 +440,16 @@
   "four_constrained_active_set_max_error": 0.0005330347406561908,
   "four_constrained_gauss_bonnet_max_error": 3.450954155770347e-08,
   "four_constrained_integration_seed_max_spread": 7.04339708501589e-08,
+  "four_constrained_inverse_covariance_weights": [
+    0.11790246681504216,
+    0.34311838878193895,
+    0.36369718660190437,
+    0.156881611218061,
+    0.018400354684582725
+  ],
+  "four_constrained_polarity_dimension_max_error": 2.7226213325515225e-08,
+  "four_constrained_polarity_face_max_error": 2.7226213325515225e-08,
+  "four_constrained_polarity_block_max_error": 6.661338147750939e-16,
   "four_constrained_chibar_95": 10.398895534303636,
   "four_constrained_null_rejection": 0.050215,
   "four_constrained_binomial_95": 9.832363421712074,

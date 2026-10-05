@@ -29,16 +29,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -355,6 +351,21 @@
     <p>while the inactive multiplier condition is $S_{II}^{-1}Y_I<0$. The first vector is the Gaussian regression
     residual with covariance $S_{A\mid I}$ and is independent of $Y_I$; the second has covariance $S_{II}^{-1}$.
     Central symmetry turns its negative-orthant probability into $\omega(S_{II}^{-1})$, proving the product.</p>
+    <p>The same formula exposes an exact covariance-inversion polarity. Put $P=S^{-1}$ and apply the face formula
+    under $P$ to the complementary active set $I$. The block-inverse identities</p>
+    $$P_{I\mid A}=S_{II}^{-1},\qquad P_{AA}^{-1}=S_{A\mid I}$$
+    <p>exchange the two orthant factors, so face by face</p>
+    <div class="equation-card">
+    $$w_A(S)=w_{A^c}(S^{-1}),\qquad
+      w_j(S)=w_{q-j}(S^{-1}).$$
+    $$H_S(t):=\sum_{j=0}^q w_j(S)t^j
+      =t^q H_{S^{-1}}(t^{-1}).$$
+    </div>
+    <p>Thus covariance inversion reverses, rather than preserves, the chi-bar dimensions. In particular the mean
+    face dimensions satisfy $\sum_j j\,w_j(S)+\sum_j j\,w_j(S^{-1})=q$. This is the covariance-coordinate version of
+    conic intrinsic-volume polarity, $v_j(C)=v_{q-j}(C^\circ)$; see
+    <a href="./bibliography.html#AmelunxenLotz2017">Amelunxen and Lotz (2017)</a>. It is an exact algebraic identity,
+    not an asymptotic or numerical symmetry.</p>
     <p>This use of a conditional covariance <em>inside a specified constrained face</em> should not be confused with
     replacing the entire marginal constrained covariance $S$ by $\operatorname{Cov}(Y\mid X)$ after looking at the
     unrestricted scores. The latter remains wrong. The cross block $B$ disappears only because $X-BS^{-1}Y$ is
@@ -455,7 +466,9 @@
     exact 95% cutoff $10.398896$ rejects at $5.0215\%$; imposing the independent-binomial weights rejects at
     $6.2549\%$. Repeating the only numerical four-dimensional orthant integrations with four randomizations changes
     any weight by at most $7.1\times10^{-8}$, and the even/odd Gauss&ndash;Bonnet sums equal $1/2$ within
-    $3.5\times10^{-8}$.</p>
+    $3.5\times10^{-8}$. Under covariance inversion, the maximum complementary-face and reversed-dimension
+    discrepancies are $2.72\times10^{-8}$, at the scale of that integration, while the two block identities agree
+    to $6.66\times10^{-16}$.</p>
     <p>A separate matrix-kernel certificate propagates the exact two-state filter by Fourier inversion for a fixed
     six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
     log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s

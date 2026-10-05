@@ -14,6 +14,9 @@ for two, three, and four correlated one-sided coordinates with dense
 unrestricted blocks.  An arbitrary-dimensional active-set formula factors
 each chi-bar weight into conditional-residual and precision orthant
 probabilities.
+The final check records the covariance-inversion polarity
+``w_A(S) = w_{A^c}(S^{-1})`` and its dimension reversal
+``w_j(S) = w_{q-j}(S^{-1})``.
 """
 import json
 import math
@@ -856,6 +859,72 @@ def main():
         four_integration_replicates, axis=0
     )))
 
+    # Covariance inversion exchanges every active face with its complement.
+    # Indeed, with P=S^{-1}, the face formula for the complementary active set
+    # I under P contains P_{I|A}=S_{II}^{-1} and P_{AA}^{-1}=S_{A|I}.
+    # Check both block identities and the resulting face/dimension weights.
+    four_precision = np.linalg.inv(four_correlation)
+    four_dual_weights, four_dual_face_probabilities = (
+        correlated_orthant_face_weights(
+            four_precision, rng_seed=20261008
+        )
+    )
+    four_polarity_dimension_error = float(np.max(np.abs(
+        four_weights - four_dual_weights[::-1]
+    )))
+    four_polarity_face_error = 0.0
+    four_polarity_block_error = 0.0
+    for mask in range(1 << four_q):
+        active = four_indices[(mask & (1 << four_indices)) != 0]
+        inactive = four_indices[(mask & (1 << four_indices)) == 0]
+        active_key = tuple(active.tolist())
+        inactive_key = tuple(inactive.tolist())
+        four_polarity_face_error = max(
+            four_polarity_face_error,
+            abs(
+                four_face_probabilities[active_key]
+                - four_dual_face_probabilities[inactive_key]
+            ),
+        )
+        if inactive.size:
+            precision_ii = four_precision[np.ix_(inactive, inactive)]
+            if active.size:
+                precision_ia = four_precision[np.ix_(inactive, active)]
+                precision_aa = four_precision[np.ix_(active, active)]
+                precision_i_given_a = (
+                    precision_ii
+                    - precision_ia
+                    @ np.linalg.solve(precision_aa, precision_ia.T)
+                )
+            else:
+                precision_i_given_a = precision_ii
+            target = np.linalg.inv(
+                four_correlation[np.ix_(inactive, inactive)]
+            )
+            four_polarity_block_error = max(
+                four_polarity_block_error,
+                float(np.max(np.abs(precision_i_given_a - target))),
+            )
+        if active.size:
+            precision_aa = four_precision[np.ix_(active, active)]
+            if inactive.size:
+                covariance_aa = four_correlation[np.ix_(active, active)]
+                covariance_ai = four_correlation[np.ix_(active, inactive)]
+                covariance_ii = four_correlation[np.ix_(inactive, inactive)]
+                covariance_a_given_i = (
+                    covariance_aa
+                    - covariance_ai
+                    @ np.linalg.solve(covariance_ii, covariance_ai.T)
+                )
+            else:
+                covariance_a_given_i = four_correlation[np.ix_(active, active)]
+            four_polarity_block_error = max(
+                four_polarity_block_error,
+                float(np.max(np.abs(
+                    np.linalg.inv(precision_aa) - covariance_a_given_i
+                ))),
+            )
+
     def four_chibar_cdf(x, weights):
         return sum(
             weight * chi2.cdf(x, four_p + face_dimension)
@@ -987,6 +1056,14 @@ def main():
             four_gauss_bonnet_error,
         "four_constrained_integration_seed_max_spread":
             four_integration_spread,
+        "four_constrained_inverse_covariance_weights":
+            four_dual_weights.tolist(),
+        "four_constrained_polarity_dimension_max_error":
+            four_polarity_dimension_error,
+        "four_constrained_polarity_face_max_error":
+            four_polarity_face_error,
+        "four_constrained_polarity_block_max_error":
+            four_polarity_block_error,
         "four_constrained_chibar_95": four_critical,
         "four_constrained_null_rejection": four_null_rejection,
         "four_constrained_binomial_95": binomial_q4_critical,
@@ -1053,6 +1130,10 @@ def main():
           f"{four_rejection_at_binomial:.6f}")
     print("four-constraint Gauss-Bonnet error/integration spread: "
           f"{four_gauss_bonnet_error:.3e}/{four_integration_spread:.3e}")
+    print("four-constraint polarity dimension/face/block errors: "
+          f"{four_polarity_dimension_error:.3e}/"
+          f"{four_polarity_face_error:.3e}/"
+          f"{four_polarity_block_error:.3e}")
 
     ok = (
         abs(out["null_rejection_cone"] - alpha) < 0.006
@@ -1088,6 +1169,9 @@ def main():
         and four_active_set_error < 0.001
         and four_gauss_bonnet_error < 5e-7
         and four_integration_spread < 5e-7
+        and four_polarity_dimension_error < 5e-7
+        and four_polarity_face_error < 5e-7
+        and four_polarity_block_error < 1e-12
         and abs(four_rejection_at_binomial - alpha) > 0.005
     )
     print("PASS" if ok else "FAIL")
