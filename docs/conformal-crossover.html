@@ -28,16 +28,12 @@
         <a href="./quantlib.html">QuantLib models</a>
       </span></span>
       <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
         <a href="./three-regimes.html">Three regimes</a>
         <a href="./erlang.html">Regimes with regular durations</a>
         <a href="./credit.html">Two-name credit</a>
         <a href="./counts.html">Poisson counts</a>
-        <a href="./cir.html">CIR</a>
-        <a href="./jumps.html">Jumps</a>
-        <a href="./heston.html">Heston</a>
         <a href="./cumulants.html">Cumulants of integrated variance</a>
-        <a href="./black-scholes.html">Black&ndash;Scholes</a>
-        <a href="./bond-options.html">Bond options</a>
         <a href="./fast-factor.html">A fast mean-reverting factor</a>
         <a href="./yield-curve.html">Three numbers in a yield curve</a>
         <a href="./cycle-smile.html">Cycle direction in the smile</a>
@@ -516,6 +512,66 @@
       \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
       \le\delta^{\rm HS}_{n,m}.$$
     </div>
+    <h4>The whole realized-coverage law, not only one tail</h4>
+    <p>The preceding event comparison is one projection of a stronger exact
+      consequence. Under the iid pooled panel, the probability integral
+      transform sends every score to a uniform random variable, so the
+      transformed $k$th order statistic is
+      $\operatorname{Beta}(k,n+1-k)$. Since
+      $C_0=\bar F(R_{(k)})$ is a measurable function of the score panel,
+      total variation contracts once more:</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left(
+      {\cal L}_{n,m}(C_0),\operatorname{Beta}(k,n+1-k)
+      \right)
+      \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
+      \le\delta^{\rm HS}_{n,m}\le\delta^{\rm gap}_{n,m}.$$
+    </div>
+    <p>Thus, writing $I_x(k,n+1-k)$ for the beta CDF,</p>
+    $$\sup_{0\le x\le1}\left|
+      \Pr_\pi\{C_0\le x\}-I_x(k,n+1-k)\right|
+      \le\delta^{\rm KL}_{n,m}.$$
+    <p>More generally, every measurable $\phi:[0,1]\to[0,1]$ obeys</p>
+    $$\left|\mathbb E_\pi\phi(C_0)
+       -\mathbb E\phi(B_{k,n+1-k})\right|
+       \le\delta^{\rm KL}_{n,m}.$$
+    <p>For example, for every integer $r\ge1$,</p>
+    $$\left|\mathbb E_\pi C_0^r
+       -\frac{(k)^{\overline r}}{(n+1)^{\overline r}}\right|
+       \le\delta^{\rm KL}_{n,m},$$
+    <p>where the overline denotes a rising factorial. In particular the
+      randomized pooled coverage mean differs from $k/(n+1)$ by at most the
+      same panel-law error. This is a distributional finite-sample result;
+      it does not substitute an effective sample size into a beta law.</p>
+    <p>The terminal-state relaxation bound converts this marginal law into a
+      transparent state-specific PAC statement without claiming conditional
+      conformal validity. For a specified current state $i$, define the
+      realized future coverage</p>
+    $$D_i(\widehat q)=\Pr(R_\Delta\le\widehat q
+       \mid\text{calibration history},Y_0=i).$$
+    <p>Since $|D_i(\widehat q)-C_0|\le H_i(\Delta)$ for every panel, putting
+      $u_i=\min\{1,p+H_i(\Delta)\}$ gives</p>
+    <div class="equation-card">
+    $$\Pr_\pi\{D_i(\widehat q)&lt;p\}
+      \le\min\left\{1,
+        I_{u_i}(k,n+1-k)+\delta^{\rm KL}_{n,m}\right\}.$$
+    </div>
+    <p>The probability is over random stationary calibration panels, while
+      $i$ and $\Delta$ are fixed. It is therefore a PAC guarantee for a
+      state-specific future coverage functional, not pointwise or
+      feature-conditional coverage. If the panel follows an initial law
+      $\nu$ after burn-in $b$, replace the right-side panel error by</p>
+    $$\min\left\{1,\delta^{\rm KL}_{n,m}
+      +\frac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}\right\}.$$
+    <p>An exact nonreversible three-state certificate with continuous
+      exponential score laws, $n=12$, $k=10$, and scaled spacing $mh=1$
+      obtains $\delta^{\rm KL}_{n,m}=0.044220298466$. Across 97 pooled-CDF
+      levels, the largest exact beta-CDF discrepancy is $0.000384664522$;
+      the exact first three moment discrepancies are respectively
+      $7.319\times10^{-5}$, $8.519\times10^{-5}$, and
+      $7.268\times10^{-5}$. The count recursion evaluates each dependent
+      CDF value without Monte Carlo, and numerical tail integration checks
+      the moment consequences independently.</p>
     <p>The Hilbert--Schmidt expression is intrinsic: it is the sum of the
       squared singular values of $P-\Pi$ on centered $L^2(\pi)$. If $Q_0$ is
       reversible with relaxation rates

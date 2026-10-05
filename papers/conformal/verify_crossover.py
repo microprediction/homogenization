@@ -34,8 +34,11 @@ A relative-entropy comparison with the iid pooled panel gives explicit
 joint panel-size/fast-switching total-variation bounds on regular and
 irregular observation grids.  Their exact mutual-information and Renyi-2/
 weighted-Hilbert--Schmidt refinements retain every nonconstant singular mode
-instead of replacing them all by the slowest relaxation rate.  A symmetric
-two-state example reduces
+instead of replacing them all by the slowest relaxation rate.  The same
+data-processing argument transfers the entire realized pooled
+coverage law to its finite-sample Beta order-statistic benchmark, controlling
+all bounded diagnostics and moments rather than only one failure event.  A
+symmetric two-state example reduces
 exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
 and proves that the resulting square-root information scale is sharp,
 including its critical local-asymptotic-normal and persistent-plus-diffuse
@@ -47,9 +50,10 @@ import itertools
 import math
 
 import numpy as np
+from scipy.integrate import quad
 from scipy.linalg import expm
 from scipy.optimize import brentq, minimize_scalar
-from scipy.special import logsumexp, ndtr
+from scipy.special import betainc, logsumexp, ndtr
 from scipy.stats import binom
 
 TARGET = 0.9
@@ -1451,6 +1455,93 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     print(f"  mixed Bernoulli/lognormal limit: {joint_limit:.9f}")
 
 
+def beta_order_statistic_transfer_checks(Q, pi, scales):
+    """Check the full Beta-law transfer for realized pooled coverage.
+
+    Under the iid pooled comparator, applying the continuous pooled CDF to
+    the kth score order statistic gives Beta(k,n+1-k).  Data processing
+    therefore carries any panel-law TV bound to the entire distribution of
+    the random coverage C_0, not only to a selected lower-tail event.
+    The dependent CDF below is computed exactly from the finite-state count
+    recursion at each pooled probability; quadrature then checks the first
+    three moment consequences independently.
+    """
+    panel_size = 12
+    rank = 10
+    scaled_spacing = 1.0
+    transition = expm(scaled_spacing * Q)
+    density = transition / pi[None, :]
+    one_step_kl = np.sum(
+        pi[:, None] * transition * np.log(density)
+    )
+    panel_tv_bound = math.sqrt(
+        (panel_size - 1) * one_step_kl / 2
+    )
+
+    def dependent_coverage_cdf(probability):
+        if probability <= 0:
+            return 0.0
+        if probability >= 1:
+            return 1.0
+        quantile = brentq(
+            lambda x: pi @ cdf_vector(x, scales) - probability,
+            0.0,
+            250.0,
+        )
+        success = cdf_vector(quantile, scales)
+        count_law = binary_count_distribution(
+            pi, [transition] * (panel_size - 1), success
+        )
+        return count_law[rank:].sum()
+
+    grid = np.linspace(0.02, 0.98, 97)
+    discrepancies = np.array([
+        abs(
+            dependent_coverage_cdf(probability)
+            - betainc(rank, panel_size + 1 - rank, probability)
+        )
+        for probability in grid
+    ])
+    maximum_grid_discrepancy = discrepancies.max()
+    maximizing_probability = grid[discrepancies.argmax()]
+    assert maximum_grid_discrepancy <= panel_tv_bound + 2e-14
+
+    moment_rows = []
+    for order in (1, 2, 3):
+        dependent_moment = quad(
+            lambda probability: order * probability ** (order - 1)
+            * (1 - dependent_coverage_cdf(probability)),
+            0.0,
+            1.0,
+            epsabs=2e-10,
+        )[0]
+        beta_moment = np.prod([
+            rank + offset for offset in range(order)
+        ]) / np.prod([
+            panel_size + 1 + offset for offset in range(order)
+        ])
+        discrepancy = abs(dependent_moment - beta_moment)
+        assert discrepancy <= panel_tv_bound + 2e-10
+        moment_rows.append((order, dependent_moment, beta_moment,
+                            discrepancy))
+
+    print("full Beta order-statistic transfer certificate:")
+    print(
+        f"  n={panel_size}, k={rank}, mh={scaled_spacing:.1f}: "
+        f"KL-TV bound {panel_tv_bound:.12f}"
+    )
+    print(
+        f"  maximum exact CDF discrepancy on 97 points: "
+        f"{maximum_grid_discrepancy:.12f} at p={maximizing_probability:.2f}"
+    )
+    print("  order   dependent moment   Beta moment       discrepancy")
+    for order, dependent, beta, discrepancy in moment_rows:
+        print(
+            f"    {order:d}       {dependent:.12f}   {beta:.12f}"
+            f"   {discrepancy:.3e}"
+        )
+
+
 def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     """Check the irregular-grid path-TV theorem and its sharp scale.
 
@@ -1703,6 +1794,7 @@ def nonreversible_contraction_checks():
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
     joint_panel_mixing_checks(Q, pi, gamma_s)
+    beta_order_statistic_transfer_checks(Q, pi, scales)
     irregular_joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
@@ -1811,7 +1903,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, regular- and irregular-grid joint panel-size/"
+          " count law, full Beta order-statistic transfer, regular- and"
+          " irregular-grid joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
           " persistent-plus-diffuse, and burned-start two-state limits,"
           " Perron tail rate,"

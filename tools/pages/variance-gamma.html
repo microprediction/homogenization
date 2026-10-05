@@ -1,0 +1,141 @@
+<!-- title: Variance gamma with switching parameters · homogenization | math -->
+  <main>
+    <h1>Variance gamma with switching parameters</h1>
+    <p class="subtitle">A pure-jump stock whose volatility, kurtosis and skew all change with a hidden regime; European option prices in closed form.</p>
+
+    <h2>The model</h2>
+    <p>In the <a href="./bibliography.html#MadanCarrChang1998">variance gamma model</a> the log price is a Brownian
+    motion with drift $\theta$ and volatility $\sigma$, run on a gamma clock whose variance rate is $\nu$. Here all
+    three parameters are set by a hidden regime $y_t \in \{1, 2\}$: while $y_t = i$,</p>
+    $$d\log S_t = (r + \omega_i)\,dt + dX^{(i)}_t, \qquad X^{(i)}_t = \theta_i\,G^{(i)}_t + \sigma_i\,W_{G^{(i)}_t},$$
+    <p>with $G^{(i)}$ a gamma process of unit mean rate and variance rate $\nu_i$. The constant</p>
+    $$\omega_i = \frac{1}{\nu_i}\log\big(1 - \theta_i\nu_i - \tfrac12\sigma_i^2\nu_i\big)$$
+    <p>keeps the discounted price a martingale in each regime. The regime switches at rate $\lambda$ in each direction.
+    The option lives for $T$ and the regime changes every $1/\lambda$.</p>
+    <p class="muted">Parameters: $\sigma = (0.25, 0.12)$, $\nu = (0.5, 0.2)$, $\theta = (-0.25, -0.10)$, $r = 0.03$,
+    $S_0 = 100$, $T = 1$, and the stock starts in the first regime, the one with the fatter tails and the stronger
+    skew.</p>
+
+    <h2>The quantity</h2>
+    <p>European call prices, through the characteristic function of the log return</p>
+    $$\phi_i(u) = \mathbb{E}\big[e^{iu\log(S_T/S_0)} \mid y_0 = i\big]$$
+    <p>and
+    <a href="./bibliography.html#Lewis2001">Lewis&apos;s formula</a></p>
+    $$C = S_0 - \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\int_0^\infty \operatorname{Re}\big[e^{iu\log(S_0/K)}\,\phi(u - \tfrac i2)\big]\,\frac{du}{u^2 + 1/4}.$$
+    <h2>Averaging</h2>
+    <p>When the regime switches infinitely fast the limit is a L&eacute;vy process whose exponent is the average of
+    the two regimes&apos; exponents. It is the sum of two independent variance gamma processes, each run at half
+    speed, and it is not itself variance gamma unless the regimes agree.</p>
+
+    <h2>Reduction to a linear system</h2>
+    <p>Over an interval $dt$ spent in regime $i$ the log return has independent increments, so $e^{iu\log(S_T/S_0)}$ is
+    multiplied on average by $e^{g_i\,dt}$ with $g_i$ the L&eacute;vy exponent of the regime. For variance gamma the
+    exponent comes from conditioning on the gamma clock. Given the clock increment $dG$, the increment of $X$ is normal
+    with mean $\theta_i\,dG$ and variance $\sigma_i^2\,dG$, so</p>
+    $$\mathbb{E}\big[e^{iu\,dX} \mid dG\big] = e^{(iu\theta_i - \frac12\sigma_i^2u^2)\,dG},$$
+    <p>and the gamma increment has $\mathbb{E}[e^{-z\,dG}] = (1 + \nu_i z)^{-dt/\nu_i}$. Putting
+    $z = -iu\theta_i + \tfrac12\sigma_i^2u^2$ gives the exponent</p>
+    $$\psi_i(u) = -\frac{1}{\nu_i}\log\big(1 - iu\,\theta_i\nu_i + \tfrac12\sigma_i^2\nu_i\,u^2\big).$$
+    <p>Meanwhile the regime jumps at the rates in $Q$. So $\phi_i(u) = a_i(T)$, with no state to factor out,
+    $a' = (Q + \operatorname{diag} g)a$, $a(0) = \mathbf 1$ and the constant, complex</p>
+    $$g_i = iu\,(r + \omega_i) - \frac{1}{\nu_i}\log\big(1 - iu\,\theta_i\nu_i + \tfrac12\sigma_i^2\nu_i\,u^2\big) .$$
+    <p>All three parameters sit inside $g_i$ and none of them touches a Riccati equation, because there is no state.
+    That is why all three may switch.</p>
+    <h2>The expansion</h2>
+    <p>Let the regime switch at rate $\lambda$ in each direction, and write</p>
+    $$\varepsilon = \frac1\lambda, \qquad \bar g = \tfrac12(g_1 + g_2), \qquad \tilde g = \tfrac12(g_1 - g_2),$$
+    <p>Here</p>
+    $$\tilde g = \tfrac12\,iu\,(\omega_1 - \omega_2) + \tfrac12\big(\psi_1(u) - \psi_2(u)\big) .$$
+    <p>The average $\bar g$ is what the <a href="./idea.html">averaged model</a> sees. The
+    half-difference $\tilde g$ measures how much the two regimes disagree.</p>
+
+    <h3>First order</h3>
+    <p>To first order in $\varepsilon$, at fixed $t > 0$,</p>
+    $$a_i(t) = \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big) + O(\varepsilon^2),$$
+    <p>with the upper sign for a start in regime 1. The three factors have separate meanings, explained on the
+    <a href="./idea.html">idea</a> page.</p>
+    <ul>
+      <li>The factor below is the averaged model:
+        $$e^{\int_0^t \bar g} .$$</li>
+      <li>The term below is half the second cumulant of the fluctuating integral of $g$:
+        $$\frac\varepsilon2\int_0^t\tilde g^{\,2} .$$
+        The square carries no conjugate, and here $g$ is complex for every $u$, so the term is complex and is not a variance. For real
+        $g$ it is half the variance, as on the <a href="./idea.html">idea</a> page. It is the same for both starting
+        regimes.</li>
+      <li>The bracket is the memory of the starting regime. The switch stays near its starting state for about
+        $1/(2\lambda)$, which shifts the integral by $\pm\tilde g/(2\lambda)$.</li>
+    </ul>
+
+    <h3>Every order</h3>
+    <p>Add and subtract the two equations for $a_1$ and $a_2$. The mean $m = \tfrac12(a_1 + a_2)$ and the normalized
+    difference $\omega = (a_1 - a_2)/(a_1 + a_2)$ then satisfy</p>
+    $$\omega' = \tilde g\,(1 - \omega^2) - 2\lambda\,\omega, \qquad \omega(0) = 0,$$
+    $$\log m(t) = \int_0^t \big(\bar g + \tilde g\,\omega\big), \qquad a_{1,2} = m\,(1 \pm \omega).$$
+    <p>The first equation has a large restoring term $-2\lambda\omega$: the switch pulls the two regimes together at
+    rate $2\lambda$, while $\tilde g$ pushes them apart. So $\omega$ stays close to the value that balances the two,
+    and expanding in $\varepsilon$ finds that value order by order. Write</p>
+    $$\omega = \sum_n \varepsilon^n\omega_n$$
+    <p>and match powers of $\varepsilon$:</p>
+    $$\omega_1 = \frac{\tilde g}{2}, \qquad \omega_{n+1} = -\frac12\Big(\omega_n' + \tilde g\sum_{i+j=n}\omega_i\,\omega_j\Big).$$
+    <p>This is the two-state case of the <a href="./solvability.html">solvability</a> argument: at each order the
+    restoring term can be inverted, which here is a division by $2\lambda$.</p>
+    <p>The series does not satisfy $\omega(0) = 0$.</p>
+    <p>An <a href="./layers.html">initial layer</a> of width about
+    $1/(2\lambda)$ repairs the start and is solved order by order in the same way. Its leading term adds
+    $\mp\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ to the first-order bracket, which returns the bracket to $1$
+    at $t = 0$; when $\tilde g(0) \ne 0$ the first-order formula above is therefore accurate to $O(\varepsilon^2)$ only
+    at fixed $t > 0$. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
+    <p>The half-difference $\tilde g$ grows only like $\log u$, because each exponent does. The expansion parameter
+    $|\tilde g|/\lambda$ therefore stays small far out along the Fourier integral, and no cutoff of the kind used for
+    <a href="./black-scholes.html">Black&ndash;Scholes</a> is needed: at $u = 200$, $|\tilde g|$ is 12.3. The price of that is slow decay. The characteristic function falls like a power of $u$,
+    and the integral is carried to $u = 600$.</p>
+
+    <h2>The characteristic function in closed form</h2>
+    <p>The forcing is constant, so the two-state system can be solved exactly. The characteristic function of the log
+    return is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_{1,2} \;=\; &e^{(\bar g - \lambda)T}\Big(\cosh sT + \frac{\lambda \pm \tilde g}{s}\,\sinh sT\Big),
+      \qquad s = \sqrt{\lambda^2 + \tilde g^2}, \\[4pt]
+    \;=\; &\exp\Big(\bar g\,T + \frac{\varepsilon}{2}\,\tilde g^2\,T - \frac{\varepsilon^2}{4}\,\tilde g^2\big(1 - e^{-2\lambda T}\big)\Big)
+      \Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\,\big(1 - e^{-2\lambda T}\big)\Big) + O(\varepsilon^3).
+    \end{aligned}$$
+    </div>
+    <p>with</p>
+    $$\begin{aligned}
+    \bar g &= iu\,(r + \bar\omega) + \tfrac12\big(\psi_1(u) + \psi_2(u)\big), \\
+    \tilde g &= iu\,\tilde\omega + \tfrac12\big(\psi_1(u) - \psi_2(u)\big), \\
+    \psi_i(u) &= -\frac{1}{\nu_i}\log\big(1 - iu\,\theta_i\nu_i + \tfrac12\sigma_i^2\nu_i\,u^2\big), \\
+    \omega_i &= \frac{1}{\nu_i}\log\big(1 - \theta_i\nu_i - \tfrac12\sigma_i^2\nu_i\big), \qquad
+    \bar\omega, \tilde\omega = \frac{\omega_1 \pm \omega_2}{2} .
+    \end{aligned}$$
+    <p>The first line follows from the matrix exponential. The system is $a' = Ma$ with</p>
+    $$M = \begin{pmatrix} g_1 - \lambda & \lambda \\ \lambda & g_2 - \lambda\end{pmatrix}
+        = (\bar g - \lambda)\,I + N, \qquad N = \begin{pmatrix}\tilde g & \lambda \\ \lambda & -\tilde g\end{pmatrix},
+        \qquad N^2 = (\lambda^2 + \tilde g^2)\,I = s^2 I,$$
+    <p>so $e^{MT} = e^{(\bar g - \lambda)T}\big(\cosh sT\; I + s^{-1}\sinh sT\; N\big)$, and applying it to $\mathbf 1$
+    gives the two rows $\lambda \pm \tilde g$. For the second line write $s = \lambda\sqrt{1 + \varepsilon^2\tilde g^2}
+    = \lambda + \tfrac12\varepsilon\tilde g^2 + O(\varepsilon^3)$, so that $e^{(s - \lambda)T}$ supplies the
+    Green&ndash;Kubo factor, and expand the remaining bracket in $\varepsilon$.</p>
+    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: the averaged L&eacute;vy
+    process, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$ and the memory of the starting regime.
+    The upper sign is for a start in the first regime.</p>
+    <p>Written out, the characteristic function of the averaged process is</p>
+    $$e^{\bar gT} = e^{iu(r + \bar\omega)T}\,
+      \big(1 - iu\,\theta_1\nu_1 + \tfrac12\sigma_1^2\nu_1u^2\big)^{-T/(2\nu_1)}\,
+      \big(1 - iu\,\theta_2\nu_2 + \tfrac12\sigma_2^2\nu_2u^2\big)^{-T/(2\nu_2)},$$
+    <p>and the Green&ndash;Kubo factor is $\exp\big(\tfrac18\varepsilon T\,[\,2iu\tilde\omega + \psi_1(u) - \psi_2(u)\,]^2\big)$.</p>
+    <p>At $\lambda = 25$, $T = 1$ and the Lewis frequency $u = 1 - i/2$:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th><th>error</th></tr></thead><tbody><tr><td>$\omega_1$, $\omega_2$</td><td>0.2075936, &nbsp; 0.0919493</td><td></td></tr><tr><td>$g_1$, $g_2$</td><td>&minus;0.0347041 + 0.0346566 i, &nbsp; 0.0050371 + 0.0301766 i</td><td></td></tr><tr><td>$\bar g$, $\tilde g$</td><td>&minus;0.0148335 + 0.0324166 i, &nbsp; &minus;0.0198706 + 0.0022400 i</td><td></td></tr><tr><td>averaged exponent</td><td>0.98475833 + 0.03193369 i</td><td>3.9e-4</td></tr><tr><td>first order</td><td>0.98437327 + 0.03196361 i</td><td>1.6e-7</td></tr><tr><td>second order</td><td>0.98437312 + 0.03196364 i</td><td>6.2e-11</td></tr><tr><td>exact</td><td>0.98437312 + 0.03196364 i</td><td></td></tr></tbody></table></div>
+
+    <h2>Results</h2>
+    <p>Call prices from the exact characteristic function, and the error of the expansion after each order:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>switching rate</th><th>strike</th><th>exact</th><th>order 0</th><th>order 1</th><th>order 2</th></tr></thead><tbody><tr><td>25</td><td>90</td><td>16.402558</td><td>3.4e-2</td><td>2.3e-4</td><td>4.5e-7</td></tr><tr><td>25</td><td>110</td><td>5.107950</td><td>4.9e-2</td><td>1.1e-4</td><td>2.1e-6</td></tr><tr><td>50</td><td>90</td><td>16.385273</td><td>1.7e-2</td><td>5.8e-5</td><td>4.1e-8</td></tr><tr><td>50</td><td>110</td><td>5.083352</td><td>2.5e-2</td><td>2.8e-5</td><td>3.0e-7</td></tr><tr><td>100</td><td>90</td><td>16.376692</td><td>8.5e-3</td><td>1.5e-5</td><td>4.2e-9</td></tr><tr><td>100</td><td>110</td><td>5.071071</td><td>1.2e-2</td><td>7.2e-6</td><td>3.9e-8</td></tr></tbody></table></div>
+    <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
+    Certificates:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
+    and, for the convergence orders,
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_quantlib_models.py">verify_quantlib_models.py</a>.</p>
+    <p>In <a href="https://github.com/microprediction/regimelib">regimelib</a> this model is
+    <code>SwitchingVarianceGammaProcess</code>.</p>
+  </main>
