@@ -774,29 +774,35 @@
       $\sum_k |k|^q|c_k|$ provide the required derivative bounds. This result makes the role of the mesh precise:
       node values alone are not a certificate, but node values plus the displayed Taylor remainder are.</p>
 
-    <h3>A posteriori three-state diagnostic</h3>
+    <h3>A proof-grade a posteriori three-state certificate</h3>
     <p>For the moving nonreversible three-state example, the certificate truncates the exponent through $m^{-3}$
-      and the trial profile through $m^{-4}$. A Fourier-coefficient $\ell^1$ envelope bounds the residual at every
-      phase of the trigonometric interpolants, rather than merely at the 8192 collocation nodes. The table compares
-      the sharper phase-mesh bracket with an independent monodromy exponent.</p>
+      and the trial profile through $m^{-4}$. It retains Fourier modes $|k|\leq16$ and makes their conjugate symmetry
+      exact. The retained binary64 real and imaginary parts <em>define</em> an explicit rational trigonometric trial;
+      no claim about FFT rounding is needed. The five exact rational Fourier modes of $mQ(t)+D(t)$ are then
+      convolved with that trial using rational arithmetic. For every complex coefficient $z$, its modulus is bounded
+      by $n/10^{40}$, where integer arithmetic chooses the least $n$ satisfying
+      $n^2\geq10^{80}|z|^2$. Thus positivity, residual tails, interval division, and the final Collatz bracket are
+      all outward enclosures. The zero mode of the explicit phase differs from the formal third-order exponent
+      sum by less than $6\times10^{-17}$ on the displayed range.</p>
+    <p>The table reports this rational enclosure, with the displayed endpoints rounded outward. The monodromy
+      column is an independent floating-point check, not an ingredient of the proof.</p>
     <div class="table-wrap">
     <table class="impl">
       <thead><tr><th style="text-transform:none">$m$</th><th>lower error bound</th><th>monodromy error</th><th>upper error bound</th></tr></thead>
       <tbody>
-        <tr><td>8</td><td>&minus;1.18042e-4</td><td>&minus;2.92236e-7</td><td>9.53341e-5</td></tr>
-        <tr><td>16</td><td>&minus;7.33587e-6</td><td>&minus;1.82153e-8</td><td>5.93961e-6</td></tr>
-        <tr><td>32</td><td>&minus;4.57198e-7</td><td>&minus;1.13113e-9</td><td>3.70712e-7</td></tr>
-        <tr><td>64</td><td>&minus;2.85382e-8</td><td>&minus;7.03820e-11</td><td>2.31571e-8</td></tr>
+        <tr><td>8</td><td>&minus;1.29452e-4</td><td>&minus;2.92236e-7</td><td>1.29099e-4</td></tr>
+        <tr><td>16</td><td>&minus;8.03357e-6</td><td>&minus;1.82153e-8</td><td>8.01212e-6</td></tr>
+        <tr><td>32</td><td>&minus;5.00316e-7</td><td>&minus;1.13113e-9</td><td>4.98995e-7</td></tr>
+        <tr><td>64</td><td>&minus;3.12145e-8</td><td>&minus;7.03820e-11</td><td>3.11325e-8</td></tr>
       </tbody>
     </table>
     </div>
-    <p>The larger absolute endpoint has measured order $4.00185$, and $m^4$ times it is $0.478792$ at $m=64$.
-      The independent monodromy error lies inside every asymmetric interval.
-      The phase-mesh radius is $12.4\%$ smaller than the global interval-division radius at $m=64$.
-      Thus the bound is finite-speed and has the predicted fourth order, although it is intentionally conservative.
-      The Fourier inequalities control the complete interpolants; the reported arithmetic is ordinary double
-      precision rather than outward-rounded interval arithmetic. A proof-grade computer enclosure therefore needs
-      the same calculation with directed rounding. This numerical scope is separate from the exact theorem above.</p>
+    <p>The larger absolute endpoint has measured order $4.00255$, and $m^4$ times it is $0.523691$ at $m=64$;
+      the certified profile lower bound there is $0.997454$. The independent monodromy error lies inside every
+      interval. The floating phase-mesh refinement remains a useful, slightly sharper diagnostic
+      ($[-2.85382,2.31571]\times10^{-8}$ at $m=64$), but it is not used in the rational certificate. Hence the
+      theorem is exact, the displayed rational bracket is proof-grade for its explicit positive trial polynomial,
+      and the monodromy and phase-mesh comparisons are reproducibility diagnostics with clearly separate scope.</p>
 
     <h3>The sharp maturity crossover for a truncated exponent</h3>
     <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,

@@ -15,6 +15,9 @@ exponent at a fixed, finite switching speed.
 
 from __future__ import annotations
 
+from fractions import Fraction
+from math import isqrt
+
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.linalg import eig, expm
@@ -2164,6 +2167,326 @@ def finite_chain_floquet_residual_diagnostic(
     }
 
 
+RationalComplex = tuple[Fraction, Fraction]
+
+
+def _rc_add(left: RationalComplex, right: RationalComplex) -> RationalComplex:
+    return left[0] + right[0], left[1] + right[1]
+
+
+def _rc_scale(value: RationalComplex, scalar: Fraction) -> RationalComplex:
+    return value[0] * scalar, value[1] * scalar
+
+
+def _rc_multiply(
+    left: RationalComplex, right: RationalComplex
+) -> RationalComplex:
+    return (
+        left[0] * right[0] - left[1] * right[1],
+        left[0] * right[1] + left[1] * right[0],
+    )
+
+
+def _rc_absolute_upper(
+    value: RationalComplex, decimal_places: int = 40
+) -> Fraction:
+    """Return a rational upper bound for the complex modulus.
+
+    The only rounding is an integer ceiling: if ``S=10**decimal_places``,
+    the returned ``n/S`` is the least such grid point whose square is no
+    smaller than the exact rational squared modulus.
+    """
+    squared = value[0] ** 2 + value[1] ** 2
+    if squared == 0:
+        return Fraction(0)
+    scale = 10**decimal_places
+    scaled_numerator = squared.numerator * scale**2
+    denominator = squared.denominator
+    root = isqrt(scaled_numerator // denominator)
+    if root**2 * denominator < scaled_numerator:
+        root += 1
+    upper = Fraction(root, scale)
+    assert upper**2 >= squared
+    return upper
+
+
+def _fraction_outward_float(value: Fraction, lower: bool) -> float:
+    """Convert an exact rational to a binary64 endpoint in the safe direction."""
+    candidate = float(value)
+    represented = Fraction.from_float(candidate)
+    if lower and represented > value:
+        candidate = float(np.nextafter(candidate, -np.inf))
+    elif not lower and represented < value:
+        candidate = float(np.nextafter(candidate, np.inf))
+    represented = Fraction.from_float(candidate)
+    assert represented <= value if lower else represented >= value
+    return candidate
+
+
+def _exact_real_fourier_polynomial(
+    values: np.ndarray, degree: int
+) -> dict[int, list[RationalComplex]]:
+    """Make an exactly real rational polynomial from sampled real values.
+
+    The FFT is used only to choose the trial polynomial.  Each retained
+    binary64 real and imaginary part is then converted to its exact rational
+    value, and negative modes are imposed as exact conjugates.  Subsequent
+    certificate arithmetic does not depend on any FFT accuracy claim.
+    """
+    if values.ndim == 1:
+        values = values[:, None]
+    grid_size, dimension = values.shape
+    if not 0 <= degree < grid_size // 2:
+        raise ValueError("Fourier degree must be below the Nyquist mode")
+    transformed = np.fft.fft(values, axis=0) / grid_size
+    answer: dict[int, list[RationalComplex]] = {
+        0: [
+            (Fraction.from_float(float(transformed[0, j].real)), Fraction(0))
+            for j in range(dimension)
+        ]
+    }
+    for mode in range(1, degree + 1):
+        positive = transformed[mode]
+        negative = transformed[-mode]
+        coefficients = []
+        for component in range(dimension):
+            # Average the nominal conjugate pair before exact conversion.
+            real_part = float(
+                0.5 * (positive[component].real + negative[component].real)
+            )
+            imaginary_part = float(
+                0.5 * (positive[component].imag - negative[component].imag)
+            )
+            coefficients.append(
+                (
+                    Fraction.from_float(real_part),
+                    Fraction.from_float(imaginary_part),
+                )
+            )
+        answer[mode] = coefficients
+        answer[-mode] = [(real, -imag) for real, imag in coefficients]
+    return answer
+
+
+def _benchmark_exact_matrix_fourier(
+    m: Fraction,
+) -> dict[int, list[list[RationalComplex]]]:
+    """Exact Fourier coefficients of the explicit three-state benchmark."""
+    zero: RationalComplex = (Fraction(0), Fraction(0))
+
+    def scalar_modes(
+        constant: str,
+        amplitude: str | None = None,
+        frequency: int = 0,
+        kind: str | None = None,
+    ) -> dict[int, RationalComplex]:
+        modes = {0: (Fraction(constant), Fraction(0))}
+        if amplitude is None:
+            return modes
+        half_amplitude = Fraction(amplitude) / 2
+        if kind == "cos":
+            modes[frequency] = (half_amplitude, Fraction(0))
+            modes[-frequency] = (half_amplitude, Fraction(0))
+        elif kind == "sin":
+            modes[frequency] = (Fraction(0), -half_amplitude)
+            modes[-frequency] = (Fraction(0), half_amplitude)
+        else:
+            raise ValueError("kind must be 'sin' or 'cos'")
+        return modes
+
+    rates = {
+        (0, 1): scalar_modes("0.8", "0.1", 1, "sin"),
+        (0, 2): scalar_modes("0.3", "0.05", 2, "cos"),
+        (1, 0): scalar_modes("0.4", "0.05", 1, "cos"),
+        (1, 2): scalar_modes("1.0", "0.1", 2, "sin"),
+        (2, 0): scalar_modes("0.7", "0.08", 1, "sin"),
+        (2, 1): scalar_modes("0.5", "0.06", 2, "cos"),
+    }
+    forcing_modes = {
+        0: scalar_modes("-0.35", "0.22", 1, "sin"),
+        1: scalar_modes("-0.20", "0.17", 1, "cos"),
+        2: scalar_modes("-0.46", "0.13", 2, "sin"),
+    }
+    answer = {
+        mode: [[zero for _ in range(3)] for _ in range(3)]
+        for mode in range(-2, 3)
+    }
+    for (row, column), modes in rates.items():
+        for mode, coefficient in modes.items():
+            answer[mode][row][column] = _rc_add(
+                answer[mode][row][column], _rc_scale(coefficient, m)
+            )
+            answer[mode][row][row] = _rc_add(
+                answer[mode][row][row], _rc_scale(coefficient, -m)
+            )
+    for component, modes in forcing_modes.items():
+        for mode, coefficient in modes.items():
+            answer[mode][component][component] = _rc_add(
+                answer[mode][component][component], coefficient
+            )
+    return answer
+
+
+def finite_chain_floquet_rational_enclosure(
+    m: float,
+    exponent_order: int,
+    coefficients: np.ndarray,
+    profiles: list[np.ndarray],
+    local_drifts: list[np.ndarray],
+    degree: int = 16,
+) -> dict[str, float | int]:
+    """Proof-grade rational enclosure for an explicit Fourier trial profile.
+
+    The retained FFT output merely defines a degree-``degree`` trial
+    polynomial: its binary64 parts are exact rationals here.  The benchmark
+    matrix Fourier coefficients, all convolutions, interval divisions, and
+    positivity checks are exact rational operations.  Complex moduli in the
+    coefficient tails are replaced by verified rational upper bounds.
+    Consequently the returned interval is an actual enclosure for this
+    explicit trial polynomial, not a floating-point residual diagnostic.
+    """
+    if len(profiles) <= exponent_order + 1:
+        raise ValueError("one profile beyond the exponent order is required")
+    if len(local_drifts) <= exponent_order:
+        raise ValueError("missing local drift")
+    rational_m = Fraction.from_float(float(m))
+    trial_profile = sum(
+        profiles[order] / m**order
+        for order in range(exponent_order + 2)
+    )
+    local_phase = sum(
+        local_drifts[order] / m**order
+        for order in range(exponent_order + 1)
+    )
+    profile = _exact_real_fourier_polynomial(trial_profile, degree)
+    phase_vectors = _exact_real_fourier_polynomial(local_phase, degree)
+    phase = {mode: values[0] for mode, values in phase_vectors.items()}
+    matrix = _benchmark_exact_matrix_fourier(rational_m)
+    for time in np.linspace(0.0, PERIOD, 17, endpoint=False):
+        reconstructed = np.zeros((3, 3), dtype=complex)
+        for mode, values in matrix.items():
+            reconstructed += np.asarray([
+                [complex(float(real), float(imag)) for real, imag in row]
+                for row in values
+            ]) * np.exp(1j * mode * time)
+        expected = (
+            m * periodic_three_state_generator(float(time))
+            + periodic_three_state_forcing(float(time))
+        )
+        assert np.max(np.abs(reconstructed.imag)) < 2e-14
+        assert np.max(np.abs(reconstructed.real - expected)) < 5e-14
+    zero: RationalComplex = (Fraction(0), Fraction(0))
+
+    residual: dict[int, list[RationalComplex]] = {}
+
+    def add_residual(
+        mode: int, component: int, value: RationalComplex
+    ) -> None:
+        if mode not in residual:
+            residual[mode] = [zero for _ in range(3)]
+        residual[mode][component] = _rc_add(
+            residual[mode][component], value
+        )
+
+    for mode, values in profile.items():
+        derivative_multiplier = (Fraction(0), Fraction(mode))
+        for component, value in enumerate(values):
+            add_residual(
+                mode,
+                component,
+                _rc_multiply(derivative_multiplier, value),
+            )
+    for matrix_mode, matrix_values in matrix.items():
+        for profile_mode, profile_values in profile.items():
+            output_mode = matrix_mode + profile_mode
+            for row in range(3):
+                for column in range(3):
+                    add_residual(
+                        output_mode,
+                        row,
+                        _rc_scale(
+                            _rc_multiply(
+                                matrix_values[row][column],
+                                profile_values[column],
+                            ),
+                            Fraction(-1),
+                        ),
+                    )
+    for phase_mode, phase_value in phase.items():
+        for profile_mode, profile_values in profile.items():
+            output_mode = phase_mode + profile_mode
+            for component, profile_value in enumerate(profile_values):
+                add_residual(
+                    output_mode,
+                    component,
+                    _rc_multiply(phase_value, profile_value),
+                )
+
+    profile_lower_bounds = []
+    profile_upper_bounds = []
+    residual_lower_bounds = []
+    residual_upper_bounds = []
+    for component in range(3):
+        profile_mean = profile[0][component][0]
+        assert profile[0][component][1] == 0
+        profile_tail = sum(
+            _rc_absolute_upper(values[component])
+            for mode, values in profile.items()
+            if mode != 0
+        )
+        profile_lower_bounds.append(profile_mean - profile_tail)
+        profile_upper_bounds.append(profile_mean + profile_tail)
+        residual_mean = residual[0][component][0]
+        assert residual[0][component][1] == 0
+        residual_tail = sum(
+            _rc_absolute_upper(values[component])
+            for mode, values in residual.items()
+            if mode != 0
+        )
+        residual_lower_bounds.append(residual_mean - residual_tail)
+        residual_upper_bounds.append(residual_mean + residual_tail)
+    assert min(profile_lower_bounds) > 0
+
+    relative_lower_bounds = []
+    relative_upper_bounds = []
+    for lower, upper, profile_lower, profile_upper in zip(
+        residual_lower_bounds,
+        residual_upper_bounds,
+        profile_lower_bounds,
+        profile_upper_bounds,
+    ):
+        if lower >= 0:
+            relative_lower_bounds.append(lower / profile_upper)
+            relative_upper_bounds.append(upper / profile_lower)
+        elif upper <= 0:
+            relative_lower_bounds.append(lower / profile_lower)
+            relative_upper_bounds.append(upper / profile_upper)
+        else:
+            relative_lower_bounds.append(lower / profile_lower)
+            relative_upper_bounds.append(upper / profile_lower)
+    relative_lower = min(relative_lower_bounds)
+    relative_upper = max(relative_upper_bounds)
+    approximate_exponent = phase[0][0]
+    formal_exponent = sum(
+        Fraction.from_float(float(coefficients[order])) / rational_m**order
+        for order in range(exponent_order + 1)
+    )
+    return {
+        "approximate_exponent": float(approximate_exponent),
+        "formal_exponent": float(formal_exponent),
+        "mean_discrepancy": float(approximate_exponent - formal_exponent),
+        "lower_error": _fraction_outward_float(-relative_upper, lower=True),
+        "upper_error": _fraction_outward_float(-relative_lower, lower=False),
+        "radius": _fraction_outward_float(
+            max(abs(relative_lower), abs(relative_upper)), lower=False
+        ),
+        "minimum_profile": _fraction_outward_float(
+            min(profile_lower_bounds), lower=True
+        ),
+        "degree": degree,
+    }
+
+
 def finite_chain_periodic_errors(
     m: float, moving_generator: bool
 ) -> dict[str, float]:
@@ -2390,6 +2713,16 @@ def check_general_periodic_generator() -> None:
         )
         for m in speeds
     ]
+    rational_enclosures = [
+        finite_chain_floquet_rational_enclosure(
+            m,
+            3,
+            recursive_coefficients,
+            recursive_profiles,
+            recursive_drifts,
+        )
+        for m in speeds
+    ]
     residual_radii = np.asarray([
         result["radius"] for result in residual_diagnostics
     ])
@@ -2400,11 +2733,21 @@ def check_general_periodic_generator() -> None:
         result["exponent"] - diagnostic["approximate_exponent"]
         for result, diagnostic in zip(moving_results, residual_diagnostics)
     ])
+    rational_monodromy_errors = np.asarray([
+        result["exponent"] - enclosure["approximate_exponent"]
+        for result, enclosure in zip(moving_results, rational_enclosures)
+    ])
+    rational_radii = np.asarray([
+        enclosure["radius"] for enclosure in rational_enclosures
+    ])
     residual_rate = float(np.log2(
         residual_radii[-2] / residual_radii[-1]
     ))
     mesh_residual_rate = float(np.log2(
         mesh_residual_radii[-2] / mesh_residual_radii[-1]
+    ))
+    rational_residual_rate = float(np.log2(
+        rational_radii[-2] / rational_radii[-1]
     ))
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
@@ -2440,8 +2783,17 @@ def check_general_periodic_generator() -> None:
         )
         assert diagnostic["mesh_radius"] < diagnostic["radius"]
         assert diagnostic["minimum_profile"] > 0.9
+    for monodromy_error, enclosure in zip(
+        rational_monodromy_errors, rational_enclosures
+    ):
+        assert enclosure["lower_error"] < monodromy_error
+        assert monodromy_error < enclosure["upper_error"]
+        assert enclosure["minimum_profile"] > 0.9
+        assert enclosure["degree"] == 16
+        assert abs(enclosure["mean_discrepancy"]) < 6e-17
     assert residual_rate > 3.9
     assert mesh_residual_rate > 3.9
+    assert rational_residual_rate > 3.9
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2539,6 +2891,22 @@ def check_general_periodic_generator() -> None:
         f"{64.0**4 * mesh_residual_radii[-1]:.10e}; "
         "improvement factor "
         f"{residual_radii[-1] / mesh_residual_radii[-1]:.3f}"
+    )
+    print("proof-grade degree-16 rational Fourier enclosure")
+    print(" m          lower error      monodromy error          upper error")
+    for m, monodromy_error, enclosure in zip(
+        speeds, rational_monodromy_errors, rational_enclosures
+    ):
+        print(
+            f"{m:3.0f}   {enclosure['lower_error']:18.9e}"
+            f"   {monodromy_error:18.9e}"
+            f"   {enclosure['upper_error']:18.9e}"
+        )
+    print(
+        "rational-enclosure radius order: "
+        f"{rational_residual_rate:.6f}; m=64 scaled radius "
+        f"{64.0**4 * rational_radii[-1]:.10e}; minimum certified profile "
+        f"{rational_enclosures[-1]['minimum_profile']:.10e}"
     )
 
 
