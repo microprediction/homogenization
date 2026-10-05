@@ -175,6 +175,32 @@
       <a href="https://doi.org/10.1007/BF00532868">Taqqu (1975)</a> identifies the non-Gaussian Rosenblatt limit.
       For $\beta=0.3$, the deterministic certificate evaluates the finite-horizon variance and triple integral:
       its normalized third cumulant approaches $\gamma_{0.3}=2.067068891$ rather than zero.</p>
+    <h3>An exactly covariance-matched Hermite hierarchy</h3>
+    <p>The rank-two example is part of a sharper non-identification result. Fix one
+      $\alpha\in(0,1)$. For each integer $q\geq1$, let $G^{(q)}$ be a centered stationary unit-variance Gaussian
+      process with covariance</p>
+    $$r_q(t)=(1+|t|)^{-\alpha/q},$$
+    <p>and let $H_q$ be the probabilists&apos; Hermite polynomial of degree $q$. The normalized observable</p>
+    $$X_t^{(q)}=\frac{H_q(G_t^{(q)})}{\sqrt{q!}}$$
+    <p>is stationary and mixing, hence ergodic. The Gaussian&ndash;Hermite identity
+      $\mathbb E[H_q(U)H_q(V)]=q!\rho^q$ for standard jointly Gaussian $(U,V)$ with correlation $\rho$ gives</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}(X_0^{(q)},X_t^{(q)})=(1+|t|)^{-\alpha}
+      \quad\hbox{for every }q.$$
+    </div>
+    <p>Thus the whole hierarchy has exactly the same covariance at every lag, not merely the same asymptotic
+      exponent. In particular, with $I_R^{(q)}=\int_0^R X_t^{(q)}dt$, every rank has the same variance and</p>
+    $$\operatorname{Var}I_R^{(q)}
+      \sim\frac{2}{(1-\alpha)(2-\alpha)}R^{2-\alpha}.$$
+    <p>Nevertheless, after normalization by this common variance, the integrated paths converge in $C[0,1]$ to
+      different limits: rank one gives fractional Brownian motion, while rank $q\geq2$ gives the non-Gaussian
+      rank-$q$ Hermite process. This is exactly the arbitrary-rank non-central limit theorem of
+      <a href="https://doi.org/10.1007/BF00535674">Taqqu (1979)</a>, applied with
+      $H=1-\alpha/2$. Hence no statistic determined only by the covariance or spectral measure can identify the
+      functional limit, even within stationary mixing transforms of Gaussian processes.</p>
+    <p>For $\alpha=0.6$, the certificate checks ranks one through five by tensor Gauss&ndash;Hermite quadrature.
+      Their covariance values agree within $4.44\times10^{-16}$; independent time quadrature checks the common
+      integrated variance within $1.82\times10^{-12}$, and at $R=2^{24}$ its leading-term ratio is $0.998196069$.</p>
     <p>To prove it, scale the Stieltjes measures by
       $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where
       $\lambda=\varepsilon/T_\varepsilon=R_\varepsilon^{-1}$.

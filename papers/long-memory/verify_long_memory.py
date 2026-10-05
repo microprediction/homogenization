@@ -5,7 +5,8 @@ integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
 periodic counterexamples, including the Gaussian fractional-Brownian functional
 limit, an ergodic second-chaos counterexample with nonvanishing limiting
-skewness, and the sharp Fourier-decay and Cesaro-mean conditions at the
+skewness, a covariance-matched hierarchy of arbitrary Hermite ranks, and the
+sharp Fourier-decay and Cesaro-mean conditions at the
 saturated epsilon-squared boundary.
 """
 import math
@@ -758,6 +759,94 @@ def verify_ergodic_second_chaos_counterexample():
     )
 
 
+def verify_covariance_matched_hermite_hierarchy():
+    """Check that every Hermite rank can have exactly the same covariance.
+
+    Fix alpha in (0,1).  For each q, let G_q be standard stationary Gaussian
+    with correlation (1+|t|)^(-alpha/q), and set
+
+        X_q(t) = He_q(G_q(t)) / sqrt(q!).
+
+    The Gaussian-Hermite identity gives Cov(X_q(0),X_q(t))=
+    (1+|t|)^(-alpha), independently of q.  Taqqu's theorem then distinguishes
+    the rank-q functional limits even though every second-order statistic is
+    identical.  Tensor Gauss-Hermite quadrature checks the covariance identity;
+    independent time quadrature checks the common integrated variance.
+    """
+    alpha = 0.6
+    orders = tuple(range(1, 6))
+    lag = 1.3
+    target_covariance = (1.0 + lag) ** (-alpha)
+
+    nodes, weights = np.polynomial.hermite_e.hermegauss(24)
+    normal_weights = weights / math.sqrt(2.0 * math.pi)
+    covariance_errors = []
+    for order in orders:
+        beta = alpha / order
+        correlation = (1.0 + lag) ** (-beta)
+        coefficients = np.zeros(order + 1)
+        coefficients[-1] = 1.0
+        first = np.polynomial.hermite_e.hermeval(nodes, coefficients)
+        second = np.polynomial.hermite_e.hermeval(
+            correlation * nodes[:, None]
+            + math.sqrt(1.0 - correlation ** 2) * nodes[None, :],
+            coefficients,
+        )
+        expectation = np.sum(
+            normal_weights[:, None] * normal_weights[None, :]
+            * first[:, None] * second
+        ) / math.factorial(order)
+        covariance_errors.append(abs(expectation - target_covariance))
+
+    horizon = 257.0
+    quadrature_variance = 2.0 * quad(
+        lambda lag_value: (
+            (horizon - lag_value) * (1.0 + lag_value) ** (-alpha)
+        ),
+        0.0,
+        horizon,
+        epsabs=2e-10,
+        epsrel=2e-12,
+        limit=500,
+    )[0]
+    exact_integral = (
+        (horizon + 1.0)
+        * math.expm1((1.0 - alpha) * math.log1p(horizon))
+        / (1.0 - alpha)
+        - math.expm1((2.0 - alpha) * math.log1p(horizon))
+        / (2.0 - alpha)
+    )
+    exact_variance = 2.0 * exact_integral
+    variance_identity_error = abs(quadrature_variance - exact_variance)
+
+    large_horizon = 2.0 ** 24
+    large_integral = (
+        (large_horizon + 1.0)
+        * math.expm1((1.0 - alpha) * math.log1p(large_horizon))
+        / (1.0 - alpha)
+        - math.expm1((2.0 - alpha) * math.log1p(large_horizon))
+        / (2.0 - alpha)
+    )
+    leading_constant = 2.0 / ((1.0 - alpha) * (2.0 - alpha))
+    asymptotic_ratio = (
+        2.0 * large_integral
+        / (leading_constant * large_horizon ** (2.0 - alpha))
+    )
+    hurst = 1.0 - alpha / 2.0
+
+    assert max(covariance_errors) < 2e-12
+    assert variance_identity_error < 2e-9
+    assert abs(asymptotic_ratio - 1.0) < 0.002
+    return (
+        alpha,
+        hurst,
+        orders,
+        max(covariance_errors),
+        variance_identity_error,
+        asymptotic_ratio,
+    )
+
+
 def verify_zero_gk_boundary():
     """Check the second critical index and finite-first-moment limit."""
     # At alpha=2 the exact formula is epsilon^2 log(1+epsilon^-2),
@@ -1062,6 +1151,7 @@ def main():
     antipersistent_17 = verify_antipersistent_case(1.7)
     gaussian_fclt = verify_gaussian_fractional_limit()
     second_chaos = verify_ergodic_second_chaos_counterexample()
+    hermite_hierarchy = verify_covariance_matched_hermite_hierarchy()
     zero_gk_boundary = verify_zero_gk_boundary()
     saturated_spectral = verify_saturated_spectral_criterion()
     spectral_abelian = verify_spectral_abelian_theorem()
@@ -1107,6 +1197,13 @@ def main():
           f"{tuple(f'{value:.9f}' for value in second_chaos[2])}")
     print("ergodic second-chaos terminal variance/cumulant leading ratios: "
           f"{second_chaos[3]:.9f}, {second_chaos[4]:.9f}")
+    print("covariance-matched Hermite hierarchy alpha/H and ranks: "
+          f"{hermite_hierarchy[0]:.1f}, {hermite_hierarchy[1]:.1f}, "
+          f"{hermite_hierarchy[2]}")
+    print("Hermite hierarchy covariance/variance identity errors and "
+          "leading ratio: "
+          f"{hermite_hierarchy[3]:.3e}, {hermite_hierarchy[4]:.3e}, "
+          f"{hermite_hierarchy[5]:.9f}")
     print("zero-Green--Kubo alpha=2 log-corrected ratio, identity error: "
           f"{zero_gk_boundary[0]:.12f}, {zero_gk_boundary[1]:.3e}")
     print("zero-Green--Kubo alpha=3 first moment, order, ratio, identity error: "
