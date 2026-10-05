@@ -400,13 +400,13 @@
       bounds
       $\mu_m\le\max_i c_i/\kappa_*$ and
       $\mathbb E_{\Pi_m}v^2\le(2\max_i c_i+\max_i a_i)\mu_m/(2\kappa_*)$.
-      At a resonant pair of rates, $Te^{-\lambda T}$ is absorbed by $e^{-\lambda T/2}$. Consequently there are
-      constants $C&lt;\infty$ and</p>
+      Put $\alpha_0=\min\{m_0\gamma_Q,\kappa_*\}$. At a resonant pair of rates a polynomial factor can multiply
+      $e^{-\alpha_0T}$, but every strict subgap exponent absorbs it. Consequently, for each fixed
+      $0&lt;\gamma&lt;\alpha_0$, there is $C_\gamma&lt;\infty$ such that</p>
     <div class="equation-card">
-    $$\gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}&gt;0$$
-    $$\text{such that}\qquad
+    $$\text{For every }0&lt;\gamma&lt;\alpha_0,\qquad
       \sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}
-      \left|\operatorname{Var}_{\Pi_m}(V_T)-\sigma_m^2T-\chi_m\right|\le C.$$
+      \left|\operatorname{Var}_{\Pi_m}(V_T)-\sigma_m^2T-\chi_m\right|\le C_\gamma.$$
     </div>
     <p>This is a joint maturity&ndash;switching-rate bound for the exact coefficients $\sigma_m^2$ and $\chi_m$;
       it does not make a finite $1/m$ truncation maturity-uniform, because any nonzero error in the slope is still
@@ -802,14 +802,14 @@
     <p>For switched CIR, the dependence on $m$ in the preceding remainder can be removed when the cumulant order
       is fixed. Fix $K$, $m_0&gt;0$, and assume $\kappa_*:=\min_i\kappa_i&gt;0$. Let
       $\lVert e^{tQ_0}-\mathbf1\pi\rVert\le M_Qe^{-\gamma_Qt}$, and consider either a fixed initial law or a
-      family of initial laws whose moments through degree $K$ are uniformly bounded. Then there are
-      $C_K&lt;\infty$ and</p>
+      family of initial laws whose moments through degree $K$ are uniformly bounded. Put
+      $\alpha_0=\min\{m_0\gamma_Q,\kappa_*\}$. Then, for every fixed
+      $0&lt;\gamma&lt;\alpha_0$, there is $C_{K,\gamma}&lt;\infty$ such that</p>
     <div class="equation-card">
-    $$\gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}&gt;0$$
-    $$\text{such that}\qquad
+    $$\text{For every }0&lt;\gamma&lt;\alpha_0,\qquad
       \sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}
       \left|\kappa_k(V_T)-T\gamma_k(m)-\beta_{k,\nu}(m)\right|
-      \le C_K,qquad 1\le k\le K.$$
+      \le C_{K,\gamma},\qquad 1\le k\le K.$$
     </div>
     <p>Here both the slope $\gamma_k(m)$ and the boundary constant $\beta_{k,\nu}(m)$ are the exact
       $m$-dependent finite-jet quantities above. In particular, $\beta_{k,\nu}(m)$ is defined by the formal
@@ -820,8 +820,11 @@
       bounded by $e^{-j\kappa_*T}$; on the centered degree-zero block, finite-chain mixing gives
       $M_Qe^{-m\gamma_QT}$. The tilted-semigroup jet through order $K$ is obtained by finitely many Duhamel
       convolutions of these stable blocks. After the exact secular term and finite boundary jet are removed, every
-      remaining convolution contains a stable factor. Resonant polynomial factors are absorbed by halving the
-      exponent. The killed resolvents and the stationary CIR moment recursion are uniformly bounded for
+      remaining convolution contains a stable factor. An $r$-fold resonance contributes at worst
+      $T^r e^{-\alpha_0T}$. Every strict subgap exponent absorbs this polynomial because, for integer $r\ge1$,</p>
+    $$\sup_{T\ge0}T^r e^{-(\alpha_0-\gamma)T}
+      =\left({r\over e(\alpha_0-\gamma)}\right)^r&lt;\infty.$$
+    <p>The killed resolvents and the stationary CIR moment recursion are uniformly bounded for
       $m\ge m_0$, completing the common-envelope estimate. The initial law enters only through its finite vector
       of component moments $\mathbb E[\mathbf1_{\{Y_0=i\}}v_0^j]$, $j\le K$; uniform boundedness of those moments
       gives a common bound on that vector. Hence neither the theorem nor its constant requires a positive MGF.
@@ -830,12 +833,29 @@
       when local exponential moments are available, it is also the finite-derivative consequence of the
       isolated-spectral-subspace framework of
       <a href="./bibliography.html#Kato1949">Kato (1949)</a>.</p>
+    <p>The strict inequality $\gamma&lt;\alpha_0$ is generally necessary. Consider the symmetric chain
+      $Q_0=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$ at $m=1$, common CIR reversion
+      $\kappa_i=2$, drifts $c_\pm=\bar c\pm\delta$, and start in the high-drift regime at
+      $v_0=\bar c/2$. The chain-contrast and CIR-decay rates both equal two, so direct solution of the first
+      moment equations gives</p>
+    <div class="equation-card">
+    $$\mathbb E\!\int_0^T\left(v_s-{\bar c\over2}\right)ds
+      ={\delta\over4}\left\{1-(2T+1)e^{-2T}\right\}.$$
+    </div>
+    <p>After subtracting its exact zero slope and boundary constant $\delta/4$, the remainder is
+      $-\delta(2T+1)e^{-2T}/4$. Hence $e^{2T}|R(T)|$ grows linearly, even though every
+      $e^{\gamma T}|R(T)|$, $\gamma&lt;2$, is bounded. This resonance rules out replacing the strict-subgap
+      statement by the endpoint exponent without an additional nonresonance assumption. The certificate takes
+      $\bar c=0.04$, $\delta=0.02$, and $a_i=0.04$, so $2c_i\ge a_i$ in both regimes and this obstruction occurs
+      inside the positive switched-CIR model.</p>
     <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
       $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
       two-state model, $0.03264$ for its point start, $0.02246$ for the Pareto no-MGF start above, and
       $0.0004104$ for the nonreversible three-state model. At $T=10$, the largest absolute remainders are
       respectively $7.23\times10^{-9}$, $1.94\times10^{-7}$, $9.10\times10^{-8}$, and
-      $4.12\times10^{-13}$.</p>
+      $4.12\times10^{-13}$. A separate exact resonant certificate agrees with the displayed first-cumulant
+      formula to $1.69\times10^{-16}$. At $T=20$, $e^{2T}|R(T)|/T=0.01025$, approaching the exact limit
+      $\delta/2=0.01$; for $\gamma=1.9$, the global envelope is $0.0386741023$, attained at $T=9.5$.</p>
     <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>
@@ -860,14 +880,16 @@
     $$\kappa_k(X_T)=T\Gamma_k(m)+B_{k,\nu}(m)+R_{k,\nu}(T,m),
       \qquad 1\le k\le K.$$
     <p>If $m\ge m_0&gt;0$, $\min_i\kappa_i&gt;0$, $\eta_i^2\le a_i=\xi_i^2$, and the initial component moments
-      through degree $K$ are uniformly bounded, then the same exponent as in the variance theorem may be used:</p>
-    $$\sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}|R_{k,\nu}(T,m)|\le C_K,
-      \qquad
-      \gamma={1\over2}\min\{m_0\gamma_Q,\kappa_*\}.$$
+      through degree $K$ are uniformly bounded, put
+      $\alpha_0=\min\{m_0\gamma_Q,\kappa_*\}$. Then every strict subgap exponent may be used:</p>
+    $$\sup_{m\ge m_0}\sup_{T\ge0}e^{\gamma T}|R_{k,\nu}(T,m)|\le C_{K,\gamma},
+      \qquad 0&lt;\gamma&lt;\alpha_0.$$
     </div>
     <p>The reason is structural: leverage changes only $B_1$. At $\theta=0$ the centered degree-zero block still
       mixes at rate $m\gamma_Q$, every positive-degree block is still killed at least at rate $\kappa_*$, and the
-      order-$K$ jet uses only finitely many convolutions with $B_1$ and $B_2$. Thus finite initial moments suffice;
+      order-$K$ jet uses only finitely many convolutions with $B_1$ and $B_2$. Polynomial resonance is absorbed
+      at every strict subgap, exactly as in the variance theorem, while its endpoint counterexample already occurs
+      at the first unleveraged cumulant. Thus finite initial moments suffice;
       no two-sided MGF is needed. This is the formal finite-jet version of the affine transform used in
       <a href="https://doi.org/10.1093/rfs/6.2.327">Heston (1993)</a> and the general affine-process framework of
       <a href="https://doi.org/10.1214/aoap/1060202835">Duffie, Filipović and Schachermayer (2003)</a>.</p>
@@ -1152,7 +1174,8 @@
       long-run cumulant rate, the slow-fast Schur recursion identifies its first two inverse-speed
       coefficients with a fixed-order $O(m^{-3})$ residual, and the Perron amplitude identifies its arbitrary-start
       boundary constant with a fixed-$m$ exponential remainder. At each fixed order, retaining the exact
-      $m$-dependent slope and boundary gives the switching-rate-uniform exponential envelope above; the triangular
+      $m$-dependent slope and boundary gives a switching-rate-uniform exponential envelope at every exponent
+      strictly below the stable-block gap; the endpoint may fail by resonance. The triangular
       finite-jet map transfers that statement to every independent-price return cumulant. These results provide no
       order-uniform constants or maturity-uniform finite-$1/m$ cumulant approximation. No price-level extension is
       claimed.</li>

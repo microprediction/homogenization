@@ -2595,6 +2595,82 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
     return gamma, results
 
 
+def verify_sharp_uniform_remainder_gap():
+    """Show that every strict subgap works, while the endpoint can fail.
+
+    Take a symmetric two-state chain with unit jump rates and common CIR
+    mean-reversion speed two.  Starting in the high-drift state makes the
+    regime contrast and the CIR relaxation decay at the same rate.  Their
+    convolution is therefore the exact resonant term ``t exp(-2t)``.
+    """
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c_bar = 0.04
+    delta = 0.02
+    c = np.array([c_bar + delta, c_bar - delta])
+    kappa = np.array([2.0, 2.0])
+    variance = np.array([0.04, 0.04])
+    initial_variance = c_bar / 2.0
+    gap = 2.0
+
+    maturities = np.linspace(0.0, 20.0, 81)
+    exact = np.array(
+        [
+            centered_integrated_cumulants(
+                1, maturity, 1.0, q0, pi, c, kappa, variance,
+                initial_regime=0,
+                initial_variance=initial_variance,
+            )[0]
+            for maturity in maturities
+        ]
+    )
+    boundary = delta / 4.0
+    closed_form = boundary * (
+        1.0 - (2.0 * maturities + 1.0) * np.exp(-gap * maturities)
+    )
+    formula_error = np.max(np.abs(exact - closed_form))
+    assert formula_error < 8e-15
+
+    # Use the closed form for exponentially rescaled diagnostics: subtracting
+    # the boundary from the matrix-exponential result loses the tiny tail at
+    # large T, while ``formula_error`` already checks the independent solve.
+    remainder = -boundary * (2.0 * maturities + 1.0) * np.exp(
+        -gap * maturities
+    )
+    endpoint_ratio = (
+        np.exp(gap * maturities[1:]) * np.abs(remainder[1:])
+        / maturities[1:]
+    )
+    endpoint_limit = delta / 2.0
+    assert abs(endpoint_ratio[-1] - endpoint_limit * (1.0 + 0.5 / 20.0)) < 2e-12
+
+    gamma = 1.9
+    epsilon = gap - gamma
+    optimizer = 1.0 / epsilon - 0.5
+    strict_bound = (
+        boundary * (2.0 * optimizer + 1.0)
+        * np.exp(-epsilon * optimizer)
+    )
+    strict_grid = np.max(np.exp(gamma * maturities) * np.abs(remainder))
+    assert strict_grid <= strict_bound * (1.0 + 2e-4)
+    assert strict_grid >= strict_bound * (1.0 - 2e-3)
+
+    print("5j-sharp. strict-subgap exponential remainder")
+    print(
+        f"   exact resonant formula error {formula_error:.2e}; "
+        f"stable-block gap {gap:.1f}"
+    )
+    print(
+        f"   endpoint e^(gap*T)|R(T)|/T at T=20 "
+        f"{endpoint_ratio[-1]:.10f}; limit {endpoint_limit:.10f}"
+    )
+    print(
+        f"   gamma={gamma:.1f} grid envelope {strict_grid:.10f}; "
+        f"exact supremum {strict_bound:.10f} at T={optimizer:.1f}"
+    )
+    return formula_error, endpoint_ratio[-1], endpoint_limit, strict_bound
+
+
 def verify_finite_moment_initial_jet(max_order=6):
     """Certify fixed-order cumulants for an initial law with no MGF.
 
@@ -3292,6 +3368,7 @@ def main():
     uniform_all_order_results = (
         verify_uniform_fixed_order_cumulant_remainders()
     )
+    sharp_remainder_gap_results = verify_sharp_uniform_remainder_gap()
     finite_moment_jet_results = verify_finite_moment_initial_jet()
     independent_return_jet_results = verify_independent_return_finite_jet()
     leveraged_return_jet_results = verify_leveraged_return_finite_jet()
@@ -3694,7 +3771,8 @@ def main():
         f"variance-rate/intercept orders {variance_rate_results[1]:.3f}/"
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
         f"{uniform_remainder_results[0]:.1f}, fixed-order uniform gamma "
-        f"{uniform_all_order_results[0]:.2f}, third rate/intercept convergence "
+        f"{uniform_all_order_results[0]:.2f}, sharp endpoint slope "
+        f"{sharp_remainder_gap_results[2]:.3f}, third rate/intercept convergence "
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
         f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
         f"all-order corrected-rate floor "
