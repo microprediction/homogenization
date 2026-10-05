@@ -1971,8 +1971,9 @@ def finite_chain_floquet_residual_diagnostic(
 
     The first bracket forms separate global Fourier intervals for the residual
     numerator and the positive profile denominator.  The second evaluates the
-    relative defect and its derivative at every collocation phase, then applies
-    Taylor's theorem with a Fourier bound on the quotient's second derivative.
+    relative defect at every collocation phase, then applies Taylor's theorem
+    at the unknown periodic extrema with a Fourier bound on the quotient's
+    second derivative.
     Both enclosures therefore control every phase of the trigonometric
     interpolants, rather than only the nodes, without discarding the sign of
     the defect.
@@ -2088,9 +2089,11 @@ def finite_chain_floquet_residual_diagnostic(
 
     # A second exact-in-principle enclosure retains the phase information at
     # the collocation nodes.  Every phase on the periodic circle is at distance
-    # at most h/2 from a node.  Taylor's theorem therefore bounds r=e/u there
-    # by r(t_j) + r'(t_j) d plus ||r''||_inf d^2/2.  Fourier coefficient l1
-    # norms bound every derivative of the complete trigonometric interpolants,
+    # at most h/2 from a node.  At each periodic global extremum of r=e/u the
+    # first derivative vanishes.  Taylor's theorem from that extremum to its
+    # nearest node therefore costs only ||r''||_inf h^2/8, rather than the
+    # earlier O(h) first-derivative padding.  Fourier coefficient l1 norms
+    # bound every derivative of the complete trigonometric interpolants,
     # including the convolution frequencies in e.
     profile_derivative = np.fft.ifft(
         1j * frequencies[:, None] * np.fft.fft(trial_profile, axis=0),
@@ -2102,30 +2105,6 @@ def finite_chain_floquet_residual_diagnostic(
         + local_phase[:, None] * trial_profile
     )
     relative_nodes = residual_nodes / trial_profile
-    profile_second_derivative = np.fft.ifft(
-        -(frequencies[:, None] ** 2)
-        * np.fft.fft(trial_profile, axis=0),
-        axis=0,
-    ).real
-    matrix_derivative = np.fft.ifft(
-        1j * frequencies[:, None, None]
-        * np.fft.fft(matrices, axis=0),
-        axis=0,
-    ).real
-    phase_derivative = np.fft.ifft(
-        1j * frequencies * np.fft.fft(local_phase)
-    ).real
-    residual_derivative_nodes = (
-        profile_second_derivative
-        - np.einsum("nij,nj->ni", matrix_derivative, trial_profile)
-        - np.einsum("nij,nj->ni", matrices, profile_derivative)
-        + phase_derivative[:, None] * trial_profile
-        + local_phase[:, None] * profile_derivative
-    )
-    relative_derivative_nodes = (
-        residual_derivative_nodes * trial_profile
-        - residual_nodes * profile_derivative
-    ) / trial_profile**2
     residual_frequencies = (
         np.arange(convolution_size) - residual_zero_index
     ) * (2 * np.pi / PERIOD)
@@ -2162,10 +2141,7 @@ def finite_chain_floquet_residual_diagnostic(
         * profile_derivative_bounds**2 / profile_lower_bounds**3
     )
     half_mesh = 0.5 * PERIOD / grid_size
-    mesh_padding = (
-        np.max(np.abs(relative_derivative_nodes), axis=0) * half_mesh
-        + 0.5 * quotient_second_derivative_bounds * half_mesh**2
-    )
+    mesh_padding = 0.5 * quotient_second_derivative_bounds * half_mesh**2
     mesh_relative_lower = max(relative_lower, float(np.min(
         np.min(relative_nodes, axis=0) - mesh_padding
     )))
@@ -2548,7 +2524,7 @@ def check_general_periodic_generator() -> None:
         f"{residual_rate:.6f}; m=64 scaled radius "
         f"{64.0**4 * residual_radii[-1]:.10e}"
     )
-    print("phase-mesh/derivative refinement")
+    print("phase-mesh extremum refinement")
     print(" m          lower error          exact error          upper error")
     for m, exact, diagnostic in zip(
         speeds, residual_exact_errors, residual_diagnostics
