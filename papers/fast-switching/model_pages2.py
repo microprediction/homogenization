@@ -907,8 +907,27 @@ def instruments_page():
     $$\int \phi_X(x)\left[\sum_k w_k e^{-p_kx-q_km(x)+q_k^2s^2/2}
       \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
       -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
-    <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. This is exact one-dimensional
-      quadrature, not a Jamshidian sum. The remaining numerical truncation has a closed-form certificate. Write
+    <p>The reduction is not special to two factors. Let $(Y,Z)$ be jointly Gaussian with
+      $Y\in\mathbb R^{d-1}$ and write each loading as $(p_k,q_k)$, where $p_k\in\mathbb R^{d-1}$ and every
+      $q_k&gt;0$. Conditional Gaussian regression gives $Z\mid Y=y\sim N(m(y),s^2)$ with affine $m$ and constant
+      $s^2$. For each $y$, the equation
+      $\sum_kw_k\exp(-p_k^\top y-q_kz)=K$ has one root $z=\zeta(y)$, and the same displayed tilted-normal formula,
+      with $p_kx$ replaced by $p_k^\top y$, integrates out $Z$ exactly. A $d$-factor coupon option is therefore
+      reduced to a $(d-1)$-dimensional Gaussian integral whenever one factor has strictly positive loadings for every
+      cash flow.</p>
+    <p>The boundary is a convex hypersurface. With
+      $d_k=w_k\exp(-p_k^\top y-q_k\zeta(y))$ and
+      $D=\sum_kd_kq_k$, implicit differentiation gives</p>
+    $$\nabla\zeta=-{\sum_kd_kp_k\over D},\qquad
+      \nabla^2\zeta={1\over D}\sum_kd_k
+      (p_k+q_k\nabla\zeta)(p_k+q_k\nabla\zeta)^\top\succeq0.$$
+    <p>If $r_k=p_k/q_k$, the Hessian rank is the affine-span dimension of the active ratio vectors $r_k$.
+      Consequently it is positive definite exactly when those ratios affinely span
+      $\mathbb R^{d-1}$. This is a local coupon-boundary rank statement under a fixed Gaussian expiry law; it is
+      unrelated to fixed-parameter Green&ndash;Kubo rank or to rank after integrating maturity loadings.</p>
+    <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. For G2++ this is exact
+      one-dimensional quadrature, not a Jamshidian sum. The remaining numerical truncation has a closed-form
+      certificate. Write
       $X=\mu_X+\sigma_X\xi$, where $\xi$ is standard normal, and let
       $s^2=\sigma_Z^2(1-\rho^2)$ and $a_k=p_k\sigma_X+q_k\rho\sigma_Z$. If the receiver integral is restricted to
       $|\xi|\le L$, positivity and $(C-K)^+\le C$ give</p>
@@ -994,7 +1013,13 @@ def instruments_page():
     <p>For the two-cash-flow certificate, conditional quadrature gives $0.669351292291$ and independent nested Gaussian
       quadrature gives the same value within $2.22\times10^{-16}$. In the $a=b$ limit it agrees with the scalar
       Jamshidian price within $1.67\times10^{-16}$. Truncating the standardized conditioning factor to $[-6,6]$
-      changes the receiver value by less than $8.00\times10^{-9}$, inside the closed-form bound above.</p>
+      changes the receiver value by less than $8.00\times10^{-9}$, inside the closed-form bound above. A separate
+      three-factor certificate uses three maturities and a genuinely two-dimensional boundary: its Hessian eigenvalues
+      are $5.14636\times10^{-5}$ and $3.65439\times10^{-2}$, the loading-ratio affine determinant is
+      $8.73332\times10^{-3}$, and centered finite differences agree with the Hessian identity within
+      $3.38\times10^{-9}$. The analytic conditional formula gives
+      $1.252075854512$ at both 28- and 36-point tensor Gauss&ndash;Hermite orders and agrees with independent adaptive
+      integration of the final Gaussian coordinate within $2.22\times10^{-16}$.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
