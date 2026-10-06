@@ -966,6 +966,27 @@
       over a parameter family that contains or approaches resonance; a uniform endpoint claim needs a quantitative
       separation $|\lambda-\kappa|\ge\eta&gt;0$ (and the analogous separation of all stable blocks at higher
       cumulant orders).</p>
+    <p>The transition between the two formulas has an exact universal profile. Fix $\kappa&gt;0$, put
+      $\lambda_T=\kappa+z/T$, and let $R_T(z)$ be the displayed boundary remainder at that contrast rate. For
+      $\delta\ne0$ define</p>
+    <div class="equation-card">
+    $$S_T(z):={\kappa e^{\kappa T}\over\delta T}R_T(z),\qquad
+      \Phi(z):={e^{-z}-1\over z},\qquad \Phi(0):=-1.$$
+    </div>
+    <p>Substitution in the exact nonresonant expression, followed by continuous extension at $z=0$, gives the
+      finite-maturity identity</p>
+    <div class="equation-card">
+    $$S_T(z)=\Phi(z)-{e^{-z}\over T(\kappa+z/T)}.$$
+    </div>
+    <p>Hence the resonant factor $T e^{-\kappa T}$ is not an isolated pathology: it is the uniform crossover
+      scale whenever $(\lambda-\kappa)T$ remains bounded. In particular, for $T&gt;Z/\kappa$,</p>
+    <div class="equation-card">
+    $$\sup_{|z|\le Z}|S_T(z)-\Phi(z)|
+      \le {e^Z\over T(\kappa-Z/T)}.$$
+    </div>
+    <p>This $O(T^{-1})$ statement is uniform on every compact detuning window and does not assert an endpoint
+      bound uniform over fixed nonzero rate separations. It instead resolves the singular boundary layer between
+      the fixed-nonresonant and exactly resonant regimes.</p>
     <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
       $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
       two-state model, $0.03264$ for its point start, $0.02246$ for the Pareto no-MGF start above, and
@@ -978,6 +999,9 @@
       $(\lambda,\kappa)=(1.4,2)$ and $(3,2)$ the closed form agrees with the independent polynomial semigroup
       within $2.7\times10^{-16}$. At $T=20$, the endpoint-rescaled remainders are
       $0.0238094214$ and $0.00999999999$, against the exact limits $1/42=0.0238095238$ and $0.01$.</p>
+    <p>The crossover certificate also takes $\lambda=2+z/T$ for seven detunings in $[-4,4]$. The exact
+      first cumulant agrees with the polynomial semigroup within machine precision, and the finite-$T$ profile
+      identity is verified before comparison with the displayed compact-window bound.</p>
     <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>

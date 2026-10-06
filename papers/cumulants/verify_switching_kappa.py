@@ -2718,6 +2718,85 @@ def verify_sharp_uniform_remainder_gap():
             endpoint_limit_nonresonant,
         ))
 
+    # Resolve the apparent blow-up of the nonresonant endpoint constant on
+    # the natural coalescing-rate scale.  Put lambda=kappa+z/T and rescale
+    # the boundary remainder by T*exp(-kappa*T).  The exact profile is
+    #
+    #   Phi(z) = (exp(-z)-1)/z,
+    #
+    # with Phi(0)=-1.  More strongly, the finite-T error is explicit:
+    #
+    #   S_T(z)-Phi(z) = -exp(-z)/(T*(kappa+z/T)).
+    #
+    # The polynomial semigroup independently checks the underlying first
+    # cumulant at moderate maturities; the closed form is then safe for the
+    # exponentially rescaled diagnostics, where direct subtraction would
+    # lose the small tail.
+    detunings = np.array([-4.0, -2.0, -0.5, 0.0, 0.5, 2.0, 4.0])
+    crossover_maturities = np.array([5.0, 10.0, 20.0, 40.0])
+    profile = np.array([
+        -1.0 if detuning == 0.0 else np.expm1(-detuning) / detuning
+        for detuning in detunings
+    ])
+    crossover_rows = []
+    crossover_formula_error = 0.0
+    crossover_identity_error = 0.0
+    for maturity in crossover_maturities:
+        scaled = []
+        for detuning in detunings:
+            contrast_rate = gap + detuning / maturity
+            assert contrast_rate > 0.0
+            speed = contrast_rate / 2.0
+            if detuning == 0.0:
+                total = boundary * (
+                    1.0 - (gap * maturity + 1.0)
+                    * np.exp(-gap * maturity)
+                )
+                tail = -delta * (1.0 + gap * maturity) * np.exp(
+                    -gap * maturity
+                ) / gap**2
+            else:
+                total = delta / (gap - contrast_rate) * (
+                    (1.0 - np.exp(-contrast_rate * maturity))
+                    / contrast_rate
+                    - (1.0 - np.exp(-gap * maturity)) / gap
+                )
+                tail = delta / (gap - contrast_rate) * (
+                    -np.exp(-contrast_rate * maturity) / contrast_rate
+                    + np.exp(-gap * maturity) / gap
+                )
+            if maturity <= 10.0:
+                numerical = centered_integrated_cumulants(
+                    1, maturity, speed, q0, pi, c, kappa, variance,
+                    initial_regime=0,
+                    initial_variance=initial_variance,
+                )[0]
+                crossover_formula_error = max(
+                    crossover_formula_error, abs(numerical - total)
+                )
+            scaled.append(
+                gap * np.exp(gap * maturity) * tail
+                / (delta * maturity)
+            )
+        scaled = np.array(scaled)
+        finite_correction = np.exp(-detunings) / (
+            maturity * (gap + detunings / maturity)
+        )
+        identity_error = np.max(
+            np.abs(scaled - profile + finite_correction)
+        )
+        crossover_identity_error = max(
+            crossover_identity_error, identity_error
+        )
+        profile_error = np.max(np.abs(scaled - profile))
+        compact_bound = np.exp(4.0) / (
+            maturity * (gap - 4.0 / maturity)
+        )
+        assert profile_error <= compact_bound * (1.0 + 2e-14)
+        crossover_rows.append((maturity, profile_error, compact_bound))
+    assert crossover_formula_error < 8e-15
+    assert crossover_identity_error < 2e-14
+
     print("5j-sharp. strict-subgap exponential remainder")
     print(
         f"   exact resonant formula error {formula_error:.2e}; "
@@ -2737,12 +2816,25 @@ def verify_sharp_uniform_remainder_gap():
             f"formula error {row[2]:.2e}; endpoint rate {row[1]:.1f}; "
             f"T=20 value/limit {row[3]:.10f}/{row[4]:.10f}"
         )
+    print(
+        "   coalescing rates lambda=2+z/T, |z|<=4: "
+        f"semigroup error {crossover_formula_error:.2e}; "
+        f"profile identity error {crossover_identity_error:.2e}"
+    )
+    for maturity, profile_error, compact_bound in crossover_rows:
+        print(
+            f"      T={maturity:4.0f}: max profile error "
+            f"{profile_error:.6e}; compact bound {compact_bound:.6e}"
+        )
     return (
         formula_error,
         endpoint_ratio[-1],
         endpoint_limit,
         strict_bound,
         nonresonant_rows,
+        crossover_formula_error,
+        crossover_identity_error,
+        crossover_rows,
     )
 
 
@@ -3847,7 +3939,8 @@ def main():
         f"{variance_rate_results[4]:.3f}, uniform remainder gamma "
         f"{uniform_remainder_results[0]:.1f}, fixed-order uniform gamma "
         f"{uniform_all_order_results[0]:.2f}, sharp endpoint slope "
-        f"{sharp_remainder_gap_results[2]:.3f}, third rate/intercept convergence "
+        f"{sharp_remainder_gap_results[2]:.3f}, crossover identity error "
+        f"{sharp_remainder_gap_results[6]:.1e}, third rate/intercept convergence "
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
         f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
         f"all-order corrected-rate floor "
