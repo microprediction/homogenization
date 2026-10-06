@@ -248,7 +248,7 @@
     $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
       \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
       R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
-    <h3>First non-Gaussian correction under stationarity</h3>
+    <h3>First non-Gaussian correction and the known-start layer</h3>
     <p>The leading characteristic-function error is also explicit when the chain starts in stationarity. For
     $0\le t_1\le t_2\le t_3\le T$, the eigenfunction identity and
     $g^2=pq+(q-p)g$ give</p>
@@ -268,9 +268,37 @@
       \mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
       -e^{-pqA_hs^2}\bigr]
       \longrightarrow-i s^3pq(q-p)A_{3,h}e^{-pqA_hs^2}.$$
-    <p>This correction is deliberately stationary-start: a specified initial regime has an additional boundary-layer
-    term of the same $\kappa^{-1/2}$ order after normalization. It is pointwise in $s$ and fixed in $T,h,p,q$, not a
-    uniform Berry&ndash;Esseen bound.</p>
+    <p>The known-start layer can also be computed exactly. Put $c=q-p$ and
+    $d_1=q$, $d_2=-p$. For a fixed initial regime $i$, the ordered three-time joint cumulant is the stationary bulk
+    term plus</p>
+    <div class="equation-card">
+    $$\operatorname{Cum}_i(g_{t_1},g_{t_2},g_{t_3})
+      =pqc\,e^{-\kappa(t_3-t_1)}+\mathcal R_i(t_1,t_2,t_3),$$
+    $$\begin{aligned}
+    \mathcal R_i={}&c^2d_i e^{-\kappa t_3}
+      -cd_i^2e^{-\kappa(t_1+t_3)}
+      -2pqd_i e^{-\kappa(t_2+t_3-t_1)}\\
+      &-2cd_i^2e^{-\kappa(t_2+t_3)}
+      +2d_i^3e^{-\kappa(t_1+t_2+t_3)}.
+    \end{aligned}$$
+    </div>
+    <p>Each remainder term is confined to the initial corner of the ordered simplex and contributes
+    $O(\kappa^{-3})$ after integration against the bounded clock weights. Thus the $\kappa^{-2}$ third-cumulant
+    coefficient is unchanged. The mean layer is larger:
+    $\mathbb E_iW_T-pR(0)=d_iR(\kappa)$ and $\kappa R(\kappa)\to e^{hT}$. Since the variance remainder is
+    $O(\kappa^{-2})$, the fixed-start first correction is</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\left[
+      \mathbb E_i e^{is\sqrt\kappa(W_T-pR(0))}-e^{-pqA_hs^2}\right]
+      \longrightarrow
+      \left\{is d_i e^{hT}-is^3pq(q-p)A_{3,h}\right\}e^{-pqA_hs^2}.$$
+    </div>
+    <p>If the clock is instead centered at its exact conditional mean $\mathbb E_iW_T$, the $is d_i e^{hT}$ term
+    disappears and the stationary skew correction remains. Both statements are pointwise in fixed $s,T,h,p,q$;
+    neither is a frequency-uniform or Berry&ndash;Esseen bound. The eigenvalue-versus-boundary-amplitude interpretation
+    is placed against the primary first-order Markov Edgeworth framework of
+    <a href="https://doi.org/10.24033/bsmf.2594">Herv&eacute; and P&egrave;ne (2010)</a>; the weighted two-state
+    coefficients displayed here are derived directly.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
@@ -279,7 +307,12 @@
     frequencies: for $\kappa=20,40,80,160,320,640$, the maximum characteristic-function errors are
     $5.76,3.80,2.59,1.80,1.26,0.889$ times $10^{-2}$, with successive orders tending to $1/2$. After subtracting
     the stationary first correction, the maximum scaled residual on $s=0.5,1,1.5$ falls from $3.20\times10^{-2}$ at
-    $\kappa=40$ to $7.72\times10^{-3}$ at $\kappa=640$, again with half-order convergence:</p>
+    $\kappa=40$ to $7.72\times10^{-3}$ at $\kappa=640$. For the two specified starts, subtracting the new mean-plus-skew
+    correction reduces the corresponding residual from $4.45\times10^{-2}$ to $1.06\times10^{-2}$. The exact
+    ordered-simplex cumulant formula agrees with an independent moment hierarchy within $7.4\times10^{-16}$, and that
+    hierarchy drives the maximum error in $\kappa^2\operatorname{Cum}_3(W_T)$ from
+    $4.20\times10^{-2}$ to $2.63\times10^{-3}$. The characteristic residuals have half-order convergence and the
+    cumulant error has first-order convergence:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\kappa$</th><th>start</th><th>$\operatorname{Var}(W_T)$</th><th>mean clock</th><th>stationary clock</th></tr></thead><tbody><tr><td>20</td><td>1</td><td>0.02143628</td><td>3.804e-02 / 2.052e-01</td><td>8.167e-02 / 4.182e-01</td></tr><tr><td>20</td><td>2</td><td>0.02223075</td><td>4.275e-02 / 2.128e-01</td><td>2.681e-01 / 6.083e-01</td></tr><tr><td>40</td><td>1</td><td>0.01123204</td><td>1.978e-02 / 1.075e-01</td><td>4.026e-02 / 2.141e-01</td></tr><tr><td>40</td><td>2</td><td>0.01143130</td><td>2.095e-02 / 1.094e-01</td><td>1.332e-01 / 3.073e-01</td></tr><tr><td>80</td><td>1</td><td>0.00574467</td><td>1.008e-02 / 5.500e-02</td><td>1.999e-02 / 1.083e-01</td></tr><tr><td>80</td><td>2</td><td>0.00579457</td><td>1.037e-02 / 5.547e-02</td><td>6.640e-02 / 1.545e-01</td></tr><tr><td>160</td><td>1</td><td>0.00290452</td><td>5.083e-03 / 2.781e-02</td><td>9.964e-03 / 5.446e-02</td></tr><tr><td>160</td><td>2</td><td>0.00291701</td><td>5.155e-03 / 2.793e-02</td><td>3.315e-02 / 7.743e-02</td></tr></tbody></table></div>
 
 

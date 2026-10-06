@@ -22,7 +22,8 @@ also checked against the independent time-inhomogeneous Feynman--Kac system.
 Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
 Wasserstein rate for merely Lipschitz clock payoffs.  A complex Feynman--Kac
 calculation verifies the corresponding weighted-clock central limit theorem
-at nonzero carry and its stationary-start first characteristic correction.
+at nonzero carry and the first characteristic correction for both stationary
+and specified initial regimes.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -32,7 +33,7 @@ import math
 import mpmath as mp
 import numpy as np
 from numpy.polynomial import chebyshev as ch
-from scipy.integrate import quad, solve_ivp
+from scipy.integrate import quad, solve_ivp, tplquad
 from scipy.special import iv, roots_jacobi
 from scipy.stats import ncx2, poisson
 
@@ -391,6 +392,33 @@ def weighted_centered_characteristic(start, rate_12, rate_21, clock_growth, argu
     return np.exp(-1j * argument * math.sqrt(total_rate) * mean) * solution.y[start, -1]
 
 
+def weighted_stationary_centered_characteristic(start, rate_12, rate_21, clock_growth, argument):
+    """Characteristic function for a fixed start, centered at the stationary clock."""
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    r0 = math.exp(clock_growth * T) * _exp_integral(clock_growth)
+
+    def rhs(tau, values):
+        frequency = argument * math.sqrt(total_rate) * math.exp(clock_growth * tau)
+        return np.array(
+            [
+                (-rate_12 + 1j * frequency) * values[0] + rate_12 * values[1],
+                rate_21 * values[0] - rate_21 * values[1],
+            ],
+            dtype=complex,
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        np.ones(2, dtype=complex),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    return np.exp(-1j * argument * math.sqrt(total_rate) * p * r0) * solution.y[start, -1]
+
+
 def weighted_stationary_characteristic(rate_12, rate_21, clock_growth, argument):
     """Characteristic function under the stationary initial regime law."""
     total_rate = rate_12 + rate_21
@@ -418,6 +446,66 @@ def weighted_stationary_characteristic(rate_12, rate_21, clock_growth, argument)
     )
     raw = p * solution.y[0, -1] + q * solution.y[1, -1]
     return np.exp(-1j * argument * math.sqrt(total_rate) * p * r0) * raw
+
+
+def weighted_clock_raw_moments_ode(start, rate_12, rate_21, clock_growth, degree=3):
+    """Independent raw moments from the polynomial Feynman--Kac hierarchy."""
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+
+    def rhs(tau, flat):
+        moments = flat.reshape(degree + 1, 2)
+        out = np.zeros_like(moments)
+        reward = np.array([math.exp(clock_growth * tau), 0.0])
+        for order in range(degree + 1):
+            out[order] = generator @ moments[order]
+            if order:
+                out[order] += order * reward * moments[order - 1]
+        return out.ravel()
+
+    initial = np.zeros((degree + 1, 2))
+    initial[0] = 1.0
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        initial.ravel(),
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    return solution.y[:, -1].reshape(degree + 1, 2)[:, start]
+
+
+def weighted_third_cumulant_integral(start, rate_12, rate_21, clock_growth):
+    """Exact ordered-simplex integral of the fixed-start joint cumulant."""
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    q = rate_12 / total_rate
+    c = q - p
+    d = q if start == 0 else -p
+
+    def integrand(t3, t2, t1):
+        bulk = p * q * c * math.exp(-total_rate * (t3 - t1))
+        boundary = (
+            c ** 2 * d * math.exp(-total_rate * t3)
+            - c * d ** 2 * math.exp(-total_rate * (t1 + t3))
+            - 2.0 * p * q * d * math.exp(-total_rate * (t2 + t3 - t1))
+            - 2.0 * c * d ** 2 * math.exp(-total_rate * (t2 + t3))
+            + 2.0 * d ** 3 * math.exp(-total_rate * (t1 + t2 + t3))
+        )
+        weight = math.exp(clock_growth * (3.0 * T - t1 - t2 - t3))
+        return 6.0 * weight * (bulk + boundary)
+
+    return tplquad(
+        integrand,
+        0.0,
+        T,
+        lambda t1: t1,
+        lambda t1: T,
+        lambda t1, t2: t2,
+        lambda t1, t2: T,
+        epsabs=2e-11,
+        epsrel=2e-11,
+    )[0]
 
 
 def cev_derivative_estimates(rate=R, dividend=Q, degree=56):
@@ -776,6 +864,81 @@ def main():
     )
     assert edgeworth_errors[-1] < 1e-2
     assert all(later < earlier for earlier, later in zip(edgeworth_errors, edgeworth_errors[1:]))
+
+    # A fixed initial regime changes the first correction only through the
+    # initial-layer mean.  Indeed kappa*R(kappa) -> exp(h*T), while the
+    # leading third cumulant is the same bulk term as under stationarity.
+    # The polynomial moment hierarchy and the complex transform below are
+    # independent numerical checks of those two assertions.
+    fixed_start_errors = []
+    third_cumulant_errors = []
+    third_cumulant_limit = 6.0 * p * q * (q - p) * weighted_third_energy
+    initial_weight = math.exp(clock_growth * T)
+    exact_cumulant_error = 0.0
+    for start in (0, 1):
+        raw = weighted_clock_raw_moments_ode(start, 7.0, 13.0, clock_growth)
+        cumulant_three = raw[3] - 3.0 * raw[2] * raw[1] + 2.0 * raw[1] ** 3
+        integral = weighted_third_cumulant_integral(start, 7.0, 13.0, clock_growth)
+        exact_cumulant_error = max(exact_cumulant_error, abs(cumulant_three - integral))
+    print(f"weighted fixed-start exact third-cumulant formula error={exact_cumulant_error:.3e}")
+    assert exact_cumulant_error < 2e-12
+
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_error = 0.0
+        max_cumulant_error = 0.0
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            raw = weighted_clock_raw_moments_ode(start, a, b, clock_growth)
+            cumulant_three = raw[3] - 3.0 * raw[2] * raw[1] + 2.0 * raw[1] ** 3
+            max_cumulant_error = max(
+                max_cumulant_error,
+                abs(kappa ** 2 * cumulant_three - third_cumulant_limit),
+            )
+            for argument in edgeworth_arguments:
+                exact_cf = weighted_stationary_centered_characteristic(
+                    start, a, b, clock_growth, argument
+                )
+                normal_cf = math.exp(-0.5 * limiting_variance * argument * argument)
+                predicted = (
+                    1j * argument * d * initial_weight
+                    - 1j
+                    * argument ** 3
+                    * p
+                    * q
+                    * (q - p)
+                    * weighted_third_energy
+                ) * normal_cf
+                scaled_error = math.sqrt(kappa) * (exact_cf - normal_cf)
+                max_error = max(max_error, abs(scaled_error - predicted))
+        fixed_start_errors.append(max_error)
+        third_cumulant_errors.append(max_cumulant_error)
+    fixed_start_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(fixed_start_errors, fixed_start_errors[1:])
+    ]
+    third_cumulant_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(third_cumulant_errors, third_cumulant_errors[1:])
+    ]
+    print(
+        "weighted fixed-start first characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in fixed_start_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in fixed_start_orders)
+    )
+    print(
+        "weighted fixed-start scaled third-cumulant errors="
+        + ", ".join(f"{value:.3e}" for value in third_cumulant_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in third_cumulant_orders)
+    )
+    assert fixed_start_errors[-1] < 2e-2
+    assert all(later < earlier for earlier, later in zip(fixed_start_errors, fixed_start_errors[1:]))
+    assert third_cumulant_errors[-1] < 1e-2
+    assert all(
+        later < earlier for earlier, later in zip(third_cumulant_errors, third_cumulant_errors[1:])
+    )
 
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21
