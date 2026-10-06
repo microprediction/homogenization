@@ -482,6 +482,68 @@ def variance_gamma_page():
       \big(1 - iu\,\theta_1\nu_1 + \tfrac12\sigma_1^2\nu_1u^2\big)^{-T/(2\nu_1)}\,
       \big(1 - iu\,\theta_2\nu_2 + \tfrac12\sigma_2^2\nu_2u^2\big)^{-T/(2\nu_2)},$$
     <p>and the Green&ndash;Kubo factor is $\exp\big(\tfrac18\varepsilon T\,[\,2iu\tilde\omega + \psi_1(u) - \psi_2(u)\,]^2\big)$.</p>
+
+    <h3>A variance-gamma tail certificate</h3>
+    <p>For variance gamma the Fourier decay can be bounded directly, uniformly in the switching rate and, in fact,
+    uniformly over the generator of any finite-state regime chain. Put</p>
+    $$a_i=\tfrac12\sigma_i^2\nu_i,\qquad b_i=\theta_i\nu_i,\qquad
+      c_i=1-\tfrac12b_i-\tfrac14a_i,$$
+    <p>and assume $c_i&gt;0$ in every regime. On the Lewis line $z=u-i/2$,</p>
+    $$\operatorname{Re}\big(1-ib_i z+a_i z^2\big)=c_i+a_i u^2.$$
+    <p>Therefore, with</p>
+    $$q=\min_i\frac{a_i}{c_i},\qquad \alpha=\min_i\frac1{\nu_i},\qquad
+      H=\max_i\left\{\frac{r+\omega_i}{2}-\frac{\log c_i}{\nu_i}\right\},$$
+    <p>the real part of every regime exponent obeys</p>
+    $$\operatorname{Re}g_i(u-i/2)\leq H-\alpha\log(1+qu^2).$$
+    <p>Conditional on the whole regime path, the transform is the exponential of the time integral of the active
+    exponent. Taking absolute values before averaging gives</p>
+    <div class="equation-card">
+    $$|\phi_i(u-i/2)|\leq e^{HT}(1+qu^2)^{-\alpha T},$$
+    $$\int_R^\infty\frac{|\phi_i(u-i/2)|}{u^2+1/4}\,du
+      \leq\frac{e^{HT}q^{-\alpha T}}{2\alpha T+1}\,R^{-(2\alpha T+1)}.$$
+    </div>
+    <p>The last line uses $u^2+1/4\geq u^2$ and $1+qu^2\geq qu^2$. Thus an admissible
+    $R=O(\lambda)$ window has a tail certificate of order $O(\lambda^{-(2\alpha T+1)})$, rather than the
+    model-independent $O(\lambda^{-1})$. For the present parameters $q=0.001426250941$, $\alpha=2$ and
+    $H=0.013005504422$, so the generator-uniform tail power is five. This improves the half-moment tail bound but,
+    by itself, says nothing about the integrated approximation error on an expanding interior window.</p>
+
+    <h3>A uniform cubic price theorem for this benchmark</h3>
+    <p>The pointwise expansion does transfer to a third-order call-price approximation when it is used on a
+    parabolic, rather than maximal, frequency window. Set $R_\lambda=c\sqrt\lambda$ for any fixed $c&gt;0$, use the
+    quadratic slow multiplier $P_{2,+}$ only on $0\leq u\leq R_\lambda$, and discard the remaining approximate
+    integral. Then, for fixed $S_0,K$ and the parameters above,</p>
+    $$|C_\lambda-\widehat C_{\lambda,R_\lambda}|=O(\lambda^{-3}).$$
+    <p>Here is a direct proof, including the two different tail mechanisms. On the Lewis line put
+    $a_i=\sigma_i^2\nu_i/2$, $b_i=\theta_i\nu_i$ and
+    $c_i=1-b_i/2-a_i/4&gt;0$. With $q=\min_i a_i/c_i$, the averaged factor obeys</p>
+    $$|e^{\bar g(u-i/2)T}|\leq e^{\bar H T}(1+qu^2)^{-\beta},\qquad
+      \beta=\frac{T}{2}\left(\frac1{\nu_1}+\frac1{\nu_2}\right)=\frac72.$$
+    <p>Also $|\tilde g(u-i/2)|\leq L(1+u)$ for a finite model constant $L$. Write
+    $z=\tilde g/\lambda$, $d=\sqrt{1+z^2}$ and note the exact identity</p>
+    $$\tilde g\,\frac{d-1}{z}=\frac{\lambda^{-1}\tilde g^2}{d+1}.$$
+    <p>On $u\leq c\sqrt\lambda$, $z\to0$ uniformly and the exponent on the right stays bounded. Differentiating
+    $A_+(z)\exp\{T\lambda^{-1}\tilde g^2/(d+1)\}$ three times with respect to $\lambda^{-1}$ therefore gives,
+    uniformly on this expanding window,</p>
+    $$|\phi_\lambda-e^{\bar gT}P_{2,+}(z)|
+      \leq C\lambda^{-3}|e^{\bar gT}|(1+|\tilde g|)^6+C e^{-c_0\lambda} |e^{\bar gT}|.$$
+    <p>The first term is integrable against $(u^2+1/4)^{-1}du$ uniformly in the upper limit precisely because
+    $\beta=7/2&gt;5/2$. Thus the integrated interior error is $O(\lambda^{-3})$.</p>
+    <p>For the omitted exact tail, let $L_2$ be the time spent in regime 2. Conditional on a regime path, the
+    shifted transform is bounded by</p>
+    $$e^{HT}(1+qu^2)^{-\{2T+3L_2\}}.$$
+    <p>The event $L_2\geq T/3$ therefore gives power $3T=3$. On its complement, the exact two-state occupation
+    transform (the same Feynman&ndash;Kac calculation used by
+    <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>) and a Chernoff bound at parameter $s=\lambda$ give</p>
+    $$\Pr(L_2&lt;T/3)\leq \frac12\left(1+\frac3{\sqrt5}\right)
+      \exp\left[-\left(\frac76-\frac{\sqrt5}{2}\right)\lambda T\right].$$
+    <p>Consequently, for $T=1$ and $R&gt;0$,</p>
+    $$\int_R^\infty\frac{|\phi_\lambda(u-i/2)|}{u^2+1/4}\,du
+      \leq e^H\left[\frac{q^{-3}}7R^{-7}
+      +\Pr(L_2&lt;1/3)\frac{q^{-2}}5R^{-5}\right].$$
+    <p>At $R=R_\lambda$ this is $O(\lambda^{-7/2})$ plus an exponentially small term, so it is strictly smaller
+    than the cubic interior remainder. The theorem is for this fixed parameter benchmark and this truncated
+    approximation; it does not claim a uniform expansion of the characteristic function over all frequencies.</p>
     <p>At $\lambda = 25$, $T = 1$ and the Lewis frequency $u = 1 - i/2$:</p>
 ''' + table(['quantity', 'value', 'error'], ex_rows) + r'''
     <h2>Results</h2>
@@ -489,11 +551,16 @@ def variance_gamma_page():
 ''' + table(['switching rate', 'strike', 'exact', 'order 0', 'order 1', 'order 2'], rows) + r'''    <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
     The inversion certificate stops the quadratic slow mode at the largest window satisfying
     $|\tilde g|/\lambda\leq0.35$. For $\lambda=25,50,100,200$, those windows are
-    $140.64,289.28,592.38,1199.97$. The observed windowed-price errors are
-    $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$, while the rigorous
-    half-moment tail ceilings fall only with measured orders $1.040,1.034,1.018$. The example therefore displays
-    third-order accuracy, but the model-independent theorem certifies only a first-order tail until
-    variance-gamma-specific Fourier decay is used.</p>
+    $140.64,289.28,592.38,1199.97$. The generator-uniform VG tail ceilings are
+    $5.59\times10^{-5},1.52\times10^{-6},4.22\times10^{-8},1.24\times10^{-9}$, with measured orders
+    $5.203,5.170,5.092$. Adding the numerically integrated interior absolute errors gives triangle ceilings
+    $6.94\times10^{-5},3.25\times10^{-6},2.62\times10^{-7},2.88\times10^{-8}$, which dominate the observed
+    windowed-price errors $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$.
+    For the new analytic cubic theorem, the verifier instead takes $R_\lambda=10\sqrt\lambda$. At
+    $\lambda=50,100,200,400$, the certified triangle bounds are
+    $3.55\times10^{-4},1.84\times10^{-5},1.39\times10^{-6},1.24\times10^{-7}$ and dominate the observed price
+    errors $2.04\times10^{-6},2.10\times10^{-7},1.55\times10^{-8},2.02\times10^{-9}$; the measured orders of the
+    interior absolute error are $2.969,2.985,2.992$.</p>
     <p>Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
     for the prices,

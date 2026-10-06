@@ -5,7 +5,9 @@ analytic in z = g_tilde/lambda for |z| < 1, while the fast mode is exponentially
 The same statements are checked for unequal transition rates after replacing
 z by the forcing contrast divided by the total switching rate.  The final
 checks record the large-frequency growth of the variance-gamma forcing and
-the separate compact-frequency and tail terms in Lewis inversion.
+the separate compact-frequency and tail terms in Lewis inversion, and a
+uniform cubic Lewis-price theorem for the variance-gamma benchmark on a
+parabolic frequency window.
 """
 import cmath
 import math
@@ -135,6 +137,33 @@ def variance_gamma_shifted_decay(rate=0.03):
     h = max(0.5 * (rate + oi) - math.log(ci) / n
             for oi, ci, n in zip(omega, c, nu))
     return q, alpha, h, c
+
+
+def symmetric_bad_occupation_bound(lam, maturity):
+    """Chernoff bound for spending less than one third of the time in state 2.
+
+    The chain starts in state 1 and jumps in either direction at rate ``lam``.
+    With L_2 its state-2 occupation time, Markov's inequality at s=lam and
+    the exact two-state Feynman--Kac transform give
+
+      P(L_2 <= T/3) <= C_occ exp(-kappa_occ*lam*T).
+    """
+    c_occ = 0.5 * (1.0 + 3.0 / math.sqrt(5.0))
+    kappa_occ = 7.0 / 6.0 - math.sqrt(5.0) / 2.0
+    return c_occ * math.exp(-kappa_occ * lam * maturity), c_occ, kappa_occ
+
+
+def symmetric_occupation_laplace(lam, maturity, penalty):
+    """E_1 exp(-penalty*L_2) for the symmetric two-state chain."""
+    delta = math.sqrt(lam * lam + penalty * penalty / 4.0)
+    center = -lam - penalty / 2.0
+    ratio = (lam + penalty / 2.0) / delta
+    # Combine the outer exponential with the two hyperbolic modes first, so
+    # the certificate remains evaluable when lam*T is much larger than 700.
+    return (0.5 * (1.0 + ratio)
+            * math.exp((center + delta) * maturity)
+            + 0.5 * (1.0 - ratio)
+            * math.exp((center - delta) * maturity))
 
 
 def main():
@@ -352,6 +381,98 @@ def main():
     assert min(universal_tail_orders) > 0.8
     assert max(universal_tail_orders) < 1.2
 
+    # A genuinely uniform cubic price theorem uses the smaller parabolic
+    # window R_lambda=c*sqrt(lambda).  On this window z=g_tilde/lambda tends
+    # to zero and the third Taylor remainder is bounded by
+    #
+    #   C lambda^-3 exp(T Re(g_bar)) (1+|g_tilde|)^6.
+    #
+    # For this benchmark exp(T Re(g_bar)) has power beta=7/2, so the displayed
+    # envelope is integrable after division by the Lewis denominator.  The
+    # exact tail needs a sharper argument than the worst-regime alpha=2 bound.
+    # If L_2 is the occupation time of regime 2, its conditional decay exponent
+    # is 2*T+3*L_2.  On L_2>=T/3 it is at least 3*T, while the complement has
+    # the exponentially small Chernoff probability returned above.  Hence
+    #
+    # tail(R) <= exp(H*T) [q^-3 R^-7/7
+    #              + P(L_2<T/3) q^-2 R^-5/5]                 (T=1).
+    #
+    # At R=c*sqrt(lambda) this is O(lambda^-7/2) plus an
+    # exponentially small term, leaving the integrated Taylor remainder as
+    # the cubic leading error.
+    average_beta = 0.5 * sum(1.0 / n for n in (0.5, 0.2)) * maturity
+    assert average_beta == 3.5
+    assert average_beta > 2.5
+    parabolic_scale = 10.0
+    parabolic_rows = []
+    weighted_remainder_ratios = []
+    for lam in (50.0, 100.0, 200.0, 400.0):
+        window = parabolic_scale * math.sqrt(lam)
+        exact_full = lewis_integral(lambda u: vg_cf(u, lam), np.inf)
+        approx_window = lewis_integral(
+            lambda u: vg_cf(u, lam, approximate=True), window
+        )
+        interior_l1 = quad(
+            lambda u: abs(vg_cf(u, lam)
+                          - vg_cf(u, lam, approximate=True))
+            / (u * u + 0.25),
+            0.0, window, epsabs=2e-10, epsrel=2e-10,
+            limit=1000,
+        )[0]
+        bad_probability, occupation_constant, occupation_rate = (
+            symmetric_bad_occupation_bound(lam, maturity)
+        )
+        direct_chernoff = (math.exp(lam * maturity / 3.0)
+                           * symmetric_occupation_laplace(
+                               lam, maturity, lam
+                           ))
+        assert direct_chernoff <= bad_probability * (1.0 + 2e-14)
+        good_tail = (math.exp(decay_h * maturity) * decay_q ** -3.0
+                     * window ** -7.0 / 7.0)
+        bad_tail = (math.exp(decay_h * maturity) * bad_probability
+                    * decay_q ** -2.0 * window ** -5.0 / 5.0)
+        exact_tail_bound = good_tail + bad_tail
+        price_error = price_prefactor * abs(exact_full - approx_window)
+        price_bound = price_prefactor * (interior_l1 + exact_tail_bound)
+        assert price_error <= price_bound * (1.0 + 2e-10)
+
+        # This grid is a diagnostic for the analytic differentiated-remainder
+        # envelope, not a replacement for it.  The ratio stays bounded as the
+        # parabolic window expands.
+        eps_lam = 1.0 / lam
+        for u in np.linspace(0.0, window, 401):
+            gbar_u, gtilde_u, _ = variance_gamma_parts(u - 0.5j, rate)
+            remainder = abs(vg_cf(u, lam)
+                            - vg_cf(u, lam, approximate=True))
+            scale = (eps_lam ** 3 * math.exp(gbar_u.real * maturity)
+                     * (1.0 + abs(gtilde_u)) ** 6)
+            if scale > 0.0:
+                weighted_remainder_ratios.append(remainder / scale)
+        for u in np.geomspace(1.0e-2, 1.0e4, 200):
+            occupation_envelope = math.exp(decay_h * maturity) * (
+                (1.0 + decay_q * u * u) ** -3.0
+                + bad_probability * (1.0 + decay_q * u * u) ** -2.0
+            )
+            assert abs(vg_cf(u, lam)) <= occupation_envelope * (
+                1.0 + 2e-11
+            )
+        parabolic_rows.append((lam, window, price_error, price_bound,
+                               price_prefactor * interior_l1,
+                               price_prefactor * good_tail,
+                               price_prefactor * bad_tail))
+
+    parabolic_orders = [
+        math.log(parabolic_rows[j][2] / parabolic_rows[j + 1][2], 2.0)
+        for j in range(len(parabolic_rows) - 1)
+    ]
+    parabolic_interior_orders = [
+        math.log(parabolic_rows[j][4] / parabolic_rows[j + 1][4], 2.0)
+        for j in range(len(parabolic_rows) - 1)
+    ]
+    assert min(parabolic_orders) > 2.8
+    assert min(parabolic_interior_orders) > 2.8
+    assert max(weighted_remainder_ratios) < 1.0
+
     print('exact split max error:', f'{max_identity_error:.3e}')
     print('largest layer / rigorous bound:', f'{max_layer_ratio:.6f}')
     print('outer Taylor errors:', [f'{x:.3e}' for x in errors])
@@ -384,6 +505,19 @@ def main():
           [f'{x:.4f}' for x in vg_tail_orders])
     print('universal-tail-bound observed orders:',
           [f'{x:.4f}' for x in universal_tail_orders])
+    print('occupation Chernoff constants (C, kappa):',
+          f'{occupation_constant:.12f}', f'{occupation_rate:.12f}')
+    print('parabolic-window cubic certificate '
+          '(lambda, R, error, bound, interior, good tail, bad tail):')
+    for row in parabolic_rows:
+        print(' ', f'{row[0]:5.0f}', f'{row[1]:10.4f}',
+              *(f'{x:.6e}' for x in row[2:]))
+    print('parabolic-price observed orders:',
+          [f'{x:.4f}' for x in parabolic_orders])
+    print('parabolic-interior observed orders:',
+          [f'{x:.4f}' for x in parabolic_interior_orders])
+    print('largest weighted cubic-remainder ratio:',
+          f'{max(weighted_remainder_ratios):.9f}')
     print('PASS')
 
 

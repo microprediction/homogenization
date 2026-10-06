@@ -40,7 +40,7 @@ papers/fast-switching/
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
-  verify_constant_forcing.py   exact slow/fast split, analytic envelope, Lewis tail bound, and VG frequency growth
+  verify_constant_forcing.py   exact slow/fast split, Lewis/VG tail bounds, and a uniform cubic VG price certificate
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
