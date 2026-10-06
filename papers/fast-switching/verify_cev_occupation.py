@@ -28,6 +28,9 @@ correction obtained from the fourth cumulant and the variance endpoint term.
 The same calculation is continued through second order for fixed initial
 regimes, both around the stationary clock and around the exact conditional
 mean.
+It also checks the joint first correction for two different deterministic
+clock loadings.  This multivariate check makes the limiting covariance a Gram
+matrix and separates its rank from any single fixed-loading calculation.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -450,6 +453,103 @@ def weighted_stationary_characteristic(rate_12, rate_21, clock_growth, argument)
     )
     raw = p * solution.y[0, -1] + q * solution.y[1, -1]
     return np.exp(-1j * argument * math.sqrt(total_rate) * p * r0) * raw
+
+
+def joint_weighted_stationary_centered_characteristic(
+    start, rate_12, rate_21, clock_growths, arguments
+):
+    """Joint clock characteristic function, centered at stationary means.
+
+    The vector is tested in the supplied Fourier direction ``arguments``.
+    Each component has loading exp(h_j*(T-t)); the backward Feynman--Kac
+    clock therefore uses exp(h_j*tau).
+    """
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    stationary_mean = p * sum(
+        argument * math.exp(growth * T) * _exp_integral(growth)
+        for growth, argument in zip(clock_growths, arguments)
+    )
+
+    def rhs(tau, values):
+        loading = sum(
+            argument * math.exp(growth * tau)
+            for growth, argument in zip(clock_growths, arguments)
+        )
+        frequency = math.sqrt(total_rate) * loading
+        return np.array(
+            [
+                (-rate_12 + 1j * frequency) * values[0] + rate_12 * values[1],
+                rate_21 * values[0] - rate_21 * values[1],
+            ],
+            dtype=complex,
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        np.ones(2, dtype=complex),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    return (
+        np.exp(-1j * math.sqrt(total_rate) * stationary_mean)
+        * solution.y[start, -1]
+    )
+
+
+def joint_weighted_raw_moments_ode(start, rate_12, rate_21, clock_growths):
+    """First and second moments of two clocks from a bivariate FK hierarchy."""
+    if len(clock_growths) != 2:
+        raise ValueError("the certificate uses exactly two clock loadings")
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+
+    def rhs(tau, flat):
+        moments = flat.reshape(3, 3, 2)
+        out = np.zeros_like(moments)
+        rewards = [
+            np.array([math.exp(growth * tau), 0.0])
+            for growth in clock_growths
+        ]
+        for first_order in range(3):
+            for second_order in range(3 - first_order):
+                out[first_order, second_order] = (
+                    generator @ moments[first_order, second_order]
+                )
+                if first_order:
+                    out[first_order, second_order] += (
+                        first_order
+                        * rewards[0]
+                        * moments[first_order - 1, second_order]
+                    )
+                if second_order:
+                    out[first_order, second_order] += (
+                        second_order
+                        * rewards[1]
+                        * moments[first_order, second_order - 1]
+                    )
+        return out.ravel()
+
+    initial = np.zeros((3, 3, 2))
+    initial[0, 0] = 1.0
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        initial.ravel(),
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    moments = solution.y[:, -1].reshape(3, 3, 2)
+    means = np.array([moments[1, 0, start], moments[0, 1, start]])
+    second = np.array(
+        [
+            [moments[2, 0, start], moments[1, 1, start]],
+            [moments[1, 1, start], moments[0, 2, start]],
+        ]
+    )
+    return means, second - np.outer(means, means)
 
 
 def weighted_clock_raw_moments_ode(start, rate_12, rate_21, clock_growth, degree=3):
@@ -1253,6 +1353,107 @@ def main():
     )
     assert fixed_variance_second_errors[-1] < 5e-5
     assert fixed_fourth_cumulant_errors[-1] < 6e-3
+
+    # Several loadings share one fast chain.  Cramer--Wold reduces the joint
+    # expansion to the scalar result with loading sum_j theta_j w_j.  An
+    # independent bivariate polynomial Feynman--Kac hierarchy checks the
+    # covariance Gram matrix, while the complex hierarchy checks the joint
+    # first characteristic correction.
+    joint_growths = (0.032, -0.018)
+    joint_directions = ((0.7, -0.4), (0.4, 0.9), (-0.6, 0.75))
+    limiting_covariance = np.array(
+        [
+            [
+                2.0
+                * p
+                * q
+                * math.exp((left + right) * T)
+                * _exp_integral(left + right)
+                for right in joint_growths
+            ]
+            for left in joint_growths
+        ]
+    )
+    joint_first_errors = []
+    joint_covariance_errors = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_first_error = 0.0
+        max_covariance_error = 0.0
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            _, covariance = joint_weighted_raw_moments_ode(
+                start, a, b, joint_growths
+            )
+            max_covariance_error = max(
+                max_covariance_error,
+                float(np.max(np.abs(kappa * covariance - limiting_covariance))),
+            )
+            for direction in joint_directions:
+                exact_cf = joint_weighted_stationary_centered_characteristic(
+                    start, a, b, joint_growths, direction
+                )
+                loading = lambda tau: sum(
+                    coefficient * math.exp(growth * tau)
+                    for coefficient, growth in zip(direction, joint_growths)
+                )
+                second_energy = quad(
+                    lambda tau: loading(tau) ** 2,
+                    0.0,
+                    T,
+                    epsabs=2e-13,
+                    epsrel=2e-13,
+                )[0]
+                third_energy = quad(
+                    lambda tau: loading(tau) ** 3,
+                    0.0,
+                    T,
+                    epsabs=2e-13,
+                    epsrel=2e-13,
+                )[0]
+                initial_loading = loading(T)
+                normal_cf = math.exp(-p * q * second_energy)
+                first_polynomial = (
+                    1j * d * initial_loading
+                    - 1j * p * q * (q - p) * third_energy
+                )
+                scaled_error = math.sqrt(kappa) * (exact_cf - normal_cf)
+                max_first_error = max(
+                    max_first_error,
+                    abs(scaled_error - first_polynomial * normal_cf),
+                )
+        joint_first_errors.append(max_first_error)
+        joint_covariance_errors.append(max_covariance_error)
+    joint_first_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(joint_first_errors, joint_first_errors[1:])
+    ]
+    joint_covariance_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(joint_covariance_errors, joint_covariance_errors[1:])
+    ]
+    print(
+        "joint weighted-clock first characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in joint_first_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in joint_first_orders)
+    )
+    print(
+        "joint weighted-clock scaled covariance errors="
+        + ", ".join(f"{value:.3e}" for value in joint_covariance_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in joint_covariance_orders)
+    )
+    assert joint_first_errors[-1] < 1.5e-2
+    assert joint_covariance_errors[-1] < 2e-3
+    assert all(
+        later < earlier
+        for earlier, later in zip(joint_first_errors, joint_first_errors[1:])
+    )
+    assert all(
+        later < earlier
+        for earlier, later in zip(joint_covariance_errors, joint_covariance_errors[1:])
+    )
 
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21

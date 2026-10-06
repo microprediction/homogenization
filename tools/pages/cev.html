@@ -342,6 +342,42 @@
     is placed against the primary first-order Markov Edgeworth framework of
     <a href="https://doi.org/10.24033/bsmf.2594">Herv&eacute; and P&egrave;ne (2010)</a>; the weighted two-state
     coefficients displayed here are derived directly.</p>
+    <h3>Several loadings: a joint clock limit</h3>
+    <p>The same calculation gives cross-loading dependence, rather than only one marginal clock. Let
+    $w_1,\ldots,w_m$ be bounded piecewise $C^2$ deterministic loadings on $[0,T]$, with finitely many breakpoints,
+    and define</p>
+    $$W_j^{(\kappa)}=\int_0^T w_j(t)\mathbf1_{\{y_t=1\}}dt,\qquad
+      m_j=p\int_0^T w_j(t)dt.$$
+    <p>For either specified initial regime, Cram&eacute;r&ndash;Wold and the two-state Poisson equation give the joint limit</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\bigl(W^{(\kappa)}-m\bigr)\Longrightarrow N(0,\Sigma),\qquad
+      \Sigma_{jk}=2pq\int_0^T w_j(t)w_k(t)dt.$$
+    </div>
+    <p>This is a Gram matrix: its rank is exactly the dimension of the span of the loadings in $L^2[0,T]$.
+    That rank statement concerns a vector formed by integrating <em>different deterministic loadings</em>; it is not
+    a claim that a fixed-parameter Green&ndash;Kubo matrix acquires extra rank.</p>
+    <p>The first joint non-Gaussian term is explicit as well. For a fixed Fourier vector $\theta$, put
+    $w_\theta=\sum_j\theta_jw_j$, $r=pq$, $c=q-p$, and $d_1=q,d_2=-p$. Then</p>
+    <div class="equation-card">
+    $$\mathbb E_i\exp\!\left(i\sqrt\kappa\,\theta^\top(W^{(\kappa)}-m)\right)
+      =e^{-r\int_0^T w_\theta^2}
+      \left[1+\frac{i d_iw_\theta(0)-irc\int_0^T w_\theta^3}{\sqrt\kappa}
+      +O(\kappa^{-1})\right].$$
+    </div>
+    <p>The mean-memory term $i d_iw_\theta(0)$ vanishes when each component is centered at its exact conditional
+    mean; the cubic bulk term remains. To see the coefficients, use the exact fixed-start covariance displayed above:
+    after multiplication by $\kappa$, its stationary term is an approximate identity and the two initial-corner
+    terms vanish. The ordered three-time cumulant has the same bulk term as the scalar clock with $w$ replaced by
+    $w_\theta$; all fixed-start remainders occupy an initial corner of volume $O(\kappa^{-3})$.
+    Finite-dimensional Feynman&ndash;Kac perturbation controls the remaining cumulants. The expansion is pointwise for
+    fixed $\theta,T$ and fixed loadings, not uniform in a growing Fourier ball.</p>
+    <p>A two-loading certificate uses $w_1(t)=e^{0.032(T-t)}$ and
+    $w_2(t)=e^{-0.018(T-t)}$. An independent bivariate polynomial Feynman&ndash;Kac hierarchy gives maximum errors in
+    $\kappa\operatorname{Cov}(W)-\Sigma$ of
+    $2.06,1.03,0.515,0.258,0.129$ times $10^{-2}$ for
+    $\kappa=40,80,160,320,640$, with order one. Across three non-axis Fourier directions and both starts, the maximum
+    residual after the displayed first correction falls from $4.38\times10^{-2}$ to $1.06\times10^{-2}$, with
+    halving orders tending to $1/2$.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
