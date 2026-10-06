@@ -316,8 +316,28 @@
       \longrightarrow
       \left\{is d_i e^{hT}-is^3pq(q-p)A_{3,h}\right\}e^{-pqA_hs^2}.$$
     </div>
+    <p>At the next order, the start changes the variance as well. For $s\le t$, direct conditioning gives the exact
+    covariance</p>
+    $$\operatorname{Cov}_i(g_s,g_t)
+      =r e^{-\kappa(t-s)}+cd_i e^{-\kappa t}-d_i^2e^{-\kappa(s+t)},$$
+    <p>and therefore</p>
+    $$\kappa\operatorname{Var}_i(W_T)=2rA_h+\frac{V_{1,i}}\kappa+O(\kappa^{-2}),
+      \qquad
+      V_{1,i}=-r(1+e^{2hT})+e^{2hT}(2cd_i-d_i^2).$$
+    <p>Expanding the binary identity $g^2=r+cg$ in the fixed-start ordered fourth cumulant shows that every boundary
+    monomial contains $e^{-\kappa(t_1+u+v+z)}$ as a factor. Its weighted simplex integral is therefore
+    $O(\kappa^{-4})$, so the $\kappa^{-3}$ bulk coefficient remains $24r(1-5r)A_{4,h}$. Put</p>
+    $$L_{1,i}(s)=is d_i e^{hT}-is^3rcA_{3,h},$$
+    $$E_{2,i}(s)=-\frac{s^2V_{1,i}}2+r(1-5r)A_{4,h}s^4+\frac12L_{1,i}(s)^2.$$
+    <p>The complete known-start second correction is then</p>
+    <div class="equation-card">
+    $$\mathbb E_i e^{is\sqrt\kappa(W_T-pR(0))}
+      =e^{-rA_hs^2}\left\{1+\frac{L_{1,i}(s)}{\sqrt\kappa}
+      +\frac{E_{2,i}(s)}\kappa+O(\kappa^{-3/2})\right\}.$$
+    </div>
     <p>If the clock is instead centered at its exact conditional mean $\mathbb E_iW_T$, the $is d_i e^{hT}$ term
-    disappears and the stationary skew correction remains. Both statements are pointwise in fixed $s,T,h,p,q$;
+    is deleted from $L_{1,i}$ and its square, but the start-dependent $V_{1,i}$ remains. Both statements are
+    pointwise in fixed $s,T,h,p,q$;
     neither is a frequency-uniform or Berry&ndash;Esseen bound. The eigenvalue-versus-boundary-amplitude interpretation
     is placed against the primary first-order Markov Edgeworth framework of
     <a href="https://doi.org/10.24033/bsmf.2594">Herv&eacute; and P&egrave;ne (2010)</a>; the weighted two-state
@@ -339,7 +359,11 @@
     residual falls from $1.12\times10^{-2}$ at $\kappa=40$ to $2.67\times10^{-3}$ at $\kappa=640$. The exact
     four-point simplex integral and independent degree-four moment hierarchy agree within $4.7\times10^{-16}$;
     the error in the scaled fourth-cumulant limit falls from $4.36\times10^{-2}$ to $2.72\times10^{-3}$ with order
-    one, and the terminal variance-coefficient error is $7.5\times10^{-7}$:</p>
+    one, and the terminal variance-coefficient error is $7.5\times10^{-7}$. For the two fixed starts, the new
+    stationary-clock second-correction residual falls from $7.87\times10^{-2}$ to $1.90\times10^{-2}$; after exact
+    conditional-mean centering it falls from $5.15\times10^{-2}$ to $1.22\times10^{-2}$. Both have the predicted
+    half-order residual. At $\kappa=640$, the maximum start-specific variance- and fourth-cumulant-coefficient errors
+    are $4.74\times10^{-5}$ and $5.15\times10^{-3}$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\kappa$</th><th>start</th><th>$\operatorname{Var}(W_T)$</th><th>mean clock</th><th>stationary clock</th></tr></thead><tbody><tr><td>20</td><td>1</td><td>0.02143628</td><td>3.804e-02 / 2.052e-01</td><td>8.167e-02 / 4.182e-01</td></tr><tr><td>20</td><td>2</td><td>0.02223075</td><td>4.275e-02 / 2.128e-01</td><td>2.681e-01 / 6.083e-01</td></tr><tr><td>40</td><td>1</td><td>0.01123204</td><td>1.978e-02 / 1.075e-01</td><td>4.026e-02 / 2.141e-01</td></tr><tr><td>40</td><td>2</td><td>0.01143130</td><td>2.095e-02 / 1.094e-01</td><td>1.332e-01 / 3.073e-01</td></tr><tr><td>80</td><td>1</td><td>0.00574467</td><td>1.008e-02 / 5.500e-02</td><td>1.999e-02 / 1.083e-01</td></tr><tr><td>80</td><td>2</td><td>0.00579457</td><td>1.037e-02 / 5.547e-02</td><td>6.640e-02 / 1.545e-01</td></tr><tr><td>160</td><td>1</td><td>0.00290452</td><td>5.083e-03 / 2.781e-02</td><td>9.964e-03 / 5.446e-02</td></tr><tr><td>160</td><td>2</td><td>0.00291701</td><td>5.155e-03 / 2.793e-02</td><td>3.315e-02 / 7.743e-02</td></tr></tbody></table></div>
 
 

@@ -25,6 +25,9 @@ calculation verifies the corresponding weighted-clock central limit theorem
 at nonzero carry, the first characteristic correction for both stationary and
 specified initial regimes, and the stationary second characteristic
 correction obtained from the fourth cumulant and the variance endpoint term.
+The same calculation is continued through second order for fixed initial
+regimes, both around the stationary clock and around the exact conditional
+mean.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -1102,6 +1105,154 @@ def main():
     assert all(
         later < earlier for earlier, later in zip(third_cumulant_errors, third_cumulant_errors[1:])
     )
+
+    # At second characteristic order a fixed start changes the variance
+    # coefficient as well as the first-order mean.  For d_i=q or -p,
+    #   Cov_i(g_s,g_t)=p*q*e^-k(t-s)+(q-p)d_i*e^-kt-d_i^2*e^-k(s+t), s<=t.
+    # The last two terms are pinned to the initial corner and give the
+    # displayed start-dependent kappa^-2 variance coefficient.  The leading
+    # fourth cumulant is still the stationary bulk coefficient because its
+    # initial-corner remainder integrates to O(kappa^-4).
+    fixed_second_errors = []
+    exact_mean_second_errors = []
+    fixed_variance_second_errors = []
+    fixed_fourth_cumulant_errors = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_fixed_error = 0.0
+        max_exact_mean_error = 0.0
+        max_variance_error = 0.0
+        max_fourth_error = 0.0
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            start_variance_coefficient = (
+                variance_second_coefficient
+                + math.exp(2.0 * clock_growth * T)
+                * (2.0 * (q - p) * d - d ** 2)
+            )
+            raw = weighted_clock_raw_moments_ode(
+                start, a, b, clock_growth, degree=4
+            )
+            mean = raw[1]
+            variance = raw[2] - mean ** 2
+            cumulant_four = (
+                raw[4]
+                - 4.0 * raw[3] * mean
+                - 3.0 * raw[2] ** 2
+                + 12.0 * raw[2] * mean ** 2
+                - 6.0 * mean ** 4
+            )
+            max_variance_error = max(
+                max_variance_error,
+                abs(
+                    kappa * (kappa * variance - limiting_variance)
+                    - start_variance_coefficient
+                ),
+            )
+            max_fourth_error = max(
+                max_fourth_error,
+                abs(kappa ** 3 * cumulant_four - fourth_cumulant_limit),
+            )
+            for argument in edgeworth_arguments:
+                normal_cf = math.exp(-0.5 * limiting_variance * argument ** 2)
+                skew_polynomial = (
+                    -1j
+                    * argument ** 3
+                    * p
+                    * q
+                    * (q - p)
+                    * weighted_third_energy
+                )
+                fixed_first_polynomial = (
+                    1j * argument * d * initial_weight + skew_polynomial
+                )
+                fixed_second_polynomial = (
+                    -0.5 * argument ** 2 * start_variance_coefficient
+                    + p
+                    * q
+                    * (1.0 - 5.0 * p * q)
+                    * weighted_fourth_energy
+                    * argument ** 4
+                    + 0.5 * fixed_first_polynomial ** 2
+                )
+                exact_fixed = weighted_stationary_centered_characteristic(
+                    start, a, b, clock_growth, argument
+                )
+                fixed_scaled_error = kappa * (
+                    exact_fixed
+                    - normal_cf
+                    - fixed_first_polynomial * normal_cf / math.sqrt(kappa)
+                )
+                max_fixed_error = max(
+                    max_fixed_error,
+                    abs(fixed_scaled_error - fixed_second_polynomial * normal_cf),
+                )
+
+                exact_mean_second_polynomial = (
+                    -0.5 * argument ** 2 * start_variance_coefficient
+                    + p
+                    * q
+                    * (1.0 - 5.0 * p * q)
+                    * weighted_fourth_energy
+                    * argument ** 4
+                    + 0.5 * skew_polynomial ** 2
+                )
+                exact_centered = weighted_centered_characteristic(
+                    start, a, b, clock_growth, argument
+                )
+                exact_mean_scaled_error = kappa * (
+                    exact_centered
+                    - normal_cf
+                    - skew_polynomial * normal_cf / math.sqrt(kappa)
+                )
+                max_exact_mean_error = max(
+                    max_exact_mean_error,
+                    abs(
+                        exact_mean_scaled_error
+                        - exact_mean_second_polynomial * normal_cf
+                    ),
+                )
+        fixed_second_errors.append(max_fixed_error)
+        exact_mean_second_errors.append(max_exact_mean_error)
+        fixed_variance_second_errors.append(max_variance_error)
+        fixed_fourth_cumulant_errors.append(max_fourth_error)
+    fixed_second_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(fixed_second_errors, fixed_second_errors[1:])
+    ]
+    exact_mean_second_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(exact_mean_second_errors, exact_mean_second_errors[1:])
+    ]
+    print(
+        "weighted fixed-start second characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in fixed_second_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in fixed_second_orders)
+    )
+    print(
+        "weighted exact-mean second characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in exact_mean_second_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in exact_mean_second_orders)
+    )
+    print(
+        "weighted fixed-start terminal variance/fourth-cumulant coefficient errors="
+        f"{fixed_variance_second_errors[-1]:.3e}/"
+        f"{fixed_fourth_cumulant_errors[-1]:.3e}"
+    )
+    assert fixed_second_errors[-1] < 2e-2
+    assert exact_mean_second_errors[-1] < 1.3e-2
+    assert all(
+        later < earlier
+        for earlier, later in zip(fixed_second_errors, fixed_second_errors[1:])
+    )
+    assert all(
+        later < earlier
+        for earlier, later in zip(exact_mean_second_errors, exact_mean_second_errors[1:])
+    )
+    assert fixed_variance_second_errors[-1] < 5e-5
+    assert fixed_fourth_cumulant_errors[-1] < 6e-3
 
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21
