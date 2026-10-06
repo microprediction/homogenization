@@ -20,8 +20,11 @@ occupation-time representation for the full clock law.  For nonzero carry, an
 exact Kummer-function Laplace transform of the weighted occupation clock is
 also checked against the independent time-inhomogeneous Feynman--Kac system.
 Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
-Wasserstein rate for merely Lipschitz clock payoffs, in contrast to the
-``kappa**(-1)`` centered Taylor bound for twice differentiable payoffs.
+Wasserstein rate for merely Lipschitz clock payoffs.  A complex Feynman--Kac
+calculation verifies the corresponding weighted-clock central limit theorem
+at nonzero carry and its stationary-start first characteristic correction.
+These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
+centered Taylor bound for twice differentiable payoffs.
 """
 
 import math
@@ -362,6 +365,61 @@ def weighted_laplace_ode(start, rate_12, rate_21, clock_growth, transform_argume
     return float(solution.y[start, -1])
 
 
+def weighted_centered_characteristic(start, rate_12, rate_21, clock_growth, argument):
+    """Characteristic function of sqrt(kappa) times the centered weighted clock."""
+    total_rate = rate_12 + rate_21
+    mean, _ = weighted_occupation_moments(start, rate_12, rate_21, clock_growth)
+
+    def rhs(tau, values):
+        frequency = argument * math.sqrt(total_rate) * math.exp(clock_growth * tau)
+        return np.array(
+            [
+                (-rate_12 + 1j * frequency) * values[0] + rate_12 * values[1],
+                rate_21 * values[0] - rate_21 * values[1],
+            ],
+            dtype=complex,
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        np.ones(2, dtype=complex),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    return np.exp(-1j * argument * math.sqrt(total_rate) * mean) * solution.y[start, -1]
+
+
+def weighted_stationary_characteristic(rate_12, rate_21, clock_growth, argument):
+    """Characteristic function under the stationary initial regime law."""
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    q = rate_12 / total_rate
+    r0 = math.exp(clock_growth * T) * _exp_integral(clock_growth)
+
+    def rhs(tau, values):
+        frequency = argument * math.sqrt(total_rate) * math.exp(clock_growth * tau)
+        return np.array(
+            [
+                (-rate_12 + 1j * frequency) * values[0] + rate_12 * values[1],
+                rate_21 * values[0] - rate_21 * values[1],
+            ],
+            dtype=complex,
+        )
+
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        np.ones(2, dtype=complex),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    raw = p * solution.y[0, -1] + q * solution.y[1, -1]
+    return np.exp(-1j * argument * math.sqrt(total_rate) * p * r0) * raw
+
+
 def cev_derivative_estimates(rate=R, dividend=Q, degree=56):
     """Numerical derivative-supremum estimates for the finite-rate table.
 
@@ -646,6 +704,79 @@ def main():
     )
     assert transform_error < 4e-12
     assert transform_imaginary < 1e-20
+
+    # Weighted additive-functional CLT.  With a=kappa*q and b=kappa*p,
+    # sqrt(kappa)(W-EW) converges to N(0, 2*p*q*int_0^T w(t)^2 dt).
+    # The complex Feynman--Kac ODE is independent of the moment calculation.
+    p, q = 0.65, 0.35
+    weighted_energy = math.expm1(2.0 * clock_growth * T) / (2.0 * clock_growth)
+    limiting_variance = 2.0 * p * q * weighted_energy
+    characteristic_errors = []
+    variance_errors = []
+    arguments = np.linspace(-2.0, 2.0, 17)
+    for kappa in (20.0, 40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_error = 0.0
+        for start in (0, 1):
+            _, variance = weighted_occupation_moments(start, a, b, clock_growth)
+            variance_errors.append(abs(kappa * variance - limiting_variance))
+            for argument in arguments:
+                exact_cf = weighted_centered_characteristic(start, a, b, clock_growth, argument)
+                normal_cf = math.exp(-0.5 * limiting_variance * argument * argument)
+                max_error = max(max_error, abs(exact_cf - normal_cf))
+        characteristic_errors.append(max_error)
+    characteristic_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(characteristic_errors, characteristic_errors[1:])
+    ]
+    print(
+        "weighted-clock CLT max characteristic errors="
+        + ", ".join(f"{value:.3e}" for value in characteristic_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in characteristic_orders)
+        + f"; terminal scaled-variance error={max(variance_errors[-2:]):.3e}"
+    )
+    assert characteristic_errors[-1] < 1.5e-2
+    assert all(later < earlier for earlier, later in zip(characteristic_errors, characteristic_errors[1:]))
+    assert max(variance_errors[-2:]) < 2e-3
+
+    # Under a stationary start the leading non-Gaussian term is explicit:
+    # kappa^2 Cum_3(W) -> 6*p*q*(q-p)*int w^3.  Hence sqrt(kappa)
+    # times the characteristic-function error has the limit below.
+    weighted_third_energy = math.expm1(3.0 * clock_growth * T) / (3.0 * clock_growth)
+    edgeworth_errors = []
+    edgeworth_arguments = (0.5, 1.0, 1.5)
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_error = 0.0
+        for argument in edgeworth_arguments:
+            exact_cf = weighted_stationary_characteristic(a, b, clock_growth, argument)
+            normal_cf = math.exp(-0.5 * limiting_variance * argument * argument)
+            predicted = (
+                -1j
+                * argument ** 3
+                * p
+                * q
+                * (q - p)
+                * weighted_third_energy
+                * normal_cf
+            )
+            scaled_error = math.sqrt(kappa) * (exact_cf - normal_cf)
+            max_error = max(max_error, abs(scaled_error - predicted))
+        edgeworth_errors.append(max_error)
+    edgeworth_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(edgeworth_errors, edgeworth_errors[1:])
+    ]
+    print(
+        "weighted stationary first characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in edgeworth_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in edgeworth_orders)
+    )
+    assert edgeworth_errors[-1] < 1e-2
+    assert all(later < earlier for earlier, later in zip(edgeworth_errors, edgeworth_errors[1:]))
+
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21
         total_rate = a + b

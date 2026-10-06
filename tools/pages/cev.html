@@ -153,6 +153,7 @@
     plug-in right-hand side:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\kappa$</th><th>start</th><th>$\operatorname{Var}(U_T)$</th><th>mean clock</th><th>stationary clock</th></tr></thead><tbody><tr><td>20</td><td>1</td><td>0.02078125</td><td>3.931e-02 / 2.166e-01</td><td>8.072e-02 / 4.331e-01</td></tr><tr><td>20</td><td>2</td><td>0.02153125</td><td>4.414e-02 / 2.244e-01</td><td>2.701e-01 / 6.266e-01</td></tr><tr><td>40</td><td>1</td><td>0.01088281</td><td>2.042e-02 / 1.134e-01</td><td>3.973e-02 / 2.217e-01</td></tr><tr><td>40</td><td>2</td><td>0.01107031</td><td>2.161e-02 / 1.154e-01</td><td>1.341e-01 / 3.165e-01</td></tr><tr><td>80</td><td>1</td><td>0.00556445</td><td>1.039e-02 / 5.798e-02</td><td>1.972e-02 / 1.121e-01</td></tr><tr><td>80</td><td>2</td><td>0.00561133</td><td>1.069e-02 / 5.847e-02</td><td>6.680e-02 / 1.590e-01</td></tr><tr><td>160</td><td>1</td><td>0.00281299</td><td>5.242e-03 / 2.931e-02</td><td>9.822e-03 / 5.639e-02</td></tr><tr><td>160</td><td>2</td><td>0.00282471</td><td>5.316e-03 / 2.943e-02</td><td>3.334e-02 / 7.971e-02</td></tr></tbody></table></div>
 
+
     <h3>A sharp regularity gap</h3>
     <p>The $O(\left(\kappa^{-1}\right))$ conclusion above uses two derivatives of the payoff. It cannot be
     extended uniformly to all Lipschitz functions. For the weighted clock below, let
@@ -190,7 +191,6 @@
     quadrature for $\kappa=20,\ldots,1280$ gives ratios to the displayed sharp equivalent increasing from
     $0.9670641$ to $0.9994997$ from state 1 and from $0.9840057$ to $0.9997574$ from state 2. At $\kappa=1280$,
     $W_1/\sqrt{\operatorname{Var}}=0.798025$, against $\sqrt{2/\pi}=0.797885$.</p>
-
 
     <h3>Nonzero carry: exact weighted moments</h3>
     <p>Although occupation time alone no longer determines the clock when $r\ne q$, its exponentially weighted
@@ -248,12 +248,38 @@
     $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
       \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
       R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
-    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry. The exact transform above also survives, although the
-    zero-carry atom-plus-Bessel density and direct price integral do not.
+    <h3>First non-Gaussian correction under stationarity</h3>
+    <p>The leading characteristic-function error is also explicit when the chain starts in stationarity. For
+    $0\le t_1\le t_2\le t_3\le T$, the eigenfunction identity and
+    $g^2=pq+(q-p)g$ give</p>
+    $$\mathbb E_\pi[g(y_{t_1})g(y_{t_2})g(y_{t_3})]
+      =pq(q-p)e^{-\kappa(t_3-t_1)}.$$
+    <p>Writing $A_{3,h}=\int_0^T e^{3h(T-t)}dt=(e^{3hT}-1)/(3h)$, symmetry of the cube therefore gives the exact
+    third-cumulant integral and its limit</p>
+    <div class="equation-card">
+    $$\operatorname{Cum}_{3,\pi}(W_T)=6pq(q-p)
+      \int_{0\le t_1\le t_2\le t_3\le T}
+      e^{h(3T-t_1-t_2-t_3)}e^{-\kappa(t_3-t_1)}\,dt_1dt_2dt_3,$$
+    $$\kappa^2\operatorname{Cum}_{3,\pi}(W_T)\longrightarrow6pq(q-p)A_{3,h}.$$
+    </div>
+    <p>The second display follows after $u=\kappa(t_2-t_1)$ and $v=\kappa(t_3-t_2)$ by dominated convergence.
+    The finite-state Feynman&ndash;Kac cumulant expansion then yields, for each fixed real $s$,</p>
+    $$\sqrt\kappa\left[
+      \mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
+      -e^{-pqA_hs^2}\bigr]
+      \longrightarrow-i s^3pq(q-p)A_{3,h}e^{-pqA_hs^2}.$$
+    <p>This correction is deliberately stationary-start: a specified initial regime has an additional boundary-layer
+    term of the same $\kappa^{-1/2}$ order after normalization. It is pointwise in $s$ and fixed in $T,h,p,q$, not a
+    uniform Berry&ndash;Esseen bound.</p>
+    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
     estimates agree to $10^{-7}$ and are rounded upward to $M_1=2.58$, $M_2=0.87$ for this illustrative plug-in
-    table:</p>
+    table. An independent complex Feynman&ndash;Kac calculation checks the weighted-clock Gaussian limit on 17
+    frequencies: for $\kappa=20,40,80,160,320,640$, the maximum characteristic-function errors are
+    $5.76,3.80,2.59,1.80,1.26,0.889$ times $10^{-2}$, with successive orders tending to $1/2$. After subtracting
+    the stationary first correction, the maximum scaled residual on $s=0.5,1,1.5$ falls from $3.20\times10^{-2}$ at
+    $\kappa=40$ to $7.72\times10^{-3}$ at $\kappa=640$, again with half-order convergence:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\kappa$</th><th>start</th><th>$\operatorname{Var}(W_T)$</th><th>mean clock</th><th>stationary clock</th></tr></thead><tbody><tr><td>20</td><td>1</td><td>0.02143628</td><td>3.804e-02 / 2.052e-01</td><td>8.167e-02 / 4.182e-01</td></tr><tr><td>20</td><td>2</td><td>0.02223075</td><td>4.275e-02 / 2.128e-01</td><td>2.681e-01 / 6.083e-01</td></tr><tr><td>40</td><td>1</td><td>0.01123204</td><td>1.978e-02 / 1.075e-01</td><td>4.026e-02 / 2.141e-01</td></tr><tr><td>40</td><td>2</td><td>0.01143130</td><td>2.095e-02 / 1.094e-01</td><td>1.332e-01 / 3.073e-01</td></tr><tr><td>80</td><td>1</td><td>0.00574467</td><td>1.008e-02 / 5.500e-02</td><td>1.999e-02 / 1.083e-01</td></tr><tr><td>80</td><td>2</td><td>0.00579457</td><td>1.037e-02 / 5.547e-02</td><td>6.640e-02 / 1.545e-01</td></tr><tr><td>160</td><td>1</td><td>0.00290452</td><td>5.083e-03 / 2.781e-02</td><td>9.964e-03 / 5.446e-02</td></tr><tr><td>160</td><td>2</td><td>0.00291701</td><td>5.155e-03 / 2.793e-02</td><td>3.315e-02 / 7.743e-02</td></tr></tbody></table></div>
 
 

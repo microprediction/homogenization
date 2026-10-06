@@ -791,6 +791,44 @@ def cev_page():
     plug-in right-hand side:</p>
 ''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(U_T)$', 'mean clock', 'stationary clock'], finite_rows) + r'''
 
+    <h3>A sharp regularity gap</h3>
+    <p>The $O(\left(\kappa^{-1}\right))$ conclusion above uses two derivatives of the payoff. It cannot be
+    extended uniformly to all Lipschitz functions. For the weighted clock below, let
+    $\mu_i=\mathbb E_iV$ and let $\operatorname{Lip}(\Phi)\le1$. Kantorovich duality against the point mass at
+    $\mu_i$ gives the exact identity</p>
+    <div class="equation-card">
+    $$\sup_{\operatorname{Lip}(\Phi)\le1}
+      \left|\mathbb E_i\Phi(V)-\Phi(\mu_i)\right|
+      =W_1(\mathcal L_i(V),\delta_{\mu_i})
+      =\mathbb E_i|V-\mu_i|
+      =|\Delta|\mathbb E_i|W_T-\mathbb E_iW_T|
+      \le |\Delta|\sqrt{\operatorname{Var}_i(W_T)}.$$
+    </div>
+    <p>The supremum is attained by $\Phi(v)=|v-\mu_i|$. More precisely, set
+    $a=\kappa q$, $b=\kappa p$, $p+q=1$, and keep $T$ and $h$ fixed. Then, for either known starting state,</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\left(W_T-\mathbb E_iW_T\right)
+      \Longrightarrow N\!\left(0,2pqA_h\right),\qquad
+      A_h=\int_0^T e^{2h(T-t)}dt=\frac{e^{2hT}-1}{2h},$$
+    $$\mathbb E_i|W_T-\mathbb E_iW_T|
+      \sim\sqrt{\frac{4pqA_h}{\pi\kappa}}.$$
+    </div>
+    <p>Here $A_0=T$. For a short proof, put $g(1)=q$, $g(2)=-p$. The base two-state generator satisfies
+    $Q_0g=-g$, so Dynkin&apos;s formula makes
+    $M_t=g(y_t)-g(y_0)+\kappa\int_0^t g(y_s)ds$ a martingale. Deterministic integration by parts leaves
+    $\kappa^{-1/2}\int_0^T e^{h(T-t)}dM_t$ as the leading term. Its predictable bracket converges to
+    $2pqA_h$, and the bounded jumps give the martingale central limit theorem of
+    <a href="./bibliography.html#Rebolledo1980">Rebolledo (1980)</a>. Uniform boundedness of the second moments
+    then transfers the normal limit to absolute first moments. Indeed,
+    $\mathbb E_iW_T=pR(0)+d_iR(\kappa)$, so the known-start displacement from the stationary mean is
+    $O(\left(\kappa^{-1}\right))$ and vanishes after $\sqrt\kappa$ scaling.</p>
+    <p>Thus generic one-Lipschitz clock payoffs have a sharp $\Theta(\left(\kappa^{-1/2}\right))$ worst-case error,
+    while the centered $C^2$ CEV call retains its $O(\left(\kappa^{-1}\right))$ error. This is a fixed-$T$, fixed-$h$
+    statement; it is not uniform over maturity or carry. At zero carry with $(p,q)=(0.65,0.35)$, exact Bessel-density
+    quadrature for $\kappa=20,\ldots,1280$ gives ratios to the displayed sharp equivalent increasing from
+    $0.9670641$ to $0.9994997$ from state 1 and from $0.9840057$ to $0.9997574$ from state 2. At $\kappa=1280$,
+    $W_1/\sqrt{\operatorname{Var}}=0.798025$, against $\sqrt{2/\pi}=0.797885$.</p>
+
     <h3>Nonzero carry: exact weighted moments</h3>
     <p>Although occupation time alone no longer determines the clock when $r\ne q$, its exponentially weighted
     counterpart still has elementary first two moments. This is a time-inhomogeneous
@@ -814,6 +852,32 @@ def cev_page():
     $$\mathbb E_iW_T=pR(0)+d_iR(\kappa),$$
     $$\mathbb E_iW_T^2=p^2R(0)^2+2pqA+2d_ipB+2d_iqD.$$
     </div>
+    <p>The entire finite-rate Laplace transform is also explicit. For $z\ge0$, let
+    $F_i(\tau;z)=\mathbb E_i\exp[-zW_\tau]$. Feynman&ndash;Kac gives</p>
+    $$F'=\begin{pmatrix}-a-ze^{h\tau}&a\\b&-b\end{pmatrix}F,
+      \qquad F(0;z)=\mathbf1.$$
+    <p>When $h\ne0$, put $\alpha=b/h$, $\gamma=1+(a+b)/h$, and
+    $w_\tau=-(z/h)e^{h\tau}$. If $M(\alpha,\gamma,w)$ and $U(\alpha,\gamma,w)$ are Kummer&apos;s and Tricomi&apos;s
+    confluent hypergeometric functions, with primes denoting derivatives in $w$, define</p>
+    $$\mathcal Y(w)=
+      \frac{U'(w_0)M(w)-M'(w_0)U(w)}{M(w_0)U'(w_0)-M'(w_0)U(w_0)}.$$
+    <p>Eliminating $F_1$ shows that $F_2$ solves
+    $F_2''+(a+b+ze^{h\tau})F_2'+bze^{h\tau}F_2=0$, which becomes Kummer&apos;s equation. The initial conditions
+    $F_2(0)=1$, $F_2'(0)=0$ therefore give the exact transform</p>
+    <div class="equation-card">
+    $$F_2(T;z)=\mathcal Y(w_T),\qquad
+      F_1(T;z)=\mathcal Y(w_T)+\frac{hw_T}{b}\mathcal Y'(w_T).$$
+    </div>
+    <p>At isolated parameter values where this particular fundamental pair degenerates, the formula is read by
+    analytic continuation; uniqueness of the two-state system fixes the limit. For $h=0$ it reduces continuously to
+    $F(T;z)=\exp\{T(Q-z\operatorname{diag}(1,0))\}\mathbf1$. On the negative $w$ axis the individual principal-branch
+    $U$ terms can be complex, but their Wronskian combination is real. Finally, the full CEV-clock transform is</p>
+    $$\mathbb E_i e^{-zV}=e^{-z\sigma_2^2R(0)}F_i(T;z\Delta),$$
+    <p>with analytic continuation in the bounded-clock transform if $\Delta&lt;0$.</p>
+    <p>This is an exact transform benchmark for nonzero carry, not an atom-plus-Bessel density or a direct
+    one-dimensional price quadrature. Across positive carry $h=0.032$ and a negative-$h$ test, 14 state/argument
+    cases agree with an independently integrated Feynman&ndash;Kac system within $8\times10^{-15}$; the largest cancelled
+    imaginary part is below $10^{-94}$.</p>
     <p>Therefore the mean-clock bound remains valid after replacing $\Delta^2\operatorname{Var}(U_T)$ by
     $\Delta^2\operatorname{Var}(W_T)$. For the stationary clock
     $\bar v=(\sigma_2^2+\Delta p)R(0)$, the separate memory term becomes
@@ -821,11 +885,38 @@ def cev_page():
     $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
       \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
       R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
+    <h3>First non-Gaussian correction under stationarity</h3>
+    <p>The leading characteristic-function error is also explicit when the chain starts in stationarity. For
+    $0\le t_1\le t_2\le t_3\le T$, the eigenfunction identity and
+    $g^2=pq+(q-p)g$ give</p>
+    $$\mathbb E_\pi[g(y_{t_1})g(y_{t_2})g(y_{t_3})]
+      =pq(q-p)e^{-\kappa(t_3-t_1)}.$$
+    <p>Writing $A_{3,h}=\int_0^T e^{3h(T-t)}dt=(e^{3hT}-1)/(3h)$, symmetry of the cube therefore gives the exact
+    third-cumulant integral and its limit</p>
+    <div class="equation-card">
+    $$\operatorname{Cum}_{3,\pi}(W_T)=6pq(q-p)
+      \int_{0\le t_1\le t_2\le t_3\le T}
+      e^{h(3T-t_1-t_2-t_3)}e^{-\kappa(t_3-t_1)}\,dt_1dt_2dt_3,$$
+    $$\kappa^2\operatorname{Cum}_{3,\pi}(W_T)\longrightarrow6pq(q-p)A_{3,h}.$$
+    </div>
+    <p>The second display follows after $u=\kappa(t_2-t_1)$ and $v=\kappa(t_3-t_2)$ by dominated convergence.
+    The finite-state Feynman&ndash;Kac cumulant expansion then yields, for each fixed real $s$,</p>
+    $$\sqrt\kappa\left[
+      \mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
+      -e^{-pqA_hs^2}\bigr]
+      \longrightarrow-i s^3pq(q-p)A_{3,h}e^{-pqA_hs^2}.$$
+    <p>This correction is deliberately stationary-start: a specified initial regime has an additional boundary-layer
+    term of the same $\kappa^{-1/2}$ order after normalization. It is pointwise in $s$ and fixed in $T,h,p,q$, not a
+    uniform Berry&ndash;Esseen bound.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
     estimates agree to $10^{-7}$ and are rounded upward to $M_1=2.58$, $M_2=0.87$ for this illustrative plug-in
-    table:</p>
+    table. An independent complex Feynman&ndash;Kac calculation checks the weighted-clock Gaussian limit on 17
+    frequencies: for $\kappa=20,40,80,160,320,640$, the maximum characteristic-function errors are
+    $5.76,3.80,2.59,1.80,1.26,0.889$ times $10^{-2}$, with successive orders tending to $1/2$. After subtracting
+    the stationary first correction, the maximum scaled residual on $s=0.5,1,1.5$ falls from $3.20\times10^{-2}$ at
+    $\kappa=40$ to $7.72\times10^{-3}$ at $\kappa=640$, again with half-order convergence:</p>
 ''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(W_T)$', 'mean clock', 'stationary clock'], weighted_rows) + r'''
 
     <h2>Reduction to a linear system</h2>
