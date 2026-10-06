@@ -2596,12 +2596,15 @@ def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
 
 
 def verify_sharp_uniform_remainder_gap():
-    """Show that every strict subgap works, while the endpoint can fail.
+    """Show the exact endpoint criterion in the two-state first cumulant.
 
     Take a symmetric two-state chain with unit jump rates and common CIR
     mean-reversion speed two.  Starting in the high-drift state makes the
     regime contrast and the CIR relaxation decay at the same rate.  Their
-    convolution is therefore the exact resonant term ``t exp(-2t)``.
+    convolution is therefore the exact resonant term ``t exp(-2t)``.  Moving
+    either rate away from two removes the polynomial: the spectral endpoint
+    is then valid for this fixed model, although no endpoint bound is uniform
+    across a family containing the resonance.
     """
     q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
     pi = np.array([0.5, 0.5])
@@ -2655,6 +2658,66 @@ def verify_sharp_uniform_remainder_gap():
     assert strict_grid <= strict_bound * (1.0 + 2e-4)
     assert strict_grid >= strict_bound * (1.0 - 2e-3)
 
+    # For contrast rate lambda=2m and common CIR reversion kappa, the exact
+    # centered mean is forced by delta*exp(-lambda*t).  Away from resonance,
+    # subtracting the boundary delta/(kappa*lambda) leaves a sum of two pure
+    # exponentials, so the endpoint min(lambda,kappa) is attained.  Check one
+    # model on each side of the resonance against the independent polynomial
+    # semigroup used above.
+    nonresonant_rows = []
+    for speed in (0.7, 1.5):
+        contrast_rate = 2.0 * speed
+        reversion_rate = kappa[0]
+        boundary_nonresonant = delta / (
+            reversion_rate * contrast_rate
+        )
+        exact_nonresonant = np.array(
+            [
+                centered_integrated_cumulants(
+                    1, maturity, speed, q0, pi, c, kappa, variance,
+                    initial_regime=0,
+                    initial_variance=initial_variance,
+                )[0]
+                for maturity in maturities
+            ]
+        )
+        closed_nonresonant = delta / (
+            reversion_rate - contrast_rate
+        ) * (
+            (1.0 - np.exp(-contrast_rate * maturities))
+            / contrast_rate
+            - (1.0 - np.exp(-reversion_rate * maturities))
+            / reversion_rate
+        )
+        nonresonant_error = np.max(
+            np.abs(exact_nonresonant - closed_nonresonant)
+        )
+        assert nonresonant_error < 8e-15
+        nonresonant_remainder = delta / (
+            reversion_rate - contrast_rate
+        ) * (
+            -np.exp(-contrast_rate * maturities) / contrast_rate
+            + np.exp(-reversion_rate * maturities) / reversion_rate
+        )
+        endpoint_rate = min(contrast_rate, reversion_rate)
+        endpoint_values = np.exp(
+            endpoint_rate * maturities
+        ) * np.abs(nonresonant_remainder)
+        endpoint_limit_nonresonant = delta / (
+            endpoint_rate
+            * abs(reversion_rate - contrast_rate)
+        )
+        assert abs(
+            endpoint_values[-1] - endpoint_limit_nonresonant
+        ) < 2e-7
+        nonresonant_rows.append((
+            contrast_rate,
+            endpoint_rate,
+            nonresonant_error,
+            endpoint_values[-1],
+            endpoint_limit_nonresonant,
+        ))
+
     print("5j-sharp. strict-subgap exponential remainder")
     print(
         f"   exact resonant formula error {formula_error:.2e}; "
@@ -2668,7 +2731,19 @@ def verify_sharp_uniform_remainder_gap():
         f"   gamma={gamma:.1f} grid envelope {strict_grid:.10f}; "
         f"exact supremum {strict_bound:.10f} at T={optimizer:.1f}"
     )
-    return formula_error, endpoint_ratio[-1], endpoint_limit, strict_bound
+    for row in nonresonant_rows:
+        print(
+            f"   nonresonant contrast/reversion {row[0]:.1f}/2.0: "
+            f"formula error {row[2]:.2e}; endpoint rate {row[1]:.1f}; "
+            f"T=20 value/limit {row[3]:.10f}/{row[4]:.10f}"
+        )
+    return (
+        formula_error,
+        endpoint_ratio[-1],
+        endpoint_limit,
+        strict_bound,
+        nonresonant_rows,
+    )
 
 
 def verify_finite_moment_initial_jet(max_order=6):

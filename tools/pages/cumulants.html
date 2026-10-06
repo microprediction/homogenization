@@ -848,6 +848,27 @@
       statement by the endpoint exponent without an additional nonresonance assumption. The certificate takes
       $\bar c=0.04$, $\delta=0.02$, and $a_i=0.04$, so $2c_i\ge a_i$ in both regimes and this obstruction occurs
       inside the positive switched-CIR model.</p>
+    <p>For this two-state first cumulant the nonresonance condition is exact. Let the chain-contrast rate be
+      $\lambda=2m$, let the common CIR reversion be $\kappa$, retain
+      $c_\pm=\bar c\pm\delta$, and start in the high-drift regime at the averaged equilibrium
+      $v_0=\bar c/\kappa$. If $\lambda\ne\kappa$, direct solution gives</p>
+    <div class="equation-card">
+    $$\mathbb E\!\int_0^T\left(v_s-\frac{\bar c}{\kappa}\right)ds
+      =\frac{\delta}{\kappa-\lambda}
+      \left\{\frac{1-e^{-\lambda T}}{\lambda}
+      -\frac{1-e^{-\kappa T}}{\kappa}\right\},$$
+    $$\beta=\frac{\delta}{\kappa\lambda},\qquad
+      R(T)=\frac{\delta}{\kappa-\lambda}
+      \left\{-\frac{e^{-\lambda T}}{\lambda}
+      +\frac{e^{-\kappa T}}{\kappa}\right\}.$$
+    </div>
+    <p>Thus the endpoint exponent $\min\{\lambda,\kappa\}$ is valid for each fixed nonresonant model. As
+      $\lambda\to\kappa$, however, the endpoint constant diverges like
+      $|\lambda-\kappa|^{-1}$ and the continuous limit is exactly
+      $-\delta(1+\kappa T)e^{-\kappa T}/\kappa^2$. Consequently the strict-subgap theorem is sharp uniformly
+      over a parameter family that contains or approaches resonance; a uniform endpoint claim needs a quantitative
+      separation $|\lambda-\kappa|\ge\eta&gt;0$ (and the analogous separation of all stable blocks at higher
+      cumulant orders).</p>
     <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
       $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
       two-state model, $0.03264$ for its point start, $0.02246$ for the Pareto no-MGF start above, and
@@ -856,6 +877,10 @@
       $4.12\times10^{-13}$. A separate exact resonant certificate agrees with the displayed first-cumulant
       formula to $1.69\times10^{-16}$. At $T=20$, $e^{2T}|R(T)|/T=0.01025$, approaching the exact limit
       $\delta/2=0.01$; for $\gamma=1.9$, the global envelope is $0.0386741023$, attained at $T=9.5$.</p>
+    <p>The new nonresonant checks put the contrast rate on both sides of the CIR rate: at
+      $(\lambda,\kappa)=(1.4,2)$ and $(3,2)$ the closed form agrees with the independent polynomial semigroup
+      within $2.7\times10^{-16}$. At $T=20$, the endpoint-rescaled remainders are
+      $0.0238094214$ and $0.00999999999$, against the exact limits $1/42=0.0238095238$ and $0.01$.</p>
     <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>
@@ -1175,7 +1200,9 @@
       coefficients with a fixed-order $O(m^{-3})$ residual, and the Perron amplitude identifies its arbitrary-start
       boundary constant with a fixed-$m$ exponential remainder. At each fixed order, retaining the exact
       $m$-dependent slope and boundary gives a switching-rate-uniform exponential envelope at every exponent
-      strictly below the stable-block gap; the endpoint may fail by resonance. The triangular
+      strictly below the stable-block gap; the endpoint may fail by resonance. In the exact two-state first-moment
+      subfamily, the endpoint holds for a fixed nonresonant pair but its constant is not uniform as the chain and
+      CIR rates approach one another. The triangular
       finite-jet map transfers that statement to every independent-price return cumulant. These results provide no
       order-uniform constants or maturity-uniform finite-$1/m$ cumulant approximation. No price-level extension is
       claimed.</li>
