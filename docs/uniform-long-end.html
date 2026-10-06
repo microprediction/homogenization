@@ -831,6 +831,54 @@
       periodic-parabolic systems by
       <a href="https://doi.org/10.1016/j.na.2018.07.014">Ant&oacute;n and L&oacute;pez-G&oacute;mez (2019)</a>;
       here the one-period comparison proof is self-contained.</p>
+
+    <h3>A posteriori finite-horizon price enclosure</h3>
+    <p>The same residual controls more than the asymptotic exponent. It gives a direct, computable bracket for
+      the finite-horizon price without first knowing the exact Floquet profile. Let $x&gt;0$ be the terminal vector,
+      let $\nu&gt;0$ be the observation row, and define</p>
+    $$B(t)=\int_0^t\widehat b(s)\,ds,\qquad
+      \alpha=\min_i{x_i\over\widehat u_i(0)},\qquad
+      \beta=\max_i{x_i\over\widehat u_i(0)}.$$
+    <div class="equation-card">
+    <p><strong>Finite-horizon comparison theorem.</strong> With the relative-residual extrema
+      $\ell,L$ defined above, every $T\geq0$ satisfies</p>
+    $$\boxed{\quad
+      \alpha e^{B(T)-LT}\,\nu\widehat u(T)
+      \leq \nu U(T,0)x
+      \leq \beta e^{B(T)-\ell T}\,\nu\widehat u(T).
+      \quad}$$
+    <p>Equivalently, for the computable trial price
+      $\widehat P(T)=e^{B(T)}\nu\widehat u(T)$,</p>
+    $$\log\alpha-LT\leq
+      \log{\nu U(T,0)x\over\widehat P(T)}
+      \leq\log\beta-\ell T.$$
+    </div>
+    <p>Indeed, put $\psi(t)=e^{B(t)}\widehat u(t)$. The residual inequalities imply
+      $e^{-Lt}\psi(t)\leq U(t,0)\psi(0)\leq e^{-\ell t}\psi(t)$ by cooperative comparison.
+      Positivity of $U$ then propagates
+      $\alpha\psi(0)\leq x\leq\beta\psi(0)$ and proves the result. Unlike the exact-profile theorem,
+      this enclosure is not width-uniform in maturity: a residual of order $m^{-N-1}$ gives a vanishing
+      log-price bracket for $T=o(m^{N+1})$ and a generally nondegenerate bracket at the critical scale.
+      That growth is necessary, not a defect of the proof, because the omitted Floquet exponent is secular.</p>
+    <p>For the rational degree-16 trial below, take
+      $x=\mathbf1$, $\nu=(0.8,0.1,0.1)$, and $T=2\pi m^4$, an integer $m^4$ periods. The trial profile and
+      its zero-mean phase then return to their initial values. The table applies the exact rational
+      residual and normalization bounds; the middle column is an independent scaled-monodromy calculation.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>lower log-error bound</th><th>monodromy check</th><th>upper log-error bound</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;3.34588</td><td>&minus;0.00759928</td><td>3.33473</td></tr>
+        <tr><td>16</td><td>&minus;3.31503</td><td>&minus;0.00751997</td><td>3.30518</td></tr>
+        <tr><td>32</td><td>&minus;3.29975</td><td>&minus;0.00745717</td><td>3.29054</td></tr>
+        <tr><td>64</td><td>&minus;3.29218</td><td>&minus;0.00742048</td><td>3.28328</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The bracket remains $O(1)$ at $T\asymp m^4$, exactly as the critical-maturity theorem predicts for a
+      third-order exponent. On every subcritical family $T=o(m^4)$, both the residual contribution and the
+      $O(m^{-1})$ initial normalization vanish. The certificate therefore distinguishes an all-maturity
+      exact-Floquet approximation from a computable truncated approximation with a rigorously stated horizon.</p>
     <p>The construction meshes directly with the all-order recursion. For an exponent truncated through
       $m^{-N}$, use</p>
     $$\widehat u_{m,N}=\sum_{n=0}^{N+1}{u_n\over m^n},\qquad

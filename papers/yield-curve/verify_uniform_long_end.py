@@ -10,7 +10,9 @@ nonreversible three-state example.  A symmetric periodic certificate also
 checks that coefficient cancellations delay the critical maturity to the
 first nonzero omitted Floquet term.  Finally, a positive periodic trial
 profile supplies an a posteriori residual bracket for the exact Floquet
-exponent at a fixed, finite switching speed.
+exponent at a fixed, finite switching speed.  The same comparison argument
+also gives a fully computable finite-horizon price bracket, including the
+initial normalization against the positive trial profile.
 """
 
 from __future__ import annotations
@@ -2466,6 +2468,25 @@ def finite_chain_floquet_rational_enclosure(
             relative_upper_bounds.append(upper / profile_lower)
     relative_lower = min(relative_lower_bounds)
     relative_upper = max(relative_upper_bounds)
+    initial_profile = []
+    for component in range(3):
+        value = zero
+        for values in profile.values():
+            value = _rc_add(value, values[component])
+        assert value[1] == 0
+        assert value[0] > 0
+        initial_profile.append(value[0])
+    initial_lower_factor = min(
+        Fraction(1, 1) / value for value in initial_profile
+    )
+    initial_upper_factor = max(
+        Fraction(1, 1) / value for value in initial_profile
+    )
+    arbitrary_prior = (Fraction(4, 5), Fraction(1, 10), Fraction(1, 10))
+    trial_initial_price = sum(
+        weight * value
+        for weight, value in zip(arbitrary_prior, initial_profile)
+    )
     approximate_exponent = phase[0][0]
     formal_exponent = sum(
         Fraction.from_float(float(coefficients[order])) / rational_m**order
@@ -2483,6 +2504,13 @@ def finite_chain_floquet_rational_enclosure(
         "minimum_profile": _fraction_outward_float(
             min(profile_lower_bounds), lower=True
         ),
+        "initial_lower_factor": _fraction_outward_float(
+            initial_lower_factor, lower=True
+        ),
+        "initial_upper_factor": _fraction_outward_float(
+            initial_upper_factor, lower=False
+        ),
+        "trial_initial_price": float(trial_initial_price),
         "degree": degree,
     }
 
@@ -2592,6 +2620,17 @@ def finite_chain_periodic_errors(
 
     stationary_plain, stationary_slip = observation_errors(pi_zero)
     arbitrary_plain, arbitrary_slip = observation_errors(arbitrary_prior)
+    period_count = int(round(m**4))
+    assert abs(period_count - m**4) < 1e-12
+    modal_coefficients = np.linalg.solve(right, one)
+    multiplier_ratios = values / multiplier
+    multiplier_ratios[index] = 1.0
+    scaled_price = arbitrary_prior @ (
+        right
+        @ (multiplier_ratios ** period_count * modal_coefficients)
+    )
+    assert abs(scaled_price.imag) < 2e-12
+    assert scaled_price.real > 0
     return {
         "stationary_plain": stationary_plain,
         "stationary_slip": stationary_slip,
@@ -2599,6 +2638,7 @@ def finite_chain_periodic_errors(
         "arbitrary_slip": arbitrary_slip,
         "periodicity_error": float(periodicity_error),
         "exponent": exponent,
+        "arbitrary_scaled_price_m4": float(scaled_price.real),
     }
 
 
@@ -2740,6 +2780,36 @@ def check_general_periodic_generator() -> None:
     rational_radii = np.asarray([
         enclosure["radius"] for enclosure in rational_enclosures
     ])
+    critical_price_bounds = []
+    critical_price_errors = []
+    for m, result, enclosure in zip(
+        speeds, moving_results, rational_enclosures
+    ):
+        # An integer number m^4 of periods makes the trial profile and its
+        # zero-mean phase return exactly to their initial values.  A scaled
+        # eigendecomposition of the independently integrated monodromy retains
+        # every complementary Floquet mode without underflow.  It is not used
+        # to form the bounds.
+        maturity = PERIOD * m**4
+        lower = (
+            np.log(enclosure["initial_lower_factor"])
+            + maturity * enclosure["lower_error"]
+        )
+        upper = (
+            np.log(enclosure["initial_upper_factor"])
+            + maturity * enclosure["upper_error"]
+        )
+        exact_error = (
+            maturity
+            * (result["exponent"] - enclosure["approximate_exponent"])
+            + np.log(
+                result["arbitrary_scaled_price_m4"]
+                / enclosure["trial_initial_price"]
+            )
+        )
+        assert lower < exact_error < upper
+        critical_price_bounds.append((float(lower), float(upper)))
+        critical_price_errors.append(float(exact_error))
     residual_rate = float(np.log2(
         residual_radii[-2] / residual_radii[-1]
     ))
@@ -2908,6 +2978,17 @@ def check_general_periodic_generator() -> None:
         f"{64.0**4 * rational_radii[-1]:.10e}; minimum certified profile "
         f"{rational_enclosures[-1]['minimum_profile']:.10e}"
     )
+    print("finite-horizon rational-comparison bracket at T=2*pi*m^4")
+    print(
+        " m          lower log error      monodromy check"
+        "          upper log error"
+    )
+    for m, exact, (lower, upper) in zip(
+        speeds, critical_price_errors, critical_price_bounds
+    ):
+        print(
+            f"{m:3.0f}   {lower:18.9e}   {exact:18.9e}   {upper:18.9e}"
+        )
 
 
 def main() -> None:
