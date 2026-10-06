@@ -99,6 +99,12 @@
     <p>The inequality is strict exactly when the positive-cash-flow loading vectors are not collinear. Thus unequal
       G2++ reversion speeds and at least two distinct payment maturities give a strictly convex boundary, while $a=b$
       recovers the one-factor Jamshidian limit.</p>
+    <p>There is also an exact local variance identity. Set
+      $\alpha_k=d_kq_k/\sum_jd_jq_j$, $r_k=p_k/q_k$ and
+      $\bar r_\alpha=\sum_k\alpha_kr_k=-\zeta'(x)$. Then</p>
+    $$\zeta''(x)=\sum_k\alpha_kq_k(r_k-\bar r_\alpha)^2.$$
+    <p>Thus the boundary bends precisely where multiple loading directions remain relevant; its second derivative is
+      a positive weighted dispersion, not merely a sign calculation.</p>
     <h3>The global boundary and its exact wings</h3>
     <p>Convexity is global and the two wings are determined by different cash flows. Put
       $r_k=p_k/q_k$, $r_{\min}=\min_kr_k$ and $r_{\max}=\max_kr_k$. Since</p>
@@ -112,6 +118,14 @@
     <p>Then the exact asymptotes are</p>
     $$\zeta(x)+r_{\min}x\longrightarrow c_R\quad(x\to+\infty),\qquad
       \zeta(x)+r_{\max}x\longrightarrow c_L\quad(x\to-\infty).$$
+    <p>Combining these limiting slopes with convexity gives the exact global slope-turning identities. If
+      $\Gamma=\{(x,\zeta(x)):x\in\mathbb R\}$, then</p>
+    $$\int_{-\infty}^{\infty}\zeta''(x)\,dx=r_{\max}-r_{\min},\qquad
+      \int_{\Gamma}\kappa_{\rm geom}\,ds
+      =\arctan r_{\max}-\arctan r_{\min}.$$
+    <p>The second formula is the Euclidean turning angle of the graph. The distribution of bending depends on the
+      cash-flow weights and strike, but its total second-derivative mass and total turning angle depend only on the
+      two extreme loading directions.</p>
     <p>To prove this, substitute $z=-r_{\min}x+c$ in $C(x,z)=K$. Terms outside $I_R$ acquire the factor
       $\exp[-q_k(r_k-r_{\min})x]$ and vanish locally uniformly in $c$; the limiting left-hand side is continuous,
       strictly decreasing and crosses $K$ once. Monotonicity therefore carries its root to $c_R$. The left wing is
@@ -142,7 +156,8 @@
       magnitudes recover exponential rates $0.287766603132$ and $0.996923880456$, respectively. At $x=20$ the
       right-wing error is $3.496798408893\times10^{-4}$ against the rigorous bound
       $3.497962883732\times10^{-4}$; at $x=-10$ the left-wing error is $1.622785325623\times10^{-3}$ against
-      $1.631497250470\times10^{-3}$.</p>
+      $1.631497250470\times10^{-3}$. Direct curvature quadrature on $[-50,100]$ gives
+      $0.302393339554306$ against the exact extreme-ratio spread $0.302393339554316$.</p>
     <p><a href="./bibliography.html#ChoiShin2016">Choi and Shin (2016)</a> likewise formulate exact pricing in
       multi-factor Gaussian term-structure models by root-finding on the nonlinear boundary and integrating in the
       remaining dimensions, alongside a tangent-hyperplane approximation. Here the two-factor monotonicity makes

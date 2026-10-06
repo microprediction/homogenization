@@ -3,9 +3,9 @@
 A single zero-coupon bond at option expiry depends on one Gaussian linear
 combination.  A coupon bond generally does not: distinct cash-flow maturities
 have non-collinear G2++ loading vectors.  This script certifies the determinant,
-the strict convexity and wing asymptotics of the exercise boundary, an exact
-conditional-Gaussian one-dimensional pricing formula, and its reduction to the
-one-factor formula.
+the strict convexity, curvature mass and wing asymptotics of the exercise
+boundary, an exact conditional-Gaussian one-dimensional pricing formula, and
+its reduction to the one-factor formula.
 """
 
 from math import exp, expm1, log, pi, sqrt
@@ -60,6 +60,27 @@ def boundary_derivatives(x, z, loadings, weights=None):
         for term, (p, q) in zip(terms, loadings)
     ) / qz
     return slope, curvature
+
+
+def curvature_variance_identity(x, z, loadings, weights=None):
+    """Return the slope and the weighted-variance form of zeta''(x)."""
+    if weights is None:
+        weights = [1.0] * len(loadings)
+    terms = [w * exp(-p * x - q * z)
+             for w, (p, q) in zip(weights, loadings)]
+    denominator = sum(term * q
+                      for term, (_, q) in zip(terms, loadings))
+    probabilities = [term * q / denominator
+                     for term, (_, q) in zip(terms, loadings)]
+    ratios = [p / q for p, q in loadings]
+    ratio_mean = sum(probability * ratio
+                     for probability, ratio in zip(probabilities, ratios))
+    curvature = sum(
+        probability * q * (ratio - ratio_mean) ** 2
+        for probability, (_, q), ratio
+        in zip(probabilities, loadings, ratios)
+    )
+    return -ratio_mean, curvature
 
 
 def unique_wing_parameters(loadings, weights, strike):
@@ -205,6 +226,11 @@ def main():
     slope, implicit_curvature = boundary_derivatives(0.0, 0.0, loadings)
     assert slope < 0
     assert abs(implicit_curvature - curvature) < 1e-14
+    variance_slope, variance_curvature = curvature_variance_identity(
+        0.0, 0.0, loadings
+    )
+    assert abs(variance_slope - slope) < 1e-14
+    assert abs(variance_curvature - curvature) < 1e-14
 
     xs = (-0.1, 0.0, 0.1)
     zs = tuple(boundary_z(x, loadings) for x in xs)
@@ -265,6 +291,41 @@ def main():
     assert abs(observed_right_rate - right_rate) < 5e-6
     assert abs(observed_left_rate - left_rate) < 2e-5
 
+    # The exact wings turn strict convexity into a global invariant.  Since
+    # zeta' tends to -r_max on the left and -r_min on the right,
+    # integral_R zeta'' = r_max-r_min.  The finite interval below captures the
+    # total mass to machine precision and independently checks the fundamental
+    # theorem identity against its endpoint slopes.
+    curvature_left, curvature_right = -50.0, 100.0
+
+    def curvature_integrand(x):
+        z = boundary_z(x, loadings, weights, strike)
+        return boundary_derivatives(x, z, loadings, weights)[1]
+
+    curvature_mass, curvature_quadrature_error = quad(
+        curvature_integrand,
+        curvature_left,
+        curvature_right,
+        epsabs=1e-13,
+        epsrel=1e-13,
+        limit=300,
+    )
+    left_slope = boundary_derivatives(
+        curvature_left,
+        boundary_z(curvature_left, loadings, weights, strike),
+        loadings,
+        weights,
+    )[0]
+    right_slope = boundary_derivatives(
+        curvature_right,
+        boundary_z(curvature_right, loadings, weights, strike),
+        loadings,
+        weights,
+    )[0]
+    ratio_spread = left_ratio - right_ratio
+    assert abs(curvature_mass - (right_slope - left_slope)) < 1e-13
+    assert abs(curvature_mass - ratio_spread) < 2e-14
+
     mean_x, mean_z = 0.01, -0.015
     sigma_x, sigma_z, rho = 0.25, 0.20, -0.35
     conditional_price = conditional_gaussian_price(
@@ -307,6 +368,9 @@ def main():
           f"{left_rate:.12f}", f"{observed_left_rate:.12f}")
     print("left-wing error/bound at x=-10:",
           f"{left_errors[0]:.12e}", f"{left_bounds[0]:.12e}")
+    print("curvature mass / extreme-ratio spread / quadrature error:",
+          f"{curvature_mass:.12f}", f"{ratio_spread:.12f}",
+          f"{curvature_quadrature_error:.3e}")
     print("conditional one-dimensional price:", f"{conditional_price:.12f}")
     print("independent nested-quadrature price:", f"{numerical_price:.12f}")
     print("pricing discrepancy:", f"{abs(conditional_price - numerical_price):.3e}")
