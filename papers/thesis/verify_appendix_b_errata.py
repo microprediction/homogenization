@@ -11,7 +11,9 @@ factor.  Finally, it checks that deterministic shifts leave every bond-forward
 measure unchanged and therefore preserve Black implied volatility after the
 corresponding deterministic rescaling of forward and strike.  It also checks
 the sharp limitation: a positive bond-basket (in particular annuity) measure
-is shift-invariant only when all of its maturity factors coincide.
+is shift-invariant only when all of its maturity factors coincide.  The
+certificate also checks the sharp total-variation modulus that quantifies the
+departure from invariance when those factors differ.
 """
 
 from __future__ import annotations
@@ -220,6 +222,39 @@ def basket_measure_state_distribution(
     return base, shifted, maturity_factors
 
 
+def basket_measure_tv_bound(maturity_factors: np.ndarray) -> float:
+    """Sharp TV envelope from the range of positive maturity factors.
+
+    If ``a`` and ``b`` are the smallest and largest factors, respectively,
+    the shifted/base likelihood ratio is a normalized random variable taking
+    values in ``[a, b]``.  Its total variation from one is therefore at most
+    ``(sqrt(b/a) - 1) / (sqrt(b/a) + 1)``.
+    """
+    if np.min(maturity_factors) <= 0.0:
+        raise ValueError("maturity factors must be strictly positive")
+    ratio = float(np.max(maturity_factors) / np.min(maturity_factors))
+    root = math.sqrt(ratio)
+    return (root - 1.0) / (root + 1.0)
+
+
+def sharp_tv_example(low: float, high: float) -> tuple[float, float]:
+    """Two-point likelihood-ratio law attaining the TV envelope exactly."""
+    if not 0.0 < low <= high:
+        raise ValueError("require 0 < low <= high")
+    low_root, high_root = math.sqrt(low), math.sqrt(high)
+    base = np.array(
+        [
+            high_root / (low_root + high_root),
+            low_root / (low_root + high_root),
+        ]
+    )
+    ratios = np.array([low, high])
+    mean_ratio = float(base @ ratios)
+    shifted = base * ratios / mean_ratio
+    tv = 0.5 * float(np.sum(np.abs(shifted - base)))
+    return tv, basket_measure_tv_bound(ratios)
+
+
 def normal_cdf(value: float) -> float:
     """Standard normal distribution function."""
     return 0.5 * (1.0 + math.erf(value / math.sqrt(2.0)))
@@ -383,6 +418,7 @@ def main() -> None:
     largest_implied_vol_error = 0.0
     largest_equal_factor_basket_error = 0.0
     largest_basket_measure_change = 0.0
+    largest_basket_bound_violation = 0.0
     positive_option_cases = 0
 
     for _ in range(500):
@@ -493,9 +529,17 @@ def main() -> None:
                 weights,
             )
         )
+        basket_tv = 0.5 * float(
+            np.sum(np.abs(base_basket_law - shifted_basket_law))
+        )
         largest_basket_measure_change = max(
             largest_basket_measure_change,
-            0.5 * float(np.sum(np.abs(base_basket_law - shifted_basket_law))),
+            basket_tv,
+        )
+        basket_bound = basket_measure_tv_bound(maturity_factors)
+        largest_basket_bound_violation = max(
+            largest_basket_bound_violation,
+            basket_tv - basket_bound,
         )
         if not np.allclose(maturity_factors, maturity_factors[0]):
             assert np.max(np.abs(base_basket_law - shifted_basket_law)) > 1e-12
@@ -529,6 +573,7 @@ def main() -> None:
     assert largest_implied_vol_error < 3e-12
     assert largest_equal_factor_basket_error < 3e-15
     assert largest_basket_measure_change > 1e-5
+    assert largest_basket_bound_violation < 3e-15
 
     # The constant-rate example from Issue #69: t=0, T=tau=1,
     # tau+Delta=2, K=0, beta X=0, and deterministic shift 5%.
@@ -591,6 +636,13 @@ def main() -> None:
     )
     annuity_tv = 0.5 * float(np.sum(np.abs(annuity_base - annuity_shifted)))
     assert annuity_tv > 0.002
+    annuity_tv_bound = basket_measure_tv_bound(annuity_factors)
+    assert annuity_tv < annuity_tv_bound
+
+    # The envelope is sharp given only the factor range.  A two-point base
+    # law with mean likelihood ratio sqrt(low * high) attains it exactly.
+    sharp_tv, sharp_bound = sharp_tv_example(0.4, 2.5)
+    assert abs(sharp_tv - sharp_bound) < 3e-16
 
     print("Appendix B deterministic-shift pricing errata")
     print(f"maximum caplet/floorlet identity error: {largest_option_error:.3e}")
@@ -628,9 +680,18 @@ def main() -> None:
         f"{largest_basket_measure_change:.9f}"
     )
     print(
+        "largest basket TV-bound violation: "
+        f"{largest_basket_bound_violation:.3e}"
+    )
+    print(
+        "sharp two-point TV envelope: "
+        f"observed {sharp_tv:.9f}, bound {sharp_bound:.9f}"
+    )
+    print(
         "annuity counterexample: factors "
         f"{annuity_factors}, base law {annuity_base}, "
-        f"shifted law {annuity_shifted}, TV {annuity_tv:.9f}"
+        f"shifted law {annuity_shifted}, TV {annuity_tv:.9f}, "
+        f"bound {annuity_tv_bound:.9f}"
     )
     print(
         "constant-rate caplet: "
@@ -653,7 +714,7 @@ def main() -> None:
         "PASS: maturity-specific shift factors and negative-exponent "
         "change of numeraire, including nonlinear multibond payoffs and "
         "forward-measure/implied-vol invariance, with the exact limitation "
-        "for bond-basket numeraires"
+        "and sharp TV modulus for bond-basket numeraires"
     )
 
 

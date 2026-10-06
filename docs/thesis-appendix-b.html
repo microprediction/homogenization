@@ -180,6 +180,35 @@
       dates, so its measure generally changes; there is no blanket shift-invariance theorem for swaption
       distributions or implied volatilities.</p>
 
+    <h3>A sharp finite sensitivity bound</h3>
+    <p>The qualitative failure of invariance is nevertheless uniformly controlled. Put
+      $a_s=\min_j A(s,u_j)$, $b_s=\max_j A(s,u_j)$, and $\kappa_s=b_s/a_s$. On
+      $\mathcal F_s$, let $\nu=Q^{N,0}$ and $\mu=Q^{N,\phi}$. Then</p>
+    <div class="equation-card">
+    $$\lVert\mu-\nu\rVert_{\mathrm{TV}}
+      \le \frac{\sqrt{\kappa_s}-1}{\sqrt{\kappa_s}+1}
+      =\tanh\!\left(\frac14\log\kappa_s\right).$$
+    </div>
+    <p><strong>Proof.</strong> The random ratio
+      $R_s=N_s^\phi/N_s^0$ is a convex combination of the maturity factors, so
+      $a_s\le R_s\le b_s$. Change of numeraire gives
+      $d\mu/d\nu=R_s/m_s$, where $m_s=\mathbb E_\nu R_s$. Hence</p>
+    $$\lVert\mu-\nu\rVert_{\mathrm{TV}}
+      =\frac{\mathbb E_\nu[(R_s-m_s)^+]}{m_s}
+      \le\frac{(b_s-m_s)(m_s-a_s)}{m_s(b_s-a_s)}.$$
+    <p>The last expression is maximized at $m_s=\sqrt{a_sb_s}$ and gives the displayed bound. A two-point
+      law supported at $a_s,b_s$ with mean $\sqrt{a_sb_s}$ attains equality, so no smaller bound can follow
+      from the factor range alone. This is the same hyperbolic-tangent profile as the classical projective
+      contraction coefficient of <a href="./bibliography.html#Birkhoff1957">Birkhoff (1957)</a>.</p>
+    <p>If $L_j=\int_s^{u_j}\phi(v)\,dv$ and
+      $\Delta_s=\max_jL_j-\min_jL_j$, then $\log\kappa_s=\Delta_s$. Therefore</p>
+    $$\lVert\mu-\nu\rVert_{\mathrm{TV}}
+      \le\tanh(\Delta_s/4)\le\Delta_s/4.$$
+    <p>For any bounded payoff $H$, this also yields
+      $|\mathbb E_\mu H-\mathbb E_\nu H|
+      \le\operatorname{osc}(H)\tanh(\Delta_s/4)$. Thus the annuity-measure effect is exactly zero when the
+      factors agree and is Lipschitz in their accumulated-shift spread when they nearly agree.</p>
+
     <h2>Corrected contract formulas</h2>
     <h3>Caplets and floorlets</h3>
     <p>Take $t\le T\le\tau&lt;\tau+\Delta$, put $q=1+\Delta K$, and define
@@ -220,8 +249,9 @@
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/thesis/verify_appendix_b_errata.py">certificate</a>
       checks the caplet and floorlet identities on 500 exact finite-state trees, the nonlinear three-bond
       transport identity, forward-law and normalized-option invariance, transformed Black implied-volatility
-      invariance, and the common-factor basket criterion. It also supplies an annuity-measure counterexample
-      with total-variation distance $0.00289904$. Source-page evidence is tracked in
+      invariance, the common-factor basket criterion, and the sharp total-variation envelope. It also supplies
+      an annuity-measure counterexample with total-variation distance $0.00289904$ and verifies the bound on
+      500 random trees. Source-page evidence is tracked in
       <a href="https://github.com/microprediction/homogenization/issues/69">Issue #69</a>.</p>
   </main>
 

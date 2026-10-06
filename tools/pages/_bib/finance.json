@@ -15,7 +15,7 @@
   "title": "A deterministic-shift extension of analytically-tractable and time-homogeneous short-rate models",
   "venue": "Finance and Stochastics 5(3):369-387",
   "doi": "10.1007/PL00013541",
-  "annotation": "Develops deterministic-shift extensions of tractable short-rate models and derives analytical formulas for bonds and bond options; the payoff-transport theorem on the bond-options page isolates the underlying maturity-by-maturity scaling rule."
+  "annotation": "Develops deterministic-shift extensions of tractable short-rate models and derives analytical formulas for bonds and bond options; the Appendix B erratum isolates the underlying maturity-by-maturity scaling rule."
  },
  {
   "key": "GemanElKarouiRochet1995",
@@ -25,5 +25,14 @@
   "venue": "Journal of Applied Probability 32(2):443-458",
   "doi": "10.2307/3215299",
   "annotation": "Establishes the general change-of-numeraire theorem and forward measures used here to fix the sign and normalization of the futures recursion."
+ },
+ {
+  "key": "Birkhoff1957",
+  "authors": "Birkhoff, G.",
+  "year": 1957,
+  "title": "Extensions of Jentzsch's theorem",
+  "venue": "Transactions of the American Mathematical Society 85(1):219-227",
+  "doi": "10.1090/S0002-9947-1957-0087058-6",
+  "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
  }
 ]
