@@ -219,29 +219,33 @@
     $$L_i=\int_0^{T_{\rm obs}}\mathbf1_{\{Y_s=i\}}\,ds,
       \qquad N_{ij}=\#\{i\to j\hbox{ jumps on }[0,T_{\rm obs}]\},$$
     <p>and set $\widehat q_{ij}=N_{ij}/L_i$ off the diagonal, with diagonal entries chosen to make row sums zero.
-      Assume a known rate cap $q_{ij}\le\bar q$ for every $i\ne j$, and fix before observing the path a finite
-      set $\Theta\subset(0,\infty)$. For each counted transition,</p>
+      Fix before observing the path a finite set $\Theta\subset(0,\infty)$. For each counted transition,</p>
     <div class="equation-card">
     $$\exp\!\left\{\pm\theta(N_{ij}-q_{ij}L_i)
       -q_{ij}L_i(e^{\pm\theta}-1\mp\theta)\right\}$$
     </div>
     <p>is a mean-one exponential martingale, the multiplicative-intensity construction underlying
-      <a href="./bibliography.html#Aalen1978">Aalen's counting-process inference</a>. Since
-      $e^{-\theta}-1+\theta\le e^\theta-1-\theta$, Markov's inequality and a union bound imply the following
-      simultaneous, data-adaptive interval. Put</p>
-    $$x=\log{2n(n-1)|\Theta|\over\delta},\qquad
-      r_i=\min_{\theta\in\Theta}\left\{
-      {\bar q(e^\theta-1-\theta)\over\theta}
-      +{x\over\theta L_i}\right\}.$$
-    <p>Then, with probability at least $1-\delta$, every off-diagonal error satisfies
-      $|\widehat q_{ij}-q_{ij}|\le r_i$. No independence between the transition counts is used.</p>
-    <p>The diagonal error in row $i$ is at most $(n-1)r_i$. Hence two computable matrix bounds are</p>
+      <a href="./bibliography.html#Aalen1978">Aalen's counting-process inference</a>. Markov's inequality applied at
+      both signs and a union bound yield intervals without any known rate cap. Put
+      $x=\log\{2n(n-1)|\Theta|/\delta\}$ and, for $i\ne j$,</p>
+    <div class="equation-card">
+    $$\ell_{ij}=\max\left\{0,\max_{\theta\in\Theta}
+      {\theta N_{ij}-x\over(e^\theta-1)L_i}\right\},\qquad
+      u_{ij}=\min_{\theta\in\Theta}
+      {x+\theta N_{ij}\over(1-e^{-\theta})L_i}.$$
+    </div>
+    <p>Then, simultaneously for every directed edge,</p>
+    $$\Pr\{\ell_{ij}\le q_{ij}\le u_{ij}\text{ for all }i\ne j\}\ge1-\delta.$$
+    <p>No independence between transition counts is assumed. Define the observable entry radius</p>
+    $$a_{ij}=\max\{|\widehat q_{ij}-\ell_{ij}|,
+      |u_{ij}-\widehat q_{ij}|\},\qquad s_i=\sum_{j\ne i}a_{ij}.$$
+    <p>The diagonal error in row $i$ is at most $s_i$. Hence the Frobenius and induced-norm calculations give</p>
     <div class="equation-card">
     $$\|\widehat Q-Q\|_2\le\varepsilon_{\rm path}:=\min\left\{
-      \sqrt{n(n-1)\sum_i r_i^2},
+      \sqrt{\sum_{i\ne j}a_{ij}^2+\sum_i s_i^2},
       \sqrt{B_1B_\infty}\right\},$$
-    $$B_\infty=2(n-1)\max_i r_i,\qquad
-      B_1=\max_j\left\{(n-1)r_j+\sum_{i\ne j}r_i\right\}.$$
+    $$B_\infty=2\max_i s_i,\qquad
+      B_1=\max_j\left\{s_j+\sum_{i\ne j}a_{ij}\right\}.$$
     </div>
     <p>On the same event, substituting $\varepsilon_{\rm path}$ into the preceding a posteriori theorem gives a
       $1-\delta$ confidence interval for the population skew energy whenever the estimated generator is irreducible
@@ -249,11 +253,12 @@
       finite radius for that row.</p>
     <p>The certificate checks the exponential-martingale identity independently by a tilted Feynman&ndash;Kac matrix.
       On one seeded four-state path with 221,183 jumps and minimum state occupation 20,901.343, the actual generator
-      error is $0.027272$ against radius $0.260095$; the actual skew-resolvent error is $0.000755$ against radius
-      $4.916236$. The true energy $0.047000719$ lies in the certified interval $[0,26.351043348]$. The example also
+      error is $0.027272$ against the rate-cap-free radius $0.147442$; the preliminary capped-rate construction gave
+      $0.260095$. The actual skew-resolvent error is $0.000755$ against radius $1.767794$. The true energy
+      $0.047000719$ lies in the certified interval $[0,3.939766863]$. The example also
       makes the conservatism transparent: this is a valid finite-path certificate, not a sharp inference method.</p>
-    <p>The result requires continuous full observation and an externally justified rate cap. It is not a theorem
-      for hidden states, discrete sampling, estimated state labels, or misspecified generators, and it does not turn
+    <p>The result requires continuous full observation but no rate cap. It is not a theorem for hidden states,
+      discrete sampling, estimated state labels, or misspecified generators, and it does not turn
       marginal random-probe guarantees into conditional guarantees for prescribed features.</p>
     <h3>Bounded sign probes: the same finite guarantee, not almost-sure detection</h3>
     <p>Gaussian coordinates are convenient but not necessary for the finite certificate. Fix any orthonormal basis

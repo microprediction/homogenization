@@ -18,8 +18,9 @@ A finite group-inverse perturbation calculation then propagates generator and
 stationary-law errors into a deterministic interval for the population skew
 energy.  For a fully observed finite-state path, exponential counting-
 martingale bounds supply the missing generator radius and hence an end-to-end
-high-probability interval.  This last result assumes a known off-diagonal rate
-cap and does not cover hidden or discretely observed states.
+high-probability interval.  A simpler preliminary radius assumes a known
+off-diagonal rate cap; direct martingale inversion removes that assumption.
+Neither version covers hidden or discretely observed states.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -338,6 +339,79 @@ def observed_path_generator_radius(
     }
 
 
+def observed_path_generator_interval(
+    occupations, counts, failure_probability, theta_grid
+):
+    """Invert counting martingales into a rate-cap-free generator radius.
+
+    The finite positive theta grid is fixed before observing the fully
+    observed path.  With probability at least 1-failure_probability, every
+    true off-diagonal rate lies in the returned entrywise interval and the
+    returned epsilon bounds ||q_hat-q||_2.
+    """
+    occupations = np.asarray(occupations, dtype=float)
+    counts = np.asarray(counts, dtype=float)
+    theta_grid = np.asarray(theta_grid, dtype=float)
+    n = len(occupations)
+    if counts.shape != (n, n):
+        raise ValueError("counts must be square with one row per state")
+    if np.min(occupations) <= 0.0:
+        raise ValueError("every state must have positive observed occupation")
+    if not 0.0 < failure_probability < 1.0:
+        raise ValueError("failure_probability must lie in (0,1)")
+    if len(theta_grid) == 0 or np.min(theta_grid) <= 0.0:
+        raise ValueError("theta_grid must contain positive tilts")
+
+    q_hat = counts / occupations[:, None]
+    np.fill_diagonal(q_hat, 0.0)
+    np.fill_diagonal(q_hat, -q_hat.sum(axis=1))
+    log_multiplier = math.log(
+        2.0 * n * (n - 1) * len(theta_grid) / failure_probability
+    )
+    lower = np.zeros((n, n))
+    upper = np.zeros((n, n))
+    entry_radii = np.zeros((n, n))
+    for i, occupation in enumerate(occupations):
+        for j in range(n):
+            if i == j:
+                continue
+            count = counts[i, j]
+            lower_candidates = (
+                theta_grid * count - log_multiplier
+            ) / ((np.exp(theta_grid) - 1.0) * occupation)
+            upper_candidates = (
+                log_multiplier + theta_grid * count
+            ) / ((1.0 - np.exp(-theta_grid)) * occupation)
+            lower[i, j] = max(0.0, np.max(lower_candidates))
+            upper[i, j] = np.min(upper_candidates)
+            if lower[i, j] > upper[i, j]:
+                raise ValueError("simultaneous rate confidence set is empty")
+            entry_radii[i, j] = max(
+                abs(q_hat[i, j] - lower[i, j]),
+                abs(upper[i, j] - q_hat[i, j]),
+            )
+
+    row_sums = entry_radii.sum(axis=1)
+    frobenius_radius = math.sqrt(
+        np.sum(entry_radii**2) + np.sum(row_sums**2)
+    )
+    infinity_radius = 2.0 * np.max(row_sums)
+    column_radii = row_sums + entry_radii.sum(axis=0)
+    one_radius = np.max(column_radii)
+    induced_radius = math.sqrt(one_radius * infinity_radius)
+    epsilon = min(frobenius_radius, induced_radius)
+    return {
+        "q_hat": q_hat,
+        "epsilon": epsilon,
+        "frobenius_radius": frobenius_radius,
+        "induced_radius": induced_radius,
+        "lower": lower,
+        "upper": upper,
+        "entry_radii": entry_radii,
+        "log_multiplier": log_multiplier,
+    }
+
+
 def simulate_ctmc_path(q, horizon, rng, initial_state=0):
     """Simulate exact holding times and transition counts on [0,horizon]."""
     n = len(q)
@@ -393,10 +467,19 @@ def observed_path_concentration_check():
     rng = np.random.default_rng(20261006)
     occupations, counts = simulate_ctmc_path(q, 100_000.0, rng)
     theta_grid = np.geomspace(0.002, 2.0, 61)
-    path = observed_path_generator_radius(
+    capped_path = observed_path_generator_radius(
         occupations, counts, rate_cap, 0.05, theta_grid
     )
+    path = observed_path_generator_interval(
+        occupations, counts, 0.05, theta_grid
+    )
     q_hat = path["q_hat"]
+    off_diagonal = ~np.eye(n, dtype=bool)
+    rate_interval_violation = max(
+        np.max(path["lower"][off_diagonal] - q[off_diagonal]),
+        np.max(q[off_diagonal] - path["upper"][off_diagonal]),
+        0.0,
+    )
     actual_generator_error = np.linalg.norm(q_hat - q, 2)
     posterior = posterior_skew_bound(q_hat, path["epsilon"])
     _, _, true_skew = canonical_skew_resolvent(q)
@@ -409,15 +492,19 @@ def observed_path_concentration_check():
     upper = (math.sqrt(energy_hat) + radius) ** 2
 
     assert max(martingale_errors) < 2e-15
+    assert rate_interval_violation == 0.0
     assert actual_generator_error <= path["epsilon"]
+    assert path["epsilon"] < capped_path["epsilon"]
     assert actual_skew_error <= radius
     assert lower <= energy <= upper
     return {
         "maximum_martingale_error": max(martingale_errors),
+        "maximum_rate_interval_violation": rate_interval_violation,
         "jump_count": int(np.sum(counts)),
         "minimum_occupation": np.min(occupations),
         "actual_generator_error": actual_generator_error,
         "generator_radius": path["epsilon"],
+        "capped_generator_radius": capped_path["epsilon"],
         "actual_generator_error_ratio": actual_generator_error
         / path["epsilon"],
         "actual_skew_error": actual_skew_error,
@@ -1158,9 +1245,10 @@ def main():
         f"{path['maximum_martingale_error']:.2e}"
     )
     print(
-        f"   generator error/radius/ratio "
+        f"   generator error/rate-free radius/capped radius "
         f"{path['actual_generator_error']:.6f}/"
         f"{path['generator_radius']:.6f}/"
+        f"{path['capped_generator_radius']:.6f}; ratio "
         f"{path['actual_generator_error_ratio']:.6f}"
     )
     print(
