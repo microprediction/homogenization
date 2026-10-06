@@ -127,8 +127,10 @@
         Median block means turn the corresponding finite-variance energy estimator into an explicit
         $O(\varepsilon^{-2}\log(1/\delta))$ relative-error confidence certificate for the population skew-resolvent
         energy. Given a supplied operator-norm error radius for an estimated generator, an estimator-centered
-        group-inverse theorem propagates that error into a fully computable interval for the population energy.
-        This is a deterministic plug-in guarantee, not yet a finite-trajectory concentration theorem.
+        group-inverse theorem propagates that error into a fully computable interval for the population energy;
+        for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale
+        bounds supply that radius from holding times and transition counts under a known off-diagonal rate cap.
+        This finite-path guarantee does not cover hidden or discretely observed regimes.
         The dimension-free constant $6$ is asymptotically sharp, but sign probes can return zero with positive
         probability and therefore are not almost-sure identifiers.</em>
       </li>

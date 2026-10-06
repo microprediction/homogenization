@@ -146,9 +146,8 @@
       relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
       half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees
       concern finitely many randomized probes of the exact population
-      operator $J$. They are not conditional guarantees for prescribed features. The next result controls the
-      deterministic plug-in error from an estimated generator, but a finite-trajectory test still needs a
-      concentration bound for that generator estimator.</p>
+      operator $J$. They are not conditional guarantees for prescribed features. The next two results separate the
+      deterministic plug-in map from a finite-path concentration bound for a fully observed chain.</p>
     <h3>Deterministic stability under generator estimation</h3>
     <p>For a row-convention irreducible $n$-state generator $Q$, write $\pi Q=0$, $P=\mathbf1\pi$ and</p>
     $$G=Q^\#=(Q-P)^{-1}+P.$$
@@ -215,6 +214,47 @@
       $0.432918$ for the stationary law, and $0.054585$ for the group inverse. The maximum Neumann ratio is
       $0.056648$, the estimator-centered stationary identity holds within $5.41\times10^{-16}$, and every energy
       interval contains the population value. The bound is conservative and does not claim sharp constants.</p>
+    <h3>A fully observed path supplies the missing generator radius</h3>
+    <p>Suppose the complete CTMC path is observed, including exact jump times. Write</p>
+    $$L_i=\int_0^{T_{\rm obs}}\mathbf1_{\{Y_s=i\}}\,ds,
+      \qquad N_{ij}=\#\{i\to j\hbox{ jumps on }[0,T_{\rm obs}]\},$$
+    <p>and set $\widehat q_{ij}=N_{ij}/L_i$ off the diagonal, with diagonal entries chosen to make row sums zero.
+      Assume a known rate cap $q_{ij}\le\bar q$ for every $i\ne j$, and fix before observing the path a finite
+      set $\Theta\subset(0,\infty)$. For each counted transition,</p>
+    <div class="equation-card">
+    $$\exp\!\left\{\pm\theta(N_{ij}-q_{ij}L_i)
+      -q_{ij}L_i(e^{\pm\theta}-1\mp\theta)\right\}$$
+    </div>
+    <p>is a mean-one exponential martingale, the multiplicative-intensity construction underlying
+      <a href="./bibliography.html#Aalen1978">Aalen's counting-process inference</a>. Since
+      $e^{-\theta}-1+\theta\le e^\theta-1-\theta$, Markov's inequality and a union bound imply the following
+      simultaneous, data-adaptive interval. Put</p>
+    $$x=\log{2n(n-1)|\Theta|\over\delta},\qquad
+      r_i=\min_{\theta\in\Theta}\left\{
+      {\bar q(e^\theta-1-\theta)\over\theta}
+      +{x\over\theta L_i}\right\}.$$
+    <p>Then, with probability at least $1-\delta$, every off-diagonal error satisfies
+      $|\widehat q_{ij}-q_{ij}|\le r_i$. No independence between the transition counts is used.</p>
+    <p>The diagonal error in row $i$ is at most $(n-1)r_i$. Hence two computable matrix bounds are</p>
+    <div class="equation-card">
+    $$\|\widehat Q-Q\|_2\le\varepsilon_{\rm path}:=\min\left\{
+      \sqrt{n(n-1)\sum_i r_i^2},
+      \sqrt{B_1B_\infty}\right\},$$
+    $$B_\infty=2(n-1)\max_i r_i,\qquad
+      B_1=\max_j\left\{(n-1)r_j+\sum_{i\ne j}r_i\right\}.$$
+    </div>
+    <p>On the same event, substituting $\varepsilon_{\rm path}$ into the preceding a posteriori theorem gives a
+      $1-\delta$ confidence interval for the population skew energy whenever the estimated generator is irreducible
+      and its displayed positivity and Neumann conditions hold. If some $L_i=0$, this construction supplies no
+      finite radius for that row.</p>
+    <p>The certificate checks the exponential-martingale identity independently by a tilted Feynman&ndash;Kac matrix.
+      On one seeded four-state path with 221,183 jumps and minimum state occupation 20,901.343, the actual generator
+      error is $0.027272$ against radius $0.260095$; the actual skew-resolvent error is $0.000755$ against radius
+      $4.916236$. The true energy $0.047000719$ lies in the certified interval $[0,26.351043348]$. The example also
+      makes the conservatism transparent: this is a valid finite-path certificate, not a sharp inference method.</p>
+    <p>The result requires continuous full observation and an externally justified rate cap. It is not a theorem
+      for hidden states, discrete sampling, estimated state labels, or misspecified generators, and it does not turn
+      marginal random-probe guarantees into conditional guarantees for prescribed features.</p>
     <h3>Bounded sign probes: the same finite guarantee, not almost-sure detection</h3>
     <p>Gaussian coordinates are convenient but not necessary for the finite certificate. Fix any orthonormal basis
       of the centered space and instead let $X,Y$ have independent Rademacher coordinates, each uniformly distributed

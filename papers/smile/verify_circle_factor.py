@@ -16,7 +16,10 @@ Median-of-means aggregation upgrades the finite-variance energy identity to
 an explicit relative-error confidence bound logarithmic in the failure level.
 A finite group-inverse perturbation calculation then propagates generator and
 stationary-law errors into a deterministic interval for the population skew
-energy, without claiming a trajectory-level concentration theorem.
+energy.  For a fully observed finite-state path, exponential counting-
+martingale bounds supply the missing generator radius and hence an end-to-end
+high-probability interval.  This last result assumes a known off-diagonal rate
+cap and does not cover hidden or discretely observed states.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -267,6 +270,163 @@ def posterior_skew_bound(q_hat, epsilon):
         "pi_hat": pi_hat,
         "group_hat": group_hat,
         "skew_hat": skew_hat,
+    }
+
+
+def observed_path_generator_radius(
+    occupations, counts, rate_cap, failure_probability, theta_grid
+):
+    """Estimate a generator and certify its operator-norm error.
+
+    The path is fully observed.  ``occupations[i]`` is the holding time in
+    state i and ``counts[i, j]`` is the number of i-to-j jumps.  The theorem
+    assumes q_ij <= rate_cap for every off-diagonal true rate.  The finite
+    positive ``theta_grid`` is fixed before observing the path.
+
+    With probability at least 1-failure_probability, the returned epsilon
+    bounds ||q_hat-q||_2.  This is a simultaneous counting-martingale bound;
+    no independence between the jump counts is assumed.
+    """
+    occupations = np.asarray(occupations, dtype=float)
+    counts = np.asarray(counts, dtype=float)
+    theta_grid = np.asarray(theta_grid, dtype=float)
+    n = len(occupations)
+    if counts.shape != (n, n):
+        raise ValueError("counts must be square with one row per state")
+    if np.min(occupations) <= 0.0:
+        raise ValueError("every state must have positive observed occupation")
+    if rate_cap <= 0.0:
+        raise ValueError("rate_cap must be positive")
+    if not 0.0 < failure_probability < 1.0:
+        raise ValueError("failure_probability must lie in (0,1)")
+    if len(theta_grid) == 0 or np.min(theta_grid) <= 0.0:
+        raise ValueError("theta_grid must contain positive tilts")
+
+    q_hat = counts / occupations[:, None]
+    np.fill_diagonal(q_hat, 0.0)
+    np.fill_diagonal(q_hat, -q_hat.sum(axis=1))
+
+    log_multiplier = math.log(
+        2.0 * n * (n - 1) * len(theta_grid) / failure_probability
+    )
+    exponential_remainder = np.exp(theta_grid) - 1.0 - theta_grid
+    row_radii = np.empty(n)
+    for i, occupation in enumerate(occupations):
+        candidates = (
+            rate_cap * exponential_remainder / theta_grid
+            + log_multiplier / (theta_grid * occupation)
+        )
+        row_radii[i] = np.min(candidates)
+
+    # Each row has n-1 off-diagonal errors of size at most r_i.  Its diagonal
+    # error is their negative sum.  Bound the spectral norm both through the
+    # Frobenius norm and through sqrt(||E||_1 ||E||_infinity), then retain the
+    # smaller fully observable radius.
+    frobenius_radius = math.sqrt(n * (n - 1) * np.sum(row_radii**2))
+    infinity_radius = 2.0 * (n - 1) * np.max(row_radii)
+    column_radii = (n - 1) * row_radii + np.sum(row_radii) - row_radii
+    one_radius = np.max(column_radii)
+    induced_radius = math.sqrt(one_radius * infinity_radius)
+    epsilon = min(frobenius_radius, induced_radius)
+    return {
+        "q_hat": q_hat,
+        "epsilon": epsilon,
+        "frobenius_radius": frobenius_radius,
+        "induced_radius": induced_radius,
+        "row_radii": row_radii,
+        "log_multiplier": log_multiplier,
+    }
+
+
+def simulate_ctmc_path(q, horizon, rng, initial_state=0):
+    """Simulate exact holding times and transition counts on [0,horizon]."""
+    n = len(q)
+    occupations = np.zeros(n)
+    counts = np.zeros((n, n), dtype=int)
+    state = initial_state
+    time = 0.0
+    while time < horizon:
+        jump_rate = -q[state, state]
+        holding_time = rng.exponential(1.0 / jump_rate)
+        if time + holding_time >= horizon:
+            occupations[state] += horizon - time
+            break
+        occupations[state] += holding_time
+        probabilities = q[state].copy()
+        probabilities[state] = 0.0
+        probabilities /= jump_rate
+        next_state = rng.choice(n, p=probabilities)
+        counts[state, next_state] += 1
+        state = next_state
+        time += holding_time
+    return occupations, counts
+
+
+def observed_path_concentration_check():
+    """Check the martingale identity and the end-to-end path certificate."""
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    n = len(q)
+    rate_cap = 2.0
+
+    # The exponential compensator is checked independently by Feynman--Kac.
+    # Tilting one counted edge and subtracting its compensator leaves a
+    # matrix whose row sums are exactly zero, so the expectation is one.
+    martingale_errors = []
+    for theta in (-0.7, -0.2, 0.3, 0.9):
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    continue
+                tilted = q.copy()
+                tilted[i, j] = q[i, j] * math.exp(theta)
+                tilted[i, i] -= (math.exp(theta) - 1.0) * q[i, j]
+                expectation = expm(0.8 * tilted) @ np.ones(n)
+                martingale_errors.append(np.max(abs(expectation - 1.0)))
+
+    rng = np.random.default_rng(20261006)
+    occupations, counts = simulate_ctmc_path(q, 100_000.0, rng)
+    theta_grid = np.geomspace(0.002, 2.0, 61)
+    path = observed_path_generator_radius(
+        occupations, counts, rate_cap, 0.05, theta_grid
+    )
+    q_hat = path["q_hat"]
+    actual_generator_error = np.linalg.norm(q_hat - q, 2)
+    posterior = posterior_skew_bound(q_hat, path["epsilon"])
+    _, _, true_skew = canonical_skew_resolvent(q)
+    estimated_skew = posterior["skew_hat"]
+    actual_skew_error = np.linalg.norm(estimated_skew - true_skew)
+    energy = np.sum(true_skew**2)
+    energy_hat = np.sum(estimated_skew**2)
+    radius = posterior["bound"]
+    lower = max(math.sqrt(energy_hat) - radius, 0.0) ** 2
+    upper = (math.sqrt(energy_hat) + radius) ** 2
+
+    assert max(martingale_errors) < 2e-15
+    assert actual_generator_error <= path["epsilon"]
+    assert actual_skew_error <= radius
+    assert lower <= energy <= upper
+    return {
+        "maximum_martingale_error": max(martingale_errors),
+        "jump_count": int(np.sum(counts)),
+        "minimum_occupation": np.min(occupations),
+        "actual_generator_error": actual_generator_error,
+        "generator_radius": path["epsilon"],
+        "actual_generator_error_ratio": actual_generator_error
+        / path["epsilon"],
+        "actual_skew_error": actual_skew_error,
+        "skew_radius": radius,
+        "actual_skew_error_ratio": actual_skew_error / radius,
+        "energy": energy,
+        "energy_lower": lower,
+        "energy_upper": upper,
+        "neumann_ratio": posterior["neumann_ratio"],
     }
 
 
@@ -988,6 +1148,30 @@ def main():
         f"   estimator-centered identity/energy-band violations "
         f"{perturbation['maximum_stationary_identity_error']:.2e}/"
         f"{perturbation['maximum_energy_band_violation']:.2e}"
+    )
+
+    print("2b. a fully observed CTMC path supplies the generator radius")
+    path = observed_path_concentration_check()
+    print(
+        f"   jumps/minimum occupation {path['jump_count']}/"
+        f"{path['minimum_occupation']:.3f}; exponential-martingale error "
+        f"{path['maximum_martingale_error']:.2e}"
+    )
+    print(
+        f"   generator error/radius/ratio "
+        f"{path['actual_generator_error']:.6f}/"
+        f"{path['generator_radius']:.6f}/"
+        f"{path['actual_generator_error_ratio']:.6f}"
+    )
+    print(
+        f"   skew error/radius/ratio {path['actual_skew_error']:.6f}/"
+        f"{path['skew_radius']:.6f}/"
+        f"{path['actual_skew_error_ratio']:.6f}; Neumann ratio "
+        f"{path['neumann_ratio']:.6f}"
+    )
+    print(
+        f"   true energy {path['energy']:.9f} in certified interval "
+        f"[{path['energy_lower']:.9f}, {path['energy_upper']:.9f}]"
     )
 
     print("3. two Gaussian features detect finite-state irreversibility almost surely")
