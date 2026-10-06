@@ -22,8 +22,9 @@ also checked against the independent time-inhomogeneous Feynman--Kac system.
 Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
 Wasserstein rate for merely Lipschitz clock payoffs.  A complex Feynman--Kac
 calculation verifies the corresponding weighted-clock central limit theorem
-at nonzero carry and the first characteristic correction for both stationary
-and specified initial regimes.
+at nonzero carry, the first characteristic correction for both stationary and
+specified initial regimes, and the stationary second characteristic
+correction obtained from the fourth cumulant and the variance endpoint term.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -508,6 +509,49 @@ def weighted_third_cumulant_integral(start, rate_12, rate_21, clock_growth):
     )[0]
 
 
+def weighted_stationary_fourth_cumulant_integral(rate_12, rate_21, clock_growth):
+    """Exact ordered-simplex integral of the stationary fourth cumulant.
+
+    The base time is integrated analytically, leaving a three-dimensional
+    simplex integral in the consecutive gaps.
+    """
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    q = rate_12 / total_rate
+    r = p * q
+    c = q - p
+
+    def integrand(gap_3, gap_2, gap_1):
+        span = gap_1 + gap_2 + gap_3
+        if abs(clock_growth) < 1e-12:
+            base_integral = T - span
+        else:
+            base_integral = (
+                math.exp(clock_growth * (4.0 * T - 3.0 * gap_1 - 2.0 * gap_2 - gap_3))
+                * -math.expm1(-4.0 * clock_growth * (T - span))
+                / (4.0 * clock_growth)
+            )
+        joint_cumulant = (
+            r * c ** 2 * math.exp(-total_rate * span)
+            - 2.0
+            * r ** 2
+            * math.exp(-total_rate * (gap_1 + 2.0 * gap_2 + gap_3))
+        )
+        return 24.0 * base_integral * joint_cumulant
+
+    return tplquad(
+        integrand,
+        0.0,
+        T,
+        lambda gap_1: 0.0,
+        lambda gap_1: T - gap_1,
+        lambda gap_1, gap_2: 0.0,
+        lambda gap_1, gap_2: T - gap_1 - gap_2,
+        epsabs=2e-11,
+        epsrel=2e-11,
+    )[0]
+
+
 def cev_derivative_estimates(rate=R, dividend=Q, degree=56):
     """Numerical derivative-supremum estimates for the finite-rate table.
 
@@ -864,6 +908,125 @@ def main():
     )
     assert edgeworth_errors[-1] < 1e-2
     assert all(later < earlier for earlier, later in zip(edgeworth_errors, edgeworth_errors[1:]))
+
+    # The stationary expansion continues one order further.  The exact
+    # variance has
+    #   kappa*Var(W) = 2*p*q*A_2 - p*q*(1+exp(2*h*T))/kappa + O(kappa^-2),
+    # while the ordered four-time joint cumulant gives
+    #   kappa^3*Cum_4(W) -> 24*p*q*(1-5*p*q)*A_4.
+    # Exponentiating the cumulant series adds one half the square of the
+    # first (skew) correction.
+    weighted_fourth_energy = math.expm1(4.0 * clock_growth * T) / (4.0 * clock_growth)
+    variance_second_coefficient = -p * q * (1.0 + math.exp(2.0 * clock_growth * T))
+    fourth_cumulant_limit = (
+        24.0 * p * q * (1.0 - 5.0 * p * q) * weighted_fourth_energy
+    )
+    stationary_raw = []
+    for start in (0, 1):
+        stationary_raw.append(
+            weighted_clock_raw_moments_ode(start, 7.0, 13.0, clock_growth, degree=4)
+        )
+    stationary_raw = p * stationary_raw[0] + q * stationary_raw[1]
+    stationary_mean = stationary_raw[1]
+    stationary_fourth_cumulant = (
+        stationary_raw[4]
+        - 4.0 * stationary_raw[3] * stationary_mean
+        - 3.0 * stationary_raw[2] ** 2
+        + 12.0 * stationary_raw[2] * stationary_mean ** 2
+        - 6.0 * stationary_mean ** 4
+    )
+    fourth_integral = weighted_stationary_fourth_cumulant_integral(
+        7.0, 13.0, clock_growth
+    )
+    fourth_integral_error = abs(stationary_fourth_cumulant - fourth_integral)
+    print(
+        "weighted stationary exact fourth-cumulant formula error="
+        f"{fourth_integral_error:.3e}"
+    )
+    assert fourth_integral_error < 2e-12
+
+    second_edgeworth_errors = []
+    variance_second_errors = []
+    fourth_cumulant_errors = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        raw_by_start = [
+            weighted_clock_raw_moments_ode(start, a, b, clock_growth, degree=4)
+            for start in (0, 1)
+        ]
+        raw = p * raw_by_start[0] + q * raw_by_start[1]
+        mean = raw[1]
+        variance = raw[2] - mean ** 2
+        cumulant_four = (
+            raw[4]
+            - 4.0 * raw[3] * mean
+            - 3.0 * raw[2] ** 2
+            + 12.0 * raw[2] * mean ** 2
+            - 6.0 * mean ** 4
+        )
+        variance_second_errors.append(
+            abs(kappa * (kappa * variance - limiting_variance) - variance_second_coefficient)
+        )
+        fourth_cumulant_errors.append(
+            abs(kappa ** 3 * cumulant_four - fourth_cumulant_limit)
+        )
+        max_error = 0.0
+        for argument in edgeworth_arguments:
+            exact_cf = weighted_stationary_characteristic(a, b, clock_growth, argument)
+            normal_cf = math.exp(-0.5 * limiting_variance * argument * argument)
+            first_polynomial = (
+                -1j * argument ** 3 * p * q * (q - p) * weighted_third_energy
+            )
+            second_polynomial = (
+                0.5
+                * p
+                * q
+                * (1.0 + math.exp(2.0 * clock_growth * T))
+                * argument ** 2
+                + p
+                * q
+                * (1.0 - 5.0 * p * q)
+                * weighted_fourth_energy
+                * argument ** 4
+                - 0.5
+                * (p * q * (q - p) * weighted_third_energy) ** 2
+                * argument ** 6
+            )
+            scaled_error = kappa * (
+                exact_cf - normal_cf - first_polynomial * normal_cf / math.sqrt(kappa)
+            )
+            max_error = max(
+                max_error, abs(scaled_error - second_polynomial * normal_cf)
+            )
+        second_edgeworth_errors.append(max_error)
+    second_edgeworth_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(second_edgeworth_errors, second_edgeworth_errors[1:])
+    ]
+    fourth_cumulant_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(fourth_cumulant_errors, fourth_cumulant_errors[1:])
+    ]
+    print(
+        "weighted stationary second characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in second_edgeworth_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in second_edgeworth_orders)
+    )
+    print(
+        "weighted stationary scaled fourth-cumulant errors="
+        + ", ".join(f"{value:.3e}" for value in fourth_cumulant_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in fourth_cumulant_orders)
+        + f"; terminal variance-coefficient error={variance_second_errors[-1]:.3e}"
+    )
+    assert second_edgeworth_errors[-1] < 4e-3
+    assert all(
+        later < earlier
+        for earlier, later in zip(second_edgeworth_errors, second_edgeworth_errors[1:])
+    )
+    assert fourth_cumulant_errors[-1] < 4e-3
+    assert variance_second_errors[-1] < 2e-6
 
     # A fixed initial regime changes the first correction only through the
     # initial-layer mean.  Indeed kappa*R(kappa) -> exp(h*T), while the

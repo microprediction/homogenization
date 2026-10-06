@@ -905,6 +905,29 @@ def cev_page():
       \mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
       -e^{-pqA_hs^2}\bigr]
       \longrightarrow-i s^3pq(q-p)A_{3,h}e^{-pqA_hs^2}.$$
+    <p>The stationary expansion can be continued through relative order $\kappa^{-1}$. Put
+    $r=pq$, $c=q-p$, and $A_{j,h}=\int_0^T e^{jh(T-t)}dt$. For ordered times, with consecutive gaps
+    $u=t_2-t_1$, $v=t_3-t_2$, and $z=t_4-t_3$, direct conditioning gives the exact connected four-point function</p>
+    $$\operatorname{Cum}_\pi(g_{t_1},g_{t_2},g_{t_3},g_{t_4})
+      =rc^2e^{-\kappa(u+v+z)}-2r^2e^{-\kappa(u+2v+z)}.$$
+    <p>After integration over the ordered simplex, dominated convergence yields</p>
+    $$\kappa^3\operatorname{Cum}_{4,\pi}(W_T)
+      \longrightarrow24r(1-5r)A_{4,h}.$$
+    <p>The variance must also be retained one order beyond its Gaussian limit. Its exact covariance integral gives</p>
+    $$\kappa\operatorname{Var}_\pi(W_T)
+      =2rA_h-\frac{r(1+e^{2hT})}{\kappa}+O(\kappa^{-2}).$$
+    <p>Expanding the cumulant exponential, including the square of the skew term, therefore gives</p>
+    <div class="equation-card">
+    $$\mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
+      =e^{-rA_hs^2}\left\{1+\frac{E_1(s)}{\sqrt\kappa}
+      +\frac{E_2(s)}{\kappa}+O(\kappa^{-3/2})\right\},$$
+    $$E_1(s)=-is^3rcA_{3,h},$$
+    $$E_2(s)=\frac r2(1+e^{2hT})s^2
+      +r(1-5r)A_{4,h}s^4
+      -\frac12r^2c^2A_{3,h}^2s^6.$$
+    </div>
+    <p>The remainder statement is pointwise for fixed $s,T,h,p,q$. It is not uniform on a growing frequency window
+    and is not a Berry&ndash;Esseen bound.</p>
     <p>The known-start layer can also be computed exactly. Put $c=q-p$ and
     $d_1=q$, $d_2=-p$. For a fixed initial regime $i$, the ordered three-time joint cumulant is the stationary bulk
     term plus</p>
@@ -949,7 +972,11 @@ def cev_page():
     ordered-simplex cumulant formula agrees with an independent moment hierarchy within $7.4\times10^{-16}$, and that
     hierarchy drives the maximum error in $\kappa^2\operatorname{Cum}_3(W_T)$ from
     $4.20\times10^{-2}$ to $2.63\times10^{-3}$. The characteristic residuals have half-order convergence and the
-    cumulant error has first-order convergence:</p>
+    cumulant error has first-order convergence. For the new stationary second correction, the scaled characteristic
+    residual falls from $1.12\times10^{-2}$ at $\kappa=40$ to $2.67\times10^{-3}$ at $\kappa=640$. The exact
+    four-point simplex integral and independent degree-four moment hierarchy agree within $4.7\times10^{-16}$;
+    the error in the scaled fourth-cumulant limit falls from $4.36\times10^{-2}$ to $2.72\times10^{-3}$ with order
+    one, and the terminal variance-coefficient error is $7.5\times10^{-7}$:</p>
 ''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(W_T)$', 'mean clock', 'stationary clock'], weighted_rows) + r'''
 
     <h2>Reduction to a linear system</h2>
