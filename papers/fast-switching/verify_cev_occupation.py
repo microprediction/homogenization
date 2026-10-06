@@ -28,9 +28,11 @@ correction obtained from the fourth cumulant and the variance endpoint term.
 The same calculation is continued through second order for fixed initial
 regimes, both around the stationary clock and around the exact conditional
 mean.
-It also checks the joint first correction for two different deterministic
-clock loadings.  This multivariate check makes the limiting covariance a Gram
-matrix and separates its rank from any single fixed-loading calculation.
+It also checks the joint first and second corrections for two different
+deterministic clock loadings.  This multivariate check makes the limiting
+covariance a Gram matrix, exposes the endpoint contribution in every fixed
+Fourier direction, and separates its rank from any single fixed-loading
+calculation.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -1358,7 +1360,11 @@ def main():
     # expansion to the scalar result with loading sum_j theta_j w_j.  An
     # independent bivariate polynomial Feynman--Kac hierarchy checks the
     # covariance Gram matrix, while the complex hierarchy checks the joint
-    # first characteristic correction.
+    # first and second characteristic corrections.  At second order the
+    # scalar loading in a fixed Fourier direction is
+    # w_theta=sum_j theta_j w_j.  Its two endpoint values determine the
+    # variance correction, while its fourth energy determines the leading
+    # fourth cumulant.
     joint_growths = (0.032, -0.018)
     joint_directions = ((0.7, -0.4), (0.4, 0.9), (-0.6, 0.75))
     limiting_covariance = np.array(
@@ -1375,11 +1381,15 @@ def main():
         ]
     )
     joint_first_errors = []
+    joint_second_errors = []
     joint_covariance_errors = []
+    joint_variance_second_errors = []
     for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
         a, b = kappa * q, kappa * p
         max_first_error = 0.0
+        max_second_error = 0.0
         max_covariance_error = 0.0
+        max_variance_second_error = 0.0
         for start in (0, 1):
             d = q if start == 0 else -p
             _, covariance = joint_weighted_raw_moments_ode(
@@ -1411,19 +1421,58 @@ def main():
                     epsabs=2e-13,
                     epsrel=2e-13,
                 )[0]
+                fourth_energy = quad(
+                    lambda tau: loading(tau) ** 4,
+                    0.0,
+                    T,
+                    epsabs=2e-13,
+                    epsrel=2e-13,
+                )[0]
                 initial_loading = loading(T)
+                terminal_loading = loading(0.0)
                 normal_cf = math.exp(-p * q * second_energy)
                 first_polynomial = (
                     1j * d * initial_loading
                     - 1j * p * q * (q - p) * third_energy
+                )
+                variance_second_coefficient = (
+                    -p * q * (initial_loading ** 2 + terminal_loading ** 2)
+                    + initial_loading ** 2 * (2.0 * (q - p) * d - d ** 2)
+                )
+                second_polynomial = (
+                    -0.5 * variance_second_coefficient
+                    + p * q * (1.0 - 5.0 * p * q) * fourth_energy
+                    + 0.5 * first_polynomial ** 2
                 )
                 scaled_error = math.sqrt(kappa) * (exact_cf - normal_cf)
                 max_first_error = max(
                     max_first_error,
                     abs(scaled_error - first_polynomial * normal_cf),
                 )
+                second_scaled_error = kappa * (
+                    exact_cf
+                    - normal_cf
+                    - first_polynomial * normal_cf / math.sqrt(kappa)
+                )
+                max_second_error = max(
+                    max_second_error,
+                    abs(second_scaled_error - second_polynomial * normal_cf),
+                )
+                projected_variance = float(
+                    np.asarray(direction) @ covariance @ np.asarray(direction)
+                )
+                max_variance_second_error = max(
+                    max_variance_second_error,
+                    abs(
+                        kappa
+                        * (kappa * projected_variance - 2.0 * p * q * second_energy)
+                        - variance_second_coefficient
+                    ),
+                )
         joint_first_errors.append(max_first_error)
+        joint_second_errors.append(max_second_error)
         joint_covariance_errors.append(max_covariance_error)
+        joint_variance_second_errors.append(max_variance_second_error)
     joint_first_orders = [
         math.log(left / right, 2.0)
         for left, right in zip(joint_first_errors, joint_first_errors[1:])
@@ -1431,6 +1480,16 @@ def main():
     joint_covariance_orders = [
         math.log(left / right, 2.0)
         for left, right in zip(joint_covariance_errors, joint_covariance_errors[1:])
+    ]
+    joint_second_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(joint_second_errors, joint_second_errors[1:])
+    ]
+    joint_variance_second_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(
+            joint_variance_second_errors, joint_variance_second_errors[1:]
+        )
     ]
     print(
         "joint weighted-clock first characteristic correction residuals="
@@ -1444,8 +1503,22 @@ def main():
         + "; halving orders="
         + ", ".join(f"{value:.3f}" for value in joint_covariance_orders)
     )
+    print(
+        "joint weighted-clock second characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in joint_second_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in joint_second_orders)
+    )
+    print(
+        "joint weighted-clock variance-coefficient errors="
+        + ", ".join(f"{value:.3e}" for value in joint_variance_second_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in joint_variance_second_orders)
+    )
     assert joint_first_errors[-1] < 1.5e-2
     assert joint_covariance_errors[-1] < 2e-3
+    assert joint_second_errors[-1] < 2e-2
+    assert joint_variance_second_errors[-1] < 5e-5
     assert all(
         later < earlier
         for earlier, later in zip(joint_first_errors, joint_first_errors[1:])
@@ -1453,6 +1526,16 @@ def main():
     assert all(
         later < earlier
         for earlier, later in zip(joint_covariance_errors, joint_covariance_errors[1:])
+    )
+    assert all(
+        later < earlier
+        for earlier, later in zip(joint_second_errors, joint_second_errors[1:])
+    )
+    assert all(
+        later < earlier
+        for earlier, later in zip(
+            joint_variance_second_errors, joint_variance_second_errors[1:]
+        )
     )
 
     for multiplier in (1, 2, 4, 8):
