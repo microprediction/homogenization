@@ -778,6 +778,41 @@
       distance equals $\beta$ in this chain. The conservatism is visible, but so is convergence to the exact iid
       training-conditional law.</p>
 
+    <h3>Why calibration mixing alone is insufficient</h3>
+    <p>The final test gap is independently necessary, not just an artifact of the bound. Keep the randomized
+      state-revealing score $S=(Y+U)/2$ and a stationary symmetric binary chain with one-step correlation
+      $a\in(0,1)$. Separate the $N$ calibration observations by a stride $d$ but leave the last
+      calibration-to-test gap at one step. As $d\to\infty$, the calibration-panel law converges in total variation
+      to $N$ iid uniforms, while the test score retains correlation $a$ with the state revealed by the last
+      calibration score.</p>
+    <p>For the sample maximum $M=Q_N$, the limiting coverage conditional on the realized iid calibration panel is
+      exactly</p>
+    <div class="equation-card">
+    $$C_a=
+      \begin{cases}
+        (1+a)M, &amp; M&lt;1/2,\\
+        a+(1-a)M, &amp; M\ge1/2,\ S_N&lt;1/2,\\
+        (1+a)M-a, &amp; S_N\ge1/2.
+      \end{cases}$$
+    </div>
+    <p>The three cases follow by conditioning the next state on the half of the unit interval containing $S_N$.
+      Thus iid convergence of the calibration panel does not force convergence to the iid
+      training-conditional law unless the last-gap correlation also vanishes.</p>
+    <p>At $N=k=9$, target $p=0.8$, and $a=0.8$, direct integration over the three panel regions gives</p>
+    <div class="equation-card">
+    $$\Pr(C_a&lt;0.8)
+      =\left(\frac49\right)^9+
+        \frac7{18}\left(\frac89\right)^8
+      =\frac{6553600}{43046721}
+      =0.152243884035,$$
+    </div>
+    <p>whereas the iid beta failure probability is $0.8^9=0.134217728$. In the exact Markov certificate, increasing
+      the eight within-panel strides from $4$ to $64$ drives panel total variation from $0.451236768$ to
+      $6.87\times10^{-7}$, while the failure probability converges from $0.158846744$ to $0.152243886$.
+      The test-decoupling distance remains $a/2=0.4$. This is a training-conditional failure probability averaged
+      over random calibration panels; it is neither pointwise nor feature-conditional coverage. It proves that
+      $\eta_{\rm cal}$ alone cannot justify the iid beta law, even when it tends to zero.</p>
+
     <h3>A coefficient-only slack-free rearrangement bound</h3>
     <p>The slack can in fact be removed without knowing the actual panel order-statistic law. Let
       $U_0\sim\operatorname{Beta}(k,N+1-k)$, put $W_0=(U_0-p)_+$, and write $Q_0$ for the lower quantile

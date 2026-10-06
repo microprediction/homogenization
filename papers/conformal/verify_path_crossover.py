@@ -30,7 +30,9 @@ it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing.  It checks the exact convex
 allocation of a fixed spacing budget for marginal and separated-PAC mixing
-envelopes, and the slack-free rearrangement
+envelopes, and an exact counterexample where the calibration panel converges
+to iid but fixed final-gap memory leaves a non-iid conditional-coverage law.
+It also checks the slack-free rearrangement
 bound obtained from the iid beta baseline and the two separated TV budgets,
 with a sharper version when the actual panel order-statistic law is known.
 It finally checks the sharp distinction between a predictor fitted on an
@@ -423,6 +425,43 @@ def exact_binary_training_failure_irregular(
             cutoff = (target - probability_zero) / probability_one
         failure += path_probability * integer_beta_cdf(cutoff, alpha, beta)
     return failure
+
+
+def iid_panel_fixed_test_failure_limit(
+    calibration_count: int,
+    target: float,
+    test_correlation: float,
+) -> float:
+    """Failure limit for a sample maximum with an iid panel and fixed test memory.
+
+    Calibration scores are iid U(0,1), but their upper/lower half still
+    reveals the terminal binary state.  The next state has correlation
+    ``test_correlation`` with that terminal state.  This is the limit of
+    :func:`exact_binary_training_failure_irregular` when all within-panel
+    correlations vanish while the final calibration--test correlation stays
+    fixed.  The formula partitions panels according to whether the maximum
+    is below one half and whether the last calibration state is zero or one.
+    """
+    if calibration_count < 1:
+        raise ValueError("calibration_count must be positive")
+    if not (0.0 < target < 1.0):
+        raise ValueError("target must lie strictly between zero and one")
+    if not (0.0 <= test_correlation < 1.0):
+        raise ValueError("test_correlation must lie in [0,1)")
+
+    count = calibration_count
+    correlation = test_correlation
+    lower_cutoff = min(0.5, max(0.0, target / (1.0 + correlation)))
+    lower_only = lower_cutoff**count
+
+    cutoff = (target - correlation) / (1.0 - correlation)
+    cutoff = min(1.0, max(0.5, cutoff))
+    last_lower = 0.5 * (cutoff ** (count - 1) - 0.5 ** (count - 1))
+
+    cutoff = (target + correlation) / (1.0 + correlation)
+    cutoff = min(1.0, max(0.5, cutoff))
+    last_upper = (cutoff - 0.5) * cutoff ** (count - 1)
+    return lower_only + last_lower + last_upper
 
 
 @lru_cache(maxsize=None)
@@ -2651,6 +2690,51 @@ def main() -> None:
         f"{integer_beta_cdf(0.8, order, calibration_count + 1 - order):.9f}"
     )
 
+    # The calibration panel and final test gap have genuinely separate
+    # asymptotic roles.  Let the eight within-panel gaps grow while the final
+    # gap stays at one transition.  The panel law converges to iid, but the
+    # fixed final correlation 0.8 leaves a non-iid training-conditional
+    # failure limit.  For N=k=9 and p=0.8, the three panel regions in
+    # iid_panel_fixed_test_failure_limit reduce exactly to
+    # (4/9)^9 + (7/18)(8/9)^8 = 6553600/43046721.
+    separated_strides = (4, 8, 16, 32, 64)
+    separated_rows = []
+    base_transition = np.array([[0.9, 0.1], [0.1, 0.9]])
+    stationary_binary = np.array([0.5, 0.5])
+    separated_limit = iid_panel_fixed_test_failure_limit(
+        calibration_count, transfer_target, 0.8
+    )
+    exact_separated_limit = 6553600 / 43046721
+    assert abs(separated_limit - exact_separated_limit) < 2e-16
+    for stride in separated_strides:
+        exact_failure = exact_binary_training_failure_irregular(
+            calibration_count,
+            order,
+            transfer_target,
+            0.8,
+            (stride,) * (calibration_count - 1) + (1,),
+        )
+        panel_tv = sampled_path_total_variation_irregular(
+            base_transition,
+            stationary_binary,
+            (stride,) * (calibration_count - 1),
+        )
+        separated_rows.append((stride, panel_tv, exact_failure))
+    assert abs(separated_rows[-1][2] - separated_limit) < 2e-9
+    assert separated_rows[-1][1] < 7e-7
+    assert abs(
+        separated_limit
+        - integer_beta_cdf(
+            transfer_target, order, calibration_count + 1 - order
+        )
+    ) > 0.018
+
+    print("\nFinal test-gap necessity")
+    print("within-panel stride   panel TV from iid   exact failure")
+    for stride, panel_tv, exact_failure in separated_rows:
+        print(f" {stride:6d}              {panel_tv:.9f}       {exact_failure:.9f}")
+    print(f"fixed-test-memory limit: {separated_limit:.12f}")
+
     # The iid-baseline rearrangement has a sharp square-root small-budget
     # law.  If g is the beta density at p, its excess above the iid failure
     # probability is sqrt(2*g*eta)+O(eta), whereas optimizing the slack bound
@@ -3238,7 +3322,7 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with optimal "
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
-        "sharp PAC design, and dependent "
+        "sharp PAC design, fixed-test-gap necessity, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
         "slack-free rearrangement bounds, "
         "independent-training validity, calibration-leakage failure, "
