@@ -211,8 +211,67 @@ def canonical_skew_resolvent(q):
     return pi, q_group, 0.5 * (resolvent - resolvent.T)
 
 
+def posterior_skew_bound(q_hat, epsilon):
+    """Estimator-centered bound for ||J(Q)-J(q_hat)||_F.
+
+    Here epsilon is any supplied upper bound on ||Q-q_hat||_2.  Every
+    quantity returned by this function depends only on q_hat and epsilon.
+    """
+    pi_hat, group_hat, skew_hat = canonical_skew_resolvent(q_hat)
+    n = len(pi_hat)
+    projector_hat = np.outer(np.ones(n), pi_hat)
+    shifted_hat = q_hat - projector_hat
+
+    beta_pi = epsilon * np.linalg.norm(group_hat, 2)
+    pi_lower = np.min(pi_hat) - beta_pi
+    if pi_lower <= 0.0:
+        raise ValueError("stationary-law radius reaches the boundary")
+
+    shifted_radius = epsilon + math.sqrt(n) * beta_pi
+    inverse_shifted_norm = np.linalg.norm(np.linalg.inv(shifted_hat), 2)
+    neumann_ratio = inverse_shifted_norm * shifted_radius
+    if neumann_ratio >= 1.0:
+        raise ValueError("group-inverse Neumann condition fails")
+
+    group_bound = (
+        inverse_shifted_norm**2
+        * shifted_radius
+        / (1.0 - neumann_ratio)
+        + math.sqrt(n) * beta_pi
+    )
+    pi_upper = np.max(pi_hat) + beta_pi
+    root_upper = math.sqrt(pi_upper)
+    inverse_root_upper = 1.0 / math.sqrt(pi_lower)
+    root_hat_max = math.sqrt(np.max(pi_hat))
+    root_difference = beta_pi / (
+        math.sqrt(pi_lower) + math.sqrt(np.min(pi_hat))
+    )
+    inverse_root_difference = beta_pi / (
+        math.sqrt(pi_lower * np.min(pi_hat))
+        * (math.sqrt(pi_lower) + math.sqrt(np.min(pi_hat)))
+    )
+    resolvent_bound = (
+        root_upper * inverse_root_upper * group_bound
+        + root_difference
+        * np.linalg.norm(group_hat, 2)
+        * inverse_root_upper
+        + root_hat_max
+        * np.linalg.norm(group_hat, 2)
+        * inverse_root_difference
+    )
+    return {
+        "bound": math.sqrt(n) * resolvent_bound,
+        "beta_pi": beta_pi,
+        "group_bound": group_bound,
+        "neumann_ratio": neumann_ratio,
+        "pi_hat": pi_hat,
+        "group_hat": group_hat,
+        "skew_hat": skew_hat,
+    }
+
+
 def generator_perturbation_check():
-    """Check the deterministic plug-in bound for an estimated generator."""
+    """Check the operational plug-in bound over directions and scales."""
     q = np.array(
         [
             [-2.5, 2.0, 0.4, 0.1],
@@ -221,84 +280,85 @@ def generator_perturbation_check():
             [1.1, 0.5, 0.2, -1.8],
         ]
     )
-    direction = np.array(
-        [
-            [0.0, 0.35, -0.20, -0.15],
-            [-0.08, 0.0, 0.31, -0.23],
-            [0.26, -0.12, 0.0, -0.14],
-            [-0.19, 0.27, -0.08, 0.0],
-        ]
-    )
-    np.fill_diagonal(direction, -direction.sum(axis=1))
-    direction /= np.linalg.norm(direction, 2)
-
     pi, q_group, skew = canonical_skew_resolvent(q)
-    projector = np.outer(np.ones(len(pi)), pi)
-    inverse_shift = np.linalg.inv(q - projector)
-    root = np.sqrt(pi)
     energy = np.sum(skew**2)
-    errors = []
-    bounds = []
+    error_rates = []
+    bound_rates = []
+    bound_ratios = []
+    stationary_bound_ratios = []
+    group_bound_ratios = []
     stationary_identity_errors = []
     energy_band_violations = []
-    amplitudes = 2.0 ** -np.arange(4, 10)
-    for amplitude in amplitudes:
-        q_hat = q + amplitude * direction
-        assert np.min(q_hat - np.diag(np.diag(q_hat))) >= 0.0
-        pi_hat, group_hat, skew_hat = canonical_skew_resolvent(q_hat)
-        projector_hat = np.outer(np.ones(len(pi_hat)), pi_hat)
+    maximum_neumann_ratio = 0.0
+    amplitudes = 2.0 ** -np.arange(5, 11)
+    rng = np.random.default_rng(20261006)
+    for _ in range(16):
+        direction = rng.normal(size=q.shape)
+        np.fill_diagonal(direction, 0.0)
+        np.fill_diagonal(direction, -direction.sum(axis=1))
+        direction /= np.linalg.norm(direction, 2)
+        errors = []
+        bounds = []
+        for amplitude in amplitudes:
+            q_hat = q + amplitude * direction
+            off_diagonal = q_hat - np.diag(np.diag(q_hat))
+            assert np.min(off_diagonal) >= 0.0
+            epsilon = np.linalg.norm(q_hat - q, 2)
+            posterior = posterior_skew_bound(q_hat, epsilon)
+            pi_hat = posterior["pi_hat"]
+            group_hat = posterior["group_hat"]
+            skew_hat = posterior["skew_hat"]
+            frobenius_bound = posterior["bound"]
 
-        generator_error = q_hat - q
-        stationary_identity = pi_hat - pi + pi_hat @ generator_error @ q_group
-        stationary_identity_errors.append(np.linalg.norm(stationary_identity))
+            generator_error = q_hat - q
+            stationary_identity = (
+                pi - pi_hat - pi @ generator_error @ group_hat
+            )
+            stationary_identity_errors.append(np.linalg.norm(stationary_identity))
+            stationary_error = np.linalg.norm(pi - pi_hat)
+            stationary_bound_ratios.append(
+                stationary_error / posterior["beta_pi"]
+            )
+            group_error = np.linalg.norm(group_hat - q_group, 2)
+            group_bound_ratios.append(group_error / posterior["group_bound"])
+            maximum_neumann_ratio = max(
+                maximum_neumann_ratio, posterior["neumann_ratio"]
+            )
 
-        shifted_error = (q_hat - projector_hat) - (q - projector)
-        inverse_norm = np.linalg.norm(inverse_shift, 2)
-        shifted_size = np.linalg.norm(shifted_error, 2)
-        assert inverse_norm * shifted_size < 1.0
-        projector_error = np.linalg.norm(projector_hat - projector, 2)
-        group_bound = (
-            inverse_norm**2
-            * shifted_size
-            / (1.0 - inverse_norm * shifted_size)
-            + projector_error
+            error = np.linalg.norm(skew_hat - skew)
+            assert error <= frobenius_bound * (1.0 + 2e-13)
+            bound_ratios.append(error / frobenius_bound)
+
+            energy_hat = np.sum(skew_hat**2)
+            lower = max(math.sqrt(energy_hat) - frobenius_bound, 0.0) ** 2
+            upper = (math.sqrt(energy_hat) + frobenius_bound) ** 2
+            energy_band_violations.append(
+                max(lower - energy, energy - upper, 0.0)
+            )
+            errors.append(error)
+            bounds.append(frobenius_bound)
+
+        error_rates.append(
+            np.polyfit(np.log2(amplitudes), np.log2(errors), 1)[0]
+        )
+        bound_rates.append(
+            np.polyfit(np.log2(amplitudes), np.log2(bounds), 1)[0]
         )
 
-        root_hat = np.sqrt(pi_hat)
-        inverse_root = 1.0 / root
-        inverse_root_hat = 1.0 / root_hat
-        resolvent_bound = (
-            np.max(root_hat) * np.max(inverse_root_hat) * group_bound
-            + np.max(abs(root_hat - root))
-            * np.linalg.norm(q_group, 2)
-            * np.max(inverse_root_hat)
-            + np.max(root)
-            * np.linalg.norm(q_group, 2)
-            * np.max(abs(inverse_root_hat - inverse_root))
-        )
-        frobenius_bound = math.sqrt(len(pi)) * resolvent_bound
-        error = np.linalg.norm(skew_hat - skew)
-        assert error <= frobenius_bound * (1.0 + 2e-13)
-
-        energy_hat = np.sum(skew_hat**2)
-        lower = max(math.sqrt(energy_hat) - frobenius_bound, 0.0) ** 2
-        upper = (math.sqrt(energy_hat) + frobenius_bound) ** 2
-        energy_band_violations.append(max(lower - energy, energy - upper, 0.0))
-        errors.append(error)
-        bounds.append(frobenius_bound)
-
-    error_rate = np.polyfit(np.log2(amplitudes), np.log2(errors), 1)[0]
-    bound_rate = np.polyfit(np.log2(amplitudes), np.log2(bounds), 1)[0]
     assert max(stationary_identity_errors) < 2e-15
     assert max(energy_band_violations) < 1e-15
-    assert 0.98 < error_rate < 1.02
-    assert 0.97 < bound_rate < 1.03
+    assert min(error_rates) > 0.97 and max(error_rates) < 1.03
+    assert min(bound_rates) > 0.97 and max(bound_rates) < 1.03
     return {
         "energy": energy,
-        "error_rate": error_rate,
-        "bound_rate": bound_rate,
-        "largest_error": errors[0],
-        "largest_bound": bounds[0],
+        "minimum_error_rate": min(error_rates),
+        "maximum_error_rate": max(error_rates),
+        "minimum_bound_rate": min(bound_rates),
+        "maximum_bound_rate": max(bound_rates),
+        "maximum_error_bound_ratio": max(bound_ratios),
+        "maximum_stationary_bound_ratio": max(stationary_bound_ratios),
+        "maximum_group_bound_ratio": max(group_bound_ratios),
+        "maximum_neumann_ratio": maximum_neumann_ratio,
         "maximum_stationary_identity_error": max(stationary_identity_errors),
         "maximum_energy_band_violation": max(energy_band_violations),
     }
@@ -911,14 +971,21 @@ def main():
     print("2. estimated generators obey a deterministic skew-resolvent bound")
     perturbation = generator_perturbation_check()
     print(
-        f"   skew error/bound at largest perturbation "
-        f"{perturbation['largest_error']:.9f}/"
-        f"{perturbation['largest_bound']:.9f}; convergence rates "
-        f"{perturbation['error_rate']:.6f}/"
-        f"{perturbation['bound_rate']:.6f}"
+        f"   16-direction skew-error rates "
+        f"[{perturbation['minimum_error_rate']:.6f}, "
+        f"{perturbation['maximum_error_rate']:.6f}]; bound rates "
+        f"[{perturbation['minimum_bound_rate']:.6f}, "
+        f"{perturbation['maximum_bound_rate']:.6f}]"
     )
     print(
-        f"   stationary identity/energy-band violations "
+        f"   maximum actual/bound ratios: skew "
+        f"{perturbation['maximum_error_bound_ratio']:.6f}, stationary "
+        f"{perturbation['maximum_stationary_bound_ratio']:.6f}, group "
+        f"{perturbation['maximum_group_bound_ratio']:.6f}; Neumann ratio "
+        f"{perturbation['maximum_neumann_ratio']:.6f}"
+    )
+    print(
+        f"   estimator-centered identity/energy-band violations "
         f"{perturbation['maximum_stationary_identity_error']:.2e}/"
         f"{perturbation['maximum_energy_band_violation']:.2e}"
     )
