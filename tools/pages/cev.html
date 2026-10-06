@@ -371,11 +371,13 @@
     $w_\theta$; all fixed-start remainders occupy an initial corner of volume $O(\kappa^{-3})$.
     Finite-dimensional Feynman&ndash;Kac perturbation controls the remaining cumulants. The expansion is pointwise for
     fixed $\theta,T$ and fixed loadings, not uniform in a growing Fourier ball.</p>
-    <p>The joint expansion also continues through second order, but the endpoint formula requires a little more
-    regularity: assume now that the $w_j$ are continuous and piecewise $C^2$. For a fixed $\theta$, write</p>
+    <p>The joint expansion also continues through second order, including loadings with finitely many value jumps.
+    For a fixed $\theta$, let $t_a$ run over the interior breakpoints of $w_\theta$ and write</p>
     $$A_{\ell,\theta}=\int_0^T w_\theta(t)^\ell dt,\qquad
-      u_0=w_\theta(0),\qquad u_T=w_\theta(T),$$
-    $$V_{1,i}(\theta)=-r(u_0^2+u_T^2)+u_0^2(2cd_i-d_i^2),$$
+      u_0=w_\theta(0+),\qquad u_T=w_\theta(T-),\qquad
+      \Delta_a=w_\theta(t_a+)-w_\theta(t_a-),$$
+    $$V_{1,i}(\theta)=-r\left(u_0^2+u_T^2+\sum_a\Delta_a^2\right)
+      +u_0^2(2cd_i-d_i^2),$$
     $$L_{1,i}(\theta)=id_i u_0-ircA_{3,\theta},\qquad
       E_{2,i}(\theta)=-\frac{V_{1,i}(\theta)}2+r(1-5r)A_{4,\theta}
       +\frac12L_{1,i}(\theta)^2.$$
@@ -390,14 +392,16 @@
     $L_{1,i}$ and from its square, while retaining $V_{1,i}$. The endpoint coefficient follows directly from</p>
     $$\operatorname{Var}_\pi(\theta^\top W)=2r\int_0^T e^{-\kappa u}
       \int_0^{T-u}w_\theta(s)w_\theta(s+u)\,ds\,du.$$
-    <p>The inner integral has value $A_{2,\theta}$ and right derivative
-    $-(u_0^2+u_T^2)/2$ at zero. The two fixed-start covariance corners add
+    <p>The inner integral has value $A_{2,\theta}$ and right derivative</p>
+    $$-\frac12\left(u_0^2+u_T^2+\sum_a\Delta_a^2\right).$$
+    <p>Indeed, smooth integration on either side of a breakpoint and the width-$u$ strip that crosses it combine to
+    $-\Delta_a^2/2$: only the jump size, not the two levels separately, remains. The two fixed-start covariance corners add
     $u_0^2(2cd_i-d_i^2)$ to the coefficient. The diagonal three- and four-point layers give, respectively,
     $6rcA_{3,\theta}$ and $24r(1-5r)A_{4,\theta}$ after their natural scaling; exponentiating adds
-    $L_{1,i}^2/2$. Continuity is material here: a loading with a value jump can contribute additional interface
-    terms, so the displayed second-order endpoint formula is not asserted for discontinuous piecewise-smooth
-    loadings. As before, the result is pointwise in fixed $\theta,T$ and fixed loadings, not a uniform
-    Fourier-domain error bound.</p>
+    $L_{1,i}^2/2$. Thus a jump always decreases the order-$\kappa^{-2}$ variance coefficient by
+    $r\Delta_a^2$; its sign cannot depend on the direction of the jump. As before, the result is pointwise in fixed
+    $\theta,T$ and fixed piecewise-$C^2$ loadings with finitely many breakpoints, not a uniform Fourier-domain
+    error bound.</p>
     <p>A two-loading certificate uses $w_1(t)=e^{0.032(T-t)}$ and
     $w_2(t)=e^{-0.018(T-t)}$. An independent bivariate polynomial Feynman&ndash;Kac hierarchy gives maximum errors in
     $\kappa\operatorname{Cov}(W)-\Sigma$ of
@@ -407,7 +411,12 @@
     halving orders tending to $1/2$. After subtracting the joint second correction, the scaled residual falls from
     $6.55\times10^{-2}$ to $1.59\times10^{-2}$ with the same half-order behavior. Independently, the maximum error
     in the projected variance endpoint coefficient falls from $2.20\times10^{-4}$ to $1.38\times10^{-5}$ with
-    order one.</p>
+    order one. A separate one-jump loading, evaluated by exact constant-matrix exponentials rather than a smoothed
+    ODE, gives second-correction residuals
+    $1.289\times10^{-1},8.944\times10^{-2},6.265\times10^{-2},4.410\times10^{-2},3.111\times10^{-2}$,
+    again with half-order convergence; the terminal error in the new jump-adjusted variance coefficient is
+    $2.4\times10^{-10}$. Omitting the interface term leaves an asymptotic coefficient miss of $0.145600000$,
+    exactly $pq\Delta^2$ for the certificate's jump.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative

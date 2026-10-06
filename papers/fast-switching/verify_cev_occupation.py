@@ -33,6 +33,8 @@ deterministic clock loadings.  This multivariate check makes the limiting
 covariance a Gram matrix, exposes the endpoint contribution in every fixed
 Fourier direction, and separates its rank from any single fixed-loading
 calculation.
+For piecewise-smooth loadings with value jumps, a final step-loading
+certificate checks the additional sum-of-squared-jumps variance coefficient.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -43,6 +45,7 @@ import mpmath as mp
 import numpy as np
 from numpy.polynomial import chebyshev as ch
 from scipy.integrate import quad, solve_ivp, tplquad
+from scipy.linalg import expm
 from scipy.special import iv, roots_jacobi
 from scipy.stats import ncx2, poisson
 
@@ -552,6 +555,55 @@ def joint_weighted_raw_moments_ode(start, rate_12, rate_21, clock_growths):
         ]
     )
     return means, second - np.outer(means, means)
+
+
+def piecewise_constant_clock_characteristic(
+    start, rate_12, rate_21, backward_segments, argument
+):
+    """Exact stationary-mean-centered transform for a step loading.
+
+    ``backward_segments`` lists ``(duration, loading)`` from maturity backward
+    to time zero.  Constant-coefficient matrix exponentials avoid numerical
+    smoothing across the loading jumps.
+    """
+    total_rate = rate_12 + rate_21
+    p = rate_21 / total_rate
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+    values = np.ones(2, dtype=complex)
+    for duration, loading in backward_segments:
+        tilted = generator + np.diag(
+            [1j * argument * math.sqrt(total_rate) * loading, 0.0]
+        )
+        values = expm(duration * tilted) @ values
+    stationary_mean = p * sum(
+        duration * loading for duration, loading in backward_segments
+    )
+    return (
+        np.exp(-1j * argument * math.sqrt(total_rate) * stationary_mean)
+        * values[start]
+    )
+
+
+def piecewise_constant_clock_raw_moments(
+    start, rate_12, rate_21, backward_segments, degree=2
+):
+    """Exact raw moments for a step loading from block matrix exponentials."""
+    generator = np.array([[-rate_12, rate_12], [rate_21, -rate_21]])
+    values = np.zeros((degree + 1, 2))
+    values[0] = 1.0
+    for duration, loading in backward_segments:
+        operator = np.zeros((2 * (degree + 1), 2 * (degree + 1)))
+        reward = np.diag([loading, 0.0])
+        for order in range(degree + 1):
+            row = slice(2 * order, 2 * order + 2)
+            operator[row, row] = generator
+            if order:
+                previous = slice(2 * (order - 1), 2 * order)
+                operator[row, previous] = order * reward
+        values = (expm(duration * operator) @ values.ravel()).reshape(
+            degree + 1, 2
+        )
+    return values[:, start]
 
 
 def weighted_clock_raw_moments_ode(start, rate_12, rate_21, clock_growth, degree=3):
@@ -1536,6 +1588,144 @@ def main():
         for earlier, later in zip(
             joint_variance_second_errors, joint_variance_second_errors[1:]
         )
+    )
+
+    # Value jumps add interface layers to the variance endpoint coefficient.
+    # For F(u)=int_0^(T-u) w(s)w(s+u) ds, a jump from w_- to w_+ contributes
+    # -0.5*(w_+-w_-)^2 to F'(0+).  The stationary coefficient therefore gains
+    # -p*q times the sum of squared jumps.  The leading third and fourth
+    # cumulants remain the same diagonal bulk integrals because finitely many
+    # jump points have zero Lebesgue measure.
+    jump_time = 0.37
+    initial_step_loading = 1.0
+    terminal_step_loading = 0.2
+    step_jump = terminal_step_loading - initial_step_loading
+    backward_step_segments = (
+        (T - jump_time, terminal_step_loading),
+        (jump_time, initial_step_loading),
+    )
+    step_energies = {
+        order: (
+            jump_time * initial_step_loading ** order
+            + (T - jump_time) * terminal_step_loading ** order
+        )
+        for order in (2, 3, 4)
+    }
+    step_arguments = (0.5, 1.0, 1.5)
+    step_second_errors = []
+    step_variance_second_errors = []
+    step_naive_variance_errors = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_second_error = 0.0
+        max_variance_error = 0.0
+        max_naive_variance_error = 0.0
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            variance_second_coefficient = (
+                -p
+                * q
+                * (
+                    initial_step_loading ** 2
+                    + terminal_step_loading ** 2
+                    + step_jump ** 2
+                )
+                + initial_step_loading ** 2
+                * (2.0 * (q - p) * d - d ** 2)
+            )
+            naive_variance_second_coefficient = (
+                -p
+                * q
+                * (initial_step_loading ** 2 + terminal_step_loading ** 2)
+                + initial_step_loading ** 2
+                * (2.0 * (q - p) * d - d ** 2)
+            )
+            raw = piecewise_constant_clock_raw_moments(
+                start, a, b, backward_step_segments
+            )
+            variance = raw[2] - raw[1] ** 2
+            max_variance_error = max(
+                max_variance_error,
+                abs(
+                    kappa
+                    * (kappa * variance - 2.0 * p * q * step_energies[2])
+                    - variance_second_coefficient
+                ),
+            )
+            max_naive_variance_error = max(
+                max_naive_variance_error,
+                abs(
+                    kappa
+                    * (kappa * variance - 2.0 * p * q * step_energies[2])
+                    - naive_variance_second_coefficient
+                ),
+            )
+            for argument in step_arguments:
+                normal_cf = math.exp(
+                    -p * q * step_energies[2] * argument ** 2
+                )
+                first_polynomial = (
+                    1j * argument * d * initial_step_loading
+                    - 1j
+                    * argument ** 3
+                    * p
+                    * q
+                    * (q - p)
+                    * step_energies[3]
+                )
+                second_polynomial = (
+                    -0.5 * argument ** 2 * variance_second_coefficient
+                    + p
+                    * q
+                    * (1.0 - 5.0 * p * q)
+                    * step_energies[4]
+                    * argument ** 4
+                    + 0.5 * first_polynomial ** 2
+                )
+                exact_cf = piecewise_constant_clock_characteristic(
+                    start, a, b, backward_step_segments, argument
+                )
+                scaled_error = kappa * (
+                    exact_cf
+                    - normal_cf
+                    - first_polynomial * normal_cf / math.sqrt(kappa)
+                )
+                max_second_error = max(
+                    max_second_error,
+                    abs(scaled_error - second_polynomial * normal_cf),
+                )
+        step_second_errors.append(max_second_error)
+        step_variance_second_errors.append(max_variance_error)
+        step_naive_variance_errors.append(max_naive_variance_error)
+    step_second_orders = [
+        math.log(left / right, 2.0)
+        for left, right in zip(step_second_errors, step_second_errors[1:])
+    ]
+    print(
+        "step-loading second characteristic correction residuals="
+        + ", ".join(f"{value:.3e}" for value in step_second_errors)
+        + "; halving orders="
+        + ", ".join(f"{value:.3f}" for value in step_second_orders)
+    )
+    print(
+        "step-loading variance-coefficient errors="
+        + ", ".join(f"{value:.3e}" for value in step_variance_second_errors)
+        + "; terminal error="
+        + f"{step_variance_second_errors[-1]:.3e}"
+    )
+    print(
+        "step-loading endpoint-only miss/predicted jump penalty="
+        f"{step_naive_variance_errors[-1]:.9f}/"
+        f"{p * q * step_jump ** 2:.9f}"
+    )
+    assert step_second_errors[-1] < 3.5e-2
+    assert step_variance_second_errors[-1] < 1e-8
+    assert abs(
+        step_naive_variance_errors[-1] - p * q * step_jump ** 2
+    ) < 1e-8
+    assert all(
+        later < earlier
+        for earlier, later in zip(step_second_errors, step_second_errors[1:])
     )
 
     for multiplier in (1, 2, 4, 8):
