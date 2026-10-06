@@ -14,12 +14,15 @@ switching ratio, and permits the contrast to vary with the switching rate.
 An unequal-rate extension makes the cancellation mechanism precise: the
 linear log-ratio error is generally quadratic in contrast/switching speed,
 and improves to cubic exactly when the two transition rates coincide.
+For constant forcing, a signed fourth-order equilibrium expansion identifies
+the sharp quadratic and cubic coefficients behind those rates.
 """
 
 from __future__ import annotations
 
 import math
 
+import mpmath as mp
 import numpy as np
 from scipy.integrate import quad, solve_ivp
 from scipy.linalg import expm
@@ -186,6 +189,29 @@ def positive_ratio_equilibrium(
     if linear >= 0.0:
         return (linear + radical) / (2.0 * rate_21)
     return 2.0 * rate_12 / (radical - linear)
+
+
+def constant_forcing_expansion_coefficients(
+    rate_12: float, rate_21: float
+) -> tuple[float, float, float]:
+    """Coefficients of the constant-forcing equilibrium error.
+
+    Put ``s=rate_12+rate_21``, ``x=q/s`` and
+    ``alpha=(rate_12-rate_21)/s``.  The analytic equilibrium branch satisfies
+
+        ell_*(q)-x = c2*x**2 + c3*x**3 + c4*x**4 + O(x**5).
+
+    This function returns ``(c2,c3,c4)``.  In particular, ``c2=alpha/2``;
+    symmetry removes it and leaves ``c3=-1/6``.
+    """
+    if rate_12 <= 0.0 or rate_21 <= 0.0:
+        raise ValueError("transition rates must be positive")
+    asymmetry = (rate_12 - rate_21) / (rate_12 + rate_21)
+    return (
+        asymmetry / 2.0,
+        asymmetry**2 / 2.0 - 1.0 / 6.0,
+        asymmetry * (5.0 * asymmetry**2 - 3.0) / 8.0,
+    )
 
 
 def unequal_rate_log_ratio_bound(
@@ -699,6 +725,65 @@ def main() -> None:
     scaled_asymmetric_error = asymmetric_errors[-1] / final_eta**2
     assert abs(scaled_asymmetric_error - final_asymmetry / 2.0) < 4e-4
 
+    # The constant-forcing equilibrium admits a signed analytic expansion.
+    # Verify all displayed coefficients independently against the exact
+    # quadratic root at 80-digit precision, including both rate orderings.
+    expansion_asymmetries = (-0.9, -0.65, -0.2, 0.0, 0.2, 0.65, 0.9)
+    expansion_orders = []
+    leading_coefficient_errors = []
+    with mp.workdps(80):
+        expansion_grid = [mp.mpf("0.08") / 2**index for index in range(5)]
+        for asymmetry in expansion_asymmetries:
+            asymmetry_mp = mp.mpf(str(asymmetry))
+            rate_12_mp = (1 + asymmetry_mp) / 2
+            rate_21_mp = (1 - asymmetry_mp) / 2
+            c2, c3, c4 = constant_forcing_expansion_coefficients(
+                float(rate_12_mp), float(rate_21_mp)
+            )
+            residuals = []
+            for scaled_forcing in expansion_grid:
+                linear = scaled_forcing - rate_12_mp + rate_21_mp
+                equilibrium_ratio = (
+                    linear
+                    + mp.sqrt(
+                        linear**2 + 4 * rate_12_mp * rate_21_mp
+                    )
+                ) / (2 * rate_21_mp)
+                equilibrium = mp.log(equilibrium_ratio)
+                expansion = (
+                    scaled_forcing
+                    + c2 * scaled_forcing**2
+                    + c3 * scaled_forcing**3
+                    + c4 * scaled_forcing**4
+                )
+                residuals.append(abs(equilibrium - expansion))
+
+            orders = [
+                mp.log(residuals[index] / residuals[index + 1], 2)
+                for index in range(len(residuals) - 1)
+            ]
+            expansion_orders.append(float(orders[-1]))
+
+            smallest = expansion_grid[-1]
+            linear = smallest - rate_12_mp + rate_21_mp
+            exact = mp.log(
+                (
+                    linear
+                    + mp.sqrt(linear**2 + 4 * rate_12_mp * rate_21_mp)
+                )
+                / (2 * rate_21_mp)
+            )
+            if asymmetry != 0.0:
+                observed = (exact - smallest) / smallest**2
+                target = asymmetry_mp / 2
+            else:
+                observed = (exact - smallest) / smallest**3
+                target = -mp.mpf(1) / 6
+            leading_coefficient_errors.append(float(abs(observed - target)))
+
+    assert min(expansion_orders) > 4.98
+    assert max(leading_coefficient_errors) < 2.1e-3
+
     # At equal rates the general log-ratio theorem has no quadratic term.
     # Its radius and bound reduce to asinh(M/S) and sinh(L)-L exactly.
     symmetric_radius, symmetric_asymmetry, symmetric_general_bound = (
@@ -802,6 +887,11 @@ def main() -> None:
         f"{scaled_asymmetric_error:.9f} versus "
         f"{final_asymmetry / 2.0:.9f}"
     )
+    print(
+        "constant-forcing signed expansion: minimum fourth-order-residual "
+        f"order {min(expansion_orders):.6f}; maximum leading-coefficient "
+        f"error {max(leading_coefficient_errors):.3e}"
+    )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
         print(
@@ -812,7 +902,8 @@ def main() -> None:
         "PASS: per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
         "orders and endpoint coefficients, maturity-uniform finite-rate "
-        "all-ratio bound, unequal-rate quadratic/cubic transition, joint "
+        "all-ratio bound, unequal-rate quadratic/cubic transition and signed "
+        "equilibrium coefficients, joint "
         "contrast/switching rate, and both thesis examples"
     )
 
