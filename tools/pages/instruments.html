@@ -92,7 +92,16 @@
       \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
       -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
     <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. This is exact one-dimensional
-      quadrature, not a Jamshidian sum. Implicit differentiation also quantifies the geometry. With
+      quadrature, not a Jamshidian sum. The remaining numerical truncation has a closed-form certificate. Write
+      $X=\mu_X+\sigma_X\xi$, where $\xi$ is standard normal, and let
+      $s^2=\sigma_Z^2(1-\rho^2)$ and $a_k=p_k\sigma_X+q_k\rho\sigma_Z$. If the receiver integral is restricted to
+      $|\xi|\le L$, positivity and $(C-K)^+\le C$ give</p>
+    $$0\le V-V_L\le\sum_k w_k
+      e^{-p_k\mu_X-q_k\mu_Z+q_k^2s^2/2+a_k^2/2}
+      \{\Phi(a_k-L)+\Phi(-a_k-L)\}.$$
+    <p>This is the exact exponentially tilted Gaussian tail of each cash flow, not an asymptotic estimate. The payer
+      tail is bounded more simply by $2K\Phi(-L)$. Both bounds are forward values; multiplication by $P(0,T)$ gives
+      time-zero bounds. Implicit differentiation also quantifies the geometry. With
       $d_k=w_ke^{-p_kx-q_k\zeta(x)}$,</p>
     $$\zeta'(x)=-{\sum_kd_kp_k\over\sum_kd_kq_k},\qquad
       \zeta''(x)={\sum_kd_k(p_k+q_k\zeta'(x))^2\over\sum_kd_kq_k}\ge0.$$
@@ -168,7 +177,8 @@
       finite-rate switching model.</p>
     <p>For the two-cash-flow certificate, conditional quadrature gives $0.669351292291$ and independent nested Gaussian
       quadrature gives the same value within $2.22\times10^{-16}$. In the $a=b$ limit it agrees with the scalar
-      Jamshidian price within $1.67\times10^{-16}$.</p>
+      Jamshidian price within $1.67\times10^{-16}$. Truncating the standardized conditioning factor to $[-6,6]$
+      changes the receiver value by less than $8.00\times10^{-9}$, inside the closed-form bound above.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>

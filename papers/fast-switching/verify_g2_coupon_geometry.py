@@ -5,7 +5,8 @@ combination.  A coupon bond generally does not: distinct cash-flow maturities
 have non-collinear G2++ loading vectors.  This script certifies the determinant,
 the strict convexity, curvature mass and wing asymptotics of the exercise
 boundary, an exact conditional-Gaussian one-dimensional pricing formula, and
-its reduction to the one-factor formula.
+its reduction to the one-factor formula.  It also certifies a closed-form
+tail bound for truncating the remaining Gaussian integral.
 """
 
 from math import exp, expm1, log, pi, sqrt
@@ -133,7 +134,8 @@ def wing_error_bound(q, competitor_mass, strike, rate, distance):
 
 
 def conditional_gaussian_price(
-        loadings, weights, strike, mean_x, mean_z, sigma_x, sigma_z, rho):
+        loadings, weights, strike, mean_x, mean_z, sigma_x, sigma_z, rho,
+        cutoff=10.0):
     """Exact receiver price under a bivariate Gaussian expiry law.
 
     The discount-to-expiry prefactor is omitted.  It can be restored by
@@ -157,8 +159,31 @@ def conditional_gaussian_price(
             ) * tilted_probability
         return value * exp(-0.5 * standard_x ** 2) / sqrt(2 * pi)
 
-    return quad(conditional_value, -10.0, 10.0,
+    return quad(conditional_value, -cutoff, cutoff,
                 epsabs=2e-13, epsrel=2e-13, limit=250)[0]
+
+
+def receiver_truncation_bound(
+        loadings, weights, mean_x, mean_z, sigma_x, sigma_z, rho, cutoff):
+    """Bound the receiver-price mass outside a standardized X window.
+
+    Since (C-K)^+ <= C, each omitted cash-flow term is an exponentially
+    tilted Gaussian tail.  The returned bound is for the undiscounted
+    forward-measure value; multiply it by P(0,T) for the time-zero price.
+    """
+    conditional_variance = sigma_z * sigma_z * (1 - rho * rho)
+    bound = 0.0
+    for weight, (p, q) in zip(weights, loadings):
+        tilt = p * sigma_x + q * rho * sigma_z
+        moment = weight * exp(
+            -p * mean_x - q * mean_z
+            + 0.5 * q * q * conditional_variance
+            + 0.5 * tilt * tilt
+        )
+        bound += moment * (
+            ndtr(tilt - cutoff) + ndtr(-tilt - cutoff)
+        )
+    return bound
 
 
 def nested_quadrature_price(
@@ -332,6 +357,19 @@ def main():
         loadings, weights, strike,
         mean_x, mean_z, sigma_x, sigma_z, rho,
     )
+    truncated_cutoff = 6.0
+    truncated_price = conditional_gaussian_price(
+        loadings, weights, strike,
+        mean_x, mean_z, sigma_x, sigma_z, rho,
+        cutoff=truncated_cutoff,
+    )
+    truncation_bound = receiver_truncation_bound(
+        loadings, weights,
+        mean_x, mean_z, sigma_x, sigma_z, rho,
+        truncated_cutoff,
+    )
+    truncation_error = conditional_price - truncated_price
+    assert -2e-15 <= truncation_error <= truncation_bound
     numerical_price = nested_quadrature_price(
         loadings, weights, strike,
         mean_x, mean_z, sigma_x, sigma_z, rho,
@@ -374,6 +412,8 @@ def main():
     print("conditional one-dimensional price:", f"{conditional_price:.12f}")
     print("independent nested-quadrature price:", f"{numerical_price:.12f}")
     print("pricing discrepancy:", f"{abs(conditional_price - numerical_price):.3e}")
+    print("cutoff-6 truncation error / rigorous bound:",
+          f"{truncation_error:.12e}", f"{truncation_bound:.12e}")
     print("one-factor reduction discrepancy:",
           f"{abs(conditional_one_factor - scalar_one_factor):.3e}")
     print("PASS: curved G2++ boundary, exact wings, and conditional price")
