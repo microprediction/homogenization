@@ -1300,6 +1300,121 @@ def burned_panel_lan_limit(initial_bias, information):
     )
 
 
+def joint_panel_limit_surface_checks():
+    """Check the closed joint burn-in/panel LAN phase surface.
+
+    The limit is a two-point mixture of scaled lognormal likelihood ratios.
+    Splitting each absolute value at its unique crossing gives a closed
+    Gaussian-CDF formula, implemented by ``burned_panel_lan_limit``.  An
+    independent quadrature checks that formula.  Data processing in the
+    initial sign and the exponential-Brownian likelihood martingale imply
+    monotonicity in the absolute initial bias and in the LAN information.
+    Marginalization and the product-TV inequality give matching two-source
+    lower and upper bounds.
+    """
+    normalizer = math.sqrt(2.0 * math.pi)
+
+    def quadrature_absolute_deviation(scale, information):
+        if information == 0:
+            return abs(scale - 1.0)
+        if scale == 0:
+            return 1.0
+        root = math.sqrt(information)
+        log_scale = math.log(scale)
+
+        def integrand(gaussian):
+            log_density = -0.5 * gaussian ** 2 - math.log(normalizer)
+            log_weighted_density = (
+                log_scale
+                - 0.5 * (gaussian - root) ** 2
+                - math.log(normalizer)
+            )
+            if log_scale + root * gaussian - information / 2.0 >= 0:
+                return (math.exp(log_weighted_density)
+                        - math.exp(log_density))
+            return (math.exp(log_density)
+                    - math.exp(log_weighted_density))
+
+        return quad(
+            integrand, -np.inf, np.inf,
+            epsabs=2e-12, epsrel=2e-12, limit=500,
+        )[0]
+
+    maximum_quadrature_error = 0.0
+    for initial_bias in (0.0, 0.2, 0.6, 1.0):
+        for information in (0.05, 0.5, 2.0, 8.0):
+            quadrature = 0.25 * sum(
+                quadrature_absolute_deviation(
+                    1 + sign * initial_bias, information
+                )
+                for sign in (-1, 1)
+            )
+            closed = burned_panel_lan_limit(initial_bias, information)
+            maximum_quadrature_error = max(
+                maximum_quadrature_error, abs(quadrature - closed)
+            )
+    assert maximum_quadrature_error < 2e-11
+
+    biases = np.linspace(0.0, 1.0, 81)
+    informations = np.r_[0.0, np.logspace(-4, 2, 121)]
+    surface = np.array([
+        [burned_panel_lan_limit(bias, information)
+         for information in informations]
+        for bias in biases
+    ])
+    minimum_bias_increment = float(np.min(np.diff(surface, axis=0)))
+    minimum_information_increment = float(np.min(np.diff(surface, axis=1)))
+    assert minimum_bias_increment > -2e-14
+    assert minimum_information_increment > -2e-14
+
+    maximum_bound_violation = 0.0
+    for bias_index, bias in enumerate(biases):
+        initial_tv = bias / 2.0
+        for information_index, information in enumerate(informations):
+            panel_tv = (2.0 * ndtr(math.sqrt(information) / 2.0) - 1.0)
+            lower = max(initial_tv, panel_tv)
+            upper = min(1.0, initial_tv + panel_tv)
+            value = surface[bias_index, information_index]
+            maximum_bound_violation = max(
+                maximum_bound_violation, lower - value, value - upper
+            )
+    assert maximum_bound_violation < 2e-14
+
+    benchmark_bias = 0.6
+    benchmark_information = 1.0
+    benchmark_value = burned_panel_lan_limit(
+        benchmark_bias, benchmark_information
+    )
+    benchmark_initial_lower = benchmark_bias / 2.0
+    benchmark_panel_lower = (
+        2.0 * ndtr(math.sqrt(benchmark_information) / 2.0) - 1.0
+    )
+    benchmark_upper = benchmark_initial_lower + benchmark_panel_lower
+
+    print("closed joint burn-in/panel phase surface:")
+    print(f"  Gaussian-CDF / independent quadrature error "
+          f"{maximum_quadrature_error:.3e}")
+    print(f"  minimum bias/information increments "
+          f"{minimum_bias_increment:.3e}, "
+          f"{minimum_information_increment:.3e}")
+    print(f"  largest two-source bound violation "
+          f"{maximum_bound_violation:.3e}")
+    print(f"  delta=0.6, c=1: lower bounds "
+          f"{benchmark_initial_lower:.9f}, {benchmark_panel_lower:.9f}; "
+          f"exact {benchmark_value:.9f}; upper {benchmark_upper:.9f}")
+
+    return (
+        maximum_quadrature_error,
+        minimum_bias_increment,
+        minimum_information_increment,
+        maximum_bound_violation,
+        benchmark_value,
+        benchmark_initial_lower,
+        benchmark_panel_lower,
+        benchmark_upper,
+    )
+
+
 def persistent_diffuse_product_tv(persistent_correlations, trials,
                                   diffuse_correlation):
     """Exact TV for fixed biased signs followed by equal diffuse signs."""
@@ -2079,6 +2194,7 @@ def nonreversible_contraction_checks():
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
     joint_panel_mixing_checks(Q, pi, gamma_s)
+    joint_panel_limit_surface_checks()
     nonstationary_joint_entropy_checks(Q, pi)
     beta_order_statistic_transfer_checks(Q, pi, scales)
     irregular_joint_panel_mixing_checks(Q, pi, gamma_s)

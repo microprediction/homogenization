@@ -741,6 +741,36 @@
       \mathbb E\left|(1+s\delta)
       e^{\sqrt c\,G-c/2}-1\right|,\qquad G\sim N(0,1).$$
     </div>
+    <p>This phase surface is available in closed form. For $a\ge0$ define</p>
+    $$\mathcal D(a,c)=\mathbb E\left|a e^{\sqrt c\,G-c/2}-1\right|.$$
+    <p>When $a&gt;0$ and $c&gt;0$, splitting at the unique likelihood crossing gives</p>
+    <div class="equation-card">
+    $$\mathcal D(a,c)=2\left[
+      a\Phi\left({\sqrt c\over2}+{\log a\over\sqrt c}\right)
+      -\Phi\left(-{\sqrt c\over2}+{\log a\over\sqrt c}\right)
+      \right]-a+1,$$
+    $$\Psi(\delta,c)=\frac14\{
+      \mathcal D(1+\delta,c)+\mathcal D(1-\delta,c)\}.$$
+    </div>
+    <p>The continuous boundary values are $\mathcal D(a,0)=|a-1|$ and
+      $\mathcal D(0,c)=1$. The formula also exposes an exact two-source
+      comparison:</p>
+    <div class="equation-card">
+    $$\max\left\{{|\delta|\over2},
+        2\Phi(\sqrt c/2)-1\right\}
+      \le \Psi(\delta,c)
+      \le \min\left\{1,{|\delta|\over2}
+        +2\Phi(\sqrt c/2)-1\right\}.$$
+    </div>
+    <p>The lower bounds follow by marginalizing to the initial sign or to the
+      transition experiment; the upper bound is the product total-variation
+      inequality. Moreover $\Psi$ is nondecreasing in both $|\delta|$ and $c$.
+      For $|\delta|$, a binary symmetric channel degrades any larger initial
+      bias to a smaller one while preserving the fair reference. For $c$, write
+      the lognormal factor as the exponential Brownian martingale
+      $e^{B_c-c/2}$ and apply conditional Jensen to the convex function
+      $|x-1|$. Thus the two memory sources cannot cancel, although their
+      total-variation effects need not add.</p>
     <p>This contains both boundary cases:
       $\Psi(\delta,0)=|\delta|/2$ is the surviving initial-state memory, while
       $\Psi(0,c)=2\Phi(\sqrt c/2)-1$ is the stationary panel limit above.
@@ -756,6 +786,11 @@
       $\Psi(0.6,1)=0.451711767$. Full path enumeration independently verifies
       the finite factorization. Continuous disjoint-support emissions again
       preserve the hidden path and make the result a score-panel statement.
+      Independent quadrature checks the Gaussian-CDF phase formula over 16
+      bias/information points to $4.2\times10^{-12}$. For the same benchmark, the
+      two marginal lower bounds are $0.3$ and $0.382924923$, while the additive
+      upper bound is $0.682924923$, locating the exact value strictly between
+      the unavoidable marginal information and the triangle bound.
       It remains a comparison of marginal random-panel laws, not a
       training-conditional or feature-conditional coverage guarantee.</p>
 
