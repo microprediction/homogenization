@@ -14,6 +14,9 @@ bound at half the root-mean-square signal.  Unlike Gaussian probes, a single
 Rademacher pair can miss a nonzero skew form with positive probability.
 Median-of-means aggregation upgrades the finite-variance energy identity to
 an explicit relative-error confidence bound logarithmic in the failure level.
+A finite group-inverse perturbation calculation then propagates generator and
+stationary-law errors into a deterministic interval for the population skew
+energy, without claiming a trajectory-level concentration theorem.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -29,7 +32,13 @@ from scipy.integrate import quad
 from scipy.linalg import expm, null_space
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "general"))
-from effective_generator import effective_generator, full_generator, gk, stationary
+from effective_generator import (
+    effective_generator,
+    full_generator,
+    gk,
+    group_inverse,
+    stationary,
+)
 
 
 D = 1.0
@@ -190,6 +199,108 @@ def general_reversal_check():
         "full_asymmetry": full_asymmetry,
         "scalar_asymmetry": scalar_asymmetry,
         "reversible_asymmetry": reversible_asymmetry,
+    }
+
+
+def canonical_skew_resolvent(q):
+    """Skew Green--Kubo resolvent in canonical Euclidean coordinates."""
+    pi = stationary(q)
+    root = np.sqrt(pi)
+    q_group = group_inverse(q)
+    resolvent = -(root[:, None] * q_group) / root[None, :]
+    return pi, q_group, 0.5 * (resolvent - resolvent.T)
+
+
+def generator_perturbation_check():
+    """Check the deterministic plug-in bound for an estimated generator."""
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    direction = np.array(
+        [
+            [0.0, 0.35, -0.20, -0.15],
+            [-0.08, 0.0, 0.31, -0.23],
+            [0.26, -0.12, 0.0, -0.14],
+            [-0.19, 0.27, -0.08, 0.0],
+        ]
+    )
+    np.fill_diagonal(direction, -direction.sum(axis=1))
+    direction /= np.linalg.norm(direction, 2)
+
+    pi, q_group, skew = canonical_skew_resolvent(q)
+    projector = np.outer(np.ones(len(pi)), pi)
+    inverse_shift = np.linalg.inv(q - projector)
+    root = np.sqrt(pi)
+    energy = np.sum(skew**2)
+    errors = []
+    bounds = []
+    stationary_identity_errors = []
+    energy_band_violations = []
+    amplitudes = 2.0 ** -np.arange(4, 10)
+    for amplitude in amplitudes:
+        q_hat = q + amplitude * direction
+        assert np.min(q_hat - np.diag(np.diag(q_hat))) >= 0.0
+        pi_hat, group_hat, skew_hat = canonical_skew_resolvent(q_hat)
+        projector_hat = np.outer(np.ones(len(pi_hat)), pi_hat)
+
+        generator_error = q_hat - q
+        stationary_identity = pi_hat - pi + pi_hat @ generator_error @ q_group
+        stationary_identity_errors.append(np.linalg.norm(stationary_identity))
+
+        shifted_error = (q_hat - projector_hat) - (q - projector)
+        inverse_norm = np.linalg.norm(inverse_shift, 2)
+        shifted_size = np.linalg.norm(shifted_error, 2)
+        assert inverse_norm * shifted_size < 1.0
+        projector_error = np.linalg.norm(projector_hat - projector, 2)
+        group_bound = (
+            inverse_norm**2
+            * shifted_size
+            / (1.0 - inverse_norm * shifted_size)
+            + projector_error
+        )
+
+        root_hat = np.sqrt(pi_hat)
+        inverse_root = 1.0 / root
+        inverse_root_hat = 1.0 / root_hat
+        resolvent_bound = (
+            np.max(root_hat) * np.max(inverse_root_hat) * group_bound
+            + np.max(abs(root_hat - root))
+            * np.linalg.norm(q_group, 2)
+            * np.max(inverse_root_hat)
+            + np.max(root)
+            * np.linalg.norm(q_group, 2)
+            * np.max(abs(inverse_root_hat - inverse_root))
+        )
+        frobenius_bound = math.sqrt(len(pi)) * resolvent_bound
+        error = np.linalg.norm(skew_hat - skew)
+        assert error <= frobenius_bound * (1.0 + 2e-13)
+
+        energy_hat = np.sum(skew_hat**2)
+        lower = max(math.sqrt(energy_hat) - frobenius_bound, 0.0) ** 2
+        upper = (math.sqrt(energy_hat) + frobenius_bound) ** 2
+        energy_band_violations.append(max(lower - energy, energy - upper, 0.0))
+        errors.append(error)
+        bounds.append(frobenius_bound)
+
+    error_rate = np.polyfit(np.log2(amplitudes), np.log2(errors), 1)[0]
+    bound_rate = np.polyfit(np.log2(amplitudes), np.log2(bounds), 1)[0]
+    assert max(stationary_identity_errors) < 2e-15
+    assert max(energy_band_violations) < 1e-15
+    assert 0.98 < error_rate < 1.02
+    assert 0.97 < bound_rate < 1.03
+    return {
+        "energy": energy,
+        "error_rate": error_rate,
+        "bound_rate": bound_rate,
+        "largest_error": errors[0],
+        "largest_bound": bounds[0],
+        "maximum_stationary_identity_error": max(stationary_identity_errors),
+        "maximum_energy_band_violation": max(energy_band_violations),
     }
 
 
@@ -797,7 +908,22 @@ def main():
         f"reversible full-form asymmetry {general['reversible_asymmetry']:.2e}"
     )
 
-    print("2. two Gaussian features detect finite-state irreversibility almost surely")
+    print("2. estimated generators obey a deterministic skew-resolvent bound")
+    perturbation = generator_perturbation_check()
+    print(
+        f"   skew error/bound at largest perturbation "
+        f"{perturbation['largest_error']:.9f}/"
+        f"{perturbation['largest_bound']:.9f}; convergence rates "
+        f"{perturbation['error_rate']:.6f}/"
+        f"{perturbation['bound_rate']:.6f}"
+    )
+    print(
+        f"   stationary identity/energy-band violations "
+        f"{perturbation['maximum_stationary_identity_error']:.2e}/"
+        f"{perturbation['maximum_energy_band_violation']:.2e}"
+    )
+
+    print("3. two Gaussian features detect finite-state irreversibility almost surely")
     probes = random_probe_detection_check()
     print(
         f"   skew Hilbert--Schmidt norm {probes['skew_hilbert_schmidt']:.9f}; "
@@ -871,7 +997,7 @@ def main():
         f"{probes['maximum_rademacher_moment_ratio']:.9f}"
     )
 
-    print("3. the energy-normalized resolvent factorization gives sharp bounds")
+    print("4. the energy-normalized resolvent factorization gives sharp bounds")
     normalized = normalized_resolvent_check()
     print(
         f"   factorization/symmetric/skew errors "
@@ -895,7 +1021,7 @@ def main():
         f"{normalized['intrinsic_full_error']:.2e}"
     )
 
-    print("4. exact Fourier blocks against direct correlation quadrature")
+    print("5. exact Fourier blocks against direct correlation quadrature")
     for mode in range(1, 6):
         exact = exact_block(mode)
         numerical = quadrature_block(mode)
@@ -903,7 +1029,7 @@ def main():
         print(f"   mode {mode}: max error {error:.2e}, anti entry {exact[0, 1]:+.8f}")
         assert error < 2e-11
 
-    print("5. periodic CTMC discretization converges to the diffusion block")
+    print("6. periodic CTMC discretization converges to the diffusion block")
     grid_errors = []
     for size in (32, 64, 128):
         q, phis = circle_chain(size)
@@ -914,14 +1040,14 @@ def main():
     spatial_rate = rate(grid_errors)
     assert 1.9 < spatial_rate < 2.1
 
-    print("6. reversing current preserves the symmetric block and flips the antisymmetric block")
+    print("7. reversing current preserves the symmetric block and flips the antisymmetric block")
     forward = exact_block(1, C)
     reverse = exact_block(1, -C)
     assert np.max(abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))) < 1e-15
     assert np.max(abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))) < 1e-15
     print(f"   c=+{C:g}: K12={forward[0, 1]:+.6f}; c=-{C:g}: K12={reverse[0, 1]:+.6f}")
 
-    print("7. the full commutator rule has a second-order finite-rate residual")
+    print("8. the full commutator rule has a second-order finite-rate residual")
     k_forward, errors_forward, values_forward = effective_check(C)
     k_reverse, errors_reverse, values_reverse = effective_check(-C)
     for name in errors_forward:
@@ -949,7 +1075,7 @@ def main():
     print("   forward-minus-reverse residual: " + " ".join(f"{x:.3e}" for x in direction_errors) + f"  rate {direction_rate:.3f}")
     assert 1.8 < direction_rate < 2.2
 
-    print("8. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
+    print("9. a nonconstant periodic diffusion obeys the exact current-reversal theorem")
     blocks = []
     for size in (32, 64, 128, 256):
         q_forward, features = variable_circle_chain(size)

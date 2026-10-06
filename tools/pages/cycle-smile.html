@@ -146,8 +146,56 @@
       relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
       half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees
       concern finitely many randomized probes of the exact population
-      operator $J$. They are neither conditional guarantees for prescribed features nor a statistical test based on
-      a finite, noisy trajectory; the latter also requires an estimation-error analysis.</p>
+      operator $J$. They are not conditional guarantees for prescribed features. The next result controls the
+      deterministic plug-in error from an estimated generator, but a finite-trajectory test still needs a
+      concentration bound for that generator estimator.</p>
+    <h3>Deterministic stability under generator estimation</h3>
+    <p>For a row-convention irreducible $n$-state generator $Q$, write $\pi Q=0$, $P=\mathbf1\pi$ and</p>
+    $$G=Q^\#=(Q-P)^{-1}+P.$$
+    <p>Let $D=\operatorname{diag}\pi$. The canonical Euclidean version of the centered Green&ndash;Kubo resolvent and
+      its directional part are</p>
+    <div class="equation-card">
+    $$\mathcal R=-D^{1/2}GD^{-1/2},\qquad
+      \mathcal J=\operatorname{Anti}\mathcal R.$$
+    </div>
+    <p>The stationary vector $\sqrt\pi$ is in the kernel, and on its orthogonal complement this is exactly
+      $(-L)^{-1}$ in $L^2(\pi)$. Thus $\|\mathcal J\|_{\rm HS}$ is the basis-independent energy used above.</p>
+    <p>Now let $\widehat Q=Q+E$ be another irreducible generator, and add hats to its associated quantities. The
+      stationary-law perturbation obeys the exact identity</p>
+    <div class="equation-card">
+    $$\widehat\pi-\pi=-\widehat\pi E G,\qquad
+      \|\widehat\pi-\pi\|_2\le\|E\|_2\|G\|_2.$$
+    </div>
+    <p>Put $Z=Q-P$, $a=\|Z^{-1}\|_2$ and
+      $\Delta=\|\widehat Q-\widehat P-(Q-P)\|_2$. If $a\Delta&lt;1$, the resolvent identity gives</p>
+    $$\|\widehat G-G\|_2\le
+      b_G:={a^2\Delta\over1-a\Delta}+\|\widehat P-P\|_2.$$
+    <p>Define</p>
+    $$u=\max_i\sqrt{\pi_i},\quad v=\max_i\pi_i^{-1/2},\quad
+      d_+=\max_i|\sqrt{\widehat\pi_i}-\sqrt{\pi_i}|,\quad
+      d_-=\max_i|\widehat\pi_i^{-1/2}-\pi_i^{-1/2}|,$$
+    <p>and define $\widehat u,\widehat v$ analogously. A three-term product expansion then yields the explicit bound</p>
+    <div class="equation-card">
+    $$\|\widehat{\mathcal J}-\mathcal J\|_{\rm HS}\le\delta,\qquad
+      \delta=\sqrt n\{\widehat u\widehat v\,b_G
+      +d_+\|G\|_2\widehat v+u\|G\|_2d_-\}.$$
+    </div>
+    <p>Indeed, Neumann inversion bounds the inverse part of $\widehat G-G$; the two remaining terms come from the
+      square-root stationary weights. Antisymmetrization is an orthogonal projection in Frobenius norm. Therefore,
+      if $S=\|\mathcal J\|_{\rm HS}^2$ and
+      $\widehat S=\|\widehat{\mathcal J}\|_{\rm HS}^2$, the computable interval</p>
+    <div class="equation-card">
+    $$\{\max(\sqrt{\widehat S}-\delta,0)\}^2\le S\le
+      (\sqrt{\widehat S}+\delta)^2$$
+    </div>
+    <p>separates deterministic plug-in bias from random-probe error. This is a finite perturbation result, not only
+      a derivative at $E=0$. Its group-inverse step is placed against
+      <a href="./bibliography.html#Meyer1980">Meyer's finite-chain perturbation theory</a>.</p>
+    <p>For the four-state certificate, six valid generator perturbations from $2^{-4}$ to $2^{-9}$ give observed
+      orders $0.996148$ for the actual skew-resolvent error and $1.012953$ for the bound. At the largest perturbation
+      the actual error/bound is $0.003812220/0.201067875$. The stationary identity holds within
+      $5.0\times10^{-16}$, and every certified energy interval contains the population energy. The conservative gap
+      is the price of using only operator norms; the theorem does not claim sharp constants.</p>
     <h3>Bounded sign probes: the same finite guarantee, not almost-sure detection</h3>
     <p>Gaussian coordinates are convenient but not necessary for the finite certificate. Fix any orthonormal basis
       of the centered space and instead let $X,Y$ have independent Rademacher coordinates, each uniformly distributed
