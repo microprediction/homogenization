@@ -11,6 +11,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     common_shock_factorial_cumulant,
                                     common_shock_factorial_cumulants22,
                                     finite_cumulant_twins,
+                                    finite_atomic_jacobian_certificate,
+                                    finite_atomic_prony_certificate,
                                     integrated_intensity_cumulants,
                                     integrated_intensity_mixed_cumulants,
                                     mark_factorial_moments,
@@ -18,6 +20,7 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     mixed_factorial_cumulants22,
                                     mixed_poisson_hankel_certificate,
                                     poisson_inverse_instability,
+                                    poisson_mixture_w1_inverse_modulus,
                                     poisson_mixture_w1_moment_upper,
                                     poisson_mixture_w1_nonparametric_lower,
                                     poisson_mixture_w1_local_minimax,
@@ -278,11 +281,14 @@ def black_scholes():
 def counts():
     hankel = mixed_poisson_hankel_certificate()
     twins = finite_cumulant_twins()
+    atomic = finite_atomic_prony_certificate()
+    atomic_jacobian = finite_atomic_jacobian_certificate()
     instability = poisson_inverse_instability()
     w1_minimax = poisson_mixture_w1_local_minimax()
     w1_point_mass = poisson_point_mass_w1_upper()
     w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
     w1_moment_upper = poisson_mixture_w1_moment_upper()
+    w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -475,6 +481,75 @@ def counts():
       ''' + f'{twins["total_variation"]:.12f}' + r''', with omitted contribution below
       ''' + f'{twins["total_variation_tail_bound"]:.2e}' + r'''. Full-law identification, all-order analytic
       identification, and finite-order cumulant identification are therefore distinct claims.</p>
+    <h3>The sharp finite-atomic exception</h3>
+    <p>A sparsity assumption changes the last conclusion completely. Suppose the mixing law has at most $r$ atoms,</p>
+    $$\mu=\sum_{j=1}^{s}w_j\delta_{x_j},\qquad
+      1\le s\le r,\quad 0\le x_1&lt;\cdots&lt;x_s,\quad w_j&gt;0.$$
+    <p>Then factorial cumulants of orders $1,\ldots,2r-1$ identify $\mu$, and this order is sharp without
+      additional separation or weight assumptions. Indeed, factorial cumulants of the count are ordinary
+      cumulants of $\Lambda$, and the triangular moment-cumulant relations recover
+      $m_k=\mathbb E[\Lambda^k]$ for $0\le k\le2r-1$, with $m_0=1$.</p>
+    <p>To reconstruct the law, first read $s$ as the rank of
+      $H_{r-1}=(m_{i+j})_{i,j=0}^{r-1}$. For the actual support size,</p>
+    $$H_{s-1}=V\operatorname{diag}(w_1,\ldots,w_s)V^\top\succ0,
+      \qquad V_{ij}=x_j^i.$$
+    <p>Let $P(x)=x^s+c_{s-1}x^{s-1}+\cdots+c_0$ be the monic support polynomial. Since
+      $P(x_j)=0$, its coefficients are the unique solution of the Hankel system</p>
+    $$H_{s-1}\begin{pmatrix}c_0\\ \vdots\\ c_{s-1}\end{pmatrix}
+      =-\begin{pmatrix}m_s\\ \vdots\\ m_{2s-1}\end{pmatrix}.$$
+    <p>The roots of $P$ are the atoms $x_j$, after which the first $s$ moment equations form a nonsingular
+      Vandermonde system for the weights. This is the classical annihilating-polynomial mechanism behind
+      <a href="./bibliography.html#Prony1795">Prony&apos;s method</a>.</p>
+    <p>The count $2r-1$ cannot be reduced. On the $2r$ nodes $x_j=j+1$, split the signed coefficients</p>
+    $$a_j=(-1)^j{2r-1\choose j},\qquad j=0,\ldots,2r-1,$$
+    <p>into their positive and negative parts and normalize each by $2^{2r-2}$. Each part is an $r$-atomic
+      probability law. The finite-difference identity makes their moments, and hence cumulants, identical through
+      order $2r-2$, while their order-$(2r-1)$ moment gap is</p>
+    $$\frac{1}{2^{2r-2}}\sum_{j=0}^{2r-1}(-1)^j{2r-1\choose j}(j+1)^{2r-1}
+      =-\frac{(2r-1)!}{2^{2r-2}}\ne0.$$
+    <p>For $r=4$, the certificate recovers a four-atom law with maximum support and weight errors
+      ''' + f'{atomic["support_error"]:.2e}' + r''' and ''' + f'{atomic["weight_error"]:.2e}' + r'''. Its exact
+      sharpness pair agrees through order six and has order-seven moment and cumulant gap
+      ''' + f'{atomic["sharp_moment_gap"]:.2f}' + r'''. This result is purely about exact identification: Hankel and
+      Vandermonde systems can become arbitrarily ill-conditioned as atoms collide or weights vanish, so it does not
+      assert uniform stable recovery.</p>
+    <h3>Exact local conditioning geometry</h3>
+    <p>The instability boundary has an exact algebraic description. For an exactly $r$-atomic law, eliminate the
+      last weight by $w_r=1-\sum_{j&lt;r}w_j$ and define the square parameter-to-moment map</p>
+    $$\Phi(w_1,\ldots,w_{r-1},x_1,\ldots,x_r)=(m_1,\ldots,m_{2r-1}).$$
+    <p>On the ordered interior $w_j&gt;0$ and $x_1&lt;\cdots&lt;x_r$, its Jacobian satisfies</p>
+    <div class="equation-card">
+    $$\left|\det D\Phi\right|
+      =\left(\prod_{j=1}^r w_j\right)
+       \left(\prod_{1\le i&lt;j\le r}(x_j-x_i)^4\right).$$
+    </div>
+    <p>The moment-to-cumulant transformation is unit triangular, so the parameter-to-factorial-cumulant map has
+      the same determinant.</p>
+    <p>To prove the identity, temporarily retain all $r$ weights and include $m_0$. The $j$th weight and atom
+      columns of the full Jacobian are respectively</p>
+    $$v(x_j)=(1,x_j,\ldots,x_j^{2r-1})^\top,\qquad
+      w_jv'(x_j).$$
+    <p>After interlacing these columns, this is a weighted confluent Vandermonde matrix, whose determinant is the
+      fourth power of the ordinary Vandermonde product times $\prod_jw_j$. Changing coordinates from the weights
+      to $(w_1,\ldots,w_{r-1},m_0)$ and expanding along $m_0=1$ leaves the displayed reduced determinant. The
+      classical inverse and conditioning analysis of these matrices goes back to
+      <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>.</p>
+    <p>The inverse-function theorem now gives a locally analytic inverse everywhere in the ordered interior. It
+      also yields an explicit differential bound. Put $d=2r-1$, suppose $0\le x_j\le R$,
+      $w_j\ge w_*$, and $x_{j+1}-x_j\ge\delta$, and set
+      $A_R=\max\{1,R^{2r-1}\}$. Every entry of $D\Phi$ is bounded by $dA_R$, so</p>
+    $$\|D\Phi\|_2\le d^2A_R,\qquad
+      \sigma_{\min}(D\Phi)
+      \ge {w_*^r\delta^{2r(r-1)}\over(d^2A_R)^{d-1}}.$$
+    <p>Thus separated atoms with weights bounded away from zero have uniformly bounded infinitesimal inverse
+      sensitivity. The determinant formula also pinpoints both degeneracies: it vanishes linearly with a disappearing
+      weight and to fourth order for each colliding pair. This is a local parameter-stability statement, not a claim
+      of total-variation stability for unrestricted mixing measures.</p>
+    <p>The certificate evaluates the reduced Jacobian directly for two through five atoms. Its maximum relative
+      determinant error is ''' + f'{atomic_jacobian["determinant_relative_error"]:.2e}' + r'''; a centered directional
+      derivative agrees within ''' + f'{atomic_jacobian["derivative_error"]:.2e}' + r'''; and after removing the
+      noncolliding factors, a shrinking pair has measured volume-collapse order
+      ''' + f'{atomic_jacobian["collision_order"]:.9f}' + r'''.</p>
     <h3>Identification is not stable inversion</h3>
     <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
       variation. For two point-mass mixing laws $\delta_a$ and $\delta_b$,</p>
@@ -659,7 +734,8 @@ def counts():
     <p>Choose any probability law on $[a,M]$ minimizing the largest moment residual,</p>
     $$\widehat\mu_{n,L}\in\arg\min_{\nu\in\mathcal P([a,M])}
       \max_{1\le k\le L}\left|\int(\theta/M)^k\,d\nu(\theta)-\widehat m_k\right|.$$
-    <p>A minimizer exists by weak compactness. If
+    <p>A minimizer exists by weak compactness; the compact-valued argmin correspondence has a Borel graph, so fix
+      any measurable selection. If
       $\epsilon_L=\max_{k\le L}|\widehat m_k-m_k|$, comparison with the true law gives a discrepancy of at most
       $2\epsilon_L$ in every fitted moment.</p>
     <p>For every $n,L\ge1$, the following nonasymptotic bound is explicit up to the universal Jackson constant
@@ -703,6 +779,52 @@ def counts():
                  w1_moment_upper['moment_degrees'],
                  w1_moment_upper['log_stochastic_factors'])],
             head=('$n$', '$L_n$', 'log stochastic factor')) + r'''
+    <h3>The compact inverse has an optimal logarithmic modulus</h3>
+    <p>The statistical upper bound also yields a population stability theorem. For a mixing law $\mu$ on
+      $[a,a+B]$, write $P_\mu$ for its one-count mixed-Poisson law and define</p>
+    $$\omega_{a,B}(\delta)=\sup\{W_1(\mu,\nu):
+      d_{\rm TV}(P_\mu,P_\nu)\le\delta\}.$$
+    <p>Fix one measurable version of the moment estimator above. Maximally couple $n$ iid counts from
+      $P_\mu$ and $P_\nu$, and apply the same estimator to the coupled samples. They agree with probability at
+      least $(1-\delta)^n$. On the complementary event, two estimator outputs supported on $[a,a+B]$ are at
+      Wasserstein distance at most $B$. The triangle inequality therefore gives</p>
+    $$\omega_{a,B}(\delta)\le 2R_{n,L}+B\{1-(1-\delta)^n\},$$
+    <p>where $R_{n,L}$ is the preceding worst-case estimator bound. In particular, with $M=a+B$ and
+      $A_M=\max(1,M^{-1})$,</p>
+    <div class="equation-card">
+    $$\omega_{a,B}(\delta)\le {4C_JM\over L}
+      +{12(B+C_JM)(L+1)^{3/2}\over\sqrt n}
+       \{14\sqrt{A_ML}\}^{L}
+      +B\{1-(1-\delta)^n\}.$$
+    </div>
+    <p>This holds for every positive integer $n,L$. Taking
+      $n=\lfloor\delta^{-1/2}\rfloor$ and
+      $L=\lfloor c\log n/\log\log n\rfloor$ for any fixed $0&lt;c&lt;1$ makes the last two terms negligible
+      relative to $1/L$, and proves</p>
+    $$\omega_{a,B}(\delta)=O\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right).$$
+    <p>The order cannot be improved. For the even/odd binomial pair used in the minimax lower bound,</p>
+    $$W_1(\mu_{L,+},\mu_{L,-})={B\over L},\qquad
+      d_{\rm TV}(P_{L,+},P_{L,-})\le
+      \delta_L=(1-e^{-B/L})^L.$$
+    <p>Hence $\omega_{a,B}(\delta_L)\ge B/L$. More generally, for every sufficiently small $\delta$, choosing
+      $L$ of order $\log(1/\delta)/\log\log(1/\delta)$ makes $\delta_L\le\delta$ and gives the reverse order.
+      Therefore</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \omega_{a,B}(\delta)=\Theta\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right),
+      \qquad \delta\downarrow0.}$$
+    </div>
+    <p>This is a positive compact-support stability statement in $W_1$, not in total variation. It complements
+      the minimax theorem of <a href="./bibliography.html#MiaoEtAl2024">Miao et al.</a>: the same logarithmic
+      ill-posedness governs both population inversion and unrestricted statistical recovery. On $[4,5]$, the
+      certificate&apos;s lower scaled separation reaches
+      ''' + f'{w1_inverse_modulus["lower_scaled_separation"][-1]:.12f}' + r''' at $L=1024$ on its slow approach to
+      one. At $\log(1/\delta)=10{,}000$, the upper construction selects $L=''' + f'{w1_inverse_modulus["degrees"][-1]}' + r'''$;
+      the logarithms of its stochastic and sample-disagreement
+      terms are ''' + f'{w1_inverse_modulus["log_stochastic_terms"][-1]:.6f}' + r''' and
+      ''' + f'{w1_inverse_modulus["log_coupling_terms"][-1]:.6f}' + r'''.</p>
     <h3>The point-mass submodel has the parametric rate</h3>
     <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
     $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}
@@ -731,10 +853,9 @@ def counts():
                  w1_point_mass['sample_sizes'], w1_point_mass['exact_risks'],
                  w1_point_mass['scaled_exact_risks'])],
             head=('$n$', 'exact sample-mean risk', r'$\sqrt n$ times risk')) + r'''
-    <p>This upper bound applies only to the one-parameter family of point masses. An arbitrary law in
-      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the unrestricted nonparametric upper rate
-      remains a separate inverse problem, consistent with the smoothness restrictions in
-      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
+    <p>This sample-mean upper bound applies only to the one-parameter family of point masses. An arbitrary law in
+      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the moment estimator above attains the
+      slower unrestricted logarithmic rate.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative

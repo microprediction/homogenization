@@ -338,8 +338,9 @@
     $$\frac{1}{2^{2r-2}}\sum_{j=0}^{2r-1}(-1)^j{2r-1\choose j}(j+1)^{2r-1}
       =-\frac{(2r-1)!}{2^{2r-2}}\ne0.$$
     <p>For $r=4$, the certificate recovers a four-atom law with maximum support and weight errors
-      1.76e-12 and 5.96e-13. Its exact sharpness pair agrees through order six and has
-      order-seven moment and cumulant gap $-78.75$. This result is purely about exact identification: Hankel and
+      1.76e-12 and 5.96e-13. Its exact
+      sharpness pair agrees through order six and has order-seven moment and cumulant gap
+      -78.75. This result is purely about exact identification: Hankel and
       Vandermonde systems can become arbitrarily ill-conditioned as atoms collide or weights vanish, so it does not
       assert uniform stable recovery.</p>
     <h3>Exact local conditioning geometry</h3>
@@ -375,8 +376,9 @@
       weight and to fourth order for each colliding pair. This is a local parameter-stability statement, not a claim
       of total-variation stability for unrestricted mixing measures.</p>
     <p>The certificate evaluates the reduced Jacobian directly for two through five atoms. Its maximum relative
-      determinant error is 2.03e-11; a centered directional derivative agrees within 8.83e-09;
-      and after removing the noncolliding factors, a shrinking pair has measured volume-collapse order
+      determinant error is 2.03e-11; a centered directional
+      derivative agrees within 8.83e-09; and after removing the
+      noncolliding factors, a shrinking pair has measured volume-collapse order
       4.000000001.</p>
     <h3>Identification is not stable inversion</h3>
     <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
@@ -551,7 +553,8 @@
     <p>Choose any probability law on $[a,M]$ minimizing the largest moment residual,</p>
     $$\widehat\mu_{n,L}\in\arg\min_{\nu\in\mathcal P([a,M])}
       \max_{1\le k\le L}\left|\int(\theta/M)^k\,d\nu(\theta)-\widehat m_k\right|.$$
-    <p>A minimizer exists by weak compactness. If
+    <p>A minimizer exists by weak compactness; the compact-valued argmin correspondence has a Borel graph, so fix
+      any measurable selection. If
       $\epsilon_L=\max_{k\le L}|\widehat m_k-m_k|$, comparison with the true law gives a discrepancy of at most
       $2\epsilon_L$ in every fitted moment.</p>
     <p>For every $n,L\ge1$, the following nonasymptotic bound is explicit up to the universal Jackson constant
@@ -591,6 +594,52 @@
       For $M=5$ and $c=1/2$, the derived stochastic factor decays as follows.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$n$</th><th>$L_n$</th><th>log stochastic factor</th></tr></thead><tbody><tr><td>$e^{100}$</td><td>10</td><td>-8.499658</td></tr><tr><td>$e^{300}$</td><td>26</td><td>-34.085499</td></tr><tr><td>$e^{1000}$</td><td>72</td><td>-149.592203</td></tr><tr><td>$e^{3000}$</td><td>187</td><td>-509.532961</td></tr></tbody></table></div>
 
+    <h3>The compact inverse has an optimal logarithmic modulus</h3>
+    <p>The statistical upper bound also yields a population stability theorem. For a mixing law $\mu$ on
+      $[a,a+B]$, write $P_\mu$ for its one-count mixed-Poisson law and define</p>
+    $$\omega_{a,B}(\delta)=\sup\{W_1(\mu,\nu):
+      d_{\rm TV}(P_\mu,P_\nu)\le\delta\}.$$
+    <p>Fix one measurable version of the moment estimator above. Maximally couple $n$ iid counts from
+      $P_\mu$ and $P_\nu$, and apply the same estimator to the coupled samples. They agree with probability at
+      least $(1-\delta)^n$. On the complementary event, two estimator outputs supported on $[a,a+B]$ are at
+      Wasserstein distance at most $B$. The triangle inequality therefore gives</p>
+    $$\omega_{a,B}(\delta)\le 2R_{n,L}+B\{1-(1-\delta)^n\},$$
+    <p>where $R_{n,L}$ is the preceding worst-case estimator bound. In particular, with $M=a+B$ and
+      $A_M=\max(1,M^{-1})$,</p>
+    <div class="equation-card">
+    $$\omega_{a,B}(\delta)\le {4C_JM\over L}
+      +{12(B+C_JM)(L+1)^{3/2}\over\sqrt n}
+       \{14\sqrt{A_ML}\}^{L}
+      +B\{1-(1-\delta)^n\}.$$
+    </div>
+    <p>This holds for every positive integer $n,L$. Taking
+      $n=\lfloor\delta^{-1/2}\rfloor$ and
+      $L=\lfloor c\log n/\log\log n\rfloor$ for any fixed $0&lt;c&lt;1$ makes the last two terms negligible
+      relative to $1/L$, and proves</p>
+    $$\omega_{a,B}(\delta)=O\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right).$$
+    <p>The order cannot be improved. For the even/odd binomial pair used in the minimax lower bound,</p>
+    $$W_1(\mu_{L,+},\mu_{L,-})={B\over L},\qquad
+      d_{\rm TV}(P_{L,+},P_{L,-})\le
+      \delta_L=(1-e^{-B/L})^L.$$
+    <p>Hence $\omega_{a,B}(\delta_L)\ge B/L$. More generally, for every sufficiently small $\delta$, choosing
+      $L$ of order $\log(1/\delta)/\log\log(1/\delta)$ makes $\delta_L\le\delta$ and gives the reverse order.
+      Therefore</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \omega_{a,B}(\delta)=\Theta\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right),
+      \qquad \delta\downarrow0.}$$
+    </div>
+    <p>This is a positive compact-support stability statement in $W_1$, not in total variation. It complements
+      the minimax theorem of <a href="./bibliography.html#MiaoEtAl2024">Miao et al.</a>: the same logarithmic
+      ill-posedness governs both population inversion and unrestricted statistical recovery. On $[4,5]$, the
+      certificate&apos;s lower scaled separation reaches
+      0.781716448592 at $L=1024$ on its slow approach to
+      one. At $\log(1/\delta)=10{,}000$, the upper construction selects $L=293$;
+      the logarithms of its stochastic and sample-disagreement
+      terms are -886.085546 and
+      -5000.000000.</p>
     <h3>The point-mass submodel has the parametric rate</h3>
     <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
     $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}
@@ -616,10 +665,9 @@
       \sqrt{9/\pi}=1.692568750643.$$
     <div class="table-wrap"><table class="impl"><thead><tr><th>$n$</th><th>exact sample-mean risk</th><th>$\sqrt n$ times risk</th></tr></thead><tbody><tr><td>10</td><td>0.534246988258</td><td>1.689437315979</td></tr><tr><td>100</td><td>0.169225534106</td><td>1.692255341057</td></tr><tr><td>1,000</td><td>0.053522732314</td><td>1.692537407073</td></tr><tr><td>10,000</td><td>0.016925656162</td><td>1.692565616172</td></tr><tr><td>100,000</td><td>0.005352371360</td><td>1.692568438025</td></tr><tr><td>1,000,000</td><td>0.001692568709</td><td>1.692568708891</td></tr></tbody></table></div>
 
-    <p>This upper bound applies only to the one-parameter family of point masses. An arbitrary law in
-      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the unrestricted nonparametric upper rate
-      remains a separate inverse problem, consistent with the smoothness restrictions in
-      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
+    <p>This sample-mean upper bound applies only to the one-parameter family of point masses. An arbitrary law in
+      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the moment estimator above attains the
+      slower unrestricted logarithmic rate.</p>
     <h3>What common shocks add</h3>
     <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
       $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
