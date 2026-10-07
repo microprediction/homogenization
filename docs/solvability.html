@@ -273,6 +273,35 @@
     semigroup or a Fourier inversion. In particular it does not replace the separate initial-layer and transform-tail
     estimates needed elsewhere on the site.</p>
 
+    <h3>The slow amplitude has a certified series too</h3>
+    <p>The same contour also controls the spectral projection, which is the missing object when initial data are not
+    already aligned with the slow mode. Let</p>
+    $$P(z)=\frac{1}{2\pi i}\int_{|w|=r}
+      (wI-Q-zD_f)^{-1}\,dw=\sum_{m\ge0}P_mz^m.$$
+    <p>Here adding the scalar $\bar g I$ changes the slow eigenvalue but not this projection. In particular,</p>
+    $$P_0=\mathbf1\pi,\qquad
+      P_1=-R D_fP_0-P_0D_fR,$$
+    <p>where $R=Q^\#$. For every $0&lt;\rho&lt;\rho_r$, the singular-value perturbation inequality gives, uniformly on
+    $|z|=\rho$,</p>
+    $$\|P(z)\|_2\le M_\rho,\qquad
+      M_\rho=\frac{r}{s_r-\rho\|D_f\|_2}.$$
+    <p>Applying the vector-valued Cauchy formula coefficient by coefficient therefore yields the explicit operator
+    remainder</p>
+    <div class="equation-card">
+    $$\left\|P(\varepsilon)-\sum_{m=0}^{p}P_m\varepsilon^m\right\|_2
+      \le M_\rho\,
+      \frac{(|\varepsilon|/\rho)^{p+1}}{1-|\varepsilon|/\rho},
+      \qquad |\varepsilon|&lt;\rho.$$
+    </div>
+    <p>Consequently the same right-hand side, multiplied by $\|v\|_2$, certifies the error in the slow amplitude
+    $P(\varepsilon)v$ selected by arbitrary initial data $v$. This isolates amplitude matching from eigenvalue
+    truncation. It still does not bound the complementary fast semigroup, whose nonnormal transient growth and
+    initial layer require a separate contour or time-domain estimate.</p>
+    <p>For the nonreversible three-state certificate below, the same rigorously sampled contour gives
+    $\rho_r\ge2.103817190523$. The exact projector is computed independently from paired left and right eigenvectors.
+    Its first-order remainder converges with measured order $1.998987$, and the largest observed error is only
+    $0.020318$ of the displayed Cauchy bound.</p>
+
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
     two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>

@@ -9,14 +9,17 @@ It checks the reported obstruction to centering the *whole* first
 coefficient, verifies the corrected average/shape recursion, and compares
 the resulting first-order outer approximation with the exact matrix
 exponential.  It also checks an exact slow/fast modal split and the uniform
-first-order composite obtained by restoring the leading initial layer.
+first-order composite obtained by restoring the leading initial layer.  A
+nonnormal three-state example additionally certifies the analytic slow
+spectral-projector series, including its first derivative and a computable
+Cauchy remainder for the initial-data amplitude.
 """
 
 from __future__ import annotations
 
 import numpy as np
 from scipy.integrate import quad_vec
-from scipy.linalg import expm
+from scipy.linalg import eig, expm
 
 
 Q = np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -311,6 +314,50 @@ def main() -> None:
     ]
     assert max(cauchy_ratios) < 0.009
 
+    # The same contour also controls the slow spectral projector, hence the
+    # amplitude selected by arbitrary initial data.  The exact projector is
+    # computed independently from paired left/right eigenvectors.  Its first
+    # derivative at zero is the standard reduced-resolvent expression
+    #
+    #     P_1 = -Q# D_f P_0 - P_0 D_f Q#.
+    #
+    # On |z|=rho, the contour resolvent is bounded by
+    # 1/(s_r-rho||D_f||), so ||P(z)|| <= r/(s_r-rho||D_f||).
+    p0 = np.outer(np.ones(3), pi3)
+    df3 = np.diag(centered3)
+    p1 = -qs3 @ df3 @ p0 - p0 @ df3 @ qs3
+    projector_errors: list[float] = []
+    for eps in epsilons:
+        scipy_values, left, right = eig(q3 + eps * df3, left=True, right=True)
+        slow_index = int(np.argmin(np.abs(scipy_values)))
+        left_vector = left[:, slow_index]
+        right_vector = right[:, slow_index]
+        exact_projector = np.outer(right_vector, left_vector.conj()) / np.vdot(
+            left_vector, right_vector
+        )
+        projector_errors.append(
+            float(np.linalg.norm(exact_projector - p0 - eps * p1, 2))
+        )
+
+    projector_order = observed_order(projector_errors, epsilons)
+    assert 1.94 < projector_order < 2.06
+    projector_cauchy_radius = 0.5 * certified_epsilon_radius
+    projector_sup_bound = contour_radius / (
+        certified_smin
+        - projector_cauchy_radius * np.linalg.norm(df3, 2)
+    )
+    projector_bounds = [
+        projector_sup_bound
+        * (eps / projector_cauchy_radius) ** 2
+        / (1.0 - eps / projector_cauchy_radius)
+        for eps in epsilons
+    ]
+    projector_bound_ratios = [
+        error / bound
+        for error, bound in zip(projector_errors, projector_bounds)
+    ]
+    assert max(projector_bound_ratios) < 1.0
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -340,6 +387,8 @@ def main() -> None:
     print(f"M-coefficient convergence order     {m_coefficient_order:.6f}")
     print(f"certified eigen-series radius       {certified_epsilon_radius:.12e}")
     print(f"largest cubic error / Cauchy bound  {max(cauchy_ratios):.6f}")
+    print(f"first-order projector error order   {projector_order:.6f}")
+    print(f"largest projector error / bound     {max(projector_bound_ratios):.6f}")
     print("ok")
 
 
