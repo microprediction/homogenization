@@ -183,6 +183,21 @@
     <a href="./layers.html">initial or terminal layer</a> when one is present. Centering the whole $u_{m+1}$ would set
     $a_{m+1}=0$ prematurely and can make the next Poisson equation insoluble.</p>
 
+    <h3>The missing amplitude is the Green&ndash;Kubo correction</h3>
+    <p>For a time-independent scalar forcing $G=\operatorname{diag}g$, put
+    $\bar g=\pi g$ and $\widetilde g=g-\bar g\mathbf1$. Then $a_0=e^{\bar g t}$ and the first centered shape is</p>
+    $$\chi_1=-a_0Q^{\#}\widetilde g.$$
+    <p>The next solvability condition becomes</p>
+    $$a_1'-\bar g a_1=K a_0,\qquad
+      K=-\pi\!\left(\widetilde g\,Q^{\#}\widetilde g\right)
+       =\int_0^\infty\operatorname{Cov}_\pi\big(g(y_0),g(y_s)\big)\,ds.$$
+    <p>With regime-free initial data, first-order matching gives $a_1(0)=0$, so $a_1=tK a_0$. Therefore the
+    null-space amplitude that centering would discard is exactly the first Green&ndash;Kubo correction to the slow
+    eigenvalue. For the accelerated generator $Q/\varepsilon$,</p>
+    $$\lambda_{\mathrm{slow}}(\varepsilon)=\bar g+\varepsilon K+O(\varepsilon^2).$$
+    <p>This scalar corollary holds without reversibility. It is the constant-forcing specialization of the normalized
+    average/shape recursion on the <a href="./engine.html">engine page</a>.</p>
+
     <h3>A two-state obstruction</h3>
     <p>For a minimal example, take</p>
     $$Q=\begin{pmatrix}-1&1\\1&-1\end{pmatrix},\qquad

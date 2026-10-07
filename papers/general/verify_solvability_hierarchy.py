@@ -52,6 +52,17 @@ def observed_order(errors: list[float], epsilons: np.ndarray) -> float:
     return float(np.polyfit(np.log(epsilons[-4:]), np.log(errors[-4:]), 1)[0])
 
 
+def stationary(q: np.ndarray) -> np.ndarray:
+    values, vectors = np.linalg.eig(q.T)
+    pi = np.real(vectors[:, np.argmin(np.abs(values))])
+    return pi / pi.sum()
+
+
+def group_inverse(q: np.ndarray, pi: np.ndarray) -> np.ndarray:
+    p = np.outer(np.ones(len(pi)), pi)
+    return np.linalg.inv(q - p) + p
+
+
 def main() -> None:
     ident = np.eye(2)
     assert np.max(np.abs(Q @ QSHARP - (ident - P))) < 2e-15
@@ -104,6 +115,39 @@ def main() -> None:
     assert 1.94 < first_order < 2.06
     assert 2.88 < second_order < 3.12
 
+    # A nonreversible three-state check of the general constant-forcing
+    # corollary.  For A_eps=Q/eps+diag(g), the first slow-eigenvalue
+    # correction and the null-space amplitude have coefficient
+    # K=-pi.(g~ Q# g~).
+    q3 = np.array([[-2.1, 2.0, 0.1], [0.1, -2.1, 2.0], [2.0, 0.1, -2.1]])
+    g3 = np.array([1.1, -0.4, 0.6])
+    pi3 = stationary(q3)
+    qs3 = group_inverse(q3, pi3)
+    centered3 = g3 - pi3 @ g3
+    k3 = -float(pi3 @ (centered3 * (qs3 @ centered3)))
+    a3 = np.exp(float(pi3 @ g3) * t)
+    u03 = a3 * np.ones(3)
+    chi13 = -a3 * (qs3 @ centered3)
+    u13 = t * k3 * a3 * np.ones(3) + chi13
+    centered3_errors: list[float] = []
+    full3_errors: list[float] = []
+    eigen3_errors: list[float] = []
+    for eps in epsilons:
+        generator = q3 / eps + np.diag(g3)
+        target = expm(generator * t) @ np.ones(3)
+        centered3_errors.append(float(np.linalg.norm(target - (u03 + eps * chi13), np.inf)))
+        full3_errors.append(float(np.linalg.norm(target - (u03 + eps * u13), np.inf)))
+        eigenvalues = np.linalg.eigvals(generator)
+        slow_eigenvalue = eigenvalues[np.argmax(np.real(eigenvalues))]
+        eigen3_errors.append(abs(float(np.real(slow_eigenvalue) - pi3 @ g3) / eps - k3))
+
+    centered3_order = observed_order(centered3_errors, epsilons)
+    full3_order = observed_order(full3_errors, epsilons)
+    eigen3_order = observed_order(eigen3_errors, epsilons)
+    assert 0.96 < centered3_order < 1.04
+    assert 1.94 < full3_order < 2.08
+    assert 0.96 < eigen3_order < 1.04
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -114,6 +158,10 @@ def main() -> None:
     print(f"smallest-eps centered error         {centered_errors[-1]:.12e}")
     print(f"smallest-eps first-order error      {first_errors[-1]:.12e}")
     print(f"smallest-eps second-order error     {second_errors[-1]:.12e}")
+    print(f"three-state Green-Kubo coefficient  {k3:.12e}")
+    print(f"three-state centered-only order     {centered3_order:.6f}")
+    print(f"three-state full first order        {full3_order:.6f}")
+    print(f"three-state eigen-coefficient order {eigen3_order:.6f}")
     print("ok")
 
 
