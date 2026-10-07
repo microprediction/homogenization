@@ -59,6 +59,7 @@ from scipy.stats import norm
 TARGET = 0.90
 MU = 1.0
 SIGMA = 0.5
+BERRY_ESSEEN_CONSTANT = 0.4748
 
 
 def window_covariance(
@@ -563,6 +564,31 @@ def binary_relative_entropy_from_half(probability: float) -> float:
     return (
         probability * math.log(2.0 * probability)
         + (1.0 - probability) * math.log(2.0 * (1.0 - probability))
+    )
+
+
+def iid_panel_fixed_test_crossover_bound(
+    calibration_count: int,
+    order: int,
+) -> float:
+    """Berry--Esseen error bound for the central marginal-shift scaling."""
+    if not (1 <= order <= calibration_count):
+        raise ValueError("order must be between one and calibration_count")
+    trials = calibration_count + 1
+    root_trials = math.sqrt(trials)
+    standardized_rank = (2 * order - trials) / root_trials
+    order_fraction = order / trials
+    return (
+        trials
+        / calibration_count
+        * (
+            BERRY_ESSEEN_CONSTANT / root_trials
+            + (1.0 - order_fraction)
+            * math.sqrt(2.0 / math.pi)
+            / root_trials
+            + abs(standardized_rank) / (2.0 * root_trials)
+        )
+        + 1.0 / (2.0 * calibration_count)
     )
 
 
@@ -2990,6 +3016,34 @@ def main() -> None:
     assert outer_bound_excess < 2e-16
     assert outer_bound_ratio < 1.0
 
+    berry_esseen_excess = -math.inf
+    central_berry_esseen_ratio = 0.0
+    for candidate_count in range(2, 201):
+        trials = candidate_count + 1
+        for candidate_order in range(1, candidate_count + 1):
+            standardized_rank = (
+                2 * candidate_order - trials
+            ) / math.sqrt(trials)
+            scaled_shift = trials * iid_panel_fixed_test_marginal_shift(
+                candidate_count, candidate_order
+            )
+            gaussian_limit = norm.cdf(standardized_rank) - 0.5
+            approximation_error = abs(scaled_shift - gaussian_limit)
+            berry_esseen_bound = iid_panel_fixed_test_crossover_bound(
+                candidate_count, candidate_order
+            )
+            berry_esseen_excess = max(
+                berry_esseen_excess,
+                approximation_error - berry_esseen_bound,
+            )
+            if abs(standardized_rank) <= 2.1:
+                central_berry_esseen_ratio = max(
+                    central_berry_esseen_ratio,
+                    approximation_error / berry_esseen_bound,
+                )
+    assert berry_esseen_excess < 1e-15
+    assert central_berry_esseen_ratio < 1.0
+
     crossover_errors = []
     crossover_rows = []
     for trials in (32, 128, 512):
@@ -3036,6 +3090,12 @@ def main() -> None:
     print(
         "central Gaussian crossover max errors at n=32,128,512: "
         + ", ".join(f"{error:.9f}" for error in crossover_errors)
+    )
+    print(
+        "Berry--Esseen crossover envelope over N=2,...,200: "
+        f"max error-minus-bound {berry_esseen_excess:.9f}; "
+        "max central error/bound "
+        f"{central_berry_esseen_ratio:.9f}"
     )
     print(" n      x_n        n D_N,k      Phi(x_n)-1/2")
     for trials, standardized_rank, scaled_shift, gaussian_limit in (

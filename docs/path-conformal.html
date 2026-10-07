@@ -941,9 +941,25 @@
     <div class="equation-card">
     $$nD_{N,k}\longrightarrow \Phi(x)-\frac12.$$
     </div>
+    <p>This convergence also has a fully explicit finite-$n$ error. Set
+      $x_n=(2k-n)/\sqrt n$ and let $C_{\rm BE}=0.4748$, the iid Berry&ndash;Esseen constant available from
+      <a href="./bibliography.html#Shevtsova2011">Shevtsova&apos;s bound</a>. Applying that inequality to the standardized
+      binomial CDF at the two adjacent lattice points $x_n-2/\sqrt n$ and $x_n$, and bounding the intervening
+      normal mass by $2/\sqrt{2\pi n}$, gives</p>
+    <div class="equation-card">
+    $$\left|nD_{N,k}-\left\{\Phi(x_n)-\frac12\right\}\right|
+      \le {n\over n-1}{C_{\rm BE}+(1-k/n)\sqrt{2/\pi}+|x_n|/2\over\sqrt n}
+      +{1\over2(n-1)}.$$
+    </div>
+    <p>In particular, uniformly over $|x_n|\le K$, the right side is at most</p>
+    <div class="equation-card">
+    $$ {n\over n-1}{C_{\rm BE}+\tfrac12\sqrt{2/\pi}+K/2+
+       K\sqrt{2/\pi}/(2\sqrt n)\over\sqrt n}+{1\over2(n-1)}.$$
+    </div>
     <p>The certificate checks the two finite-$N$ Chernoff inequalities for every order at $N=2,\ldots,200$ and
-      the central crossover at $n=32,128,512$. These are marginal-mean statements in the fixed-test-memory limit;
-      they neither remove the changed training-conditional tail nor assert feature-conditional coverage.</p>
+      checks the Berry&ndash;Esseen envelope over the same complete rank grid, as well as the central crossover at
+      $n=32,128,512$. These are marginal-mean statements in the fixed-test-memory limit; they neither remove the
+      changed training-conditional tail nor assert feature-conditional coverage.</p>
     <p>For the sample maximum $M=Q_N$, the limiting coverage conditional on the realized iid calibration panel is
       exactly</p>
     <div class="equation-card">
