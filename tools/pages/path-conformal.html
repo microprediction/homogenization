@@ -801,11 +801,24 @@
       \end{cases}$$
     </div>
     <p>At $a=0$ this mixture collapses to the iid law $I_p(k,N+1-k)$. For fixed $a&gt;0$ it generally does not.
-      Fixed test memory can also change marginal coverage: the corresponding conditional-component means are
-      $\rho_y k/(z+1)$ for $z\ge k$ and
-      $\rho_y+(1-\rho_y)(k-z)/(N-z+1)$ for $z&lt;k$, averaged with the same binomial weights. Thus convergence of
-      the calibration panel to iid does not by itself restore either the iid training-conditional law or, in
-      general, the iid mean $k/(N+1)$.</p>
+      The marginal effect has a particularly simple closed form. If $B\sim\operatorname{Binomial}(N+1,1/2)$,
+      then</p>
+    <div class="equation-card">
+    $$E C_a=\frac{k}{N+1}+aD_{N,k},\qquad
+      D_{N,k}=\frac{(N-k+1)\Pr(B\le k-1)-k\Pr(B\ge k+1)}{N(N+1)}.$$
+    </div>
+    <p>Indeed, conditionally on the iid threshold $Q_k=q$, the last score has lower-minus-upper-half mean</p>
+    $$E[1-2Y_N\mid Q_k=q]=
+      \begin{cases}
+      (k-Nq)/\{N(1-q)\},&amp;q&lt;1/2,\\
+      (k-1-Nq)/(Nq),&amp;q&gt;1/2.
+      \end{cases}$$
+    <p>The test CDF is $C_a=Q_k+a(1-2Y_N)\min(Q_k,1-Q_k)$. Integrating the two pieces against the
+      $\operatorname{Beta}(k,N+1-k)$ density and integrating by parts gives the binomial-tail coefficient above.
+      In particular $D_{N,N+1-k}=-D_{N,k}$, so the central order statistic has no marginal shift when $N$ is odd,
+      although its training-conditional distribution can still change. Thus convergence of the calibration panel
+      to iid does not by itself restore either the iid training-conditional law or, in general, the iid mean
+      $k/(N+1)$.</p>
     <p>For the sample maximum $M=Q_N$, the limiting coverage conditional on the realized iid calibration panel is
       exactly</p>
     <div class="equation-card">
@@ -843,7 +856,9 @@
       </tbody>
     </table>
     <p>The finite mixture agrees with exact Markov-path enumeration for all nine order statistics to
-      $4.98\times10^{-14}$ once the within-panel stride is 128. This exact calculation complements the marginal
+      $4.98\times10^{-14}$ once the within-panel stride is 128. The closed marginal coefficient agrees with the
+      independent component-mean mixture for every $2\le N\le20$ and every $k$ to $2.50\times10^{-16}$, while its
+      reflection identity holds to machine zero. This exact calculation complements the marginal
       mixing and thinning guarantees of <a href="https://proceedings.mlr.press/v235/zheng24j.html">Zheng and
       Proutiere (2024)</a>: it isolates the separate final-gap memory that a calibration-only mixing statement
       cannot remove.</p>

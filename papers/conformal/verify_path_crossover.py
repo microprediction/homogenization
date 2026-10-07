@@ -527,6 +527,35 @@ def iid_panel_fixed_test_mean_coverage(
     return coverage
 
 
+def iid_panel_fixed_test_marginal_shift(
+    calibration_count: int,
+    order: int,
+) -> float:
+    """Coefficient of final-memory correlation in marginal coverage.
+
+    If ``B`` is Binomial(calibration_count + 1, 1/2), the coefficient is
+
+    ((N-k+1) P(B <= k-1) - k P(B >= k+1)) / (N(N+1)).
+
+    This is obtained independently by conditioning on the iid kth order
+    statistic and integrating the last score's lower/upper-half sign.
+    """
+    if not (1 <= order <= calibration_count):
+        raise ValueError("order must be between one and calibration_count")
+    trials = calibration_count + 1
+    denominator = 2.0**trials
+    lower_tail = sum(
+        math.comb(trials, count) for count in range(order)
+    ) / denominator
+    upper_tail = sum(
+        math.comb(trials, count) for count in range(order + 1, trials + 1)
+    ) / denominator
+    return (
+        (calibration_count - order + 1) * lower_tail
+        - order * upper_tail
+    ) / (calibration_count * trials)
+
+
 @lru_cache(maxsize=None)
 def binary_panel_order_components(
     calibration_count: int,
@@ -2873,10 +2902,47 @@ def main() -> None:
                 )
             ) < 3e-15
 
+    marginal_shift_error = 0.0
+    marginal_symmetry_error = 0.0
+    for candidate_count in range(2, 21):
+        for candidate_order in range(1, candidate_count + 1):
+            shift = iid_panel_fixed_test_marginal_shift(
+                candidate_count, candidate_order
+            )
+            mixture_mean = iid_panel_fixed_test_mean_coverage(
+                candidate_count, candidate_order, 0.37
+            )
+            marginal_shift_error = max(
+                marginal_shift_error,
+                abs(
+                    mixture_mean
+                    - candidate_order / (candidate_count + 1)
+                    - 0.37 * shift
+                ),
+            )
+            reflected_shift = iid_panel_fixed_test_marginal_shift(
+                candidate_count,
+                candidate_count + 1 - candidate_order,
+            )
+            marginal_symmetry_error = max(
+                marginal_symmetry_error,
+                abs(shift + reflected_shift),
+            )
+    assert marginal_shift_error < 4e-16
+    assert marginal_symmetry_error < 2e-17
+    assert abs(
+        iid_panel_fixed_test_marginal_shift(9, 9) - 251 / 23040
+    ) < 2e-17
+
     print("\nAll-order-statistic fixed-test-memory law")
     print(
         f"zero-memory beta-law max error: {zero_memory_error:.3e}; "
         f"stride-128 enumeration max error: {stride_limit_error:.3e}"
+    )
+    print(
+        "closed marginal-shift max error over N=2,...,20: "
+        f"{marginal_shift_error:.3e}; reflection error: "
+        f"{marginal_symmetry_error:.3e}"
     )
     print(" k    iid failure   fixed-memory failure   mean coverage")
     for candidate_order, iid_failure, fixed_failure, mean_coverage in (
