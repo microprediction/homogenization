@@ -879,6 +879,26 @@
       third-order exponent. On every subcritical family $T=o(m^4)$, both the residual contribution and the
       $O(m^{-1})$ initial normalization vanish. The certificate therefore distinguishes an all-maturity
       exact-Floquet approximation from a computable truncated approximation with a rigorously stated horizon.</p>
+    <p>One additional recursion step resolves that same formerly critical window. Retain the exponent through
+      $m^{-4}$ and the trial profile through $m^{-5}$. The exact rational relative residual is then
+      $O(m^{-5})$, so its contribution at $T=2\pi m^4$ is $O(m^{-1})$ rather than $O(1)$; the initial
+      normalization is also $O(m^{-1})$. The resulting proof-grade bracket is</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>lower log-error bound</th><th>monodromy check</th><th>upper log-error bound</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;0.919378</td><td>&minus;0.000218157</td><td>0.921164</td></tr>
+        <tr><td>16</td><td>&minus;0.456303</td><td>&minus;0.000139123</td><td>0.457213</td></tr>
+        <tr><td>32</td><td>&minus;0.227309</td><td>&minus;0.0000763289</td><td>0.227768</td></tr>
+        <tr><td>64</td><td>&minus;0.113464</td><td>&minus;0.0000396360</td><td>0.113697</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The larger endpoint has measured order $1.00237$ on the final doubling, and the $m=64$ radius is
+      $28.96$ times smaller than the third-order radius at the same maturity. This is a fixed-order,
+      fixed-window statement: it does not assert convergence as the truncation order grows, nor does it make
+      the fourth-order truncation uniform over all maturities. Its own generally critical window is
+      $T\asymp m^5$.</p>
     <p>The construction meshes directly with the all-order recursion. For an exponent truncated through
       $m^{-N}$, use</p>
     $$\widehat u_{m,N}=\sum_{n=0}^{N+1}{u_n\over m^n},\qquad
@@ -948,6 +968,10 @@
       ($[-2.85382,2.31571]\times10^{-8}$ at $m=64$), but it is not used in the rational certificate. Hence the
       theorem is exact, the displayed rational bracket is proof-grade for its explicit positive trial polynomial,
       and the monodromy and phase-mesh comparisons are reproducibility diagnostics with clearly separate scope.</p>
+    <p>Applying the same exact construction one recursion step later, with the exponent through $m^{-4}$ and
+      profile through $m^{-5}$, gives a residual radius of order $5.00228$. At $m=64$ the exponent-error
+      enclosure is $[-1.06002,1.06463]\times10^{-9}$ and the explicit trial profile remains above $0.9$.
+      This is the certificate used in the shrinking former-critical-window table above.</p>
 
     <h3>The sharp maturity crossover for a truncated exponent</h3>
     <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,
