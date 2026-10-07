@@ -8,6 +8,8 @@ boundary, an exact conditional-Gaussian one-dimensional pricing formula, and
 its reduction to the one-factor formula.  It also certifies a closed-form
 tail bound for truncating the remaining Gaussian integral and the general
 d-factor-to-(d-1)-factor conditioning identity with its boundary Hessian.
+It also certifies an oblique conditioning direction in a case where no
+original coordinate has cash-flow loadings of one sign.
 """
 
 from itertools import product
@@ -228,6 +230,29 @@ def multifactor_boundary_derivatives(y, z, loadings, weights):
         start=np.zeros((len(y), len(y))),
     ) / denominator
     return gradient, hessian
+
+
+def rotate_conditioning_problem(loadings, mean, covariance, direction):
+    """Rotate a Gaussian problem so ``direction`` is the last coordinate."""
+    loadings = np.asarray(loadings, dtype=float)
+    mean = np.asarray(mean, dtype=float)
+    covariance = np.asarray(covariance, dtype=float)
+    direction = np.asarray(direction, dtype=float)
+    direction = direction / np.linalg.norm(direction)
+    _, _, right_vectors = np.linalg.svd(direction.reshape(1, -1))
+    complement = right_vectors[1:].T
+    frame = np.column_stack((complement, direction))
+    assert np.max(np.abs(frame.T @ frame - np.eye(len(direction)))) < 1e-14
+    rotated_loadings = [
+        (complement.T @ loading, float(direction @ loading))
+        for loading in loadings
+    ]
+    assert all(q > 0 for _, q in rotated_loadings)
+    return (
+        rotated_loadings,
+        frame.T @ mean,
+        frame.T @ covariance @ frame,
+    )
 
 
 def multifactor_conditional_price(
@@ -588,6 +613,79 @@ def main():
     assert abs(reduced_price_36 - reduced_price_28) < 2e-10
     assert abs(reduced_price_36 - independent_inner_price) < 2e-11
 
+    # No original coordinate works in this example: every column contains
+    # both positive and negative loadings.  But the loading hull lies in the
+    # plane b.u=1.2/sqrt(3), so u=(1,1,1)/sqrt(3) strictly separates it from
+    # the origin.  The barycenter is the closest hull point, proving the
+    # separation margin (and hull distance) exactly for this symmetric case.
+    oblique_loadings = np.array([
+        [2.0, -0.4, -0.4],
+        [-0.4, 2.0, -0.4],
+        [-0.4, -0.4, 2.0],
+    ])
+    coordinate_minima = np.min(oblique_loadings, axis=0)
+    coordinate_maxima = np.max(oblique_loadings, axis=0)
+    assert np.all(coordinate_minima < 0)
+    assert np.all(coordinate_maxima > 0)
+    first_direction = np.ones(3) / sqrt(3)
+    first_margins = oblique_loadings @ first_direction
+    separation_margin = float(np.min(first_margins))
+    hull_nearest_point = np.mean(oblique_loadings, axis=0)
+    hull_distance = float(np.linalg.norm(hull_nearest_point))
+    assert np.max(first_margins) - separation_margin < 1e-14
+    assert np.linalg.norm(
+        hull_nearest_point - separation_margin * first_direction
+    ) < 1e-14
+    assert abs(hull_distance - separation_margin) < 1e-14
+    second_direction = np.array([1.2, 1.0, 1.0])
+    second_direction /= np.linalg.norm(second_direction)
+    second_margin = float(np.min(oblique_loadings @ second_direction))
+    assert second_margin > 0
+
+    oblique_weights = [0.7, 0.9, 1.1]
+    oblique_strike = sum(oblique_weights)
+
+    def oblique_price(direction, order, numerical_inner=False):
+        rotated = rotate_conditioning_problem(
+            oblique_loadings, three_factor_mean,
+            three_factor_covariance, direction,
+        )
+        return multifactor_conditional_price(
+            rotated[0], oblique_weights, oblique_strike,
+            rotated[1], rotated[2], order=order,
+            numerical_inner=numerical_inner,
+        )
+
+    oblique_prices_36 = [
+        oblique_price(direction, 36)
+        for direction in (first_direction, second_direction)
+    ]
+    oblique_prices_44 = [
+        oblique_price(direction, 44)
+        for direction in (first_direction, second_direction)
+    ]
+    oblique_inner_28 = [
+        oblique_price(direction, 28, numerical_inner=True)
+        for direction in (first_direction, second_direction)
+    ]
+    oblique_analytic_28 = [
+        oblique_price(direction, 28)
+        for direction in (first_direction, second_direction)
+    ]
+    oblique_direction_discrepancy = abs(
+        oblique_prices_44[0] - oblique_prices_44[1]
+    )
+    oblique_inner_discrepancy = max(
+        abs(analytic - numerical)
+        for analytic, numerical in zip(oblique_analytic_28, oblique_inner_28)
+    )
+    assert max(
+        abs(coarse - fine)
+        for coarse, fine in zip(oblique_prices_36, oblique_prices_44)
+    ) < 1e-12
+    assert oblique_direction_discrepancy < 1e-12
+    assert oblique_inner_discrepancy < 2e-12
+
     print("loadings:", loadings)
     print("determinant:", f"{det:.12f}")
     print("boundary z(-0.1), z(0), z(0.1):", tuple(f"{z:.12f}" for z in zs))
@@ -625,6 +723,18 @@ def main():
           f"{reduced_price_28:.12f}", f"{reduced_price_36:.12f}")
     print("three-factor analytic/numerical-inner discrepancy:",
           f"{abs(reduced_price_36 - independent_inner_price):.3e}")
+    print("oblique coordinate loading ranges:", tuple(
+        (f"{minimum:.1f}", f"{maximum:.1f}")
+        for minimum, maximum in zip(coordinate_minima, coordinate_maxima)
+    ))
+    print("oblique separation margin / hull distance / second margin:",
+          f"{separation_margin:.12f}", f"{hull_distance:.12f}",
+          f"{second_margin:.12f}")
+    print("oblique prices along two directions:",
+          *(f"{price:.15f}" for price in oblique_prices_44))
+    print("oblique direction / numerical-inner discrepancies:",
+          f"{oblique_direction_discrepancy:.3e}",
+          f"{oblique_inner_discrepancy:.3e}")
     print("PASS: curved Gaussian boundaries and exact dimension reduction")
 
 

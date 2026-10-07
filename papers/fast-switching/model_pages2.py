@@ -907,14 +907,21 @@ def instruments_page():
     $$\int \phi_X(x)\left[\sum_k w_k e^{-p_kx-q_km(x)+q_k^2s^2/2}
       \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
       -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
-    <p>The reduction is not special to two factors. Let $(Y,Z)$ be jointly Gaussian with
-      $Y\in\mathbb R^{d-1}$ and write each loading as $(p_k,q_k)$, where $p_k\in\mathbb R^{d-1}$ and every
-      $q_k&gt;0$. Conditional Gaussian regression gives $Z\mid Y=y\sim N(m(y),s^2)$ with affine $m$ and constant
+    <p>The reduction is not special to two factors or to a coordinate chosen in advance. Let the cash-flow loading
+      vectors be $b_k\in\mathbb R^d$. There is a direction $u$ with $b_k^\top u&gt;0$ for every $k$ exactly when</p>
+    $$0\notin\operatorname{conv}\{b_1,\ldots,b_n\}.$$
+    <p>Indeed, strict separation of the compact finite convex hull from the origin supplies such a $u$; conversely,
+      taking the inner product with a convex combination rules out the origin. Complete $u$ to an orthonormal frame
+      and write the Gaussian factor as $Vy+uz$. Then $p_k=V^\top b_k$ and $q_k=u^\top b_k&gt;0$.
+      Conditional Gaussian regression gives $Z\mid Y=y\sim N(m(y),s^2)$ with affine $m$ and constant
       $s^2$. For each $y$, the equation
       $\sum_kw_k\exp(-p_k^\top y-q_kz)=K$ has one root $z=\zeta(y)$, and the same displayed tilted-normal formula,
       with $p_kx$ replaced by $p_k^\top y$, integrates out $Z$ exactly. A $d$-factor coupon option is therefore
-      reduced to a $(d-1)$-dimensional Gaussian integral whenever one factor has strictly positive loadings for every
-      cash flow.</p>
+      reduced to a $(d-1)$-dimensional Gaussian integral exactly when the loading hull excludes the origin. The
+      conditioning direction may be oblique: requiring one of the original coordinates to have positive loadings is
+      only a sufficient special case. If the origin lies in the hull, no direction makes the coupon globally strictly
+      monotone in this way; this obstruction concerns this root-based reduction, not every conceivable pricing
+      algorithm.</p>
     <p>The boundary is a convex hypersurface. With
       $d_k=w_k\exp(-p_k^\top y-q_k\zeta(y))$ and
       $D=\sum_kd_kq_k$, implicit differentiation gives</p>
@@ -1019,7 +1026,12 @@ def instruments_page():
       $8.73332\times10^{-3}$, and centered finite differences agree with the Hessian identity within
       $3.38\times10^{-9}$. The analytic conditional formula gives
       $1.252075854512$ at both 28- and 36-point tensor Gauss&ndash;Hermite orders and agrees with independent adaptive
-      integration of the final Gaussian coordinate within $2.22\times10^{-16}$.</p>
+      integration of the final Gaussian coordinate within $2.22\times10^{-16}$. An oblique certificate has loading
+      rows $(2,-0.4,-0.4)$ and their cyclic permutations, so every coordinate changes sign. Nevertheless
+      $u=(1,1,1)/\sqrt3$ strictly separates their convex hull from zero with margin $0.692820323028$.
+      Conditioning along this direction and along the distinct direction proportional to $(1.2,1,1)$ gives the same
+      price, $0.216109447065$, within $2.78\times10^{-16}$; independent adaptive integration of the final coordinate
+      agrees within $1.11\times10^{-16}$.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
