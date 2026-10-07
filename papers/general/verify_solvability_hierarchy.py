@@ -279,6 +279,38 @@ def main() -> None:
     assert 0.85 < l_coefficient_order < 1.08
     assert 0.85 < m_coefficient_order < 1.08
 
+    # A certified analytic disk from a resolvent contour.  Singular values
+    # are 1-Lipschitz in the scalar spectral parameter.  Thus a regular
+    # N-point grid on |w|=r gives a rigorous lower bound after subtracting
+    # the maximum distance r*pi/N to the nearest sampled point.
+    contour_radius = 1.8
+    contour_points = 8192
+    angles = 2.0 * np.pi * np.arange(contour_points) / contour_points
+    sampled_smin = min(
+        np.linalg.svd(
+            contour_radius * np.exp(1j * angle) * np.eye(3) - q3,
+            compute_uv=False,
+        )[-1]
+        for angle in angles
+    )
+    certified_smin = sampled_smin - contour_radius * np.pi / contour_points
+    certified_epsilon_radius = certified_smin / np.linalg.norm(np.diag(centered3), 2)
+    assert certified_smin > 0.0
+    assert certified_epsilon_radius > 2.10
+
+    # Use a strict interior circle for Cauchy's estimate and verify the
+    # resulting fourth-order eigenvalue remainder at every tested epsilon.
+    cauchy_radius = 0.99 * certified_epsilon_radius
+    cauchy_bounds = [
+        contour_radius * eps**4
+        / (cauchy_radius**5 * (1.0 - eps / cauchy_radius))
+        for eps in epsilons
+    ]
+    cauchy_ratios = [
+        error / bound for error, bound in zip(eigen_klm_errors, cauchy_bounds)
+    ]
+    assert max(cauchy_ratios) < 0.009
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -306,6 +338,8 @@ def main() -> None:
     print(f"K+L+M eigenvalue residual order     {eigen_klm_order:.6f}")
     print(f"L-coefficient convergence order     {l_coefficient_order:.6f}")
     print(f"M-coefficient convergence order     {m_coefficient_order:.6f}")
+    print(f"certified eigen-series radius       {certified_epsilon_radius:.12e}")
+    print(f"largest cubic error / Cauchy bound  {max(cauchy_ratios):.6f}")
     print("ok")
 
 

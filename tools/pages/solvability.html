@@ -151,6 +151,31 @@
     cumulant, not the raw ordered four-time moment. Like $L$, $M$ is signed and has no positive-semidefinite or rank
     interpretation.</p>
 
+    <h3>A computable convergence disk and truncation bound</h3>
+    <p>The analytic neighborhood can be certified directly from the unperturbed generator, including for a
+    nonnormal chain. Choose $r&gt;0$ so that the circle $|w|=r$ separates the simple eigenvalue zero of $Q$ from every
+    other eigenvalue, and define</p>
+    $$s_r=\min_{|w|=r}\sigma_{\min}(wI-Q),\qquad
+      \rho_r=\frac{s_r}{\|D_f\|_2}.$$
+    <p>If $|z|&lt;\rho_r$, then on this circle</p>
+    $$\|zD_f(wI-Q)^{-1}\|_2&lt;1.$$
+    <p>The Neumann resolvent identity therefore keeps the circle in the resolvent set of $Q+zD_f$. Its Riesz
+    projection has the same rank one throughout the disk, so the slow eigenvalue $\mu(z)$ of $Q+zD_f$ is analytic
+    there and remains inside $|w|&lt;r$. This supplies a quantitative version of the local perturbation argument.</p>
+    <p>For any $0&lt;\rho&lt;\rho_r$, Cauchy&apos;s estimate applied to $\mu$ turns the recursion into the explicit remainder
+    bound</p>
+    <div class="equation-card">
+    $$\left|\lambda_{\mathrm{slow}}(\varepsilon)-\bar g
+      -\sum_{m=1}^{p}\kappa_m\varepsilon^m\right|
+      \le
+      \frac{r|\varepsilon|^{p+1}}
+      {\rho^{p+2}(1-|\varepsilon|/\rho)},
+      \qquad |\varepsilon|&lt;\rho.$$
+    </div>
+    <p>This is conservative but fully computable. It bounds the eigenvalue series, not a whole time-dependent
+    semigroup or a Fourier inversion. In particular it does not replace the separate initial-layer and transform-tail
+    estimates needed elsewhere on the site.</p>
+
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
     two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>
