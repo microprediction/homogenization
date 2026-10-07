@@ -14,7 +14,9 @@ nonreversible three-state example additionally certifies the analytic slow
 spectral-projector series, including its first derivative and a computable
 Cauchy remainder for the initial-data amplitude.  A second resolvent contour
 enclosing the fast spectrum certifies its exponentially decaying semigroup,
-including any nonnormal transient amplification.
+including any nonnormal transient amplification.  Finally the eigenvalue,
+projector, and fast estimates are combined into an all-time semigroup bound
+and checked on a growing t=eps^{-2}/4 maturity window.
 """
 
 from __future__ import annotations
@@ -418,6 +420,100 @@ def main() -> None:
             assert ratio < 1.0
     assert max(fast_bound_ratios) < 0.31
 
+    # Combining the two Cauchy remainders with the fast-contour estimate
+    # gives an end-to-end bound for the whole semigroup.  Write
+    #
+    #   lambda_3 = bar(g) + eps K + eps^2 L + eps^3 M,
+    #   P_1(eps) = P_0 + eps P_1.
+    #
+    # After division by exp(t lambda_3), the exact decomposition and the
+    # elementary exponential inequality imply
+    #
+    # ||exp(-t lambda_3) exp(t A_eps) - P_1(eps)||
+    # <= exp(t E_lambda) E_P
+    #    + ||P_1(eps)|| (exp(t E_lambda)-1)
+    #    + exp(t(bar(g)-lambda_3)) C_f exp(-gamma t/eps).
+    #
+    # Here E_lambda and E_P are precisely the certified Cauchy bounds
+    # above.  The formula is valid for every t >= 0 and exposes, rather
+    # than hides, the accumulation t E_lambda of the eigenvalue remainder.
+    # At t=eps^{-2}/4 the first-order projector and cubic eigenvalue
+    # truncations are both O(eps^2) on this normalized slow scale.
+    long_maturity_errors: list[float] = []
+    long_maturity_bounds: list[float] = []
+    identity_residuals: list[float] = []
+    bar_g3 = float(pi3 @ g3)
+    for eps, eigen_bound, projector_bound in zip(
+        epsilons, cauchy_bounds, projector_bounds
+    ):
+        perturbed = q3 + eps * df3
+        scipy_values, left, right = eig(perturbed, left=True, right=True)
+        slow_index = int(np.argmin(np.abs(scipy_values)))
+        spectral_projectors: list[np.ndarray] = []
+        for index in range(3):
+            spectral_projectors.append(
+                np.outer(right[:, index], left[:, index].conj())
+                / np.vdot(left[:, index], right[:, index])
+            )
+        exact_projector = spectral_projectors[slow_index]
+        exact_lambda = bar_g3 + float(np.real(scipy_values[slow_index])) / eps
+        approximate_lambda = (
+            bar_g3 + eps * k3 + eps**2 * l3 + eps**3 * m3
+        )
+        approximate_projector = p0 + eps * p1
+        long_maturity = 0.25 / eps**2
+
+        # Evaluate the normalized spectral decomposition mode by mode.  It
+        # is algebraically the full matrix exponential, but avoids overflow
+        # in its large common slow factor at the longest tested maturities.
+        normalized_exact = (
+            np.exp(long_maturity * (exact_lambda - approximate_lambda))
+            * exact_projector
+        )
+        for index, value in enumerate(scipy_values):
+            if index != slow_index:
+                normalized_exact += (
+                    np.exp(
+                        long_maturity
+                        * (bar_g3 + value / eps - approximate_lambda)
+                    )
+                    * spectral_projectors[index]
+                )
+        long_maturity_errors.append(
+            float(np.linalg.norm(normalized_exact - approximate_projector, 2))
+        )
+
+        fast_constant = fast_radius / (
+            fast_certified_smin - eps * np.linalg.norm(df3, 2)
+        )
+        proved_bound = (
+            np.exp(long_maturity * eigen_bound) * projector_bound
+            + np.linalg.norm(approximate_projector, 2)
+            * np.expm1(long_maturity * eigen_bound)
+            + np.exp(long_maturity * (bar_g3 - approximate_lambda))
+            * fast_constant
+            * np.exp(-fast_gamma * long_maturity / eps)
+        )
+        long_maturity_bounds.append(float(proved_bound))
+        assert long_maturity_errors[-1] <= proved_bound
+
+        # The paired projectors must resolve the identity; this separately
+        # guards the spectral evaluation used above.
+        identity_residuals.append(
+            float(np.linalg.norm(sum(spectral_projectors) - np.eye(3), 2))
+        )
+
+    long_maturity_order = observed_order(long_maturity_errors, epsilons)
+    long_maturity_bound_order = observed_order(long_maturity_bounds, epsilons)
+    long_maturity_bound_ratios = [
+        error / bound
+        for error, bound in zip(long_maturity_errors, long_maturity_bounds)
+    ]
+    assert max(identity_residuals) < 3e-15
+    assert 1.94 < long_maturity_order < 2.06
+    assert 1.94 < long_maturity_bound_order < 2.06
+    assert max(long_maturity_bound_ratios) < 1.0
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -452,6 +548,9 @@ def main() -> None:
     print(f"certified fast-contour eps radius   {fast_epsilon_radius:.12e}")
     print(f"certified fast decay exponent       {fast_gamma:.12e}")
     print(f"largest fast semigroup / bound      {max(fast_bound_ratios):.6f}")
+    print(f"normalized t=eps^-2/4 error order   {long_maturity_order:.6f}")
+    print(f"composite proved-bound order        {long_maturity_bound_order:.6f}")
+    print(f"largest composite error / bound     {max(long_maturity_bound_ratios):.6f}")
     print("ok")
 
 

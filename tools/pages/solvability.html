@@ -233,6 +233,41 @@
     $\varepsilon\le0.2$ and $0\le t/\varepsilon\le5$, the largest exact-fast-semigroup to proved-bound ratio is
     $0.305868$.</p>
 
+    <h3>The three bounds combine into an all-time semigroup certificate</h3>
+    <p>The eigenvalue, projector, and fast-contour estimates can be assembled without another asymptotic step. For
+    integers $p,q\ge0$, write</p>
+    $$\lambda_p(\varepsilon)=\bar g+\sum_{m=1}^p\kappa_m\varepsilon^m,\qquad
+      P_q(\varepsilon)=\sum_{m=0}^qP_m\varepsilon^m,$$
+    <p>and denote the two Cauchy bounds above by $E_{\lambda,p}(\varepsilon)$ and
+    $E_{P,q}(\varepsilon)$. Also put</p>
+    $$C_f(\varepsilon)=\frac{L_\Gamma}
+      {2\pi\{s_\Gamma-\varepsilon\|D_f\|_2\}}.$$
+    <p>For real $0&lt;\varepsilon&lt;\min(\rho,s_\Gamma/\|D_f\|_2)$, the exact spectral split is</p>
+    $$e^{t(Q/\varepsilon+D_g)}=e^{t\lambda_{\mathrm{slow}}(\varepsilon)}P(\varepsilon)
+      +e^{\bar g t}e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon)).$$
+    <p>Subtracting $e^{t\lambda_p}P_q$, then using
+    $|e^z-1|\le e^{|z|}-1$, gives the explicit bound</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \left\|e^{t(Q/\varepsilon+D_g)}-e^{t\lambda_p}P_q\right\|_2
+      \le{}&e^{t\operatorname{Re}\lambda_p}
+      \left[e^{tE_{\lambda,p}}E_{P,q}
+      +\|P_q\|_2\left(e^{tE_{\lambda,p}}-1\right)\right]\\
+      &+e^{\bar g t}C_f(\varepsilon)e^{-\gamma t/\varepsilon},qquad t\ge0.
+    \end{aligned}$$
+    </div>
+    <p>This is an all-time inequality, not a claim that a fixed truncation is uniformly accurate for all maturity.
+    On the slow exponential scale its two algebraic terms are
+    $O(\varepsilon^{q+1}+t\varepsilon^{p+1})$ while
+    $tE_{\lambda,p}=o(1)$; the third term is the certified initial layer. Thus, on a window
+    $t=O(\varepsilon^{-\alpha})$, the normalized algebraic error has order
+    $\min(q+1,p+1-\alpha)$ when $\alpha&lt;p+1$. The formula makes the maturity loss from eigenvalue truncation
+    explicit instead of absorbing it into an unspecified constant.</p>
+    <p>In the three-state certificate, $p=3$, $q=1$, and $t=\varepsilon^{-2}/4$. The normalized full-semigroup
+    error converges with measured order $1.998990$; its proved bound has measured order $2.030627$, and the largest
+    observed error is $0.020181$ of that bound. The evaluation uses the exact paired spectral projectors mode by
+    mode, avoiding overflow from the common slow exponential at these growing maturities.</p>
+
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
     two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>
