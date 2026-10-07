@@ -907,6 +907,67 @@
       Proutiere (2024)</a>: it isolates the separate final-gap memory that a calibration-only mixing statement
       cannot remove.</p>
 
+    <h4>Unequal stationary masses</h4>
+    <p>The half-interval split is not essential. Let the lower latent state have stationary mass
+      $r\in(0,1)$ and emit a uniform score on $[0,r]$; let the upper state emit uniformly on $[r,1]$.
+      The stationary score is again exactly uniform. If $L_N\in\{0,1\}$ indicates that the last calibration
+      score is in the lower interval and the retained test-gap eigenvalue is $a\in[0,1)$, then</p>
+    $$\Pr(L_\ast=1\mid L_N)=\rho_{L_N}:=r+a(L_N-r).$$
+    <p>Let $j$ be the number of lower scores among the first $N-1$ observations and put $z=j+L_N$.
+      Conditional on $(j,L_N)$, the same order-statistic argument gives the exact failure probability</p>
+    <div class="equation-card">
+    $$\Pr(C_a&lt;p)=\sum_{\ell=0}^1\sum_{j=0}^{N-1}
+      r^\ell(1-r)^{1-\ell}{N-1\choose j}r^j(1-r)^{N-1-j}
+      \begin{cases}
+      I_{p/\rho_\ell}(k,z+1-k),&amp;z\ge k,\\
+      I_{(p-\rho_\ell)/(1-\rho_\ell)}(k-z,N+1-k),&amp;z&lt;k.
+      \end{cases}$$
+    </div>
+    <p>At $a=0$ this again collapses to the iid beta law. The marginal mean has the exact affine form</p>
+    <div class="equation-card">
+    $$E C_a={k\over N+1}+aD_{N,k}(r),$$
+    $$D_{N,k}(r)=E\left[\left({Z\over N}-r\right)d_k(Z)\right],qquad
+      Z\sim\operatorname{Binomial}(N,r),$$
+    $$d_k(z)=
+      \begin{cases}
+      (N+1-k)/(N+1-z),&amp;z&lt;k,\\
+      k/(z+1),&amp;z\ge k.
+      \end{cases}$$
+    </div>
+    <p>To prove the coefficient, condition on the total lower count $Z=z$. Exchangeability makes the chance
+      that the last observation is lower equal to $z/N$, while the relevant rescaled beta order statistic has
+      mean $d_k(z)$. This also gives the reflection identity
+      $D_{N,N+1-k}(1-r)=-D_{N,k}(r)$. The symmetric formula above is the special case $r=1/2$.</p>
+    <p>The outer large-panel limit changes with the partition imbalance. If $k/(N+1)\to\tau\ne r$, then</p>
+    <div class="equation-card">
+    $$ND_{N,k}(r)\longrightarrow
+      \begin{cases}
+      -\tau(1-r)/r,&amp;\tau&lt;r,\\
+      r(1-\tau)/(1-r),&amp;\tau&gt;r.
+      \end{cases}$$
+    </div>
+    <p>Indeed, the binomial covariance identity, with $W\sim\operatorname{Binomial}(N-1,r)$, is</p>
+    $$D_{N,k}(r)=r(1-r)E\{d_k(W+1)-d_k(W)\}.$$
+    <p>Off the transition $\tau=r$, binomial concentration selects one smooth branch of $d_k$ with
+      exponentially high probability; its first difference gives the displayed limits. This is an
+      unequal-rate final-gap effect, not a change to the iid calibration baseline.</p>
+    <p>For $N=9$, $p=0.8$, $a=0.8$, and $r=0.3$, the exact values are:</p>
+    <table>
+      <thead><tr><th>$k$</th><th>iid failure</th><th>fixed-memory failure</th><th>fixed-memory mean</th></tr></thead>
+      <tbody>
+        <tr><td>3</td><td>0.999686144</td><td>0.903868390</td><td>0.288405541</td></tr>
+        <tr><td>5</td><td>0.980418560</td><td>0.740337736</td><td>0.511275100</td></tr>
+        <tr><td>8</td><td>0.436207616</td><td>0.405222434</td><td>0.807583089</td></tr>
+        <tr><td>9</td><td>0.134217728</td><td>0.151680017</td><td>0.903807874</td></tr>
+      </tbody>
+    </table>
+    <p>A separate unequal-transition Markov-path enumeration agrees with the mixture for every order statistic
+      within $1.05\times10^{-13}$ after within-panel stride 128. Across $2\le N\le20$, four unequal masses,
+      and every rank, the component mean agrees with the displayed marginal coefficient within
+      $1.17\times10^{-15}$; the reflection discrepancy is $7.68\times10^{-17}$. These failure probabilities
+      average a training-conditional event over random panels, whereas the last column is marginal coverage.
+      Neither is feature-conditional validity.</p>
+
     <h3>A coefficient-only slack-free rearrangement bound</h3>
     <p>The slack can in fact be removed without knowing the actual panel order-statistic law. Let
       $U_0\sim\operatorname{Beta}(k,N+1-k)$, put $W_0=(U_0-p)_+$, and write $Q_0$ for the lower quantile

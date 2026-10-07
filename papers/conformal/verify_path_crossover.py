@@ -31,7 +31,8 @@ training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing.  It checks the exact convex
 allocation of a fixed spacing budget for marginal and separated-PAC mixing
 envelopes, and an exact counterexample where the calibration panel converges
-to iid but fixed final-gap memory leaves a non-iid conditional-coverage law.
+to iid but fixed final-gap memory leaves a non-iid conditional-coverage law,
+including unequal stationary masses for the two latent states.
 It also checks the slack-free rearrangement
 bound obtained from the iid beta baseline and the two separated TV budgets,
 with a sharper version when the actual panel order-statistic law is known.
@@ -53,6 +54,7 @@ from scipy.integrate import quad, solve_ivp
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import ive, ndtr, roots_hermite, roots_jacobi, roots_legendre
 from scipy.stats import beta as beta_distribution
+from scipy.stats import binom as binomial_distribution
 from scipy.stats import norm
 
 
@@ -428,25 +430,82 @@ def exact_binary_training_failure_irregular(
     return failure
 
 
+def exact_partition_training_failure_irregular(
+    calibration_count: int,
+    order: int,
+    target: float,
+    transition: np.ndarray,
+    strides: tuple[int, ...],
+) -> float:
+    """Exact irregular-grid failure for an unequal stationary partition.
+
+    State zero has stationary mass ``r`` and emits a uniform score on
+    ``[0,r]``; state one emits uniformly on ``[r,1]``.  The stationary score
+    is therefore uniform even when the two state masses are unequal.  Direct
+    state-path enumeration is independent of the iid-panel mixture below.
+    """
+    import itertools
+
+    if not (1 <= order <= calibration_count):
+        raise ValueError("order must be between one and calibration_count")
+    if len(strides) != calibration_count or min(strides) < 1:
+        raise ValueError("strides must contain calibration_count positive gaps")
+    transition = np.asarray(transition, dtype=float)
+    if transition.shape != (2, 2):
+        raise ValueError("transition must be two by two")
+    if np.min(transition) < 0 or not np.allclose(transition.sum(axis=1), 1.0):
+        raise ValueError("transition must be row stochastic")
+    lower_mass = transition[1, 0] / (transition[0, 1] + transition[1, 0])
+    stationary = np.array([lower_mass, 1.0 - lower_mass])
+    sampled_transitions = [
+        np.linalg.matrix_power(transition, stride) for stride in strides
+    ]
+    failure = 0.0
+    for states in itertools.product((0, 1), repeat=calibration_count):
+        path_probability = stationary[states[0]]
+        for index, (previous, current) in enumerate(
+            zip(states[:-1], states[1:])
+        ):
+            path_probability *= sampled_transitions[index][previous, current]
+        probability_lower = sampled_transitions[-1][states[-1], 0]
+        probability_upper = 1.0 - probability_lower
+        lower_count = states.count(0)
+        if lower_count >= order:
+            failure += path_probability * integer_beta_cdf(
+                target / probability_lower,
+                order,
+                lower_count + 1 - order,
+            )
+        else:
+            failure += path_probability * integer_beta_cdf(
+                (target - probability_lower) / probability_upper,
+                order - lower_count,
+                calibration_count + 1 - order,
+            )
+    return failure
+
+
 def iid_panel_fixed_test_failure_limit(
     calibration_count: int,
     order: int,
     target: float,
     test_correlation: float,
+    lower_mass: float = 0.5,
 ) -> float:
     """Failure limit for any order statistic with fixed test memory.
 
-    Calibration scores are iid U(0,1), but the half containing the last
-    score reveals its binary state.  Conditional on that state, the next
-    state has correlation ``test_correlation``.  This is the limit of
+    Calibration scores are iid U(0,1), but the partition ``[0,r]`` or
+    ``[r,1]`` containing the last score reveals its binary state, where
+    ``r=lower_mass``.  Conditional on that state, the next state retains the
+    nontrivial transition eigenvalue ``test_correlation``.  This is the limit of
     :func:`exact_binary_training_failure_irregular` when all within-panel
     correlations vanish while the final calibration--test correlation stays
     fixed.
 
-    If ``j`` of the first ``N-1`` scores are in the lower half and the last
-    state is ``y``, the total lower-half count is ``z=j+1-y``.  For ``z>=k``,
-    twice the kth order statistic is Beta(k,z+1-k); otherwise twice its
-    excess above one half is Beta(k-z,N+1-k).  The displayed binomial-beta
+    If ``j`` of the first ``N-1`` scores are in the lower interval and the
+    last state is ``y``, the total lower count is ``z=j+1-y``.  For ``z>=k``,
+    the kth order statistic divided by ``r`` is Beta(k,z+1-k); otherwise its
+    rescaled excess above ``r`` is Beta(k-z,N+1-k).  The binomial-beta
     mixture evaluates the complete training-conditional failure law without
     simulation or path enumeration.
     """
@@ -456,20 +515,26 @@ def iid_panel_fixed_test_failure_limit(
         raise ValueError("target must lie strictly between zero and one")
     if not (0.0 <= test_correlation < 1.0):
         raise ValueError("test_correlation must lie in [0,1)")
+    if not (0.0 < lower_mass < 1.0):
+        raise ValueError("lower_mass must lie strictly between zero and one")
 
     failure = 0.0
     for last_state in (0, 1):
-        probability_zero = (
-            (1.0 + test_correlation) / 2.0
-            if last_state == 0
-            else (1.0 - test_correlation) / 2.0
+        last_is_lower = 1 - last_state
+        probability_zero = lower_mass + test_correlation * (
+            last_is_lower - lower_mass
         )
         probability_one = 1.0 - probability_zero
+        last_weight = lower_mass if last_is_lower else 1.0 - lower_mass
         for first_panel_zeros in range(calibration_count):
-            zero_count = first_panel_zeros + (1 - last_state)
+            zero_count = first_panel_zeros + last_is_lower
             weight = (
-                math.comb(calibration_count - 1, first_panel_zeros)
-                / 2.0**calibration_count
+                last_weight
+                * math.comb(calibration_count - 1, first_panel_zeros)
+                * lower_mass**first_panel_zeros
+                * (1.0 - lower_mass) ** (
+                    calibration_count - 1 - first_panel_zeros
+                )
             )
             if zero_count >= order:
                 failure += weight * integer_beta_cdf(
@@ -490,26 +555,33 @@ def iid_panel_fixed_test_mean_coverage(
     calibration_count: int,
     order: int,
     test_correlation: float,
+    lower_mass: float = 0.5,
 ) -> float:
     """Mean coverage in the iid-panel, fixed-test-memory limit."""
     if not (1 <= order <= calibration_count):
         raise ValueError("order must be between one and calibration_count")
     if not (0.0 <= test_correlation < 1.0):
         raise ValueError("test_correlation must lie in [0,1)")
+    if not (0.0 < lower_mass < 1.0):
+        raise ValueError("lower_mass must lie strictly between zero and one")
 
     coverage = 0.0
     for last_state in (0, 1):
-        probability_zero = (
-            (1.0 + test_correlation) / 2.0
-            if last_state == 0
-            else (1.0 - test_correlation) / 2.0
+        last_is_lower = 1 - last_state
+        probability_zero = lower_mass + test_correlation * (
+            last_is_lower - lower_mass
         )
         probability_one = 1.0 - probability_zero
+        last_weight = lower_mass if last_is_lower else 1.0 - lower_mass
         for first_panel_zeros in range(calibration_count):
-            zero_count = first_panel_zeros + (1 - last_state)
+            zero_count = first_panel_zeros + last_is_lower
             weight = (
-                math.comb(calibration_count - 1, first_panel_zeros)
-                / 2.0**calibration_count
+                last_weight
+                * math.comb(calibration_count - 1, first_panel_zeros)
+                * lower_mass**first_panel_zeros
+                * (1.0 - lower_mass) ** (
+                    calibration_count - 1 - first_panel_zeros
+                )
             )
             if zero_count >= order:
                 coverage += (
@@ -531,10 +603,17 @@ def iid_panel_fixed_test_mean_coverage(
 def iid_panel_fixed_test_marginal_shift(
     calibration_count: int,
     order: int,
+    lower_mass: float = 0.5,
 ) -> float:
     """Coefficient of final-memory correlation in marginal coverage.
 
-    If ``B`` is Binomial(calibration_count + 1, 1/2), the coefficient is
+    For an arbitrary lower-state mass ``r``, if ``Z`` is Binomial(N,r),
+    the coefficient is
+
+    E[(Z/N-r) d_k(Z)],
+
+    where ``d_k(z)=k/(z+1)`` for ``z>=k`` and
+    ``d_k(z)=(N+1-k)/(N+1-z)`` otherwise.  At ``r=1/2`` this reduces to
 
     ((N-k+1) P(B <= k-1) - k P(B >= k+1)) / (N(N+1)).
 
@@ -543,6 +622,24 @@ def iid_panel_fixed_test_marginal_shift(
     """
     if not (1 <= order <= calibration_count):
         raise ValueError("order must be between one and calibration_count")
+    if not (0.0 < lower_mass < 1.0):
+        raise ValueError("lower_mass must lie strictly between zero and one")
+    if lower_mass != 0.5:
+        counts = np.arange(calibration_count + 1)
+        weights = binomial_distribution.pmf(
+            counts, calibration_count, lower_mass
+        )
+        conditional_profile = np.where(
+            counts >= order,
+            order / (counts + 1.0),
+            (calibration_count + 1 - order)
+            / (calibration_count + 1.0 - counts),
+        )
+        return float(np.sum(
+            weights
+            * (counts / calibration_count - lower_mass)
+            * conditional_profile
+        ))
     trials = calibration_count + 1
     denominator = 2.0**trials
     lower_tail = sum(
@@ -3115,6 +3212,177 @@ def main() -> None:
             f"{fixed_failure:.9f}          {mean_coverage:.9f}"
         )
 
+    # The half-interval construction is not essential.  Let the lower state
+    # have stationary mass r and emit uniformly on [0,r], with the upper
+    # state uniform on [r,1].  The stationary score remains exactly uniform.
+    # A transition with nontrivial eigenvalue a has lower-state probability
+    # r+a(1{last lower}-r) at the test point.  Check the resulting exact
+    # binomial-beta law against a separate Markov-path enumeration, and the
+    # marginal coefficient against the independent component mean.
+    unequal_lower_mass = 0.3
+    unequal_test_memory = 0.8
+    unequal_transition = np.array([
+        [
+            unequal_lower_mass
+            + unequal_test_memory * (1.0 - unequal_lower_mass),
+            (1.0 - unequal_lower_mass) * (1.0 - unequal_test_memory),
+        ],
+        [
+            unequal_lower_mass * (1.0 - unequal_test_memory),
+            1.0 - unequal_lower_mass
+            + unequal_test_memory * unequal_lower_mass,
+        ],
+    ])
+    unequal_rows = []
+    unequal_zero_memory_error = 0.0
+    unequal_enumeration_error = 0.0
+    for candidate_order in range(1, calibration_count + 1):
+        iid_failure = integer_beta_cdf(
+            transfer_target,
+            candidate_order,
+            calibration_count + 1 - candidate_order,
+        )
+        zero_memory_failure = iid_panel_fixed_test_failure_limit(
+            calibration_count,
+            candidate_order,
+            transfer_target,
+            0.0,
+            unequal_lower_mass,
+        )
+        unequal_zero_memory_error = max(
+            unequal_zero_memory_error,
+            abs(zero_memory_failure - iid_failure),
+        )
+        fixed_failure = iid_panel_fixed_test_failure_limit(
+            calibration_count,
+            candidate_order,
+            transfer_target,
+            unequal_test_memory,
+            unequal_lower_mass,
+        )
+        enumerated_failure = exact_partition_training_failure_irregular(
+            calibration_count,
+            candidate_order,
+            transfer_target,
+            unequal_transition,
+            (128,) * (calibration_count - 1) + (1,),
+        )
+        unequal_enumeration_error = max(
+            unequal_enumeration_error,
+            abs(fixed_failure - enumerated_failure),
+        )
+        mean_coverage = iid_panel_fixed_test_mean_coverage(
+            calibration_count,
+            candidate_order,
+            unequal_test_memory,
+            unequal_lower_mass,
+        )
+        marginal_shift = iid_panel_fixed_test_marginal_shift(
+            calibration_count, candidate_order, unequal_lower_mass
+        )
+        assert abs(
+            mean_coverage
+            - candidate_order / (calibration_count + 1)
+            - unequal_test_memory * marginal_shift
+        ) < 7e-16
+        unequal_rows.append(
+            (candidate_order, iid_failure, fixed_failure, mean_coverage)
+        )
+    assert unequal_zero_memory_error < 8e-16
+    assert unequal_enumeration_error < 3e-13
+
+    unequal_shift_error = 0.0
+    unequal_reflection_error = 0.0
+    for candidate_count in range(2, 21):
+        for lower_mass in (0.2, 0.3, 0.65, 0.8):
+            for candidate_order in range(1, candidate_count + 1):
+                shift = iid_panel_fixed_test_marginal_shift(
+                    candidate_count, candidate_order, lower_mass
+                )
+                mixture_mean = iid_panel_fixed_test_mean_coverage(
+                    candidate_count, candidate_order, 0.37, lower_mass
+                )
+                unequal_shift_error = max(
+                    unequal_shift_error,
+                    abs(
+                        mixture_mean
+                        - candidate_order / (candidate_count + 1)
+                        - 0.37 * shift
+                    ),
+                )
+                reflected_shift = iid_panel_fixed_test_marginal_shift(
+                    candidate_count,
+                    candidate_count + 1 - candidate_order,
+                    1.0 - lower_mass,
+                )
+                unequal_reflection_error = max(
+                    unequal_reflection_error,
+                    abs(shift + reflected_shift),
+                )
+    assert unequal_shift_error < 1.5e-15
+    assert unequal_reflection_error < 2e-16
+
+    # Away from the partition mass r, binomial concentration and the exact
+    # covariance identity give N D -> -tau(1-r)/r below r and
+    # N D -> r(1-tau)/(1-r) above r.  The three sample sizes certify the
+    # approach without using the component-mixture mean.
+    unequal_outer_cases = (
+        (0.3, 0.2),
+        (0.3, 0.8),
+        (0.7, 0.4),
+        (0.7, 0.8),
+    )
+    unequal_outer_rows = []
+    for lower_mass, rank_fraction in unequal_outer_cases:
+        limit = (
+            -rank_fraction * (1.0 - lower_mass) / lower_mass
+            if rank_fraction < lower_mass
+            else lower_mass * (1.0 - rank_fraction) / (1.0 - lower_mass)
+        )
+        approximations = []
+        for candidate_count in (256, 1024, 4096):
+            candidate_order = round(
+                (candidate_count + 1) * rank_fraction
+            )
+            approximations.append(
+                candidate_count
+                * iid_panel_fixed_test_marginal_shift(
+                    candidate_count, candidate_order, lower_mass
+                )
+            )
+        errors = [abs(value - limit) for value in approximations]
+        assert errors[-1] < 2.5e-4
+        unequal_outer_rows.append(
+            (lower_mass, rank_fraction, approximations[-1], limit)
+        )
+
+    print("\nUnequal-mass fixed-test-memory law")
+    print(
+        f"lower-state mass {unequal_lower_mass:.1f}; zero-memory beta error "
+        f"{unequal_zero_memory_error:.3e}; stride-128 enumeration error "
+        f"{unequal_enumeration_error:.3e}"
+    )
+    print(
+        "general marginal-shift max error: "
+        f"{unequal_shift_error:.3e}; reflection error: "
+        f"{unequal_reflection_error:.3e}"
+    )
+    print(" r     tau       N D at N=4096       outer limit")
+    for lower_mass, rank_fraction, approximation, limit in unequal_outer_rows:
+        print(
+            f" {lower_mass:.1f}   {rank_fraction:.1f}       "
+            f"{approximation: .9f}       {limit: .9f}"
+        )
+    print(" k    iid failure   fixed-memory failure   mean coverage")
+    for candidate_order, iid_failure, fixed_failure, mean_coverage in (
+        unequal_rows
+    ):
+        if candidate_order in (3, 5, 8, 9):
+            print(
+                f" {candidate_order:1d}    {iid_failure:.9f}       "
+                f"{fixed_failure:.9f}          {mean_coverage:.9f}"
+            )
+
     # The iid-baseline rearrangement has a sharp square-root small-budget
     # law.  If g is the beta density at p, its excess above the iid failure
     # probability is sqrt(2*g*eta)+O(eta), whereas optimizing the slack bound
@@ -3702,7 +3970,8 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with optimal "
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
-        "sharp PAC design, all-order fixed-test-memory law, and dependent "
+        "sharp PAC design, symmetric and unequal-mass all-order "
+        "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
         "slack-free rearrangement bounds, "
         "independent-training validity, calibration-leakage failure, "
