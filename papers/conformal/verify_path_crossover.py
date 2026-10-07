@@ -429,39 +429,102 @@ def exact_binary_training_failure_irregular(
 
 def iid_panel_fixed_test_failure_limit(
     calibration_count: int,
+    order: int,
     target: float,
     test_correlation: float,
 ) -> float:
-    """Failure limit for a sample maximum with an iid panel and fixed test memory.
+    """Failure limit for any order statistic with fixed test memory.
 
-    Calibration scores are iid U(0,1), but their upper/lower half still
-    reveals the terminal binary state.  The next state has correlation
-    ``test_correlation`` with that terminal state.  This is the limit of
+    Calibration scores are iid U(0,1), but the half containing the last
+    score reveals its binary state.  Conditional on that state, the next
+    state has correlation ``test_correlation``.  This is the limit of
     :func:`exact_binary_training_failure_irregular` when all within-panel
     correlations vanish while the final calibration--test correlation stays
-    fixed.  The formula partitions panels according to whether the maximum
-    is below one half and whether the last calibration state is zero or one.
+    fixed.
+
+    If ``j`` of the first ``N-1`` scores are in the lower half and the last
+    state is ``y``, the total lower-half count is ``z=j+1-y``.  For ``z>=k``,
+    twice the kth order statistic is Beta(k,z+1-k); otherwise twice its
+    excess above one half is Beta(k-z,N+1-k).  The displayed binomial-beta
+    mixture evaluates the complete training-conditional failure law without
+    simulation or path enumeration.
     """
-    if calibration_count < 1:
-        raise ValueError("calibration_count must be positive")
+    if not (1 <= order <= calibration_count):
+        raise ValueError("order must be between one and calibration_count")
     if not (0.0 < target < 1.0):
         raise ValueError("target must lie strictly between zero and one")
     if not (0.0 <= test_correlation < 1.0):
         raise ValueError("test_correlation must lie in [0,1)")
 
-    count = calibration_count
-    correlation = test_correlation
-    lower_cutoff = min(0.5, max(0.0, target / (1.0 + correlation)))
-    lower_only = lower_cutoff**count
+    failure = 0.0
+    for last_state in (0, 1):
+        probability_zero = (
+            (1.0 + test_correlation) / 2.0
+            if last_state == 0
+            else (1.0 - test_correlation) / 2.0
+        )
+        probability_one = 1.0 - probability_zero
+        for first_panel_zeros in range(calibration_count):
+            zero_count = first_panel_zeros + (1 - last_state)
+            weight = (
+                math.comb(calibration_count - 1, first_panel_zeros)
+                / 2.0**calibration_count
+            )
+            if zero_count >= order:
+                failure += weight * integer_beta_cdf(
+                    target / probability_zero,
+                    order,
+                    zero_count + 1 - order,
+                )
+            else:
+                failure += weight * integer_beta_cdf(
+                    (target - probability_zero) / probability_one,
+                    order - zero_count,
+                    calibration_count + 1 - order,
+                )
+    return failure
 
-    cutoff = (target - correlation) / (1.0 - correlation)
-    cutoff = min(1.0, max(0.5, cutoff))
-    last_lower = 0.5 * (cutoff ** (count - 1) - 0.5 ** (count - 1))
 
-    cutoff = (target + correlation) / (1.0 + correlation)
-    cutoff = min(1.0, max(0.5, cutoff))
-    last_upper = (cutoff - 0.5) * cutoff ** (count - 1)
-    return lower_only + last_lower + last_upper
+def iid_panel_fixed_test_mean_coverage(
+    calibration_count: int,
+    order: int,
+    test_correlation: float,
+) -> float:
+    """Mean coverage in the iid-panel, fixed-test-memory limit."""
+    if not (1 <= order <= calibration_count):
+        raise ValueError("order must be between one and calibration_count")
+    if not (0.0 <= test_correlation < 1.0):
+        raise ValueError("test_correlation must lie in [0,1)")
+
+    coverage = 0.0
+    for last_state in (0, 1):
+        probability_zero = (
+            (1.0 + test_correlation) / 2.0
+            if last_state == 0
+            else (1.0 - test_correlation) / 2.0
+        )
+        probability_one = 1.0 - probability_zero
+        for first_panel_zeros in range(calibration_count):
+            zero_count = first_panel_zeros + (1 - last_state)
+            weight = (
+                math.comb(calibration_count - 1, first_panel_zeros)
+                / 2.0**calibration_count
+            )
+            if zero_count >= order:
+                coverage += (
+                    weight
+                    * probability_zero
+                    * order
+                    / (zero_count + 1)
+                )
+            else:
+                coverage += weight * (
+                    probability_zero
+                    + probability_one
+                    * (order - zero_count)
+                    / (calibration_count - zero_count + 1)
+                )
+    return coverage
 
 
 @lru_cache(maxsize=None)
@@ -2694,15 +2757,15 @@ def main() -> None:
     # asymptotic roles.  Let the eight within-panel gaps grow while the final
     # gap stays at one transition.  The panel law converges to iid, but the
     # fixed final correlation 0.8 leaves a non-iid training-conditional
-    # failure limit.  For N=k=9 and p=0.8, the three panel regions in
-    # iid_panel_fixed_test_failure_limit reduce exactly to
+    # failure law for every order statistic.  For N=k=9 and p=0.8, the
+    # binomial-beta mixture in iid_panel_fixed_test_failure_limit reduces to
     # (4/9)^9 + (7/18)(8/9)^8 = 6553600/43046721.
     separated_strides = (4, 8, 16, 32, 64)
     separated_rows = []
     base_transition = np.array([[0.9, 0.1], [0.1, 0.9]])
     stationary_binary = np.array([0.5, 0.5])
     separated_limit = iid_panel_fixed_test_failure_limit(
-        calibration_count, transfer_target, 0.8
+        calibration_count, order, transfer_target, 0.8
     )
     exact_separated_limit = 6553600 / 43046721
     assert abs(separated_limit - exact_separated_limit) < 2e-16
@@ -2734,6 +2797,95 @@ def main() -> None:
     for stride, panel_tv, exact_failure in separated_rows:
         print(f" {stride:6d}              {panel_tv:.9f}       {exact_failure:.9f}")
     print(f"fixed-test-memory limit: {separated_limit:.12f}")
+
+    # Check the full binomial-beta mixture.  With zero final correlation it
+    # collapses to the iid Beta(k,N+1-k) law.  At correlation 0.8 it agrees,
+    # for all nine order statistics, with exact path enumeration after the
+    # within-panel stride has removed calibration dependence.  The same
+    # mixture gives the marginal mean coverage; unlike the iid benchmark,
+    # fixed test memory can change this mean as well as its panelwise tail.
+    fixed_memory_rows = []
+    zero_memory_error = 0.0
+    stride_limit_error = 0.0
+    for candidate_order in range(1, calibration_count + 1):
+        iid_failure = integer_beta_cdf(
+            transfer_target,
+            candidate_order,
+            calibration_count + 1 - candidate_order,
+        )
+        zero_memory_error = max(
+            zero_memory_error,
+            abs(
+                iid_panel_fixed_test_failure_limit(
+                    calibration_count,
+                    candidate_order,
+                    transfer_target,
+                    0.0,
+                )
+                - iid_failure
+            ),
+        )
+        fixed_memory_failure = iid_panel_fixed_test_failure_limit(
+            calibration_count,
+            candidate_order,
+            transfer_target,
+            0.8,
+        )
+        enumerated_failure = exact_binary_training_failure_irregular(
+            calibration_count,
+            candidate_order,
+            transfer_target,
+            0.8,
+            (128,) * (calibration_count - 1) + (1,),
+        )
+        stride_limit_error = max(
+            stride_limit_error,
+            abs(enumerated_failure - fixed_memory_failure),
+        )
+        fixed_memory_rows.append(
+            (
+                candidate_order,
+                iid_failure,
+                fixed_memory_failure,
+                iid_panel_fixed_test_mean_coverage(
+                    calibration_count,
+                    candidate_order,
+                    0.8,
+                ),
+            )
+        )
+    assert zero_memory_error < 3e-16
+    assert stride_limit_error < 1e-13
+    expected_fixed_memory_rows = {
+        5: (0.98041856, 0.7394770904850105, 0.5),
+        8: (0.43620761600000024, 0.3539670303807809, 0.8160416666666668),
+        9: (0.13421772800000006, 0.1522438840347445, 0.9087152777777779),
+    }
+    for candidate_order, iid_failure, fixed_failure, mean_coverage in (
+        fixed_memory_rows
+    ):
+        if candidate_order in expected_fixed_memory_rows:
+            expected = expected_fixed_memory_rows[candidate_order]
+            assert max(
+                abs(actual - target_value)
+                for actual, target_value in zip(
+                    (iid_failure, fixed_failure, mean_coverage), expected
+                )
+            ) < 3e-15
+
+    print("\nAll-order-statistic fixed-test-memory law")
+    print(
+        f"zero-memory beta-law max error: {zero_memory_error:.3e}; "
+        f"stride-128 enumeration max error: {stride_limit_error:.3e}"
+    )
+    print(" k    iid failure   fixed-memory failure   mean coverage")
+    for candidate_order, iid_failure, fixed_failure, mean_coverage in (
+        fixed_memory_rows
+    ):
+        print(
+            f" {candidate_order:1d}    {iid_failure:.9f}       "
+            f"{fixed_failure:.9f}          {mean_coverage:.9f}"
+        )
 
     # The iid-baseline rearrangement has a sharp square-root small-budget
     # law.  If g is the beta density at p, its excess above the iid failure
@@ -3322,7 +3474,7 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with optimal "
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
-        "sharp PAC design, fixed-test-gap necessity, and dependent "
+        "sharp PAC design, all-order fixed-test-memory law, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
         "slack-free rearrangement bounds, "
         "independent-training validity, calibration-leakage failure, "

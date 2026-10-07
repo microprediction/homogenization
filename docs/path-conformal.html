@@ -882,6 +882,27 @@
       calibration-to-test gap at one step. As $d\to\infty$, the calibration-panel law converges in total variation
       to $N$ iid uniforms, while the test score retains correlation $a$ with the state revealed by the last
       calibration score.</p>
+    <p>The limiting law is explicit for every order statistic, not only the maximum. Let $Q_k$ be the $k$th
+      calibration order statistic, let $y\in\{0,1\}$ be the state revealed by the last calibration score, and let
+      $j$ count lower-half scores among the first $N-1$ observations. Put</p>
+    $$z=j+1-y,\qquad \rho_y=\frac{1+(-1)^y a}{2},$$
+    <p>and write $I_x(r,s)$ for the regularized beta CDF, extended as zero for $x\le0$ and one for $x\ge1$.
+      Conditional on $(j,y)$, either $2Q_k\sim\operatorname{Beta}(k,z+1-k)$ when $z\ge k$, or
+      $2Q_k-1\sim\operatorname{Beta}(k-z,N+1-k)$ when $z&lt;k$. Hence the exact limiting
+      training-conditional failure probability at target $p$ is</p>
+    <div class="equation-card">
+    $$\Pr(C_a&lt;p)=2^{-N}\sum_{y=0}^1\sum_{j=0}^{N-1}{N-1\choose j}
+      \begin{cases}
+      I_{p/\rho_y}(k,z+1-k),&amp;z\ge k,\\
+      I_{(p-\rho_y)/(1-\rho_y)}(k-z,N+1-k),&amp;z&lt;k.
+      \end{cases}$$
+    </div>
+    <p>At $a=0$ this mixture collapses to the iid law $I_p(k,N+1-k)$. For fixed $a&gt;0$ it generally does not.
+      Fixed test memory can also change marginal coverage: the corresponding conditional-component means are
+      $\rho_y k/(z+1)$ for $z\ge k$ and
+      $\rho_y+(1-\rho_y)(k-z)/(N-z+1)$ for $z&lt;k$, averaged with the same binomial weights. Thus convergence of
+      the calibration panel to iid does not by itself restore either the iid training-conditional law or, in
+      general, the iid mean $k/(N+1)$.</p>
     <p>For the sample maximum $M=Q_N$, the limiting coverage conditional on the realized iid calibration panel is
       exactly</p>
     <div class="equation-card">
@@ -909,6 +930,20 @@
       The test-decoupling distance remains $a/2=0.4$. This is a training-conditional failure probability averaged
       over random calibration panels; it is neither pointwise nor feature-conditional coverage. It proves that
       $\eta_{\rm cal}$ alone cannot justify the iid beta law, even when it tends to zero.</p>
+    <p>The all-order certificate makes the distinction quantitative for $N=9$, $p=0.8$, and $a=0.8$:</p>
+    <table>
+      <thead><tr><th>$k$</th><th>iid failure</th><th>fixed-memory failure</th><th>fixed-memory mean</th></tr></thead>
+      <tbody>
+        <tr><td>5</td><td>0.980418560</td><td>0.739477090</td><td>0.500000000</td></tr>
+        <tr><td>8</td><td>0.436207616</td><td>0.353967030</td><td>0.816041667</td></tr>
+        <tr><td>9</td><td>0.134217728</td><td>0.152243884</td><td>0.908715278</td></tr>
+      </tbody>
+    </table>
+    <p>The finite mixture agrees with exact Markov-path enumeration for all nine order statistics to
+      $4.98\times10^{-14}$ once the within-panel stride is 128. This exact calculation complements the marginal
+      mixing and thinning guarantees of <a href="https://proceedings.mlr.press/v235/zheng24j.html">Zheng and
+      Proutiere (2024)</a>: it isolates the separate final-gap memory that a calibration-only mixing statement
+      cannot remove.</p>
 
     <h3>A coefficient-only slack-free rearrangement bound</h3>
     <p>The slack can in fact be removed without knowing the actual panel order-statistic law. Let
