@@ -2797,6 +2797,114 @@ def verify_sharp_uniform_remainder_gap():
     assert crossover_formula_error < 8e-15
     assert crossover_identity_error < 2e-14
 
+    # The crossover does not require a point start.  Let Y take values +/-1,
+    # write y0=E[Y_0], and put x0=E[v_0]-c_bar/kappa.  The first-moment
+    # equations use only these two initial means, even when Y_0 and v_0 are
+    # dependent.  For lambda=kappa+z/T and delta*y0 != 0,
+    #
+    #   kappa*exp(kappa*T) R_T /(delta*y0*T)
+    #     = Phi(z) - exp(-z)/(T*(kappa+z/T))
+    #       - x0/(delta*y0*T).
+    #
+    # Check three genuinely mixed, state-dependent initial laws against the
+    # independent polynomial semigroup.  Conditional variances are chosen
+    # positive, but only their probability-weighted mean enters the formula.
+    initial_laws = [
+        (0.80, 0.030, 0.010),
+        (0.25, 0.012, 0.024),
+        (0.65, 0.012, 0.016),
+    ]
+    arbitrary_start_formula_error = 0.0
+    arbitrary_start_identity_error = 0.0
+    arbitrary_start_rows = []
+    for maturity in crossover_maturities:
+        maturity_profile_error = 0.0
+        maturity_bound = 0.0
+        for p_high, v_high, v_low in initial_laws:
+            y0 = 2.0 * p_high - 1.0
+            initial_mean = p_high * v_high + (1.0 - p_high) * v_low
+            x0 = initial_mean - c_bar / gap
+            assert abs(delta * y0) > 0.0
+            initial_components = np.array([
+                [p_high, p_high * v_high],
+                [1.0 - p_high, (1.0 - p_high) * v_low],
+            ])
+            scaled = []
+            for detuning in detunings:
+                contrast_rate = gap + detuning / maturity
+                speed = contrast_rate / 2.0
+                if detuning == 0.0:
+                    total = (
+                        x0 * (1.0 - np.exp(-gap * maturity)) / gap
+                        + delta * y0 / gap**2
+                        * (1.0 - (1.0 + gap * maturity)
+                           * np.exp(-gap * maturity))
+                    )
+                    tail = (
+                        -x0 * np.exp(-gap * maturity) / gap
+                        - delta * y0 * (1.0 + gap * maturity)
+                        * np.exp(-gap * maturity) / gap**2
+                    )
+                else:
+                    total = (
+                        x0 * (1.0 - np.exp(-gap * maturity)) / gap
+                        + delta * y0 / (gap - contrast_rate)
+                        * (
+                            (1.0 - np.exp(-contrast_rate * maturity))
+                            / contrast_rate
+                            - (1.0 - np.exp(-gap * maturity)) / gap
+                        )
+                    )
+                    tail = (
+                        -x0 * np.exp(-gap * maturity) / gap
+                        + delta * y0 / (gap - contrast_rate)
+                        * (
+                            -np.exp(-contrast_rate * maturity)
+                            / contrast_rate
+                            + np.exp(-gap * maturity) / gap
+                        )
+                    )
+                if maturity <= 10.0:
+                    numerical = centered_integrated_cumulants(
+                        1, maturity, speed, q0, pi, c, kappa, variance,
+                        initial_moment_components=initial_components,
+                    )[0]
+                    arbitrary_start_formula_error = max(
+                        arbitrary_start_formula_error,
+                        abs(numerical - total),
+                    )
+                scaled.append(
+                    gap * np.exp(gap * maturity) * tail
+                    / (delta * y0 * maturity)
+                )
+            scaled = np.array(scaled)
+            finite_correction = np.exp(-detunings) / (
+                maturity * (gap + detunings / maturity)
+            )
+            initial_correction = x0 / (delta * y0 * maturity)
+            arbitrary_start_identity_error = max(
+                arbitrary_start_identity_error,
+                np.max(np.abs(
+                    scaled - profile + finite_correction
+                    + initial_correction
+                )),
+            )
+            maturity_profile_error = max(
+                maturity_profile_error,
+                np.max(np.abs(scaled - profile)),
+            )
+            maturity_bound = max(
+                maturity_bound,
+                np.exp(4.0) / (maturity * (gap - 4.0 / maturity))
+                + abs(x0) / (abs(delta * y0) * maturity),
+            )
+        assert maturity_profile_error <= maturity_bound * (1.0 + 2e-14)
+        arbitrary_start_rows.append((
+            maturity, maturity_profile_error, maturity_bound,
+        ))
+    assert arbitrary_start_formula_error < 8e-15
+    assert arbitrary_start_identity_error < 3e-14
+
     print("5j-sharp. strict-subgap exponential remainder")
     print(
         f"   exact resonant formula error {formula_error:.2e}; "
@@ -2826,6 +2934,16 @@ def verify_sharp_uniform_remainder_gap():
             f"      T={maturity:4.0f}: max profile error "
             f"{profile_error:.6e}; compact bound {compact_bound:.6e}"
         )
+    print(
+        "   arbitrary mixed initial laws: "
+        f"semigroup error {arbitrary_start_formula_error:.2e}; "
+        f"profile identity error {arbitrary_start_identity_error:.2e}"
+    )
+    for maturity, profile_error, compact_bound in arbitrary_start_rows:
+        print(
+            f"      T={maturity:4.0f}: max profile error "
+            f"{profile_error:.6e}; compact bound {compact_bound:.6e}"
+        )
     return (
         formula_error,
         endpoint_ratio[-1],
@@ -2835,6 +2953,9 @@ def verify_sharp_uniform_remainder_gap():
         crossover_formula_error,
         crossover_identity_error,
         crossover_rows,
+        arbitrary_start_formula_error,
+        arbitrary_start_identity_error,
+        arbitrary_start_rows,
     )
 
 

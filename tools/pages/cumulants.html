@@ -890,6 +890,40 @@
     <p>This $O(T^{-1})$ statement is uniform on every compact detuning window and does not assert an endpoint
       bound uniform over fixed nonzero rate separations. It instead resolves the singular boundary layer between
       the fixed-nonresonant and exactly resonant regimes.</p>
+    <p>The same profile is universal over arbitrary initial laws with a finite variance mean. Encode the high and
+      low regimes by $Y=+1$ and $Y=-1$, and for an initial law $\nu$ put</p>
+    <div class="equation-card">
+    $$y_0=\mathbb E_\nu Y_0,\qquad
+      x_0=\mathbb E_\nu v_0-{\bar c\over\kappa}.$$
+    </div>
+    <p>No independence between $Y_0$ and $v_0$ is needed. Indeed, the two first-moment equations close as
+      $\mathbb E Y_t=y_0e^{-\lambda t}$ and
+      $x'(t)=-\kappa x(t)+\delta y_0e^{-\lambda t}$. Therefore, when
+      $\lambda\ne\kappa$,</p>
+    <div class="equation-card">
+    $$\mathbb E_\nu\!\int_0^T\left(v_s-{\bar c\over\kappa}\right)ds
+      ={x_0(1-e^{-\kappa T})\over\kappa}
+      +{\delta y_0\over\kappa-\lambda}
+      \left\{{1-e^{-\lambda T}\over\lambda}
+      -{1-e^{-\kappa T}\over\kappa}\right\},$$
+    $$\beta_\nu={x_0\over\kappa}+{\delta y_0\over\kappa\lambda}.$$
+    </div>
+    <p>At resonance the second term has the continuous limit
+      $\delta y_0\{1-(1+\kappa T)e^{-\kappa T}\}/\kappa^2$. For $y_0\ne0$ and
+      $\lambda_T=\kappa+z/T$, the corresponding boundary remainder satisfies the exact identity</p>
+    <div class="equation-card">
+    $$S_{T,\nu}(z):={\kappa e^{\kappa T}\over\delta y_0T}R_{T,\nu}(z)
+      =\Phi(z)-{e^{-z}\over T(\kappa+z/T)}-{x_0\over\delta y_0T}.$$
+    </div>
+    <p>Consequently, for $T&gt;Z/\kappa$,</p>
+    <div class="equation-card">
+    $$\sup_{|z|\le Z}|S_{T,\nu}(z)-\Phi(z)|
+      \le {e^Z\over T(\kappa-Z/T)}+{|x_0|\over|\delta y_0|T}.$$
+    </div>
+    <p>Thus an arbitrary initial variance mean changes only the explicit $O(T^{-1})$ correction; even initial
+      regime&ndash;variance dependence does not change the leading crossover. If $y_0=0$, the resonant forcing is
+      absent and the remainder reduces to $-x_0e^{-\kappa T}/\kappa$, so this normalization is neither needed nor
+      defined.</p>
     <p>The certificate checks orders one through six for $m=1,2,\ldots,64$ and $0\le T\le10$ with one exponent
       $\gamma=0.35$. The largest rescaled envelopes over all six orders are $0.001598$ for the stationary
       two-state model, $0.03264$ for its point start, $0.02246$ for the Pareto no-MGF start above, and
@@ -904,7 +938,11 @@
       $0.0238094214$ and $0.00999999999$, against the exact limits $1/42=0.0238095238$ and $0.01$.</p>
     <p>The crossover certificate also takes $\lambda=2+z/T$ for seven detunings in $[-4,4]$. The exact
       first cumulant agrees with the polynomial semigroup within machine precision, and the finite-$T$ profile
-      identity is verified before comparison with the displayed compact-window bound.</p>
+      identity is verified before comparison with the displayed compact-window bound. Three further mixed initial
+      laws use nondegenerate regime probabilities and different conditional variance means; they independently
+      verify the arbitrary-start identity and show numerically that only $y_0$ and $x_0$ enter. Across those laws,
+      the largest semigroup discrepancy is $1.16\times10^{-16}$ and the largest error in the exact scaled-profile
+      identity is $1.27\times10^{-14}$.</p>
     <p>This is uniform in switching speed only after fixing the cumulant order and retaining the exact rate and
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>
