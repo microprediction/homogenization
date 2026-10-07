@@ -3366,6 +3366,7 @@ def main() -> None:
     # limits.  The crossing increment has binomial mass O(N^{-1/2}) and
     # therefore does not contribute to the limit.
     unequal_critical_rows = []
+    unequal_critical_scaled_error = 0.0
     for lower_mass in (0.3, 0.7):
         for target_x in (-1.0, 0.0, 1.0):
             errors = []
@@ -3393,6 +3394,10 @@ def main() -> None:
                 )
                 gaussian_limit = float(ndtr(standardized_rank)) + lower_mass - 1.0
                 errors.append(abs(scaled_shift - gaussian_limit))
+                unequal_critical_scaled_error = max(
+                    unequal_critical_scaled_error,
+                    math.sqrt(candidate_count) * errors[-1],
+                )
                 row = (
                     lower_mass,
                     standardized_rank,
@@ -3402,6 +3407,7 @@ def main() -> None:
             assert errors[-1] < 0.021
             assert row is not None
             unequal_critical_rows.append(row)
+    assert unequal_critical_scaled_error < 1.3
 
     print("\nUnequal-mass fixed-test-memory law")
     print(
@@ -3428,6 +3434,10 @@ def main() -> None:
             f" {lower_mass:.1f}   {standardized_rank: .5f}       "
             f"{approximation: .9f}       {limit: .9f}"
         )
+    print(
+        "critical-window max sqrt(N) error: "
+        f"{unequal_critical_scaled_error:.9f}"
+    )
     print(" k    iid failure   fixed-memory failure   mean coverage")
     for candidate_order, iid_failure, fixed_failure, mean_coverage in (
         unequal_rows

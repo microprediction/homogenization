@@ -957,12 +957,21 @@
     <div class="equation-card">
     $$ND_{N,k}(r)\longrightarrow \Phi(x)+r-1.$$
     </div>
+    <p>There is also a finite-rate form. For fixed $r\in(0,1)$ and
+      $|x_N|\le K$,</p>
+    <div class="equation-card">
+    $$ND_{N,k}(r)=\Phi(x_N)+r-1+O_{r,K}(N^{-1/2}).$$
+    </div>
     <p>Indeed, away from the single crossing increment, $N\{d_k(W+1)-d_k(W)\}$ tends to
       $1/(1-r)$ below the rank boundary and $-1/r$ above it. The crossing atom has probability
       $O(N^{-1/2})$, so it vanishes after the displayed scaling. Weighting the two branch limits by
       $\Pr(W&lt;k)\to\Phi(x)$ gives the formula. It joins the one-sided limits continuously:
       $-(1-r)$ as $x\to-\infty$ and $r$ as $x\to+\infty$. At $r=1/2$ it reduces to the symmetric
-      crossover $\Phi(x)-1/2$.</p>
+      crossover $\Phi(x)-1/2$. For the rate, on the binomial central region the two rational
+      increments differ from their branch constants by
+      $O_{r,K}(N^{-1/2}+|W-(N-1)r|/N)$, whose expectation is $O(N^{-1/2})$.
+      Chernoff controls the complementary tails, the crossing mass is $O(N^{-1/2})$, and the
+      Berry&ndash;Esseen inequality controls the remaining binomial CDF error at the same order.</p>
     <p>For $N=9$, $p=0.8$, $a=0.8$, and $r=0.3$, the exact values are:</p>
     <table>
       <thead><tr><th>$k$</th><th>iid failure</th><th>fixed-memory failure</th><th>fixed-memory mean</th></tr></thead>
@@ -977,7 +986,8 @@
       within $1.05\times10^{-13}$ after within-panel stride 128. Across $2\le N\le20$, four unequal masses,
       and every rank, the component mean agrees with the displayed marginal coefficient within
       $1.17\times10^{-15}$; the reflection discrepancy is $7.68\times10^{-17}$. At $N=4096$, six critical-window
-      checks with $r\in\{0.3,0.7\}$ and $x\in\{-1,0,1\}$ are within $0.019394$ of the Gaussian limit. These failure probabilities
+      checks with $r\in\{0.3,0.7\}$ and $x\in\{-1,0,1\}$ are within $0.019394$ of the Gaussian limit; over
+      $N=256,1024,4096$, the largest $\sqrt N$-scaled error is $1.241183$. These failure probabilities
       average a training-conditional event over random panels, whereas the last column is marginal coverage.
       Neither is feature-conditional validity.</p>
 
