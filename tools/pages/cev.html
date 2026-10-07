@@ -104,6 +104,35 @@
     $a^kb^ke^{-au-b(T-u)}u^k(T-u)^{k-1}/[k!(k-1)!]$; summing gives the $I_1$ term. The state-2 formula follows by
     exchanging the states. This is the two-state occupation law studied by
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.</p>
+    <p>Keeping jump parity rather than summing it out gives the stronger joint law with the terminal regime. Write
+      $f_{ij}(u)\,du=\mathbb P_i\{U_T\in du,\ y_T=j\}$ on $0&lt;u&lt;T$. Then</p>
+    <div class="equation-card">
+    $$\begin{pmatrix}f_{11}(u)&f_{12}(u)\\f_{21}(u)&f_{22}(u)\end{pmatrix}
+      =e^{-au-b(T-u)}
+      \begin{pmatrix}
+      \dfrac{ab\,u}{\sqrt z}I_1(2\sqrt z)&aI_0(2\sqrt z)\\
+      bI_0(2\sqrt z)&\dfrac{ab\,(T-u)}{\sqrt z}I_1(2\sqrt z)
+      \end{pmatrix}.$$
+    </div>
+    <p>The no-jump atoms are $e^{-aT}$ at $(U_T,y_T)=(T,1)$ from state 1 and $e^{-bT}$ at
+      $(0,2)$ from state 2. Odd jump counts give the off-diagonal $I_0$ entries; positive even counts give the
+      diagonal $I_1$ entries. Integrating each entry plus its atom recovers the exact transition matrix</p>
+    <div class="equation-card">
+    $$P(T)={1\over a+b}
+      \begin{pmatrix}
+      b+ae^{-(a+b)T}&a(1-e^{-(a+b)T})\\
+      b(1-e^{-(a+b)T})&a+be^{-(a+b)T}
+      \end{pmatrix}.$$
+    </div>
+    <p>Therefore an endpoint-contingent call has the exact finite-rate price</p>
+    $$u_{ij}=e^{-rT}\left[p_{ij}^{\rm atom}C(F_0,V_i^{\rm atom})+
+      \int_0^T C\!\left(F_0,T\sigma_2^2+(\sigma_1^2-\sigma_2^2)u\right)f_{ij}(u)\,du\right].$$
+    <p>This prices $(S_T-K)^+\mathbf1_{\{y_T=j\}}$; division by $P_{ij}(T)$ gives the conditional call value
+      given the terminal regime. It also supplies exact continuation values when a later payoff depends on the
+      observed regime. For $(a,b)=(7,13)$, quadrature recovers all four transition probabilities to machine
+      precision, and an independent terminal-resolved polynomial-moment ODE gives:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>start</th><th>terminal</th><th>probability</th><th>endpoint price</th><th>ODE difference</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>0.6500000007</td><td>8.7053654672</td><td>6.9e-14</td></tr><tr><td>1</td><td>2</td><td>0.3499999993</td><td>4.5659792266</td><td>4.0e-14</td></tr><tr><td>2</td><td>1</td><td>0.6499999987</td><td>8.4796757065</td><td>5.0e-14</td></tr><tr><td>2</td><td>2</td><td>0.3500000013</td><td>4.4408690781</td><td>1.3e-14</td></tr></tbody></table></div>
+
     <p>Integrating the transition probabilities gives the first moments used below:</p>
     $$\mathbb E_1U_T=\frac{bT}{a+b}+\frac{a}{(a+b)^2}\big(1-e^{-(a+b)T}\big),\qquad
       \mathbb E_2U_T=\frac{bT}{a+b}-\frac{b}{(a+b)^2}\big(1-e^{-(a+b)T}\big).$$
@@ -113,7 +142,7 @@
     <p>For $(a,b)=(7,13)$, the density plus its atom integrates to one within $1.2\times10^{-16}$ in each starting
     state; its first moment matches the transition-semigroup formula to the same accuracy. Prices against the
     independent polynomial-moment ODE are:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>starting regime</th><th>Bessel density</th><th>moment ODE</th><th>difference</th></tr></thead><tbody><tr><td>1</td><td>13.2713446938</td><td>13.2713446938</td><td>1.8e-13</td></tr><tr><td>2</td><td>12.9205447846</td><td>12.9205447846</td><td>9.6e-14</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>starting regime</th><th>Bessel density</th><th>moment ODE</th><th>difference</th></tr></thead><tbody><tr><td>1</td><td>13.2713446938</td><td>13.2713446938</td><td>1.9e-13</td></tr><tr><td>2</td><td>12.9205447846</td><td>12.9205447846</td><td>9.6e-14</td></tr></tbody></table></div>
     <p>This removes the equal-rate restriction from the exact finite-rate benchmark. The zero-carry restriction remains:
     when $r\ne q$, the clock contains the nonconstant weight $h(T-t)$ and is no longer determined by occupation time
     alone.</p>

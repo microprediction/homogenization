@@ -137,16 +137,45 @@ def moment_ode_price(start, degree=32):
 
 def unequal_occupation_density(u, start, rate_12, rate_21):
     """Interior density of state-1 occupation time for arbitrary two-state rates."""
+    return sum(
+        joint_occupation_density(u, start, end, rate_12, rate_21)
+        for end in (0, 1)
+    )
+
+
+def joint_occupation_density(u, start, end, rate_12, rate_21):
+    """Interior joint density of ``(U_T, Y_T=end)``.
+
+    States 0 and 1 correspond to regimes 1 and 2.  Odd jump counts change
+    state and sum to the I_0 terms; positive even jump counts preserve the
+    state and sum to the I_1 terms.  The no-jump atom is handled separately.
+    """
     z = rate_12 * rate_21 * u * (T - u)
     root = math.sqrt(max(z, 0.0))
     i0 = iv(0, 2.0 * root)
     i1_over_root = iv(1, 2.0 * root) / root if root > 1e-10 else 1.0 + 0.5 * z
     exponential = math.exp(-rate_12 * u - rate_21 * (T - u))
-    if start == 0:
-        bracket = rate_12 * i0 + rate_12 * rate_21 * u * i1_over_root
+    if start == 0 and end == 0:
+        bracket = rate_12 * rate_21 * u * i1_over_root
+    elif start == 0 and end == 1:
+        bracket = rate_12 * i0
+    elif start == 1 and end == 0:
+        bracket = rate_21 * i0
+    elif start == 1 and end == 1:
+        bracket = rate_12 * rate_21 * (T - u) * i1_over_root
     else:
-        bracket = rate_21 * i0 + rate_12 * rate_21 * (T - u) * i1_over_root
+        raise ValueError("start and end must be 0 or 1")
     return exponential * bracket
+
+
+def unequal_transition_probability(start, end, rate_12, rate_21):
+    """Closed-form two-state transition probability over ``[0,T]``."""
+    total_rate = rate_12 + rate_21
+    decay = math.exp(-total_rate * T)
+    stationary = np.array([rate_21, rate_12]) / total_rate
+    if start == end:
+        return stationary[end] + (1.0 - stationary[end]) * decay
+    return stationary[end] * (1.0 - decay)
 
 
 def bessel_price(start, rate_12, rate_21):
@@ -167,6 +196,31 @@ def bessel_price(start, rate_12, rate_21):
         limit=250,
     )[0]
     return math.exp(-R * T) * (atom * atom_price + interior)
+
+
+def bessel_endpoint_price(start, end, rate_12, rate_21):
+    """Exact price of the call multiplied by ``1{Y_T=end}``."""
+    s1, s2 = SIGMA[0] ** 2, SIGMA[1] ** 2
+
+    def clock_price(u):
+        return cev_call(s2 * T + (s1 - s2) * u)
+
+    atom = 0.0
+    if start == end:
+        exit_rate = rate_12 if start == 0 else rate_21
+        endpoint = T if start == 0 else 0.0
+        atom = math.exp(-exit_rate * T) * clock_price(endpoint)
+    interior = quad(
+        lambda u: joint_occupation_density(
+            u, start, end, rate_12, rate_21
+        ) * clock_price(u),
+        0.0,
+        T,
+        epsabs=2e-12,
+        epsrel=2e-12,
+        limit=250,
+    )[0]
+    return math.exp(-R * T) * (atom + interior)
 
 
 def unequal_moment_ode_price(start, rate_12, rate_21, degree=28):
@@ -196,6 +250,52 @@ def unequal_moment_ode_price(start, rate_12, rate_21, degree=28):
         initial[order] = (-1.0) ** order
     moments = solve_ivp(rhs, (0.0, T), initial.ravel(), method="DOP853", rtol=2e-13, atol=2e-15).y[:, -1]
     moments = moments.reshape(degree + 1, 2)
+    return math.exp(-R * T) * float(polynomial @ moments[:, start])
+
+
+def unequal_moment_ode_endpoint_price(
+    start, end, rate_12, rate_21, degree=28
+):
+    """Independent moment reconstruction with terminal regime retained."""
+    s1, s2 = SIGMA[0] ** 2, SIGMA[1] ** 2
+    nodes = np.cos(np.pi * (np.arange(72) + 0.5) / 72)
+    coefficients = ch.chebfit(
+        nodes,
+        [cev_call(T * (s2 + 0.5 * (s1 - s2) * (x + 1.0)))
+         for x in nodes],
+        degree,
+    )
+    polynomial = ch.cheb2poly(coefficients)
+    generator = np.array([
+        [-rate_12, rate_12],
+        [rate_21, -rate_21],
+    ])
+    state_one = np.array([1.0, 0.0])
+
+    def rhs(_, flat):
+        moments = flat.reshape(degree + 1, 2)
+        out = np.zeros_like(moments)
+        for order in range(degree + 1):
+            out[order] = generator @ moments[order]
+            if order:
+                out[order] += (
+                    order * (2.0 / T) * state_one * moments[order - 1]
+                )
+        return out.ravel()
+
+    terminal_mask = np.zeros(2)
+    terminal_mask[end] = 1.0
+    initial = np.empty((degree + 1, 2))
+    for order in range(degree + 1):
+        initial[order] = (-1.0) ** order * terminal_mask
+    moments = solve_ivp(
+        rhs,
+        (0.0, T),
+        initial.ravel(),
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    ).y[:, -1].reshape(degree + 1, 2)
     return math.exp(-R * T) * float(polynomial @ moments[:, start])
 
 
@@ -900,6 +1000,61 @@ def main():
         assert abs(mass - 1.0) < 3e-13
         assert abs(mean - unequal_occupation_mean(start, rate_12, rate_21)) < 3e-13
         assert abs(bessel - moment) < 5e-12
+
+    joint_mass_error = 0.0
+    joint_price_error = 0.0
+    endpoint_sum_error = 0.0
+    for start in (0, 1):
+        endpoint_prices = []
+        for end in (0, 1):
+            atom = (
+                math.exp(-(rate_12 if start == 0 else rate_21) * T)
+                if start == end else 0.0
+            )
+            mass = atom + quad(
+                lambda u: joint_occupation_density(
+                    u, start, end, rate_12, rate_21
+                ),
+                0.0,
+                T,
+                epsabs=2e-13,
+                epsrel=2e-13,
+                limit=250,
+            )[0]
+            transition = unequal_transition_probability(
+                start, end, rate_12, rate_21
+            )
+            density_price = bessel_endpoint_price(
+                start, end, rate_12, rate_21
+            )
+            moment_price = unequal_moment_ode_endpoint_price(
+                start, end, rate_12, rate_21
+            )
+            joint_mass_error = max(joint_mass_error, abs(mass - transition))
+            joint_price_error = max(
+                joint_price_error, abs(density_price - moment_price)
+            )
+            endpoint_prices.append(density_price)
+            print(
+                f"start/end {start+1}/{end+1}: transition={transition:.10f}; "
+                f"mass error={abs(mass-transition):.3e}; "
+                f"endpoint price={density_price:.10f}; "
+                f"moment ODE difference={abs(density_price-moment_price):.3e}"
+            )
+        endpoint_sum_error = max(
+            endpoint_sum_error,
+            abs(sum(endpoint_prices) - bessel_price(
+                start, rate_12, rate_21
+            )),
+        )
+    assert joint_mass_error < 3e-13
+    assert joint_price_error < 5e-12
+    assert endpoint_sum_error < 3e-13
+    print(
+        f"joint endpoint law: max mass error={joint_mass_error:.3e}; "
+        f"price error={joint_price_error:.3e}; "
+        f"endpoint-sum error={endpoint_sum_error:.3e}"
+    )
 
     m1_raw, m2_raw = cev_derivative_estimates()
     m1_check, m2_check = cev_derivative_estimates(degree=48)

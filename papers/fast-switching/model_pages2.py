@@ -531,11 +531,14 @@ def cev_page():
     from scipy.integrate import solve_ivp
     from numpy.polynomial import chebyshev as ch
     from verify_cev_occupation import (
+        bessel_endpoint_price,
         bessel_price,
         finite_rate_bounds,
         poisson_beta_price,
+        unequal_moment_ode_endpoint_price,
         unequal_moment_ode_price,
         unequal_occupation_moments,
+        unequal_transition_probability,
         weighted_finite_rate_bounds,
         weighted_occupation_moments,
     )
@@ -607,6 +610,19 @@ def cev_page():
         bessel = bessel_price(start, 7.0, 13.0)
         moment = unequal_moment_ode_price(start, 7.0, 13.0)
         unequal_rows.append([str(start + 1), f'{bessel:.10f}', f'{moment:.10f}', e(abs(bessel - moment))])
+    endpoint_rows = []
+    for start in (0, 1):
+        for end in (0, 1):
+            bessel = bessel_endpoint_price(start, end, 7.0, 13.0)
+            moment = unequal_moment_ode_endpoint_price(start, end, 7.0, 13.0)
+            probability = unequal_transition_probability(start, end, 7.0, 13.0)
+            endpoint_rows.append([
+                str(start + 1),
+                str(end + 1),
+                f'{probability:.10f}',
+                f'{bessel:.10f}',
+                e(abs(bessel - moment)),
+            ])
     finite_rows = []
     for multiplier in (1, 2, 4, 8):
         a, b = 7.0 * multiplier, 13.0 * multiplier
@@ -743,6 +759,34 @@ def cev_page():
     $a^kb^ke^{-au-b(T-u)}u^k(T-u)^{k-1}/[k!(k-1)!]$; summing gives the $I_1$ term. The state-2 formula follows by
     exchanging the states. This is the two-state occupation law studied by
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.</p>
+    <p>Keeping jump parity rather than summing it out gives the stronger joint law with the terminal regime. Write
+      $f_{ij}(u)\,du=\mathbb P_i\{U_T\in du,\ y_T=j\}$ on $0&lt;u&lt;T$. Then</p>
+    <div class="equation-card">
+    $$\begin{pmatrix}f_{11}(u)&f_{12}(u)\\f_{21}(u)&f_{22}(u)\end{pmatrix}
+      =e^{-au-b(T-u)}
+      \begin{pmatrix}
+      \dfrac{ab\,u}{\sqrt z}I_1(2\sqrt z)&aI_0(2\sqrt z)\\
+      bI_0(2\sqrt z)&\dfrac{ab\,(T-u)}{\sqrt z}I_1(2\sqrt z)
+      \end{pmatrix}.$$
+    </div>
+    <p>The no-jump atoms are $e^{-aT}$ at $(U_T,y_T)=(T,1)$ from state 1 and $e^{-bT}$ at
+      $(0,2)$ from state 2. Odd jump counts give the off-diagonal $I_0$ entries; positive even counts give the
+      diagonal $I_1$ entries. Integrating each entry plus its atom recovers the exact transition matrix</p>
+    <div class="equation-card">
+    $$P(T)={1\over a+b}
+      \begin{pmatrix}
+      b+ae^{-(a+b)T}&a(1-e^{-(a+b)T})\\
+      b(1-e^{-(a+b)T})&a+be^{-(a+b)T}
+      \end{pmatrix}.$$
+    </div>
+    <p>Therefore an endpoint-contingent call has the exact finite-rate price</p>
+    $$u_{ij}=e^{-rT}\left[p_{ij}^{\rm atom}C(F_0,V_i^{\rm atom})+
+      \int_0^T C\!\left(F_0,T\sigma_2^2+(\sigma_1^2-\sigma_2^2)u\right)f_{ij}(u)\,du\right].$$
+    <p>This prices $(S_T-K)^+\mathbf1_{\{y_T=j\}}$; division by $P_{ij}(T)$ gives the conditional call value
+      given the terminal regime. It also supplies exact continuation values when a later payoff depends on the
+      observed regime. For $(a,b)=(7,13)$, quadrature recovers all four transition probabilities to machine
+      precision, and an independent terminal-resolved polynomial-moment ODE gives:</p>
+''' + table(['start', 'terminal', 'probability', 'endpoint price', 'ODE difference'], endpoint_rows) + r'''
     <p>Integrating the transition probabilities gives the first moments used below:</p>
     $$\mathbb E_1U_T=\frac{bT}{a+b}+\frac{a}{(a+b)^2}\big(1-e^{-(a+b)T}\big),\qquad
       \mathbb E_2U_T=\frac{bT}{a+b}-\frac{b}{(a+b)^2}\big(1-e^{-(a+b)T}\big).$$
