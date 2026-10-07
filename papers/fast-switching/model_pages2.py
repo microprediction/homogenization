@@ -991,8 +991,19 @@ def cev_page():
       \Sigma_{jk}=2pq\int_0^T w_j(t)w_k(t)dt.$$
     </div>
     <p>This is a Gram matrix: its rank is exactly the dimension of the span of the loadings in $L^2[0,T]$.
-    That rank statement concerns a vector formed by integrating <em>different deterministic loadings</em>; it is not
-    a claim that a fixed-parameter Green&ndash;Kubo matrix acquires extra rank.</p>
+    In fact, this is not merely a limiting-rank statement. For every finite $\kappa>0$, every $T>0$, and either a
+    specified or stationary initial regime,</p>
+    <div class="equation-card">
+    $$\ker\operatorname{Cov}(W^{(\kappa)})
+      =\left\{\theta:\sum_j\theta_jw_j=0\ \text{a.e. on }[0,T]\right\}.$$
+    </div>
+    <p>One inclusion is immediate. For the converse, if $f=\sum_j\theta_jw_j$ is not zero a.e., its absolutely
+    continuous primitive $F(t)=\int_0^t f(s)ds$ is nonconstant. Conditional on exactly one jump, the jump time has
+    a strictly positive density on $(0,T)$ and the projected clock is $F(\tau)$ from state 1, or
+    $F(T)-F(\tau)$ from state 2. Its conditional variance is therefore positive, and so is its unconditional
+    variance. Thus finite switching neither creates nor destroys covariance directions: the exact covariance and
+    its fast-switching Gram limit have the same nullspace. This rank is created by integrating <em>different
+    deterministic loadings</em>; it is not a claim that a fixed-parameter Green&ndash;Kubo matrix acquires extra rank.</p>
     <p>The first joint non-Gaussian term is explicit as well. For a fixed Fourier vector $\theta$, put
     $w_\theta=\sum_j\theta_jw_j$, $r=pq$, $c=q-p$, and $d_1=q,d_2=-p$. Then</p>
     <div class="equation-card">
@@ -1066,7 +1077,12 @@ def cev_page():
     $2.4\times10^{-10}$. Omitting the interface term leaves an asymptotic coefficient miss of $0.145600000$,
     exactly $pq\Delta^2$ for the certificate's jump. A two-loading, two-jump certificate uses non-collinear jump
     vectors. Its interface-penalty eigenvalues are $0.175626851$ and $0.438623149$, hence rank two; the spectral-norm
-    error in the full covariance coefficient is $1.8\times10^{-10}$ at $\kappa=640$.</p>
+    error in the full covariance coefficient is $1.8\times10^{-10}$ at $\kappa=640$. Adding
+    a separate pair $w_1(t)=e^{0.8(T-t)}$, $w_2(t)=e^{-0.7(T-t)}$, and
+    $w_3=1.7w_1-0.4w_2$ gives an exact null direction $(-1.7,0.4,1)$ at every finite rate. Across both starts and
+    $\kappa=40,80,160,320,640$, the largest scaled null residual is below $5.1\times10^{-16}$, while the smallest
+    nonzero eigenvalue of $\kappa\operatorname{Cov}(W_1,W_2,W_3)$ stays above $0.042$, numerically certifying exact
+    rank two rather than only asymptotic rank two.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative

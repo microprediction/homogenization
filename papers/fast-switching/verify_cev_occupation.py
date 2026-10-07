@@ -32,7 +32,9 @@ It also checks the joint first and second corrections for two different
 deterministic clock loadings.  This multivariate check makes the limiting
 covariance a Gram matrix, exposes the endpoint contribution in every fixed
 Fourier direction, and separates its rank from any single fixed-loading
-calculation.
+calculation.  A deliberately dependent third loading certifies that the exact
+finite-rate covariance has precisely the same loading-space nullspace as the
+limiting Gram matrix.
 For piecewise-smooth loadings with value jumps, step-loading certificates
 check both the scalar sum-of-squared-jumps coefficient and its multivariate
 negative-semidefinite jump-matrix extension.
@@ -1590,6 +1592,47 @@ def main():
             joint_variance_second_errors, joint_variance_second_errors[1:]
         )
     )
+
+    # Exact finite-rate rank is already the loading-space rank, not merely its
+    # fast-switching limit.  Add w_3=1.7*w_1-0.4*w_2.  The covariance is the
+    # exact linear image A Cov(w_1,w_2) A', so (-1.7,0.4,1) is an exact null
+    # direction.  The two positive directions remain uniformly visible after
+    # multiplying by kappa.
+    dependent_map = np.array(((1.0, 0.0), (0.0, 1.0), (1.7, -0.4)))
+    dependent_null = np.array((-1.7, 0.4, 1.0))
+    finite_rank_growths = (0.8, -0.7)
+    finite_rank_null_residual = 0.0
+    finite_rank_positive_floor = math.inf
+    finite_rank_numerical_ranks = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        for start in (0, 1):
+            _, base_covariance = joint_weighted_raw_moments_ode(
+                start, a, b, finite_rank_growths
+            )
+            dependent_covariance = (
+                dependent_map @ base_covariance @ dependent_map.T
+            )
+            scaled_covariance = kappa * dependent_covariance
+            eigenvalues = np.linalg.eigvalsh(scaled_covariance)
+            finite_rank_null_residual = max(
+                finite_rank_null_residual,
+                float(np.linalg.norm(scaled_covariance @ dependent_null)),
+            )
+            finite_rank_positive_floor = min(
+                finite_rank_positive_floor, float(eigenvalues[1])
+            )
+            finite_rank_numerical_ranks.append(
+                int(np.linalg.matrix_rank(scaled_covariance, tol=1e-11))
+            )
+    print(
+        "dependent-loading finite-rate null residual/min positive eigenvalue/ranks="
+        f"{finite_rank_null_residual:.3e}/{finite_rank_positive_floor:.9f}/"
+        + ",".join(str(rank) for rank in finite_rank_numerical_ranks)
+    )
+    assert finite_rank_null_residual < 1e-12
+    assert finite_rank_positive_floor > 0.04
+    assert set(finite_rank_numerical_ranks) == {2}
 
     # Value jumps add interface layers to the variance endpoint coefficient.
     # For F(u)=int_0^(T-u) w(s)w(s+u) ds, a jump from w_- to w_+ contributes
