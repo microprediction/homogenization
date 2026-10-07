@@ -19,6 +19,9 @@ occupation moments extend those bounds to nonzero carry without asserting an
 occupation-time representation for the full clock law.  For nonzero carry, an
 exact Kummer-function Laplace transform of the weighted occupation clock is
 also checked against the independent time-inhomogeneous Feynman--Kac system.
+Keeping the terminal basis vector in that system gives the full endpoint-
+resolved transform matrix, which is checked entry by entry and sums back to
+the unconditional transform.
 Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
 Wasserstein rate for merely Lipschitz clock payoffs.  A complex Feynman--Kac
 calculation verifies the corresponding weighted-clock central limit theorem
@@ -460,6 +463,76 @@ def weighted_laplace_kummer(start, rate_12, rate_21, clock_growth, transform_arg
     return result
 
 
+def weighted_laplace_kummer_endpoint(
+    start, end, rate_12, rate_21, clock_growth, transform_argument
+):
+    """Exact transform of the weighted clock jointly with ``Y_T=end``.
+
+    The scalar Kummer reduction is the same as for the unconditional
+    transform, but the initial data at zero horizon are the terminal-state
+    basis vector.  States 0 and 1 correspond to regimes 1 and 2.
+    """
+    if start not in (0, 1) or end not in (0, 1):
+        raise ValueError("start and end must be 0 or 1")
+    if transform_argument == 0.0:
+        return mp.mpf(unequal_transition_probability(
+            start, end, rate_12, rate_21
+        ))
+    if clock_growth == 0.0:
+        generator = np.array([
+            [-rate_12 - transform_argument, rate_12],
+            [rate_21, -rate_21],
+        ])
+        return mp.mpf(expm(T * generator)[start, end])
+
+    with mp.workdps(80):
+        h = mp.mpf(clock_growth)
+        a = mp.mpf(rate_12)
+        b = mp.mpf(rate_21)
+        z = mp.mpf(transform_argument)
+        alpha = b / h
+        gamma = 1.0 + (a + b) / h
+        w0 = -z / h
+        wT = w0 * mp.exp(h * T)
+
+        def kummer_m(w):
+            return mp.hyp1f1(alpha, gamma, w)
+
+        def kummer_m_prime(w):
+            return alpha * mp.hyp1f1(alpha + 1.0, gamma + 1.0, w) / gamma
+
+        def kummer_u(w):
+            return mp.hyperu(alpha, gamma, w)
+
+        def kummer_u_prime(w):
+            return -alpha * mp.hyperu(alpha + 1.0, gamma + 1.0, w)
+
+        m0 = kummer_m(w0)
+        mp0 = kummer_m_prime(w0)
+        u0 = kummer_u(w0)
+        up0 = kummer_u_prime(w0)
+        denominator = m0 * up0 - mp0 * u0
+
+        value0 = mp.mpf(1.0 if end == 1 else 0.0)
+        tau_derivative0 = b if end == 0 else -b
+        derivative0 = tau_derivative0 / (h * w0)
+        coefficient_m = value0 * up0 - derivative0 * u0
+        coefficient_u = derivative0 * m0 - value0 * mp0
+        state_two = (
+            coefficient_m * kummer_m(wT)
+            + coefficient_u * kummer_u(wT)
+        ) / denominator
+        state_two_w = (
+            coefficient_m * kummer_m_prime(wT)
+            + coefficient_u * kummer_u_prime(wT)
+        ) / denominator
+        result = (
+            state_two + h * wT * state_two_w / b
+            if start == 0 else state_two
+        )
+    return result
+
+
 def weighted_laplace_ode(start, rate_12, rate_21, clock_growth, transform_argument):
     """Independent Feynman--Kac evaluation of the weighted-clock transform."""
 
@@ -474,6 +547,31 @@ def weighted_laplace_ode(start, rate_12, rate_21, clock_growth, transform_argume
         rhs,
         (0.0, T),
         [1.0, 1.0],
+        method="DOP853",
+        rtol=2e-13,
+        atol=2e-15,
+    )
+    return float(solution.y[start, -1])
+
+
+def weighted_laplace_ode_endpoint(
+    start, end, rate_12, rate_21, clock_growth, transform_argument
+):
+    """Independent endpoint-resolved Feynman--Kac evaluation."""
+
+    def rhs(tau, values):
+        penalty = transform_argument * math.exp(clock_growth * tau)
+        return [
+            -(rate_12 + penalty) * values[0] + rate_12 * values[1],
+            rate_21 * values[0] - rate_21 * values[1],
+        ]
+
+    initial = [0.0, 0.0]
+    initial[end] = 1.0
+    solution = solve_ivp(
+        rhs,
+        (0.0, T),
+        initial,
         method="DOP853",
         rtol=2e-13,
         atol=2e-15,
@@ -1133,6 +1231,8 @@ def main():
     )
     transform_error = 0.0
     transform_imaginary = 0.0
+    endpoint_transform_error = 0.0
+    endpoint_sum_error = 0.0
     transform_cases = (
         (rate_12, rate_21, clock_growth, (0.01, 0.1, 1.0, 5.0)),
         (0.8, 1.1, -0.7, (0.1, 1.0, 3.0)),
@@ -1145,12 +1245,54 @@ def main():
                 transform_error = max(transform_error, float(abs(mp.re(kummer) - ode)))
                 transform_imaginary = max(transform_imaginary, float(abs(mp.im(kummer))))
                 assert 0.0 < mp.re(kummer) <= 1.0
+                endpoint_values = []
+                for end in (0, 1):
+                    endpoint = weighted_laplace_kummer_endpoint(
+                        start, end, a, b, h, argument
+                    )
+                    endpoint_ode = weighted_laplace_ode_endpoint(
+                        start, end, a, b, h, argument
+                    )
+                    endpoint_transform_error = max(
+                        endpoint_transform_error,
+                        float(abs(mp.re(endpoint) - endpoint_ode)),
+                    )
+                    transform_imaginary = max(
+                        transform_imaginary, float(abs(mp.im(endpoint)))
+                    )
+                    assert 0.0 < mp.re(endpoint) < 1.0
+                    endpoint_values.append(endpoint)
+                endpoint_sum_error = max(
+                    endpoint_sum_error,
+                    float(abs(sum(endpoint_values) - kummer)),
+                )
     print(
         f"weighted-clock Kummer/Feynman--Kac max error={transform_error:.3e}; "
+        f"endpoint error={endpoint_transform_error:.3e}; "
+        f"endpoint-sum error={endpoint_sum_error:.3e}; "
         f"max cancelled imaginary part={transform_imaginary:.3e}"
     )
     assert transform_error < 4e-12
+    assert endpoint_transform_error < 4e-12
+    assert endpoint_sum_error < 4e-14
     assert transform_imaginary < 1e-20
+
+    for start in (0, 1):
+        for end in (0, 1):
+            transition = unequal_transition_probability(
+                start, end, rate_12, rate_21
+            )
+            zero_argument = weighted_laplace_kummer_endpoint(
+                start, end, rate_12, rate_21, clock_growth, 0.0
+            )
+            constant_weight = weighted_laplace_kummer_endpoint(
+                start, end, rate_12, rate_21, 0.0, 0.7
+            )
+            constant_weight_ode = weighted_laplace_ode_endpoint(
+                start, end, rate_12, rate_21, 0.0, 0.7
+            )
+            assert abs(float(zero_argument) - transition) < 3e-16
+            assert abs(float(constant_weight) - constant_weight_ode) < 3e-13
 
     # Weighted additive-functional CLT.  With a=kappa*q and b=kappa*p,
     # sqrt(kappa)(W-EW) converges to N(0, 2*p*q*int_0^T w(t)^2 dt).

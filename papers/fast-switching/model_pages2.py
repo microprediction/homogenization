@@ -540,6 +540,8 @@ def cev_page():
         unequal_occupation_moments,
         unequal_transition_probability,
         weighted_finite_rate_bounds,
+        weighted_laplace_kummer_endpoint,
+        weighted_laplace_ode_endpoint,
         weighted_occupation_moments,
     )
     S0, r, q, beta, K, T, sig = 100.0, 0.02, 0.0, 0.6, 100.0, 1.0, [2.5, 1.2]
@@ -622,6 +624,21 @@ def cev_page():
                 f'{probability:.10f}',
                 f'{bessel:.10f}',
                 e(abs(bessel - moment)),
+            ])
+    weighted_endpoint_rows = []
+    for start in (0, 1):
+        for end in (0, 1):
+            kummer = weighted_laplace_kummer_endpoint(
+                start, end, 7.0, 13.0, 0.032, 1.0
+            )
+            ode = weighted_laplace_ode_endpoint(
+                start, end, 7.0, 13.0, 0.032, 1.0
+            )
+            weighted_endpoint_rows.append([
+                str(start + 1),
+                str(end + 1),
+                f'{float(kummer.real):.10f}',
+                e(abs(float(kummer.real) - ode)),
             ])
     finite_rows = []
     for multiplier in (1, 2, 4, 8):
@@ -912,11 +929,33 @@ def cev_page():
     $$F_2(T;z)=\mathcal Y(w_T),\qquad
       F_1(T;z)=\mathcal Y(w_T)+\frac{hw_T}{b}\mathcal Y'(w_T).$$
     </div>
+    <p>The same reduction retains the terminal regime. Define
+      $F_{ij}(T;z)=\mathbb E_i[e^{-zW_T}\mathbf1_{\{y_T=j\}}]$. For $j=1,2$, set</p>
+    $$\eta_1=0,\quad \eta_2=1,\qquad
+      \xi_1=\frac{b}{hw_0},\quad \xi_2=-\frac{b}{hw_0},$$
+    $$\mathcal Y_j(w)=\frac{(\eta_jU'(w_0)-\xi_jU(w_0))M(w)
+      +(\xi_jM(w_0)-\eta_jM'(w_0))U(w)}
+      {M(w_0)U'(w_0)-M'(w_0)U(w_0)}.$$
+    <p>These constants are exactly the terminal-basis initial data:
+      $\mathcal Y_j(w_0)=\mathbf1_{\{j=2\}}$ and
+      $hw_0\mathcal Y_j'(w_0)=b(\mathbf1_{\{j=1\}}-\mathbf1_{\{j=2\}})$. Hence</p>
+    <div class="equation-card">
+    $$F_{2j}(T;z)=\mathcal Y_j(w_T),\qquad
+      F_{1j}(T;z)=\mathcal Y_j(w_T)+\frac{hw_T}{b}\mathcal Y_j'(w_T).$$
+    </div>
+    <p>Summing over $j$ recovers the unconditional transform above. At $z=0$ the continuous limit is the ordinary
+      transition matrix, and at $h=0$ it is
+      $\exp\{T(Q-z\operatorname{diag}(1,0))\}$. Thus terminal-regime-contingent clock claims have an exact transform
+      even with nonzero carry. This remains a transform identity, not a direct one-dimensional quadrature for a
+      nonlinear CEV payoff. For $(a,b,h,z)=(7,13,0.032,1)$, an independent terminal-basis Feynman&ndash;Kac solve gives:</p>
+''' + table(['start', 'terminal', 'joint transform', 'ODE difference'], weighted_endpoint_rows) + r'''
     <p>At isolated parameter values where this particular fundamental pair degenerates, the formula is read by
     analytic continuation; uniqueness of the two-state system fixes the limit. For $h=0$ it reduces continuously to
     $F(T;z)=\exp\{T(Q-z\operatorname{diag}(1,0))\}\mathbf1$. On the negative $w$ axis the individual principal-branch
     $U$ terms can be complex, but their Wronskian combination is real. Finally, the full CEV-clock transform is</p>
     $$\mathbb E_i e^{-zV}=e^{-z\sigma_2^2R(0)}F_i(T;z\Delta),$$
+    $$\mathbb E_i[e^{-zV}\mathbf1_{\{y_T=j\}}]
+      =e^{-z\sigma_2^2R(0)}F_{ij}(T;z\Delta),$$
     <p>with analytic continuation in the bounded-clock transform if $\Delta&lt;0$.</p>
     <p>This is an exact transform benchmark for nonzero carry, not an atom-plus-Bessel density or a direct
     one-dimensional price quadrature. Across positive carry $h=0.032$ and a negative-$h$ test, 14 state/argument
