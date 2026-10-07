@@ -8,7 +8,8 @@ The page uses the two-state system
 It checks the reported obstruction to centering the *whole* first
 coefficient, verifies the corrected average/shape recursion, and compares
 the resulting first-order outer approximation with the exact matrix
-exponential.  The exact comparison starts away from the initial layer.
+exponential.  It also checks an exact slow/fast modal split and the uniform
+first-order composite obtained by restoring the leading initial layer.
 """
 
 from __future__ import annotations
@@ -46,6 +47,37 @@ def coefficients(t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 def exact(t: float, eps: float) -> np.ndarray:
     return expm((Q / eps + G) * t) @ ONE
+
+
+def exact_modal(t: float, eps: float) -> np.ndarray:
+    """Exact slow/fast decomposition in mean and centered coordinates."""
+    d = np.sqrt(1.0 + eps**2 / 4.0)
+    slow = 0.5 + (d - 1.0) / eps
+    fast = 0.5 - (d + 1.0) / eps
+    mean = ((d + 1.0) * np.exp(slow * t) + (d - 1.0) * np.exp(fast * t)) / (2.0 * d)
+    shape = eps * (np.exp(slow * t) - np.exp(fast * t)) / (4.0 * d)
+    return mean * ONE + shape * SHAPE
+
+
+def first_outer(t: float, eps: float) -> np.ndarray:
+    """First-order outer approximation for initial data u(0)=1."""
+    a0 = np.exp(t / 2.0)
+    return a0 * ONE + eps * (t * a0 * ONE / 8.0 + a0 * SHAPE / 4.0)
+
+
+def first_composite(t: float, eps: float) -> np.ndarray:
+    """First outer approximation plus the leading fast initial layer."""
+    return first_outer(t, eps) - eps * np.exp(-2.0 * t / eps) * SHAPE / 4.0
+
+
+def uniform_constant(t_max: float) -> float:
+    """Explicit coefficient in the proved uniform O(eps^2) bound."""
+    return (
+        np.exp(5.0 * t_max / 8.0)
+        * (3.0 / 32.0 + t_max / 32.0 + t_max**2 / 128.0)
+        + t_max * np.exp(t_max / 2.0) / 128.0
+        + 17.0 / 96.0
+    )
 
 
 def observed_order(errors: list[float], epsilons: np.ndarray) -> float:
@@ -115,6 +147,41 @@ def main() -> None:
     assert 1.94 < first_order < 2.06
     assert 2.88 < second_order < 3.12
 
+    # The outer approximation alone cannot be uniform at t=0: its initial
+    # centered mismatch is exactly eps/4.  Adding the leading layer cancels
+    # that mismatch and gives a uniform O(eps^2) approximation on [0,T].
+    t_max = 2.0
+    times = np.linspace(0.0, t_max, 2001)
+    modal_error = max(
+        float(np.linalg.norm(exact_modal(s, 0.137) - exact(s, 0.137), np.inf))
+        for s in times
+    )
+    assert modal_error < 3e-14
+
+    uniform_outer_errors: list[float] = []
+    uniform_composite_errors: list[float] = []
+    bound_ratios: list[float] = []
+    c_t = uniform_constant(t_max)
+    for eps in epsilons:
+        outer_error = max(
+            float(np.linalg.norm(exact_modal(s, eps) - first_outer(s, eps), np.inf))
+            for s in times
+        )
+        composite_error = max(
+            float(np.linalg.norm(exact_modal(s, eps) - first_composite(s, eps), np.inf))
+            for s in times
+        )
+        uniform_outer_errors.append(outer_error)
+        uniform_composite_errors.append(composite_error)
+        bound_ratios.append(composite_error / (c_t * eps**2))
+        assert abs(outer_error - eps / 4.0) < 3e-14
+        assert composite_error <= c_t * eps**2
+
+    uniform_outer_order = observed_order(uniform_outer_errors, epsilons)
+    uniform_composite_order = observed_order(uniform_composite_errors, epsilons)
+    assert 0.99 < uniform_outer_order < 1.01
+    assert 1.98 < uniform_composite_order < 2.03
+
     # A nonreversible three-state check of the general constant-forcing
     # corollary.  For A_eps=Q/eps+diag(g), the first slow-eigenvalue
     # correction and the null-space amplitude have coefficient
@@ -158,6 +225,11 @@ def main() -> None:
     print(f"smallest-eps centered error         {centered_errors[-1]:.12e}")
     print(f"smallest-eps first-order error      {first_errors[-1]:.12e}")
     print(f"smallest-eps second-order error     {second_errors[-1]:.12e}")
+    print(f"modal formula maximum error         {modal_error:.3e}")
+    print(f"uniform outer order on [0,2]        {uniform_outer_order:.6f}")
+    print(f"uniform composite order on [0,2]    {uniform_composite_order:.6f}")
+    print(f"proved uniform coefficient C_2      {c_t:.12e}")
+    print(f"largest error / proved bound        {max(bound_ratios):.6f}")
     print(f"three-state Green-Kubo coefficient  {k3:.12e}")
     print(f"three-state centered-only order     {centered3_order:.6f}")
     print(f"three-state full first order        {full3_order:.6f}")

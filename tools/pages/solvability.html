@@ -101,6 +101,39 @@
     <p>This scalar corollary holds without reversibility. It is the constant-forcing specialization of the normalized
     average/shape recursion on the <a href="./engine.html">engine page</a>.</p>
 
+    <h3>A uniform first-order composite</h3>
+    <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
+    two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>
+    $$d_\varepsilon=\sqrt{1+\varepsilon^2/4},\qquad
+      \lambda_s=\frac12+\frac{d_\varepsilon-1}{\varepsilon},\qquad
+      \lambda_f=\frac12-\frac{d_\varepsilon+1}{\varepsilon}.$$
+    <p>The exact solution splits into its slow and fast modes:</p>
+    $$m_\varepsilon(t)=\frac{d_\varepsilon+1}{2d_\varepsilon}e^{\lambda_st}
+      +\frac{d_\varepsilon-1}{2d_\varepsilon}e^{\lambda_ft},\qquad
+      z_\varepsilon(t)=\frac{\varepsilon}{4d_\varepsilon}
+      \left(e^{\lambda_st}-e^{\lambda_ft}\right).$$
+    <p>The first-order outer approximation is</p>
+    $$u_{\mathrm{out}}(t)=e^{t/2}\left[
+      \left(1+\frac{\varepsilon t}{8}\right)\mathbf1
+      +\frac{\varepsilon}{4}(1,-1)^\top\right].$$
+    <p>At $t=0$ its centered error is exactly $\varepsilon/4$, so it cannot have a uniform
+    $O(\varepsilon^2)$ remainder on an interval containing zero. Restoring the leading fast layer gives</p>
+    <div class="equation-card">
+    $$u_{\mathrm{comp}}(t)=u_{\mathrm{out}}(t)
+      -\frac{\varepsilon}{4}e^{-2t/\varepsilon}(1,-1)^\top.$$
+    </div>
+    <p>For every $T\ge0$ and $0&lt;\varepsilon\le1$, direct estimates of the exact modal formula give the
+    fully uniform bound</p>
+    $$\sup_{0\le t\le T}\|u(t)-u_{\mathrm{comp}}(t)\|_\infty
+      \le C_T\varepsilon^2,$$
+    $$C_T=e^{5T/8}\left(\frac3{32}+\frac{T}{32}+\frac{T^2}{128}\right)
+      +\frac{T e^{T/2}}{128}+\frac{17}{96}.$$
+    <p>Indeed, $0\le\lambda_s-1/2\le\varepsilon/8$,
+    $|\lambda_s-1/2-\varepsilon/8|\le\varepsilon^3/128$, and the exact fast amplitude differs from
+    $-\varepsilon/4$ only at the order needed by the bound. Taylor&apos;s inequality for the slow exponential and
+    $t e^{-at}\le a^{-1}$ for the fast exponential yield the displayed $C_T$. This is a finite-time theorem uniform
+    over $[0,T]$; because $C_T$ grows with $T$, it is not a long-maturity-uniform claim.</p>
+
     <h3>A two-state obstruction</h3>
     <p>For a minimal example, take</p>
     $$Q=\begin{pmatrix}-1&1\\1&-1\end{pmatrix},\qquad
@@ -113,9 +146,10 @@
     $$u_1=a_1\mathbf1+\chi_1,\qquad a_1'-\frac12a_1=\frac18a.$$
     <p>For $u(0)=\mathbf1$, matching gives $a_1(0)=0$, hence $a_1=ta/8$. At any fixed positive time the centered-only
     approximation has an order-$\varepsilon$ error, whereas including $a_1\mathbf1$ reduces it to
-    order $\varepsilon^2$. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
-    checks the Poisson equations, the obstruction, and these exact matrix-exponential convergence orders. This is a
-    formal outer hierarchy; rigorous remainder bounds require the usual regularity and layer hypotheses. In
+    order $\varepsilon^2$ at fixed positive time. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
+    checks the Poisson equations, the obstruction, the exact modal formula, the finite-time uniform bound, and the
+    matrix-exponential convergence orders. The general recursion remains a formal outer hierarchy; beyond the exact
+    two-state theorem above, rigorous remainder bounds require the usual regularity and layer hypotheses. In
     particular, the primary two-time-scale analysis of
     <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> constructs the outer and initial-layer
     pieces together and proves remainder bounds under its stated assumptions.</p>
