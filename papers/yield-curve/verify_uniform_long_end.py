@@ -5,7 +5,7 @@ original two-by-two pricing system.  A direct integration of that system on a
 finite interval and a constant-forcing closed form provide separate checks.
 The later calculations let the switching generator itself vary, isolate the
 loss caused by its moving invariant distribution, and certify an all-order
-periodic Floquet recursion through the fifth inverse-speed coefficient on a
+periodic Floquet recursion through the sixth inverse-speed coefficient on a
 nonreversible three-state example.  A symmetric periodic certificate also
 checks that coefficient cancellations delay the critical maturity to the
 first nonzero omitted Floquet term.  Finally, a positive periodic trial
@@ -2620,17 +2620,20 @@ def finite_chain_periodic_errors(
 
     stationary_plain, stationary_slip = observation_errors(pi_zero)
     arbitrary_plain, arbitrary_slip = observation_errors(arbitrary_prior)
-    period_count = int(round(m**4))
-    assert abs(period_count - m**4) < 1e-12
     modal_coefficients = np.linalg.solve(right, one)
     multiplier_ratios = values / multiplier
     multiplier_ratios[index] = 1.0
-    scaled_price = arbitrary_prior @ (
-        right
-        @ (multiplier_ratios ** period_count * modal_coefficients)
-    )
-    assert abs(scaled_price.imag) < 2e-12
-    assert scaled_price.real > 0
+    scaled_prices = {}
+    for power in (4, 5):
+        period_count = int(round(m**power))
+        assert abs(period_count - m**power) < 1e-12
+        scaled_price = arbitrary_prior @ (
+            right
+            @ (multiplier_ratios ** period_count * modal_coefficients)
+        )
+        assert abs(scaled_price.imag) < 2e-12
+        assert scaled_price.real > 0
+        scaled_prices[power] = float(scaled_price.real)
     return {
         "stationary_plain": stationary_plain,
         "stationary_slip": stationary_slip,
@@ -2638,7 +2641,8 @@ def finite_chain_periodic_errors(
         "arbitrary_slip": arbitrary_slip,
         "periodicity_error": float(periodicity_error),
         "exponent": exponent,
-        "arbitrary_scaled_price_m4": float(scaled_price.real),
+        "arbitrary_scaled_price_m4": scaled_prices[4],
+        "arbitrary_scaled_price_m5": scaled_prices[5],
     }
 
 
@@ -2648,7 +2652,7 @@ def check_general_periodic_generator() -> None:
         finite_chain_floquet_coefficients()
     )
     recursive_coefficients, recursive_profiles, recursive_drifts = (
-        finite_chain_floquet_recursion(5)
+        finite_chain_floquet_recursion(6)
     )
     predicted_drift = dynamic_drift + geometric_drift
     assert abs(recursive_coefficients[0] - leading_mean) < 2e-12
@@ -2657,6 +2661,7 @@ def check_general_periodic_generator() -> None:
     third_drift = float(recursive_coefficients[3])
     fourth_drift = float(recursive_coefficients[4])
     fifth_drift = float(recursive_coefficients[5])
+    sixth_drift = float(recursive_coefficients[6])
     moving_results = []
     fixed_results = []
     print("\nFinite-chain periodic Floquet profile")
@@ -2774,6 +2779,16 @@ def check_general_periodic_generator() -> None:
         )
         for m in speeds
     ]
+    critical_m5_enclosures = [
+        finite_chain_floquet_rational_enclosure(
+            m,
+            5,
+            recursive_coefficients,
+            recursive_profiles,
+            recursive_drifts,
+        )
+        for m in speeds
+    ]
     residual_radii = np.asarray([
         result["radius"] for result in residual_diagnostics
     ])
@@ -2797,6 +2812,13 @@ def check_general_periodic_generator() -> None:
     ])
     refined_rational_radii = np.asarray([
         enclosure["radius"] for enclosure in refined_rational_enclosures
+    ])
+    critical_m5_monodromy_errors = np.asarray([
+        result["exponent"] - enclosure["approximate_exponent"]
+        for result, enclosure in zip(moving_results, critical_m5_enclosures)
+    ])
+    critical_m5_radii = np.asarray([
+        enclosure["radius"] for enclosure in critical_m5_enclosures
     ])
     critical_price_bounds = []
     critical_price_errors = []
@@ -2856,6 +2878,34 @@ def check_general_periodic_generator() -> None:
         assert lower < exact_error < upper
         refined_critical_price_bounds.append((float(lower), float(upper)))
         refined_critical_price_errors.append(float(exact_error))
+    critical_m5_price_bounds = []
+    critical_m5_price_errors = []
+    for m, result, enclosure in zip(
+        speeds, moving_results, critical_m5_enclosures
+    ):
+        # Retaining beta_5 and u_6 makes the rational relative residual
+        # O(m^-6).  At the previous fourth-order critical horizon 2*pi*m^5,
+        # both the accumulated residual and initial normalization are O(m^-1).
+        maturity = PERIOD * m**5
+        lower = (
+            np.log(enclosure["initial_lower_factor"])
+            + maturity * enclosure["lower_error"]
+        )
+        upper = (
+            np.log(enclosure["initial_upper_factor"])
+            + maturity * enclosure["upper_error"]
+        )
+        exact_error = (
+            maturity
+            * (result["exponent"] - enclosure["approximate_exponent"])
+            + np.log(
+                result["arbitrary_scaled_price_m5"]
+                / enclosure["trial_initial_price"]
+            )
+        )
+        assert lower < exact_error < upper
+        critical_m5_price_bounds.append((float(lower), float(upper)))
+        critical_m5_price_errors.append(float(exact_error))
     residual_rate = float(np.log2(
         residual_radii[-2] / residual_radii[-1]
     ))
@@ -2868,6 +2918,9 @@ def check_general_periodic_generator() -> None:
     refined_rational_residual_rate = float(np.log2(
         refined_rational_radii[-2] / refined_rational_radii[-1]
     ))
+    critical_m5_residual_rate = float(np.log2(
+        critical_m5_radii[-2] / critical_m5_radii[-1]
+    ))
     critical_radius = np.asarray([
         max(abs(lower), abs(upper)) for lower, upper in critical_price_bounds
     ])
@@ -2877,6 +2930,13 @@ def check_general_periodic_generator() -> None:
     ])
     refined_critical_radius_rate = float(np.log2(
         refined_critical_radius[-2] / refined_critical_radius[-1]
+    ))
+    critical_m5_radius = np.asarray([
+        max(abs(lower), abs(upper))
+        for lower, upper in critical_m5_price_bounds
+    ])
+    critical_m5_radius_rate = float(np.log2(
+        critical_m5_radius[-2] / critical_m5_radius[-1]
     ))
     measured_second_drift = 64.0 ** 2 * (
         moving_results[-1]["exponent"]
@@ -2928,6 +2988,14 @@ def check_general_periodic_generator() -> None:
         assert enclosure["minimum_profile"] > 0.9
         assert enclosure["degree"] == 16
         assert abs(enclosure["mean_discrepancy"]) < 6e-17
+    for monodromy_error, enclosure in zip(
+        critical_m5_monodromy_errors, critical_m5_enclosures
+    ):
+        assert enclosure["lower_error"] < monodromy_error
+        assert monodromy_error < enclosure["upper_error"]
+        assert enclosure["minimum_profile"] > 0.9
+        assert enclosure["degree"] == 16
+        assert abs(enclosure["mean_discrepancy"]) < 6e-17
     assert residual_rate > 3.9
     assert mesh_residual_rate > 3.9
     assert rational_residual_rate > 3.9
@@ -2935,6 +3003,8 @@ def check_general_periodic_generator() -> None:
     assert refined_critical_radius_rate > 0.95
     assert refined_critical_radius[-1] < 0.12
     assert critical_radius[-1] / refined_critical_radius[-1] > 25.0
+    assert critical_m5_residual_rate > 5.9
+    assert critical_m5_radius_rate > 0.95
     assert abs(richardson_second_drift / second_drift - 1.0) < 8e-4
     assert abs(geometric_drift) > 1e-4
     assert max(result["periodicity_error"] for result in moving_results) < 3e-11
@@ -2984,6 +3054,10 @@ def check_general_periodic_generator() -> None:
     print(
         "moving three-state fifth-order Floquet drift from the all-order "
         f"recursion: {fifth_drift:.10e}"
+    )
+    print(
+        "moving three-state sixth-order Floquet drift from the all-order "
+        f"recursion: {sixth_drift:.10e}"
     )
     print(
         "finite-chain exponent residual rates: first-order "
@@ -3094,6 +3168,37 @@ def check_general_periodic_generator() -> None:
         "refined former-critical radius order: "
         f"{refined_critical_radius_rate:.6f}; m=64 old/new improvement "
         f"{critical_radius[-1] / refined_critical_radius[-1]:.3f}"
+    )
+    print("fifth-order proof-grade rational Fourier enclosure")
+    print(" m          lower error      monodromy error          upper error")
+    for m, monodromy_error, enclosure in zip(
+        speeds, critical_m5_monodromy_errors, critical_m5_enclosures
+    ):
+        print(
+            f"{m:3.0f}   {enclosure['lower_error']:18.9e}"
+            f"   {monodromy_error:18.9e}"
+            f"   {enclosure['upper_error']:18.9e}"
+        )
+    print(
+        "fifth-order rational-enclosure radius order: "
+        f"{critical_m5_residual_rate:.6f}; m=64 scaled radius "
+        f"{64.0**6 * critical_m5_radii[-1]:.10e}"
+    )
+    print("fifth-order rational-comparison bracket at T=2*pi*m^5")
+    print(
+        " m          lower log error      monodromy check"
+        "          upper log error"
+    )
+    for m, exact, (lower, upper) in zip(
+        speeds, critical_m5_price_errors, critical_m5_price_bounds
+    ):
+        print(
+            f"{m:3.0f}   {lower:18.9e}   {exact:18.9e}   {upper:18.9e}"
+        )
+    print(
+        "fifth-order critical-window radius order: "
+        f"{critical_m5_radius_rate:.6f}; m=64 radius "
+        f"{critical_m5_radius[-1]:.10e}"
     )
 
 

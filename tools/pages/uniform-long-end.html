@@ -802,6 +802,25 @@
       fixed-window statement: it does not assert convergence as the truncation order grows, nor does it make
       the fourth-order truncation uniform over all maturities. Its own generally critical window is
       $T\asymp m^5$.</p>
+    <p>That next critical window can be resolved in exactly the same fixed-order sense. Retaining the exponent
+      through $m^{-5}$ and the trial profile through $m^{-6}$ makes the exact rational relative residual
+      $O(m^{-6})$. At $T=2\pi m^5$, both its accumulated contribution and the initial normalization are therefore
+      $O(m^{-1})$. The proof-grade fifth-order bracket is</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>lower log-error bound</th><th>monodromy check</th><th>upper log-error bound</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>&minus;2.300972</td><td>0.00143936</td><td>2.298788</td></tr>
+        <tr><td>16</td><td>&minus;1.142172</td><td>0.000702733</td><td>1.141083</td></tr>
+        <tr><td>32</td><td>&minus;0.569060</td><td>0.000345299</td><td>0.568514</td></tr>
+        <tr><td>64</td><td>&minus;0.285436</td><td>0.000177812</td><td>0.285146</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The rational residual radius has measured order $5.99534$; at $m=64$ it is
+      $4.20531\times10^{-11}$, with $m^6$-scaled radius $2.88987$. The finite-horizon radius has measured order
+      $0.99541$ on the final doubling. This again says nothing about convergence as the order grows: the
+      fifth-order truncation has its own generic critical window at $T\asymp m^6$.</p>
     <p>The construction meshes directly with the all-order recursion. For an exponent truncated through
       $m^{-N}$, use</p>
     $$\widehat u_{m,N}=\sum_{n=0}^{N+1}{u_n\over m^n},\qquad
@@ -875,6 +894,10 @@
       profile through $m^{-5}$, gives a residual radius of order $5.00228$. At $m=64$ the exponent-error
       enclosure is $[-1.06002,1.06463]\times10^{-9}$ and the explicit trial profile remains above $0.9$.
       This is the certificate used in the shrinking former-critical-window table above.</p>
+    <p>With the exponent through $m^{-5}$ and profile through $m^{-6}$, the corresponding proof-grade residual
+      enclosure at $m=64$ is
+      $[-4.20531,4.20478]\times10^{-11}$, and the independent monodromy exponent error is
+      $2.65344\times10^{-14}$. This is the certificate used for the $T=2\pi m^5$ table.</p>
 
     <h3>The sharp maturity crossover for a truncated exponent</h3>
     <p>The preceding warning has an exact scale. Write $\beta_n=\langle b_n\rangle$ and,
