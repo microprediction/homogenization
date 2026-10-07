@@ -124,6 +124,33 @@
     constant-forcing specialization of the normalized average/shape recursion on the
     <a href="./engine.html">engine page</a>.</p>
 
+    <h3>An all-orders recursion and the fourth cumulant</h3>
+    <p>The same coefficient matching gives a finite-dimensional recursion to every order. Write</p>
+    $$h_\varepsilon=\mathbf1+\sum_{m\ge1}\varepsilon^m h_m,
+      \qquad
+      \lambda_{\mathrm{slow}}=\bar g+\sum_{m\ge1}\varepsilon^m\kappa_m,
+      \qquad \pi h_m=0,$$
+    <p>with $h_0=\mathbf1$ and $h_1=-Rf$. Then, for $m\ge1$,</p>
+    <div class="equation-card">
+    $$\kappa_m=\pi D_fh_m,$$
+    $$h_{m+1}=R\!\left(-D_fh_m+
+      \sum_{j=1}^{m}\kappa_jh_{m-j}\right).$$
+    </div>
+    <p>Indeed, the coefficient of $\varepsilon^{m+1}$ in the eigen-equation has the expression in parentheses as
+    its Poisson right side. Its stationary mean vanishes precisely when
+    $\kappa_m=\pi D_fh_m$; applying $R$ then selects the normalized centered solution. This proves the recursion by
+    induction for every order inside the local analytic neighborhood.</p>
+    <p>The first new term after $K=\kappa_1$ and $L=\kappa_2$ is</p>
+    $$M=\kappa_3
+      =-\pi D_fR D_fR D_fRf-K\,\pi D_fR^2f,$$
+    <p>so</p>
+    $$\lambda_{\mathrm{slow}}(\varepsilon)
+      =\bar g+\varepsilon K+\varepsilon^2L+\varepsilon^3M+O(\varepsilon^4).$$
+    <p>Equivalently, $M$ is one twenty-fourth of the long-run fourth-cumulant rate of
+    $\int_0^T f(Y_s)\,ds$. The second term in the displayed formula is essential: fourth order uses a connected
+    cumulant, not the raw ordered four-time moment. Like $L$, $M$ is signed and has no positive-semidefinite or rank
+    interpretation.</p>
+
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
     two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>

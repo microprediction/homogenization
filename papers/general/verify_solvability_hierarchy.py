@@ -184,9 +184,10 @@ def main() -> None:
     assert 1.98 < uniform_composite_order < 2.03
 
     # A nonreversible three-state check of the general constant-forcing
-    # corollary.  For A_eps=Q/eps+diag(g), the first two slow-eigenvalue
-    # corrections are K=-pi.(g~ Q# g~) and
-    # L=pi.[g~ Q# diag(g~) Q# g~].
+    # corollary.  For A_eps=Q/eps+diag(g), the first three slow-eigenvalue
+    # corrections are K, L and M.  The fourth-cumulant coefficient M has
+    # the connected subtraction term that is absent from the raw ordered
+    # four-time moment.
     q3 = np.array([[-2.1, 2.0, 0.1], [0.1, -2.1, 2.0], [2.0, 0.1, -2.1]])
     g3 = np.array([1.1, -0.4, 0.6])
     pi3 = stationary(q3)
@@ -196,10 +197,19 @@ def main() -> None:
     h13 = -(qs3 @ centered3)
     h23 = qs3 @ (centered3 * (qs3 @ centered3))
     l3 = float(pi3 @ (centered3 * h23))
+    h33 = qs3 @ (-centered3 * h23 + k3 * h13 + l3 * np.ones(3))
+    m3 = float(pi3 @ (centered3 * h33))
+    m3_direct = -float(
+        pi3 @ (centered3 * (qs3 @ (centered3 * (qs3 @ (centered3 * (qs3 @ centered3))))))
+        + k3 * pi3 @ (centered3 * (qs3 @ (qs3 @ centered3)))
+    )
     assert abs(pi3 @ h13) < 2e-15
     assert abs(pi3 @ h23) < 2e-15
+    assert abs(pi3 @ h33) < 2e-15
+    assert abs(m3 - m3_direct) < 2e-15
     assert np.max(np.abs(q3 @ h13 + centered3)) < 2e-15
     assert np.max(np.abs(q3 @ h23 - centered3 * (qs3 @ centered3) - k3 * np.ones(3))) < 2e-15
+    assert np.max(np.abs(q3 @ h33 - (-centered3 * h23 + k3 * h13 + l3 * np.ones(3)))) < 2e-15
 
     # Independent ordered-correlation quadrature.  The nonzero eigenvalues
     # have real part -3.15, so truncation at 12 makes the omitted tail far
@@ -230,7 +240,9 @@ def main() -> None:
     eigen3_errors: list[float] = []
     eigen_k_errors: list[float] = []
     eigen_kl_errors: list[float] = []
+    eigen_klm_errors: list[float] = []
     l_coefficient_errors: list[float] = []
+    m_coefficient_errors: list[float] = []
     for eps in epsilons:
         generator = q3 / eps + np.diag(g3)
         target = expm(generator * t) @ np.ones(3)
@@ -242,20 +254,30 @@ def main() -> None:
         eigen3_errors.append(abs((slow_eigenvalue - pi3 @ g3) / eps - k3))
         eigen_k_errors.append(abs(slow_eigenvalue - pi3 @ g3 - eps * k3))
         eigen_kl_errors.append(abs(slow_eigenvalue - pi3 @ g3 - eps * k3 - eps**2 * l3))
+        eigen_klm_errors.append(
+            abs(slow_eigenvalue - pi3 @ g3 - eps * k3 - eps**2 * l3 - eps**3 * m3)
+        )
         l_coefficient_errors.append(abs((slow_eigenvalue - pi3 @ g3 - eps * k3) / eps**2 - l3))
+        m_coefficient_errors.append(
+            abs((slow_eigenvalue - pi3 @ g3 - eps * k3 - eps**2 * l3) / eps**3 - m3)
+        )
 
     centered3_order = observed_order(centered3_errors, epsilons)
     full3_order = observed_order(full3_errors, epsilons)
     eigen3_order = observed_order(eigen3_errors, epsilons)
     eigen_k_order = observed_order(eigen_k_errors, epsilons)
     eigen_kl_order = observed_order(eigen_kl_errors, epsilons)
+    eigen_klm_order = observed_order(eigen_klm_errors, epsilons)
     l_coefficient_order = observed_order(l_coefficient_errors, epsilons)
+    m_coefficient_order = observed_order(m_coefficient_errors, epsilons)
     assert 0.96 < centered3_order < 1.04
     assert 1.94 < full3_order < 2.08
     assert 0.96 < eigen3_order < 1.04
     assert 1.96 < eigen_k_order < 2.04
     assert 2.85 < eigen_kl_order < 3.08
+    assert 3.85 < eigen_klm_order < 4.08
     assert 0.85 < l_coefficient_order < 1.08
+    assert 0.85 < m_coefficient_order < 1.08
 
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
@@ -274,13 +296,16 @@ def main() -> None:
     print(f"largest error / proved bound        {max(bound_ratios):.6f}")
     print(f"three-state Green-Kubo coefficient  {k3:.12e}")
     print(f"three-state third-cumulant coeff L  {l3:.12e}")
+    print(f"three-state fourth-cumulant coeff M {m3:.12e}")
     print(f"ordered-correlation quadrature err  {l3_quadrature_error:.3e}")
     print(f"three-state centered-only order     {centered3_order:.6f}")
     print(f"three-state full first order        {full3_order:.6f}")
     print(f"three-state eigen-coefficient order {eigen3_order:.6f}")
     print(f"GK-only eigenvalue residual order   {eigen_k_order:.6f}")
     print(f"K+L eigenvalue residual order       {eigen_kl_order:.6f}")
+    print(f"K+L+M eigenvalue residual order     {eigen_klm_order:.6f}")
     print(f"L-coefficient convergence order     {l_coefficient_order:.6f}")
+    print(f"M-coefficient convergence order     {m_coefficient_order:.6f}")
     print("ok")
 
 
