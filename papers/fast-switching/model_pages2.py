@@ -1039,6 +1039,17 @@ def cev_page():
     $r\Delta_a^2$; its sign cannot depend on the direction of the jump. As before, the result is pointwise in fixed
     $\theta,T$ and fixed piecewise-$C^2$ loadings with finitely many breakpoints, not a uniform Fourier-domain
     error bound.</p>
+    <p>The same result has a useful matrix form. Write $w(t)=(w_1(t),\ldots,w_m(t))^\top$,
+    $w_0=w(0+)$, $w_T=w(T-)$, and $\Delta_a=w(t_a+)-w(t_a-)$. Then</p>
+    $$\kappa\operatorname{Cov}_i(W^{(\kappa)})
+      =2r\int_0^T w(t)w(t)^\top dt+\frac{\mathcal V_{1,i}}\kappa+O(\kappa^{-2}),$$
+    $$\mathcal V_{1,i}=-r\left(w_0w_0^\top+w_Tw_T^\top
+      +\sum_a\Delta_a\Delta_a^\top\right)
+      +(2cd_i-d_i^2)w_0w_0^\top.$$
+    <p>This follows by applying the scalar identity to every projection and polarizing. The pure interface term
+    $-r\sum_a\Delta_a\Delta_a^\top$ is negative semidefinite, and its rank is exactly the dimension of the span of
+    the jump vectors. This is a rank statement about a second-order boundary/interface coefficient. It is neither
+    the rank of the leading loading Gram matrix nor the rank of a fixed-parameter Green&ndash;Kubo matrix.</p>
     <p>A two-loading certificate uses $w_1(t)=e^{0.032(T-t)}$ and
     $w_2(t)=e^{-0.018(T-t)}$. An independent bivariate polynomial Feynman&ndash;Kac hierarchy gives maximum errors in
     $\kappa\operatorname{Cov}(W)-\Sigma$ of
@@ -1053,7 +1064,9 @@ def cev_page():
     $1.289\times10^{-1},8.944\times10^{-2},6.265\times10^{-2},4.410\times10^{-2},3.111\times10^{-2}$,
     again with half-order convergence; the terminal error in the new jump-adjusted variance coefficient is
     $2.4\times10^{-10}$. Omitting the interface term leaves an asymptotic coefficient miss of $0.145600000$,
-    exactly $pq\Delta^2$ for the certificate's jump.</p>
+    exactly $pq\Delta^2$ for the certificate's jump. A two-loading, two-jump certificate uses non-collinear jump
+    vectors. Its interface-penalty eigenvalues are $0.175626851$ and $0.438623149$, hence rank two; the spectral-norm
+    error in the full covariance coefficient is $1.8\times10^{-10}$ at $\kappa=640$.</p>
     <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
     For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
     $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative

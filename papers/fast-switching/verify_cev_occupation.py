@@ -33,8 +33,9 @@ deterministic clock loadings.  This multivariate check makes the limiting
 covariance a Gram matrix, exposes the endpoint contribution in every fixed
 Fourier direction, and separates its rank from any single fixed-loading
 calculation.
-For piecewise-smooth loadings with value jumps, a final step-loading
-certificate checks the additional sum-of-squared-jumps variance coefficient.
+For piecewise-smooth loadings with value jumps, step-loading certificates
+check both the scalar sum-of-squared-jumps coefficient and its multivariate
+negative-semidefinite jump-matrix extension.
 These sharp ``kappa**(-1/2)`` scales contrast with the ``kappa**(-1)``
 centered Taylor bound for twice differentiable payoffs.
 """
@@ -1727,6 +1728,93 @@ def main():
         later < earlier
         for earlier, later in zip(step_second_errors, step_second_errors[1:])
     )
+
+    # In vector form the interface penalty is the negative-semidefinite matrix
+    # -p*q*sum_a Delta_a Delta_a'.  Two non-collinear jumps therefore give a
+    # rank-two second-order interface term even though every scalar projection
+    # sees only the corresponding sum of squared projected jumps.
+    vector_breaks = (0.31, 0.72)
+    vector_durations = (
+        vector_breaks[0],
+        vector_breaks[1] - vector_breaks[0],
+        T - vector_breaks[1],
+    )
+    vector_levels = np.array(((1.0, -0.3), (0.2, 0.8), (-0.4, 0.1)))
+    vector_jumps = np.diff(vector_levels, axis=0)
+    vector_gram = sum(
+        duration * np.outer(level, level)
+        for duration, level in zip(vector_durations, vector_levels)
+    )
+    vector_interface = sum(np.outer(jump, jump) for jump in vector_jumps)
+    vector_endpoints = (
+        np.outer(vector_levels[0], vector_levels[0])
+        + np.outer(vector_levels[-1], vector_levels[-1])
+    )
+    projection_directions = (
+        np.array((1.0, 0.0)),
+        np.array((0.0, 1.0)),
+        np.array((1.0, 1.0)),
+    )
+    vector_second_errors = []
+    for kappa in (40.0, 80.0, 160.0, 320.0, 640.0):
+        a, b = kappa * q, kappa * p
+        max_matrix_error = 0.0
+        for start in (0, 1):
+            d = q if start == 0 else -p
+            projected_variances = []
+            for direction in projection_directions:
+                backward_projected_segments = tuple(
+                    (duration, float(direction @ level))
+                    for duration, level in reversed(
+                        tuple(zip(vector_durations, vector_levels))
+                    )
+                )
+                raw = piecewise_constant_clock_raw_moments(
+                    start, a, b, backward_projected_segments
+                )
+                projected_variances.append(raw[2] - raw[1] ** 2)
+            covariance = np.array(
+                (
+                    (projected_variances[0],
+                     0.5 * (projected_variances[2]
+                            - projected_variances[0]
+                            - projected_variances[1])),
+                    (0.5 * (projected_variances[2]
+                            - projected_variances[0]
+                            - projected_variances[1]),
+                     projected_variances[1]),
+                )
+            )
+            variance_second_matrix = (
+                -p * q * (vector_endpoints + vector_interface)
+                + (2.0 * (q - p) * d - d ** 2)
+                * np.outer(vector_levels[0], vector_levels[0])
+            )
+            estimated_second_matrix = kappa * (
+                kappa * covariance - 2.0 * p * q * vector_gram
+            )
+            max_matrix_error = max(
+                max_matrix_error,
+                float(np.linalg.norm(
+                    estimated_second_matrix - variance_second_matrix, ord=2
+                )),
+            )
+        vector_second_errors.append(max_matrix_error)
+    interface_eigenvalues = np.linalg.eigvalsh(p * q * vector_interface)
+    print(
+        "vector step-loading variance-matrix coefficient errors="
+        + ", ".join(f"{value:.3e}" for value in vector_second_errors)
+        + "; terminal error="
+        + f"{vector_second_errors[-1]:.3e}"
+    )
+    print(
+        "vector step-loading jump-penalty eigenvalues/rank="
+        + ", ".join(f"{value:.9f}" for value in interface_eigenvalues)
+        + f"/{np.linalg.matrix_rank(vector_interface)}"
+    )
+    assert max(vector_second_errors[1:]) < 1e-8
+    assert np.all(interface_eigenvalues > 0.0)
+    assert np.linalg.matrix_rank(vector_interface) == 2
 
     for multiplier in (1, 2, 4, 8):
         a, b = multiplier * rate_12, multiplier * rate_21
