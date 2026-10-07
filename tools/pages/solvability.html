@@ -96,10 +96,33 @@
        =\int_0^\infty\operatorname{Cov}_\pi\big(g(y_0),g(y_s)\big)\,ds.$$
     <p>With regime-free initial data, first-order matching gives $a_1(0)=0$, so $a_1=tK a_0$. Therefore the
     null-space amplitude that centering would discard is exactly the first Green&ndash;Kubo correction to the slow
-    eigenvalue. For the accelerated generator $Q/\varepsilon$,</p>
-    $$\lambda_{\mathrm{slow}}(\varepsilon)=\bar g+\varepsilon K+O(\varepsilon^2).$$
-    <p>This scalar corollary holds without reversibility. It is the constant-forcing specialization of the normalized
-    average/shape recursion on the <a href="./engine.html">engine page</a>.</p>
+    eigenvalue.</p>
+
+    <h3>The next coefficient is a three-time cumulant</h3>
+    <p>The same recursion gives one more coefficient without assuming reversibility. Write $R=Q^{\#}$,
+    $f=\widetilde g$, and let $D_f$ denote multiplication by $f$. Normalizing the slow right eigenvector by
+    $\pi h_\varepsilon=1$ gives</p>
+    $$h_\varepsilon=\mathbf1-\varepsilon Rf
+      +\varepsilon^2R D_fRf+O(\varepsilon^3),$$
+    <p>and the slow eigenvalue of $Q/\varepsilon+\operatorname{diag}g$ is</p>
+    <div class="equation-card">
+    $$\lambda_{\mathrm{slow}}(\varepsilon)
+      =\bar g+\varepsilon K+\varepsilon^2L+O(\varepsilon^3),$$
+    $$K=-\pi D_fRf,\qquad L=\pi D_fR D_fRf.$$
+    </div>
+    <p>Multiplying the eigen-equation order by order proves the formula: the first centered equation is
+    $Qh_1=-f$, the second is $Qh_2=D_fRf+K\mathbf1$, and its next solvability condition is $L=\pi D_fh_2$.
+    Analyticity follows locally because zero is a simple eigenvalue of an irreducible finite-state generator, the
+    finite-dimensional setting of <a href="./bibliography.html#Kato1949">Kato&apos;s perturbation theory</a>.</p>
+    <p>Since $R=-\int_0^\infty(e^{Qt}-\mathbf1\pi)\,dt$, the second coefficient also has the ordered-correlation form</p>
+    $$L=\int_0^\infty\!\int_0^\infty
+      \mathbb E_\pi\!left[f(Y_0)f(Y_s)f(Y_{s+t})\right]dt\,ds
+      =\lim_{T\to\infty}\frac1{6T}
+      \operatorname{Cum}_3\!\left(\int_0^T f(Y_s)\,ds\right).$$
+    <p>Thus $K$ is the variance-rate coefficient and is nonnegative, whereas $L$ is signed third-order information.
+    It is not a Gram matrix and carries no positive-semidefinite or rank claim. These coefficients are the
+    constant-forcing specialization of the normalized average/shape recursion on the
+    <a href="./engine.html">engine page</a>.</p>
 
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the

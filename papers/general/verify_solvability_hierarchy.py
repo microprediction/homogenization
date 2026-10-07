@@ -15,6 +15,7 @@ first-order composite obtained by restoring the leading initial layer.
 from __future__ import annotations
 
 import numpy as np
+from scipy.integrate import quad_vec
 from scipy.linalg import expm
 
 
@@ -183,15 +184,43 @@ def main() -> None:
     assert 1.98 < uniform_composite_order < 2.03
 
     # A nonreversible three-state check of the general constant-forcing
-    # corollary.  For A_eps=Q/eps+diag(g), the first slow-eigenvalue
-    # correction and the null-space amplitude have coefficient
-    # K=-pi.(g~ Q# g~).
+    # corollary.  For A_eps=Q/eps+diag(g), the first two slow-eigenvalue
+    # corrections are K=-pi.(g~ Q# g~) and
+    # L=pi.[g~ Q# diag(g~) Q# g~].
     q3 = np.array([[-2.1, 2.0, 0.1], [0.1, -2.1, 2.0], [2.0, 0.1, -2.1]])
     g3 = np.array([1.1, -0.4, 0.6])
     pi3 = stationary(q3)
     qs3 = group_inverse(q3, pi3)
     centered3 = g3 - pi3 @ g3
     k3 = -float(pi3 @ (centered3 * (qs3 @ centered3)))
+    h13 = -(qs3 @ centered3)
+    h23 = qs3 @ (centered3 * (qs3 @ centered3))
+    l3 = float(pi3 @ (centered3 * h23))
+    assert abs(pi3 @ h13) < 2e-15
+    assert abs(pi3 @ h23) < 2e-15
+    assert np.max(np.abs(q3 @ h13 + centered3)) < 2e-15
+    assert np.max(np.abs(q3 @ h23 - centered3 * (qs3 @ centered3) - k3 * np.ones(3))) < 2e-15
+
+    # Independent ordered-correlation quadrature.  The nonzero eigenvalues
+    # have real part -3.15, so truncation at 12 makes the omitted tail far
+    # smaller than the displayed tolerance.
+    correlation_cutoff = 12.0
+    integrated_future, _ = quad_vec(
+        lambda s: expm(q3 * s) @ centered3,
+        0.0,
+        correlation_cutoff,
+        epsabs=1e-13,
+        epsrel=1e-13,
+    )
+    l3_quadrature, _ = quad_vec(
+        lambda s: (pi3 * centered3) @ (expm(q3 * s) @ (centered3 * integrated_future)),
+        0.0,
+        correlation_cutoff,
+        epsabs=1e-13,
+        epsrel=1e-13,
+    )
+    l3_quadrature_error = abs(float(l3_quadrature) - l3)
+    assert l3_quadrature_error < 2e-15
     a3 = np.exp(float(pi3 @ g3) * t)
     u03 = a3 * np.ones(3)
     chi13 = -a3 * (qs3 @ centered3)
@@ -199,6 +228,9 @@ def main() -> None:
     centered3_errors: list[float] = []
     full3_errors: list[float] = []
     eigen3_errors: list[float] = []
+    eigen_k_errors: list[float] = []
+    eigen_kl_errors: list[float] = []
+    l_coefficient_errors: list[float] = []
     for eps in epsilons:
         generator = q3 / eps + np.diag(g3)
         target = expm(generator * t) @ np.ones(3)
@@ -206,14 +238,24 @@ def main() -> None:
         full3_errors.append(float(np.linalg.norm(target - (u03 + eps * u13), np.inf)))
         eigenvalues = np.linalg.eigvals(generator)
         slow_eigenvalue = eigenvalues[np.argmax(np.real(eigenvalues))]
-        eigen3_errors.append(abs(float(np.real(slow_eigenvalue) - pi3 @ g3) / eps - k3))
+        slow_eigenvalue = float(np.real(slow_eigenvalue))
+        eigen3_errors.append(abs((slow_eigenvalue - pi3 @ g3) / eps - k3))
+        eigen_k_errors.append(abs(slow_eigenvalue - pi3 @ g3 - eps * k3))
+        eigen_kl_errors.append(abs(slow_eigenvalue - pi3 @ g3 - eps * k3 - eps**2 * l3))
+        l_coefficient_errors.append(abs((slow_eigenvalue - pi3 @ g3 - eps * k3) / eps**2 - l3))
 
     centered3_order = observed_order(centered3_errors, epsilons)
     full3_order = observed_order(full3_errors, epsilons)
     eigen3_order = observed_order(eigen3_errors, epsilons)
+    eigen_k_order = observed_order(eigen_k_errors, epsilons)
+    eigen_kl_order = observed_order(eigen_kl_errors, epsilons)
+    l_coefficient_order = observed_order(l_coefficient_errors, epsilons)
     assert 0.96 < centered3_order < 1.04
     assert 1.94 < full3_order < 2.08
     assert 0.96 < eigen3_order < 1.04
+    assert 1.96 < eigen_k_order < 2.04
+    assert 2.85 < eigen_kl_order < 3.08
+    assert 0.85 < l_coefficient_order < 1.08
 
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
@@ -231,9 +273,14 @@ def main() -> None:
     print(f"proved uniform coefficient C_2      {c_t:.12e}")
     print(f"largest error / proved bound        {max(bound_ratios):.6f}")
     print(f"three-state Green-Kubo coefficient  {k3:.12e}")
+    print(f"three-state third-cumulant coeff L  {l3:.12e}")
+    print(f"ordered-correlation quadrature err  {l3_quadrature_error:.3e}")
     print(f"three-state centered-only order     {centered3_order:.6f}")
     print(f"three-state full first order        {full3_order:.6f}")
     print(f"three-state eigen-coefficient order {eigen3_order:.6f}")
+    print(f"GK-only eigenvalue residual order   {eigen_k_order:.6f}")
+    print(f"K+L eigenvalue residual order       {eigen_kl_order:.6f}")
+    print(f"L-coefficient convergence order     {l_coefficient_order:.6f}")
     print("ok")
 
 
