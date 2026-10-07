@@ -10,9 +10,11 @@ coefficient, verifies the corrected average/shape recursion, and compares
 the resulting first-order outer approximation with the exact matrix
 exponential.  It also checks an exact slow/fast modal split and the uniform
 first-order composite obtained by restoring the leading initial layer.  A
-nonnormal three-state example additionally certifies the analytic slow
+nonreversible three-state example additionally certifies the analytic slow
 spectral-projector series, including its first derivative and a computable
-Cauchy remainder for the initial-data amplitude.
+Cauchy remainder for the initial-data amplitude.  A second resolvent contour
+enclosing the fast spectrum certifies its exponentially decaying semigroup,
+including any nonnormal transient amplification.
 """
 
 from __future__ import annotations
@@ -358,6 +360,64 @@ def main() -> None:
     ]
     assert max(projector_bound_ratios) < 1.0
 
+    # A separate contour enclosing the two fast eigenvalues controls the
+    # complementary semigroup.  If Gamma lies in Re(w) <= -gamma and
+    #
+    #   s_Gamma = min_Gamma sigma_min(w I - Q),
+    #
+    # then, for eps ||D_f|| < s_Gamma, the Dunford integral gives
+    #
+    # ||exp(t(Q+eps D_f)/eps)(I-P(eps))||
+    #   <= length(Gamma) exp(-gamma t/eps)
+    #      / (2 pi (s_Gamma-eps||D_f||)).
+    #
+    # For this example a circle centered at -3.15 with radius 2.4 encloses
+    # both fast eigenvalues, excludes zero, and has gamma=0.75.  As above,
+    # singular-value Lipschitz continuity turns the sampled minimum into a
+    # rigorous lower bound after subtracting the half-mesh chord bound.
+    fast_center = -3.15
+    fast_radius = 2.4
+    fast_gamma = -(fast_center + fast_radius)
+    fast_angles = 2.0 * np.pi * np.arange(contour_points) / contour_points
+    fast_sampled_smin = min(
+        np.linalg.svd(
+            (fast_center + fast_radius * np.exp(1j * angle)) * np.eye(3) - q3,
+            compute_uv=False,
+        )[-1]
+        for angle in fast_angles
+    )
+    fast_certified_smin = (
+        fast_sampled_smin - fast_radius * np.pi / contour_points
+    )
+    fast_epsilon_radius = fast_certified_smin / np.linalg.norm(df3, 2)
+    assert fast_gamma > 0.0
+    assert fast_certified_smin > 0.0
+    assert fast_epsilon_radius > 0.89
+
+    fast_bound_ratios: list[float] = []
+    scaled_times = np.linspace(0.0, 5.0, 1001)
+    for eps in epsilons:
+        perturbed = q3 + eps * df3
+        scipy_values, left, right = eig(perturbed, left=True, right=True)
+        slow_index = int(np.argmin(np.abs(scipy_values)))
+        left_vector = left[:, slow_index]
+        right_vector = right[:, slow_index]
+        exact_projector = np.outer(right_vector, left_vector.conj()) / np.vdot(
+            left_vector, right_vector
+        )
+        fast_constant = fast_radius / (
+            fast_certified_smin - eps * np.linalg.norm(df3, 2)
+        )
+        for scaled_time in scaled_times:
+            exact_fast = expm(perturbed * scaled_time) @ (
+                np.eye(3) - exact_projector
+            )
+            proved_bound = fast_constant * np.exp(-fast_gamma * scaled_time)
+            ratio = float(np.linalg.norm(exact_fast, 2) / proved_bound)
+            fast_bound_ratios.append(ratio)
+            assert ratio < 1.0
+    assert max(fast_bound_ratios) < 0.31
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -389,6 +449,9 @@ def main() -> None:
     print(f"largest cubic error / Cauchy bound  {max(cauchy_ratios):.6f}")
     print(f"first-order projector error order   {projector_order:.6f}")
     print(f"largest projector error / bound     {max(projector_bound_ratios):.6f}")
+    print(f"certified fast-contour eps radius   {fast_epsilon_radius:.12e}")
+    print(f"certified fast decay exponent       {fast_gamma:.12e}")
+    print(f"largest fast semigroup / bound      {max(fast_bound_ratios):.6f}")
     print("ok")
 
 

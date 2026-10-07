@@ -198,12 +198,40 @@
     </div>
     <p>Consequently the same right-hand side, multiplied by $\|v\|_2$, certifies the error in the slow amplitude
     $P(\varepsilon)v$ selected by arbitrary initial data $v$. This isolates amplitude matching from eigenvalue
-    truncation. It still does not bound the complementary fast semigroup, whose nonnormal transient growth and
-    initial layer require a separate contour or time-domain estimate.</p>
+    truncation.</p>
     <p>For the nonreversible three-state certificate below, the same rigorously sampled contour gives
     $\rho_r\ge2.103817190523$. The exact projector is computed independently from paired left and right eigenvectors.
     Its first-order remainder converges with measured order $1.998987$, and the largest observed error is only
     $0.020318$ of the displayed Cauchy bound.</p>
+
+    <h3>The complementary fast semigroup has a separate bound</h3>
+    <p>The slow contour alone cannot control the initial layer, but a second contour can. Let $\Gamma$ be a simple
+    positively oriented contour that encloses every nonzero eigenvalue of $Q$, excludes zero, and lies in
+    $\operatorname{Re}w\le-\gamma&lt;0$. Put</p>
+    $$s_\Gamma=\min_{w\in\Gamma}\sigma_{\min}(wI-Q),\qquad
+      L_\Gamma=\operatorname{length}(\Gamma).$$
+    <p>If $0&lt;\varepsilon\|D_f\|_2&lt;s_\Gamma$, the singular-value perturbation inequality keeps $\Gamma$ in the
+    resolvent set of $B_\varepsilon=Q+\varepsilon D_f$. The contour still encloses exactly the fast eigenvalues, so
+    Dunford&apos;s formula gives</p>
+    $$e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon))
+      =\frac{1}{2\pi i}\int_\Gamma e^{tw/\varepsilon}
+      (wI-B_\varepsilon)^{-1}\,dw.$$
+    <p>Taking the operator norm proves the explicit all-time estimate</p>
+    <div class="equation-card">
+    $$\left\|e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon))\right\|_2
+      \le \frac{L_\Gamma}{2\pi\{s_\Gamma-\varepsilon\|D_f\|_2\}}
+      e^{-\gamma t/\varepsilon},\qquad t\ge0.$$
+    </div>
+    <p>Restoring the scalar mean forcing multiplies the right side by $e^{\bar g t}$. The prefactor retains the
+    possible nonnormal transient amplification; it is not silently set to one. This controls the exact fast
+    component for arbitrary initial data, but it does not make a truncated slow eigenvalue expansion uniformly
+    accurate at arbitrarily long maturities: any slow-eigenvalue truncation error still accumulates in its
+    exponential.</p>
+    <p>For the nonreversible three-state certificate, the circle centered at $-3.15$ with radius $2.4$ has
+    $\gamma=0.75$ and a rigorously sampled validity radius
+    $s_\Gamma/\|D_f\|_2\ge0.898895533832$. Over all tested
+    $\varepsilon\le0.2$ and $0\le t/\varepsilon\le5$, the largest exact-fast-semigroup to proved-bound ratio is
+    $0.305868$.</p>
 
     <h3>A uniform first-order composite</h3>
     <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
