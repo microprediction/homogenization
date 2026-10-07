@@ -1048,6 +1048,18 @@
     <p>Off the transition $\tau=r$, binomial concentration selects one smooth branch of $d_k$ with
       exponentially high probability; its first difference gives the displayed limits. This is an
       unequal-rate final-gap effect, not a change to the iid calibration baseline.</p>
+    <p>The missing critical window has a Gaussian interpolation. If</p>
+    $$x_N=\frac{k-1-(N-1)r}{\sqrt{(N-1)r(1-r)}}\longrightarrow x,$$
+    <p>then the same covariance identity and the binomial central limit theorem give</p>
+    <div class="equation-card">
+    $$ND_{N,k}(r)\longrightarrow \Phi(x)+r-1.$$
+    </div>
+    <p>Indeed, away from the single crossing increment, $N\{d_k(W+1)-d_k(W)\}$ tends to
+      $1/(1-r)$ below the rank boundary and $-1/r$ above it. The crossing atom has probability
+      $O(N^{-1/2})$, so it vanishes after the displayed scaling. Weighting the two branch limits by
+      $\Pr(W&lt;k)\to\Phi(x)$ gives the formula. It joins the one-sided limits continuously:
+      $-(1-r)$ as $x\to-\infty$ and $r$ as $x\to+\infty$. At $r=1/2$ it reduces to the symmetric
+      crossover $\Phi(x)-1/2$.</p>
     <p>For $N=9$, $p=0.8$, $a=0.8$, and $r=0.3$, the exact values are:</p>
     <table>
       <thead><tr><th>$k$</th><th>iid failure</th><th>fixed-memory failure</th><th>fixed-memory mean</th></tr></thead>
@@ -1061,7 +1073,8 @@
     <p>A separate unequal-transition Markov-path enumeration agrees with the mixture for every order statistic
       within $1.05\times10^{-13}$ after within-panel stride 128. Across $2\le N\le20$, four unequal masses,
       and every rank, the component mean agrees with the displayed marginal coefficient within
-      $1.17\times10^{-15}$; the reflection discrepancy is $7.68\times10^{-17}$. These failure probabilities
+      $1.17\times10^{-15}$; the reflection discrepancy is $7.68\times10^{-17}$. At $N=4096$, six critical-window
+      checks with $r\in\{0.3,0.7\}$ and $x\in\{-1,0,1\}$ are within $0.019394$ of the Gaussian limit. These failure probabilities
       average a training-conditional event over random panels, whereas the last column is marginal coverage.
       Neither is feature-conditional validity.</p>
 

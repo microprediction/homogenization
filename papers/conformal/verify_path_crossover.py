@@ -3356,6 +3356,53 @@ def main() -> None:
             (lower_mass, rank_fraction, approximations[-1], limit)
         )
 
+    # At the omitted transition k/(N+1) -> r, the two smooth branches are
+    # selected with asymptotically Gaussian probabilities.  If
+    # x_N=(k-1-(N-1)r)/sqrt((N-1)r(1-r)) -> x, then
+    #
+    #     N D_{N,k}(r) -> Phi(x)+r-1.
+    #
+    # This interpolates between -(1-r) and r, the two one-sided outer
+    # limits.  The crossing increment has binomial mass O(N^{-1/2}) and
+    # therefore does not contribute to the limit.
+    unequal_critical_rows = []
+    for lower_mass in (0.3, 0.7):
+        for target_x in (-1.0, 0.0, 1.0):
+            errors = []
+            row = None
+            for candidate_count in (256, 1024, 4096):
+                variance = (
+                    (candidate_count - 1)
+                    * lower_mass
+                    * (1.0 - lower_mass)
+                )
+                candidate_order = int(round(
+                    1.0
+                    + (candidate_count - 1) * lower_mass
+                    + target_x * math.sqrt(variance)
+                ))
+                standardized_rank = (
+                    candidate_order
+                    - 1.0
+                    - (candidate_count - 1) * lower_mass
+                ) / math.sqrt(variance)
+                scaled_shift = candidate_count * (
+                    iid_panel_fixed_test_marginal_shift(
+                        candidate_count, candidate_order, lower_mass
+                    )
+                )
+                gaussian_limit = float(ndtr(standardized_rank)) + lower_mass - 1.0
+                errors.append(abs(scaled_shift - gaussian_limit))
+                row = (
+                    lower_mass,
+                    standardized_rank,
+                    scaled_shift,
+                    gaussian_limit,
+                )
+            assert errors[-1] < 0.021
+            assert row is not None
+            unequal_critical_rows.append(row)
+
     print("\nUnequal-mass fixed-test-memory law")
     print(
         f"lower-state mass {unequal_lower_mass:.1f}; zero-memory beta error "
@@ -3371,6 +3418,14 @@ def main() -> None:
     for lower_mass, rank_fraction, approximation, limit in unequal_outer_rows:
         print(
             f" {lower_mass:.1f}   {rank_fraction:.1f}       "
+            f"{approximation: .9f}       {limit: .9f}"
+        )
+    print(" r      x_N       N D at N=4096       Phi(x_N)+r-1")
+    for lower_mass, standardized_rank, approximation, limit in (
+        unequal_critical_rows
+    ):
+        print(
+            f" {lower_mass:.1f}   {standardized_rank: .5f}       "
             f"{approximation: .9f}       {limit: .9f}"
         )
     print(" k    iid failure   fixed-memory failure   mean coverage")
