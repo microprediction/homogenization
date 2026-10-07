@@ -556,6 +556,16 @@ def iid_panel_fixed_test_marginal_shift(
     ) / (calibration_count * trials)
 
 
+def binary_relative_entropy_from_half(probability: float) -> float:
+    """Bernoulli relative entropy D(probability || 1/2)."""
+    if not (0.0 < probability < 1.0):
+        raise ValueError("probability must lie strictly between zero and one")
+    return (
+        probability * math.log(2.0 * probability)
+        + (1.0 - probability) * math.log(2.0 * (1.0 - probability))
+    )
+
+
 @lru_cache(maxsize=None)
 def binary_panel_order_components(
     calibration_count: int,
@@ -2934,6 +2944,80 @@ def main() -> None:
         iid_panel_fixed_test_marginal_shift(9, 9) - 251 / 23040
     ) < 2e-17
 
+    # Away from the median rank, the exact binomial-tail coefficient has an
+    # exponentially accurate outer approximation.  At the median scale its
+    # transition is Gaussian.  These checks cover every admissible order for
+    # N=2,...,200 and a three-level central-limit sequence independently of
+    # the mixture-mean identity above.
+    outer_bound_excess = 0.0
+    outer_bound_ratio = 0.0
+    for candidate_count in range(2, 201):
+        trials = candidate_count + 1
+        for candidate_order in range(1, candidate_count + 1):
+            if 2 * candidate_order == trials:
+                assert abs(
+                    iid_panel_fixed_test_marginal_shift(
+                        candidate_count, candidate_order
+                    )
+                ) < 2e-17
+                continue
+            shift = iid_panel_fixed_test_marginal_shift(
+                candidate_count, candidate_order
+            )
+            if 2 * candidate_order > trials:
+                outer_value = (
+                    trials - candidate_order
+                ) / (candidate_count * trials)
+                outer_error = outer_value - shift
+            else:
+                outer_value = -candidate_order / (
+                    candidate_count * trials
+                )
+                outer_error = shift - outer_value
+            entropy = binary_relative_entropy_from_half(
+                candidate_order / trials
+            )
+            chernoff_bound = math.exp(-trials * entropy) / candidate_count
+            assert outer_error >= -2e-17
+            outer_bound_excess = max(
+                outer_bound_excess, outer_error - chernoff_bound
+            )
+            if chernoff_bound > 1e-15:
+                outer_bound_ratio = max(
+                    outer_bound_ratio,
+                    max(0.0, outer_error) / chernoff_bound,
+                )
+    assert outer_bound_excess < 2e-16
+    assert outer_bound_ratio < 1.0
+
+    crossover_errors = []
+    crossover_rows = []
+    for trials in (32, 128, 512):
+        level_errors = []
+        for target_x in (-2.0, -1.0, 0.0, 1.0, 2.0):
+            candidate_order = round(
+                (trials + target_x * math.sqrt(trials)) / 2.0
+            )
+            standardized_rank = (
+                2 * candidate_order - trials
+            ) / math.sqrt(trials)
+            scaled_shift = trials * iid_panel_fixed_test_marginal_shift(
+                trials - 1, candidate_order
+            )
+            gaussian_limit = norm.cdf(standardized_rank) - 0.5
+            level_errors.append(abs(scaled_shift - gaussian_limit))
+            crossover_rows.append(
+                (
+                    trials,
+                    standardized_rank,
+                    scaled_shift,
+                    gaussian_limit,
+                )
+            )
+        crossover_errors.append(max(level_errors))
+    assert crossover_errors[0] > crossover_errors[1] > crossover_errors[2]
+    assert crossover_errors[-1] < 0.045
+
     print("\nAll-order-statistic fixed-test-memory law")
     print(
         f"zero-memory beta-law max error: {zero_memory_error:.3e}; "
@@ -2944,6 +3028,24 @@ def main() -> None:
         f"{marginal_shift_error:.3e}; reflection error: "
         f"{marginal_symmetry_error:.3e}"
     )
+    print(
+        "outer Chernoff envelope over N=2,...,200: max excess "
+        f"{outer_bound_excess:.3e}, max error/bound "
+        f"{outer_bound_ratio:.9f}"
+    )
+    print(
+        "central Gaussian crossover max errors at n=32,128,512: "
+        + ", ".join(f"{error:.9f}" for error in crossover_errors)
+    )
+    print(" n      x_n        n D_N,k      Phi(x_n)-1/2")
+    for trials, standardized_rank, scaled_shift, gaussian_limit in (
+        crossover_rows
+    ):
+        if trials == 512:
+            print(
+                f" {trials:3d}  {standardized_rank: .6f}  "
+                f"{scaled_shift: .9f}    {gaussian_limit: .9f}"
+            )
     print(" k    iid failure   fixed-memory failure   mean coverage")
     for candidate_order, iid_failure, fixed_failure, mean_coverage in (
         fixed_memory_rows

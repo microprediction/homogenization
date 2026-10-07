@@ -916,6 +916,34 @@
       although its training-conditional distribution can still change. Thus convergence of the calibration panel
       to iid does not by itself restore either the iid training-conditional law or, in general, the iid mean
       $k/(N+1)$.</p>
+    <p>The coefficient also has an explicit finite-rate description. Put $n=N+1$ and
+      $I(\theta)=\theta\log(2\theta)+(1-\theta)\log(2(1-\theta))$. Directly separating the two binomial tails in
+      the preceding display and applying the Chernoff bound gives, for $k&gt;n/2$,</p>
+    <div class="equation-card">
+    $$0\le {n-k\over Nn}-D_{N,k}
+      ={(n-k)\Pr(B\ge k)+k\Pr(B\ge k+1)\over Nn}
+      \le {\Pr(B\ge k)\over N}
+      \le {e^{-nI(k/n)}\over N},$$
+    </div>
+    <p>while for $k&lt;n/2$,</p>
+    <div class="equation-card">
+    $$0\le D_{N,k}+{k\over Nn}
+      ={(n-k)\Pr(B\le k-1)+k\Pr(B\le k)\over Nn}
+      \le {\Pr(B\le k)\over N}
+      \le {e^{-nI(k/n)}\over N}.$$
+    </div>
+    <p>Consequently, if $k/n\to\tau\ne1/2$, then
+      $ND_{N,k}\to-\tau$ below the median and $ND_{N,k}\to1-\tau$ above it. For the usual upper conformal order
+      with $k/n\to1-\alpha&gt;1/2$, fixed final-memory correlation $a$ therefore raises mean coverage by
+      $a\alpha/N+o(N^{-1})$, with an exponentially small remainder whenever the rank fraction stays a fixed
+      distance from $1/2$. The median transition has a different, Gaussian scale: if
+      $x_n=(2k-n)/\sqrt n\to x$, the binomial central limit theorem yields</p>
+    <div class="equation-card">
+    $$nD_{N,k}\longrightarrow \Phi(x)-\frac12.$$
+    </div>
+    <p>The certificate checks the two finite-$N$ Chernoff inequalities for every order at $N=2,\ldots,200$ and
+      the central crossover at $n=32,128,512$. These are marginal-mean statements in the fixed-test-memory limit;
+      they neither remove the changed training-conditional tail nor assert feature-conditional coverage.</p>
     <p>For the sample maximum $M=Q_N$, the limiting coverage conditional on the realized iid calibration panel is
       exactly</p>
     <div class="equation-card">
