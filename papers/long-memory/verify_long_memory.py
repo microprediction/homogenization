@@ -4,8 +4,9 @@ The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
 periodic counterexamples, including the Gaussian fractional-Brownian functional
-limit, the critical Gaussian finite-dimensional limit and failure of
-path-space tightness, an ergodic second-chaos counterexample with nonvanishing
+limit, the critical Gaussian finite-dimensional limit, its power-scale
+modulus profile and failure of path-space tightness, an ergodic second-chaos
+counterexample with nonvanishing
 limiting skewness, a covariance-matched hierarchy of arbitrary Hermite ranks,
 and the sharp Fourier-decay and Cesaro-mean conditions at the
 saturated epsilon-squared boundary.
@@ -680,7 +681,12 @@ def verify_critical_gaussian_boundary():
     one on the positive-time diagonal and one half at every pair of distinct
     positive times.  Its increments over every fixed positive time interval
     retain asymptotic variance one, which is the obstruction to C[0,1]
-    tightness.
+    tightness.  The same closed form resolves shrinking lags h_R=R^(-beta):
+
+        V(R h_R) / V(R) -> max(1-beta, 0).
+
+    This is the p=0 member of the logarithmic critical family whose profile
+    is max(1-beta, 0)^(p+1).
     """
     scales = np.array([0.25, 1.0, 4.0, 16.0])
     quadrature = np.array([
@@ -699,7 +705,7 @@ def verify_critical_gaussian_boundary():
             if s > 0.0 and t > 0.0:
                 target[i, j] = 1.0 if i == j else 0.5
 
-    powers = (10, 20, 40, 80, 160)
+    powers = (10, 20, 40, 80, 160, 320)
     errors = []
     increment_variances = []
     delta = 0.01
@@ -723,8 +729,32 @@ def verify_critical_gaussian_boundary():
     assert all(x > y for x, y in zip(errors, errors[1:]))
     assert errors[-1] < 0.021
     assert increment_variances[-1] > 0.958
+
+    betas = np.array([0.25, 0.5, 0.75, 1.0, 1.25])
+    target_profile = np.maximum(1.0 - betas, 0.0)
+    profile_errors = []
+    terminal_profile = None
+    for power in powers:
+        log_r = power * math.log(2.0)
+        denominator = math.log1p(math.exp(2.0 * log_r))
+        values = []
+        for beta in betas:
+            exponent = 2.0 * (1.0 - beta) * log_r
+            numerator = (
+                math.log1p(math.exp(exponent))
+                if exponent <= 700.0 else exponent
+            )
+            values.append(numerator / denominator)
+        values = np.asarray(values)
+        profile_errors.append(float(np.max(np.abs(values - target_profile))))
+        terminal_profile = values
+
+    assert all(x > y for x, y in zip(profile_errors, profile_errors[1:]))
+    assert profile_errors[-1] < 0.0016
     return (identity_error, tuple(errors), tuple(increment_variances),
-            powers, delta)
+            powers, delta, tuple(map(float, betas)),
+            tuple(map(float, target_profile)),
+            tuple(profile_errors), tuple(terminal_profile))
 
 
 def verify_ergodic_second_chaos_counterexample():
@@ -1257,6 +1287,11 @@ def main():
     print("critical Gaussian delta and normalized increment variances at "
           f"R=2^{critical_gaussian[3]}: {critical_gaussian[4]:.2f}, "
           f"{tuple(f'{value:.6f}' for value in critical_gaussian[2])}")
+    print("critical Gaussian power-lag betas/limits and terminal values: "
+          f"{critical_gaussian[5]}, {critical_gaussian[6]}, "
+          f"{tuple(f'{value:.6f}' for value in critical_gaussian[8])}")
+    print("critical Gaussian power-lag maximum profile errors: "
+          f"{tuple(f'{error:.6f}' for error in critical_gaussian[7])}")
     print("ergodic second-chaos beta, limiting/finite normalized third "
           "cumulants: "
           f"{second_chaos[0]:.1f}, {second_chaos[1]:.9f}, "

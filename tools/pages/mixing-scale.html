@@ -163,15 +163,40 @@
       of length $\delta$ exceeds $\eta$ has limit inferior at least $2\Phi(-\eta)$. Letting $\delta\downarrow0$
       violates the necessary modulus-of-continuity condition for tightness. The endpoint therefore has a valid and
       explicit finite-dimensional limit but no continuous functional limit under this normalization.</p>
+    <h4>A power-scale modulus profile</h4>
+    <p>The failure of tightness has a sharper multiscale form. Suppose more specifically that the critical spectral
+      law has</p>
+    $$F(x)\sim b x^2\{\log(1/x)\}^{p}\ell(1/x),\qquad p&gt;-1,$$
+    <p>where $\ell(R^\theta)/\ell(R)\to1$ for each fixed $\theta&gt;0$. Then the endpoint theorem and ordinary
+      integration on the logarithmic scale give</p>
+    $$V(R)\sim\frac{4b}{p+1}\{\log R\}^{p+1}\ell(R).$$
+    <p>For the shrinking lag $h_R=R^{-\beta}$, stationarity of the integrated process gives the exact reduction</p>
+    $$\operatorname{Var}\{S_R(t+h_R)-S_R(t)\}=\frac{V(Rh_R)}{V(R)},$$
+    <p>whenever both times lie in the path interval. Consequently, for every fixed $\beta\ge0$,</p>
+    <div class="equation-card">
+    $$\frac{V(R^{1-\beta})}{V(R)}\longrightarrow
+      (1-\beta)_+^{\,p+1}.$$
+    </div>
+    <p>Thus the correlation-time scale $R^{-1}$ is the continuity threshold, but the whole approach to it remembers
+      the slowly varying critical law. Fixed positive lags correspond to $\beta=0$ and retain unit variance;
+      lags at or below $R^{-1}$ vanish after normalization. Between them lies a continuum of nonzero increment
+      variances. The exponent $p+1$ also shows why there is no universal microscopic modulus profile under the bare
+      critical hypothesis: different logarithmic spectral corrections have the same fixed-time Gaussian-dust limit
+      but different power-scale paths to continuity.</p>
     <p>An exact benchmark takes one-sided spectral density $f(\omega)=\omega e^{-\omega}$. Then
       $F(x)\sim x^2/2$, $C(t)=\operatorname{Re}(1-it)^{-2}$, and</p>
     $$V(R)=2\int_0^\infty\frac{1-\cos(R\omega)}{\omega}e^{-\omega}d\omega
       =\log(1+R^2).$$
+    <p>Here $p=0$, so for $h_R=R^{-\beta}$ the finite-$R$ profile is exactly</p>
+    $$\frac{\log\{1+R^{2(1-\beta)}\}}{\log(1+R^2)}
+      \longrightarrow(1-\beta)_+.$$
     <p>The certificate checks this identity against covariance quadrature within $2.67\times10^{-15}$. On the time
       grid $0,0.1,0.25,0.5,0.75,1$, the maximum covariance-matrix error relative to the displayed limit falls from
-      $0.332186$ at $R=2^{10}$ to $0.020762$ at $R=2^{160}$. The deliberately slow logarithmic convergence is real:
+      $0.332186$ at $R=2^{10}$ to $0.010381$ at $R=2^{320}$. At
+      $\beta=(0.25,0.5,0.75,1,1.25)$, the maximum discrepancy from the limiting power-lag profile is below
+      $1.6\times10^{-3}$ at $R=2^{320}$. The deliberately slow logarithmic convergence is real:
       even for the short interval $\delta=0.01$, its normalized increment variance rises to $0.958476$ at
-      $R=2^{160}$, toward the nonzero limit one.</p>
+      $R=2^{160}$ and $0.979238$ at $R=2^{320}$, toward the nonzero limit one.</p>
     <h3>Why Gaussianity is essential: an ergodic counterexample</h3>
     <p>The warning above is not merely about a hidden invariant random offset. Fix $0&lt;\beta&lt;1/2$ and let $G$ be
       a centered stationary unit-variance Gaussian process with covariance</p>
