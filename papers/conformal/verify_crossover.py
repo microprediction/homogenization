@@ -44,6 +44,10 @@ same
 data-processing argument transfers the entire realized pooled
 coverage law to its finite-sample Beta order-statistic benchmark, controlling
 all bounded diagnostics and moments rather than only one failure event.  A
+succeeding block of future predictions has a Beta-binomial iid benchmark,
+not an independent-binomial law, because every indicator shares the random
+calibration threshold.  Applying the joint score-law comparison before the
+threshold/count map transfers this whole repeated-coverage law as well.  A
 symmetric two-state example reduces
 exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
 and proves that the resulting square-root information scale is sharp,
@@ -1942,6 +1946,136 @@ def beta_order_statistic_transfer_checks(Q, pi, scales):
     )
 
 
+def beta_binomial_law(trials, alpha, beta):
+    """Return the beta-binomial probability vector without SciPy fitting."""
+    law = np.empty(trials + 1)
+    log_beta_denominator = (
+        math.lgamma(alpha) + math.lgamma(beta)
+        - math.lgamma(alpha + beta)
+    )
+    for successes in range(trials + 1):
+        log_probability = (
+            math.log(math.comb(trials, successes))
+            + math.lgamma(alpha + successes)
+            + math.lgamma(beta + trials - successes)
+            - math.lgamma(alpha + beta + trials)
+            - log_beta_denominator
+        )
+        law[successes] = math.exp(log_probability)
+    assert abs(law.sum() - 1.0) < 3e-14
+    return law
+
+
+def conditional_disjoint_support_count(path, calibration_size, rank, future_size):
+    """Exact future-success count law conditional on a binary state path.
+
+    State zero emits uniformly on (0, 1/2), and state one emits uniformly on
+    (1/2, 1).  If the calibration order statistic lies in one support, the
+    relevant within-support quantile is beta distributed.  Mixing the future
+    Bernoulli trials over that quantile gives a beta-binomial law.
+    """
+    calibration = path[:calibration_size]
+    future = path[calibration_size:]
+    calibration_low = sum(state == 0 for state in calibration)
+    future_low = sum(state == 0 for state in future)
+    law = np.zeros(future_size + 1)
+
+    if calibration_low >= rank:
+        within_rank = rank
+        beta_tail = calibration_low + 1 - rank
+        component = beta_binomial_law(
+            future_low, within_rank, beta_tail
+        )
+        law[:future_low + 1] = component
+    else:
+        within_rank = rank - calibration_low
+        calibration_high = calibration_size - calibration_low
+        future_high = future_size - future_low
+        beta_tail = calibration_high + 1 - within_rank
+        component = beta_binomial_law(
+            future_high, within_rank, beta_tail
+        )
+        law[future_low:future_low + future_high + 1] = component
+    assert abs(law.sum() - 1.0) < 3e-14
+    return law
+
+
+def repeated_future_coverage_checks():
+    """Check the calibration-plus-future beta-binomial transfer exactly."""
+    calibration_size = 7
+    rank = 6
+    future_size = 5
+    total_size = calibration_size + future_size
+    correlation = 0.2
+    transition = np.array([
+        [(1.0 + correlation) / 2.0, (1.0 - correlation) / 2.0],
+        [(1.0 - correlation) / 2.0, (1.0 + correlation) / 2.0],
+    ])
+
+    dependent_law = np.zeros(future_size + 1)
+    enumerated_iid_law = np.zeros(future_size + 1)
+    for path in itertools.product((0, 1), repeat=total_size):
+        conditional_law = conditional_disjoint_support_count(
+            path, calibration_size, rank, future_size
+        )
+        path_probability = 0.5
+        for index in range(total_size - 1):
+            path_probability *= transition[path[index], path[index + 1]]
+        dependent_law += path_probability * conditional_law
+        enumerated_iid_law += 2.0 ** (-total_size) * conditional_law
+
+    beta_parameter = calibration_size + 1 - rank
+    iid_law = beta_binomial_law(
+        future_size, rank, beta_parameter
+    )
+    assert np.max(abs(enumerated_iid_law - iid_law)) < 3e-14
+
+    pooled_coverage = rank / (calibration_size + 1)
+    independent_binomial = binom.pmf(
+        np.arange(future_size + 1), future_size, pooled_coverage
+    )
+    iid_binomial_tv = 0.5 * np.sum(abs(iid_law - independent_binomial))
+
+    count_values = np.arange(future_size + 1)
+    iid_mean = float(iid_law @ count_values)
+    iid_variance = float(iid_law @ (count_values - iid_mean) ** 2)
+    beta_binomial_variance = (
+        future_size * pooled_coverage * (1.0 - pooled_coverage)
+        * (calibration_size + 1 + future_size)
+        / (calibration_size + 2)
+    )
+    assert abs(iid_mean - future_size * pooled_coverage) < 3e-14
+    assert abs(iid_variance - beta_binomial_variance) < 3e-14
+
+    one_step_information = float(np.sum(
+        0.5 * transition * np.log(transition / 0.5)
+    ))
+    joint_tv_bound = math.sqrt(
+        (total_size - 1) * one_step_information / 2.0
+    )
+    exact_count_tv = 0.5 * np.sum(abs(dependent_law - iid_law))
+    assert exact_count_tv <= joint_tv_bound + 3e-14
+
+    print("repeated future-coverage law certificate:")
+    print(
+        f"  calibration n={calibration_size}, rank k={rank}, "
+        f"future L={future_size}, correlation a={correlation:.1f}"
+    )
+    print(
+        f"  exact dependent/Beta-binomial count TV {exact_count_tv:.12f}, "
+        f"joint score-law bound {joint_tv_bound:.12f}"
+    )
+    print(
+        f"  iid Beta-binomial/independent-binomial TV "
+        f"{iid_binomial_tv:.12f}"
+    )
+    print(
+        f"  iid future-count variance {iid_variance:.12f}, "
+        f"naive binomial variance "
+        f"{future_size * pooled_coverage * (1.0 - pooled_coverage):.12f}"
+    )
+
+
 def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     """Check the irregular-grid path-TV theorem and its sharp scale.
 
@@ -2197,6 +2331,7 @@ def nonreversible_contraction_checks():
     joint_panel_limit_surface_checks()
     nonstationary_joint_entropy_checks(Q, pi)
     beta_order_statistic_transfer_checks(Q, pi, scales)
+    repeated_future_coverage_checks()
     irregular_joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
@@ -2305,7 +2440,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, full Beta order-statistic transfer, regular- and"
+          " count law, full Beta order-statistic and repeated-future"
+          " Beta-binomial transfers, regular- and"
           " irregular-grid and arbitrary-start joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
           " persistent-plus-diffuse, and burned-start two-state limits,"

@@ -594,6 +594,61 @@
       randomized pooled coverage mean differs from $k/(n+1)$ by at most the
       same panel-law error. This is a distributional finite-sample result;
       it does not substitute an effective sample size into a beta law.</p>
+
+    <h4>Several future predictions: the beta-binomial benchmark</h4>
+    <p>A deployed threshold is normally reused. Take $n$ calibration scores,
+      let $C_0^\circ=U_{(k)}$, and append $L$ future randomized transforms.
+      Define</p>
+    $$Z_\ell={\bf1}\{U_{n+\ell}\le U_{(k)}\},\qquad
+      J_L=\sum_{\ell=1}^L Z_\ell.$$
+    <p>Under the iid pooled comparator, conditional on
+      $B=C_0^\circ\sim\operatorname{Beta}(k,n+1-k)$, the $Z_\ell$ are iid
+      Bernoulli$(B)$. Therefore their unconditional law is exchangeable, not
+      independent, and</p>
+    <div class="equation-card">
+    $$\Pr\{J_L=j\}
+      ={L\choose j}\frac{B(k+j,n+1-k+L-j)}{B(k,n+1-k)},
+      \qquad 0\le j\le L.$$
+    </div>
+    <p>This is the beta-binomial law. In particular, with
+      $p=k/(n+1)$,</p>
+    $$\operatorname{Cov}(Z_\ell,Z_r)
+      =\frac{k(n+1-k)}{(n+1)^2(n+2)},\quad \ell\ne r,$$
+    $$\operatorname{Var}(J_L)
+      =Lp(1-p)\frac{n+1+L}{n+2}.$$
+    <p>Thus replacing the $L$ indicators by independent Bernoulli$(p)$
+      variables is wrong even before time-series dependence is introduced.
+      The shared finite-sample threshold creates the positive covariance.</p>
+    <p>Now apply the score-path comparison to the complete string of
+      $n+L$ calibration and future scores before taking order statistics or
+      indicators. Data processing gives</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{n+L,m}(J_L),
+      \operatorname{BetaBinomial}(L,k,n+1-k)\right\}
+      \le\delta^{\rm KL}_{n+L,m}.$$
+    </div>
+    <p>The same bound controls the full indicator vector and every event or
+      bounded diagnostic built from it. On irregular grids or from a
+      nonstationary start, replace the right side by the corresponding exact
+      joint path-entropy bound for all $n+L$ observations. This remains a
+      marginal comparison over random calibration and future sequences. It
+      does not make the realized indicators conditionally independent and
+      does not assert pointwise or feature-conditional coverage.</p>
+    <p>The iid universal finite-batch law is derived by
+      <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> via
+      exchangeability and P&oacute;lya&apos;s urn. The contribution here is its
+      quantitative transfer to fast hidden Markov scores through the joint
+      total-variation theorem.</p>
+    <p>For the exact two-state certificate, state zero emits uniformly on
+      $(0,1/2)$ and state one uniformly on $(1/2,1)$, so the pooled law is
+      uniform and the hidden path is recoverable from every score. With
+      $n=7$, $k=6$, $L=5$, and one-step correlation $0.2$, enumeration of
+      all $2^{12}$ paths plus the conditional beta-binomial calculation gives
+      count-law distance $0.038520368837$, below the joint score-law bound
+      $0.332784201141$. Even in the iid comparator, its distance from the
+      naive independent-binomial law is $0.128876657197$; the exact count
+      variance is $1.354166666667$, versus $0.9375$ under independence.</p>
+
     <p>If ties are instead retained deterministically, let
       $C_0=\bar F(R_{(k)})$ and define
       $H_{\bar F}(c)=\Pr_{R\sim\bar F}\{\bar F(R)\le c\}$. Under the iid

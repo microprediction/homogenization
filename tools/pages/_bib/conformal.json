@@ -60,6 +60,16 @@
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
  },
  {
+  "key": "MarquesF2023",
+  "authors": "Marques F., P. C.",
+  "year": 2023,
+  "title": "On the Universal Distribution of the Coverage in Split Conformal Prediction",
+  "venue": "arXiv:2303.02770",
+  "doi": "10.48550/arXiv.2303.02770",
+  "url": "https://arxiv.org/abs/2303.02770",
+  "annotation": "Derives the exact universal finite-batch empirical-coverage law for split conformal prediction under exchangeability using a Polya-urn representation. The repeated-future theorem transfers this iid beta-binomial benchmark to fast hidden Markov scores."
+ },
+ {
   "key": "Esseen1945",
   "authors": "Esseen, C.-G.",
   "year": 1945,
