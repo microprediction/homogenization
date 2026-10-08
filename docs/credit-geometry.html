@@ -806,6 +806,34 @@
       most $r$. This is a fixed-parameter long-maturity expansion; it is not
       uniform when $K$, the CIR parameters, or the transient spectral floor
       vary with $T$.</p>
+    <p>The inverse expansion also gives an exact long-maturity dichotomy for
+      equality-constrained minimum variance. For a fixed nonzero
+      normalization vector $c$, let</p>
+    $$w_T={D(T)^{-1}c\over c^\top D(T)^{-1}c},\qquad
+      v_T={1\over c^\top D(T)^{-1}c}.$$
+    <p>This is the classical minimum-variance solution under $c^\top w=1$;
+      the usual budget constraint takes $c=\mathbf1$. There are two cases.</p>
+    <div class="equation-card">
+    <p><strong>Long-maturity minimum-variance dichotomy.</strong> If
+      $Pc\ne0$, put $h=c^\top H_K^+c&gt;0$. Then</p>
+    $$w_T={H_K^+c\over h}+O(T^{-1}),\qquad
+      v_T={1\over h}+O(T^{-1}).$$
+    <p>If $Pc=0$, equivalently $c\in\operatorname{ran}A$, put
+      $g=c^\top LA^+L^\top c=c^\top A^+c&gt;0$. Then</p>
+    $$w_T={LA^+L^\top c\over g}+O(T^{-1}),\qquad
+      {v_T\over T}={1\over g}+O(T^{-1}).$$
+    </div>
+    <p>Thus a normalization that sees the transient kernel has a finite
+      long-end risk floor and its optimizer converges into that kernel. If
+      the normalization is blind to the kernel, only the $r$ stationary
+      Green&ndash;Kubo directions can satisfy it and the minimum variance grows
+      linearly. Finite-maturity full rank does not remove this distinction.
+      The result is unconstrained apart from $c^\top w=1$; it does not claim
+      the same closed form under long-only, leverage, or turnover constraints.
+      The optimization criterion is the one introduced by
+      <a href="https://doi.org/10.1111/j.1540-6261.1952.tb01525.x">Markowitz
+      (1952)</a>; the two-scale limit here comes from the CIR loading
+      expansion.</p>
     <p>A five-name certificate takes the rank-two matrix $K=FF^\top$ with
       $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and heterogeneous
       positive-volatility CIR loadings with one repeated full pair:
@@ -832,7 +860,13 @@
       $3.040135$, and $4.084200$, respectively. The one-term remainder at
       $T=2048$ is $7.20040338\times10^{-4}$. For the constant proxy at
       $T=64$, the three-term error is $9.33677673\times10^{-3}$, below the
-      explicit Neumann bound $1.03296926\times10^{-2}$.</p>
+      explicit Neumann bound $1.03296926\times10^{-2}$. For the ordinary
+      budget vector, the predicted risk floor is $0.097070544508$ and the
+      value at $T=2048$ is $0.097042372590$. For a normalization vector in
+      $\operatorname{ran}A$, the predicted limit of $v_T/T$ is
+      $3.0766963489$, versus $3.0675084592$ at $T=2048$. The four weight and
+      risk errors converge with observed dyadic orders between $1.000036$
+      and $1.004731$.</p>
     <p>The result concerns a fixed $K$ and fixed CIR parameters. It explicitly
       distinguishes the $r$ stationary directions inherited from fixed
       Green&ndash;Kubo rank from the additional finite information created by

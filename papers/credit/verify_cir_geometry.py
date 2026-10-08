@@ -27,7 +27,10 @@ general law: exactly r information eigenvalues grow linearly when the fixed
 matrix has rank r, while maturity integration can make every finite-maturity
 matrix full rank through a positive transient complement.  The same Schur
 reduction is checked through three inverse corrections, exhibiting the full
-all-orders inverse series and remainder orders two, three, and four.  An
+all-orders inverse series and remainder orders two, three, and four.  The
+same example verifies the two equality-constrained minimum-variance limits:
+a finite transient risk floor versus linear risk growth when the constraint
+lies entirely in the stationary range.  An
 additional certificate checks the exact full-rank criterion: for distinct CIR
 mean-reversion rates, K Hadamard J(T) is positive definite at every positive
 maturity if and only if every diagonal entry of the positive semidefinite K
@@ -785,6 +788,78 @@ def finite_rank_long_maturity_checks():
     assert abs(range_traces[-1] / range_trace_target - 1) < 0.004
     assert abs(null_traces[-1] / null_trace_target - 1) < 0.001
 
+    # Equality-constrained minimum-variance limits.  A generic budget vector
+    # sees the transient kernel and therefore has a finite risk floor.  A
+    # constraint chosen in ran(A) is blind to that floor; its risk grows like
+    # T and the first inverse correction determines the normalized weights.
+    budget = np.ones(len(kappas))
+    budget_floor = float(budget @ null_inverse @ budget)
+    assert budget_floor > 1e-5
+    budget_weight_limit = null_inverse @ budget / budget_floor
+    budget_variance_limit = 1.0 / budget_floor
+
+    range_constraint = range_basis @ np.array([1.0, 0.4])
+    leading_inverse = inverse_terms[0]
+    range_information = float(
+        range_constraint @ leading_inverse @ range_constraint
+    )
+    assert range_information > 1e-5
+    range_weight_limit = (
+        leading_inverse @ range_constraint / range_information
+    )
+    range_variance_slope = 1.0 / range_information
+
+    budget_weight_errors = []
+    budget_variance_errors = []
+    range_weight_errors = []
+    range_variance_errors = []
+    for horizon in horizons:
+        matrix = green_kubo * loading_gram(horizon)
+        matrix_inverse = np.linalg.inv(matrix)
+        budget_information = float(budget @ matrix_inverse @ budget)
+        budget_weights = matrix_inverse @ budget / budget_information
+        budget_weight_errors.append(np.linalg.norm(
+            budget_weights - budget_weight_limit
+        ))
+        budget_variance_errors.append(abs(
+            1.0 / budget_information - budget_variance_limit
+        ))
+
+        range_sample_information = float(
+            range_constraint @ matrix_inverse @ range_constraint
+        )
+        range_weights = (
+            matrix_inverse @ range_constraint / range_sample_information
+        )
+        range_weight_errors.append(np.linalg.norm(
+            range_weights - range_weight_limit
+        ))
+        range_variance_errors.append(abs(
+            1.0 / (horizon * range_sample_information)
+            - range_variance_slope
+        ))
+
+    budget_weight_orders = np.log2(
+        np.asarray(budget_weight_errors[:-1])
+        / np.asarray(budget_weight_errors[1:])
+    )
+    budget_variance_orders = np.log2(
+        np.asarray(budget_variance_errors[:-1])
+        / np.asarray(budget_variance_errors[1:])
+    )
+    range_weight_orders = np.log2(
+        np.asarray(range_weight_errors[:-1])
+        / np.asarray(range_weight_errors[1:])
+    )
+    range_variance_orders = np.log2(
+        np.asarray(range_variance_errors[:-1])
+        / np.asarray(range_variance_errors[1:])
+    )
+    assert min(
+        budget_weight_orders[-1], budget_variance_orders[-1],
+        range_weight_orders[-1], range_variance_orders[-1]
+    ) > 0.99
+
     print("\nrank-r long-maturity CIR loading certificate")
     print(f"  fixed Green-Kubo rank {rank}, integrated rank {len(kappas)}")
     print("  limiting transient eigenvalues "
@@ -823,6 +898,16 @@ def finite_rank_long_maturity_checks():
           f"limit {range_trace_target:.10f}")
     print(f"  null inverse trace {null_traces[-1]:.10f}, "
           f"limit {null_trace_target:.10f}")
+    print("  minimum-variance constraint limits:")
+    print(f"    budget risk floor {budget_variance_limit:.10e}, "
+          f"T=2048 {1.0 / (budget @ np.linalg.inv(green_kubo * loading_gram(horizons[-1])) @ budget):.10e}")
+    print(f"    range risk/T limit {range_variance_slope:.10e}, "
+          f"T=2048 {1.0 / (horizons[-1] * range_constraint @ np.linalg.inv(green_kubo * loading_gram(horizons[-1])) @ range_constraint):.10e}")
+    print("    weight/risk convergence orders "
+          f"{budget_weight_orders[-1]:.6f} "
+          f"{budget_variance_orders[-1]:.6f} "
+          f"{range_weight_orders[-1]:.6f} "
+          f"{range_variance_orders[-1]:.6f}")
     return (transient_values, stationary_values[-rank:], values,
             final_orders, inverse_errors_by_order, inverse_orders_by_order)
 
