@@ -247,15 +247,36 @@
     $$B_\infty=2\max_i s_i,\qquad
       B_1=\max_j\left\{s_j+\sum_{i\ne j}a_{ij}\right\}.$$
     </div>
-    <p>On the same event, substituting $\varepsilon_{\rm path}$ into the preceding a posteriori theorem gives a
+    <p>For a small chain the rectangular rate set can instead be propagated exactly. Define the asymmetric
+      off-diagonal error endpoints</p>
+    $$\underline e_{ij}=\widehat q_{ij}-u_{ij},\qquad
+      \overline e_{ij}=\widehat q_{ij}-\ell_{ij},$$
+    <p>and, for any choice $e=(e_{ij})_{i\ne j}$, let $E(e)$ have off-diagonal entries $e_{ij}$ and diagonal
+      entries $E_{ii}=-\sum_{j\ne i}e_{ij}$. Then</p>
+    <div class="equation-card">
+    $$\varepsilon_{\rm box}
+      =\max_{\substack{e_{ij}\in\{\underline e_{ij},\overline e_{ij}\}\\i\ne j}}
+      \|E(e)\|_2
+      =\max_{\substack{\underline e_{ij}\le e_{ij}\le\overline e_{ij}\\i\ne j}}
+      \|E(e)\|_2.$$
+    </div>
+    <p>The equality is exact: every point of the box is a convex combination of its vertices, $E(e)$ is affine,
+      and the spectral norm is convex. Thus the same simultaneous confidence event gives
+      $\|\widehat Q-Q\|_2\le\min(\varepsilon_{\rm path},\varepsilon_{\rm box})$.
+      The enumeration costs $2^{n(n-1)}$ spectral norms, so it is useful only for small state spaces; the displayed
+      Frobenius/induced-norm formula remains the polynomial-time fallback. This step tightens only deterministic
+      propagation of the rate intervals and does not change their statistical coverage.</p>
+    <p>On the same event, substituting the smaller available radius into the preceding a posteriori theorem gives a
       $1-\delta$ confidence interval for the population skew energy whenever the estimated generator is irreducible
       and its displayed positivity and Neumann conditions hold. If some $L_i=0$, this construction supplies no
       finite radius for that row.</p>
     <p>The certificate checks the exponential-martingale identity independently by a tilted Feynman&ndash;Kac matrix.
       On one seeded four-state path with 221,183 jumps and minimum state occupation 20,901.343, the actual generator
-      error is $0.027272$ against the rate-cap-free radius $0.147442$; the preliminary capped-rate construction gave
-      $0.260095$. The actual skew-resolvent error is $0.000755$ against radius $1.767794$. The true energy
-      $0.047000719$ lies in the certified interval $[0,3.939766863]$. The example also
+      error is $0.027272$. The 4,096-vertex maximum gives radius $0.113539$, versus $0.147442$ from the analytic
+      rate-cap-free bound and $0.260095$ from the preliminary capped-rate construction. The actual skew-resolvent
+      error is $0.000755$ against propagated radius $1.216804$, reduced from $1.767794$. The true energy
+      $0.047000719$ lies in the certified interval $[0,2.056054602]$, whose upper endpoint was previously
+      $3.939766863$. The example also
       makes the conservatism transparent: this is a valid finite-path certificate, not a sharp inference method.</p>
     <p>The result requires continuous full observation but no rate cap. It is not a theorem for hidden states,
       discrete sampling, estimated state labels, or misspecified generators, and it does not turn

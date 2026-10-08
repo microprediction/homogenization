@@ -20,7 +20,10 @@ energy.  For a fully observed finite-state path, exponential counting-
 martingale bounds supply the missing generator radius and hence an end-to-end
 high-probability interval.  A simpler preliminary radius assumes a known
 off-diagonal rate cap; direct martingale inversion removes that assumption.
-Neither version covers hidden or discretely observed states.
+For small chains, exhaustive vertex propagation gives the exact spectral-
+norm radius of the resulting rectangular confidence set, while the analytic
+Frobenius/induced-norm construction remains the large-state fallback.  None
+of these versions covers hidden or discretely observed states.
 
 For dY=c dt+sqrt(2D)dW modulo 2 pi and the Fourier pair (cos(nY),
 sin(nY)), the Green--Kubo matrix is then checked in closed form, by direct
@@ -340,14 +343,20 @@ def observed_path_generator_radius(
 
 
 def observed_path_generator_interval(
-    occupations, counts, failure_probability, theta_grid
+    occupations, counts, failure_probability, theta_grid,
+    exact_vertex_edge_limit=16,
 ):
     """Invert counting martingales into a rate-cap-free generator radius.
 
     The finite positive theta grid is fixed before observing the fully
     observed path.  With probability at least 1-failure_probability, every
     true off-diagonal rate lies in the returned entrywise interval and the
-    returned epsilon bounds ||q_hat-q||_2.
+    returned epsilon bounds ||q_hat-q||_2.  When the number of directed
+    edges is at most ``exact_vertex_edge_limit``, the operator-norm radius
+    is computed exactly over the rectangular confidence set: convexity of
+    the spectral norm reduces the maximum to its finitely many vertices.
+    The analytic Frobenius/induced-norm radius remains the fallback for
+    larger state spaces.
     """
     occupations = np.asarray(occupations, dtype=float)
     counts = np.asarray(counts, dtype=float)
@@ -399,10 +408,41 @@ def observed_path_generator_interval(
     column_radii = row_sums + entry_radii.sum(axis=0)
     one_radius = np.max(column_radii)
     induced_radius = math.sqrt(one_radius * infinity_radius)
-    epsilon = min(frobenius_radius, induced_radius)
+    analytic_radius = min(frobenius_radius, induced_radius)
+
+    # The off-diagonal generator errors form a box.  The diagonal error is
+    # the negative row sum, hence an affine function of those coordinates.
+    # Every point of a box is a convex combination of its vertices, and the
+    # spectral norm is convex, so its maximum over the entire confidence set
+    # is exactly the maximum over the 2^[n(n-1)] endpoint generators.
+    edges = [(i, j) for i in range(n) for j in range(n) if i != j]
+    edge_count = len(edges)
+    vertex_radius = None
+    vertex_count = 0
+    if edge_count <= exact_vertex_edge_limit:
+        lower_error = q_hat - upper
+        upper_error = q_hat - lower
+        vertex_radius = 0.0
+        vertex_count = 2**edge_count
+        for mask in range(vertex_count):
+            error = np.zeros((n, n))
+            for edge_index, (i, j) in enumerate(edges):
+                error[i, j] = (
+                    upper_error[i, j]
+                    if (mask >> edge_index) & 1
+                    else lower_error[i, j]
+                )
+            np.fill_diagonal(error, -error.sum(axis=1))
+            vertex_radius = max(vertex_radius, np.linalg.norm(error, 2))
+        epsilon = min(analytic_radius, vertex_radius)
+    else:
+        epsilon = analytic_radius
     return {
         "q_hat": q_hat,
         "epsilon": epsilon,
+        "analytic_radius": analytic_radius,
+        "vertex_radius": vertex_radius,
+        "vertex_count": vertex_count,
         "frobenius_radius": frobenius_radius,
         "induced_radius": induced_radius,
         "lower": lower,
@@ -473,6 +513,10 @@ def observed_path_concentration_check():
     path = observed_path_generator_interval(
         occupations, counts, 0.05, theta_grid
     )
+    fallback_path = observed_path_generator_interval(
+        occupations, counts, 0.05, theta_grid,
+        exact_vertex_edge_limit=0,
+    )
     q_hat = path["q_hat"]
     off_diagonal = ~np.eye(n, dtype=bool)
     rate_interval_violation = max(
@@ -482,6 +526,9 @@ def observed_path_concentration_check():
     )
     actual_generator_error = np.linalg.norm(q_hat - q, 2)
     posterior = posterior_skew_bound(q_hat, path["epsilon"])
+    analytic_posterior = posterior_skew_bound(
+        q_hat, path["analytic_radius"]
+    )
     _, _, true_skew = canonical_skew_resolvent(q)
     estimated_skew = posterior["skew_hat"]
     actual_skew_error = np.linalg.norm(estimated_skew - true_skew)
@@ -490,10 +537,18 @@ def observed_path_concentration_check():
     radius = posterior["bound"]
     lower = max(math.sqrt(energy_hat) - radius, 0.0) ** 2
     upper = (math.sqrt(energy_hat) + radius) ** 2
+    analytic_upper = (
+        math.sqrt(energy_hat) + analytic_posterior["bound"]
+    ) ** 2
 
     assert max(martingale_errors) < 2e-15
     assert rate_interval_violation == 0.0
     assert actual_generator_error <= path["epsilon"]
+    assert path["vertex_count"] == 2 ** (n * (n - 1))
+    assert path["vertex_radius"] == path["epsilon"]
+    assert path["vertex_radius"] < path["analytic_radius"]
+    assert fallback_path["vertex_radius"] is None
+    assert fallback_path["epsilon"] == path["analytic_radius"]
     assert path["epsilon"] < capped_path["epsilon"]
     assert actual_skew_error <= radius
     assert lower <= energy <= upper
@@ -504,15 +559,19 @@ def observed_path_concentration_check():
         "minimum_occupation": np.min(occupations),
         "actual_generator_error": actual_generator_error,
         "generator_radius": path["epsilon"],
+        "analytic_generator_radius": path["analytic_radius"],
+        "vertex_count": path["vertex_count"],
         "capped_generator_radius": capped_path["epsilon"],
         "actual_generator_error_ratio": actual_generator_error
         / path["epsilon"],
         "actual_skew_error": actual_skew_error,
         "skew_radius": radius,
+        "analytic_skew_radius": analytic_posterior["bound"],
         "actual_skew_error_ratio": actual_skew_error / radius,
         "energy": energy,
         "energy_lower": lower,
         "energy_upper": upper,
+        "analytic_energy_upper": analytic_upper,
         "neumann_ratio": posterior["neumann_ratio"],
     }
 
@@ -1245,21 +1304,25 @@ def main():
         f"{path['maximum_martingale_error']:.2e}"
     )
     print(
-        f"   generator error/rate-free radius/capped radius "
+        f"   generator error/vertex/analytic/capped radii "
         f"{path['actual_generator_error']:.6f}/"
         f"{path['generator_radius']:.6f}/"
+        f"{path['analytic_generator_radius']:.6f}/"
         f"{path['capped_generator_radius']:.6f}; ratio "
         f"{path['actual_generator_error_ratio']:.6f}"
     )
     print(
-        f"   skew error/radius/ratio {path['actual_skew_error']:.6f}/"
+        f"   {path['vertex_count']} vertices; skew error/vertex/analytic "
+        f"radii {path['actual_skew_error']:.6f}/"
         f"{path['skew_radius']:.6f}/"
+        f"{path['analytic_skew_radius']:.6f}; exact-radius ratio "
         f"{path['actual_skew_error_ratio']:.6f}; Neumann ratio "
         f"{path['neumann_ratio']:.6f}"
     )
     print(
         f"   true energy {path['energy']:.9f} in certified interval "
-        f"[{path['energy_lower']:.9f}, {path['energy_upper']:.9f}]"
+        f"[{path['energy_lower']:.9f}, {path['energy_upper']:.9f}]; "
+        f"analytic-radius upper endpoint {path['analytic_energy_upper']:.9f}"
     )
 
     print("3. two Gaussian features detect finite-state irreversibility almost surely")
