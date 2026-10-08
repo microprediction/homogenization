@@ -2465,6 +2465,17 @@
  },
  {
   "role": "survey_conformal",
+  "key": "Pyke1965",
+  "authors": "Pyke, R.",
+  "year": 1965,
+  "title": "Spacings",
+  "venue": "Journal of the Royal Statistical Society: Series B 27(3):395-436",
+  "doi": "10.1111/j.2517-6161.1965.tb00602.x",
+  "url": "https://doi.org/10.1111/j.2517-6161.1965.tb00602.x",
+  "annotation": "Develops the distribution theory of uniform spacings. The multilevel conformal theorem uses the Dirichlet law of grouped uniform spacings to obtain its exact Dirichlet-multinomial future-count benchmark."
+ },
+ {
+  "role": "survey_conformal",
   "key": "Renyi1961",
   "authors": "Rényi, A.",
   "year": 1961,

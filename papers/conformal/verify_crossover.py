@@ -1966,6 +1966,99 @@ def beta_binomial_law(trials, alpha, beta):
     return law
 
 
+def three_category_compositions(total):
+    """Return three-category count vectors in a fixed lexicographic order."""
+    return [
+        (left, middle, total - left - middle)
+        for left in range(total + 1)
+        for middle in range(total - left + 1)
+    ]
+
+
+def dirichlet_multinomial_law(trials, alpha):
+    """Return the three-category Dirichlet-multinomial law exactly."""
+    alpha = np.asarray(alpha, dtype=float)
+    assert alpha.shape == (3,) and np.all(alpha > 0)
+    total_alpha = float(alpha.sum())
+    law = []
+    for counts in three_category_compositions(trials):
+        log_probability = math.lgamma(trials + 1)
+        log_probability -= sum(math.lgamma(count + 1) for count in counts)
+        log_probability += math.lgamma(total_alpha)
+        log_probability -= math.lgamma(total_alpha + trials)
+        log_probability += sum(
+            math.lgamma(parameter + count) - math.lgamma(parameter)
+            for parameter, count in zip(alpha, counts)
+        )
+        law.append(math.exp(log_probability))
+    law = np.asarray(law)
+    assert abs(law.sum() - 1.0) < 3e-14
+    return law
+
+
+def conditional_multilevel_count(path, calibration_size, ranks, future_size):
+    """Exact three-bin future-count law conditional on a binary state path.
+
+    The two calibration thresholds split future observations into three
+    nested-coverage categories. Disjoint uniform supports reduce each case
+    to one Dirichlet-multinomial law or two independent beta-binomial splits.
+    """
+    lower_rank, upper_rank = ranks
+    assert 1 <= lower_rank < upper_rank <= calibration_size
+    calibration = path[:calibration_size]
+    future = path[calibration_size:]
+    calibration_low = sum(state == 0 for state in calibration)
+    future_low = sum(state == 0 for state in future)
+    calibration_high = calibration_size - calibration_low
+    future_high = future_size - future_low
+    compositions = three_category_compositions(future_size)
+    index = {counts: position for position, counts in enumerate(compositions)}
+    law = np.zeros(len(compositions))
+
+    if calibration_low >= upper_rank:
+        component = dirichlet_multinomial_law(
+            future_low,
+            (lower_rank, upper_rank - lower_rank,
+             calibration_low + 1 - upper_rank),
+        )
+        for probability, counts in zip(
+                component, three_category_compositions(future_low)):
+            augmented = (counts[0], counts[1], counts[2] + future_high)
+            law[index[augmented]] += probability
+    elif calibration_low < lower_rank:
+        shifted_lower = lower_rank - calibration_low
+        shifted_upper = upper_rank - calibration_low
+        component = dirichlet_multinomial_law(
+            future_high,
+            (shifted_lower, shifted_upper - shifted_lower,
+             calibration_high + 1 - shifted_upper),
+        )
+        for probability, counts in zip(
+                component, three_category_compositions(future_high)):
+            augmented = (counts[0] + future_low, counts[1], counts[2])
+            law[index[augmented]] += probability
+    else:
+        low_split = beta_binomial_law(
+            future_low, lower_rank, calibration_low + 1 - lower_rank
+        )
+        shifted_upper = upper_rank - calibration_low
+        high_split = beta_binomial_law(
+            future_high, shifted_upper,
+            calibration_high + 1 - shifted_upper
+        )
+        for below_lower, low_probability in enumerate(low_split):
+            low_middle = future_low - below_lower
+            for high_middle, high_probability in enumerate(high_split):
+                counts = (
+                    below_lower,
+                    low_middle + high_middle,
+                    future_high - high_middle,
+                )
+                law[index[counts]] += low_probability * high_probability
+    assert abs(law.sum() - 1.0) < 3e-14
+    return law
+
+
 def conditional_disjoint_support_count(path, calibration_size, rank, future_size):
     """Exact future-success count law conditional on a binary state path.
 
@@ -2073,6 +2166,82 @@ def repeated_future_coverage_checks():
         f"  iid future-count variance {iid_variance:.12f}, "
         f"naive binomial variance "
         f"{future_size * pooled_coverage * (1.0 - pooled_coverage):.12f}"
+    )
+
+
+def multilevel_future_coverage_checks():
+    """Check the nested-threshold Dirichlet-multinomial transfer exactly."""
+    calibration_size = 7
+    ranks = (3, 6)
+    future_size = 5
+    total_size = calibration_size + future_size
+    correlation = 0.2
+    transition = np.array([
+        [(1.0 + correlation) / 2.0, (1.0 - correlation) / 2.0],
+        [(1.0 - correlation) / 2.0, (1.0 + correlation) / 2.0],
+    ])
+
+    compositions = three_category_compositions(future_size)
+    dependent_law = np.zeros(len(compositions))
+    enumerated_iid_law = np.zeros(len(compositions))
+    for path in itertools.product((0, 1), repeat=total_size):
+        conditional_law = conditional_multilevel_count(
+            path, calibration_size, ranks, future_size
+        )
+        path_probability = 0.5
+        for position in range(total_size - 1):
+            path_probability *= transition[path[position], path[position + 1]]
+        dependent_law += path_probability * conditional_law
+        enumerated_iid_law += 2.0 ** (-total_size) * conditional_law
+
+    alpha = np.array([
+        ranks[0], ranks[1] - ranks[0], calibration_size + 1 - ranks[1]
+    ])
+    iid_law = dirichlet_multinomial_law(future_size, alpha)
+    assert np.max(abs(enumerated_iid_law - iid_law)) < 3e-14
+
+    probabilities = alpha / alpha.sum()
+    fixed_multinomial = np.array([
+        math.factorial(future_size)
+        / math.prod(math.factorial(count) for count in counts)
+        * math.prod(probability ** count
+                    for probability, count in zip(probabilities, counts))
+        for counts in compositions
+    ])
+    iid_multinomial_tv = 0.5 * np.sum(abs(iid_law - fixed_multinomial))
+    exact_count_tv = 0.5 * np.sum(abs(dependent_law - iid_law))
+    one_step_information = float(np.sum(
+        0.5 * transition * np.log(transition / 0.5)
+    ))
+    joint_tv_bound = math.sqrt(
+        (total_size - 1) * one_step_information / 2.0
+    )
+    assert exact_count_tv <= joint_tv_bound + 3e-14
+
+    count_matrix = np.asarray(compositions, dtype=float)
+    iid_mean = iid_law @ count_matrix
+    centered = count_matrix - iid_mean
+    iid_covariance = centered.T @ (iid_law[:, None] * centered)
+    naive_covariance = future_size * (
+        np.diag(probabilities) - np.outer(probabilities, probabilities)
+    )
+    inflation = (calibration_size + 1 + future_size) / (calibration_size + 2)
+    assert np.max(abs(iid_covariance - inflation * naive_covariance)) < 3e-14
+
+    print("multilevel future-coverage law certificate:")
+    print(
+        f"  calibration n={calibration_size}, ranks={ranks}, "
+        f"future L={future_size}, correlation a={correlation:.1f}"
+    )
+    print(
+        f"  exact dependent/Dirichlet-multinomial TV "
+        f"{exact_count_tv:.12f}, joint score-law bound "
+        f"{joint_tv_bound:.12f}"
+    )
+    print(
+        f"  iid Dirichlet-multinomial/fixed-multinomial TV "
+        f"{iid_multinomial_tv:.12f}, covariance inflation "
+        f"{inflation:.12f}"
     )
 
 
@@ -2332,6 +2501,7 @@ def nonreversible_contraction_checks():
     nonstationary_joint_entropy_checks(Q, pi)
     beta_order_statistic_transfer_checks(Q, pi, scales)
     repeated_future_coverage_checks()
+    multilevel_future_coverage_checks()
     irregular_joint_panel_mixing_checks(Q, pi, gamma_s)
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
@@ -2440,8 +2610,9 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, full Beta order-statistic and repeated-future"
-          " Beta-binomial transfers, regular- and"
+          " count law, full Beta order-statistic, repeated-future"
+          " Beta-binomial, and multilevel Dirichlet-multinomial transfers,"
+          " regular- and"
           " irregular-grid and arbitrary-start joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
           " persistent-plus-diffuse, and burned-start two-state limits,"

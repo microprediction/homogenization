@@ -649,6 +649,52 @@
       naive independent-binomial law is $0.128876657197$; the exact count
       variance is $1.354166666667$, versus $0.9375$ under independence.</p>
 
+    <h4>Several coverage levels: the Dirichlet--multinomial benchmark</h4>
+    <p>Monitoring nested conformal levels creates a second shared-threshold
+      dependence. Choose ranks
+      $0=k_0&lt;k_1&lt;\cdots&lt;k_q&lt;k_{q+1}=n+1$, and let the $q$
+      order statistics split $[0,1]$ into $q+1$ cells. Their random cell
+      probabilities $S=(S_1,\ldots,S_{q+1})$ obey</p>
+    $$S\sim\operatorname{Dirichlet}(\alpha_1,\ldots,\alpha_{q+1}),
+      \qquad \alpha_j=k_j-k_{j-1}.$$
+    <p>If $N_j$ is the number of $L$ future randomized scores falling in
+      cell $j$, then $N\mid S\sim\operatorname{Multinomial}(L,S)$, so</p>
+    <div class="equation-card">
+    $$\Pr\{N=x\}
+      =\frac{L!\,\Gamma(n+1)}{\Gamma(n+1+L)}
+       \prod_{j=1}^{q+1}
+       \frac{\Gamma(\alpha_j+x_j)}{x_j!\,\Gamma(\alpha_j)},
+      \qquad \sum_jx_j=L.$$
+    </div>
+    <p>This is the Dirichlet--multinomial law. With
+      $p_j=\alpha_j/(n+1)$, its covariance matrix is</p>
+    $$\operatorname{Cov}(N)
+      =L\frac{n+1+L}{n+2}\{\operatorname{diag}(p)-pp^\top\}.$$
+    <p>The factor $(n+1+L)/(n+2)$ is the exact inflation relative to a
+      multinomial with fixed probabilities. Thus neither different future
+      observations nor different monitored levels may be treated as
+      independent merely because the underlying scores are iid.</p>
+    <p>Apply the same joint score-path comparison to all $n+L$ observations
+      before forming every order statistic and cell count. Data processing
+      gives the multilevel transfer theorem</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{n+L,m}(N),
+      \operatorname{DM}(L;\alpha_1,\ldots,\alpha_{q+1})\right\}
+      \le\delta^{\rm KL}_{n+L,m}.$$
+    </div>
+    <p>This controls the joint law of all nested future-coverage counts and
+      every bounded simultaneous diagnostic. It remains marginal over the
+      random calibration and future sequence; it is not simultaneous
+      feature-conditional coverage. The Dirichlet law of uniform spacings is
+      classical; see <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>.
+      The hidden-Markov contribution is the quantitative transfer bound.</p>
+    <p>In the same exact two-state certificate, take $n=7$, ranks $(3,6)$,
+      and $L=5$. Enumeration of all $2^{12}$ hidden paths gives joint-count
+      distance $0.060077182905$ from the Dirichlet--multinomial law, below
+      $0.332784201141$. The iid Dirichlet--multinomial comparator is itself
+      $0.165035363400$ from the fixed-probability multinomial, and its
+      covariance inflation is $13/9=1.444444444444$.</p>
+
     <p>If ties are instead retained deterministically, let
       $C_0=\bar F(R_{(k)})$ and define
       $H_{\bar F}(c)=\Pr_{R\sim\bar F}\{\bar F(R)\le c\}$. Under the iid
