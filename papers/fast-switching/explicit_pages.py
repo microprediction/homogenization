@@ -25,7 +25,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     poisson_mixture_w1_nonparametric_lower,
                                     poisson_mixture_w1_local_minimax,
                                     poisson_point_mass_w1_upper,
-                                    stationary_time_reversal_count_certificate)
+                                    stationary_time_reversal_count_certificate,
+                                    ordered_window_reversal_certificate)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -291,6 +292,7 @@ def counts():
     w1_moment_upper = poisson_mixture_w1_moment_upper()
     w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
     reversal = stationary_time_reversal_count_certificate()
+    ordered = ordered_window_reversal_certificate()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -457,6 +459,35 @@ def counts():
       $e_i^\top K_Q\mathbf1$, which generally differs after reversal. Recording the terminal state also retains the
       weighted-transpose relation above, and ordered event-time or path data can retain temporal direction. The
       theorem concerns terminal occupation-based counts, not those richer experiments.</p>
+    <h3>Ordered windows recover the arrow of time</h3>
+    <p>A minimal enrichment already breaks that non-identification. Let $N_a^-$ count stream $a$ on $[0,A]$ and
+      $N_b^+$ count stream $b$ on $[A+\Delta,A+\Delta+B]$, where stream $a$ has state rate $\ell^{(a)}$.
+      Write $F_{ia}=\ell_i^{(a)}-\pi\ell^{(a)}$, $P_t=e^{tQ}$ and
+      $H_T(Q)=\int_0^T P_s\,ds$. Conditional Poisson increments on disjoint windows are independent, so there is
+      no shot-noise term across the boundary and the entire early/late covariance matrix is exactly</p>
+    <div class="equation-card">
+    $$C_{A,B,\Delta}(Q)=\operatorname{Cov}(N^-,N^+)
+      =F^\top\Pi H_A(Q)e^{\Delta Q}H_B(Q)F.$$
+    </div>
+    <p>Since $e^{tQ^\leftarrow}=\Pi^{-1}e^{tQ^\top}\Pi$, time reversal transposes this matrix:</p>
+    $$C_{A,B,\Delta}(Q^\leftarrow)=C_{A,B,\Delta}(Q)^\top.$$
+    <p>Thus the antisymmetric part is an exact arrow-of-time statistic. It vanishes for reversible chains, but it
+      need not vanish for irreversible ones. This conclusion uses ordered, stream-labelled windows; summing the
+      windows returns to the occupation-only experiment and loses the direction. This is a finite-window,
+      time-domain counterpart of the second-order point-process analysis initiated by
+      <a href="https://doi.org/10.1111/j.2517-6161.1963.tb00508.x">Bartlett (1963)</a>.</p>
+    <p>The fast-switching scale is a boundary effect. Put $Q_m=mQ_0$, take adjacent fixed windows
+      $A,B&gt;0$, and let $R=-Q_0^\#$ be the zero-mean potential operator. Then</p>
+    $$m^2 C_{A,B,0}(Q_m)\longrightarrow F^\top\Pi R^2F.$$
+    <p>More generally, for a microscopic gap $\Delta=\delta/m$ the middle factor survives and the limit is
+      $F^\top\Pi R e^{\delta Q_0}RF$; for a fixed positive gap the covariance instead decays exponentially.
+      This $m^{-2}$ ordered-boundary signal is distinct from the $m^{-1}$ Green&ndash;Kubo variance accumulated
+      inside one macroscopic window.</p>
+    <p>For the four-state irreversible certificate with $A=0.7$ and $B=1.1$, the off-diagonal antisymmetric signal
+      is ''' + f'{ordered["antisymmetric_signal"]:.12f}' + r'''. Reversal agrees with the transpose to
+      ''' + f'{ordered["transpose_error"]:.1e}' + r'''; an independent mixed derivative of the sequential count PGF
+      agrees with the semigroup covariance to ''' + f'{ordered["pgf_error"]:.1e}' + r'''. At $m=40$, the scaled
+      covariance is within ''' + f'{ordered["fast_limit_error"]:.1e}' + r''' of $F^\top\Pi R^2F$.</p>
     <p>The certificate uses a nonreversible four-state generator whose maximum entrywise difference from its reverse
       is ''' + f'{reversal["generator_gap"]:.12f}' + r'''. Across four PGF arguments, stationary transforms agree
       within ''' + f'{reversal["stationary_pgf_error"]:.1e}' + r''' and the weighted endpoint identity within
