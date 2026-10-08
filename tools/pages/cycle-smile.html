@@ -143,6 +143,32 @@
       consequently the Chebyshev bound</p>
     $$\Pr\!\left(\left|m^{-1}\sum_{k=1}^m\Xi_k^2/S_2-1\right|\ge\varepsilon\right)
       \le \frac{5}{m\varepsilon^2}.$$
+    <h3>Action probes need five times fewer samples</h3>
+    <p>The bilinear design is appropriate when an oracle returns only scalar entries
+      $\langle x,Jy\rangle$. If the full vector action $Jx$ is available, the ordinary quadratic trace probe is
+      sharper. For $x\sim N(0,I)$ put $Z_x=\lVert Jx\rVert^2$. Then</p>
+    <div class="equation-card">
+    $$\mathbb E Z_x=S_2,\qquad
+      \operatorname{Var}(Z_x)=2S_4\le S_2^2.$$
+    </div>
+    <p>The final inequality again uses the paired nonzero singular values of a real skew-adjoint matrix. Thus the
+      empirical action-probe energy is unbiased with relative variance at most $1/m$, compared with $5/m$ for
+      squared bilinear Gaussian probes. Paley&ndash;Zygmund also gives</p>
+    <div class="equation-card">
+    $$\Pr\!\left(\lVert Jx\rVert\ge\theta\lVert J\rVert_{\rm HS}\right)
+      \ge { (1-\theta^2)^2\over 1+2S_4/S_2^2}
+      \ge { (1-\theta^2)^2\over2}.$$
+    </div>
+    <p>At half the Hilbert&ndash;Schmidt scale the universal detection probability is at least $9/32$, so 14
+      independent action probes have miss probability at most $(23/32)^{14}=0.009820&lt;1\%$. For bounded sign
+      vectors the exact variance is
+      $2\{S_4-\sum_i(J^\dagger J)_{ii}^2\}\le S_2^2$, so the same universal bounds apply, although discrete probes
+      can still lie in the kernel with positive probability.</p>
+    <p>In the four-state certificate the Gaussian relative variance is exactly $1$ and the simulation gives
+      $1.000353$; half-scale detection is $0.779485$. The sign-action relative variance is $0.289570$, reproduced by
+      exhaustive enumeration, with detection probability $0.75$. This is an operator-action result: it does not
+      improve the scalar-query complexity when only bilinear entries are observable, and it does not absorb error
+      from estimating $J$ from a hidden or noisy trajectory.</p>
     <h3>Exponential confidence from median block means</h3>
     <p>The polynomial Chebyshev tail can be amplified without assuming any
       higher moments. Split the squared signals into $k$ independent blocks
@@ -171,6 +197,9 @@
       probes. Across 200 Gaussian and 400 sign-probe certificate repetitions,
       the observed failure frequencies are both zero; maximum relative errors
       are $0.158228$ and $0.188130$, respectively.</p>
+    <p>For Gaussian action probes the variance constant is only $v=1$, so the same theorem uses $b=16$ and 400
+      actions rather than 2,000 bilinear pairs. Across 1,000 certificate repetitions the observed failure frequency
+      is zero and the maximum relative error is $0.208269$.</p>
     <p>For the four-state certificate the paired-singular-value bound is attained: $S_4/S_2^2=1/2$ and the exact
       relative variance is $5$. The exact/simulated fourth moments are $0.013254405/0.013425214$, and the observed
       half-RMS detection frequency is $0.4933025$ versus the universal $0.09375$ lower bound. These guarantees

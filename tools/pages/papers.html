@@ -128,7 +128,10 @@
         with the sharper dimension-$d$ constant $6-8/d$; the four-state certificate needs 25 rather than 47 pairs.
         Median block means turn the corresponding finite-variance energy estimator into an explicit
         $O(\varepsilon^{-2}\log(1/\delta))$ relative-error confidence certificate for the population skew-resolvent
-        energy. Given a supplied operator-norm error radius for an estimated generator, an estimator-centered
+        energy. When the full action $Jx$ is available, quadratic trace probes reduce the worst-case relative-variance
+        constant from five to one and the half-scale one-percent miss certificate from 47 probes to 14; this stronger
+        result does not apply to scalar-only bilinear queries. Given a supplied operator-norm error radius for an
+        estimated generator, an estimator-centered
         group-inverse theorem propagates that error into a fully computable interval for the population energy;
         for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale
         bounds supply entrywise rate intervals from holding times and transition counts without a known rate cap.

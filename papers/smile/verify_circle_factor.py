@@ -19,6 +19,10 @@ bound at half the root-mean-square signal.  Unlike Gaussian probes, a single
 Rademacher pair can miss a nonzero skew form with positive probability.
 Median-of-means aggregation upgrades the finite-variance energy identity to
 an explicit relative-error confidence bound logarithmic in the failure level.
+When the oracle returns the vector action Jx rather than only scalar bilinear
+queries, quadratic trace probes reduce the worst-case relative-variance
+constant from five to one, the median block size from 80 to 16, and the
+half-RMS one-percent miss certificate from 47 probes to 14.
 A finite group-inverse perturbation calculation then propagates generator and
 stationary-law errors into a deterministic interval for the population skew
 energy.  For a fully observed finite-state path, exponential counting-
@@ -865,6 +869,78 @@ def random_probe_detection_check(sample_count=400_000):
     )
 
     threshold_fraction = 0.5
+
+    # If the oracle returns the full action Jx rather than only a scalar
+    # bilinear query x'Jy, the usual quadratic trace probe is substantially
+    # more efficient.  For A=J'J and Z=x'Ax=||Jx||^2 with Gaussian x,
+    #
+    # E Z=S2,  Var(Z)=2 S4 <= S2^2,
+    #
+    # because the singular values of a real skew matrix are paired and hence
+    # S4/S2^2 <= 1/2.  Paley--Zygmund gives
+    #
+    # P(||Jx|| >= theta ||J||_F)
+    #   >= (1-theta^2)^2/(1+2 S4/S2^2)
+    #   >= (1-theta^2)^2/2.
+    #
+    # The relative-variance constant for median amplification is therefore
+    # one instead of five.  This is an action-oracle result: it does not apply
+    # when only scalar bilinear entries are available.
+    action_matrix = skew_resolvent.T @ skew_resolvent
+    action_energies = np.einsum(
+        "bi,ij,bj->b", x, action_matrix, x
+    )
+    exact_action_second_moment = (
+        exact_second_moment**2 + 2.0 * fourth_spectral_sum
+    )
+    action_relative_variance = (
+        2.0 * fourth_spectral_sum / exact_second_moment**2
+    )
+    empirical_action_mean = np.mean(action_energies)
+    empirical_action_relative_variance = (
+        np.var(action_energies) / exact_second_moment**2
+    )
+    action_detection_probability = np.mean(
+        action_energies
+        >= threshold_fraction**2 * exact_second_moment
+    )
+    action_detection_bound = (
+        (1.0 - threshold_fraction**2) ** 2
+        / (1.0 + 2.0 * spectral_concentration)
+    )
+    universal_action_detection_bound = (
+        (1.0 - threshold_fraction**2) ** 2 / 2.0
+    )
+    action_probes_for_one_percent = math.ceil(
+        math.log(0.01)
+        / math.log1p(-universal_action_detection_bound)
+    )
+    action_one_percent_miss_bound = (
+        1.0 - universal_action_detection_bound
+    ) ** action_probes_for_one_percent
+    action_mom_block_size = math.ceil(
+        4.0 / mom_epsilon**2
+    )
+    action_mom_sample_size = mom_blocks * action_mom_block_size
+    action_mom_trials = sample_count // action_mom_sample_size
+    action_mom_values = action_energies[
+        :action_mom_trials * action_mom_sample_size
+    ]
+    action_mom_estimates = np.median(
+        action_mom_values.reshape(
+            action_mom_trials,
+            mom_blocks,
+            action_mom_block_size,
+        ).mean(axis=2),
+        axis=1,
+    )
+    action_mom_relative_errors = np.abs(
+        action_mom_estimates / exact_second_moment - 1.0
+    )
+    action_mom_failure_frequency = np.mean(
+        action_mom_relative_errors > mom_epsilon
+    )
+
     threshold = threshold_fraction * math.sqrt(exact_second_moment)
     empirical_detection_probability = np.mean(abs(signals) >= threshold)
     paley_zygmund_bound = (1.0 - threshold_fraction**2) ** 2 / (
@@ -907,6 +983,19 @@ def random_probe_detection_check(sample_count=400_000):
     rademacher_signals = np.einsum(
         "ai,ij,bj->ab", sign_vectors, skew_resolvent, sign_vectors
     ).ravel()
+    rademacher_action_energies = np.einsum(
+        "bi,ij,bj->b", sign_vectors, action_matrix, sign_vectors
+    )
+    exact_rademacher_action_variance = 2.0 * (
+        fourth_spectral_sum - np.sum(np.diag(action_matrix) ** 2)
+    )
+    enumerated_rademacher_action_variance = np.var(
+        rademacher_action_energies
+    )
+    rademacher_action_detection_probability = np.mean(
+        rademacher_action_energies
+        >= threshold_fraction**2 * exact_second_moment
+    )
     row_energies = np.sum(skew_resolvent**2, axis=1)
     exact_rademacher_fourth_moment = (
         3.0 * exact_second_moment**2
@@ -1073,6 +1162,20 @@ def random_probe_detection_check(sample_count=400_000):
     assert mom_failure_bound < mom_delta
     assert gaussian_mom_trials == 200
     assert gaussian_mom_failure_frequency < 0.02
+    assert abs(
+        empirical_action_mean / exact_second_moment - 1.0
+    ) < 5e-3
+    assert action_relative_variance <= 1.0 + 2e-14
+    assert abs(
+        empirical_action_relative_variance - action_relative_variance
+    ) < 1e-2
+    assert action_detection_probability >= action_detection_bound
+    assert action_probes_for_one_percent == 14
+    assert action_one_percent_miss_bound < 0.01
+    assert action_mom_block_size == 16
+    assert action_mom_sample_size == 400
+    assert action_mom_trials == 1000
+    assert action_mom_failure_frequency < 0.02
     assert relative_fourth_moment_error < 3e-2
     assert empirical_detection_probability >= paley_zygmund_bound
     assert probes_for_one_percent == 47
@@ -1082,6 +1185,20 @@ def random_probe_detection_check(sample_count=400_000):
     assert abs(
         enumerated_rademacher_second_moment / exact_second_moment - 1.0
     ) < 2e-14
+    assert abs(
+        np.mean(rademacher_action_energies) / exact_second_moment - 1.0
+    ) < 2e-14
+    assert abs(
+        enumerated_rademacher_action_variance
+        - exact_rademacher_action_variance
+    ) < 2e-14
+    assert exact_rademacher_action_variance <= (
+        exact_second_moment**2 * (1.0 + 2e-14)
+    )
+    assert (
+        rademacher_action_detection_probability
+        >= universal_action_detection_bound
+    )
     assert abs(
         enumerated_rademacher_fourth_moment
         / exact_rademacher_fourth_moment - 1.0
@@ -1132,6 +1249,26 @@ def random_probe_detection_check(sample_count=400_000):
         "gaussian_mom_maximum_relative_error": np.max(
             gaussian_mom_relative_errors
         ),
+        "exact_action_second_moment": exact_action_second_moment,
+        "action_relative_variance": action_relative_variance,
+        "empirical_action_mean": empirical_action_mean,
+        "empirical_action_relative_variance": (
+            empirical_action_relative_variance
+        ),
+        "action_detection_probability": action_detection_probability,
+        "action_detection_bound": action_detection_bound,
+        "universal_action_detection_bound": (
+            universal_action_detection_bound
+        ),
+        "action_probes_for_one_percent": action_probes_for_one_percent,
+        "action_one_percent_miss_bound": action_one_percent_miss_bound,
+        "action_mom_block_size": action_mom_block_size,
+        "action_mom_sample_size": action_mom_sample_size,
+        "action_mom_trials": action_mom_trials,
+        "action_mom_failure_frequency": action_mom_failure_frequency,
+        "action_mom_maximum_relative_error": np.max(
+            action_mom_relative_errors
+        ),
         "threshold_fraction": threshold_fraction,
         "empirical_detection_probability": empirical_detection_probability,
         "paley_zygmund_bound": paley_zygmund_bound,
@@ -1149,6 +1286,15 @@ def random_probe_detection_check(sample_count=400_000):
         ),
         "rademacher_relative_energy_variance": (
             rademacher_relative_energy_variance
+        ),
+        "exact_rademacher_action_variance": (
+            exact_rademacher_action_variance
+        ),
+        "enumerated_rademacher_action_variance": (
+            enumerated_rademacher_action_variance
+        ),
+        "rademacher_action_detection_probability": (
+            rademacher_action_detection_probability
         ),
         "dimension_moment_constant": dimension_moment_constant,
         "rademacher_variance_constant": rademacher_variance_constant,
@@ -1460,11 +1606,34 @@ def main():
         f"{probes['gaussian_mom_maximum_relative_error']:.6f}"
     )
     print(
+        f"   action-probe relative variance exact/simulated "
+        f"{probes['action_relative_variance']:.9f}/"
+        f"{probes['empirical_action_relative_variance']:.9f}; "
+        f"half-RMS detection simulated/bounded "
+        f"{probes['action_detection_probability']:.9f}/"
+        f"{probes['universal_action_detection_bound']:.9f}"
+    )
+    print(
+        f"   action median-of-means blocks/size/failure bound "
+        f"{probes['mom_blocks']}/{probes['action_mom_block_size']}/"
+        f"{probes['mom_failure_bound']:.6f}; empirical failures/max error "
+        f"{probes['action_mom_failure_frequency']:.6f}/"
+        f"{probes['action_mom_maximum_relative_error']:.6f}; "
+        f"{probes['action_probes_for_one_percent']} probes give miss bound "
+        f"{probes['action_one_percent_miss_bound']:.6f}"
+    )
+    print(
         f"   Rademacher fourth moment exact/enumerated "
         f"{probes['exact_rademacher_fourth_moment']:.9f}/"
         f"{probes['enumerated_rademacher_fourth_moment']:.9f}; "
         f"relative energy-variance "
         f"{probes['rademacher_relative_energy_variance']:.9f}"
+    )
+    print(
+        f"   Rademacher action relative variance exact/enumerated "
+        f"{probes['exact_rademacher_action_variance'] / probes['exact_second_moment']**2:.9f}/"
+        f"{probes['enumerated_rademacher_action_variance'] / probes['exact_second_moment']**2:.9f}; "
+        f"half-RMS detection {probes['rademacher_action_detection_probability']:.9f}"
     )
     print(
         f"   Rademacher half-RMS detection/zero probabilities "
