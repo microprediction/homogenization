@@ -439,6 +439,53 @@
       it is not a claim about fixed-feature Green&ndash;Kubo rank or rank created by
       integrating different contract loadings.</p>
 
+    <h3>Defective long end: the Jordan polynomial changes the threshold</h3>
+    <p>The distinct-rate hypothesis in the preceding hierarchy matters even when every
+      maturity tuple remains identifying. The sharp three-state defective case makes the
+      missing factor explicit. Suppose the centered restriction has one size-two Jordan
+      block at $-a$, $a&gt;0$. Normalize a Jordan chain and cyclic scalar feature so that</p>
+    $$Q_0v=-av,\qquad Q_0w=\eta v-aw,\qquad F=w,\qquad \eta\ne0.$$
+    <p>Then the exact response is</p>
+    <div class="equation-card">
+    $$R(t)=g_0(t)w+\eta g_1(t)v,\qquad
+      g_0(t)={1-e^{-at}\over a},\qquad
+      g_1(t)={1-(1+at)e^{-at}\over a^2}.$$
+    </div>
+    <p>For any fixed offsets $c_1&lt;c_2$, put
+      $A_M=[\mathbf1\ R(M+c_1)\ R(M+c_2)]$. If
+      $K=[\mathbf1\ v\ w]$, direct expansion gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \det A_M
+      &amp;=\det K\,\eta\{g_1(M+c_1)g_0(M+c_2)
+        -g_1(M+c_2)g_0(M+c_1)\},\\
+      {\det A_M\over M e^{-aM}}
+      &amp;\longrightarrow {\det K\,\eta\over a^2}
+        \{e^{-ac_2}-e^{-ac_1}\}\ne0.
+    \end{aligned}$$
+    </div>
+    <p>The first two singular values converge to positive limits, so the determinant
+      identity and the product formula for singular values yield the complete hierarchy</p>
+    <div class="equation-card">
+    $$\sigma_1(A_M),\sigma_2(A_M)=\Theta(1),\qquad
+      \sigma_3(A_M)=\Theta(M e^{-aM}),\qquad
+      \kappa_2(A_M)=\Theta(e^{aM}/M).$$
+    </div>
+    <p>The centered-prior weakest signal has the same order
+      $s_M=\Theta(M e^{-aM})$. Consequently every Gaussian, correlated-noise, and
+      deterministic minimax statement below remains valid after replacing the simple-spectrum
+      scale by this Jordan scale under their stated covariance assumptions. Exact noiseless rank
+      still holds at each finite $M$; the polynomial factor weakens the pure exponential loss
+      by one power of $M$ but does not prevent it. This is the Jordan-chain specialization of the
+      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman rank framework</a>,
+      not a statement about fixed-feature Green&ndash;Kubo rank or maturity-integrated loading rank.</p>
+    <p>The existing irreducible defective certificate has $a=1$, $\eta=0.1$, and offsets
+      $(0.4,1.7)$. After dividing the augmented and centered-prior least singular values by
+      $M e^{-M}$, their fitted exponential rates are both $0.999461$. At $M=16$ their scaled
+      values are both $0.042053486$. The scaled determinant is $0.581981281$, against its
+      exact limit $0.585163826$, and the direct Jordan factorization error is below
+      $6.4\times10^{-15}$.</p>
+
     <h3>Gaussian quote noise: exact rank is not statistical recovery</h3>
     <p>The preceding condition number has a direct minimax consequence. Let
       $C_M=[R(M+c_1)\ \cdots\ R(M+c_r)]$, let

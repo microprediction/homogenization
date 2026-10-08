@@ -1417,6 +1417,98 @@ def verify_long_end_conditioning():
           f"{maximum_local_minimax_ratio:.12f}")
 
 
+def verify_defective_long_end_conditioning():
+    """A size-two Jordan block adds a sharp polynomial long-end factor."""
+    # In the basis (1, v, w), Qv=-v and Qw=eta*v-w.  Thus
+    # exp(Qt)w=exp(-t)(w+eta*t*v), and the response is
+    # R(t)=g0(t)w+eta*g1(t)v with
+    # g0=1-exp(-t), g1=1-(1+t)exp(-t).
+    Q = np.array([
+        [-8.0 / 15.0, 1.0 / 15.0, 7.0 / 15.0],
+        [1.0 / 3.0, -2.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 5.0, 3.0 / 5.0, -4.0 / 5.0],
+    ])
+    v = np.array([-4.0, 0.0, 4.0])
+    w = np.array([-4.0, 1.0, 3.0])
+    eta = 0.1
+    feature = w[:, None]
+    basis = np.column_stack([np.ones(3), v, w])
+    offsets = np.array([0.4, 1.7])
+    translations = np.arange(6.0, 18.0, 2.0)
+    centered_basis = np.linalg.qr(np.column_stack([
+        np.ones(3), np.eye(3)[:, 1:]
+    ]))[0][:, 1:]
+
+    assert np.max(np.abs(Q @ v + v)) < 3e-16
+    assert np.max(np.abs(Q @ w - eta * v + w)) < 3e-16
+
+    spectra = []
+    restricted_spectra = []
+    determinants = []
+    factorization_errors = []
+    for translation in translations:
+        taus = translation + offsets
+        response = transient_response_matrix(Q, feature, taus)
+        augmented = np.column_stack([np.ones(3), response])
+        spectra.append(np.linalg.svd(augmented, compute_uv=False))
+        restricted_spectra.append(np.linalg.svd(
+            response.T @ centered_basis, compute_uv=False))
+        observed = np.linalg.det(augmented)
+        g0 = 1.0 - np.exp(-taus)
+        g1 = 1.0 - (1.0 + taus) * np.exp(-taus)
+        predicted = (
+            np.linalg.det(basis) * eta
+            * (g1[0] * g0[1] - g1[1] * g0[0]))
+        determinants.append(abs(observed))
+        factorization_errors.append(abs(observed - predicted))
+
+    spectra = np.asarray(spectra)
+    restricted_spectra = np.asarray(restricted_spectra)
+    determinants = np.asarray(determinants)
+    assert max(factorization_errors) < 8e-15
+
+    jordan_scale = translations * np.exp(-translations)
+    scaled_smallest = spectra[:, -1] / jordan_scale
+    scaled_restricted = restricted_spectra[:, -1] / jordan_scale
+    scaled_determinants = determinants / jordan_scale
+    scaled_conditions = (
+        spectra[:, 0] / spectra[:, -1] * jordan_scale)
+    predicted_determinant_constant = abs(
+        np.linalg.det(basis) * eta
+        * (math.exp(-offsets[1]) - math.exp(-offsets[0])))
+
+    # Removing the Jordan polynomial exposes the exact exponential rate one.
+    corrected_smallest_rate = -np.polyfit(
+        translations[-4:],
+        np.log(spectra[-4:, -1] / translations[-4:]), 1)[0]
+    corrected_restricted_rate = -np.polyfit(
+        translations[-4:],
+        np.log(restricted_spectra[-4:, -1] / translations[-4:]), 1)[0]
+    assert abs(corrected_smallest_rate - 1.0) < 8e-4
+    assert abs(corrected_restricted_rate - 1.0) < 8e-4
+    assert abs(
+        scaled_determinants[-1] / predicted_determinant_constant - 1.0
+    ) < 0.01
+    for scaled in (
+            scaled_smallest, scaled_restricted, scaled_conditions):
+        assert abs(scaled[-1] / scaled[-2] - 1.0) < 0.01
+
+    print("\nDefective three-state long-end conditioning")
+    print(f"offsets: {offsets}")
+    print(f"corrected augmented/restricted exponential rates: "
+          f"{corrected_smallest_rate:.9f}, "
+          f"{corrected_restricted_rate:.9f}")
+    print("terminal sigma_min/(M exp(-M)), restricted counterpart: "
+          f"{scaled_smallest[-1]:.9f}, {scaled_restricted[-1]:.9f}")
+    print("terminal determinant/(M exp(-M)), predicted limit: "
+          f"{scaled_determinants[-1]:.9f}, "
+          f"{predicted_determinant_constant:.9f}")
+    print("terminal condition * M exp(-M): "
+          f"{scaled_conditions[-1]:.9f}")
+    print(f"maximum exact Jordan factorization error: "
+          f"{max(factorization_errors):.3e}")
+
+
 def verify_complex_long_end_aliasing():
     """Oscillatory modes create infinitely many translated rank losses."""
     cycle_Q = np.array([
@@ -1903,6 +1995,7 @@ def main():
     verify_krylov_observability()
     verify_real_spectrum_all_maturities()
     verify_long_end_conditioning()
+    verify_defective_long_end_conditioning()
     verify_complex_long_end_aliasing()
     verify_initial_mixture_observability()
 
@@ -1928,8 +2021,8 @@ def main():
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
-        "three-state exceptional-set observability, sharp real-spectrum and "
-        "oscillatory long-end conditioning and whitened noisy recovery, "
+        "three-state exceptional-set observability, sharp simple-spectrum, "
+        "defective, and oscillatory long-end conditioning and whitened noisy recovery, "
         "shape identities, "
         "known-start expansion, and explicit bounds"
     )
