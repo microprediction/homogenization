@@ -58,6 +58,35 @@
     <p>Thus stationary time reversal preserves the symmetric Green&ndash;Kubo form and flips the antisymmetric form.
     This is the integrated-correlation consequence of the general Markov time-reversal framework of
     <a href="./bibliography.html#Nagasawa1964">Nagasawa (1964)</a>.</p>
+    <h3>Exact occupation-law blindness at every switching rate</h3>
+    <p>The preceding result has an exact, non-asymptotic counterpart. Under a stationary start, a process and its
+    stationary time reversal have the same law for the occupation measure
+    $O_T(B)=\int_0^T\mathbf 1_{\{Y_s\in B\}}\,ds$, because reversing a path preserves the total time it spends in
+    every set. Hence, for every measurable state observable $f$ for which the transform exists,</p>
+    <div class="equation-card">
+    $$\int_0^T f(Y_s^{\leftarrow})\,ds\ \overset d=\ \int_0^T f(Y_s)\,ds.$$
+    </div>
+    <p>For a finite-state chain in row-generator convention, this follows directly from
+    $Q^{\leftarrow}=\Pi^{-1}Q^\top\Pi$. If $D_z$ is any diagonal real or complex state potential, then</p>
+    <div class="equation-card">
+    $$\pi e^{T(Q^{\leftarrow}+D_z)}\mathbf 1
+      =\mathbf 1^\top e^{T(Q^\top+D_z)}\pi^\top
+      =\pi e^{T(Q+D_z)}\mathbf 1.$$
+    </div>
+    <p>This is the full joint Laplace/characteristic-transform identity for the state occupation times. Thus no
+    stationary payoff depending only on total state occupations can identify cycle direction at <em>any</em>
+    switching rate, not just at first Green&ndash;Kubo order. The tilted generators are similar to transposes, so their
+    principal eigenvalues&mdash;and therefore scalar long-time Feynman&ndash;Kac growth rates&mdash;are also identical.</p>
+    <p>Temporal ordering is the missing information. For a time-dependent loading $g$, path reversal gives</p>
+    <div class="equation-card">
+    $$\mathbb E_{\pi,Q^{\leftarrow}}\exp\!\left\{\int_0^Tg(s,Y_s)\,ds\right\}
+      =\mathbb E_{\pi,Q}\exp\!\left\{\int_0^Tg(T-s,Y_s)\,ds\right\}.$$
+    </div>
+    <p>Constant or time-symmetric loadings remain blind, whereas an asymmetric loading schedule can distinguish
+    the two directions. Endpoint conditioning, ordered events such as first-default races, and noncommuting
+    switched operators can do so as well. The finite-state certificate checks the constant-potential transform
+    to $7.51\times10^{-16}$, the principal eigenvalue to $8.88\times10^{-16}$, and the reversed-schedule identity to
+    $4.44\times10^{-16}$; applying the same asymmetric two-stage schedule leaves a directional gap of $0.01976$.</p>
     <p>There is also a precise converse. Suppose $-L$ is invertible on the centered subspace with bounded inverse,
     as for an irreducible finite chain and for the usual spectral-gap setting. Then
     $K(f,g)=\langle f,(-L)^{-1}g\rangle_\pi$ is symmetric for <em>every</em> centered pair if and only if

@@ -4,6 +4,11 @@ The transpose identity is first checked for a nonreversible finite-state
 Markov chain with a nonuniform invariant law.  The same certificate records
 the important converse distinction: the full centered Green--Kubo form
 detects nonreversibility, whereas a selected feature block need not do so.
+It also checks the stronger exact statement that the full stationary
+occupation-time law is invariant under time reversal at every finite rate.
+A two-stage time-dependent potential obeys the corresponding reversed-
+schedule identity while differing under the same schedule, isolating the
+temporal-order information that occupation-only payoffs discard.
 It then checks that two independent Gaussian feature probes detect every
 finite-state irreversible chain almost surely and that the mean-square
 antisymmetric signal is the squared Hilbert--Schmidt norm of the skew
@@ -206,6 +211,89 @@ def general_reversal_check():
         "full_asymmetry": full_asymmetry,
         "scalar_asymmetry": scalar_asymmetry,
         "reversible_asymmetry": reversible_asymmetry,
+    }
+
+
+def occupation_reversal_check():
+    """Check exact occupation-law and reversed-schedule identities."""
+    q = np.array(
+        [
+            [-2.5, 2.0, 0.4, 0.1],
+            [0.2, -2.1, 1.6, 0.3],
+            [0.7, 0.1, -2.6, 1.8],
+            [1.1, 0.5, 0.2, -1.8],
+        ]
+    )
+    pi = stationary(q)
+    q_reverse = reverse_generator(q)
+    one = np.ones(len(pi))
+
+    # These diagonal potentials probe the joint transform of all state
+    # occupation times; complex potentials also cover characteristic
+    # functions rather than only Laplace transforms.
+    potentials = (
+        np.array([0.2, -0.1, 0.4, -0.3]),
+        np.array([-0.7, 0.2, 1.1, -0.4]),
+        1j * np.array([0.4, -0.8, 0.3, 0.1]),
+        np.array([0.3 + 0.2j, -0.4j, 0.1 - 0.3j, 0.2]),
+    )
+    transform_error = 0.0
+    for maturity in (0.2, 0.9, 2.3):
+        for potential in potentials:
+            diagonal = np.diag(potential)
+            forward = pi @ expm(maturity * (q + diagonal)) @ one
+            backward = pi @ expm(maturity * (q_reverse + diagonal)) @ one
+            transform_error = max(transform_error, abs(forward - backward))
+
+    # The same similarity-and-transpose identity equates the tilted
+    # generators' spectra, including their long-time principal eigenvalues.
+    feature = np.array([-0.7, 0.2, 1.1, -0.4])
+    eigenvalue_error = 0.0
+    for tilt in (-0.9, 0.4, 1.2):
+        forward = max(np.linalg.eigvals(q + tilt * np.diag(feature)).real)
+        backward = max(
+            np.linalg.eigvals(q_reverse + tilt * np.diag(feature)).real
+        )
+        eigenvalue_error = max(eigenvalue_error, abs(forward - backward))
+
+    # A time-dependent loading is transformed into its time reverse.  It
+    # need not agree when the same asymmetric schedule is imposed on both
+    # directions, so temporal order restores directional information.
+    half_time = 0.55
+    first = np.diag(np.array([0.9, -0.6, 0.2, 0.7]))
+    second = np.diag(np.array([-0.4, 0.8, 1.1, -0.2]))
+    reverse_same_schedule = (
+        pi
+        @ expm(half_time * (q_reverse + first))
+        @ expm(half_time * (q_reverse + second))
+        @ one
+    )
+    forward_reversed_schedule = (
+        pi
+        @ expm(half_time * (q + second))
+        @ expm(half_time * (q + first))
+        @ one
+    )
+    forward_same_schedule = (
+        pi
+        @ expm(half_time * (q + first))
+        @ expm(half_time * (q + second))
+        @ one
+    )
+    schedule_identity_error = abs(
+        reverse_same_schedule - forward_reversed_schedule
+    )
+    same_schedule_gap = abs(reverse_same_schedule - forward_same_schedule)
+
+    assert transform_error < 8e-15
+    assert eigenvalue_error < 2e-14
+    assert schedule_identity_error < 5e-15
+    assert same_schedule_gap > 0.019
+    return {
+        "transform_error": transform_error,
+        "eigenvalue_error": eigenvalue_error,
+        "schedule_identity_error": schedule_identity_error,
+        "same_schedule_gap": same_schedule_gap,
     }
 
 
@@ -1272,6 +1360,18 @@ def main():
         f"   irreversible full-form asymmetry {general['full_asymmetry']:.3e}; "
         f"one-feature asymmetry {general['scalar_asymmetry']:.1e}; "
         f"reversible full-form asymmetry {general['reversible_asymmetry']:.2e}"
+    )
+
+    occupation = occupation_reversal_check()
+    print(
+        f"   occupation-transform/principal-eigenvalue reversal errors "
+        f"{occupation['transform_error']:.2e}/"
+        f"{occupation['eigenvalue_error']:.2e}"
+    )
+    print(
+        f"   reversed-schedule identity error "
+        f"{occupation['schedule_identity_error']:.2e}; same-schedule "
+        f"directional gap {occupation['same_schedule_gap']:.6f}"
     )
 
     print("2. estimated generators obey a deterministic skew-resolvent bound")
