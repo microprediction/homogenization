@@ -13,6 +13,9 @@ profile supplies an a posteriori residual bracket for the exact Floquet
 exponent at a fixed, finite switching speed.  The same comparison argument
 also gives a fully computable finite-horizon price bracket, including the
 initial normalization against the positive trial profile.
+The final check shifts the calendar origin, recomputes the phase-specific
+Floquet projection, and verifies that the frozen slip restores the uniform
+second-order rate at every sampled start phase.
 """
 
 from __future__ import annotations
@@ -2646,6 +2649,148 @@ def finite_chain_periodic_errors(
     }
 
 
+def phase_shifted_floquet_errors(m: float) -> dict[str, float]:
+    """Check the finite-chain projection uniformly over sampled start phases.
+
+    Each phase gets its own conjugate monodromy, dual Floquet coefficient,
+    and frozen boundary layer.  Recomputing these objects from the shifted
+    evolution, instead of transporting the phase-zero eigenvectors, is an
+    independent numerical check that the construction is origin invariant.
+    """
+    one = np.ones(3)
+    arbitrary_prior = np.array([0.8, 0.1, 0.1])
+    phases = PERIOD * np.array([0.0, 0.13, 0.31, 0.57, 0.83])
+    relative_times = np.linspace(0.0, 3 * PERIOD, 1201)
+    arbitrary_plain_errors = []
+    arbitrary_slip_errors = []
+    stationary_plain_errors = []
+    exponents = []
+
+    def matrix(time: float) -> np.ndarray:
+        return (
+            m * periodic_three_state_generator(time)
+            + periodic_three_state_forcing(time)
+        )
+
+    def matrix_rhs(time: float, state: np.ndarray) -> np.ndarray:
+        return (matrix(time) @ state.reshape(3, -1)).ravel()
+
+    for phase in phases:
+        generator_phase = periodic_three_state_generator(phase)
+        stationary_phase = stationary_row(generator_phase)
+        fundamental = solve_ivp(
+            matrix_rhs,
+            (phase, phase + PERIOD),
+            np.eye(3).ravel(),
+            method="DOP853",
+            rtol=2e-12,
+            atol=2e-14,
+        )
+        assert fundamental.success
+        monodromy = fundamental.y[:, -1].reshape(3, 3)
+        values, left, right = eig(monodromy, left=True, right=True)
+        index = int(np.argmax(values.real))
+        assert abs(values[index].imag) < 2e-11
+        multiplier = float(values[index].real)
+        right_vector = right[:, index].real
+        left_vector = left[:, index].real
+        if stationary_phase @ right_vector < 0:
+            right_vector *= -1
+            left_vector *= -1
+        right_vector /= stationary_phase @ right_vector
+        left_vector /= left_vector @ right_vector
+        exponent = float(np.log(multiplier) / PERIOD)
+        exponents.append(exponent)
+        principal_weight = float(left_vector @ one)
+        fast_initial = one - principal_weight * right_vector
+        assert abs(left_vector @ fast_initial) < 3e-12
+
+        initial_columns = np.column_stack((one, right_vector)).ravel()
+        evolved = solve_ivp(
+            matrix_rhs,
+            (phase, phase + 3 * PERIOD),
+            initial_columns,
+            t_eval=phase + relative_times,
+            method="Radau",
+            rtol=2e-12,
+            atol=2e-14,
+        )
+        assert evolved.success
+        columns = evolved.y.reshape(3, 2, -1)
+        exact = columns[:, 0, :]
+        principal = columns[:, 1, :]
+        frozen_matrix = matrix(phase) - exponent * np.eye(3)
+        frozen_fast = np.column_stack(
+            [
+                expm(frozen_matrix * time) @ fast_initial
+                for time in relative_times
+            ]
+        )
+        exponential = np.exp(exponent * relative_times)
+
+        def observation_errors(prior: np.ndarray) -> tuple[float, float]:
+            exact_price = prior @ exact
+            principal_price = principal_weight * (prior @ principal)
+            slip_price = principal_price + exponential * (prior @ frozen_fast)
+            assert np.min(exact_price) > 0
+            assert np.min(principal_price) > 0
+            assert np.min(slip_price) > 0
+            plain = float(
+                np.max(np.abs(np.log(exact_price) - np.log(principal_price)))
+            )
+            slip = float(
+                np.max(np.abs(np.log(exact_price) - np.log(slip_price)))
+            )
+            assert abs(exact_price[0] - slip_price[0]) < 3e-13
+            return plain, slip
+
+        arbitrary_plain, arbitrary_slip = observation_errors(arbitrary_prior)
+        stationary_plain, _ = observation_errors(stationary_phase)
+        arbitrary_plain_errors.append(arbitrary_plain)
+        arbitrary_slip_errors.append(arbitrary_slip)
+        stationary_plain_errors.append(stationary_plain)
+
+    return {
+        "arbitrary_plain": max(arbitrary_plain_errors),
+        "arbitrary_slip": max(arbitrary_slip_errors),
+        "stationary_plain": max(stationary_plain_errors),
+        "exponent_spread": max(exponents) - min(exponents),
+    }
+
+
+def check_phase_shifted_floquet_projection() -> None:
+    """Phase-uniform finite-chain Floquet profile and frozen slip."""
+    speeds = (4.0, 8.0, 16.0, 32.0, 64.0)
+    results = [phase_shifted_floquet_errors(m) for m in speeds]
+    print("\nPhase-shifted finite-chain Floquet projection")
+    print(
+        " m      arbitrary raw max   arbitrary slip max"
+        "   stationary raw max   exponent spread"
+    )
+    for m, result in zip(speeds, results):
+        print(
+            f"{m:3.0f}   {result['arbitrary_plain']:18.9e}"
+            f"   {result['arbitrary_slip']:18.9e}"
+            f"   {result['stationary_plain']:18.9e}"
+            f"   {result['exponent_spread']:14.7e}"
+        )
+
+    def final_rate(key: str) -> float:
+        return float(np.log2(results[-2][key] / results[-1][key]))
+
+    raw_rate = final_rate("arbitrary_plain")
+    slip_rate = final_rate("arbitrary_slip")
+    stationary_rate = final_rate("stationary_plain")
+    assert 0.95 < raw_rate < 1.05
+    assert slip_rate > 1.90
+    assert stationary_rate > 1.90
+    assert max(result["exponent_spread"] for result in results) < 2e-10
+    print(
+        "phase-uniform rates (raw, slip, stationary): "
+        f"{raw_rate:.6f}, {slip_rate:.6f}, {stationary_rate:.6f}"
+    )
+
+
 def check_general_periodic_generator() -> None:
     """Finite-chain Floquet profile and frozen boundary slip."""
     leading_mean, dynamic_drift, geometric_drift, second_drift = (
@@ -3213,6 +3358,7 @@ def main() -> None:
     check_asymmetric_periodic_forcing()
     check_moving_periodic_generator()
     check_general_periodic_generator()
+    check_phase_shifted_floquet_projection()
 
     print("Uniform stationary-start error (all sampled T in [0,max(20,m^2)])")
     print(" m       max error       theorem bound     m^2 max error")
@@ -3249,6 +3395,7 @@ def main() -> None:
     print("Unequal-rate periodic phase-and-slip theorem: passed")
     print("Moving-generator periodic phase-and-slip theorem: passed")
     print("Finite-chain periodic Floquet-profile theorem: passed")
+    print("Phase-uniform Floquet-projection theorem: passed")
 
 
 if __name__ == "__main__":

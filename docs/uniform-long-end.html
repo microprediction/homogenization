@@ -739,6 +739,63 @@
     stationary-prior formula with the frozen slip improves to $O(m^{-3})$ even when $Q_0$ is defective.</p>
     </div>
 
+    <h3>The calendar origin is arbitrary</h3>
+    <p>The preceding notation fixes phase zero only for convenience. For a start phase $s\in[0,P]$, let
+      $F_{m,s}=U_m(s+P,s)$ and choose its Perron vectors so that</p>
+    $$F_{m,s}v_{m,s}=e^{\lambda_mP}v_{m,s},\qquad
+      w_{m,s}^\top F_{m,s}=e^{\lambda_mP}w_{m,s}^\top,$$
+    $$w_{m,s}^\top v_{m,s}=1,\qquad \pi(s)v_{m,s}=1.$$
+    <p>The exponent has no phase subscript. Indeed, periodicity gives the exact conjugacy</p>
+    $$F_{m,s}=U_m(s,0)F_{m,0}U_m(s,0)^{-1},$$
+    <p>so every calendar phase has the same Floquet multipliers. Define the shifted profile, dual coefficient,
+      complementary datum, and frozen slip by</p>
+    $$r_{m,s}(T)=e^{-\lambda_mT}U_m(s+T,s)v_{m,s},\qquad
+      c_{m,s}=w_{m,s}^\top\mathbf1,$$
+    $$z_{m,s}=\mathbf1-c_{m,s}v_{m,s},\qquad
+      b_{m,s}(T)=e^{\{A_m(s)-\lambda_mI\}T}z_{m,s}.$$
+    <div class="equation-card">
+    <p><strong>Phase-uniform Floquet theorem.</strong> For every fixed probability row $\nu$, there are
+      $m_0,C_\nu&lt;\infty$, independent of the start phase and maturity, such that</p>
+    $$\sup_{s\in[0,P]}\sup_{T\geq0}\left|
+      \log\{\nu U_m(s+T,s)\mathbf1\}-\lambda_mT
+      -\log\{c_{m,s}\nu r_{m,s}(T)+\nu b_{m,s}(T)\}
+      \right|\leq {C_\nu\over m^2}.$$
+    <p>If the observation begins from the phase-specific stationary row $\nu=\pi(s)$, the slip may again be
+      omitted with a uniform $O(m^{-2})$ remainder. For a phase-independent nonstationary prior, omitting it is
+      generically only $O(m^{-1})$.</p>
+    </div>
+    <p>To prove the statement, apply the finite-chain theorem to the translated coefficients
+      $Q_s(t)=Q(s+t)$ and $D_s(t)=D(s+t)$. Their $C^2$ norms, irreducibility constants, and fast spectral gaps
+      are uniform in $s$ by periodicity and compactness. The exponential-dichotomy and frozen-layer estimates
+      therefore have one constant for every phase. Conjugacy identifies their exact exponents, while the
+      displayed phase-specific right and left eigenvectors identify the principal coefficient and complementary
+      datum. This is the origin-invariance implicit in
+      <a href="https://doi.org/10.24033/asens.220">Floquet&apos;s original theorem</a>; the uniform fast-layer
+      estimate uses the same singular-perturbation mechanism as the time-inhomogeneous chain expansion of
+      <a href="https://doi.org/10.1214/105051606000000682">Yin and Zhang (2007)</a>.</p>
+
+    <h3>Shifted-phase certificate</h3>
+    <p>The three-state certificate recomputes the conjugate monodromy, both Perron vectors, and the frozen slip
+      independently at phases $s/P\in\{0,0.13,0.31,0.57,0.83\}$. The table reports the maximum over those phases
+      and over $0\leq T\leq3P$ for the fixed prior $(0.8,0.1,0.1)$, together with the maximum uncorrected error
+      for the phase-specific stationary prior.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>arbitrary prior, no slip</th><th>arbitrary prior, frozen slip</th><th>stationary prior, no slip</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>1.89105e-2</td><td>6.65138e-4</td><td>8.97440e-4</td></tr>
+        <tr><td>8</td><td>9.97689e-3</td><td>1.37611e-4</td><td>2.21080e-4</td></tr>
+        <tr><td>16</td><td>5.09988e-3</td><td>3.09691e-5</td><td>5.43803e-5</td></tr>
+        <tr><td>32</td><td>2.57458e-3</td><td>7.31777e-6</td><td>1.34600e-5</td></tr>
+        <tr><td>64</td><td>1.29301e-3</td><td>1.77651e-6</td><td>3.34685e-6</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final observed orders are $0.9936$ without the arbitrary-prior slip, $2.0424$ with it, and $2.0078$
+      for the stationary prior. Across all five phases and speeds, the independently recomputed Floquet exponents
+      differ by at most $3.2\times10^{-15}$. The finite phase and maturity mesh is a numerical order certificate;
+      the preceding compactness argument, not the mesh, supplies the two continuous suprema in the theorem.</p>
+
     <h3>Explicit first-order coefficient</h3>
     <p>The exact Floquet exponent also has an explicit first correction in any number of states. Let
     $g(t)=\operatorname{diag}D(t)$, $\bar g(t)=\pi(t)g(t)$, and
