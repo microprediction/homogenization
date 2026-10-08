@@ -24,7 +24,8 @@ from verify_count_cumulants import (bivariate_count_mixed_cumulants,
                                     poisson_mixture_w1_moment_upper,
                                     poisson_mixture_w1_nonparametric_lower,
                                     poisson_mixture_w1_local_minimax,
-                                    poisson_point_mass_w1_upper)
+                                    poisson_point_mass_w1_upper,
+                                    stationary_time_reversal_count_certificate)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -289,6 +290,7 @@ def counts():
     w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
     w1_moment_upper = poisson_mixture_w1_moment_upper()
     w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
+    reversal = stationary_time_reversal_count_certificate()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -425,6 +427,43 @@ def counts():
       uniqueness of Laplace transforms then imply equality of the mixing laws. Thus the mixed-Poisson family is
       identifiable, with no moment-determinacy assumption. This is the Poisson-mixture case of
       <a href="./bibliography.html#Teicher1961">Teicher&apos;s identifiability theorem</a>.</p>
+    <h3>What it does not identify: the arrow of latent time</h3>
+    <p>Identifying the law of $\Lambda_T$ is not the same as identifying the hidden generator. Let $Y$ be an
+      irreducible finite-state chain with row generator $Q$, stationary law $\pi$, and
+      $\Pi=\operatorname{diag}(\pi)$. Its stationary time reversal has generator</p>
+    $$Q^\leftarrow=\Pi^{-1}Q^\top\Pi.$$
+    <p>For state rates $\ell_i\ge0$, put $D=\operatorname{diag}(\ell)$ and
+      $\Lambda_T=\int_0^T\ell_{Y_s}\,ds$. Reversing a path preserves every occupation time, so under a stationary
+      start $Q$ and $Q^\leftarrow$ give exactly the same law of $\Lambda_T$ and hence exactly the same Cox count
+      law for every $T$. This is a genuine non-identification whenever $Q\ne Q^\leftarrow$; the underlying
+      time-reversal construction is classical, going back to
+      <a href="https://doi.org/10.1017/S0027763000011405">Nagasawa (1964)</a>.</p>
+    <p>The endpoint-resolved Feynman&ndash;Kac matrices make both the theorem and its boundary explicit. Define</p>
+    $$K_Q(T,z)=\exp\{T[Q+(z-1)D]\},\qquad
+      [K_Q(T,z)]_{ij}=\mathbb E_i[z^{N_T}\mathbf1\{Y_T=j\}].$$
+    <p>Because $D$ commutes with $\Pi$,</p>
+    <div class="equation-card">
+    $$K_{Q^\leftarrow}(T,z)=\Pi^{-1}K_Q(T,z)^\top\Pi,
+      \qquad
+      [K_{Q^\leftarrow}]_{ij}={\pi_j\over\pi_i}[K_Q]_{ji}.$$
+    </div>
+    <p>Multiplication on the left by $\pi$ and on the right by $\mathbf1$ erases this weighted transpose, proving</p>
+    $$\pi K_{Q^\leftarrow}(T,z)\mathbf1=\pi K_Q(T,z)\mathbf1.$$
+    <p>The same proof covers several conditionally independent count streams by replacing $(z-1)D$ with a sum
+      of diagonal state-rate potentials. It also covers state-dependent compound-Poisson marks by using their
+      diagonal probability-generating exponents. Thus neither additional terminal count coordinates nor arbitrary
+      contemporaneous state marks recover the arrow of time if all observations remain occupation based.</p>
+    <p>The stationarity and aggregation qualifications are essential. With a known start $i$, the transform is
+      $e_i^\top K_Q\mathbf1$, which generally differs after reversal. Recording the terminal state also retains the
+      weighted-transpose relation above, and ordered event-time or path data can retain temporal direction. The
+      theorem concerns terminal occupation-based counts, not those richer experiments.</p>
+    <p>The certificate uses a nonreversible four-state generator whose maximum entrywise difference from its reverse
+      is ''' + f'{reversal["generator_gap"]:.12f}' + r'''. Across four PGF arguments, stationary transforms agree
+      within ''' + f'{reversal["stationary_pgf_error"]:.1e}' + r''' and the weighted endpoint identity within
+      ''' + f'{reversal["endpoint_transpose_error"]:.1e}' + r'''. An independent count-resolved master equation
+      agrees within ''' + f'{reversal["count_pmf_error"]:.1e}' + r''', with omitted mass below
+      ''' + f'{reversal["tail_bound"]:.1e}' + r'''. In contrast, a known start in state 1 gives count-law total
+      variation ''' + f'{reversal["fixed_start_total_variation"]:.12f}' + r'''.</p>
     <h3>Which count laws are mixed Poisson?</h3>
     <p>Injectivity answers uniqueness after a mixed-Poisson representation is known to exist. Existence itself has
       an exact test. Let $p_n=\Pr\{N=n\}$ and $q_n=n!p_n$. Then $N$ is mixed Poisson if and only if, for every

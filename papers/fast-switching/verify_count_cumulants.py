@@ -1083,6 +1083,88 @@ def count_cumulants(Q, rates, T, prior, max_count=80):
     return cumulants4(raw), p
 
 
+def stationary_time_reversal_count_certificate():
+    """Certify the count-law blindness to stationary time reversal.
+
+    For a stationary finite-state chain, reversing the path preserves every
+    occupation time and therefore every path functional
+    ``integral rates[Y_s] ds``.  The matrix Feynman--Kac identity gives a
+    sharper endpoint-resolved statement: if ``Pi = diag(pi)`` and
+    ``Qrev = Pi^-1 Q.T Pi``, then
+
+        exp(T (Qrev + (z-1) D)) = Pi^-1 exp(T (Q + (z-1) D)).T Pi.
+
+    The certificate also checks two boundaries of this non-identification
+    result.  Endpoint-tagged transforms are transposed rather than erased,
+    while a known nonstationary start generally distinguishes the two chains.
+    """
+    Q = np.array([
+        [-2.5, 2.0, 0.4, 0.1],
+        [0.2, -2.1, 1.6, 0.3],
+        [0.7, 0.1, -2.6, 1.8],
+        [1.1, 0.5, 0.2, -1.8],
+    ])
+    rates = np.array([0.4, 1.3, 2.1, 3.2])
+    maturity = 1.7
+    states = len(rates)
+
+    stationary_system = np.vstack((Q.T[:-1], np.ones(states)))
+    stationary_rhs = np.r_[np.zeros(states - 1), 1.0]
+    stationary = np.linalg.solve(stationary_system, stationary_rhs)
+    Pi = np.diag(stationary)
+    Q_reverse = np.diag(1.0 / stationary) @ Q.T @ Pi
+    D = np.diag(rates)
+
+    stationary_pgf_errors = []
+    endpoint_transpose_errors = []
+    fixed_start_pgf_gaps = []
+    for z in (0.0, 0.2, 0.7, 1.0):
+        forward = expm(maturity * (Q + (z - 1.0) * D))
+        reverse = expm(maturity * (Q_reverse + (z - 1.0) * D))
+        stationary_pgf_errors.append(abs(
+            stationary @ forward @ np.ones(states)
+            - stationary @ reverse @ np.ones(states)))
+        endpoint_transpose_errors.append(np.max(np.abs(
+            reverse - np.diag(1.0 / stationary) @ forward.T @ Pi)))
+        fixed_start_pgf_gaps.append(np.max(np.abs(
+            forward @ np.ones(states) - reverse @ np.ones(states))))
+
+    _, count_pmf = count_cumulants(
+        Q, rates, maturity, stationary, max_count=80)
+    _, reverse_count_pmf = count_cumulants(
+        Q_reverse, rates, maturity, stationary, max_count=80)
+    _, fixed_count_pmf = count_cumulants(
+        Q, rates, maturity, np.eye(states)[0], max_count=80)
+    _, reverse_fixed_count_pmf = count_cumulants(
+        Q_reverse, rates, maturity, np.eye(states)[0], max_count=80)
+
+    count_pmf_error = np.max(np.abs(count_pmf - reverse_count_pmf))
+    fixed_start_total_variation = 0.5 * np.sum(np.abs(
+        fixed_count_pmf - reverse_fixed_count_pmf))
+    tail_bound = poisson.sf(80, rates.max() * maturity)
+    generator_gap = np.max(np.abs(Q - Q_reverse))
+
+    assert np.max(np.abs(stationary @ Q)) < 2e-15
+    assert np.max(np.abs(Q_reverse.sum(axis=1))) < 2e-15
+    assert generator_gap > 1.0
+    assert max(stationary_pgf_errors) < 2e-15
+    assert max(endpoint_transpose_errors) < 2e-15
+    assert count_pmf_error < 2e-15
+    assert max(fixed_start_pgf_gaps) > 0.04
+    assert fixed_start_total_variation > 0.06
+    assert tail_bound < 1e-60
+    return {
+        "stationary": stationary,
+        "generator_gap": generator_gap,
+        "stationary_pgf_error": max(stationary_pgf_errors),
+        "endpoint_transpose_error": max(endpoint_transpose_errors),
+        "count_pmf_error": count_pmf_error,
+        "fixed_start_pgf_gap": max(fixed_start_pgf_gaps),
+        "fixed_start_total_variation": fixed_start_total_variation,
+        "tail_bound": tail_bound,
+    }
+
+
 def integrated_intensity_mixed_cumulants(Q, rates1, rates2, T, prior):
     """Mixed cumulants of two integrated rates, through bidegree (2,2)."""
     Q = np.asarray(Q, float)
@@ -1410,6 +1492,7 @@ def main():
     w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
     w1_moment_upper = poisson_mixture_w1_moment_upper()
     w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
+    reversal = stationary_time_reversal_count_certificate()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -1752,6 +1835,18 @@ def main():
             f"{log_inverse_delta:12.0f}   {degree:8d}   "
             f"{log_stochastic:14.6f}   {log_coupling:12.6f}"
         )
+    print("stationary time-reversal generator gap",
+          f"{reversal['generator_gap']:.12f}")
+    print("stationary time-reversal PGF and count-pmf errors",
+          f"{reversal['stationary_pgf_error']:.3e}",
+          f"{reversal['count_pmf_error']:.3e}")
+    print("endpoint weighted-transpose error",
+          f"{reversal['endpoint_transpose_error']:.3e}")
+    print("fixed-start PGF gap and count total variation",
+          f"{reversal['fixed_start_pgf_gap']:.12f}",
+          f"{reversal['fixed_start_total_variation']:.12f}")
+    print("time-reversal count-truncation tail bound",
+          f"{reversal['tail_bound']:.3e}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
