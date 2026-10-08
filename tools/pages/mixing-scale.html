@@ -138,6 +138,40 @@
       case of <a href="https://doi.org/10.1007/BF00532868">Taqqu&apos;s weak-convergence theorem (1975)</a>; the limit is the
       fractional Brownian motion introduced by
       <a href="https://doi.org/10.1137/1010093">Mandelbrot and Van Ness (1968)</a>.</p>
+    <h3>The critical Gaussian boundary is not fractional Brownian motion</h3>
+    <p>The restriction $\alpha&lt;2$ in the functional theorem is sharp. At the divergent critical endpoint, suppose</p>
+    $$F(x)\sim b x^2L(1/x),\qquad
+      H(x)=\int_1^xL(u)\frac{du}{u}\longrightarrow\infty.$$
+    <p>The endpoint spectral theorem below gives $V(R)\sim4bH(R)$. The divergent integral $H$ is slowly varying,
+      so $V(cR)/V(R)\to1$ for every fixed $c&gt;0$. Hence for a centered stationary Gaussian driver the same exact
+      stationary-increment identity used above yields, for $s,t&gt;0$,</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}\{S_R(s),S_R(t)\}\longrightarrow
+      \begin{cases}1,&amp;s=t,\\[2pt]\tfrac12,&amp;s\ne t.\end{cases}$$
+    </div>
+    <p>Thus on any finite collection of distinct positive times the limit has the representation
+      $G(t_i)=(Z_0+Z_i)/\sqrt2$, where $Z_0,Z_1,\ldots$ are independent standard Gaussians; also $G(0)=0$.
+      This finite-dimensional limit has no stochastically continuous version. In particular it is not a
+      fractional Brownian motion with a formal Hurst index zero. The analogous discrete-time spectral theorem of
+      <a href="./bibliography.html#DeligiannidisUtev2013">Deligiannidis and Utev (2013)</a> assumes a strictly
+      positive regular-variation index for the partial-sum variance; this zero-index endpoint lies outside its
+      stated equivalence.</p>
+    <p>More decisively, the normalized paths are not tight in $C[0,1]$. For every fixed $\delta&gt;0$, stationarity
+      gives</p>
+    $$\operatorname{Var}\{S_R(\delta)-S_R(0)\}=\frac{V(R\delta)}{V(R)}\longrightarrow1.$$
+    <p>Since the increment is Gaussian, for every $\eta&gt;0$ the probability that the uniform modulus over intervals
+      of length $\delta$ exceeds $\eta$ has limit inferior at least $2\Phi(-\eta)$. Letting $\delta\downarrow0$
+      violates the necessary modulus-of-continuity condition for tightness. The endpoint therefore has a valid and
+      explicit finite-dimensional limit but no continuous functional limit under this normalization.</p>
+    <p>An exact benchmark takes one-sided spectral density $f(\omega)=\omega e^{-\omega}$. Then
+      $F(x)\sim x^2/2$, $C(t)=\operatorname{Re}(1-it)^{-2}$, and</p>
+    $$V(R)=2\int_0^\infty\frac{1-\cos(R\omega)}{\omega}e^{-\omega}d\omega
+      =\log(1+R^2).$$
+    <p>The certificate checks this identity against covariance quadrature within $2.67\times10^{-15}$. On the time
+      grid $0,0.1,0.25,0.5,0.75,1$, the maximum covariance-matrix error relative to the displayed limit falls from
+      $0.332186$ at $R=2^{10}$ to $0.020762$ at $R=2^{160}$. The deliberately slow logarithmic convergence is real:
+      even for the short interval $\delta=0.01$, its normalized increment variance rises to $0.958476$ at
+      $R=2^{160}$, toward the nonzero limit one.</p>
     <h3>Why Gaussianity is essential: an ergodic counterexample</h3>
     <p>The warning above is not merely about a hidden invariant random offset. Fix $0&lt;\beta&lt;1/2$ and let $G$ be
       a centered stationary unit-variance Gaussian process with covariance</p>

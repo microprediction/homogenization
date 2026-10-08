@@ -4,9 +4,10 @@ The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
 periodic counterexamples, including the Gaussian fractional-Brownian functional
-limit, an ergodic second-chaos counterexample with nonvanishing limiting
-skewness, a covariance-matched hierarchy of arbitrary Hermite ranks, and the
-sharp Fourier-decay and Cesaro-mean conditions at the
+limit, the critical Gaussian finite-dimensional limit and failure of
+path-space tightness, an ergodic second-chaos counterexample with nonvanishing
+limiting skewness, a covariance-matched hierarchy of arbitrary Hermite ranks,
+and the sharp Fourier-decay and Cesaro-mean conditions at the
 saturated epsilon-squared boundary.
 """
 import math
@@ -668,6 +669,64 @@ def verify_gaussian_fractional_limit():
     return tuple(results)
 
 
+def verify_critical_gaussian_boundary():
+    """Check the alpha=2 Gaussian finite-dimensional boundary.
+
+    The one-sided spectral density f(omega)=omega exp(-omega) has
+
+        F(x) ~ x^2/2,        V(R)=log(1+R^2).
+
+    Consequently the normalized integrated process has limiting covariance
+    one on the positive-time diagonal and one half at every pair of distinct
+    positive times.  Its increments over every fixed positive time interval
+    retain asymptotic variance one, which is the obstruction to C[0,1]
+    tightness.
+    """
+    scales = np.array([0.25, 1.0, 4.0, 16.0])
+    quadrature = np.array([
+        integrated_variance(
+            lambda t: antipersistent_covariance(t, 2.0), 1.0, scale
+        )
+        for scale in scales
+    ])
+    closed = np.log1p(scales ** 2)
+    identity_error = float(np.max(np.abs(quadrature - closed)))
+
+    times = np.array([0.0, 0.1, 0.25, 0.5, 0.75, 1.0])
+    target = np.zeros((len(times), len(times)))
+    for i, s in enumerate(times):
+        for j, t in enumerate(times):
+            if s > 0.0 and t > 0.0:
+                target[i, j] = 1.0 if i == j else 0.5
+
+    powers = (10, 20, 40, 80, 160)
+    errors = []
+    increment_variances = []
+    delta = 0.01
+    for power in powers:
+        horizon = 2.0 ** power
+
+        def variance(t):
+            return math.log1p((horizon * t) ** 2)
+
+        terminal_variance = variance(1.0)
+        covariance = np.empty_like(target)
+        for i, s in enumerate(times):
+            for j, t in enumerate(times):
+                covariance[i, j] = (
+                    variance(s) + variance(t) - variance(abs(t - s))
+                ) / (2.0 * terminal_variance)
+        errors.append(float(np.max(np.abs(covariance - target))))
+        increment_variances.append(variance(delta) / terminal_variance)
+
+    assert identity_error < 3e-15
+    assert all(x > y for x, y in zip(errors, errors[1:]))
+    assert errors[-1] < 0.021
+    assert increment_variances[-1] > 0.958
+    return (identity_error, tuple(errors), tuple(increment_variances),
+            powers, delta)
+
+
 def verify_ergodic_second_chaos_counterexample():
     """Certify that matching covariance scaling need not give an fBm limit.
 
@@ -1150,6 +1209,7 @@ def main():
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
     gaussian_fclt = verify_gaussian_fractional_limit()
+    critical_gaussian = verify_critical_gaussian_boundary()
     second_chaos = verify_ergodic_second_chaos_counterexample()
     hermite_hierarchy = verify_covariance_matched_hermite_hierarchy()
     zero_gk_boundary = verify_zero_gk_boundary()
@@ -1191,6 +1251,12 @@ def main():
         print("Gaussian fractional limit alpha/H, covariance errors, "
               f"terminal R=2^{terminal_power}: {alpha:.1f}, {hurst:.2f}, "
               f"{tuple(f'{error:.3e}' for error in errors)}")
+    print("critical Gaussian spectral identity/covariance errors: "
+          f"{critical_gaussian[0]:.3e}, "
+          f"{tuple(f'{error:.6f}' for error in critical_gaussian[1])}")
+    print("critical Gaussian delta and normalized increment variances at "
+          f"R=2^{critical_gaussian[3]}: {critical_gaussian[4]:.2f}, "
+          f"{tuple(f'{value:.6f}' for value in critical_gaussian[2])}")
     print("ergodic second-chaos beta, limiting/finite normalized third "
           "cumulants: "
           f"{second_chaos[0]:.1f}, {second_chaos[1]:.9f}, "
