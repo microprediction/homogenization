@@ -7,7 +7,7 @@ z by the forcing contrast divided by the total switching rate.  The final
 checks record the large-frequency growth of the variance-gamma forcing and
 the separate compact-frequency and tail terms in Lewis inversion, and a
 uniform cubic Lewis-price theorem for the variance-gamma benchmark on a
-parabolic frequency window.
+parabolic frequency window, including unequal transition rates.
 """
 import cmath
 import math
@@ -164,6 +164,52 @@ def symmetric_occupation_laplace(lam, maturity, penalty):
             * math.exp((center + delta) * maturity)
             + 0.5 * (1.0 - ratio)
             * math.exp((center - delta) * maturity))
+
+
+def unequal_occupation_laplace(rate12, rate21, speed, maturity,
+                                scaled_penalty):
+    """E_1 exp(-speed*scaled_penalty*L_2) in closed form.
+
+    The physical generator is ``speed*[[-rate12,rate12],
+    [rate21,-rate21]]``.  Diagonalizing the killed two-state generator gives
+    a stable two-exponential expression even at large switching speeds.
+    """
+    total = rate12 + rate21
+    discriminant = math.sqrt(
+        (total + scaled_penalty) ** 2
+        - 4.0 * rate12 * scaled_penalty
+    )
+    root_plus = -0.5 * (total + scaled_penalty - discriminant)
+    root_minus = -0.5 * (total + scaled_penalty + discriminant)
+    coefficient_plus = -root_minus / discriminant
+    coefficient_minus = root_plus / discriminant
+    return (coefficient_plus * math.exp(speed * root_plus * maturity)
+            + coefficient_minus * math.exp(speed * root_minus * maturity))
+
+
+def unequal_bad_occupation_bound(rate12, rate21, speed, maturity,
+                                  threshold, scaled_penalty=None):
+    """Chernoff bound for ``P_1(L_2 <= threshold*maturity)``.
+
+    If the scaled penalty is ``d``, the exact killed eigenvalue and the fact
+    that the second exponential has a negative coefficient give
+
+      P <= C exp(-speed*maturity*I),
+      I=(a+b+d-Delta)/2-d*threshold.
+
+    Every threshold below the stationary mass a/(a+b) admits a positive
+    rate after optimizing d.  Taking d=a+b reproduces the symmetric bound
+    used above when a=b=1 and threshold=1/3.
+    """
+    total = rate12 + rate21
+    d = total if scaled_penalty is None else scaled_penalty
+    discriminant = math.sqrt((total + d) ** 2 - 4.0 * rate12 * d)
+    constant = (total + d + discriminant) / (2.0 * discriminant)
+    rate = 0.5 * (total + d - discriminant) - d * threshold
+    assert 0.0 < threshold < rate12 / total
+    assert rate > 0.0
+    bound = constant * math.exp(-speed * maturity * rate)
+    return bound, constant, rate
 
 
 def main():
@@ -473,6 +519,149 @@ def main():
     assert min(parabolic_interior_orders) > 2.8
     assert max(weighted_remainder_ratios) < 1.0
 
+    # The same price argument is not tied to symmetric switching.  Take
+    # Q=speed*[[-a,a],[b,-b]] with (a,b)=(1.7,0.4), so the stationary mass of
+    # the faster-decaying second VG regime is pi_2=a/(a+b).  The averaged
+    # Fourier exponent and the exponent on L_2/T >= ell are respectively
+    #
+    #   beta_pi=T*(pi_1/nu_1+pi_2/nu_2),
+    #   alpha_ell=T/nu_1+ell*T*(1/nu_2-1/nu_1).
+    #
+    # Both exceed 5/2 below.  The explicit unequal-rate occupation bound then
+    # makes the bad event exponentially small, while the good-event Lewis tail
+    # is O(R^(-2*alpha_ell-1)).  On R=c*sqrt(speed*(a+b)) it is therefore
+    # o(speed^-3), leaving the cubic interior remainder.
+    vg_rate12, vg_rate21 = 1.7, 0.4
+    vg_total_rate = vg_rate12 + vg_rate21
+    vg_pi1 = vg_rate21 / vg_total_rate
+    vg_pi2 = vg_rate12 / vg_total_rate
+    occupation_threshold = 1.0 / 3.0
+    unequal_average_beta = maturity * (
+        vg_pi1 / 0.5 + vg_pi2 / 0.2
+    )
+    unequal_good_alpha = maturity * (
+        1.0 / 0.5
+        + occupation_threshold * (1.0 / 0.2 - 1.0 / 0.5)
+    )
+    assert unequal_average_beta > 2.5
+    assert unequal_good_alpha > 2.5
+
+    def unequal_vg_cf(u, speed, approximate=False):
+        gbar_u, gtilde_u, _ = variance_gamma_parts(u - 0.5j, rate)
+        g1_u, g2_u = gbar_u + gtilde_u, gbar_u - gtilde_u
+        if approximate:
+            return unequal_outer_quadratic(
+                g1_u, g2_u, vg_rate12, vg_rate21, speed,
+                maturity, +1,
+            )
+        outer_u, layer_u, _, _ = unequal_split(
+            g1_u, g2_u, vg_rate12, vg_rate21, speed,
+            maturity, +1,
+        )
+        return outer_u + layer_u
+
+    unequal_parabolic_rows = []
+    unequal_weighted_remainder_ratios = []
+    killed_transform_error = 0.0
+    for test_speed in (0.25, 1.0, 4.0, 12.0):
+        for test_penalty in (0.2, 1.1, vg_total_rate, 4.0):
+            killed = test_speed * np.array([
+                [-vg_rate12, vg_rate12],
+                [vg_rate21, -vg_rate21 - test_penalty],
+            ])
+            killed_reference = (expm(killed * maturity) @ np.ones(2))[0]
+            killed_closed_form = unequal_occupation_laplace(
+                vg_rate12, vg_rate21, test_speed, maturity,
+                test_penalty,
+            )
+            killed_transform_error = max(
+                killed_transform_error,
+                abs(killed_reference - killed_closed_form),
+            )
+    unequal_parabolic_scale = 10.0
+    for speed in (40.0, 80.0, 160.0, 320.0):
+        effective_rate = speed * vg_total_rate
+        window = unequal_parabolic_scale * math.sqrt(effective_rate)
+        exact_full = lewis_integral(
+            lambda u: unequal_vg_cf(u, speed), np.inf
+        )
+        approx_window = lewis_integral(
+            lambda u: unequal_vg_cf(u, speed, approximate=True), window
+        )
+        interior_l1 = quad(
+            lambda u: abs(unequal_vg_cf(u, speed)
+                          - unequal_vg_cf(u, speed, approximate=True))
+            / (u * u + 0.25),
+            0.0, window, epsabs=2e-10, epsrel=2e-10,
+            limit=1000,
+        )[0]
+        bad_probability, unequal_occ_constant, unequal_occ_rate = (
+            unequal_bad_occupation_bound(
+                vg_rate12, vg_rate21, speed, maturity,
+                occupation_threshold,
+            )
+        )
+        scaled_penalty = vg_total_rate
+        direct_chernoff = math.exp(
+            speed * scaled_penalty * occupation_threshold * maturity
+        ) * unequal_occupation_laplace(
+            vg_rate12, vg_rate21, speed, maturity, scaled_penalty
+        )
+        assert direct_chernoff <= bad_probability * (1.0 + 2e-14)
+
+        good_tail = (math.exp(decay_h * maturity)
+                     * decay_q ** -unequal_good_alpha
+                     * window ** (-(2.0 * unequal_good_alpha + 1.0))
+                     / (2.0 * unequal_good_alpha + 1.0))
+        bad_tail = (math.exp(decay_h * maturity) * bad_probability
+                    * decay_q ** -2.0 * window ** -5.0 / 5.0)
+        exact_tail_bound = good_tail + bad_tail
+        price_error = price_prefactor * abs(exact_full - approx_window)
+        price_bound = price_prefactor * (interior_l1 + exact_tail_bound)
+        assert price_error <= price_bound * (1.0 + 2e-10)
+
+        inverse_total_rate = 1.0 / effective_rate
+        for u in np.linspace(0.0, window, 401):
+            gbar_u, gtilde_u, _ = variance_gamma_parts(u - 0.5j, rate)
+            remainder = abs(
+                unequal_vg_cf(u, speed)
+                - unequal_vg_cf(u, speed, approximate=True)
+            )
+            scale = (inverse_total_rate ** 3
+                     * math.exp(gbar_u.real * maturity)
+                     * (1.0 + abs(gtilde_u)) ** 6)
+            if scale > 0.0:
+                unequal_weighted_remainder_ratios.append(remainder / scale)
+        for u in np.geomspace(1.0e-2, 1.0e4, 200):
+            occupation_envelope = math.exp(decay_h * maturity) * (
+                (1.0 + decay_q * u * u) ** -unequal_good_alpha
+                + bad_probability * (1.0 + decay_q * u * u) ** -2.0
+            )
+            assert abs(unequal_vg_cf(u, speed)) <= occupation_envelope * (
+                1.0 + 2e-11
+            )
+        unequal_parabolic_rows.append((
+            speed, effective_rate, window, price_error, price_bound,
+            price_prefactor * interior_l1,
+            price_prefactor * good_tail,
+            price_prefactor * bad_tail,
+        ))
+
+    unequal_parabolic_orders = [
+        math.log(unequal_parabolic_rows[j][3]
+                 / unequal_parabolic_rows[j + 1][3], 2.0)
+        for j in range(len(unequal_parabolic_rows) - 1)
+    ]
+    unequal_parabolic_interior_orders = [
+        math.log(unequal_parabolic_rows[j][5]
+                 / unequal_parabolic_rows[j + 1][5], 2.0)
+        for j in range(len(unequal_parabolic_rows) - 1)
+    ]
+    assert min(unequal_parabolic_orders) > 2.8
+    assert min(unequal_parabolic_interior_orders) > 2.8
+    assert max(unequal_weighted_remainder_ratios) < 20.0
+    assert killed_transform_error < 2e-14
+
     print('exact split max error:', f'{max_identity_error:.3e}')
     print('largest layer / rigorous bound:', f'{max_layer_ratio:.6f}')
     print('outer Taylor errors:', [f'{x:.3e}' for x in errors])
@@ -518,6 +707,23 @@ def main():
           [f'{x:.4f}' for x in parabolic_interior_orders])
     print('largest weighted cubic-remainder ratio:',
           f'{max(weighted_remainder_ratios):.9f}')
+    print('unequal-rate occupation constants (C, I):',
+          f'{unequal_occ_constant:.12f}', f'{unequal_occ_rate:.12f}')
+    print('unequal-rate Fourier exponents (beta_pi, alpha_ell):',
+          f'{unequal_average_beta:.12f}', f'{unequal_good_alpha:.12f}')
+    print('unequal-rate killed-transform max error:',
+          f'{killed_transform_error:.3e}')
+    print('unequal-rate parabolic certificate '
+          '(speed, total rate, R, error, bound, interior, good tail, bad tail):')
+    for row in unequal_parabolic_rows:
+        print(' ', f'{row[0]:5.0f}', f'{row[1]:10.4f}', f'{row[2]:10.4f}',
+              *(f'{x:.6e}' for x in row[3:]))
+    print('unequal-rate parabolic-price observed orders:',
+          [f'{x:.4f}' for x in unequal_parabolic_orders])
+    print('unequal-rate parabolic-interior observed orders:',
+          [f'{x:.4f}' for x in unequal_parabolic_interior_orders])
+    print('unequal-rate largest weighted cubic-remainder ratio:',
+          f'{max(unequal_weighted_remainder_ratios):.9f}')
     print('PASS')
 
 

@@ -508,7 +508,7 @@ def variance_gamma_page():
     $H=0.013005504422$, so the generator-uniform tail power is five. This improves the half-moment tail bound but,
     by itself, says nothing about the integrated approximation error on an expanding interior window.</p>
 
-    <h3>A uniform cubic price theorem for this benchmark</h3>
+    <h3>A uniform cubic price theorem, including unequal switching rates</h3>
     <p>The pointwise expansion does transfer to a third-order call-price approximation when it is used on a
     parabolic, rather than maximal, frequency window. Set $R_\lambda=c\sqrt\lambda$ for any fixed $c&gt;0$, use the
     quadratic slow multiplier $P_{2,+}$ only on $0\leq u\leq R_\lambda$, and discard the remaining approximate
@@ -542,8 +542,40 @@ def variance_gamma_page():
       \leq e^H\left[\frac{q^{-3}}7R^{-7}
       +\Pr(L_2&lt;1/3)\frac{q^{-2}}5R^{-5}\right].$$
     <p>At $R=R_\lambda$ this is $O(\lambda^{-7/2})$ plus an exponentially small term, so it is strictly smaller
-    than the cubic interior remainder. The theorem is for this fixed parameter benchmark and this truncated
-    approximation; it does not claim a uniform expansion of the characteristic function over all frequencies.</p>
+    than the cubic interior remainder.</p>
+
+    <h4>Unequal rates</h4>
+    <p>The symmetry of the preceding display is convenient, not essential. Let</p>
+    $$Q_m=m\begin{pmatrix}-a&a\\ b&-b\end{pmatrix},\qquad
+      \kappa=a+b,\qquad \pi_1=\frac b\kappa,\quad \pi_2=\frac a\kappa,$$
+    <p>with fixed $a,b&gt;0$, and suppose regime 2 has the faster VG decay, $\nu_2&lt;\nu_1$. For a chain starting in
+    regime 1, killing state 2 at rate $md$ gives</p>
+    $$\mathbb E_1 e^{-mdL_2}
+      =C_d e^{m\zeta_+T}+(1-C_d)e^{m\zeta_-T},$$
+    $$\Delta_d=\sqrt{(\kappa+d)^2-4ad},\qquad
+      \zeta_\pm=-\frac{\kappa+d\mp\Delta_d}{2},\qquad
+      C_d=\frac{\kappa+d+\Delta_d}{2\Delta_d}.$$
+    <p>Since $1-C_d&lt;0$, Chernoff&apos;s inequality yields the explicit one-mode bound</p>
+    $$\Pr_1(L_2\leq \ell T)
+      \leq C_d\exp\{-mT I_d(\ell)\},\qquad
+      I_d(\ell)=\frac{\kappa+d-\Delta_d}{2}-d\ell.$$
+    <p>For every $0&lt;\ell&lt;\pi_2$ a sufficiently small $d&gt;0$ makes $I_d(\ell)&gt;0$, because
+    $\partial_d I_d(\ell)|_{d=0}=\pi_2-\ell$. Thus, if</p>
+    $$\beta_\pi=T\left(\frac{\pi_1}{\nu_1}+\frac{\pi_2}{\nu_2}\right)>\frac52,$$
+    <p>one can choose $\ell&lt;\pi_2$ close enough to $\pi_2$ that</p>
+    $$\alpha_\ell=T\left(\frac{1-\ell}{\nu_1}+\frac{\ell}{\nu_2}\right)>\frac52.$$
+    <p>For the unequal-rate slow mode, put $\vartheta=(a-b)/\kappa$ and
+    $z=(g_1-g_2)/(m\kappa)$. Its discriminant is
+    $\sqrt{1-2\vartheta z+z^2}$; both branch points have modulus one. Hence $z\to0$ uniformly on the parabolic
+    window and the same third-derivative argument gives the cubic interior envelope, now around the stationary
+    average $\pi_1g_1+\pi_2g_2$. The averaged slow factor makes this envelope integrable on
+    $R_m=c\sqrt{m\kappa}$, while the exact tail is bounded by a constant times</p>
+    $$R_m^{-(2\alpha_\ell+1)}
+      +e^{-mT I_d(\ell)}R_m^{-(2T/\nu_1+1)}=o(m^{-3}).$$
+    <p>Consequently the same truncated quadratic Lewis price has $O(m^{-3})$ error for fixed $a,b$ and fixed model
+    parameters. This is a fixed-parameter theorem: its constant is not asserted to remain uniform as a transition rate
+    tends to zero or as either strict exponent condition approaches $5/2$. It also concerns the truncated price
+    integral, not a characteristic-function expansion uniform over all frequencies.</p>
     <p>At $\lambda = 25$, $T = 1$ and the Lewis frequency $u = 1 - i/2$:</p>
 ''' + table(['quantity', 'value', 'error'], ex_rows) + r'''
     <h2>Results</h2>
@@ -560,7 +592,11 @@ def variance_gamma_page():
     $\lambda=50,100,200,400$, the certified triangle bounds are
     $3.55\times10^{-4},1.84\times10^{-5},1.39\times10^{-6},1.24\times10^{-7}$ and dominate the observed price
     errors $2.04\times10^{-6},2.10\times10^{-7},1.55\times10^{-8},2.02\times10^{-9}$; the measured orders of the
-    interior absolute error are $2.969,2.985,2.992$.</p>
+    interior absolute error are $2.969,2.985,2.992$. An unequal-rate certificate takes
+    $(a,b)=(1.7,0.4)$, so $\pi_2=17/21$, and $\ell=1/3$, $d=a+b$. It has
+    $\beta_\pi=4.428571$, $\alpha_\ell=3$ and $I_d(\ell)=0.483484861$. At
+    $m=40,80,160,320$, the observed price-error orders are $2.941,2.956,2.992$ and the absolute-interior orders are
+    $2.979,2.989,2.994$; the explicit triangle bounds dominate every observed error.</p>
     <p>Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
     for the prices,

@@ -71,10 +71,11 @@
         Lewis-inversion theorem splits price error into the weighted compact-frequency transform error and an exact
         half-moment tail bound, showing why pointwise cubic accuracy alone does not imply a cubic price rate. For
         switched variance gamma, conditioning on the regime path sharpens that tail to
-        $O(R^{-(2T/\nu_{\max}+1)})$, uniformly in the switching generator. For the worked benchmark, averaged VG
-        decay makes the cubic Taylor envelope integrable on $R_\lambda=c\sqrt\lambda$, while an occupation-time
-        Chernoff bound makes the omitted exact tail higher order; together they prove a benchmark-specific uniform
-        $O(\lambda^{-3})$ error for the truncated quadratic call price.</em>
+        $O(R^{-(2T/\nu_{\max}+1)})$, uniformly in the switching generator. Averaged VG decay makes the cubic Taylor
+        envelope integrable on a parabolic frequency window, while an explicit occupation-time Chernoff bound makes
+        the omitted exact tail higher order. This proves $O(m^{-3})$ error for the truncated quadratic call price under
+        fixed positive, possibly unequal two-state transition rates whenever the stationary and good-occupation decay
+        exponents are both strictly above $5/2$.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Closed-Form Bond Options Under Fast Regime Switching</em>. Note in preparation.
