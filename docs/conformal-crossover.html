@@ -101,7 +101,7 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">numerical certificate</a></span></p>
     <h1>When fast mixing justifies pooled residuals</h1>
     <p class="subtitle">An exact finite-chain horizon-to-switching crossover for conditional coverage, alongside finite-calibration, irregular-grid, burn-in and transient-panel bounds.</p>
-    <p class="muted">Research note, 23 September 2026; extended 28 September 2026. A finite-state benchmark for
+    <p class="muted">Research note, 23 September 2026; extended 8 October 2026. A finite-state benchmark for
       <a href="./index.html">homogenization and residual pooling</a>;
       it does not assert distribution-free conditional coverage.</p>
 
@@ -275,6 +275,64 @@
       specialization, the exact variance is $0.00110385$ versus $0.00110741$
       in direct simulation. A separate $n=17$ two-state construction attains
       its bound exactly at variance $0.04032855$.</p>
+
+    <h3>A sharp joint panel-size and switching-rate limit</h3>
+    <p>The retained finite sum also resolves the limit excluded by fixed-$P_h$
+      panel asymptotics. Let the panel and its sampling scheme vary with $n$,
+      put</p>
+    $$x_n=m_n\gamma_sh_n,\qquad \Lambda_n=nx_n,\qquad
+      W_n=\frac1nV_n(e^{-x_n}),$$
+    <p>so that
+      $\operatorname{Var}\widehat F_n(r)\le p_r(1-p_r)W_n$.
+      If $x_n\to0$ and $\Lambda_n\to\Lambda\in[0,\infty)$, then</p>
+    <div class="equation-card">
+    $$W_n\longrightarrow
+      \Psi(\Lambda):=
+      \begin{cases}
+      \displaystyle\frac{2(\Lambda-1+e^{-\Lambda})}{\Lambda^2},
+        &amp;\Lambda&gt;0,\\[6pt]
+      1,&amp;\Lambda=0.
+      \end{cases}$$
+    </div>
+    <p>Indeed, the dependence term is the Riemann sum</p>
+    $$\frac2{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
+      e^{-\Lambda_n\ell/n}
+      \longrightarrow2\int_0^1(1-u)e^{-\Lambda u}\,du.$$
+    <p>The profile is not merely an upper bound. For every $n$, a symmetric
+      two-state chain with conditional CDF values $(0,1)$ attains the finite
+      factor exactly, so all these limits are sharp. In particular,
+      $\Lambda_n\to0$ leaves the whole panel asymptotically equivalent, for
+      this variance, to one Bernoulli observation. In the sharp example, a
+      finite positive $\Lambda$ leaves nonzero limiting variance no matter
+      how large $n$ is.</p>
+    <p>The same exact formula connects this critical window to both outer
+      regimes:</p>
+    <div class="equation-card">
+    $$\begin{array}{lll}
+      x_n\to0,\ \Lambda_n\to\infty:
+        &amp;W_n\sim2/\Lambda_n,
+        &amp;n_{\rm eff}:=1/W_n\sim\Lambda_n/2,\\[3pt]
+      x_n\to x\in(0,\infty):
+        &amp;W_n\sim n^{-1}\coth(x/2),
+        &amp;n_{\rm eff}\sim n\tanh(x/2),\\[3pt]
+      x_n\to\infty:
+        &amp;W_n\sim1/n,
+        &amp;n_{\rm eff}\sim n.
+    \end{array}$$
+    </div>
+    <p>For the first line, substitute $a=e^{-x_n}$ in the closed finite-sum
+      formula, use $1-a\sim x_n$ and $a^n=e^{-\Lambda_n}$, and then let
+      $\Lambda_n\to\infty$. For the second and third lines, $a$ converges
+      respectively to $e^{-x}\in(0,1)$ and to zero while $a^n\to0$.
+      These reductions prove the three displayed equivalents directly.</p>
+    <p>Here $n_{\rm eff}$ is only a variance-equivalent count for the
+      empirical calibration CDF; it is not a replacement for $n$ in a
+      conformal rank law. These statements concern marginal fluctuations
+      over a stationary calibration panel. They do not assert conditional
+      conformal coverage, and they remain distinct from the fixed-transition
+      large-panel expansions below. The certificate evaluates the critical
+      profile at total exposures $0.05,0.5,2,$ and $8$, and checks both outer
+      limits directly from the finite sum.</p>
 
     <h3>Irregular observation times</h3>
     <p>A regular spacing is not needed. Let

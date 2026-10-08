@@ -27,6 +27,10 @@ and leaves an order-n^{-3/2} residual against exact coefficient tails.  An
 all-vertices check certifies uniformity over every initial regime law.
 The curvature of that Perron eigenvalue is checked against the discrete
 Green--Kubo variance, including its exact finite-panel intercept and remainder.
+The exact finite-panel variance factor is also followed through a joint limit
+in which the panel size grows while the per-observation mixing exposure may
+vanish.  This certifies the critical finite-total-exposure profile and its
+dense- and resolved-grid limits without making a conditional-coverage claim.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
@@ -109,6 +113,77 @@ def finite_variance_factor(a, n):
               - 2 * a * (1 - a ** n) / (n * (1 - a) ** 2))
     assert abs(direct - closed) < 2e-14
     return closed
+
+
+def critical_variance_profile(total_exposure):
+    """Limit of V_n(exp(-total_exposure/n))/n."""
+    if abs(total_exposure) < 1e-6:
+        # Stable continuation of 2 (lambda - 1 + exp(-lambda)) / lambda**2.
+        return (1 - total_exposure / 3
+                + total_exposure ** 2 / 12
+                - total_exposure ** 3 / 60)
+    return (2 * (total_exposure - 1 + math.exp(-total_exposure))
+            / total_exposure ** 2)
+
+
+def normalized_variance_factor(step_exposure, n):
+    """Return V_n(exp(-step_exposure))/n without near-one cancellation."""
+    return ((1 + 2 / n * sum(
+        (n - lag) * math.exp(-step_exposure * lag)
+        for lag in range(1, n)
+    )) / n)
+
+
+def joint_panel_switching_checks():
+    """Certify the sharp joint panel-size/per-step-mixing regimes."""
+    n_critical = 4096
+    critical_rows = []
+    for total_exposure in (0.05, 0.5, 2.0, 8.0):
+        normalized = normalized_variance_factor(
+            total_exposure / n_critical, n_critical
+        )
+        limit = critical_variance_profile(total_exposure)
+        assert abs(normalized - limit) < 2e-7
+        # The symmetric binary two-state construction attains the envelope.
+        a = math.exp(-total_exposure / n_critical)
+        exact_binary_variance = (
+            0.25 / n_critical
+            + 0.5 / n_critical ** 2 * sum(
+                (n_critical - lag) * a ** lag
+                for lag in range(1, n_critical)
+            )
+        )
+        assert abs(exact_binary_variance - 0.25 * normalized) < 2e-14
+        critical_rows.append((total_exposure, normalized, limit))
+
+    # Dense observations with diverging total exposure have only
+    # total_exposure/2 variance-equivalent observations to first order.
+    n_dense = 16384
+    dense_exposure = math.sqrt(n_dense)
+    dense_normalized = normalized_variance_factor(
+        dense_exposure / n_dense, n_dense
+    )
+    dense_ratio = dense_exposure * dense_normalized / 2
+    assert abs(dense_ratio - 1) < 0.008
+
+    # A resolved grid instead supplies a fixed inflation per observation.
+    n_resolved = 4096
+    step_exposure = 0.7
+    resolved_factor = n_resolved * normalized_variance_factor(
+        step_exposure, n_resolved
+    )
+    resolved_limit = 1 / math.tanh(step_exposure / 2)
+    assert abs(resolved_factor - resolved_limit) < 0.001
+
+    print("joint panel/switching critical profile:",
+          "; ".join(
+              f"lambda={lam:g}: {value:.9f} (limit {limit:.9f})"
+              for lam, value, limit in critical_rows
+          ))
+    print("joint panel/switching outer regimes:",
+          f"dense ratio {dense_ratio:.9f},",
+          f"resolved factor {resolved_factor:.9f}",
+          f"(limit {resolved_limit:.9f})")
 
 
 def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
@@ -1205,6 +1280,7 @@ def nonreversible_contraction_checks():
     print("finite-n factor saturation:",
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
+    joint_panel_switching_checks()
     cantelli_order_statistic_checks(Q, pi, gamma_s, scales)
     irregular_panel_checks(Q, pi, gamma_s, f)
     burnin_transfer_checks(Q, pi, gamma_s, f)
@@ -1312,7 +1388,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, Perron tail rate, sharp prefactor and first two"
+          " count law, the sharp joint panel/switching variance profile,"
+          " Perron tail rate, sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"
           " correction, Green--Kubo"
