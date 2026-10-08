@@ -222,7 +222,10 @@
         $O(\varepsilon^{-2}\log(1/\delta))$ relative-error confidence certificate for the population skew-resolvent
         energy. When the full action $Jx$ is available, quadratic trace probes reduce the worst-case relative-variance
         constant from five to one and the half-scale one-percent miss certificate from 47 probes to 14; this stronger
-        result does not apply to scalar-only bilinear queries. Given a supplied operator-norm error radius for an
+        result does not apply to scalar-only bilinear queries. Normalizing Gaussian directions to the sphere of
+        radius $\sqrt d$ removes radial noise: the exact relative variance is at most $(d-2)/(d+2)$, and the
+        three-dimensional certificate needs eight probes for one-percent half-scale detection and 100 actions for
+        the displayed median-of-means guarantee. Given a supplied operator-norm error radius for an
         estimated generator, an estimator-centered
         group-inverse theorem propagates that error into a fully computable interval for the population energy;
         for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale

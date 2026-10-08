@@ -169,6 +169,36 @@
       exhaustive enumeration, with detection probability $0.75$. This is an operator-action result: it does not
       improve the scalar-query complexity when only bilinear entries are observable, and it does not absorb error
       from estimating $J$ from a hidden or noisy trajectory.</p>
+    <h3>Fixed-norm action probes remove radial noise</h3>
+    <p>Gaussian directions spend some of their variance on their random length. Let $d\ge2$ be the centered-space
+      dimension, let $u$ be uniform on the sphere of radius $\sqrt d$, and put
+      $Z_u=\lVert Ju\rVert^2$. Since $\mathbb E[uu^\top]=I$, this remains an unbiased trace estimator:
+      $\mathbb E Z_u=S_2$. The fourth-order spherical moment tensor gives the exact variance</p>
+    <div class="equation-card">
+    $$\operatorname{Var}(Z_u)
+      ={2\over d+2}\{dS_4-S_2^2\},\qquad
+      {\operatorname{Var}(Z_u)\over S_2^2}
+      \le {d-2\over d+2}.$$
+    </div>
+    <p>The last inequality again uses $S_4/S_2^2\le1/2$ for a real skew-adjoint matrix. It is sharp for rank two;
+      for $d=2$, $J^\top J$ is a scalar matrix and one fixed-norm action recovers the energy exactly. Paley&ndash;Zygmund
+      therefore yields the dimension-dependent guarantee</p>
+    <div class="equation-card">
+    $$\Pr\!\left(\lVert Ju\rVert\ge\theta\lVert J\rVert_{\rm HS}\right)
+      \ge { (1-\theta^2)^2\over1+\operatorname{Var}(Z_u)/S_2^2}
+      \ge {(1-\theta^2)^2(d+2)\over2d}.$$
+    </div>
+    <p>At $d=3$ and $\theta=1/2$, the universal detection probability is at least $15/32$. Hence eight independent
+      fixed-norm actions have miss probability at most $(17/32)^8=0.006344&lt;1\%$. The relative-variance constant is
+      $1/5$, so the same median-of-means theorem below uses blocks of size four and 100 actions in total at
+      $\varepsilon=1/2$, $\delta=0.05$&mdash;one quarter of the Gaussian-action certificate. The four-state simulation
+      gives relative variance $0.200079$ against the exact value $0.2$, half-scale detection $0.912885$, zero failures
+      in 4,000 median-of-means trials, and maximum relative error $0.195953$.</p>
+    <p>This is a rotation-invariant randomized trace estimator for $J^\top J$, in the general framework analyzed by
+      <a href="./bibliography.html#AvronToledo2011">Avron and Toledo (2011)</a>. The dimension-dependent improvement
+      comes here from combining the exact spherical moment with the paired spectrum of a skew operator. It retains
+      the same action-oracle and exact-population-operator scope as the Gaussian result; normalizing directions does
+      not address scalar-only access or generator-estimation error.</p>
     <h3>Exponential confidence from median block means</h3>
     <p>The polynomial Chebyshev tail can be amplified without assuming any
       higher moments. Split the squared signals into $k$ independent blocks

@@ -941,6 +941,84 @@ def random_probe_detection_check(sample_count=400_000):
         action_mom_relative_errors > mom_epsilon
     )
 
+    # Removing the Gaussian radial fluctuation improves the action estimator.
+    # If u is uniform on the sphere of radius sqrt(d), then E uu'=I and, for
+    # A=J'J,
+    #
+    # E (u'Au)^2 = d/(d+2) {(tr A)^2 + 2 tr(A^2)},
+    # Var(u'Au) = 2/(d+2) {d S4 - S2^2}.
+    #
+    # Paired singular values give S4/S2^2 <= 1/2, hence the relative variance
+    # is at most (d-2)/(d+2).  This is sharp for a rank-two skew matrix and
+    # vanishes in d=2, where J'J is a scalar matrix.
+    dimension = len(probe_x)
+    sphere_x = (
+        math.sqrt(dimension)
+        * x
+        / np.linalg.norm(x, axis=1)[:, None]
+    )
+    sphere_action_energies = np.einsum(
+        "bi,ij,bj->b", sphere_x, action_matrix, sphere_x
+    )
+    sphere_action_relative_variance = (
+        2.0
+        / (dimension + 2.0)
+        * (dimension * fourth_spectral_sum - exact_second_moment**2)
+        / exact_second_moment**2
+    )
+    sphere_action_variance_bound = (
+        (dimension - 2.0) / (dimension + 2.0)
+    )
+    empirical_sphere_action_relative_variance = (
+        np.var(sphere_action_energies) / exact_second_moment**2
+    )
+    sphere_action_detection_probability = np.mean(
+        sphere_action_energies
+        >= threshold_fraction**2 * exact_second_moment
+    )
+    sphere_action_detection_bound = (
+        (1.0 - threshold_fraction**2) ** 2
+        / (1.0 + sphere_action_relative_variance)
+    )
+    universal_sphere_action_detection_bound = (
+        (1.0 - threshold_fraction**2) ** 2
+        * (dimension + 2.0)
+        / (2.0 * dimension)
+    )
+    sphere_action_probes_for_one_percent = math.ceil(
+        math.log(0.01)
+        / math.log1p(-universal_sphere_action_detection_bound)
+    )
+    sphere_action_one_percent_miss_bound = (
+        1.0 - universal_sphere_action_detection_bound
+    ) ** sphere_action_probes_for_one_percent
+    sphere_action_mom_block_size = math.ceil(
+        4.0 * sphere_action_variance_bound / mom_epsilon**2
+    )
+    sphere_action_mom_sample_size = (
+        mom_blocks * sphere_action_mom_block_size
+    )
+    sphere_action_mom_trials = (
+        sample_count // sphere_action_mom_sample_size
+    )
+    sphere_action_mom_values = sphere_action_energies[
+        :sphere_action_mom_trials * sphere_action_mom_sample_size
+    ]
+    sphere_action_mom_estimates = np.median(
+        sphere_action_mom_values.reshape(
+            sphere_action_mom_trials,
+            mom_blocks,
+            sphere_action_mom_block_size,
+        ).mean(axis=2),
+        axis=1,
+    )
+    sphere_action_mom_relative_errors = np.abs(
+        sphere_action_mom_estimates / exact_second_moment - 1.0
+    )
+    sphere_action_mom_failure_frequency = np.mean(
+        sphere_action_mom_relative_errors > mom_epsilon
+    )
+
     threshold = threshold_fraction * math.sqrt(exact_second_moment)
     empirical_detection_probability = np.mean(abs(signals) >= threshold)
     paley_zygmund_bound = (1.0 - threshold_fraction**2) ** 2 / (
@@ -974,7 +1052,6 @@ def random_probe_detection_check(sample_count=400_000):
     # most sum_i q_i^2.  More sharply, sum_i q_i^2 >= S2^2/d, so the fourth
     # moment is at most (6-8/d)S2^2.  The dimension-free constant six is
     # asymptotically sharp for the dense rank-two harmonic family below.
-    dimension = len(probe_x)
     assert dimension >= 2
     integers = np.arange(2**dimension, dtype=np.uint64)
     bits = ((integers[:, None] >> np.arange(dimension, dtype=np.uint64))
@@ -1176,6 +1253,26 @@ def random_probe_detection_check(sample_count=400_000):
     assert action_mom_sample_size == 400
     assert action_mom_trials == 1000
     assert action_mom_failure_frequency < 0.02
+    assert abs(
+        np.mean(sphere_action_energies) / exact_second_moment - 1.0
+    ) < 3e-3
+    assert sphere_action_relative_variance <= (
+        sphere_action_variance_bound + 2e-14
+    )
+    assert abs(
+        empirical_sphere_action_relative_variance
+        - sphere_action_relative_variance
+    ) < 5e-3
+    assert (
+        sphere_action_detection_probability
+        >= sphere_action_detection_bound
+    )
+    assert sphere_action_probes_for_one_percent == 8
+    assert sphere_action_one_percent_miss_bound < 0.01
+    assert sphere_action_mom_block_size == 4
+    assert sphere_action_mom_sample_size == 100
+    assert sphere_action_mom_trials == 4000
+    assert sphere_action_mom_failure_frequency < 0.02
     assert relative_fourth_moment_error < 3e-2
     assert empirical_detection_probability >= paley_zygmund_bound
     assert probes_for_one_percent == 47
@@ -1268,6 +1365,35 @@ def random_probe_detection_check(sample_count=400_000):
         "action_mom_failure_frequency": action_mom_failure_frequency,
         "action_mom_maximum_relative_error": np.max(
             action_mom_relative_errors
+        ),
+        "sphere_action_relative_variance": (
+            sphere_action_relative_variance
+        ),
+        "sphere_action_variance_bound": sphere_action_variance_bound,
+        "empirical_sphere_action_relative_variance": (
+            empirical_sphere_action_relative_variance
+        ),
+        "sphere_action_detection_probability": (
+            sphere_action_detection_probability
+        ),
+        "sphere_action_detection_bound": sphere_action_detection_bound,
+        "universal_sphere_action_detection_bound": (
+            universal_sphere_action_detection_bound
+        ),
+        "sphere_action_probes_for_one_percent": (
+            sphere_action_probes_for_one_percent
+        ),
+        "sphere_action_one_percent_miss_bound": (
+            sphere_action_one_percent_miss_bound
+        ),
+        "sphere_action_mom_block_size": sphere_action_mom_block_size,
+        "sphere_action_mom_sample_size": sphere_action_mom_sample_size,
+        "sphere_action_mom_trials": sphere_action_mom_trials,
+        "sphere_action_mom_failure_frequency": (
+            sphere_action_mom_failure_frequency
+        ),
+        "sphere_action_mom_maximum_relative_error": np.max(
+            sphere_action_mom_relative_errors
         ),
         "threshold_fraction": threshold_fraction,
         "empirical_detection_probability": empirical_detection_probability,
@@ -1621,6 +1747,26 @@ def main():
         f"{probes['action_mom_maximum_relative_error']:.6f}; "
         f"{probes['action_probes_for_one_percent']} probes give miss bound "
         f"{probes['action_one_percent_miss_bound']:.6f}"
+    )
+    print(
+        f"   spherical-action relative variance exact/simulated/bounded "
+        f"{probes['sphere_action_relative_variance']:.9f}/"
+        f"{probes['empirical_sphere_action_relative_variance']:.9f}/"
+        f"{probes['sphere_action_variance_bound']:.9f}; half-RMS "
+        f"detection simulated/bounded "
+        f"{probes['sphere_action_detection_probability']:.9f}/"
+        f"{probes['universal_sphere_action_detection_bound']:.9f}"
+    )
+    print(
+        f"   spherical-action median-of-means blocks/size/failure bound "
+        f"{probes['mom_blocks']}/"
+        f"{probes['sphere_action_mom_block_size']}/"
+        f"{probes['mom_failure_bound']:.6f}; empirical failures/max error "
+        f"{probes['sphere_action_mom_failure_frequency']:.6f}/"
+        f"{probes['sphere_action_mom_maximum_relative_error']:.6f}; "
+        f"{probes['sphere_action_probes_for_one_percent']} probes give "
+        f"miss bound "
+        f"{probes['sphere_action_one_percent_miss_bound']:.6f}"
     )
     print(
         f"   Rademacher fourth moment exact/enumerated "
