@@ -451,6 +451,547 @@
       conformal validity. Nor does the calculation justify replacing $n$ by
       an effective sample size in an iid beta law.</p>
 
+    <h3>A joint long-panel and fast-switching theorem</h3>
+    <p>The preceding exact recursion permits any fixed pair $(n,m)$, while the
+      Perron asymptotics below send $n$ to infinity at fixed $m$. There is also
+      a uniform comparison in which both change. Let
+      ${\cal L}_{n,m}$ be the law of a stationary score panel on a regular grid
+      with $P=e^{mQ_0h}$, and let $\bar{\cal L}^{\otimes n}$ be $n$ independent
+      draws from the pooled score law. For a finite irreducible $d$-state
+      chain and $m,h&gt;0$, put $\Pi={\bf1}\pi$ and define the exact
+      one-step mutual information and dependence energy</p>
+    $$\mathfrak I(P):=\sum_i\pi_iD(P(i,\cdot)\Vert\pi),$$
+    $$\mathfrak E(P):=
+      \left\|D_\pi^{1/2}(P-\Pi)D_\pi^{-1/2}\right\|_F^2
+      =\sum_i\pi_i\chi^2(P(i,\cdot),\pi).$$
+    <p>Then</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left({\cal L}_{n,m},\bar{\cal L}^{\otimes n}\right)
+      \le \delta^{\rm KL}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\,\mathfrak I(P)}\right\}
+      \le \delta^{(2)}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\log\{1+\mathfrak E(P)\}}\right\}
+      \le \delta^{\rm HS}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{n-1}{2}\,\mathfrak E(P)}\right\}
+      \le \delta^{\rm gap}_{n,m}:=
+      \min\!\left\{1,\sqrt{\frac{(n-1)(d-1)}2}\,
+      e^{-m\gamma_s h}\right\}.$$
+    </div>
+    <p>To prove it, first compare the stationary hidden path with
+      $\pi^{\otimes n}$. The chain rule for relative entropy gives exactly</p>
+    $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
+      =(n-1)\sum_i\pi_iD(P(i,\cdot)\Vert\pi).$$
+    <p>Pinsker gives $\delta^{\rm KL}$. Regarding the stationary pair law
+      $\pi_iP_{ij}$ relative to $\pi_i\pi_j$, monotonicity of R&eacute;nyi
+      divergence in its order gives</p>
+    $$\mathfrak I(P)\le D_2(\pi_iP_{ij}\Vert\pi_i\pi_j)
+      =\log\{1+\mathfrak E(P)\}.$$
+    <p>This is the middle bound $\delta^{(2)}$; it is always at least as sharp
+      as replacing relative entropy directly by chi-square divergence because
+      $\log(1+x)\le x$. R&eacute;nyi&apos;s original family of information measures
+      is introduced by
+      <a href="./bibliography.html#Renyi1961">R&eacute;nyi (1961)</a>.
+      The stationary average row chi-square divergence is exactly
+      $\mathfrak E(P)$. The $L^2(\pi)$
+      contraction of the adjoint semigroup then gives the gap-only corollary</p>
+    $$\mathfrak E(P)
+      \le e^{-2m\gamma_sh}\sum_i\pi_i(\pi_i^{-1}-1)
+      =(d-1)e^{-2m\gamma_sh}.$$
+    <p>Pinsker&apos;s inequality yields the displayed total-variation bound.
+      Passing the hidden path through arbitrary conditionally independent
+      state-specific emission kernels can only decrease divergence, the data
+      processing principle developed for general information divergences by
+      <a href="./bibliography.html#Csiszar1963">Csisz&aacute;r (1963)</a>.
+      Thus the conclusion is uniform over the score laws and over every panel
+      event; it is not merely a covariance or empirical-CDF statement.</p>
+    <p>For example, continuity of the pooled CDF gives the finite-panel iid
+      comparison</p>
+    <div class="equation-card">
+    $$\left|\Pr_\pi\{C_0&lt;p\}
+      -\Pr\{\operatorname{Bin}(n,p)\ge k\}\right|
+      \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
+      \le\delta^{\rm HS}_{n,m}.$$
+    </div>
+    <h4>A single joint bound for an arbitrary start</h4>
+    <p>The initial-law and within-panel errors need not be separated by a
+      triangle inequality. Let $Y_1\sim\mu_1$, let $P_t$ carry $Y_t$ to
+      $Y_{t+1}$, and put $\mu_{t+1}=\mu_tP_t$. Assume each $P_t$ preserves the
+      same strictly positive law $\pi$. The relative-entropy chain rule gives
+      the exact nonstationary identity</p>
+    <div class="equation-card">
+    $$D\!\left\{{\cal L}_{\mu_1}(Y_{1:n})\Vert\pi^{\otimes n}\right\}
+      =D(\mu_1\Vert\pi)
+       +\sum_{t=1}^{n-1}\sum_i\mu_t(i)
+          D\!\left(P_t(i,\cdot)\Vert\pi\right)=:{\cal J}_{\mu,\boldsymbol P}.$$
+    </div>
+    <p>Indeed, the path log-likelihood ratio is the initial density ratio
+      plus the $n-1$ transition density ratios. Taking expectation under the
+      nonstationary path law produces the changing pre-transition marginal
+      $\mu_t$ in every summand. Passing this hidden path through arbitrary
+      conditionally independent state-specific emission kernels and applying
+      Pinsker once therefore yields</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{\mu_1}(R_{1:n}),
+          \bar{\cal L}^{\otimes n}\right\}
+       \le\delta^{\rm KL}_{\mu,\boldsymbol P}:=
+       \min\!\left\{1,\sqrt{\frac{{\cal J}_{\mu,\boldsymbol P}}2}\right\}.$$
+    </div>
+    <p>For a burn-in $b$ from $\nu$, take
+      $\mu_1=\nu e^{mQ_0b}$ and
+      $P_t=e^{mQ_0h_t}$. The formula allows unequal panel spacings and combines
+      residual start-up memory with every subsequent transition before the
+      square root is taken. At $\mu_1=\pi$ it reduces exactly to the
+      stationary regular- or irregular-grid identities above. The simpler
+      additive burn-in transfer remains a useful gap-only envelope, but it can
+      be looser because it applies total variation and a triangle inequality
+      before combining the two effects.</p>
+    <p>An eight-observation nonreversible three-state certificate starts from
+      state zero, uses scaled burn-in $0.2$ and spacing $0.3$, and enumerates
+      all $3^8$ hidden paths. The chain-rule and enumerated entropies both equal
+      $0.905666166906$ (initial contribution $0.227966925401$ and transition
+      contribution $0.677699241505$). Hidden-path TV is $0.518315896318$ and
+      the joint Pinsker bound is $0.672928735791$, compared with
+      $0.875891326846$ for exact initial-state TV plus the stationary-panel
+      Pinsker bound. After binary emissions with state success probabilities
+      $(0.15,0.65,0.90)$, data processing lowers the exact panel TV to
+      $0.204334689360$.</p>
+    <p>This is a comparison of <em>marginal laws over random panels</em>.
+      It controls every panel event and bounded panel functional, but it is
+      not pointwise, feature-conditional, or training-conditional conformal
+      coverage.</p>
+    <h4>The whole realized-coverage law, including ties</h4>
+    <p>The preceding event comparison is one projection of a stronger exact
+      consequence. Continuity is unnecessary if ties are randomized. For a
+      pooled score with CDF $\bar F$, attach an independent
+      $V\sim\operatorname{Unif}(0,1)$ and use the distributional transform</p>
+    $$U=\bar F(R^-)+V\{\bar F(R)-\bar F(R^-)\}.$$
+    <p>This $U$ is exactly uniform for an arbitrary pooled score law
+      (<a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf,
+      2009</a>), and ordering $U$ is equivalent to lexicographically ordering
+      $(R,V)$. Adding the same independent tie-breaking kernel to the
+      dependent and iid panels cannot increase total variation. Hence, if
+      $C_0^\circ=U_{(k)}$,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left(
+      {\cal L}_{n,m}(C_0^\circ),\operatorname{Beta}(k,n+1-k)
+      \right)
+      \le\delta^{\rm KL}_{n,m}\le\delta^{(2)}_{n,m}
+      \le\delta^{\rm HS}_{n,m}\le\delta^{\rm gap}_{n,m}.$$
+    </div>
+    <p>Thus, writing $I_x(k,n+1-k)$ for the beta CDF,</p>
+    $$\sup_{0\le x\le1}\left|
+      \Pr_\pi\{C_0^\circ\le x\}-I_x(k,n+1-k)\right|
+      \le\delta^{\rm KL}_{n,m}.$$
+    <p>More generally, every measurable $\phi:[0,1]\to[0,1]$ obeys</p>
+    $$\left|\mathbb E_\pi\phi(C_0^\circ)
+       -\mathbb E\phi(B_{k,n+1-k})\right|
+       \le\delta^{\rm KL}_{n,m}.$$
+    <p>For example, for every integer $r\ge1$,</p>
+    $$\left|\mathbb E_\pi (C_0^\circ)^r
+       -\frac{(k)^{\overline r}}{(n+1)^{\overline r}}\right|
+       \le\delta^{\rm KL}_{n,m},$$
+    <p>where the overline denotes a rising factorial. In particular the
+      randomized pooled coverage mean differs from $k/(n+1)$ by at most the
+      same panel-law error. This is a distributional finite-sample result;
+      it does not substitute an effective sample size into a beta law.</p>
+
+    <h4>Several future predictions: the beta-binomial benchmark</h4>
+    <p>A deployed threshold is normally reused. Take $n$ calibration scores,
+      let $C_0^\circ=U_{(k)}$, and append $L$ future randomized transforms.
+      Define</p>
+    $$Z_\ell={\bf1}\{U_{n+\ell}\le U_{(k)}\},\qquad
+      J_L=\sum_{\ell=1}^L Z_\ell.$$
+    <p>Under the iid pooled comparator, conditional on
+      $B=C_0^\circ\sim\operatorname{Beta}(k,n+1-k)$, the $Z_\ell$ are iid
+      Bernoulli$(B)$. Therefore their unconditional law is exchangeable, not
+      independent, and</p>
+    <div class="equation-card">
+    $$\Pr\{J_L=j\}
+      ={L\choose j}\frac{B(k+j,n+1-k+L-j)}{B(k,n+1-k)},
+      \qquad 0\le j\le L.$$
+    </div>
+    <p>This is the beta-binomial law. In particular, with
+      $p=k/(n+1)$,</p>
+    $$\operatorname{Cov}(Z_\ell,Z_r)
+      =\frac{k(n+1-k)}{(n+1)^2(n+2)},\quad \ell\ne r,$$
+    $$\operatorname{Var}(J_L)
+      =Lp(1-p)\frac{n+1+L}{n+2}.$$
+    <p>Thus replacing the $L$ indicators by independent Bernoulli$(p)$
+      variables is wrong even before time-series dependence is introduced.
+      The shared finite-sample threshold creates the positive covariance.</p>
+    <p>Now apply the score-path comparison to the complete string of
+      $n+L$ calibration and future scores before taking order statistics or
+      indicators. Data processing gives</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{n+L,m}(J_L),
+      \operatorname{BetaBinomial}(L,k,n+1-k)\right\}
+      \le\delta^{\rm KL}_{n+L,m}.$$
+    </div>
+    <p>The same bound controls the full indicator vector and every event or
+      bounded diagnostic built from it. On irregular grids or from a
+      nonstationary start, replace the right side by the corresponding exact
+      joint path-entropy bound for all $n+L$ observations. This remains a
+      marginal comparison over random calibration and future sequences. It
+      does not make the realized indicators conditionally independent and
+      does not assert pointwise or feature-conditional coverage.</p>
+    <p>The iid universal finite-batch law is derived by
+      <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> via
+      exchangeability and P&oacute;lya&apos;s urn. The contribution here is its
+      quantitative transfer to fast hidden Markov scores through the joint
+      total-variation theorem.</p>
+    <p>For the exact two-state certificate, state zero emits uniformly on
+      $(0,1/2)$ and state one uniformly on $(1/2,1)$, so the pooled law is
+      uniform and the hidden path is recoverable from every score. With
+      $n=7$, $k=6$, $L=5$, and one-step correlation $0.2$, enumeration of
+      all $2^{12}$ paths plus the conditional beta-binomial calculation gives
+      count-law distance $0.038520368837$, below the joint score-law bound
+      $0.332784201141$. Even in the iid comparator, its distance from the
+      naive independent-binomial law is $0.128876657197$; the exact count
+      variance is $1.354166666667$, versus $0.9375$ under independence.</p>
+
+    <h4>Several coverage levels: the Dirichlet--multinomial benchmark</h4>
+    <p>Monitoring nested conformal levels creates a second shared-threshold
+      dependence. Choose ranks
+      $0=k_0&lt;k_1&lt;\cdots&lt;k_q&lt;k_{q+1}=n+1$, and let the $q$
+      order statistics split $[0,1]$ into $q+1$ cells. Their random cell
+      probabilities $S=(S_1,\ldots,S_{q+1})$ obey</p>
+    $$S\sim\operatorname{Dirichlet}(\alpha_1,\ldots,\alpha_{q+1}),
+      \qquad \alpha_j=k_j-k_{j-1}.$$
+    <p>If $N_j$ is the number of $L$ future randomized scores falling in
+      cell $j$, then $N\mid S\sim\operatorname{Multinomial}(L,S)$, so</p>
+    <div class="equation-card">
+    $$\Pr\{N=x\}
+      =\frac{L!\,\Gamma(n+1)}{\Gamma(n+1+L)}
+       \prod_{j=1}^{q+1}
+       \frac{\Gamma(\alpha_j+x_j)}{x_j!\,\Gamma(\alpha_j)},
+      \qquad \sum_jx_j=L.$$
+    </div>
+    <p>This is the Dirichlet--multinomial law. With
+      $p_j=\alpha_j/(n+1)$, its covariance matrix is</p>
+    $$\operatorname{Cov}(N)
+      =L\frac{n+1+L}{n+2}\{\operatorname{diag}(p)-pp^\top\}.$$
+    <p>The factor $(n+1+L)/(n+2)$ is the exact inflation relative to a
+      multinomial with fixed probabilities. Thus neither different future
+      observations nor different monitored levels may be treated as
+      independent merely because the underlying scores are iid.</p>
+    <p>Apply the same joint score-path comparison to all $n+L$ observations
+      before forming every order statistic and cell count. Data processing
+      gives the multilevel transfer theorem</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left\{{\cal L}_{n+L,m}(N),
+      \operatorname{DM}(L;\alpha_1,\ldots,\alpha_{q+1})\right\}
+      \le\delta^{\rm KL}_{n+L,m}.$$
+    </div>
+    <p>This controls the joint law of all nested future-coverage counts and
+      every bounded simultaneous diagnostic. It remains marginal over the
+      random calibration and future sequence; it is not simultaneous
+      feature-conditional coverage. The Dirichlet law of uniform spacings is
+      classical; see <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>.
+      The hidden-Markov contribution is the quantitative transfer bound.</p>
+    <p>In the same exact two-state certificate, take $n=7$, ranks $(3,6)$,
+      and $L=5$. Enumeration of all $2^{12}$ hidden paths gives joint-count
+      distance $0.060077182905$ from the Dirichlet--multinomial law, below
+      $0.332784201141$. The iid Dirichlet--multinomial comparator is itself
+      $0.165035363400$ from the fixed-probability multinomial, and its
+      covariance inflation is $13/9=1.444444444444$.</p>
+
+    <p>If ties are instead retained deterministically, let
+      $C_0=\bar F(R_{(k)})$ and define
+      $H_{\bar F}(c)=\Pr_{R\sim\bar F}\{\bar F(R)\le c\}$. Under the iid
+      pooled panel, the exact atomic comparator is</p>
+    $$\Pr\{C_0\le c\}=I_{H_{\bar F}(c)}(k,n+1-k).$$
+    <p>Consequently the dependent panel obeys</p>
+    <div class="equation-card">
+    $$\sup_{0\le c\le1}\left|
+      \Pr_\pi\{C_0\le c\}
+      -I_{H_{\bar F}(c)}(k,n+1-k)\right|
+      \le\delta^{\rm KL}_{n,m}.$$
+    </div>
+    <p>Because $H_{\bar F}(c)\le c$, deterministic tie retention is
+      conservative in the iid comparator and also gives the simpler bound
+      $\Pr_\pi\{C_0\le c\}\le I_c(k,n+1-k)+\delta^{\rm KL}_{n,m}$.
+      The exact $H_{\bar F}$ formula separates that discreteness effect from
+      calibration dependence and can be much sharper than this envelope.</p>
+    <p>The terminal-state relaxation bound converts this marginal law into a
+      transparent state-specific PAC statement without claiming conditional
+      conformal validity. For a specified current state $i$, define the
+      randomized realized future coverage $D_i^\circ(\widehat q)$, using an
+      independent tie uniform for the future score as well as the calibration
+      scores. Since
+      $|D_i^\circ(\widehat q)-C_0^\circ|\le H_i(\Delta)$ for every panel,
+      putting
+      $u_i=\min\{1,p+H_i(\Delta)\}$ gives</p>
+    <div class="equation-card">
+    $$\Pr_\pi\{D_i^\circ(\widehat q)&lt;p\}
+      \le\min\left\{1,
+        I_{u_i}(k,n+1-k)+\delta^{\rm KL}_{n,m}\right\}.$$
+    </div>
+    <p>The probability is over random stationary calibration panels, while
+      $i$ and $\Delta$ are fixed. It is therefore a PAC guarantee for a
+      state-specific future coverage functional, not pointwise or
+      feature-conditional coverage. If the panel follows an initial law
+      $\nu$ after burn-in $b$, one may replace the right-side panel error by
+      the joint $\delta^{\rm KL}_{\mu,\boldsymbol P}$ above. A simpler
+      gap-only envelope is</p>
+    $$\min\left\{1,\delta^{\rm KL}_{n,m}
+      +\frac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}\right\}.$$
+    <p>An exact nonreversible three-state certificate with $n=12$, $k=10$,
+      and scaled spacing $mh=1$
+      obtains $\delta^{\rm KL}_{n,m}=0.044220298466$. Across 97 pooled-CDF
+      levels, the largest exact beta-CDF discrepancy is $0.000384664522$;
+      the exact first three moment discrepancies are respectively
+      $7.319\times10^{-5}$, $8.519\times10^{-5}$, and
+      $7.268\times10^{-5}$. The count recursion evaluates each dependent
+      CDF value without Monte Carlo, and numerical tail integration checks
+      the moment consequences independently. A separate three-atom score
+      law gives a maximum randomized-transform beta-CDF discrepancy of
+      $0.000419796730$ on 99 levels and a maximum deterministic
+      atomic-comparator discrepancy of $0.000420433415$. At $c=0.8$,
+      $H_{\bar F}(c)=0.649319371728$: the dependent lower tail is
+      $0.149730544921$, the exact iid atomic comparator is $0.150150978336$,
+      and the looser continuous-beta envelope is $0.558345748480$.</p>
+    <p>The Hilbert--Schmidt expression is intrinsic: it is the sum of the
+      squared singular values of $P-\Pi$ on centered $L^2(\pi)$. If $Q_0$ is
+      reversible with relaxation rates
+      $0=\lambda_1&lt;\lambda_2\le\cdots\le\lambda_d$, the identity becomes</p>
+    <div class="equation-card">
+    $$\mathfrak E(e^{mQ_0h})
+      =\sum_{r=2}^d e^{-2m\lambda_rh}.$$
+    </div>
+    <p>Thus iid calibration-panel rank laws become uniformly accurate under
+      the intrinsic sufficient condition
+      $(n_m-1)\mathfrak E(P_m)\to0$. The simpler condition
+      $n_me^{-2m\gamma_sh}\to0$ remains sufficient, but can waste a factor
+      $d-1$ by treating every mode as if it relaxed at the gap. Equivalently,
+      the reversible effective rank
+      $r_{\rm eff}=e^{2m\lambda_2h}\mathfrak E(P)$ lies between $1$ and
+      $d-1$ and counts the modes still visible at the panel spacing. This
+      remains a
+      <em>marginal law over calibration panels</em>; it does not turn ordinary
+      pooled conformal prediction into pointwise, training-conditional, or
+      feature-conditional coverage. From an initial law $\nu$ followed by a
+      burn-in $b$, the exact joint entropy bound
+      $\delta^{\rm KL}_{\mu,\boldsymbol P}$ can be used directly. If only the
+      stationary Hilbert&ndash;Schmidt or gap envelope is desired, the simpler
+      triangle bound adds
+      $\tfrac12\|\nu/\pi-1\|_{2,\pi}e^{-m\gamma_sb}$.</p>
+    <p>A ten-state reversible certificate makes the improvement concrete.
+      Two five-state clusters mix rapidly internally but communicate through
+      one slow contrast. At scaled time $10$,</p>
+    $$\mathfrak E(P)=0.018315638889,
+      \qquad (d-1)e^{-2\gamma_s t}=0.164840749999,$$
+    <p>so $r_{\rm eff}=1$ to numerical precision. For $n=20$, the exact
+      Hilbert--Schmidt TV bound is $0.417131357540$, whereas the gap-only
+      bound is the vacuous value $1$. The certificate also checks the
+      weighted row-$\chi^2$, Frobenius, singular-value, and reversible
+      eigenvalue formulas independently.</p>
+    <p>The R&eacute;nyi step matters away from the weak-dependence limit. For the
+      same ten-state chain at scaled time $0.2$ and a two-observation panel,
+      the exact-KL, R&eacute;nyi-2, and direct Hilbert--Schmidt bounds are
+      respectively $0.560996559452$, $0.601934420847$, and $0.729386305243$.
+      The middle quantity is a rigorous transform of the same computable
+      dependence energy, not a new mixing assumption.</p>
+
+    <h3>Irregular panels: the whole spacing vector matters</h3>
+    <p>The comparison is not restricted to a regular grid. Let the successive
+      spacings be $h_1,\ldots,h_{n-1}$ and put
+      $P_j=e^{mQ_0h_j}$. Stationarity is preserved across every unequal
+      transition, so the relative-entropy chain rule gives the exact identity</p>
+    <div class="equation-card">
+    $$D\!\left({\cal L}(Y_1,\ldots,Y_n)\Vert\pi^{\otimes n}\right)
+      =\sum_{j=1}^{n-1}\sum_i\pi_i
+        D(P_j(i,\cdot)\Vert\pi).$$
+    </div>
+    <p>Applying data processing, Pinsker, and the same rowwise chi-square
+      comparison separately at every gap yields, for arbitrary conditionally
+      independent state-specific emission kernels,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\!\left({\cal L}_{\boldsymbol h,m},
+       \bar{\cal L}^{\otimes n}\right)
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\mathfrak I(P_j)}\right\}
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\log\{1+\mathfrak E(P_j)\}}\right\}
+      \le \min\!\left\{1,
+       \sqrt{\frac12\sum_{j=1}^{n-1}\mathfrak E(P_j)}\right\}
+      \le \min\!\left\{1,
+       \sqrt{\frac{d-1}{2}\sum_{j=1}^{n-1}
+       e^{-2m\gamma_sh_j}}\right\}.$$
+    </div>
+    <p>If $Q_0$ is reversible with relaxation rates $\lambda_r$, the exact
+      energy in the first bound is</p>
+    $$\sum_{j=1}^{n-1}\mathfrak E(P_j)
+      =\sum_{j=1}^{n-1}\sum_{r=2}^d e^{-2m\lambda_rh_j}.$$
+    <p>Thus an irregular triangular array is asymptotically iid whenever this
+      summed modal energy tends to zero. The whole spacing vector is essential:
+      Jensen&apos;s inequality gives
+      $\sum_j e^{-2m\gamma_sh_j}\ge
+      (n-1)e^{-2m\gamma_s\bar h}$. Replacing unequal gaps by their mean would
+      therefore make the displayed envelope smaller, not safer; a few short
+      gaps can dominate it.</p>
+    <p>The nonreversible three-state certificate uses scaled spacings
+      $(0.35,0.50,0.75,1.10,1.70)$. Full enumeration of all $3^6$ hidden paths
+      gives KL divergence $0.088542841901$ and TV distance $0.179564893897$.
+      The exact-KL, summed R&eacute;nyi-2, Hilbert--Schmidt, and gap-only bounds are
+      respectively $0.210407749264$, $0.282956573231$, $0.289820479269$, and
+      $0.325134088385$.</p>
+    <p>The information scale remains sharp with unequal gaps. In the symmetric
+      two-state chain set $a_j=e^{-2mh_j}$. The path-to-sign bijection now gives</p>
+    $$L=\prod_{j=1}^{n-1}(1+a_jZ_j),$$
+    <p>where the $Z_j$ are independent fair signs under the iid reference.
+      Hence path TV is exactly heterogeneous Bernoulli-product TV. Its
+      Hellinger affinity with the iid law is also exact:</p>
+    <div class="equation-card">
+    $$\rho_{\boldsymbol a}
+      =\prod_{j=1}^{n-1}\frac{\sqrt{1+a_j}+\sqrt{1-a_j}}2,
+      \qquad
+      1-\rho_{\boldsymbol a}\le d_{\rm TV}
+      \le\sqrt{1-\rho_{\boldsymbol a}^2}.$$
+    </div>
+    <p>Writing $\psi(a)=-\log[(\sqrt{1+a}+\sqrt{1-a})/2]$, the ratio
+      $\psi(a)/a^2$ extends to a strictly positive continuous function on
+      $[0,1]$, with endpoint values $1/8$ and $(\log2)/2$. Consequently, for
+      any triangular array of gaps, without an infinitesimal-gap assumption,</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\to0\quad\Longleftrightarrow\quad\sum_j a_j^2\to0,
+      \qquad
+      d_{\rm TV}\to1\quad\Longleftrightarrow\quad\sum_j a_j^2\to\infty.$$
+    </div>
+    <p>This finite-product calculation is the Bernoulli specialization of the
+      affinity criterion in
+      <a href="./bibliography.html#Kakutani1948">Kakutani&apos;s (1948)</a>
+      equivalence--singularity theorem. The interior critical value needs more
+      information than the sum of squares. If
+      $\max_j|a_j|\to0$ and $\sum_j a_j^2\to c$, the triangular-array
+      log-likelihood is locally asymptotically normal in the sense of
+      <a href="./bibliography.html#LeCam1960">Le Cam (1960)</a>, and the TV distance tends
+      to $2\Phi(\sqrt c/2)-1$. Without the maximum condition, the same
+      $c$ need not give that limit: at $c=1/4$, one persistent correlation
+      $a=1/2$ has TV $0.25$, while $65{,}536$ equal correlations with the same
+      total squared correlation give $0.19741205$, approaching the diffuse LAN
+      limit $0.19741265$.</p>
+    <p>There is nevertheless a complete mixed-profile limit. Suppose a fixed
+      number $q$ of correlations converge to $b_1,\ldots,b_q$, while among the
+      remaining correlations the maximum tends to zero and the sum of squares
+      tends to $c$. For independent fair signs $Z_1,\ldots,Z_q$ and an
+      independent $G\sim N(0,1)$, put
+      $B=\prod_{\ell=1}^q(1+b_\ell Z_\ell)$. Then</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\longrightarrow
+      \frac12\mathbb E\left|B e^{\sqrt cG-c/2}-1\right|.$$
+    </div>
+    <p>The proof factors the likelihood into persistent and diffuse parts,
+      applies the Bernoulli triangular-array LAN limit only to the latter, and
+      uses
+      $\mathbb E_0L^2=\prod_j(1+a_j^2)$ for uniform integrability. Thus the
+      entire finite-information profile, not merely its squared norm, is the
+      invariant. With persistent correlations $0.5$ and $0.3$ and diffuse
+      information $c=0.25$, the exact TV at $16{,}384$ diffuse signs is
+      $0.312896499$, versus the product Bernoulli/lognormal limit
+      $0.312895750$.</p>
+    <p>With equally many correlations
+      $a$ and $2a$ and total squared correlation tending to one, the exact
+      certificate reaches $0.38297545$ at $a=2^{-6}$, versus the limit
+      $0.38292492$. This is still a marginal comparison of random panel laws,
+      not conditional conformal coverage.</p>
+
+    <p>The scale cannot be improved in general even on a regular grid. For the stationary symmetric
+      two-state chain, encode the states by $X_j\in\{-1,1\}$ and put
+      $a=e^{-2mh}$. The transition signs $Z_j=X_jX_{j+1}$ are independent with
+      $\Pr(Z_j=1)=(1+a)/2$; under an iid stationary panel they are independent
+      fair signs. The path total variation is therefore exactly the distance
+      between $n-1$ copies of $\operatorname{Bernoulli}((1+a)/2)$ and fair
+      Bernoulli variables. As $a\downarrow0$, it tends to zero if
+      $(n-1)a^2\to0$, to one if $(n-1)a^2\to\infty$, and, if
+      $(n-1)a^2\to c\in(0,\infty)$, to</p>
+    $$2\Phi(\sqrt c/2)-1.$$
+    <p>Continuous emissions on disjoint state-specific supports reveal the
+      state and preserve this distance exactly, so the example is a genuine
+      continuous-score counterexample outside the subcritical scale. The
+      certificate checks the exact Bernoulli-product formula by full path
+      enumeration and obtains $0.38292359$ at $a=2^{-7}$,
+      $n-1=a^{-2}$, against the critical limit $0.38292492$. For the
+      nonreversible three-state chain and a 200-score panel, the spectral
+      bounds at scaled spacings $mh=1,1.5,2$ are respectively
+      $0.35621999$, $0.05660622$, and $0.00899518$.</p>
+
+    <h3>Sharp joint burn-in and panel limit</h3>
+    <p>The additive burn-in term is not merely a proof artifact. In the same
+      symmetric two-state model, let the initial sign imbalance before burn-in
+      be $\eta$, put</p>
+    $$\delta_m=\eta e^{-2mb_m},\qquad a_m=e^{-2mh_m},$$
+    <p>and observe $n_m$ states after the burn-in. The path-to-sign map is a
+      bijection, and under the iid stationary reference law
+      $(X_0,Z_1,\ldots,Z_{n_m-1})$ are independent fair signs. Under the
+      Markov law they are still independent, but have means
+      $(\delta_m,a_m,\ldots,a_m)$. Consequently the likelihood ratio is exactly</p>
+    $$L_m=(1+\delta_mX_0)
+      \prod_{j=1}^{n_m-1}(1+a_mZ_j),\qquad
+      d_{\rm TV}=\frac12\mathbb E_0|L_m-1|.$$
+    <p>Suppose $a_m\to0$, $\delta_m\to\delta\in[-1,1]$, and
+      $(n_m-1)a_m^2\to c\in[0,\infty)$. The log of the product is locally
+      asymptotically normal, in the sense introduced by
+      <a href="./bibliography.html#LeCam1960">Le Cam (1960)</a>, and uniform
+      integrability follows from its bounded second moment. Hence</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\longrightarrow
+      \Psi(\delta,c):=\frac14\sum_{s=\pm1}
+      \mathbb E\left|(1+s\delta)
+      e^{\sqrt c\,G-c/2}-1\right|,\qquad G\sim N(0,1).$$
+    </div>
+    <p>This phase surface is available in closed form. For $a\ge0$ define</p>
+    $$\mathcal D(a,c)=\mathbb E\left|a e^{\sqrt c\,G-c/2}-1\right|.$$
+    <p>When $a&gt;0$ and $c&gt;0$, splitting at the unique likelihood crossing gives</p>
+    <div class="equation-card">
+    $$\mathcal D(a,c)=2\left[
+      a\Phi\left({\sqrt c\over2}+{\log a\over\sqrt c}\right)
+      -\Phi\left(-{\sqrt c\over2}+{\log a\over\sqrt c}\right)
+      \right]-a+1,$$
+    $$\Psi(\delta,c)=\frac14\{
+      \mathcal D(1+\delta,c)+\mathcal D(1-\delta,c)\}.$$
+    </div>
+    <p>The continuous boundary values are $\mathcal D(a,0)=|a-1|$ and
+      $\mathcal D(0,c)=1$. The formula also exposes an exact two-source
+      comparison:</p>
+    <div class="equation-card">
+    $$\max\left\{{|\delta|\over2},
+        2\Phi(\sqrt c/2)-1\right\}
+      \le \Psi(\delta,c)
+      \le \min\left\{1,{|\delta|\over2}
+        +2\Phi(\sqrt c/2)-1\right\}.$$
+    </div>
+    <p>The lower bounds follow by marginalizing to the initial sign or to the
+      transition experiment; the upper bound is the product total-variation
+      inequality. Moreover $\Psi$ is nondecreasing in both $|\delta|$ and $c$.
+      For $|\delta|$, a binary symmetric channel degrades any larger initial
+      bias to a smaller one while preserving the fair reference. For $c$, write
+      the lognormal factor as the exponential Brownian martingale
+      $e^{B_c-c/2}$ and apply conditional Jensen to the convex function
+      $|x-1|$. Thus the two memory sources cannot cancel, although their
+      total-variation effects need not add.</p>
+    <p>This contains both boundary cases:
+      $\Psi(\delta,0)=|\delta|/2$ is the surviving initial-state memory, while
+      $\Psi(0,c)=2\Phi(\sqrt c/2)-1$ is the stationary panel limit above.
+      Therefore iid panel convergence holds in this sharp example if and only
+      if</p>
+    $$\delta_m\to0
+      \quad\hbox{and}\quad
+      (n_m-1)a_m^2\to0.$$
+    <p>A short within-panel spacing cannot compensate for insufficient burn-in,
+      nor can burn-in remove accumulated dependence among a growing number of
+      calibration scores. With $\delta=0.6$ and $c=1$, the exact finite-panel
+      distance at $a=2^{-7}$ is $0.451714292$, converging to
+      $\Psi(0.6,1)=0.451711767$. Full path enumeration independently verifies
+      the finite factorization. Continuous disjoint-support emissions again
+      preserve the hidden path and make the result a score-panel statement.
+      Independent quadrature checks the Gaussian-CDF phase formula over 16
+      bias/information points to $4.2\times10^{-12}$. For the same benchmark, the
+      two marginal lower bounds are $0.3$ and $0.382924923$, while the additive
+      upper bound is $0.682924923$, locating the exact value strictly between
+      the unavoidable marginal information and the triangle bound.
+      It remains a comparison of marginal random-panel laws, not a
+      training-conditional or feature-conditional coverage guarantee.</p>
+
     <h3>Long regular panels: the exact exponential rate</h3>
     <p>The generating matrix also resolves the large-panel limit, but only
       when the spacing is fixed. Let $P=e^{mQ_0h}$ for $h&gt;0$, assume the
@@ -935,6 +1476,10 @@
       $1-\delta-\zeta_b$. In particular, the uniform empirical-CDF event and
       the conditional-coverage inequality above remain unchanged on the good
       event, but their confidence becomes $1-\delta-\zeta_b$.
+      When the comparator is specifically the iid pooled panel, the exact
+      nonstationary path-entropy identity above combines start-up and
+      within-panel errors before Pinsker and can be sharper than this general
+      transfer.
       To make the start-up penalty at most $\epsilon$, it is sufficient that</p>
     $$b\ge\frac1{m\gamma_s}
        \left[\log\frac{\|\nu/\pi-1\|_{L^2(\pi)}}{2\epsilon}\right]_+.$$

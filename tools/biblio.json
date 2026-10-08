@@ -2431,6 +2431,72 @@
   "annotation": "Establishes a first-order Edgeworth expansion for sums related to a homogeneous Markov chain and corrects inaccuracies in earlier Markov-chain formulations."
  },
  {
+  "role": "survey_conformal",
+  "key": "Csiszar1963",
+  "authors": "Csiszár, I.",
+  "year": 1963,
+  "title": "Eine informationstheoretische Ungleichung und ihre Anwendung auf den Beweis der Ergodizität von Markoffschen Ketten",
+  "venue": "A Magyar Tudományos Akadémia Matematikai Kutató Intézetének Közleményei 8(1-2):85-108",
+  "doi": "",
+  "url": "https://real.mtak.hu/201426/",
+  "annotation": "Proves that general information divergences cannot increase through a stochastic channel. The joint panel theorem uses this data-processing principle after comparing the hidden Markov path with the iid stationary path."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Ruschendorf2009",
+  "authors": "Rüschendorf, L.",
+  "year": 2009,
+  "title": "On the distributional transform, Sklar's theorem, and the empirical copula process",
+  "venue": "Journal of Statistical Planning and Inference 139(11):3921-3927",
+  "doi": "10.1016/j.jspi.2009.05.030",
+  "url": "https://doi.org/10.1016/j.jspi.2009.05.030",
+  "annotation": "Develops the randomized distributional transform for arbitrary, possibly discontinuous distributions. It supplies the exact uniformization used to transfer the full beta order-statistic law when pooled conformity scores have ties."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "MarquesF2023",
+  "authors": "Marques F., P. C.",
+  "year": 2023,
+  "title": "On the Universal Distribution of the Coverage in Split Conformal Prediction",
+  "venue": "arXiv:2303.02770",
+  "doi": "10.48550/arXiv.2303.02770",
+  "url": "https://arxiv.org/abs/2303.02770",
+  "annotation": "Derives the exact universal finite-batch empirical-coverage law for split conformal prediction under exchangeability using a Polya-urn representation. The repeated-future theorem transfers this iid beta-binomial benchmark to fast hidden Markov scores."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Pyke1965",
+  "authors": "Pyke, R.",
+  "year": 1965,
+  "title": "Spacings",
+  "venue": "Journal of the Royal Statistical Society: Series B 27(3):395-436",
+  "doi": "10.1111/j.2517-6161.1965.tb00602.x",
+  "url": "https://doi.org/10.1111/j.2517-6161.1965.tb00602.x",
+  "annotation": "Develops the distribution theory of uniform spacings. The multilevel conformal theorem uses the Dirichlet law of grouped uniform spacings to obtain its exact Dirichlet-multinomial future-count benchmark."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Renyi1961",
+  "authors": "Rényi, A.",
+  "year": 1961,
+  "title": "On Measures of Entropy and Information",
+  "venue": "Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability, Volume I:547-561",
+  "doi": "",
+  "url": "https://projecteuclid.org/ebook/PreviewFirstPage?urlId=bsmsp%2F1200512181",
+  "annotation": "Introduces the order-indexed information measures. Monotonicity from order one to order two gives the logarithmic refinement between the exact mutual-information and Hilbert--Schmidt panel bounds."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "LeCam1960",
+  "authors": "Le Cam, L.",
+  "year": 1960,
+  "title": "Locally asymptotically normal families of distributions",
+  "venue": "University of California Publications in Statistics 3(2):37-98",
+  "doi": "",
+  "url": "https://books.google.com/books?id=ytBUAAAAYAAJ",
+  "annotation": "Introduces local asymptotic normality. The joint burn-in/panel theorem uses the Bernoulli likelihood-ratio limit, while retaining the separate finite initial-state likelihood factor."
+ },
+ {
   "role": "examples",
   "key": "Merton1976",
   "authors": "Merton, R. C.",
