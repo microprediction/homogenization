@@ -304,6 +304,72 @@ def spectral_abelian_constant(alpha, density_coefficient=1.0):
                * math.sin(math.pi * alpha / 2.0)))
 
 
+def verify_vector_low_frequency_hierarchy():
+    """Certify a full-rank covariance with rank-one leading spectral scale.
+
+    Take two independent stationary Gaussian coordinates with one-sided
+    Gamma spectral densities of exponents alpha_1 < alpha_2 < 2.  The exact
+    covariance of every nontrivial integrated vector is diagonal and full
+    rank, but after normalization at the dominant epsilon**alpha_1 scale it
+    converges to a rank-one matrix.  The second direction is recovered only
+    at the smaller epsilon**alpha_2 scale.
+    """
+    alpha_1, alpha_2 = 0.6, 1.6
+    epsilons = 2.0 ** -np.arange(8, 29)
+    first = np.array([
+        antipersistent_variance(epsilon, alpha_1)
+        for epsilon in epsilons
+    ])
+    second = np.array([
+        antipersistent_variance(epsilon, alpha_2)
+        for epsilon in epsilons
+    ])
+    coefficient_1 = spectral_abelian_constant(
+        alpha_1, density_coefficient=1.0 / math.gamma(alpha_1))
+    coefficient_2 = spectral_abelian_constant(
+        alpha_2, density_coefficient=1.0 / math.gamma(alpha_2))
+
+    quadrature_errors = []
+    for alpha in (alpha_1, alpha_2):
+        for epsilon in 2.0 ** -np.arange(3, 8):
+            direct = integrated_variance(
+                lambda t, exponent=alpha: antipersistent_covariance(
+                    t, exponent), epsilon)
+            closed = antipersistent_variance(epsilon, alpha)
+            quadrature_errors.append(abs(direct - closed))
+    identity_error = max(quadrature_errors)
+
+    order_1 = measured_order(first)
+    order_2 = measured_order(second)
+    ratio_1 = first[-1] / (coefficient_1 * epsilons[-1] ** alpha_1)
+    ratio_2 = second[-1] / (coefficient_2 * epsilons[-1] ** alpha_2)
+    condition_number = first / second
+    condition_prediction = ((coefficient_1 / coefficient_2)
+                            * epsilons ** (alpha_1 - alpha_2))
+    condition_ratio = condition_number[-1] / condition_prediction[-1]
+    normalized_eigenvalues = np.array([
+        first[-1], second[-1]
+    ]) / epsilons[-1] ** alpha_1
+
+    assert np.all(first > 0.0) and np.all(second > 0.0)
+    assert identity_error < 6e-16
+    assert abs(order_1 - alpha_1) < 2e-4
+    assert abs(order_2 - alpha_2) < 0.003
+    assert abs(ratio_1 - 1.0) < 2e-6
+    assert abs(ratio_2 - 1.0) < 0.002
+    assert abs(condition_ratio - 1.0) < 0.002
+    assert normalized_eigenvalues[0] > 1.0
+    assert normalized_eigenvalues[1] < 3e-8
+    return {
+        "alphas": (alpha_1, alpha_2),
+        "orders": (order_1, order_2),
+        "ratios": (ratio_1, ratio_2),
+        "condition_ratio": condition_ratio,
+        "normalized_eigenvalues": normalized_eigenvalues,
+        "identity_error": identity_error,
+    }
+
+
 def atomic_spectral_variance(epsilon, alpha, maturity=1.0,
                              cutoff_multiple=6.0, tail_terms=10):
     """Integrated variance for a purely atomic low-frequency spectrum.
@@ -1233,6 +1299,7 @@ def main():
     zero_atom = verify_zero_frequency_atom()
     all_scale = verify_all_scale_crossover()
     vector_rank = verify_vector_rank_crossover()
+    vector_low_frequency = verify_vector_low_frequency_hierarchy()
     long_04 = verify_long_memory_case(0.4)
     long_07 = verify_long_memory_case(0.7)
     critical_ratio = verify_critical_case()
@@ -1268,6 +1335,16 @@ def main():
           f"{vector_rank[0]:.3e}, {vector_rank[1]}")
     print("vector eigenvalues at the rank-drop scale 2pi: "
           f"{vector_rank[2][0]:.3e}, {vector_rank[2][1]:.12f}")
+    print("vector low-frequency exponents and measured eigenvalue orders: "
+          f"{vector_low_frequency['alphas']}, "
+          f"{tuple(f'{value:.9f}' for value in vector_low_frequency['orders'])}")
+    print("vector low-frequency leading ratios and condition-number ratio: "
+          f"{tuple(f'{value:.9f}' for value in vector_low_frequency['ratios'])}, "
+          f"{vector_low_frequency['condition_ratio']:.9f}")
+    print("vector dominant-scale normalized eigenvalues: "
+          f"{tuple(f'{value:.3e}' for value in vector_low_frequency['normalized_eigenvalues'])}")
+    print("vector low-frequency covariance-quadrature identity error: "
+          f"{vector_low_frequency['identity_error']:.3e}")
     print(f"alpha=0.4 order, asymptotic ratio: {long_04[0]:.6f}, {long_04[1]:.6f}")
     print(f"alpha=0.7 order, asymptotic ratio: {long_07[0]:.6f}, {long_07[1]:.6f}")
     print(f"critical epsilon-log ratio: {critical_ratio:.6f}")
