@@ -883,8 +883,9 @@ def instruments_page():
     $$b_k = \big(B_a(\tau_k), B_b(\tau_k)\big), \qquad
       B_c(\tau) = \frac{1-e^{-c\tau}}{c}.$$
     <p>Thus the regime-$j$ coupon bond is
-    $C_j(x,z)=\sum_k c_kA_{kj}\exp(-b_k\cdot(x,z))$. A linear scalar-Gaussian reduction of Jamshidian&apos;s kind exists
-    exactly when all of the $b_k$ are collinear. For two distinct residual maturities this fails when $a\ne b$, because</p>
+    $C_j(x,z)=\sum_k c_kA_{kj}\exp(-b_k\cdot(x,z))$. An exact pathwise decomposition of Jamshidian&apos;s kind exists
+    exactly when all active nonzero $b_k$ lie on one positive ray. For standard positive G2++ bond loadings this is
+    equivalent to collinearity. For two distinct residual maturities it fails when $a\ne b$, because</p>
     $$R(\tau)=\frac{B_a(\tau)}{B_b(\tau)}, \qquad
       \frac{d}{d\tau}\log R(\tau)=\frac{a}{e^{a\tau}-1}-\frac{b}{e^{b\tau}-1},$$
     <p>and $c/(e^{c\tau}-1)$ is strictly decreasing in $c>0$. With the G2++ parameters on this site,
@@ -896,6 +897,31 @@ def instruments_page():
     <p>G2++ coupon-bond options and swaptions consequently require a two-dimensional Gaussian integral, or conditioning
     on one factor and solving the monotone boundary in the other. The one-factor decomposition above remains valid for
     Vasicek and Hull&ndash;White, while zero-coupon bond options and caplets remain one-dimensional under G2++.</p>
+    <h3>The exact positive-ray criterion</h3>
+    <p>The distinction between rank one and common orientation is essential. At any boundary point $x^*$ write</p>
+    $$P_k(x)=K_k\exp[-b_k^\top(x-x^*)],\qquad
+      K=\sum_kw_kK_k,\qquad w_k,K_k&gt;0.$$
+    <p>Then the receiver identity</p>
+    $$\left(\sum_kw_k(P_k(x)-K_k)\right)^+
+      =\sum_kw_k(P_k(x)-K_k)^+\quad\hbox{for every }x$$
+    <p>(and equivalently the payer identity with every difference reversed) holds if and only if all active nonzero
+      loading vectors have the form $b_k=\beta_kb$ for one $b\ne0$ and scalars $\beta_k&gt;0$. Zero loadings are
+      harmless constant cash flows. Thus a nominally multifactor Gaussian model can still admit Jamshidian&apos;s
+      pathwise decomposition when the particular coupon-date loadings occupy one positive ray; conversely, matrix
+      rank one alone is insufficient if some loadings point in opposite directions.</p>
+    <p>The proof is algebraic. For real numbers $a_k$,</p>
+    $$\left(\sum_ka_k\right)^+\leq\sum_ka_k^+,$$
+    <p>with equality exactly when the nonzero $a_k$ have one sign. Here
+      $\operatorname{sgn}(P_k(x)-K_k)=\operatorname{sgn}[-b_k^\top(x-x^*)]$. Positive-ray loadings therefore give
+      a common sign for every $x$. If two nonzero loadings are not positive multiples, there is a displacement $h$
+      with $b_i^\top h&gt;0&gt;b_j^\top h$; at $x^*+h$ those two component differences have opposite signs, so
+      cancellation makes the displayed inequality strict. This proves necessity as well as sufficiency.</p>
+    <p>This criterion is strictly stronger than the convex-hull condition below. The latter asks only for one direction
+      along which every cash flow is monotone and yields exact conditional quadrature; it does not align all exercise
+      half-spaces and therefore does not produce a sum of component options. In the numerical certificate, positive-ray
+      loadings satisfy both receiver and payer identities to $2\times10^{-15}$, while the non-collinear G2++ pair has
+      projections $(1/2,-1/2)$ at an explicit witness and a decomposition gap
+      $1-e^{-1/2}=0.393469340287$. Oppositely oriented rank-one loadings have the same strict gap.</p>
     <h3>An exact one-dimensional G2++ price</h3>
     <p>The curved boundary does not require two-dimensional numerical quadrature. In ordinary fixed-parameter G2++,
       work under the $T$-forward measure and write $(X,Z)$ for the bivariate Gaussian factors at option expiry. Put

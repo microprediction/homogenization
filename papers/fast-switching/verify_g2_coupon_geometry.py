@@ -9,7 +9,10 @@ its reduction to the one-factor formula.  It also certifies a closed-form
 tail bound for truncating the remaining Gaussian integral and the general
 d-factor-to-(d-1)-factor conditioning identity with its boundary Hessian.
 It also certifies an oblique conditioning direction in a case where no
-original coordinate has cash-flow loadings of one sign.
+original coordinate has cash-flow loadings of one sign.  Finally, it checks
+the sharper positive-ray criterion for an exact pathwise Jamshidian
+decomposition and supplies witnesses showing that both non-collinearity and
+oppositely oriented collinear loadings cause strict cancellation.
 """
 
 from itertools import product
@@ -32,6 +35,35 @@ def loading(a, b, tau):
 
 def determinant(u, v):
     return u[0] * v[1] - u[1] * v[0]
+
+
+def jamshidian_decomposition_gaps(
+        loadings, weights, component_strikes, displacement):
+    """Return receiver and payer gaps in the proposed pathwise decomposition.
+
+    The reference boundary point is the origin, so component ``k`` has value
+    ``component_strikes[k]`` there and value
+    ``component_strikes[k] * exp(-loadings[k] @ displacement)`` at the test
+    point.  Each returned gap is decomposed value minus coupon-option value;
+    convexity of the positive part makes it nonnegative.
+    """
+    loadings = np.asarray(loadings, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+    component_strikes = np.asarray(component_strikes, dtype=float)
+    displacement = np.asarray(displacement, dtype=float)
+    differences = component_strikes * (
+        np.exp(-(loadings @ displacement)) - 1.0
+    )
+    weighted_difference = float(weights @ differences)
+    receiver_gap = float(
+        weights @ np.maximum(differences, 0.0)
+        - max(weighted_difference, 0.0)
+    )
+    payer_gap = float(
+        weights @ np.maximum(-differences, 0.0)
+        - max(-weighted_difference, 0.0)
+    )
+    return receiver_gap, payer_gap
 
 
 def coupon(x, z, loadings, weights=None):
@@ -374,6 +406,55 @@ def main():
         assert log_ratio_derivative(a, b, tau) < 0
     assert abs(det - 0.9487045402383338) < 1e-14
 
+    # Exact pathwise Jamshidian decomposition is sharper than a rank-one
+    # loading condition.  It holds precisely when every active nonzero
+    # loading lies on one positive ray.  Then every component moves to the
+    # same side of its boundary strike at every factor realization.
+    ray = np.array([0.8, -0.3, 0.5])
+    positive_ray_loadings = np.outer([0.4, 1.1, 2.3], ray)
+    ray_weights = [0.5, 1.25, 0.8]
+    ray_strikes = [0.9, 1.15, 0.7]
+    positive_ray_gaps = [
+        jamshidian_decomposition_gaps(
+            positive_ray_loadings, ray_weights, ray_strikes, displacement,
+        )
+        for displacement in product((-1.0, -0.2, 0.0, 0.7), repeat=3)
+    ]
+    positive_ray_max_gap = max(
+        abs(gap) for gaps in positive_ray_gaps for gap in gaps
+    )
+    assert positive_ray_max_gap < 2e-15
+
+    # The two G2++ loadings are independent.  Solve for a displacement whose
+    # projections are +1/2 and -1/2.  The component option payoffs then have
+    # opposite signs and the positive-part subadditivity is strict for both
+    # receiver and payer decompositions.
+    g2_witness = 0.5 * np.linalg.solve(
+        np.asarray(loadings), np.array([1.0, -1.0])
+    )
+    g2_witness_projections = np.asarray(loadings) @ g2_witness
+    g2_receiver_gap, g2_payer_gap = jamshidian_decomposition_gaps(
+        loadings, [1.0, 1.0], [1.0, 1.0], g2_witness,
+    )
+    cancellation_gap = 1.0 - exp(-0.5)
+    assert np.max(np.abs(
+        g2_witness_projections - np.array([0.5, -0.5])
+    )) < 1e-14
+    assert abs(g2_receiver_gap - cancellation_gap) < 1e-14
+    assert abs(g2_payer_gap - cancellation_gap) < 1e-14
+
+    # Collinearity without common orientation is not enough.  These loadings
+    # have rank one but lie on opposite rays, and give the same strict gap.
+    opposite_ray_loadings = np.array([[1.0, 0.0], [-1.0, 0.0]])
+    opposite_receiver_gap, opposite_payer_gap = (
+        jamshidian_decomposition_gaps(
+            opposite_ray_loadings, [1.0, 1.0], [1.0, 1.0], [0.5, 0.0],
+        )
+    )
+    assert np.linalg.matrix_rank(opposite_ray_loadings) == 1
+    assert abs(opposite_receiver_gap - cancellation_gap) < 1e-14
+    assert abs(opposite_payer_gap - cancellation_gap) < 1e-14
+
     qsum = loadings[0][1] + loadings[1][1]
     curvature = 2 * det * det / qsum**3
     assert abs(curvature - 0.023475128385069474) < 1e-14
@@ -688,6 +769,15 @@ def main():
 
     print("loadings:", loadings)
     print("determinant:", f"{det:.12f}")
+    print("positive-ray maximum pathwise decomposition gap:",
+          f"{positive_ray_max_gap:.3e}")
+    print("G2 witness projections / receiver gap / payer gap:",
+          tuple(f"{value:.6f}" for value in g2_witness_projections),
+          f"{g2_receiver_gap:.12f}", f"{g2_payer_gap:.12f}")
+    print("opposite-ray rank / receiver gap / payer gap:",
+          np.linalg.matrix_rank(opposite_ray_loadings),
+          f"{opposite_receiver_gap:.12f}",
+          f"{opposite_payer_gap:.12f}")
     print("boundary z(-0.1), z(0), z(0.1):", tuple(f"{z:.12f}" for z in zs))
     print("secant slopes:", tuple(f"{s:.12f}" for s in slopes))
     print("analytic curvature z''(0):", f"{curvature:.12f}")
