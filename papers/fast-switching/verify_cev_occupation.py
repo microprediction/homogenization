@@ -21,7 +21,12 @@ exact Kummer-function Laplace transform of the weighted occupation clock is
 also checked against the independent time-inhomogeneous Feynman--Kac system.
 Keeping the terminal basis vector in that system gives the full endpoint-
 resolved transform matrix, which is checked entry by entry and sums back to
-the unconditional transform.
+the unconditional transform.  Stationary path reversal gives an additional
+exact endpoint-transpose identity: reversing the exponentially weighted clock
+changes ``h`` to ``-h`` and rescales its transform argument by ``exp(h*T)``.
+For the reversible two-state chain this identity also regularizes isolated
+negative-carry parameters where the displayed Kummer fundamental pair
+degenerates.
 Finally, the exact Bessel density certifies the sharp ``kappa**(-1/2)``
 Wasserstein rate for merely Lipschitz clock payoffs.  A complex Feynman--Kac
 calculation verifies the corresponding weighted-clock central limit theorem
@@ -484,6 +489,36 @@ def weighted_laplace_kummer_endpoint(
             [rate_21, -rate_21],
         ])
         return mp.mpf(expm(T * generator)[start, end])
+
+    # Kummer's displayed M/U fundamental pair degenerates when gamma is a
+    # nonpositive integer.  In the negative-h case, stationary path reversal
+    # evaluates the same analytic continuation from the nondegenerate
+    # positive-h partner:
+    #   F^h_ij(z) = (pi_j/pi_i) F^{-h}_ji(z exp(hT)).
+    h_float = float(clock_growth)
+    gamma_float = 1.0 + (rate_12 + rate_21) / h_float
+    nearest_gamma = round(gamma_float)
+    if (
+        h_float < 0.0
+        and nearest_gamma <= 0
+        and abs(gamma_float - nearest_gamma) < 1e-12
+    ):
+        stationary = (
+            rate_21 / (rate_12 + rate_21),
+            rate_12 / (rate_12 + rate_21),
+        )
+        return (
+            stationary[end]
+            / stationary[start]
+            * weighted_laplace_kummer_endpoint(
+                end,
+                start,
+                rate_12,
+                rate_21,
+                -h_float,
+                transform_argument * math.exp(h_float * T),
+            )
+        )
 
     with mp.workdps(80):
         h = mp.mpf(clock_growth)
@@ -1276,6 +1311,57 @@ def main():
     assert endpoint_transform_error < 4e-12
     assert endpoint_sum_error < 4e-14
     assert transform_imaginary < 1e-20
+
+    # For a general stationary finite chain, path reversal swaps the endpoint
+    # pair.  Since w_h(T-t)=exp(hT) w_{-h}(t), the weighted transform obeys
+    # F^{Qrev,h}_{ij}(z)=(pi_j/pi_i)F^{Q,-h}_{ji}(z exp(hT)).
+    # Every two-state chain is reversible, so Qrev=Q here.  The first case
+    # deliberately maps to gamma=-624, where the raw negative-h Kummer pair
+    # degenerates and the identity supplies its analytic continuation.
+    reversal_error = 0.0
+    reversal_kummer_ode_error = 0.0
+    reversal_cases = (
+        (rate_12, rate_21, clock_growth, (0.1, 1.0, 5.0)),
+        (0.8, 1.1, -0.7, (0.1, 1.0, 3.0)),
+        (2.3, 0.4, 0.25, (0.2, 0.7, 2.0)),
+    )
+    for a, b, h, arguments in reversal_cases:
+        stationary = (b / (a + b), a / (a + b))
+        for argument in arguments:
+            reversed_argument = argument * math.exp(h * T)
+            for start in (0, 1):
+                for end in (0, 1):
+                    forward_ode = weighted_laplace_ode_endpoint(
+                        start, end, a, b, h, argument
+                    )
+                    reversed_ode = (
+                        stationary[end]
+                        / stationary[start]
+                        * weighted_laplace_ode_endpoint(
+                            end, start, a, b, -h, reversed_argument
+                        )
+                    )
+                    reversal_error = max(
+                        reversal_error, abs(forward_ode - reversed_ode)
+                    )
+                    reversed_kummer = (
+                        stationary[end]
+                        / stationary[start]
+                        * weighted_laplace_kummer_endpoint(
+                            end, start, a, b, -h, reversed_argument
+                        )
+                    )
+                    reversal_kummer_ode_error = max(
+                        reversal_kummer_ode_error,
+                        float(abs(mp.re(reversed_kummer) - forward_ode)),
+                    )
+    print(
+        f"weighted endpoint reversal error={reversal_error:.3e}; "
+        f"reversal-regularized Kummer/ODE error="
+        f"{reversal_kummer_ode_error:.3e}"
+    )
+    assert reversal_error < 4e-12
+    assert reversal_kummer_ode_error < 4e-12
 
     for start in (0, 1):
         for end in (0, 1):

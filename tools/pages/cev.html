@@ -281,8 +281,33 @@
       nonlinear CEV payoff. For $(a,b,h,z)=(7,13,0.032,1)$, an independent terminal-basis Feynman&ndash;Kac solve gives:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>start</th><th>terminal</th><th>joint transform</th><th>ODE difference</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>0.3274548843</td><td>1.4e-15</td></tr><tr><td>1</td><td>2</td><td>0.1854439490</td><td>7.2e-16</td></tr><tr><td>2</td><td>1</td><td>0.3449066028</td><td>2.7e-15</td></tr><tr><td>2</td><td>2</td><td>0.1953271925</td><td>1.1e-15</td></tr></tbody></table></div>
 
+    <h3>Endpoint reversal swaps carry</h3>
+    <p>The endpoint matrix has an exact path-reversal symmetry that is useful precisely because the loading is
+    time-dependent. Let $F^{Q,h}_{ij}(T;z)$ denote the preceding transform for a stationary finite chain $Q$, and
+    let $Q^{\leftarrow}=\Pi^{-1}Q^\top\Pi$ be its stationary reverse. Reversing a path swaps its endpoints and sends</p>
+    $$W_h=\int_0^T e^{h(T-t)}\mathbf1_{\{y_t=1\}}\,dt
+      \quad\longmapsto\quad
+      e^{hT}W_{-h}.$$
+    <p>Therefore the complete endpoint-resolved identity is</p>
+    <div class="equation-card">
+    $$F^{Q^{\leftarrow},h}_{ij}(T;z)
+      =\frac{\pi_j}{\pi_i}
+       F^{Q,-h}_{ji}(T;ze^{hT}).$$
+    </div>
+    <p>Every irreducible two-state chain is reversible, so here $Q^{\leftarrow}=Q$. At zero carry this reduces to
+    the killed-semigroup detailed-balance relation
+    $\pi_iF_{ij}(T;z)=\pi_jF_{ji}(T;z)$. At nonzero carry, reversal must also reverse the loading schedule: comparing
+    the same $h$ in both directions would be incorrect. This is the endpoint form of the general stationary
+    time-reversal framework of
+    <a href="https://doi.org/10.1017/S0027763000011405">Nagasawa (1964)</a>.</p>
+    <p>The identity also resolves a numerical singularity of the displayed Kummer basis. For
+    $(a,b,h)=(7,13,-0.032)$ one has $\gamma=1+(a+b)/h=-624$, where that $M/U$ pair degenerates. Evaluation through
+    the positive-carry reversed partner supplies the analytic continuation and agrees with an independent
+    time-inhomogeneous Feynman&ndash;Kac solve within $7.67\times10^{-15}$. Across positive, negative, and generic
+    parameter cases, the independently integrated reversal identity has maximum error $1.80\times10^{-13}$.</p>
     <p>At isolated parameter values where this particular fundamental pair degenerates, the formula is read by
-    analytic continuation; uniqueness of the two-state system fixes the limit. For $h=0$ it reduces continuously to
+    analytic continuation; uniqueness of the two-state system fixes the limit, and the reversal identity above gives
+    a stable evaluation whenever the negative-carry $\gamma$ is a nonpositive integer. For $h=0$ it reduces continuously to
     $F(T;z)=\exp\{T(Q-z\operatorname{diag}(1,0))\}\mathbf1$. On the negative $w$ axis the individual principal-branch
     $U$ terms can be complex, but their Wronskian combination is real. Finally, the full CEV-clock transform is</p>
     $$\mathbb E_i e^{-zV}=e^{-z\sigma_2^2R(0)}F_i(T;z\Delta),$$
