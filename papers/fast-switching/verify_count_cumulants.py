@@ -46,7 +46,7 @@ import itertools
 import math
 from fractions import Fraction
 import numpy as np
-from scipy.linalg import expm
+from scipy.linalg import expm, expm_frechet
 from scipy.optimize import brentq
 from scipy.sparse import diags, eye, kron
 from scipy.sparse.linalg import expm_multiply
@@ -1165,6 +1165,84 @@ def stationary_time_reversal_count_certificate():
     }
 
 
+def ordered_window_reversal_certificate():
+    """Show that ordered count windows recover the latent arrow of time.
+
+    Terminal counts depend only on occupation times and are reversal blind.
+    In contrast, the early/late cross-covariance matrix of several count
+    streams is transposed by reversal.  This routine checks the exact
+    semigroup formula, an independent mixed derivative of the sequential
+    count PGF, and the fast-switching boundary-layer limit.
+    """
+    Q = np.array([
+        [-2.5, 2.0, 0.4, 0.1],
+        [0.2, -2.1, 1.6, 0.3],
+        [0.7, 0.1, -2.6, 1.8],
+        [1.1, 0.5, 0.2, -1.8],
+    ])
+    rates = np.column_stack((
+        np.array([0.4, 1.3, 2.1, 3.2]),
+        np.array([3.0, 0.6, 2.7, 1.2]),
+    ))
+    n = Q.shape[0]
+    system = np.vstack((Q.T[:-1], np.ones(n)))
+    stationary = np.linalg.solve(system, np.r_[np.zeros(n - 1), 1.0])
+    Pi = np.diag(stationary)
+    Qrev = np.diag(1.0 / stationary) @ Q.T @ Pi
+    centered = rates - stationary @ rates
+    early, late, gap = 0.7, 1.1, 0.0
+
+    def integral_semigroup(generator, horizon):
+        block = np.block([[generator, np.eye(n)],
+                          [np.zeros((n, n)), np.zeros((n, n))]])
+        return expm(horizon * block)[:n, n:]
+
+    def cross_covariance(generator, scale=1.0, separation=gap):
+        scaled = scale * generator
+        HA = integral_semigroup(scaled, early)
+        HB = integral_semigroup(scaled, late)
+        return centered.T @ Pi @ HA @ expm(scaled * separation) @ HB @ centered
+
+    covariance = cross_covariance(Q)
+    reverse_covariance = cross_covariance(Qrev)
+
+    # Independent differentiation of the two-window count PGF.
+    Eearly = expm_frechet(early * Q, early * np.diag(rates[:, 0]),
+                          compute_expm=False)
+    Elate = expm_frechet(late * Q, late * np.diag(rates[:, 1]),
+                         compute_expm=False)
+    ones = np.ones(n)
+    mixed_raw = stationary @ Eearly @ Elate @ ones
+    pgf_covariance = (mixed_raw
+                      - (stationary @ Eearly @ ones)
+                      * (stationary @ Elate @ ones))
+
+    projector = np.outer(np.ones(n), stationary)
+    group_inverse = np.linalg.inv(Q + projector) - projector
+    resolvent = -group_inverse
+    limit = centered.T @ Pi @ resolvent @ resolvent @ centered
+    scaled_covariance = 40.0 ** 2 * cross_covariance(Q, scale=40.0)
+
+    transpose_error = np.max(np.abs(reverse_covariance - covariance.T))
+    pgf_error = abs(pgf_covariance - covariance[0, 1])
+    limit_error = np.max(np.abs(scaled_covariance - limit))
+    antisymmetric_signal = covariance[0, 1] - covariance[1, 0]
+
+    assert transpose_error < 2e-14
+    assert pgf_error < 2e-14
+    assert abs(antisymmetric_signal) > 1e-3
+    assert limit_error < 1e-12
+    return {
+        "covariance": covariance,
+        "reverse_covariance": reverse_covariance,
+        "transpose_error": transpose_error,
+        "pgf_error": pgf_error,
+        "antisymmetric_signal": antisymmetric_signal,
+        "fast_limit": limit,
+        "fast_limit_error": limit_error,
+    }
+
+
 def integrated_intensity_mixed_cumulants(Q, rates1, rates2, T, prior):
     """Mixed cumulants of two integrated rates, through bidegree (2,2)."""
     Q = np.asarray(Q, float)
@@ -1493,6 +1571,7 @@ def main():
     w1_moment_upper = poisson_mixture_w1_moment_upper()
     w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
     reversal = stationary_time_reversal_count_certificate()
+    ordered = ordered_window_reversal_certificate()
 
     # A genuinely nonreversible chain: all three stationary edge currents are nonzero.
     Q = np.array([[-3.0, 2.0, 1.0],
@@ -1847,6 +1926,12 @@ def main():
           f"{reversal['fixed_start_total_variation']:.12f}")
     print("time-reversal count-truncation tail bound",
           f"{reversal['tail_bound']:.3e}")
+    print("ordered-window antisymmetric covariance signal",
+          f"{ordered['antisymmetric_signal']:.12f}")
+    print("ordered-window transpose, PGF, and fast-limit errors",
+          f"{ordered['transpose_error']:.3e}",
+          f"{ordered['pgf_error']:.3e}",
+          f"{ordered['fast_limit_error']:.3e}")
     print("nonreversible factorial identity max error", f"{identity_error:.3e}")
     print("count-truncation tail bound", f"{tail_bound:.3e}")
     print("mixed factorial identity max error", f"{mixed_error:.3e}")
