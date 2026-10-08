@@ -685,6 +685,30 @@
       $D(T)$ exactly full rank at every finite maturity, but precisely
       $\operatorname{rank}K$ information directions accumulate without bound
       at the long end. The preceding theorem is the $r=1$ specialization.</p>
+    <p>The same calculation supplies the complete matrix-valued inverse
+      expansion, not only its first correction. Let $A^{+/2}$ denote the
+      positive square root of $A^+$ on $\operatorname{ran}A$. For every fixed
+      integer $p\ge0$,</p>
+    <div class="equation-card">
+    $$D(T)^{-1}=H_K^++
+      \sum_{j=0}^p{(-1)^j\over T^{j+1}}
+      L A^{+/2}M_K^jA^{+/2}L^\top
+      +O(T^{-p-2}).$$
+    </div>
+    <p>Indeed, the constant proxy $TA+C_K$ has the exact block inverse</p>
+    $$(TA+C_K)^{-1}=H_K^++
+      L A^{+/2}(TI+M_K)^{-1}A^{+/2}L^\top.$$
+    <p>Expanding $(TI+M_K)^{-1}$ proves the formula. More quantitatively, if
+      $T&gt;\|M_K\|_2$, the proxy remainder after the displayed $p$th term is at
+      most</p>
+    $$ {\|LA^{+/2}\|_2^2\,\|M_K\|_2^{p+1}
+        \over T^{p+2}\{1-\|M_K\|_2/T\}}.$$
+    <p>The exponentially small difference between $D(T)$ and $TA+C_K$ adds
+      $O(e^{-\rho T})$ by the resolvent identity, which is absorbed by every
+      fixed algebraic remainder above. Each inverse correction has rank at
+      most $r$. This is a fixed-parameter long-maturity expansion; it is not
+      uniform when $K$, the CIR parameters, or the transient spectral floor
+      vary with $T$.</p>
     <p>A five-name certificate takes the rank-two matrix $K=FF^\top$ with
       $F=(\mathbf1,x)$ and $x=(-2,-0.7,0.2,1.1,2.3)^\top$, and heterogeneous
       positive-volatility CIR loadings with one repeated full pair:
@@ -705,8 +729,13 @@
       \vartheta_K/T\}$ is $40.5617551$. After subtracting only
       $\vartheta_K/T$, the normalized determinant remainder at $T=2048$ is
       $9.67074\times10^{-6}$ with observed dyadic order $1.999992$. The
-      inverse-expansion remainder is
-      $7.20040338\times10^{-4}$ with observed order $2.004872$.</p>
+      inverse remainders at $T=64$ after one, two, and three terms are
+      $8.22310\times10^{-1}$, $8.74039\times10^{-2}$, and
+      $9.33677\times10^{-3}$, with observed dyadic orders $2.004872$,
+      $3.040135$, and $4.084200$, respectively. The one-term remainder at
+      $T=2048$ is $7.20040338\times10^{-4}$. For the constant proxy at
+      $T=64$, the three-term error is $9.33677673\times10^{-3}$, below the
+      explicit Neumann bound $1.03296926\times10^{-2}$.</p>
     <p>The result concerns a fixed $K$ and fixed CIR parameters. It explicitly
       distinguishes the $r$ stationary directions inherited from fixed
       Green&ndash;Kubo rank from the additional finite information created by

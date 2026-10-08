@@ -25,8 +25,10 @@ finite inverse-information floor on the transient subspace.  A rank-two fixed
 Green--Kubo certificate with one repeated full parameter pair then checks the
 general law: exactly r information eigenvalues grow linearly when the fixed
 matrix has rank r, while maturity integration can make every finite-maturity
-matrix full rank through a positive transient complement.  An additional
-certificate checks the exact full-rank criterion: for distinct CIR
+matrix full rank through a positive transient complement.  The same Schur
+reduction is checked through three inverse corrections, exhibiting the full
+all-orders inverse series and remainder orders two, three, and four.  An
+additional certificate checks the exact full-rank criterion: for distinct CIR
 mean-reversion rates, K Hadamard J(T) is positive definite at every positive
 maturity if and only if every diagonal entry of the positive semidefinite K
 is positive, irrespective of the rank of K.  For repeated loading shapes it
@@ -541,7 +543,8 @@ def finite_rank_long_maturity_checks():
     A=diag(b)Kdiag(b) therefore supplies two order-T eigenvalues.  Compression
     of K Hadamard C to ker(A) supplies the other three finite limits and the
     limiting inverse-information floor.  The same block reduction checks the
-    full inverse-maturity determinant polynomial and its second coefficient.
+    full inverse-maturity determinant polynomial and its second coefficient,
+    together with the first three terms of the all-orders inverse expansion.
     """
     kappas = np.array([0.35, 0.35, 1.2, 2.4, 5.0])
     sigmas = np.array([0.12, 0.12, 0.30, 0.08, 0.50])
@@ -621,11 +624,6 @@ def finite_rank_long_maturity_checks():
     assert transient_values[0] > 0
 
     null_inverse = null_basis @ np.linalg.inv(compressed) @ null_basis.T
-    range_inverse = (
-        range_basis
-        @ np.linalg.inv(range_basis.T @ stationary_matrix @ range_basis)
-        @ range_basis.T
-    )
     null_projector = null_basis @ null_basis.T
     range_projector = range_basis @ range_basis.T
     inverse_lift = (
@@ -633,11 +631,50 @@ def finite_rank_long_maturity_checks():
         - null_inverse @ null_projector @ constant_matrix @ range_projector
     )
 
+    stationary_block = range_basis.T @ stationary_matrix @ range_basis
+    range_constant = range_basis.T @ constant_matrix @ range_basis
+    range_null_constant = range_basis.T @ constant_matrix @ null_basis
+    determinant_schur_constant = (
+        range_constant
+        - range_null_constant
+        @ np.linalg.solve(compressed, range_null_constant.T)
+    )
+    stationary_block_inverse = np.linalg.inv(stationary_block)
+    reduced_inverse_terms = [stationary_block_inverse]
+    for _ in range(2):
+        reduced_inverse_terms.append(
+            -reduced_inverse_terms[-1]
+            @ determinant_schur_constant
+            @ stationary_block_inverse
+        )
+    inverse_terms = [
+        inverse_lift
+        @ range_basis
+        @ term
+        @ range_basis.T
+        @ inverse_lift.T
+        for term in reduced_inverse_terms
+    ]
+    stationary_spectrum, stationary_frame = np.linalg.eigh(stationary_block)
+    stationary_inverse_sqrt = (
+        stationary_frame
+        @ np.diag(stationary_spectrum**-0.5)
+        @ stationary_frame.T
+    )
+    whitened_schur = (
+        stationary_inverse_sqrt
+        @ determinant_schur_constant
+        @ stationary_inverse_sqrt
+    )
+    whitened_lift = (
+        inverse_lift @ range_basis @ stationary_inverse_sqrt
+    )
+
     horizons = 2.0 ** np.arange(5, 12)
     values = []
     conditions = []
     determinants = []
-    inverse_errors = []
+    inverse_errors_by_order = [[], [], []]
     range_traces = []
     null_traces = []
     for horizon in horizons:
@@ -648,13 +685,12 @@ def finite_rank_long_maturity_checks():
         conditions.append(eigenvalues[-1] / eigenvalues[0] / horizon)
         determinants.append(np.linalg.det(matrix) / horizon**rank)
         matrix_inverse = np.linalg.inv(matrix)
-        inverse_approximation = (
-            null_inverse
-            + inverse_lift @ range_inverse @ inverse_lift.T / horizon
-        )
-        inverse_errors.append(np.linalg.norm(
-            matrix_inverse - inverse_approximation, ord=2
-        ))
+        inverse_approximation = null_inverse.copy()
+        for order, term in enumerate(inverse_terms, start=1):
+            inverse_approximation += term / horizon**order
+            inverse_errors_by_order[order - 1].append(np.linalg.norm(
+                matrix_inverse - inverse_approximation, ord=2
+            ))
         range_traces.append(horizon * np.trace(
             range_basis.T @ matrix_inverse @ range_basis
         ))
@@ -673,14 +709,6 @@ def finite_rank_long_maturity_checks():
     condition_target = stationary_values[-1] / transient_values[0]
     determinant_target = (
         np.prod(stationary_values[-rank:]) * np.linalg.det(compressed)
-    )
-    stationary_block = range_basis.T @ stationary_matrix @ range_basis
-    range_constant = range_basis.T @ constant_matrix @ range_basis
-    range_null_constant = range_basis.T @ constant_matrix @ null_basis
-    determinant_schur_constant = (
-        range_constant
-        - range_null_constant
-        @ np.linalg.solve(compressed, range_null_constant.T)
     )
     determinant_correction = np.trace(np.linalg.solve(
         stationary_block, determinant_schur_constant
@@ -713,15 +741,47 @@ def finite_rank_long_maturity_checks():
         determinant_second_scaled[1] - determinant_second_correction
     ) < 1e-6
 
-    inverse_orders = np.log2(
-        np.asarray(inverse_errors[:-1]) / np.asarray(inverse_errors[1:])
-    )
+    inverse_errors_by_order = [
+        np.asarray(errors) for errors in inverse_errors_by_order
+    ]
+    inverse_orders_by_order = [
+        np.log2(errors[:-1] / errors[1:])
+        for errors in inverse_errors_by_order
+    ]
     range_trace_target = np.trace(
         np.linalg.inv(range_basis.T @ stationary_matrix @ range_basis)
     )
     null_trace_target = np.trace(np.linalg.inv(compressed))
-    assert inverse_orders[-1] > 1.99
-    assert inverse_errors[-1] < 0.004
+    assert inverse_orders_by_order[0][-1] > 1.99
+    assert inverse_errors_by_order[0][-1] < 0.004
+    # Higher terms reach floating-point/quadrature noise at the largest T,
+    # so certify their asymptotic orders on the earlier clean dyadic window.
+    assert inverse_orders_by_order[1][2] > 2.95
+    assert inverse_orders_by_order[2][1] > 3.90
+    proxy_horizon = 64.0
+    proxy_inverse = (
+        null_inverse
+        + whitened_lift
+        @ np.linalg.inv(
+            proxy_horizon * np.eye(rank) + whitened_schur
+        )
+        @ whitened_lift.T
+    )
+    proxy_approximation = null_inverse.copy()
+    for order, term in enumerate(inverse_terms, start=1):
+        proxy_approximation += term / proxy_horizon**order
+    proxy_remainder = np.linalg.norm(
+        proxy_inverse - proxy_approximation, ord=2
+    )
+    schur_norm = np.linalg.norm(whitened_schur, ord=2)
+    assert proxy_horizon > schur_norm
+    proxy_bound = (
+        np.linalg.norm(whitened_lift, ord=2) ** 2
+        * schur_norm**len(inverse_terms)
+        / proxy_horizon ** (len(inverse_terms) + 1)
+        / (1 - schur_norm / proxy_horizon)
+    )
+    assert proxy_remainder <= proxy_bound * (1 + 1e-10)
     assert abs(range_traces[-1] / range_trace_target - 1) < 0.004
     assert abs(null_traces[-1] / null_trace_target - 1) < 0.001
 
@@ -749,14 +809,22 @@ def finite_rank_long_maturity_checks():
           f"{determinant_remainder_orders[-1]:.6f}")
     print(f"  scaled second coefficient at T=64 "
           f"{determinant_second_scaled[1]:.10e}")
-    print(f"  inverse remainder {inverse_errors[-1]:.10e}, "
-          f"observed order {inverse_orders[-1]:.6f}")
+    print("  inverse remainders after 1/2/3 terms at T=64 "
+          + " ".join(
+              f"{errors[1]:.10e}" for errors in inverse_errors_by_order
+          ))
+    print("  inverse observed orders "
+          f"{inverse_orders_by_order[0][-1]:.6f} "
+          f"{inverse_orders_by_order[1][2]:.6f} "
+          f"{inverse_orders_by_order[2][1]:.6f}")
+    print(f"  three-term proxy remainder/bound at T=64 "
+          f"{proxy_remainder:.10e}/{proxy_bound:.10e}")
     print(f"  range inverse trace {range_traces[-1]:.10f}, "
           f"limit {range_trace_target:.10f}")
     print(f"  null inverse trace {null_traces[-1]:.10f}, "
           f"limit {null_trace_target:.10f}")
     return (transient_values, stationary_values[-rank:], values,
-            final_orders, inverse_errors, inverse_orders)
+            final_orders, inverse_errors_by_order, inverse_orders_by_order)
 
 
 def integrated_full_rank_criterion_checks():

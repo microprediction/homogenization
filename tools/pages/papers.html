@@ -88,6 +88,9 @@
         polynomial: its coefficients are the elementary symmetric polynomials of the stationary Schur-complement
         correction after whitening by the stationary block. This includes the cross-coupling through the transient
         block; the log-determinant follows to every fixed algebraic order from the corresponding trace-power series.
+        The same stationary Schur complement gives the full matrix-valued inverse-maturity series: after $p+1$
+        explicit rank-at-most-$r$ terms its operator-norm remainder is $O(T^{-p-2})$, with a geometric bound once
+        $T$ exceeds the whitened Schur-correction norm.
         Thus exact finite-maturity rank does not imply that every exposure
         gains unbounded long-end precision.
         It also separates arbitrary-prior marginal memory from first-order pair dependence.
