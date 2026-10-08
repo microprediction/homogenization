@@ -42,7 +42,10 @@ covariance a Gram matrix, exposes the endpoint contribution in every fixed
 Fourier direction, and separates its rank from any single fixed-loading
 calculation.  A deliberately dependent third loading certifies that the exact
 finite-rate covariance has precisely the same loading-space nullspace as the
-limiting Gram matrix.
+limiting Gram matrix.  The qualitative rank proof is sharpened to an explicit
+Loewner lower bound: the covariance dominates the scatter contributed by
+exactly-one-jump paths, which in turn dominates a computable Gram matrix of
+the loading primitives.
 For piecewise-smooth loadings with value jumps, step-loading certificates
 check both the scalar sum-of-squared-jumps coefficient and its multivariate
 negative-semidefinite jump-matrix extension.
@@ -791,6 +794,120 @@ def joint_weighted_raw_moments_ode(start, rate_12, rate_21, clock_growths):
         ]
     )
     return means, second - np.outer(means, means)
+
+
+def exponential_loading_primitive(time, clock_growths):
+    """Primitive from calendar time zero of exp(growth*(T-t))."""
+    values = []
+    for growth in clock_growths:
+        if growth == 0.0:
+            values.append(time)
+        else:
+            values.append(
+                math.exp(growth * T) * (-math.expm1(-growth * time)) / growth
+            )
+    return np.asarray(values)
+
+
+def one_jump_covariance_lower(initial, rate_12, rate_21, clock_growths):
+    """One-jump and elementary primitive-Gram covariance lower bounds."""
+    initial = np.asarray(initial)
+    endpoint = exponential_loading_primitive(T, clock_growths)
+
+    def density_12(time):
+        return (initial[0] * rate_12
+                * math.exp(-rate_12 * time - rate_21 * (T - time)))
+
+    def density_21(time):
+        return (initial[1] * rate_21
+                * math.exp(-rate_21 * time - rate_12 * (T - time)))
+
+    jump_mass = quad(
+        lambda time: density_12(time) + density_21(time),
+        0.0,
+        T,
+        epsabs=2e-14,
+        epsrel=2e-14,
+    )[0]
+    first = np.array([
+        quad(
+            lambda time: (
+                density_12(time)
+                * exponential_loading_primitive(time, clock_growths)[index]
+                + density_21(time)
+                * (endpoint[index]
+                   - exponential_loading_primitive(time, clock_growths)[index])
+            ),
+            0.0,
+            T,
+            epsabs=2e-14,
+            epsrel=2e-14,
+        )[0]
+        for index in range(len(clock_growths))
+    ])
+    second = np.array([
+        [
+            quad(
+                lambda time: (
+                    density_12(time)
+                    * exponential_loading_primitive(time, clock_growths)[left]
+                    * exponential_loading_primitive(time, clock_growths)[right]
+                    + density_21(time)
+                    * (endpoint[left]
+                       - exponential_loading_primitive(time, clock_growths)[left])
+                    * (endpoint[right]
+                       - exponential_loading_primitive(time, clock_growths)[right])
+                ),
+                0.0,
+                T,
+                epsabs=2e-14,
+                epsrel=2e-14,
+            )[0]
+            for right in range(len(clock_growths))
+        ]
+        for left in range(len(clock_growths))
+    ])
+    one_jump = second - np.outer(first, first) / jump_mass
+
+    primitive_mean = np.array([
+        quad(
+            lambda time: exponential_loading_primitive(
+                time, clock_growths
+            )[index],
+            0.0,
+            T,
+            epsabs=2e-14,
+            epsrel=2e-14,
+        )[0] / T
+        for index in range(len(clock_growths))
+    ])
+    primitive_gram = np.array([
+        [
+            quad(
+                lambda time: (
+                    (exponential_loading_primitive(time, clock_growths)[left]
+                     - primitive_mean[left])
+                    * (exponential_loading_primitive(time, clock_growths)[right]
+                       - primitive_mean[right])
+                ),
+                0.0,
+                T,
+                epsabs=2e-14,
+                epsrel=2e-14,
+            )[0]
+            for right in range(len(clock_growths))
+        ]
+        for left in range(len(clock_growths))
+    ])
+    elementary_coefficient = (
+        math.exp(-max(rate_12, rate_21) * T)
+        * (initial[0] * rate_12 + initial[1] * rate_21)
+    )
+    return (
+        one_jump,
+        elementary_coefficient * primitive_gram,
+        jump_mass,
+    )
 
 
 def piecewise_constant_clock_characteristic(
@@ -2016,6 +2133,58 @@ def main():
     assert finite_rank_null_residual < 1e-12
     assert finite_rank_positive_floor > 0.04
     assert set(finite_rank_numerical_ranks) == {2}
+
+    # The one-jump rank proof also gives a quantitative Loewner bound.  At
+    # moderate unequal rates it retains a substantial fraction of the weakest
+    # covariance eigenvalue under the stationary initial law.
+    lower_rate_12, lower_rate_21 = 1.7, 0.4
+    lower_initial = np.array((
+        lower_rate_21 / (lower_rate_12 + lower_rate_21),
+        lower_rate_12 / (lower_rate_12 + lower_rate_21),
+    ))
+    component_means = []
+    component_covariances = []
+    for start in (0, 1):
+        mean, covariance = joint_weighted_raw_moments_ode(
+            start, lower_rate_12, lower_rate_21, finite_rank_growths
+        )
+        component_means.append(mean)
+        component_covariances.append(covariance)
+    mixture_mean = sum(
+        lower_initial[start] * component_means[start]
+        for start in (0, 1)
+    )
+    exact_covariance = sum(
+        lower_initial[start]
+        * (component_covariances[start]
+           + np.outer(component_means[start], component_means[start]))
+        for start in (0, 1)
+    ) - np.outer(mixture_mean, mixture_mean)
+    one_jump_lower, primitive_lower, one_jump_mass = (
+        one_jump_covariance_lower(
+            lower_initial,
+            lower_rate_12,
+            lower_rate_21,
+            finite_rank_growths,
+        )
+    )
+    exact_eigenvalues = np.linalg.eigvalsh(exact_covariance)
+    one_jump_eigenvalues = np.linalg.eigvalsh(one_jump_lower)
+    primitive_eigenvalues = np.linalg.eigvalsh(primitive_lower)
+    exact_minus_jump = np.linalg.eigvalsh(exact_covariance - one_jump_lower)
+    jump_minus_primitive = np.linalg.eigvalsh(
+        one_jump_lower - primitive_lower
+    )
+    print(
+        "quantitative one-jump covariance lower bound:"
+        f" mass={one_jump_mass:.9f}, weakest exact/one-jump/elementary="
+        f"{exact_eigenvalues[0]:.9f}/{one_jump_eigenvalues[0]:.9f}/"
+        f"{primitive_eigenvalues[0]:.9f}, captured="
+        f"{one_jump_eigenvalues[0] / exact_eigenvalues[0]:.6f}"
+    )
+    assert exact_minus_jump[0] > -2e-13
+    assert jump_minus_primitive[0] > -2e-13
+    assert one_jump_eigenvalues[0] > 0.75 * exact_eigenvalues[0]
 
     # Value jumps add interface layers to the variance endpoint coefficient.
     # For F(u)=int_0^(T-u) w(s)w(s+u) ds, a jump from w_- to w_+ contributes

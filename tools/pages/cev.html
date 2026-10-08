@@ -444,6 +444,36 @@
     variance. Thus finite switching neither creates nor destroys covariance directions: the exact covariance and
     its fast-switching Gram limit have the same nullspace. This rank is created by integrating <em>different
     deterministic loadings</em>; it is not a claim that a fixed-parameter Green&ndash;Kubo matrix acquires extra rank.</p>
+    <p>The same one-jump argument gives a quantitative, computable lower bound. Write the loading vector as
+    $w(t)=(w_1(t),\ldots,w_m(t))^\top$, put</p>
+    $$F(t)=\int_0^tw(s)ds,\qquad
+      \bar F=\frac1T\int_0^TF(t)dt,\qquad
+      H_F=\int_0^T(F(t)-\bar F)(F(t)-\bar F)^\top dt,$$
+    <p>and let the two jump rates be $a$ and $b$, with initial law $\nu=(\nu_1,\nu_2)$. The two exactly-one-jump
+    path densities and clock values are</p>
+    $$\rho_1(t)=\nu_1a e^{-at-b(T-t)},\quad x_1(t)=F(t),\qquad
+      \rho_2(t)=\nu_2b e^{-bt-a(T-t)},\quad x_2(t)=F(T)-F(t).$$
+    <p>Let $M_1=\int_0^T(\rho_1+\rho_2)$,
+      $\bar x=M_1^{-1}\sum_{s=1}^2\int_0^T\rho_s(t)x_s(t)dt$, and define the one-jump scatter</p>
+    $$J_\nu=\sum_{s=1}^2\int_0^T\rho_s(t)
+      (x_s(t)-\bar x)(x_s(t)-\bar x)^\top dt.$$
+    <p>Then the following Loewner inequalities hold at every finite rate:</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}_\nu(W)\succeq J_\nu\succeq
+      \eta_\nu H_F,\qquad
+      \eta_\nu=e^{-\max(a,b)T}(\nu_1a+\nu_2b).$$
+    </div>
+    <p>The first inequality is total covariance split by the event of exactly one jump: $J_\nu$ is that event's
+      probability times its conditional covariance. For the second, each $\rho_s$ is bounded below by its
+      coefficient times $e^{-\max(a,b)T}$; minimizing the resulting quadratic form over its centering constant
+      gives $H_F$ for both $F(t)$ and $F(T)-F(t)$. Moreover,
+      $\ker H_F=\{\theta:\theta^\top w=0\text{ a.e.}\}$, so this also proves the rank theorem and supplies an
+      explicit lower bound for every identifiable direction. The elementary $\eta_\nu H_F$ bound can become very
+      conservative when exactly-one-jump paths are rare; $J_\nu$ is the sharper computable certificate.</p>
+    <p>For $a=1.7$, $b=0.4$, the stationary initial law, and loadings
+      $e^{0.8(T-t)}$ and $e^{-0.7(T-t)}$, the weakest eigenvalues of the exact covariance, $J_\nu$, and
+      $\eta_\nu H_F$ are respectively $0.002272262$, $0.001768855$, and $0.000152092$.
+      Thus the one-jump matrix has $77.85\%$ of the exact covariance's smallest eigenvalue in this example.</p>
     <p>The first joint non-Gaussian term is explicit as well. For a fixed Fourier vector $\theta$, put
     $w_\theta=\sum_j\theta_jw_j$, $r=pq$, $c=q-p$, and $d_1=q,d_2=-p$. Then</p>
     <div class="equation-card">
