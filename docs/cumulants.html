@@ -1044,6 +1044,63 @@
       boundary constant. It gives neither constants uniform in $k$, nor a maturity-uniform finite-$1/m$
       truncation, nor a price-level theorem.</p>
 
+    <h3>Two-term standardized cumulants with an explicit finite-time bound</h3>
+    <p>The exact rate&ndash;boundary&ndash;remainder decomposition also quantifies how skewness and excess kurtosis
+      decay with maturity. The statement is algebraic and applies without change to integrated variance,
+      independent returns, or leveraged returns whenever the corresponding exact fixed-order decomposition above
+      is available. Write, for $2\le j\le K$,</p>
+    $$\kappa_j(Y_T)=T\Gamma_j+B_j+R_j(T),\qquad
+      |R_j(T)|\le C_je^{-qT},$$
+    <p>assume $\Gamma_2&gt;0$, and put
+      $Z_T=(Y_T-\mathbb EY_T)/\sqrt{\kappa_2(Y_T)}$. For fixed $j\ge3$ and $p=j/2$, direct expansion of the
+      exact denominator gives</p>
+    <div class="equation-card">
+    $$\kappa_j(Z_T)=A_jT^{1-p}+D_jT^{-p}+\mathcal E_j(T),$$
+    $$A_j={\Gamma_j\over\Gamma_2^p},\qquad
+      D_j={B_j\over\Gamma_2^p}
+      -{p\Gamma_jB_2\over\Gamma_2^{p+1}}.$$
+    </div>
+    <p>This is more than an asymptotic order statement. Let
+      $\mathcal B_2=|B_2|+C_2$, $L_p=p2^{p+1}$, and
+      $D_p=p(p+1)2^{p+1}$. Taylor's theorem for $(1+x)^{-p}$ on
+      $|x|\le1/2$ gives, for $T\ge2\mathcal B_2/\Gamma_2$,</p>
+    <div class="equation-card">
+    $$|\mathcal E_j(T)|\le\Gamma_2^{-p}
+      \left\{{H_j\over T^{p+1}}+{E_je^{-qT}\over T^p}\right\},$$
+    $$H_j={D_p|\Gamma_j|\mathcal B_2^2\over\Gamma_2^2}
+      +{L_p|B_j|\mathcal B_2\over\Gamma_2},\qquad
+      E_j={p|\Gamma_j|C_2\over\Gamma_2}+2^pC_j.$$
+    </div>
+    <p>In particular, skewness and excess kurtosis have the explicit forms</p>
+    <div class="equation-card">
+    $$\operatorname{Skew}(Y_T)
+      ={\Gamma_3\over\Gamma_2^{3/2}}T^{-1/2}
+      +\left\{{B_3\over\Gamma_2^{3/2}}
+      -{3\Gamma_3B_2\over2\Gamma_2^{5/2}}\right\}T^{-3/2}
+      +O(T^{-5/2}+T^{-3/2}e^{-qT}),$$
+    $$\operatorname{ExKurt}(Y_T)
+      ={\Gamma_4\over\Gamma_2^2}T^{-1}
+      +\left\{{B_4\over\Gamma_2^2}
+      -{2\Gamma_4B_2\over\Gamma_2^3}\right\}T^{-2}
+      +O(T^{-3}+T^{-2}e^{-qT}).$$
+    </div>
+    <p>If the preceding exact decomposition is switching-rate uniform, the same conclusion is uniform in
+      $m\ge m_0$ provided $\inf_m\Gamma_2(m)&gt;0$ and the displayed slopes, boundaries, and remainder constants
+      have the corresponding uniform upper bounds. Those nondegeneracy assumptions are explicit; the
+      normalization does not create them. The finite-jet remainder comes from the killed-semigroup argument of
+      <a href="./bibliography.html#Kac1949">Kac (1949)</a> and the isolated spectral decomposition of
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>; the step on this page is the exact scalar
+      normalization and Taylor remainder.</p>
+    <p>For the positive two-state benchmark at $m=8$, the certificate compares the formulas with the independent
+      degree-four polynomial semigroup at $T=4,8,16,32$. For stationary start, the last-doubling residual orders
+      improve from $1.575$ to $2.547$ for skewness and from $2.104$ to $3.057$ for excess kurtosis after the
+      boundary term is included. For the point start they improve from $1.765$ to $2.604$ and from $2.448$ to
+      $3.129$. The exact normalization identity agrees to machine precision, and every tested finite-time error
+      is below the displayed explicit Taylor bound.</p>
+    <p>Vanishing standardized cumulants at any fixed list of orders are not, by themselves, an Edgeworth theorem,
+      a Berry&ndash;Esseen bound, or even a proof of weak convergence. No such distributional claim is made here.
+      The result is a finite-order shape certificate with a fully stated normalization error.</p>
+
     <h3>Every leveraged-return cumulant has the same exact long-maturity decomposition</h3>
     <p>Conditional normality is unnecessary. Write $X_t=M_t-\tfrac12\int_0^t v_sds$ and
       $eta_i=\rho_i\xi_i$. Exponential conjugation of the joint generator by $e^{\theta x}$ leaves a polynomial
@@ -1363,8 +1420,10 @@
       subfamily, the endpoint holds for a fixed nonresonant pair but its constant is not uniform as the chain and
       CIR rates approach one another. The triangular
       finite-jet map transfers that statement to every independent-price return cumulant. These results provide no
-      order-uniform constants or maturity-uniform finite-$1/m$ cumulant approximation. No price-level extension is
-      claimed.</li>
+      order-uniform constants or maturity-uniform finite-$1/m$ cumulant approximation. The standardized-cumulant
+      corollary additionally requires a positive long-run variance slope; uniformity in switching speed requires a
+      uniform positive lower bound on that slope. Its finite-order decay formulas are not an Edgeworth expansion,
+      a Berry&ndash;Esseen estimate, or a weak-convergence theorem. No price-level extension is claimed.</li>
       <li>The statewise Feller theorem is pathwise and exact for every switching speed and initial regime. It is
       valid when vol-of-vol also switches, and is separate from the stationary-start, fixed-maturity asymptotic
       expansions.</li>
@@ -1389,7 +1448,8 @@
     finite-rate formulas for the stationary second-cumulant slope and intercept, third-cumulant slope and intercept,
     and every fixed-order long-run cumulant rate and arbitrary-start boundary constant in that
     simultaneous-switching model, together with the exact triangular transfer of those quantities and their
-    exponential remainders to every fixed-order independent-price return cumulant. The damped
+    exponential remainders to every fixed-order independent-price return cumulant, and the resulting explicit
+    two-term standardized-cumulant expansion with a finite-time normalization bound. The damped
     inversion follows
     <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr
     and Madan (1999)</a>.</p>

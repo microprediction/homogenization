@@ -2474,6 +2474,158 @@ def verify_all_fixed_order_cumulant_intercepts(max_order=6):
     return intercepts, discrepancies, recursion_errors, known_error
 
 
+def verify_standardized_cumulant_asymptotics():
+    """Check the two-term long-maturity standardized-cumulant theorem.
+
+    If kappa_j(T)=T*gamma_j+beta_j+r_j(T), direct normalization by
+    kappa_2(T)^(j/2) gives two explicit algebraic terms.  The theorem uses
+    the already proved exponential bounds on r_j; this certificate compares
+    those terms with the independent polynomial semigroup and also checks the
+    finite-time Taylor bound pointwise.
+    """
+    q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
+    pi = np.array([0.5, 0.5])
+    c = np.array([0.04, 0.16])
+    kappa = np.array([0.8, 2.0])
+    variance = np.array([0.04, 0.04])
+    speed = 8.0
+    maturities = 2.0 ** np.arange(2, 6)
+    rates, _ = integrated_variance_cumulant_rates(
+        4, speed, q0, pi, c, kappa, variance
+    )
+    assert rates[1] > 0.0
+
+    starts = {
+        "stationary": {},
+        "point": {"initial_regime": 0, "initial_variance": 0.04},
+    }
+    results = {}
+    identity_error = 0.0
+    maximum_bound_ratio = 0.0
+    for name, start in starts.items():
+        boundary, _, _, _ = integrated_variance_boundary_constants(
+            4, speed, q0, pi, c, kappa, variance, **start
+        )
+        errors = {
+            "skew leading": [],
+            "skew two-term": [],
+            "excess leading": [],
+            "excess two-term": [],
+        }
+        for maturity in maturities:
+            exact = centered_integrated_cumulants(
+                4, maturity, speed, q0, pi, c, kappa, variance,
+                **start,
+            )
+            remainder = exact - maturity * rates - boundary
+            for order, label in ((3, "skew"), (4, "excess")):
+                index = order - 1
+                power = order / 2.0
+                variance_rate = rates[1]
+                exact_standardized = exact[index] / exact[1] ** power
+                leading_coefficient = (
+                    rates[index] / variance_rate**power
+                )
+                boundary_coefficient = (
+                    boundary[index] / variance_rate**power
+                    - power * rates[index] * boundary[1]
+                    / variance_rate ** (power + 1.0)
+                )
+                leading = (
+                    leading_coefficient * maturity ** (1.0 - power)
+                )
+                two_term = (
+                    leading
+                    + boundary_coefficient * maturity ** (-power)
+                )
+                errors[f"{label} leading"].append(
+                    abs(exact_standardized - leading)
+                )
+                errors[f"{label} two-term"].append(
+                    abs(exact_standardized - two_term)
+                )
+
+                # Independent evaluation of the exact normalization identity.
+                relative_variance_boundary = (
+                    (boundary[1] + remainder[1])
+                    / (variance_rate * maturity)
+                )
+                identity_residual = variance_rate ** (-power) * (
+                    maturity ** (-power)
+                    * (
+                        (maturity * rates[index] + boundary[index]
+                         + remainder[index])
+                        * (1.0 + relative_variance_boundary) ** (-power)
+                        - maturity * rates[index]
+                        - boundary[index]
+                        + power * rates[index] * boundary[1]
+                        / variance_rate
+                    )
+                )
+                identity_error = max(
+                    identity_error,
+                    abs(identity_residual - (exact_standardized - two_term)),
+                )
+
+                # Pointwise form of the explicit theorem bound.  Replacing
+                # |r_i(T)| below by C_i exp(-qT) gives the printed uniform
+                # finite-time inequality.
+                b2 = abs(boundary[1]) + abs(remainder[1])
+                taylor_second = (
+                    power * (power + 1.0) * 2.0 ** (power + 1.0)
+                )
+                taylor_first = power * 2.0 ** (power + 1.0)
+                algebraic_constant = (
+                    taylor_second * abs(rates[index]) * b2**2
+                    / variance_rate**2
+                    + taylor_first * abs(boundary[index]) * b2
+                    / variance_rate
+                )
+                remainder_constant = (
+                    power * abs(rates[index]) * abs(remainder[1])
+                    / variance_rate
+                    + 2.0**power * abs(remainder[index])
+                )
+                bound = variance_rate ** (-power) * (
+                    algebraic_constant * maturity ** (-power - 1.0)
+                    + remainder_constant * maturity ** (-power)
+                )
+                maximum_bound_ratio = max(
+                    maximum_bound_ratio,
+                    abs(exact_standardized - two_term) / bound,
+                )
+        for key in errors:
+            errors[key] = np.asarray(errors[key])
+        measured = {
+            key: np.log2(values[-2] / values[-1])
+            for key, values in errors.items()
+        }
+        assert 1.30 < measured["skew leading"] < 1.90
+        assert 2.35 < measured["skew two-term"] < 2.75
+        assert 1.80 < measured["excess leading"] < 2.60
+        assert 2.80 < measured["excess two-term"] < 3.30
+        results[name] = (errors, measured, boundary)
+
+    assert identity_error < 2e-14
+    assert maximum_bound_ratio < 1.0
+    print("5i-2. standardized-cumulant long-maturity expansion")
+    for name, (_, measured, boundary) in results.items():
+        print(
+            f"   {name:10s}: skew rates "
+            f"{measured['skew leading']:.3f}/"
+            f"{measured['skew two-term']:.3f}; excess rates "
+            f"{measured['excess leading']:.3f}/"
+            f"{measured['excess two-term']:.3f}; "
+            f"beta2--beta4 "
+            + " ".join(f"{value:+.8e}" for value in boundary[1:4])
+        )
+    print(
+        f"   normalization identity error {identity_error:.2e}; "
+        f"maximum explicit-bound ratio {maximum_bound_ratio:.6f}"
+    )
+    return results, identity_error, maximum_bound_ratio
+
+
 def verify_uniform_fixed_order_cumulant_remainders(max_order=6):
     """Illustrate one switching-rate-uniform envelope at every tested order.
 
@@ -3653,6 +3805,9 @@ def main():
         verify_all_fixed_order_second_rate_corrections()
     )
     all_order_intercept_results = verify_all_fixed_order_cumulant_intercepts()
+    standardized_cumulant_results = (
+        verify_standardized_cumulant_asymptotics()
+    )
     uniform_all_order_results = (
         verify_uniform_fixed_order_cumulant_remainders()
     )
@@ -4063,6 +4218,8 @@ def main():
         f"{sharp_remainder_gap_results[2]:.3f}, crossover identity error "
         f"{sharp_remainder_gap_results[6]:.1e}, third rate/intercept convergence "
         f"{third_rate_results[0]:.3f}/{third_rate_results[3]:.3f}, "
+        f"standardized-cumulant bound ratio "
+        f"{standardized_cumulant_results[2]:.3f}, "
         f"fourth-rate convergence {fourth_rate_results[0]:.3f}, "
         f"all-order corrected-rate floor "
         f"{min(all_order_rate_correction_results[2]):.3f}, "
