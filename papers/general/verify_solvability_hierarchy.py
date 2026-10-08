@@ -17,12 +17,17 @@ enclosing the fast spectrum certifies its exponentially decaying semigroup,
 including any nonnormal transient amplification.  Finally the eigenvalue,
 projector, and fast estimates are combined into an all-time semigroup bound
 and checked on a growing t=eps^{-2}/4 maturity window.
+
+The certificate also treats a smoothly time-dependent two-state generator.
+It verifies the moving-centering identity, including the geometric term
+pi'(t) chi_m, and checks at one period that retaining this term gives a
+second-order outer error while dropping it leaves a first-order error.
 """
 
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import quad_vec
+from scipy.integrate import quad_vec, solve_ivp
 from scipy.linalg import eig, expm
 
 
@@ -101,6 +106,132 @@ def stationary(q: np.ndarray) -> np.ndarray:
 def group_inverse(q: np.ndarray, pi: np.ndarray) -> np.ndarray:
     p = np.outer(np.ones(len(pi)), pi)
     return np.linalg.inv(q - p) + p
+
+
+def moving_data(t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return Q(t), pi(t), pi'(t), and diagonal forcing g(t)."""
+    alpha = 1.4 + 0.25 * np.sin(t) + 0.08 * np.cos(2.0 * t)
+    beta = 0.7 + 0.18 * np.cos(t) - 0.06 * np.sin(2.0 * t)
+    alpha_prime = 0.25 * np.cos(t) - 0.16 * np.sin(2.0 * t)
+    beta_prime = -0.18 * np.sin(t) - 0.12 * np.cos(2.0 * t)
+    rate_sum = alpha + beta
+    p = beta / rate_sum
+    p_prime = (beta_prime * rate_sum - beta * (alpha_prime + beta_prime)) / rate_sum**2
+
+    q = np.array([[-alpha, alpha], [beta, -beta]])
+    pi = np.array([p, 1.0 - p])
+    pi_prime = np.array([p_prime, -p_prime])
+
+    bar_g = -0.35 + 0.08 * np.cos(t) + 0.03 * np.sin(2.0 * t)
+    delta = 0.45 + 0.22 * np.sin(t) - 0.08 * np.cos(2.0 * t)
+    g = np.array([bar_g + (1.0 - p) * delta, bar_g - p * delta])
+    return q, pi, pi_prime, g
+
+
+def moving_coefficients(t: float) -> tuple[float, float, float, np.ndarray]:
+    """Return bar g, dynamic/geometric coefficients, and the first shape/a0."""
+    q, pi, pi_prime, g = moving_data(t)
+    bar_g = float(pi @ g)
+    f = g - bar_g * np.ones(2)
+    r = group_inverse(q, pi)
+    shape_per_a0 = -r @ f
+    dynamic = -float(pi @ (f * (r @ f)))
+    geometric = -float(pi_prime @ (r @ f))
+    return bar_g, dynamic, geometric, shape_per_a0
+
+
+def check_moving_generator_hierarchy() -> dict[str, float]:
+    """Certify the moving-pi hierarchy and its first-order endpoint error."""
+    period = 2.0 * np.pi
+    times = np.linspace(0.0, period, 401)
+    algebraic_residuals: list[float] = []
+    gauge_derivative_residuals: list[float] = []
+
+    # The derivative of pi(t) chi_1(t)=0 must contain pi'(t) chi_1(t).
+    step = 2e-6
+    for t in times:
+        q, pi, pi_prime, g = moving_data(t)
+        _, _, _, shape = moving_coefficients(t)
+        algebraic_residuals.append(abs(float(pi @ shape)))
+        _, pi_minus, _, _ = moving_data(t - step)
+        _, pi_plus, _, _ = moving_data(t + step)
+        _, _, _, shape_minus = moving_coefficients(t - step)
+        _, _, _, shape_plus = moving_coefficients(t + step)
+        shape_prime = (shape_plus - shape_minus) / (2.0 * step)
+        numerical_gauge_derivative = float(pi @ shape_prime + pi_prime @ shape)
+        direct_gauge_derivative = float(
+            ((pi_plus @ shape_plus) - (pi_minus @ shape_minus)) / (2.0 * step)
+        )
+        gauge_derivative_residuals.append(
+            abs(numerical_gauge_derivative - direct_gauge_derivative)
+        )
+        assert np.linalg.norm(q @ shape + (g - float(pi @ g) * np.ones(2))) < 3e-14
+
+    assert max(algebraic_residuals) < 2e-15
+    assert max(gauge_derivative_residuals) < 2e-9
+
+    def hierarchy_rhs(t: float, state: np.ndarray) -> np.ndarray:
+        a0, a1, a1_dynamic = state
+        bar_g, dynamic, geometric, _ = moving_coefficients(t)
+        return np.array(
+            [
+                bar_g * a0,
+                bar_g * a1 + a0 * (dynamic + geometric),
+                bar_g * a1_dynamic + a0 * dynamic,
+            ]
+        )
+
+    hierarchy = solve_ivp(
+        hierarchy_rhs,
+        (0.0, period),
+        np.array([1.0, 0.0, 0.0]),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    assert hierarchy.success
+    a0, a1, a1_dynamic = hierarchy.y[:, -1]
+    _, _, _, final_shape = moving_coefficients(period)
+    chi1 = a0 * final_shape
+
+    epsilons = np.array([0.08, 0.06, 0.045, 0.034, 0.025, 0.019, 0.014, 0.01])
+    full_errors: list[float] = []
+    dynamic_only_errors: list[float] = []
+    for eps in epsilons:
+        def exact_rhs(t: float, value: np.ndarray) -> np.ndarray:
+            q, _, _, g = moving_data(t)
+            return (q / eps + np.diag(g)) @ value
+
+        solution = solve_ivp(
+            exact_rhs,
+            (0.0, period),
+            np.ones(2),
+            method="DOP853",
+            rtol=2e-12,
+            atol=2e-14,
+        )
+        assert solution.success
+        endpoint = solution.y[:, -1]
+        full_outer = a0 * np.ones(2) + eps * (a1 * np.ones(2) + chi1)
+        dynamic_outer = a0 * np.ones(2) + eps * (a1_dynamic * np.ones(2) + chi1)
+        full_errors.append(float(np.linalg.norm(endpoint - full_outer, np.inf)))
+        dynamic_only_errors.append(float(np.linalg.norm(endpoint - dynamic_outer, np.inf)))
+
+    full_order = observed_order(full_errors, epsilons)
+    dynamic_only_order = observed_order(dynamic_only_errors, epsilons)
+    geometric_integral = float((a1 - a1_dynamic) / a0)
+    assert 1.90 < full_order < 2.10
+    assert 0.94 < dynamic_only_order < 1.06
+    assert abs(geometric_integral) > 1e-3
+
+    return {
+        "gauge_residual": max(gauge_derivative_residuals),
+        "geometric_integral": geometric_integral,
+        "full_order": full_order,
+        "dynamic_only_order": dynamic_only_order,
+        "full_error": full_errors[-1],
+        "dynamic_only_error": dynamic_only_errors[-1],
+    }
 
 
 def main() -> None:
@@ -514,6 +645,8 @@ def main() -> None:
     assert 1.94 < long_maturity_bound_order < 2.06
     assert max(long_maturity_bound_ratios) < 1.0
 
+    moving = check_moving_generator_hierarchy()
+
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
     print(f"exact obstruction -a0/8            {-a0 / 8.0:.12e}")
@@ -551,6 +684,12 @@ def main() -> None:
     print(f"normalized t=eps^-2/4 error order   {long_maturity_order:.6f}")
     print(f"composite proved-bound order        {long_maturity_bound_order:.6f}")
     print(f"largest composite error / bound     {max(long_maturity_bound_ratios):.6f}")
+    print(f"moving-gauge derivative residual    {moving['gauge_residual']:.3e}")
+    print(f"integrated geometric coefficient    {moving['geometric_integral']:.12e}")
+    print(f"moving full first-order error order {moving['full_order']:.6f}")
+    print(f"without geometric term error order  {moving['dynamic_only_order']:.6f}")
+    print(f"smallest-eps moving full error       {moving['full_error']:.12e}")
+    print(f"smallest-eps dynamic-only error      {moving['dynamic_only_error']:.12e}")
     print("ok")
 
 

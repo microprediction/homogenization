@@ -183,6 +183,39 @@
     <a href="./layers.html">initial or terminal layer</a> when one is present. Centering the whole $u_{m+1}$ would set
     $a_{m+1}=0$ prematurely and can make the next Poisson equation insoluble.</p>
 
+    <h3>A moving generator adds geometric transport</h3>
+    <p>If the fast generator itself varies on the slow time scale, its stationary projection also moves. Let
+    $Q=Q(t)$ be a $C^1$ family of irreducible finite-state generators, let $\pi(t)Q(t)=0$, and assume its nonzero
+    spectrum stays uniformly away from zero on the fixed time interval. Put
+    $P(t)=\mathbf1\pi(t)$ and $R(t)=Q(t)^{\#}$. The decomposition is now</p>
+    $$u_m=a_m(t)\mathbf1+\chi_m(t),\qquad \pi(t)\chi_m(t)=0.$$
+    <p>The Poisson equation is unchanged pointwise, but its solvability condition is not. Differentiating the moving
+    gauge gives $\pi\chi_m'=-\pi'\chi_m$, hence</p>
+    <div class="equation-card">
+    $$a_m'=\pi G(a_m\mathbf1+\chi_m)+\pi'\chi_m,$$
+    $$\chi_{m+1}=R(\partial_t-G)(a_m\mathbf1+\chi_m).$$
+    </div>
+    <p>The extra term is geometric transport of the centered shape by the moving stationary subspace. It vanishes
+    for fixed $Q$, but not merely because the forcing is scalar or because every instantaneous corrector is
+    centered.</p>
+    <p>For $G(t)=\operatorname{diag}g(t)$, write $\bar g=\pi g$, $f=g-\bar g\mathbf1$. Then</p>
+    $$a_0'=\bar g a_0,\qquad \chi_1=-a_0Rf,$$
+    <p>and the first null-space amplitude satisfies</p>
+    <div class="equation-card">
+    $$a_1'-\bar g a_1=a_0(K_{\rm dyn}+K_{\rm geo}),$$
+    $$K_{\rm dyn}=-\pi D_fRf,\qquad K_{\rm geo}=-\pi'Rf.$$
+    </div>
+    <p>Only $K_{\rm dyn}$ is the instantaneous Green&ndash;Kubo contraction. The second coefficient records motion of
+    $\pi(t)$ and is generally signed. For a smooth periodic two-state example, the
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
+    finds $\int_0^{2\pi}K_{\rm geo}(t)\,dt=-0.00639952$. At the one-period endpoint the complete first-order outer
+    approximation converges with observed order $1.990$, whereas deleting $K_{\rm geo}$ leaves observed order
+    $0.957$. This is a fixed-positive-time test: an initial layer is still needed for a bound uniform down to
+    $t=0$, and no long-maturity uniformity is claimed.</p>
+    <p>This moving-projection recursion is the finite-state backward-equation counterpart of the asymptotic-series
+    machinery in <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> and the
+    singularly perturbed chain framework of <a href="./bibliography.html#YinZhang1998">Yin and Zhang (1998)</a>.</p>
+
     <h3>The missing amplitude is the Green&ndash;Kubo correction</h3>
     <p>For a time-independent scalar forcing $G=\operatorname{diag}g$, put
     $\bar g=\pi g$ and $\widetilde g=g-\bar g\mathbf1$. Then $a_0=e^{\bar g t}$ and the first centered shape is</p>
