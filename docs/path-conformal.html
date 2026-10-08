@@ -875,6 +875,50 @@
       distance equals $\beta$ in this chain. The conservatism is visible, but so is convergence to the exact iid
       training-conditional law.</p>
 
+    <h3>The whole training-conditional coverage law</h3>
+    <p>The same two TV budgets control more than one lower tail. They control the complete random law of coverage
+      conditional on the calibration panel. With $C_P,C_0,\mu,\nu,\eta_{\rm cal},\eta_{\rm test}$ as above, let
+      $B\sim\operatorname{Beta}(k,N+1-k)$. Then, for the ordinary distance on $[0,1]$,</p>
+    <div class="equation-card">
+    $$W_1\!\left(\mathcal L_\mu(C_P),\mathcal L(B)\right)
+      \le \min\{1,\eta_{\rm cal}+\eta_{\rm test}\}.$$
+    </div>
+    <p>The proof is a two-coupling argument. Disintegrating the joint and decoupled laws over their common panel
+      marginal gives</p>
+    $$E_\mu|C_P(X)-C_0(X)|\le\eta_{\rm test}.$$
+    <p>Next take a maximal coupling $X\sim\mu$ and $X^0\sim\nu$. On the event $X=X^0$, the two values of
+      $C_0$ coincide; since $0\le C_0\le1$,</p>
+    $$E|C_0(X)-C_0(X^0)|\le\Pr(X\ne X^0)=\eta_{\rm cal}.$$
+    <p>Under $\nu$, $C_0(X^0)$ has the beta order-statistic law. The triangle inequality for $W_1$ proves the
+      result. Equivalently, every 1-Lipschitz diagnostic $\varphi:[0,1]\to\mathbb R$ obeys</p>
+    <div class="equation-card">
+    $$\left|E_\mu\varphi(C_P)-E\varphi(B)\right|
+      \le\eta_{\rm cal}+\eta_{\rm test}.$$
+    </div>
+    <p>For irregular nonoverlapping blocks, the explicit version is</p>
+    <div class="equation-card">
+    $$W_1\!\left(\mathcal L_\mu(C_P),\operatorname{Beta}(k,N+1-k)\right)
+      \le \min\left\{1,\sum_{i=0}^{N-1}\beta_X(h_i)\right\}.$$
+    </div>
+    <p>Here the first $N-1$ terms couple the calibration panel and the final term decouples the test score. Thus
+      the formula preserves the distinction between those two roles even though their coefficients are both one
+      for this distributional metric.</p>
+    <p>This also identifies what fast mixing cannot do at fixed calibration size. Put $m=k/(N+1)$ and
+      $D_{N,k}=E|B-m|$. Taking $\varphi(c)=|c-m|$ gives the direct comparison</p>
+    <div class="equation-card">
+    $$\left|E_\mu|C_P-m|-D_{N,k}\right|
+      \le\eta_{\rm cal}+\eta_{\rm test}.$$
+    </div>
+    <p>Therefore vanishing dependence budgets recover the nondegenerate iid beta law, not the point mass at its
+      mean. For $N=k=9$, $m=0.9$ and
+      $D_{9,9}=0.2(0.9)^{10}=0.06973568802$. In the randomized binary certificate, strides $28,40,48$ give exact
+      $W_1$ distances $0.0000214995$, $0.0000014743$, and $0.0000002473$, against separated-TV budgets
+      $0.0030847990$, $0.0002118554$, and $0.0000355421$. The corresponding values of
+      $E|C_P-0.9|$ are $0.0697455929$, $0.0697363574$, and $0.0697358002$, converging to the irreducible beta
+      fluctuation.</p>
+    <p>This is a law over random calibration panels. It does not assert that $C_P(x)$ is close to $m$ for every
+      realized panel, and it is not feature-conditional conformal coverage.</p>
+
     <h3>Why calibration mixing alone is insufficient</h3>
     <p>The final test gap is independently necessary, not just an artifact of the bound. Keep the randomized
       state-revealing score $S=(Y+U)/2$ and a stationary symmetric binary chain with one-step correlation

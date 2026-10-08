@@ -430,6 +430,66 @@ def exact_binary_training_failure_irregular(
     return failure
 
 
+def exact_binary_conditional_coverage_wasserstein(
+    calibration_count: int,
+    order: int,
+    correlation: float,
+) -> tuple[float, float]:
+    """W1 distance to the iid beta law and deviation from its mean.
+
+    ``exact_binary_training_failure(..., target, ...)`` is the CDF of the
+    random training-conditional coverage.  In one dimension W1 is the
+    integral of the absolute CDF difference.  The second return value is
+    E|C-k/(N+1)|, recovered from the same exact CDF without Monte Carlo.
+    """
+    nominal = order / (calibration_count + 1.0)
+    alpha = order
+    beta = calibration_count + 1 - order
+    breakpoints = sorted({
+        (1.0 - correlation) / 2.0,
+        (1.0 + correlation) / 2.0,
+        nominal,
+    })
+
+    def dependent_cdf(value: float) -> float:
+        return exact_binary_training_failure(
+            calibration_count, order, value, correlation
+        )
+
+    wasserstein = quad(
+        lambda value: abs(
+            dependent_cdf(value) - integer_beta_cdf(value, alpha, beta)
+        ),
+        0.0,
+        1.0,
+        points=breakpoints,
+        epsabs=2e-12,
+        epsrel=2e-11,
+        limit=150,
+    )[0]
+    mean_absolute_deviation = (
+        quad(
+            dependent_cdf,
+            0.0,
+            nominal,
+            points=[point for point in breakpoints if point < nominal],
+            epsabs=2e-12,
+            epsrel=2e-11,
+            limit=150,
+        )[0]
+        + quad(
+            lambda value: 1.0 - dependent_cdf(value),
+            nominal,
+            1.0,
+            points=[point for point in breakpoints if point > nominal],
+            epsabs=2e-12,
+            epsrel=2e-11,
+            limit=150,
+        )[0]
+    )
+    return float(wasserstein), float(mean_absolute_deviation)
+
+
 def exact_partition_training_failure_irregular(
     calibration_count: int,
     order: int,
@@ -2759,6 +2819,18 @@ def main() -> None:
     # (N-1) beta + beta/slack rather than coupling all N+1 scores twice.
     transfer_target = 0.8
     transfer_strides = (28, 40, 48)
+    nominal_conditional_coverage = order / (calibration_count + 1.0)
+    iid_conditional_deviation = quad(
+        lambda value: abs(value - nominal_conditional_coverage)
+        * beta_distribution.pdf(
+            value, order, calibration_count + 1 - order
+        ),
+        0.0,
+        1.0,
+        points=[nominal_conditional_coverage],
+        epsabs=2e-14,
+        epsrel=2e-13,
+    )[0]
     transfer_rows = []
     for stride in transfer_strides:
         sampled_correlation = 0.8**stride
@@ -2854,6 +2926,19 @@ def main() -> None:
         assert exact_tv_bound <= berbee_bound + 2e-14
         assert exact_panel_tv <= berbee_panel_tv + 2e-14
         assert abs(exact_test_tv - beta) < 2e-14
+        conditional_wasserstein, conditional_deviation = (
+            exact_binary_conditional_coverage_wasserstein(
+                calibration_count, order, sampled_correlation
+            )
+        )
+        distributional_tv_budget = exact_panel_tv + exact_test_tv
+        assert (
+            conditional_wasserstein
+            <= distributional_tv_budget + 2e-11
+        )
+        assert abs(
+            conditional_deviation - iid_conditional_deviation
+        ) <= distributional_tv_budget + 2e-11
         assert abs(
             binary_panel_order_cdf(
                 1.0, calibration_count, order, sampled_correlation
@@ -2876,6 +2961,9 @@ def main() -> None:
             robust_exact_tv_cutoff,
             robust_berbee_bound,
             robust_berbee_cutoff,
+            conditional_wasserstein,
+            conditional_deviation,
+            distributional_tv_budget,
         ))
 
     expected_transfer_failures = (
@@ -2898,6 +2986,28 @@ def main() -> None:
             transfer_rows, expected_rearrangement_bounds
         )
     ) < 2e-12
+    expected_conditional_wasserstein = (
+        0.0000214995,
+        0.0000014743,
+        0.0000002473,
+    )
+    expected_conditional_deviation = (
+        0.0697455929,
+        0.0697363574,
+        0.0697358002,
+    )
+    assert max(
+        abs(row[15] - expected)
+        for row, expected in zip(
+            transfer_rows, expected_conditional_wasserstein
+        )
+    ) < 5e-11
+    assert max(
+        abs(row[16] - expected)
+        for row, expected in zip(
+            transfer_rows, expected_conditional_deviation
+        )
+    ) < 5e-11
     print("\nTraining-conditional total-variation transfer")
     print("randomized binary score, N=k=9, target 0.8")
     print(
@@ -2913,6 +3023,18 @@ def main() -> None:
     print(
         "iid beta failure at target 0.8: "
         f"{integer_beta_cdf(0.8, order, calibration_count + 1 - order):.9f}"
+    )
+    print("\nWhole conditional-coverage law transfer")
+    print("randomized binary score, N=k=9; iid law Beta(9,1)")
+    print("stride       W1 exact       TV budget       E|C-.9|")
+    for row in transfer_rows:
+        print(
+            f" {row[0]:3d}       {row[15]:.10f}    "
+            f"{row[17]:.10f}    {row[16]:.10f}"
+        )
+    print(
+        "iid Beta(9,1) E|B-.9|: "
+        f"{iid_conditional_deviation:.11f}"
     )
 
     # The calibration panel and final test gap have genuinely separate
@@ -4038,7 +4160,7 @@ def main() -> None:
         "sharp PAC design, symmetric and unequal-mass all-order "
         "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
-        "slack-free rearrangement bounds, "
+        "slack-free rearrangement bounds plus whole-law Wasserstein control, "
         "independent-training validity, calibration-leakage failure, "
         "remote-training total-variation separation, "
         "exact transforms, and simulations"
