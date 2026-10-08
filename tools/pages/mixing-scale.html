@@ -113,6 +113,47 @@
     <p>This includes fixed maturity, shrinking maturity with many fast correlation times still observed, and growing
       maturity. For a general stationary process it is a variance theorem, not a functional limit theorem. For a
       stationary <em>Gaussian</em> driver, however, the variance result determines the entire limit law.</p>
+    <h3>Matrix regular variation and a spectral rank hierarchy</h3>
+    <p>The low-frequency theorem also has a finite-dimensional matrix form. For the vector spectral measure above,
+      assume there is no atom at zero and define the symmetrized cumulative matrix</p>
+    $$\mathsf M(x)=\mathsf F((-x,x)\setminus\{0\}).$$
+    <p>If, in operator norm,</p>
+    $$\frac{\mathsf M(x)}{x^\alpha L(1/x)}\longrightarrow B\succeq0,
+      \qquad x\downarrow0,\qquad0&lt;\alpha&lt;2,$$
+    <p>then along every $R_\varepsilon=T_\varepsilon/\varepsilon\to\infty$,</p>
+    <div class="equation-card">
+    $$\frac{\operatorname{Cov}A_\varepsilon(T_\varepsilon)}
+      {T_\varepsilon^{2-\alpha}\varepsilon^\alpha L(R_\varepsilon)}
+      \longrightarrow
+      \frac{\alpha\pi}{\Gamma(3-\alpha)\sin(\pi\alpha/2)}B$$
+    </div>
+    <p>in operator norm. This follows directly from the matrix Fej&eacute;r identity: matrix Potter bounds control
+      the small-frequency part uniformly, frequencies bounded away from zero are
+      $o(T_\varepsilon^{2-\alpha}\varepsilon^\alpha L(R_\varepsilon))$, and finite-dimensional polarization
+      identifies the limit. Equivalently one may first test every quadratic form $u^*\mathsf M u$ and then use
+      compactness of the unit sphere. The conclusion includes singular $B$; no positive-definiteness assumption is
+      hidden in the proof.</p>
+    <p>That last point creates a genuine hierarchy. Let the two coordinates be independent stationary Gaussian
+      processes with</p>
+    $$\operatorname{Cov}(X_0^{(j)},X_t^{(j)})
+      =\operatorname{Re}(1-it)^{-\alpha_j},\qquad
+      \alpha_1=0.6,\quad\alpha_2=1.6.$$
+    <p>Their one-sided spectral densities are
+      $e^{-\omega}\omega^{\alpha_j-1}/\Gamma(\alpha_j)$. For every finite $\varepsilon&gt;0$ the integrated
+      covariance is diagonal and full rank, but its eigenvalues satisfy</p>
+    $$\lambda_j\sim
+      \frac{\pi}{\Gamma(\alpha_j)\Gamma(3-\alpha_j)
+      \sin(\pi\alpha_j/2)}
+      T^{2-\alpha_j}\varepsilon^{\alpha_j}.$$
+    <p>Thus normalization at the dominant $\varepsilon^{0.6}$ scale produces a rank-one limit; the second direction
+      is visible only at order $\varepsilon^{1.6}$, and the condition number grows like
+      a known constant times $\varepsilon^{-1}$. This asymptotic spectral rank is not the exact finite-$\varepsilon$
+      rank and is not the fixed-feature Green&ndash;Kubo rank of a finite-state chain.</p>
+    <p>The exact Gamma-spectrum certificate measures eigenvalue orders $0.599999990$ and $1.599757660$.
+      The two leading-constant ratios are $0.999999993$ and $0.999474581$, while the condition-number ratio to its
+      predicted equivalent is $1.000525688$. At the smallest tested $\varepsilon$, the eigenvalues normalized by
+      $\varepsilon^{0.6}$ are $2.09923303$ and $2.5102\times10^{-8}$. Independent covariance quadrature agrees
+      with the closed spectral formula within $4.45\times10^{-16}$.</p>
     <h3>Gaussian functional limit</h3>
     <p>Let $X$ now be centered, stationary and Gaussian, and put</p>
     $$S_R(t)=\frac{\int_0^{Rt}X_s\,ds}{\sqrt{V(R)}},\qquad
