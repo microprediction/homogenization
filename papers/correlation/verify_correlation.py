@@ -13,9 +13,10 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
  3. spread option (S1 - S2 - K)^+ by Gauss-Hermite quadrature at fixed correlation: exact E[C(rho_hat)] against the
     rule C(rho_bar) + (K_rhorho / T) C_rhorho, second-order convergence, Monte Carlo, implied correlations.
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
- 4. exact finite-rate second through fourth cumulants from the first four occupation-time cumulants, checked against the
-    exact cumulant generating function (Cauchy formula on exp(t (Q + diag g))), plus second-order convergence of the
-    Green--Kubo rule, a cross-check with the engine's ODE solver, and exact-in-law Monte Carlo;
+ 4. exact finite-rate cumulants of every order from singleton/pair partitions and occupation-time cumulants, with
+    orders two through six checked against the exact cumulant generating function (Cauchy formula on
+    exp(t (Q + diag g))), plus second-order convergence of the Green--Kubo rule, a cross-check with the engine's ODE
+    solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
@@ -31,7 +32,8 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          margrabe_first_order, implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
-                         occupation_cumulants)
+                         occupation_cumulants, occupation_cumulants_quadrature,
+                         gaussian_occupation_cumulant)
 
 A, B = 4 / 3, 4.0
 RHO = [0.2, 0.8]
@@ -288,6 +290,53 @@ def main():
     ok &= fourth_rate > 1.8
     out['fourth_cumulants'] = {'rows': fourth_rows, 'leading_error_rate': fourth_rate,
                                'max_closed_error': max(row['closed_error'] for row in fourth_rows)}
+
+    print("4c. all-order singleton/pair theorem through sixth order")
+    regime_means = np.array([MU1, MU2]).T
+    regime_covariances = np.array([
+        [[c11[z], c12[z]], [c12[z], c22[z]]] for z in range(2)
+    ])
+    all_order_errors, higher_order_errors = [], []
+    examples = {}
+    for initial_p1 in (None, 0.0, 0.35, 1.0):
+        occupation = occupation_cumulants_quadrature(
+            T, A, B, max_order=6, initial_p1=initial_p1, n=160
+        )
+        matrix = cumulants_exact(
+            T, Q2(A, B), MU1, MU2, VOL1, VOL2, RHO,
+            r=0.35, N=48, initial_p1=initial_p1, max_order=6
+        )
+        for order in range(2, 7):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_occupation_cumulant(
+                    indices, T, regime_means, regime_covariances, occupation
+                )
+                error = abs(partition_value - matrix[key])
+                all_order_errors.append(error)
+                if order >= 5:
+                    higher_order_errors.append(error)
+        if initial_p1 is None:
+            examples = {'k11112': matrix['k11112'],
+                        'k111222': matrix['k111222']}
+    all_order_error = max(all_order_errors)
+    print(f"   100 tensor entries (52 of orders five/six), four initial laws: "
+          f"max error {all_order_error:.1e}")
+    print(f"   stationary examples: kappa_11112 {examples['k11112']:.6e}, "
+          f"kappa_111222 {examples['k111222']:.6e}")
+    ok &= all_order_error < 3e-12
+    out['all_order_cumulants'] = {
+        'orders': [2, 3, 4, 5, 6],
+        'initial_p1': ['stationary', 0.0, 0.35, 1.0],
+        'checked_entries': len(all_order_errors),
+        'checked_higher_entries': len(higher_order_errors),
+        'max_matrix_exponential_error': all_order_error,
+        'examples': examples,
+    }
+
     # cross-check of the exact generating function with the engine's high-precision ODE solver
     from fastswitch import numerical_a, ExpSum
     th1, th2 = 0.7, -0.4

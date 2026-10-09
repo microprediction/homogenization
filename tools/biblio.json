@@ -2516,6 +2516,6 @@
   "venue": "Annals of the Institute of Statistical Mathematics 21(1), 215-218",
   "doi": "10.1007/bf02532246",
   "url": "https://doi.org/10.1007/bf02532246",
-  "annotation": "Introduces the conditional-cumulant formula used to organize the exact covariance, co-skewness and co-kurtosis tensors of the Gaussian occupation-time mixture."
+  "annotation": "Introduces the conditional-cumulant formula used here to organize the exact all-order joint cumulant tensor of the Gaussian occupation-time mixture."
  }
 ]

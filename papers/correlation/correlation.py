@@ -147,6 +147,87 @@ def occupation_cumulants(T, a, b, initial_p1=None):
     }
 
 
+def occupation_cumulants_quadrature(T, a, b, max_order, initial_p1=None, n=120):
+    """Occupation cumulants of arbitrary fixed order from the exact Bessel law.
+
+    This is primarily a numerical certificate for orders beyond the four
+    closed formulas above.  It uses the standard raw-moment-to-cumulant
+    recursion.
+    """
+    if max_order < 1:
+        raise ValueError("max_order must be positive")
+    nodes, weights = occupation_nodes(T, a, b, n=n, initial_p1=initial_p1)
+    moments = [1.0] + [float(weights @ nodes ** j)
+                       for j in range(1, max_order + 1)]
+    cumulants = [0.0] * (max_order + 1)
+    for order in range(1, max_order + 1):
+        cumulants[order] = moments[order] - sum(
+            math.comb(order - 1, j - 1) * cumulants[j] * moments[order - j]
+            for j in range(1, order)
+        )
+    return {f'k{j}': float(cumulants[j]) for j in range(1, max_order + 1)}
+
+
+def _singleton_pair_partitions(positions):
+    """Generate partitions of labelled positions into singletons and pairs."""
+    if not positions:
+        yield ()
+        return
+    first = positions[0]
+    for rest in _singleton_pair_partitions(positions[1:]):
+        yield ((first,),) + rest
+    for j in range(1, len(positions)):
+        partner = positions[j]
+        remaining = positions[1:j] + positions[j + 1:]
+        for rest in _singleton_pair_partitions(remaining):
+            yield ((first, partner),) + rest
+
+
+def gaussian_occupation_cumulant(indices, T, regime_means, regime_covariances,
+                                  occupation):
+    """Exact joint cumulant for a Gaussian law affine in one occupation time.
+
+    ``indices`` labels coordinates of the return vector.  ``regime_means``
+    has shape (2,d), ``regime_covariances`` has shape (2,d,d), and
+    ``occupation['kM']`` is the Mth cumulant of time spent in state one.
+    The formula is the all-order singleton/pair specialization of the law of
+    total cumulance.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    means = np.asarray(regime_means, float)
+    covariances = np.asarray(regime_covariances, float)
+    if means.ndim != 2 or means.shape[0] != 2:
+        raise ValueError("expected two regime mean vectors")
+    d = means.shape[1]
+    if means.shape != (2, d) or covariances.shape != (2, d, d):
+        raise ValueError("expected two regime means and covariance matrices")
+    if any(index < 0 or index >= d for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    order = len(indices)
+    delta_mean = means[1] - means[0]
+    delta_covariance = covariances[1] - covariances[0]
+    value = 0.0
+    if order == 1:
+        value += T * means[0, indices[0]]
+    elif order == 2:
+        value += T * covariances[0, indices[0], indices[1]]
+
+    for partition in _singleton_pair_partitions(tuple(range(order))):
+        term = occupation[f'k{len(partition)}']
+        for block in partition:
+            if len(block) == 1:
+                term *= delta_mean[indices[block[0]]]
+            else:
+                term *= delta_covariance[
+                    indices[block[0]], indices[block[1]]
+                ]
+        value += term
+    return float(value)
+
+
 def simulate_occupation(T, a, b, n, rng, initial_p1=None):
     """Exact samples of tau, the time in state 1 on [0, T]."""
     p = pi2(a, b)
@@ -313,10 +394,13 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=No
     }
 
 
-def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16, initial_p1=None):
+def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16,
+                    initial_p1=None, max_order=4):
     """Exact cumulants from the Markov-modulated cumulant generating function
         log E exp(th1 X1 + th2 X2) = log pi . exp(t (Q + diag g(th))) 1,   g = th.mu + th' c th / 2,
     by Cauchy's formula on a polydisc of radius r (two-dimensional FFT of the exact function)."""
+    if max_order < 2 or max_order >= N:
+        raise ValueError("max_order must lie between 2 and N-1")
     c11, c22, c12 = cov_entries(sig1, sig2, rho)
     mu1, mu2 = np.array(mu1, float), np.array(mu2, float)
     pi = np.linalg.solve(np.vstack([Q.T[:-1], np.ones(len(Q))]), np.r_[np.zeros(len(Q) - 1), 1.0])
@@ -333,9 +417,13 @@ def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16, initial_p1=No
             F[i, j] = np.log(pi @ expm(t * (Q + np.diag(g))) @ np.ones(len(Q)))
     C = np.fft.fft2(F) / N / N          # C[m, n] r^{m+n} = Taylor coefficient of th1^m th2^n
     coef = lambda m, n: (C[m, n] / r ** (m + n)).real * math.factorial(m) * math.factorial(n)
-    return {'k11': coef(2, 0), 'k22': coef(0, 2), 'k12': coef(1, 1), 'k111': coef(3, 0), 'k222': coef(0, 3),
-            'k112': coef(2, 1), 'k122': coef(1, 2), 'k1111': coef(4, 0), 'k2222': coef(0, 4),
-            'k1112': coef(3, 1), 'k1122': coef(2, 2), 'k1222': coef(1, 3)}
+    result = {}
+    for order in range(2, max_order + 1):
+        for number_two in range(order + 1):
+            number_one = order - number_two
+            key = 'k' + '1' * number_one + '2' * number_two
+            result[key] = coef(number_one, number_two)
+    return result
 
 
 def simulate_returns(t, a, b, mu1, mu2, sig1, sig2, rho, n, rng):
