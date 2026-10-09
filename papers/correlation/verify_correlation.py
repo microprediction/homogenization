@@ -34,6 +34,7 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
+                         occupation_covariance_rate,
                          occupation_joint_cumulants_cauchy,
                          occupation_joint_cumulant_bulk_cauchy,
                          gaussian_occupation_cumulant,
@@ -435,6 +436,10 @@ def main():
         abs(bulk_3[(color,)] - stationary_3[color + 1])
         for color in range(2)
     )
+    covariance_rate_3 = occupation_covariance_rate(q3)
+    second_derivative_error = max(abs(
+        bulk_3[tuple(sorted((a, b)))] - covariance_rate_3[a, b]
+    ) for a in range(2) for b in range(2))
     occupation_rows = []
     magnitude_rates, remainder_rates = {}, {}
     exact_occupations = {}
@@ -484,18 +489,47 @@ def main():
         print(f"   return order {order}: magnitude rate "
               f"{return_rates[order]:.3f} "
               f"(want {math.ceil(order / 2) - 1})")
+    leading_occupation = {
+        tuple(sorted((a, b))): covariance_rate_3[a, b]
+        for a in range(2) for b in range(2)
+    }
+    for order in range(3, 5):
+        for colors in np.ndindex(*(2,) * order):
+            leading_occupation[tuple(sorted(colors))] = 0.0
+    leading_error_rates = {}
+    for order in (3, 4):
+        leading = {}
+        for number_of_twos in range(order + 1):
+            indices = ((0,) * (order - number_of_twos)
+                       + (1,) * number_of_twos)
+            key = ('k' + '1' * (order - number_of_twos)
+                   + '2' * number_of_twos)
+            leading[key] = gaussian_vector_occupation_cumulant(
+                indices, T, means_3[0], covariances_3[0],
+                means_3[1:] - means_3[0],
+                covariances_3[1:] - covariances_3[0], leading_occupation
+            )
+        errors = [max(abs(row['tensor'][key] - leading[key] / row['m'])
+                      for key in leading) for row in return_rows]
+        leading_error_rates[order] = rate(errors)
+        print(f"   return order {order}: Green--Kubo leading-error rate "
+              f"{leading_error_rates[order]:.3f} (want 2)")
     ok &= first_derivative_error < 2e-13
+    ok &= second_derivative_error < 2e-13
     ok &= all(magnitude_rates[order] > order - 1.1
               for order in range(2, 6))
     ok &= all(remainder_rates[order] > order - 0.1
               for order in range(2, 6))
     ok &= all(return_rates[order] > math.ceil(order / 2) - 1.1
               for order in range(3, 6))
+    ok &= all(leading_error_rates[order] > 1.9 for order in (3, 4))
     out['finite_state_fast_rate'] = {
         'speeds': fast_speeds,
         'first_derivative_error': first_derivative_error,
+        'group_inverse_second_derivative_error': second_derivative_error,
         'occupation_rows': occupation_rows,
         'return_rates': return_rates,
+        'green_kubo_leading_error_rates': leading_error_rates,
     }
 
     # cross-check of the exact generating function with the engine's high-precision ODE solver

@@ -357,6 +357,21 @@
     <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a>. The statement is a fixed-horizon fast-rate result. It
     is also uniform on compact maturity intervals bounded away from zero, but it does not cover a joint limit with
     $sT=O(1)$.</p>
+    <p>The first nontrivial eigenvalue coefficient is explicit. For centered state indicators $f_a$, the group inverse
+    $Q^{\#}$ gives the symmetric Green&ndash;Kubo rate matrix</p>
+    $$\Gamma_{ab}=\partial_{ab}\lambda(0)
+      =-\pi\!\left[f_aQ^{\#}f_b\right]-\pi\!\left[f_bQ^{\#}f_a\right].$$
+    <p>Therefore the leading finite-state co-skewness and co-kurtosis tensors are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{ijk}(X)&=\frac{T}{s}\sum_{a,b}\Gamma_{ab}
+      \left(d\mu_i^a dc_{jk}^b+d\mu_j^a dc_{ik}^b+d\mu_k^a dc_{ij}^b\right)+O(s^{-2}),\\
+    \kappa_{ijkl}(X)&=\frac{T}{s}\sum_{a,b}\Gamma_{ab}
+      \left(dc_{ij}^a dc_{kl}^b+dc_{ik}^a dc_{jl}^b+dc_{il}^a dc_{jk}^b\right)+O(s^{-2}).
+    \end{aligned}$$
+    </div>
+    <p>These are fixed-$Q$, fixed-maturity contractions of the Green&ndash;Kubo matrix. They do not assert the same rank
+    after combining different maturity-dependent loadings.</p>
     <p>Choosing the $m-1$ non-reference state indicators as the $f_a$ proves that every mixed finite-state occupation
     cumulant is $O(s^{1-k})$. Every singleton&ndash;pair partition has at least $\lceil n/2\rceil$ blocks, so the exact
     colored formula above yields</p>
@@ -467,7 +482,9 @@
     The corresponding maximum return-tensor magnitudes have exponents $0.987$, $1.005$, and $1.954$ at orders three,
     four, and five, matching $s^{1-\lceil n/2\rceil}$. The principal-eigenvalue derivatives are obtained by an
     independent two-dimensional Cauchy transform, and their first derivatives recover the stationary probabilities to
-    numerical precision.</p>
+    numerical precision. The group-inverse $\Gamma$ agrees with the second eigenvalue derivatives within
+    $2.0\times10^{-15}$; the errors of the explicit third- and fourth-order Green&ndash;Kubo tensors decay with exponents
+    $2.014$ and $1.978$, respectively.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>

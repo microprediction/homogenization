@@ -1332,6 +1332,7 @@
    16
   ],
   "first_derivative_error": 3.3306690738754696e-16,
+  "group_inverse_second_derivative_error": 1.9984014443252818e-15,
   "occupation_rows": [
    {
     "order": 2,
@@ -1414,6 +1415,10 @@
    "3": 0.9867298142610857,
    "4": 1.0047357342762948,
    "5": 1.953826677202481
+  },
+  "green_kubo_leading_error_rates": {
+   "3": 2.014366707930919,
+   "4": 1.9779112367024771
   }
  },
  "exceedance": {

@@ -13,7 +13,10 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from correlation import (cumulants_exact, occupation_joint_cumulants_cauchy,
+from correlation import (cov_entries, cumulants_exact,
+                         gaussian_vector_occupation_cumulant,
+                         occupation_covariance_rate,
+                         occupation_joint_cumulants_cauchy,
                          occupation_joint_cumulant_bulk_cauchy)
 
 
@@ -45,6 +48,13 @@ def main():
                       for a in range(2))
     print(f"principal-eigenvalue first-derivative error {first_error:.2e}")
     ok &= first_error < 2e-13
+
+    covariance_rate = occupation_covariance_rate(Q)
+    second_error = max(abs(
+        bulk[tuple(sorted((a, b)))] - covariance_rate[a, b]
+    ) for a in range(2) for b in range(2))
+    print(f"group-inverse second-derivative error {second_error:.2e}")
+    ok &= second_error < 2e-13
 
     exact = {
         speed: occupation_joint_cumulants_cauchy(
@@ -80,6 +90,37 @@ def main():
         print(f"return order {order}: rate {return_rate:.3f} "
               f"(target {target})")
         ok &= return_rate > target - 0.1
+
+    c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
+    means = np.column_stack([MU1, MU2])
+    covariances = np.array([
+        [[c11[z], c12[z]], [c12[z], c22[z]]] for z in range(3)
+    ])
+    leading_occupation = {
+        tuple(sorted((a, b))): covariance_rate[a, b]
+        for a in range(2) for b in range(2)
+    }
+    for order in range(3, 5):
+        for colors in np.ndindex(*(2,) * order):
+            leading_occupation[tuple(sorted(colors))] = 0.0
+    for order in (3, 4):
+        keys, leading = [], {}
+        for j in range(order + 1):
+            indices = (0,) * (order - j) + (1,) * j
+            key = 'k' + '1' * (order - j) + '2' * j
+            keys.append(key)
+            leading[key] = gaussian_vector_occupation_cumulant(
+                indices, T, means[0], covariances[0],
+                means[1:] - means[0], covariances[1:] - covariances[0],
+                leading_occupation
+            )
+        errors = [max(abs(tensor[key] - leading[key] / speed)
+                      for key in keys)
+                  for speed, tensor in zip(SPEEDS, tensors)]
+        leading_error_rate = rate(errors)
+        print(f"return order {order}: Green--Kubo leading-error rate "
+              f"{leading_error_rate:.3f} (target 2)")
+        ok &= leading_error_rate > 1.9
 
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1

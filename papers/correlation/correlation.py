@@ -279,6 +279,36 @@ def occupation_joint_cumulant_bulk_cauchy(Q, max_order, r=0.2, N=32):
     return result
 
 
+def occupation_covariance_rate(Q):
+    """Green--Kubo rate matrix for non-reference occupation times.
+
+    Entry ``(a,b)`` is the second derivative of the principal eigenvalue
+    tilted by the indicators of states ``a+1`` and ``b+1``.  Equivalently it
+    is the two-sided integrated covariance rate
+
+        -pi[f_a Q# f_b] - pi[f_b Q# f_a],
+
+    with centered indicators and the group inverse ``Q#``.  The matrix is
+    symmetric positive semidefinite.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    indicators = np.eye(states)[:, 1:].T - pi[1:, None]
+    one_sided = np.array([
+        [-pi @ (f * (group_inverse @ h)) for h in indicators]
+        for f in indicators
+    ])
+    return one_sided + one_sided.T
+
+
 def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
                                         baseline_covariance, mean_contrasts,
                                         covariance_contrasts, occupation):
