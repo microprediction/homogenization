@@ -235,6 +235,50 @@ def occupation_joint_cumulants_cauchy(T, Q, max_order, r=0.25, N=24,
     return result
 
 
+def occupation_joint_cumulant_bulk_cauchy(Q, max_order, r=0.2, N=32):
+    """Derivatives of the principal tilted-generator eigenvalue.
+
+    For non-reference occupation coordinates, let ``lambda(z)`` be the
+    eigenvalue continuing zero from ``Q + diag(0, z)``.  The returned mixed
+    derivatives of ``lambda`` are the bulk coefficients in
+
+        cum(A_T^{a_1}, ..., A_T^{a_k})
+        = T s**(1-k) D_{a_1}...D_{a_k} lambda(0) + O(s**(-k))
+
+    for the chain with generator ``s * Q`` at fixed positive ``T``.  The
+    Cauchy radius must remain inside the analytic neighborhood of the simple
+    eigenvalue zero; this routine is intended as a numerical certificate.
+    Its cost grows as ``N ** (number_of_states - 1)``.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    contrasts = states - 1
+    if Q.shape != (states, states) or contrasts < 1:
+        raise ValueError("Q must be a square generator with at least two states")
+    if max_order < 1 or max_order >= N:
+        raise ValueError("max_order must lie between 1 and N-1")
+
+    roots = r * np.exp(2j * np.pi * np.arange(N) / N)
+    values = np.empty((N,) * contrasts, complex)
+    for grid_index in np.ndindex(values.shape):
+        tilt = np.r_[0.0, [roots[k] for k in grid_index]]
+        eigenvalues = np.linalg.eigvals(Q + np.diag(tilt))
+        values[grid_index] = eigenvalues[np.argmin(np.abs(eigenvalues))]
+    coefficients = np.fft.fftn(values) / N ** contrasts
+
+    result = {}
+    for counts in itertools.product(range(max_order + 1), repeat=contrasts):
+        order = sum(counts)
+        if not 1 <= order <= max_order:
+            continue
+        key = tuple(color for color, count in enumerate(counts)
+                    for _ in range(count))
+        scale = r ** order
+        factorial = math.prod(math.factorial(count) for count in counts)
+        result[key] = float((coefficients[counts] / scale).real * factorial)
+    return result
+
+
 def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
                                         baseline_covariance, mean_contrasts,
                                         covariance_contrasts, occupation):

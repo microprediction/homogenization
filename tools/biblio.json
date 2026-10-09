@@ -2509,6 +2509,17 @@
  },
  {
   "role": "survey_correlation",
+  "key": "Kato1995",
+  "authors": "Kato, T.",
+  "year": 1995,
+  "title": "Perturbation Theory for Linear Operators",
+  "venue": "Classics in Mathematics, Springer, Berlin and Heidelberg",
+  "doi": "10.1007/978-3-642-66282-9",
+  "url": "https://doi.org/10.1007/978-3-642-66282-9",
+  "annotation": "Develops analytic perturbation of isolated eigenvalues and their spectral projections, used here to separate the principal tilted-generator eigenvalue from the exponentially decaying finite-state modes."
+ },
+ {
+  "role": "survey_correlation",
   "key": "Brillinger1969",
   "authors": "Brillinger, D. R.",
   "year": 1969,

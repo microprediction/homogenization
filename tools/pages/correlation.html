@@ -332,15 +332,40 @@
     multivariate chain rule to the joint occupation CGF. It is invariant to the chosen reference state, although its
     contrast coordinates are not. Unlike the two-state case, its inputs include mixed occupation cumulants; replacing
     them by separate marginal cumulants is generally wrong.</p>
-    <p>For a stationary two-state chain with fixed $p_0,p_1,T$ and $r\to\infty$,
-    $\kappa_m(A_T)=O(r^{1-m})$ for $m\geq2$. Every singleton&ndash;pair partition has at least
-    $\lceil n/2\rceil$ blocks, hence</p>
-    $$\kappa_{i_1\cdots i_n}(X)=O\!\left(r^{1-\lceil n/2\rceil}\right),\qquad n\geq3.$$
+    <h4>Finite-state fast-rate theorem</h4>
+    <p>The rate law is not special to two states. Let $Q$ be any fixed irreducible finite-state generator, let the
+    accelerated chain have generator $sQ$, and fix $T&gt;0$ and an arbitrary initial law $\nu$. For bounded state
+    observables $f_a$, put $A_T^a=\int_0^T f_a(Y_t)\,dt$. Define $\lambda(z)$ to be the simple eigenvalue continuing zero
+    from $Q+\operatorname{diag}(\sum_a z_af_a)$, $P(z)$ its analytic spectral projection, and
+    $b_\nu(z)=\log[\nu P(z){\bf1}]$. Then every mixed occupation cumulant of order $k\geq2$ has the expansion</p>
+    <div class="equation-card">
+    $$\operatorname{cum}(A_T^{a_1},\ldots,A_T^{a_k})=
+      T s^{1-k}\,\partial_{a_1}\cdots\partial_{a_k}\lambda(0)
+      +s^{-k}\,\partial_{a_1}\cdots\partial_{a_k}b_\nu(0)
+      +O(e^{-c sT}).$$
+    </div>
+    <p>The bulk coefficient is independent of the initial law; the first initial-law contribution is one inverse-rate
+    order smaller. To prove the display, write the occupation CGF as</p>
+    $$K_s(z)=\log\!\left[\nu e^{T(sQ+D(z))}{\bf1}\right]
+      =\log\!\left[\nu e^{sT(Q+D(z/s))}{\bf1}\right].$$
+    <p>Analytic perturbation of the isolated simple eigenvalue zero and the spectral gap give, uniformly on a fixed
+    complex polydisc in $z$ for all sufficiently large $s$,</p>
+    $$K_s(z)=sT\lambda(z/s)+b_\nu(z/s)+O(e^{-csT}).$$
+    <p>Cauchy estimates permit termwise mixed differentiation and give the theorem. This is a finite-dimensional use of
+    <a href="./bibliography.html#Kato1995">Kato&apos;s analytic eigenvalue and projection perturbation theory</a>; the
+    broader singular-perturbation and occupation-measure setting is treated by
+    <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a>. The statement is a fixed-horizon fast-rate result. It
+    is also uniform on compact maturity intervals bounded away from zero, but it does not cover a joint limit with
+    $sT=O(1)$.</p>
+    <p>Choosing the $m-1$ non-reference state indicators as the $f_a$ proves that every mixed finite-state occupation
+    cumulant is $O(s^{1-k})$. Every singleton&ndash;pair partition has at least $\lceil n/2\rceil$ blocks, so the exact
+    colored formula above yields</p>
+    $$\kappa_{i_1\cdots i_n}(X)=O\!\left(s^{1-\lceil n/2\rceil}\right),\qquad n\geq3.$$
     <p>The bound is generically attained, although symmetry or parameter contractions can cancel its leading
-    coefficient. Thus orders three and four are $O(r^{-1})$, orders five and six are $O(r^{-2})$, and so on.
+    coefficient. Thus orders three and four are $O(s^{-1})$, orders five and six are $O(s^{-2})$, and so on.
     If only covariance switches ($d\mu=0$), every odd cumulant of order at least three vanishes exactly and the even formula reduces to pairings.
     If only the mean switches ($dc=0$), only the all-singleton partition remains, giving
-    $\kappa_n(A_T)\prod_a d\mu_{i_a}=O(r^{1-n})$.</p>
+    $\kappa_n(A_T)\prod_a d\mu_{i_a}=O(s^{1-n})$.</p>
     <p>For example, the exact mixed fourth cumulant is</p>
     $$\begin{aligned}
     \kappa_{1122}(X)={}&\kappa_2(A_T)(dc_{11}dc_{22}+2dc_{12}^2)\\
@@ -435,6 +460,14 @@
     reference states leaves at most a $2.4\times10^{-13}$ residual. Its stationary example gives
     $\kappa_{11122}=-6.09744\times10^{-6}$. This verifies the vector formula, not a closed-form law for general
     finite-state occupation times.</p>
+    <p>A <a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_fast_rate.py">focused
+    three-state certificate</a> checks the fast-rate theorem independently. For mixed occupation orders two through
+    five, the observed decay exponents at the last rate doubling are $0.983$, $1.968$, $2.961$, and $3.939$; after
+    subtracting $Ts^{1-k}\partial^k\lambda(0)$, the residual exponents are $2.000$, $3.000$, $4.000$, and $4.998$.
+    The corresponding maximum return-tensor magnitudes have exponents $0.987$, $1.005$, and $1.954$ at orders three,
+    four, and five, matching $s^{1-\lceil n/2\rceil}$. The principal-eigenvalue derivatives are obtained by an
+    independent two-dimensional Cauchy transform, and their first derivatives recover the stationary probabilities to
+    numerical precision.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>

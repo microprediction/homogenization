@@ -15,8 +15,9 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
  4. exact finite-rate cumulants of every order from singleton/pair partitions and occupation-time cumulants, with
     orders two through six checked for two states and orders two through five checked for three states against the exact
-    cumulant generating function (Cauchy formula on exp(t (Q + diag g))), plus second-order convergence of the
-    Green--Kubo rule, a cross-check with the engine's ODE solver, and exact-in-law Monte Carlo;
+    cumulant generating function (Cauchy formula on exp(t (Q + diag g))), the finite-state fast-rate hierarchy checked
+    against principal-eigenvalue derivatives, plus second-order convergence of the Green--Kubo rule, a cross-check with
+    the engine's ODE solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
@@ -34,6 +35,7 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
                          occupation_joint_cumulants_cauchy,
+                         occupation_joint_cumulant_bulk_cauchy,
                          gaussian_occupation_cumulant,
                          gaussian_vector_occupation_cumulant)
 
@@ -419,6 +421,81 @@ def main():
         'reference_state_checks': len(reference_errors),
         'max_reference_state_error': reference_error,
         'examples': vector_examples,
+    }
+
+    print("4e. finite-state fast-rate occupation-cumulant theorem")
+    fast_speeds = [1, 2, 4, 8, 16]
+    bulk_3 = occupation_joint_cumulant_bulk_cauchy(
+        q3, max_order=5, r=0.2, N=32
+    )
+    stationary_3 = np.linalg.solve(
+        np.vstack([q3.T[:-1], np.ones(3)]), np.r_[np.zeros(2), 1.0]
+    )
+    first_derivative_error = max(
+        abs(bulk_3[(color,)] - stationary_3[color + 1])
+        for color in range(2)
+    )
+    occupation_rows = []
+    magnitude_rates, remainder_rates = {}, {}
+    exact_occupations = {}
+    for speed in fast_speeds:
+        exact_occupations[speed] = occupation_joint_cumulants_cauchy(
+            T, speed * q3, max_order=5, r=0.32, N=32
+        )
+    for order in range(2, 6):
+        order_keys = [key for key in bulk_3 if len(key) == order]
+        magnitudes, remainders = [], []
+        for speed in fast_speeds:
+            exact_occupation = exact_occupations[speed]
+            magnitudes.append(max(abs(exact_occupation[key])
+                                  for key in order_keys))
+            remainders.append(max(abs(
+                exact_occupation[key]
+                - T * speed ** (1 - order) * bulk_3[key]
+            ) for key in order_keys))
+        magnitude_rates[order] = rate(magnitudes)
+        remainder_rates[order] = rate(remainders)
+        occupation_rows.append({
+            'order': order, 'magnitudes': magnitudes,
+            'bulk_remainders': remainders,
+            'magnitude_rate': magnitude_rates[order],
+            'bulk_remainder_rate': remainder_rates[order],
+        })
+        print(f"   occupation order {order}: magnitude rate "
+              f"{magnitude_rates[order]:.3f} (want {order - 1}), "
+              f"bulk-remainder rate {remainder_rates[order]:.3f} "
+              f"(want {order})")
+    return_rates = {}
+    return_rows = []
+    for speed in fast_speeds:
+        tensor = cumulants_exact(
+            T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3, rho_3,
+            r=0.32, N=48, max_order=5
+        )
+        return_rows.append({'m': speed, 'tensor': tensor})
+    for order in range(3, 6):
+        order_keys = [
+            'k' + '1' * (order - number_of_twos) + '2' * number_of_twos
+            for number_of_twos in range(order + 1)
+        ]
+        magnitudes = [max(abs(row['tensor'][key]) for key in order_keys)
+                      for row in return_rows]
+        return_rates[order] = rate(magnitudes)
+        print(f"   return order {order}: magnitude rate "
+              f"{return_rates[order]:.3f} "
+              f"(want {math.ceil(order / 2) - 1})")
+    ok &= first_derivative_error < 2e-13
+    ok &= all(magnitude_rates[order] > order - 1.1
+              for order in range(2, 6))
+    ok &= all(remainder_rates[order] > order - 0.1
+              for order in range(2, 6))
+    ok &= all(return_rates[order] > math.ceil(order / 2) - 1.1
+              for order in range(3, 6))
+    out['finite_state_fast_rate'] = {
+        'speeds': fast_speeds,
+        'first_derivative_error': first_derivative_error,
+        'occupation_rows': occupation_rows,
+        'return_rates': return_rates,
     }
 
     # cross-check of the exact generating function with the engine's high-precision ODE solver
