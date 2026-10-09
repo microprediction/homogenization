@@ -85,11 +85,15 @@ def simulate(m, T, N, rng, grid=None):
     return X, P
 
 
-def postfit_mc(m, T, N, rng, n=1001):
-    """Mean-square residual of the phase after a least-squares quadratic fit on n equally spaced samples."""
-    tg = np.linspace(0, T, n)
+def postfit_mc(m, T, N, rng, n=1001, times=None, weights=None):
+    """Mean-square residual after a sampled weighted least-squares quadratic fit."""
+    tg = np.linspace(0, T, n) if times is None else np.asarray(times, float)
+    if np.any(np.diff(tg) <= 0) or tg[0] < 0 or tg[-1] > T:
+        raise ValueError("sample times must be strictly increasing in [0,T]")
+    weights = np.ones(len(tg)) if weights is None else np.asarray(weights, float)
+    weights = weights / weights.sum()
     V = np.vander(tg / T, 3)
-    H = V @ np.linalg.pinv(V)
+    H = V @ np.linalg.solve(V.T @ (weights[:, None] * V), V.T * weights)
     out = np.empty(N)
     for k in range(N):
         s = [0.0]
@@ -107,7 +111,7 @@ def postfit_mc(m, T, N, rng, n=1001):
         Ph = np.concatenate([[0.0], np.cumsum(0.5 * (Xp[1:] + Xp[:-1]) * np.diff(pts))])
         r = np.interp(tg, pts, Ph)
         r = r - H @ r
-        out[k] = np.mean(r ** 2)
+        out[k] = weights @ (r ** 2)
     return out
 
 
@@ -248,15 +252,39 @@ def main():
     ok &= abs(rows[-1][4] - asym) < 3e-9
     out['postfit_exact'] = rows
 
+    print("   sampled-design trace theorem")
+    dense = []
+    continuous = m.postfit_ms_exact(100.0)
+    for n in (9, 17, 33, 65, 129, 257):
+        val = m.postfit_ms_sampled(np.linspace(0, 100.0, n))
+        dense.append([n, val, val / continuous - 1])
+        print(f"     uniform n {n:3d}: sampled {val:.8e}, relative continuous error {val/continuous-1:+.6e}")
+    orders = [math.log(abs(dense[i - 1][2] / dense[i][2]), 2) for i in range(2, len(dense))]
+    ok &= min(orders[-3:]) > 0.95
+    irregular = 100 * np.array([0, .03, .08, .15, .27, .40, .58, .73, .86, .95, 1.0])
+    iw = np.linspace(.7, 1.4, len(irregular))
+    exact_irregular = m.postfit_ms_sampled(irregular, iw)
+    mc_irregular = postfit_mc(m, 100.0, 50000, np.random.default_rng(806), times=irregular, weights=iw)
+    se_irregular = mc_irregular.std() / math.sqrt(len(mc_irregular))
+    eigmin = np.linalg.eigvalsh(m.phase_covariance(irregular)).min()
+    print(f"     irregular weighted: trace {exact_irregular:.8e}, MC {mc_irregular.mean():.8e} "
+          f"+- {se_irregular:.2e}; covariance min eigenvalue {eigmin:.3e}")
+    ok &= abs(mc_irregular.mean() - exact_irregular) < 4 * se_irregular
+    ok &= eigmin > -1e-10
+    out['postfit_sampled'] = dict(dense=dense, dense_orders=orders, irregular_times=irregular.tolist(),
+                                  irregular_weights=iw.tolist(), exact=exact_irregular,
+                                  mc=float(mc_irregular.mean()), mc_se=float(se_irregular), cov_min_eig=float(eigmin))
+
     rows = []
     for T in (300.0, 1000.0, 3000.0):
         N = 4000
         ms = postfit_mc(m, T, N, rng)
+        sampled = m.postfit_ms_sampled(np.linspace(0, T, 1001))
         pred = m.postfit_ms_exact(T)
-        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred, m.postfit_ms(T)])
+        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred, sampled, m.postfit_ms(T)])
         print(f"   post-fit mean-square phase residual, T {T:5.0f}: MC {ms.mean():.4e} +- {ms.std()/math.sqrt(N):.1e}"
-              f" vs exact {pred:.4e} (ratio {ms.mean()/pred:.3f})")
-    ok &= abs(rows[-1][1] / rows[-1][3] - 1) < 0.08
+              f" vs sampled trace {sampled:.4e}, continuous {pred:.4e}")
+    ok &= abs(rows[-1][1] / rows[-1][4] - 1) < 0.08
     out['postfit'] = rows
 
     print("8. spectrum of the spin-down rate")

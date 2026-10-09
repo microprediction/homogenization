@@ -165,6 +165,35 @@
     generalized least squares require the corresponding discrete design and covariance matrices; the scalar
     factor $R(x)$ should not be reused in those settings.</p>
 
+    <h3>Exact sampled-design version</h3>
+    <p>There is nevertheless an exact finite-sample answer. For observation times $t_i$, let $C_{ij}$ be the
+    covariance of the phase residuals before the timing fit. If $u=\min(t_i,t_j)$ and $v=\max(t_i,t_j)$, direct
+    integration of the exponential rate covariance gives</p>
+    $$C_{ij}=\pi_1\pi_2\Delta^2\,J_\gamma(u,v),$$
+    $$\begin{aligned}
+    J_\gamma(u,v)={}&-\frac{u^3}{3\gamma}+\frac{u^2v}{\gamma}-\frac{uv}{\gamma^2}
+      +\frac{v-u}{\gamma^3}-\frac{u e^{-\gamma v}+v e^{-\gamma u}}{\gamma^3}\\
+      &+\frac{e^{-\gamma(v-u)}+1-e^{-\gamma v}-e^{-\gamma u}}{\gamma^4}.
+    \end{aligned}$$
+    <p>Let $X_i=(1,t_i,t_i^2)$, let $W=\operatorname{diag}(w_i)$ with positive weights summing to one, and let</p>
+    $$H=X(X^\top W X)^{-1}X^\top W.$$
+    <p>The sampled weighted least-squares residual $r=(I-H)\Phi$ satisfies the exact trace identity</p>
+    <div class="equation-card">
+    $$\mathbb E(r^\top Wr)
+      =\operatorname{tr}\!\left(W(I-H)C(I-H)^\top\right)
+      =\operatorname{tr}(WC)-\operatorname{tr}(WHC).$$
+    </div>
+    <p>The second equality uses $H^2=H$ and $H^\top W=WH$. More generally, the first trace formula applies to
+    any specified linear fitting matrix, including a generalized least-squares timing fit; measurement noise is
+    included by adding its covariance to $C$. Thus irregular sampling and weights do not need a new
+    homogenization approximation&mdash;they need the correct finite design. This is the covariance-matrix viewpoint
+    advocated for correlated pulsar timing data by
+    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>.</p>
+    <p>For B1931+24 over 100 days, equally weighted grids with 17 and 257 observations give mean-square residuals
+    $164.416$ and $139.865$ nHz$^2$ day$^2$, respectively, converging to the continuous value $138.075$.
+    The endpoint grid has first-order quadrature error. On an eleven-point irregular weighted design, the exact
+    trace is $154.452$; exact-path simulation gives $155.726\pm0.852$.</p>
+
     <h2>What timing data identify</h2>
     <p>The two-state chain has four parameters: $\dot\nu_1$, $\dot\nu_2$, $a$ and $b$. To first order timing data see two
     numbers, the averaged spin-down $\bar{\dot\nu}$ and the Green&ndash;Kubo integral $K$. Any two chains that share

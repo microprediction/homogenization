@@ -120,6 +120,48 @@ class TwoState:
         """Exact post-fit mean square divided by its Green--Kubo limit."""
         return self.postfit_ms_exact(T) / self.postfit_ms(T)
 
+    def phase_covariance(self, times):
+        """Exact covariance matrix of Phi(t) on an arbitrary nonnegative time design."""
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) == 0 or np.any(times < 0):
+            raise ValueError("times must be a nonempty vector of nonnegative values")
+        u = np.minimum.outer(times, times)
+        v = np.maximum.outer(times, times)
+        g = self.gamma
+        e_u, e_v = np.exp(-g * u), np.exp(-g * v)
+        shape = (-u ** 3 / (3 * g) + u ** 2 * v / g - u * v / g ** 2
+                 + (v - u) / g ** 3 - (u * e_v + v * e_u) / g ** 3
+                 + (np.exp(-g * (v - u)) + 1 - e_v - e_u) / g ** 4)
+        shape[u == 0] = 0.0
+        c0 = self.p1 * self.p2 * self.Delta ** 2
+        return c0 * shape
+
+    def postfit_ms_sampled(self, times, weights=None):
+        """Exact weighted residual power for sampled OLS on 1, t and t^2.
+
+        The returned objective is E[sum_i w_i r_i^2], with positive weights
+        normalized to sum to one.  Equal weights give the sampled mean square.
+        """
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) < 3 or np.any(times < 0):
+            raise ValueError("at least three nonnegative sample times are required")
+        scale = max(float(np.max(times)), 1.0)
+        design = np.column_stack((np.ones_like(times), times / scale, (times / scale) ** 2))
+        if weights is None:
+            weights = np.ones(len(times))
+        weights = np.asarray(weights, float)
+        if weights.shape != times.shape or np.any(weights <= 0):
+            raise ValueError("weights must be positive and match times")
+        weights = weights / weights.sum()
+        gram = design.T @ (weights[:, None] * design)
+        if np.linalg.matrix_rank(gram) < 3:
+            raise ValueError("the quadratic timing design is rank deficient")
+        hat = design @ np.linalg.solve(gram, design.T * weights)
+        cov = self.phase_covariance(times)
+        # Weighted orthogonal projection gives H'W=WH and H^2=H, hence
+        # tr[W(I-H)C(I-H)'] = tr(WC)-tr(WHC), avoiding a cubic matrix product.
+        return float(weights @ np.diag(cov) - np.sum(weights[:, None] * hat * cov.T))
+
     # ---- spectra (two-sided, per Hz) ----------------------------------------------------------------------
     def S_nudot(self, f):
         w = 2 * math.pi * np.asarray(f, float)
