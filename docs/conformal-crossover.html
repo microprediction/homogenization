@@ -298,6 +298,27 @@
     $$\frac2{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
       e^{-\Lambda_n\ell/n}
       \longrightarrow2\int_0^1(1-u)e^{-\Lambda u}\,du.$$
+    <p>On the exact critical schedule $x_n=\Lambda/n$, the same finite sum
+      gives a sharper uniform expansion. For every fixed $L&lt;\infty$, uniformly
+      for $0\leq\Lambda\leq L$,</p>
+    <div class="equation-card">
+    $$W_n=\Psi(\Lambda)
+      +\frac{1+\Lambda-e^{-\Lambda}}{6n^2}
+      -\frac{\Lambda^2(\Lambda+3-3e^{-\Lambda})}{360n^4}
+      +O_L(n^{-6}).$$
+    </div>
+    <p>There is no order-$n^{-1}$ term. Indeed, with
+      $f_\Lambda(u)=(1-u)e^{-\Lambda u}$,</p>
+    $$W_n=\frac1n+\frac2n\sum_{\ell=1}^{n-1}
+      f_\Lambda(\ell/n).$$
+    <p>The endpoint term in Euler&ndash;Maclaurin is
+      $-\{f_\Lambda(0)+f_\Lambda(1)\}/n=-1/n$, exactly cancelling the
+      displayed diagonal contribution. The $B_2$ and $B_4$ terms give the
+      two coefficients above; bounded sixth derivatives on
+      $[0,L]\times[0,1]$ give the stated uniform remainder. This expansion is
+      for the exact schedule $x_n=\Lambda/n$. For a perturbed sequence
+      $\Lambda_n\to\Lambda$, its perturbation error must be retained separately
+      and can dominate $n^{-2}$.</p>
     <p>The profile is not merely an upper bound. For every $n$, a symmetric
       two-state chain with conditional CDF values $(0,1)$ attains the finite
       factor exactly, so all these limits are sharp. In particular,

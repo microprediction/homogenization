@@ -31,6 +31,9 @@ The exact finite-panel variance factor is also followed through a joint limit
 in which the panel size grows while the per-observation mixing exposure may
 vanish.  This certifies the critical finite-total-exposure profile and its
 dense- and resolved-grid limits without making a conditional-coverage claim.
+On the exact critical schedule it also checks the first two finite-panel
+Euler--Maclaurin corrections and the cancellation of the nominal order-n^{-1}
+term.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
@@ -38,6 +41,7 @@ boundary correction for every fixed cumulant order and every initial law.
 """
 import itertools
 import math
+from decimal import Decimal, localcontext
 
 import numpy as np
 from scipy.linalg import expm
@@ -134,6 +138,22 @@ def normalized_variance_factor(step_exposure, n):
     )) / n)
 
 
+def critical_factor_decimal(total_exposure, n):
+    """High-precision W_n for x_n=total_exposure/n.
+
+    The fourth- and sixth-order residuals in the critical expansion are much
+    smaller than double precision at the largest panel sizes, so the
+    certificate evaluates the defining finite sum with Decimal arithmetic.
+    """
+    lam = Decimal(total_exposure)
+    nd = Decimal(n)
+    dependence = sum(
+        Decimal(n - lag) * (-lam * Decimal(lag) / nd).exp()
+        for lag in range(1, n)
+    )
+    return (Decimal(1) + Decimal(2) * dependence / nd) / nd
+
+
 def joint_panel_switching_checks():
     """Certify the sharp joint panel-size/per-step-mixing regimes."""
     n_critical = 4096
@@ -155,6 +175,45 @@ def joint_panel_switching_checks():
         )
         assert abs(exact_binary_variance - 0.25 * normalized) < 2e-14
         critical_rows.append((total_exposure, normalized, limit))
+
+    # On the exact critical schedule x_n=lambda/n, Euler--Maclaurin gives
+    # W_n = Psi(lambda) + c2(lambda)/n^2 + c4(lambda)/n^4 + O(n^-6).
+    # The explicit 1/n term in W_n cancels the endpoint correction of the
+    # Riemann sum.  High precision exposes all three successive rates.
+    expansion_rows = []
+    with localcontext() as context:
+        context.prec = 80
+        for lam_text in ("0.05", "0.5", "2", "8"):
+            lam = Decimal(lam_text)
+            exp_minus = (-lam).exp()
+            profile = Decimal(2) * (lam - 1 + exp_minus) / lam ** 2
+            c2 = (1 + lam - exp_minus) / Decimal(6)
+            c4 = -lam ** 2 * (lam + 3 - 3 * exp_minus) / Decimal(360)
+            errors = [[], [], []]
+            for n in (32, 64, 128, 256):
+                value = critical_factor_decimal(lam_text, n)
+                errors[0].append(abs(value - profile))
+                errors[1].append(abs(value - profile - c2 / Decimal(n) ** 2))
+                errors[2].append(abs(
+                    value - profile - c2 / Decimal(n) ** 2
+                    - c4 / Decimal(n) ** 4
+                ))
+            rates = [
+                math.log2(float(level[-2] / level[-1]))
+                for level in errors
+            ]
+            assert abs(rates[0] - 2) < 1e-4
+            assert abs(rates[1] - 4) < 2e-4
+            assert abs(rates[2] - 6) < 2e-4
+            n = 256
+            value = critical_factor_decimal(lam_text, n)
+            scaled_c2 = (value - profile) * Decimal(n) ** 2
+            scaled_c4 = (
+                value - profile - c2 / Decimal(n) ** 2
+            ) * Decimal(n) ** 4
+            assert abs(scaled_c2 - c2) < Decimal("3e-5")
+            assert abs(scaled_c4 - c4) < Decimal("6e-5")
+            expansion_rows.append((float(lam), rates, float(c2), float(c4)))
 
     # Dense observations with diverging total exposure have only
     # total_exposure/2 variance-equivalent observations to first order.
@@ -179,6 +238,13 @@ def joint_panel_switching_checks():
           "; ".join(
               f"lambda={lam:g}: {value:.9f} (limit {limit:.9f})"
               for lam, value, limit in critical_rows
+          ))
+    print("critical finite-panel expansion:",
+          "; ".join(
+              f"lambda={lam:g}: rates {rates[0]:.6f},"
+              f" {rates[1]:.6f}, {rates[2]:.6f};"
+              f" c2={c2:.9f}, c4={c4:.9f}"
+              for lam, rates, c2, c4 in expansion_rows
           ))
     print("joint panel/switching outer regimes:",
           f"dense ratio {dense_ratio:.9f},",
