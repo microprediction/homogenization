@@ -317,8 +317,21 @@
     Fa&agrave; di Bruno formula applied to
     $K_{A_T}(\theta\cdot d\mu+\tfrac12\theta^\top dc\,\theta)$; it is also the conditional-Gaussian
     form of <a href="./bibliography.html#Brillinger1969">Brillinger&apos;s conditional-cumulant formula</a>. The statement is exact at finite rate and horizon for every two-state initial
-    law. It does not assert a scalar formula for three or more regimes: then the occupation time is vector-valued and
-    mixed occupation cumulants enter.</p>
+    law.</p>
+    <p>There is an exact finite-state version, but it is genuinely vector-valued. Choose state zero as reference, write
+    $A_T^a$ for time in state $a=1,\ldots,m-1$, and let $d\mu^a=\mu^a-\mu^0$ and
+    $dc^a=c^a-c^0$. Color every block $B$ of $\mathcal P$ by a state contrast $z(B)$. Then, for $n\geq3$,</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(X)=
+      \sum_{\mathcal P\in\mathcal M_n}\ \sum_{z:\mathcal P\to\{1,\ldots,m-1\}}
+      \operatorname{cum}\!\big(A_T^{z(B)}:B\in\mathcal P\big)
+      \prod_{\{a\}\in\mathcal P}d\mu^{z(\{a\})}_{i_a}
+      \prod_{\{a,b\}\in\mathcal P}dc^{z(\{a,b\})}_{i_ai_b}.$$
+    </div>
+    <p>The order-one and order-two baseline additions are unchanged. This formula follows by applying the same
+    multivariate chain rule to the joint occupation CGF. It is invariant to the chosen reference state, although its
+    contrast coordinates are not. Unlike the two-state case, its inputs include mixed occupation cumulants; replacing
+    them by separate marginal cumulants is generally wrong.</p>
     <p>For a stationary two-state chain with fixed $p_0,p_1,T$ and $r\to\infty$,
     $\kappa_m(A_T)=O(r^{1-m})$ for $m\geq2$. Every singleton&ndash;pair partition has at least
     $\lceil n/2\rceil$ blocks, hence</p>
@@ -415,6 +428,13 @@
     stationary, calm, mixed, and crisis initial laws (including 52 fifth- and sixth-order entries); the maximum absolute
     discrepancy is $2.4\times10^{-12}$. For the displayed parameters, two stationary higher-order examples are
     $\kappa_{11112}=-2.29443\times10^{-4}$ and $\kappa_{111222}=2.10610\times10^{-5}$.</p>
+    <p>A separate nonreversible three-state certificate computes the mixed cumulants of two reference-state occupation
+    coordinates by a two-dimensional Cauchy transform of the tilted generator. Across stationary, deterministic, and
+    mixed initial laws, all 54 symmetric bivariate return-tensor entries of orders two through five agree with a direct
+    return-CGF extraction within $2.8\times10^{-13}$; recomputing all stationary entries with each of the other two
+    reference states leaves at most a $2.4\times10^{-13}$ residual. Its stationary example gives
+    $\kappa_{11122}=-6.09744\times10^{-6}$. This verifies the vector formula, not a closed-form law for general
+    finite-state occupation times.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>

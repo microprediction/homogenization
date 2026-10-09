@@ -14,9 +14,9 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
     rule C(rho_bar) + (K_rhorho / T) C_rhorho, second-order convergence, Monte Carlo, implied correlations.
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
  4. exact finite-rate cumulants of every order from singleton/pair partitions and occupation-time cumulants, with
-    orders two through six checked against the exact cumulant generating function (Cauchy formula on
-    exp(t (Q + diag g))), plus second-order convergence of the Green--Kubo rule, a cross-check with the engine's ODE
-    solver, and exact-in-law Monte Carlo;
+    orders two through six checked for two states and orders two through five checked for three states against the exact
+    cumulant generating function (Cauchy formula on exp(t (Q + diag g))), plus second-order convergence of the
+    Green--Kubo rule, a cross-check with the engine's ODE solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
@@ -33,7 +33,9 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
-                         gaussian_occupation_cumulant)
+                         occupation_joint_cumulants_cauchy,
+                         gaussian_occupation_cumulant,
+                         gaussian_vector_occupation_cumulant)
 
 A, B = 4 / 3, 4.0
 RHO = [0.2, 0.8]
@@ -335,6 +337,88 @@ def main():
         'checked_higher_entries': len(higher_order_errors),
         'max_matrix_exponential_error': all_order_error,
         'examples': examples,
+    }
+
+    print("4d. vector-occupation theorem for a three-state chain")
+    q3 = np.array([[-3.0, 2.0, 1.0],
+                   [1.0, -4.0, 3.0],
+                   [2.0, 1.0, -3.0]])
+    mu1_3 = np.array([0.10, -0.15, 0.03])
+    mu2_3 = np.array([0.05, 0.08, -0.20])
+    vol1_3 = np.array([0.15, 0.28, 0.18])
+    vol2_3 = np.array([0.12, 0.22, 0.30])
+    rho_3 = np.array([0.10, 0.75, -0.35])
+    c11_3, c22_3, c12_3 = cov_entries(vol1_3, vol2_3, rho_3)
+    means_3 = np.column_stack([mu1_3, mu2_3])
+    covariances_3 = np.array([
+        [[c11_3[z], c12_3[z]], [c12_3[z], c22_3[z]]]
+        for z in range(3)
+    ])
+    starts_3 = [None, np.array([1.0, 0.0, 0.0]),
+                np.array([0.2, 0.3, 0.5])]
+    vector_errors, reference_errors, vector_examples = [], [], {}
+    for initial in starts_3:
+        occupation_3 = occupation_joint_cumulants_cauchy(
+            T, q3, max_order=5, r=0.32, N=32, initial=initial
+        )
+        matrix_3 = cumulants_exact(
+            T, q3, mu1_3, mu2_3, vol1_3, vol2_3, rho_3,
+            r=0.32, N=48, max_order=5, initial=initial
+        )
+        for order in range(2, 6):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_vector_occupation_cumulant(
+                    indices, T, means_3[0], covariances_3[0],
+                    means_3[1:] - means_3[0],
+                    covariances_3[1:] - covariances_3[0], occupation_3
+                )
+                vector_errors.append(abs(partition_value - matrix_3[key]))
+        if initial is None:
+            vector_examples['k11122'] = matrix_3['k11122']
+            stationary_matrix_3 = matrix_3
+    for permutation in (np.array([1, 0, 2]), np.array([2, 0, 1])):
+        permuted_q = q3[np.ix_(permutation, permutation)]
+        permuted_means = means_3[permutation]
+        permuted_covariances = covariances_3[permutation]
+        permuted_occupation = occupation_joint_cumulants_cauchy(
+            T, permuted_q, max_order=5, r=0.32, N=32
+        )
+        for order in range(2, 6):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_vector_occupation_cumulant(
+                    indices, T, permuted_means[0], permuted_covariances[0],
+                    permuted_means[1:] - permuted_means[0],
+                    permuted_covariances[1:] - permuted_covariances[0],
+                    permuted_occupation
+                )
+                reference_errors.append(
+                    abs(partition_value - stationary_matrix_3[key])
+                )
+    vector_error = max(vector_errors)
+    reference_error = max(reference_errors)
+    print(f"   54 tensor entries through order five, three initial laws: "
+          f"max error {vector_error:.1e}")
+    print(f"   two alternative reference states: max residual "
+          f"{reference_error:.1e}")
+    print(f"   stationary kappa_11122 {vector_examples['k11122']:.6e}")
+    ok &= vector_error < 4e-13 and reference_error < 4e-13
+    out['vector_occupation_cumulants'] = {
+        'states': 3,
+        'orders': [2, 3, 4, 5],
+        'initial_laws': ['stationary', 'state_zero', [0.2, 0.3, 0.5]],
+        'checked_entries': len(vector_errors),
+        'max_matrix_exponential_error': vector_error,
+        'reference_state_checks': len(reference_errors),
+        'max_reference_state_error': reference_error,
+        'examples': vector_examples,
     }
 
     # cross-check of the exact generating function with the engine's high-precision ODE solver

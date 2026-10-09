@@ -18,6 +18,7 @@ and the cross-cumulants kappa_112 ~ 2t [2 K(mu1, c12) + K(mu2, c11)], kappa_122 
 Two-state chain: calm (state 0) -> crisis (state 1) at rate a, crisis -> calm at rate b.
     pi = (b, a) / (a + b),   K(f, h) = pi0 pi1 (f0 - f1)(h0 - h1) / (a + b).
 """
+import itertools
 import math
 import numpy as np
 from scipy.linalg import expm
@@ -183,6 +184,106 @@ def _singleton_pair_partitions(positions):
             yield ((first, partner),) + rest
 
 
+def occupation_joint_cumulants_cauchy(T, Q, max_order, r=0.25, N=24,
+                                      initial=None):
+    """Mixed cumulants of non-reference occupation times by Cauchy FFT.
+
+    State zero is the reference and the returned dictionary is indexed by a
+    sorted tuple of occupation coordinates: ``(0, 0, 1)`` denotes
+    cum(A_1, A_1, A_2).  This is an independent numerical certificate, not a
+    claim of a closed occupation law for a general finite-state chain.  Its
+    cost grows as ``N ** (number_of_states - 1)``.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    contrasts = states - 1
+    if Q.shape != (states, states) or contrasts < 1:
+        raise ValueError("Q must be a square generator with at least two states")
+    if max_order < 1 or max_order >= N:
+        raise ValueError("max_order must lie between 1 and N-1")
+    if initial is None:
+        initial = np.linalg.solve(
+            np.vstack([Q.T[:-1], np.ones(states)]),
+            np.r_[np.zeros(states - 1), 1.0]
+        )
+    else:
+        initial = np.asarray(initial, float)
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+
+    roots = r * np.exp(2j * np.pi * np.arange(N) / N)
+    values = np.empty((N,) * contrasts, complex)
+    ones = np.ones(states)
+    for grid_index in np.ndindex(values.shape):
+        tilt = np.r_[0.0, [roots[k] for k in grid_index]]
+        values[grid_index] = np.log(
+            initial @ expm(T * (Q + np.diag(tilt))) @ ones
+        )
+    coefficients = np.fft.fftn(values) / N ** contrasts
+
+    result = {}
+    for counts in itertools.product(range(max_order + 1), repeat=contrasts):
+        order = sum(counts)
+        if not 1 <= order <= max_order:
+            continue
+        key = tuple(color for color, count in enumerate(counts)
+                    for _ in range(count))
+        scale = r ** order
+        factorial = math.prod(math.factorial(count) for count in counts)
+        result[key] = float((coefficients[counts] / scale).real * factorial)
+    return result
+
+
+def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
+                                        baseline_covariance, mean_contrasts,
+                                        covariance_contrasts, occupation):
+    """Exact Gaussian-mixture cumulant for a vector of occupation times.
+
+    The conditional mean and covariance are a baseline times ``T`` plus a
+    linear combination of occupation coordinates.  ``occupation[key]`` is
+    the mixed cumulant whose coordinate labels are the sorted tuple ``key``.
+    Summing block colorings is the multivariate singleton/pair formula.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    baseline_mean = np.asarray(baseline_mean, float)
+    baseline_covariance = np.asarray(baseline_covariance, float)
+    mean_contrasts = np.asarray(mean_contrasts, float)
+    covariance_contrasts = np.asarray(covariance_contrasts, float)
+    if baseline_mean.ndim != 1:
+        raise ValueError("baseline_mean must be a vector")
+    dimension = len(baseline_mean)
+    colors = len(mean_contrasts)
+    if (baseline_covariance.shape != (dimension, dimension)
+            or mean_contrasts.shape != (colors, dimension)
+            or covariance_contrasts.shape != (colors, dimension, dimension)
+            or colors < 1):
+        raise ValueError("incompatible baseline and occupation contrasts")
+    if any(index < 0 or index >= dimension for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    order = len(indices)
+    value = 0.0
+    if order == 1:
+        value += T * baseline_mean[indices[0]]
+    elif order == 2:
+        value += T * baseline_covariance[indices[0], indices[1]]
+    for partition in _singleton_pair_partitions(tuple(range(order))):
+        for coloring in itertools.product(range(colors), repeat=len(partition)):
+            term = occupation[tuple(sorted(coloring))]
+            for block, color in zip(partition, coloring):
+                if len(block) == 1:
+                    term *= mean_contrasts[color, indices[block[0]]]
+                else:
+                    term *= covariance_contrasts[
+                        color, indices[block[0]], indices[block[1]]
+                    ]
+            value += term
+    return float(value)
+
+
 def gaussian_occupation_cumulant(indices, T, regime_means, regime_covariances,
                                   occupation):
     """Exact joint cumulant for a Gaussian law affine in one occupation time.
@@ -206,26 +307,16 @@ def gaussian_occupation_cumulant(indices, T, regime_means, regime_covariances,
     if any(index < 0 or index >= d for index in indices):
         raise ValueError("coordinate index out of range")
 
-    order = len(indices)
-    delta_mean = means[1] - means[0]
-    delta_covariance = covariances[1] - covariances[0]
-    value = 0.0
-    if order == 1:
-        value += T * means[0, indices[0]]
-    elif order == 2:
-        value += T * covariances[0, indices[0], indices[1]]
-
-    for partition in _singleton_pair_partitions(tuple(range(order))):
-        term = occupation[f'k{len(partition)}']
-        for block in partition:
-            if len(block) == 1:
-                term *= delta_mean[indices[block[0]]]
-            else:
-                term *= delta_covariance[
-                    indices[block[0]], indices[block[1]]
-                ]
-        value += term
-    return float(value)
+    mixed_occupation = {
+        (0,) * order: occupation[f'k{order}']
+        for order in range(1, len(indices) + 1)
+    }
+    return gaussian_vector_occupation_cumulant(
+        indices, T, means[0], covariances[0],
+        (means[1] - means[0])[None, :],
+        (covariances[1] - covariances[0])[None, :, :],
+        mixed_occupation
+    )
 
 
 def simulate_occupation(T, a, b, n, rng, initial_p1=None):
@@ -395,7 +486,7 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=No
 
 
 def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16,
-                    initial_p1=None, max_order=4):
+                    initial_p1=None, max_order=4, initial=None):
     """Exact cumulants from the Markov-modulated cumulant generating function
         log E exp(th1 X1 + th2 X2) = log pi . exp(t (Q + diag g(th))) 1,   g = th.mu + th' c th / 2,
     by Cauchy's formula on a polydisc of radius r (two-dimensional FFT of the exact function)."""
@@ -404,6 +495,14 @@ def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16,
     c11, c22, c12 = cov_entries(sig1, sig2, rho)
     mu1, mu2 = np.array(mu1, float), np.array(mu2, float)
     pi = np.linalg.solve(np.vstack([Q.T[:-1], np.ones(len(Q))]), np.r_[np.zeros(len(Q) - 1), 1.0])
+    if initial is not None and initial_p1 is not None:
+        raise ValueError("supply initial or initial_p1, not both")
+    if initial is not None:
+        initial = np.asarray(initial, float)
+        if (initial.shape != (len(Q),) or np.any(initial < 0)
+                or not np.isclose(initial.sum(), 1)):
+            raise ValueError("initial must be a probability vector")
+        pi = initial
     if initial_p1 is not None:
         if len(Q) != 2 or not 0 <= initial_p1 <= 1:
             raise ValueError("initial_p1 requires a two-state chain and must lie in [0, 1]")

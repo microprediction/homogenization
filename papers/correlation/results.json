@@ -1298,6 +1298,31 @@
    "k111222": 2.106099415111023e-05
   }
  },
+ "vector_occupation_cumulants": {
+  "states": 3,
+  "orders": [
+   2,
+   3,
+   4,
+   5
+  ],
+  "initial_laws": [
+   "stationary",
+   "state_zero",
+   [
+    0.2,
+    0.3,
+    0.5
+   ]
+  ],
+  "checked_entries": 54,
+  "max_matrix_exponential_error": 2.789247138649826e-13,
+  "reference_state_checks": 36,
+  "max_reference_state_error": 2.3856314330678724e-13,
+  "examples": {
+   "k11122": -6.09743803701559e-06
+  }
+ },
  "exceedance": {
   "corr": 0.6121451669718729,
   "down": 0.5631620485009226,
