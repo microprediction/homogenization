@@ -2539,5 +2539,16 @@
   "doi": "10.1017/s0269964802163066",
   "url": "https://doi.org/10.1017/s0269964802163066",
   "annotation": "Defines and studies the continuous-time deviation matrix D = integral_0^infinity (P(t)-Pi) dt, the group-inverse object governing the arbitrary-start initial-layer coefficient used here."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "VanDijkSladky2006",
+  "authors": "van Dijk, N. M. and Sladky, K.",
+  "year": 2006,
+  "title": "On the total reward variance for continuous-time Markov reward chains",
+  "venue": "Journal of Applied Probability 43(4), 1044-1052",
+  "doi": "10.1239/jap/1165505206",
+  "url": "https://doi.org/10.1239/jap/1165505206",
+  "annotation": "Establishes asymptotically linear variance growth for finite-state continuous-time Markov reward chains and gives formulas for its growth rate; the boundary Hessian here refines the finite-horizon constant term."
  }
 ]

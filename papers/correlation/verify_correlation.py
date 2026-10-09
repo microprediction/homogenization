@@ -34,6 +34,7 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
+                         initial_covariance_boundary,
                          initial_layer_coefficient,
                          occupation_covariance_rate,
                          occupation_third_cumulant_rate,
@@ -503,6 +504,7 @@ def main():
         for colors in np.ndindex(*(2,) * order):
             leading_occupation[tuple(sorted(colors))] = 0.0
     leading_error_rates = {}
+    green_kubo_leading = {}
     for order in (3, 4):
         leading = {}
         for number_of_twos in range(order + 1):
@@ -515,6 +517,7 @@ def main():
                 means_3[1:] - means_3[0],
                 covariances_3[1:] - covariances_3[0], leading_occupation
             )
+        green_kubo_leading[order] = leading
         errors = [max(abs(row['tensor'][key] - leading[key] / row['m'])
                       for key in leading) for row in return_rows]
         leading_error_rates[order] = rate(errors)
@@ -567,7 +570,11 @@ def main():
         covariance_boundary = initial_layer_coefficient(
             q3, covariances_3, initial
         )
+        occupation_covariance_boundary = initial_covariance_boundary(
+            q3, np.eye(3)[:, 1:], initial
+        )
         semigroup_errors, covariance_errors = [], []
+        occupation_boundary_errors, initial_tensors = [], []
         for speed in fast_speeds:
             occupation = occupation_joint_cumulants_cauchy(
                 T, speed * q3, max_order=2, r=0.32, N=32,
@@ -584,10 +591,21 @@ def main():
             semigroup_errors.append(float(np.max(np.abs(
                 exact_occupation_mean - semigroup_mean
             ))))
+            exact_occupation_covariance = np.array([
+                [occupation[(0, 0)], occupation[(0, 1)]],
+                [occupation[(0, 1)], occupation[(1, 1)]]
+            ])
+            occupation_boundary_errors.append(float(np.max(np.abs(
+                speed ** 2 * (
+                    exact_occupation_covariance
+                    - T * covariance_rate_3 / speed
+                ) - occupation_covariance_boundary
+            ))))
             tensor = cumulants_exact(
                 T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3,
-                rho_3, r=0.32, N=48, max_order=2, initial=initial
+                rho_3, r=0.32, N=48, max_order=4, initial=initial
             )
+            initial_tensors.append(tensor)
             exact_covariance = np.array([
                 [tensor['k11'], tensor['k12']],
                 [tensor['k12'], tensor['k22']]
@@ -604,6 +622,40 @@ def main():
         total_first_coefficient = (
             covariance_boundary + T * mean_covariance_rate_3
         )
+        second_occupation = {}
+        for occupation_order in range(1, 5):
+            for colors in np.ndindex(*(2,) * occupation_order):
+                key = tuple(sorted(colors))
+                if occupation_order == 2:
+                    second_occupation[key] = (
+                        occupation_covariance_boundary[key]
+                    )
+                elif occupation_order == 3:
+                    second_occupation[key] = T * third_rate_3[key]
+                else:
+                    second_occupation[key] = 0.0
+        second_order_return_rates = {}
+        second_order_return_coefficients = {}
+        for order in (3, 4):
+            second = {}
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                second[key] = gaussian_vector_occupation_cumulant(
+                    indices, T, means_3[0], covariances_3[0],
+                    means_3[1:] - means_3[0],
+                    covariances_3[1:] - covariances_3[0],
+                    second_occupation
+                )
+            errors = [max(abs(
+                tensor[key] - green_kubo_leading[order][key] / speed
+                - second[key] / speed ** 2
+            ) for key in second)
+                for speed, tensor in zip(fast_speeds, initial_tensors)]
+            second_order_return_rates[order] = rate(errors)
+            second_order_return_coefficients[order] = second
         initial_layer_rows.append({
             'label': label,
             'initial': initial.tolist(),
@@ -615,12 +667,26 @@ def main():
                 total_first_coefficient.tolist(),
             'covariance_errors': covariance_errors,
             'covariance_remainder_rate': covariance_remainder_rate,
+            'occupation_covariance_boundary':
+                occupation_covariance_boundary.tolist(),
+            'occupation_second_boundary_error_at_speed_4':
+                occupation_boundary_errors[2],
+            'second_order_return_error_rates': second_order_return_rates,
+            'second_order_return_coefficients':
+                second_order_return_coefficients,
         })
         print(f"   initial layer {label}: occupation error "
               f"{max(semigroup_errors):.2e}, covariance remainder rate "
               f"{covariance_remainder_rate:.3f} (want 2)")
+        print(f"     second boundary at speed 4: occupation error "
+              f"{occupation_boundary_errors[2]:.2e}; return rates "
+              f"order 3 {second_order_return_rates[3]:.3f}, "
+              f"order 4 {second_order_return_rates[4]:.3f} (want 3)")
         ok &= max(semigroup_errors) < 3e-13
+        ok &= occupation_boundary_errors[2] < 1e-8
         ok &= covariance_remainder_rate > 1.95
+        ok &= all(second_order_return_rates[order] > 2.9
+                  for order in (3, 4))
     ok &= first_derivative_error < 2e-13
     ok &= second_derivative_error < 2e-13
     ok &= third_derivative_error < 2e-13

@@ -16,6 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from correlation import (cov_entries, cumulants_exact,
                          gaussian_vector_occupation_cumulant,
+                         initial_covariance_boundary,
                          initial_layer_coefficient,
                          occupation_covariance_rate,
                          occupation_third_cumulant_rate,
@@ -116,6 +117,7 @@ def main():
     for order in range(3, 5):
         for colors in np.ndindex(*(2,) * order):
             leading_occupation[tuple(sorted(colors))] = 0.0
+    green_kubo_leading = {}
     for order in (3, 4):
         keys, leading = [], {}
         for j in range(order + 1):
@@ -127,6 +129,7 @@ def main():
                 means[1:] - means[0], covariances[1:] - covariances[0],
                 leading_occupation
             )
+        green_kubo_leading[order] = leading
         errors = [max(abs(tensor[key] - leading[key] / speed)
                       for key in keys)
                   for speed, tensor in zip(SPEEDS, tensors)]
@@ -179,9 +182,14 @@ def main():
         )
         semigroup_errors = []
         covariance_errors = []
+        occupation_covariance_boundary = initial_covariance_boundary(
+            Q, np.eye(3)[:, 1:], initial
+        )
+        occupation_boundary_errors = []
         covariance_boundary = initial_layer_coefficient(
             Q, covariances, initial
         )
+        initial_tensors = []
         for speed in SPEEDS:
             occupation = occupation_joint_cumulants_cauchy(
                 T, speed * Q, max_order=2, r=0.32, N=32,
@@ -198,11 +206,22 @@ def main():
             semigroup_errors.append(float(np.max(np.abs(
                 exact_occupation_mean - semigroup_mean
             ))))
+            exact_occupation_covariance = np.array([
+                [occupation[(0, 0)], occupation[(0, 1)]],
+                [occupation[(0, 1)], occupation[(1, 1)]]
+            ])
+            occupation_boundary_errors.append(float(np.max(np.abs(
+                speed ** 2 * (
+                    exact_occupation_covariance
+                    - T * covariance_rate / speed
+                ) - occupation_covariance_boundary
+            ))))
 
             tensor = cumulants_exact(
                 T, speed * Q, MU1, MU2, VOL1, VOL2, RHO,
-                r=0.32, N=48, max_order=2, initial=initial
+                r=0.32, N=48, max_order=4, initial=initial
             )
+            initial_tensors.append(tensor)
             exact_covariance = np.array([
                 [tensor['k11'], tensor['k12']],
                 [tensor['k12'], tensor['k22']]
@@ -218,6 +237,39 @@ def main():
         print(f"initial layer {label}: occupation semigroup error "
               f"{max(semigroup_errors):.2e}; covariance remainder rate "
               f"{covariance_remainder_rate:.3f} (target 2)")
+        print(f"  second boundary at speed 4: occupation error "
+              f"{occupation_boundary_errors[2]:.2e}")
+        second_occupation = {}
+        for occupation_order in range(1, 5):
+            for colors in np.ndindex(*(2,) * occupation_order):
+                key = tuple(sorted(colors))
+                if occupation_order == 2:
+                    second_occupation[key] = (
+                        occupation_covariance_boundary[key]
+                    )
+                elif occupation_order == 3:
+                    second_occupation[key] = T * third_rate[key]
+                else:
+                    second_occupation[key] = 0.0
+        for order in (3, 4):
+            second = {}
+            for j in range(order + 1):
+                indices = (0,) * (order - j) + (1,) * j
+                key = 'k' + '1' * (order - j) + '2' * j
+                second[key] = gaussian_vector_occupation_cumulant(
+                    indices, T, means[0], covariances[0],
+                    means[1:] - means[0], covariances[1:] - covariances[0],
+                    second_occupation
+                )
+            errors = [max(abs(
+                tensor[key] - green_kubo_leading[order][key] / speed
+                - second[key] / speed ** 2
+            ) for key in second)
+                for speed, tensor in zip(SPEEDS, initial_tensors)]
+            second_order_rate = rate(errors)
+            print(f"  return order {order}: complete second-order error "
+                  f"rate {second_order_rate:.3f} (target 3)")
+            ok &= second_order_rate > 2.9
         if label == "state_zero":
             total = covariance_boundary + T * mean_covariance_rate
             print(f"  asset-2 coefficient: boundary "
@@ -225,6 +277,7 @@ def main():
                   f"{T * mean_covariance_rate[1, 1]:+.8f}; "
                   f"total {total[1, 1]:+.8f}")
         ok &= max(semigroup_errors) < 3e-13
+        ok &= occupation_boundary_errors[2] < 1e-8
         ok &= covariance_remainder_rate > 1.95
 
     print("PASS" if ok else "FAIL")

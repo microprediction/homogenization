@@ -401,6 +401,27 @@
     inverse-rate order as the stationary Green&ndash;Kubo drift term; it vanishes for $\nu=\pi$, but not for a known
     starting regime. This is a fixed-$T$ expansion, uniform for maturities bounded away from zero, and does not cover
     $sT=O(1)$.</p>
+    <p>The next boundary coefficient is explicit as well. Put $R=Q^{\#}$ and let products of state fields denote
+    pointwise multiplication. For centered $f,g$, define</p>
+    <div class="equation-card">
+    $$\mathcal B_\nu(f,g)=
+      \nu R\{f(Rg)+g(Rf)\}
+      -\pi\{f(R^2g)+g(R^2f)\}
+      -(\nu Rf)(\nu Rg).$$
+    </div>
+    <p>For the proof, normalize the left eigenvector by $\ell(z){\bf1}=1$ and the right one by
+    $\ell(z)r(z)=1$, so that $P(z){\bf1}=r(z)$. The differentiated eigenvector equations give</p>
+    $$r_f=-Rf,\qquad
+      r_{fg}=R\{f(Rg)+g(Rf)\}
+      -\pi\{f(R^2g)+g(R^2f)\}{\bf1}.$$
+    <p>Since $b_\nu(z)=\log[\nu r(z)]$, its Hessian is exactly $\mathcal B_\nu$. Hence the
+    integrated-field covariance has the sharper expansion</p>
+    $$\operatorname{cum}_\nu(A_T^f,A_T^g)
+      =\frac{T}{s}\Gamma(f,g)+\frac1{s^2}\mathcal B_\nu(f,g)+O(e^{-csT}).$$
+    <p>Even when $\nu=\pi$, the constant boundary term need not vanish: it records the two finite-horizon endpoints,
+    not merely failure to start in equilibrium. This refines the classical linear variance-growth description for
+    continuous-time Markov reward chains studied by
+    <a href="./bibliography.html#VanDijkSladky2006">van Dijk and Sladk&yacute;</a>.</p>
     <p>The next spectral coefficient is also explicit. Write $(u_1,u_2,u_3)=(a,b,c)$. Differentiating the normalized
     right eigenvector of the tilted generator twice gives the symmetric third occupation-rate tensor</p>
     $$\Theta_{abc}=\partial_{abc}\lambda(0)
@@ -411,6 +432,27 @@
     normalized by $\pi r(z)=1$, the first perturbation equation gives
     $\partial_a r(0)=-Q^{\#}f_a$; projecting the first and second differentiated eigenvector equations onto $\pi$
     yields the displayed six-permutation sum.</p>
+    <p>Together, $\mathcal B_\nu$ and $\Theta$ give the complete second-order co-skewness and co-kurtosis correction.
+    Let $\mathcal M_n^{(q)}$ denote singleton&ndash;pair partitions with $q$ blocks, and put</p>
+    $$W(\mathcal P,z)=
+      \prod_{\{j\}\in\mathcal P}d\mu^{z(\{j\})}_{i_j}
+      \prod_{\{j,k\}\in\mathcal P}dc^{z(\{j,k\})}_{i_ji_k}.$$
+    <p>Then, for $n=3,4$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{i_1\cdots i_n}(X)
+    ={}&\frac{T}{s}\sum_{\mathcal P\in\mathcal M_n^{(2)}}\sum_z
+      \Gamma_{z(B_1)z(B_2)}W(\mathcal P,z)\\
+    &+\frac1{s^2}\left\{
+      \sum_{\mathcal P\in\mathcal M_n^{(2)}}\sum_z
+      \mathcal B_{\nu,z(B_1)z(B_2)}W(\mathcal P,z)
+      +T\sum_{\mathcal P\in\mathcal M_n^{(3)}}\sum_z
+      \Theta_{z(B_1)z(B_2)z(B_3)}W(\mathcal P,z)\right\}\\
+    &+O(s^{-3})+O(e^{-csT}).
+    \end{aligned}$$
+    </div>
+    <p>For order three these are the singleton&ndash;pair and all-singleton partitions. For order four they are the two-pair
+    and pair&ndash;singleton&ndash;singleton partitions. The initial law enters only through $\mathcal B_\nu$ at this order.</p>
     <p>Let $\mathcal M_n^{(3)}$ be the singleton&ndash;pair partitions of $\{1,\ldots,n\}$ having exactly three blocks.
     The leading fifth- and sixth-order return tensors are therefore, for $n=5,6$,</p>
     <div class="equation-card">
@@ -545,6 +587,11 @@
     exponent $2.000$. For the state-zero start, the asset-two covariance-field boundary coefficient is
     $-9.18107\times10^{-3}$, which overwhelms the stationary Green&ndash;Kubo coefficient
     $+6.40041\times10^{-3}$ and reverses the total first correction to $-2.78066\times10^{-3}$.</p>
+    <p>The same certificate checks the explicit $\mathcal B_\nu$ matrix. At rate multiplier four, the residual after
+    extracting it from the exact occupation covariance is $3.4\times10^{-10}$ for the deterministic start and
+    $6.5\times10^{-11}$ for the mixed start. After subtracting both the $s^{-1}$ and complete $s^{-2}$ terms, the
+    co-skewness errors decay with exponent $3.000$ for both starts; the co-kurtosis exponents are $2.981$ and $2.996$.
+    These are direct return-CGF checks of the full tensor correction, not only of the occupation inputs.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>

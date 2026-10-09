@@ -345,6 +345,60 @@ def initial_layer_coefficient(Q, values, initial):
     return -np.tensordot(initial @ group_inverse, centered, axes=(0, 0))
 
 
+def initial_covariance_boundary(Q, values, initial):
+    """Second spectral boundary coefficient for integrated state fields.
+
+    ``values`` has one row per state and either one scalar field or one column
+    per field.  If ``A_a = integral_0^T values[Y_t, a] dt`` under generator
+    ``s * Q``, then
+
+        cum(A_a, A_b) = T * Gamma(a, b) / s
+                          + boundary(a, b) / s**2
+                          + O(exp(-c*s*T)).
+
+    The returned coefficient is the Hessian at zero of the logarithmic
+    principal-spectral-projection amplitude.  A one-dimensional ``values``
+    input returns a scalar; a matrix input returns its field-by-field Hessian.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    scalar = values.ndim == 1
+    if scalar:
+        values = values[:, None]
+    if values.ndim != 2 or values.shape[0] != states:
+        raise ValueError("values must have one row per state")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    centered = values - np.outer(np.ones(states), pi @ values)
+    first = -initial @ group_inverse @ centered
+    fields = values.shape[1]
+    boundary = np.empty((fields, fields))
+    group_inverse_squared = group_inverse @ group_inverse
+    for a in range(fields):
+        f = centered[:, a]
+        for b in range(fields):
+            g = centered[:, b]
+            projection_second = (
+                initial @ group_inverse
+                @ (f * (group_inverse @ g) + g * (group_inverse @ f))
+                - pi @ (f * (group_inverse_squared @ g)
+                        + g * (group_inverse_squared @ f))
+            )
+            boundary[a, b] = projection_second - first[a] * first[b]
+    return float(boundary[0, 0]) if scalar else boundary
+
+
 def occupation_third_cumulant_rate(Q):
     """Third bulk-cumulant tensor for non-reference occupation times.
 
