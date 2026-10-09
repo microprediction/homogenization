@@ -41,8 +41,10 @@ def Q2(a, b):
 
 
 # ---------------------------------------------------------------- occupation time of the crisis state
-def occupation_nodes(T, a, b, n=80):
-    """Nodes v and weights w with sum w f(v) = E_pi[f(tau)], tau the time spent in state 1 on [0, T].
+def occupation_nodes(T, a, b, n=80, initial_p1=None):
+    """Nodes v and weights w with sum w f(v) = E[f(tau)], tau the time spent in state 1 on [0, T].
+
+    The default initial law is stationary; initial_p1 supplies an arbitrary probability of state 1.
 
     Start in 0, end in 0 (n >= 1 visits to 1):  e^{-a u - b v} sqrt(a b u / v) I1(2 sqrt(a b u v)),
     start in 0, end in 1:                     a e^{-a u - b v} I0(2 sqrt(a b u v)),     u = T - v,
@@ -58,43 +60,71 @@ def occupation_nodes(T, a, b, n=80):
     E = np.exp(z - a * u - b * v)
     s = np.sqrt(a * b * u / v) * i1e(z) * E + a * i0e(z) * E            # start calm, tau = v
     s1 = np.sqrt(a * b * v / u) * i1e(z) * E + b * i0e(z) * E           # start crisis, time in calm = u
-    p = pi2(a, b)
+    p = pi2(a, b) if initial_p1 is None else np.array([1 - initial_p1, initial_p1], float)
+    if np.any(p < 0) or np.any(p > 1):
+        raise ValueError("initial_p1 must lie in [0, 1]")
     nodes = np.concatenate([[0.0], v, [T]])
     w = np.concatenate([[p[0] * math.exp(-a * T)], wq * (p[0] * s + p[1] * s1), [p[1] * math.exp(-b * T)]])
     return nodes, w
 
 
-def occupation_cumulants(T, a, b):
-    """First three cumulants of the time A_T spent in state 1, from a stationary start.
+def occupation_cumulants(T, a, b, initial_p1=None):
+    """First three cumulants of the time A_T spent in state 1.
 
     The centered two-state indicator X_t = 1_{Y_t=1} - pi_1 has
 
         E[X_0 X_t] = pi_0 pi_1 exp(-r t),
         E[X_s X_t X_u] = pi_0 pi_1 (pi_0-pi_1) exp(-r (u-s)),  s <= t <= u,
 
-    where r=a+b.  Integrating over [0,T]^2 and [0,T]^3 gives the formulas below.
+    where r=a+b.  Integrating over [0,T]^2 and [0,T]^3 gives the stationary formulas.
+    For an arbitrary initial crisis probability q, write delta=q-pi_1.  The extra terms come
+    from log(1 + delta R), where R=(M_1-M_0)/M_pi is the normalized difference of the two
+    conditional moment generating functions.
     """
     if min(T, a, b) <= 0:
         raise ValueError("T and both switching rates must be positive")
     p0, p1 = pi2(a, b)
+    q = p1 if initial_p1 is None else float(initial_p1)
+    if not 0 <= q <= 1:
+        raise ValueError("initial_p1 must lie in [0, 1]")
     r, x = a + b, (a + b) * T
     if x < 1e-3:
         g2 = x ** 2 / 2 - x ** 3 / 6 + x ** 4 / 24 - x ** 5 / 120 + x ** 6 / 720
         g3 = x ** 3 / 6 - x ** 4 / 12 + x ** 5 / 40 - x ** 6 / 180 + x ** 7 / 1008
+        h1 = x - x ** 2 / 2 + x ** 3 / 6 - x ** 4 / 24 + x ** 5 / 120 - x ** 6 / 720
+        h2 = ((1 - 2 * p1) * x ** 2 + (4 * p1 / 3 - 2 / 3) * x ** 3
+              + (1 / 4 - p1 / 2) * x ** 4 + (2 * p1 / 15 - 1 / 15) * x ** 5
+              + (1 / 72 - p1 / 36) * x ** 6)
+        h3 = ((1 - 6 * p0 * p1) * x ** 3 + (5 * p0 * p1 - 3 / 4) * x ** 4
+              + (3 / 10 - 23 * p0 * p1 / 10) * x ** 5
+              + (23 * p0 * p1 / 30 - 1 / 12) * x ** 6)
     else:
+        e = math.exp(-x)
         g2 = x + math.expm1(-x)
-        g3 = x - 2 + (x + 2) * math.exp(-x)
+        g3 = x - 2 + (x + 2) * e
+        h1 = -math.expm1(-x)
+        h2 = 2 * (p0 - p1) * (1 - (1 + x) * e)
+        h3 = (6 * (1 - e) - 3 * x ** 2 * e - 6 * x * e
+              + p0 * p1 * (12 * x ** 2 * e + 36 * x * e - 30 + 24 * e + 6 * e ** 2))
+    delta = q - p1
+    k1_stationary = p1 * T
+    k2_stationary = 2 * p0 * p1 * g2 / r ** 2
+    k3_stationary = 6 * p0 * p1 * (p0 - p1) * g3 / r ** 3
     return {
-        'k1': float(p1 * T),
-        'k2': float(2 * p0 * p1 * g2 / r ** 2),
-        'k3': float(6 * p0 * p1 * (p0 - p1) * g3 / r ** 3),
+        'k1': float(k1_stationary + delta * h1 / r),
+        'k2': float(k2_stationary + (delta * h2 - delta ** 2 * h1 ** 2) / r ** 2),
+        'k3': float(k3_stationary + (delta * h3 - 3 * delta ** 2 * h1 * h2
+                                     + 2 * delta ** 3 * h1 ** 3) / r ** 3),
     }
 
 
-def simulate_occupation(T, a, b, n, rng):
-    """Exact samples of tau, the time in state 1 on [0, T], from a stationary start."""
+def simulate_occupation(T, a, b, n, rng, initial_p1=None):
+    """Exact samples of tau, the time in state 1 on [0, T]."""
     p = pi2(a, b)
-    state = (rng.random(n) < p[1]).astype(int)
+    q = p[1] if initial_p1 is None else float(initial_p1)
+    if not 0 <= q <= 1:
+        raise ValueError("initial_p1 must lie in [0, 1]")
+    state = (rng.random(n) < q).astype(int)
     t = np.zeros(n)
     tau = np.zeros(n)
     alive = np.ones(n, bool)
@@ -220,7 +250,7 @@ def cumulants_first_order(t, a, b, mu1, mu2, sig1, sig2, rho):
     }
 
 
-def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho):
+def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=None):
     """Exact covariance and third-cumulant tensor for two-state Markov-modulated Gaussian returns.
 
     Conditional on the occupation time A of state 1, the return vector is Gaussian with
@@ -229,15 +259,14 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho):
     """
     c11, c22, c12 = cov_entries(sig1, sig2, rho)
     mu1, mu2 = np.asarray(mu1, float), np.asarray(mu2, float)
-    p = pi2(a, b)
-    ka = occupation_cumulants(t, a, b)
+    ka = occupation_cumulants(t, a, b, initial_p1)
     d1, d2 = mu1[1] - mu1[0], mu2[1] - mu2[0]
     dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
     v, s = ka['k2'], ka['k3']
     return {
-        'k11': float(t * (p @ c11) + v * d1 * d1),
-        'k22': float(t * (p @ c22) + v * d2 * d2),
-        'k12': float(t * (p @ c12) + v * d1 * d2),
+        'k11': float(t * c11[0] + ka['k1'] * dc11 + v * d1 * d1),
+        'k22': float(t * c22[0] + ka['k1'] * dc22 + v * d2 * d2),
+        'k12': float(t * c12[0] + ka['k1'] * dc12 + v * d1 * d2),
         'k111': float(3 * v * d1 * dc11 + s * d1 ** 3),
         'k222': float(3 * v * d2 * dc22 + s * d2 ** 3),
         'k112': float(v * (2 * d1 * dc12 + d2 * dc11) + s * d1 * d1 * d2),
@@ -246,13 +275,17 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho):
     }
 
 
-def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16):
+def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16, initial_p1=None):
     """Exact cumulants from the Markov-modulated cumulant generating function
         log E exp(th1 X1 + th2 X2) = log pi . exp(t (Q + diag g(th))) 1,   g = th.mu + th' c th / 2,
     by Cauchy's formula on a polydisc of radius r (two-dimensional FFT of the exact function)."""
     c11, c22, c12 = cov_entries(sig1, sig2, rho)
     mu1, mu2 = np.array(mu1, float), np.array(mu2, float)
     pi = np.linalg.solve(np.vstack([Q.T[:-1], np.ones(len(Q))]), np.r_[np.zeros(len(Q) - 1), 1.0])
+    if initial_p1 is not None:
+        if len(Q) != 2 or not 0 <= initial_p1 <= 1:
+            raise ValueError("initial_p1 requires a two-state chain and must lie in [0, 1]")
+        pi = np.array([1 - initial_p1, initial_p1], float)
     ang = 2 * np.pi * np.arange(N) / N
     F = np.zeros((N, N), complex)
     for i, al in enumerate(ang):

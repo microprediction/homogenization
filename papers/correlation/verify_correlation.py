@@ -4,7 +4,8 @@ Two assets; a two-state chain, calm (correlation 0.2) and crisis (correlation 0.
 and back at rate b = 4 (crises last three months on average and occupy a quarter of the time), sped up by m.
 
 Part 1, pricing (volatilities fixed, only the correlation switches):
- 1. the exact law of the time spent in crisis (Bessel density) against its known mean and variance;
+ 1. the exact law of the time spent in crisis (Bessel density) against its first three cumulants, including
+    nonstationary initial laws and regime relabelling;
  2. exchange option: the exact price E[Margrabe(integrated exchange variance)] by quadrature over that law, against
     Lewis's Fourier formula with the matrix-exponential characteristic function, and against chain-path Monte Carlo;
     the first-order rule (Margrabe at the averaged exchange variance plus the volga term) converges at second order;
@@ -69,6 +70,39 @@ def main():
         print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance "
               f"{w @ (v-mv)**2:.10f} (want {var:.10f}), third cumulant {third:.10f} (want {oc['k3']:.10f})")
     ok &= max(rows) < 1e-10
+
+    print("1b. nonstationary occupation cumulants and initial layer")
+    nonstationary = []
+    relabel_error = 0.0
+    for m in (1, 4, 16):
+        a, b = m * A, m * B
+        for q in (0.0, 0.1, 0.7, 1.0):
+            oc = occupation_cumulants(T, a, b, q)
+            v, w = occupation_nodes(T, a, b, initial_p1=q)
+            mean = w @ v
+            quad = {'k1': mean, 'k2': w @ (v - mean) ** 2, 'k3': w @ (v - mean) ** 3}
+            quad_error = max(abs(quad[k] - oc[k]) for k in quad)
+            swapped = occupation_cumulants(T, b, a, 1 - q)
+            relabel_error = max(relabel_error, abs(oc['k1'] + swapped['k1'] - T),
+                                abs(oc['k2'] - swapped['k2']), abs(oc['k3'] + swapped['k3']))
+            closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO, q)
+            exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO, initial_p1=q)
+            tensor_error = max(abs(closed[k] - exact[k]) for k in exact)
+            nonstationary.append({'m': m, 'initial_p1': q, 'occupation': oc,
+                                  'quadrature_error': quad_error, 'tensor_error': tensor_error,
+                                  'k112': closed['k112']})
+            print(f"   m={m:2d}, q={q:.1f}: occupation error {quad_error:.1e}, tensor error {tensor_error:.1e}, "
+                  f"kappa_112 {closed['k112']:.6e}")
+    frozen = occupation_cumulants(T, 3e-9, 7e-9, 0.8)
+    frozen_target = {'k1': 0.8 * T, 'k2': 0.8 * 0.2 * T ** 2,
+                     'k3': 0.8 * 0.2 * (1 - 2 * 0.8) * T ** 3}
+    frozen_error = max(abs(frozen[k] - frozen_target[k]) for k in frozen)
+    print(f"   relabelling error {relabel_error:.1e}; near-frozen Bernoulli error {frozen_error:.1e}")
+    ok &= max(row['quadrature_error'] for row in nonstationary) < 1e-10
+    ok &= max(row['tensor_error'] for row in nonstationary) < 2e-11
+    ok &= relabel_error < 1e-13 and frozen_error < 1e-8
+    out['nonstationary'] = {'rows': nonstationary, 'relabel_error': relabel_error,
+                            'frozen_error': frozen_error, 'frozen': frozen}
 
     print("2. exchange option (S1 - q S2)^+")
     out['exchange'] = {'speeds': SPEEDS, 'q': QS, 'rows': []}

@@ -331,6 +331,32 @@
     orderings of the cube proves the formulas. The modified-Bessel occupation density used above is a special case of
     the finite-state construction of <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
     Nir (2010)</a>.</p>
+    <p>The stationary-start restriction can also be removed exactly. Let $q=\mathbb P(y_0=1)$,
+    $\delta=q-p_1$ and $x=rT$. Define</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    H_1={}&1-e^{-x},\\
+    H_2={}&2(p_0-p_1)\{1-(1+x)e^{-x}\},\\
+    H_3={}&6(1-e^{-x})-3x^2e^{-x}-6xe^{-x}\\
+      &+p_0p_1\{12x^2e^{-x}+36xe^{-x}-30+24e^{-x}+6e^{-2x}\}.
+    \end{aligned}$$
+    </div>
+    <p>Then the arbitrary-start occupation cumulants are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{1,q}(A_T)&=\kappa_{1,\pi}(A_T)+\frac{\delta H_1}{r},\\
+    \kappa_{2,q}(A_T)&=\kappa_{2,\pi}(A_T)+\frac{\delta H_2-\delta^2H_1^2}{r^2},\\
+    \kappa_{3,q}(A_T)&=\kappa_{3,\pi}(A_T)
+       +\frac{\delta H_3-3\delta^2H_1H_2+2\delta^3H_1^3}{r^3}.
+    \end{aligned}$$
+    </div>
+    <p>For the proof, let $M_i(z)=\mathbb E_i e^{zA_T}$ and
+    $M_\pi=(1-p_1)M_0+p_1M_1$. Linearity in the initial law gives
+    $M_q=M_\pi\{1+\delta R(z)\}$ with $R=(M_1-M_0)/M_\pi$ and $R(0)=0$.
+    Direct integration of the two-state transition probabilities gives
+    $R^{(j)}(0)=H_j/r^j$ for $j=1,2,3$. Differentiating
+    $\log M_q=\log M_\pi+\log(1+\delta R)$ gives the three displayed corrections. This also exposes them as a
+    finite-horizon initial layer rather than part of the stationary Green&ndash;Kubo coefficient.</p>
     <p>Now use differences from calm to crisis,
     $d\mu=\mu_{mathrm{crisis}}-\mu_{mathrm{calm}}$ and
     $dc=c_{mathrm{crisis}}-c_{mathrm{calm}}$. Conditional on $A_T$,</p>
@@ -340,16 +366,23 @@
     $K_{A_T}(\theta\cdot d\mu+\tfrac12\theta^\top dc\,\theta)$. Differentiating gives the exact finite-rate identities</p>
     <div class="equation-card">
     $$\begin{aligned}
-    \kappa_{ij}(X)&=T\bar c_{ij}+\kappa_2(A_T)d\mu_i d\mu_j,\\
+    \kappa_{ij}(X)&=Tc_{ij,\mathrm{calm}}+\kappa_1(A_T)dc_{ij}
+       +\kappa_2(A_T)d\mu_i d\mu_j,\\
     \kappa_{ijk}(X)&=\kappa_2(A_T)
        \big(d\mu_i dc_{jk}+d\mu_j dc_{ik}+d\mu_k dc_{ij}\big)
        +\kappa_3(A_T)d\mu_i d\mu_j d\mu_k.
     \end{aligned}$$
     </div>
-    <p>The result is exact for every $T,a,b&gt;0$ under a stationary two-state chain independent of the Brownian shocks.
-    The Green&ndash;Kubo rule is recovered by replacing
+    <p>The result is exact for every $T,a,b&gt;0$ and every initial probability $q\in[0,1]$ under a two-state chain
+    independent of the Brownian shocks.
+    For a stationary start, the Green&ndash;Kubo rule is recovered by replacing
     $\kappa_2(A_T)$ with $2p_0p_1T/r$ and omitting $\kappa_3(A_T)$, which is one order smaller in the fast rate.
     For a symmetric chain $p_0=p_1$, the occupation-skew term vanishes exactly.</p>
+    <p>For a nonstationary start, the leading covariance correction has an additional initial-layer term:</p>
+    $$\kappa_{ij}(X)=T\bar c_{ij}+\frac{\delta}{r}dc_{ij}
+      +\frac{2p_0p_1T}{r}d\mu_i d\mu_j+O(r^{-2}),$$
+    <p>whereas the leading third-cumulant formula is unchanged, with the initial-law dependence entering at
+    $O(r^{-2})$. Thus one must not apply the stationary covariance rule to a known starting regime.</p>
 
     <h3>Written out for two regimes</h3>
     <p>For the two-state chain $K(f, h) = ab\,\Delta f\,\Delta h/(a + b)^3$, with $\Delta$ the calm value minus the crisis
@@ -385,14 +418,19 @@
     mean&ndash;covariance term contributes $-3.20936\times10^{-3}$ and the skewed occupation time contributes
     $-0.37098\times10^{-3}$. Thus the finite-rate discrepancy is not numerical noise; it is the explicit boundary and
     occupation-skew correction omitted by the first-order rule.</p>
+    <p>The initial regime is visible at this horizon. Starting certainly calm gives
+    $\kappa_{112}=-2.92476\times10^{-3}$; starting certainly in crisis gives
+    $-3.80148\times10^{-3}$. Both values converge to the same stationary fast-rate law as the initial layer decays.</p>
     <p>The same simulated returns show the asymmetry that the empirical literature measures.</p>
     <p>The correlation of the two
     returns, given that both lie below their means, is $0.563$. Given that both lie above, it is $0.254$. A Gaussian with
     the same overall correlation, $0.612$, gives $0.367$ on both sides.</p>
 
     <h3>Checks for the cumulants</h3>
-    <p>The closed finite-rate tensor agrees with the independent numerical solution to at most $8.3\times10^{-12}$ over
-    $m=1,2,4,8,16$. The latter reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
+    <p>The closed finite-rate tensor agrees with the independent numerical solution to at most $8.6\times10^{-12}$ over
+    stationary and nonstationary starts and rate multipliers through $m=16$. Occupation-density quadrature independently
+    reproduces all three arbitrary-start cumulants to $1.2\times10^{-16}$, and relabelling the regimes gives zero residual
+    to displayed precision. The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
     two-dimensional FFT of $\Lambda$ on a polydisc of radius $0.05$, with the matrix exponential evaluated at each node. At
     one point it agrees with the engine&apos;s high-precision ODE solver to $10^{-14}$. Third cumulants in units of
     $10^{-3}$:</p>
@@ -458,8 +496,9 @@
         integrated covariance matrix.</li>
       <li>Under the pricing measure the drift is $r$ in every regime, so the co-skewness of the second part matters for
         allocation, risk and density forecasts, not for prices, unless the regime carries a risk premium.</li>
-      <li>The exact finite-rate cumulant tensor assumes a stationary two-state chain independent of the Brownian shocks.
-        The displayed Green&ndash;Kubo formulas remain fast-rate approximations outside that exact two-state calculation.</li>
+      <li>The exact finite-rate cumulant tensor allows any specified initial probability for a two-state chain independent
+        of the Brownian shocks. The displayed Green&ndash;Kubo formulas remain fast-rate approximations outside that exact
+        two-state calculation.</li>
       <li>A chain independent of the price shocks gives an exchange-option smile that is even in log-moneyness. A fast diffusive
         correlation factor whose shocks are correlated with the prices would add a term of order $\sqrt\varepsilon$, odd
         in moneyness, that skews the implied correlation, in the manner of the
