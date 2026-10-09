@@ -251,13 +251,19 @@
       predicted equivalent is $1.000525688$. At the smallest tested $\varepsilon$, the eigenvalues normalized by
       $\varepsilon^{0.6}$ are $2.09923303$ and $2.5102\times10^{-8}$. Independent covariance quadrature agrees
       with the closed spectral formula within $4.45\times10^{-16}$.</p>
-    <h3>Gaussian functional limit</h3>
+    <h3>Gaussian functional limit in the sharp subcritical H&ouml;lder topology</h3>
     <p>Let $X$ now be centered, stationary and Gaussian, and put</p>
     $$S_R(t)=\frac{\int_0^{Rt}X_s\,ds}{\sqrt{V(R)}},\qquad
       V(r)=\operatorname{Var}\!\left(\int_0^rX_s\,ds\right),\qquad0\le t\le1.$$
-    <p>Under the same cumulative spectral hypothesis, set $H=1-\alpha/2\in(0,1)$. Then, as $R\to\infty$,</p>
+    <p>Under the same cumulative spectral hypothesis, set $H=1-\alpha/2\in(0,1)$.</p>
+    <p>For $0&lt;\gamma&lt;1$, let $c_0^\gamma[0,1]$ denote the separable little-H&ouml;lder space: paths
+      $f(0)=0$ with finite $\gamma$-H&ouml;lder norm and</p>
+    $$\lim_{\rho\downarrow0}\ \sup_{0&lt;|t-s|\le\rho}
+      \frac{|f(t)-f(s)|}{|t-s|^\gamma}=0.$$
+    <p>Then, as $R\to\infty$,</p>
     <div class="equation-card">
-    $$S_R\ \Longrightarrow\ B_H\qquad\text{in }C[0,1],$$
+    $$S_R\ \Longrightarrow\ B_H\qquad\text{in }c_0^\gamma[0,1]
+      \quad\text{for every }0&lt;\gamma&lt;H.$$
     </div>
     <p>where $B_H$ is standard fractional Brownian motion. Equivalently, along every joint path
       $T_\varepsilon/\varepsilon\to\infty$, the process
@@ -268,14 +274,36 @@
       =\frac{V(Rs)+V(Rt)-V(R|t-s|)}{2V(R)},$$
     <p>which converges to
       $\{s^{2H}+t^{2H}-|t-s|^{2H}\}/2$. Gaussianity turns covariance convergence into
-      finite-dimensional convergence. Potter bounds give, for every sufficiently small $\delta&gt;0$,</p>
-    $$\mathbb E|S_R(t)-S_R(s)|^2\le C_\delta|t-s|^{2H-\delta}.$$
-    <p>Higher Gaussian moments and Kolmogorov&apos;s criterion give tightness in $C[0,1]$. No mixing assumption is
-      needed beyond the spectral regular variation, but Gaussianity is essential: the same variance asymptotic does
-      not determine the limit for a general process. The long-memory half, $0&lt;\alpha&lt;1$, is the linear Gaussian
-      case of <a href="https://doi.org/10.1007/BF00532868">Taqqu&apos;s weak-convergence theorem (1975)</a>; the limit is the
+      finite-dimensional convergence.</p>
+    <p>The usual invocation of Potter bounds needs one extra step here: regular variation controls $V(Rh)/V(R)$
+      only when $Rh$ is large. Fix $\eta&gt;0$. For $Rh$ above a fixed threshold, Potter&apos;s bound gives
+      $V(Rh)/V(R)\le C_\eta h^{2H-\eta}$. For microscopic lags, stationarity and
+      $|\operatorname{Cov}(X_0,X_u)|\le\operatorname{Var}(X_0)$ give $V(r)\le\operatorname{Var}(X_0)r^2$.
+      Since $2-2H+\eta&gt;0$ and $R^{-\eta}/L(R)$ is bounded for slowly varying $L$, the same inequality follows
+      uniformly for $Rh$ below the threshold. Thus</p>
+    $$\mathbb E|S_R(t)-S_R(s)|^2\le C_\eta|t-s|^{2H-\eta}
+      \qquad(0\le s,t\le1),$$
+    <p>uniformly for all sufficiently large $R$. Gaussian moment equivalence and the H&ouml;lder version of
+      Kolmogorov&apos;s criterion imply tightness in $c_0^\gamma$ after choosing $p$ and $\eta$ so that
+      $\gamma&lt;H-\eta/2-1/p$. Together with the covariance limit, this proves the displayed convergence.</p>
+    <p>The topology is sharp. Fractional Brownian motion has exact uniform modulus
+      $h^H\sqrt{\log(1/h)}$ up to constants, so its paths are almost surely in every $c_0^\gamma$, $\gamma&lt;H$,
+      but not in $C^H$. If the laws of $S_R$ were tight in $c_0^\gamma$ for any $\gamma\ge H$, continuous embedding
+      into $C[0,1]$ and uniqueness of the finite-dimensional limit would produce an fBm-valued limit in that space,
+      a contradiction. The modulus statement is also the ordinary-fBm specialization of
+      <a href="https://doi.org/10.1007/s10959-021-01148-8">Wang and Xiao&apos;s exact theorem (2022)</a>.</p>
+    <p>No mixing assumption is needed beyond the spectral regular variation, but Gaussianity is essential: the same
+      variance asymptotic does not determine the limit for a general process. The long-memory half,
+      $0&lt;\alpha&lt;1$, is the linear Gaussian case of
+      <a href="https://doi.org/10.1007/BF00532868">Taqqu&apos;s weak-convergence theorem (1975)</a>; the limit is the
       fractional Brownian motion introduced by
       <a href="https://doi.org/10.1137/1010093">Mandelbrot and Van Ness (1968)</a>.</p>
+    <p>The exact Gamma-spectrum certificate checks the uniform variance envelope on a dyadic mesh extending ten
+      scales below the correlation time. For $(\alpha,H,\gamma)=(0.7,0.65,0.55)$ its largest nontrivial ratio
+      $\{V(Rh)/V(R)\}/h^{2\gamma}$ is $0.8705506$ through $R=2^{80}$, while the correlation-time ratio falls to
+      $0.0000061$. For $(1.7,0.15,0.10)$ the corresponding values are $0.9330330$ and $0.0003460$.
+      The fitted correlation-time decay exponents are $0.2000000$ and $0.1000015$, against the predicted
+      $2(H-\gamma)$ values $0.2$ and $0.1$.</p>
     <h3>The critical Gaussian boundary is not fractional Brownian motion</h3>
     <p>The restriction $\alpha&lt;2$ in the functional theorem is sharp. At the divergent critical endpoint, suppose</p>
     $$F(x)\sim b x^2L(1/x),\qquad

@@ -4,7 +4,8 @@ The proof is on tools/pages/mixing-scale.html.  This certificate independently
 integrates the exact finite-horizon covariance and checks the Green--Kubo,
 long-memory, critical, and zero-Green--Kubo regimes and the scalar and vector
 periodic counterexamples, including the Gaussian fractional-Brownian functional
-limit, the critical Gaussian finite-dimensional limit, its power-scale
+limit in sharp subcritical Holder topologies, the critical Gaussian
+finite-dimensional limit, its power-scale
 modulus profile and failure of path-space tightness, an ergodic second-chaos
 counterexample with nonvanishing
 limiting skewness, a covariance-matched hierarchy of arbitrary Hermite ranks,
@@ -736,6 +737,65 @@ def verify_gaussian_fractional_limit():
     return tuple(results)
 
 
+def verify_gaussian_holder_envelope():
+    """Check the uniform increment bound behind Holder-space tightness.
+
+    For the Gamma-spectrum benchmark, stationary increments reduce the
+    normalized increment variance to V(Rh)/V(R).  The dyadic mesh extends ten
+    scales below the correlation time 1/R, so it checks both the regularly
+    varying region and the microscopic V(r) = O(r**2) region.  At h=1/R the
+    ratio after division by h**(2*gamma) decays like R**(-2*(H-gamma)).
+    """
+    cases = ((0.7, 0.55), (1.7, 0.10))
+    powers = np.array([8, 12, 16, 20, 24, 30, 40, 50, 60, 80])
+    results = []
+    for alpha, gamma in cases:
+        hurst = 1.0 - alpha / 2.0
+        assert 0.0 < gamma < hurst
+        envelopes = []
+        correlation_time_ratios = []
+        for power in powers:
+            epsilon = 2.0 ** -power
+            terminal_variance = antipersistent_variance(epsilon, alpha)
+            lags = 2.0 ** -np.arange(1, power + 11)
+            increment_variances = np.array([
+                antipersistent_variance(epsilon, alpha, lag)
+                / terminal_variance
+                for lag in lags
+            ])
+            holder_ratios = increment_variances / lags ** (2.0 * gamma)
+            envelopes.append(float(np.max(holder_ratios)))
+
+            correlation_lag = 2.0 ** -power
+            correlation_ratio = (
+                antipersistent_variance(epsilon, alpha, correlation_lag)
+                / terminal_variance
+                / correlation_lag ** (2.0 * gamma)
+            )
+            correlation_time_ratios.append(correlation_ratio)
+
+        log_ratios = np.log2(correlation_time_ratios)
+        fitted_decay = -float(np.polyfit(powers[-3:], log_ratios[-3:], 1)[0])
+        predicted_decay = 2.0 * (hurst - gamma)
+        assert max(envelopes) < 0.94
+        assert envelopes[-1] > 0.86
+        assert all(x > y for x, y in zip(
+            correlation_time_ratios, correlation_time_ratios[1:]
+        ))
+        assert abs(fitted_decay - predicted_decay) < 2e-5
+        results.append({
+            "alpha": alpha,
+            "hurst": hurst,
+            "gamma": gamma,
+            "terminal_envelope": envelopes[-1],
+            "terminal_correlation_ratio": correlation_time_ratios[-1],
+            "fitted_decay": fitted_decay,
+            "predicted_decay": predicted_decay,
+            "terminal_power": int(powers[-1]),
+        })
+    return tuple(results)
+
+
 def verify_critical_gaussian_boundary():
     """Check the alpha=2 Gaussian finite-dimensional boundary.
 
@@ -1306,6 +1366,7 @@ def main():
     antipersistent_14 = verify_antipersistent_case(1.4)
     antipersistent_17 = verify_antipersistent_case(1.7)
     gaussian_fclt = verify_gaussian_fractional_limit()
+    gaussian_holder = verify_gaussian_holder_envelope()
     critical_gaussian = verify_critical_gaussian_boundary()
     second_chaos = verify_ergodic_second_chaos_counterexample()
     hermite_hierarchy = verify_covariance_matched_hermite_hierarchy()
@@ -1358,6 +1419,15 @@ def main():
         print("Gaussian fractional limit alpha/H, covariance errors, "
               f"terminal R=2^{terminal_power}: {alpha:.1f}, {hurst:.2f}, "
               f"{tuple(f'{error:.3e}' for error in errors)}")
+    for result in gaussian_holder:
+        print("Gaussian Holder alpha/H/gamma, terminal envelope and "
+              "correlation-time ratio, fitted/predicted decay at "
+              f"R=2^{result['terminal_power']}: "
+              f"{result['alpha']:.1f}, {result['hurst']:.2f}, "
+              f"{result['gamma']:.2f}, {result['terminal_envelope']:.7f}, "
+              f"{result['terminal_correlation_ratio']:.7f}, "
+              f"{result['fitted_decay']:.7f}, "
+              f"{result['predicted_decay']:.7f}")
     print("critical Gaussian spectral identity/covariance errors: "
           f"{critical_gaussian[0]:.3e}, "
           f"{tuple(f'{error:.6f}' for error in critical_gaussian[1])}")
