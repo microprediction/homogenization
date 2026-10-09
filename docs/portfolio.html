@@ -296,6 +296,34 @@
     coefficient $m\{\mathrm{CE}_m-\bar h\}$ converges to the symmetric prediction $-0.03377375$; at $m=512$ it is
     $-0.03376714$, while the one-sided formula predicts $-0.00556710$.</p>
 
+    <h3>Exact Gram rank and maturity aggregation</h3>
+    <p>The positive-semidefinite statement has an exact identification converse. Let $Q$ be the generator of any
+    finite irreducible chain, let $F\in\mathbb R^{n\times p}$ collect regime features, and center its columns as
+    $H=(I-\mathbf 1\pi)F$. Define the symmetric Green&ndash;Kubo Gram matrix by
+    $G_{ab}=\mathcal K^{\rm sym}(H_a,H_b)$. Then</p>
+    $$\ker G=\ker H,\qquad \operatorname{rank}G=\operatorname{rank}H\le n-1.$$
+    <p>This does not require reversibility. Indeed, for any coefficient vector $c$, put
+    $h=Hc$ and $\phi=-Q^\#h$, so that $-Q\phi=h$. Stationarity gives the Dirichlet identity</p>
+    $$2c^\top Gc=\sum_{i,j}\pi_iq_{ij}(\phi_j-\phi_i)^2.$$
+    <p>The right side vanishes only when $\phi$ is constant on the strongly connected state graph. The group-inverse
+    normalization makes that constant zero, and hence $h=0$. Thus the Gram matrix loses precisely the feature
+    combinations that are already constant across regimes; the antisymmetric directed sector changes neither this
+    nullspace nor its rank.</p>
+    <p>There is an important scope distinction. If the centered loading matrix depends on maturity and a nonnegative
+    measure $\nu$ is used to aggregate it, then, subject to integrability,</p>
+    $$\bar G=\int G(\tau)\,\nu(d\tau),\qquad
+      \ker\bar G=\{c:H(\tau)c=0\ \text{for }\nu\text{-almost every }\tau\}.$$
+    <p>Consequently the integrated rank can exceed every fixed-maturity rank. For the two-state chain
+    $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$, contrast $z=(1,-1)^\top$, and loadings
+    $H(\tau)=z(1,\tau)$, one has $\mathcal K(z,z)=1/2$. Every $G(\tau)$ has rank one, while uniform integration over
+    $0\le\tau\le1$ gives</p>
+    $$\bar G=\frac12\begin{pmatrix}1&amp;1/2\\1/2&amp;1/3\end{pmatrix},\qquad
+      \det\bar G=\frac1{48},\qquad \operatorname{rank}\bar G=2.$$
+    <p>The certificate verifies the Dirichlet identity on the nonreversible three-state chain to machine precision
+    and reproduces this integrated matrix by Gauss&ndash;Legendre quadrature. The first theorem is a fixed-generator,
+    fixed-feature statement; it must not be used as a rank bound after combining different maturity-loading
+    directions.</p>
+
     <h2>Worked example</h2>
     <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are
     2.78 in the bull market and &minus;0.30 in the bear market: leveraged long, then short. The Green&ndash;Kubo number is</p>

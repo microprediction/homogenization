@@ -10,6 +10,9 @@
 3. Regime-blind constant fraction: CE(w) and the weight shift against a numerical solve and numerical maximization,
    and exact Monte Carlo over chain paths.  A nonreversible three-state example verifies that the drift/variance
    cross coefficient must be the symmetric Green-Kubo form; the one-sided coefficient fails at first order.
+4. Gram identification: for a finite irreducible chain, the symmetric Green-Kubo Gram matrix has exactly the
+   nullspace of the centered feature matrix.  A two-state example verifies that integrating maturity-dependent
+   loading directions can nevertheless raise rank above every fixed-maturity rank.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -228,6 +231,68 @@ def main():
         speeds=speeds.tolist(),
         scaled_exact=scaled.tolist(),
         convergence_ratios=ratios.tolist(),
+    )
+
+    print("4. exact Green-Kubo Gram rank and maturity aggregation")
+    features = np.column_stack([muc, sc, muc + 2.0 * sc, np.ones(3)])
+    centered = features - np.outer(np.ones(3), pi_c @ features)
+    gram = green_kubo_gram(Qc, features)
+    feature_rank = int(np.linalg.matrix_rank(centered, tol=1e-11))
+    gram_rank = int(np.linalg.matrix_rank(gram, tol=1e-11))
+    coeffs = [
+        np.array([1.0, -0.4, 0.3, 2.0]),
+        np.array([-0.2, 0.7, -0.5, 1.0]),
+        np.array([0.6, 0.1, -0.8, -3.0]),
+    ]
+    dirichlet_errors = []
+    for c in coeffs:
+        h = centered @ c
+        potential = -group_inverse(Qc) @ h
+        energy = np.sum(
+            pi_c[:, None] * Qc * (potential[None, :] - potential[:, None]) ** 2
+        )
+        dirichlet_errors.append(abs(2.0 * c @ gram @ c - energy))
+    max_dirichlet_error = float(max(dirichlet_errors))
+    print(f"      centered feature rank {feature_rank}, Gram rank {gram_rank}, "
+          f"max Dirichlet identity error {max_dirichlet_error:.3e}")
+    ok &= feature_rank == gram_rank == 2
+    ok &= max_dirichlet_error < 2e-14
+
+    Q_two = two_state(1.0, 1.0)
+    contrast = np.array([1.0, -1.0])
+    contrast_k = K(Q_two, contrast, contrast)
+    nodes, weights = np.polynomial.legendre.leggauss(8)
+    maturities, weights = 0.5 * (nodes + 1.0), 0.5 * weights
+    integrated = sum(
+        weight * green_kubo_gram(Q_two, np.outer(contrast, [1.0, maturity]))
+        for maturity, weight in zip(maturities, weights)
+    )
+    integrated_exact = 0.5 * np.array([[1.0, 0.5], [0.5, 1.0 / 3.0]])
+    quadrature_error = float(np.max(np.abs(integrated - integrated_exact)))
+    integrated_det = float(np.linalg.det(integrated))
+    pointwise_ranks = [
+        int(np.linalg.matrix_rank(green_kubo_gram(Q_two, np.outer(contrast, [1.0, maturity])), tol=1e-12))
+        for maturity in [0.0, 0.25, 0.5, 0.75, 1.0]
+    ]
+    integrated_rank = int(np.linalg.matrix_rank(integrated, tol=1e-12))
+    print(f"      two-state K(z,z) {contrast_k:.12f}; pointwise ranks {pointwise_ranks}, "
+          f"integrated rank {integrated_rank}, determinant {integrated_det:.12f}")
+    print(f"      Gauss-Legendre versus exact integrated Gram error {quadrature_error:.3e}")
+    ok &= abs(contrast_k - 0.5) < 1e-15
+    ok &= pointwise_ranks == [1, 1, 1, 1, 1]
+    ok &= integrated_rank == 2
+    ok &= abs(integrated_det - 1.0 / 48.0) < 2e-15
+    ok &= quadrature_error < 2e-15
+    out['gram_rank'] = dict(
+        nonreversible_feature_rank=feature_rank,
+        nonreversible_gram_rank=gram_rank,
+        max_dirichlet_identity_error=max_dirichlet_error,
+        two_state_contrast_K=contrast_k,
+        pointwise_ranks=pointwise_ranks,
+        integrated_gram=integrated.tolist(),
+        integrated_rank=integrated_rank,
+        integrated_determinant=integrated_det,
+        quadrature_error=quadrature_error,
     )
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)

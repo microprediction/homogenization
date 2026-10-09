@@ -56,6 +56,19 @@ def Ksym(Q, f, h):
     return 0.5 * (K(Q, f, h) + K(Q, h, f))
 
 
+def green_kubo_gram(Q, features):
+    """Symmetric Green-Kubo Gram matrix for the columns of ``features``."""
+    features = np.asarray(features, float)
+    if features.ndim == 1:
+        features = features[:, None]
+    p = features.shape[1]
+    directed = np.empty((p, p))
+    for a in range(p):
+        for b in range(p):
+            directed[a, b] = K(Q, features[:, a], features[:, b])
+    return 0.5 * (directed + directed.T)
+
+
 def K2(q1, q2, f, h):
     """two-regime closed form"""
     p1, p2 = q2 / (q1 + q2), q1 / (q1 + q2)
