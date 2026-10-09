@@ -23,6 +23,10 @@ When the oracle returns the vector action Jx rather than only scalar bilinear
 queries, quadratic trace probes reduce the worst-case relative-variance
 constant from five to one, the median block size from 80 to 16, and the
 half-RMS one-percent miss certificate from 47 probes to 14.
+Fixed-norm spherical actions remove radial variance, and Haar-orthogonal
+blocks add the exact finite-population factor (d-k)/(d-1).  In centered
+dimension three, two orthogonal actions deterministically estimate the skew
+energy within 50 percent.
 A finite group-inverse perturbation calculation then propagates generator and
 stationary-law errors into a deterministic interval for the population skew
 energy.  For a fully observed finite-state path, exponential counting-
@@ -1019,6 +1023,106 @@ def random_probe_detection_check(sample_count=400_000):
         sphere_action_mom_relative_errors > mom_epsilon
     )
 
+    # Orthogonalizing fixed-norm directions gives a without-replacement
+    # analogue of the preceding trace estimator.  If U has k Haar-uniform
+    # orthonormal columns, P=UU', and
+    #
+    #     Z_k=(d/k) tr(U' A U),
+    #
+    # then E Z_k=tr A and the second moment tensor of the Haar projector
+    # gives
+    #
+    # Var(Z_k)/(tr A)^2
+    #   = 2d(d-k)/{k(d-1)(d+2)}
+    #       {tr(A^2)/(tr A)^2 - 1/d}.
+    #
+    # For A=J'J, paired singular values bound the last display by
+    # (d-k)(d-2)/{k(d-1)(d+2)}.  Compared with k independent spherical
+    # actions, this is the exact finite-population factor (d-k)/(d-1), and
+    # it vanishes at k=d.
+    orthogonal_block_size = dimension - 1
+    orthogonal_action_relative_variance = (
+        2.0
+        * dimension
+        * (dimension - orthogonal_block_size)
+        / (
+            orthogonal_block_size
+            * (dimension - 1.0)
+            * (dimension + 2.0)
+        )
+        * (spectral_concentration - 1.0 / dimension)
+    )
+    orthogonal_action_variance_bound = (
+        (dimension - orthogonal_block_size)
+        * (dimension - 2.0)
+        / (
+            orthogonal_block_size
+            * (dimension - 1.0)
+            * (dimension + 2.0)
+        )
+    )
+
+    # In d=3, a Haar two-frame is the orthogonal complement of one Haar
+    # unit vector v.  This realizes the estimator without a QR loop:
+    # Z_2=(3/2){S2-v'Av}.  A three-dimensional nonzero real skew matrix has
+    # spectrum(A)=(s^2,s^2,0), hence every frame satisfies
+    # 3S2/4 <= Z_2 <= 3S2/2.  The displayed 50%-relative-error certificate
+    # is therefore deterministic; the simulation only checks the exact
+    # mean and variance formula.
+    assert dimension == 3
+    assert orthogonal_block_size == 2
+    complement_directions = x / np.linalg.norm(x, axis=1)[:, None]
+    complement_energies = np.einsum(
+        "bi,ij,bj->b",
+        complement_directions,
+        action_matrix,
+        complement_directions,
+    )
+    orthogonal_action_energies = (
+        dimension
+        / orthogonal_block_size
+        * (exact_second_moment - complement_energies)
+    )
+    empirical_orthogonal_action_relative_variance = (
+        np.var(orthogonal_action_energies) / exact_second_moment**2
+    )
+    orthogonal_action_minimum_ratio = (
+        np.min(orthogonal_action_energies) / exact_second_moment
+    )
+    orthogonal_action_maximum_ratio = (
+        np.max(orthogonal_action_energies) / exact_second_moment
+    )
+    orthogonal_action_mom_block_size = math.ceil(
+        4.0 * orthogonal_action_variance_bound / mom_epsilon**2
+    )
+    orthogonal_action_mom_frame_count = (
+        mom_blocks * orthogonal_action_mom_block_size
+    )
+    orthogonal_action_mom_action_count = (
+        orthogonal_block_size * orthogonal_action_mom_frame_count
+    )
+    orthogonal_action_mom_trials = (
+        sample_count // orthogonal_action_mom_frame_count
+    )
+    orthogonal_action_mom_values = orthogonal_action_energies[
+        :orthogonal_action_mom_trials
+        * orthogonal_action_mom_frame_count
+    ]
+    orthogonal_action_mom_estimates = np.median(
+        orthogonal_action_mom_values.reshape(
+            orthogonal_action_mom_trials,
+            mom_blocks,
+            orthogonal_action_mom_block_size,
+        ).mean(axis=2),
+        axis=1,
+    )
+    orthogonal_action_mom_relative_errors = np.abs(
+        orthogonal_action_mom_estimates / exact_second_moment - 1.0
+    )
+    orthogonal_action_mom_failure_frequency = np.mean(
+        orthogonal_action_mom_relative_errors > mom_epsilon
+    )
+
     threshold = threshold_fraction * math.sqrt(exact_second_moment)
     empirical_detection_probability = np.mean(abs(signals) >= threshold)
     paley_zygmund_bound = (1.0 - threshold_fraction**2) ** 2 / (
@@ -1273,6 +1377,26 @@ def random_probe_detection_check(sample_count=400_000):
     assert sphere_action_mom_sample_size == 100
     assert sphere_action_mom_trials == 4000
     assert sphere_action_mom_failure_frequency < 0.02
+    assert abs(
+        np.mean(orthogonal_action_energies) / exact_second_moment - 1.0
+    ) < 2e-3
+    assert orthogonal_action_relative_variance <= (
+        orthogonal_action_variance_bound + 2e-14
+    )
+    assert abs(
+        empirical_orthogonal_action_relative_variance
+        - orthogonal_action_relative_variance
+    ) < 2e-3
+    assert abs(
+        orthogonal_action_relative_variance - 1.0 / 20.0
+    ) < 2e-14
+    assert orthogonal_action_minimum_ratio >= 0.75 - 2e-14
+    assert orthogonal_action_maximum_ratio <= 1.5 + 2e-14
+    assert orthogonal_action_mom_block_size == 1
+    assert orthogonal_action_mom_frame_count == 25
+    assert orthogonal_action_mom_action_count == 50
+    assert orthogonal_action_mom_trials == 16000
+    assert orthogonal_action_mom_failure_frequency == 0.0
     assert relative_fourth_moment_error < 3e-2
     assert empirical_detection_probability >= paley_zygmund_bound
     assert probes_for_one_percent == 47
@@ -1394,6 +1518,38 @@ def random_probe_detection_check(sample_count=400_000):
         ),
         "sphere_action_mom_maximum_relative_error": np.max(
             sphere_action_mom_relative_errors
+        ),
+        "orthogonal_block_size": orthogonal_block_size,
+        "orthogonal_action_relative_variance": (
+            orthogonal_action_relative_variance
+        ),
+        "orthogonal_action_variance_bound": (
+            orthogonal_action_variance_bound
+        ),
+        "empirical_orthogonal_action_relative_variance": (
+            empirical_orthogonal_action_relative_variance
+        ),
+        "orthogonal_action_minimum_ratio": (
+            orthogonal_action_minimum_ratio
+        ),
+        "orthogonal_action_maximum_ratio": (
+            orthogonal_action_maximum_ratio
+        ),
+        "orthogonal_action_mom_block_size": (
+            orthogonal_action_mom_block_size
+        ),
+        "orthogonal_action_mom_frame_count": (
+            orthogonal_action_mom_frame_count
+        ),
+        "orthogonal_action_mom_action_count": (
+            orthogonal_action_mom_action_count
+        ),
+        "orthogonal_action_mom_trials": orthogonal_action_mom_trials,
+        "orthogonal_action_mom_failure_frequency": (
+            orthogonal_action_mom_failure_frequency
+        ),
+        "orthogonal_action_mom_maximum_relative_error": np.max(
+            orthogonal_action_mom_relative_errors
         ),
         "threshold_fraction": threshold_fraction,
         "empirical_detection_probability": empirical_detection_probability,
@@ -1767,6 +1923,25 @@ def main():
         f"{probes['sphere_action_probes_for_one_percent']} probes give "
         f"miss bound "
         f"{probes['sphere_action_one_percent_miss_bound']:.6f}"
+    )
+    print(
+        f"   orthogonal {probes['orthogonal_block_size']}-action block "
+        f"relative variance exact/simulated/bounded "
+        f"{probes['orthogonal_action_relative_variance']:.9f}/"
+        f"{probes['empirical_orthogonal_action_relative_variance']:.9f}/"
+        f"{probes['orthogonal_action_variance_bound']:.9f}; observed "
+        f"energy-ratio range "
+        f"[{probes['orthogonal_action_minimum_ratio']:.6f}, "
+        f"{probes['orthogonal_action_maximum_ratio']:.6f}]"
+    )
+    print(
+        f"   orthogonal-action median-of-means blocks/frames/actions "
+        f"{probes['mom_blocks']}/"
+        f"{probes['orthogonal_action_mom_frame_count']}/"
+        f"{probes['orthogonal_action_mom_action_count']}; empirical "
+        f"failures/max error "
+        f"{probes['orthogonal_action_mom_failure_frequency']:.6f}/"
+        f"{probes['orthogonal_action_mom_maximum_relative_error']:.6f}"
     )
     print(
         f"   Rademacher fourth moment exact/enumerated "

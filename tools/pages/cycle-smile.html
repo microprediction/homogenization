@@ -199,6 +199,52 @@
       comes here from combining the exact spherical moment with the paired spectrum of a skew operator. It retains
       the same action-oracle and exact-population-operator scope as the Gaussian result; normalizing directions does
       not address scalar-only access or generator-estimation error.</p>
+    <h3>Orthogonal action blocks sample without replacement</h3>
+    <p>Independent fixed-norm probes can be improved by making the directions orthogonal inside each block. Let
+      $U\in\mathbb R^{d\times k}$ have Haar-uniform orthonormal columns, put $P=UU^\top$, and define the $k$-action
+      estimator</p>
+    <div class="equation-card">
+    $$Z_k={d\over k}\operatorname{tr}(U^\top J^\top JU)
+      ={d\over k}\sum_{a=1}^k\lVert Ju_a\rVert^2.$$
+    </div>
+    <p>Haar invariance gives $\mathbb E P=(k/d)I$, so $Z_k$ is unbiased. The second moment tensor of a rank-$k$
+      Haar projector gives, with $S_2=\operatorname{tr}(J^\top J)$ and
+      $S_4=\operatorname{tr}{(J^\top J)^2\}$,</p>
+    <div class="equation-card">
+    $${\operatorname{Var}(Z_k)\over S_2^2}
+      ={2d(d-k)\over k(d-1)(d+2)}
+       \left({S_4\over S_2^2}-{1\over d}\right)
+      \le{(d-k)(d-2)\over k(d-1)(d+2)}.$$
+    </div>
+    <p>For completeness, orthogonal invariance forces
+      $\mathbb E[P_{ij}P_{\ell m}]=a\delta_{ij}\delta_{\ell m}
+      +b(\delta_{i\ell}\delta_{jm}+\delta_{im}\delta_{j\ell})$. The identities
+      $\operatorname{tr}P=k$ and $\operatorname{tr}(P^2)=k$ determine
+      $b=k(d-k)/\{d(d-1)(d+2)\}$ and $a-k^2/d^2=-2b/d$. Contracting this tensor with
+      $A=J^\top J$ proves
+      $\operatorname{Var}\{\operatorname{tr}(AP)\}=2b[\operatorname{tr}(A^2)-(\operatorname{tr}A)^2/d]$,
+      which is exactly the displayed formula after multiplying by $(d/k)^2$.</p>
+    <p>The inequality uses the paired nonzero singular values of the real skew operator, and is sharp at rank two.
+      Averaging $k$ independent spherical actions has worst relative variance $(d-2)/\{k(d+2)\}$; orthogonality
+      multiplies it by the finite-population factor $(d-k)/(d-1)$. Thus a full $d$-frame returns the trace exactly.
+      This exact quadratic specialization complements the broader orthogonal-sampling variance-reduction program of
+      <a href="./bibliography.html#ChoromanskiEtAl2019">Choromanski, Rowland, Chen and Weller
+      (2019)</a>.</p>
+    <p>The four-state certificate has centered dimension $d=3$. For a Haar two-frame, write its orthogonal complement
+      as the unit vector $v$. Then
+      $Z_2=(3/2)\{S_2-v^\top J^\top Jv\}$. Every nonzero three-dimensional real skew matrix has
+      $\operatorname{spec}(J^\top J)=(s^2,s^2,0)$, so this is the deterministic interval</p>
+    <div class="equation-card">
+    $$ {3\over4}S_2\le Z_2\le {3\over2}S_2.$$
+    </div>
+    <p>Consequently two orthogonal actions alone already give relative error at most $1/2$ for this example; this is
+      stronger than a probability bound. The exact relative variance is $1/20$, and 400,000 simulated Haar frames
+      give $0.050020$, with observed energy ratios in $[0.75,1.5]$. The generic median-of-means construction uses
+      25 one-frame blocks, hence 50 actions rather than 100 independent spherical actions or 400 Gaussian actions;
+      its 16,000 simulated repetitions have zero failures and maximum relative error $0.259118$.</p>
+    <p>These gains require a full action oracle and coordinated directions in a common centered-space basis. They do
+      not improve scalar bilinear access, do not make a marginal random-feature guarantee conditional on prescribed
+      features, and do not include error from estimating the population operator $J$.</p>
     <h3>Exponential confidence from median block means</h3>
     <p>The polynomial Chebyshev tail can be amplified without assuming any
       higher moments. Split the squared signals into $k$ independent blocks

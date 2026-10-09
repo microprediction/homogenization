@@ -225,7 +225,10 @@
         result does not apply to scalar-only bilinear queries. Normalizing Gaussian directions to the sphere of
         radius $\sqrt d$ removes radial noise: the exact relative variance is at most $(d-2)/(d+2)$, and the
         three-dimensional certificate needs eight probes for one-percent half-scale detection and 100 actions for
-        the displayed median-of-means guarantee. Given a supplied operator-norm error radius for an
+        the displayed median-of-means guarantee. Haar-orthogonal blocks add a finite-population factor
+        $(d-k)/(d-1)$ to the $k$-action variance; a full frame is exact, and in the three-dimensional certificate a
+        two-action frame has exact relative variance $1/20$ and deterministically estimates the energy within 50%.
+        This orthogonal-block result still requires a full action oracle. Given a supplied operator-norm error radius for an
         estimated generator, an estimator-centered
         group-inverse theorem propagates that error into a fully computable interval for the population energy;
         for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale
