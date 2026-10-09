@@ -26,6 +26,9 @@ the two-state model it further identifies the accumulated geometric term as
 the oriented protocol integral int (delta/s) dp and checks invariance under
 an orientation-preserving time change, sign reversal under path reversal,
 and vanishing when the closed protocol is confined to a graph h=H(p).
+For a nonreversible three-state family it then verifies the general
+parameter-space connection and its curvature, including Stokes' theorem on
+a two-parameter loop.
 """
 
 from __future__ import annotations
@@ -42,6 +45,25 @@ SHAPE = np.array([1.0, -1.0])
 PI = np.array([0.5, 0.5])
 P = np.outer(ONE, PI)
 QSHARP = np.linalg.inv(Q - P) + P
+
+
+def zero_row_sum_matrix(off_diagonal: list[list[float]]) -> np.ndarray:
+    """Complete the diagonal so that every row sums to zero."""
+    matrix = np.array(off_diagonal, dtype=float)
+    np.fill_diagonal(matrix, 0.0)
+    np.fill_diagonal(matrix, -matrix.sum(axis=1))
+    return matrix
+
+
+PROTOCOL_Q0 = zero_row_sum_matrix(
+    [[0.0, 1.0, 0.6], [0.5, 0.0, 1.2], [0.9, 0.7, 0.0]]
+)
+PROTOCOL_QX = zero_row_sum_matrix(
+    [[0.0, 0.2, 0.0], [0.0, 0.0, 0.1], [-0.12, 0.0, 0.0]]
+)
+PROTOCOL_QY = zero_row_sum_matrix(
+    [[0.0, 0.0, -0.1], [0.15, 0.0, 0.0], [0.0, 0.16, 0.0]]
+)
 
 
 def average(v: np.ndarray) -> float:
@@ -149,6 +171,113 @@ def two_state_protocol_data(t: float) -> tuple[float, float, float, float]:
     q, pi, pi_prime, g = moving_data(t)
     rate_sum = -float(np.trace(q))
     return float(pi[0]), float(pi_prime[0]), rate_sum, float(g[0] - g[1])
+
+
+def stationary_linear_solve(q: np.ndarray) -> np.ndarray:
+    """Stationary row law via a linear solve, retaining complex perturbations."""
+    system = q.T.copy()
+    system[-1, :] = 1.0
+    rhs = np.zeros(q.shape[0], dtype=q.dtype)
+    rhs[-1] = 1.0
+    return np.linalg.solve(system, rhs)
+
+
+def protocol_connection(x: complex, y: complex) -> np.ndarray:
+    """Connection coefficients A_x,A_y for a three-state parameter family."""
+    q = PROTOCOL_Q0 + x * PROTOCOL_QX + y * PROTOCOL_QY
+    pi = stationary_linear_solve(q)
+    p = np.outer(np.ones(3), pi)
+    r = np.linalg.inv(q - p) + p
+    g = np.array(
+        [0.3 + 0.1 * y, -0.2 + 0.15 * x, 0.55 - 0.08 * x + 0.05 * y],
+        dtype=q.dtype,
+    )
+    f = g - (pi @ g) * np.ones(3)
+    return np.array(
+        [pi @ PROTOCOL_QX @ r @ r @ f, pi @ PROTOCOL_QY @ r @ r @ f]
+    )
+
+
+def protocol_curvature(x: float, y: float) -> float:
+    """Return d_x A_y-d_y A_x by complex-step differentiation."""
+    step = 1e-20
+    d_x_a_y = np.imag(protocol_connection(x + 1j * step, y)[1]) / step
+    d_y_a_x = np.imag(protocol_connection(x, y + 1j * step)[0]) / step
+    return float(d_x_a_y - d_y_a_x)
+
+
+def check_protocol_curvature() -> dict[str, float]:
+    """Check the finite-state connection identity and Stokes' theorem."""
+    x0, x1 = -0.6, 0.7
+    y0, y1 = -0.5, 0.8
+    identity_residuals: list[float] = []
+    minimum_rate = np.inf
+
+    for x in np.linspace(x0, x1, 9):
+        for y in np.linspace(y0, y1, 9):
+            q = PROTOCOL_Q0 + x * PROTOCOL_QX + y * PROTOCOL_QY
+            pi = stationary_linear_solve(q)
+            p = np.outer(np.ones(3), pi)
+            r = np.linalg.inv(q - p) + p
+            g = np.array([0.3 + 0.1 * y, -0.2 + 0.15 * x, 0.55 - 0.08 * x + 0.05 * y])
+            f = g - float(pi @ g) * np.ones(3)
+            pi_x = -pi @ PROTOCOL_QX @ r
+            pi_y = -pi @ PROTOCOL_QY @ r
+            direct = np.array([-pi_x @ r @ f, -pi_y @ r @ f])
+            identity_residuals.append(float(np.max(np.abs(direct - protocol_connection(x, y)))))
+            minimum_rate = min(
+                minimum_rate,
+                *(q[i, j] for i in range(3) for j in range(3) if i != j),
+            )
+
+    # Counterclockwise boundary integral of A_x dx+A_y dy.
+    line_integral = (
+        quad(lambda x: float(protocol_connection(x, y0)[0]), x0, x1, epsabs=2e-13)[0]
+        + quad(lambda y: float(protocol_connection(x1, y)[1]), y0, y1, epsabs=2e-13)[0]
+        - quad(lambda x: float(protocol_connection(x, y1)[0]), x0, x1, epsabs=2e-13)[0]
+        - quad(lambda y: float(protocol_connection(x0, y)[1]), y0, y1, epsabs=2e-13)[0]
+    )
+
+    nodes, weights = np.polynomial.legendre.leggauss(40)
+    area_integral = 0.0
+    for i, node_x in enumerate(nodes):
+        x = 0.5 * (x0 + x1) + 0.5 * (x1 - x0) * node_x
+        for j, node_y in enumerate(nodes):
+            y = 0.5 * (y0 + y1) + 0.5 * (y1 - y0) * node_y
+            area_integral += (
+                weights[i]
+                * weights[j]
+                * protocol_curvature(x, y)
+                * (x1 - x0)
+                * (y1 - y0)
+                / 4.0
+            )
+
+    center_q = PROTOCOL_Q0
+    cycle_affinity = float(
+        np.log(
+            center_q[0, 1]
+            * center_q[1, 2]
+            * center_q[2, 0]
+            / (center_q[1, 0] * center_q[2, 1] * center_q[0, 2])
+        )
+    )
+    stokes_error = abs(line_integral - area_integral)
+    assert max(identity_residuals) < 3e-17
+    assert minimum_rate > 0.4
+    assert abs(cycle_affinity) > 1.0
+    assert abs(line_integral) > 1e-3
+    assert stokes_error < 2e-13
+
+    return {
+        "identity_residual": max(identity_residuals),
+        "minimum_rate": float(minimum_rate),
+        "cycle_affinity": cycle_affinity,
+        "center_curvature": protocol_curvature(0.0, 0.0),
+        "line_integral": float(line_integral),
+        "area_integral": float(area_integral),
+        "stokes_error": float(stokes_error),
+    }
 
 
 def check_moving_generator_hierarchy() -> dict[str, float]:
@@ -726,6 +855,7 @@ def main() -> None:
     assert max(long_maturity_bound_ratios) < 1.0
 
     moving = check_moving_generator_hierarchy()
+    protocol = check_protocol_curvature()
 
     print("null-space solvability hierarchy certificate")
     print(f"centered-only next-order obstruction  {centered_obstruction:.12e}")
@@ -774,6 +904,13 @@ def main() -> None:
     print(f"without geometric term error order  {moving['dynamic_only_order']:.6f}")
     print(f"smallest-eps moving full error       {moving['full_error']:.12e}")
     print(f"smallest-eps dynamic-only error      {moving['dynamic_only_error']:.12e}")
+    print(f"protocol connection identity resid. {protocol['identity_residual']:.3e}")
+    print(f"three-state minimum jump rate       {protocol['minimum_rate']:.6f}")
+    print(f"three-state cycle affinity          {protocol['cycle_affinity']:.12e}")
+    print(f"protocol curvature at center        {protocol['center_curvature']:.12e}")
+    print(f"protocol boundary integral          {protocol['line_integral']:.12e}")
+    print(f"protocol curvature-area integral    {protocol['area_integral']:.12e}")
+    print(f"protocol Stokes residual            {protocol['stokes_error']:.3e}")
     print("ok")
 
 
