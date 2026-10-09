@@ -7,9 +7,10 @@ Units: days, nHz, nHz per day (1e-15 Hz/s = 0.0864 nHz/day). Phase in nHz day = 
     error ~ (gamma T)^(-1/2), with layer constant and skewness ~ (gamma T)^(-1).
  4. Characteristic function of the phase residual: engine ODE a' = (Q + i u t diag g) a vs Gaussian / adiabatic.
  5. Cumulant rates lambda_2, lambda_3 against the eigenvalue of Q + s diag g by finite differences.
- 6. Exact (discretization-free) Monte Carlo of the switching process: variances, skewness, post-fit residual.
- 7. Spectrum: Lorentzian vs numerical Fourier transform of the matrix-exponential covariance.
- 8. Quasi-periodic switching: renewal formula vs Erlang-chain Green-Kubo (group inverse) vs Monte Carlo.
+ 6. Exact (discretization-free) Monte Carlo of the switching process: variances and skewness.
+ 7. Finite-rate post-fit theorem: closed form vs independent covariance-kernel quadrature and Monte Carlo.
+ 8. Spectrum: Lorentzian vs numerical Fourier transform of the matrix-exponential covariance.
+ 9. Quasi-periodic switching: renewal formula vs Erlang-chain Green-Kubo (group inverse) vs Monte Carlo.
 """
 import json, math, os, sys
 import numpy as np
@@ -108,6 +109,27 @@ def postfit_mc(m, T, N, rng, n=1001):
         r = r - H @ r
         out[k] = np.mean(r ** 2)
     return out
+
+
+def postfit_covariance_quadrature(m, T):
+    """Independent continuous-time covariance-kernel calculation of post-fit mean square.
+
+    For 0 <= u <= z <= 1, H(z,u) is the L2 inner product of the two
+    integrated impulses (t-z)_+ and (t-u)_+ after projecting both off
+    span{1,t,t^2}.  The telegraph covariance is c0 exp(-x|z-u|).
+    """
+    x = m.gamma * T
+    c0 = m.p1 * m.p2 * m.Delta ** 2
+
+    def h(z, u):
+        return (-u ** 2 * (z - 1) ** 2
+                * (15 * u ** 2 * z ** 2 - 30 * u * z ** 2 + 4 * u * z
+                   + 2 * u + 15 * z ** 2 - 6 * z) / 12)
+
+    val = 2 * quad(lambda z: quad(lambda u: math.exp(-x * (z - u)) * h(z, u), 0, z,
+                                  epsabs=1e-14, epsrel=2e-11)[0],
+                   0, 1, epsabs=1e-14, epsrel=2e-11)[0]
+    return c0 * T ** 4 * val
 
 
 def main():
@@ -210,18 +232,34 @@ def main():
               f"{m.var_phase(T):.5e}; skew X {sk:+.3f} vs first order {rows[-1][-1]:+.3f}")
         ok &= abs(vx - v2) < 4 * sex and abs(vp - m.var_phase(T)) < 4 * sep
     out['mc'] = rows
+    print("7. exact finite-rate residual after a continuous quadratic fit")
+    rows = []
+    for T in (30.0, 100.0, 300.0, 1000.0, 3000.0):
+        exact = m.postfit_ms_exact(T)
+        direct = postfit_covariance_quadrature(m, T)
+        leading = m.postfit_ms(T)
+        rows.append([T, m.gamma * T, exact, direct, exact / leading, abs(exact - direct) / exact])
+        print(f"   T {T:5.0f}: exact {exact:.8e}, covariance quadrature {direct:.8e}, "
+              f"exact/GK {exact/leading:.9f}, rel diff {abs(exact-direct)/exact:.2e}")
+        ok &= abs(exact - direct) / exact < 2e-9
+    # The fit cancels the O(1/x) relative boundary correction: 1-R(x) ~ 108/x^2.
+    xlast = rows[-1][1]
+    asym = 1 - 108 / xlast ** 2 + 1260 / xlast ** 3 - 7560 / xlast ** 4
+    ok &= abs(rows[-1][4] - asym) < 3e-9
+    out['postfit_exact'] = rows
+
     rows = []
     for T in (300.0, 1000.0, 3000.0):
         N = 4000
         ms = postfit_mc(m, T, N, rng)
-        pred = m.postfit_ms(T)
-        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred])
+        pred = m.postfit_ms_exact(T)
+        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred, m.postfit_ms(T)])
         print(f"   post-fit mean-square phase residual, T {T:5.0f}: MC {ms.mean():.4e} +- {ms.std()/math.sqrt(N):.1e}"
-              f" vs 2KT^3/2520 = {pred:.4e} (ratio {ms.mean()/pred:.3f})")
+              f" vs exact {pred:.4e} (ratio {ms.mean()/pred:.3f})")
     ok &= abs(rows[-1][1] / rows[-1][3] - 1) < 0.08
     out['postfit'] = rows
 
-    print("7. spectrum of the spin-down rate")
+    print("8. spectrum of the spin-down rate")
     C = lambda tau: m.pi @ (m.g * (expm(tau * m.Q) @ m.g))
     rows = []
     for f in (0.0, 0.01, 0.03, 0.1):     # cycles per day
@@ -232,7 +270,7 @@ def main():
     ok &= abs(float(m.S_nudot(0.0)) - 2 * m.K) < 1e-12 * m.K
     out['spectrum'] = rows
 
-    print("8. quasi-periodic switching")
+    print("9. quasi-periodic switching")
     s_on, s_off = 5 / math.sqrt(12), 10 / math.sqrt(12)        # uniform on 5-10 and 25-35 days
     Kq = K_renewal(m.Delta, M_ON, s_on, M_OFF, s_off)
     k_on, k_off = round((M_ON / s_on) ** 2), round((M_OFF / s_off) ** 2)
@@ -268,7 +306,7 @@ def main():
         for T in (100.0, 300.0, 1000.0, 3000.0):
             sdnu = math.sqrt(mod.var_nu(T))
             sdph = math.sqrt(mod.var_phase(T)) * CYC
-            pf = math.sqrt(mod.postfit_ms(T)) * CYC
+            pf = math.sqrt(mod.postfit_ms_exact(T)) * CYC
             pfq = math.sqrt(mod.postfit_ms(T) * Kq / mod.K) * CYC
             ex.append([T, sdnu, math.sqrt(mod.var_nu_gk(T)), sdph, sdph / NU,
                        math.sqrt(mod.var_phase_gk(T)) * CYC / NU, pf / NU * 1e3, pfq / NU * 1e3,
@@ -291,7 +329,7 @@ def main():
     for yrs in (5.0, 10.0, 20.0):
         T = yrs * 365.25
         ex8.append([yrs, m8.gamma * T, math.sqrt(m8.var_nu(T)), math.sqrt(m8.var_phase(T)) * CYC / nu8,
-                    math.sqrt(m8.var_phase_gk(T)) * CYC / nu8, math.sqrt(m8.postfit_ms(T)) * CYC / nu8 * 1e3,
+                    math.sqrt(m8.var_phase_gk(T)) * CYC / nu8, math.sqrt(m8.postfit_ms_exact(T)) * CYC / nu8 * 1e3,
                     m8.kappa3_nu_first(T) / m8.var_nu(T) ** 1.5])
         print(f"   B1828-11 T {yrs:4.0f} yr (gamma T {ex8[-1][1]:.1f}): sd nu {ex8[-1][2]:.2f} nHz, sd timing "
               f"{ex8[-1][3]:.2f} s (T^3: {ex8[-1][4]:.2f}), post-fit rms {ex8[-1][5]:.1f} ms, skew {ex8[-1][6]:+.3f}")

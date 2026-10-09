@@ -84,6 +84,42 @@ class TwoState:
         """First-order mean-square phase residual over [0, T] after a fitted quadratic: 2 K T^3 / 2520."""
         return 2 * self.K * T ** 3 / 2520
 
+    @staticmethod
+    def _postfit_shape(x):
+        """Dimensionless finite-correlation shape F(x) for the continuous quadratic timing fit.
+
+        The exact mean square is p1*p2*Delta**2*T**4*F(gamma*T).  A Taylor
+        series avoids cancellation when the correlation time is long compared
+        with the observing span.
+        """
+        if x <= 0:
+            raise ValueError("gamma*T must be positive")
+        if x <= 2:
+            terms = (
+                (1, 27720), (-1, 100800), (1, 576576), (-1, 4233600),
+                (1, 37065600), (-1, 372556800), (1, 4200768000),
+                (-1, 52306974720), (1, 711075456000),
+                (-1, 10461394944000), (1, 165407090688000),
+                (-1, 2794686935040000), (1, 50217592732876800),
+                (-1, 955782931783680000), (1, 19200844280217600000),
+                (-1, 405889151697469440000), (1, 9004185396670464000000),
+            )
+            return math.fsum(sign * x ** (j + 1) / den for j, (sign, den) in enumerate(terms))
+        p = (x ** 9 - 108 * x ** 7 + 1260 * x ** 6 - 7560 * x ** 5
+             + 22680 * x ** 4 - 181440 * x ** 2 + 1814400)
+        q = (-7560 * x ** 4 - 120960 * x ** 3 - 725760 * x ** 2
+             - 1814400 * x - 1814400)
+        return (p + math.exp(-x) * q) / (1260 * x ** 10)
+
+    def postfit_ms_exact(self, T):
+        """Exact continuous-time OLS residual power after fitting 1, t and t^2."""
+        c0 = self.p1 * self.p2 * self.Delta ** 2
+        return c0 * T ** 4 * self._postfit_shape(self.gamma * T)
+
+    def postfit_ratio(self, T):
+        """Exact post-fit mean square divided by its Green--Kubo limit."""
+        return self.postfit_ms_exact(T) / self.postfit_ms(T)
+
     # ---- spectra (two-sided, per Hz) ----------------------------------------------------------------------
     def S_nudot(self, f):
         w = 2 * math.pi * np.asarray(f, float)
