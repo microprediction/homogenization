@@ -5,11 +5,16 @@
 2. Vasicek with switching reversion speed and volatility (non-commuting): same, on the discretized pricing equation.
 3. Black-Scholes with switching variance: call prices from the rule against the numerical solution.
 4. Many-name credit: joint survival of every subset from one Green-Kubo matrix of hazards.
+5. Competing arrivals: two observed channels driven by a three-state irreversible cycle already detect the
+   antisymmetric Green-Kubo sector; the first-order error falls like |Q|^-2.
 """
 import math, cmath, os, sys
 import numpy as np
 from scipy.linalg import expm
-from effective_generator import stationary, gk, averages, effective_generator, full_generator
+from effective_generator import (
+    stationary, gk, averages, effective_generator, full_generator,
+    first_arrival_probability, first_arrival_first_order,
+)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fast-switching'))
 
 Q3 = np.array([[-3, 2, 1], [1, -2, 1], [0.5, 1.5, -2]], float)          # irreversible
@@ -144,6 +149,36 @@ def main():
     w = np.linalg.eigvalsh(Ks)
     print(f"   eigenvalues of the dependence matrix {np.array2string(w, precision=2)}: rank at most 2 for three states")
     ok &= abs(w).min() < 1e-12 * abs(w).max() and w.min() > -1e-12 * abs(w).max()
+
+    print("5. two-channel first-arrival race under a three-state irreversible cycle")
+    race_hazards = np.array([[0.07, 0.01, 0.01], [0.01, 0.07, 0.01]])
+    race_speeds = np.array([5.0, 10.0, 20.0, 40.0, 80.0])
+    forward, reverse, approximations, errors, reversal_errors = [], [], [], [], []
+    for m in race_speeds:
+        Q = m * QC
+        p_forward = first_arrival_probability(Q, race_hazards)
+        p_reverse = first_arrival_probability(Q.T, race_hazards)
+        p_first = first_arrival_first_order(Q, race_hazards)
+        K_race = gk(Q, race_hazards)
+        total_mean = averages(Q, race_hazards).sum()
+        predicted_gap = (K_race[0, 1] - K_race[1, 0]) / total_mean
+        forward.append(p_forward)
+        reverse.append(p_reverse)
+        approximations.append(p_first)
+        errors.append(abs(p_forward - p_first))
+        reversal_errors.append(abs((p_forward - p_reverse) - predicted_gap))
+    ratios = np.array(errors[:-1]) / np.array(errors[1:])
+    reversal_ratios = np.array(reversal_errors[:-1]) / np.array(reversal_errors[1:])
+    i10 = list(race_speeds).index(10.0)
+    print(f"   speed 10: forward {forward[i10]:.10f}, reversed {reverse[i10]:.10f}, "
+          f"first order {approximations[i10]:.10f}")
+    print("   approximation error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
+    print("   reversal-gap error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in reversal_ratios))
+    ok &= abs(forward[i10] - 0.5001500360718357) < 2e-15
+    ok &= abs(reverse[i10] - 0.4998499639281751) < 2e-15
+    ok &= all(3.95 < x < 4.05 for x in ratios)
+    ok &= all(3.95 < x < 4.05 for x in reversal_ratios)
+    ok &= abs(forward[i10] - reverse[i10]) > 3e-4
     print("PASS" if ok else "FAIL")
 
 

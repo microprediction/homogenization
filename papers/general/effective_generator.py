@@ -37,6 +37,26 @@ def averages(Q, phis):
     return np.array([pi @ np.asarray(p, float) for p in phis])
 
 
+def first_arrival_probability(Q, hazards, winner=0, initial=None):
+    """Exact probability that one of several Markov-modulated Cox channels arrives first."""
+    Q = np.asarray(Q, float)
+    hazards = np.asarray(hazards, float)
+    initial = stationary(Q) if initial is None else np.asarray(initial, float)
+    killed_generator = np.diag(hazards.sum(axis=0)) - Q
+    return float(initial @ np.linalg.solve(killed_generator, hazards[winner]))
+
+
+def first_arrival_first_order(Q, hazards, winner=0):
+    """Stationary-start Green-Kubo approximation for a fast generator Q."""
+    hazards = np.asarray(hazards, float)
+    means = averages(Q, hazards)
+    total_mean = means.sum()
+    leading = means[winner] / total_mean
+    K = gk(Q, hazards)
+    correction = (leading * K.sum() - K[:, winner].sum()) / total_mean
+    return float(leading + correction)
+
+
 def effective_generator(Lbar, As, K, part='full'):
     """Lbar + sum K_jk A_j A_k; part='sym' keeps only the symmetric part of K."""
     if part == 'sym':
