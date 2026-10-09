@@ -31,9 +31,9 @@ The exact finite-panel variance factor is also followed through a joint limit
 in which the panel size grows while the per-observation mixing exposure may
 vanish.  This certifies the critical finite-total-exposure profile and its
 dense- and resolved-grid limits without making a conditional-coverage claim.
-On the exact critical schedule it also checks the first two finite-panel
-Euler--Maclaurin corrections and the cancellation of the nominal order-n^{-1}
-term.
+For every bounded moving total exposure it also checks the first two
+finite-panel Euler--Maclaurin corrections, the cancellation of the nominal
+order-n^{-1} term, and a computable order-n^{-6} remainder bound.
 An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
@@ -176,8 +176,9 @@ def joint_panel_switching_checks():
         assert abs(exact_binary_variance - 0.25 * normalized) < 2e-14
         critical_rows.append((total_exposure, normalized, limit))
 
-    # On the exact critical schedule x_n=lambda/n, Euler--Maclaurin gives
-    # W_n = Psi(lambda) + c2(lambda)/n^2 + c4(lambda)/n^4 + O(n^-6).
+    # Since lambda_n=n*x_n identically, Euler--Maclaurin applies pointwise at
+    # every moving total exposure lambda_n.  Its periodic-B_6 remainder gives
+    # an explicit finite-n error bound c6(lambda_n)/n^6.
     # The explicit 1/n term in W_n cancels the endpoint correction of the
     # Riemann sum.  High precision exposes all three successive rates.
     expansion_rows = []
@@ -189,7 +190,9 @@ def joint_panel_switching_checks():
             profile = Decimal(2) * (lam - 1 + exp_minus) / lam ** 2
             c2 = (1 + lam - exp_minus) / Decimal(6)
             c4 = -lam ** 2 * (lam + 3 - 3 * exp_minus) / Decimal(360)
+            c6 = lam ** 4 * (lam + 5 - 5 * exp_minus) / Decimal(15120)
             errors = [[], [], []]
+            bound_ratios = []
             for n in (32, 64, 128, 256):
                 value = critical_factor_decimal(lam_text, n)
                 errors[0].append(abs(value - profile))
@@ -198,6 +201,7 @@ def joint_panel_switching_checks():
                     value - profile - c2 / Decimal(n) ** 2
                     - c4 / Decimal(n) ** 4
                 ))
+                bound_ratios.append(errors[2][-1] / (c6 / Decimal(n) ** 6))
             rates = [
                 math.log2(float(level[-2] / level[-1]))
                 for level in errors
@@ -205,6 +209,7 @@ def joint_panel_switching_checks():
             assert abs(rates[0] - 2) < 1e-4
             assert abs(rates[1] - 4) < 2e-4
             assert abs(rates[2] - 6) < 2e-4
+            assert max(bound_ratios) <= 1
             n = 256
             value = critical_factor_decimal(lam_text, n)
             scaled_c2 = (value - profile) * Decimal(n) ** 2
@@ -213,7 +218,10 @@ def joint_panel_switching_checks():
             ) * Decimal(n) ** 4
             assert abs(scaled_c2 - c2) < Decimal("3e-5")
             assert abs(scaled_c4 - c4) < Decimal("6e-5")
-            expansion_rows.append((float(lam), rates, float(c2), float(c4)))
+            expansion_rows.append((
+                float(lam), rates, float(c2), float(c4),
+                float(c6), float(max(bound_ratios))
+            ))
 
     # Dense observations with diverging total exposure have only
     # total_exposure/2 variance-equivalent observations to first order.
@@ -243,8 +251,9 @@ def joint_panel_switching_checks():
           "; ".join(
               f"lambda={lam:g}: rates {rates[0]:.6f},"
               f" {rates[1]:.6f}, {rates[2]:.6f};"
-              f" c2={c2:.9f}, c4={c4:.9f}"
-              for lam, rates, c2, c4 in expansion_rows
+              f" c2={c2:.9f}, c4={c4:.9f};"
+              f" max remainder/bound={bound_ratio:.9f}"
+              for lam, rates, c2, c4, c6, bound_ratio in expansion_rows
           ))
     print("joint panel/switching outer regimes:",
           f"dense ratio {dense_ratio:.9f},",

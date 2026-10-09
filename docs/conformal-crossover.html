@@ -298,14 +298,18 @@
     $$\frac2{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
       e^{-\Lambda_n\ell/n}
       \longrightarrow2\int_0^1(1-u)e^{-\Lambda u}\,du.$$
-    <p>On the exact critical schedule $x_n=\Lambda/n$, the same finite sum
-      gives a sharper uniform expansion. For every fixed $L&lt;\infty$, uniformly
-      for $0\leq\Lambda\leq L$,</p>
+    <p>The same finite sum gives a nonasymptotic refinement throughout the
+      critical window. Put</p>
+    $$c_2(\Lambda)=\frac{1+\Lambda-e^{-\Lambda}}6,\qquad
+      c_4(\Lambda)=-\frac{\Lambda^2(\Lambda+3-3e^{-\Lambda})}{360},$$
+    $$c_6(\Lambda)=
+      \frac{\Lambda^4(\Lambda+5-5e^{-\Lambda})}{15120}.$$
+    <p>For every $n\geq1$ and every $\Lambda\geq0$, if the per-step exposure is
+      $x=\Lambda/n$, then</p>
     <div class="equation-card">
-    $$W_n=\Psi(\Lambda)
-      +\frac{1+\Lambda-e^{-\Lambda}}{6n^2}
-      -\frac{\Lambda^2(\Lambda+3-3e^{-\Lambda})}{360n^4}
-      +O_L(n^{-6}).$$
+    $$\left|W_n-\Psi(\Lambda)-\frac{c_2(\Lambda)}{n^2}
+      -\frac{c_4(\Lambda)}{n^4}\right|
+      \leq\frac{c_6(\Lambda)}{n^6}.$$
     </div>
     <p>There is no order-$n^{-1}$ term. Indeed, with
       $f_\Lambda(u)=(1-u)e^{-\Lambda u}$,</p>
@@ -314,11 +318,18 @@
     <p>The endpoint term in Euler&ndash;Maclaurin is
       $-\{f_\Lambda(0)+f_\Lambda(1)\}/n=-1/n$, exactly cancelling the
       displayed diagonal contribution. The $B_2$ and $B_4$ terms give the
-      two coefficients above; bounded sixth derivatives on
-      $[0,L]\times[0,1]$ give the stated uniform remainder. This expansion is
-      for the exact schedule $x_n=\Lambda/n$. For a perturbed sequence
-      $\Lambda_n\to\Lambda$, its perturbation error must be retained separately
-      and can dominate $n^{-2}$.</p>
+      two coefficients above. The Euler&ndash;Maclaurin remainder is the integral
+      of the periodic sixth Bernoulli polynomial against
+      $f_\Lambda^{(6)}$. Since
+      $\|B_6(\{\cdot\})\|_\infty/6!=1/30240$ and</p>
+    $$\int_0^1|f_\Lambda^{(6)}(u)|\,du
+      =\Lambda^4(\Lambda+5-5e^{-\Lambda}),$$
+    <p>multiplying by the factor two in $W_n$ gives exactly the displayed
+      bound. Because $\Lambda_n=nx_n$ by definition, the inequality can be
+      applied with the moving value $\Lambda_n$ for every bounded critical
+      sequence; evaluating the coefficients at a fixed limit $\Lambda$
+      instead introduces the separate perturbation error
+      $\Psi(\Lambda_n)-\Psi(\Lambda)$.</p>
     <p>The profile is not merely an upper bound. For every $n$, a symmetric
       two-state chain with conditional CDF values $(0,1)$ attains the finite
       factor exactly, so all these limits are sharp. In particular,
