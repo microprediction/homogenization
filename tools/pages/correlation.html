@@ -372,6 +372,35 @@
     </div>
     <p>These are fixed-$Q$, fixed-maturity contractions of the Green&ndash;Kubo matrix. They do not assert the same rank
     after combining different maturity-dependent loadings.</p>
+    <h4>Arbitrary-start covariance layer</h4>
+    <p>The abstract boundary coefficient above has a simple first-order form. For any state field $f$, write
+    $\widetilde f=f-\pi f$. The semigroup identity is exact:</p>
+    <div class="equation-card">
+    $$\mathbb E_\nu\!\int_0^T f(Y_t)\,dt
+      =T\pi f-\frac1s\nu Q^{\#}\widetilde f
+       +\frac1s\nu e^{sTQ}Q^{\#}\widetilde f.$$
+    </div>
+    <p>Thus the initial-layer coefficient is $-\nu Q^{\#}\widetilde f$. In the row-generator convention used here,
+    $-Q^{\#}$ is the continuous-time deviation matrix
+    $\int_0^\infty(e^{tQ}-P)\,dt$ studied by
+    <a href="./bibliography.html#CoolenSchrijnerVanDoorn2002">Coolen-Schrijner and van Doorn</a>. Applying the identity
+    to the drift and covariance fields gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E_\nu X_i
+      &=T\bar\mu_i-\frac1s\nu Q^{\#}\widetilde\mu_i
+        +O(e^{-csT}/s),\\
+    \operatorname{Cov}_\nu(X_i,X_j)
+      &=T\bar c_{ij}+\frac1s\left\{
+        T\Gamma(\widetilde\mu_i,\widetilde\mu_j)
+        -\nu Q^{\#}\widetilde c_{ij}\right\}
+        +O(s^{-2})+O(e^{-csT}/s).
+    \end{aligned}$$
+    </div>
+    <p>Here $\Gamma(f,g)=-\pi[fQ^{\#}g]-\pi[gQ^{\#}f]$. The covariance-field transient is therefore at the same
+    inverse-rate order as the stationary Green&ndash;Kubo drift term; it vanishes for $\nu=\pi$, but not for a known
+    starting regime. This is a fixed-$T$ expansion, uniform for maturities bounded away from zero, and does not cover
+    $sT=O(1)$.</p>
     <p>The next spectral coefficient is also explicit. Write $(u_1,u_2,u_3)=(a,b,c)$. Differentiating the normalized
     right eigenvector of the tilted generator twice gives the symmetric third occupation-rate tensor</p>
     $$\Theta_{abc}=\partial_{abc}\lambda(0)
@@ -510,7 +539,12 @@
     $2.0\times10^{-15}$; the errors of the explicit third- and fourth-order Green&ndash;Kubo tensors decay with exponents
     $2.014$ and $1.978$, respectively. The group-inverse $\Theta$ agrees with the independently extracted third
     eigenvalue derivatives within $2.8\times10^{-15}$; the errors of the explicit fifth- and sixth-order leading tensors
-    decay with exponents $2.981$ and $2.989$, matching the $O(s^{-3})$ remainder.</p>
+    decay with exponents $2.981$ and $2.989$, matching the $O(s^{-3})$ remainder. For initial laws
+    $(1,0,0)$ and $(0.2,0.3,0.5)$, the exact occupation means also agree with the displayed semigroup identity within
+    $1.3\times10^{-15}$, and the covariance errors after subtracting the arbitrary-start first correction decay with
+    exponent $2.000$. For the state-zero start, the asset-two covariance-field boundary coefficient is
+    $-9.18107\times10^{-3}$, which overwhelms the stationary Green&ndash;Kubo coefficient
+    $+6.40041\times10^{-3}$ and reverses the total first correction to $-2.78066\times10^{-3}$.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>

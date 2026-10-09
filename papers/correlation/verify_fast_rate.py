@@ -10,11 +10,13 @@ import os
 import sys
 
 import numpy as np
+from scipy.linalg import expm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from correlation import (cov_entries, cumulants_exact,
                          gaussian_vector_occupation_cumulant,
+                         initial_layer_coefficient,
                          occupation_covariance_rate,
                          occupation_third_cumulant_rate,
                          occupation_joint_cumulants_cauchy,
@@ -158,6 +160,72 @@ def main():
         print(f"return order {order}: third-spectral leading-error rate "
               f"{leading_error_rate:.3f} (target 3)")
         ok &= leading_error_rate > 2.85
+
+    projection = np.outer(np.ones(3), stationary)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    mean_contrasts = means[1:] - means[0]
+    mean_covariance_rate = (
+        mean_contrasts.T @ covariance_rate @ mean_contrasts
+    )
+    stationary_covariance = np.tensordot(
+        stationary, covariances, axes=(0, 0)
+    )
+    for label, initial in (
+        ("state_zero", np.array([1.0, 0.0, 0.0])),
+        ("mixed", np.array([0.2, 0.3, 0.5])),
+    ):
+        occupation_boundary = initial_layer_coefficient(
+            Q, np.eye(3), initial
+        )
+        semigroup_errors = []
+        covariance_errors = []
+        covariance_boundary = initial_layer_coefficient(
+            Q, covariances, initial
+        )
+        for speed in SPEEDS:
+            occupation = occupation_joint_cumulants_cauchy(
+                T, speed * Q, max_order=2, r=0.32, N=32,
+                initial=initial
+            )
+            exact_occupation_mean = np.array([
+                T - occupation[(0,)] - occupation[(1,)],
+                occupation[(0,)], occupation[(1,)]
+            ])
+            semigroup_mean = (
+                T * stationary + occupation_boundary / speed
+                + initial @ expm(speed * T * Q) @ group_inverse / speed
+            )
+            semigroup_errors.append(float(np.max(np.abs(
+                exact_occupation_mean - semigroup_mean
+            ))))
+
+            tensor = cumulants_exact(
+                T, speed * Q, MU1, MU2, VOL1, VOL2, RHO,
+                r=0.32, N=48, max_order=2, initial=initial
+            )
+            exact_covariance = np.array([
+                [tensor['k11'], tensor['k12']],
+                [tensor['k12'], tensor['k22']]
+            ])
+            first_order_covariance = (
+                T * stationary_covariance
+                + (covariance_boundary + T * mean_covariance_rate) / speed
+            )
+            covariance_errors.append(float(np.max(np.abs(
+                exact_covariance - first_order_covariance
+            ))))
+        covariance_remainder_rate = rate(covariance_errors)
+        print(f"initial layer {label}: occupation semigroup error "
+              f"{max(semigroup_errors):.2e}; covariance remainder rate "
+              f"{covariance_remainder_rate:.3f} (target 2)")
+        if label == "state_zero":
+            total = covariance_boundary + T * mean_covariance_rate
+            print(f"  asset-2 coefficient: boundary "
+                  f"{covariance_boundary[1, 1]:+.8f}; Green--Kubo "
+                  f"{T * mean_covariance_rate[1, 1]:+.8f}; "
+                  f"total {total[1, 1]:+.8f}")
+        ok &= max(semigroup_errors) < 3e-13
+        ok &= covariance_remainder_rate > 1.95
 
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1

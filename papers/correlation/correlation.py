@@ -309,6 +309,42 @@ def occupation_covariance_rate(Q):
     return one_sided + one_sided.T
 
 
+def initial_layer_coefficient(Q, values, initial):
+    """Leading arbitrary-start correction for an integrated state field.
+
+    ``values[y]`` is a scalar, vector, or tensor attached to state ``y`` and
+    ``initial`` is the row distribution of the chain at time zero.  If the
+    generator is ``s * Q``, then
+
+        E_initial integral_0^T values[Y_t] dt
+        = T * pi[values] + initial_layer_coefficient / s
+          + O(exp(-c*s*T) / s),
+
+    where the returned coefficient is ``-initial Q# (values-pi[values])``.
+    Trailing dimensions of ``values`` are preserved.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    if values.ndim < 1 or values.shape[0] != states:
+        raise ValueError("the first values dimension must index the states")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    stationary_value = np.tensordot(pi, values, axes=(0, 0))
+    centered = values - stationary_value
+    return -np.tensordot(initial @ group_inverse, centered, axes=(0, 0))
+
+
 def occupation_third_cumulant_rate(Q):
     """Third bulk-cumulant tensor for non-reference occupation times.
 

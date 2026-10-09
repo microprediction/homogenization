@@ -34,6 +34,7 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
+                         initial_layer_coefficient,
                          occupation_covariance_rate,
                          occupation_third_cumulant_rate,
                          occupation_joint_cumulants_cauchy,
@@ -546,6 +547,80 @@ def main():
         third_spectral_leading_error_rates[order] = rate(errors)
         print(f"   return order {order}: third-spectral leading-error rate "
               f"{third_spectral_leading_error_rates[order]:.3f} (want 3)")
+    projection_3 = np.outer(np.ones(3), stationary_3)
+    group_inverse_3 = np.linalg.inv(q3 - projection_3) + projection_3
+    mean_contrasts_3 = means_3[1:] - means_3[0]
+    mean_covariance_rate_3 = (
+        mean_contrasts_3.T @ covariance_rate_3 @ mean_contrasts_3
+    )
+    stationary_covariance_3 = np.tensordot(
+        stationary_3, covariances_3, axes=(0, 0)
+    )
+    initial_layer_rows = []
+    for label, initial in (
+        ('state_zero', np.array([1.0, 0.0, 0.0])),
+        ('mixed', np.array([0.2, 0.3, 0.5])),
+    ):
+        occupation_boundary = initial_layer_coefficient(
+            q3, np.eye(3), initial
+        )
+        covariance_boundary = initial_layer_coefficient(
+            q3, covariances_3, initial
+        )
+        semigroup_errors, covariance_errors = [], []
+        for speed in fast_speeds:
+            occupation = occupation_joint_cumulants_cauchy(
+                T, speed * q3, max_order=2, r=0.32, N=32,
+                initial=initial
+            )
+            exact_occupation_mean = np.array([
+                T - occupation[(0,)] - occupation[(1,)],
+                occupation[(0,)], occupation[(1,)]
+            ])
+            semigroup_mean = (
+                T * stationary_3 + occupation_boundary / speed
+                + initial @ expm(speed * T * q3) @ group_inverse_3 / speed
+            )
+            semigroup_errors.append(float(np.max(np.abs(
+                exact_occupation_mean - semigroup_mean
+            ))))
+            tensor = cumulants_exact(
+                T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3,
+                rho_3, r=0.32, N=48, max_order=2, initial=initial
+            )
+            exact_covariance = np.array([
+                [tensor['k11'], tensor['k12']],
+                [tensor['k12'], tensor['k22']]
+            ])
+            first_order_covariance = (
+                T * stationary_covariance_3
+                + (covariance_boundary + T * mean_covariance_rate_3)
+                / speed
+            )
+            covariance_errors.append(float(np.max(np.abs(
+                exact_covariance - first_order_covariance
+            ))))
+        covariance_remainder_rate = rate(covariance_errors)
+        total_first_coefficient = (
+            covariance_boundary + T * mean_covariance_rate_3
+        )
+        initial_layer_rows.append({
+            'label': label,
+            'initial': initial.tolist(),
+            'occupation_semigroup_error': max(semigroup_errors),
+            'covariance_boundary': covariance_boundary.tolist(),
+            'green_kubo_mean_rate':
+                (T * mean_covariance_rate_3).tolist(),
+            'total_first_covariance_coefficient':
+                total_first_coefficient.tolist(),
+            'covariance_errors': covariance_errors,
+            'covariance_remainder_rate': covariance_remainder_rate,
+        })
+        print(f"   initial layer {label}: occupation error "
+              f"{max(semigroup_errors):.2e}, covariance remainder rate "
+              f"{covariance_remainder_rate:.3f} (want 2)")
+        ok &= max(semigroup_errors) < 3e-13
+        ok &= covariance_remainder_rate > 1.95
     ok &= first_derivative_error < 2e-13
     ok &= second_derivative_error < 2e-13
     ok &= third_derivative_error < 2e-13
@@ -568,6 +643,7 @@ def main():
         'green_kubo_leading_error_rates': leading_error_rates,
         'third_spectral_leading_error_rates':
             third_spectral_leading_error_rates,
+        'initial_layer_rows': initial_layer_rows,
     }
 
     # cross-check of the exact generating function with the engine's high-precision ODE solver

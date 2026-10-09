@@ -2528,5 +2528,16 @@
   "doi": "10.1007/bf02532246",
   "url": "https://doi.org/10.1007/bf02532246",
   "annotation": "Introduces the conditional-cumulant formula used here to organize the exact all-order joint cumulant tensor of the Gaussian occupation-time mixture."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "CoolenSchrijnerVanDoorn2002",
+  "authors": "Coolen-Schrijner, P. and van Doorn, E. A.",
+  "year": 2002,
+  "title": "The deviation matrix of a continuous-time Markov chain",
+  "venue": "Probability in the Engineering and Informational Sciences 16(3), 351-366",
+  "doi": "10.1017/s0269964802163066",
+  "url": "https://doi.org/10.1017/s0269964802163066",
+  "annotation": "Defines and studies the continuous-time deviation matrix D = integral_0^infinity (P(t)-Pi) dt, the group-inverse object governing the arbitrary-start initial-layer coefficient used here."
  }
 ]
