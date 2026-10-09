@@ -289,6 +289,41 @@
     K_{\beta\beta} &= \frac{\tilde\beta^2}{2\lambda}, \qquad \lambda = \text{switching rate in each direction}.
     \end{aligned}$$
     </div>
+    <h3>An exact typical-growth formula for two regimes</h3>
+    <p>The first-order formula is not needed when only two transmission rates switch. Put $z=E/I$. In regime $i$,</p>
+    $$z' = F_i(z) = \beta_i + (\gamma-\sigma)z-\sigma z^2
+      = -\sigma(z-a_i)(z-b_i), \qquad b_i&lt;0&lt;a_i.$$
+    <p>Suppose $\beta_h&gt;\beta_\ell&gt;0$, with switching rates $q_{h\ell}$ and $q_{\ell h}$. Then
+    $a_\ell&lt;z&lt;a_h$ is invariant and attracting: the high-transmission flow points right and the low-transmission
+    flow points left. Write</p>
+    $$d_i=\sqrt{(\gamma-\sigma)^2+4\sigma\beta_i}, \qquad
+      \kappa_h=\frac{q_{h\ell}}{d_h}, \qquad \kappa_\ell=\frac{q_{\ell h}}{d_\ell},$$
+    $$H(z)=\left(\frac{a_h-z}{z-b_h}\right)^{\kappa_h}
+      \left(\frac{z-a_\ell}{z-b_\ell}\right)^{\kappa_\ell}.$$
+    <p>The invariant densities of the joint regime&ndash;ratio process are exactly</p>
+    <div class="equation-card">
+    $$p_h(z)=C\frac{H(z)}{F_h(z)}, \qquad
+      p_\ell(z)=-C\frac{H(z)}{F_\ell(z)}, \qquad a_\ell&lt;z&lt;a_h,$$
+    $$\Lambda_{\mathrm{as}}
+      = \sigma\int_{a_\ell}^{a_h}z\,[p_h(z)+p_\ell(z)]\,dz-\gamma,$$
+    <p>where $C&gt;0$ makes the two densities integrate to one in total.</p>
+    </div>
+    <p>Indeed, the stationary forward equations and zero boundary flux give
+    $F_h p_h+F_\ell p_\ell=0$. If $u=F_h p_h$, the remaining equation is
+    $u'=-u(q_{h\ell}/F_h+q_{\ell h}/F_\ell)$; integration gives $H$. The endpoint powers
+    $\kappa_h,\kappa_\ell&gt;0$ make the densities integrable, and their regime marginals are necessarily the
+    stationary probabilities of the two-state chain. Finally $(\log I)'=\sigma z-\gamma$, so the ergodic average
+    gives the displayed Lyapunov exponent. This proves the formula for every positive initial infected vector.</p>
+    <p>After $z=a_\ell+(a_h-a_\ell)t$, the two integrals have Jacobi weights
+    $t^{\kappa_\ell}(1-t)^{\kappa_h-1}$ and
+    $t^{\kappa_\ell-1}(1-t)^{\kappa_h}$. The certificate therefore evaluates them by Gauss&ndash;Jacobi quadrature,
+    without time discretization or endpoint clipping.</p>
+    <p>For the parameters here and symmetric switching, the exact extinction&ndash;invasion threshold is</p>
+    $$\lambda_* = 2.3126879896\ \text{per week}.$$
+    <p>Thus a typical introduction declines for $\lambda&lt;\lambda_*$ and grows for $\lambda&gt;\lambda_*$,
+    even though the averaged model grows. The first-order formula predicts $2.6316808690$, about $13.8\%$ too
+    high. This exact reduction is special to two regimes with only $\beta$ switched; with three or more regimes,
+    or with switched recovery, the projective invariant law is no longer this one-dimensional two-flow problem.</p>
     <p>For any chain the almost-sure formula holds with $K_{\beta\beta} = -\pi\cdot(\tilde\beta\,Q^{\#}\tilde\beta)$, and the
     mean still has no first-order term.</p>
     <p>The latent stage reverses the SIR picture. In SIR the fluctuation raises the mean and leaves the typical path
@@ -348,11 +383,11 @@
 
     <h2>A worked example</h2>
     <p>Transmission switched on two states at $\lambda = 2$, so that each regime lasts half a week:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$\sqrt D$</td><td>0.756637</td></tr><tr><td>$\bar y_E\,\bar x_I = \sigma/\sqrt D$</td><td>0.660819</td></tr><tr><td>$K_{\beta\beta} = \tilde\beta^2/(2\lambda)$</td><td>0.010000</td></tr><tr><td>averaged SEIR growth $r$</td><td>0.003319</td></tr><tr><td>SEIR mean, second order</td><td>0.004145</td></tr><tr><td>SEIR mean, numerical</td><td>0.004012</td></tr><tr><td>SEIR almost-sure, first order $r - K_{\beta\beta}\sigma^2/D$</td><td>&minus;0.001048</td></tr><tr><td>SEIR almost-sure, Monte Carlo</td><td>&minus;0.000450 &plusmn; 3e&minus;6</td></tr><tr><td>SIR mean, first order $\bar\beta - \gamma + K_{\beta\beta}$</td><td>0.015000</td></tr><tr><td>SIR almost-sure $\bar\beta - \gamma$</td><td>0.005000</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>value</th></tr></thead><tbody><tr><td>$\sqrt D$</td><td>0.756637</td></tr><tr><td>$\bar y_E\,\bar x_I = \sigma/\sqrt D$</td><td>0.660819</td></tr><tr><td>$K_{\beta\beta} = \tilde\beta^2/(2\lambda)$</td><td>0.010000</td></tr><tr><td>averaged SEIR growth $r$</td><td>0.003319</td></tr><tr><td>SEIR mean, second order</td><td>0.004145</td></tr><tr><td>SEIR mean, numerical</td><td>0.004012</td></tr><tr><td>SEIR almost-sure, first order $r - K_{\beta\beta}\sigma^2/D$</td><td>&minus;0.001048</td></tr><tr><td>SEIR almost-sure, exact projective density</td><td>&minus;0.000448</td></tr><tr><td>SEIR almost-sure, Monte Carlo</td><td>&minus;0.000450 &plusmn; 3e&minus;6</td></tr><tr><td>SIR mean, first order $\bar\beta - \gamma + K_{\beta\beta}$</td><td>0.015000</td></tr><tr><td>SIR almost-sure $\bar\beta - \gamma$</td><td>0.005000</td></tr></tbody></table></div>
     <p>The averaged model says the epidemic grows. So does the mean.</p>
     <p>The typical path declines, and
-    the Monte Carlo value is &minus;0.00045 per week. The first-order formula overstates the drop by about 16% at
-    this speed; the error falls by four for each doubling of $\lambda$, as the checks show.</p>
+    the exact value is &minus;0.0004478 per week, while Monte Carlo gives &minus;0.000450. The first-order error falls
+    by four for each doubling of $\lambda$, as the checks show.</p>
     <p>The three-regime cycle at $c = 2$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>quantity</th><th>forward</th><th>reversed</th></tr></thead><tbody><tr><td>$a$, $b$</td><td>4, 0.2</td><td>0.2, 4</td></tr><tr><td>$W(\beta, \gamma)$</td><td>0.2475</td><td>&minus;0.2475</td></tr><tr><td>$K_{\beta\beta}$, $K_{\gamma\gamma}$</td><td>0.007690, 0.005612</td><td>0.007690, 0.005612</td></tr><tr><td>$K_{\beta\gamma}$, $K_{\gamma\beta}$</td><td>0.000297, &minus;0.005909</td><td>&minus;0.005909, 0.000297</td></tr><tr><td>averaged growth $r$</td><td>0.003319</td><td>0.003319</td></tr><tr><td>mean, first order</td><td>0.010956</td><td>0.006855</td></tr><tr><td>mean, numerical</td><td>0.010650</td><td>0.007269</td></tr><tr><td>gap $\Lambda_{\mathrm{mean}} - \Lambda_{\mathrm{as}}$, first order</td><td>0.008308</td><td>0.008308</td></tr><tr><td>almost-sure, first order</td><td>0.002648</td><td>&minus;0.001453</td></tr><tr><td>almost-sure, Monte Carlo</td><td>0.002592 &plusmn; 3e&minus;6</td><td>&minus;0.000903 &plusmn; 3e&minus;6</td></tr></tbody></table></div>
     <p>The averaged rates are the same and $\bar\beta/\bar\gamma = 1.02$ in both cases. In the forward cycle a typical
@@ -376,11 +411,13 @@
     <p>SIR with switched transmission. The quadratic root agrees with the numerical eigenvalue to $10^{-12}$. For the
     symmetric chain the first-order error is third order, falling by eight per doubling:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th style="text-transform:none">$K_{\beta\beta}$</th><th>mean, numerical</th><th>mean, first order</th><th>error</th><th>almost-sure</th></tr></thead><tbody><tr><td>1</td><td>0.02000</td><td>0.024804</td><td>0.025000</td><td>2.0e&minus;4</td><td>0.005000</td></tr><tr><td>2</td><td>0.01000</td><td>0.014975</td><td>0.015000</td><td>2.5e&minus;5</td><td>0.005000</td></tr><tr><td>4</td><td>0.00500</td><td>0.009997</td><td>0.010000</td><td>3.1e&minus;6</td><td>0.005000</td></tr><tr><td>8</td><td>0.00250</td><td>0.007500</td><td>0.007500</td><td>3.9e&minus;7</td><td>0.005000</td></tr><tr><td>16</td><td>0.00125</td><td>0.006250</td><td>0.006250</td><td>4.9e&minus;8</td><td>0.005000</td></tr></tbody></table></div>
-    <p>SEIR with switched transmission. The scalar equation agrees with the numerical eigenvalue to $10^{-11}$.</p>
+    <p>SEIR with switched transmission. The scalar mean equation agrees with the numerical eigenvalue to $10^{-11}$.
+    The exact projective-density exponent lies within four Monte Carlo standard errors in every row; doubling the
+    Gauss&ndash;Jacobi rule from 96 to 192 nodes changes the value at $\lambda=2$ by less than $2\times10^{-14}$.</p>
     <p>The
     mean moves at second order, and $(\Lambda_{\mathrm{mean}} - r)\lambda^2$ tends to
     $\tilde\beta^2\sigma^2/(4\sqrt D) = 0.00330$. The almost-sure error falls by four per doubling:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th>mean, numerical</th><th>mean, second order</th><th style="text-transform:none">$(\Lambda_{\mathrm{mean}} - r)\lambda^2$</th><th>almost-sure, Monte Carlo</th><th>almost-sure, first order</th><th>error</th></tr></thead><tbody><tr><td>1</td><td>0.005703</td><td>0.006623</td><td>0.00238</td><td>&minus;0.003307</td><td>&minus;0.005415</td><td>&minus;2.1e&minus;3</td></tr><tr><td>2</td><td>0.004012</td><td>0.004145</td><td>0.00278</td><td>&minus;0.000450</td><td>&minus;0.001048</td><td>&minus;6.0e&minus;4</td></tr><tr><td>4</td><td>0.003507</td><td>0.003525</td><td>0.00302</td><td>0.001301</td><td>0.001135</td><td>&minus;1.7e&minus;4</td></tr><tr><td>8</td><td>0.003368</td><td>0.003370</td><td>0.00315</td><td>0.002268</td><td>0.002227</td><td>&minus;4.1e&minus;5</td></tr><tr><td>16</td><td>0.003331</td><td>0.003332</td><td>0.00323</td><td>0.002783</td><td>0.002773</td><td>&minus;1.0e&minus;5</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th>mean, numerical</th><th style="text-transform:none">$(\Lambda_{\mathrm{mean}} - r)\lambda^2$</th><th>almost-sure, exact</th><th>Monte Carlo</th><th>first order</th><th>first-order error</th></tr></thead><tbody><tr><td>1</td><td>0.005703</td><td>0.00238</td><td>&minus;0.003310</td><td>&minus;0.003307</td><td>&minus;0.005415</td><td>&minus;2.1e&minus;3</td></tr><tr><td>2</td><td>0.004012</td><td>0.00278</td><td>&minus;0.000448</td><td>&minus;0.000450</td><td>&minus;0.001048</td><td>&minus;6.0e&minus;4</td></tr><tr><td>4</td><td>0.003507</td><td>0.00302</td><td>0.001297</td><td>0.001301</td><td>0.001135</td><td>&minus;1.6e&minus;4</td></tr><tr><td>8</td><td>0.003368</td><td>0.00315</td><td>0.002269</td><td>0.002268</td><td>0.002227</td><td>&minus;4.2e&minus;5</td></tr><tr><td>16</td><td>0.003331</td><td>0.00323</td><td>0.002784</td><td>0.002783</td><td>0.002773</td><td>&minus;1.1e&minus;5</td></tr></tbody></table></div>
     <p>The three-regime cycle. The closed-form $K$ agrees with $-\pi\cdot(f\,Q^{\#}g)$ to $10^{-13}$. Both first-order
     formulas have errors falling at second order in each direction:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>forward mean, numerical</th><th>first order</th><th>reversed mean, numerical</th><th>first order</th></tr></thead><tbody><tr><td>1</td><td>0.017530</td><td>0.018593</td><td>0.011917</td><td>0.010392</td></tr><tr><td>2</td><td>0.010650</td><td>0.010956</td><td>0.007269</td><td>0.006855</td></tr><tr><td>4</td><td>0.007055</td><td>0.007137</td><td>0.005195</td><td>0.005087</td></tr><tr><td>8</td><td>0.005207</td><td>0.005228</td><td>0.004230</td><td>0.004203</td></tr><tr><td>16</td><td>0.004268</td><td>0.004273</td><td>0.003768</td><td>0.003761</td></tr></tbody></table></div>
@@ -459,8 +496,8 @@
     deterministic counterpart of the invasion question here.</p>
     <p>Not found in the literature reviewed: the first-order mean growth rate in the Green&ndash;Kubo form, the gap
     between the two rates as the Green&ndash;Kubo integral of the projected rate, the absence of a first-order mean
-    correction in SEIR when only transmission switches, and the closed-form effect of the direction of a regime cycle
-    through $W(\beta, \gamma)$.</p>
+    correction in SEIR when only transmission switches, the explicit two-regime SEIR projective density and exact
+    threshold above, and the closed-form effect of the direction of a regime cycle through $W(\beta, \gamma)$.</p>
     <p>All of this is the linear phase. Depletion of susceptibles, final size and endemic levels are outside it.</p>
     <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/epidemics/verify_epidemics.py">verify_epidemics.py</a>.</p>
   </main>

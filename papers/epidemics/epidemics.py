@@ -17,6 +17,7 @@ SEIR (x = (E, I)):    A_y = [[-sigma, beta_y], [sigma, -gamma_y]].
 """
 import os, sys
 import numpy as np
+from scipy.special import roots_jacobi
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'general'))
 from effective_generator import stationary, gk  # noqa: E402
 
@@ -72,6 +73,80 @@ def seir_beta_formulas(beta1, beta2, sigma, gamma, lam):
     K = two_state_K(bt, lam)
     return {'r': r, 'K': K, 'yE_xI': sigma / sD, 'as1': r - K * sigma ** 2 / sD ** 2,
             'mean2': r + bt ** 2 * sigma ** 2 / (4 * lam ** 2 * sD)}
+
+
+def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None, nodes=128):
+    """Exact top Lyapunov exponent for two-state SEIR transmission switching.
+
+    Put z = E/I.  In regime i,
+
+        z' = F_i(z) = beta_i + (gamma-sigma) z - sigma z^2.
+
+    If beta_hi > beta_lo, the projective process is confined between the
+    positive roots a_lo < z < a_hi.  Its stationary densities solve
+
+        (F_hi p_hi)' = -rate_hi,lo p_hi + rate_lo,hi p_lo,
+        F_hi p_hi + F_lo p_lo = 0.
+
+    Factoring F_i = -sigma (z-a_i)(z-b_i), b_i < 0 < a_i,
+    gives an explicit beta-weight density.  Gauss-Jacobi quadrature evaluates
+    its normalization and first moment without endpoint singularities.  Since
+    (log I)' = sigma z-gamma and z stays bounded, the top exponent is
+    sigma E[z]-gamma.
+    """
+    if rate21 is None:
+        rate21 = rate12
+    if min(beta1, beta2, sigma, gamma, rate12, rate21) <= 0:
+        raise ValueError("rates and transmission parameters must be positive")
+    if abs(beta1 - beta2) <= 1e-15 * max(beta1, beta2):
+        pi1 = rate21 / (rate12 + rate21)
+        return {'lyapunov': seir_rate(beta1, sigma, gamma), 'mean_z': None,
+                'state_mass': [pi1, 1 - pi1], 'roots': None, 'powers': None}
+
+    # Re-label by transmission level.  a is high -> low and b is low -> high.
+    if beta1 > beta2:
+        beta_hi, beta_lo, a, b = beta1, beta2, rate12, rate21
+        high_first = True
+    else:
+        beta_hi, beta_lo, a, b = beta2, beta1, rate21, rate12
+        high_first = False
+
+    def projective_roots(beta):
+        disc = np.sqrt((gamma - sigma) ** 2 + 4 * sigma * beta)
+        return ((gamma - sigma + disc) / (2 * sigma),
+                (gamma - sigma - disc) / (2 * sigma), disc)
+
+    ahi, bhi, dhi = projective_roots(beta_hi)
+    alo, blo, dlo = projective_roots(beta_lo)
+    khi, klo = a / dhi, b / dlo
+    width = ahi - alo
+
+    # After z = alo + width*t, the common irrelevant factor is suppressed.
+    # State hi has weight t^klo (1-t)^(khi-1); state lo has
+    # t^(klo-1) (1-t)^khi.
+    entries = []
+    for state, (alpha, beta_power) in enumerate(((khi - 1, klo), (khi, klo - 1))):
+        x, weights = roots_jacobi(nodes, alpha, beta_power)
+        t = (x + 1) / 2
+        z = alo + width * t
+        if state == 0:
+            log_smooth = -(khi + 1) * np.log(z - bhi) - klo * np.log(z - blo)
+        else:
+            log_smooth = -khi * np.log(z - bhi) - (klo + 1) * np.log(z - blo)
+        entries.append((weights, z, log_smooth))
+    scale = max(np.max(entry[2]) for entry in entries)
+    masses, moments = [], []
+    for weights, z, log_smooth in entries:
+        w = weights * np.exp(log_smooth - scale)
+        masses.append(float(w.sum()))
+        moments.append(float(w @ z))
+    total = sum(masses)
+    mean_z = sum(moments) / total
+    normalized = [m / total for m in masses]
+    state_mass = normalized if high_first else normalized[::-1]
+    return {'lyapunov': float(sigma * mean_z - gamma), 'mean_z': float(mean_z),
+            'state_mass': state_mass, 'roots': [float(alo), float(ahi), float(blo), float(bhi)],
+            'powers': [float(klo), float(khi)]}
 
 
 def seir_beta_gamma_formulas(Q, beta, gamma, sigma):
