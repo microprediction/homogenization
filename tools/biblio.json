@@ -2495,5 +2495,16 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "KovchegovMeredithNir2010",
+  "authors": "Kovchegov, Y. and Meredith, N. and Nir, E.",
+  "year": 2010,
+  "title": "Occupation times and Bessel densities",
+  "venue": "Statistics & Probability Letters 80(2), 104-110",
+  "doi": "10.1016/j.spl.2009.09.018",
+  "url": "https://doi.org/10.1016/j.spl.2009.09.018",
+  "annotation": "Derives occupation-time distributions for continuous-time Markov chains and explains the modified-Bessel form used in the two-state certificate."
  }
 ]

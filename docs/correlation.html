@@ -312,6 +312,45 @@
     <p>A regime whose mean is low when its covariance is high makes $K(\mu, c) &lt; 0$ and a negative third cumulant. The
     term $2w_1w_2\,c_{12}$ inside $w^{\top}c\,w$ is the part carried by the correlation.</p>
 
+    <h3>Exact finite-rate cumulants for two regimes</h3>
+    <p>For two states the covariance and co-skewness need not be approximated. Let
+    $A_T=\int_0^T\mathbf 1_{\{y_t=1\}}\,dt$ be the time spent in crisis, put $r=a+b$, and write
+    $p_0=b/r$, $p_1=a/r$. With a stationary start its first three cumulants are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_1(A_T)&=p_1T,\\
+    \kappa_2(A_T)&=\frac{2p_0p_1}{r^2}\big(rT-1+e^{-rT}\big),\\
+    \kappa_3(A_T)&=\frac{6p_0p_1(p_0-p_1)}{r^3}
+       \big(rT-2+(rT+2)e^{-rT}\big).
+    \end{aligned}$$
+    </div>
+    <p>Indeed, for $Z_t=\mathbf 1_{\{y_t=1\}}-p_1$, stationarity and the two-state semigroup give
+    $\mathbb E[Z_0Z_t]=p_0p_1e^{-rt}$. Since $Z_t^2=(p_0-p_1)Z_t+p_0p_1$, for
+    $s\leq t\leq u$ they also give
+    $\mathbb E[Z_sZ_tZ_u]=p_0p_1(p_0-p_1)e^{-r(u-s)}$. Integrating over the square and the six
+    orderings of the cube proves the formulas. The modified-Bessel occupation density used above is a special case of
+    the finite-state construction of <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
+    Nir (2010)</a>.</p>
+    <p>Now use differences from calm to crisis,
+    $d\mu=\mu_{mathrm{crisis}}-\mu_{mathrm{calm}}$ and
+    $dc=c_{mathrm{crisis}}-c_{mathrm{calm}}$. Conditional on $A_T$,</p>
+    $$X\mid A_T\sim N\big(\mu_{mathrm{calm}}T+d\mu\,A_T,
+      c_{mathrm{calm}}T+dc\,A_T\big),$$
+    <p>so its cumulant generating function is the calm Gaussian exponent plus
+    $K_{A_T}(\theta\cdot d\mu+\tfrac12\theta^\top dc\,\theta)$. Differentiating gives the exact finite-rate identities</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{ij}(X)&=T\bar c_{ij}+\kappa_2(A_T)d\mu_i d\mu_j,\\
+    \kappa_{ijk}(X)&=\kappa_2(A_T)
+       \big(d\mu_i dc_{jk}+d\mu_j dc_{ik}+d\mu_k dc_{ij}\big)
+       +\kappa_3(A_T)d\mu_i d\mu_j d\mu_k.
+    \end{aligned}$$
+    </div>
+    <p>The result is exact for every $T,a,b&gt;0$ under a stationary two-state chain independent of the Brownian shocks.
+    The Green&ndash;Kubo rule is recovered by replacing
+    $\kappa_2(A_T)$ with $2p_0p_1T/r$ and omitting $\kappa_3(A_T)$, which is one order smaller in the fast rate.
+    For a symmetric chain $p_0=p_1$, the occupation-skew term vanishes exactly.</p>
+
     <h3>Written out for two regimes</h3>
     <p>For the two-state chain $K(f, h) = ab\,\Delta f\,\Delta h/(a + b)^3$, with $\Delta$ the calm value minus the crisis
     value. Every cumulant through third order is then:</p>
@@ -342,13 +381,18 @@
     <p>For the equal-weight portfolio, $\kappa_3 \approx -3.79\times10^{-3}$, half of it from the correlation switch. Its
     skewness over one year is $-0.64$ in the numerical solution. The averaged model is Gaussian, with no skewness at
     all.</p>
+    <p>At the unscaled rates the exact formula instead gives $\kappa_{112}=-3.58034\times10^{-3}$: the
+    mean&ndash;covariance term contributes $-3.20936\times10^{-3}$ and the skewed occupation time contributes
+    $-0.37098\times10^{-3}$. Thus the finite-rate discrepancy is not numerical noise; it is the explicit boundary and
+    occupation-skew correction omitted by the first-order rule.</p>
     <p>The same simulated returns show the asymmetry that the empirical literature measures.</p>
     <p>The correlation of the two
     returns, given that both lie below their means, is $0.563$. Given that both lie above, it is $0.254$. A Gaussian with
     the same overall correlation, $0.612$, gives $0.367$ on both sides.</p>
 
     <h3>Checks for the cumulants</h3>
-    <p>The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
+    <p>The closed finite-rate tensor agrees with the independent numerical solution to at most $8.3\times10^{-12}$ over
+    $m=1,2,4,8,16$. The latter reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
     two-dimensional FFT of $\Lambda$ on a polydisc of radius $0.05$, with the matrix exponential evaluated at each node. At
     one point it agrees with the engine&apos;s high-precision ODE solver to $10^{-14}$. Third cumulants in units of
     $10^{-3}$:</p>
@@ -414,6 +458,8 @@
         integrated covariance matrix.</li>
       <li>Under the pricing measure the drift is $r$ in every regime, so the co-skewness of the second part matters for
         allocation, risk and density forecasts, not for prices, unless the regime carries a risk premium.</li>
+      <li>The exact finite-rate cumulant tensor assumes a stationary two-state chain independent of the Brownian shocks.
+        The displayed Green&ndash;Kubo formulas remain fast-rate approximations outside that exact two-state calculation.</li>
       <li>A chain independent of the price shocks gives an exchange-option smile that is even in log-moneyness. A fast diffusive
         correlation factor whose shocks are correlated with the prices would add a term of order $\sqrt\varepsilon$, odd
         in moneyness, that skews the implied correlation, in the manner of the

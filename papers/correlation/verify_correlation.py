@@ -12,9 +12,9 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
  3. spread option (S1 - S2 - K)^+ by Gauss-Hermite quadrature at fixed correlation: exact E[C(rho_hat)] against the
     rule C(rho_bar) + (K_rhorho / T) C_rhorho, second-order convergence, Monte Carlo, implied correlations.
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
- 4. second and third cumulants of the log returns from the rule against the exact cumulant generating function
-    (Cauchy formula on exp(t (Q + diag g))), second-order convergence, a cross-check with the engine's ODE solver,
-    and exact-in-law Monte Carlo;
+ 4. exact finite-rate second and third cumulants from the first three occupation-time cumulants, checked against the
+    exact cumulant generating function (Cauchy formula on exp(t (Q + diag g))), plus second-order convergence of the
+    Green--Kubo rule, a cross-check with the engine's ODE solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
@@ -29,7 +29,8 @@ sys.path.insert(0, os.path.join(HERE, '..', 'general'))
 from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, margrabe, margrabe_greeks, exch_var,
                          margrabe_first_order, implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
-                         cumulants_exact, simulate_returns, cov_entries)
+                         cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
+                         occupation_cumulants)
 
 A, B = 4 / 3, 4.0
 RHO = [0.2, 0.8]
@@ -60,10 +61,13 @@ def main():
         p = pi2(a, b)
         lam = a + b
         var = 2 * p[0] * p[1] / lam * (T - (1 - math.exp(-lam * T)) / lam)
+        oc = occupation_cumulants(T, a, b)
         mv = w @ v
-        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var))
+        third = w @ (v - mv) ** 3
+        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var), abs(third - oc['k3']))
         rows.append(e)
-        print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance {w @ (v-mv)**2:.10f} (want {var:.10f})")
+        print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance "
+              f"{w @ (v-mv)**2:.10f} (want {var:.10f}), third cumulant {third:.10f} (want {oc['k3']:.10f})")
     ok &= max(rows) < 1e-10
 
     print("2. exchange option (S1 - q S2)^+")
@@ -188,21 +192,27 @@ def main():
         a, b = m * A, m * B
         fo = cumulants_first_order(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
         ex = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO)
+        closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
         c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
         p = pi2(a, b)
         avg = {'k11': T * p @ c11, 'k22': T * p @ c22, 'k12': T * p @ c12, 'k111': 0, 'k222': 0, 'k112': 0, 'k122': 0}
+        closed_err = max(abs(closed[k] - ex[k]) for k in keys)
         out['cumulants']['rows'].append({'m': m, 'first': {k: fo[k] for k in keys}, 'exact': {k: ex[k] for k in keys},
+                                         'closed': {k: closed[k] for k in keys}, 'closed_error': closed_err,
+                                         'occupation': closed['occupation'],
                                          'averaged': avg, 'K_mu1_c12': K2(MU1, c12, a, b), 'K_mu2_c11': K2(MU2, c11, a, b),
                                          'K_mu2_c12': K2(MU2, c12, a, b), 'K_mu1_c22': K2(MU1, c22, a, b)})
         e112.append(max(abs(fo[k] - ex[k]) for k in ['k111', 'k222', 'k112', 'k122']))
         e12.append(max(abs(fo[k] - ex[k]) for k in ['k11', 'k22', 'k12']))
         print(f"   m={m:2d}: kappa_112 rule {fo['k112']:.4e} exact {ex['k112']:.4e};  kappa_122 rule {fo['k122']:.4e} "
-              f"exact {ex['k122']:.4e};  kappa_12 rule {fo['k12']:.5f} exact {ex['k12']:.5f}")
+              f"exact {ex['k122']:.4e};  kappa_12 rule {fo['k12']:.5f} exact {ex['k12']:.5f}; closed error {closed_err:.1e}")
+        ok &= closed_err < 2e-11
     r3, r2 = rate(e112), rate(e12)
     print(f"   rates over the last doubling: third cumulants {r3:.2f}, second cumulants {r2:.2f} (want 2)")
     ok &= r3 > 1.8 and r2 > 1.8
     out['cumulants']['rate3'], out['cumulants']['rate2'] = r3, r2
     out['cumulants']['err3'], out['cumulants']['err2'] = e112, e12
+    out['cumulants']['max_closed_error'] = max(row['closed_error'] for row in out['cumulants']['rows'])
     # cross-check of the exact generating function with the engine's high-precision ODE solver
     from fastswitch import numerical_a, ExpSum
     th1, th2 = 0.7, -0.4

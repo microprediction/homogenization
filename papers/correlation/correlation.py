@@ -64,6 +64,33 @@ def occupation_nodes(T, a, b, n=80):
     return nodes, w
 
 
+def occupation_cumulants(T, a, b):
+    """First three cumulants of the time A_T spent in state 1, from a stationary start.
+
+    The centered two-state indicator X_t = 1_{Y_t=1} - pi_1 has
+
+        E[X_0 X_t] = pi_0 pi_1 exp(-r t),
+        E[X_s X_t X_u] = pi_0 pi_1 (pi_0-pi_1) exp(-r (u-s)),  s <= t <= u,
+
+    where r=a+b.  Integrating over [0,T]^2 and [0,T]^3 gives the formulas below.
+    """
+    if min(T, a, b) <= 0:
+        raise ValueError("T and both switching rates must be positive")
+    p0, p1 = pi2(a, b)
+    r, x = a + b, (a + b) * T
+    if x < 1e-3:
+        g2 = x ** 2 / 2 - x ** 3 / 6 + x ** 4 / 24 - x ** 5 / 120 + x ** 6 / 720
+        g3 = x ** 3 / 6 - x ** 4 / 12 + x ** 5 / 40 - x ** 6 / 180 + x ** 7 / 1008
+    else:
+        g2 = x + math.expm1(-x)
+        g3 = x - 2 + (x + 2) * math.exp(-x)
+    return {
+        'k1': float(p1 * T),
+        'k2': float(2 * p0 * p1 * g2 / r ** 2),
+        'k3': float(6 * p0 * p1 * (p0 - p1) * g3 / r ** 3),
+    }
+
+
 def simulate_occupation(T, a, b, n, rng):
     """Exact samples of tau, the time in state 1 on [0, T], from a stationary start."""
     p = pi2(a, b)
@@ -190,6 +217,32 @@ def cumulants_first_order(t, a, b, mu1, mu2, sig1, sig2, rho):
         'k222': 6 * t * K(mu2, c22),
         'k112': 2 * t * (2 * K(mu1, c12) + K(mu2, c11)),
         'k122': 2 * t * (2 * K(mu2, c12) + K(mu1, c22)),
+    }
+
+
+def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho):
+    """Exact covariance and third-cumulant tensor for two-state Markov-modulated Gaussian returns.
+
+    Conditional on the occupation time A of state 1, the return vector is Gaussian with
+    mean mu_0*t + Delta_mu*A and covariance c_0*t + Delta_c*A.  Composing its quadratic
+    conditional cumulant generator with the cumulant generator of A gives the result.
+    """
+    c11, c22, c12 = cov_entries(sig1, sig2, rho)
+    mu1, mu2 = np.asarray(mu1, float), np.asarray(mu2, float)
+    p = pi2(a, b)
+    ka = occupation_cumulants(t, a, b)
+    d1, d2 = mu1[1] - mu1[0], mu2[1] - mu2[0]
+    dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
+    v, s = ka['k2'], ka['k3']
+    return {
+        'k11': float(t * (p @ c11) + v * d1 * d1),
+        'k22': float(t * (p @ c22) + v * d2 * d2),
+        'k12': float(t * (p @ c12) + v * d1 * d2),
+        'k111': float(3 * v * d1 * dc11 + s * d1 ** 3),
+        'k222': float(3 * v * d2 * dc22 + s * d2 ** 3),
+        'k112': float(v * (2 * d1 * dc12 + d2 * dc11) + s * d1 * d1 * d2),
+        'k122': float(v * (2 * d2 * dc12 + d1 * dc22) + s * d1 * d2 * d2),
+        'occupation': ka,
     }
 
 
