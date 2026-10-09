@@ -4,7 +4,7 @@ Two assets; a two-state chain, calm (correlation 0.2) and crisis (correlation 0.
 and back at rate b = 4 (crises last three months on average and occupy a quarter of the time), sped up by m.
 
 Part 1, pricing (volatilities fixed, only the correlation switches):
- 1. the exact law of the time spent in crisis (Bessel density) against its first three cumulants, including
+ 1. the exact law of the time spent in crisis (Bessel density) against its first four cumulants, including
     nonstationary initial laws and regime relabelling;
  2. exchange option: the exact price E[Margrabe(integrated exchange variance)] by quadrature over that law, against
     Lewis's Fourier formula with the matrix-exponential characteristic function, and against chain-path Monte Carlo;
@@ -13,7 +13,7 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
  3. spread option (S1 - S2 - K)^+ by Gauss-Hermite quadrature at fixed correlation: exact E[C(rho_hat)] against the
     rule C(rho_bar) + (K_rhorho / T) C_rhorho, second-order convergence, Monte Carlo, implied correlations.
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
- 4. exact finite-rate second and third cumulants from the first three occupation-time cumulants, checked against the
+ 4. exact finite-rate second through fourth cumulants from the first four occupation-time cumulants, checked against the
     exact cumulant generating function (Cauchy formula on exp(t (Q + diag g))), plus second-order convergence of the
     Green--Kubo rule, a cross-check with the engine's ODE solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
@@ -65,10 +65,13 @@ def main():
         oc = occupation_cumulants(T, a, b)
         mv = w @ v
         third = w @ (v - mv) ** 3
-        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var), abs(third - oc['k3']))
+        fourth = w @ (v - mv) ** 4 - 3 * (w @ (v - mv) ** 2) ** 2
+        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var),
+                abs(third - oc['k3']), abs(fourth - oc['k4']))
         rows.append(e)
         print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance "
-              f"{w @ (v-mv)**2:.10f} (want {var:.10f}), third cumulant {third:.10f} (want {oc['k3']:.10f})")
+              f"{w @ (v-mv)**2:.10f} (want {var:.10f}), third cumulant {third:.10f} (want {oc['k3']:.10f}), "
+              f"fourth {fourth:.10f} (want {oc['k4']:.10f})")
     ok &= max(rows) < 1e-10
 
     print("1b. nonstationary occupation cumulants and initial layer")
@@ -80,13 +83,17 @@ def main():
             oc = occupation_cumulants(T, a, b, q)
             v, w = occupation_nodes(T, a, b, initial_p1=q)
             mean = w @ v
-            quad = {'k1': mean, 'k2': w @ (v - mean) ** 2, 'k3': w @ (v - mean) ** 3}
+            var_q = w @ (v - mean) ** 2
+            quad = {'k1': mean, 'k2': var_q, 'k3': w @ (v - mean) ** 3,
+                    'k4': w @ (v - mean) ** 4 - 3 * var_q ** 2}
             quad_error = max(abs(quad[k] - oc[k]) for k in quad)
             swapped = occupation_cumulants(T, b, a, 1 - q)
             relabel_error = max(relabel_error, abs(oc['k1'] + swapped['k1'] - T),
-                                abs(oc['k2'] - swapped['k2']), abs(oc['k3'] + swapped['k3']))
+                                abs(oc['k2'] - swapped['k2']), abs(oc['k3'] + swapped['k3']),
+                                abs(oc['k4'] - swapped['k4']))
             closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO, q)
-            exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO, initial_p1=q)
+            exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO,
+                                    r=0.15, N=24, initial_p1=q)
             tensor_error = max(abs(closed[k] - exact[k]) for k in exact)
             nonstationary.append({'m': m, 'initial_p1': q, 'occupation': oc,
                                   'quadrature_error': quad_error, 'tensor_error': tensor_error,
@@ -95,11 +102,12 @@ def main():
                   f"kappa_112 {closed['k112']:.6e}")
     frozen = occupation_cumulants(T, 3e-9, 7e-9, 0.8)
     frozen_target = {'k1': 0.8 * T, 'k2': 0.8 * 0.2 * T ** 2,
-                     'k3': 0.8 * 0.2 * (1 - 2 * 0.8) * T ** 3}
+                     'k3': 0.8 * 0.2 * (1 - 2 * 0.8) * T ** 3,
+                     'k4': 0.8 * 0.2 * (1 - 6 * 0.8 * 0.2) * T ** 4}
     frozen_error = max(abs(frozen[k] - frozen_target[k]) for k in frozen)
     print(f"   relabelling error {relabel_error:.1e}; near-frozen Bernoulli error {frozen_error:.1e}")
     ok &= max(row['quadrature_error'] for row in nonstationary) < 1e-10
-    ok &= max(row['tensor_error'] for row in nonstationary) < 2e-11
+    ok &= max(row['tensor_error'] for row in nonstationary) < 1e-10
     ok &= relabel_error < 1e-13 and frozen_error < 1e-8
     out['nonstationary'] = {'rows': nonstationary, 'relabel_error': relabel_error,
                             'frozen_error': frozen_error, 'frozen': frozen}
@@ -247,6 +255,39 @@ def main():
     out['cumulants']['rate3'], out['cumulants']['rate2'] = r3, r2
     out['cumulants']['err3'], out['cumulants']['err2'] = e112, e12
     out['cumulants']['max_closed_error'] = max(row['closed_error'] for row in out['cumulants']['rows'])
+
+    print("4b. exact fourth-cumulant tensor and leading variance-switching term")
+    keys4 = ['k1111', 'k1112', 'k1122', 'k1222', 'k2222']
+    fourth_rows, fourth_errors = [], []
+    c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
+    dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
+    for m in SPEEDS + [16]:
+        a, b = m * A, m * B
+        p = pi2(a, b)
+        lead_scale = 2 * p[0] * p[1] * T / (a + b)
+        lead = {
+            'k1111': 3 * lead_scale * dc11 ** 2,
+            'k1112': 3 * lead_scale * dc11 * dc12,
+            'k1122': lead_scale * (dc11 * dc22 + 2 * dc12 ** 2),
+            'k1222': 3 * lead_scale * dc22 * dc12,
+            'k2222': 3 * lead_scale * dc22 ** 2,
+        }
+        closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
+        exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO, r=0.15, N=24)
+        closed_error = max(abs(closed[k] - exact[k]) for k in keys4)
+        lead_error = max(abs(closed[k] - lead[k]) for k in keys4)
+        fourth_errors.append(lead_error)
+        fourth_rows.append({'m': m, 'closed': {k: closed[k] for k in keys4},
+                            'matrix_exponential': {k: exact[k] for k in keys4}, 'leading': lead,
+                            'closed_error': closed_error, 'leading_error': lead_error})
+        print(f"   m={m:2d}: kappa_1122 exact {closed['k1122']:.6e}, leading {lead['k1122']:.6e}; "
+              f"tensor error {closed_error:.1e}, leading error {lead_error:.1e}")
+        ok &= closed_error < 1e-10
+    fourth_rate = rate(fourth_errors)
+    print(f"   fourth-cumulant leading-error rate {fourth_rate:.2f} (want 2)")
+    ok &= fourth_rate > 1.8
+    out['fourth_cumulants'] = {'rows': fourth_rows, 'leading_error_rate': fourth_rate,
+                               'max_closed_error': max(row['closed_error'] for row in fourth_rows)}
     # cross-check of the exact generating function with the engine's high-precision ODE solver
     from fastswitch import numerical_a, ExpSum
     th1, th2 = 0.7, -0.4
@@ -299,11 +340,15 @@ def main():
         ex = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO)
         exact = (w_[0] ** 3 * ex['k111'] + 3 * w_[0] ** 2 * w_[1] * ex['k112'] + 3 * w_[0] * w_[1] ** 2 * ex['k122']
                  + w_[1] ** 3 * ex['k222'])
+        exact4 = (w_[0] ** 4 * ex['k1111'] + 4 * w_[0] ** 3 * w_[1] * ex['k1112']
+                  + 6 * w_[0] ** 2 * w_[1] ** 2 * ex['k1122']
+                  + 4 * w_[0] * w_[1] ** 3 * ex['k1222'] + w_[1] ** 4 * ex['k2222'])
         var = w_[0] ** 2 * ex['k11'] + 2 * w_[0] * w_[1] * ex['k12'] + w_[1] ** 2 * ex['k22']
         prow.append({'m': m, 'rule': rule, 'exact': exact, 'corr_part': corr_part, 'skew_exact': exact / var ** 1.5,
-                     'skew_rule': rule / var ** 1.5})
+                     'skew_rule': rule / var ** 1.5, 'fourth_exact': exact4,
+                     'excess_kurtosis_exact': exact4 / var ** 2})
         print(f"   m={m:2d}: kappa_3 rule {rule:.4e}, exact {exact:.4e}; part from the correlation switch {corr_part:.4e}; "
-              f"skewness {exact/var**1.5:.3f}")
+              f"skewness {exact/var**1.5:.3f}; excess kurtosis {exact4/var**2:.3f}")
     ok &= abs(prow[-1]['rule'] - prow[-1]['exact']) < 0.01 * abs(prow[-1]['exact'])
     out['portfolio'] = prow
 

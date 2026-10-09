@@ -69,7 +69,7 @@ def occupation_nodes(T, a, b, n=80, initial_p1=None):
 
 
 def occupation_cumulants(T, a, b, initial_p1=None):
-    """First three cumulants of the time A_T spent in state 1.
+    """First four cumulants of the time A_T spent in state 1.
 
     The centered two-state indicator X_t = 1_{Y_t=1} - pi_1 has
 
@@ -79,7 +79,9 @@ def occupation_cumulants(T, a, b, initial_p1=None):
     where r=a+b.  Integrating over [0,T]^2 and [0,T]^3 gives the stationary formulas.
     For an arbitrary initial crisis probability q, write delta=q-pi_1.  The extra terms come
     from log(1 + delta R), where R=(M_1-M_0)/M_pi is the normalized difference of the two
-    conditional moment generating functions.
+    conditional moment generating functions.  The fourth stationary formula follows by
+    expanding the exact two-state tilted-generator eigenvalue expression; the arbitrary-start
+    correction is the fourth derivative of the same log(1 + delta R) term.
     """
     if min(T, a, b) <= 0:
         raise ValueError("T and both switching rates must be positive")
@@ -98,6 +100,22 @@ def occupation_cumulants(T, a, b, initial_p1=None):
         h3 = ((1 - 6 * p0 * p1) * x ** 3 + (5 * p0 * p1 - 3 / 4) * x ** 4
               + (3 / 10 - 23 * p0 * p1 / 10) * x ** 5
               + (23 * p0 * p1 / 30 - 1 / 12) * x ** 6)
+        g4 = ((-6 * p1 ** 4 + 12 * p1 ** 3 - 7 * p1 ** 2 + p1) * x ** 4
+              + (4 * p1 ** 4 - 8 * p1 ** 3 + 23 * p1 ** 2 / 5 - 3 * p1 / 5) * x ** 5
+              + (-23 * p1 ** 4 / 15 + 46 * p1 ** 3 / 15 - 26 * p1 ** 2 / 15
+                 + p1 / 5) * x ** 6
+              + (46 * p1 ** 4 / 105 - 92 * p1 ** 3 / 105 + 17 * p1 ** 2 / 35
+                 - p1 / 21) * x ** 7
+              + (-29 * p1 ** 4 / 280 + 29 * p1 ** 3 / 140 - 9 * p1 ** 2 / 80
+                 + p1 / 112) * x ** 8)
+        h4 = ((-24 * p1 ** 3 + 36 * p1 ** 2 - 14 * p1 + 1) * x ** 4
+              + (24 * p1 ** 3 - 36 * p1 ** 2 + 68 * p1 / 5 - 4 / 5) * x ** 5
+              + (-196 * p1 ** 3 / 15 + 98 * p1 ** 2 / 5 - 36 * p1 / 5
+                 + 1 / 3) * x ** 6
+              + (536 * p1 ** 3 / 105 - 268 * p1 ** 2 / 35 + 96 * p1 / 35
+                 - 2 / 21) * x ** 7
+              + (-67 * p1 ** 3 / 42 + 67 * p1 ** 2 / 28 - 47 * p1 / 56
+                 + 1 / 48) * x ** 8)
     else:
         e = math.exp(-x)
         g2 = x + math.expm1(-x)
@@ -106,15 +124,26 @@ def occupation_cumulants(T, a, b, initial_p1=None):
         h2 = 2 * (p0 - p1) * (1 - (1 + x) * e)
         h3 = (6 * (1 - e) - 3 * x ** 2 * e - 6 * x * e
               + p0 * p1 * (12 * x ** 2 * e + 36 * x * e - 30 + 24 * e + 6 * e ** 2))
+        u = p0 * p1
+        g4 = 12 * u * (2 * x - 6 + (x ** 2 + 4 * x + 6) * e
+                       + u * (29 - 10 * x - (4 * x ** 2 + 20 * x + 28) * e - e ** 2))
+        h4 = -4 * (p1 - p0) * (u * (12 * x + 18) * e ** 2
+                               + u * (4 * x ** 3 + 24 * x ** 2 + 48 * x + 24) * e
+                               - (x ** 3 + 3 * x ** 2 + 6 * x + 6) * e - 42 * u + 6)
     delta = q - p1
     k1_stationary = p1 * T
     k2_stationary = 2 * p0 * p1 * g2 / r ** 2
     k3_stationary = 6 * p0 * p1 * (p0 - p1) * g3 / r ** 3
+    k4_stationary = g4 / r ** 4
     return {
         'k1': float(k1_stationary + delta * h1 / r),
         'k2': float(k2_stationary + (delta * h2 - delta ** 2 * h1 ** 2) / r ** 2),
         'k3': float(k3_stationary + (delta * h3 - 3 * delta ** 2 * h1 * h2
                                      + 2 * delta ** 3 * h1 ** 3) / r ** 3),
+        'k4': float(k4_stationary + (delta * h4
+                                     - delta ** 2 * (4 * h1 * h3 + 3 * h2 ** 2)
+                                     + 12 * delta ** 3 * h1 ** 2 * h2
+                                     - 6 * delta ** 4 * h1 ** 4) / r ** 4),
     }
 
 
@@ -251,7 +280,7 @@ def cumulants_first_order(t, a, b, mu1, mu2, sig1, sig2, rho):
 
 
 def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=None):
-    """Exact covariance and third-cumulant tensor for two-state Markov-modulated Gaussian returns.
+    """Exact covariance through fourth-cumulant tensors for two-state Markov-modulated Gaussian returns.
 
     Conditional on the occupation time A of state 1, the return vector is Gaussian with
     mean mu_0*t + Delta_mu*A and covariance c_0*t + Delta_c*A.  Composing its quadratic
@@ -262,7 +291,7 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=No
     ka = occupation_cumulants(t, a, b, initial_p1)
     d1, d2 = mu1[1] - mu1[0], mu2[1] - mu2[0]
     dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
-    v, s = ka['k2'], ka['k3']
+    v, s, k = ka['k2'], ka['k3'], ka['k4']
     return {
         'k11': float(t * c11[0] + ka['k1'] * dc11 + v * d1 * d1),
         'k22': float(t * c22[0] + ka['k1'] * dc22 + v * d2 * d2),
@@ -271,6 +300,15 @@ def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=No
         'k222': float(3 * v * d2 * dc22 + s * d2 ** 3),
         'k112': float(v * (2 * d1 * dc12 + d2 * dc11) + s * d1 * d1 * d2),
         'k122': float(v * (2 * d2 * dc12 + d1 * dc22) + s * d1 * d2 * d2),
+        'k1111': float(3 * v * dc11 ** 2 + 6 * s * d1 ** 2 * dc11 + k * d1 ** 4),
+        'k2222': float(3 * v * dc22 ** 2 + 6 * s * d2 ** 2 * dc22 + k * d2 ** 4),
+        'k1112': float(3 * v * dc11 * dc12
+                       + 3 * s * (dc11 * d1 * d2 + dc12 * d1 ** 2) + k * d1 ** 3 * d2),
+        'k1122': float(v * (dc11 * dc22 + 2 * dc12 ** 2)
+                       + s * (dc11 * d2 ** 2 + dc22 * d1 ** 2 + 4 * dc12 * d1 * d2)
+                       + k * d1 ** 2 * d2 ** 2),
+        'k1222': float(3 * v * dc22 * dc12
+                       + 3 * s * (dc22 * d1 * d2 + dc12 * d2 ** 2) + k * d1 * d2 ** 3),
         'occupation': ka,
     }
 
@@ -296,7 +334,8 @@ def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16, initial_p1=No
     C = np.fft.fft2(F) / N / N          # C[m, n] r^{m+n} = Taylor coefficient of th1^m th2^n
     coef = lambda m, n: (C[m, n] / r ** (m + n)).real * math.factorial(m) * math.factorial(n)
     return {'k11': coef(2, 0), 'k22': coef(0, 2), 'k12': coef(1, 1), 'k111': coef(3, 0), 'k222': coef(0, 3),
-            'k112': coef(2, 1), 'k122': coef(1, 2)}
+            'k112': coef(2, 1), 'k122': coef(1, 2), 'k1111': coef(4, 0), 'k2222': coef(0, 4),
+            'k1112': coef(3, 1), 'k1122': coef(2, 2), 'k1222': coef(1, 3)}
 
 
 def simulate_returns(t, a, b, mu1, mu2, sig1, sig2, rho, n, rng):

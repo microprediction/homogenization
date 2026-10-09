@@ -2506,5 +2506,16 @@
   "doi": "10.1016/j.spl.2009.09.018",
   "url": "https://doi.org/10.1016/j.spl.2009.09.018",
   "annotation": "Derives occupation-time distributions for continuous-time Markov chains and explains the modified-Bessel form used in the two-state certificate."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Brillinger1969",
+  "authors": "Brillinger, D. R.",
+  "year": 1969,
+  "title": "The calculation of cumulants via conditioning",
+  "venue": "Annals of the Institute of Statistical Mathematics 21(1), 215-218",
+  "doi": "10.1007/bf02532246",
+  "url": "https://doi.org/10.1007/bf02532246",
+  "annotation": "Introduces the conditional-cumulant formula used to organize the exact covariance, co-skewness and co-kurtosis tensors of the Gaussian occupation-time mixture."
  }
 ]

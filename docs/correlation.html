@@ -313,22 +313,32 @@
     term $2w_1w_2\,c_{12}$ inside $w^{\top}c\,w$ is the part carried by the correlation.</p>
 
     <h3>Exact finite-rate cumulants for two regimes</h3>
-    <p>For two states the covariance and co-skewness need not be approximated. Let
+    <p>For two states the covariance, co-skewness and co-kurtosis need not be approximated. Let
     $A_T=\int_0^T\mathbf 1_{\{y_t=1\}}\,dt$ be the time spent in crisis, put $r=a+b$, and write
-    $p_0=b/r$, $p_1=a/r$. With a stationary start its first three cumulants are</p>
+    $p_0=b/r$, $p_1=a/r$, $u=p_0p_1$ and $x=rT$. With a stationary start its first four cumulants are</p>
     <div class="equation-card">
     $$\begin{aligned}
     \kappa_1(A_T)&=p_1T,\\
     \kappa_2(A_T)&=\frac{2p_0p_1}{r^2}\big(rT-1+e^{-rT}\big),\\
     \kappa_3(A_T)&=\frac{6p_0p_1(p_0-p_1)}{r^3}
-       \big(rT-2+(rT+2)e^{-rT}\big).
+       \big(x-2+(x+2)e^{-x}\big),\\
+    \kappa_4(A_T)&=\frac{12u}{r^4}\Big[2x-6+(x^2+4x+6)e^{-x}\\
+      &\qquad\qquad+u\{29-10x-(4x^2+20x+28)e^{-x}-e^{-2x}\}\Big].
     \end{aligned}$$
     </div>
+    <p>For completeness, put $D(z)=\sqrt{1+2(p_1-p_0)z+z^2}$. Diagonalizing the dimensionless tilted generator gives
+    the stationary moment generating function in closed form:</p>
+    $$\mathbb E_\pi e^{zrA_T}=e^{(z-1)x/2}\left[
+      \cosh\!\left(\frac{xD(z)}2\right)
+      +\frac{1+(p_1-p_0)z}{D(z)}\sinh\!\left(\frac{xD(z)}2\right)\right].$$
+    <p>Four derivatives of its logarithm at zero give the displayed stationary cumulants, including the fourth; this
+    also shows that the formula is finite-horizon exact rather than a large-$r$ expansion.</p>
     <p>Indeed, for $Z_t=\mathbf 1_{\{y_t=1\}}-p_1$, stationarity and the two-state semigroup give
     $\mathbb E[Z_0Z_t]=p_0p_1e^{-rt}$. Since $Z_t^2=(p_0-p_1)Z_t+p_0p_1$, for
     $s\leq t\leq u$ they also give
     $\mathbb E[Z_sZ_tZ_u]=p_0p_1(p_0-p_1)e^{-r(u-s)}$. Integrating over the square and the six
-    orderings of the cube proves the formulas. The modified-Bessel occupation density used above is a special case of
+    orderings of the cube proves the first three formulas. The fourth follows by expanding the exact tilted two-state
+    generator. The modified-Bessel occupation density used above is a special case of
     the finite-state construction of <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
     Nir (2010)</a>.</p>
     <p>The stationary-start restriction can also be removed exactly. Let $q=\mathbb P(y_0=1)$,
@@ -338,7 +348,10 @@
     H_1={}&1-e^{-x},\\
     H_2={}&2(p_0-p_1)\{1-(1+x)e^{-x}\},\\
     H_3={}&6(1-e^{-x})-3x^2e^{-x}-6xe^{-x}\\
-      &+p_0p_1\{12x^2e^{-x}+36xe^{-x}-30+24e^{-x}+6e^{-2x}\}.
+      &+u\{12x^2e^{-x}+36xe^{-x}-30+24e^{-x}+6e^{-2x}\},\\
+    H_4={}&-4(p_1-p_0)\Big[u(12x+18)e^{-2x}\\
+      &+u(4x^3+24x^2+48x+24)e^{-x}\\
+      &-(x^3+3x^2+6x+6)e^{-x}-42u+6\Big].
     \end{aligned}$$
     </div>
     <p>Then the arbitrary-start occupation cumulants are</p>
@@ -347,15 +360,20 @@
     \kappa_{1,q}(A_T)&=\kappa_{1,\pi}(A_T)+\frac{\delta H_1}{r},\\
     \kappa_{2,q}(A_T)&=\kappa_{2,\pi}(A_T)+\frac{\delta H_2-\delta^2H_1^2}{r^2},\\
     \kappa_{3,q}(A_T)&=\kappa_{3,\pi}(A_T)
-       +\frac{\delta H_3-3\delta^2H_1H_2+2\delta^3H_1^3}{r^3}.
+       +\frac{\delta H_3-3\delta^2H_1H_2+2\delta^3H_1^3}{r^3},\\
+    \kappa_{4,q}(A_T)&=\kappa_{4,\pi}(A_T)+\frac{1}{r^4}\Big[\delta H_4
+      -\delta^2(4H_1H_3+3H_2^2)\\
+      &\qquad\qquad+12\delta^3H_1^2H_2-6\delta^4H_1^4\Big].
     \end{aligned}$$
     </div>
     <p>For the proof, let $M_i(z)=\mathbb E_i e^{zA_T}$ and
     $M_\pi=(1-p_1)M_0+p_1M_1$. Linearity in the initial law gives
     $M_q=M_\pi\{1+\delta R(z)\}$ with $R=(M_1-M_0)/M_\pi$ and $R(0)=0$.
     Direct integration of the two-state transition probabilities gives
-    $R^{(j)}(0)=H_j/r^j$ for $j=1,2,3$. Differentiating
-    $\log M_q=\log M_\pi+\log(1+\delta R)$ gives the three displayed corrections. This also exposes them as a
+    $R^{(j)}(0)=H_j/r^j$ for $j=1,\ldots,4$. Differentiating
+    $\log M_q=\log M_\pi+\log(1+\delta R)$ gives the displayed corrections. This conditional-cumulant organization is
+    the finite-mixture specialization of <a href="./bibliography.html#Brillinger1969">Brillinger (1969)</a> and exposes
+    the corrections as a
     finite-horizon initial layer rather than part of the stationary Green&ndash;Kubo coefficient.</p>
     <p>Now use differences from calm to crisis,
     $d\mu=\mu_{mathrm{crisis}}-\mu_{mathrm{calm}}$ and
@@ -370,7 +388,10 @@
        +\kappa_2(A_T)d\mu_i d\mu_j,\\
     \kappa_{ijk}(X)&=\kappa_2(A_T)
        \big(d\mu_i dc_{jk}+d\mu_j dc_{ik}+d\mu_k dc_{ij}\big)
-       +\kappa_3(A_T)d\mu_i d\mu_j d\mu_k.
+       +\kappa_3(A_T)d\mu_i d\mu_j d\mu_k,\\
+    \kappa_{ijkl}(X)&=\kappa_2(A_T)\!\sum_{\mathrm{3\ pairings}}dc_{ij}dc_{kl}
+       +\kappa_3(A_T)\!\sum_{\mathrm{6\ pairs}}dc_{ij}d\mu_kd\mu_l\\
+       &\qquad+\kappa_4(A_T)d\mu_id\mu_jd\mu_kd\mu_l.
     \end{aligned}$$
     </div>
     <p>The result is exact for every $T,a,b&gt;0$ and every initial probability $q\in[0,1]$ under a two-state chain
@@ -378,6 +399,16 @@
     For a stationary start, the Green&ndash;Kubo rule is recovered by replacing
     $\kappa_2(A_T)$ with $2p_0p_1T/r$ and omitting $\kappa_3(A_T)$, which is one order smaller in the fast rate.
     For a symmetric chain $p_0=p_1$, the occupation-skew term vanishes exactly.</p>
+    <p>For example, the exact mixed fourth cumulant is</p>
+    $$\begin{aligned}
+    \kappa_{1122}(X)={}&\kappa_2(A_T)(dc_{11}dc_{22}+2dc_{12}^2)\\
+      &+\kappa_3(A_T)(dc_{11}d\mu_2^2+dc_{22}d\mu_1^2+4dc_{12}d\mu_1d\mu_2)\\
+      &+\kappa_4(A_T)d\mu_1^2d\mu_2^2.
+    \end{aligned}$$
+    <p>At fast switching, its leading term is
+    $(2p_0p_1T/r)(dc_{11}dc_{22}+2dc_{12}^2)$; the occupation-skew and occupation-kurtosis
+    pieces begin at orders $r^{-2}$ and $r^{-3}$. Thus covariance switching alone creates an order-$r^{-1}$ excess
+    co-kurtosis even when the regime drifts coincide.</p>
     <p>For a nonstationary start, the leading covariance correction has an additional initial-layer term:</p>
     $$\kappa_{ij}(X)=T\bar c_{ij}+\frac{\delta}{r}dc_{ij}
       +\frac{2p_0p_1T}{r}d\mu_i d\mu_j+O(r^{-2}),$$
@@ -429,9 +460,9 @@
     <h3>Checks for the cumulants</h3>
     <p>The closed finite-rate tensor agrees with the independent numerical solution to at most $8.6\times10^{-12}$ over
     stationary and nonstationary starts and rate multipliers through $m=16$. Occupation-density quadrature independently
-    reproduces all three arbitrary-start cumulants to $1.2\times10^{-16}$, and relabelling the regimes gives zero residual
-    to displayed precision. The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
-    two-dimensional FFT of $\Lambda$ on a polydisc of radius $0.05$, with the matrix exponential evaluated at each node. At
+    reproduces all four arbitrary-start cumulants to $1.2\times10^{-16}$, and relabelling the regimes gives a residual below
+    $2\times10^{-19}$. The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
+    two-dimensional FFT of $\Lambda$ on polydiscs of radii $0.05$ through third order and $0.15$ at fourth order, with the matrix exponential evaluated at each node. At
     one point it agrees with the engine&apos;s high-precision ODE solver to $10^{-14}$. Third cumulants in units of
     $10^{-3}$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$\kappa_{12}$, averaged</th><th style="text-transform:none">$\kappa_{12}$, numerical</th><th style="text-transform:none">$\kappa_{12}$, rule</th><th style="text-transform:none">$\kappa_{112}$, numerical</th><th style="text-transform:none">$\kappa_{112}$, rule</th><th style="text-transform:none">$\kappa_{122}$, numerical</th><th style="text-transform:none">$\kappa_{122}$, rule</th></tr></thead><tbody>
@@ -444,6 +475,12 @@
     <p>The relative error of the rule falls from $10\%$ with three-month crises to $1.3\%$ at $m = 4$ and $0.3\%$ at
     $m = 16$. Over the last doubling the absolute errors fall at rate 2.06 for the third cumulants and 2.00 for the
     second, as a second-order remainder should.</p>
+    <p>The fourth-order tensor has the same independent check. At $m=1$, the exact
+    $\kappa_{1122}=9.78461\times10^{-4}$, while its leading variance-switching term is
+    $6.75610\times10^{-4}$. By $m=16$ these are $4.43009\times10^{-5}$ and
+    $4.22256\times10^{-5}$. Across all five tensor entries and rate multipliers the closed formula agrees with the
+    matrix-exponential extraction within $8\times10^{-12}$; the error of the leading term falls at rate $1.96$ over the
+    last doubling.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>
@@ -456,6 +493,8 @@
     </tbody></table></div>
     <p>The third cumulant of the equal-weight portfolio, rule against numerical, in units of $10^{-3}$: $-3.79$ against
     $-3.48$ at $m = 1$, $-0.949$ against $-0.939$ at $m = 4$, and $-0.2371$ against $-0.2367$ at $m = 16$.</p>
+    <p>The same exact tensor gives excess kurtosis $1.030$ for the equal-weight one-year portfolio at $m=1$, falling
+    to $0.278$ at $m=4$ and $0.068$ at $m=16$. This is excess over the Gaussian value, not raw kurtosis.</p>
 
     <h2>Prior art</h2>
     <p>That correlations rise in falling markets is well documented.</p>
