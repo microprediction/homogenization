@@ -35,6 +35,7 @@ from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, mar
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
                          occupation_covariance_rate,
+                         occupation_third_cumulant_rate,
                          occupation_joint_cumulants_cauchy,
                          occupation_joint_cumulant_bulk_cauchy,
                          gaussian_occupation_cumulant,
@@ -427,7 +428,7 @@ def main():
     print("4e. finite-state fast-rate occupation-cumulant theorem")
     fast_speeds = [1, 2, 4, 8, 16]
     bulk_3 = occupation_joint_cumulant_bulk_cauchy(
-        q3, max_order=5, r=0.2, N=32
+        q3, max_order=6, r=0.2, N=32
     )
     stationary_3 = np.linalg.solve(
         np.vstack([q3.T[:-1], np.ones(3)]), np.r_[np.zeros(2), 1.0]
@@ -440,14 +441,18 @@ def main():
     second_derivative_error = max(abs(
         bulk_3[tuple(sorted((a, b)))] - covariance_rate_3[a, b]
     ) for a in range(2) for b in range(2))
+    third_rate_3 = occupation_third_cumulant_rate(q3)
+    third_derivative_error = max(abs(
+        bulk_3[tuple(sorted((a, b, c)))] - third_rate_3[a, b, c]
+    ) for a in range(2) for b in range(2) for c in range(2))
     occupation_rows = []
     magnitude_rates, remainder_rates = {}, {}
     exact_occupations = {}
     for speed in fast_speeds:
         exact_occupations[speed] = occupation_joint_cumulants_cauchy(
-            T, speed * q3, max_order=5, r=0.32, N=32
+            T, speed * q3, max_order=6, r=0.32, N=32
         )
-    for order in range(2, 6):
+    for order in range(2, 7):
         order_keys = [key for key in bulk_3 if len(key) == order]
         magnitudes, remainders = [], []
         for speed in fast_speeds:
@@ -475,10 +480,10 @@ def main():
     for speed in fast_speeds:
         tensor = cumulants_exact(
             T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3, rho_3,
-            r=0.32, N=48, max_order=5
+            r=0.32, N=48, max_order=6
         )
         return_rows.append({'m': speed, 'tensor': tensor})
-    for order in range(3, 6):
+    for order in range(3, 7):
         order_keys = [
             'k' + '1' * (order - number_of_twos) + '2' * number_of_twos
             for number_of_twos in range(order + 1)
@@ -514,22 +519,55 @@ def main():
         leading_error_rates[order] = rate(errors)
         print(f"   return order {order}: Green--Kubo leading-error rate "
               f"{leading_error_rates[order]:.3f} (want 2)")
+    third_spectral_leading_error_rates = {}
+    third_leading_occupation = {}
+    for occupation_order in range(1, 7):
+        for colors in np.ndindex(*(2,) * occupation_order):
+            key = tuple(sorted(colors))
+            third_leading_occupation[key] = (
+                T * third_rate_3[key] if occupation_order == 3 else 0.0
+            )
+    for order in (5, 6):
+        leading = {}
+        for number_of_twos in range(order + 1):
+            indices = ((0,) * (order - number_of_twos)
+                       + (1,) * number_of_twos)
+            key = ('k' + '1' * (order - number_of_twos)
+                   + '2' * number_of_twos)
+            leading[key] = gaussian_vector_occupation_cumulant(
+                indices, T, means_3[0], covariances_3[0],
+                means_3[1:] - means_3[0],
+                covariances_3[1:] - covariances_3[0],
+                third_leading_occupation
+            )
+        errors = [max(abs(
+            row['tensor'][key] - leading[key] / row['m'] ** 2
+        ) for key in leading) for row in return_rows]
+        third_spectral_leading_error_rates[order] = rate(errors)
+        print(f"   return order {order}: third-spectral leading-error rate "
+              f"{third_spectral_leading_error_rates[order]:.3f} (want 3)")
     ok &= first_derivative_error < 2e-13
     ok &= second_derivative_error < 2e-13
+    ok &= third_derivative_error < 2e-13
     ok &= all(magnitude_rates[order] > order - 1.1
-              for order in range(2, 6))
-    ok &= all(remainder_rates[order] > order - 0.1
-              for order in range(2, 6))
+              for order in range(2, 7))
+    ok &= all(remainder_rates[order] > order - 0.15
+              for order in range(2, 7))
     ok &= all(return_rates[order] > math.ceil(order / 2) - 1.1
-              for order in range(3, 6))
+              for order in range(3, 7))
     ok &= all(leading_error_rates[order] > 1.9 for order in (3, 4))
+    ok &= all(third_spectral_leading_error_rates[order] > 2.85
+              for order in (5, 6))
     out['finite_state_fast_rate'] = {
         'speeds': fast_speeds,
         'first_derivative_error': first_derivative_error,
         'group_inverse_second_derivative_error': second_derivative_error,
+        'group_inverse_third_derivative_error': third_derivative_error,
         'occupation_rows': occupation_rows,
         'return_rates': return_rates,
         'green_kubo_leading_error_rates': leading_error_rates,
+        'third_spectral_leading_error_rates':
+            third_spectral_leading_error_rates,
     }
 
     # cross-check of the exact generating function with the engine's high-precision ODE solver

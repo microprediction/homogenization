@@ -309,6 +309,46 @@ def occupation_covariance_rate(Q):
     return one_sided + one_sided.T
 
 
+def occupation_third_cumulant_rate(Q):
+    """Third bulk-cumulant tensor for non-reference occupation times.
+
+    For centered state indicators ``f_a`` and the group inverse ``Q#``,
+
+        D_abc lambda(0) = sum_{sigma in S_3}
+            pi[f_{sigma(a)} Q# f_{sigma(b)} Q# f_{sigma(c)}].
+
+    Here ``lambda`` is the principal eigenvalue of the diagonally tilted
+    generator.  Entry ``(a,b,c)`` is therefore the coefficient of
+    ``T / s**2`` in the corresponding third occupation cumulant for the
+    chain with generator ``s * Q``.  The tensor is symmetric but need not
+    have a fixed sign.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    indicators = np.eye(states)[:, 1:].T - pi[1:, None]
+    contrasts = states - 1
+    tensor = np.empty((contrasts, contrasts, contrasts))
+    for a, b, c in np.ndindex(tensor.shape):
+        value = 0.0
+        for x, y, z in itertools.permutations((a, b, c)):
+            value += pi @ (
+                indicators[x]
+                * (group_inverse @ (
+                    indicators[y] * (group_inverse @ indicators[z])
+                ))
+            )
+        tensor[a, b, c] = value
+    return tensor
+
+
 def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
                                         baseline_covariance, mean_contrasts,
                                         covariance_contrasts, occupation):
