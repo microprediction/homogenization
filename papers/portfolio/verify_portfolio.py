@@ -8,7 +8,8 @@
    agrees with their general formula when r is constant and with exact Monte Carlo of the optimal feedback;
    beta ~ exp(-T<lam^2> + T K(lam^2, lam^2)) with second-order errors.
 3. Regime-blind constant fraction: CE(w) and the weight shift against a numerical solve and numerical maximization,
-   and exact Monte Carlo over chain paths.
+   and exact Monte Carlo over chain paths.  A nonreversible three-state example verifies that the drift/variance
+   cross coefficient must be the symmetric Green-Kubo form; the one-sided coefficient fails at first order.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -176,6 +177,58 @@ def main():
     print(f"   Monte Carlo {ce_mc:.6f} +- {se:.6f}, numerical {ce_ex:.6f}")
     ok &= abs(ce_mc - ce_ex) < 4 * se
     out['blind_mc'] = dict(mc=float(ce_mc), se=float(se), exact=ce_ex)
+
+    print("   nonreversible three-state cross coefficient")
+    Qc = np.array([[-4.2, 4.0, 0.2], [0.2, -4.2, 4.0], [4.0, 0.2, -4.2]])
+    muc = np.array([1.0, 0.0, -1.0])
+    sc = np.array([2.0, 3.0, 1.0])
+    sigc = np.sqrt(sc)
+    wc, rc, gc, tc = 0.5, 0.0, 3.0, 2.0
+    k_mu_s = K(Qc, muc, sc)
+    k_s_mu = K(Qc, sc, muc)
+    k_sym = Ksym(Qc, muc, sc)
+    k_mm, k_ss = K(Qc, muc, muc), K(Qc, sc, sc)
+    hc = h_blind(wc, rc, muc, sigc, gc)
+    k_direct = K(Qc, hc, hc)
+    k_symmetric_expansion = (
+        wc**2 * k_mm - gc * wc**3 * k_sym + 0.25 * gc**2 * wc**4 * k_ss
+    )
+    k_one_sided = (
+        wc**2 * k_mm - gc * wc**3 * k_mu_s + 0.25 * gc**2 * wc**4 * k_ss
+    )
+    pi_c = stationary(Qc)
+    hbar_c = float(pi_c @ hc)
+    limit = (1.0 - gc) * k_direct
+    speeds = np.array([16.0, 32.0, 64.0, 128.0, 256.0, 512.0])
+    scaled = np.array(
+        [m * (ce_blind_exact(m * Qc, wc, rc, muc, sigc, gc, tc) - hbar_c) for m in speeds]
+    )
+    errors = np.abs(scaled - limit)
+    ratios = errors[:-1] / errors[1:]
+    print(f"      K(mu,s) {k_mu_s:.12e}, K(s,mu) {k_s_mu:.12e}, symmetric {k_sym:.12e}")
+    print(f"      K(h,h) direct {k_direct:.12e}, symmetric expansion {k_symmetric_expansion:.12e}, "
+          f"one-sided expansion {k_one_sided:.12e}")
+    print(f"      scaled exact coefficient at speed 512 {scaled[-1]:.12e}, limit {limit:.12e}, "
+          f"one-sided prediction {(1.0-gc)*k_one_sided:.12e}")
+    print("      first-order convergence ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
+    ok &= abs(k_mu_s - k_s_mu) > 0.07
+    ok &= abs(k_direct - k_symmetric_expansion) < 2e-16
+    ok &= abs(k_one_sided / k_direct - 1.0) > 0.8
+    ok &= abs(scaled[-1] / limit - 1.0) < 3e-4
+    ok &= all(1.95 < x < 2.05 for x in ratios[1:])
+    out['nonreversible_cross'] = dict(
+        pi=pi_c.tolist(),
+        K_mu_s=k_mu_s,
+        K_s_mu=k_s_mu,
+        K_sym=k_sym,
+        K_h_h=k_direct,
+        K_symmetric_expansion=k_symmetric_expansion,
+        K_one_sided_expansion=k_one_sided,
+        scaled_limit=limit,
+        speeds=speeds.tolist(),
+        scaled_exact=scaled.tolist(),
+        convergence_ratios=ratios.tolist(),
+    )
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)
     print("PASS" if ok else "FAIL")
