@@ -21,13 +21,17 @@ and checked on a growing t=eps^{-2}/4 maturity window.
 The certificate also treats a smoothly time-dependent two-state generator.
 It verifies the moving-centering identity, including the geometric term
 pi'(t) chi_m, and checks at one period that retaining this term gives a
-second-order outer error while dropping it leaves a first-order error.
+second-order outer error while dropping it leaves a first-order error.  For
+the two-state model it further identifies the accumulated geometric term as
+the oriented protocol integral int (delta/s) dp and checks invariance under
+an orientation-preserving time change, sign reversal under path reversal,
+and vanishing when the closed protocol is confined to a graph h=H(p).
 """
 
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import quad_vec, solve_ivp
+from scipy.integrate import quad, quad_vec, solve_ivp
 from scipy.linalg import eig, expm
 
 
@@ -140,18 +144,32 @@ def moving_coefficients(t: float) -> tuple[float, float, float, np.ndarray]:
     return bar_g, dynamic, geometric, shape_per_a0
 
 
+def two_state_protocol_data(t: float) -> tuple[float, float, float, float]:
+    """Return p, p', rate sum s, and forcing contrast delta."""
+    q, pi, pi_prime, g = moving_data(t)
+    rate_sum = -float(np.trace(q))
+    return float(pi[0]), float(pi_prime[0]), rate_sum, float(g[0] - g[1])
+
+
 def check_moving_generator_hierarchy() -> dict[str, float]:
     """Certify the moving-pi hierarchy and its first-order endpoint error."""
     period = 2.0 * np.pi
     times = np.linspace(0.0, period, 401)
     algebraic_residuals: list[float] = []
     gauge_derivative_residuals: list[float] = []
+    dynamic_formula_residuals: list[float] = []
+    geometric_formula_residuals: list[float] = []
 
     # The derivative of pi(t) chi_1(t)=0 must contain pi'(t) chi_1(t).
     step = 2e-6
     for t in times:
         q, pi, pi_prime, g = moving_data(t)
-        _, _, _, shape = moving_coefficients(t)
+        _, dynamic, geometric, shape = moving_coefficients(t)
+        p, p_prime, rate_sum, delta = two_state_protocol_data(t)
+        dynamic_formula_residuals.append(
+            abs(dynamic - p * (1.0 - p) * delta**2 / rate_sum)
+        )
+        geometric_formula_residuals.append(abs(geometric - p_prime * delta / rate_sum))
         algebraic_residuals.append(abs(float(pi @ shape)))
         _, pi_minus, _, _ = moving_data(t - step)
         _, pi_plus, _, _ = moving_data(t + step)
@@ -169,6 +187,8 @@ def check_moving_generator_hierarchy() -> dict[str, float]:
 
     assert max(algebraic_residuals) < 2e-15
     assert max(gauge_derivative_residuals) < 2e-9
+    assert max(dynamic_formula_residuals) < 2e-15
+    assert max(geometric_formula_residuals) < 2e-15
 
     def hierarchy_rhs(t: float, state: np.ndarray) -> np.ndarray:
         a0, a1, a1_dynamic = state
@@ -224,9 +244,69 @@ def check_moving_generator_hierarchy() -> dict[str, float]:
     assert 0.94 < dynamic_only_order < 1.06
     assert abs(geometric_integral) > 1e-3
 
+    def geometric_integrand(t: float) -> float:
+        _, p_prime, rate_sum, delta = two_state_protocol_data(t)
+        return p_prime * delta / rate_sum
+
+    protocol_integral = quad(
+        geometric_integrand, 0.0, period, epsabs=2e-13, epsrel=2e-13, limit=200
+    )[0]
+
+    # The map phi is a nonuniform, orientation-preserving traversal of the
+    # same closed protocol.  Its derivative remains at least 0.65.
+    def phi(u: float) -> float:
+        return u + 0.35 * np.sin(u)
+
+    def phi_prime(u: float) -> float:
+        return 1.0 + 0.35 * np.cos(u)
+
+    reparameterized_integral = quad(
+        lambda u: geometric_integrand(phi(u)) * phi_prime(u),
+        0.0,
+        period,
+        epsabs=2e-13,
+        epsrel=2e-13,
+        limit=200,
+    )[0]
+    reversed_integral = quad(
+        lambda u: -geometric_integrand(period - u),
+        0.0,
+        period,
+        epsabs=2e-13,
+        epsrel=2e-13,
+        limit=200,
+    )[0]
+
+    # If delta/s is a function of p alone, the one-form (delta/s) dp is
+    # exact on a closed protocol and the geometric contribution vanishes.
+    def graph_protocol_integrand(t: float) -> float:
+        p, p_prime, _, _ = two_state_protocol_data(t)
+        h_of_p = 0.4 - 0.2 * p + 0.3 * p**2
+        return p_prime * h_of_p
+
+    graph_protocol_integral = quad(
+        graph_protocol_integrand,
+        0.0,
+        period,
+        epsabs=2e-13,
+        epsrel=2e-13,
+        limit=200,
+    )[0]
+
+    assert abs(protocol_integral - geometric_integral) < 3e-11
+    assert abs(reparameterized_integral - protocol_integral) < 3e-13
+    assert abs(reversed_integral + protocol_integral) < 3e-13
+    assert abs(graph_protocol_integral) < 3e-13
+
     return {
         "gauge_residual": max(gauge_derivative_residuals),
+        "coefficient_formula_residual": max(
+            max(dynamic_formula_residuals), max(geometric_formula_residuals)
+        ),
         "geometric_integral": geometric_integral,
+        "reparameterization_error": abs(reparameterized_integral - protocol_integral),
+        "reversal_error": abs(reversed_integral + protocol_integral),
+        "graph_protocol_integral": graph_protocol_integral,
         "full_order": full_order,
         "dynamic_only_order": dynamic_only_order,
         "full_error": full_errors[-1],
@@ -685,7 +765,11 @@ def main() -> None:
     print(f"composite proved-bound order        {long_maturity_bound_order:.6f}")
     print(f"largest composite error / bound     {max(long_maturity_bound_ratios):.6f}")
     print(f"moving-gauge derivative residual    {moving['gauge_residual']:.3e}")
+    print(f"two-state coefficient formula resid {moving['coefficient_formula_residual']:.3e}")
     print(f"integrated geometric coefficient    {moving['geometric_integral']:.12e}")
+    print(f"protocol reparameterization error   {moving['reparameterization_error']:.3e}")
+    print(f"protocol reversal sign error        {moving['reversal_error']:.3e}")
+    print(f"graph-valued loop integral          {moving['graph_protocol_integral']:.3e}")
     print(f"moving full first-order error order {moving['full_order']:.6f}")
     print(f"without geometric term error order  {moving['dynamic_only_order']:.6f}")
     print(f"smallest-eps moving full error       {moving['full_error']:.12e}")

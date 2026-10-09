@@ -109,12 +109,42 @@
     $$K_{\rm dyn}=-\pi D_fRf,\qquad K_{\rm geo}=-\pi'Rf.$$
     </div>
     <p>Only $K_{\rm dyn}$ is the instantaneous Green&ndash;Kubo contraction. The second coefficient records motion of
-    $\pi(t)$ and is generally signed. For a smooth periodic two-state example, the
+    $\pi(t)$ and is generally signed.</p>
+
+    <h4>Exact two-state protocol integral</h4>
+    <p>The word geometric is literal in the two-state case. Write</p>
+    $$Q(t)=\begin{pmatrix}-\alpha(t)&amp;\alpha(t)\\ \beta(t)&amp;-\beta(t)\end{pmatrix},\qquad
+      s=\alpha+\beta,\qquad \pi=(p,1-p),\qquad p={\beta\over s},$$
+    <p>and let $\delta=g_0-g_1$. The centered forcing is
+    $f=((1-p)\delta,-p\delta)^\top$, so $Qf=-sf$ and $Rf=-f/s$. Therefore</p>
+    <div class="equation-card">
+    $$K_{\rm dyn}={p(1-p)\delta^2\over s},\qquad
+      K_{\rm geo}={p'\delta\over s}.$$
+    </div>
+    <p>On a closed protocol $\mathcal C:t\mapsto(p(t),h(t))$, with $h=\delta/s$, the accumulated geometric
+    contribution is the oriented line integral</p>
+    <div class="equation-card">
+    $$\Gamma_{\rm geo}=\int_0^T K_{\rm geo}(t)\,dt
+      =\oint_{\mathcal C} h\,dp.$$
+    </div>
+    <p>Consequently $\Gamma_{\rm geo}$ is unchanged by every orientation-preserving $C^1$ reparameterization of
+    the same protocol, and changes sign when the loop is traversed backwards. It vanishes whenever $h$ is a
+    single-valued function of $p$ along the loop, because then $h(p)\,dp$ is exact. Thus a nonzero periodic
+    correction requires a loop in the two protocol coordinates $(p,h)$ that is not confined to a graph
+    $h=H(p)$. In contrast, $\int K_{\rm dyn}\,dt$ depends on traversal time and remains nonnegative.</p>
+    <p>This is the same path-geometric mechanism emphasized for stochastic pumps by
+    <a href="./bibliography.html#SinitsynNemenman2007">Sinitsyn and Nemenman (2007)</a>, but the observable here is
+    different: it is a null-space amplitude in a backward-equation corrector, not a transported-current cumulant.
+    No pump-current identity is being asserted.</p>
+
+    <p>For the smooth periodic example used here, the
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
     finds $\int_0^{2\pi}K_{\rm geo}(t)\,dt=-0.00639952$. At the one-period endpoint the complete first-order outer
     approximation converges with observed order $1.990$, whereas deleting $K_{\rm geo}$ leaves observed order
-    $0.957$. This is a fixed-positive-time test: an initial layer is still needed for a bound uniform down to
-    $t=0$, and no long-maturity uniformity is claimed.</p>
+    $0.957$. It also verifies the geometric formula to $5.3\times10^{-18}$, invariance under a nonuniform traversal
+    to $8.7\times10^{-19}$, sign reversal to $5.3\times10^{-18}$, and zero contribution for a graph-valued loop to
+    $3.5\times10^{-18}$. This is a fixed-positive-time test: an initial layer is still needed for a bound uniform
+    down to $t=0$, and no long-maturity uniformity is claimed.</p>
     <p>This moving-projection recursion is the finite-state backward-equation counterpart of the asymptotic-series
     machinery in <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> and the
     singularly perturbed chain framework of <a href="./bibliography.html#YinZhang1998">Yin and Zhang (1998)</a>.</p>

@@ -100,6 +100,17 @@
  },
  {
   "role": "classics",
+  "key": "SinitsynNemenman2007",
+  "authors": "N. A. Sinitsyn, Ilya Nemenman",
+  "year": 2007,
+  "title": "Universal Geometric Theory of Mesoscopic Stochastic Pumps and Reversible Ratchets",
+  "venue": "Physical Review Letters 99:220408",
+  "doi": "10.1103/physrevlett.99.220408",
+  "url": "https://doi.org/10.1103/PhysRevLett.99.220408",
+  "annotation": "Develops geometric phase contributions for slowly driven stochastic kinetics and shows that the periodic contribution depends on the oriented parameter-space protocol rather than its traversal speed; the observable there is a pump current, not the backward-equation amplitude used here."
+ },
+ {
+  "role": "classics",
   "key": "IlinKhasminskiiYin1999",
   "authors": "A. M. Il'in, R. Z. Khasminskii, G. Yin",
   "year": 1999,
