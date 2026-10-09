@@ -345,8 +345,27 @@
     <ul>
       <li>the first two arrivals identify everything the arrival law reveals about $K$ at that order;</li>
       <li>the diagonal of $K$ cannot be observed;</li>
-      <li>the asymmetry of $K$ can be seen with three channels but never with two.</li>
+      <li>two channels already reveal the asymmetry of $K$, provided the hidden driver has at least three states
+        and violates detailed balance.</li>
     </ul>
+    <p>The number of observed channels and the number of hidden states play different roles. For two hazards
+    $h_1,h_2$ and a stationary hidden chain with fast generator $Q_m=mQ$, the exact first-arrival probability is</p>
+    $$p_1(m)=\pi^\top\big(\operatorname{diag}(h_1+h_2)-Q_m\big)^{-1}h_1.$$
+    <p>Writing $\bar h=\bar h_1+\bar h_2$ and computing the directed Green&ndash;Kubo matrix $K$ for $Q_m$, its
+    first-order expansion is</p>
+    $$p_1(m)=\frac{\bar h_1}{\bar h}
+      +\frac1{\bar h}\left\{\frac{\bar h_1}{\bar h}\sum_{j,k=1}^2K_{jk}-K_{11}-K_{21}\right\}
+      +O(m^{-2}).$$
+    <p>To see this, solve $(\operatorname{diag}(h_1+h_2)-mQ)u=h_1$ and insert
+    $u=u_0\mathbf1+m^{-1}u_1+\cdots$. The first solvability condition gives
+    $u_0=\bar h_1/\bar h$; the next Poisson equation, followed by its solvability condition, gives the displayed
+    Green&ndash;Kubo coefficient.</p>
+    <p>The unsymmetrized entry $K_{21}$ is therefore observable with only two channels. A two-state hidden chain is
+    necessarily reversible, but a three-state chain can carry a directed cycle. For rates $2$ clockwise and $0.1$
+    counterclockwise, $h_1=(0.07,0.01,0.01)$ and $h_2=(0.01,0.07,0.01)$, the certificate gives
+    $p_1(10)=0.5001500361$; reversing the cycle gives $0.4998499639$. The first-order and reversal-gap errors both
+    fall by a factor of four when $m$ doubles, confirming the $O(m^{-2})$ remainder
+    (<a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">certificate</a>).</p>
     <p>The horse-race model of choice and response times is its psychological ancestor
     (<a href="./bibliography.html#MarleyColonius1992">Marley and Colonius 1992</a>).</p>
 
