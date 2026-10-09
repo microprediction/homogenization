@@ -314,7 +314,7 @@ def canonical_skew_resolvent(q):
     return pi, q_group, 0.5 * (resolvent - resolvent.T)
 
 
-def posterior_skew_bound(q_hat, epsilon):
+def posterior_skew_bound(q_hat, epsilon, use_fixed_point=True):
     """Estimator-centered bound for ||J(Q)-J(q_hat)||_F.
 
     Here epsilon is any supplied upper bound on ||Q-q_hat||_2.  Every
@@ -325,8 +325,31 @@ def posterior_skew_bound(q_hat, epsilon):
     projector_hat = np.outer(np.ones(n), pi_hat)
     shifted_hat = q_hat - projector_hat
 
-    beta_pi = epsilon * np.linalg.norm(group_hat, 2)
-    pi_lower = np.min(pi_hat) - beta_pi
+    group_norm = np.linalg.norm(group_hat, 2)
+    raw_beta_pi = epsilon * group_norm
+    beta_pi = raw_beta_pi
+    if use_fixed_point and raw_beta_pi < 1.0:
+        # The identity d = pi E G_hat and pi = pi_hat + d give
+        # ||d|| <= r (||pi_hat|| + ||d||), r = eps ||G_hat||.
+        # This retains the observed simplex geometry rather than replacing
+        # ||pi||_2 by its universal upper bound one.
+        fixed_point_beta = (
+            raw_beta_pi * np.linalg.norm(pi_hat) / (1.0 - raw_beta_pi)
+        )
+        beta_pi = min(raw_beta_pi, fixed_point_beta)
+
+    if use_fixed_point:
+        pi_norm_bound = np.linalg.norm(pi_hat) + beta_pi
+        component_beta = np.minimum(
+            beta_pi,
+            epsilon * pi_norm_bound * np.linalg.norm(group_hat, axis=0),
+        )
+    else:
+        component_beta = np.full(n, beta_pi)
+
+    pi_lower_vector = pi_hat - component_beta
+    pi_upper_vector = pi_hat + component_beta
+    pi_lower = np.min(pi_lower_vector)
     if pi_lower <= 0.0:
         raise ValueError("stationary-law radius reaches the boundary")
 
@@ -342,29 +365,33 @@ def posterior_skew_bound(q_hat, epsilon):
         / (1.0 - neumann_ratio)
         + math.sqrt(n) * beta_pi
     )
-    pi_upper = np.max(pi_hat) + beta_pi
+    pi_upper = np.max(pi_upper_vector)
     root_upper = math.sqrt(pi_upper)
     inverse_root_upper = 1.0 / math.sqrt(pi_lower)
     root_hat_max = math.sqrt(np.max(pi_hat))
-    root_difference = beta_pi / (
-        math.sqrt(pi_lower) + math.sqrt(np.min(pi_hat))
+    root_difference = np.max(
+        component_beta
+        / (np.sqrt(pi_lower_vector) + np.sqrt(pi_hat))
     )
-    inverse_root_difference = beta_pi / (
-        math.sqrt(pi_lower * np.min(pi_hat))
-        * (math.sqrt(pi_lower) + math.sqrt(np.min(pi_hat)))
+    inverse_root_difference = np.max(
+        component_beta
+        / (
+            np.sqrt(pi_lower_vector * pi_hat)
+            * (np.sqrt(pi_lower_vector) + np.sqrt(pi_hat))
+        )
     )
     resolvent_bound = (
         root_upper * inverse_root_upper * group_bound
-        + root_difference
-        * np.linalg.norm(group_hat, 2)
-        * inverse_root_upper
+        + root_difference * group_norm * inverse_root_upper
         + root_hat_max
-        * np.linalg.norm(group_hat, 2)
+        * group_norm
         * inverse_root_difference
     )
     return {
         "bound": math.sqrt(n) * resolvent_bound,
         "beta_pi": beta_pi,
+        "raw_beta_pi": raw_beta_pi,
+        "component_beta": component_beta,
         "group_bound": group_bound,
         "neumann_ratio": neumann_ratio,
         "pi_hat": pi_hat,
@@ -622,8 +649,14 @@ def observed_path_concentration_check():
     )
     actual_generator_error = np.linalg.norm(q_hat - q, 2)
     posterior = posterior_skew_bound(q_hat, path["epsilon"])
+    coarse_posterior = posterior_skew_bound(
+        q_hat, path["epsilon"], use_fixed_point=False
+    )
     analytic_posterior = posterior_skew_bound(
         q_hat, path["analytic_radius"]
+    )
+    coarse_analytic_posterior = posterior_skew_bound(
+        q_hat, path["analytic_radius"], use_fixed_point=False
     )
     _, _, true_skew = canonical_skew_resolvent(q)
     estimated_skew = posterior["skew_hat"]
@@ -647,6 +680,13 @@ def observed_path_concentration_check():
     assert fallback_path["epsilon"] == path["analytic_radius"]
     assert path["epsilon"] < capped_path["epsilon"]
     assert actual_skew_error <= radius
+    true_pi, _, _ = canonical_skew_resolvent(q)
+    assert np.all(
+        np.abs(true_pi - posterior["pi_hat"])
+        <= posterior["component_beta"] * (1.0 + 2e-13)
+    )
+    assert radius < coarse_posterior["bound"]
+    assert analytic_posterior["bound"] < coarse_analytic_posterior["bound"]
     assert lower <= energy <= upper
     return {
         "maximum_martingale_error": max(martingale_errors),
@@ -662,13 +702,17 @@ def observed_path_concentration_check():
         / path["epsilon"],
         "actual_skew_error": actual_skew_error,
         "skew_radius": radius,
+        "coarse_skew_radius": coarse_posterior["bound"],
         "analytic_skew_radius": analytic_posterior["bound"],
+        "coarse_analytic_skew_radius": coarse_analytic_posterior["bound"],
         "actual_skew_error_ratio": actual_skew_error / radius,
         "energy": energy,
         "energy_lower": lower,
         "energy_upper": upper,
         "analytic_energy_upper": analytic_upper,
         "neumann_ratio": posterior["neumann_ratio"],
+        "stationary_radius": posterior["beta_pi"],
+        "coarse_stationary_radius": posterior["raw_beta_pi"],
     }
 
 
@@ -688,9 +732,12 @@ def generator_perturbation_check():
     bound_rates = []
     bound_ratios = []
     stationary_bound_ratios = []
+    component_bound_ratios = []
     group_bound_ratios = []
     stationary_identity_errors = []
     energy_band_violations = []
+    stationary_radius_ratios = []
+    skew_radius_ratios = []
     maximum_neumann_ratio = 0.0
     amplitudes = 2.0 ** -np.arange(5, 11)
     rng = np.random.default_rng(20261006)
@@ -707,10 +754,19 @@ def generator_perturbation_check():
             assert np.min(off_diagonal) >= 0.0
             epsilon = np.linalg.norm(q_hat - q, 2)
             posterior = posterior_skew_bound(q_hat, epsilon)
+            coarse_posterior = posterior_skew_bound(
+                q_hat, epsilon, use_fixed_point=False
+            )
             pi_hat = posterior["pi_hat"]
             group_hat = posterior["group_hat"]
             skew_hat = posterior["skew_hat"]
             frobenius_bound = posterior["bound"]
+            stationary_radius_ratios.append(
+                posterior["beta_pi"] / coarse_posterior["beta_pi"]
+            )
+            skew_radius_ratios.append(
+                frobenius_bound / coarse_posterior["bound"]
+            )
 
             generator_error = q_hat - q
             stationary_identity = (
@@ -720,6 +776,9 @@ def generator_perturbation_check():
             stationary_error = np.linalg.norm(pi - pi_hat)
             stationary_bound_ratios.append(
                 stationary_error / posterior["beta_pi"]
+            )
+            component_bound_ratios.extend(
+                np.abs(pi - pi_hat) / posterior["component_beta"]
             )
             group_error = np.linalg.norm(group_hat - q_group, 2)
             group_bound_ratios.append(group_error / posterior["group_bound"])
@@ -759,8 +818,13 @@ def generator_perturbation_check():
         "maximum_bound_rate": max(bound_rates),
         "maximum_error_bound_ratio": max(bound_ratios),
         "maximum_stationary_bound_ratio": max(stationary_bound_ratios),
+        "maximum_component_bound_ratio": max(component_bound_ratios),
         "maximum_group_bound_ratio": max(group_bound_ratios),
         "maximum_neumann_ratio": maximum_neumann_ratio,
+        "minimum_stationary_radius_ratio": min(stationary_radius_ratios),
+        "maximum_stationary_radius_ratio": max(stationary_radius_ratios),
+        "minimum_skew_radius_ratio": min(skew_radius_ratios),
+        "maximum_skew_radius_ratio": max(skew_radius_ratios),
         "maximum_stationary_identity_error": max(stationary_identity_errors),
         "maximum_energy_band_violation": max(energy_band_violations),
     }
@@ -1814,7 +1878,8 @@ def main():
     print(
         f"   maximum actual/bound ratios: skew "
         f"{perturbation['maximum_error_bound_ratio']:.6f}, stationary "
-        f"{perturbation['maximum_stationary_bound_ratio']:.6f}, group "
+        f"{perturbation['maximum_stationary_bound_ratio']:.6f}, component "
+        f"{perturbation['maximum_component_bound_ratio']:.6f}, group "
         f"{perturbation['maximum_group_bound_ratio']:.6f}; Neumann ratio "
         f"{perturbation['maximum_neumann_ratio']:.6f}"
     )
@@ -1822,6 +1887,13 @@ def main():
         f"   estimator-centered identity/energy-band violations "
         f"{perturbation['maximum_stationary_identity_error']:.2e}/"
         f"{perturbation['maximum_energy_band_violation']:.2e}"
+    )
+    print(
+        f"   fixed-point/coarse stationary-radius ratios "
+        f"[{perturbation['minimum_stationary_radius_ratio']:.6f}, "
+        f"{perturbation['maximum_stationary_radius_ratio']:.6f}]; skew-radius "
+        f"ratios [{perturbation['minimum_skew_radius_ratio']:.6f}, "
+        f"{perturbation['maximum_skew_radius_ratio']:.6f}]"
     )
 
     print("2b. a fully observed CTMC path supplies the generator radius")
@@ -1846,6 +1918,13 @@ def main():
         f"{path['analytic_skew_radius']:.6f}; exact-radius ratio "
         f"{path['actual_skew_error_ratio']:.6f}; Neumann ratio "
         f"{path['neumann_ratio']:.6f}"
+    )
+    print(
+        f"   fixed-point/coarse stationary radius "
+        f"{path['stationary_radius']:.6f}/"
+        f"{path['coarse_stationary_radius']:.6f}; coarse skew radii "
+        f"{path['coarse_skew_radius']:.6f}/"
+        f"{path['coarse_analytic_skew_radius']:.6f}"
     )
     print(
         f"   true energy {path['energy']:.9f} in certified interval "

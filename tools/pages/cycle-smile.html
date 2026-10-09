@@ -304,24 +304,40 @@
       \|\pi-\widehat\pi\|_2\le
       \beta_\pi:=\varepsilon\|\widehat G\|_2.$$
     </div>
-    <p>Consequently
-      $\|P-\widehat P\|_2\le\sqrt n\,\beta_\pi$. Define</p>
-    $$\eta_Z=\varepsilon+\sqrt n\,\beta_\pi,qquad
+    <p>The universal bound above discards the geometry of the observed stationary law. Put
+      $r=\varepsilon\|\widehat G\|_2$. Since
+      $\pi=\widehat\pi+(\pi-\widehat\pi)$, the same identity also gives, when $r&lt;1$,</p>
+    $$\|\pi-\widehat\pi\|_2
+      \le {r\|\widehat\pi\|_2\over1-r}.$$
+    <p>Hence the entirely estimator-centered fixed-point radii</p>
+    <div class="equation-card">
+    $$\beta_2=\begin{cases}
+      \min\left\{r,{r\|\widehat\pi\|_2\over1-r}\right\},&r&lt;1,\\
+      r,&r\ge1,
+      \end{cases}$$
+    $$\beta_i=\min\left\{\beta_2,
+      \varepsilon(\|\widehat\pi\|_2+\beta_2)
+      \|\widehat G e_i\|_2\right\}$$
+    </div>
+    <p>satisfy $\|\pi-\widehat\pi\|_2\le\beta_2$ and
+      $|\pi_i-\widehat\pi_i|\le\beta_i$. The second formula retains the different sensitivities of the stationary
+      coordinates instead of replacing every column of $\widehat G$ by its operator norm. Consequently
+      $\|P-\widehat P\|_2\le\sqrt n\,\beta_2$. Define</p>
+    $$\eta_Z=\varepsilon+\sqrt n\,\beta_2,\qquad
       \widehat a=\|\widehat Z^{-1}\|_2.$$
-    <p>If $\beta_\pi&lt;\widehat\pi_{\min}$ and
+    <p>If $p_i^-:=\widehat\pi_i-\beta_i&gt;0$ for every $i$ and
       $\widehat a\eta_Z&lt;1$, Neumann inversion gives the entirely estimator-centered bound</p>
     <div class="equation-card">
     $$\|G-\widehat G\|_2\le B_G:=
       {\widehat a^2\eta_Z\over1-\widehat a\eta_Z}
-      +\sqrt n\,\beta_\pi.$$
+      +\sqrt n\,\beta_2.$$
     </div>
     <p>For the stationary square-root weights, set</p>
-    $$p_- =\widehat\pi_{\min}-\beta_\pi,\qquad
-      p_+=\widehat\pi_{\max}+\beta_\pi,$$
-    $$d_+={\beta_\pi\over\sqrt{p_-}+\sqrt{\widehat\pi_{\min}}},\qquad
-      d_-={\beta_\pi\over
-      \sqrt{p_-\widehat\pi_{\min}}
-      (\sqrt{p_-}+\sqrt{\widehat\pi_{\min}})}.$$
+    $$p_- =\min_i p_i^-,\qquad p_+=\max_i(\widehat\pi_i+\beta_i),$$
+    $$d_+=\max_i{\beta_i\over\sqrt{p_i^-}+\sqrt{\widehat\pi_i}},\qquad
+      d_-=\max_i{\beta_i\over
+      \sqrt{p_i^-\widehat\pi_i}
+      (\sqrt{p_i^-}+\sqrt{\widehat\pi_i})}.$$
     <p>A three-term product expansion, followed by contraction under antisymmetrization, now yields the a posteriori
       radius</p>
     <div class="equation-card">
@@ -344,10 +360,13 @@
       <a href="./bibliography.html#Meyer1980">Meyer's finite-chain perturbation theory</a>.</p>
     <p>The certificate checks 16 generator-perturbation directions at six scales, for 96 cases total. Actual
       skew-resolvent errors have fitted orders in $[0.996415,1.003445]$; the a posteriori bounds have orders in
-      $[1.018047,1.023996]$. The largest observed actual/bound ratios are $0.010088$ for the skew resolvent,
-      $0.432918$ for the stationary law, and $0.054585$ for the group inverse. The maximum Neumann ratio is
-      $0.056648$, the estimator-centered stationary identity holds within $5.41\times10^{-16}$, and every energy
-      interval contains the population value. The bound is conservative and does not claim sharp constants.</p>
+      $[1.012001,1.016636]$. Relative to the earlier universal choice $\beta_2=r$, the fixed-point stationary radii
+      are $0.504309$&ndash;$0.510877$ as large and the final skew radii are $0.602191$&ndash;$0.619885$ as large.
+      The largest observed actual/bound ratios are $0.016276$ for the skew resolvent, $0.858415$ for the stationary
+      law in Euclidean norm, $0.859699$ coordinatewise, and $0.078440$ for the group inverse. The maximum Neumann
+      ratio is $0.044292$, the estimator-centered
+      stationary identity holds within $5.41\times10^{-16}$, and every energy interval contains the population
+      value. The bound is conservative and does not claim sharp constants.</p>
     <h3>A fully observed path supplies the missing generator radius</h3>
     <p>Suppose the complete CTMC path is observed, including exact jump times. Write</p>
     $$L_i=\int_0^{T_{\rm obs}}\mathbf1_{\{Y_s=i\}}\,ds,
@@ -408,9 +427,11 @@
       On one seeded four-state path with 221,183 jumps and minimum state occupation 20,901.343, the actual generator
       error is $0.027272$. The 4,096-vertex maximum gives radius $0.113539$, versus $0.147442$ from the analytic
       rate-cap-free bound and $0.260095$ from the preliminary capped-rate construction. The actual skew-resolvent
-      error is $0.000755$ against propagated radius $1.216804$, reduced from $1.767794$. The true energy
-      $0.047000719$ lies in the certified interval $[0,2.056054602]$, whose upper endpoint was previously
-      $3.939766863$. The example also
+      error is $0.000755$ against propagated radius $0.677127$; the earlier universal stationary bound gave
+      $1.216804$, and the analytic generator radius now gives $0.946064$ rather than $1.767794$. The fixed-point
+      stationary radius is $0.023883$, versus $0.045214$ from $\|\pi\|_2\le1$. The true energy
+      $0.047000719$ lies in the certified interval $[0,0.799625333]$; the analytic-radius upper endpoint is
+      $1.352930540$. The example also
       makes the conservatism transparent: this is a valid finite-path certificate, not a sharp inference method.</p>
     <p>The result requires continuous full observation but no rate cap. It is not a theorem for hidden states,
       discrete sampling, estimated state labels, or misspecified generators, and it does not turn
