@@ -161,6 +161,30 @@
     <p>The correlation length must be shorter than the mean free path set by the contrast between the materials. The
     volume fractions do not enter.</p>
 
+    <h3>What the all-orders series sums to</h3>
+    <p>The power series describes the slow outer mode, not the entire finite-slab answer. This distinction is exact.
+    Put $\Delta=\Sigma_A-\Sigma_B$, $\delta=p_B-p_A$, $x=\lambda_c\Delta$, and</p>
+    $$D(x)=\sqrt{1+2\delta x+x^2}.$$
+    <p>The spectral gap and the two nonnegative weights in the exact law are</p>
+    $$r_+-r_-=\frac{D(x)}{\lambda_c},\qquad
+      w_- = \frac{D(x)+1+\delta x}{2D(x)},\qquad
+      w_+ = \frac{D(x)-1-\delta x}{2D(x)}.$$
+    <p>Here $w_-+w_+=1$. Therefore the full finite-slab logarithm has the exact decomposition</p>
+    <div class="equation-card">
+    $$\log T(L)=-r_-L+\log w_-+
+      \log\!\left(1+\frac{w_+}{w_-}e^{-D(x)L/\lambda_c}\right).$$
+    $$0\le \log T(L)-\{-r_-L+\log w_-\}
+      \le \frac{w_+}{w_-}e^{-D(x)L/\lambda_c}.$$
+    </div>
+    <p>The Taylor series of $r_-$ and $\log w_-$ both converge for $|x|<1$ and sum to the first two terms. The last
+    term is the entry layer. For fixed $L>0$ it is smaller than every power of $\lambda_c$, but it is not zero:
+    the expansion is a convergent outer series plus a beyond-all-orders exponential. Thus an infinite algebraic
+    expansion does not equal the exact finite-$L$ transmission unless the fast mode is retained.</p>
+    <p>This statement is not uniform in a thin-slab limit. If $L/\lambda_c$ stays bounded, the displayed exponential
+    need not be small, and the exact two-exponential law should be used. This is the finite-distance version of the
+    small-correlation-length/entry-layer distinction in stochastic transport
+    (<a href="./bibliography.html#MalvagiLevermorePomraning1989">Malvagi, Levermore and Pomraning 1989</a>).</p>
+
     <h2>Any number of materials</h2>
     <p>Nothing in Steps 1 to 4 used two materials. For a chain with any number of materials, generator $Q$ and volume
     fractions $\pi$, the same result holds with matrix coefficients:</p>
@@ -196,7 +220,8 @@
     $$\log T(L) = -\Sigma_{\mathrm{eff}}^{(n)}\,L - C^{(n)} + O(\lambda_c^{n+1}),$$
     <p>where $\Sigma_{\mathrm{eff}}^{(n)}$ and $C^{(n)}$ are the Taylor polynomials, of degree $n$ in $\lambda_c$, of
     the slow decay rate and of the log of its weight. The first three terms are the result box above. For any
-    number of materials the engine computes the rest in the same way.</p>
+    number of materials the engine computes the rest in the same way. This is an outer expansion for fixed positive
+    $L$; the exact binary error after summing every algebraic order is the positive entry-layer term bounded above.</p>
 
     <h2>Dense clumps in thin gas</h2>
     <p>Clumps with $\Sigma_A = 5$ fill 10% of a gas with $\Sigma_B = 0.05$, arranged as a coloured Poisson tessellation,
@@ -222,6 +247,10 @@
     <p>Each order gains one power of $\lambda_c$, as the last row shows.</p>
     <p>The radius of convergence. Taylor coefficients of the slow rate, computed by a Cauchy integral, grow like
     $4.947^k$, against $\lvert\Sigma_A - \Sigma_B\rvert = 4.95$.</p>
+    <p>For the five worked correlation lengths, the exact relative entry-layer bounds are respectively
+    $1.34\times10^{-48}$, $1.84\times10^{-75}$, $9.69\times10^{-130}$,
+    $1.51\times10^{-238}$ and below floating-point range. Hence the visible errors in the table are algebraic
+    truncation errors, not an unresolved fast mode.</p>
     <p>Inside the radius the engine&apos;s partial sums
     close in on the answer, with oscillations because the singularities are complex. Outside it they blow up:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>order</th><th style="text-transform:none">error at $\lambda_c = 0.16$ ($\lambda_c\lvert\Sigma_A - \Sigma_B\rvert = 0.79$)</th><th style="text-transform:none">error at $\lambda_c = 0.32$ ($\lambda_c\lvert\Sigma_A - \Sigma_B\rvert = 1.58$)</th></tr></thead><tbody><tr><td>0</td><td>2.1</td><td>2.95</td></tr><tr><td>2</td><td>8.60e-1</td><td>5.06</td></tr><tr><td>4</td><td>1.50e-1</td><td>4.01</td></tr><tr><td>6</td><td>5.92e-2</td><td>4.6</td></tr><tr><td>8</td><td>4.22e-2</td><td>15.8</td></tr><tr><td>10</td><td>2.16e-4</td><td>3.66</td></tr><tr><td>12</td><td>9.72e-3</td><td>53.9</td></tr></tbody></table></div>

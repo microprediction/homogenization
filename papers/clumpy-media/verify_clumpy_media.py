@@ -6,12 +6,14 @@
    through orders 0, 1, 2 equals the fast-switching engine at those orders.
 3. Worked example (dense clumps in thin gas): errors in log T against the matrix exponential fall like
    lam_c^(n+1) at order n, for n = 0, 1, 2, 3, 4, 6, 8.
-4. The series in lam_c converges for lam_c |Sigma_A - Sigma_B| < 1 and diverges beyond: Cauchy-integral
-   Taylor coefficients of the decay rate grow like |Sigma_A - Sigma_B|^k, and engine partial sums settle at
-   lam_c = 0.16 and blow up at lam_c = 0.32.
-5. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
+4. The outer series in lam_c converges for lam_c |Sigma_A - Sigma_B| < 1 and diverges beyond: Cauchy-integral
+   Taylor coefficients of the slow decay rate grow like |Sigma_A - Sigma_B|^k, and engine partial sums settle
+   at lam_c = 0.16 and blow up at lam_c = 0.32.
+5. The exact two-mode decomposition isolates the positive, exponentially small finite-slab entry layer and
+   supplies a computable bound on the error made by the all-orders outer series.
+6. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
    exponential and the engine, with the same orders of convergence.
-6. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
+7. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
    sampling of the chain, agree with the matrix exponential within three standard errors.
 Writes results.json for the page.
 """
@@ -20,6 +22,7 @@ import math
 import os
 import numpy as np
 from clumpy import (binary_Q, binary_lams, tessellation_Q, exact_T, two_exponential_T, two_exponential_parts,
+                    two_exponential_decomposition,
                     coefficients, binary_coefficients, log_T_closed, engine_log_T, mc_chain, mc_tessellation,
                     stationary, tau_cumulants)
 
@@ -139,7 +142,45 @@ def main():
     ok &= rad[0]['errors'][12] < 0.01 * rad[0]['errors'][0] and rad[1]['errors'][12] > 10 * rad[1]['errors'][0]
     out['radius'] = dict(growth=growth, d=d, rows=rad)
 
-    print("5. three nested phases: gas, envelopes, cores")
+    print("5. exact finite-slab entry layer")
+    layer_rows = []
+    layer_identity = 0.0
+    # Check both opacity orderings, unequal fractions, and zero contrast.
+    for pA_ in (0.1, 0.5, 0.9):
+        for SA_, SB_ in ((5.0, 0.05), (0.2, 4.0), (1.0, 1.0)):
+            for lc_ in (0.01, 0.08, 0.3):
+                lA_, lB_ = binary_lams(pA_, lc_)
+                dec_ = two_exponential_decomposition(SA_, SB_, lA_, lB_, 0.7)
+                direct_ = two_exponential_T(SA_, SB_, lA_, lB_, 0.7)
+                layer_identity = max(layer_identity, abs(dec_['exact'] - direct_) / direct_)
+                ok &= dec_['slow_weight'] > 0 and dec_['fast_weight'] >= -2e-16
+                ok &= 0.0 <= dec_['log_layer'] <= dec_['relative_layer'] * (1 + 1e-14)
+    for lc in LCS:
+        lA, lB = binary_lams(PA, lc)
+        dec = two_exponential_decomposition(SA, SB, lA, lB, L)
+        direct = two_exponential_T(SA, SB, lA, lB, L)
+        layer_identity = max(layer_identity, abs(dec['exact'] - direct) / direct)
+        # log(1+z) is positive and no larger than z for z >= 0.
+        ok &= 0.0 <= dec['log_layer'] <= dec['relative_layer'] * (1 + 1e-14)
+        layer_rows.append(dict(lam_c=lc, gap=dec['gap'], slow_weight=dec['slow_weight'],
+                               fast_weight=dec['fast_weight'], relative_layer=dec['relative_layer'],
+                               log_layer=dec['log_layer']))
+        print(f"   lam_c {lc:<6} gap {dec['gap']:.6f}  fast weight {dec['fast_weight']:.6e}  "
+              f"relative layer <= {dec['relative_layer']:.3e}")
+    # A shorter slab keeps the flat term visible numerically.  Its ratio to
+    # every fixed algebraic power still vanishes as lam_c decreases.
+    short_L, short_lcs, power = 0.25, [0.08, 0.04, 0.02, 0.01], 4
+    flat = []
+    for lc in short_lcs:
+        lA, lB = binary_lams(PA, lc)
+        dec = two_exponential_decomposition(SA, SB, lA, lB, short_L)
+        flat.append(dict(lam_c=lc, log_layer=dec['log_layer'], scaled=dec['log_layer'] / lc ** power))
+    print("   short-slab log-layer / lam_c^4: " + ", ".join(f"{r['scaled']:.3e}" for r in flat))
+    ok &= layer_identity < 2e-14 and all(flat[j + 1]['scaled'] < flat[j]['scaled'] for j in range(len(flat) - 1))
+    out['entry_layer'] = dict(identity_diff=layer_identity, rows=layer_rows, short_L=short_L,
+                              power=power, flat=flat)
+
+    print("6. three nested phases: gas, envelopes, cores")
     rows3, errs3 = [], []
     for ell in ELLS:
         Q = nested_Q(ell)
@@ -160,7 +201,7 @@ def main():
     out['nested'] = rows3
     out['nested_slopes'] = {str(n): s for n, s in sl3.items()}
 
-    print("6. Monte Carlo")
+    print("7. Monte Carlo")
     rng = np.random.default_rng(20260923)
     mcs = []
     for lc, media in [(0.16, 300), (0.08, 300), (0.04, 600)]:
