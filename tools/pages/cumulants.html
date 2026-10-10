@@ -363,30 +363,40 @@
       <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann
       (2012)</a>, while the displayed recursion follows here directly from the generator.</p>
 
-    <h3>The first inverse-speed coefficient at every moment order</h3>
-    <p>The recursion also yields a completely explicit fast-switching coefficient. Let
-      $S=Q_0^\#$, $\bar\kappa=\pi\kappa$, and initialize
-      $\bar M_0=1$, $\dot M_0=0$, and $z_0=0$. For $p\ge1$ define</p>
-    $$\bar M_p=\bar M_{p-1}{\pi d_p\over p\bar\kappa},$$
-    $$z_p=\left(p\bar M_p\pi D_\kappa-\bar M_{p-1}\pi D_{d_p}\right)S,$$
-    $$\dot M_p={z_{p-1}d_p+\dot M_{p-1}\pi d_p-pz_p\kappa
-      \over p\bar\kappa}.$$
-    <p>The source defining $z_p$ has zero row sum, so $z_p\mathbf1=0$. Fixed-order Fredholm expansion of the
-      exact linear systems proves</p>
+    <h3>Every fixed inverse-speed coefficient at every fixed moment order</h3>
+    <p>The recursion in fact determines the complete formal fast-switching expansion, coefficient by coefficient.
+      Let $S=Q_0^\#$, $\bar\kappa=\pi\kappa$, and write</p>
+    $$r^{(p)}(m)\sim\sum_{n\ge0}m^{-n}r_{p,n},\qquad
+      r_{p,n}=z_{p,n}+\mu_{p,n}\pi,\qquad z_{p,n}\mathbf1=0.$$
+    <p>Initialize $r_{0,0}=\pi$, $r_{0,n}=0$ for $n\ge1$, and $z_{p,0}=0$. For
+      $n=0,1,\ldots$ and, within each $n$, $p=1,2,\ldots$, set</p>
     <div class="equation-card">
-    $$r^{(p)}=\bar M_p\pi+{1\over m}\left(z_p+\dot M_p\pi\right)+O_p(m^{-2}),$$
-    $$\mathbb E_{\Pi_m}v^p=\bar M_p+{\dot M_p\over m}+O_p(m^{-2}).$$
+    $$\mu_{p,n}={r_{p-1,n}d_p-pz_{p,n}\kappa\over p\bar\kappa},
+      \qquad r_{p,n}=z_{p,n}+\mu_{p,n}\pi,$$
+    $$z_{p,n+1}=\left(p r_{p,n}D_\kappa-r_{p-1,n}D_{d_p}\right)S.$$
     </div>
-    <p>The leading recursion is exactly the moment recursion of the averaged CIR model with coefficients
-      $(\bar c,\bar\kappa,\bar a)$. If all coefficients are regime independent, the stronger identity
-      $r^{(p)}=\pi\mathbb E[v^p]$ holds for every switching speed and reduces to the stationary Gamma moments</p>
+    <p>The definition of $\mu_{p,n}$ makes the source in the second line annihilate $\mathbf1$; hence multiplication
+      by the group inverse gives its unique zero-sum solution. Substitution into the exact moment equation, followed
+      by induction in $(n,p)$, proves that for every fixed $p$ and truncation order $N$,</p>
+    <div class="equation-card">
+    $$r^{(p)}(m)=\sum_{n=0}^{N}m^{-n}r_{p,n}+O_{p,N}(m^{-N-1}),$$
+    $$\mathbb E_{\Pi_m}v^p=\sum_{n=0}^{N}m^{-n}\mu_{p,n}
+      +O_{p,N}(m^{-N-1}).$$
+    </div>
+    <p>The remainder follows from finite-dimensional analytic perturbation at the simple stationary eigenvector
+      of $Q_0$, in the sense of <a href="./bibliography.html#Kato1949">Kato (1949)</a>. This is an asymptotic
+      statement for each fixed pair $(p,N)$: it claims neither
+      convergence of the series as $N\to\infty$ nor an error constant uniform in the moment order. At $n=0$ it is
+      exactly the stationary-moment recursion of the averaged CIR model; at $n=1$ it reduces to the previously
+      displayed first correction. If all coefficients are regime independent, every $n\ge1$ coefficient vanishes
+      and the exact law has the stationary Gamma moments</p>
     $$\mathbb E[v^p]=\prod_{j=0}^{p-1}{c+ja/2\over\kappa}.$$
-    <p>A nonreversible three-state certificate checks orders one through six. One block polynomial-semigroup
-      exponential, started away from stationarity, agrees with the six recursive invariant moment vectors within
-      $7.3\times10^{-15}$; the constant-coefficient Gamma reduction agrees within $1.2\times10^{-16}$.
-      After subtracting the displayed first coefficient, the scalar residual orders are
-      $(1.996,2.023,1.987,1.993,1.994,1.995)$, and the largest component-vector residual has order $1.997$.
-      These are fixed-moment asymptotics; no constant uniform in $p$ or interchange of $p$ and $m$ is claimed.</p>
+    <p>A nonreversible three-state certificate checks moment orders one through six and inverse-speed truncations
+      zero through three. The observed scalar remainder orders are $(0.990,1.992,2.992,3.993)$ and the
+      regime-resolved orders are $(0.993,1.994,2.993,3.993)$, matching the predicted powers one through four.
+      At $m=128$ the largest scalar residual after the cubic correction is $7.9\times10^{-13}$. Independently,
+      one block polynomial-semigroup exponential agrees with the exact recursive invariant moments within
+      $7.3\times10^{-15}$, and the constant-coefficient Gamma reduction within $1.2\times10^{-16}$.</p>
 
     <h2>The exact long-run second-cumulant slope and intercept</h2>
     <p>The higher-cumulant expansion above is fixed-maturity, but its first secular coefficient can still be

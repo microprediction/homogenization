@@ -4,8 +4,8 @@ For the row-vector convention used in the paper, the invariant component
 moments r[p, i] = E[v**p 1_{Y=i}] obey a triangular sequence of killed-chain
 linear systems.  This script checks that recursion against one large
 polynomial-semigroup exponential, verifies the constant-coefficient Gamma
-special case, and tests the explicit first inverse-speed coefficient on a
-nonreversible three-state chain.
+special case, and tests the explicit inverse-speed expansion through cubic
+order on a nonreversible three-state chain.
 """
 import math
 import os
@@ -19,7 +19,8 @@ from effective_generator import group_inverse, stationary
 
 
 DEGREE = 6
-SPEEDS = (16, 32, 64, 128, 256)
+SPEEDS = (8, 16, 32, 64, 128)
+ASYMPTOTIC_ORDER = 3
 
 
 def stationary_moments(speed, q0, pi, c, kappa, variance, degree=DEGREE):
@@ -52,32 +53,42 @@ def moment_semigroup(speed, q0, initial_regime, v0, c, kappa, variance,
     return (initial @ expm(maturity * generator)).reshape(degree + 1, states)
 
 
-def fast_coefficients(q0, pi, c, kappa, variance, degree=DEGREE):
-    """Leading averaged moments and their exact first inverse-speed coefficient."""
+def fast_coefficients(q0, pi, c, kappa, variance, degree=DEGREE,
+                      asymptotic_order=ASYMPTOTIC_ORDER):
+    """Return r[p,n] in r_p(m)=sum_n m**(-n) r[p,n]+remainder."""
     inverse = group_inverse(q0)
     bar_kappa = pi @ kappa
-    leading = [1.0]
-    correction = [0.0]
-    centered = [np.zeros_like(pi)]
-    for order in range(1, degree + 1):
-        forcing = order * c + order * (order - 1) * variance / 2
-        next_leading = leading[-1] * (pi @ forcing) / (order * bar_kappa)
-        source = (
-            next_leading * order * pi * kappa
-            - leading[-1] * pi * forcing
-        )
-        next_centered = source @ inverse
-        assert abs(source.sum()) < 2e-13
-        assert abs(next_centered.sum()) < 2e-13
-        next_correction = (
-            centered[-1] @ forcing
-            + correction[-1] * (pi @ forcing)
-            - order * (next_centered @ kappa)
-        ) / (order * bar_kappa)
-        leading.append(next_leading)
-        centered.append(next_centered)
-        correction.append(next_correction)
-    return np.asarray(leading), np.asarray(correction), np.asarray(centered)
+    coefficients = np.zeros((degree + 1, asymptotic_order + 1, len(pi)))
+    centered = np.zeros_like(coefficients)
+    scalar = np.zeros((degree + 1, asymptotic_order + 1))
+    coefficients[0, 0] = pi
+    scalar[0, 0] = 1.0
+    for inverse_order in range(asymptotic_order + 1):
+        for moment_order in range(1, degree + 1):
+            forcing = (
+                moment_order * c
+                + moment_order * (moment_order - 1) * variance / 2
+            )
+            scalar[moment_order, inverse_order] = (
+                coefficients[moment_order - 1, inverse_order] @ forcing
+                - moment_order
+                * (centered[moment_order, inverse_order] @ kappa)
+            ) / (moment_order * bar_kappa)
+            coefficients[moment_order, inverse_order] = (
+                centered[moment_order, inverse_order]
+                + scalar[moment_order, inverse_order] * pi
+            )
+            if inverse_order < asymptotic_order:
+                source = (
+                    moment_order
+                    * coefficients[moment_order, inverse_order]
+                    * kappa
+                    - coefficients[moment_order - 1, inverse_order] * forcing
+                )
+                assert abs(source.sum()) < 8e-13
+                centered[moment_order, inverse_order + 1] = source @ inverse
+                assert abs(centered[moment_order, inverse_order + 1].sum()) < 8e-13
+    return coefficients, scalar, centered
 
 
 def gamma_moments(c, kappa, variance, degree=DEGREE):
@@ -123,40 +134,46 @@ def main():
     )
     assert gamma_error < 2e-14
 
-    leading, correction, centered = fast_coefficients(
+    coefficients, scalar, centered = fast_coefficients(
         q0, pi, c, kappa, variance
     )
-    residuals = []
-    component_residuals = []
+    residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
+    component_residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
     for speed in SPEEDS:
         moments = stationary_moments(speed, q0, pi, c, kappa, variance)
-        residuals.append(
-            np.abs(moments.sum(axis=1) - leading - correction / speed)
-        )
-        component_residuals.append(
-            np.max(
-                np.abs(
-                    moments
-                    - leading[:, None] * pi
-                    - (centered + correction[:, None] * pi) / speed
-                )
+        for inverse_order in range(ASYMPTOTIC_ORDER + 1):
+            powers = speed ** -np.arange(inverse_order + 1, dtype=float)
+            approximation = np.einsum(
+                "pn,n->p", scalar[:, :inverse_order + 1], powers
             )
-        )
-    residuals = np.asarray(residuals)
-    rates = [observed_order(residuals[:, order]) for order in range(1, DEGREE + 1)]
-    component_rate = observed_order(component_residuals)
-    assert min(rates) > 1.98
-    assert component_rate > 1.98
+            component_approximation = np.einsum(
+                "pni,n->pi", coefficients[:, :inverse_order + 1], powers
+            )
+            residuals[inverse_order].append(
+                np.max(np.abs(moments.sum(axis=1)[1:] - approximation[1:]))
+            )
+            component_residuals[inverse_order].append(
+                np.max(np.abs(moments[1:] - component_approximation[1:]))
+            )
+    scalar_rates = np.asarray(
+        [observed_order(residuals[order]) for order in range(ASYMPTOTIC_ORDER + 1)]
+    )
+    component_rates = np.asarray(
+        [observed_order(component_residuals[order])
+         for order in range(ASYMPTOTIC_ORDER + 1)]
+    )
+    assert np.min(scalar_rates - np.arange(1, ASYMPTOTIC_ORDER + 2)) > -0.06
+    assert np.min(component_rates - np.arange(1, ASYMPTOTIC_ORDER + 2)) > -0.06
 
     print("all-order stationary switched-CIR moment certificate")
     print("stationary law:", np.array2string(pi, precision=10))
     print("semigroup discrepancy:", f"{semigroup_error:.3e}")
     print("Gamma reduction discrepancy:", f"{gamma_error:.3e}")
-    print("leading moments p=1..6:", np.array2string(leading[1:], precision=10))
-    print("first coefficients p=1..6:", np.array2string(correction[1:], precision=10))
-    print("scalar residual orders p=1..6:", np.array2string(np.asarray(rates), precision=6))
-    print("component residual order:", f"{component_rate:.6f}")
-    print("largest m=256 scalar residual:", f"{np.max(residuals[-1, 1:]):.3e}")
+    print("leading moments p=1..6:", np.array2string(scalar[1:, 0], precision=10))
+    print("first coefficients p=1..6:", np.array2string(scalar[1:, 1], precision=10))
+    print("scalar residual orders n=0..3:", np.array2string(scalar_rates, precision=6))
+    print("component residual orders n=0..3:", np.array2string(component_rates, precision=6))
+    print("largest cubic scalar residual at m=128:", f"{residuals[3][-1]:.3e}")
 
 
 if __name__ == "__main__":
