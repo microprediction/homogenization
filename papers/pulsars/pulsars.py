@@ -1,7 +1,8 @@
 """Pulsar spin-down switching: closed forms for the two-state model.
 
 The spin-down rate nudot(y_t) switches between nudot_1 and nudot_2 with a hidden Markov chain y_t that leaves
-state 1 at rate a and state 2 at rate b, started from its stationary law. With the averaged spin-down removed,
+state 1 at rate a and state 2 at rate b.  The stationary-start formulas remain the default; the sampled-design
+methods also accept an arbitrary initial probability of state 1. With the stationary averaged spin-down removed,
     X(T)   = nu(T) - nu(0) - nubar_dot T        = int_0^T g(y_s) ds,          g = nudot - nubar_dot,
     Phi(T) = phi(T) - phi(0) - nu(0)T - nubar_dot T^2/2 = int_0^T (T - s) g(y_s) ds.
 Any consistent units; the certificate uses days, nHz and nHz per day.
@@ -120,8 +121,62 @@ class TwoState:
         """Exact post-fit mean square divided by its Green--Kubo limit."""
         return self.postfit_ms_exact(T) / self.postfit_ms(T)
 
-    def phase_covariance(self, times):
-        """Exact covariance matrix of Phi(t) on an arbitrary nonnegative time design."""
+    @staticmethod
+    def _exp_moment(n, upper, rate):
+        """Return int_0^upper s^n exp(-rate*s) ds, stably for small rate*upper."""
+        upper = np.asarray(upper, float)
+        x = rate * upper
+        out = np.empty_like(upper)
+        small = x < 0.5
+        if np.any(small):
+            xs, us = x[small], upper[small]
+            series = np.zeros_like(xs)
+            term = np.ones_like(xs)
+            for k in range(40):
+                if k:
+                    term *= -xs / k
+                series += term / (n + k + 1)
+            out[small] = us ** (n + 1) * series
+        if np.any(~small):
+            xl = x[~small]
+            partial = np.zeros_like(xl)
+            term = np.ones_like(xl)
+            for k in range(n + 1):
+                if k:
+                    term *= xl / k
+                partial += term
+            out[~small] = (math.factorial(n) / rate ** (n + 1)
+                           * (1 - np.exp(-xl) * partial))
+        return out
+
+    def _entry_phase_kernel(self, u, v):
+        """Double-integrated kernel exp(-gamma*max(s,t)) for 0 <= s <= u, 0 <= t <= v."""
+        u, v = np.minimum(u, v), np.maximum(u, v)
+        g = self.gamma
+        e0, e1, e2, e3 = (self._exp_moment(n, u, g) for n in range(4))
+        return (u ** 2 * np.exp(-g * v) / (2 * g ** 2)
+                + u * (v / g - 1 / g ** 2) * e0
+                + (u * v - u / g - v / g + 1 / g ** 2) * e1
+                + (-u / 2 - v + 1 / g) * e2 + e3 / 2)
+
+    def _initial_p1(self, initial_p1):
+        q = self.p1 if initial_p1 is None else float(initial_p1)
+        if not 0 <= q <= 1:
+            raise ValueError("initial_p1 must lie in [0,1]")
+        return q
+
+    def phase_mean(self, times, initial_p1=None):
+        """Exact mean of Phi(t) for an arbitrary initial probability of state 1."""
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) == 0 or np.any(times < 0):
+            raise ValueError("times must be a nonempty vector of nonnegative values")
+        d = self._initial_p1(initial_p1) - self.p1
+        e0 = self._exp_moment(0, times, self.gamma)
+        e1 = self._exp_moment(1, times, self.gamma)
+        return self.Delta * d * (times * e0 - e1)
+
+    def phase_second_moment(self, times, initial_p1=None):
+        """Exact matrix E[Phi(t_i) Phi(t_j)] for an arbitrary initial law."""
         times = np.asarray(times, float)
         if times.ndim != 1 or len(times) == 0 or np.any(times < 0):
             raise ValueError("times must be a nonempty vector of nonnegative values")
@@ -134,13 +189,22 @@ class TwoState:
                  + (np.exp(-g * (v - u)) + 1 - e_v - e_u) / g ** 4)
         shape[u == 0] = 0.0
         c0 = self.p1 * self.p2 * self.Delta ** 2
-        return c0 * shape
+        d = self._initial_p1(initial_p1) - self.p1
+        entry = d * (self.p2 - self.p1) * self.Delta ** 2 * self._entry_phase_kernel(u, v)
+        return c0 * shape + entry
 
-    def postfit_ms_sampled(self, times, weights=None):
+    def phase_covariance(self, times, initial_p1=None):
+        """Exact centered covariance matrix of Phi(t) for an arbitrary initial law."""
+        mean = self.phase_mean(times, initial_p1)
+        return self.phase_second_moment(times, initial_p1) - np.outer(mean, mean)
+
+    def postfit_ms_sampled(self, times, weights=None, initial_p1=None, centered=False):
         """Exact weighted residual power for sampled OLS on 1, t and t^2.
 
         The returned objective is E[sum_i w_i r_i^2], with positive weights
-        normalized to sum to one.  Equal weights give the sampled mean square.
+        normalized to sum to one. Equal weights give the sampled mean square.
+        For an arbitrary start this includes the projected squared mean unless
+        centered=True, which returns the conditional stochastic variance only.
         """
         times = np.asarray(times, float)
         if times.ndim != 1 or len(times) < 3 or np.any(times < 0):
@@ -157,10 +221,11 @@ class TwoState:
         if np.linalg.matrix_rank(gram) < 3:
             raise ValueError("the quadratic timing design is rank deficient")
         hat = design @ np.linalg.solve(gram, design.T * weights)
-        cov = self.phase_covariance(times)
+        second = (self.phase_covariance(times, initial_p1) if centered
+                  else self.phase_second_moment(times, initial_p1))
         # Weighted orthogonal projection gives H'W=WH and H^2=H, hence
         # tr[W(I-H)C(I-H)'] = tr(WC)-tr(WHC), avoiding a cubic matrix product.
-        return float(weights @ np.diag(cov) - np.sum(weights[:, None] * hat * cov.T))
+        return float(weights @ np.diag(second) - np.sum(weights[:, None] * hat * second.T))
 
     # ---- spectra (two-sided, per Hz) ----------------------------------------------------------------------
     def S_nudot(self, f):

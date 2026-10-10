@@ -111,7 +111,9 @@
     $b$. The rates may differ, so the pulsar can spend most of its time in one state. The spin-down rate is
     $\dot\nu_{y_t}$, and frequency and phase (in cycles) are its integrals:</p>
     $$\nu(t) = \nu(0) + \int_0^t \dot\nu_{y_s}\,ds, \qquad \phi(t) = \phi(0) + \int_0^t \nu(s)\,ds .$$
-    <p>The chain starts from its stationary law, since an observer does not know the state when timing begins.</p>
+    <p>The main formulas start the chain from its stationary law, appropriate when the initial magnetospheric state is
+    unknown. For an intermittent pulsar the radio on/off state can instead be observed at the beginning of a timing
+    campaign; an exact known-start correction is derived below.</p>
     <p>There are two time scales. The state persists for $1/a$ or $1/b$, from days to years.</p>
     <p>The pulsar is timed over
     a span $T$ of years. The expansion parameter is $1/(\gamma T)$ with $\gamma = a + b$.</p>
@@ -291,6 +293,53 @@
     $164.416$ and $139.865$ nHz$^2$ day$^2$, respectively, converging to the continuous value $138.075$.
     The endpoint grid has first-order quadrature error. On an eleven-point irregular weighted design, the exact
     trace is $154.452$; exact-path simulation gives $155.726\pm0.852$.</p>
+
+    <h3>A known starting regime: the exact entry layer</h3>
+    <p>The stationary calculation is not the conditional answer when the radio state is known at the first
+    observation. Put $q=\Pr(y_0=1)$, $d=q-\pi_1$, and let $I_t$ indicate state 1. The two-state semigroup gives, for
+    $s\le t$,</p>
+    $$\mathbb E(I_t-\pi_1\mid I_s)=e^{-\gamma(t-s)}(I_s-\pi_1).$$
+    <p>Consequently the nonstationary first and raw second moments of the centered spin-down rate are exactly</p>
+    <div class="equation-card">
+    $$\mathbb E_q g(y_s)=\Delta d e^{-\gamma s},$$
+    $$\mathbb E_q\{g(y_s)g(y_t)\}
+      =\Delta^2\left\{\pi_1\pi_2e^{-\gamma|t-s|}
+      +d(\pi_2-\pi_1)e^{-\gamma\max(s,t)}\right\}.$$
+    </div>
+    <p>The second term is the exact entry layer. It is linear in the initial law, as every raw Markov expectation
+    must be. After integrating twice, the phase mean is</p>
+    $$m_q(t)=\Delta d\left\{\frac{t}{\gamma}
+      -\frac{1-e^{-\gamma t}}{\gamma^2}\right\}.$$
+    <p>For $u=\min(t_i,t_j)$, $v=\max(t_i,t_j)$ and
+      $E_k(u)=\int_0^u s^k e^{-\gamma s}\,ds$, the raw phase second moment is</p>
+    $$M_{q,ij}=\pi_1\pi_2\Delta^2J_\gamma(u,v)
+      +d(\pi_2-\pi_1)\Delta^2L_\gamma(u,v),$$
+    $$\begin{aligned}
+    L_\gamma(u,v)={}&\frac{u^2e^{-\gamma v}}{2\gamma^2}
+      +u\left(\frac v\gamma-\frac1{\gamma^2}\right)E_0(u)\\
+      &+\left(uv-\frac u\gamma-\frac v\gamma+\frac1{\gamma^2}\right)E_1(u)
+      +\left(\frac1\gamma-v-\frac u2\right)E_2(u)+\frac12E_3(u).
+    \end{aligned}$$
+    <p>The conditional covariance is $C_q=M_q-m_qm_q^\top$. Therefore the expected fitted residual energy uses the
+    raw second moment,</p>
+    <div class="equation-card">
+    $$\mathbb E_q(r^\top Wr)=\operatorname{tr}\{W(I-H)M_q(I-H)^\top\},$$
+    $$\mathbb E_q(r^\top Wr)
+      =\operatorname{tr}\{W(I-H)C_q(I-H)^\top\}
+       +\|(I-H)m_q\|_W^2.$$
+    </div>
+    <p>This separates stochastic timing noise conditional on the starting state from a deterministic transient mean
+    that is not exactly quadratic and hence is not completely removed by the timing fit. When $q=\pi_1$, $d=0$ and
+    all formulas reduce to the stationary theorem above. The derivation uses only the two-state Markov semigroup,
+    not Gaussianity.</p>
+    <p>On the same 100-day irregular B1931+24 design, the stationary expected energy is $154.452$. Conditioning on
+    an on-state start gives $167.131=163.217+3.914$, where the last number is the projected squared mean; an
+    off-state start gives $151.283=151.038+0.245$. Thus using the stationary law changes this finite-span benchmark
+    by $+8.21\%$ or $-2.05\%$, depending on the observed initial state. Independent matrix-semigroup quadrature
+    agrees with the closed form within $7.2\times10^{-15}$, label swapping is invariant to $2.0\times10^{-16}$,
+    and conditioned exact-path simulations agree within Monte Carlo uncertainty. The relevance of conditioning is
+    empirical rather than hypothetical here: <a href="./bibliography.html#Kramer2006">Kramer et al. (2006)</a>
+    identify B1931+24&apos;s radio on/off state and its associated spin-down change directly.</p>
 
     <h2>What timing data identify</h2>
     <p>The two-state chain has four parameters: $\dot\nu_1$, $\dot\nu_2$, $a$ and $b$. To first order timing data see two
