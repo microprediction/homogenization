@@ -2550,5 +2550,16 @@
   "doi": "10.1239/jap/1165505206",
   "url": "https://doi.org/10.1239/jap/1165505206",
   "annotation": "Establishes asymptotically linear variance growth for finite-state continuous-time Markov reward chains and gives formulas for its growth rate; the boundary Hessian here refines the finite-horizon constant term."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Breuer2012",
+  "authors": "Breuer, L.",
+  "year": 2012,
+  "title": "Occupation times for Markov-modulated Brownian motion",
+  "venue": "Journal of Applied Probability 49(2), 549-565",
+  "doi": "10.1239/jap/1339878804",
+  "url": "https://doi.org/10.1239/jap/1339878804",
+  "annotation": "Develops occupation-time transforms for finite-state Markov-modulated Brownian motion, the process class whose exact short-maturity time change supplies the critical sT boundary layer here."
  }
 ]

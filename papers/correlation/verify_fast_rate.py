@@ -15,6 +15,7 @@ from scipy.linalg import expm
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from correlation import (cov_entries, cumulants_exact,
+                         critical_return_cumulant_coefficients,
                          gaussian_vector_occupation_cumulant,
                          initial_covariance_boundary,
                          initial_layer_coefficient,
@@ -110,6 +111,88 @@ def main():
     covariances = np.array([
         [[c11[z], c12[z]], [c12[z], c22[z]]] for z in range(3)
     ])
+
+    print("critical boundary layer s*T=tau")
+    tau = 0.75
+    critical_initial = np.array([0.2, 0.3, 0.5])
+    critical_occupation = occupation_joint_cumulants_cauchy(
+        tau, Q, max_order=6, r=0.32, N=32, initial=critical_initial
+    )
+    critical_speeds = [1, 4, 16, 64, 256]
+    coefficient_table = {}
+    maximum_identity_error = 0.0
+    critical_exact = {}
+    for speed in critical_speeds:
+        critical_exact[speed] = cumulants_exact(
+            tau, Q, MU1 / math.sqrt(speed), MU2 / math.sqrt(speed),
+            VOL1, VOL2, RHO, r=0.32, N=48, max_order=6,
+            initial=critical_initial
+        )
+    time_change_speed = 16
+    original_short_time = cumulants_exact(
+        tau / time_change_speed, time_change_speed * Q,
+        MU1, MU2, VOL1, VOL2, RHO, r=0.08, N=64, max_order=4,
+        initial=critical_initial
+    )
+    time_change_error = 0.0
+    for order in range(2, 5):
+        for twos in range(order + 1):
+            key = 'k' + '1' * (order - twos) + '2' * twos
+            time_change_error = max(time_change_error, abs(
+                time_change_speed ** (order / 2) * original_short_time[key]
+                - critical_exact[time_change_speed][key]
+            ))
+    for order in range(2, 7):
+        for twos in range(order + 1):
+            indices = (0,) * (order - twos) + (1,) * twos
+            key = 'k' + '1' * (order - twos) + '2' * twos
+            coefficients = critical_return_cumulant_coefficients(
+                indices, tau, means[0], covariances[0],
+                means[1:] - means[0], covariances[1:] - covariances[0],
+                critical_occupation
+            )
+            coefficient_table[key] = coefficients
+            for speed in critical_speeds:
+                predicted = sum(value * speed ** (-singletons / 2)
+                                for singletons, value in coefficients.items())
+                maximum_identity_error = max(
+                    maximum_identity_error,
+                    abs(critical_exact[speed][key] - predicted)
+                )
+
+    variance_limit = coefficient_table['k11'][0]
+    fourth_limit = coefficient_table['k1111'][0]
+    sixth_limit = coefficient_table['k111111'][0]
+    excess_kurtosis_limit = fourth_limit / variance_limit ** 2
+    print(f"  exact coefficient identity error {maximum_identity_error:.2e}")
+    print(f"  direct short-time rescaling error through order four "
+          f"{time_change_error:.2e}")
+    print(f"  asset-1 limit: variance {variance_limit:.8f}; "
+          f"fourth cumulant {fourth_limit:.8e}; "
+          f"sixth cumulant {sixth_limit:.8e}; "
+          f"excess kurtosis {excess_kurtosis_limit:.6f}")
+    for order in (3, 5):
+        key = 'k' + '1' * order
+        leading = coefficient_table[key][1]
+        errors = [abs(math.sqrt(speed) * critical_exact[speed][key]
+                      - leading) for speed in critical_speeds]
+        ratio = errors[-2] / errors[-1]
+        print(f"  order {order}: sqrt(s)-scaled limit {leading:+.8e}; "
+              f"last quadrupling error ratio {ratio:.3f} (target 4)")
+        ok &= ratio > 3.8
+    for order in (4, 6):
+        key = 'k' + '1' * order
+        leading = coefficient_table[key][0]
+        errors = [abs(critical_exact[speed][key] - leading)
+                  for speed in critical_speeds]
+        ratio = errors[-2] / errors[-1]
+        print(f"  order {order}: persistent limit {leading:+.8e}; "
+              f"last quadrupling error ratio {ratio:.3f} (target 4)")
+        ok &= ratio > 3.8
+    ok &= maximum_identity_error < 1e-11
+    ok &= time_change_error < 1e-9
+    ok &= abs(excess_kurtosis_limit) > 1e-4
+
     leading_occupation = {
         tuple(sorted((a, b))): covariance_rate[a, b]
         for a in range(2) for b in range(2)

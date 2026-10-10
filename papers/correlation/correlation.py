@@ -488,6 +488,65 @@ def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
     return float(value)
 
 
+def critical_return_cumulant_coefficients(indices, tau, baseline_mean,
+                                          baseline_covariance,
+                                          mean_contrasts,
+                                          covariance_contrasts, occupation):
+    """Coefficients in the exact ``s*T=tau`` scaled-return identity.
+
+    If the regime chain has generator ``s Q``, ``T=tau/s``, and
+    ``Z_s=sqrt(s) X_T``, Brownian scaling gives
+
+        cumulant(indices, Z_s) = sum_q coefficient[q] * s**(-q/2).
+
+    Here ``q`` is the number of singleton blocks in the corresponding
+    singleton/pair partition.  The occupation cumulants in ``occupation``
+    are those of the unit-speed ``Q`` chain over ``[0, tau]``.  Thus even
+    cumulants can have a nonzero ``q=0`` Gaussian-mixture limit, whereas
+    odd cumulants have at least one singleton and are ``O(s**(-1/2))``.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    baseline_mean = np.asarray(baseline_mean, float)
+    baseline_covariance = np.asarray(baseline_covariance, float)
+    mean_contrasts = np.asarray(mean_contrasts, float)
+    covariance_contrasts = np.asarray(covariance_contrasts, float)
+    if baseline_mean.ndim != 1:
+        raise ValueError("baseline_mean must be a vector")
+    dimension = len(baseline_mean)
+    colors = len(mean_contrasts)
+    if (baseline_covariance.shape != (dimension, dimension)
+            or mean_contrasts.shape != (colors, dimension)
+            or covariance_contrasts.shape != (colors, dimension, dimension)
+            or colors < 1):
+        raise ValueError("incompatible baseline and occupation contrasts")
+    if any(index < 0 or index >= dimension for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    order = len(indices)
+    coefficients = {}
+    if order == 1:
+        coefficients[1] = tau * baseline_mean[indices[0]]
+    elif order == 2:
+        coefficients[0] = tau * baseline_covariance[
+            indices[0], indices[1]
+        ]
+    for partition in _singleton_pair_partitions(tuple(range(order))):
+        singletons = sum(len(block) == 1 for block in partition)
+        for coloring in itertools.product(range(colors), repeat=len(partition)):
+            term = occupation[tuple(sorted(coloring))]
+            for block, color in zip(partition, coloring):
+                if len(block) == 1:
+                    term *= mean_contrasts[color, indices[block[0]]]
+                else:
+                    term *= covariance_contrasts[
+                        color, indices[block[0]], indices[block[1]]
+                    ]
+            coefficients[singletons] = coefficients.get(singletons, 0.0) + term
+    return {q: float(value) for q, value in sorted(coefficients.items())}
+
+
 def gaussian_occupation_cumulant(indices, T, regime_means, regime_covariances,
                                   occupation):
     """Exact joint cumulant for a Gaussian law affine in one occupation time.

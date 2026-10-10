@@ -372,6 +372,47 @@
     </div>
     <p>These are fixed-$Q$, fixed-maturity contractions of the Green&ndash;Kubo matrix. They do not assert the same rank
     after combining different maturity-dependent loadings.</p>
+    <h4>The critical boundary layer $sT=\tau$</h4>
+    <p>The excluded near end has a different, exact scaling law. Put $T_s=\tau/s$ and
+      $Z_s=\sqrt{s}\,X_{T_s}$. Under the time change $u=st$, the regime process has generator $Q$ on
+      $[0,\tau]$, while Brownian scaling removes $s$ from the conditional covariance. If $A_\tau^a$ are the
+      non-reference occupation times of that unit-speed chain, then exactly</p>
+    <div class="equation-card">
+    $$Z_s\mid A_\tau\sim N\!\left(
+      s^{-1/2}\left\{\mu^0\tau+\sum_a d\mu^aA_\tau^a\right\},
+      C^0\tau+\sum_a dC^aA_\tau^a\right).$$
+    </div>
+    <p>Consequently, if $r(\mathcal P)$ is the number of singleton blocks in a singleton&ndash;pair partition,
+      the all-order tensor has the exact finite-$s$ identity</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(Z_s)=
+      \sum_{\mathcal P\in\mathcal M_n}\ \sum_z
+      s^{-r(\mathcal P)/2}
+      \operatorname{cum}\!\left(A_\tau^{z(B)}:B\in\mathcal P\right)
+      \prod_{\{j\}\in\mathcal P}d\mu_{i_j}^{z(\{j\})}
+      \prod_{\{j,k\}\in\mathcal P}dC_{i_ji_k}^{z(\{j,k\})}.$$
+    </div>
+    <p>For even $n$, perfect pairings have no singleton, so covariance switching can leave a nonzero limiting
+      cumulant of every even order. For odd $n$, every partition has a singleton, giving
+      $\kappa_n(Z_s)=O(s^{-1/2})$; the leading term uses one drift contrast and $(n-1)/2$ covariance contrasts.
+      Thus</p>
+    $$Z_s\ \Longrightarrow\ Z_\infty,\qquad
+      Z_\infty\mid A_\tau\sim N\!\left(0,
+      C^0\tau+\sum_a dC^aA_\tau^a\right),$$
+    <p>which is generally a non-Gaussian covariance mixture. It becomes Gaussian when the integrated covariance is
+      deterministic in every observed direction; in particular, pure mean switching disappears at this scale.
+      This proves that the fixed-maturity fast-rate hierarchy above cannot be uniform down to $T=O(s^{-1})$.
+      The process is the finite-state Markov-modulated Brownian motion studied by
+      <a href="./bibliography.html#Breuer2012">Breuer</a>; the occupation vector, rather than a new limiting object,
+      carries the entire crossover.</p>
+    <p>For the nonreversible three-state certificate with $\tau=0.75$, the limiting asset-one variance is
+      $0.03133818$, the fourth and sixth cumulants are $3.20891983\times10^{-4}$ and
+      $1.30228960\times10^{-5}$, and the limiting excess kurtosis is $0.326747$. The exact coefficient polynomial
+      agrees with independent tilted-matrix extraction through order six within $6.8\times10^{-12}$. Under each
+      quadrupling of $s$, the residuals after the odd $s^{-1/2}$ limits and the persistent even limits fall by
+      factors $4.000$, $4.010$, $3.999$, and $4.038$ at orders three through six. A separate calculation at
+      $s=16$ compares the original horizon $\tau/s$ directly with the rescaled unit-speed system through order
+      four and agrees within $2.8\times10^{-10}$.</p>
     <h4>Arbitrary-start covariance layer</h4>
     <p>The abstract boundary coefficient above has a simple first-order form. For any state field $f$, write
     $\widetilde f=f-\pi f$. The semigroup identity is exact:</p>
