@@ -692,6 +692,24 @@
       with $q$th block $t^qC_q$ are independent, so their $L^2[0,1]$ Gram
       matrix $G$ is positive definite. Changing the orthonormal basis within
       any grade only orthogonally conjugates $G$, making $\det G$ intrinsic.</p>
+    <p><strong>Every repeated-power constant.</strong> The same matrix gives
+      the leading constant of each eigenvalue, not only their product. Let
+      $G_{&lt;q,&lt;q}$ denote the leading block indexed by grades below $q$ and
+      define the positive-definite Schur pivots</p>
+    $$\Sigma_1=G_{11},\qquad
+      \Sigma_q=G_{qq}-G_{q,&lt;q}G_{&lt;q,&lt;q}^{-1}G_{&lt;q,q}\quad(q&gt;1).$$
+    <p>If $\mu_{q,1}\ge\cdots\ge\mu_{q,d_q}&gt;0$ are the eigenvalues of
+      $\Sigma_q$ and the positive eigenvalues of $D(T)$ are ordered
+      decreasingly, then</p>
+    $$\lambda_{s_{q-1}+j}(D(T))
+      =\mu_{q,j}T^{2q+1}\{1+O(T)\},qquad 1\le j\le d_q.$$
+    <p>For the proof, insert $\lambda=\mu T^{2q+1}$ into the characteristic
+      determinant and eliminate the earlier grades. Their resolvent converges,
+      after its own block scaling, to $G_{&lt;q,&lt;q}^{-1}$; the grade-$q$
+      factor tends to $\det(\Sigma_q-\mu I)$, while every later grade is of
+      smaller order. Induction over $q$ gives the displayed limits. The
+      identity $\det G=\prod_q\det\Sigma_q$ recovers the pseudo-determinant
+      constant above.</p>
     <p>For common-volatility CIR loadings with distinct mean-reversion rates,
       $s_d=d$ whenever $K_{ii}>0$ for every name. Indeed, the coefficient of
       order $q$ is a polynomial of degree $q-1$ in $\kappa_i$ with nonzero
@@ -712,7 +730,12 @@
       $22.954111$, and the condition-number slope is $-4.001934$. The explicit
       block Gram above gives $\det G=9.72067545896\times10^{-11}$; at
       $T=1/512$ the ratio
-      $\det D(T)/(T^{23}\det G)$ is $0.9862517970$. This theorem
+      $\det D(T)/(T^{23}\det G)$ is $0.9862517970$. The five predicted
+      eigenvalue constants are</p>
+    $$(2.654588640, 1.378744693, 0.02288875651,
+      2.279894144\times10^{-5},\ 5.089539343\times10^{-5}),$$
+    <p>and the largest relative discrepancy of the five scaled eigenvalues at
+      $T=1/512$ is $0.4003\%$. This theorem
       keeps the two notions of rank separate: for CIR, where $v_1$ is the
       all-ones vector, $s_1=\operatorname{rank}K$ is the fixed-parameter
       Green&ndash;Kubo rank, while later blocks describe new directions created

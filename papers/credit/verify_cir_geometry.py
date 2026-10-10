@@ -16,7 +16,8 @@ the sixth-power condition-number blow-up as maturity shrinks.
 For a five-name rank-two Green--Kubo matrix, a block-jet certificate then
 checks the general filtration law: cumulative ranks 2, 4, 5 produce powers
 3, 3, 5, 5, 7, determinant power 23, its explicit block-Gram leading
-constant, and fourth-power conditioning.
+constant, every individual Schur-pivot eigenvalue constant, and fourth-power
+conditioning.
 For partially coalescing rates in clusters of sizes three, two, and one, a
 second high-precision check verifies the Hermite-jet exponent multiset
 0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
@@ -542,7 +543,9 @@ def block_short_maturity_loading_checks():
 
         G_qp = C_q C_p' / (q+p+1),
 
-    then pdet D(T) / T^nu tends to det G.  This example has rank(K)=2 in
+    then pdet D(T) / T^nu tends to det G.  Moreover, the eigenvalues in
+    grade q, divided by T^(2q+1), tend to the eigenvalues of the q-th
+    successive Schur complement of G.  This example has rank(K)=2 in
     dimension five and cumulative ranks 2,4,5.
     """
     old_dps = mp.mp.dps
@@ -660,6 +663,33 @@ def block_short_maturity_loading_checks():
         assert limiting_eigenvalues[0] > 0
         determinant_constant = mp.det(limiting_gram)
 
+        # The constants within each repeated-power cluster are the spectra of
+        # the successive Schur pivots of G.  Their determinant product must
+        # recover det(G).
+        eigenvalue_constants = []
+        schur_determinants = []
+        grade_start = 0
+        for _, coefficient in grade_coefficients:
+            grade_stop = grade_start + coefficient.rows
+            schur_pivot = limiting_gram[
+                grade_start:grade_stop, grade_start:grade_stop
+            ]
+            if grade_start:
+                previous = limiting_gram[:grade_start, :grade_start]
+                cross = limiting_gram[:grade_start,
+                                      grade_start:grade_stop]
+                schur_pivot -= cross.T * previous**-1 * cross
+            pivot_eigenvalues = sorted(
+                mp.eigsy(schur_pivot, eigvals_only=True), reverse=True
+            )
+            assert pivot_eigenvalues[-1] > 0
+            eigenvalue_constants.extend(pivot_eigenvalues)
+            schur_determinants.append(mp.det(schur_pivot))
+            grade_start = grade_stop
+        assert abs(
+            mp.fprod(schur_determinants) / determinant_constant - 1
+        ) < mp.mpf("1e-80")
+
         horizons = [mp.mpf(2)**(-power) for power in range(3, 10)]
         spectra = []
         determinants = []
@@ -721,6 +751,12 @@ def block_short_maturity_loading_checks():
         determinant_ratios = [
             scaled / determinant_constant for scaled in scaled_determinants
         ]
+        eigenvalue_constant_errors = [
+            abs(measured / predicted - 1)
+            for measured, predicted in zip(
+                scaled_eigenvalues, eigenvalue_constants
+            )
+        ]
 
         assert np.max(abs(np.asarray(slopes) - exponents)) < 0.02
         assert abs(determinant_slope - determinant_power) < 0.06
@@ -729,6 +765,7 @@ def block_short_maturity_loading_checks():
             scaled_determinants[-1] / scaled_determinants[-2] - 1
         )) < 0.015
         assert abs(float(determinant_ratios[-1] - 1)) < 0.02
+        assert max(eigenvalue_constant_errors) < mp.mpf("0.005")
 
         print("\nblock short-maturity CIR loading certificate")
         print(f"  fixed Green-Kubo rank {feature_rank}; cumulative jet "
@@ -746,13 +783,19 @@ def block_short_maturity_loading_checks():
               + mp.nstr(determinant_constant, 12))
         print("  final determinant/leading-asymptotic ratio "
               + mp.nstr(determinant_ratios[-1], 12))
+        print("  predicted Schur-pivot eigenvalue constants "
+              + " ".join(mp.nstr(value, 12)
+                         for value in eigenvalue_constants))
+        print("  maximum eigenvalue-constant relative error "
+              + mp.nstr(max(eigenvalue_constant_errors), 9))
         print("  final scaled-determinant relative change "
               + mp.nstr(abs(
                   scaled_determinants[-1] / scaled_determinants[-2] - 1
               ), 9))
         print(f"  condition-number slope {condition_slope:.6f}")
         return (cumulative_ranks, exponents, slopes, determinant_slope,
-                determinant_constant, determinant_ratios, condition_slope)
+                determinant_constant, determinant_ratios,
+                eigenvalue_constants, condition_slope)
     finally:
         mp.mp.dps = old_dps
 
