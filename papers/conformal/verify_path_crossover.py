@@ -25,7 +25,9 @@ bound beyond the symmetric binary example, including discrete scores with
 deterministic or randomized tie handling.  It also checks the exact beta law
 of iid coverage conditional on the realized, tie-augmented calibration sample
 for arbitrary score distributions, and the sharp one-sided tolerance-limit/PAC
-choice of calibration order statistic.  Finally,
+choice of calibration order statistic.  It also checks the exact beta-spacing
+law and sharp PAC rank-width design for an interval with two finite calibration
+order-statistic endpoints.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing.  It checks the exact convex
@@ -151,6 +153,37 @@ def pac_calibration_order(
         ):
             return order
     return None
+
+
+def pac_interval_rank_width(
+    calibration_count: int, target: float, failure_probability: float
+) -> int | None:
+    """Smallest rank width for two finite order-statistic endpoints.
+
+    If the endpoints have ranks ``lower < upper``, their conditional coverage
+    has the Beta(upper-lower, N+1-upper+lower) law.  Only widths 1,...,N-1
+    are available because both endpoints must be calibration observations.
+    """
+    for width in range(1, calibration_count):
+        if iid_training_confidence(calibration_count, width, target) >= (
+            1.0 - failure_probability
+        ):
+            return width
+    return None
+
+
+def minimum_two_endpoint_panel(
+    target: float, failure_probability: float
+) -> tuple[int, int]:
+    """Smallest panel size and rank width for a finite two-endpoint interval."""
+    calibration_count = 2
+    while True:
+        width = pac_interval_rank_width(
+            calibration_count, target, failure_probability
+        )
+        if width is not None:
+            return calibration_count, width
+        calibration_count += 1
 
 
 def integer_beta_cdf(value: float, alpha: int, beta: int) -> float:
@@ -2872,6 +2905,126 @@ def main() -> None:
         f"{pac_quadrature_error:.3e}"
     )
 
+    # Two finite calibration endpoints give a beta *spacing*, not the beta
+    # order statistic above.  For lower < upper, the PIT transforms their
+    # conditional interval coverage into U_(upper)-U_(lower).  Uniform
+    # spacings are Dirichlet, so this difference is Beta(r,N+1-r), where
+    # r=upper-lower.  Its law depends only on rank width, not interval
+    # location.  Check the law by quadrature and simulation for the sample
+    # range of nine observations (lower=1, upper=9, r=8).
+    lower_order, upper_order = 1, 9
+    rank_width = upper_order - lower_order
+    spacing_rng = np.random.default_rng(20261010)
+    ordered_uniforms = np.sort(
+        spacing_rng.random((400_000, calibration_count)), axis=1
+    )
+    interval_coverages = (
+        ordered_uniforms[:, upper_order - 1]
+        - ordered_uniforms[:, lower_order - 1]
+    )
+    spacing_a = rank_width
+    spacing_b = calibration_count + 1 - rank_width
+    spacing_mean = rank_width / (calibration_count + 1)
+    spacing_variance = (
+        spacing_a
+        * spacing_b
+        / ((calibration_count + 1) ** 2 * (calibration_count + 2))
+    )
+    spacing_target = 0.7
+    spacing_lower_tail = integer_beta_cdf(
+        spacing_target, spacing_a, spacing_b
+    )
+    spacing_log_beta = (
+        math.lgamma(spacing_a)
+        + math.lgamma(spacing_b)
+        - math.lgamma(spacing_a + spacing_b)
+    )
+
+    def spacing_density(coverage):
+        if coverage <= 0.0 or coverage >= 1.0:
+            return 0.0
+        return math.exp(
+            (spacing_a - 1) * math.log(coverage)
+            + (spacing_b - 1) * math.log1p(-coverage)
+            - spacing_log_beta
+        )
+
+    spacing_quadrature_tail = quad(
+        spacing_density,
+        0.0,
+        spacing_target,
+        epsabs=2e-14,
+        epsrel=2e-13,
+    )[0]
+    empirical_spacing_tail = np.mean(interval_coverages < spacing_target)
+    assert abs(spacing_quadrature_tail - spacing_lower_tail) < 2e-14
+    assert abs(np.mean(interval_coverages) - spacing_mean) < 5e-4
+    assert abs(np.var(interval_coverages) - spacing_variance) < 5e-5
+    assert abs(empirical_spacing_tail - spacing_lower_tail) < 0.0015
+
+    # The exact PAC rule is the same binomial-tail inversion with rank width
+    # in place of the one-sided order.  The finite-endpoint constraint r<=N-1
+    # changes feasibility: the sample range succeeds iff
+    # p^(N-1) [N-(N-1)p] <= delta.
+    two_endpoint_minima = [
+        minimum_two_endpoint_panel(target, failure_probability)
+        for failure_probability in failure_probabilities
+    ]
+    assert two_endpoint_minima == [(38, 37), (46, 45), (64, 63)]
+    for failure_probability, (count, width) in zip(
+        failure_probabilities, two_endpoint_minima
+    ):
+        range_failure = target ** (count - 1) * (
+            count - (count - 1) * target
+        )
+        assert abs(
+            range_failure
+            - (1.0 - iid_training_confidence(count, count - 1, target))
+        ) < 3e-15
+        assert range_failure <= failure_probability
+        previous_failure = target ** (count - 2) * (
+            count - 1 - (count - 2) * target
+        )
+        assert previous_failure > failure_probability
+        assert width == count - 1
+
+    conventional_width = math.ceil(target * (100 + 1))
+    conventional_interval_confidence = iid_training_confidence(
+        100, conventional_width, target
+    )
+    pac_widths = [
+        pac_interval_rank_width(100, target, failure_probability)
+        for failure_probability in failure_probabilities
+    ]
+    assert pac_widths == [95, 96, 97]
+    assert abs(
+        conventional_interval_confidence - 0.5487098345579959
+    ) < 2e-14
+    print("\nTwo-finite-endpoint iid calibration design")
+    print(
+        f"N=9 ranks 1,9: law=Beta({spacing_a},{spacing_b}); "
+        f"mean={spacing_mean:.8f}; sd={math.sqrt(spacing_variance):.8f}"
+    )
+    print(
+        f"P(conditional interval coverage < {spacing_target:.1f}): "
+        f"exact={spacing_lower_tail:.9f}, "
+        f"simulation={empirical_spacing_tail:.9f}"
+    )
+    print("target coverage 0.9")
+    print(" delta      minimum N     rank width     marginal coverage")
+    for failure_probability, (count, width) in zip(
+        failure_probabilities, two_endpoint_minima
+    ):
+        print(
+            f" {failure_probability:5.2f}       {count:5d}"
+            f"          {width:5d}          {width / (count + 1):.8f}"
+        )
+    print(
+        "N=100 conventional width=91: training confidence "
+        f"{conventional_interval_confidence:.8f}"
+    )
+    print("N=100 PAC widths for delta=.10,.05,.01: " + str(pac_widths))
+
     # Transfer the iid beta tail to a dependent training-conditional
     # statement.  The score (Y + U)/2 has an exactly uniform stationary
     # marginal but reveals the binary state.  Its conditional coverage law is
@@ -4317,7 +4470,8 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with optimal "
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
-        "sharp PAC design, symmetric and unequal-mass all-order "
+        "sharp one-sided and two-finite-endpoint PAC designs, "
+        "symmetric and unequal-mass all-order "
         "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
         "slack-free rearrangement bounds plus whole-law Wasserstein control "
