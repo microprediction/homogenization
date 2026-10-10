@@ -1340,6 +1340,62 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
     assert min(budget_ratios) > 0.999
     assert min(variance_ratios) > 0.999
 
+    # Sampling cost selects a finite optimum.  The continuous extension
+    # f(N)=N*tanh(L/(2N)) is strictly increasing and strictly concave, since
+    # f''(N)=-2*x**2*sech(x)**2*tanh(x)/N for x=L/(2N).  Hence the information
+    # increments decrease, as do the normalized variance reductions
+    # d_N=1/I_N-1/I_(N+1).  The exact cost-optimal interval count is the first
+    # N with d_N <= c.  Its small-cost cube-root law follows from
+    # d_N ~ L**3 / (12*I_infinity**2*N**3).
+    cost_rows = []
+    maximum_threshold_error = 0.0
+    maximum_asymptotic_error = 0.0
+    for cost_exposure in (0.5, 2.0, 8.0, 32.0):
+        cost_limit_information = np.longdouble(1 + cost_exposure / 2)
+
+        def cost_information(intervals):
+            cost_x = np.longdouble(cost_exposure) / (2 * intervals)
+            return np.longdouble(1) + intervals * np.tanh(cost_x)
+
+        previous_reduction = np.longdouble("inf")
+        for intervals in range(1, 128):
+            reduction = (1 / cost_information(intervals)
+                         - 1 / cost_information(intervals + 1))
+            assert 0 < reduction < previous_reduction
+            previous_reduction = reduction
+
+        for observation_cost in (1e-6, 1e-8, 1e-10):
+            intervals = 1
+            while (1 / cost_information(intervals)
+                   - 1 / cost_information(intervals + 1)
+                   > observation_cost):
+                intervals += 1
+            next_reduction = (1 / cost_information(intervals)
+                              - 1 / cost_information(intervals + 1))
+            if intervals > 1:
+                previous_reduction = (1 / cost_information(intervals - 1)
+                                      - 1 / cost_information(intervals))
+                maximum_threshold_error = max(
+                    maximum_threshold_error,
+                    float(max(observation_cost - previous_reduction,
+                              next_reduction - observation_cost, 0)))
+                assert previous_reduction >= observation_cost
+            assert next_reduction <= observation_cost
+
+            asymptotic_intervals = (
+                cost_exposure ** 3
+                / (12 * observation_cost * float(cost_limit_information) ** 2)
+            ) ** (1 / 3)
+            relative_error = abs(intervals / asymptotic_intervals - 1)
+            if observation_cost == 1e-10:
+                maximum_asymptotic_error = max(
+                    maximum_asymptotic_error, relative_error)
+                cost_rows.append((cost_exposure, intervals,
+                                  asymptotic_intervals, next_reduction))
+        assert intervals < 10000
+    assert maximum_threshold_error == 0
+    assert maximum_asymptotic_error < 0.002
+
     print("irregular nonreversible panel:",
           f"exact variance {exact_variance:.8f},",
           f"bound {variance_bound:.8f}, factor {pairwise_factor:.8f}")
@@ -1369,6 +1425,14 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
           np.array2string(np.array(budget_ratios), precision=9),
           "for exposures [0.1, 0.5, 2, 8, 32];",
           f"minimum variance-gap ratio {min(variance_ratios):.9f}")
+    print("cost-optimal observation counts at cost 1e-10:",
+          "; ".join(
+              f"L={cost_exposure:g}: {intervals} "
+              f"(cube-root {asymptotic_intervals:.3f}, "
+              f"next gain {float(next_reduction):.3e})"
+              for (cost_exposure, intervals, asymptotic_intervals,
+                   next_reduction) in cost_rows),
+          f"; maximum relative count error {maximum_asymptotic_error:.3e}")
 
 
 def transient_panel_checks(Q, pi, gamma_s, success):
@@ -1641,7 +1705,8 @@ def main():
     finite_chain_checks(rng)
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
-          " count law, the sharp joint panel/switching variance profile,"
+          " count law, optimal calibration design and its cost rule, the"
+          " sharp joint panel/switching variance profile,"
           " Perron tail rate, sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"
           " bridge to the mean, the second-order central lattice Edgeworth"

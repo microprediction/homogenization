@@ -513,6 +513,42 @@
       Zhigljavsky (2015)</a>. The bound here is exact for the exponential
       kernel and retains the same marginal-variance-only scope as the
       preceding design theorem.</p>
+
+    <h3>Observation cost gives a cube-root panel rule</h3>
+    <p>The exact information curve also chooses the panel size when each
+      additional observation carries a normalized cost. Let</p>
+    $$f_L(N)=N\tanh\left(\frac{L}{2N}\right),\qquad
+      \mathcal I_N=1+f_L(N),\qquad V_N=\mathcal I_N^{-1}.$$
+    <p>For real $N&gt;0$, put $x=L/(2N)$. Direct differentiation gives</p>
+    $$f_L'(N)=\tanh x-x\operatorname{sech}^2x&gt;0,$$
+    $$f_L''(N)=-\frac{2x^2}{N}\operatorname{sech}^2x\tanh x&lt;0.$$
+    <p>Thus the information increments are strictly decreasing. The normalized
+      variance reductions</p>
+    $$d_N=V_N-V_{N+1}
+      =\frac{\mathcal I_{N+1}-\mathcal I_N}
+      {\mathcal I_N\mathcal I_{N+1}}$$
+    <p>are also strictly decreasing, because their numerators decrease while
+      their denominators increase. Consequently $V_N+cN$ is a strictly convex
+      sequence. Its minimizer is characterized exactly by</p>
+    <div class="equation-card">
+    $$d_{N-1}\geq c\geq d_N,$$
+    </div>
+    <p>with the evident endpoint convention; equality gives the only possible
+      adjacent tie. The expansion of the exact information formula yields</p>
+    $$d_N\sim\frac{L^3}{12(1+L/2)^2N^3},
+      \qquad
+      N_c\sim\left\{\frac{L^3}
+      {12c(1+L/2)^2}\right\}^{1/3}\quad(c\downarrow0).$$
+    <p>The cube-root law quantifies diminishing returns rather than merely
+      asserting that more observations help. At normalized cost $10^{-10}$,
+      the exact optimal interval counts for $L=(0.5,2,8,32)$ are
+      $(405,1186,2575,4555)$, while the cube-root formula gives
+      $(405.480,1185.631,2574.638,4554.670)$; the largest relative error is
+      $0.119\%$. Multiplying $V_N$ by the Bernoulli factor $p(1-p)$ simply
+      rescales $c$. This remains an optimal-design statement for the marginal
+      empirical-CDF variance envelope. It is not a conditional-coverage or
+      weighted-conformal-validity theorem.</p>
+
     <p>Here is a conservative finite-sample statement that requires no
       independent-calibration fiction. Assume $\bar F$ is continuous
       and strictly increasing. Select an integer $M\ge2$ and failure
