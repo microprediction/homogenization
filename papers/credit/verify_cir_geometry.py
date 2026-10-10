@@ -15,7 +15,8 @@ QR--Hilbert leading constants, the twenty-fourth-power determinant law, and
 the sixth-power condition-number blow-up as maturity shrinks.
 For a five-name rank-two Green--Kubo matrix, a block-jet certificate then
 checks the general filtration law: cumulative ranks 2, 4, 5 produce powers
-3, 3, 5, 5, 7, determinant power 23, and fourth-power conditioning.
+3, 3, 5, 5, 7, determinant power 23, its explicit block-Gram leading
+constant, and fourth-power conditioning.
 For partially coalescing rates in clusters of sizes three, two, and one, a
 second high-precision check verifies the Hermite-jet exponent multiset
 0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
@@ -536,8 +537,13 @@ def block_short_maturity_loading_checks():
 
     Factor K=FF'.  For loading coefficient vectors v_k, put
     A_k=diag(v_k)F and s_q=rank[A_1,...,A_q].  Exactly s_q-s_(q-1)
-    positive eigenvalues have order T^(2q+1).  This example has rank(K)=2
-    in dimension five and cumulative ranks 2,4,5.
+    positive eigenvalues have order T^(2q+1).  If U_q spans the orthogonal
+    grade V_q minus V_(q-1), C_q=U_q' A_q, and
+
+        G_qp = C_q C_p' / (q+p+1),
+
+    then pdet D(T) / T^nu tends to det G.  This example has rank(K)=2 in
+    dimension five and cumulative ranks 2,4,5.
     """
     old_dps = mp.mp.dps
     mp.mp.dps = 100
@@ -591,6 +597,68 @@ def block_short_maturity_loading_checks():
         assert exponents == [3, 3, 5, 5, 7]
         determinant_power = sum(exponents)
         assert determinant_power == 23
+
+        # Construct a high-precision orthonormal basis grade by grade.  The
+        # first nonzero coefficient in grade q is U_q' A_q, so the rescaled
+        # integrated Gramian converges blockwise to
+        # C_q C_p'/(q+p+1).  Its determinant is the leading constant.
+        coefficient_blocks_mp = []
+        grade_bases = []
+        orthonormal_columns = []
+        for order in range(1, dimension + 1):
+            block = mp.matrix([
+                [coefficients[name][order] * features[name, feature]
+                 for feature in range(feature_rank)]
+                for name in range(dimension)
+            ])
+            coefficient_blocks_mp.append(block)
+            new_columns = []
+            for feature in range(feature_rank):
+                vector = block[:, feature]
+                # Two passes make the classical Gram--Schmidt construction
+                # numerically stable at 100 digits without changing the flag.
+                for _ in range(2):
+                    for basis_vector in orthonormal_columns + new_columns:
+                        vector -= basis_vector * mp.fdot(
+                            basis_vector, vector
+                        )
+                norm = mp.sqrt(mp.fdot(vector, vector))
+                if norm > mp.mpf("1e-70"):
+                    new_columns.append(vector / norm)
+            if new_columns:
+                grade_basis = mp.matrix(dimension, len(new_columns))
+                grade_bases.append((order, grade_basis))
+                for column, vector in enumerate(new_columns):
+                    grade_bases[-1][1][:, column] = vector
+                orthonormal_columns.extend(new_columns)
+            if len(orthonormal_columns) == dimension:
+                break
+        assert [basis.cols for _, basis in grade_bases] == [2, 2, 1]
+
+        grade_coefficients = [
+            (order, basis.T * coefficient_blocks_mp[order - 1])
+            for order, basis in grade_bases
+        ]
+        limiting_gram = mp.matrix(dimension, dimension)
+        row_start = 0
+        for order, coefficient in grade_coefficients:
+            column_start = 0
+            for other_order, other_coefficient in grade_coefficients:
+                block = (
+                    coefficient * other_coefficient.T
+                    / (order + other_order + 1)
+                )
+                for row in range(coefficient.rows):
+                    for column in range(other_coefficient.rows):
+                        limiting_gram[row_start + row,
+                                      column_start + column] = block[row, column]
+                column_start += other_coefficient.rows
+            row_start += coefficient.rows
+        limiting_eigenvalues = mp.eigsy(
+            limiting_gram, eigvals_only=True
+        )
+        assert limiting_eigenvalues[0] > 0
+        determinant_constant = mp.det(limiting_gram)
 
         horizons = [mp.mpf(2)**(-power) for power in range(3, 10)]
         spectra = []
@@ -650,6 +718,9 @@ def block_short_maturity_loading_checks():
             determinant / horizon**determinant_power
             for determinant, horizon in zip(determinants, horizons)
         ]
+        determinant_ratios = [
+            scaled / determinant_constant for scaled in scaled_determinants
+        ]
 
         assert np.max(abs(np.asarray(slopes) - exponents)) < 0.02
         assert abs(determinant_slope - determinant_power) < 0.06
@@ -657,6 +728,7 @@ def block_short_maturity_loading_checks():
         assert abs(float(
             scaled_determinants[-1] / scaled_determinants[-2] - 1
         )) < 0.015
+        assert abs(float(determinant_ratios[-1] - 1)) < 0.02
 
         print("\nblock short-maturity CIR loading certificate")
         print(f"  fixed Green-Kubo rank {feature_rank}; cumulative jet "
@@ -670,13 +742,17 @@ def block_short_maturity_loading_checks():
                          for value in scaled_eigenvalues))
         print(f"  determinant predicted/observed powers "
               f"{determinant_power}/{determinant_slope:.6f}")
+        print("  explicit block-Gram determinant constant "
+              + mp.nstr(determinant_constant, 12))
+        print("  final determinant/leading-asymptotic ratio "
+              + mp.nstr(determinant_ratios[-1], 12))
         print("  final scaled-determinant relative change "
               + mp.nstr(abs(
                   scaled_determinants[-1] / scaled_determinants[-2] - 1
               ), 9))
         print(f"  condition-number slope {condition_slope:.6f}")
         return (cumulative_ranks, exponents, slopes, determinant_slope,
-                condition_slope)
+                determinant_constant, determinant_ratios, condition_slope)
     finally:
         mp.mp.dps = old_dps
 

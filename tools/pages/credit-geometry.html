@@ -575,6 +575,26 @@
       map. Its integral Gram matrix is positive definite because the grades
       have distinct first nonzero polynomial degrees. Exterior powers then
       give the stated multiplicities and powers.</p>
+    <p><strong>Explicit block-jet determinant constant.</strong> Put
+      $d_q=s_q-s_{q-1}$ and choose a $d\times d_q$ matrix $U_q$ with
+      orthonormal columns spanning
+      $\mathcal V_q\cap\mathcal V_{q-1}^{\perp}$. Define</p>
+    $$C_q=U_q^\top A_q,\qquad
+      G_{qp}={C_qC_p^\top\over q+p+1},\qquad
+      \nu=\sum_{q=1}^{q_*}d_q(2q+1).$$
+    <p>Here $G=(G_{qp})_{q,p=1}^{q_*}$ has dimension $s_\infty$; grades with
+      $d_q=0$ are simply omitted. Then $G$ is positive definite and</p>
+    $$\operatorname{pdet}D(T)=T^\nu\det G\{1+O(T)\},$$
+    <p>where $\operatorname{pdet}$ denotes the product of the positive
+      eigenvalues. In particular, this is an ordinary determinant formula
+      when $s_\infty=d$. To see the constant directly, concatenate the $U_q$
+      and write $S_T=\operatorname{diag}_q(T^{q+1/2}I_{d_q})$. Taylor
+      expansion gives</p>
+    $$S_T^{-1}U^\top D(T)US_T^{-1}=G+O(T).$$
+    <p>Each $C_q$ has full row rank. Hence the rows of the polynomial matrix
+      with $q$th block $t^qC_q$ are independent, so their $L^2[0,1]$ Gram
+      matrix $G$ is positive definite. Changing the orthonormal basis within
+      any grade only orthogonally conjugates $G$, making $\det G$ intrinsic.</p>
     <p>For common-volatility CIR loadings with distinct mean-reversion rates,
       $s_d=d$ whenever $K_{ii}>0$ for every name. Indeed, the coefficient of
       order $q$ is a polynomial of degree $q-1$ in $\kappa_i$ with nonzero
@@ -592,7 +612,10 @@
       power $23$, and condition-number slope $-4$. Over the final dyadic step
       down to $T=1/512$, the measured eigenvalue slopes are
       $(2.986771,2.996952,4.987058,4.994626,6.988704)$, the determinant slope is
-      $22.954111$, and the condition-number slope is $-4.001934$. This theorem
+      $22.954111$, and the condition-number slope is $-4.001934$. The explicit
+      block Gram above gives $\det G=9.72067545896\times10^{-11}$; at
+      $T=1/512$ the ratio
+      $\det D(T)/(T^{23}\det G)$ is $0.9862517970$. This theorem
       keeps the two notions of rank separate: for CIR, where $v_1$ is the
       all-ones vector, $s_1=\operatorname{rank}K$ is the fixed-parameter
       Green&ndash;Kubo rank, while later blocks describe new directions created
