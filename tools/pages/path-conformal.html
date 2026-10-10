@@ -793,7 +793,9 @@
       $C_0$ coincide; since $0\le C_0\le1$,</p>
     $$E|C_0(X)-C_0(X^0)|\le\Pr(X\ne X^0)=\eta_{\rm cal}.$$
     <p>Under $\nu$, $C_0(X^0)$ has the beta order-statistic law. The triangle inequality for $W_1$ proves the
-      result. Equivalently, every 1-Lipschitz diagnostic $\varphi:[0,1]\to\mathbb R$ obeys</p>
+      result. Equivalently, the duality of
+      <a href="./bibliography.html#KantorovichRubinstein1958">Kantorovich and Rubinstein (1958)</a> says that every
+      1-Lipschitz diagnostic $\varphi:[0,1]\to\mathbb R$ obeys</p>
     <div class="equation-card">
     $$\left|E_\mu\varphi(C_P)-E\varphi(B)\right|
       \le\eta_{\rm cal}+\eta_{\rm test}.$$
@@ -806,21 +808,49 @@
     <p>Here the first $N-1$ terms couple the calibration panel and the final term decouples the test score. Thus
       the formula preserves the distinction between those two roles even though their coefficients are both one
       for this distributional metric.</p>
-    <p>This also identifies what fast mixing cannot do at fixed calibration size. Put $m=k/(N+1)$ and
-      $D_{N,k}=E|B-m|$. Taking $\varphi(c)=|c-m|$ gives the direct comparison</p>
+    <p>This also identifies what fast mixing cannot do at fixed calibration size. Put $s=N+1$, $m=k/s$, and
+      $M_{N,k}=E|B-m|$. Taking $\varphi(c)=|c-m|$ gives the direct comparison</p>
     <div class="equation-card">
-    $$\left|E_\mu|C_P-m|-D_{N,k}\right|
+    $$\left|E_\mu|C_P-m|-M_{N,k}\right|
       \le\eta_{\rm cal}+\eta_{\rm test}.$$
+    </div>
+    <p>The irreducible iid term is available in closed form:</p>
+    <div class="equation-card">
+    $$M_{N,k}=\frac{2m^k(1-m)^{s-k}}{s\,B(k,s-k)}.$$
+    </div>
+    <p>Indeed,
+      $d\{x^k(1-x)^{s-k}\}/dx=s(m-x)x^{k-1}(1-x)^{s-k-1}$; integrating on either side of
+      the mean gives half the absolute deviation. Stirling&apos;s formula then gives, uniformly while $m$ stays in a
+      compact subset of $(0,1)$,</p>
+    <div class="equation-card">
+    $$M_{N,k}=\sqrt{\frac{2m(1-m)}{\pi s}}\{1+O(s^{-1})\}.$$
+    </div>
+    <p>This turns the law-level transfer into a direct finite calibration design. For target $p$, take
+      $k_N=\lceil p(N+1)\rceil\le N$, put $m_N=k_N/(N+1)$, and let
+      $\eta=\eta_{\rm cal}+\eta_{\rm test}$. Then</p>
+    <div class="equation-card">
+    $$E_\mu|C_P-p|\le (m_N-p)+M_{N,k_N}+\eta.$$
+    </div>
+    <p>Thus the least $N$ for which the right side is at most a desired tolerance $\tau$ is an exact sufficient
+      design under the stated TV budgets. For fixed interior $p$ and $\tau-\eta\downarrow0$, its leading size is</p>
+    <div class="equation-card">
+    $$N+1\sim\frac{2p(1-p)}{\pi(\tau-\eta)^2}.$$
     </div>
     <p>Therefore vanishing dependence budgets recover the nondegenerate iid beta law, not the point mass at its
       mean. For $N=k=9$, $m=0.9$ and
-      $D_{9,9}=0.2(0.9)^{10}=0.06973568802$. In the randomized binary certificate, strides $28,40,48$ give exact
+      $M_{9,9}=0.2(0.9)^{10}=0.06973568802$. In the randomized binary certificate, strides $28,40,48$ give exact
       $W_1$ distances $0.0000214995$, $0.0000014743$, and $0.0000002473$, against separated-TV budgets
       $0.0030847990$, $0.0002118554$, and $0.0000355421$. The corresponding values of
       $E|C_P-0.9|$ are $0.0697455929$, $0.0697363574$, and $0.0697358002$, converging to the irreducible beta
-      fluctuation.</p>
+      fluctuation. At target $p=.9$, the exact rank-rounded designs for tolerances $.05,.03,.02$ need respectively
+      $N=29,69,149$ calibration scores when $\eta=0$; allowing a dependence budget $.005$ raises the $.03$ design
+      to $N=89$. The certificate checks the beta identity against independent quadrature, and at total beta size
+      $s=20480$ its largest relative error against the square-root law over
+      $m\in\{.1,.25,.5,.75,.9\}$ is below $5\times10^{-5}$.</p>
     <p>This is a law over random calibration panels. It does not assert that $C_P(x)$ is close to $m$ for every
-      realized panel, and it is not feature-conditional conformal coverage.</p>
+      realized panel, and it is not feature-conditional conformal coverage. The notation $M_{N,k}$ is kept
+      separate from the signed final-memory coefficient $D_{N,k}$ below, resolving the collision recorded in
+      <a href="https://github.com/microprediction/homogenization/issues/92">issue #92</a>.</p>
 
     <h3>Why calibration mixing alone is insufficient</h3>
     <p>The final test gap is independently necessary, not just an artifact of the bound. Keep the randomized

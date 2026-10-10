@@ -36,6 +36,8 @@ including unequal stationary masses for the two latent states.
 It also checks the slack-free rearrangement
 bound obtained from the iid beta baseline and the two separated TV budgets,
 with a sharper version when the actual panel order-statistic law is known.
+The complete-law Wasserstein certificate includes the exact beta mean absolute
+deviation and its resulting finite calibration-size design.
 It finally checks the sharp distinction between a predictor fitted on an
 independent training sample and a memorizing predictor fitted on the
 calibration labels, as well as the exact total-variation cost of separating a
@@ -162,6 +164,66 @@ def integer_beta_cdf(value: float, alpha: int, beta: int) -> float:
         binomial_mass(degree, count, value)
         for count in range(alpha, degree + 1)
     )
+
+
+def beta_mean_absolute_deviation(alpha: int, beta: int) -> float:
+    """Exact mean absolute deviation of a beta law about its mean.
+
+    If ``B`` is Beta(alpha, beta) and ``m = alpha / (alpha + beta)``,
+    integration of the derivative of ``x**alpha * (1-x)**beta`` gives
+
+        E|B-m| = 2 m**alpha (1-m)**beta
+                 / ((alpha+beta) Beta(alpha,beta)).
+
+    The logarithmic evaluation remains stable for large calibration panels.
+    """
+    if alpha <= 0 or beta <= 0:
+        raise ValueError("beta parameters must be positive")
+    total = alpha + beta
+    mean = alpha / total
+    log_value = (
+        math.log(2.0)
+        + alpha * math.log(mean)
+        + beta * math.log1p(-mean)
+        - math.log(total)
+        - math.lgamma(alpha)
+        - math.lgamma(beta)
+        + math.lgamma(total)
+    )
+    return math.exp(log_value)
+
+
+def least_conditional_mad_panel(
+    target: float,
+    tolerance: float,
+    dependence_budget: float = 0.0,
+    maximum_count: int = 1_000_000,
+) -> tuple[int, int, float]:
+    """Least upper order-statistic design meeting an L1 coverage target.
+
+    The chosen order is ``ceil(target * (N+1))``.  The returned certificate
+    is the beta mean absolute deviation, plus the upward rank rounding error,
+    plus the separated dependence budget from the Wasserstein theorem.
+    """
+    if not (0.0 < target < 1.0):
+        raise ValueError("target must lie strictly between zero and one")
+    if tolerance <= dependence_budget:
+        raise ValueError("tolerance must exceed the dependence budget")
+    for calibration_count in range(1, maximum_count + 1):
+        total = calibration_count + 1
+        order = math.ceil(target * total)
+        if order > calibration_count:
+            continue
+        nominal = order / total
+        certificate = (
+            nominal
+            - target
+            + beta_mean_absolute_deviation(order, total - order)
+            + dependence_budget
+        )
+        if certificate <= tolerance:
+            return calibration_count, order, certificate
+    raise ValueError("no design found below maximum_count")
 
 
 def atomic_lex_order_cdf(
@@ -2820,7 +2882,10 @@ def main() -> None:
     transfer_target = 0.8
     transfer_strides = (28, 40, 48)
     nominal_conditional_coverage = order / (calibration_count + 1.0)
-    iid_conditional_deviation = quad(
+    iid_conditional_deviation = beta_mean_absolute_deviation(
+        order, calibration_count + 1 - order
+    )
+    iid_conditional_deviation_quadrature = quad(
         lambda value: abs(value - nominal_conditional_coverage)
         * beta_distribution.pdf(
             value, order, calibration_count + 1 - order
@@ -2831,6 +2896,10 @@ def main() -> None:
         epsabs=2e-14,
         epsrel=2e-13,
     )[0]
+    assert abs(
+        iid_conditional_deviation
+        - iid_conditional_deviation_quadrature
+    ) < 2e-14
     transfer_rows = []
     for stride in transfer_strides:
         sampled_correlation = 0.8**stride
@@ -3036,6 +3105,97 @@ def main() -> None:
         "iid Beta(9,1) E|B-.9|: "
         f"{iid_conditional_deviation:.11f}"
     )
+
+    # The irreducible iid conditional fluctuation has an exact beta formula
+    # and a square-root calibration-size law.  Check the identity against
+    # independent quadrature on an interior parameter grid and its uniform
+    # Stirling approximation on five fixed rank fractions.
+    beta_mad_identity_error = 0.0
+    for total in (5, 10, 20, 40, 80):
+        for beta_alpha in range(1, total):
+            beta_beta = total - beta_alpha
+            beta_mean = beta_alpha / total
+            quadrature_value = quad(
+                lambda value: abs(value - beta_mean)
+                * beta_distribution.pdf(value, beta_alpha, beta_beta),
+                0.0,
+                1.0,
+                points=[beta_mean],
+                epsabs=2e-13,
+                epsrel=2e-13,
+            )[0]
+            beta_mad_identity_error = max(
+                beta_mad_identity_error,
+                abs(
+                    beta_mean_absolute_deviation(beta_alpha, beta_beta)
+                    - quadrature_value
+                ),
+            )
+    assert beta_mad_identity_error < 8e-14
+
+    beta_mad_rows = []
+    beta_mad_relative_error = 0.0
+    for rank_fraction in (0.1, 0.25, 0.5, 0.75, 0.9):
+        ratios = []
+        for total in (160, 640, 2560, 10240, 20480):
+            beta_alpha = round(rank_fraction * total)
+            beta_beta = total - beta_alpha
+            exact_mad = beta_mean_absolute_deviation(beta_alpha, beta_beta)
+            leading_mad = math.sqrt(
+                2.0 * rank_fraction * (1.0 - rank_fraction)
+                / (math.pi * total)
+            )
+            ratios.append(exact_mad / leading_mad)
+        assert abs(ratios[-1] - 1.0) < 5e-5
+        beta_mad_relative_error = max(
+            beta_mad_relative_error, abs(ratios[-1] - 1.0)
+        )
+        beta_mad_rows.append((rank_fraction, ratios[-1]))
+
+    conditional_design_rows = []
+    for tolerance, dependence_budget in (
+        (0.05, 0.0),
+        (0.03, 0.0),
+        (0.03, 0.005),
+        (0.02, 0.0),
+    ):
+        conditional_design_rows.append(
+            (
+                tolerance,
+                dependence_budget,
+                *least_conditional_mad_panel(
+                    0.9, tolerance, dependence_budget
+                ),
+            )
+        )
+    expected_designs = (
+        (29, 27),
+        (69, 63),
+        (89, 81),
+        (149, 135),
+    )
+    assert tuple((row[2], row[3]) for row in conditional_design_rows) == (
+        expected_designs
+    )
+    print("\nExact beta conditional-dispersion design")
+    print(
+        "maximum identity error: "
+        f"{beta_mad_identity_error:.3e}; maximum final asymptotic "
+        f"relative error: {beta_mad_relative_error:.3e}"
+    )
+    print(" target  budget      N      k     certified E|C-.9|")
+    for (
+        tolerance,
+        dependence_budget,
+        design_count,
+        design_order,
+        design_certificate,
+    ) in conditional_design_rows:
+        print(
+            f" {tolerance:.3f}   {dependence_budget:.3f}    "
+            f"{design_count:4d}   {design_order:4d}       "
+            f"{design_certificate:.9f}"
+        )
 
     # The calibration panel and final test gap have genuinely separate
     # asymptotic roles.  Let the eight within-panel gaps grow while the final
@@ -4160,7 +4320,8 @@ def main() -> None:
         "sharp PAC design, symmetric and unequal-mass all-order "
         "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
-        "slack-free rearrangement bounds plus whole-law Wasserstein control, "
+        "slack-free rearrangement bounds plus whole-law Wasserstein control "
+        "and exact beta conditional-dispersion calibration design, "
         "independent-training validity, calibration-leakage failure, "
         "remote-training total-variation separation, "
         "exact transforms, and simulations"
