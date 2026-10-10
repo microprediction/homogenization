@@ -606,6 +606,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "Kac1949",
+  "authors": "Kac, M.",
+  "year": 1949,
+  "title": "On Distributions of Certain Wiener Functionals",
+  "venue": "Transactions of the American Mathematical Society 65(1):1-13",
+  "doi": "10.1090/S0002-9947-1949-0027960-X",
+  "url": "https://doi.org/10.1090/S0002-9947-1949-0027960-X",
+  "annotation": "A primary source for the Feynman-Kac representation, used here in its finite-state killed-semigroup form to obtain a switching-rate-uniform contraction bound."
+ },
+ {
+  "role": "survey_theory",
   "key": "PardouxVeretennikov2001",
   "authors": "Pardoux, E. and Veretennikov, A. Yu.",
   "year": 2001,
@@ -614,6 +625,17 @@
   "doi": "10.1214/aop/1015345596",
   "url": "https://doi.org/10.1214/aop/1015345596",
   "annotation": "Solves the Poisson equation for the generator of an ergodic diffusion on the whole space and uses it to prove diffusion approximations; the continuous-state version of solving Q w = f."
+ },
+ {
+  "role": "survey_theory",
+  "key": "KontoyiannisMeyn2003",
+  "authors": "Kontoyiannis, I. and Meyn, S. P.",
+  "year": 2003,
+  "title": "Spectral Theory and Limit Theorems for Geometrically Ergodic Markov Processes",
+  "venue": "Annals of Applied Probability 13(1):304-362",
+  "doi": "10.1214/aoap/1042765670",
+  "url": "https://doi.org/10.1214/aoap/1042765670",
+  "annotation": "Develops multiplicative Poisson equations and analytic cumulant limits for geometrically ergodic Markov processes; the switched-CIR calculation here obtains its third-cumulant coefficients directly from ordered correlations and polynomial closure."
  },
  {
   "role": "survey_theory",

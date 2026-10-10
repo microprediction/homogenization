@@ -217,11 +217,43 @@
       <li>
         Cotton, P. (2026). <em>Cumulants of Integrated Variance Under a Fast Regime</em>. Note in preparation.
         <a href="./cumulants.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">certificate</a>.
-        <em>The fourth cumulant of a return under a switched variance is three times the variance of integrated variance
-        only for independent Brownian noise, and that variance is its Green&ndash;Kubo term up to a remainder bounded
-        uniformly in maturity; for a CIR variance with a switching level the same holds with the maturity replaced
-        by an integral of the reversion weight, and the first-order rule gives every cumulant at fixed maturity.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cumulants.py">cumulant certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_stationary_moments.py">stationary moments</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_feller.py">boundary certificate</a>.
+        <em>Exact integrated-variance and return cumulants for a positive switched CIR variance, with a
+        maturity-uniform Green&ndash;Kubo bound, fixed-maturity leverage and simultaneous-coefficient corrections,
+        uniform and growing-window first-moment composites, an exact all-order recursion for every regime-resolved
+        invariant variance moment with every inverse-speed coefficient, a convergent fixed-moment Taylor series
+        inside an explicit generalized-eigenvalue disk, a computable Cauchy remainder bound, and a residue
+        noncancellation criterion proving when that disk is the exact Taylor disk (with no moment-uniform radius),
+        exact long-run second-cumulant slope and
+        intercept with a
+        switching-rate-uniform exponential remainder, exact nested-Poisson third-cumulant slope and intercept, an
+        exact centered-Poisson recursion for every fixed long-run cumulant rate, explicit slow-fast formulas for
+        every fixed-order first and second inverse-speed coefficient with $O(m^{-3})$ residual, and computable
+        arbitrary-start boundary constants with fixed-order switching-rate-uniform exponential remainders. Every
+        exponent strictly below the stable-block gap is valid; an exact resonant two-state CIR example shows that
+        the endpoint exponent can fail through a $T e^{-\alpha T}$ term, while an exact nonresonant formula shows
+        that the endpoint is recovered for each fixed separated pair of chain and CIR relaxation rates and that
+        its constant blows up as the rates collide. An exact compact-detuning profile resolves that collision on
+        the scale $(\lambda-\kappa)T=O(1)$ with a uniform $O(T^{-1})$ error, and the same leading profile holds
+        for arbitrary dependent initial regime&ndash;variance laws with a finite variance mean. An
+        MGF-free finite-moment jet theorem shows that these fixed-order conclusions need only the corresponding
+        initial moments, including for the switching-rate-uniform envelope when those moments are uniformly
+        bounded. Exact normalization of the slope&ndash;boundary decomposition gives two-term long-maturity
+        formulas and explicit finite-time bounds for every fixed standardized cumulant; in particular it resolves
+        the boundary corrections to skewness and excess-kurtosis decay without asserting an Edgeworth or
+        Berry&ndash;Esseen theorem. An exact triangular finite-jet map transfers every slope, arbitrary-start boundary constant, and
+        exponential remainder to the corresponding fixed-order independent-price return cumulant, without adding
+        an MGF assumption. A separate tilted-generator recursion proves the same exact-slope, arbitrary-start
+        boundary, and switching-rate-uniform remainder theorem for every fixed-order leveraged-return cumulant,
+        even with switching correlation and only finitely many initial moments. The note also gives a sharp
+        initial-law-specific boundary criterion for reducible chains: the statewise Feller test is necessary and
+        sufficient exactly on regimes reachable from the initial support. It also gives sharp
+        homogenized-correlation admissibility criteria. Vol-of-vol
+        heterogeneity contracts the attainable effective-correlation interval to
+        $|\rho_{\rm eff}|\le1/\sqrt{1+\operatorname{CV}_\pi(\xi)^2}$.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>The Direction of a Regime Cycle in the Heston Smile</em>. Note in preparation.
