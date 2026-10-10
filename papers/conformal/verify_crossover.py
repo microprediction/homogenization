@@ -14,7 +14,7 @@ same exponential kernel gives the exact minimum-variance nonnegative weights
 and their closed-form information for every deterministic grid.  With fixed
 endpoints it also verifies that equal spacing uniquely maximizes this
 information, together with the endpoint-atom limit of the optimal weights on
-a dense grid.
+a dense grid and a sharp global observation-budget error bound.
 Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
@@ -1301,6 +1301,45 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
                - limiting_interior_mass) < 2e-4
     assert abs(equal_weights.sum() - 1) < 2e-15
 
+    # The continuous-observation information is a genuine finite-sample
+    # ceiling.  If N=n-1 is the number of equal subintervals and L is total
+    # mixing exposure, then I_N=1+N*tanh(L/(2N)) increases to 1+L/2.  The
+    # elementary global inequality 0 <= x-tanh(x) <= x^3/3 gives an
+    # asymptotically sharp error certificate for every L and N.
+    budget_ratios = []
+    variance_ratios = []
+    for budget_exposure in (0.1, 0.5, 2.0, 8.0, 32.0):
+        continuous_information = 1 + budget_exposure / 2
+        previous_information = 0.0
+        for intervals in (1, 2, 4, 8, 16, 32, 64, 128, 256, 512,
+                          1024):
+            budget_x = np.longdouble(budget_exposure) / (2 * intervals)
+            finite_information = float(
+                1 + intervals * np.tanh(budget_x))
+            assert finite_information > previous_information
+            assert finite_information <= continuous_information + 2e-14
+            information_gap = float(
+                intervals * (budget_x - np.tanh(budget_x)))
+            information_bound = (budget_exposure ** 3
+                                 / (24 * intervals ** 2))
+            assert information_gap <= information_bound + 2e-14
+            finite_variance = 1 / finite_information
+            continuous_variance = 1 / continuous_information
+            variance_gap = (information_gap
+                            / (finite_information
+                               * continuous_information))
+            assert abs(variance_gap - (finite_variance
+                                       - continuous_variance)) < 2e-14
+            budget_variance_bound = (information_bound
+                                     / (finite_information
+                                        * continuous_information))
+            assert 0 <= variance_gap <= budget_variance_bound + 2e-14
+            previous_information = finite_information
+        budget_ratios.append(information_gap / information_bound)
+        variance_ratios.append(variance_gap / budget_variance_bound)
+    assert min(budget_ratios) > 0.999
+    assert min(variance_ratios) > 0.999
+
     print("irregular nonreversible panel:",
           f"exact variance {exact_variance:.8f},",
           f"bound {variance_bound:.8f}, factor {pairwise_factor:.8f}")
@@ -1325,6 +1364,11 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
           f"{dense_weights[0]:.8f} -> {limiting_endpoint_weight:.8f},",
           f"interior mass {dense_weights[1:-1].sum():.8f} ->",
           f"{limiting_interior_mass:.8f}")
+    print("observation-budget information bound:",
+          "last-gap/bound ratios",
+          np.array2string(np.array(budget_ratios), precision=9),
+          "for exposures [0.1, 0.5, 2, 8, 32];",
+          f"minimum variance-gap ratio {min(variance_ratios):.9f}")
 
 
 def transient_panel_checks(Q, pi, gamma_s, success):

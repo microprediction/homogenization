@@ -381,6 +381,41 @@
       optimize the sharp marginal variance envelope for a weighted empirical
       CDF. They do not establish conditional coverage or weighted conformal
       rank validity.</p>
+
+    <h3>A finite observation-budget guarantee</h3>
+    <p>The continuous-design ceiling also has a sharp global finite-sample
+      error bound. Put $N=n-1$ and keep $L=\lambda T$. For the jointly
+      optimal $n$-point design, write</p>
+    $$\mathcal I_N=1+N\tanh\left(\frac{L}{2N}\right),\qquad
+      \mathcal I_\infty=1+\frac L2.$$
+    <p>For $L&gt;0$, the function $N\tanh\{L/(2N)\}$ is strictly increasing in $N$:
+      with $x=L/(2N)$, its derivative has the sign of
+      $\tanh x-x\operatorname{sech}^2x&gt;0$. Moreover, for every
+      $x\geq0$,</p>
+    $$0\leq x-\tanh x\leq\frac{x^3}{3}.$$
+    <p>The upper inequality follows because the derivative of
+      $x^3/3-x+\tanh x$ is $x^2-\tanh^2x\geq0$. Therefore, for every
+      exposure $L\geq0$ and every integer $N\geq1$,</p>
+    <div class="equation-card">
+    $$0\leq\mathcal I_\infty-\mathcal I_N
+      \leq\frac{L^3}{24N^2},$$
+    $$0\leq\frac1{\mathcal I_N}-\frac1{\mathcal I_\infty}
+      \leq\frac{L^3}
+      {24N^2\mathcal I_N\mathcal I_\infty}.$$
+    </div>
+    <p>The constant is asymptotically sharp, since</p>
+    $$\mathcal I_\infty-\mathcal I_N
+      =\frac{L^3}{24N^2}-\frac{L^5}{240N^4}
+       +O_L(N^{-6}).$$
+    <p>This supplies an explicit sampling-budget guarantee rather than only
+      a dense-grid limit. At $N=1024$, the certificate evaluates the exact
+      gap-to-bound ratio for $L=0.1,0.5,2,8,32$; every ratio exceeds
+      $0.999$. The endpoint-plus-density continuous design is consistent with
+      the general continuous-time BLUE framework of
+      <a href="https://arxiv.org/abs/1501.01774">Dette, Pepelyshev and
+      Zhigljavsky (2015)</a>. The bound here is exact for the exponential
+      kernel and retains the same marginal-variance-only scope as the
+      preceding design theorem.</p>
     <p>Here is a conservative finite-sample statement that requires no
       independent-calibration fiction. Assume $\bar F$ is continuous
       and strictly increasing. Select an integer $M\ge2$ and failure
