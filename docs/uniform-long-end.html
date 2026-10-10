@@ -822,6 +822,33 @@
       This is the payoff-sensitive version of the matched boundary layers constructed by
       <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang (1996)</a>.</p>
 
+    <h4>The sharp fast-clock profile</h4>
+    <p>The preceding orders have explicit leading coefficients. Put
+      $Q_s=Q(s)$, $\pi_sQ_s=0$, $C_s=I-\mathbf1\pi_s$, and $z_s^0=C_sx$. For $\tau\geq0$ define</p>
+    $$H_{Q,s}(\tau)x=\int_0^\tau
+      e^{(\tau-r)Q_s}\,rQ'(s)\,e^{rQ_s}z_s^0\,dr,$$
+    $$H_{D,s}(\tau)x=\int_0^\tau
+      e^{(\tau-r)Q_s}\,rD'(s)\,e^{rQ_s}z_s^0\,dr.$$
+    <p>Let $E_{m,s,\nu}^x(T)$ denote the signed log error inside the absolute value in the payoff-sensitive
+      theorem. If $Q,D$ are $C^2$, then, locally uniformly in $\tau$ and uniformly in the calendar phase,</p>
+    <div class="equation-card">
+    $$mE_{m,s,\nu}^x(\tau/m)\longrightarrow
+      {\nu H_{Q,s}(\tau)x\over \nu e^{\tau Q_s}x}$$
+    <p>for a moving generator. If $Q(t)\equiv Q_0$, then</p>
+    $$m^2E_{m,s,\nu}^x(\tau/m)\longrightarrow
+      {\nu H_{D,s}(\tau)x\over \nu e^{\tau Q_0}x}.$$
+    </div>
+    <p>Indeed, after multiplying the matched expression by $e^{\lambda_mT}$, the principal Floquet part is
+      exact and the vector error is precisely</p>
+    $$\{U_m(s+T,s)-e^{A_m(s)T}\}z_{m,s}(x).$$
+    <p>On the fast clock its two generators differ first by
+      $rQ'(s)/m$, or by $rD'(s)/m^2$ when $Q$ is fixed. Duhamel&apos;s formula and
+      $z_{m,s}(x)=z_s^0+O(m^{-1})$ give the two limits; positivity of $x$ gives the displayed logarithmic
+      denominators. Moreover $z_s^0=0$ if and only if $x$ is constant, because the kernel of
+      $I-\mathbf1\pi_s$ is exactly $\operatorname{span}\{\mathbf1\}$. Thus the bond-payoff improvement is an
+      exact payoff-space statement, while additional cancellation of either displayed scalar profile is
+      model-, phase-, and observation-specific.</p>
+
     <p>The certificate uses $x=(1.35,0.72,1.08)$ and $\nu=(0.8,0.1,0.1)$. It compares the moving
       three-state chain with the defective fixed-generator control and maximizes over two periods.</p>
     <div class="table-wrap">
@@ -838,7 +865,10 @@
     </div>
     <p>The last-doubling frozen-slip orders are $1.05296$ for moving $Q(t)$ and $2.01769$ for fixed $Q_0$;
       without the slip, both errors converge to nonzero constants. The calculation uses a positive payoff, so it
-      is an order certificate for the boundary-layer mechanism rather than a test driven by sign cancellation.</p>
+      is an order certificate for the boundary-layer mechanism rather than a test driven by sign cancellation.
+      On $0\leq\tau\leq12$, the maximum discrepancy between the scaled numerical log error and the explicit
+      fast-clock profile falls at rates $0.9950$ and $0.9368$ for moving and fixed generators, respectively;
+      at $m=128$ the discrepancies are $1.02\times10^{-4}$ and $2.49\times10^{-4}$.</p>
 
     <h3>Explicit first-order coefficient</h3>
     <p>The exact Floquet exponent also has an explicit first correction in any number of states. Let
