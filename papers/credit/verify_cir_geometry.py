@@ -9,6 +9,10 @@ For four nearly coalescing mean-reversion rates, a high-precision certificate
 checks the confluent-Vandermonde determinant constant, the eigenvalue powers
 0, 2, 4, 6 and their leading constants, and the resulting sixth-power
 condition-number blow-up.
+For four fixed distinct rates at short maturity, another high-precision
+certificate checks the complementary eigenvalue powers 3, 5, 7, 9, their
+QR--Hilbert leading constants, the twenty-fourth-power determinant law, and
+the sixth-power condition-number blow-up as maturity shrinks.
 For partially coalescing rates in clusters of sizes three, two, and one, a
 second high-precision check verifies the Hermite-jet exponent multiset
 0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
@@ -379,6 +383,149 @@ def rank_amplification_checks():
         print(f"  d={d}: smallest eigenvalue {smallest:.9e}, "
               f"condition {condition:.6e}")
     return rows
+
+
+def short_maturity_loading_checks():
+    """Certify the short-maturity CIR loading spectrum.
+
+    If B(t)=sum_{k>=1} v_k t^k and V=[v_1,...,v_d] is nonsingular, then
+    int_0^T B(t)B(t)'dt factors as
+
+        V D_T {H+O(T)} D_T V',
+
+    where D_T=diag(T^(3/2),...,T^(d+1/2)) and
+    H_kl=1/(k+l+1).  QR of V and Cholesky of H give every leading
+    eigenvalue constant.  Common volatility and distinct CIR kappas make V
+    nonsingular by the polynomial Taylor-coefficient recurrence.
+    """
+    old_dps = mp.mp.dps
+    mp.mp.dps = 100
+    try:
+        dimension = 4
+        kappas = [mp.mpf(value) for value in
+                  ("0.35", "0.8", "1.7", "3.2")]
+        sigma = mp.mpf("0.18")
+        terms = 40
+
+        coefficients = []
+        for kappa in kappas:
+            values = [mp.mpf(0)] * (terms + 1)
+            values[1] = mp.mpf(1)
+            for order in range(1, terms):
+                convolution = mp.fsum(
+                    values[left] * values[order - left]
+                    for left in range(1, order)
+                )
+                values[order + 1] = (
+                    -kappa * values[order]
+                    - sigma**2 * convolution / 2
+                ) / (order + 1)
+            coefficients.append(values)
+
+        jet_matrix = mp.matrix([
+            [coefficients[name][order]
+             for order in range(1, dimension + 1)]
+            for name in range(dimension)
+        ])
+        _, jet_triangular = mp.qr(jet_matrix)
+        shifted_hilbert = mp.matrix([
+            [mp.mpf(1) / (left + right + 1)
+             for right in range(1, dimension + 1)]
+            for left in range(1, dimension + 1)
+        ])
+        hilbert_cholesky = mp.cholesky(shifted_hilbert)
+        eigenvalue_constants = [
+            (jet_triangular[index, index]
+             * hilbert_cholesky[index, index])**2
+            for index in range(dimension)
+        ]
+        determinant_constant = (
+            mp.det(jet_matrix)**2 * mp.det(shifted_hilbert)
+        )
+        assert abs(
+            mp.fprod(eigenvalue_constants) / determinant_constant - 1
+        ) < mp.mpf("1e-80")
+
+        horizons = [mp.mpf(2)**(-power) for power in range(2, 9)]
+        spectra = []
+        determinant_ratios = []
+        for horizon in horizons:
+            gram = mp.matrix(dimension, dimension)
+            for left in range(dimension):
+                for right in range(dimension):
+                    gram[left, right] = mp.fsum(
+                        coefficients[left][j] * coefficients[right][k]
+                        * horizon**(j + k + 1) / (j + k + 1)
+                        for j in range(1, terms + 1)
+                        for k in range(1, terms + 1)
+                    )
+            eigenvalues = sorted(
+                mp.eigsy(gram, eigvals_only=True), reverse=True
+            )
+            assert eigenvalues[-1] > 0
+            spectra.append(eigenvalues)
+            determinant_ratios.append(
+                mp.det(gram)
+                / (determinant_constant
+                   * horizon**(dimension * (dimension + 2)))
+            )
+
+        log_horizons = np.log(np.array([
+            float(value) for value in horizons[-4:]
+        ]))
+        slopes = []
+        for index in range(dimension):
+            log_eigenvalues = np.log(np.array([
+                float(spectrum[index]) for spectrum in spectra[-4:]
+            ]))
+            slopes.append(float(np.polyfit(
+                log_horizons, log_eigenvalues, 1
+            )[0]))
+        expected_slopes = 2 * np.arange(1, dimension + 1) + 1
+        assert np.max(abs(np.asarray(slopes) - expected_slopes)) < 0.04
+
+        measured_constants = [
+            spectra[-1][index]
+            / horizons[-1]**(2 * (index + 1) + 1)
+            for index in range(dimension)
+        ]
+        constant_errors = [
+            abs(measured / predicted - 1)
+            for measured, predicted in zip(
+                measured_constants, eigenvalue_constants
+            )
+        ]
+        condition_slope = float(np.polyfit(
+            log_horizons,
+            np.log(np.array([
+                float(spectrum[0] / spectrum[-1])
+                for spectrum in spectra[-4:]
+            ])),
+            1,
+        )[0])
+        assert max(constant_errors) < mp.mpf("0.01")
+        assert abs(float(determinant_ratios[-1]) - 1) < 0.03
+        assert abs(condition_slope + 2 * (dimension - 1)) < 0.02
+
+        print("\nshort-maturity CIR loading certificate")
+        print("  eigenvalue log-log slopes "
+              + " ".join(f"{slope:.6f}" for slope in slopes))
+        print("  predicted eigenvalue constants "
+              + " ".join(mp.nstr(value, 12)
+                         for value in eigenvalue_constants))
+        print("  scaled eigenvalues at T=1/256 "
+              + " ".join(mp.nstr(value, 12)
+                         for value in measured_constants))
+        print("  maximum eigenvalue-constant relative error "
+              + mp.nstr(max(constant_errors), 9))
+        print("  determinant power/ratio "
+              f"{dimension * (dimension + 2)}/"
+              f"{float(determinant_ratios[-1]):.12f}")
+        print(f"  condition-number slope {condition_slope:.6f}")
+        return (slopes, eigenvalue_constants, measured_constants,
+                determinant_ratios, condition_slope)
+    finally:
+        mp.mp.dps = old_dps
 
 
 def long_maturity_loading_checks():
@@ -1661,6 +1808,7 @@ def cir_jet_independence_checks():
 
 def main():
     rank_amplification_checks()
+    short_maturity_loading_checks()
     long_maturity_loading_checks()
     finite_rank_long_maturity_checks()
     integrated_full_rank_criterion_checks()
@@ -2006,10 +2154,11 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification, distinct, repeated, "
-          "heterogeneous two-name, and unrestricted heterogeneous loading rank "
-          "criteria, automatic CIR jet independence, prior memory, pair "
-          "cancellation, and ordered default")
+    print("PASS: positivity, sharp rank amplification, short- and long-maturity "
+          "spectra, distinct, repeated, heterogeneous two-name, and "
+          "unrestricted heterogeneous loading rank criteria, automatic CIR "
+          "jet independence, prior memory, pair cancellation, and ordered "
+          "default")
 
 
 if __name__ == "__main__":

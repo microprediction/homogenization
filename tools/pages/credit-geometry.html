@@ -497,6 +497,59 @@
       Fixed Green&ndash;Kubo ranks one, two, and three give the predicted and
       observed integrated ranks $3,5,6$.</p>
 
+    <h3>Short maturity has an explicit odd-power spectrum</h3>
+    <p>Exact full rank at every $T&gt;0$ is also poorly conditioned near zero
+      maturity, because every CIR loading begins with the same term $B_i(t)=t+O(t^2)$.
+      Write the vector loading as</p>
+    $$B(t)=\sum_{k\ge1}v_kt^k,qquad
+      V=[v_1\ \cdots\ v_d]=Q_VR_V,$$
+    <p>and assume $V$ is nonsingular. Let $H_d$ be the shifted Hilbert matrix
+      and $C$ its lower Cholesky factor:</p>
+    $$ (H_d)_{k\ell}={1\over k+\ell+1},qquad
+       H_d=CC^\top,qquad 1\le k,\ell\le d.$$
+    <p>If the eigenvalues of the loading Gramian
+      $J(T)=\int_0^TB(t)B(t)^\top dt$ are ordered decreasingly, then</p>
+    <div class="equation-card">
+    $$\lambda_k(J(T))=(R_V)_{kk}^2C_{kk}^2
+      T^{2k+1}\{1+O(T)\},\qquad1\le k\le d.$$
+    </div>
+    <p>Consequently,</p>
+    $$\det J(T)=(\det V)^2\det(H_d)
+      T^{d(d+2)}\{1+O(T)\},qquad
+      \operatorname{cond}_2J(T)=\Theta(T^{-2(d-1)}).$$
+    <p>The proof rescales $t=Tx$ and factors</p>
+    $$J(T)=VD_T\{H_d+O(T)\}D_TV^\top,qquad
+      D_T=\operatorname{diag}(T^{3/2},T^{5/2},\ldots,T^{d+1/2}).$$
+    <p>Exterior powers after QR and Cholesky give the individual constants.
+      For common volatility and distinct mean-reversion rates, the CIR
+      recurrence already displayed below makes $v_k$ a polynomial vector of
+      degree $k-1$ with nonzero leading coefficient. Thus $V$ is a scaled
+      Vandermonde matrix and the hypothesis is automatic. This is the
+      shifted version of the ordinary small-time controllability-Gramian
+      hierarchy analyzed by
+      <a href="https://arxiv.org/abs/2609.37077">Trélat and Zuazua (2026)</a>:
+      the CIR loading vanishes at zero, shifting powers $T,T^3,\ldots$ to
+      $T^3,T^5,\ldots$.</p>
+    <p>For rank-one fixed-feature geometry $K=aa^\top$ with every $a_i\ne0$,
+      $D(T)=\operatorname{diag}(a)J(T)\operatorname{diag}(a)$ has the same
+      powers after replacing $V$ by $\operatorname{diag}(a)V$. The theorem
+      does not claim the same constants for arbitrary higher-rank $K$; that
+      problem depends on its rowwise tensor jets. In particular, this
+      short-maturity hierarchy is created by deterministic loading
+      integration and does not change the fixed-parameter Green&ndash;Kubo rank.</p>
+    <p>For four positive-volatility loadings with
+      $\kappa=(0.35,0.8,1.7,3.2)$ and common $\sigma=0.18$, the predicted
+      constants for powers $(T^3,T^5,T^7,T^9)$ are</p>
+    $$(1.33333333333,\ 0.014818359375,\
+      4.98187595323\times10^{-5},\ 3.61281062019\times10^{-8}).$$
+    <p>At $T=1/256$, the 100-digit scaled eigenvalues are</p>
+    $$(1.32744941175,\ 0.0146976470187,\
+      4.95054769866\times10^{-5},\ 3.59920214851\times10^{-8}).$$
+    <p>The largest relative error is $0.815\%$. The observed slopes are
+      $(2.985538,4.972892,6.978991,8.987390)$, the normalized determinant is
+      $0.977571$ against its $T^{24}$ limit, and the measured condition-number
+      slope is $-6.001852$.</p>
+
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across
       maturities. Let the distinct CIR loadings have positive limits</p>
