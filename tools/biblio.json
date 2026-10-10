@@ -2399,6 +2399,17 @@
  },
  {
   "role": "survey_conformal",
+  "key": "HervePene2010",
+  "authors": "Hervé, L. and Pène, F.",
+  "year": 2010,
+  "title": "The Nagaev-Guivarc'h method via the Keller-Liverani theorem",
+  "venue": "Bulletin de la Société Mathématique de France 138(3):415-489",
+  "doi": "10.24033/bsmf.2594",
+  "url": "https://doi.org/10.24033/bsmf.2594",
+  "annotation": "Develops spectral Taylor and Edgeworth expansions for additive functionals of Markov processes; the critical-score calculation uses the corresponding finite-state Poisson and moment mechanism."
+ },
+ {
+  "role": "survey_conformal",
   "key": "NettasingheChatterjeeTipireddyHalappanavar2023",
   "authors": "Nettasinghe, B., Chatterjee, S., Tipireddy, R. and Halappanavar, M.",
   "year": 2023,
@@ -2517,5 +2528,27 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Ruschendorf2009",
+  "authors": "Rüschendorf, L.",
+  "year": 2009,
+  "title": "On the distributional transform, Sklar's theorem, and the empirical copula process",
+  "venue": "Journal of Statistical Planning and Inference 139(11):3921-3927",
+  "doi": "10.1016/j.jspi.2009.05.030",
+  "url": "https://doi.org/10.1016/j.jspi.2009.05.030",
+  "annotation": "Develops the randomized distributional transform that maps an arbitrary, possibly atomic distribution to a uniform variable; the path-conformal page uses it to extend the exact training-conditional beta law to randomized ties."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "KantorovichRubinstein1958",
+  "authors": "Kantorovich, L. V. and Rubinstein, G. S.",
+  "year": 1958,
+  "title": "On a space of completely additive functions",
+  "venue": "Vestnik Leningrad University 13(7):52-59",
+  "doi": "",
+  "url": "https://www.mathnet.ru/links/d483d221217d29f60d6f93617c387415/rm6527_eng.pdf",
+  "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
  }
 ]

@@ -251,6 +251,46 @@
         filtered state; calibration dependence at the sampling spacing as a separate, exactly computable effect.</em>
       </li>
       <li>
+        Cotton, P. (2026). <em>Path-Dependent Conformal Pooling Under Fast Regime Switching</em>. Note in preparation.
+        <a href="./path-conformal.html">Summary</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_path_crossover.py">certificate</a>.
+        <em>Exact path-score and dynamically filtered-predictor crossovers, including finite-chain Poisson-equation
+        coefficients through second order, a gradient/Hessian theorem for smooth nonlinear functions of several
+        path averages, and the explicit $c^{-2}$ boundary-covariance/third-derivative coefficient when the score
+        gradient vanishes. The model-conditional errors can be unequal; stationary weighting cancels them exactly,
+        while posterior-cancellation slices have an exact affine-dimension formula, including nonstationary
+        simultaneous first- and second-order cancellation with four or more regimes;
+        finite-sample marginal rank bounds under absolute
+        regularity for regular or irregular deterministic block spacing, randomized tie handling, and an exact
+        iid beta/PAC law for arbitrary score distributions conditional on the realized tie-augmented calibration
+        panel. For intervals with two finite calibration endpoints, the corresponding conditional coverage is an
+        exact beta spacing depending only on rank width; its sharp finite-sample PAC rule exposes the stricter
+        feasibility cost of estimating both tails. The full three-component Dirichlet spacing law also gives an
+        exact multinomial certificate and a sharp sample-range feasibility test for controlling the lower and
+        upper conditional tail errors separately. Under an exponential mixing envelope, equal gaps optimally allocate a fixed span for marginal
+        coverage, while an explicit logarithmic water fill assigns extra separation to the final test gap in the
+        training-conditional PAC bound. The dependent high-probability bound keeps
+        every calibration gap distinct from the final test gap; an iid-beta rearrangement removes the free slack
+        using only the two TV budgets, and the actual panel order-statistic law sharpens it further. The same two
+        TV budgets control the complete random training-conditional coverage law in $W_1$ distance from its iid
+        beta benchmark, proving that fixed-$N$ conditional variability persists even under arbitrarily fast
+        mixing. The beta benchmark&apos;s mean absolute deviation has an exact closed form and a sharp
+        $N^{-1/2}$ law, yielding a finite calibration-size rule that adds the dependence budget without confusing
+        marginal and calibration-conditional coverage. An exact
+        binomial-beta mixture gives the fixed-test-memory limit for every calibration order statistic, and an exact
+        binomial-tail coefficient gives the resulting marginal-coverage shift. The same law extends to unequal
+        stationary two-state masses, with an exact finite-sum coefficient, asymmetric outer-rank limits, and a
+        Gaussian critical-window interpolation with an $O(N^{-1/2})$ remainder at the stationary mass.
+        Finite-$N$ Chernoff envelopes
+        away from the median rank and a Gaussian central crossover with an explicit Berry&ndash;Esseen remainder: the
+        panel can converge in total variation to iid while the final gap changes both the training-conditional tail
+        and, generally, marginal coverage.
+        Independent fitting preserves these guarantees conditional
+        on the learned score map; remote same-series training pays one additional mixing term, while reusing
+        calibration labels can reduce ordinary split coverage to zero. None of these statements claims
+        feature-conditional validity.</em>
+      </li>
+      <li>
         Cotton, P. (2026). <em>Pulsar Spin-Down Switching and Timing Noise</em>. Note in preparation.
         <a href="./pulsars.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/pulsars/verify_pulsars.py">certificate</a>.
