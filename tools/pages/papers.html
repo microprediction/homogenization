@@ -81,7 +81,14 @@
         every clustered jet matrix to a nonsingular confluent Vandermonde system. At short maturity, distinct
         common-volatility loadings have the explicit eigenvalue hierarchy
         $T^3,T^5,\ldots,T^{2d+1}$, determinant order $T^{d(d+2)}$, and condition number
-        $\Theta(T^{-2(d-1)})$, with QR&ndash;shifted-Hilbert leading constants. At long maturity, for arbitrary
+        $\Theta(T^{-2(d-1)})$, with QR&ndash;shifted-Hilbert leading constants. More generally, if
+        $K=FF^\top$, $A_q=\operatorname{diag}(v_q)F$, and
+        $s_q=\operatorname{rank}[A_1\ \cdots\ A_q]$, then exactly
+        $s_q-s_{q-1}$ integrated eigenvalues have order $T^{2q+1}$. Distinct common-volatility
+        CIR rates and positive diagonal $K$ force $s_d=d$: full fixed rank gives only $T^3$
+        powers, rank one gives the full odd-power ladder, and intermediate rank gives repeated
+        graded powers. Here $s_1=\operatorname{rank}K$ remains the fixed Green&ndash;Kubo rank;
+        later blocks measure rank created by maturity integration. At long maturity, for arbitrary
         heterogeneous CIR pairs, including repeated full-pair clusters satisfying the exact within-cluster
         criterion, the number of linearly growing information eigenvalues is exactly the fixed Green&ndash;Kubo rank $r$;
         if maturity integration creates full rank, the other $d-r$ eigenvalues converge to a positive transient

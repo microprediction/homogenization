@@ -598,7 +598,7 @@
     <p>Exact full rank at every $T&gt;0$ is also poorly conditioned near zero
       maturity, because every CIR loading begins with the same term $B_i(t)=t+O(t^2)$.
       Write the vector loading as</p>
-    $$B(t)=\sum_{k\ge1}v_kt^k,qquad
+    $$B(t)=\sum_{k\ge1}v_kt^k,\qquad
       V=[v_1\ \cdots\ v_d]=Q_VR_V,$$
     <p>and assume $V$ is nonsingular. Let $H_d$ be the shifted Hilbert matrix
       and $C$ its lower Cholesky factor:</p>
@@ -646,6 +646,54 @@
       $(2.985538,4.972892,6.978991,8.987390)$, the normalized determinant is
       $0.977571$ against its $T^{24}$ limit, and the measured condition-number
       slope is $-6.001852$.</p>
+
+    <h3>Higher fixed rank gives a block-jet spectrum</h3>
+    <p>The rank-one hierarchy has an exact higher-rank extension. Factor the
+      fixed-feature Gram matrix as $K=FF^\top$, with $F\in\mathbb R^{d\times r}$,
+      and define the rowwise Taylor blocks and their cumulative ranks by</p>
+    $$A_q=\operatorname{diag}(v_q)F,\qquad
+      s_q=\operatorname{rank}[A_1\ \cdots\ A_q],\qquad s_0=0.$$
+    <p>For analytic loadings, let $s_\infty$ be the eventual value of $s_q$.
+      Then for every $T&gt;0$,</p>
+    $$\operatorname{rank}D(T)=s_\infty,
+      \qquad D(T)=\int_0^T\operatorname{diag}(B(t))K
+      \operatorname{diag}(B(t))\,dt,$$
+    <p>and exactly $s_q-s_{q-1}$ positive eigenvalues of $D(T)$ have order
+      $\Theta(T^{2q+1})$ as $T\downarrow0$. Thus the product of the positive
+      eigenvalues has order</p>
+    $$T^{\sum_{q\ge1}(s_q-s_{q-1})(2q+1)}.$$
+    <p>If $q_*=\min\{q:s_q=s_\infty\}$ and $s_1&gt;0$, the positive-spectrum
+      condition number is $\Theta(T^{-2(q_*-1)})$. In the full-rank case the
+      product above is the ordinary determinant. The proof uses the nested
+      spaces $\mathcal V_q=\operatorname{col}[A_1\ \cdots\ A_q]$: after
+      decomposing into the new grades
+      $\mathcal V_q\cap\mathcal V_{q-1}^{\perp}$ and rescaling the $q$th grade
+      by $T^{q+1/2}$, the synthesis map converges to a full-row-rank polynomial
+      map. Its integral Gram matrix is positive definite because the grades
+      have distinct first nonzero polynomial degrees. Exterior powers then
+      give the stated multiplicities and powers.</p>
+    <p>For common-volatility CIR loadings with distinct mean-reversion rates,
+      $s_d=d$ whenever $K_{ii}>0$ for every name. Indeed, the coefficient of
+      order $q$ is a polynomial of degree $q-1$ in $\kappa_i$ with nonzero
+      leading coefficient. A vector annihilating the first $d$ blocks would,
+      feature column by feature column, annihilate a Vandermonde system; hence
+      $x_iF_{i\ell}=0$ for every $i,\ell$, and the nonzero rows implied by
+      $K_{ii}>0$ force $x=0$. Therefore full fixed rank gives $d$ copies of
+      $T^3$, rank one gives $T^3,T^5,\ldots,T^{2d+1}$, and intermediate fixed
+      ranks give repeated graded powers. This is the block/multi-input analogue
+      of the scalar small-time controllability-Gramian hierarchy of
+      <a href="https://arxiv.org/abs/2609.37077">Trélat and Zuazua (2026)</a>,
+      shifted by the CIR zero at the origin.</p>
+    <p>A five-name 100-digit certificate with fixed rank two has cumulative
+      ranks $(2,4,5)$ and therefore predicts powers $(3,3,5,5,7)$, determinant
+      power $23$, and condition-number slope $-4$. Over the final dyadic step
+      down to $T=1/512$, the measured eigenvalue slopes are
+      $(2.986771,2.996952,4.987058,4.994626,6.988704)$, the determinant slope is
+      $22.954111$, and the condition-number slope is $-4.001934$. This theorem
+      keeps the two notions of rank separate: for CIR, where $v_1$ is the
+      all-ones vector, $s_1=\operatorname{rank}K$ is the fixed-parameter
+      Green&ndash;Kubo rank, while later blocks describe new directions created
+      only after integrating heterogeneous maturity loadings.</p>
 
     <h3>Long maturity restores effective rank one</h3>
     <p>Full algebraic rank also does not mean uniform information across

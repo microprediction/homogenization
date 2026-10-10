@@ -13,6 +13,9 @@ For four fixed distinct rates at short maturity, another high-precision
 certificate checks the complementary eigenvalue powers 3, 5, 7, 9, their
 QR--Hilbert leading constants, the twenty-fourth-power determinant law, and
 the sixth-power condition-number blow-up as maturity shrinks.
+For a five-name rank-two Green--Kubo matrix, a block-jet certificate then
+checks the general filtration law: cumulative ranks 2, 4, 5 produce powers
+3, 3, 5, 5, 7, determinant power 23, and fourth-power conditioning.
 For partially coalescing rates in clusters of sizes three, two, and one, a
 second high-precision check verifies the Hermite-jet exponent multiset
 0, 0, 0, 2, 2, 4, the eighth-power determinant law, and the fourth-power
@@ -524,6 +527,156 @@ def short_maturity_loading_checks():
         print(f"  condition-number slope {condition_slope:.6f}")
         return (slopes, eigenvalue_constants, measured_constants,
                 determinant_ratios, condition_slope)
+    finally:
+        mp.mp.dps = old_dps
+
+
+def block_short_maturity_loading_checks():
+    """Certify the block-jet law for higher-rank fixed Green--Kubo geometry.
+
+    Factor K=FF'.  For loading coefficient vectors v_k, put
+    A_k=diag(v_k)F and s_q=rank[A_1,...,A_q].  Exactly s_q-s_(q-1)
+    positive eigenvalues have order T^(2q+1).  This example has rank(K)=2
+    in dimension five and cumulative ranks 2,4,5.
+    """
+    old_dps = mp.mp.dps
+    mp.mp.dps = 100
+    try:
+        dimension = 5
+        feature_rank = 2
+        kappas = [mp.mpf(value) for value in
+                  ("0.35", "0.7", "1.2", "2.0", "3.4")]
+        sigma = mp.mpf("0.18")
+        features = mp.matrix([
+            [1, mp.mpf(value)]
+            for value in ("-1.3", "-0.4", "0.2", "1.1", "2.0")
+        ])
+        fixed_gram = features * features.T
+        terms = 40
+
+        coefficients = []
+        for kappa in kappas:
+            values = [mp.mpf(0)] * (terms + 1)
+            values[1] = mp.mpf(1)
+            for order in range(1, terms):
+                convolution = mp.fsum(
+                    values[left] * values[order - left]
+                    for left in range(1, order)
+                )
+                values[order + 1] = (
+                    -kappa * values[order]
+                    - sigma**2 * convolution / 2
+                ) / (order + 1)
+            coefficients.append(values)
+
+        feature_array = np.asarray(features.tolist(), dtype=float)
+        coefficient_blocks = []
+        cumulative_ranks = []
+        for order in range(1, dimension + 1):
+            coefficient_blocks.append(
+                np.diag([
+                    float(coefficients[name][order])
+                    for name in range(dimension)
+                ]) @ feature_array
+            )
+            cumulative_ranks.append(np.linalg.matrix_rank(
+                np.column_stack(coefficient_blocks), tol=1e-12
+            ))
+        assert cumulative_ranks == [2, 4, 5, 5, 5]
+
+        multiplicities = np.diff([0] + cumulative_ranks).tolist()
+        exponents = []
+        for order, multiplicity in enumerate(multiplicities, start=1):
+            exponents.extend([2 * order + 1] * multiplicity)
+        assert exponents == [3, 3, 5, 5, 7]
+        determinant_power = sum(exponents)
+        assert determinant_power == 23
+
+        horizons = [mp.mpf(2)**(-power) for power in range(3, 10)]
+        spectra = []
+        determinants = []
+        for horizon in horizons:
+            integrated = mp.matrix(dimension, dimension)
+            for left in range(dimension):
+                for right in range(dimension):
+                    loading_gram = mp.fsum(
+                        coefficients[left][j] * coefficients[right][k]
+                        * horizon**(j + k + 1) / (j + k + 1)
+                        for j in range(1, terms + 1)
+                        for k in range(1, terms + 1)
+                    )
+                    integrated[left, right] = (
+                        fixed_gram[left, right] * loading_gram
+                    )
+            eigenvalues = sorted(
+                mp.eigsy(integrated, eigvals_only=True), reverse=True
+            )
+            assert eigenvalues[-1] > 0
+            spectra.append(eigenvalues)
+            determinants.append(mp.det(integrated))
+
+        log_horizons = np.log(np.array([
+            float(value) for value in horizons[-4:]
+        ]))
+        slopes = []
+        for index in range(dimension):
+            slopes.append(float(np.polyfit(
+                log_horizons,
+                np.log(np.array([
+                    float(spectrum[index]) for spectrum in spectra[-4:]
+                ])),
+                1,
+            )[0]))
+        determinant_slope = float(np.polyfit(
+            log_horizons,
+            np.log(np.array([
+                float(value) for value in determinants[-4:]
+            ])),
+            1,
+        )[0])
+        condition_slope = float(np.polyfit(
+            log_horizons,
+            np.log(np.array([
+                float(spectrum[0] / spectrum[-1])
+                for spectrum in spectra[-4:]
+            ])),
+            1,
+        )[0])
+        scaled_eigenvalues = [
+            spectra[-1][index] / horizons[-1]**exponents[index]
+            for index in range(dimension)
+        ]
+        scaled_determinants = [
+            determinant / horizon**determinant_power
+            for determinant, horizon in zip(determinants, horizons)
+        ]
+
+        assert np.max(abs(np.asarray(slopes) - exponents)) < 0.02
+        assert abs(determinant_slope - determinant_power) < 0.06
+        assert abs(condition_slope + 4) < 0.01
+        assert abs(float(
+            scaled_determinants[-1] / scaled_determinants[-2] - 1
+        )) < 0.015
+
+        print("\nblock short-maturity CIR loading certificate")
+        print(f"  fixed Green-Kubo rank {feature_rank}; cumulative jet "
+              "ranks " + " ".join(map(str, cumulative_ranks[:3])))
+        print("  predicted eigenvalue powers "
+              + " ".join(map(str, exponents)))
+        print("  observed eigenvalue slopes "
+              + " ".join(f"{slope:.6f}" for slope in slopes))
+        print("  scaled eigenvalues at T=1/512 "
+              + " ".join(mp.nstr(value, 12)
+                         for value in scaled_eigenvalues))
+        print(f"  determinant predicted/observed powers "
+              f"{determinant_power}/{determinant_slope:.6f}")
+        print("  final scaled-determinant relative change "
+              + mp.nstr(abs(
+                  scaled_determinants[-1] / scaled_determinants[-2] - 1
+              ), 9))
+        print(f"  condition-number slope {condition_slope:.6f}")
+        return (cumulative_ranks, exponents, slopes, determinant_slope,
+                condition_slope)
     finally:
         mp.mp.dps = old_dps
 
@@ -1809,6 +1962,7 @@ def cir_jet_independence_checks():
 def main():
     rank_amplification_checks()
     short_maturity_loading_checks()
+    block_short_maturity_loading_checks()
     long_maturity_loading_checks()
     finite_rank_long_maturity_checks()
     integrated_full_rank_criterion_checks()
@@ -2154,8 +2308,8 @@ def main():
         f"fixed-budget {maximum_budget_error:.2e}; infimum sqrt(2)"
     )
 
-    print("PASS: positivity, sharp rank amplification, short- and long-maturity "
-          "spectra, distinct, repeated, heterogeneous two-name, and "
+    print("PASS: positivity, sharp rank amplification, short-maturity block-jet "
+          "and long-maturity spectra, distinct, repeated, heterogeneous two-name, and "
           "unrestricted heterogeneous loading rank criteria, automatic CIR "
           "jet independence, prior memory, pair cancellation, and ordered "
           "default")
