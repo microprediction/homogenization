@@ -383,10 +383,32 @@
     $$\mathbb E_{\Pi_m}v^p=\sum_{n=0}^{N}m^{-n}\mu_{p,n}
       +O_{p,N}(m^{-N-1}).$$
     </div>
-    <p>The remainder follows from finite-dimensional analytic perturbation at the simple stationary eigenvector
-      of $Q_0$, in the sense of <a href="./bibliography.html#Kato1949">Kato (1949)</a>. This is an asymptotic
-      statement for each fixed pair $(p,N)$: it claims neither
-      convergence of the series as $N\to\infty$ nor an error constant uniform in the moment order. At $n=0$ it is
+    <p>Here the series is more than formal. Put $\epsilon=1/m$ and define the exact row-valued function</p>
+    $$R_p(\epsilon)=\pi\prod_{j=1}^p
+      \left[D_{d_j}\,\epsilon(j\epsilon D_\kappa-Q_0)^{-1}\right].$$
+    <p>The apparent singularity of each factor at zero is removable:</p>
+    $$\epsilon(j\epsilon D_\kappa-Q_0)^{-1}
+      \longrightarrow {\mathbf1\pi\over j\bar\kappa}.$$
+    <p>All other possible poles of its $j$th factor are $\lambda/j$, where
+      $\lambda$ is a nonzero eigenvalue of $D_\kappa^{-1}Q_0$. Therefore, with</p>
+    $$\gamma_\kappa=\min\{|\lambda|:\lambda\in
+      \sigma(D_\kappa^{-1}Q_0)\setminus\{0\}\},$$
+    <div class="equation-card">
+    $$R_p(\epsilon)=\sum_{n\ge0}\epsilon^nr_{p,n}
+      \quad\hbox{converges absolutely for}\quad |\epsilon|<{\gamma_\kappa\over p}.$$
+    </div>
+    <p>The recursion above gives its Taylor coefficients, so the fixed-$(p,N)$ remainder follows directly.
+      A fully computable Cauchy bound is also available. For $0&lt;r&lt;\gamma_\kappa/p$, let</p>
+    $$\delta_{j,r}=\min_{|\zeta|=r}\sigma_{\min}
+      (j\zeta D_\kappa-Q_0),\qquad
+      B_{p,r}=\|\pi\|_2\prod_{j=1}^p
+      {r\|D_{d_j}\|_2\over\delta_{j,r}}.$$
+    <p>Then, whenever $|\epsilon|&lt;r$,</p>
+    $$\left\|R_p(\epsilon)-\sum_{n=0}^N\epsilon^nr_{p,n}\right\|_2
+      \le B_{p,r}{(|\epsilon|/r)^{N+1}\over1-|\epsilon|/r}.$$
+    <p>This is a fixed-moment convergence theorem in the sense of
+      <a href="./bibliography.html#Kato1949">Kato (1949)</a>, not a moment-uniform one: the guaranteed disk
+      shrinks like $1/p$, and neither the displayed radius nor the Cauchy constant is asserted sharp. At $n=0$ it is
       exactly the stationary-moment recursion of the averaged CIR model; at $n=1$ it reduces to the previously
       displayed first correction. If all coefficients are regime independent, every $n\ge1$ coefficient vanishes
       and the exact law has the stationary Gamma moments</p>
@@ -396,7 +418,10 @@
       regime-resolved orders are $(0.993,1.994,2.993,3.993)$, matching the predicted powers one through four.
       At $m=128$ the largest scalar residual after the cubic correction is $7.9\times10^{-13}$. Independently,
       one block polynomial-semigroup exponential agrees with the exact recursive invariant moments within
-      $7.3\times10^{-15}$, and the constant-coefficient Gamma reduction within $1.2\times10^{-16}$.</p>
+      $7.3\times10^{-15}$, and the constant-coefficient Gamma reduction within $1.2\times10^{-16}$.
+      The guaranteed Taylor radius through moment six is $0.3053256795$. At $m=8$ the ratio
+      $\epsilon/\rho$ is $0.4093989087$, and 80-digit truncations at orders $3,6,\ldots,30$ decrease monotonically
+      from $4.77\times10^{-8}$ to $1.55\times10^{-20}$.</p>
 
     <h2>The exact long-run second-cumulant slope and intercept</h2>
     <p>The higher-cumulant expansion above is fixed-maturity, but its first secular coefficient can still be

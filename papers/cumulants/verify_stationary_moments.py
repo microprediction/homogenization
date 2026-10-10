@@ -4,13 +4,15 @@ For the row-vector convention used in the paper, the invariant component
 moments r[p, i] = E[v**p 1_{Y=i}] obey a triangular sequence of killed-chain
 linear systems.  This script checks that recursion against one large
 polynomial-semigroup exponential, verifies the constant-coefficient Gamma
-special case, and tests the explicit inverse-speed expansion through cubic
-order on a nonreversible three-state chain.
+special case, tests the explicit inverse-speed expansion through cubic order,
+and checks convergence of the full Taylor series inside the computable pole
+disk on a nonreversible three-state chain.
 """
 import math
 import os
 import sys
 
+import mpmath as mp
 import numpy as np
 from scipy.linalg import expm
 
@@ -21,6 +23,7 @@ from effective_generator import group_inverse, stationary
 DEGREE = 6
 SPEEDS = (8, 16, 32, 64, 128)
 ASYMPTOTIC_ORDER = 3
+CONVERGENCE_ORDER = 30
 
 
 def stationary_moments(speed, q0, pi, c, kappa, variance, degree=DEGREE):
@@ -98,6 +101,132 @@ def gamma_moments(c, kappa, variance, degree=DEGREE):
     return np.asarray(values)
 
 
+def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
+                            expansion_order=CONVERGENCE_ORDER, speed=8):
+    """High-precision Taylor convergence inside the explicit pole disk.
+
+    For epsilon=1/speed, the pth exact moment row is a product of factors
+
+        epsilon * (p * epsilon * D_kappa - Q_0)^(-1).
+
+    The apparent singularity at epsilon=0 is removable.  Every other pole of
+    the pth factor is lambda/p, where lambda is a nonzero eigenvalue of
+    D_kappa^(-1) Q_0.  Thus the moments through ``degree`` are analytic in the
+    guaranteed disk with radius min(abs(lambda))/degree.
+    """
+    eigenvalues = np.linalg.eigvals(np.linalg.solve(np.diag(kappa), q0))
+    nonzero = eigenvalues[np.abs(eigenvalues) > 1e-11]
+    radius = np.min(np.abs(nonzero)) / degree
+    assert 1 / speed < radius
+
+    old_dps = mp.mp.dps
+    mp.mp.dps = 80
+    try:
+        size = len(kappa)
+        q_mp = mp.matrix([[mp.mpf(str(value)) for value in row] for row in q0])
+        c_mp = [mp.mpf(str(value)) for value in c]
+        kappa_mp = [mp.mpf(str(value)) for value in kappa]
+        variance_mp = [mp.mpf(str(value)) for value in variance]
+
+        stationary_system = q_mp.T.copy()
+        stationary_rhs = mp.matrix(size, 1)
+        for column in range(size):
+            stationary_system[size - 1, column] = 1
+        stationary_rhs[size - 1] = 1
+        pi = mp.lu_solve(stationary_system, stationary_rhs).T
+        ones = mp.matrix(size, 1)
+        for index in range(size):
+            ones[index] = 1
+        projection = ones * pi
+        inverse = (q_mp + projection) ** -1 - projection
+        bar_kappa = sum(pi[index] * kappa_mp[index]
+                        for index in range(size))
+
+        def zero_row():
+            return mp.matrix(1, size)
+
+        coefficients = [
+            [zero_row() for _ in range(expansion_order + 1)]
+            for _ in range(degree + 1)
+        ]
+        centered = [
+            [zero_row() for _ in range(expansion_order + 1)]
+            for _ in range(degree + 1)
+        ]
+        scalar = [
+            [mp.mpf("0") for _ in range(expansion_order + 1)]
+            for _ in range(degree + 1)
+        ]
+        coefficients[0][0] = pi
+        scalar[0][0] = 1
+        for inverse_order in range(expansion_order + 1):
+            for moment_order in range(1, degree + 1):
+                forcing = [
+                    moment_order * c_mp[index]
+                    + mp.mpf(moment_order * (moment_order - 1))
+                    * variance_mp[index] / 2
+                    for index in range(size)
+                ]
+                previous = sum(
+                    coefficients[moment_order - 1][inverse_order][index]
+                    * forcing[index] for index in range(size)
+                )
+                centered_kappa = sum(
+                    centered[moment_order][inverse_order][index]
+                    * kappa_mp[index] for index in range(size)
+                )
+                scalar[moment_order][inverse_order] = (
+                    previous - moment_order * centered_kappa
+                ) / (moment_order * bar_kappa)
+                coefficients[moment_order][inverse_order] = (
+                    centered[moment_order][inverse_order]
+                    + scalar[moment_order][inverse_order] * pi
+                )
+                if inverse_order < expansion_order:
+                    source = mp.matrix([[
+                        moment_order
+                        * coefficients[moment_order][inverse_order][index]
+                        * kappa_mp[index]
+                        - coefficients[moment_order - 1][inverse_order][index]
+                        * forcing[index]
+                        for index in range(size)
+                    ]])
+                    assert abs(sum(source)) < mp.mpf("1e-65")
+                    centered[moment_order][inverse_order + 1] = source * inverse
+
+        speed_mp = mp.mpf(speed)
+        exact_rows = [pi]
+        for moment_order in range(1, degree + 1):
+            forcing = mp.matrix([
+                exact_rows[-1][index]
+                * (moment_order * c_mp[index]
+                   + mp.mpf(moment_order * (moment_order - 1))
+                   * variance_mp[index] / 2)
+                for index in range(size)
+            ])
+            killed = (mp.diag([moment_order * value for value in kappa_mp])
+                      - speed_mp * q_mp)
+            exact_rows.append(mp.lu_solve(killed.T, forcing).T)
+        exact_scalar = [sum(row) for row in exact_rows]
+
+        truncations = tuple(range(3, expansion_order + 1, 3))
+        errors = []
+        for truncation in truncations:
+            errors.append(max(
+                abs(exact_scalar[moment_order] - sum(
+                    scalar[moment_order][inverse_order]
+                    / speed_mp ** inverse_order
+                    for inverse_order in range(truncation + 1)
+                ))
+                for moment_order in range(1, degree + 1)
+            ))
+        assert all(later < earlier for earlier, later in zip(errors, errors[1:]))
+        assert errors[-1] < mp.mpf("1.6e-20")
+        return radius, truncations, errors
+    finally:
+        mp.mp.dps = old_dps
+
+
 def observed_order(errors):
     return math.log(errors[-2] / errors[-1], 2)
 
@@ -137,6 +266,9 @@ def main():
     coefficients, scalar, centered = fast_coefficients(
         q0, pi, c, kappa, variance
     )
+    radius, truncations, convergence_errors = convergence_certificate(
+        q0, c, kappa, variance
+    )
     residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
     component_residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
     for speed in SPEEDS:
@@ -174,6 +306,11 @@ def main():
     print("scalar residual orders n=0..3:", np.array2string(scalar_rates, precision=6))
     print("component residual orders n=0..3:", np.array2string(component_rates, precision=6))
     print("largest cubic scalar residual at m=128:", f"{residuals[3][-1]:.3e}")
+    print("guaranteed Taylor radius through p=6:", f"{radius:.10f}")
+    print("epsilon/radius at speed 8:", f"{1 / (8 * radius):.10f}")
+    print("Taylor truncation orders:", " ".join(map(str, truncations)))
+    print("maximum scalar Taylor errors:",
+          " ".join(mp.nstr(value, 7) for value in convergence_errors))
 
 
 if __name__ == "__main__":
