@@ -5,6 +5,7 @@ first-order expressions to an ODE solve; it does not substitute for that proof.
 """
 import math
 
+import mpmath as mp
 import numpy as np
 from scipy.integrate import quad_vec, solve_ivp
 from scipy.linalg import block_diag, expm, null_space
@@ -183,8 +184,46 @@ def continuous_observability_gramian(Q, centered, horizon):
     return (gramian + gramian.T) / 2
 
 
+def high_precision_restricted_series(Q, centered, tangent, horizon, terms=44):
+    """Short-window restricted Gramian spectrum without cancellation loss."""
+    old_dps = mp.mp.dps
+    mp.mp.dps = 80
+    try:
+        q_mp = mp.matrix([
+            [mp.mpf(str(value)) for value in row] for row in Q
+        ])
+        centered_mp = mp.matrix([
+            [mp.mpf(str(value)) for value in row] for row in centered
+        ])
+        tangent_mp = mp.matrix([
+            [mp.mpf(str(value)) for value in row] for row in tangent
+        ])
+        horizon_mp = mp.mpf(str(horizon))
+        powers = [centered_mp]
+        for _ in range(1, terms):
+            powers.append(q_mp * powers[-1])
+        gramian = mp.matrix(len(Q), len(Q))
+        for left in range(1, terms + 1):
+            for right in range(1, terms + 1):
+                coefficient = (
+                    horizon_mp ** (left + right + 1)
+                    / (mp.factorial(left) * mp.factorial(right)
+                       * (left + right + 1))
+                )
+                gramian += (coefficient * powers[left - 1]
+                             * powers[right - 1].T)
+        restricted = tangent_mp.T * gramian * tangent_mp
+        eigenvalues, _ = mp.eigsy(restricted)
+        return (
+            np.array([float(value) for value in reversed(eigenvalues)]),
+            float(mp.det(restricted)),
+        )
+    finally:
+        mp.mp.dps = old_dps
+
+
 def verify_continuous_observability_gramian():
-    """Continuous-curve Fisher rank and its finite transient information."""
+    """Continuous-curve Fisher rank and its short/long information scales."""
     rng = np.random.default_rng(10102026)
     maximum_quadrature_error = 0.0
     checked = 0
@@ -262,6 +301,73 @@ def verify_continuous_observability_gramian():
     assert np.max(saturated_relative_changes) < 0.005
     assert maximum_quadrature_error < 2e-10
 
+    # At the opposite endpoint, the scalar cyclic response vanishes at zero.
+    # Its constrained information eigenvalues therefore have the shifted
+    # single-input Gramian hierarchy L^3,L^5,...,L^(2r+1).  QR of the centered
+    # Krylov matrix and Cholesky of the factorial Hilbert matrix give every
+    # leading constant.
+    tangent_dimension = len(Q) - 1
+    centered_krylov = tangent.T @ np.column_stack([
+        np.linalg.matrix_power(Q, order) @ centered
+        for order in range(tangent_dimension)
+    ])
+    _, krylov_triangular = np.linalg.qr(centered_krylov)
+    factorial_hilbert = np.array([
+        [
+            1.0 / (
+                math.factorial(left) * math.factorial(right)
+                * (left + right + 1)
+            )
+            for right in range(1, tangent_dimension + 1)
+        ]
+        for left in range(1, tangent_dimension + 1)
+    ])
+    hilbert_cholesky = np.linalg.cholesky(factorial_hilbert)
+    short_constants = (
+        np.diag(krylov_triangular) ** 2
+        * np.diag(hilbert_cholesky) ** 2
+    )
+    explicit_hilbert_diagonal = np.array([
+        (
+            math.factorial(order - 1) ** 2
+            * math.factorial(order + 1) ** 2
+            / (math.factorial(order) ** 2
+               * math.factorial(2 * order)
+               * math.factorial(2 * order + 1))
+        )
+        for order in range(1, tangent_dimension + 1)
+    ])
+    assert np.max(abs(
+        np.diag(hilbert_cholesky) ** 2 - explicit_hilbert_diagonal
+    )) < 3e-17
+
+    short_horizons = np.array([0.2, 0.1, 0.05, 0.025, 0.0125])
+    scaled_short_spectra = []
+    determinant_ratios = []
+    determinant_constant = (
+        np.linalg.det(centered_krylov) ** 2
+        * np.linalg.det(factorial_hilbert)
+    )
+    determinant_power = tangent_dimension * (tangent_dimension + 2)
+    for horizon in short_horizons:
+        eigenvalues, determinant = high_precision_restricted_series(
+            Q, centered, tangent, horizon
+        )
+        powers = horizon ** (2 * np.arange(1, tangent_dimension + 1) + 1)
+        scaled_short_spectra.append(eigenvalues / powers)
+        determinant_ratios.append(
+            determinant / (determinant_constant * horizon ** determinant_power)
+        )
+    scaled_short_spectra = np.asarray(scaled_short_spectra)
+    relative_errors = np.max(
+        abs(scaled_short_spectra / short_constants - 1.0), axis=1
+    )
+    short_order = math.log(relative_errors[-2] / relative_errors[-1], 2)
+    assert np.all(np.diff(relative_errors) < 0)
+    assert relative_errors[-1] < 0.04
+    assert 0.8 < short_order < 1.2
+    assert abs(determinant_ratios[-1] - 1.0) < 0.08
+
     print("\nContinuous-maturity Fisher Gramian")
     print(f"random finite-chain cases checked: {checked}")
     print(f"Van Loan vs quadrature maximum error: {maximum_quadrature_error:.3e}")
@@ -272,6 +378,14 @@ def verify_continuous_observability_gramian():
     print(f"linearly growing eigenvalue ratio: {leading_ratio:.9f}")
     print("saturated-direction relative changes from L=128 to 256: "
           + ", ".join(f"{x:.3e}" for x in saturated_relative_changes))
+    print("short-window predicted constants (L^3,L^5,L^7): "
+          + " ".join(f"{value:.10e}" for value in short_constants))
+    print("short-window scaled eigenvalues at L=0.0125: "
+          + " ".join(f"{value:.10e}" for value in scaled_short_spectra[-1]))
+    print(f"maximum relative constant error: {relative_errors[-1]:.6f}; "
+          f"observed order {short_order:.6f}")
+    print(f"normalized short-window determinant: "
+          f"{determinant_ratios[-1]:.9f}; power {determinant_power}")
 
 
 def project_simplex(values):

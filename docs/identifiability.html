@@ -383,6 +383,49 @@
       Thus continuum observation introduces no new algebraic condition beyond the PBH/Krylov
       theorem; it turns that condition into a quantitative information matrix.</p>
 
+    <h3>Short maturity windows: an explicit Fisher hierarchy</h3>
+    <p>Rank alone hides a severe short-window conditioning law. Consider one scalar centered feature,
+      scalar white-noise variance $\Gamma=\gamma&gt;0$, and put $r=n-1$. Assume the feature is cyclic, and let
+      $U$ be an orthonormal prior-tangent basis. Define the square centered Krylov matrix</p>
+    $$K_c=U^\top[F\ Q_0F\ \cdots\ Q_0^{r-1}F]=Q_KR_K.$$
+    <p>Let $H_r$ be the factorial Hilbert matrix and $C$ its lower Cholesky factor:</p>
+    $$ (H_r)_{k\ell}={1\over k!\ell!(k+\ell+1)},\qquad H_r=CC^\top,qquad 1\le k,\ell\le r.$$
+    <p>Then the constrained Fisher eigenvalues, ordered decreasingly, obey</p>
+    <div class="equation-card">
+    $$\lambda_k(U^\top\mathcal W_{L,\gamma}U)
+      ={(R_K)_{kk}^2C_{kk}^2\over\gamma}
+      L^{2k+1}\{1+O(L)\},\qquad 1\le k\le r,$$
+    </div>
+    <p>with the completely explicit universal factor</p>
+    $$C_{kk}^2={[(k-1)!]^2[(k+1)!]^2
+      \over(k!)^2(2k)!(2k+1)!}.$$
+    <p>Consequently</p>
+    $$\det(U^\top\mathcal W_{L,\gamma}U)
+      ={(\det K_c)^2\det H_r\over\gamma^r}
+      L^{r(r+2)}\{1+O(L)\},
+      \qquad
+      \kappa_2(\mathcal W_{L,\gamma}|_{{\bf1}^\perp})
+      =\Theta(L^{-2(r-1)}).$$
+    <p>The proof inserts
+      $R(\tau)=\sum_{k\ge1}\tau^kQ_0^{k-1}F/k!$ into the Gramian, rescales
+      $\tau=Lx$, and factors the result as
+      $K_cD_L\{H_r+O(L)\}D_LK_c^\top/\gamma$, where
+      $D_L=\operatorname{diag}(L^{3/2},L^{5/2},\ldots,L^{r+1/2})$.
+      Exterior powers after QR and Cholesky give the individual constants. This is a Fisher-information
+      statement about the initial mixture. It is not the discrete-maturity response hierarchy and does not
+      change the fixed-feature Green&ndash;Kubo rank or any rank obtained after contract-loading integration.</p>
+    <p>The odd-power hierarchy is the shifted analogue of the single-input controllability-Gramian law developed
+      by <a href="./bibliography.html#TrelatZuazua2026">Trélat and Zuazua (2026)</a>: their ordinary response is
+      nonzero at time zero and begins with powers $L,L^3,\ldots$, whereas the yield response itself starts at
+      order $\tau$, shifting every information power by two.</p>
+
+    <p>For the four-state cyclic certificate, the predicted constants for powers $(L^3,L^5,L^7)$ are</p>
+    $$1.0300000000,\qquad4.66565231\times10^{-3},\qquad5.12386811\times10^{-7}.$$
+    <p>At $L=0.0125$, the 80-digit measured scaled eigenvalues are
+      $(1.00987837,4.55027653\times10^{-3},5.00661036\times10^{-7})$; the largest relative error is
+      $2.48\%$ and decreases at observed first order. The normalized determinant is $0.934336$, consistent with
+      its $L^{15}$ limit.</p>
+
     <p>There is also a sharp long-interval distinction between fixed-feature information and
       transiently created information. Put $B=HF$ and let $r=\operatorname{rank}F$. Exponential
       mixing gives</p>

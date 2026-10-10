@@ -18,6 +18,15 @@
   "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
  },
  {
+  "key": "TrelatZuazua2026",
+  "authors": "Trélat, E. and Zuazua, E.",
+  "year": 2026,
+  "title": "Two-term small-time spectral expansions for controllability Gramians",
+  "venue": "arXiv:2609.37077",
+  "url": "https://arxiv.org/abs/2609.37077",
+  "annotation": "Derives the small-time odd-power eigenvalue hierarchy and refined spectral expansions for controllable single-input Gramians. The yield-curve Fisher response vanishes once more at zero maturity, shifting the hierarchy from powers 1,3,... to 3,5,...; the note gives the corresponding factorial-Hilbert leading constants directly."
+ },
+ {
   "key": "KipnisVaradhan1986",
   "authors": "Kipnis, C. and Varadhan, S. R. S.",
   "year": 1986,
