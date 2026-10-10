@@ -136,8 +136,9 @@
     </div>
     <p>This is the Fredholm alternative: either the right side is orthogonal to the left null vector and the
     equation can be solved, or it is not and no solution exists. When a solution exists it is unique up to adding a
-    constant, because constants are in the null space. The convention used throughout fixes the constant by requiring
-    $\mathbb{E}_\pi[w] = 0$.</p>
+    constant, because constants are in the null space. The group inverse selects the particular solution whose
+    stationary mean is zero. In an asymptotic expansion this centers only the <em>range part</em> of a coefficient;
+    its full coefficient can still have a null-space amplitude that the next solvability condition determines.</p>
 
     <h2>The intuition</h2>
     <p>Read $f$ as a source that pays $f_i$ per unit time while the chain sits in state $i$. The solution of
@@ -162,9 +163,377 @@
     $$\partial_t u_0 = \mathbb{E}_\pi[G]\,u_0 .$$
     <p>That is the averaged equation. The fast variable has been replaced by its stationary average, and the step
     that forced it was the solvability condition.</p>
-    <p>With the averaged equation in hand, the order-1 equation can be solved for $u_1$, which is the corrector. The
-    next order gives a solvability condition that fixes the slow evolution of $u_1$, and so on. Every order is the
-    same two steps: impose solvability, then solve.</p>
+    <p>With the averaged equation in hand, the order-1 equation determines the state-dependent part of $u_1$. It does
+    not yet determine the part of $u_1$ shared by all fast states. The next order fixes that remaining slow amplitude,
+    and so on.</p>
+
+    <h2>The full hierarchy: average plus shape</h2>
+    <p>Put $P=\mathbf1\pi$ and decompose every coefficient as</p>
+    $$u_m=a_m(t)\mathbf1+\chi_m(t),\qquad \pi\chi_m=0.$$
+    <p>Here $\chi_m=(I-P)u_m$ is the centered shape, while $a_m=\pi u_m$ is the null-space amplitude. If
+    $u_0=a_0\mathbf1$, take $\chi_0=0$. At order $m$ the equation for the next shape is</p>
+    $$Q\chi_{m+1}=(\partial_t-G)(a_m\mathbf1+\chi_m).$$
+    <p>Its solvability condition and centered solution are respectively</p>
+    <div class="equation-card">
+    $$a_m'=\pi G(a_m\mathbf1+\chi_m),\qquad
+      \chi_{m+1}=Q^{\#}(\partial_t-G)(a_m\mathbf1+\chi_m).$$
+    </div>
+    <p>Thus $Q^{\#}$ determines only $\chi_{m+1}$. The scalar or slow-variable function $a_{m+1}$ remains free until
+    the next order. Its initial or terminal condition comes from matching the original data, including an
+    <a href="./layers.html">initial or terminal layer</a> when one is present. Centering the whole $u_{m+1}$ would set
+    $a_{m+1}=0$ prematurely and can make the next Poisson equation insoluble.</p>
+
+    <h3>A moving generator adds geometric transport</h3>
+    <p>If the fast generator itself varies on the slow time scale, its stationary projection also moves. Let
+    $Q=Q(t)$ be a $C^1$ family of irreducible finite-state generators, let $\pi(t)Q(t)=0$, and assume its nonzero
+    spectrum stays uniformly away from zero on the fixed time interval. Put
+    $P(t)=\mathbf1\pi(t)$ and $R(t)=Q(t)^{\#}$. The decomposition is now</p>
+    $$u_m=a_m(t)\mathbf1+\chi_m(t),\qquad \pi(t)\chi_m(t)=0.$$
+    <p>The Poisson equation is unchanged pointwise, but its solvability condition is not. Differentiating the moving
+    gauge gives $\pi\chi_m'=-\pi'\chi_m$, hence</p>
+    <div class="equation-card">
+    $$a_m'=\pi G(a_m\mathbf1+\chi_m)+\pi'\chi_m,$$
+    $$\chi_{m+1}=R(\partial_t-G)(a_m\mathbf1+\chi_m).$$
+    </div>
+    <p>The extra term is geometric transport of the centered shape by the moving stationary subspace. It vanishes
+    for fixed $Q$, but not merely because the forcing is scalar or because every instantaneous corrector is
+    centered.</p>
+    <p>For $G(t)=\operatorname{diag}g(t)$, write $\bar g=\pi g$, $f=g-\bar g\mathbf1$. Then</p>
+    $$a_0'=\bar g a_0,\qquad \chi_1=-a_0Rf,$$
+    <p>and the first null-space amplitude satisfies</p>
+    <div class="equation-card">
+    $$a_1'-\bar g a_1=a_0(K_{\rm dyn}+K_{\rm geo}),$$
+    $$K_{\rm dyn}=-\pi D_fRf,\qquad K_{\rm geo}=-\pi'Rf.$$
+    </div>
+    <p>Only $K_{\rm dyn}$ is the instantaneous Green&ndash;Kubo contraction. The second coefficient records motion of
+    $\pi(t)$ and is generally signed.</p>
+
+    <h4>Exact two-state protocol integral</h4>
+    <p>The word geometric is literal in the two-state case. Write</p>
+    $$Q(t)=\begin{pmatrix}-\alpha(t)&amp;\alpha(t)\\ \beta(t)&amp;-\beta(t)\end{pmatrix},\qquad
+      s=\alpha+\beta,\qquad \pi=(p,1-p),\qquad p={\beta\over s},$$
+    <p>and let $\delta=g_0-g_1$. The centered forcing is
+    $f=((1-p)\delta,-p\delta)^\top$, so $Qf=-sf$ and $Rf=-f/s$. Therefore</p>
+    <div class="equation-card">
+    $$K_{\rm dyn}={p(1-p)\delta^2\over s},\qquad
+      K_{\rm geo}={p'\delta\over s}.$$
+    </div>
+    <p>On a closed protocol $\mathcal C:t\mapsto(p(t),h(t))$, with $h=\delta/s$, the accumulated geometric
+    contribution is the oriented line integral</p>
+    <div class="equation-card">
+    $$\Gamma_{\rm geo}=\int_0^T K_{\rm geo}(t)\,dt
+      =\oint_{\mathcal C} h\,dp.$$
+    </div>
+    <p>Consequently $\Gamma_{\rm geo}$ is unchanged by every orientation-preserving $C^1$ reparameterization of
+    the same protocol, and changes sign when the loop is traversed backwards. It vanishes whenever $h$ is a
+    single-valued function of $p$ along the loop, because then $h(p)\,dp$ is exact. Thus a nonzero periodic
+    correction requires a loop in the two protocol coordinates $(p,h)$ that is not confined to a graph
+    $h=H(p)$. In contrast, $\int K_{\rm dyn}\,dt$ depends on traversal time and remains nonnegative.</p>
+    <p>This is the same path-geometric mechanism emphasized for stochastic pumps by
+    <a href="./bibliography.html#SinitsynNemenman2007">Sinitsyn and Nemenman (2007)</a>, but the observable here is
+    different: it is a null-space amplitude in a backward-equation corrector, not a transported-current cumulant.
+    No pump-current identity is being asserted.</p>
+
+    <h4>Finite-state connection, curvature, and Stokes formula</h4>
+    <p>The line-integral structure is not special to two states. Let
+    $Q=Q(\theta)$ and $g=g(\theta)$ be $C^2$ on a parameter patch, with $Q(\theta)$ an irreducible finite-state
+    generator whose nonzero spectrum remains uniformly separated from zero. Write
+    $\pi=\pi(\theta)$, $R=Q(\theta)^{\#}$, and $f=g-(\pi g)\mathbf1$. Differentiating
+    $\pi Q=0$ and $\pi\mathbf1=1$ gives $\partial_a\pi=-\pi(\partial_aQ)R$. Hence the geometric coefficient along
+    a piecewise $C^1$ protocol $\theta(t)$ is the pullback of the one-form
+    $\mathcal A=\sum_a\mathcal A_a\,d\theta_a$, where</p>
+    <div class="equation-card">
+    $$\mathcal A_a=-(\partial_a\pi)Rf
+      =\pi(\partial_aQ)R^2f,$$
+    $$K_{\rm geo}(t)\,dt=\sum_a\mathcal A_a(\theta(t))\,d\theta_a.$$
+    </div>
+    <p>Thus the closed-protocol correction is $\Gamma_{\rm geo}(\mathcal C)=\oint_{\mathcal C}\mathcal A$.
+    It depends on the oriented path, not its traversal speed. For two parameters, Stokes&apos; theorem gives</p>
+    <div class="equation-card">
+    $$\Gamma_{\rm geo}(\partial\Sigma)
+      =\iint_\Sigma \mathcal F_{12}\,d\theta_1d\theta_2,
+      \qquad \mathcal F_{12}=\partial_1\mathcal A_2-\partial_2\mathcal A_1.$$
+    </div>
+    <p>Writing $\pi_a=\partial_a\pi$, $R_a=\partial_aR$, and $f_a=\partial_af$, cancellation of the mixed
+    derivatives of $\pi$ yields the explicit curvature</p>
+    $$\mathcal F_{ab}=\pi_aR_bf-\pi_bR_af+\pi_aRf_b-\pi_bRf_a.$$
+    <p>The one-form itself depends on the choice of particular Poisson corrector, but its closed-loop content does
+      not. Indeed, replace the centered first shape $-a_0Rf$ by
+      $-a_0Rf+a_0c(\theta)\mathbf1$. To leave the full first corrector unchanged, its normalized null amplitude
+      $b=a_1/a_0$ must be replaced by $\widetilde b=b-c(\theta)$. Therefore</p>
+    <div class="equation-card">
+    $$\widetilde{\mathcal A}=\mathcal A-dc,\qquad
+      d\widetilde{\mathcal A}=d\mathcal A,\qquad
+      \oint_{\mathcal C}\widetilde{\mathcal A}
+      =\oint_{\mathcal C}\mathcal A.$$
+    </div>
+    <p>For an open protocol the line integral changes by
+      $-\{c(\theta_{\mathrm{final}})-c(\theta_{\mathrm{initial}})\}$, exactly compensated by the endpoint change in the
+      null amplitude. Thus the connection is gauge covariant, while its curvature and closed-protocol holonomy are
+      gauge invariant. The centered convention $\pi\chi_1=0$ simply fixes $c=0$. This is the same
+      exact-differential gauge mechanism as in
+      <a href="./bibliography.html#Berry1984">Berry&apos;s original geometric-phase construction (1984)</a>, although
+      the transported object and governing equation here are different.</p>
+    <p>Nonzero curvature is therefore a local obstruction to writing $\mathcal A$ as an exact differential. On a
+    simply connected patch, vanishing curvature makes every contractible-loop correction zero; nonzero curvature
+    produces a nontrivial correction for sufficiently small loops. This is a statement about the geometric part
+    alone: the instantaneous Green&ndash;Kubo term is still traversal-time dependent.</p>
+
+    <p>The certificate tests this theorem on an affine, nonreversible three-state family over a rectangle where
+    every jump rate is at least $0.425$. It verifies
+    $\mathcal A_a=-\pi_aRf=\pi(\partial_aQ)R^2f$ exactly to displayed precision, finds center curvature
+    $2.90856\times10^{-3}$, and obtains the same nonzero correction $4.801835316245\times10^{-3}$ from the
+    boundary integral and a $40\times40$ Gauss&ndash;Legendre curvature integral, with residual
+    $8.7\times10^{-19}$. A nonconstant polynomial corrector gauge independently leaves the boundary integral and
+    curvature unchanged to numerical precision, while its open-edge shift agrees with the predicted endpoint
+    difference.</p>
+
+    <p>For the smooth periodic example used here, the
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
+    finds $\int_0^{2\pi}K_{\rm geo}(t)\,dt=-0.00639952$. At the one-period endpoint the complete first-order outer
+    approximation converges with observed order $1.990$, whereas deleting $K_{\rm geo}$ leaves observed order
+    $0.957$. It also verifies the geometric formula to $5.3\times10^{-18}$, invariance under a nonuniform traversal
+    to $8.7\times10^{-19}$, sign reversal to $5.3\times10^{-18}$, and zero contribution for a graph-valued loop to
+    $3.5\times10^{-18}$. This is a fixed-positive-time test: an initial layer is still needed for a bound uniform
+    down to $t=0$, and no long-maturity uniformity is claimed.</p>
+    <p>This moving-projection recursion is the finite-state backward-equation counterpart of the asymptotic-series
+    machinery in <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> and the
+    singularly perturbed chain framework of <a href="./bibliography.html#YinZhang1998">Yin and Zhang (1998)</a>.</p>
+
+    <h3>The missing amplitude is the Green&ndash;Kubo correction</h3>
+    <p>For a time-independent scalar forcing $G=\operatorname{diag}g$, put
+    $\bar g=\pi g$ and $\widetilde g=g-\bar g\mathbf1$. Then $a_0=e^{\bar g t}$ and the first centered shape is</p>
+    $$\chi_1=-a_0Q^{\#}\widetilde g.$$
+    <p>The next solvability condition becomes</p>
+    $$a_1'-\bar g a_1=K a_0,\qquad
+      K=-\pi\!\left(\widetilde g\,Q^{\#}\widetilde g\right)
+       =\int_0^\infty\operatorname{Cov}_\pi\big(g(y_0),g(y_s)\big)\,ds.$$
+    <p>With regime-free initial data, first-order matching gives $a_1(0)=0$, so $a_1=tK a_0$. Therefore the
+    null-space amplitude that centering would discard is exactly the first Green&ndash;Kubo correction to the slow
+    eigenvalue.</p>
+
+    <h3>The next coefficient is a three-time cumulant</h3>
+    <p>The same recursion gives one more coefficient without assuming reversibility. Write $R=Q^{\#}$,
+    $f=\widetilde g$, and let $D_f$ denote multiplication by $f$. Normalizing the slow right eigenvector by
+    $\pi h_\varepsilon=1$ gives</p>
+    $$h_\varepsilon=\mathbf1-\varepsilon Rf
+      +\varepsilon^2R D_fRf+O(\varepsilon^3),$$
+    <p>and the slow eigenvalue of $Q/\varepsilon+\operatorname{diag}g$ is</p>
+    <div class="equation-card">
+    $$\lambda_{\mathrm{slow}}(\varepsilon)
+      =\bar g+\varepsilon K+\varepsilon^2L+O(\varepsilon^3),$$
+    $$K=-\pi D_fRf,\qquad L=\pi D_fR D_fRf.$$
+    </div>
+    <p>Multiplying the eigen-equation order by order proves the formula: the first centered equation is
+    $Qh_1=-f$, the second is $Qh_2=D_fRf+K\mathbf1$, and its next solvability condition is $L=\pi D_fh_2$.
+    Analyticity follows locally because zero is a simple eigenvalue of an irreducible finite-state generator, the
+    finite-dimensional setting of <a href="./bibliography.html#Kato1949">Kato&apos;s perturbation theory</a>.</p>
+    <p>Since $R=-\int_0^\infty(e^{Qt}-\mathbf1\pi)\,dt$, the second coefficient also has the ordered-correlation form</p>
+    $$L=\int_0^\infty\!\int_0^\infty
+      \mathbb E_\pi\!\left[f(Y_0)f(Y_s)f(Y_{s+t})\right]dt\,ds
+      =\lim_{T\to\infty}\frac1{6T}
+      \operatorname{Cum}_3\!\left(\int_0^T f(Y_s)\,ds\right).$$
+    <p>Thus $K$ is the variance-rate coefficient and is nonnegative, whereas $L$ is signed third-order information.
+    It is not a Gram matrix and carries no positive-semidefinite or rank claim. These coefficients are the
+    constant-forcing specialization of the normalized average/shape recursion on the
+    <a href="./engine.html">engine page</a>.</p>
+
+    <h3>An all-orders recursion and the fourth cumulant</h3>
+    <p>The same coefficient matching gives a finite-dimensional recursion to every order. Write</p>
+    $$h_\varepsilon=\mathbf1+\sum_{m\ge1}\varepsilon^m h_m,
+      \qquad
+      \lambda_{\mathrm{slow}}=\bar g+\sum_{m\ge1}\varepsilon^m\kappa_m,
+      \qquad \pi h_m=0,$$
+    <p>with $h_0=\mathbf1$ and $h_1=-Rf$. Then, for $m\ge1$,</p>
+    <div class="equation-card">
+    $$\kappa_m=\pi D_fh_m,$$
+    $$h_{m+1}=R\!\left(-D_fh_m+
+      \sum_{j=1}^{m}\kappa_jh_{m-j}\right).$$
+    </div>
+    <p>Indeed, the coefficient of $\varepsilon^{m+1}$ in the eigen-equation has the expression in parentheses as
+    its Poisson right side. Its stationary mean vanishes precisely when
+    $\kappa_m=\pi D_fh_m$; applying $R$ then selects the normalized centered solution. This proves the recursion by
+    induction for every order inside the local analytic neighborhood.</p>
+    <p>The first new term after $K=\kappa_1$ and $L=\kappa_2$ is</p>
+    $$M=\kappa_3
+      =-\pi D_fR D_fR D_fRf-K\,\pi D_fR^2f,$$
+    <p>so</p>
+    $$\lambda_{\mathrm{slow}}(\varepsilon)
+      =\bar g+\varepsilon K+\varepsilon^2L+\varepsilon^3M+O(\varepsilon^4).$$
+    <p>Equivalently, $M$ is one twenty-fourth of the long-run fourth-cumulant rate of
+    $\int_0^T f(Y_s)\,ds$. The second term in the displayed formula is essential: fourth order uses a connected
+    cumulant, not the raw ordered four-time moment. Like $L$, $M$ is signed and has no positive-semidefinite or rank
+    interpretation.</p>
+
+    <h3>A computable convergence disk and truncation bound</h3>
+    <p>The analytic neighborhood can be certified directly from the unperturbed generator, including for a
+    nonnormal chain. Choose $r&gt;0$ so that the circle $|w|=r$ separates the simple eigenvalue zero of $Q$ from every
+    other eigenvalue, and define</p>
+    $$s_r=\min_{|w|=r}\sigma_{\min}(wI-Q),\qquad
+      \rho_r=\frac{s_r}{\|D_f\|_2}.$$
+    <p>If $|z|&lt;\rho_r$, then on this circle</p>
+    $$\|zD_f(wI-Q)^{-1}\|_2&lt;1.$$
+    <p>The Neumann resolvent identity therefore keeps the circle in the resolvent set of $Q+zD_f$. Its Riesz
+    projection has the same rank one throughout the disk, so the slow eigenvalue $\mu(z)$ of $Q+zD_f$ is analytic
+    there and remains inside $|w|&lt;r$. This supplies a quantitative version of the local perturbation argument.</p>
+    <p>For any $0&lt;\rho&lt;\rho_r$, Cauchy&apos;s estimate applied to $\mu$ turns the recursion into the explicit remainder
+    bound</p>
+    <div class="equation-card">
+    $$\left|\lambda_{\mathrm{slow}}(\varepsilon)-\bar g
+      -\sum_{m=1}^{p}\kappa_m\varepsilon^m\right|
+      \le
+      \frac{r|\varepsilon|^{p+1}}
+      {\rho^{p+2}(1-|\varepsilon|/\rho)},
+      \qquad |\varepsilon|&lt;\rho.$$
+    </div>
+    <p>This is conservative but fully computable. It bounds the eigenvalue series, not a whole time-dependent
+    semigroup or a Fourier inversion. In particular it does not replace the separate initial-layer and transform-tail
+    estimates needed elsewhere on the site.</p>
+
+    <h3>The slow amplitude has a certified series too</h3>
+    <p>The same contour also controls the spectral projection, which is the missing object when initial data are not
+    already aligned with the slow mode. Let</p>
+    $$P(z)=\frac{1}{2\pi i}\int_{|w|=r}
+      (wI-Q-zD_f)^{-1}\,dw=\sum_{m\ge0}P_mz^m.$$
+    <p>Here adding the scalar $\bar g I$ changes the slow eigenvalue but not this projection. In particular,</p>
+    $$P_0=\mathbf1\pi,\qquad
+      P_1=-R D_fP_0-P_0D_fR,$$
+    <p>where $R=Q^\#$. For every $0&lt;\rho&lt;\rho_r$, the singular-value perturbation inequality gives, uniformly on
+    $|z|=\rho$,</p>
+    $$\|P(z)\|_2\le M_\rho,\qquad
+      M_\rho=\frac{r}{s_r-\rho\|D_f\|_2}.$$
+    <p>Applying the vector-valued Cauchy formula coefficient by coefficient therefore yields the explicit operator
+    remainder</p>
+    <div class="equation-card">
+    $$\left\|P(\varepsilon)-\sum_{m=0}^{p}P_m\varepsilon^m\right\|_2
+      \le M_\rho\,
+      \frac{(|\varepsilon|/\rho)^{p+1}}{1-|\varepsilon|/\rho},
+      \qquad |\varepsilon|&lt;\rho.$$
+    </div>
+    <p>Consequently the same right-hand side, multiplied by $\|v\|_2$, certifies the error in the slow amplitude
+    $P(\varepsilon)v$ selected by arbitrary initial data $v$. This isolates amplitude matching from eigenvalue
+    truncation.</p>
+    <p>For the nonreversible three-state certificate below, the same rigorously sampled contour gives
+    $\rho_r\ge2.103817190523$. The exact projector is computed independently from paired left and right eigenvectors.
+    Its first-order remainder converges with measured order $1.998987$, and the largest observed error is only
+    $0.020318$ of the displayed Cauchy bound.</p>
+
+    <h3>The complementary fast semigroup has a separate bound</h3>
+    <p>The slow contour alone cannot control the initial layer, but a second contour can. Let $\Gamma$ be a simple
+    positively oriented contour that encloses every nonzero eigenvalue of $Q$, excludes zero, and lies in
+    $\operatorname{Re}w\le-\gamma&lt;0$. Put</p>
+    $$s_\Gamma=\min_{w\in\Gamma}\sigma_{\min}(wI-Q),\qquad
+      L_\Gamma=\operatorname{length}(\Gamma).$$
+    <p>If $0&lt;\varepsilon\|D_f\|_2&lt;s_\Gamma$, the singular-value perturbation inequality keeps $\Gamma$ in the
+    resolvent set of $B_\varepsilon=Q+\varepsilon D_f$. The contour still encloses exactly the fast eigenvalues, so
+    Dunford&apos;s formula gives</p>
+    $$e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon))
+      =\frac{1}{2\pi i}\int_\Gamma e^{tw/\varepsilon}
+      (wI-B_\varepsilon)^{-1}\,dw.$$
+    <p>Taking the operator norm proves the explicit all-time estimate</p>
+    <div class="equation-card">
+    $$\left\|e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon))\right\|_2
+      \le \frac{L_\Gamma}{2\pi\{s_\Gamma-\varepsilon\|D_f\|_2\}}
+      e^{-\gamma t/\varepsilon},\qquad t\ge0.$$
+    </div>
+    <p>Restoring the scalar mean forcing multiplies the right side by $e^{\bar g t}$. The prefactor retains the
+    possible nonnormal transient amplification; it is not silently set to one. This controls the exact fast
+    component for arbitrary initial data, but it does not make a truncated slow eigenvalue expansion uniformly
+    accurate at arbitrarily long maturities: any slow-eigenvalue truncation error still accumulates in its
+    exponential.</p>
+    <p>For the nonreversible three-state certificate, the circle centered at $-3.15$ with radius $2.4$ has
+    $\gamma=0.75$ and a rigorously sampled validity radius
+    $s_\Gamma/\|D_f\|_2\ge0.898895533832$. Over all tested
+    $\varepsilon\le0.2$ and $0\le t/\varepsilon\le5$, the largest exact-fast-semigroup to proved-bound ratio is
+    $0.305868$.</p>
+
+    <h3>The three bounds combine into an all-time semigroup certificate</h3>
+    <p>The eigenvalue, projector, and fast-contour estimates can be assembled without another asymptotic step. For
+    integers $p,q\ge0$, write</p>
+    $$\lambda_p(\varepsilon)=\bar g+\sum_{m=1}^p\kappa_m\varepsilon^m,\qquad
+      P_q(\varepsilon)=\sum_{m=0}^qP_m\varepsilon^m,$$
+    <p>and denote the two Cauchy bounds above by $E_{\lambda,p}(\varepsilon)$ and
+    $E_{P,q}(\varepsilon)$. Also put</p>
+    $$C_f(\varepsilon)=\frac{L_\Gamma}
+      {2\pi\{s_\Gamma-\varepsilon\|D_f\|_2\}}.$$
+    <p>For real $0&lt;\varepsilon&lt;\min(\rho,s_\Gamma/\|D_f\|_2)$, the exact spectral split is</p>
+    $$e^{t(Q/\varepsilon+D_g)}=e^{t\lambda_{\mathrm{slow}}(\varepsilon)}P(\varepsilon)
+      +e^{\bar g t}e^{tB_\varepsilon/\varepsilon}(I-P(\varepsilon)).$$
+    <p>Subtracting $e^{t\lambda_p}P_q$, then using
+    $|e^z-1|\le e^{|z|}-1$, gives the explicit bound</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \left\|e^{t(Q/\varepsilon+D_g)}-e^{t\lambda_p}P_q\right\|_2
+      \le{}&e^{t\operatorname{Re}\lambda_p}
+      \left[e^{tE_{\lambda,p}}E_{P,q}
+      +\|P_q\|_2\left(e^{tE_{\lambda,p}}-1\right)\right]\\
+      &+e^{\bar g t}C_f(\varepsilon)e^{-\gamma t/\varepsilon},qquad t\ge0.
+    \end{aligned}$$
+    </div>
+    <p>This is an all-time inequality, not a claim that a fixed truncation is uniformly accurate for all maturity.
+    On the slow exponential scale its two algebraic terms are
+    $O(\varepsilon^{q+1}+t\varepsilon^{p+1})$ while
+    $tE_{\lambda,p}=o(1)$; the third term is the certified initial layer. Thus, on a window
+    $t=O(\varepsilon^{-\alpha})$, the normalized algebraic error has order
+    $\min(q+1,p+1-\alpha)$ when $\alpha&lt;p+1$. The formula makes the maturity loss from eigenvalue truncation
+    explicit instead of absorbing it into an unspecified constant.</p>
+    <p>In the three-state certificate, $p=3$, $q=1$, and $t=\varepsilon^{-2}/4$. The normalized full-semigroup
+    error converges with measured order $1.998990$; its proved bound has measured order $2.030627$, and the largest
+    observed error is $0.020181$ of that bound. The evaluation uses the exact paired spectral projectors mode by
+    mode, avoiding overflow from the common slow exponential at these growing maturities.</p>
+
+    <h3>A uniform first-order composite</h3>
+    <p>The initial layer matters if the approximation is required uniformly all the way down to $t=0$. For the
+    two-state example below with $u(0)=\mathbf1$, write $u=m\mathbf1+z(1,-1)^\top$ and put</p>
+    $$d_\varepsilon=\sqrt{1+\varepsilon^2/4},\qquad
+      \lambda_s=\frac12+\frac{d_\varepsilon-1}{\varepsilon},\qquad
+      \lambda_f=\frac12-\frac{d_\varepsilon+1}{\varepsilon}.$$
+    <p>The exact solution splits into its slow and fast modes:</p>
+    $$m_\varepsilon(t)=\frac{d_\varepsilon+1}{2d_\varepsilon}e^{\lambda_st}
+      +\frac{d_\varepsilon-1}{2d_\varepsilon}e^{\lambda_ft},\qquad
+      z_\varepsilon(t)=\frac{\varepsilon}{4d_\varepsilon}
+      \left(e^{\lambda_st}-e^{\lambda_ft}\right).$$
+    <p>The first-order outer approximation is</p>
+    $$u_{\mathrm{out}}(t)=e^{t/2}\left[
+      \left(1+\frac{\varepsilon t}{8}\right)\mathbf1
+      +\frac{\varepsilon}{4}(1,-1)^\top\right].$$
+    <p>At $t=0$ its centered error is exactly $\varepsilon/4$, so it cannot have a uniform
+    $O(\varepsilon^2)$ remainder on an interval containing zero. Restoring the leading fast layer gives</p>
+    <div class="equation-card">
+    $$u_{\mathrm{comp}}(t)=u_{\mathrm{out}}(t)
+      -\frac{\varepsilon}{4}e^{-2t/\varepsilon}(1,-1)^\top.$$
+    </div>
+    <p>For every $T\ge0$ and $0&lt;\varepsilon\le1$, direct estimates of the exact modal formula give the
+    fully uniform bound</p>
+    $$\sup_{0\le t\le T}\|u(t)-u_{\mathrm{comp}}(t)\|_\infty
+      \le C_T\varepsilon^2,$$
+    $$C_T=e^{5T/8}\left(\frac3{32}+\frac{T}{32}+\frac{T^2}{128}\right)
+      +\frac{T e^{T/2}}{128}+\frac{17}{96}.$$
+    <p>Indeed, $0\le\lambda_s-1/2\le\varepsilon/8$,
+    $|\lambda_s-1/2-\varepsilon/8|\le\varepsilon^3/128$, and the exact fast amplitude differs from
+    $-\varepsilon/4$ only at the order needed by the bound. Taylor&apos;s inequality for the slow exponential and
+    $t e^{-at}\le a^{-1}$ for the fast exponential yield the displayed $C_T$. This is a finite-time theorem uniform
+    over $[0,T]$; because $C_T$ grows with $T$, it is not a long-maturity-uniform claim.</p>
+
+    <h3>A two-state obstruction</h3>
+    <p>For a minimal example, take</p>
+    $$Q=\begin{pmatrix}-1&1\\1&-1\end{pmatrix},\qquad
+      \pi=(\tfrac12,\tfrac12),\qquad G=\operatorname{diag}(1,0).$$
+    <p>Writing $u_0=a(t)\mathbf1$, leading solvability gives $a'=a/2$. The centered first shape is</p>
+    $$\chi_1=\frac a4(1,-1)^\top.$$
+    <p>If one incorrectly sets the full coefficient $u_1=\chi_1$, then</p>
+    $$\pi(\partial_t-G)u_1=-\frac a8\ne0,$$
+    <p>so no $u_2$ can solve the next equation. The missing term is $a_1(t)\mathbf1$:</p>
+    $$u_1=a_1\mathbf1+\chi_1,\qquad a_1'-\frac12a_1=\frac18a.$$
+    <p>For $u(0)=\mathbf1$, matching gives $a_1(0)=0$, hence $a_1=ta/8$. At any fixed positive time the centered-only
+    approximation has an order-$\varepsilon$ error, whereas including $a_1\mathbf1$ reduces it to
+    order $\varepsilon^2$ at fixed positive time. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>
+    checks the Poisson equations, the obstruction, the exact modal formula, the finite-time uniform bound, and the
+    matrix-exponential convergence orders. The general recursion remains a formal outer hierarchy; beyond the exact
+    two-state theorem above, rigorous remainder bounds require the usual regularity and layer hypotheses. In
+    particular, the primary two-time-scale analysis of
+    <a href="./bibliography.html#KhasminskiiYin1996">Khasminskii and Yin (1996)</a> constructs the outer and initial-layer
+    pieces together and proves remainder bounds under its stated assumptions.</p>
 
     <h2>The group inverse</h2>
     <p>When $\mathbb{E}_\pi[f] = 0$, the solution of $Qw = f$ with $\mathbb{E}_\pi[w] = 0$ is written
