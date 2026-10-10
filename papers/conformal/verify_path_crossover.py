@@ -27,7 +27,9 @@ of iid coverage conditional on the realized, tie-augmented calibration sample
 for arbitrary score distributions, and the sharp one-sided tolerance-limit/PAC
 choice of calibration order statistic.  It also checks the exact beta-spacing
 law and sharp PAC rank-width design for an interval with two finite calibration
-order-statistic endpoints.  Finally,
+order-statistic endpoints.  The stronger three-component Dirichlet law gives
+an exact joint certificate for the lower- and upper-tail allocation and its
+sharp sample-range feasibility rule.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing.  It checks the exact convex
@@ -184,6 +186,54 @@ def minimum_two_endpoint_panel(
         if width is not None:
             return calibration_count, width
         calibration_count += 1
+
+
+def iid_two_tail_confidence(
+    calibration_count: int,
+    lower_order: int,
+    upper_order: int,
+    lower_cap: float,
+    upper_cap: float,
+) -> float:
+    """Probability that both conditional tail masses meet their caps.
+
+    For iid continuous scores, the lower tail below the ``lower_order``th
+    order statistic and the upper tail above the ``upper_order``th order
+    statistic are the first and third components of a
+    Dirichlet(lower_order, upper_order-lower_order,
+    calibration_count+1-upper_order) vector.  Equivalently, split the panel
+    uniforms among [0, lower_cap], the middle interval, and
+    [1-upper_cap, 1].
+    """
+    if not 1 <= lower_order < upper_order <= calibration_count:
+        raise ValueError("orders must satisfy 1 <= lower < upper <= N")
+    if lower_cap < 0.0 or upper_cap < 0.0 or lower_cap + upper_cap > 1.0:
+        raise ValueError("tail caps must be nonnegative and sum to at most one")
+    required_upper = calibration_count - upper_order + 1
+    middle_probability = 1.0 - lower_cap - upper_cap
+    return math.fsum(
+        math.comb(calibration_count, lower_count)
+        * math.comb(calibration_count - lower_count, upper_count)
+        * lower_cap**lower_count
+        * upper_cap**upper_count
+        * middle_probability
+        ** (calibration_count - lower_count - upper_count)
+        for lower_count in range(lower_order, calibration_count + 1)
+        for upper_count in range(required_upper, calibration_count + 1)
+        if lower_count + upper_count <= calibration_count
+    )
+
+
+def sample_range_two_tail_confidence(
+    calibration_count: int, lower_cap: float, upper_cap: float
+) -> float:
+    """Joint tail-cap confidence for the widest finite interval."""
+    return (
+        1.0
+        - (1.0 - lower_cap) ** calibration_count
+        - (1.0 - upper_cap) ** calibration_count
+        + (1.0 - lower_cap - upper_cap) ** calibration_count
+    )
 
 
 def integer_beta_cdf(value: float, alpha: int, beta: int) -> float:
@@ -2962,6 +3012,87 @@ def main() -> None:
     assert abs(np.var(interval_coverages) - spacing_variance) < 5e-5
     assert abs(empirical_spacing_tail - spacing_lower_tail) < 0.0015
 
+    # Rank width determines total covered mass, but endpoint placement
+    # determines how the omitted mass is allocated.  For a general pair of
+    # ranks, the lower tail L=U_(lower), covered mass
+    # C=U_(upper)-U_(lower), and upper tail R=1-U_(upper) are jointly
+    # Dirichlet(lower, upper-lower, N+1-upper).  Therefore the event
+    # {L<=a, R<=b} also has an exact multinomial-count formula.  Check that
+    # formula independently against a two-dimensional density integral and
+    # direct Dirichlet simulation.
+    tail_count, tail_lower, tail_upper = 20, 3, 17
+    lower_cap, upper_cap = 0.20, 0.15
+    tail_shapes = (
+        tail_lower,
+        tail_upper - tail_lower,
+        tail_count + 1 - tail_upper,
+    )
+    exact_tail_confidence = iid_two_tail_confidence(
+        tail_count, tail_lower, tail_upper, lower_cap, upper_cap
+    )
+    log_dirichlet_normalizer = math.lgamma(tail_count + 1) - sum(
+        math.lgamma(shape) for shape in tail_shapes
+    )
+
+    def joint_tail_density(lower_mass, upper_mass):
+        covered_mass = 1.0 - lower_mass - upper_mass
+        if lower_mass <= 0.0 or upper_mass <= 0.0 or covered_mass <= 0.0:
+            return 0.0
+        return math.exp(
+            log_dirichlet_normalizer
+            + (tail_shapes[0] - 1) * math.log(lower_mass)
+            + (tail_shapes[1] - 1) * math.log(covered_mass)
+            + (tail_shapes[2] - 1) * math.log(upper_mass)
+        )
+
+    quadrature_tail_confidence = quad(
+        lambda lower_mass: quad(
+            lambda upper_mass: joint_tail_density(lower_mass, upper_mass),
+            0.0,
+            upper_cap,
+            epsabs=2e-13,
+            epsrel=2e-13,
+        )[0],
+        0.0,
+        lower_cap,
+        epsabs=2e-13,
+        epsrel=2e-13,
+    )[0]
+    dirichlet_draws = spacing_rng.dirichlet(tail_shapes, size=400_000)
+    empirical_tail_confidence = np.mean(
+        (dirichlet_draws[:, 0] <= lower_cap)
+        & (dirichlet_draws[:, 2] <= upper_cap)
+    )
+    assert abs(quadrature_tail_confidence - exact_tail_confidence) < 2e-13
+    assert abs(empirical_tail_confidence - exact_tail_confidence) < 0.0015
+
+    # The sample range (lower=1, upper=N) maximizes the simultaneous event
+    # among all finite calibration endpoints.  Inclusion-exclusion gives its
+    # confidence in closed form, hence an exact feasibility test.  For two
+    # five-percent tail caps the smallest panel sizes are 58, 72, and 104 at
+    # confidence 90%, 95%, and 99%, respectively.
+    symmetric_tail_cap = 0.05
+    joint_minima = []
+    for failure_probability in failure_probabilities:
+        count = 2
+        while sample_range_two_tail_confidence(
+            count, symmetric_tail_cap, symmetric_tail_cap
+        ) < (1.0 - failure_probability):
+            count += 1
+        joint_minima.append(count)
+        assert sample_range_two_tail_confidence(
+            count - 1, symmetric_tail_cap, symmetric_tail_cap
+        ) < (1.0 - failure_probability)
+        assert abs(
+            iid_two_tail_confidence(
+                count, 1, count, symmetric_tail_cap, symmetric_tail_cap
+            )
+            - sample_range_two_tail_confidence(
+                count, symmetric_tail_cap, symmetric_tail_cap
+            )
+        ) < 2e-14
+    assert joint_minima == [58, 72, 104]
+
     # The exact PAC rule is the same binomial-tail inversion with rank width
     # in place of the one-sided order.  The finite-endpoint constraint r<=N-1
     # changes feasibility: the sample range succeeds iff
@@ -3024,6 +3155,28 @@ def main() -> None:
         f"{conventional_interval_confidence:.8f}"
     )
     print("N=100 PAC widths for delta=.10,.05,.01: " + str(pac_widths))
+    print("\nExact joint allocation of the two omitted tails")
+    print(
+        "N=20 ranks 3,17; caps .20,.15: "
+        f"exact={exact_tail_confidence:.9f}, "
+        f"quadrature={quadrature_tail_confidence:.9f}, "
+        f"simulation={empirical_tail_confidence:.9f}"
+    )
+    print(
+        "two 5% tail caps: minimum N for delta=.10,.05,.01: "
+        + str(joint_minima)
+    )
+    print(
+        "achieved sample-range confidences: "
+        + str(
+            [
+                sample_range_two_tail_confidence(
+                    count, symmetric_tail_cap, symmetric_tail_cap
+                )
+                for count in joint_minima
+            ]
+        )
+    )
 
     # Transfer the iid beta tail to a dependent training-conditional
     # statement.  The score (Y + U)/2 has an exactly uniform stationary
@@ -4470,7 +4623,8 @@ def main() -> None:
         "regular and irregular absolute-regularity coupling with optimal "
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
-        "sharp one-sided and two-finite-endpoint PAC designs, "
+        "sharp one-sided and two-finite-endpoint PAC designs including "
+        "exact joint tail allocation, "
         "symmetric and unequal-mass all-order "
         "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
