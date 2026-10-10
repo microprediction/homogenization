@@ -436,6 +436,55 @@
       $1.990$, $1.986$, and $1.992$. A nonreversible three-state check gives slope orders
       $1.995$, $2.995$, and $3.997$.</p>
 
+    <h2>Every invariant variance moment, exactly</h2>
+    <p>The invariant moments used by the cumulant hierarchy themselves have an all-order closed form. For an
+      irreducible $Q_0$, $m&gt;0$, and $\kappa_*:=\min_i\kappa_i&gt;0$, put $a_i=\xi_i^2$ and, under the invariant
+      law $\Pi_m$, define the row vectors</p>
+    $$r_i^{(p)}=\mathbb E_{\Pi_m}[v^p\mathbf1_{\{Y=i\}}],\qquad r^{(0)}=\pi,$$
+    $$d_p=pc+{p(p-1)\over2}a,\qquad M_p=pD_\kappa-mQ_0.$$
+    <p>Applying the joint generator to $v^p\mathbf1_{\{Y=i\}}$ gives the exact triangular recursion</p>
+    <div class="equation-card">
+    $$r^{(p)}M_p=r^{(p-1)}D_{d_p},\qquad
+      r^{(p)}=r^{(p-1)}D_{d_p}M_p^{-1},\qquad p\ge1.$$
+    </div>
+    <p>Each $M_p$ is a nonsingular $M$-matrix. More directly, its inverse is the killed-chain resolvent</p>
+    $$M_p^{-1}=\int_0^\infty e^{t(mQ_0-pD_\kappa)}\,dt\ge0,
+      \qquad \lVert M_p^{-1}\rVert_\infty\le {1\over p\kappa_*}.$$
+    <p>Thus every component moment is nonnegative and</p>
+    $$\mathbb E_{\Pi_m}v^p\le
+      {\max_i d_{p,i}\over p\kappa_*}\mathbb E_{\Pi_m}v^{p-1}.$$
+    <p>The same generator inequality is a Foster&ndash;Lyapunov bound, so all positive integer invariant moments
+      are finite. This conclusion needs mean reversion, not the statewise Feller inequality
+      $2c_i\ge a_i$: boundary inaccessibility and moment existence are separate questions. The finite-dimensional
+      closure is the switched-CIR instance of the polynomial-process framework of
+      <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann
+      (2012)</a>, while the displayed recursion follows here directly from the generator.</p>
+
+    <h3>The first inverse-speed coefficient at every moment order</h3>
+    <p>The recursion also yields a completely explicit fast-switching coefficient. Let
+      $S=Q_0^\#$, $\bar\kappa=\pi\kappa$, and initialize
+      $\bar M_0=1$, $\dot M_0=0$, and $z_0=0$. For $p\ge1$ define</p>
+    $$\bar M_p=\bar M_{p-1}{\pi d_p\over p\bar\kappa},$$
+    $$z_p=\left(p\bar M_p\pi D_\kappa-\bar M_{p-1}\pi D_{d_p}\right)S,$$
+    $$\dot M_p={z_{p-1}d_p+\dot M_{p-1}\pi d_p-pz_p\kappa
+      \over p\bar\kappa}.$$
+    <p>The source defining $z_p$ has zero row sum, so $z_p\mathbf1=0$. Fixed-order Fredholm expansion of the
+      exact linear systems proves</p>
+    <div class="equation-card">
+    $$r^{(p)}=\bar M_p\pi+{1\over m}\left(z_p+\dot M_p\pi\right)+O_p(m^{-2}),$$
+    $$\mathbb E_{\Pi_m}v^p=\bar M_p+{\dot M_p\over m}+O_p(m^{-2}).$$
+    </div>
+    <p>The leading recursion is exactly the moment recursion of the averaged CIR model with coefficients
+      $(\bar c,\bar\kappa,\bar a)$. If all coefficients are regime independent, the stronger identity
+      $r^{(p)}=\pi\mathbb E[v^p]$ holds for every switching speed and reduces to the stationary Gamma moments</p>
+    $$\mathbb E[v^p]=\prod_{j=0}^{p-1}{c+ja/2\over\kappa}.$$
+    <p>A nonreversible three-state certificate checks orders one through six. One block polynomial-semigroup
+      exponential, started away from stationarity, agrees with the six recursive invariant moment vectors within
+      $7.3\times10^{-15}$; the constant-coefficient Gamma reduction agrees within $1.2\times10^{-16}$.
+      After subtracting the displayed first coefficient, the scalar residual orders are
+      $(1.996,2.023,1.987,1.993,1.994,1.995)$, and the largest component-vector residual has order $1.997$.
+      These are fixed-moment asymptotics; no constant uniform in $p$ or interchange of $p$ and $m$ is claimed.</p>
+
     <h2>The exact long-run second-cumulant slope and intercept</h2>
     <p>The higher-cumulant expansion above is fixed-maturity, but its first secular coefficient can still be
       obtained exactly when all three variance coefficients switch. Let the joint process $(Y_t,v_t)$ start in its
