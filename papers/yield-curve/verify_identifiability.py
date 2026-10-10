@@ -7,7 +7,7 @@ import math
 
 import numpy as np
 from scipy.integrate import quad_vec, solve_ivp
-from scipy.linalg import expm
+from scipy.linalg import block_diag, expm, null_space
 from scipy.optimize import brentq
 from scipy.special import gammaincc, ndtr
 
@@ -157,6 +157,121 @@ def transient_response_matrix(Q, centered, taus):
         H @ (identity - expm(Q * tau)) @ centered
         for tau in taus
     ])
+
+
+def continuous_observability_gramian(Q, centered, horizon):
+    """Exact integral of R(t)R(t)' from a Van Loan block exponential."""
+    Q = np.asarray(Q, float)
+    centered = np.asarray(centered, float)
+    states = len(Q)
+    H = -group_inverse(Q)
+    plateau = H @ centered
+
+    # z(t)=[exp(Qt) plateau; plateau], R(t)=[-I I]z(t).
+    dynamics = block_diag(Q, np.zeros_like(Q))
+    initial = np.vstack([plateau, plateau])
+    covariance = initial @ initial.T
+    size = 2 * states
+    van_loan = np.block([
+        [dynamics, covariance],
+        [np.zeros((size, size)), -dynamics.T],
+    ])
+    exponential = expm(van_loan * horizon)
+    lifted = exponential[:size, size:] @ expm(dynamics.T * horizon)
+    observation = np.column_stack([-np.eye(states), np.eye(states)])
+    gramian = observation @ lifted @ observation.T
+    return (gramian + gramian.T) / 2
+
+
+def verify_continuous_observability_gramian():
+    """Continuous-curve Fisher rank and its finite transient information."""
+    rng = np.random.default_rng(10102026)
+    maximum_quadrature_error = 0.0
+    checked = 0
+    for states, feature_count in ((3, 1), (4, 2), (5, 2), (6, 3)):
+        for _ in range(6):
+            Q = random_generator(states, rng)
+            pi = stationary(Q)
+            features = rng.normal(size=(states, feature_count))
+            centered = features - np.outer(np.ones(states), pi @ features)
+            gramian = continuous_observability_gramian(Q, centered, 1.37)
+            krylov = krylov_matrix(Q, centered)
+            assert (np.linalg.matrix_rank(gramian, tol=2e-9)
+                    == np.linalg.matrix_rank(krylov, tol=2e-9))
+            assert np.linalg.eigvalsh(gramian)[0] > -2e-11
+
+            H = -group_inverse(Q)
+            identity = np.eye(states)
+            numerical = quad_vec(
+                lambda t: (
+                    H @ (identity - expm(Q * t)) @ centered
+                    @ centered.T @ (identity - expm(Q.T * t)) @ H.T
+                ).ravel(),
+                0.0,
+                1.37,
+                epsabs=2e-12,
+                epsrel=2e-12,
+            )[0].reshape(states, states)
+            maximum_quadrature_error = max(
+                maximum_quadrature_error,
+                float(np.max(np.abs(gramian - numerical))),
+            )
+            checked += 1
+
+    # A cyclic scalar feature on four states has fixed-feature rank one but
+    # identifies all three prior degrees of freedom on every nontrivial
+    # continuous maturity interval.
+    Q = np.array([
+        [-1.6, 0.8, 0.5, 0.3],
+        [0.2, -1.3, 0.7, 0.4],
+        [0.6, 0.1, -1.5, 0.8],
+        [0.3, 0.9, 0.2, -1.4],
+    ])
+    pi = stationary(Q)
+    feature = np.array([[1.1], [-0.7], [0.2], [1.6]])
+    centered = feature - np.outer(np.ones(4), pi @ feature)
+    tangent = null_space(np.ones((1, 4)))
+    H = -group_inverse(Q)
+    plateau = H @ centered
+    plateau_information = tangent.T @ plateau @ plateau.T @ tangent
+    plateau_rate = np.linalg.eigvalsh(plateau_information)[-1]
+    horizons = (16.0, 32.0, 64.0, 128.0, 256.0)
+    spectra = []
+    identity = np.eye(4)
+    for horizon in horizons:
+        gramian = quad_vec(
+            lambda t: (
+                H @ (identity - expm(Q * t)) @ centered
+                @ centered.T @ (identity - expm(Q.T * t)) @ H.T
+            ).ravel(),
+            0.0,
+            horizon,
+            epsabs=2e-12,
+            epsrel=2e-12,
+        )[0].reshape(4, 4)
+        restricted = tangent.T @ gramian @ tangent
+        eigenvalues = np.linalg.eigvalsh(restricted)
+        assert eigenvalues[0] > 1e-8
+        spectra.append(eigenvalues)
+
+    spectra = np.asarray(spectra)
+    leading_ratio = spectra[-1, -1] / (horizons[-1] * plateau_rate)
+    saturated_relative_changes = np.abs(
+        spectra[-1, :-1] / spectra[-2, :-1] - 1.0)
+    assert abs(leading_ratio - 1.0) < 0.06
+    assert np.max(saturated_relative_changes) < 0.005
+    assert maximum_quadrature_error < 2e-10
+
+    print("\nContinuous-maturity Fisher Gramian")
+    print(f"random finite-chain cases checked: {checked}")
+    print(f"Van Loan vs quadrature maximum error: {maximum_quadrature_error:.3e}")
+    print(f"fixed-feature rank / continuous prior rank: "
+          f"{np.linalg.matrix_rank(centered)} / "
+          f"{np.linalg.matrix_rank(krylov_matrix(Q, centered))}")
+    print(f"restricted eigenvalues at L=256: {spectra[-1]}")
+    print(f"linearly growing eigenvalue ratio: {leading_ratio:.9f}")
+    print("saturated-direction relative changes from L=128 to 256: "
+          + ", ".join(f"{x:.3e}" for x in saturated_relative_changes))
 
 
 def project_simplex(values):
@@ -1993,6 +2108,7 @@ def main():
     verify_finite_horizon_covariance()
     verify_arbitrary_prior_rank()
     verify_krylov_observability()
+    verify_continuous_observability_gramian()
     verify_real_spectrum_all_maturities()
     verify_long_end_conditioning()
     verify_defective_long_end_conditioning()
@@ -2021,6 +2137,7 @@ def main():
     print(
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
+        "continuous-maturity Fisher information, "
         "three-state exceptional-set observability, sharp simple-spectrum, "
         "defective, and oscillatory long-end conditioning and whitened noisy recovery, "
         "shape identities, "

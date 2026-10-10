@@ -146,7 +146,7 @@
       \operatorname{rank}D(T)=\operatorname{rank}\mathcal B\le\min(p,qr).$$
     <p>The matrix $D(T)$ is a finite-horizon controllability Gramian with input matrix $L(t)R$;
       the rank interpretation goes back to
-      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman (1960)</a>.</p>
+      <a href="./bibliography.html#Kalman1960">Kalman (1960)</a>.</p>
     <p>Although every integrand has rank at most $r$, its range can rotate with $t$, so $D(T)$
       can attain the larger bound $qr$. The smallest counterexample uses only two regimes and one
       centered feature. Take scalar $G=[g]$ with $g>0$ and
@@ -229,7 +229,7 @@
       \operatorname{rank}\mathcal O_m=n-1.$$
     </div>
     <p>This is the observability counterpart of
-      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman's 1960 rank framework</a>.
+      <a href="./bibliography.html#Kalman1960">Kalman's 1960 rank framework</a>.
       It concerns initial-distribution information, not the fixed-feature Green&ndash;Kubo
       rank and not the rank created by maturity-dependent contract loadings.</p>
 
@@ -249,11 +249,75 @@
     <p>This is the classical Kalman reachability condition on the centered state space,
       used here through its observability dual. Equivalently, the PBH obstruction is a
       nonzero left eigenvector $\ell Q_0=\lambda\ell$, $\lambda\ne0$, with $\ell F=0$;
-      see <a href="https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/">Hautus (1969)</a>.
+      see <a href="./bibliography.html#Hautus1969">Hautus (1969)</a>.
       For a reversible chain and one scalar feature, full identification therefore requires
       every nonzero eigenvalue to be simple and the feature to have a nonzero component in
       every nonconstant eigenmode. A repeated eigenspace is a genuine obstruction: varying
       maturity cannot create more than one direction from one vector inside that eigenspace.</p>
+
+    <h3>A continuous maturity interval: exact Fisher information</h3>
+    <p>The whole-curve rank criterion has an exact statistical counterpart. Suppose the
+      centered response is observed continuously on $0\le\tau\le L$ in the Gaussian white-noise
+      experiment</p>
+    $$dY_\tau=R(\tau)^\top(\nu-\pi)^\top d\tau+\Gamma^{1/2}dW_\tau,
+      \qquad \Gamma\succ0.$$
+    <p>Its Fisher information for the initial prior is the continuous observability Gramian</p>
+    <div class="equation-card">
+    $$\mathcal W_{L,\Gamma}=\int_0^L
+      R(\tau)\Gamma^{-1}R(\tau)^\top d\tau.$$
+    </div>
+    <p>For every $L&gt;0$, not merely in the limit $L\to\infty$, analyticity gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \ker\mathcal W_{L,\Gamma}
+      &=\ker[F\ Q_0F\ \cdots\ Q_0^{n-2}F]^\top,\\
+      \operatorname{rank}\mathcal W_{L,\Gamma}
+      &=\operatorname{rank}[F\ Q_0F\ \cdots\ Q_0^{n-2}F].
+    \end{aligned}$$
+    </div>
+    <p>Indeed, $x^\top\mathcal W_{L,\Gamma}x=0$ if and only if the analytic function
+      $x^\top R(\tau)$ vanishes throughout the interval. Since</p>
+    $$R(\tau)=\tau F+{\tau^2\over2!}Q_0F+
+      {\tau^3\over3!}Q_0^2F+\cdots,$$
+    <p>this is equivalent to $x$ annihilating the Krylov space. If $U$ is any orthonormal
+      basis of the prior tangent space $\{x:{\bf1}^\top x=0\}$, the constrained Fisher matrix
+      is $U^\top\mathcal W_{L,\Gamma}U$. It is positive definite exactly when
+      $\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{n-2}F]=n$.
+      Thus continuum observation introduces no new algebraic condition beyond the PBH/Krylov
+      theorem; it turns that condition into a quantitative information matrix.</p>
+
+    <p>There is also a sharp long-interval distinction between fixed-feature information and
+      transiently created information. Put $B=HF$ and let $r=\operatorname{rank}F$. Exponential
+      mixing gives</p>
+    $$\mathcal W_{L,\Gamma}
+      =L B\Gamma^{-1}B^\top+\mathcal C_\Gamma+O(e^{-cL}).$$
+    <p>Under full prior observability, exactly $r$ eigenvalues of the constrained Fisher matrix
+      are $\Theta(L)$. The remaining $n-1-r$ eigenvalues converge to finite strictly positive
+      limits. To see positivity, take a tangent direction with $B^\top x=0$; then</p>
+    <div class="equation-card">
+    $$x^\top\mathcal W_{L,\Gamma}x
+      =\int_0^L\left\|\Gamma^{-1/2}B^\top e^{Q_0^\top\tau}x\right\|^2d\tau
+      \longrightarrow
+      \int_0^\infty\left\|\Gamma^{-1/2}B^\top e^{Q_0^\top\tau}x\right\|^2d\tau.$$
+    </div>
+    <p>The limit can vanish only in a PBH-obstructed direction. Therefore adding ever longer
+      maturities keeps accumulating information only in the fixed-feature span. The extra
+      prior directions revealed by maturity rotation are identifiable, but their total
+      transient information is finite. This is a continuous-observation statement about the
+      initial mixture, not a change to the fixed-feature Green&ndash;Kubo rank and not a rank claim
+      for integrated contract loadings.</p>
+
+    <p>The certificate evaluates the Gramian independently by a Van Loan block exponential and
+      direct quadrature in 24 random finite-chain cases; the maximum discrepancy is
+      $1.99\times10^{-13}$. In the four-state cyclic scalar example, fixed-feature rank one
+      becomes continuous-prior rank three. At $L=256$ the constrained information eigenvalues
+      are</p>
+    $$1.73166112\times10^{-5},\qquad 1.05121653\times10^{-2},\qquad 1.75301704\times10^2.$$
+    <p>The growing eigenvalue divided by its predicted linear term is $0.997278$; the two
+      transient eigenvalues change by only $0.465\%$ and $0.421\%$ between $L=128$ and $256$.
+      This is the finite-horizon observability-Gramian form of the classical Kalman/Hautus
+      criterion already cited above.</p>
+
     <p>Reversibility is sufficient for a real spectrum, but neither reversibility nor
       diagonalizability is necessary for the all-maturity conclusion. Suppose the restriction
       of $Q_0$ to the centered state space has only real eigenvalues, repeated eigenvalues and
@@ -380,7 +444,7 @@
       scale by this Jordan scale under their stated covariance assumptions. Exact noiseless rank
       still holds at each finite $M$; the polynomial factor weakens the pure exponential loss
       by one power of $M$ but does not prevent it. This is the Jordan-chain specialization of the
-      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman rank framework</a>,
+      <a href="./bibliography.html#Kalman1960">Kalman rank framework</a>,
       not a statement about fixed-feature Green&ndash;Kubo rank or maturity-integrated loading rank.</p>
     <p>The existing irreducible defective certificate has $a=1$, $\eta=0.1$, and offsets
       $(0.4,1.7)$. After dividing the augmented and centered-prior least singular values by

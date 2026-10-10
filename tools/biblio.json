@@ -100,6 +100,28 @@
  },
  {
   "role": "classics",
+  "key": "Berry1984",
+  "authors": "Michael V. Berry",
+  "year": 1984,
+  "title": "Quantal Phase Factors Accompanying Adiabatic Changes",
+  "venue": "Proceedings of the Royal Society of London A 392(1802):45-57",
+  "doi": "10.1098/rspa.1984.0023",
+  "url": "https://doi.org/10.1098/rspa.1984.0023",
+  "annotation": "Introduces the geometric phase of a cyclically transported eigenspace and its gauge-invariant closed-loop content. The corrector connection here obeys the same exact-differential gauge law, but governs a backward-equation amplitude rather than a quantum phase."
+ },
+ {
+  "role": "classics",
+  "key": "SinitsynNemenman2007",
+  "authors": "N. A. Sinitsyn, Ilya Nemenman",
+  "year": 2007,
+  "title": "Universal Geometric Theory of Mesoscopic Stochastic Pumps and Reversible Ratchets",
+  "venue": "Physical Review Letters 99:220408",
+  "doi": "10.1103/physrevlett.99.220408",
+  "url": "https://doi.org/10.1103/PhysRevLett.99.220408",
+  "annotation": "Develops geometric phase contributions for slowly driven stochastic kinetics and shows that the periodic contribution depends on the oriented parameter-space protocol rather than its traversal speed; the observable there is a pump current, not the backward-equation amplitude used here."
+ },
+ {
+  "role": "classics",
   "key": "IlinKhasminskiiYin1999",
   "authors": "A. M. Il'in, R. Z. Khasminskii, G. Yin",
   "year": 1999,
@@ -2495,5 +2517,27 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Kalman1960",
+  "authors": "Kalman, R. E.",
+  "year": 1960,
+  "title": "Contributions to the Theory of Optimal Control",
+  "venue": "Boletín de la Sociedad Matemática Mexicana 5:102-119",
+  "doi": "",
+  "url": "https://boletin.math.org.mx/pdf/2/5/BSMM(2).5.102-119.pdf",
+  "annotation": "Introduces the state-space controllability and observability viewpoint. The yield-curve note turns its finite-horizon observability Gramian into the Fisher information for a continuously observed maturity response."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Hautus1969",
+  "authors": "Hautus, M. L. J.",
+  "year": 1969,
+  "title": "Controllability and Observability Conditions of Linear Autonomous Systems",
+  "venue": "Indagationes Mathematicae (Proceedings) 72(5):443-448",
+  "doi": "",
+  "url": "https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/",
+  "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
  }
 ]

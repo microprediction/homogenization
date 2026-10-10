@@ -1,5 +1,23 @@
 [
  {
+  "key": "Kalman1960",
+  "authors": "Kalman, R. E.",
+  "year": 1960,
+  "title": "Contributions to the Theory of Optimal Control",
+  "venue": "Boletín de la Sociedad Matemática Mexicana 5:102-119",
+  "url": "https://boletin.math.org.mx/pdf/2/5/BSMM(2).5.102-119.pdf",
+  "annotation": "Introduces the state-space controllability and observability viewpoint. The yield-curve note turns its finite-horizon observability Gramian into the Fisher information for a continuously observed maturity response."
+ },
+ {
+  "key": "Hautus1969",
+  "authors": "Hautus, M. L. J.",
+  "year": 1969,
+  "title": "Controllability and Observability Conditions of Linear Autonomous Systems",
+  "venue": "Indagationes Mathematicae (Proceedings) 72(5):443-448",
+  "url": "https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/",
+  "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
+ },
+ {
   "key": "KipnisVaradhan1986",
   "authors": "Kipnis, C. and Varadhan, S. R. S.",
   "year": 1986,
