@@ -114,6 +114,101 @@
     gives the two rows $\lambda \pm \tilde g$. For the second line write $s = \lambda\sqrt{1 + \varepsilon^2\tilde g^2}
     = \lambda + \tfrac12\varepsilon\tilde g^2 + O(\varepsilon^3)$, so that $e^{(s - \lambda)T}$ supplies the
     Green&ndash;Kubo factor, and expand the remaining bracket in $\varepsilon$.</p>
+    <h3>Where the expansion applies</h3>
+    <p>This expansion is pointwise in the Fourier frequency. Put $z = \varepsilon\tilde g$ and take the principal
+    square root $d(z) = \sqrt{1 + z^2}$. The exact answer separates into its slow outer mode and its fast initial
+    layer:</p>
+    <div class="equation-card">
+    $$\phi_\pm=e^{\bar gT}\left[A_\pm(z)e^{(d(z)-1)T/\varepsilon}
+      +B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right],\qquad
+      A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+      B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).$$
+    </div>
+    <p>The branch points $z=\pm i$ give the natural radius one. More quantitatively, fix $0&lt;\rho&lt;1$. If
+    $|z|\leq\rho$, then the principal-root identity
+    $(\operatorname{Re}d)^2=(|1+z^2|+\operatorname{Re}(1+z^2))/2$ gives
+    $\operatorname{Re}d(z)\geq\sqrt{1-\rho^2}$, and hence</p>
+    $$\left|e^{\bar gT}B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right|
+      \leq e^{\operatorname{Re}\bar gT}
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}.$$
+    <p>For fixed $\tilde g$, the outer factor is analytic for $|z|&lt;1$. If $P_{2,\pm}$ is its quadratic Taylor
+    polynomial,</p>
+    $$P_{2,\pm}(z)=1+\frac{T\tilde g\pm1}{2}z+
+      \left(\frac{(T\tilde g)^2}{8}\pm\frac{T\tilde g}{4}-\frac14\right)z^2,$$
+    <p>then for $|z|\leq r&lt;\rho&lt;1$, Cauchy&apos;s estimate gives the explicit remainder</p>
+    $$\left|A_\pm(z)e^{T\tilde g(d(z)-1)/z}-P_{2,\pm}(z)\right|
+      \leq \frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3,\qquad
+      M_\rho=\max_{|w|=\rho}\left|A_\pm(w)e^{T\tilde g(d(w)-1)/w}\right|.$$
+    <p>Combining the two estimates gives the absolute error bound</p>
+    $$\left|\phi_\pm-e^{\bar gT}P_{2,\pm}(z)\right|\leq e^{\operatorname{Re}\bar gT}
+      \left[\frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3+
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}\right].$$
+    <p>Thus the fixed-frequency second-order error is $O(\lambda^{-3})$ plus an explicitly bounded exponential
+    layer. A Fourier price needs the separate frequency-envelope condition
+    $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
+    not uniform over all frequencies.</p>
+
+    <h3>From a transform bound to a price bound</h3>
+    <p>The passage through Lewis inversion can be made exact, but it introduces a separate tail term. Let
+    $\phi_\lambda$ be the exact log-return transform, let $\widehat\phi_\lambda$ be any approximation used only on
+    $0\leq u\leq R$, and suppose
+    $|\phi_\lambda(u-i/2)-\widehat\phi_\lambda(u-i/2)|\leq E_\lambda(u)$ there. If
+    $M_{1/2,\lambda}=\mathbb E[e^{X_\lambda/2}]&lt;\infty$, then the Lewis call with the approximate transform
+    stopped at $R$ satisfies</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    |C_\lambda-\widehat C_{\lambda,R}|
+    \leq \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\left[
+    \int_0^R\frac{E_\lambda(u)}{u^2+1/4}\,du
+\mathrel{+}M_{1/2,\lambda}\{\pi-2\arctan(2R)\}\right].
+    \end{aligned}$$
+    </div>
+    <p>Indeed, $|\phi_\lambda(u-i/2)|\leq M_{1/2,\lambda}$ and
+    $\int_R^\infty(u^2+1/4)^{-1}du=\pi-2\arctan(2R)$. This proves convergence by first fixing $R$, taking the
+    fast-switching limit on that compact interval, and then sending $R$ to infinity, provided the half-moments are
+    uniformly bounded. It does <em>not</em> transfer the compact-frequency order automatically. If the forcing
+    condition permits only $R=O(\lambda)$, as for variance gamma with switching martingale corrections, this
+    model-independent tail certificate is only $O(\lambda^{-1})$; for a diffusive $u^2$ contrast and
+    $R=O(\sqrt\lambda)$ it is only $O(\lambda^{-1/2})$. Faster price rates require a model-specific decay bound for
+    the shifted characteristic function. These are upper-bound limitations, not lower bounds on the actual error.</p>
+
+    <h3>Unequal transition rates</h3>
+    <p>The radius-one conclusion is not an artifact of symmetric switching. Let the generator be
+    $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ with $a,b&gt;0$, put
+    $\kappa=a+b$, $\vartheta=(a-b)/\kappa$, $\varepsilon=(m\kappa)^{-1}$,
+    $\delta=g_1-g_2$, $z=\varepsilon\delta$, and
+    $\bar g_\pi=(bg_1+ag_2)/\kappa$. Direct diagonalization gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_\pm={}&e^{\bar g_\pi T}\left[A_\pm(z)
+      e^{\{d(z)-1+\vartheta z\}T/(2\varepsilon)}
+      +B_\pm(z)e^{-\{d(z)+1-\vartheta z\}T/(2\varepsilon)}\right],\\
+    d(z)={}&\sqrt{1-2\vartheta z+z^2},\qquad
+    A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+    B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).
+    \end{aligned}$$
+    </div>
+    <p>The branch points are
+    $z=\vartheta\pm i\sqrt{1-\vartheta^2}$, again on the unit circle. Thus the slow mode is analytic for
+    $|z|&lt;1$. On every closed disk $|z|\leq\rho&lt;1$,
+    $\eta_{\vartheta,\rho}=\min\operatorname{Re}d(z)&gt;0$ and
+    $|B_\pm(z)|\leq(1-\rho)^{-1}$, so the second term is bounded by</p>
+    $$\frac{e^{\operatorname{Re}\bar g_\pi T}}{1-\rho}
+      \exp\left[-\frac{\eta_{\vartheta,\rho}+1-|\vartheta|\rho}
+      {2\varepsilon}T\right].$$
+    <p>The quadratic slow-mode polynomial therefore has an $O((m\kappa)^{-3})$ fixed-frequency remainder plus this
+    exponential layer by Cauchy&apos;s estimate on nested disks. Explicitly, if
+    $c_1=T\delta(1-\vartheta^2)/4$, $c_2=T\delta\vartheta(1-\vartheta^2)/4$,
+    $a_{1,\pm}=(\vartheta\pm1)/2$, and
+    $a_{2,\pm}=(3\vartheta^2-1)/4\pm\vartheta/2$, the slow multiplier after
+    $e^{\bar g_\pi T}$ is</p>
+    $$P_{2,\pm}(z)=1+(a_{1,\pm}+c_1)z+
+      \left(a_{2,\pm}+c_2+a_{1,\pm}c_1+\tfrac12c_1^2\right)z^2+O(z^3).$$
+    <p>Symmetric switching is the special case $\vartheta=0$, $\delta=2\tilde g$. This transform is
+    the finite-state Feynman&ndash;Kac counterpart of the two-state occupation transforms studied by
+    <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
     <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
     function at the averaged variance and intensity, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$
     and the memory of the starting regime. The upper sign is for a start in the stressed regime.</p>
