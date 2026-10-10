@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>When fast mixing justifies pooled residuals · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">numerical certificate</a></span></p>
+    <h1>When fast mixing justifies pooled residuals</h1>
+    <p class="subtitle">An exact finite-chain horizon-to-switching crossover for conditional coverage, alongside finite-calibration, irregular-grid, burn-in and transient-panel bounds.</p>
+    <p class="muted">Research note, 23 September 2026; extended 8 October 2026. A finite-state benchmark for
+      <a href="./index.html">homogenization and residual pooling</a>;
+      it does not assert distribution-free conditional coverage.</p>
+
+    <h2>What is being pooled?</h2>
+    <p>Let $Y_t$ be an irreducible finite-state continuous-time chain with
+      generator $mQ_0$ and invariant law $\pi$; the initial law need not equal $\pi$.
+      A score $R_t$ (for example an absolute prediction residual) has continuous
+      conditional CDF $F_i(r)$ when $Y_t=i$. Emissions are independent given the
+      states; the prediction rule and the emission laws are fixed.
+      To forecast a <em>terminal</em> score at horizon $\Delta$ we pool
+      calibration scores and choose the population threshold $q$ satisfying</p>
+    $$\bar F(q)=1-\alpha,\qquad \bar F=\sum_i\pi_iF_i.$$
+    <p>The distinction is between coverage averaged over the stationary current state
+      and coverage conditional on a specified current state. It is also essential
+      to separate the <em>forecast horizon</em> $\Delta$ from the calibration
+      spacing $h$: fast mixing along the former does not imply a large effective
+      calibration sample along the latter.</p>
+
+    <h2>The finite-chain identity and a nonreversible bound</h2>
+    <p>Write $F(r)=(F_1(r),\ldots,F_d(r))^\top$ and
+      $P_t=e^{mQ_0t}$. For any initial regime prior $\nu$, the conditional
+      coverage error at the pooled population threshold is exactly</p>
+    <div class="equation-card">
+    $$\Pr_\nu(R_\Delta\le q)-(1-\alpha)
+      =(\nu P_\Delta-\pi)F(q).$$
+    </div>
+    <p>At $\Delta=c/m$ this is $(\nu e^{cQ_0}-\pi)F(q)$, independent of
+      $m$ and generally nonzero; at fixed positive $\Delta$ it vanishes as
+      $m\to\infty$. This is an exact semigroup identity, not an asymptotic
+      or a distribution-free conditional-coverage claim.</p>
+    <p>The identity also has a general nonreversible rate bound. Let
+      $Q_0^*$ be the $L^2(\pi)$ adjoint, let
+      $Q_s=(Q_0+Q_0^*)/2$, and let $\gamma_s$ be the smallest positive
+      eigenvalue of $-Q_s$ on centered functions. Then</p>
+    <div class="equation-card">
+    $$\left|\Pr_\nu(R_\Delta\le q)-(1-\alpha)\right|
+      \le e^{-m\gamma_s\Delta}
+      \left\|\frac{\nu}{\pi}-1\right\|_{L^2(\pi)}
+      \left\|F(q)-(1-\alpha){\bf1}\right\|_{L^2(\pi)}.$$
+    </div>
+    <p>Indeed, for centered $g$, differentiation along the original
+      nonreversible semigroup gives</p>
+    $$\frac{d}{dt}\|P_tg\|_{L^2(\pi)}^2
+      =2m\langle P_tg,Q_sP_tg\rangle_\pi
+      \le-2m\gamma_s\|P_tg\|_{L^2(\pi)}^2.$$
+    <p>Thus $\|P_tg\|_{2,\pi}\le e^{-m\gamma_s t}\|g\|_{2,\pi}$;
+      Cauchy&ndash;Schwarz yields the displayed result. For a specified state
+      $i$, $\|\delta_i/\pi-1\|_{2,\pi}=\sqrt{1/\pi_i-1}$ and the final
+      score-CDF norm is at most $1/2$. In the reversible case
+      $Q_s=Q_0$, so this reduces to the usual spectral-gap bound.
+      This additive-reversibilization route follows the nonreversible
+      $L^2$ framework of
+      <a href="https://doi.org/10.1090/S0002-9947-1988-0930082-9">Lawler and Sokal (1988)</a>.</p>
+    <p>The exponent is sharp among bounds with prefactor one. More precisely,</p>
+    <div class="equation-card">
+    $$\gamma_s=\sup\left\{\gamma:
+      \|e^{tQ_0}g\|_{2,\pi}\le e^{-\gamma t}\|g\|_{2,\pi}
+      \quad\hbox{for every }t\ge0\hbox{ and }\pi g=0\right\}.$$
+    </div>
+    <p>Sufficiency is the preceding energy estimate. For necessity, choose a
+      unit eigenfunction $g_s$ of $-Q_s$ with eigenvalue $\gamma_s$.
+      The exact right derivative at zero is</p>
+    $$\left.\frac{d}{dt}\|e^{tQ_0}g_s\|_{2,\pi}^2\right|_{t=0}
+      =-2\gamma_s.$$
+    <p>Any larger exponential rate with prefactor one would force a strictly
+      smaller derivative, a contradiction. This is a worst-direction,
+      all-times statement; a particular score vector may contract faster.
+      Equivalently, $-\gamma_s$ is the Hilbert-space logarithmic norm on the
+      centered subspace, in the sense introduced by
+      <a href="https://openlibrary.org/books/OL5804145M/Stability_and_error_bounds_in_the_numerical_integration_of_ordinary_differential_equations.">Dahlquist (1958)</a>.</p>
+
+    <h2>The symmetric two-state formula</h2>
+    <p>For $Q_0=\left(\begin{smallmatrix}-1&1\\1&-1\end{smallmatrix}\right)$,
+      $m=1/\varepsilon$, and $\pi=(1/2,1/2)$, the general identity reduces to</p>
+    <div class="equation-card">
+    $$\Pr(R_{\Delta}\le q\mid Y_0=i)
+      =1-\alpha+e^{-2\Delta/\varepsilon}
+         \bigl(F_i(q)-(1-\alpha)\bigr),\qquad i=1,2.$$
+    </div>
+    <p>Indeed, $e^{Q\Delta}={\bf1}\pi+
+      e^{-2\Delta/\varepsilon}(I-{\bf1}\pi)$, so the distribution of
+      the terminal state is its stationary law plus a decaying memory
+      of $Y_0$. The expression is exact for the stated model.
+      If $Y_0$ is stationary, averaging over $i$ gives exactly
+      $1-\alpha$ <em>at the population threshold</em>, for every $\Delta$.
+      This marginal identity says nothing about conditional coverage.</p>
+    <p>At $\Delta=c\varepsilon$, the conditional error is
+      $e^{-2c}(F_i(q)-(1-\alpha))$. It remains nonzero as
+      $\varepsilon\to0$ whenever the two residual distributions
+      disagree at $q$. Only for $\Delta/\varepsilon\to\infty$ does
+      pooling become conditionally accurate in this benchmark.
+      For $\Delta/\varepsilon\to0$, conditioning retains the
+      full regime-specific difference.</p>
+
+    <h2>Coverage and width</h2>
+    <p>The shortest upper score threshold with population conditional
+      coverage $1-\alpha$ under prior $\nu$ is
+      $q_{\nu,\Delta}=F_{\nu,\Delta}^{-1}(1-\alpha)$, where
+      $F_{\nu,\Delta}(r)=\nu P_\Delta F(r)$.
+      When the conditional laws have continuously differentiable densities near $q$
+      and $\bar f(q)>0$, expansion as the chain mixes gives</p>
+    $$q_{\nu,\Delta}=q-
+       \frac{(\nu P_\Delta-\pi)F(q)}{\bar f(q)}
+       +O(\|\nu P_\Delta-\pi\|^2).$$
+    <p>The preceding two-state expression follows by substituting its single
+      exponential mode.</p>
+    <p>A pooled threshold $q$ can be too narrow for one state and
+      unnecessarily wide for the other. If state information is used
+      only to demand coverage for <em>both</em> states with a single
+      threshold, the smallest such threshold is
+      $\max_i q_{i,\Delta}$. Thus marginal validity, conditional
+      validity, and sharpness are distinct objectives.</p>
+    <p>For example, take exponential scores with conditional means 1
+      and 3 and $\alpha=0.1$. The pooled threshold is about $4.93784$.
+      At $\Delta=0$ its conditional coverages are approximately
+      $0.99283$ and $0.80717$, despite exactly $0.9$ stationary
+      marginal coverage. At $\Delta=\varepsilon$ they are
+      $0.91256$ and $0.88744$. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">certificate</a>
+      simulates the Markov transitions and fresh scores to check these
+      figures.</p>
+    <p>The certificate also uses a nonreversible three-state chain with a
+      nonuniform invariant law. It obtains $\gamma_s=3.67885921$; over forty
+      scaled horizons the largest score-vector ratio of the exact $L^2(\pi)$
+      norm to its additive-reversibilization envelope is $0.97508013$.
+      For the gap eigenfunction at $t=10^{-3}$, the ratio is
+      $0.999999999315$, while replacing $\gamma_s$ by $1.01\gamma_s$
+      gives $1.000036788583>1$ and violates the proposed faster bound.
+      This checks the original nonnormal semigroup rather than diagonalizing
+      it as though it were reversible.</p>
+
+    <h2>Finite dependent calibration</h2>
+    <p>The population threshold is not what split conformal actually
+      computes. Suppose $n$ calibration scores are sampled from the
+      stationary process at spacing $h>0$, and let
+      $\widehat F_n(r)=n^{-1}\sum_{\ell=1}^n
+      {\bf1}\{R_{\ell h}\le r\}$. Put $f_r=F(r)$,
+      $p_r=\pi f_r$, $\widetilde f_r=f_r-p_r{\bf1}$, and
+      $P_h=e^{mQ_0h}$. Conditional independence of distinct emissions gives
+      the exact finite-chain Green&ndash;Kubo sum</p>
+    $$\operatorname{Var}\widehat F_n(r)
+       =\frac{p_r(1-p_r)}{n}
+        +\frac{2}{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
+          \langle\widetilde f_r,P_h^\ell\widetilde f_r\rangle_\pi.$$
+    <p>The same nonreversible contraction gives, with
+      $a=e^{-m\gamma_sh}$, the exact finite-panel envelope</p>
+    <div class="equation-card">
+    $$\operatorname{Var}\widehat F_n(r)
+       \le \frac{p_r(1-p_r)}{n}V_n(a),$$
+    $$V_n(a)=1+\frac2n\sum_{\ell=1}^{n-1}(n-\ell)a^\ell
+       =\frac{1+a}{1-a}
+        -\frac{2a(1-a^n)}{n(1-a)^2}.$$
+    </div>
+    <p>This uses $\|\widetilde f_r\|_{2,\pi}^2\le p_r(1-p_r)$ and
+      retains the finite geometric sum. It remains valid when the covariances
+      oscillate or change sign, and is strictly sharper than the asymptotic
+      factor $(1+a)/(1-a)$ for finite $n$. For the symmetric
+      two-state chain, $\gamma_s=2$ and
+      $\langle\widetilde f_r,P_h^\ell\widetilde f_r\rangle_\pi
+      =d_r^2e^{-2\ell h/\varepsilon}$, recovering the original equality.
+      In fact the variance envelope is sharp: take the symmetric two-state
+      chain and conditional CDF values $(0,1)$ at the threshold. Continuous
+      score laws with disjoint supports realize this case, and every covariance
+      inequality above is then an equality.
+      When $m\gamma_sh\ll1$,
+      adjacent scores carry nearly the same regime information, so
+      $n$ can badly overstate the effective sample size. The first
+      term includes the within-regime emission noise, while the
+      second is exactly the dependence contribution from the hidden chain.
+      In the nonreversible certificate, the exact variance is $0.00091950$
+      and the finite-panel bound is $0.00123603$. In the reversible three-state
+      specialization, the exact variance is $0.00110385$ versus $0.00110741$
+      in direct simulation. A separate $n=17$ two-state construction attains
+      its bound exactly at variance $0.04032855$.</p>
+
+    <h3>A sharp joint panel-size and switching-rate limit</h3>
+    <p>The retained finite sum also resolves the limit excluded by fixed-$P_h$
+      panel asymptotics. Let the panel and its sampling scheme vary with $n$,
+      put</p>
+    $$x_n=m_n\gamma_sh_n,\qquad \Lambda_n=nx_n,\qquad
+      W_n=\frac1nV_n(e^{-x_n}),$$
+    <p>so that
+      $\operatorname{Var}\widehat F_n(r)\le p_r(1-p_r)W_n$.
+      If $x_n\to0$ and $\Lambda_n\to\Lambda\in[0,\infty)$, then</p>
+    <div class="equation-card">
+    $$W_n\longrightarrow
+      \Psi(\Lambda):=
+      \begin{cases}
+      \displaystyle\frac{2(\Lambda-1+e^{-\Lambda})}{\Lambda^2},
+        &amp;\Lambda&gt;0,\\[6pt]
+      1,&amp;\Lambda=0.
+      \end{cases}$$
+    </div>
+    <p>Indeed, the dependence term is the Riemann sum</p>
+    $$\frac2{n^2}\sum_{\ell=1}^{n-1}(n-\ell)
+      e^{-\Lambda_n\ell/n}
+      \longrightarrow2\int_0^1(1-u)e^{-\Lambda u}\,du.$$
+    <p>The same finite sum gives a nonasymptotic refinement throughout the
+      critical window. Put</p>
+    $$c_2(\Lambda)=\frac{1+\Lambda-e^{-\Lambda}}6,\qquad
+      c_4(\Lambda)=-\frac{\Lambda^2(\Lambda+3-3e^{-\Lambda})}{360},$$
+    $$c_6(\Lambda)=
+      \frac{\Lambda^4(\Lambda+5-5e^{-\Lambda})}{15120}.$$
+    <p>For every $n\geq1$ and every $\Lambda\geq0$, if the per-step exposure is
+      $x=\Lambda/n$, then</p>
+    <div class="equation-card">
+    $$\left|W_n-\Psi(\Lambda)-\frac{c_2(\Lambda)}{n^2}
+      -\frac{c_4(\Lambda)}{n^4}\right|
+      \leq\frac{c_6(\Lambda)}{n^6}.$$
+    </div>
+    <p>There is no order-$n^{-1}$ term. Indeed, with
+      $f_\Lambda(u)=(1-u)e^{-\Lambda u}$,</p>
+    $$W_n=\frac1n+\frac2n\sum_{\ell=1}^{n-1}
+      f_\Lambda(\ell/n).$$
+    <p>The endpoint term in Euler&ndash;Maclaurin is
+      $-\{f_\Lambda(0)+f_\Lambda(1)\}/n=-1/n$, exactly cancelling the
+      displayed diagonal contribution. The $B_2$ and $B_4$ terms give the
+      two coefficients above. The Euler&ndash;Maclaurin remainder is the integral
+      of the periodic sixth Bernoulli polynomial against
+      $f_\Lambda^{(6)}$. Since
+      $\|B_6(\{\cdot\})\|_\infty/6!=1/30240$ and</p>
+    $$\int_0^1|f_\Lambda^{(6)}(u)|\,du
+      =\Lambda^4(\Lambda+5-5e^{-\Lambda}),$$
+    <p>multiplying by the factor two in $W_n$ gives exactly the displayed
+      bound. Because $\Lambda_n=nx_n$ by definition, the inequality can be
+      applied with the moving value $\Lambda_n$ for every bounded critical
+      sequence; evaluating the coefficients at a fixed limit $\Lambda$
+      instead introduces the separate perturbation error
+      $\Psi(\Lambda_n)-\Psi(\Lambda)$.</p>
+    <p>The profile is not merely an upper bound. For every $n$, a symmetric
+      two-state chain with conditional CDF values $(0,1)$ attains the finite
+      factor exactly, so all these limits are sharp. In particular,
+      $\Lambda_n\to0$ leaves the whole panel asymptotically equivalent, for
+      this variance, to one Bernoulli observation. In the sharp example, a
+      finite positive $\Lambda$ leaves nonzero limiting variance no matter
+      how large $n$ is.</p>
+    <p>The same exact formula connects this critical window to both outer
+      regimes:</p>
+    <div class="equation-card">
+    $$\begin{array}{lll}
+      x_n\to0,\ \Lambda_n\to\infty:
+        &amp;W_n\sim2/\Lambda_n,
+        &amp;n_{\rm eff}:=1/W_n\sim\Lambda_n/2,\\[3pt]
+      x_n\to x\in(0,\infty):
+        &amp;W_n\sim n^{-1}\coth(x/2),
+        &amp;n_{\rm eff}\sim n\tanh(x/2),\\[3pt]
+      x_n\to\infty:
+        &amp;W_n\sim1/n,
+        &amp;n_{\rm eff}\sim n.
+    \end{array}$$
+    </div>
+    <p>For the first line, substitute $a=e^{-x_n}$ in the closed finite-sum
+      formula, use $1-a\sim x_n$ and $a^n=e^{-\Lambda_n}$, and then let
+      $\Lambda_n\to\infty$. For the second and third lines, $a$ converges
+      respectively to $e^{-x}\in(0,1)$ and to zero while $a^n\to0$.
+      These reductions prove the three displayed equivalents directly.</p>
+    <p>Here $n_{\rm eff}$ is only a variance-equivalent count for the
+      empirical calibration CDF; it is not a replacement for $n$ in a
+      conformal rank law. These statements concern marginal fluctuations
+      over a stationary calibration panel. They do not assert conditional
+      conformal coverage, and they remain distinct from the fixed-transition
+      large-panel expansions below. The certificate evaluates the critical
+      profile at total exposures $0.05,0.5,2,$ and $8$, and checks both outer
+      limits directly from the finite sum.</p>
+
+    <h3>Irregular observation times</h3>
+    <p>A regular spacing is not needed. Let
+      $0=t_1&lt;t_2&lt;\cdots&lt;t_n$ be any deterministic observation grid and
+      sample the stationary score process at these times. The exact covariance
+      identity and the additive-reversibilization estimate give</p>
+    <div class="equation-card">
+    $$\operatorname{Var}\widehat F_{\boldsymbol t}(r)
+      =\frac{p_r(1-p_r)}n+\frac2{n^2}\sum_{i&lt;j}
+       \langle\widetilde f_r,P_{t_j-t_i}\widetilde f_r\rangle_\pi,$$
+    $$\operatorname{Var}\widehat F_{\boldsymbol t}(r)
+      \le\frac{p_r(1-p_r)}nV_{\boldsymbol t},\qquad
+      V_{\boldsymbol t}=1+\frac2n\sum_{i&lt;j}
+        e^{-m\gamma_s(t_j-t_i)}.$$
+    </div>
+    <p>The first equality uses only stationarity and conditional independence
+      of distinct emissions. The inequality follows pair by pair from the same
+      nonreversible $L^2(\pi)$ contraction. For a symmetric two-state chain
+      and conditional CDF values $(0,1)$, every pairwise inequality is an
+      equality on <em>every</em> grid, so $V_{\boldsymbol t}$ is sharp.</p>
+    <p>Consequently, replacing an uneven grid by its average adjacent spacing
+      is not a valid upper bound. The certificate takes the scaled times
+      $(0,0.01,0.02,0.03,6)$ for the sharp two-state example. Its exact
+      empirical-CDF variance is $0.16822116$, whereas the regular-grid formula
+      at the same average spacing $1.5$ gives only $0.07133157$, understating
+      the variance by a factor $2.3583$. The complete pairwise-kernel formula
+      returns $0.16822116$ exactly. One may call $n/V_{\boldsymbol t}$ a
+      variance-equivalent sample size for this statistic, but it is not a
+      substitution for $n$ in conformal rank or coverage laws.</p>
+
+    <h3>Optimal nonnegative weights on an irregular grid</h3>
+    <p>The same theorem also answers a design question that equal weighting
+      hides. Let $w_i\geq0$, $\sum_iw_i=1$, and define the weighted empirical
+      CDF $\widehat F_w(r)=\sum_iw_i{\bf1}\{R_{t_i}\leq r\}$. With</p>
+    $$R_{ij}=e^{-m\gamma_s|t_i-t_j|},$$
+    <p>the exact covariance identity gives the sharp envelope</p>
+    <div class="equation-card">
+    $$\operatorname{Var}\widehat F_w(r)
+      \leq p_r(1-p_r)\,w^\top Rw.$$
+    </div>
+    <p>A symmetric two-state chain with conditional CDF values $(0,1)$
+      attains equality for every grid and every choice of weights. Therefore
+      minimizing this bound is not a merely formal relaxation. The unique
+      minimizer is the generalized least-squares weight</p>
+    $$w^\star=\frac{R^{-1}{\bf1}}{{\bf1}^\top R^{-1}{\bf1}}.$$
+    <p>For ordered times put
+      $\rho_i=e^{-m\gamma_s(t_{i+1}-t_i)}$. The Markov exponential kernel has
+      a tridiagonal inverse, and direct multiplication yields</p>
+    <div class="equation-card">
+    $$\mathcal I_{\boldsymbol t}:={\bf1}^\top R^{-1}{\bf1}
+      =1+\sum_{i=1}^{n-1}\frac{1-\rho_i}{1+\rho_i}
+      =1+\sum_{i=1}^{n-1}\tanh\!\left(
+        \frac{m\gamma_s(t_{i+1}-t_i)}2\right),$$
+    $$\min_{w:\,{\bf1}^\top w=1}w^\top Rw
+      =\mathcal I_{\boldsymbol t}^{-1}.$$
+    </div>
+    <p>Every component of $R^{-1}{\bf1}$ is positive: the endpoints are
+      $1/(1+\rho_1)$ and $1/(1+\rho_{n-1})$, while an interior component is
+      $1/(1+\rho_{i-1})-\rho_i/(1+\rho_i)>0$. Thus the unconstrained
+      generalized least-squares solution already satisfies the nonnegative
+      calibration-weight constraint. This is the correlated-observation
+      principle of <a href="https://doi.org/10.1017/S0370164600014346">Aitken
+      (1935)</a>, specialized here to the sharp Markov envelope.</p>
+    <p>For the clustered grid $(0,0.01,0.02,0.03,6)$, the optimal weights are
+      $(0.250012,0.002488,0.002488,0.248744,0.496269)$. They reduce the sharp
+      two-state variance from $0.16822116$ to $0.12438402$, a $26.1\%$
+      reduction. This is only a minimum-variance statement for a weighted
+      empirical CDF. It does not make an ordinary weighted quantile a valid
+      conformal rank rule; any weighted conformal procedure needs its own
+      exchangeability or covariate-shift argument.</p>
+
+    <h3>Jointly optimal times and weights</h3>
+    <p>Suppose now that the endpoint times are fixed,
+      $0=t_1&lt;\cdots&lt;t_n=T$, but the interior observation times and the
+      nonnegative weights can both be chosen. Write
+      $\lambda=m\gamma_s$ and $\Delta_i=t_{i+1}-t_i$. Substitution in the
+      information formula above leaves the deterministic design problem</p>
+    $$\max_{\Delta_i&gt;0,\ \sum_i\Delta_i=T}
+      \left\{1+\sum_{i=1}^{n-1}\tanh
+      \left(\frac{\lambda\Delta_i}{2}\right)\right\}.$$
+    <p>Because $\tanh x$ is strictly concave for $x&gt;0$, Jensen's inequality
+      proves that equal spacing is the unique optimum. Hence</p>
+    <div class="equation-card">
+    $$\min_{\substack{0=t_1&lt;\cdots&lt;t_n=T\\
+             w_i\geq0,\ \sum_iw_i=1}} w^\top Rw
+      =\left[1+(n-1)\tanh\left(
+        \frac{\lambda T}{2(n-1)}\right)\right]^{-1}.$$
+    </div>
+    <p>For $\rho=e^{-\lambda T/(n-1)}$ and
+      $\mathcal I_n=1+(n-1)(1-\rho)/(1+\rho)$, the corresponding weights are</p>
+    $$w_1^\star=w_n^\star=\frac{1}{(1+\rho)\mathcal I_n},\qquad
+      w_i^\star=\frac{1-\rho}{(1+\rho)\mathcal I_n}
+      \quad(2\leq i\leq n-1).$$
+    <p>This recovers, for the sharp exponential covariance envelope, the
+      equispaced trend-design conclusion proved for the Ornstein&ndash;Uhlenbeck
+      process by <a href="https://doi.org/10.1002/asmb.749">Zagoraiou and
+      Baldi Antognini (2009)</a>.</p>
+    <p>The dense-grid limit is not a uniform probability distribution. If
+      $L=\lambda T$ is fixed while $n\to\infty$, then</p>
+    <div class="equation-card">
+    $$\mathcal I_n\longrightarrow 1+\frac L2,\qquad
+      \min w^\top Rw\longrightarrow\frac{1}{1+L/2}.$$
+    $$w_1^\star,w_n^\star\longrightarrow\frac{1}{2+L},\qquad
+      \sum_{i=2}^{n-1}w_i^\star\longrightarrow\frac{L}{2+L}.$$
+    </div>
+    <p>Thus the limiting optimal design places an atom $1/(2+L)$ at each
+      endpoint and spreads the remaining mass uniformly through the
+      interior. At $L=6$, the certificate obtains information
+      $3.99999946$ on a 4097-point grid, converging to $4$; each endpoint
+      weight tends to $1/8$ and the interior mass to $3/4$. These conclusions
+      optimize the sharp marginal variance envelope for a weighted empirical
+      CDF. They do not establish conditional coverage or weighted conformal
+      rank validity.</p>
+
+    <h3>A finite observation-budget guarantee</h3>
+    <p>The continuous-design ceiling also has a sharp global finite-sample
+      error bound. Put $N=n-1$ and keep $L=\lambda T$. For the jointly
+      optimal $n$-point design, write</p>
+    $$\mathcal I_N=1+N\tanh\left(\frac{L}{2N}\right),\qquad
+      \mathcal I_\infty=1+\frac L2.$$
+    <p>For $L&gt;0$, the function $N\tanh\{L/(2N)\}$ is strictly increasing in $N$:
+      with $x=L/(2N)$, its derivative has the sign of
+      $\tanh x-x\operatorname{sech}^2x&gt;0$. Moreover, for every
+      $x\geq0$,</p>
+    $$0\leq x-\tanh x\leq\frac{x^3}{3}.$$
+    <p>The upper inequality follows because the derivative of
+      $x^3/3-x+\tanh x$ is $x^2-\tanh^2x\geq0$. Therefore, for every
+      exposure $L\geq0$ and every integer $N\geq1$,</p>
+    <div class="equation-card">
+    $$0\leq\mathcal I_\infty-\mathcal I_N
+      \leq\frac{L^3}{24N^2},$$
+    $$0\leq\frac1{\mathcal I_N}-\frac1{\mathcal I_\infty}
+      \leq\frac{L^3}
+      {24N^2\mathcal I_N\mathcal I_\infty}.$$
+    </div>
+    <p>The constant is asymptotically sharp, since</p>
+    $$\mathcal I_\infty-\mathcal I_N
+      =\frac{L^3}{24N^2}-\frac{L^5}{240N^4}
+       +O_L(N^{-6}).$$
+    <p>This supplies an explicit sampling-budget guarantee rather than only
+      a dense-grid limit. At $N=1024$, the certificate evaluates the exact
+      gap-to-bound ratio for $L=0.1,0.5,2,8,32$; every ratio exceeds
+      $0.999$. The endpoint-plus-density continuous design is consistent with
+      the general continuous-time BLUE framework of
+      <a href="https://arxiv.org/abs/1501.01774">Dette, Pepelyshev and
+      Zhigljavsky (2015)</a>. The bound here is exact for the exponential
+      kernel and retains the same marginal-variance-only scope as the
+      preceding design theorem.</p>
+
+    <h3>Observation cost gives a cube-root panel rule</h3>
+    <p>The exact information curve also chooses the panel size when each
+      additional observation carries a normalized cost. Let</p>
+    $$f_L(N)=N\tanh\left(\frac{L}{2N}\right),\qquad
+      \mathcal I_N=1+f_L(N),\qquad V_N=\mathcal I_N^{-1}.$$
+    <p>For real $N&gt;0$, put $x=L/(2N)$. Direct differentiation gives</p>
+    $$f_L'(N)=\tanh x-x\operatorname{sech}^2x&gt;0,$$
+    $$f_L''(N)=-\frac{2x^2}{N}\operatorname{sech}^2x\tanh x&lt;0.$$
+    <p>Thus the information increments are strictly decreasing. The normalized
+      variance reductions</p>
+    $$d_N=V_N-V_{N+1}
+      =\frac{\mathcal I_{N+1}-\mathcal I_N}
+      {\mathcal I_N\mathcal I_{N+1}}$$
+    <p>are also strictly decreasing, because their numerators decrease while
+      their denominators increase. Consequently $V_N+cN$ is a strictly convex
+      sequence. Its minimizer is characterized exactly by</p>
+    <div class="equation-card">
+    $$d_{N-1}\geq c\geq d_N,$$
+    </div>
+    <p>with the evident endpoint convention; equality gives the only possible
+      adjacent tie. The expansion of the exact information formula yields</p>
+    $$d_N\sim\frac{L^3}{12(1+L/2)^2N^3},
+      \qquad
+      N_c\sim\left\{\frac{L^3}
+      {12c(1+L/2)^2}\right\}^{1/3}\quad(c\downarrow0).$$
+    <p>The cube-root law quantifies diminishing returns rather than merely
+      asserting that more observations help. At normalized cost $10^{-10}$,
+      the exact optimal interval counts for $L=(0.5,2,8,32)$ are
+      $(405,1186,2575,4555)$, while the cube-root formula gives
+      $(405.480,1185.631,2574.638,4554.670)$; the largest relative error is
+      $0.119\%$. Multiplying $V_N$ by the Bernoulli factor $p(1-p)$ simply
+      rescales $c$. This remains an optimal-design statement for the marginal
+      empirical-CDF variance envelope. It is not a conditional-coverage or
+      weighted-conformal-validity theorem.</p>
+
+    <p>Here is a conservative finite-sample statement that requires no
+      independent-calibration fiction. Assume $\bar F$ is continuous
+      and strictly increasing. Select an integer $M\ge2$ and failure
+      probability $\delta\in(0,1)$, and let
+      $V=V_n(a)$ on a regular grid, or $V=V_{\boldsymbol t}$ on an
+      irregular grid. A grid of $M-1$ population quantiles,
+      Chebyshev's inequality and a union bound imply, with probability
+      at least $1-\delta$ over the stationary calibration sequence,</p>
+    $$\sup_r|\widehat F_n(r)-\bar F(r)|
+       \le \frac1M+\sqrt{\frac{(M-1)V}{4n\delta}}
+       =:\eta_{n,M,\delta}.$$
+    <p>Let $\widehat q$ be the ordinary split-conformal order statistic
+      of rank $k=\lceil(n+1)(1-\alpha)\rceil$, assuming $k\le n$
+      and no score ties. Then on this same event,
+      for each possible observed state $Y_0=i$,</p>
+    <div class="equation-card">
+    $$\left|\Pr(R_\Delta\le\widehat q
+        \mid\text{calibration history},Y_0=i)
+          -(1-\alpha)\right|
+      \le \eta_{n,M,\delta}+\frac2n+
+        \frac12\sqrt{\frac1{\pi_i}-1}\,e^{-m\gamma_s\Delta}.$$
+    </div>
+    <p>The Markov property makes the future emission conditionally independent
+      of past calibration given $Y_0$. The order-statistic convention contributes
+      at most $2/n$ in pooled CDF units. This bound separates
+      calibration uncertainty from the irreducible horizon effect;
+      it is intentionally loose, particularly its Chebyshev factor.
+      For the symmetric two-state chain, the sharper exact horizon term is
+      $e^{-2\Delta/\varepsilon}\sup_r|F_i(r)-\bar F(r)|$.
+      If the current state is hidden, the same reasoning applies with its
+      posterior $\nu$, replacing $\sqrt{1/\pi_i-1}$ by
+      $\|\nu/\pi-1\|_{L^2(\pi)}$.</p>
+
+    <h3>A sharper one-sided threshold guarantee</h3>
+    <p>The uniform bound pays for a grid of thresholds and both tails. If the
+      question is only whether the realized order-statistic threshold has at
+      least a specified pooled coverage, the variance theorem gives a sharper
+      one-sided result with no discretization parameter. Let $\widehat q=R_{(k)}$
+      be the $k$th of the $n$ stationary calibration scores, put
+      $C_0=\bar F(\widehat q)$, and choose $0&lt;p&lt;k/n$. If
+      $q_p=\bar F^{-1}(p)$, continuity and absence of ties give the exact event
+      identity</p>
+    $$\{C_0&lt;p\}=\{\widehat F_n(q_p)\ge k/n\}.$$
+    <p>Since the empirical CDF has mean $p$ and variance at most
+      $p(1-p)V/n$, Cantelli&apos;s one-sided inequality yields</p>
+    <div class="equation-card">
+    $$\Pr_\pi\{C_0&lt;p\}
+      \le B_{n,k,V}(p)
+      :=\frac{p(1-p)V}
+      {p(1-p)V+n(k/n-p)^2}.$$
+    </div>
+    <p>Here $V=V_n(e^{-m\gamma_sh})$ on a regular grid and
+      $V=V_{\boldsymbol t}$ on an irregular grid. The proof uses dependence
+      only through the already established spectral variance envelope.
+      Cantelli&apos;s denominator makes the bound strictly sharper than the
+      corresponding one-sided Chebyshev bound
+      $p(1-p)V/[n(k/n-p)^2]$. This is the one-sided inequality introduced by
+      <a href="https://www.mathunion.org/fileadmin/ICM/Proceedings/ICM1928.6/ICM1928.6.ocr.pdf">Cantelli (1928)</a>.</p>
+    <p>The terminal-horizon error can be included without conflating the two
+      effects. Put</p>
+    $$H_i(\Delta)=\frac12\sqrt{\frac1{\pi_i}-1}
+      e^{-m\gamma_s\Delta}.$$
+    <p>For every calibration panel,
+      $|\Pr(R_\Delta\le\widehat q\mid\text{history},Y_0=i)-C_0|
+      \le H_i(\Delta)$. Therefore, whenever $u_i=p+H_i(\Delta)&lt;k/n$,</p>
+    <div class="equation-card">
+    $$\Pr_\pi\!\left\{
+      \Pr(R_\Delta\le\widehat q\mid\text{history},Y_0=i)&lt;p
+      \right\}
+      \le B_{n,k,V}(u_i).$$
+    </div>
+    <p>Replacing $H_i$ by $\max_iH_i$ makes the conclusion simultaneous over
+      all possible current states. This is a PAC statement over random
+      stationary calibration panels. It is training-conditional in the sense
+      that it controls the probability of drawing a badly calibrated panel;
+      it is neither pointwise nor feature-conditional conformal validity.</p>
+    <p>An exact nonreversible three-state enumeration uses $p=0.8$, $n=k=9$.
+      It converts every score to the indicator that it is below the population
+      $0.8$-quantile and sums all $2^9$ hidden-state emission patterns:</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>scaled spacing</th><th style="text-transform:none">$V_n$</th><th>exact failure</th><th>Cantelli</th><th>Chebyshev</th></tr></thead>
+      <tbody>
+        <tr><td>0.05</td><td>5.605161</td><td>0.25922080</td><td>0.713564</td><td>1.000000</td></tr>
+        <tr><td>0.10</td><td>3.933312</td><td>0.20575616</td><td>0.636117</td><td>1.000000</td></tr>
+        <tr><td>0.20</td><td>2.447832</td><td>0.16380956</td><td>0.521056</td><td>1.000000</td></tr>
+        <tr><td>0.40</td><td>1.510007</td><td>0.14146048</td><td>0.401597</td><td>0.671114</td></tr>
+        <tr><td>0.80</td><td>1.098219</td><td>0.13418952</td><td>0.328001</td><td>0.488097</td></tr>
+        <tr><td>1.50</td><td>1.007159</td><td>0.13408634</td><td>0.309214</td><td>0.447626</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The exact iid benchmark is $0.8^9=0.134217728$. The spectral-Cantelli
+      bound is conservative, as a second-moment bound must be, but it remains
+      nonvacuous where the Chebyshev conversion is one and approaches the iid
+      regime without an effective-sample-size substitution.</p>
+
+    <h3>The exact finite-state count law</h3>
+    <p>For a finite hidden state space, the entire order-statistic failure law
+      is available by a polynomial matrix recursion. This is sharper than a
+      moment inequality and does not require enumerating $2^n$ binary paths.
+      On a deterministic grid $t_1&lt;\cdots&lt;t_n$, let
+      $P_j=e^{mQ_0(t_{j+1}-t_j)}$, let
+      $f_i=F_i(q_p)$, and put</p>
+    $$D(z)=\operatorname{diag}(1-f+zf).$$
+    <p>If $S_n=\sum_{j=1}^n{\bf1}\{R_{t_j}\le q_p\}$ and the initial state
+      law is the row vector $\nu$, then conditional independence of the
+      emissions and the Markov property give the exact probability-generating
+      function</p>
+    <div class="equation-card">
+    $$G_n(z)=\mathbb E_\nu z^{S_n}
+      =\nu D(z)P_1D(z)\cdots P_{n-1}D(z){\bf1},$$
+    $$\Pr_\nu\{C_0&lt;p\}=\Pr_\nu\{S_n\ge k\}
+      =\sum_{s=k}^n[z^s]G_n(z).$$
+    </div>
+    <p>The first identity follows by conditioning successively on the hidden
+      states; it is the discrete finite-state Feynman&ndash;Kac product associated
+      with the transform method introduced by
+      <a href="https://doi.org/10.1090/S0002-9947-1949-0027960-X">Kac (1949)</a>.
+      Multiplying polynomial state rows computes every coefficient in
+      $O(n^2d^2)$ operations and $O(nd)$ memory for $d$ hidden states. Thus the
+      formula handles arbitrary deterministic spacings and arbitrary initial
+      laws directly. For $k=n$, its highest coefficient is simply the exact
+      all-success probability; this is why each $n=k=9$ failure probability in
+      the preceding table can be recovered without binary-path enumeration.</p>
+    <p>The same generating function also gives the computable exponential
+      bound</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k\}
+      \le \inf_{z&gt;1}z^{-k}G_n(z)
+      =\inf_{\theta&gt;0}e^{-k\theta}G_n(e^\theta).$$
+    </div>
+    <p>This Chernoff consequence is distribution-specific, unlike the
+      spectral-Cantelli envelope, but it can be substantially sharper. In the
+      same nonreversible model with scaled spacing $0.1$, $p=0.8$, $n=30$, and
+      $k=27$, the coefficient recursion gives exact failure probability
+      $0.187906264$. The optimized generating-function bound is $0.481299437$
+      at $\theta=0.55627313$, compared with the spectral-Cantelli bound
+      $0.727691942$. Independent enumeration verifies every coefficient for
+      $n=9$ within $2\times10^{-15}$, while the $n=30$ computation replaces
+      more than one billion binary paths by 31 coefficient rows.</p>
+    <p>These are probabilities over random calibration panels. Even when the
+      count law is computed exactly, the conclusion remains
+      training-conditional/PAC rather than pointwise or feature-conditional
+      conformal validity. Nor does the calculation justify replacing $n$ by
+      an effective sample size in an iid beta law.</p>
+
+    <h3>Long regular panels: the exact exponential rate</h3>
+    <p>The generating matrix also resolves the large-panel limit, but only
+      when the spacing is fixed. Let $P=e^{mQ_0h}$ for $h&gt;0$, assume the
+      finite CTMC is irreducible, and suppose $0&lt;f_i&lt;1$ in every state.
+      Then $P$ and the tilted matrix below are strictly positive. Put</p>
+    $$M_\theta=P D(e^\theta),\qquad
+      \Lambda(\theta)=\log\rho(M_\theta),$$
+    <p>where $\rho$ is the Perron root. Since</p>
+    $$G_n(e^\theta)=\nu D(e^\theta)M_\theta^{n-1}{\bf1},$$
+    <p>Perron&ndash;Frobenius theory gives, for every initial state law $\nu$,</p>
+    <div class="equation-card">
+    $$\lim_{n\to\infty}\frac1n
+      \log\mathbb E_\nu e^{\theta S_n}=\Lambda(\theta),$$
+    $$I(x)=\sup_{\theta\in\mathbb R}
+      \{\theta x-\Lambda(\theta)\},\qquad
+      \lim_{n\to\infty}\frac1n\log
+      \Pr_\nu\{S_n/n\ge x\}=-I(x),\quad p&lt;x&lt;1,$$
+    </div>
+    <p>with $p=\pi f=\Lambda'(0)$. Positivity makes the Perron root simple and
+      analytic for every real $\theta$, so the differentiability hypothesis
+      in the G&auml;rtner&ndash;Ellis theorem is automatic. This is the finite-state
+      specialization of the primary large-deviation results of
+      <a href="https://doi.org/10.1137/1122003">G&auml;rtner (1977)</a> and
+      <a href="https://doi.org/10.1214/aop/1176993370">Ellis (1984)</a>.
+      For $x&gt;p$, the optimizing tilt is positive, and the finite-panel
+      Chernoff exponent converges to $I(x)$. In the iid specialization,
+      $\Lambda(\theta)=\log(1-p+pe^\theta)$ and $I$ reduces to the Bernoulli
+      relative entropy.</p>
+    <p>For the nonreversible certificate at scaled spacing $0.1$, $p=0.8$ and
+      $x=0.9$, the Perron calculation gives</p>
+    $$I(0.9)=0.023859569,\qquad \theta_*=0.545570879.$$
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$n$</th><th>exact upper tail</th><th style="text-transform:none">$-n^{-1}\log\Pr$</th><th>exact / sharp</th><th>exact / first</th><th>exact / second</th></tr></thead>
+      <tbody>
+        <tr><td>30</td><td>0.1879062642</td><td>0.055727068</td><td>0.789037</td><td>1.550044</td><td>0.522166</td></tr>
+        <tr><td>60</td><td>0.0707685778</td><td>0.044139003</td><td>0.859754</td><td>1.139470</td><td>0.855449</td></tr>
+        <tr><td>120</td><td>0.0127009673</td><td>0.036383976</td><td>0.913293</td><td>1.041074</td><td>0.971704</td></tr>
+        <tr><td>240</td><td>0.0005332535</td><td>0.031402140</td><td>0.949886</td><td>1.011992</td><td>0.995388</td></tr>
+        <tr><td>480</td><td>0.0000012583</td><td>0.028303726</td><td>0.972566</td><td>1.003353</td><td>0.999318</td></tr>
+        <tr><td>960</td><td>9.5765864e-12</td><td>0.026428854</td><td>0.985543</td><td>1.000899</td><td>0.999906</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The exact coefficients converge toward the predicted logarithmic rate;
+      the remaining finite-$n$ difference is resolved by the sharp prefactor
+      below. This
+      theorem is for a fixed regular-grid transition matrix. The earlier
+      polynomial recursion remains exact on irregular grids, but no
+      single-matrix Perron rate is claimed there.</p>
+
+    <h3>The sharp lattice tail prefactor</h3>
+    <p>The boundary amplitude also identifies the leading finite-panel tail,
+      rather than only its logarithmic rate. Let $r_\theta,\ell_\theta$ be
+      right and left Perron eigenvectors normalized by
+      $\ell_\theta^\top r_\theta=1$, define
+      $A_\nu(\theta)=\{\nu D(e^\theta)r_\theta\}
+      \{\ell_\theta^\top{\bf1}\}$, and put
+      $B_\nu(\theta)=A_\nu(\theta)e^{-\Lambda(\theta)}$. For integer thresholds
+      $k_n$ such that $x_n=k_n/n$ stays in a compact subset of $(p,1)$, let
+      $\theta_n&gt;0$ solve $\Lambda'(\theta_n)=x_n$, set
+      $v_n=\Lambda''(\theta_n)$, and write
+      $I(x_n)=\theta_nx_n-\Lambda(\theta_n)$. Then</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{B_\nu(\theta_n)}{1-e^{-\theta_n}}
+       \frac{e^{-nI(x_n)}}{\sqrt{2\pi n v_n}}
+       \{1+o(1)\}.$$
+    </div>
+    <p>The proof is a finite-dimensional lattice saddle point. Fourier
+      inversion of the exact matrix MGF gives the central Gaussian factor.
+      Because every $0&lt;f_i&lt;1$ and $P$ is positive, the tilted Fourier matrix
+      has spectral radius strictly below its real Perron root away from
+      frequency zero, so the remaining integral is negligible. Successive
+      lattice masses above $k_n$ have limiting ratio $e^{-\theta_n}$; summing
+      them supplies the factor $(1-e^{-\theta_n})^{-1}$. Finally, the
+      replacement of $(n-1)\Lambda$ by $n\Lambda$ explains why the initial-law
+      factor is $B_\nu=A_\nu e^{-\Lambda}$ rather than $A_\nu$.</p>
+    <p>This is the finite-state Markov-additive counterpart of the sharp
+      lattice asymptotics of
+      <a href="./bibliography.html#BahadurRao1960">Bahadur and Ranga Rao
+      (1960)</a>; the Markov-additive large-deviation framework is due to
+      <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin
+      (1987)</a>. For the benchmark $x_n=0.9$,
+      $v_n=0.122606564$, $B_\pi(\theta_n)=0.984845741$, and the $n$-free
+      prefactor is $2.66849646$. The table's fourth column shows the exact tail
+      divided by this sharp approximation, converging to one. A pure
+      exponential approximation
+      omits both the $n^{-1/2}$ factor and the initial-law amplitude. The
+      theorem remains a fixed-$P$ result; it neither covers irregular grids
+      nor asserts a joint limit in panel size and switching rate.</p>
+
+    <h3>The first two relative saddle-point corrections</h3>
+    <p>The same local Fourier calculation supplies the next two terms, including
+      the derivatives of the initial-law and lattice amplitude. Write</p>
+    <div class="equation-card">
+    $$H_\nu(\theta)=\frac{B_\nu(\theta)}{1-e^{-\theta}},\qquad
+      v=\Lambda''(\theta),\quad c_3=\Lambda'''(\theta),\quad
+      c_4=\Lambda''''(\theta).$$
+    </div>
+    <p>With every quantity below evaluated at $\theta_n$, uniformly while
+      $x_n=k_n/n$ remains in a compact subset of $(p,1)$,</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{H_\nu e^{-nI(x_n)}}{\sqrt{2\pi n v}}
+       \left\{1+\frac{C_1(\theta_n)}{n}
+       +\frac{C_2(\theta_n)}{n^2}+o(n^{-2})\right\},$$
+    $$C_1=-\frac{H_\nu''}{2vH_\nu}
+      +\frac{H_\nu'c_3}{2v^2H_\nu}
+      +\frac{c_4}{8v^2}-\frac{5c_3^2}{24v^3}.$$
+    </div>
+    <p>Writing $H_j=H_\nu^{(j)}(\theta_n)$ and
+      $c_j=\Lambda^{(j)}(\theta_n)$, the second coefficient is</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    C_2={}&\frac{H_4}{8v^2H_0}
+      -\frac{H_1c_5}{8v^3H_0}
+      -\frac{5H_2c_4}{16v^3H_0}
+      -\frac{5H_3c_3}{12v^3H_0}-\frac{c_6}{48v^3}\\
+      &+\frac{35H_2c_3^2}{48v^4H_0}
+      +\frac{35H_1c_3c_4}{48v^4H_0}
+      +\frac{7c_3c_5}{48v^4}+\frac{35c_4^2}{384v^4}\\
+      &-\frac{35H_1c_3^3}{48v^5H_0}
+      -\frac{35c_3^2c_4}{64v^5}
+      +\frac{385c_3^4}{1152v^6}.
+    \end{aligned}$$
+    </div>
+    <p>Indeed, after the saddle scaling $t=s/\sqrt n$, expand the analytic
+      Fourier amplitude as $H_\nu+iH_\nu't-H_\nu''t^2/2$ and the Perron
+      exponent as $-vt^2/2-ic_3t^3/6+c_4t^4/24$. Integrating the even terms
+      against the centered Gaussian gives the four displayed contributions;
+      the noncentral arc is exponentially smaller by the same Perron
+      separation used above. Retaining the even terms through order $n^{-2}$
+      gives $C_2$; analyticity makes the expansion uniform on compact tilt
+      intervals. This is the finite-state Markov-additive version
+      of the asymptotic saddle-point expansion introduced by
+      <a href="./bibliography.html#Daniels1954">Daniels (1954)</a>.</p>
+    <p>For the benchmark, $C_1=-14.728744589$ and $C_2=901.839869479$.
+      The last two columns divide the exact probability by the first- and
+      second-order corrected approximations. At $n=480$ and $960$, the second
+      correction reduces the relative discrepancies to $0.0682\%$ and
+      $0.0094\%$, from $0.3353\%$ and $0.0899\%$ after the first correction and
+      $2.7434\%$ and $1.4457\%$ for the leading formula. The overshoot at
+      small $n$ is deliberately retained: this is an asymptotic expansion, not
+      a finite-panel error bound, and truncation is not guaranteed to improve
+      every small panel. The statement is still for a fixed regular-grid $P$;
+      it makes no irregular-grid or joint $n$--switching-rate claim.</p>
+
+    <h3>The moderate-deviation bridge to the mean</h3>
+    <p>The compact-interior hypothesis can be relaxed in one important
+      direction. Keep the regular-grid transition matrix $P$ fixed, let
+      $p=\Lambda'(0)$ and $\sigma_P^2=\Lambda''(0)&gt;0$, and take integer
+      thresholds $k_n$ with</p>
+    $$\delta_n=\frac{k_n}{n}-p\downarrow0,
+      \qquad \sqrt n\,\delta_n\longrightarrow\infty.$$
+    <p>If $\theta_n&gt;0$ solves
+      $\Lambda'(\theta_n)=p+\delta_n$, then
+      $\theta_n\sim\delta_n/\sigma_P^2$ and
+      $n\theta_n^2\to\infty$. For every fixed initial law $\nu$, the sharp
+      lattice formula continues to hold:</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{B_\nu(\theta_n)}{1-e^{-\theta_n}}
+       \frac{e^{-nI(p+\delta_n)}}
+       {\sqrt{2\pi n\Lambda''(\theta_n)}}
+       \left\{1+O\!\left(\frac1{n\theta_n^2}\right)\right\},$$
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\frac{\sigma_P}{\delta_n\sqrt{2\pi n}}
+       e^{-nI(p+\delta_n)}
+       \left\{1+O(\delta_n)
+       +O\!\left(\frac1{n\delta_n^2}\right)\right\}.$$
+    </div>
+    <p>The singular lattice factor is essential: as the saddle approaches
+      zero, $(1-e^{-\theta_n})^{-1}\sim1/\theta_n$. After the Fourier scaling
+      $t=s/\sqrt n$, derivatives of that amplitude cost powers of
+      $1/\theta_n$; the first omitted even Gaussian term is therefore of
+      relative order $(n\theta_n^2)^{-1}$. The displayed condition is exactly
+      what makes it vanish. Analyticity gives
+      $B_\nu(\theta)=1+O(\theta)$,
+      $\Lambda''(\theta)=\sigma_P^2+O(\theta)$, and
+      $\theta=\delta/\sigma_P^2+O(\delta^2)$, yielding the second formula.
+      Thus the initial law disappears from the leading moderate-deviation
+      prefactor, though it remains in the exact finite-$n$ amplitude.</p>
+    <p>This is the near-mean boundary of the same Markov-additive saddle
+      argument of <a href="./bibliography.html#NeyNummelin1987">Ney and
+      Nummelin (1987)</a> and the lattice prefactor mechanism of
+      <a href="./bibliography.html#BahadurRao1960">Bahadur and Ranga Rao
+      (1960)</a>. It is not a central-limit theorem: when
+      $\sqrt n\,\delta_n=O(1)$, the pole and Gaussian saddle interact and a
+      normal-tail approximation is required instead.</p>
+    <p>In the certificate, $p=0.5$ and
+      $k_n=\lceil np+\tfrac12n^{3/4}\rceil$. From $n=120$ to $3840$,
+      $\delta_n$ falls from $0.15833333$ to $0.06354167$, while
+      $n\theta_n^2$ rises from $22.2914$ to $107.7808$. The exact-to-Perron
+      ratio rises from $0.923553$ to $0.978915$; after also replacing the
+      exact amplitude by the universal Gaussian prefactor, the ratio falls
+      from $1.133454$ to $1.062593$. The theorem is fixed-$P$ and gives no
+      irregular-grid, finite-$n$, central-zone, or joint switching-rate bound.</p>
+    <p class="muted">All $O(\cdot)$ constants above are fixed-model,
+      fixed-initial-law constants. No uniformity is asserted as the transition
+      matrix loses positivity or its spectral separation degenerates.</p>
+
+    <h3>The central-limit boundary: a second-order lattice Edgeworth bridge</h3>
+    <p>The complementary zone has a different uniform approximation. Assume
+      $P$ is fixed and positive, every emission probability satisfies
+      $0&lt;f_i&lt;1$. The initial law may be any probability vector $\nu$,
+      and may even vary with $n$. Put</p>
+    $$p=\Lambda'(0),\qquad \sigma^2=\Lambda''(0)&gt;0,
+      \qquad \kappa_3=\Lambda'''(0),\qquad
+      \kappa_4=\Lambda^{(4)}(0),\qquad
+      b_{1,\nu}=B_\nu'(0),\qquad
+      b_{2,\nu}=B_\nu''(0).$$
+    <p>For integer thresholds $k_n$, use the half-integer tail coordinate</p>
+    $$x_n=\frac{k_n-\tfrac12-np}{\sigma\sqrt n}.$$
+    <p>Write $H_1(x)=x$, $H_3(x)=x^3-3x$, and
+      $H_5(x)=x^5-10x^3+15x$. Then, uniformly whenever $x_n$ stays in a
+      fixed compact subset of $\mathbb R$,</p>
+    <div class="equation-card">
+    $$\Pr_\nu\{S_n\ge k_n\}
+      =\overline\Phi(x_n)+\phi(x_n)
+       \left\{\frac{A_{1,\nu}(x_n)}{\sqrt n}
+       +\frac{A_{2,\nu}(x_n)}n\right\}+O_K(n^{-3/2}),$$
+    $$A_{1,\nu}(x)=\frac{b_{1,\nu}}{\sigma}
+       +\frac{\kappa_3}{6\sigma^3}(x^2-1),$$
+    $$A_{2,\nu}(x)=
+      \left\{\frac{b_{2,\nu}}{2\sigma^2}
+      -\frac1{24\sigma^2}\right\}H_1(x)
+      +\left\{\frac{\kappa_4}{24\sigma^4}
+      +\frac{b_{1,\nu}\kappa_3}{6\sigma^4}\right\}H_3(x)
+      +\frac{\kappa_3^2}{72\sigma^6}H_5(x).$$
+    </div>
+    <p>Both first-order terms are necessary. The skewness term comes from the
+      cubic Taylor coefficient of the Perron eigenvalue. The boundary term is
+      the order-one mean shift: the spectral decomposition
+      $\mathbb E_\nu e^{\theta S_n}
+      =B_\nu(\theta)e^{n\Lambda(\theta)}+O(\rho^n)$ implies
+      $\mathbb E_\nu S_n=np+b_{1,\nu}+O(\rho^n)$. Hence a positive
+      $b_{1,\nu}$ raises the upper tail. For a stationary start,
+      $b_{1,\pi}=0$ because the finite-panel mean is exactly $np$.</p>
+    <p>For completeness, the proof is a local Fourier expansion rather than a
+      continuation of the singular large-deviation prefactor. At frequency
+      $t/(\sigma\sqrt n)$, expand $\log B_\nu$ through first order and
+      $n\Lambda$ through third order. Fourier inversion gives the Gaussian,
+      boundary-mean and skewness terms. Summing the lattice masses through
+      $k_n-1$ places the discontinuity halfway between adjacent integers,
+      producing $k_n-\tfrac12$; omitting this continuity correction leaves an
+      order-$n^{-1/2}$ periodic term. At second order, expanding
+      $\log B_\nu$ through quadratic order and $n\Lambda$ through fourth
+      order and then exponentiating recombines
+      $(\log B_\nu)''(0)$ with $\{(\log B_\nu)'(0)\}^2$ into
+      $b_{2,\nu}=B_\nu''(0)$. This gives the $b_{2,\nu}$, $\kappa_4$,
+      $b_{1,\nu}\kappa_3$, and $\kappa_3^2$ terms. The midpoint
+      Euler&ndash;Maclaurin formula contributes the separate
+      $-H_1/(24\sigma^2)$ lattice term. Positivity of $P$ and
+      $0&lt;f_i&lt;1$ give strict Fourier contraction away from zero, while the
+      next local Taylor order makes the remainder $O_K(n^{-3/2})$.
+      This is the finite-matrix version of the lattice Fourier expansion of
+      <a href="./bibliography.html#Esseen1945">Esseen (1945)</a> and the
+      first-order Markov-chain Edgeworth theory of
+      <a href="./bibliography.html#DattaMcCormick1993">Datta and McCormick
+      (1993)</a>; arbitrary-order local lattice expansions for finite Markov
+      chains are established by
+      <a href="./bibliography.html#Pudlo2010">Pudlo (2010)</a>.</p>
+    <p>The remainder is uniform over the entire initial-law simplex. Indeed,
+      $B_\nu$, $b_{1,\nu}=B_\nu'(0)$ and
+      $b_{2,\nu}=B_\nu''(0)$ are linear in $\nu$ because the exact matrix MGF
+      is linear in its starting law. The exact tail and the
+      displayed truncated expansion are therefore both affine in $\nu$.
+      Their signed difference is affine too, so</p>
+    $$\sup_{\nu\in\mathcal P(\{1,\ldots,d\})}
+      |R_{n,\nu}(x)|=\max_{1\le i\le d}|R_{n,e_i}(x)|.$$
+    <p>Thus the same $O_K(n^{-3/2})$ constant works simultaneously for every
+      start, including an adversarial sequence $\nu_n$. This conclusion uses
+      finiteness of the regime set; it is stronger than pointwise uniformity
+      over a preselected family of starts.</p>
+    <p>The exact-law certificate uses the nonstationary start concentrated in
+      state zero, for which
+      $\sigma^2=0.261098129759$, $\kappa_3=-0.350878968118$,
+      $\kappa_4=0.328775644197$, $b_{1,\nu}=0.653945953614$, and
+      $b_{2,\nu}=-0.497726343467$. Over target coordinates
+      $x\in\{-1,0,1,2\}$, the maximum uncorrected Gaussian error falls from
+      $0.062972628$ at $n=120$ to $0.022139640$ at $n=960$, with
+      $\sqrt n$ times that error nearly constant. Including skewness but
+      omitting the boundary-mean term still leaves error $0.016504237$ at
+      $n=960$. Including both first-order terms reduces the maximum errors to
+      $0.002466128$, $0.001130799$,
+      $0.000576090$, and $0.000271427$ for
+      $n=120,240,480,960$; the products by $n$ remain between $0.2606$ and
+      $0.2959$. Adding $A_{2,\nu}$ reduces the maximum errors to
+      $4.34444\times10^{-4}$, $1.37683\times10^{-4}$,
+      $5.32133\times10^{-5}$, $1.71588\times10^{-5}$,
+      $6.15325\times10^{-6}$, and $2.22912\times10^{-6}$ for
+      $n=120,240,480,960,1920,3840$. The corresponding
+      $n^{3/2}$-scaled errors stay between $0.510$ and $0.572$. Checking all
+      three pure-state starts shows that this same state-zero error is the
+      simplex-wide maximum at $n=120,480,1920$: the worst errors are
+      $4.34444\times10^{-4}$, $5.3213\times10^{-5}$, and
+      $6.153\times10^{-6}$, respectively.</p>
+    <p class="muted">The $O_K(n^{-3/2})$ statement is uniform only over a fixed
+      compact set of central coordinates for this fixed regular-grid model
+      and all initial laws. It is not an explicit finite-panel error bound,
+      is not uniform as positivity, variance or the spectral gap degenerates,
+      and makes no irregular-grid or joint panel-size/switching-rate claim.
+      It concerns the calibration-count law and does not upgrade marginal
+      split-conformal coverage to conditional coverage.</p>
+
+    <h3>Perron curvature is exactly Green&ndash;Kubo</h3>
+    <p>The tilted eigenvalue is also consistent with the finite-panel variance
+      theorem, including its boundary term. Let
+      $\widetilde f=f-p{\bf1}$, $\Pi={\bf1}\pi$, and</p>
+    $$Z=(I-P+\Pi)^{-1}.$$
+    <p>On centered vectors, $Z=\sum_{\ell\ge0}P^\ell$. Differentiating the
+      Perron eigenvalue at zero, or equivalently summing the stationary
+      indicator covariances, gives</p>
+    <div class="equation-card">
+    $$\Lambda'(0)=p,\qquad
+      \Lambda''(0)=\sigma_P^2
+      =p(1-p)+2\langle\widetilde f,PZ\widetilde f\rangle_\pi,$$
+    $$\chi_P=-2\langle\widetilde f,PZ^2\widetilde f\rangle_\pi,$$
+    $$\operatorname{Var}_\pi(S_n)
+      =n\sigma_P^2+\chi_P
+      +2\langle\widetilde f,P^{n+1}Z^2\widetilde f\rangle_\pi.$$
+    </div>
+    <p>The first line is the discrete Green&ndash;Kubo formula. The second and
+      third lines are an exact finite-panel refinement: $\chi_P$ is the
+      persistent endpoint intercept, while the final term decays geometrically.
+      No reversibility is required. More generally, analyticity of the simple
+      Perron root gives
+      $\lim_{n\to\infty}\kappa_r(S_n)/n=\Lambda^{(r)}(0)$ for every fixed
+      cumulant order $r$. The covariance interpretation is the discrete
+      counterpart of the primary formulas of
+      <a href="./bibliography.html#Green1954">Green (1954)</a> and
+      <a href="./bibliography.html#Kubo1957">Kubo (1957)</a>.</p>
+    <p>For the same nonreversible benchmark,</p>
+    $$\sigma_P^2=0.261098129759,\qquad
+      \chi_P=-0.196956872111.$$
+    <p>A five-point numerical derivative gives
+      $\Lambda''(0)=0.261098129855$. The exact coefficient law has
+      $\operatorname{Var}(S_{30})/30=0.254532972569$ and
+      $\operatorname{Var}(S_{60})/60=0.257815515224$; the exact remaining
+      boundary terms after slope and intercept are respectively
+      $2.1564\times10^{-6}$ and $6.86\times10^{-12}$. This is a
+      panel-size asymptotic at fixed $P$, distinct from the fast-switching
+      limit obtained by changing $m$.</p>
+
+    <h3>All Perron cumulants and near-mean tail asymmetry</h3>
+    <p>The same simple-root perturbation gives every limiting cumulant rate
+      by finite-dimensional linear algebra. Put
+      $B=P\operatorname{diag}(f)$, $r_0={\bf1}$, $a_0=1$, and
+      $\kappa_0=0$. For $k\ge1$, recursively define</p>
+    <div class="equation-card">
+    $$a_k=\sum_{j=1}^k {k\choose j}\pi B r_{k-j},$$
+    $$r_k=Z\sum_{j=1}^k {k\choose j}(B-a_jI)r_{k-j},
+      \qquad \pi r_k=0,$$
+    $$\kappa_{k,P}
+      =a_k-\sum_{j=1}^{k-1}{k-1\choose j-1}
+        \kappa_{j,P}a_{k-j}.$$
+    </div>
+    <p>Here $a_k=\rho^{(k)}(0)$ and
+      $\kappa_{k,P}=\Lambda^{(k)}(0)$, so for every fixed $k$ and every
+      initial state law,</p>
+    $$\lim_{n\to\infty}\frac{\kappa_k(S_n)}n=\kappa_{k,P}.$$
+    <p>The recursion follows by differentiating
+      $M_\theta r(\theta)=\rho(\theta)r(\theta)$ and
+      $\rho(\theta)=e^{\Lambda(\theta)}$; every step uses the same fundamental
+      matrix $Z$. This is the finite-dimensional positive-matrix specialization
+      of <a href="./bibliography.html#Kato1949">Kato's (1949)</a> regular
+      eigenvalue perturbation method.</p>
+
+    <h3>Every finite-panel cumulant has an explicit boundary constant</h3>
+    <p>The limiting slopes above do not describe the complete fixed-order
+      asymptotics. Let $r_\theta$ and $\ell_\theta$ be analytic right and left
+      Perron eigenvectors of $M_\theta$, normalized by
+      $\ell_\theta^\top r_\theta=1$, and put</p>
+    $$A_\nu(\theta)=
+      \{\nu D(e^\theta)r_\theta\}
+      \{\ell_\theta^\top{\bf1}\}.$$
+    <p>The scalar $A_\nu$ is independent of the reciprocal rescaling of the
+      two eigenvectors. Positivity and the spectral gap give a complex
+      neighborhood of zero and constants $C&lt;\infty$, $0&lt;q&lt;1$ such that,
+      uniformly there,</p>
+    <div class="equation-card">
+    $$\log\mathbb E_\nu e^{\theta S_n}
+      =(n-1)\Lambda(\theta)+\log A_\nu(\theta)+R_{n,\nu}(\theta),
+      \qquad |R_{n,\nu}(\theta)|\le Cq^n,$$
+    $$\kappa_k(S_n)=n\kappa_{k,P}+\beta_{k,\nu}+O_k(q^n),
+      \qquad
+      \beta_{k,\nu}=
+      \left.\frac{d^k}{d\theta^k}
+      \{\log A_\nu(\theta)-\Lambda(\theta)\}\right|_{\theta=0}.$$
+    </div>
+    <p>This holds for every fixed $k$ and every initial probability law
+      $\nu$. It follows directly by inserting the analytic Perron projector
+      $r_\theta\ell_\theta^\top$ into the exact matrix MGF and differentiating
+      the uniform analytic remainder by Cauchy's formula. Thus the start-up
+      effect is an explicit order-one constant, followed by geometric decay;
+      it is not hidden in an unspecified $o(n)$ term.</p>
+    <p>For the nonreversible certificate, the stationary boundary constants
+      through order four are</p>
+    $$\beta_{1:4,\pi}=(0,
+      -0.196956872111,
+      0.737447302168,
+      -1.805249335882),$$
+    <p>so the second entry exactly recovers the Green&ndash;Kubo endpoint
+      intercept $\chi_P$. Starting instead from state zero gives</p>
+    $$\beta_{1:4,e_0}=(0.653945953614,
+      -0.925371653715,
+      1.430373003343,
+      -1.538351359308).$$
+    <p>These $\beta_{k,\nu}$ are boundary <em>cumulants</em>, hence
+      derivatives of $\log B_\nu=\log A_\nu-\Lambda$. They are deliberately
+      distinct from the ordinary amplitude derivatives $b_{k,\nu}$ in the
+      Edgeworth theorem. In particular,</p>
+    $$b_{1,\nu}=\beta_{1,\nu},\qquad
+      b_{2,\nu}=\beta_{2,\nu}+\beta_{1,\nu}^2.$$
+    <p>For the state-zero start, this gives
+      $b_{2,e_0}=-0.925371653715+(0.653945953614)^2
+      =-0.497726343467$, exactly the coefficient used in the second-order
+      Edgeworth term.</p>
+    <p>At $n=60$, all eight constants agree with cumulants extracted
+      independently from the exact coefficient law within
+      $1.17\times10^{-8}$. These are fixed-$P$ boundary corrections in panel
+      size; they are unrelated to a joint limit that changes the switching
+      rate.</p>
+
+    <p>Finally,
+      writing $v=\Lambda''(0)&gt;0$, analytic Legendre duality gives the
+      two-sided local expansion through fourth order</p>
+    <div class="equation-card">
+    $$I(p+\delta)
+      =\frac{\delta^2}{2v}
+      -\frac{\kappa_{3,P}}{6v^3}\delta^3
+      +\frac{3\kappa_{3,P}^2-v\kappa_{4,P}}{24v^5}\delta^4
+      +O(\delta^5).$$
+    </div>
+    <p>The quadratic term is the Green&ndash;Kubo Gaussian approximation; the
+      cubic and quartic terms are the first skewness and kurtosis corrections
+      for the dependent panel. This is a Taylor consequence of the same
+      G&auml;rtner&ndash;Ellis rate function above. It is distinct from the sharp
+      lattice prefactor proved above, and is not an Edgeworth approximation
+      to a finite-panel probability or a joint limit in $n$ and $m$.</p>
+    <p>For the benchmark,
+      $(\kappa_{3,P},\kappa_{4,P})
+      =(-0.350878968118,0.328775644197)$. Richardson differentiation gives
+      $(-0.350878967774,0.328775569108)$, while the exact coefficient law at
+      $n=480$ gives $(-0.349342619570,0.325014708079)$. At $\delta=0.02$,
+      the exact rate is $0.000793937413$; the quadratic, cubic and quartic
+      errors are respectively $2.7942\times10^{-5}$,
+      $1.6583\times10^{-6}$ and $1.0070\times10^{-7}$. Across
+      $\delta=0.04,0.02,0.01,0.005,0.0025$, their measured residual orders
+      are $3.041083$, $4.042367$ and $5.047594$. In the iid specialization,
+      the recursion agrees with cumulants extracted independently from the
+      exact coefficient law through order eight, with maximum discrepancy
+      $3.32\times10^{-8}$.</p>
+
+    <h2>Arbitrary starts and burn-in</h2>
+    <p>The preceding calibration confidence was stated for a stationary panel.
+      There is an explicit transfer to any initial regime law. Let the chain
+      start from $\nu$, allow a burn-in $b\ge0$, and then observe the emitted
+      panel
+      $\mathcal P_b=(R_b,R_{b+h},\ldots,R_{b+(n-1)h})$.
+      If $\mathcal P_\pi$ denotes the same panel started from $\pi$, then</p>
+    <div class="equation-card">
+    $$d_{\rm TV}\{\mathcal L_\nu(\mathcal P_b),
+                    \mathcal L_\pi(\mathcal P_\pi)\}
+      \le d_{\rm TV}(\nu e^{mQ_0b},\pi)
+      \le \frac12e^{-m\gamma_sb}
+          \left\|\frac{\nu}{\pi}-1\right\|_{L^2(\pi)}
+      =:\zeta_b.$$
+    </div>
+    <p>For the first inequality, condition on the state at time $b$ and view
+      all later states and emissions as one Markov kernel; total variation
+      cannot increase under that kernel. This data-processing principle is
+      the finite-state form of the contraction studied by
+      <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a>.
+      For the second inequality, the density relative to $\pi$ evolves under
+      the adjoint semigroup. Its symmetric part is again $Q_s$, so the same
+      energy argument gives $L^2(\pi)$ contraction at rate $\gamma_s$;
+      Cauchy&ndash;Schwarz then converts $L^2$ to total variation.</p>
+    <p>Consequently, every stationary-panel event with probability at least
+      $1-\delta$ holds after burn-in with probability at least
+      $1-\delta-\zeta_b$. In particular, the uniform empirical-CDF event and
+      the conditional-coverage inequality above remain unchanged on the good
+      event, but their confidence becomes $1-\delta-\zeta_b$.
+      To make the start-up penalty at most $\epsilon$, it is sufficient that</p>
+    $$b\ge\frac1{m\gamma_s}
+       \left[\log\frac{\|\nu/\pi-1\|_{L^2(\pi)}}{2\epsilon}\right]_+.$$
+    <p>For a specified initial state $i$, the numerator is
+      $\sqrt{1/\pi_i-1}$. This is a marginal probability statement over the
+      random calibration panel. It is neither training-conditional nor
+      feature-conditional validity, and the bound does not replace the panel
+      size by an informal effective sample size.</p>
+    <p>The nonreversible three-state certificate enumerates the exact law of
+      every four-score binary panel. For scaled burn-ins $mb=0,0.25,0.5,1$,
+      the score-panel total variations are respectively $0.13175444$,
+      $0.06439285$, $0.02503886$, and $0.00201894$; each lies below both the
+      exact first-state total variation and the $L^2$ envelope. From state
+      zero, the sufficient burn-in for a one-percent envelope is
+      $mb\ge1.19131949$.</p>
+
+    <h3>The panel also forgets the start</h3>
+    <p>The total-variation transfer is deliberately uniform over every panel
+      event. For the empirical CDF itself, later observations provide their
+      own burn-in and give a sharper result. Fix $r$, put $f=F(r)$,
+      $p=\pi f$, $P=e^{mQ_0h}$, and
+      $\mu_\ell=\nu e^{mQ_0b}P^\ell$. For
+      $X_\ell={\bf1}\{R_{b+\ell h}\le r\}$ and
+      $\widehat F_n(r)=n^{-1}\sum_{\ell=0}^{n-1}X_\ell$,</p>
+    <div class="equation-card">
+    $$\mathbb E_\nu\widehat F_n(r)-p
+      =\frac1n\sum_{\ell=0}^{n-1}(\mu_\ell-\pi)f,$$
+    $$\left|\mathbb E_\nu\widehat F_n(r)-p\right|
+      \le e^{-m\gamma_sb}
+      \left\|\frac\nu\pi-1\right\|_{2,\pi}
+      \|f-p{\bf1}\|_{2,\pi}
+      B_n(a),$$
+    $$B_n(a)=\frac{1-a^n}{n(1-a)},\qquad
+      a=e^{-m\gamma_sh}.$$
+    </div>
+    <p>The identity is just the sum of the transient marginal expectations.
+      For the bound, center $f$, move each transition semigroup onto that
+      centered function, and apply the additive-reversibilization contraction.
+      Since $f_i\in[0,1]$, its stationary standard deviation is at most
+      $1/2$, giving the universal version</p>
+    $$\left|\mathbb E_\nu\widehat F_n(r)-p\right|
+      \le\frac12e^{-m\gamma_sb}
+      \left\|\frac\nu\pi-1\right\|_{2,\pi}B_n(a).$$
+    <p>This prefactor and the complete factor $B_n(a)$ are sharp. For the
+      symmetric two-state chain, a point start, and conditional success
+      probabilities $(0,1)$, every summand has the same sign and lies in the
+      gap eigenspace, so equality holds for every $n$, $b$, and $h$.
+      In particular, if $mh$ is bounded away from zero, then
+      $B_n(a)\sim\{n(1-a)\}^{-1}$: within-panel relaxation makes the initial-law
+      bias $O(n^{-1})$ even with no separate burn-in. This does not improve
+      the preceding $\zeta_b$ guarantee for an arbitrary panel event; it uses
+      the averaging structure of this particular statistic.</p>
+    <p>For an arbitrary deterministic grid $0=t_1&lt;\cdots&lt;t_n$, the same
+      proof replaces $B_n(a)$ by the exact envelope</p>
+    <div class="equation-card">
+    $$B_{\boldsymbol t}=\frac1n\sum_{i=1}^n
+       e^{-m\gamma_st_i},\qquad
+      \left|\mathbb E_\nu\widehat F_{\boldsymbol t}(r)-p\right|
+      \le e^{-m\gamma_sb}\left\|\frac\nu\pi-1\right\|_{2,\pi}
+       \|f-p{\bf1}\|_{2,\pi}B_{\boldsymbol t}.$$
+    </div>
+    <p>The same symmetric binary chain attains equality for every grid and
+      burn-in. On the clustered five-point grid above with $b=0.2$, its exact
+      start-up bias is $-0.32283968$, equal in magnitude to the displayed
+      bound. In the nonreversible certificate on times
+      $(0,0.07,0.31,0.9,1.8)$, the exact bias is $0.02702529$ and the
+      score-specific bound is $0.03907180$.</p>
+    <p>The same conditioning argument gives an exact nonstationary variance,
+      not an effective-sample-size heuristic:</p>
+    <div class="equation-card">
+    $$\operatorname{Var}_\nu\widehat F_n(r)
+      =\frac1{n^2}\left\{
+      \sum_{\ell=0}^{n-1}\mu_\ell f
+      +2\sum_{0\le\ell<j\le n-1}
+        \mu_\ell\operatorname{diag}(f)P^{j-\ell}f
+      -\left(\sum_{\ell=0}^{n-1}\mu_\ell f\right)^2
+      \right\}.$$
+    </div>
+    <p>Conditional independence of the emissions is used only in the mixed
+      moment
+      $\mathbb E(X_\ell X_j)=
+      \mu_\ell\operatorname{diag}(f)P^{j-\ell}f$.
+      On an irregular grid this term is instead
+      $\mu_i\operatorname{diag}(f)P_{t_j-t_i}f$; no other change is needed.
+      Exact enumeration of all $2^4$ regular-grid and $2^5$ irregular-grid
+      binary panels agrees with the moment identities within
+      $2\times10^{-15}$. In the nonreversible example,
+      the empirical-CDF bias decreases from $0.04088399$ at $mb=0$ to
+      $0.00051374$ at $mb=1$; the corresponding score-specific bounds are
+      $0.07072227$ and $0.00178586$. The sharp two-state certificate has
+      absolute bias and bound both equal to $0.09440221$.
+      These finite sums are the elementary finite-state version of the
+      Markov-additive calculations organized more generally through the
+      Poisson equation; see
+      <a href="https://doi.org/10.1214/aop/1039639370">Glynn and Meyn (1996)</a>.</p>
+
+    <h2>Relation to Markov conformal work and next step</h2>
+    <p><a href="https://proceedings.mlr.press/v235/zheng24j.html">Zheng and Proutiere (2024)</a>
+      analyze the coverage gap for split conformal with Markovian data
+      and the effects of thinning calibration.
+      <a href="https://proceedings.mlr.press/v313/barber26a.html">Barber and Pananjady (2026)</a>
+      analyze temporal dependence, including predictors with memory,
+      through a switch coefficient.
+      <a href="https://proceedings.mlr.press/v202/nettasinghe23a.html">Nettasinghe et al. (2023)</a>
+      obtain a different exact-validity construction for hidden Markov
+      models using exchangeable blocks. The calculation here isolates
+      a separate question: how a forecast horizon comparable to the
+      switching time leaves a conditional residual mismatch even
+      with the <em>population</em> pooled quantile.</p>
+    <p class="muted">Scope: the identity and additive-reversibilization
+      bounds cover any irreducible finite-state CTMC and any deterministic
+      regular or irregular observation grid. Scores are independent
+      terminal emissions conditional on the terminal state, with fixed laws
+      and a frozen prediction rule. Path functionals, predictors with memory,
+      and overlapping path-score calibration require different formulas;
+      those are treated separately in
+      <a href="https://github.com/microprediction/homogenization/pull/60">PR #60</a>.
+      No result here asserts distribution-free conditional coverage.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
