@@ -338,6 +338,49 @@
       empirical CDF. It does not make an ordinary weighted quantile a valid
       conformal rank rule; any weighted conformal procedure needs its own
       exchangeability or covariate-shift argument.</p>
+
+    <h3>Jointly optimal times and weights</h3>
+    <p>Suppose now that the endpoint times are fixed,
+      $0=t_1&lt;\cdots&lt;t_n=T$, but the interior observation times and the
+      nonnegative weights can both be chosen. Write
+      $\lambda=m\gamma_s$ and $\Delta_i=t_{i+1}-t_i$. Substitution in the
+      information formula above leaves the deterministic design problem</p>
+    $$\max_{\Delta_i&gt;0,\ \sum_i\Delta_i=T}
+      \left\{1+\sum_{i=1}^{n-1}\tanh
+      \left(\frac{\lambda\Delta_i}{2}\right)\right\}.$$
+    <p>Because $\tanh x$ is strictly concave for $x&gt;0$, Jensen's inequality
+      proves that equal spacing is the unique optimum. Hence</p>
+    <div class="equation-card">
+    $$\min_{\substack{0=t_1&lt;\cdots&lt;t_n=T\\
+             w_i\geq0,\ \sum_iw_i=1}} w^\top Rw
+      =\left[1+(n-1)\tanh\left(
+        \frac{\lambda T}{2(n-1)}\right)\right]^{-1}.$$
+    </div>
+    <p>For $\rho=e^{-\lambda T/(n-1)}$ and
+      $\mathcal I_n=1+(n-1)(1-\rho)/(1+\rho)$, the corresponding weights are</p>
+    $$w_1^\star=w_n^\star=\frac{1}{(1+\rho)\mathcal I_n},\qquad
+      w_i^\star=\frac{1-\rho}{(1+\rho)\mathcal I_n}
+      \quad(2\leq i\leq n-1).$$
+    <p>This recovers, for the sharp exponential covariance envelope, the
+      equispaced trend-design conclusion proved for the Ornstein&ndash;Uhlenbeck
+      process by <a href="https://doi.org/10.1002/asmb.749">Zagoraiou and
+      Baldi Antognini (2009)</a>.</p>
+    <p>The dense-grid limit is not a uniform probability distribution. If
+      $L=\lambda T$ is fixed while $n\to\infty$, then</p>
+    <div class="equation-card">
+    $$\mathcal I_n\longrightarrow 1+\frac L2,\qquad
+      \min w^\top Rw\longrightarrow\frac{1}{1+L/2}.$$
+    $$w_1^\star,w_n^\star\longrightarrow\frac{1}{2+L},\qquad
+      \sum_{i=2}^{n-1}w_i^\star\longrightarrow\frac{L}{2+L}.$$
+    </div>
+    <p>Thus the limiting optimal design places an atom $1/(2+L)$ at each
+      endpoint and spreads the remaining mass uniformly through the
+      interior. At $L=6$, the certificate obtains information
+      $3.99999946$ on a 4097-point grid, converging to $4$; each endpoint
+      weight tends to $1/8$ and the interior mass to $3/4$. These conclusions
+      optimize the sharp marginal variance envelope for a weighted empirical
+      CDF. They do not establish conditional coverage or weighted conformal
+      rank validity.</p>
     <p>Here is a conservative finite-sample statement that requires no
       independent-calibration fiction. Assume $\bar F$ is continuous
       and strictly increasing. Select an integer $M\ge2$ and failure

@@ -11,7 +11,10 @@ checks exact transient mean and variance identities for the empirical CDF.
 Irregular observation grids check the pairwise-kernel variance bound and
 show that substituting the average spacing can be anti-conservative.  The
 same exponential kernel gives the exact minimum-variance nonnegative weights
-and their closed-form information for every deterministic grid.
+and their closed-form information for every deterministic grid.  With fixed
+endpoints it also verifies that equal spacing uniquely maximizes this
+information, together with the endpoint-atom limit of the optimal weights on
+a dense grid.
 Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
@@ -1261,6 +1264,43 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
             assert np.min(formula_weights) > 0
     assert weight_formula_error < 2e-13
 
+    # Once the weights have been optimized, observation-time design reduces
+    # to maximizing 1 + sum tanh(rate * gap / 2).  Strict concavity of tanh on
+    # the positive half-line makes equal spacing the unique fixed-span
+    # optimum.  Random designs check the formula, and a dense equal grid
+    # checks the resulting endpoint atoms and continuous interior mass.
+    design_rate = 1.0
+    total_span = 6.0
+    design_n = 8
+    equal_times = np.linspace(0.0, total_span, design_n)
+    equal_weights, equal_information = optimal_exponential_weights(
+        equal_times, design_rate)
+    equal_information_formula = 1 + (design_n - 1) * math.tanh(
+        design_rate * total_span / (2 * (design_n - 1)))
+    assert abs(equal_information - equal_information_formula) < 2e-15
+
+    design_rng = np.random.default_rng(20261011)
+    random_gaps = design_rng.dirichlet(
+        np.ones(design_n - 1), size=4096) * total_span
+    random_information = 1 + np.tanh(
+        design_rate * random_gaps / 2).sum(axis=1)
+    assert np.max(random_information) < equal_information
+
+    dense_n = 4097
+    dense_times = np.linspace(0.0, total_span, dense_n)
+    dense_weights, dense_information = optimal_exponential_weights(
+        dense_times, design_rate)
+    exposure = design_rate * total_span
+    limiting_information = 1 + exposure / 2
+    limiting_endpoint_weight = 1 / (2 + exposure)
+    limiting_interior_mass = exposure / (2 + exposure)
+    assert abs(dense_information - limiting_information) < 6e-7
+    assert abs(dense_weights[0] - limiting_endpoint_weight) < 1e-4
+    assert abs(dense_weights[-1] - limiting_endpoint_weight) < 1e-4
+    assert abs(dense_weights[1:-1].sum()
+               - limiting_interior_mass) < 2e-4
+    assert abs(equal_weights.sum() - 1) < 2e-15
+
     print("irregular nonreversible panel:",
           f"exact variance {exact_variance:.8f},",
           f"bound {variance_bound:.8f}, factor {pairwise_factor:.8f}")
@@ -1277,6 +1317,14 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
           f"variance {sharp_weighted_variance:.8f} vs",
           f"equal {equal_weight_variance:.8f},",
           f"random-grid formula error {weight_formula_error:.2e}")
+    print("joint time-and-weight design:",
+          f"equal-grid information {equal_information:.8f} vs",
+          f"best of 4096 random grids {np.max(random_information):.8f};",
+          f"dense information {dense_information:.8f} ->",
+          f"{limiting_information:.8f}, endpoint weights",
+          f"{dense_weights[0]:.8f} -> {limiting_endpoint_weight:.8f},",
+          f"interior mass {dense_weights[1:-1].sum():.8f} ->",
+          f"{limiting_interior_mass:.8f}")
 
 
 def transient_panel_checks(Q, pi, gamma_s, success):
