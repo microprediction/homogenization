@@ -2431,6 +2431,28 @@
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
  },
  {
+  "role": "survey_finance",
+  "key": "Gautschi1978",
+  "authors": "Gautschi, W.",
+  "year": 1978,
+  "title": "On inverses of Vandermonde and confluent Vandermonde matrices III",
+  "venue": "Numerische Mathematik 29:445-450",
+  "doi": "10.1007/bf01432880",
+  "url": "https://doi.org/10.1007/bf01432880",
+  "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices. The credit-geometry page uses the same coalescing-node structure to quantify how a full-rank maturity-loading Gram matrix becomes singular."
+ },
+ {
+  "role": "survey_finance",
+  "key": "Hermite1878",
+  "authors": "Hermite, C.",
+  "year": 1878,
+  "title": "Sur la formule d'interpolation de Lagrange",
+  "venue": "Journal für die reine und angewandte Mathematik 84:70-79",
+  "doi": "10.1515/crelle-1878-18788405",
+  "url": "https://doi.org/10.1515/crelle-1878-18788405",
+  "annotation": "Introduces the derivative-matching interpolation construction whose confluent Vandermonde structure underlies the clustered-loading collision theorem."
+ },
+ {
   "role": "examples",
   "key": "Merton1976",
   "authors": "Merton, R. C.",

@@ -49,6 +49,76 @@
       </li>
     </ul>
 
+    <h2 id="credit-geometry">Joint default</h2>
+    <ul>
+      <li>
+        <em>Green&ndash;Kubo Geometry of Joint Default</em> (2026).
+        <a href="./credit-geometry.html">Full note</a> &middot;
+        <a href="./credit.html">Two-name CIR example</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>.
+        <em>A positive CIR construction separates fixed Green&ndash;Kubo rank from rank created by heterogeneous
+        maturity loadings: the sharp bound is $\operatorname{rank}(K\circ J)\le
+        \operatorname{rank}(K)\operatorname{rank}(J)$, yet two regimes can produce a full-rank integrated
+        correction for arbitrarily many names. For distinct CIR mean-reversion rates the exact criterion is
+        $K\circ J(T)\succ0$ at every $T&gt;0$ if and only if every diagonal entry of $K$ is positive, regardless
+        of the fixed rank of $K$. When loading shapes repeat in clusters $C_c$, the exact rank is instead
+        $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
+        within-cluster block. For two names with heterogeneous CIR parameters, the loading Gramian is singular
+        exactly when both $(\kappa,\sigma)$ pairs coincide: equal mean reversion alone does not collapse rank
+        when vol-of-vol differs. For arbitrarily many heterogeneous names, distinct full parameter pairs always
+        give linearly independent loadings, with no common-volatility or common-decay restriction. Expanding each
+        loading in exponential harmonics and using prime-indexed harmonics isolates the slowest decay group even
+        when rational decay ratios create collisions. Consequently the same exact cluster formula holds for
+        unrestricted heterogeneous parameter collections. The resulting sharp regime-count inference is
+        $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
+        it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
+        the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
+        with explicit QR/LQ leading constants, so full rank coexists with condition number
+        $\Theta(\epsilon^{-2(d-1)})$. For several distinct collision centers, the exponent multiset is instead
+        twice the union of the within-cluster derivative orders; the largest cluster controls conditioning while
+        all clusters contribute to the explicit determinant power. The required joint jet independence is
+        automatic for CIR loadings: their time-Taylor coefficients form a polynomial basis in $\kappa$, reducing
+        every clustered jet matrix to a nonsingular confluent Vandermonde system. At short maturity, distinct
+        common-volatility loadings have the explicit eigenvalue hierarchy
+        $T^3,T^5,\ldots,T^{2d+1}$, determinant order $T^{d(d+2)}$, and condition number
+        $\Theta(T^{-2(d-1)})$, with QR&ndash;shifted-Hilbert leading constants. More generally, if
+        $K=FF^\top$, $A_q=\operatorname{diag}(v_q)F$, and
+        $s_q=\operatorname{rank}[A_1\ \cdots\ A_q]$, then exactly
+        $s_q-s_{q-1}$ integrated eigenvalues have order $T^{2q+1}$; an
+        explicit positive-definite block Gram matrix gives both the leading
+        pseudo-determinant constant and, through its successive Schur pivots,
+        every individual eigenvalue constant for arbitrary fixed rank. Distinct common-volatility
+        CIR rates and positive diagonal $K$ force $s_d=d$: full fixed rank gives only $T^3$
+        powers, rank one gives the full odd-power ladder, and intermediate rank gives repeated
+        graded powers. Here $s_1=\operatorname{rank}K$ remains the fixed Green&ndash;Kubo rank;
+        later blocks measure rank created by maturity integration. At long maturity, for arbitrary
+        heterogeneous CIR pairs, including repeated full-pair clusters satisfying the exact within-cluster
+        criterion, the number of linearly growing information eigenvalues is exactly the fixed Green&ndash;Kubo rank $r$;
+        if maturity integration creates full rank, the other $d-r$ eigenvalues converge to a positive transient
+        complement, so conditioning still grows linearly. The inverse converges to the Moore&ndash;Penrose inverse
+        of that complement, with an explicit rank-$r$ stationary&ndash;transient correction of order $T^{-1}$ and
+        operator-norm remainder $O(T^{-2})$. The normalized determinant has a complete degree-$r$ inverse-maturity
+        polynomial: its coefficients are the elementary symmetric polynomials of the stationary Schur-complement
+        correction after whitening by the stationary block. This includes the cross-coupling through the transient
+        block; the log-determinant follows to every fixed algebraic order from the corresponding trace-power series.
+        The same stationary Schur complement gives the full matrix-valued inverse-maturity series: after $p+1$
+        explicit rank-at-most-$r$ terms its operator-norm remainder is $O(T^{-p-2})$, with a geometric bound once
+        $T$ exceeds the whitened Schur-correction norm.
+        The same inverse expansion gives a minimum-variance dichotomy: a budget or normalization vector with a
+        transient-kernel component has a finite long-maturity risk floor, whereas a vector entirely in the
+        stationary Green&ndash;Kubo range has minimum variance growing linearly with maturity.
+        Thus exact finite-maturity rank does not imply that every exposure
+        gains unbounded long-end precision.
+        It also separates arbitrary-prior marginal memory from first-order pair dependence.
+        Cause-specific first-default races identify cycle orientation: one unweighted multi-name race sees only
+        antisymmetric row sums, while $d-1$ independent positive exposure designs are necessary and sufficient
+        to identify every $d$-cause oriented matrix. The design-frame spectrum gives exact singular values and
+        an explicit positive, closed-form reconstruction with quantified noise amplification. Among minimal
+        designs the sharp condition-number infimum is $\sqrt2$; strict positivity approaches but cannot attain
+        the equal-norm orthogonal optimum.</em>
+      </li>
+    </ul>
+
     <h2>Working papers and notes</h2>
     <ul>
       <li>
