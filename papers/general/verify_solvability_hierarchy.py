@@ -206,6 +206,29 @@ def protocol_curvature(x: float, y: float) -> float:
     return float(d_x_a_y - d_y_a_x)
 
 
+def protocol_gauge(x: complex, y: complex) -> complex:
+    """A nontrivial scalar corrector gauge used to test gauge covariance."""
+    return 0.17 * x**2 - 0.11 * x * y + 0.07 * y**3
+
+
+def protocol_gauge_gradient(x: complex, y: complex) -> np.ndarray:
+    """Gradient of the scalar corrector gauge."""
+    return np.array([0.34 * x - 0.11 * y, -0.11 * x + 0.21 * y**2])
+
+
+def gauged_protocol_connection(x: complex, y: complex) -> np.ndarray:
+    """Connection after adding c(theta) 1 to the first Poisson corrector."""
+    return protocol_connection(x, y) - protocol_gauge_gradient(x, y)
+
+
+def gauged_protocol_curvature(x: float, y: float) -> float:
+    """Curvature of the gauge-shifted connection by complex-step differentiation."""
+    step = 1e-20
+    d_x_a_y = np.imag(gauged_protocol_connection(x + 1j * step, y)[1]) / step
+    d_y_a_x = np.imag(gauged_protocol_connection(x, y + 1j * step)[0]) / step
+    return float(d_x_a_y - d_y_a_x)
+
+
 def check_protocol_curvature() -> dict[str, float]:
     """Check the finite-state connection identity and Stokes' theorem."""
     x0, x1 = -0.6, 0.7
@@ -263,11 +286,41 @@ def check_protocol_curvature() -> dict[str, float]:
         )
     )
     stokes_error = abs(line_integral - area_integral)
+
+    # Adding c(theta) 1 to a particular Poisson corrector sends the normalized
+    # slow amplitude b to b-c.  Hence A changes to A-dc, while curvature and
+    # every closed-loop integral remain invariant.
+    gauged_line_integral = (
+        quad(lambda x: float(gauged_protocol_connection(x, y0)[0]), x0, x1, epsabs=2e-13)[0]
+        + quad(lambda y: float(gauged_protocol_connection(x1, y)[1]), y0, y1, epsabs=2e-13)[0]
+        - quad(lambda x: float(gauged_protocol_connection(x, y1)[0]), x0, x1, epsabs=2e-13)[0]
+        - quad(lambda y: float(gauged_protocol_connection(x0, y)[1]), y0, y1, epsabs=2e-13)[0]
+    )
+    gauge_loop_error = abs(gauged_line_integral - line_integral)
+    gauge_curvature_errors = [
+        abs(gauged_protocol_curvature(x, y) - protocol_curvature(x, y))
+        for x in np.linspace(x0, x1, 7)
+        for y in np.linspace(y0, y1, 7)
+    ]
+    gauge_endpoint_error = abs(
+        quad(
+            lambda x: float(
+                gauged_protocol_connection(x, y0)[0] - protocol_connection(x, y0)[0]
+            ),
+            x0,
+            x1,
+            epsabs=2e-13,
+        )[0]
+        + float(protocol_gauge(x1, y0) - protocol_gauge(x0, y0))
+    )
     assert max(identity_residuals) < 3e-17
     assert minimum_rate > 0.4
     assert abs(cycle_affinity) > 1.0
     assert abs(line_integral) > 1e-3
     assert stokes_error < 2e-13
+    assert gauge_loop_error < 2e-13
+    assert max(gauge_curvature_errors) < 2e-15
+    assert gauge_endpoint_error < 2e-13
 
     return {
         "identity_residual": max(identity_residuals),
@@ -277,6 +330,9 @@ def check_protocol_curvature() -> dict[str, float]:
         "line_integral": float(line_integral),
         "area_integral": float(area_integral),
         "stokes_error": float(stokes_error),
+        "gauge_loop_error": float(gauge_loop_error),
+        "gauge_curvature_error": float(max(gauge_curvature_errors)),
+        "gauge_endpoint_error": float(gauge_endpoint_error),
     }
 
 
@@ -911,6 +967,9 @@ def main() -> None:
     print(f"protocol boundary integral          {protocol['line_integral']:.12e}")
     print(f"protocol curvature-area integral    {protocol['area_integral']:.12e}")
     print(f"protocol Stokes residual            {protocol['stokes_error']:.3e}")
+    print(f"corrector-gauge loop residual       {protocol['gauge_loop_error']:.3e}")
+    print(f"corrector-gauge curvature residual  {protocol['gauge_curvature_error']:.3e}")
+    print(f"open-path endpoint-shift residual   {protocol['gauge_endpoint_error']:.3e}")
     print("ok")
 
 

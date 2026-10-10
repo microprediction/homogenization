@@ -257,6 +257,23 @@
     <p>Writing $\pi_a=\partial_a\pi$, $R_a=\partial_aR$, and $f_a=\partial_af$, cancellation of the mixed
     derivatives of $\pi$ yields the explicit curvature</p>
     $$\mathcal F_{ab}=\pi_aR_bf-\pi_bR_af+\pi_aRf_b-\pi_bRf_a.$$
+    <p>The one-form itself depends on the choice of particular Poisson corrector, but its closed-loop content does
+      not. Indeed, replace the centered first shape $-a_0Rf$ by
+      $-a_0Rf+a_0c(\theta)\mathbf1$. To leave the full first corrector unchanged, its normalized null amplitude
+      $b=a_1/a_0$ must be replaced by $\widetilde b=b-c(\theta)$. Therefore</p>
+    <div class="equation-card">
+    $$\widetilde{\mathcal A}=\mathcal A-dc,\qquad
+      d\widetilde{\mathcal A}=d\mathcal A,\qquad
+      \oint_{\mathcal C}\widetilde{\mathcal A}
+      =\oint_{\mathcal C}\mathcal A.$$
+    </div>
+    <p>For an open protocol the line integral changes by
+      $-\{c(\theta_{\mathrm{final}})-c(\theta_{\mathrm{initial}})\}$, exactly compensated by the endpoint change in the
+      null amplitude. Thus the connection is gauge covariant, while its curvature and closed-protocol holonomy are
+      gauge invariant. The centered convention $\pi\chi_1=0$ simply fixes $c=0$. This is the same
+      exact-differential gauge mechanism as in
+      <a href="./bibliography.html#Berry1984">Berry&apos;s original geometric-phase construction (1984)</a>, although
+      the transported object and governing equation here are different.</p>
     <p>Nonzero curvature is therefore a local obstruction to writing $\mathcal A$ as an exact differential. On a
     simply connected patch, vanishing curvature makes every contractible-loop correction zero; nonzero curvature
     produces a nontrivial correction for sufficiently small loops. This is a statement about the geometric part
@@ -267,7 +284,9 @@
     $\mathcal A_a=-\pi_aRf=\pi(\partial_aQ)R^2f$ exactly to displayed precision, finds center curvature
     $2.90856\times10^{-3}$, and obtains the same nonzero correction $4.801835316245\times10^{-3}$ from the
     boundary integral and a $40\times40$ Gauss&ndash;Legendre curvature integral, with residual
-    $8.7\times10^{-19}$.</p>
+    $8.7\times10^{-19}$. A nonconstant polynomial corrector gauge independently leaves the boundary integral and
+    curvature unchanged to numerical precision, while its open-edge shift agrees with the predicted endpoint
+    difference.</p>
 
     <p>For the smooth periodic example used here, the
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>

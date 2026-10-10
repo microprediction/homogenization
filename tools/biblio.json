@@ -100,6 +100,17 @@
  },
  {
   "role": "classics",
+  "key": "Berry1984",
+  "authors": "Michael V. Berry",
+  "year": 1984,
+  "title": "Quantal Phase Factors Accompanying Adiabatic Changes",
+  "venue": "Proceedings of the Royal Society of London A 392(1802):45-57",
+  "doi": "10.1098/rspa.1984.0023",
+  "url": "https://doi.org/10.1098/rspa.1984.0023",
+  "annotation": "Introduces the geometric phase of a cyclically transported eigenspace and its gauge-invariant closed-loop content. The corrector connection here obeys the same exact-differential gauge law, but governs a backward-equation amplitude rather than a quantum phase."
+ },
+ {
+  "role": "classics",
   "key": "SinitsynNemenman2007",
   "authors": "N. A. Sinitsyn, Ilya Nemenman",
   "year": 2007,
