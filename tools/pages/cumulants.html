@@ -423,6 +423,40 @@
       $\epsilon/\rho$ is $0.4093989087$, and 80-digit truncations at orders $3,6,\ldots,30$ decrease monotonically
       from $4.77\times10^{-8}$ to $1.55\times10^{-20}$.</p>
 
+    <h3>When the generalized-eigenvalue disk is exact</h3>
+    <p>The preceding radius is not automatically sharp: multiplication by the other moment factors can cancel a
+      candidate resolvent pole. There is, however, a direct and checkable noncancellation criterion. Write</p>
+    $$A_j(\epsilon)=\epsilon(j\epsilon D_\kappa-Q_0)^{-1},\qquad
+      R_p(\epsilon)=\pi\prod_{j=1}^p[D_{d_j}A_j(\epsilon)].$$
+    <p>Suppose $\lambda_*$ is a simple nonzero generalized eigenvalue of $(Q_0,D_\kappa)$ with
+      $|\lambda_*|=\gamma_\kappa$, put $\epsilon_*=\lambda_*/p$, and assume no earlier factor
+      $A_j$, $j&lt;p$, is singular at $\epsilon_*$. Choose right and left eigenvectors $x,y$ satisfying</p>
+    $$Q_0x=\lambda_*D_\kappa x,\qquad
+      y^*Q_0=\lambda_*y^*D_\kappa,qquad y^*D_\kappa x\ne0.$$
+    <p>The possible pole of $R_p$ at $\epsilon_*$ has residue</p>
+    <div class="equation-card">
+    $$\mathcal R_{p,*}=
+      \left\{\pi\prod_{j=1}^{p-1}[D_{d_j}A_j(\epsilon_*)]\right\}
+      D_{d_p}\,{\epsilon_*xy^*\over p\,y^*D_\kappa x}.$$
+    </div>
+    <p>If $\mathcal R_{p,*}\ne0$, the pole is nonremovable and the row-valued Taylor series has exact radius</p>
+    $$\rho_p={\gamma_\kappa\over p}.$$
+    <p>The scalar moment $R_p(\epsilon)\mathbf1$ has the same exact radius when
+      $\mathcal R_{p,*}\mathbf1\ne0$. If this is also the unique pole of modulus $\rho_p$, its Taylor coefficients
+      satisfy the sharper asymptotic identity</p>
+    $$r_{p,n}=-\mathcal R_{p,*}\epsilon_*^{-n-1}
+      +o(|\epsilon_*|^{-n-1}).$$
+    <p>This follows by taking the rank-one Laurent residue of the simple matrix pencil and then expanding
+      $(\epsilon-\epsilon_*)^{-1}$ geometrically. If the residue vanishes, or several factors resonate at the same
+      pole, the safe disk above remains valid but the exact radius must be found after combining the principal
+      parts; no universal sharpness claim is then made.</p>
+    <p>For the nonreversible three-state benchmark at $p=6$, the nearest candidate is the isolated real pole
+      $\epsilon_*=-0.305325679501$. Its row-residue norm is $1.71603791912\times10^{-8}$ and its scalar residue is
+      $8.14325368498\times10^{-9}$, so neither series cancels the pole. The generalized-eigenvalue radius
+      $0.305325679501$ is therefore exact in this example. The punctured-limit residue and the displayed
+      left/right-eigenvector formula agree relatively within $3.77\times10^{-33}$; independently, the rescaled
+      100th Taylor coefficient recovers the residue with relative error $2.11609\times10^{-4}$.</p>
+
     <h2>The exact long-run second-cumulant slope and intercept</h2>
     <p>The higher-cumulant expansion above is fixed-maturity, but its first secular coefficient can still be
       obtained exactly when all three variance coefficients switch. Let the joint process $(Y_t,v_t)$ start in its

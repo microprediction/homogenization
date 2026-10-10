@@ -6,7 +6,8 @@ linear systems.  This script checks that recursion against one large
 polynomial-semigroup exponential, verifies the constant-coefficient Gamma
 special case, tests the explicit inverse-speed expansion through cubic order,
 and checks convergence of the full Taylor series inside the computable pole
-disk on a nonreversible three-state chain.
+disk on a nonreversible three-state chain.  It also verifies a noncancellation
+criterion under which that disk is the exact Taylor disk.
 """
 import math
 import os
@@ -24,6 +25,7 @@ DEGREE = 6
 SPEEDS = (8, 16, 32, 64, 128)
 ASYMPTOTIC_ORDER = 3
 CONVERGENCE_ORDER = 30
+SHARPNESS_ORDER = 100
 
 
 def stationary_moments(speed, q0, pi, c, kappa, variance, degree=DEGREE):
@@ -102,7 +104,8 @@ def gamma_moments(c, kappa, variance, degree=DEGREE):
 
 
 def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
-                            expansion_order=CONVERGENCE_ORDER, speed=8):
+                            expansion_order=CONVERGENCE_ORDER, speed=8,
+                            sharpness_order=SHARPNESS_ORDER):
     """High-precision Taylor convergence inside the explicit pole disk.
 
     For epsilon=1/speed, the pth exact moment row is a product of factors
@@ -120,7 +123,7 @@ def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
     assert 1 / speed < radius
 
     old_dps = mp.mp.dps
-    mp.mp.dps = 80
+    mp.mp.dps = 160
     try:
         size = len(kappa)
         q_mp = mp.matrix([[mp.mpf(str(value)) for value in row] for row in q0])
@@ -145,21 +148,22 @@ def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
         def zero_row():
             return mp.matrix(1, size)
 
+        coefficient_order = max(expansion_order, sharpness_order)
         coefficients = [
-            [zero_row() for _ in range(expansion_order + 1)]
+            [zero_row() for _ in range(coefficient_order + 1)]
             for _ in range(degree + 1)
         ]
         centered = [
-            [zero_row() for _ in range(expansion_order + 1)]
+            [zero_row() for _ in range(coefficient_order + 1)]
             for _ in range(degree + 1)
         ]
         scalar = [
-            [mp.mpf("0") for _ in range(expansion_order + 1)]
+            [mp.mpf("0") for _ in range(coefficient_order + 1)]
             for _ in range(degree + 1)
         ]
         coefficients[0][0] = pi
         scalar[0][0] = 1
-        for inverse_order in range(expansion_order + 1):
+        for inverse_order in range(coefficient_order + 1):
             for moment_order in range(1, degree + 1):
                 forcing = [
                     moment_order * c_mp[index]
@@ -182,7 +186,7 @@ def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
                     centered[moment_order][inverse_order]
                     + scalar[moment_order][inverse_order] * pi
                 )
-                if inverse_order < expansion_order:
+                if inverse_order < coefficient_order:
                     source = mp.matrix([[
                         moment_order
                         * coefficients[moment_order][inverse_order][index]
@@ -222,7 +226,129 @@ def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
             ))
         assert all(later < earlier for earlier, later in zip(errors, errors[1:]))
         assert errors[-1] < mp.mpf("1.6e-20")
-        return radius, truncations, errors
+
+        # The guaranteed radius is exact if its nearest candidate pole is
+        # simple, isolated, and has nonzero residue after multiplication by
+        # the preceding moment factors.  Here the nearest pole belongs only
+        # to the degree-th factor.  Evaluate its residue by a high-precision
+        # punctured limit and independently recover it from the 100th Taylor
+        # coefficient: if R(epsilon) has residue A at epsilon_*, then
+        # r_n ~ -A epsilon_*^(-n-1).
+        d_kappa = mp.diag(kappa_mp)
+        eigenvalues, right_eigenvectors = mp.eig(d_kappa ** -1 * q_mp)
+        nonzero_eigenvalues = [
+            value for value in eigenvalues if abs(value) > mp.mpf("1e-60")
+        ]
+        candidate_poles = sorted(
+            [
+                value / moment_order
+                for moment_order in range(1, degree + 1)
+                for value in nonzero_eigenvalues
+            ],
+            key=abs,
+        )
+        pole = candidate_poles[0]
+        assert abs(abs(pole) - mp.mpf(str(radius))) < mp.mpf("2e-15")
+        assert abs(candidate_poles[1]) > abs(pole) * mp.mpf("1.05")
+
+        def exact_row(epsilon):
+            row = pi.copy()
+            for moment_order in range(1, degree + 1):
+                forcing = [
+                    moment_order * c_mp[index]
+                    + mp.mpf(moment_order * (moment_order - 1))
+                    * variance_mp[index] / 2
+                    for index in range(size)
+                ]
+                row = (
+                    row
+                    * mp.diag(forcing)
+                    * (
+                        epsilon
+                        * (moment_order * epsilon * d_kappa - q_mp) ** -1
+                    )
+                )
+            return row
+
+        residue_step = mp.mpf("1e-35")
+        residue = residue_step * exact_row(pole + residue_step)
+        residue_check_step = mp.mpf("1e-30")
+        residue_check = residue_check_step * exact_row(
+            pole + residue_check_step
+        )
+        residue_norm = mp.norm(residue)
+        scalar_residue = sum(residue)
+        assert residue_norm > mp.mpf("1e-10") ** 2
+        assert abs(scalar_residue) > mp.mpf("1e-10") ** 2
+        assert mp.norm(residue_check - residue) / residue_norm < mp.mpf("1e-4")
+
+        # Independently evaluate the rank-one matrix-pencil residue from its
+        # generalized left and right eigenvectors.
+        pole_eigenvalue = degree * pole
+        right_index = min(
+            range(len(eigenvalues)),
+            key=lambda index: abs(eigenvalues[index] - pole_eigenvalue),
+        )
+        left_eigenvalues, left_eigenvectors = mp.eig(
+            d_kappa ** -1 * q_mp.T
+        )
+        left_index = min(
+            range(len(left_eigenvalues)),
+            key=lambda index: abs(
+                left_eigenvalues[index] - pole_eigenvalue
+            ),
+        )
+        right_vector = right_eigenvectors[:, right_index]
+        left_vector = left_eigenvectors[:, left_index]
+        prefix = pi.copy()
+        for moment_order in range(1, degree):
+            forcing = [
+                moment_order * c_mp[index]
+                + mp.mpf(moment_order * (moment_order - 1))
+                * variance_mp[index] / 2
+                for index in range(size)
+            ]
+            prefix = (
+                prefix
+                * mp.diag(forcing)
+                * (
+                    pole
+                    * (moment_order * pole * d_kappa - q_mp) ** -1
+                )
+            )
+        last_forcing = [
+            degree * c_mp[index]
+            + mp.mpf(degree * (degree - 1)) * variance_mp[index] / 2
+            for index in range(size)
+        ]
+        eigenvector_residue = (
+            (prefix * mp.diag(last_forcing) * right_vector)[0]
+            * pole
+            / (degree * (left_vector.T * d_kappa * right_vector)[0])
+            * left_vector.T
+        )
+        residue_formula_error = (
+            mp.norm(eigenvector_residue - residue) / residue_norm
+        )
+        assert residue_formula_error < mp.mpf("1e-25")
+        coefficient_residue = (
+            -pole ** (sharpness_order + 1)
+            * coefficients[degree][sharpness_order]
+        )
+        residue_relative_error = (
+            mp.norm(coefficient_residue - residue) / residue_norm
+        )
+        assert residue_relative_error < mp.mpf("2.2e-4")
+        return (
+            radius,
+            truncations,
+            errors,
+            pole,
+            residue_norm,
+            scalar_residue,
+            residue_formula_error,
+            residue_relative_error,
+        )
     finally:
         mp.mp.dps = old_dps
 
@@ -266,9 +392,16 @@ def main():
     coefficients, scalar, centered = fast_coefficients(
         q0, pi, c, kappa, variance
     )
-    radius, truncations, convergence_errors = convergence_certificate(
-        q0, c, kappa, variance
-    )
+    (
+        radius,
+        truncations,
+        convergence_errors,
+        nearest_pole,
+        residue_norm,
+        scalar_residue,
+        residue_formula_error,
+        residue_relative_error,
+    ) = convergence_certificate(q0, c, kappa, variance)
     residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
     component_residuals = {order: [] for order in range(ASYMPTOTIC_ORDER + 1)}
     for speed in SPEEDS:
@@ -311,6 +444,17 @@ def main():
     print("Taylor truncation orders:", " ".join(map(str, truncations)))
     print("maximum scalar Taylor errors:",
           " ".join(mp.nstr(value, 7) for value in convergence_errors))
+    print("nearest nonremovable pole:", mp.nstr(nearest_pole, 12))
+    print("nearest-pole row residue norm:", mp.nstr(residue_norm, 12))
+    print("nearest-pole scalar residue:", mp.nstr(scalar_residue, 12))
+    print(
+        "eigenvector-residue relative error:",
+        mp.nstr(residue_formula_error, 5),
+    )
+    print(
+        "100th-coefficient residue relative error:",
+        mp.nstr(residue_relative_error, 12),
+    )
 
 
 if __name__ == "__main__":
