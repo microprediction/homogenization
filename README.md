@@ -39,6 +39,7 @@ papers/fast-switching/
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
+  verify_g2_coupon_geometry.py  curved G2++ exercise boundary and exact conditional-Gaussian quadrature
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/

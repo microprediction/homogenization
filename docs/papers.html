@@ -162,9 +162,23 @@
       <li>
         Cotton, P. (2026). <em>Closed-Form Bond Options Under Fast Regime Switching</em>. Note in preparation.
         <a href="./bond-options.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/bond_option_explicit.py">code</a>.
-        <em>Jamshidian&apos;s formula plus an explicit first-order correction, including the memory of the regime at
-        expiry, in Gaussian integrals.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/bond_option_explicit.py">code</a>
+        &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">G2++ certificate</a>.
+        <em>One-factor Jamshidian decomposition plus an explicit first-order correction, including the memory of the
+        regime at expiry, in Gaussian integrals. In G2++, only a single zero-coupon bond has a scalar Gaussian loading;
+        coupon-bond exercise boundaries are strictly convex when the reversion speeds differ. Their two exact affine
+        wings are selected by the shortest and longest residual cash-flow maturities, with explicit exponential
+        approach rates; the boundary curvature is a weighted loading-ratio variance whose total mass equals the
+        spread between the extreme loading ratios. For ordinary fixed-parameter G2++, Gaussian conditioning
+        nevertheless gives an exact one-dimensional quadrature over the unique nonlinear boundary, with an explicit
+        exponentially tilted Gaussian bound for truncating the last integral. Exact pathwise Jamshidian decomposition
+        holds precisely when all active nonzero coupon-date loadings lie on one positive ray; loading-matrix rank one
+        without common orientation is not enough. More generally, a monotone Gaussian
+        conditioning direction exists exactly when the origin is outside the convex hull of the cash-flow loading
+        vectors, and it can be oblique to every original coordinate. Conditioning on that direction reduces a
+        $d$-factor coupon option to $d-1$ dimensions;
+        the boundary Hessian is positive semidefinite and its rank is the affine-span dimension of the loading-ratio
+        vectors. These fixed-Gaussian results do not extend unchanged to the full finite-rate switching model.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Three Numbers in a Yield Curve</em>. Working paper in preparation.

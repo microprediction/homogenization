@@ -36,7 +36,7 @@
     $\partial_Ta(T) = (Q + \operatorname{diag} g(T))\,a(T)$.</p>
 
     <h2>Options on bonds, swaptions and caps</h2>
-    <p>Under a Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
+    <p>Under a one-factor Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
     $A_j\,e^{-b\,x_T}$ with $A_j = a_j(S - T)$ and $b = B(S - T)$. The call pays $(A_je^{-bx_T} - K)^+$, which is positive
     when $x_T < x_j^* = \log(A_j/K)/b$: one exercise boundary per regime. Its value is a sum over the regime at
     expiry of two terms of the form</p>
@@ -46,7 +46,7 @@
     terminal exponent changes the coefficient of the state from $B$ to
     $B_c(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa$ and leaves the form of the forcing alone. The derivation,
     and the closed forms, are on the <a href="./bond-options.html">bond options</a> page.</p>
-    <p>A coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
+    <p>In the same one-factor model, a coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
     <a href="./bibliography.html#Jamshidian1989">Jamshidian&apos;s decomposition</a> holds regime by regime. In regime $j$
     there is one $x_j^*$ at which the coupon bond equals the strike, and the option on the coupon bond is the sum of
     options on its zero-coupon parts with strikes $K_{kj} = A_{kj}e^{-b_kx_j^*}$:</p>
@@ -59,9 +59,189 @@
         struck at $1/(1 + \tau_kK)$ and expiring at $t_{k-1}$;</li>
       <li>under <a href="./hull-white.html">Hull&ndash;White</a> the deterministic shift scales each cash flow by
         $e^{-\int\varphi}$ and the rest is unchanged;</li>
-      <li>under <a href="./g2.html">G2++</a> a zero-coupon bond depends on the factors through the single Gaussian variable
-        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor.</li>
+      <li>under <a href="./g2.html">G2++</a> a single zero-coupon bond still depends on one Gaussian linear combination,
+        so its option remains one-dimensional; this does not extend to a coupon bond.</li>
     </ul>
+    <h3>Why G2++ swaptions are not Jamshidian decompositions</h3>
+    <p>At expiry, a cash flow with residual maturity $\tau_k$ has loading vector</p>
+    $$b_k = \big(B_a(\tau_k), B_b(\tau_k)\big), \qquad
+      B_c(\tau) = \frac{1-e^{-c\tau}}{c}.$$
+    <p>Thus the regime-$j$ coupon bond is
+    $C_j(x,z)=\sum_k c_kA_{kj}\exp(-b_k\cdot(x,z))$. An exact pathwise decomposition of Jamshidian&apos;s kind exists
+    exactly when all active nonzero $b_k$ lie on one positive ray. For standard positive G2++ bond loadings this is
+    equivalent to collinearity. For two distinct residual maturities it fails when $a\ne b$, because</p>
+    $$R(\tau)=\frac{B_a(\tau)}{B_b(\tau)}, \qquad
+      \frac{d}{d\tau}\log R(\tau)=\frac{a}{e^{a\tau}-1}-\frac{b}{e^{b\tau}-1},$$
+    <p>and $c/(e^{c\tau}-1)$ is strictly decreasing in $c>0$. With the G2++ parameters on this site,
+    $a=0.5$, $b=0.1$, and residual maturities one and four years,</p>
+    $$\det(b_1,b_2)=0.94870454.$$
+    <p>The exercise boundary is therefore curved rather than a Gaussian half-space. For two unit cash flows struck at
+    two, the boundary through the origin has</p>
+    $$z''(0)=\frac{2\det(b_1,b_2)^2}{(B_b(1)+B_b(4))^3}=0.02347513.$$
+    <p>G2++ coupon-bond options and swaptions consequently require a two-dimensional Gaussian integral, or conditioning
+    on one factor and solving the monotone boundary in the other. The one-factor decomposition above remains valid for
+    Vasicek and Hull&ndash;White, while zero-coupon bond options and caplets remain one-dimensional under G2++.</p>
+    <h3>The exact positive-ray criterion</h3>
+    <p>The distinction between rank one and common orientation is essential. At any boundary point $x^*$ write</p>
+    $$P_k(x)=K_k\exp[-b_k^\top(x-x^*)],\qquad
+      K=\sum_kw_kK_k,\qquad w_k,K_k&gt;0.$$
+    <p>Then the receiver identity</p>
+    $$\left(\sum_kw_k(P_k(x)-K_k)\right)^+
+      =\sum_kw_k(P_k(x)-K_k)^+\quad\hbox{for every }x$$
+    <p>(and equivalently the payer identity with every difference reversed) holds if and only if all active nonzero
+      loading vectors have the form $b_k=\beta_kb$ for one $b\ne0$ and scalars $\beta_k&gt;0$. Zero loadings are
+      harmless constant cash flows. Thus a nominally multifactor Gaussian model can still admit Jamshidian&apos;s
+      pathwise decomposition when the particular coupon-date loadings occupy one positive ray; conversely, matrix
+      rank one alone is insufficient if some loadings point in opposite directions.</p>
+    <p>The proof is algebraic. For real numbers $a_k$,</p>
+    $$\left(\sum_ka_k\right)^+\leq\sum_ka_k^+,$$
+    <p>with equality exactly when the nonzero $a_k$ have one sign. Here
+      $\operatorname{sgn}(P_k(x)-K_k)=\operatorname{sgn}[-b_k^\top(x-x^*)]$. Positive-ray loadings therefore give
+      a common sign for every $x$. If two nonzero loadings are not positive multiples, there is a displacement $h$
+      with $b_i^\top h&gt;0&gt;b_j^\top h$; at $x^*+h$ those two component differences have opposite signs, so
+      cancellation makes the displayed inequality strict. This proves necessity as well as sufficiency.</p>
+    <p>This criterion is strictly stronger than the convex-hull condition below. The latter asks only for one direction
+      along which every cash flow is monotone and yields exact conditional quadrature; it does not align all exercise
+      half-spaces and therefore does not produce a sum of component options. In the numerical certificate, positive-ray
+      loadings satisfy both receiver and payer identities to $2\times10^{-15}$, while the non-collinear G2++ pair has
+      projections $(1/2,-1/2)$ at an explicit witness and a decomposition gap
+      $1-e^{-1/2}=0.393469340287$. Oppositely oriented rank-one loadings have the same strict gap.</p>
+    <h3>An exact one-dimensional G2++ price</h3>
+    <p>The curved boundary does not require two-dimensional numerical quadrature. In ordinary fixed-parameter G2++,
+      work under the $T$-forward measure and write $(X,Z)$ for the bivariate Gaussian factors at option expiry. Put
+      $w_k=c_kA_k&gt;0$, $p_k=B_a(\tau_k)$ and $q_k=B_b(\tau_k)$. For every fixed $x$,</p>
+    $$C(x,z)=\sum_kw_k e^{-p_kx-q_kz}$$
+    <p>decreases continuously from infinity to zero as $z$ increases, so there is a unique root
+      $z=\zeta(x)$ of $C(x,z)=K$. If $Z\mid X=x\sim N(m(x),s^2)$, Gaussian exponential tilting gives the exact receiver
+      forward value</p>
+    $$\int \phi_X(x)\left[\sum_k w_k e^{-p_kx-q_km(x)+q_k^2s^2/2}
+      \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
+      -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
+    <p>The reduction is not special to two factors or to a coordinate chosen in advance. Let the cash-flow loading
+      vectors be $b_k\in\mathbb R^d$. There is a direction $u$ with $b_k^\top u&gt;0$ for every $k$ exactly when</p>
+    $$0\notin\operatorname{conv}\{b_1,\ldots,b_n\}.$$
+    <p>Indeed, strict separation of the compact finite convex hull from the origin supplies such a $u$; conversely,
+      taking the inner product with a convex combination rules out the origin. Complete $u$ to an orthonormal frame
+      and write the Gaussian factor as $Vy+uz$. Then $p_k=V^\top b_k$ and $q_k=u^\top b_k&gt;0$.
+      Conditional Gaussian regression gives $Z\mid Y=y\sim N(m(y),s^2)$ with affine $m$ and constant
+      $s^2$. For each $y$, the equation
+      $\sum_kw_k\exp(-p_k^\top y-q_kz)=K$ has one root $z=\zeta(y)$, and the same displayed tilted-normal formula,
+      with $p_kx$ replaced by $p_k^\top y$, integrates out $Z$ exactly. A $d$-factor coupon option is therefore
+      reduced to a $(d-1)$-dimensional Gaussian integral exactly when the loading hull excludes the origin. The
+      conditioning direction may be oblique: requiring one of the original coordinates to have positive loadings is
+      only a sufficient special case. If the origin lies in the hull, no direction makes the coupon globally strictly
+      monotone in this way; this obstruction concerns this root-based reduction, not every conceivable pricing
+      algorithm.</p>
+    <p>The boundary is a convex hypersurface. With
+      $d_k=w_k\exp(-p_k^\top y-q_k\zeta(y))$ and
+      $D=\sum_kd_kq_k$, implicit differentiation gives</p>
+    $$\nabla\zeta=-{\sum_kd_kp_k\over D},\qquad
+      \nabla^2\zeta={1\over D}\sum_kd_k
+      (p_k+q_k\nabla\zeta)(p_k+q_k\nabla\zeta)^\top\succeq0.$$
+    <p>If $r_k=p_k/q_k$, the Hessian rank is the affine-span dimension of the active ratio vectors $r_k$.
+      Consequently it is positive definite exactly when those ratios affinely span
+      $\mathbb R^{d-1}$. This is a local coupon-boundary rank statement under a fixed Gaussian expiry law; it is
+      unrelated to fixed-parameter Green&ndash;Kubo rank or to rank after integrating maturity loadings.</p>
+    <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. For G2++ this is exact
+      one-dimensional quadrature, not a Jamshidian sum. The remaining numerical truncation has a closed-form
+      certificate. Write
+      $X=\mu_X+\sigma_X\xi$, where $\xi$ is standard normal, and let
+      $s^2=\sigma_Z^2(1-\rho^2)$ and $a_k=p_k\sigma_X+q_k\rho\sigma_Z$. If the receiver integral is restricted to
+      $|\xi|\le L$, positivity and $(C-K)^+\le C$ give</p>
+    $$0\le V-V_L\le\sum_k w_k
+      e^{-p_k\mu_X-q_k\mu_Z+q_k^2s^2/2+a_k^2/2}
+      \{\Phi(a_k-L)+\Phi(-a_k-L)\}.$$
+    <p>This is the exact exponentially tilted Gaussian tail of each cash flow, not an asymptotic estimate. The payer
+      tail is bounded more simply by $2K\Phi(-L)$. Both bounds are forward values; multiplication by $P(0,T)$ gives
+      time-zero bounds. Implicit differentiation also quantifies the geometry. With
+      $d_k=w_ke^{-p_kx-q_k\zeta(x)}$,</p>
+    $$\zeta'(x)=-{\sum_kd_kp_k\over\sum_kd_kq_k},\qquad
+      \zeta''(x)={\sum_kd_k(p_k+q_k\zeta'(x))^2\over\sum_kd_kq_k}\ge0.$$
+    <p>The inequality is strict exactly when the positive-cash-flow loading vectors are not collinear. Thus unequal
+      G2++ reversion speeds and at least two distinct payment maturities give a strictly convex boundary, while $a=b$
+      recovers the one-factor Jamshidian limit.</p>
+    <p>There is also an exact local variance identity. Set
+      $\alpha_k=d_kq_k/\sum_jd_jq_j$, $r_k=p_k/q_k$ and
+      $\bar r_\alpha=\sum_k\alpha_kr_k=-\zeta'(x)$. Then</p>
+    $$\zeta''(x)=\sum_k\alpha_kq_k(r_k-\bar r_\alpha)^2.$$
+    <p>Thus the boundary bends precisely where multiple loading directions remain relevant; its second derivative is
+      a positive weighted dispersion, not merely a sign calculation.</p>
+    <h3>The global boundary and its exact wings</h3>
+    <p>Convexity is global and the two wings are determined by different cash flows. Put
+      $r_k=p_k/q_k$, $r_{\min}=\min_kr_k$ and $r_{\max}=\max_kr_k$. Since</p>
+    $$-\zeta'(x)={\sum_kd_kq_kr_k\over\sum_kd_kq_k},$$
+    <p>the slope obeys
+      $-r_{\max}\leq\zeta'(x)\leq-r_{\min}$, strictly between the endpoints whenever the loading directions differ.
+      More precisely, if $I_R=\{k:r_k=r_{\min}\}$ and $I_L=\{k:r_k=r_{\max}\}$, let $c_R,c_L$ be the unique
+      solutions of</p>
+    $$\sum_{k\in I_R}w_ke^{-q_kc_R}=K,\qquad
+      \sum_{k\in I_L}w_ke^{-q_kc_L}=K.$$
+    <p>Then the exact asymptotes are</p>
+    $$\zeta(x)+r_{\min}x\longrightarrow c_R\quad(x\to+\infty),\qquad
+      \zeta(x)+r_{\max}x\longrightarrow c_L\quad(x\to-\infty).$$
+    <p>Combining these limiting slopes with convexity gives the exact global slope-turning identities. If
+      $\Gamma=\{(x,\zeta(x)):x\in\mathbb R\}$, then</p>
+    $$\int_{-\infty}^{\infty}\zeta''(x)\,dx=r_{\max}-r_{\min},\qquad
+      \int_{\Gamma}\kappa_{\rm geom}\,ds
+      =\arctan r_{\max}-\arctan r_{\min}.$$
+    <p>The second formula is the Euclidean turning angle of the graph. The distribution of bending depends on the
+      cash-flow weights and strike, but its total second-derivative mass and total turning angle depend only on the
+      two extreme loading directions.</p>
+    <p>To prove this, substitute $z=-r_{\min}x+c$ in $C(x,z)=K$. Terms outside $I_R$ acquire the factor
+      $\exp[-q_k(r_k-r_{\min})x]$ and vanish locally uniformly in $c$; the limiting left-hand side is continuous,
+      strictly decreasing and crosses $K$ once. Monotonicity therefore carries its root to $c_R$. The left wing is
+      identical after substituting $z=-r_{\max}x+c$ and sending $x$ to minus infinity.</p>
+    <p>If each extreme is unique, attained at $i_R$ and $i_L$, this also supplies convergence rates:</p>
+    $$\begin{aligned}
+      \zeta(x)&=-r_{\min}x+{1\over q_{i_R}}\log{w_{i_R}\over K}
+        +O(e^{-\delta_Rx}),
+        &\delta_R&=\min_{k\ne i_R}q_k(r_k-r_{\min}),\\
+      \zeta(x)&=-r_{\max}x+{1\over q_{i_L}}\log{w_{i_L}\over K}
+        +O(e^{-\delta_L|x|}),
+        &\delta_L&=\min_{k\ne i_L}q_k(r_{\max}-r_k).
+    \end{aligned}$$
+    <p>There is also an explicit finite-$x$ bound. Set
+      $A_R=\sum_{k\ne i_R}w_ke^{-q_kc_R}$ and $u_R(x)=(A_R/K)e^{-\delta_Rx}$. Whenever $x\ge0$ and $u_R(x)&lt;1$,</p>
+    $$0\leq \zeta(x)+r_{\min}x-c_R
+      \leq-{1\over q_{i_R}}\log(1-u_R(x)).$$
+    <p>The analogous left-wing bound has
+      $A_L=\sum_{k\ne i_L}w_ke^{-q_kc_L}$ and $u_L(x)=(A_L/K)e^{-\delta_L|x|}$ for $x\le0$.
+      Indeed the dominant term equals $K e^{-q_i\eta(x)}$ after subtracting the stated line. Positivity gives
+      $\eta\ge0$, and bounding every competing exponential by $e^{-\delta|x|}$ gives the displayed inequality.
+      For $a&gt;b$, the
+      ratio $B_a(\tau)/B_b(\tau)$ decreases with residual maturity. Hence the longest payment determines the right
+      wing and the shortest payment the left wing&mdash;a global obstruction to replacing the boundary by one
+      Gaussian half-space.</p>
+    <p>For the certificate above, $(r_{\min},c_R,\delta_R)=(0.524547948012,-0.119219437938,0.287765309607)$ and
+      $(r_{\max},c_L,\delta_L)=(0.826941287566,-1.181063053835,0.996930222634)$. Boundary roots at increasing
+      magnitudes recover exponential rates $0.287766603132$ and $0.996923880456$, respectively. At $x=20$ the
+      right-wing error is $3.496798408893\times10^{-4}$ against the rigorous bound
+      $3.497962883732\times10^{-4}$; at $x=-10$ the left-wing error is $1.622785325623\times10^{-3}$ against
+      $1.631497250470\times10^{-3}$. Direct curvature quadrature on $[-50,100]$ gives
+      $0.302393339554306$ against the exact extreme-ratio spread $0.302393339554316$.</p>
+    <p><a href="./bibliography.html#ChoiShin2016">Choi and Shin (2016)</a> likewise formulate exact pricing in
+      multi-factor Gaussian term-structure models by root-finding on the nonlinear boundary and integrating in the
+      remaining dimensions, alongside a tangent-hyperplane approximation. Here the two-factor monotonicity makes
+      the root unique for every conditioning value and the Gaussian tilting evaluates the other dimension exactly.
+      This direct Gaussian formula is narrower than the general affine approximations of
+      <a href="./bibliography.html#SchragerPelsser2006">Schrager and Pelsser (2006)</a>: it assumes a fixed-parameter
+      Gaussian expiry law. It is exact for standard G2++ and its averaged fast-switching limit, not for the full
+      finite-rate switching model.</p>
+    <p>For the two-cash-flow certificate, conditional quadrature gives $0.669351292291$ and independent nested Gaussian
+      quadrature gives the same value within $2.22\times10^{-16}$. In the $a=b$ limit it agrees with the scalar
+      Jamshidian price within $1.67\times10^{-16}$. Truncating the standardized conditioning factor to $[-6,6]$
+      changes the receiver value by less than $8.00\times10^{-9}$, inside the closed-form bound above. A separate
+      three-factor certificate uses three maturities and a genuinely two-dimensional boundary: its Hessian eigenvalues
+      are $5.14636\times10^{-5}$ and $3.65439\times10^{-2}$, the loading-ratio affine determinant is
+      $8.73332\times10^{-3}$, and centered finite differences agree with the Hessian identity within
+      $3.38\times10^{-9}$. The analytic conditional formula gives
+      $1.252075854512$ at both 28- and 36-point tensor Gauss&ndash;Hermite orders and agrees with independent adaptive
+      integration of the final Gaussian coordinate within $2.22\times10^{-16}$. An oblique certificate has loading
+      rows $(2,-0.4,-0.4)$ and their cyclic permutations, so every coordinate changes sign. Nevertheless
+      $u=(1,1,1)/\sqrt3$ strictly separates their convex hull from zero with margin $0.692820323028$.
+      Conditioning along this direction and along the distinct direction proportional to $(1.2,1,1)$ gives the same
+      price, $0.216109447065$, within $2.78\times10^{-16}$; independent adaptive integration of the final coordinate
+      agrees within $1.11\times10^{-16}$.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
@@ -164,6 +344,8 @@
     using $QQ^\# = I - \mathbf 1\pi$ and $d\pi\,\mathbf 1 = 0$. The Green&ndash;Kubo matrix
     $K_{jk} = -\pi\cdot(\tilde f_j\odot Q^\#\tilde f_k)$ and the memory vector $m = Q^\#\tilde g$ then vary by the
     product rule.</p>
-    <p>Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a>. The instruments are implemented in
+    <p>Certificates: <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py">model_pages2.py</a> and
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">verify_g2_coupon_geometry.py</a>.
+    The instruments are implemented in
     <a href="https://github.com/microprediction/regimelib">regimelib</a>.</p>
   </main>
