@@ -2791,6 +2791,128 @@ def check_phase_shifted_floquet_projection() -> None:
     )
 
 
+def regime_payoff_floquet_errors(
+    m: float, moving_generator: bool
+) -> dict[str, float]:
+    """Frozen-layer errors for a positive regime-dependent payoff.
+
+    Unlike the bond payoff ``one``, this payoff has an order-one fast
+    component.  A moving generator therefore leaves an order ``m^-1``
+    frozen-layer error; with a fixed generator only the slowly varying
+    diagonal forcing remains and the error is order ``m^-2``.
+    """
+    fixed_generator = defective_generator()
+    payoff = np.array([1.35, 0.72, 1.08])
+    prior = np.array([0.8, 0.1, 0.1])
+
+    def generator(time: float) -> np.ndarray:
+        if moving_generator:
+            return periodic_three_state_generator(time)
+        return fixed_generator
+
+    def matrix(time: float) -> np.ndarray:
+        return m * generator(time) + periodic_three_state_forcing(time)
+
+    def matrix_rhs(time: float, state: np.ndarray) -> np.ndarray:
+        return (matrix(time) @ state.reshape(3, -1)).ravel()
+
+    stationary = stationary_row(generator(0.0))
+    fundamental = solve_ivp(
+        matrix_rhs,
+        (0.0, PERIOD),
+        np.eye(3).ravel(),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    assert fundamental.success
+    monodromy = fundamental.y[:, -1].reshape(3, 3)
+    values, left, right = eig(monodromy, left=True, right=True)
+    index = int(np.argmax(values.real))
+    assert abs(values[index].imag) < 2e-11
+    multiplier = float(values[index].real)
+    right_vector = right[:, index].real
+    left_vector = left[:, index].real
+    if stationary @ right_vector < 0:
+        right_vector *= -1
+        left_vector *= -1
+    right_vector /= stationary @ right_vector
+    left_vector /= left_vector @ right_vector
+    exponent = float(np.log(multiplier) / PERIOD)
+    principal_weight = float(left_vector @ payoff)
+    fast_initial = payoff - principal_weight * right_vector
+    assert abs(left_vector @ fast_initial) < 3e-12
+
+    relative_times = np.linspace(0.0, 2 * PERIOD, 1601)
+    initial_columns = np.column_stack((payoff, right_vector)).ravel()
+    evolved = solve_ivp(
+        matrix_rhs,
+        (0.0, 2 * PERIOD),
+        initial_columns,
+        t_eval=relative_times,
+        method="Radau",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    assert evolved.success
+    columns = evolved.y.reshape(3, 2, -1)
+    exact = columns[:, 0, :]
+    principal = columns[:, 1, :]
+    frozen_matrix = matrix(0.0) - exponent * np.eye(3)
+    frozen_fast = np.column_stack(
+        [expm(frozen_matrix * time) @ fast_initial for time in relative_times]
+    )
+    exponential = np.exp(exponent * relative_times)
+    exact_price = prior @ exact
+    principal_price = principal_weight * (prior @ principal)
+    slip_price = principal_price + exponential * (prior @ frozen_fast)
+    assert np.min(exact_price) > 0
+    assert np.min(principal_price) > 0
+    assert np.min(slip_price) > 0
+    assert abs(exact_price[0] - slip_price[0]) < 3e-13
+    return {
+        "plain": float(
+            np.max(np.abs(np.log(exact_price) - np.log(principal_price)))
+        ),
+        "slip": float(
+            np.max(np.abs(np.log(exact_price) - np.log(slip_price)))
+        ),
+    }
+
+
+def check_regime_dependent_payoff_layer() -> None:
+    """Sharp frozen-layer orders for a nonconstant positive payoff."""
+    speeds = (8.0, 16.0, 32.0, 64.0, 128.0)
+    moving = [regime_payoff_floquet_errors(m, True) for m in speeds]
+    fixed = [regime_payoff_floquet_errors(m, False) for m in speeds]
+    print("\nRegime-dependent payoff: frozen Floquet layer")
+    print(
+        " m        moving raw       moving slip"
+        "         fixed raw        fixed slip"
+    )
+    for m, moving_result, fixed_result in zip(speeds, moving, fixed):
+        print(
+            f"{m:3.0f}   {moving_result['plain']:16.9e}"
+            f"   {moving_result['slip']:16.9e}"
+            f"   {fixed_result['plain']:16.9e}"
+            f"   {fixed_result['slip']:16.9e}"
+        )
+
+    def final_rate(results: list[dict[str, float]], key: str) -> float:
+        return float(np.log2(results[-2][key] / results[-1][key]))
+
+    moving_rate = final_rate(moving, "slip")
+    fixed_rate = final_rate(fixed, "slip")
+    assert abs(final_rate(moving, "plain")) < 0.05
+    assert abs(final_rate(fixed, "plain")) < 0.05
+    assert 0.90 < moving_rate < 1.10
+    assert fixed_rate > 1.90
+    print(
+        "regime-payoff frozen-slip rates (moving, fixed): "
+        f"{moving_rate:.6f}, {fixed_rate:.6f}"
+    )
+
+
 def check_general_periodic_generator() -> None:
     """Finite-chain Floquet profile and frozen boundary slip."""
     leading_mean, dynamic_drift, geometric_drift, second_drift = (
@@ -3359,6 +3481,7 @@ def main() -> None:
     check_moving_periodic_generator()
     check_general_periodic_generator()
     check_phase_shifted_floquet_projection()
+    check_regime_dependent_payoff_layer()
 
     print("Uniform stationary-start error (all sampled T in [0,max(20,m^2)])")
     print(" m       max error       theorem bound     m^2 max error")
@@ -3396,6 +3519,7 @@ def main() -> None:
     print("Moving-generator periodic phase-and-slip theorem: passed")
     print("Finite-chain periodic Floquet-profile theorem: passed")
     print("Phase-uniform Floquet-projection theorem: passed")
+    print("Regime-dependent payoff boundary-layer orders: passed")
 
 
 if __name__ == "__main__":

@@ -699,6 +699,50 @@
       differ by at most $3.2\times10^{-15}$. The finite phase and maturity mesh is a numerical order certificate;
       the preceding compactness argument, not the mesh, supplies the two continuous suprema in the theorem.</p>
 
+    <h3>A regime-dependent payoff loses one boundary-layer order</h3>
+    <p>The payoff $\mathbf1$ is special: it lies in the nullspace of every fast generator, so its complementary
+      Floquet datum is only $O(m^{-1})$. For a fixed positive payoff vector $x$ with genuinely different regime
+      values, define at phase $s$</p>
+    $$c_{m,s}(x)=w_{m,s}^{\top}x,\qquad
+      z_{m,s}(x)=x-c_{m,s}(x)v_{m,s},$$
+    $$b_{m,s}^{x}(T)=e^{\{A_m(s)-\lambda_mI\}T}z_{m,s}(x).$$
+    <p>Now $z_{m,s}(x)=O(1)$ in general. Under the hypotheses of the phase-uniform theorem, and with
+      $\min_i x_i&gt;0$, the corresponding frozen-layer approximation satisfies</p>
+    <div class="equation-card">
+    $$\sup_{s\in[0,P]}\sup_{T\geq0}\left|
+      \log\{\nu U_m(s+T,s)x\}-\lambda_mT
+      -\log\{c_{m,s}(x)\nu r_{m,s}(T)+\nu b_{m,s}^{x}(T)\}
+      \right|=O(m^{-1}).$$
+    <p>If $Q(t)\equiv Q_0$ is fixed and only the diagonal forcing moves, the right-hand side improves to
+      $O(m^{-2})$. Both orders are generically sharp for this frozen layer.</p>
+    </div>
+    <p>The order loss follows directly from Duhamel scaling on the fast layer. For $T=O(m^{-1})$,
+      $m\{Q(s+T)-Q(s)\}=O(mT)$, and convolution with two $e^{-cmT}$ fast bounds is $O(m^{-1})$
+      when it acts on an order-one datum. If $Q$ is fixed, only $D(s+T)-D(s)=O(T)$ remains, giving
+      $O(m^{-2})$. The complete normalized price is bounded away from zero for large $m$, uniformly in phase
+      and maturity, so the same orders pass from the vector remainder to its logarithm. For the bond payoff
+      $x=\mathbf1$, the additional $z_{m,s}(\mathbf1)=O(m^{-1})$ alignment recovers the stronger theorem above.
+      This is the payoff-sensitive version of the matched boundary layers constructed by
+      <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang (1996)</a>.</p>
+
+    <p>The certificate uses $x=(1.35,0.72,1.08)$ and $\nu=(0.8,0.1,0.1)$. It compares the moving
+      three-state chain with the defective fixed-generator control and maximizes over two periods.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>moving, no slip</th><th>moving, frozen slip</th><th>fixed, no slip</th><th>fixed, frozen slip</th></tr></thead>
+      <tbody>
+        <tr><td>8</td><td>1.79254e-1</td><td>1.06975e-3</td><td>1.88468e-1</td><td>8.37150e-4</td></tr>
+        <tr><td>16</td><td>1.78008e-1</td><td>4.34767e-4</td><td>1.85233e-1</td><td>1.93747e-4</td></tr>
+        <tr><td>32</td><td>1.77397e-1</td><td>1.91853e-4</td><td>1.83748e-1</td><td>4.63275e-5</td></tr>
+        <tr><td>64</td><td>1.77093e-1</td><td>8.94951e-5</td><td>1.83028e-1</td><td>1.13097e-5</td></tr>
+        <tr><td>128</td><td>1.76942e-1</td><td>4.31346e-5</td><td>1.82674e-1</td><td>2.79295e-6</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The last-doubling frozen-slip orders are $1.05296$ for moving $Q(t)$ and $2.01769$ for fixed $Q_0$;
+      without the slip, both errors converge to nonzero constants. The calculation uses a positive payoff, so it
+      is an order certificate for the boundary-layer mechanism rather than a test driven by sign cancellation.</p>
+
     <h3>Explicit first-order coefficient</h3>
     <p>The exact Floquet exponent also has an explicit first correction in any number of states. Let
     $g(t)=\operatorname{diag}D(t)$, $\bar g(t)=\pi(t)g(t)$, and
