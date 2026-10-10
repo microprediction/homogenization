@@ -9,7 +9,9 @@ An exact hidden-state enumeration checks the burn-in transfer from an
 arbitrary initial regime law to a stationary calibration panel.  It also
 checks exact transient mean and variance identities for the empirical CDF.
 Irregular observation grids check the pairwise-kernel variance bound and
-show that substituting the average spacing can be anti-conservative.
+show that substituting the average spacing can be anti-conservative.  The
+same exponential kernel gives the exact minimum-variance nonnegative weights
+and their closed-form information for every deterministic grid.
 Finally, an exact polynomial Feynman--Kac recursion computes the full count
 law, checks the one-sided Cantelli conversion from the spectral variance bound
 to a training-panel PAC bound, and supplies both a finite-panel Chernoff
@@ -1108,6 +1110,35 @@ def stationary_irregular_variance(Q, pi, success, times):
     return variance
 
 
+def stationary_weighted_irregular_variance(Q, pi, success, times, weights):
+    """Exact variance of a weighted empirical CDF on a stationary grid."""
+    times = np.asarray(times)
+    weights = np.asarray(weights)
+    p = pi @ success
+    centered = success - p
+    variance = p * (1 - p) * (weights @ weights)
+    for left in range(len(times)):
+        for right in range(left + 1, len(times)):
+            transition = expm((times[right] - times[left]) * Q)
+            covariance = pi @ (centered * (transition @ centered))
+            variance += 2 * weights[left] * weights[right] * covariance
+    return variance
+
+
+def optimal_exponential_weights(times, rate):
+    """BLUE weights for covariance exp(-rate*abs(t_i-t_j))."""
+    times = np.asarray(times)
+    rho = np.exp(-rate * np.diff(times))
+    precision_ones = np.empty(len(times))
+    precision_ones[0] = 1 / (1 + rho[0])
+    precision_ones[-1] = 1 / (1 + rho[-1])
+    precision_ones[1:-1] = (1 / (1 + rho[:-1])
+                             - rho[1:] / (1 + rho[1:]))
+    information = 1 + np.sum((1 - rho) / (1 + rho))
+    weights = precision_ones / information
+    return weights, information
+
+
 def irregular_panel_checks(Q, pi, gamma_s, success):
     """Check arbitrary-grid variance and start-up-bias bounds."""
     times = np.array([0.0, 0.07, 0.31, 0.9, 1.8])
@@ -1181,6 +1212,55 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
         math.exp(-(sharp_burnin + t)) for t in clustered_times))
     assert abs(abs(sharp_mean - 0.5) - sharp_bias_bound) < 2e-15
 
+    # The sharp exponential envelope is itself a covariance matrix.  Its
+    # inverse is tridiagonal, so the minimum-variance weights and information
+    # are explicit and remain strictly positive on every ordered grid.
+    optimal_weights, information = optimal_exponential_weights(
+        clustered_times, rate=1.0)
+    sharp_kernel = np.exp(-np.abs(
+        clustered_times[:, None] - clustered_times[None, :]))
+    direct_weights = (np.linalg.solve(sharp_kernel,
+                                      np.ones(sharp_n)))
+    direct_weights /= direct_weights.sum()
+    assert np.max(abs(optimal_weights - direct_weights)) < 2e-14
+    assert np.min(optimal_weights) > 0
+    assert abs(optimal_weights.sum() - 1) < 2e-15
+    optimal_factor = optimal_weights @ sharp_kernel @ optimal_weights
+    assert abs(optimal_factor - 1 / information) < 2e-15
+    sharp_weighted_variance = stationary_weighted_irregular_variance(
+        sharp_Q, sharp_pi, sharp_success, clustered_times, optimal_weights)
+    assert abs(sharp_weighted_variance - 0.25 / information) < 2e-15
+    equal_weight_variance = sharp_exact
+    assert sharp_weighted_variance < equal_weight_variance
+
+    nonrev_weights, nonrev_information = optimal_exponential_weights(
+        times, rate=gamma_s)
+    nonrev_weighted_variance = stationary_weighted_irregular_variance(
+        Q, pi, success, times, nonrev_weights)
+    assert nonrev_weighted_variance <= (
+        p * (1 - p) / nonrev_information + 2e-14)
+
+    weight_formula_error = 0.0
+    grid_rng = np.random.default_rng(20261010)
+    for grid_size in range(2, 13):
+        for _ in range(8):
+            random_times = np.r_[0.0, np.cumsum(
+                grid_rng.uniform(0.005, 2.0, size=grid_size - 1))]
+            random_rate = grid_rng.uniform(0.1, 4.0)
+            formula_weights, formula_information = (
+                optimal_exponential_weights(random_times, random_rate))
+            random_kernel = np.exp(-random_rate * np.abs(
+                random_times[:, None] - random_times[None, :]))
+            solved = np.linalg.solve(random_kernel, np.ones(grid_size))
+            solved_information = solved.sum()
+            solved /= solved_information
+            weight_formula_error = max(
+                weight_formula_error,
+                np.max(abs(formula_weights - solved)),
+                abs(formula_information - solved_information))
+            assert np.min(formula_weights) > 0
+    assert weight_formula_error < 2e-13
+
     print("irregular nonreversible panel:",
           f"exact variance {exact_variance:.8f},",
           f"bound {variance_bound:.8f}, factor {pairwise_factor:.8f}")
@@ -1191,6 +1271,12 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
     print("irregular-grid start-up bias:",
           f"nonreversible {exact_mean - p:+.8f} <= {bias_bound:.8f};",
           f"sharp two-state {sharp_mean - 0.5:+.8f}")
+    print("optimal irregular-grid weights:",
+          np.array2string(optimal_weights, precision=8),
+          f"information {information:.8f},",
+          f"variance {sharp_weighted_variance:.8f} vs",
+          f"equal {equal_weight_variance:.8f},",
+          f"random-grid formula error {weight_formula_error:.2e}")
 
 
 def transient_panel_checks(Q, pi, gamma_s, success):

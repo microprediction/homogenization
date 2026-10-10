@@ -394,6 +394,47 @@
       returns $0.16822116$ exactly. One may call $n/V_{\boldsymbol t}$ a
       variance-equivalent sample size for this statistic, but it is not a
       substitution for $n$ in conformal rank or coverage laws.</p>
+
+    <h3>Optimal nonnegative weights on an irregular grid</h3>
+    <p>The same theorem also answers a design question that equal weighting
+      hides. Let $w_i\geq0$, $\sum_iw_i=1$, and define the weighted empirical
+      CDF $\widehat F_w(r)=\sum_iw_i{\bf1}\{R_{t_i}\leq r\}$. With</p>
+    $$R_{ij}=e^{-m\gamma_s|t_i-t_j|},$$
+    <p>the exact covariance identity gives the sharp envelope</p>
+    <div class="equation-card">
+    $$\operatorname{Var}\widehat F_w(r)
+      \leq p_r(1-p_r)\,w^\top Rw.$$
+    </div>
+    <p>A symmetric two-state chain with conditional CDF values $(0,1)$
+      attains equality for every grid and every choice of weights. Therefore
+      minimizing this bound is not a merely formal relaxation. The unique
+      minimizer is the generalized least-squares weight</p>
+    $$w^\star=\frac{R^{-1}{\bf1}}{{\bf1}^\top R^{-1}{\bf1}}.$$
+    <p>For ordered times put
+      $\rho_i=e^{-m\gamma_s(t_{i+1}-t_i)}$. The Markov exponential kernel has
+      a tridiagonal inverse, and direct multiplication yields</p>
+    <div class="equation-card">
+    $$\mathcal I_{\boldsymbol t}:={\bf1}^\top R^{-1}{\bf1}
+      =1+\sum_{i=1}^{n-1}\frac{1-\rho_i}{1+\rho_i}
+      =1+\sum_{i=1}^{n-1}\tanh\!\left(
+        \frac{m\gamma_s(t_{i+1}-t_i)}2\right),$$
+    $$\min_{w:\,{\bf1}^\top w=1}w^\top Rw
+      =\mathcal I_{\boldsymbol t}^{-1}.$$
+    </div>
+    <p>Every component of $R^{-1}{\bf1}$ is positive: the endpoints are
+      $1/(1+\rho_1)$ and $1/(1+\rho_{n-1})$, while an interior component is
+      $1/(1+\rho_{i-1})-\rho_i/(1+\rho_i)>0$. Thus the unconstrained
+      generalized least-squares solution already satisfies the nonnegative
+      calibration-weight constraint. This is the correlated-observation
+      principle of <a href="https://doi.org/10.1017/S0370164600014346">Aitken
+      (1935)</a>, specialized here to the sharp Markov envelope.</p>
+    <p>For the clustered grid $(0,0.01,0.02,0.03,6)$, the optimal weights are
+      $(0.250012,0.002488,0.002488,0.248744,0.496269)$. They reduce the sharp
+      two-state variance from $0.16822116$ to $0.12438402$, a $26.1\%$
+      reduction. This is only a minimum-variance statement for a weighted
+      empirical CDF. It does not make an ordinary weighted quantile a valid
+      conformal rank rule; any weighted conformal procedure needs its own
+      exchangeability or covariate-shift argument.</p>
     <p>Here is a conservative finite-sample statement that requires no
       independent-calibration fiction. Assume $\bar F$ is continuous
       and strictly increasing. Select an integer $M\ge2$ and failure
