@@ -314,15 +314,53 @@
     $\kappa_h,\kappa_\ell&gt;0$ make the densities integrable, and their regime marginals are necessarily the
     stationary probabilities of the two-state chain. Finally $(\log I)'=\sigma z-\gamma$, so the ergodic average
     gives the displayed Lyapunov exponent. This proves the formula for every positive initial infected vector.</p>
+    <h4>The slow and fast switching endpoints</h4>
+    <p>The same formula also resolves the opposite, slow-switching limit. Scale the transition rates as
+      $q_{h\ell}=c\alpha$ and $q_{\ell h}=c\delta$, with fixed $\alpha,\delta&gt;0$, and let $c\downarrow0$.
+      Put $r_i=\sigma a_i-\gamma$ and
+      $\pi_h=\delta/(\alpha+\delta)$, $\pi_\ell=\alpha/(\alpha+\delta)$. Then</p>
+    <div class="equation-card">
+    $$\Lambda_{\rm as}(c)=\pi_h r_h+\pi_\ell r_\ell+cJ+O(c^2),$$
+    $$J=\frac{\alpha\delta}{\alpha+\delta}
+      \log\!\left\{
+      \frac{(a_h-b_\ell)(a_\ell-b_h)}{(a_\ell-b_\ell)(a_h-b_h)}
+      \right\}>0.$$
+    </div>
+    <p>Here is a direct renewal proof. A high-to-low switch occurs at stationary flux
+      $c\alpha\delta/(\alpha+\delta)$ and contributes the deterministic relaxation area</p>
+    $$\int_0^\infty\{z_\ell(t;a_h)-a_\ell\}\,dt
+      =\frac1\sigma\log\frac{a_h-b_\ell}{a_\ell-b_\ell}.$$
+    <p>A low-to-high switch contributes</p>
+    $$\int_0^\infty\{z_h(t;a_\ell)-a_h\}\,dt
+      =-\frac1\sigma\log\frac{a_h-b_h}{a_\ell-b_h}.$$
+    <p>Multiplying their sum by the switch flux and by the outer factor $\sigma$ gives $cJ$.
+      The projective flows approach their attracting roots exponentially. Consequently the expected displacement of
+      the entry point from the previous root is $O(c)$; multiplying its bounded relaxation-area effect by the
+      $O(c)$ switch flux gives the stated $O(c^2)$ remainder. Positivity is exact: the numerator minus denominator
+      inside the logarithm is $(a_h-a_\ell)(b_\ell-b_h)&gt;0$.</p>
+    <p>At the other endpoint, with
+      $\bar\beta=\pi_h\beta_h+\pi_\ell\beta_\ell$ and
+      $\bar D=(\gamma-\sigma)^2+4\sigma\bar\beta$, the Green&ndash;Kubo expansion gives</p>
+    <div class="equation-card">
+    $$\Lambda_{\rm as}(c)=r(\bar\beta)
+      -\frac{\alpha\delta(\beta_h-\beta_\ell)^2\sigma^2}
+      {c(\alpha+\delta)^3\bar D}+O(c^{-2}),\qquad c\to\infty.$$
+    </div>
+    <p>Since $r(\beta)$ is strictly concave, the fast limit $r(\bar\beta)$ strictly exceeds the slow limit
+      $\pi_h r_h+\pi_\ell r_\ell$ when the transmission rates differ. The positive slow coefficient and negative
+      fast correction show that increasing the switching speed initially and eventually raises growth. They do not,
+      by themselves, prove global monotonicity at every intermediate speed.</p>
     <p>After $z=a_\ell+(a_h-a_\ell)t$, the two integrals have Jacobi weights
     $t^{\kappa_\ell}(1-t)^{\kappa_h-1}$ and
     $t^{\kappa_\ell-1}(1-t)^{\kappa_h}$. The certificate therefore evaluates them by Gauss&ndash;Jacobi quadrature,
     without time discretization or endpoint clipping.</p>
     <p>For the parameters here and symmetric switching, the exact extinction&ndash;invasion threshold is</p>
     $$\lambda_* = 2.3126879896\ \text{per week}.$$
-    <p>Thus a typical introduction declines for $\lambda&lt;\lambda_*$ and grows for $\lambda&gt;\lambda_*$,
-    even though the averaged model grows. The first-order formula predicts $2.6316808690$, about $13.8\%$ too
-    high. This exact reduction is special to two regimes with only $\beta$ switched; with three or more regimes,
+    <p>The slow limit is negative and the fast limit positive, so continuity guarantees at least one
+      extinction&ndash;invasion crossing. Exact quadrature finds the displayed crossing, with negative values on the
+      tested slower grid and positive values on the tested faster grid. No uniqueness or global monotonicity claim is
+      needed. The first-order formula predicts $2.6316808690$, about $13.8\%$ too high. This exact reduction is
+      special to two regimes with only $\beta$ switched; with three or more regimes,
     or with switched recovery, the projective invariant law is no longer this one-dimensional two-flow problem.</p>
     <p>For any chain the almost-sure formula holds with $K_{\beta\beta} = -\pi\cdot(\tilde\beta\,Q^{\#}\tilde\beta)$, and the
     mean still has no first-order term.</p>

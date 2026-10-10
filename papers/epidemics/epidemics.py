@@ -149,6 +149,44 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
             'powers': [float(klo), float(khi)]}
 
 
+def seir_beta_slow_switching(beta1, beta2, sigma, gamma, rate12_scale=1.0, rate21_scale=None):
+    """Slow-switching limit and first coefficient for two-state SEIR.
+
+    The actual switching rates are c*rate12_scale and c*rate21_scale,
+    with c tending to zero.  The coefficient is the stationary switch flux
+    times the two deterministic projective relaxation areas.
+    """
+    if rate21_scale is None:
+        rate21_scale = rate12_scale
+    if min(beta1, beta2, sigma, gamma, rate12_scale, rate21_scale) <= 0:
+        raise ValueError("rates and transmission parameters must be positive")
+
+    def projective_roots(beta):
+        disc = np.sqrt((gamma - sigma) ** 2 + 4 * sigma * beta)
+        return ((gamma - sigma + disc) / (2 * sigma),
+                (gamma - sigma - disc) / (2 * sigma))
+
+    if beta1 >= beta2:
+        beta_hi, beta_lo = beta1, beta2
+        rate_hi_lo, rate_lo_hi = rate12_scale, rate21_scale
+    else:
+        beta_hi, beta_lo = beta2, beta1
+        rate_hi_lo, rate_lo_hi = rate21_scale, rate12_scale
+    ahi, bhi = projective_roots(beta_hi)
+    alo, blo = projective_roots(beta_lo)
+    pi_hi = rate_lo_hi / (rate_hi_lo + rate_lo_hi)
+    slow_limit = pi_hi * seir_rate(beta_hi, sigma, gamma) + (1.0 - pi_hi) * seir_rate(beta_lo, sigma, gamma)
+    if beta_hi == beta_lo:
+        return {'limit': float(slow_limit), 'coefficient': 0.0, 'cross_ratio': 1.0,
+                'pi_high': float(pi_hi)}
+
+    cross_ratio = ((ahi - blo) * (alo - bhi)) / ((alo - blo) * (ahi - bhi))
+    switch_flux_scale = rate_hi_lo * rate_lo_hi / (rate_hi_lo + rate_lo_hi)
+    coefficient = switch_flux_scale * np.log(cross_ratio)
+    return {'limit': float(slow_limit), 'coefficient': float(coefficient),
+            'cross_ratio': float(cross_ratio), 'pi_high': float(pi_hi)}
+
+
 def seir_beta_gamma_formulas(Q, beta, gamma, sigma):
     """SEIR with beta and gamma switched: first-order mean and a.s. growth in closed form."""
     pi = stationary(Q)

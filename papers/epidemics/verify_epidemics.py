@@ -8,8 +8,9 @@ References, all independent of the expansions:
                       with each holding interval propagated exactly by exp(tau A_i).
 Checks:
   1. SIR, beta switched: mean = bbar - gamma + K, almost-sure = bbar - gamma exactly.
-  2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; no first-order mean correction
-     (second order, closed form); almost-sure growth drops by K (ybar_E xbar_I)^2 = K sigma^2 / D.
+  2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; slow- and fast-switching
+     endpoint expansions; no first-order mean correction (second order, closed form); almost-sure growth drops by
+     K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
   3. SEIR, beta and gamma switched on a three-state cycle, forward and reversed: first-order mean and almost-sure
      growth, and the forward-minus-reversed gap against 2 K^anti sigma / sqrt(D).
   4. A three-compartment structured example for the general formulas.
@@ -20,7 +21,8 @@ import numpy as np
 from scipy.linalg import expm
 from scipy.optimize import brentq
 from epidemics import (stationary, gk, two_state_K, sir_mean_two_state, seir_vectors, seir_beta_mean_two_state,
-                       seir_beta_formulas, seir_beta_lyapunov_two_state, seir_beta_gamma_formulas,
+                       seir_beta_formulas, seir_beta_lyapunov_two_state, seir_beta_slow_switching,
+                       seir_beta_gamma_formulas,
                        first_order, mean_growth, lyapunov_mc,
                        cycle_generator, cycle_K, regime_matrices, principal, E_I, I_I)
 
@@ -159,6 +161,43 @@ def main():
     check(abs(seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, exact_threshold)['lyapunov']) < 2e-14,
           "exact projective quadrature resolves the extinction/invasion threshold")
     out['seir_threshold'] = {'exact': exact_threshold, 'first_order': first_threshold}
+    # Slow switching: each transition contributes a deterministic relaxation
+    # area, while the stationary transition flux is linear in the common
+    # speed c.  The next error is quadratic because entry-point errors are O(c).
+    slow_rows = []
+    for label, (rate12_scale, rate21_scale) in (
+            ('symmetric', (1.0, 1.0)), ('asymmetric', (1.7, 0.4))):
+        asymptotic = seir_beta_slow_switching(
+            *BETA2, SIGMA, GAMMA, rate12_scale, rate21_scale)
+        speeds = [0.08, 0.04, 0.02, 0.01, 0.005]
+        errors = []
+        values = []
+        for speed in speeds:
+            exact = seir_beta_lyapunov_two_state(
+                *BETA2, SIGMA, GAMMA,
+                speed * rate12_scale, speed * rate21_scale, nodes=256)['lyapunov']
+            approximation = asymptotic['limit'] + speed * asymptotic['coefficient']
+            values.append(exact)
+            errors.append(exact - approximation)
+        orders = [rate(errors[i], errors[i + 1]) for i in range(len(errors) - 1)]
+        check(asymptotic['cross_ratio'] > 1.0,
+              f"{label} slow-switching coefficient is strictly positive")
+        check(all(1.8 < order < 2.2 for order in orders[-2:]),
+              f"{label} slow-switching remainder is second order")
+        slow_rows.append({
+            'label': label, 'rate_scales': [rate12_scale, rate21_scale],
+            'limit': asymptotic['limit'], 'coefficient': asymptotic['coefficient'],
+            'cross_ratio': asymptotic['cross_ratio'], 'speeds': speeds,
+            'exact': values, 'errors': errors, 'orders': orders,
+        })
+        print(f"  slow {label}: limit {asymptotic['limit']:.9f}, coefficient "
+              f"{asymptotic['coefficient']:.9f}, terminal remainder order {orders[-1]:.6f}")
+    # Relabelling exchanges the base switching rates but not the expansion.
+    slow_original = seir_beta_slow_switching(*BETA2, SIGMA, GAMMA, 1.7, 0.4)
+    slow_relabelled = seir_beta_slow_switching(BETA2[1], BETA2[0], SIGMA, GAMMA, 0.4, 1.7)
+    check(max(abs(slow_original[key] - slow_relabelled[key]) for key in ('limit', 'coefficient', 'cross_ratio')) < 1e-14,
+          "the slow-switching expansion is invariant under regime relabelling")
+    out['seir_slow_switching'] = slow_rows
     out['seir_beta'] = rows
 
     # ---------------------------------------------------------------- 3. the cycle
