@@ -806,8 +806,10 @@ def verify_critical_gaussian_boundary():
     Consequently the normalized integrated process has limiting covariance
     one on the positive-time diagonal and one half at every pair of distinct
     positive times.  Its increments over every fixed positive time interval
-    retain asymptotic variance one, which is the obstruction to C[0,1]
-    tightness.  The same closed form resolves shrinking lags h_R=R^(-beta):
+    retain asymptotic variance one.  The resulting Gaussian-dust finite-
+    dimensional law has no cadlag version, obstructing tightness not only in
+    C[0,1] but in Skorokhod D[0,1] under J1 or M1.  The same closed form
+    resolves shrinking lags h_R=R^(-beta):
 
         V(R h_R) / V(R) -> max(1-beta, 0).
 
@@ -877,10 +879,27 @@ def verify_critical_gaussian_boundary():
 
     assert all(x > y for x, y in zip(profile_errors, profile_errors[1:]))
     assert profile_errors[-1] < 0.0016
+
+    # Every fixed positive lag has limiting normalized increment variance one.
+    # A dyadic grid records how strongly this obstruction is already visible
+    # at the terminal finite scale used by the covariance certificate.
+    fixed_lags = 2.0 ** -np.arange(1, 11)
+    terminal_power = powers[-1]
+    terminal_log_r = terminal_power * math.log(2.0)
+    terminal_denominator = math.log1p(math.exp(2.0 * terminal_log_r))
+    fixed_lag_variances = np.array([
+        math.log1p(math.exp(2.0 * (terminal_log_r + math.log(lag))))
+        / terminal_denominator
+        for lag in fixed_lags
+    ])
+    assert np.all(np.diff(fixed_lag_variances) < 0.0)
+    assert fixed_lag_variances[-1] > 0.968
     return (identity_error, tuple(errors), tuple(increment_variances),
             powers, delta, tuple(map(float, betas)),
             tuple(map(float, target_profile)),
-            tuple(profile_errors), tuple(terminal_profile))
+            tuple(profile_errors), tuple(terminal_profile),
+            tuple(map(float, fixed_lags)),
+            tuple(map(float, fixed_lag_variances)))
 
 
 def verify_ergodic_second_chaos_counterexample():
@@ -1439,6 +1458,9 @@ def main():
           f"{tuple(f'{value:.6f}' for value in critical_gaussian[8])}")
     print("critical Gaussian power-lag maximum profile errors: "
           f"{tuple(f'{error:.6f}' for error in critical_gaussian[7])}")
+    print("critical Gaussian terminal fixed dyadic lags/variances: "
+          f"{critical_gaussian[9]}, "
+          f"{tuple(f'{value:.6f}' for value in critical_gaussian[10])}")
     print("ergodic second-chaos beta, limiting/finite normalized third "
           "cumulants: "
           f"{second_chaos[0]:.1f}, {second_chaos[1]:.9f}, "
@@ -1496,3 +1518,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

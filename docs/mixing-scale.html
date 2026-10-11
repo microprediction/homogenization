@@ -101,7 +101,8 @@
     <p class="subtitle">Ergodicity gives averaging. The covariance tail decides the size of the first fluctuation correction.</p>
 
     <p class="lead">A fast finite-state chain has an integrable covariance, so its symmetric correction is proportional
-      to its correlation time. That conclusion is not a consequence of stationarity and ergodicity alone. Long memory
+      to its correlation time. That conclusion is not a consequence of stationarity and ergodicity alone.</p>
+    <p class="lead">Long memory
       changes the power of the small parameter. Conversely, a vanishing Green&ndash;Kubo integral can make averaging
       faster than the usual diffusive rate, while a periodic ergodic driver can have no convergent Green&ndash;Kubo
       integral at all.</p>
@@ -137,7 +138,8 @@
       \longrightarrow P_{\rm inv}X_0\quad\hbox{in }L^2.$$
     <p>Thus a centered ergodic process has $\mu(\{0\})=0$. More generally, zero mass at frequency zero is
       exactly the condition needed for this particular observable to average in mean square; it does not by itself
-      imply that the whole stationary system is ergodic. If $\mu(\{0\})&gt;0$, the variance converges to
+      imply that the whole stationary system is ergodic.</p>
+    <p>If $\mu(\{0\})&gt;0$, the variance converges to
       $T^2\mu(\{0\})$ and no fluctuation rescaling can repair the failed averaging limit. This is the spectral
       projection underlying
       <a href="https://doi.org/10.1073/pnas.18.1.70">von Neumann&apos;s mean ergodic theorem (1932)</a>.</p>
@@ -227,7 +229,8 @@
     <p>in operator norm. This follows directly from the matrix Fej&eacute;r identity: matrix Potter bounds control
       the small-frequency part uniformly, frequencies bounded away from zero are
       $o(T_\varepsilon^{2-\alpha}\varepsilon^\alpha L(R_\varepsilon))$, and finite-dimensional polarization
-      identifies the limit. Equivalently one may first test every quadratic form $u^*\mathsf M u$ and then use
+      identifies the limit.</p>
+    <p>Equivalently one may first test every quadratic form $u^*\mathsf M u$ and then use
       compactness of the unit sphere. The conclusion includes singular $B$; no positive-definiteness assumption is
       hidden in the proof.</p>
     <p>That last point creates a genuine hierarchy. Let the two coordinates be independent stationary Gaussian
@@ -248,7 +251,8 @@
       rank and is not the fixed-feature Green&ndash;Kubo rank of a finite-state chain.</p>
     <p>The exact Gamma-spectrum certificate measures eigenvalue orders $0.599999990$ and $1.599757660$.
       The two leading-constant ratios are $0.999999993$ and $0.999474581$, while the condition-number ratio to its
-      predicted equivalent is $1.000525688$. At the smallest tested $\varepsilon$, the eigenvalues normalized by
+      predicted equivalent is $1.000525688$.</p>
+    <p>At the smallest tested $\varepsilon$, the eigenvalues normalized by
       $\varepsilon^{0.6}$ are $2.09923303$ and $2.5102\times10^{-8}$. Independent covariance quadrature agrees
       with the closed spectral formula within $4.45\times10^{-16}$.</p>
     <h3>Gaussian functional limit in the sharp subcritical H&ouml;lder topology</h3>
@@ -267,8 +271,8 @@
     </div>
     <p>where $B_H$ is standard fractional Brownian motion. Equivalently, along every joint path
       $T_\varepsilon/\varepsilon\to\infty$, the process
-      $A_\varepsilon(tT_\varepsilon)/\sqrt{\operatorname{Var}A_\varepsilon(T_\varepsilon)}$ has the same limit.
-      Indeed, the spectral theorem says that $V$ is regularly varying with index
+      $A_\varepsilon(tT_\varepsilon)/\sqrt{\operatorname{Var}A_\varepsilon(T_\varepsilon)}$ has the same limit.</p>
+    <p>Indeed, the spectral theorem says that $V$ is regularly varying with index
       $2-\alpha=2H$. Stationary increments give the exact identity</p>
     $$\operatorname{Cov}\{S_R(s),S_R(t)\}
       =\frac{V(Rs)+V(Rt)-V(R|t-s|)}{2V(R)},$$
@@ -277,7 +281,8 @@
       finite-dimensional convergence.</p>
     <p>The usual invocation of Potter bounds needs one extra step here: regular variation controls $V(Rh)/V(R)$
       only when $Rh$ is large. Fix $\eta&gt;0$. For $Rh$ above a fixed threshold, Potter&apos;s bound gives
-      $V(Rh)/V(R)\le C_\eta h^{2H-\eta}$. For microscopic lags, stationarity and
+      $V(Rh)/V(R)\le C_\eta h^{2H-\eta}$.</p>
+    <p>For microscopic lags, stationarity and
       $|\operatorname{Cov}(X_0,X_u)|\le\operatorname{Var}(X_0)$ give $V(r)\le\operatorname{Var}(X_0)r^2$.
       Since $2-2H+\eta&gt;0$ and $R^{-\eta}/L(R)$ is bounded for slowly varying $L$, the same inequality follows
       uniformly for $Rh$ below the threshold. Thus</p>
@@ -288,7 +293,8 @@
       $\gamma&lt;H-\eta/2-1/p$. Together with the covariance limit, this proves the displayed convergence.</p>
     <p>The topology is sharp. Fractional Brownian motion has exact uniform modulus
       $h^H\sqrt{\log(1/h)}$ up to constants, so its paths are almost surely in every $c_0^\gamma$, $\gamma&lt;H$,
-      but not in $C^H$. If the laws of $S_R$ were tight in $c_0^\gamma$ for any $\gamma\ge H$, continuous embedding
+      but not in $C^H$.</p>
+    <p>If the laws of $S_R$ were tight in $c_0^\gamma$ for any $\gamma\ge H$, continuous embedding
       into $C[0,1]$ and uniqueness of the finite-dimensional limit would produce an fBm-valued limit in that space,
       a contradiction. The modulus statement is also the ordinary-fBm specialization of
       <a href="https://doi.org/10.1007/s10959-021-01148-8">Wang and Xiao&apos;s exact theorem (2022)</a>.</p>
@@ -301,7 +307,8 @@
     <p>The exact Gamma-spectrum certificate checks the uniform variance envelope on a dyadic mesh extending ten
       scales below the correlation time. For $(\alpha,H,\gamma)=(0.7,0.65,0.55)$ its largest nontrivial ratio
       $\{V(Rh)/V(R)\}/h^{2\gamma}$ is $0.8705506$ through $R=2^{80}$, while the correlation-time ratio falls to
-      $0.0000061$. For $(1.7,0.15,0.10)$ the corresponding values are $0.9330330$ and $0.0003460$.
+      $0.0000061$.</p>
+    <p>For $(1.7,0.15,0.10)$ the corresponding values are $0.9330330$ and $0.0003460$.
       The fitted correlation-time decay exponents are $0.2000000$ and $0.1000015$, against the predicted
       $2(H-\gamma)$ values $0.2$ and $0.1$.</p>
     <h3>The critical Gaussian boundary is not fractional Brownian motion</h3>
@@ -317,18 +324,29 @@
     </div>
     <p>Thus on any finite collection of distinct positive times the limit has the representation
       $G(t_i)=(Z_0+Z_i)/\sqrt2$, where $Z_0,Z_1,\ldots$ are independent standard Gaussians; also $G(0)=0$.
-      This finite-dimensional limit has no stochastically continuous version. In particular it is not a
+      This finite-dimensional limit has no stochastically continuous version.</p>
+    <p>In particular it is not a
       fractional Brownian motion with a formal Hurst index zero. The analogous discrete-time spectral theorem of
       <a href="./bibliography.html#DeligiannidisUtev2013">Deligiannidis and Utev (2013)</a> assumes a strictly
       positive regular-variation index for the partial-sum variance; this zero-index endpoint lies outside its
       stated equivalence.</p>
-    <p>More decisively, the normalized paths are not tight in $C[0,1]$. For every fixed $\delta&gt;0$, stationarity
+    <p>In fact allowing jumps does not rescue functional convergence: the normalized paths are not tight in
+      Skorokhod $D[0,1]$ under either the $J_1$ or $M_1$ topology. Otherwise some subsequence would converge to a
+      c&agrave;dl&agrave;g process $Y$. The deterministic times at which a c&agrave;dl&agrave;g process has a jump with positive
+      probability form an at most countable set, so one can choose $t&gt;0$ and a decreasing sequence
+      $h_n\downarrow0$ such that $t$ and every $t+h_n$ are continuity times of $Y$.</p>
+    <p>Evaluation at such times is
+      continuous in both topologies. The already identified finite-dimensional limit would therefore force</p>
+    $$Y(t+h_n)-Y(t)\sim N(0,1)\qquad\text{for every }n.$$
+    <p>But right continuity of $Y$ forces the same increments to converge almost surely, hence in probability, to
+      zero. This contradiction proves the claim. In particular the paths are not tight in $C[0,1]$.</p>
+    <p>The continuous-path obstruction is also visible directly. For every fixed $\delta&gt;0$, stationarity
       gives</p>
     $$\operatorname{Var}\{S_R(\delta)-S_R(0)\}=\frac{V(R\delta)}{V(R)}\longrightarrow1.$$
     <p>Since the increment is Gaussian, for every $\eta&gt;0$ the probability that the uniform modulus over intervals
       of length $\delta$ exceeds $\eta$ has limit inferior at least $2\Phi(-\eta)$. Letting $\delta\downarrow0$
       violates the necessary modulus-of-continuity condition for tightness. The endpoint therefore has a valid and
-      explicit finite-dimensional limit but no continuous functional limit under this normalization.</p>
+      explicit finite-dimensional limit but no c&agrave;dl&agrave;g functional limit under this normalization.</p>
     <h4>A power-scale modulus profile</h4>
     <p>The failure of tightness has a sharper multiscale form. Suppose more specifically that the critical spectral
       law has</p>
@@ -345,7 +363,8 @@
     </div>
     <p>Thus the correlation-time scale $R^{-1}$ is the continuity threshold, but the whole approach to it remembers
       the slowly varying critical law. Fixed positive lags correspond to $\beta=0$ and retain unit variance;
-      lags at or below $R^{-1}$ vanish after normalization. Between them lies a continuum of nonzero increment
+      lags at or below $R^{-1}$ vanish after normalization.</p>
+    <p>Between them lies a continuum of nonzero increment
       variances. The exponent $p+1$ also shows why there is no universal microscopic modulus profile under the bare
       critical hypothesis: different logarithmic spectral corrections have the same fixed-time Gaussian-dust limit
       but different power-scale paths to continuity.</p>
@@ -360,9 +379,12 @@
       grid $0,0.1,0.25,0.5,0.75,1$, the maximum covariance-matrix error relative to the displayed limit falls from
       $0.332186$ at $R=2^{10}$ to $0.010381$ at $R=2^{320}$. At
       $\beta=(0.25,0.5,0.75,1,1.25)$, the maximum discrepancy from the limiting power-lag profile is below
-      $1.6\times10^{-3}$ at $R=2^{320}$. The deliberately slow logarithmic convergence is real:
+      $1.6\times10^{-3}$ at $R=2^{320}$.</p>
+    <p>The deliberately slow logarithmic convergence is real:
       even for the short interval $\delta=0.01$, its normalized increment variance rises to $0.958476$ at
-      $R=2^{160}$ and $0.979238$ at $R=2^{320}$, toward the nonzero limit one.</p>
+      $R=2^{160}$ and $0.979238$ at $R=2^{320}$, toward the nonzero limit one. At the terminal scale, the fixed
+      dyadic lags $2^{-1},\ldots,2^{-10}$ retain normalized increment variances between $0.968750$ and $0.996875$;
+      this is the finite-scale signature of the c&agrave;dl&agrave;g obstruction.</p>
     <h3>Why Gaussianity is essential: an ergodic counterexample</h3>
     <p>The warning above is not merely about a hidden invariant random offset. Fix $0&lt;\beta&lt;1/2$ and let $G$ be
       a centered stationary unit-variance Gaussian process with covariance</p>
@@ -396,7 +418,8 @@
     <p>Each normalized $I_R$ lies in the second Wiener chaos. Hypercontractivity therefore bounds its fourth
       moment uniformly, so convergence to a standard Gaussian would force its third moment to converge to zero,
       contradicting the display. The covariance exponent and even ergodicity do not identify the functional limit;
-      the Hermite rank matters. In the corresponding long-memory rank-two setting,
+      the Hermite rank matters.</p>
+    <p>In the corresponding long-memory rank-two setting,
       <a href="https://doi.org/10.1007/BF00532868">Taqqu (1975)</a> identifies the non-Gaussian Rosenblatt limit.
       For $\beta=0.3$, the deterministic certificate evaluates the finite-horizon variance and triple integral:
       its normalized third cumulant approaches $\gamma_{0.3}=2.067068891$ rather than zero.</p>
@@ -429,7 +452,8 @@
     <p>To prove it, scale the Stieltjes measures by
       $\mu_\lambda(B)=\mu(\lambda B)/F(\lambda)$, where
       $\lambda=\varepsilon/T_\varepsilon=R_\varepsilon^{-1}$.
-      Regular variation gives vague convergence to $\alpha x^{\alpha-1}dx$. The kernel
+      Regular variation gives vague convergence to $\alpha x^{\alpha-1}dx$.</p>
+    <p>The kernel
       $2(1-\cos x)/x^2$ is bounded at zero; Potter bounds and $\alpha&lt;2$ control its tail.
       Equivalently, the exact scale-collapse identity</p>
     $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{T_\varepsilon^2}
@@ -468,7 +492,8 @@
       $2bH(R){1+o(1)\}$; substitution in the exact Fej&eacute;r identity proves the factor $4b$.
       If a density exists with
       $f(\omega)\sim a\omega L(1/\omega)$, then $b=a/2$ and this reduces to the earlier
-      $2a\varepsilon^2H(T/\varepsilon)$ law. The divergence of $H$ is essential: when it stays bounded, the
+      $2a\varepsilon^2H(T/\varepsilon)$ law.</p>
+    <p>The divergence of $H$ is essential: when it stays bounded, the
       local equivalent of $F$ no longer determines a limiting coefficient. A finite global inverse spectral
       moment gives an order-$\varepsilon^2$ bound, but the coefficient converges only under the Fourier-decay
       condition stated below.</p>
@@ -495,13 +520,15 @@
     <p>A density-free benchmark puts mass $n^{-\alpha-1}$ at frequency $1/n$. Its cumulative mass satisfies</p>
     $$F(x)=\sum_{n\ge\lceil1/x\rceil}n^{-\alpha-1}\sim\frac{x^\alpha}{\alpha},$$
     <p>so the theorem applies although the measure is purely atomic. For $\alpha=1.3$, the certificate evaluates
-      the exact Fej&eacute;r sum using a direct finite sum and an independent Hurwitz-zeta tail. It finds order
+      the exact Fej&eacute;r sum using a direct finite sum and an independent Hurwitz-zeta tail.</p>
+    <p>It finds order
       $1.300596$ and leading-constant ratio $1.000240$. The example also emphasizes that zero spectral mass at
       frequency zero is an observable-level averaging condition: atoms at nonzero frequencies need not disappear.</p>
     <p>The same pure-point construction at the endpoint puts mass $n^{-3}$ at $1/n$. Then
       $F(x)\sim x^2/2$, so the critical theorem predicts
       $2\varepsilon^2\log(1/\varepsilon)$ at $T=1$. The direct Fej&eacute;r sum and an independently refined
-      Hurwitz-zeta tail agree within $2.71\times10^{-20}$. Regressing
+      Hurwitz-zeta tail agree within $2.71\times10^{-20}$.</p>
+    <p>Regressing
       $\operatorname{Var}A_\varepsilon/\varepsilon^2$ against $\log(1/\varepsilon)$ gives slope $1.966971$
       against the limiting value $2$; at the smallest tested $\varepsilon=2^{-20}$ the leading-term ratio is
       $1.025526$. The deliberately slow logarithmic convergence distinguishes this endpoint from the power-law
@@ -510,7 +537,8 @@
       $R=T_\varepsilon/\varepsilon$: fixed maturity, $T_\varepsilon=R^{-1/2}\downarrow0$, and
       $T_\varepsilon=R^{1/2}\uparrow\infty$. After division by $T_\varepsilon^2$, all three exact variances agree
       to machine precision. At $R=2^{24}$, the power-law leading ratio is $0.992367$ and the critical logarithmic
-      ratio is $1.000000000000$ on every path. An independent covariance-quadrature certificate for the
+      ratio is $1.000000000000$ on every path.</p>
+    <p>An independent covariance-quadrature certificate for the
       atom-plus-OU example checks the full $R$ crossover along maturities $0.2$, $1.3$, and $7$: normalized
       variances agree with the exact formula within $8\times10^{-15}$ and collapse across maturity paths within
       $5\times10^{-16}$, while the frozen, $R=1$, and invariant limits are respectively
@@ -610,7 +638,8 @@
     <p>Consequently $0\leq\operatorname{Var}A_\varepsilon/(2\varepsilon^2)\leq2M_{-2}$, and convergence to
       $M_{-2}$ along every long-window path is equivalent to
       $\operatorname{Re}\widehat\nu(R)\to0$. It is sufficient that $\nu$ be Rajchman, meaning that its
-      Fourier&ndash;Stieltjes transform vanishes at infinity. In particular this holds whenever $\nu$ has an
+      Fourier&ndash;Stieltjes transform vanishes at infinity.</p>
+    <p>In particular this holds whenever $\nu$ has an
       $L^1$ density, by the Riemann&ndash;Lebesgue lemma. The stronger time-domain assumptions above therefore imply
       a coefficient, but finiteness of $M_{-2}$ alone does not.</p>
     <p>The obstruction is already a stationary Gaussian process with no zero-frequency atom. Let
@@ -636,13 +665,15 @@
       \frac1S\int_0^S\{q(R)-M_{-2}\}^2\,dR
       \longrightarrow\frac12\sum_{\omega&gt;0}\nu(\{\omega\})^2.$$
     </div>
-    <p>Here the sum is over the atoms of the finite weighted measure $\nu$. The proof is direct. The average of
+    <p>Here the sum is over the atoms of the finite weighted measure $\nu$. The proof is direct.</p>
+    <p>The average of
       $\cos(R\omega)$ tends to zero for each $\omega&gt;0$. For the square, expand the product and use</p>
     $$\frac1S\int_0^S\cos(R\omega)\cos(R\lambda)\,dR
       \longrightarrow\frac12\mathbf1_{\{\omega=\lambda\}}.$$
     <p>Dominated convergence against $\nu\otimes\nu$ leaves half the mass of the diagonal, namely half the sum of
       squared atom masses. Thus the normalized coefficient converges to $M_{-2}$ in Ces&agrave;ro mean square if and
-      only if $\nu$ is nonatomic. This is strictly weaker than pointwise Rajchman decay. For example, a shifted
+      only if $\nu$ is nonatomic. This is strictly weaker than pointwise Rajchman decay.</p>
+    <p>For example, a shifted
       middle-thirds Cantor measure is nonatomic. If
       $Y=1+\sum_{k\geq1}2\xi_k3^{-k}$ for independent fair bits $\xi_k$, then</p>
     $$\widehat\nu(R)=e^{3iR/2}\prod_{k\geq1}\cos(R/3^k).$$
@@ -710,7 +741,8 @@
     <p>For the zero-Green&ndash;Kubo benchmark, independent covariance quadrature agrees with the exact formula within
       $1.1\times10^{-17}$. At $\alpha=1.4$, the measured order and asymptotic ratio are $1.399942$ and $0.999921$;
       at $\alpha=1.7$, they are $1.697433$ and $0.992367$. The boundary checks obtain the exact log-corrected ratio
-      $1.000000000000$ at $\alpha=2$. At $\alpha=3$, independent quadrature gives $M=-0.5$, measured order
+      $1.000000000000$ at $\alpha=2$.</p>
+    <p>At $\alpha=3$, independent quadrature gives $M=-0.5$, measured order
       $2.000000000$, and asymptotic ratio $0.999999999996$. Independent spectral quadrature gives
       $\int\omega^{-2}\mu(d\omega)=0.5$, agreeing with $-M$ within $1.1\times10^{-16}$.</p>
     <p>The low-frequency certificate also reconciles the spectral and covariance-tail constants within
@@ -771,7 +803,8 @@
       expansion for every long-memory process or nonsmooth payoff. Distributional limits depend on the process and
       on the Hermite rank of the observable. The regular-variation step is
       <a href="https://doi.org/10.24033/bsmf.1196">Karamata&apos;s
-      integral theorem (1933)</a>. Primary long-memory references are
+      integral theorem (1933)</a>.</p>
+    <p>Primary long-memory references are
       <a href="https://doi.org/10.1007/BF00532868">Taqqu (1975)</a>,
       <a href="https://doi.org/10.1007/BF00535673">Dobrushin and Major (1979)</a>, and
       <a href="https://doi.org/10.1007/BF00535674">Taqqu (1979)</a>. In finance,
