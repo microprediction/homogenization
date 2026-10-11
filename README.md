@@ -48,6 +48,7 @@ papers/yield-curve/
   long_end.py              the long yield as a principal eigenvalue; its convergent series in the switching time
   verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
   verify_uniform_long_end.py  uniform long-maturity, initial-slip, moving-generator, and Floquet phase/slip certificates
+  verify_identifiability.py exact covariance, fixed-feature/loading/Krylov rank, whitened noisy and robust minimax recovery, and finite-rate bounds
   make_data.py             writes docs/three-numbers.js for the yield-curve page
 papers/conformal/
   pooled.py                exact conditional laws of terminal, path-average and slow-state scores under a two-state chain
@@ -68,7 +69,7 @@ papers/smile/
   verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
   verify_circle_factor.py  stationary reversal and sharp energy-normalized Green-Kubo bounds
 docs/                      the site (GitHub Pages from main /docs)
-tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
+tools/assemble.py          builds docs/*.html from tools/pages/, including the identifiability note
 tools/biblio.json          the verified bibliography
 ```
 
