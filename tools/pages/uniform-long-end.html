@@ -632,14 +632,16 @@
     <p>Thus $r_m(t+P)=r_m(t)$. The profile and exponent are exact Floquet quantities; only the short initial
     transient is approximated.</p>
     <div class="equation-card">
-    <p><strong>Finite-chain periodic theorem.</strong> For every fixed probability row $\nu$,</p>
-    $$\sup_{T\geq0}\left|
+    <p><strong>Bounded-horizon frozen-layer theorem.</strong> For every fixed probability row $\nu$ and every
+      fixed $H&lt;\infty$,</p>
+    $$\sup_{0\leq T\leq H}\left|
       \log\{\nu U_m(T,0)\mathbf1\}-\lambda_mT
       -\log\{c_m\nu r_m(T)+\nu b_{m,0}(T)\}
-      \right|\leq {C_\nu\over m^2}.$$
-    <p>For the stationary initial row $\nu=\pi(0)$, the slip may be omitted while retaining $O(m^{-2})$.
-    For a general fixed prior, omitting it is generically only $O(m^{-1})$. If $Q(t)\equiv Q_0$ is fixed, the
-    stationary-prior formula with the frozen slip improves to $O(m^{-3})$ even when $Q_0$ is defective.</p>
+      \right|\leq {C_{\nu,H}\over m^2}.$$
+    <p>The exact Floquet principal term without a frozen slip is genuinely all-maturity: its error is
+      $O(m^{-2})$ for the stationary initial row $\nu=\pi(0)$ and generically $O(m^{-1})$ for a general fixed
+      prior. If $Q(t)\equiv Q_0$ is fixed, adding the frozen slip improves the stationary-prior error to
+      $O_H(m^{-3})$ on every fixed bounded horizon, even when $Q_0$ is defective.</p>
     </div>
 
     <h3>The calendar origin is arbitrary</h3>
@@ -657,22 +659,24 @@
     $$z_{m,s}=\mathbf1-c_{m,s}v_{m,s},\qquad
       b_{m,s}(T)=e^{\{A_m(s)-\lambda_mI\}T}z_{m,s}.$$
     <div class="equation-card">
-    <p><strong>Phase-uniform Floquet theorem.</strong> For every fixed probability row $\nu$, there are
-      $m_0,C_\nu&lt;\infty$, independent of the start phase and maturity, such that</p>
-    $$\sup_{s\in[0,P]}\sup_{T\geq0}\left|
+    <p><strong>Phase-uniform bounded-horizon theorem.</strong> For every fixed probability row $\nu$ and fixed
+      $H&lt;\infty$, there are $m_0,C_{\nu,H}&lt;\infty$, independent of the start phase, such that</p>
+    $$\sup_{s\in[0,P]}\sup_{0\leq T\leq H}\left|
       \log\{\nu U_m(s+T,s)\mathbf1\}-\lambda_mT
       -\log\{c_{m,s}\nu r_{m,s}(T)+\nu b_{m,s}(T)\}
-      \right|\leq {C_\nu\over m^2}.$$
-    <p>If the observation begins from the phase-specific stationary row $\nu=\pi(s)$, the slip may again be
-      omitted with a uniform $O(m^{-2})$ remainder. For a phase-independent nonstationary prior, omitting it is
-      generically only $O(m^{-1})$.</p>
+      \right|\leq {C_{\nu,H}\over m^2}.$$
+    <p>If the observation begins from the phase-specific stationary row $\nu=\pi(s)$, the slip may be omitted
+      with an $O(m^{-2})$ remainder uniform in both phase and all $T\geq0$. For a phase-independent
+      nonstationary prior, the corresponding all-maturity no-slip order is generically only $O(m^{-1})$.</p>
     </div>
     <p>To prove the statement, apply the finite-chain theorem to the translated coefficients
       $Q_s(t)=Q(s+t)$ and $D_s(t)=D(s+t)$. Their $C^2$ norms, irreducibility constants, and fast spectral gaps
       are uniform in $s$ by periodicity and compactness. The exponential-dichotomy and frozen-layer estimates
       therefore have one constant for every phase. Conjugacy identifies their exact exponents, while the
       displayed phase-specific right and left eigenvectors identify the principal coefficient and complementary
-      datum. This is the origin-invariance implicit in
+      datum. The fixed horizon is essential for the locally frozen exponential; the exact Floquet complement,
+      rather than a frozen local matrix, supplies the all-maturity exponential dichotomy. This is the
+      origin-invariance implicit in
       <a href="https://doi.org/10.24033/asens.220">Floquet&apos;s original theorem</a>; the uniform fast-layer
       estimate uses the same singular-perturbation mechanism as the time-inhomogeneous chain expansion of
       <a href="https://doi.org/10.1214/105051606000000682">Yin and Zhang (2007)</a>.</p>
@@ -706,10 +710,10 @@
     $$c_{m,s}(x)=w_{m,s}^{\top}x,\qquad
       z_{m,s}(x)=x-c_{m,s}(x)v_{m,s},$$
     $$b_{m,s}^{x}(T)=e^{\{A_m(s)-\lambda_mI\}T}z_{m,s}(x).$$
-    <p>Now $z_{m,s}(x)=O(1)$ in general. Under the hypotheses of the phase-uniform theorem, and with
-      $\min_i x_i&gt;0$, the corresponding frozen-layer approximation satisfies</p>
+    <p>Now $z_{m,s}(x)=O(1)$ in general. Under the hypotheses of the phase-uniform theorem, with
+      $\min_i x_i&gt;0$, and for every fixed $H&lt;\infty$, the corresponding frozen-layer approximation satisfies</p>
     <div class="equation-card">
-    $$\sup_{s\in[0,P]}\sup_{T\geq0}\left|
+    $$\sup_{s\in[0,P]}\sup_{0\leq T\leq H}\left|
       \log\{\nu U_m(s+T,s)x\}-\lambda_mT
       -\log\{c_{m,s}(x)\nu r_{m,s}(T)+\nu b_{m,s}^{x}(T)\}
       \right|=O(m^{-1}).$$
@@ -720,7 +724,7 @@
       $m\{Q(s+T)-Q(s)\}=O(mT)$, and convolution with two $e^{-cmT}$ fast bounds is $O(m^{-1})$
       when it acts on an order-one datum. If $Q$ is fixed, only $D(s+T)-D(s)=O(T)$ remains, giving
       $O(m^{-2})$. The complete normalized price is bounded away from zero for large $m$, uniformly in phase
-      and maturity, so the same orders pass from the vector remainder to its logarithm. For the bond payoff
+      and bounded maturity, so the same orders pass from the vector remainder to its logarithm. For the bond payoff
       $x=\mathbf1$, the additional $z_{m,s}(\mathbf1)=O(m^{-1})$ alignment recovers the stronger theorem above.
       This is the payoff-sensitive version of the matched boundary layers constructed by
       <a href="https://doi.org/10.1137/S0036139993259933">Khasminskii, Yin, and Zhang (1996)</a>.</p>
@@ -751,6 +755,29 @@
       $I-\mathbf1\pi_s$ is exactly $\operatorname{span}\{\mathbf1\}$. Thus the bond-payoff improvement is an
       exact payoff-space statement, while additional cancellation of either displayed scalar profile is
       model-, phase-, and observation-specific.</p>
+
+    <h4>Why the locally frozen slip is not an all-maturity object</h4>
+    <p>The earlier version of this note incorrectly put a supremum over every $T\geq0$ around the frozen-slip
+      estimates. Let $\alpha_{m,s}$ and $P^{\rm loc}_{m,s}$ denote the Perron root and projection of the frozen
+      matrix $A_m(s)$. If</p>
+    $$\Delta_{m,s}:=\alpha_{m,s}-\lambda_m&gt;0,
+      \qquad \nu P^{\rm loc}_{m,s}z_{m,s}(x)\ne0,$$
+    <p>then ordinary finite-dimensional spectral asymptotics give</p>
+    $$\nu b_{m,s}^x(T)
+      =e^{\Delta_{m,s}T}\{\nu P^{\rm loc}_{m,s}z_{m,s}(x)+o(1)\}.$$
+    <p>The exact Floquet complement instead decays under the nonautonomous exponential dichotomy. Thus the
+      locally frozen term eventually grows relative to the exact normalized price; if the displayed coefficient
+      is negative, the proposed positive logarithmic bracket eventually crosses zero. No constant independent of
+      maturity can then bound its log error. The obstruction can occur even for $x=\mathbf1$: the local Perron
+      leakage is smaller, but a nonzero exponentially amplified coefficient still wins at a logarithmically
+      later maturity.</p>
+    <p>In the moving three-state certificate at phase zero and $m=64$,
+      $\Delta_{m,0}=0.0551616197852$. At integer periods the frozen bracket for the bond changes sign between
+      $42P=263.893783$ and $43P=270.176968$; for $x=(1.35,0.72,1.08)$ it changes sign between
+      $28P=175.929189$ and $29P=182.212374$. The exact prices remain strictly positive. This counterexample does
+      not affect the bounded-horizon theorem, the fast-clock profiles, or the all-maturity no-slip Floquet
+      estimates. A genuinely all-maturity matched layer must use the transported nonautonomous complementary
+      bundle (or an explicitly stable surrogate), not the exponential of one locally frozen full matrix.</p>
 
     <p>The certificate uses $x=(1.35,0.72,1.08)$ and $\nu=(0.8,0.1,0.1)$. It compares the moving
       three-state chain with the defective fixed-generator control and maximizes over two periods.</p>

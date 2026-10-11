@@ -13,9 +13,11 @@ profile supplies an a posteriori residual bracket for the exact Floquet
 exponent at a fixed, finite switching speed.  The same comparison argument
 also gives a fully computable finite-horizon price bracket, including the
 initial normalization against the positive trial profile.
-The final check shifts the calendar origin, recomputes the phase-specific
-Floquet projection, and verifies that the frozen slip restores the uniform
-second-order rate at every sampled start phase.
+The final checks shift the calendar origin, recompute the phase-specific
+Floquet projection, verify that the frozen slip restores the second-order
+rate on a fixed bounded window at every sampled start phase, and exhibit the
+local-Perron leakage that prevents that frozen full-matrix exponential from
+being an all-maturity approximation.
 """
 
 from __future__ import annotations
@@ -2759,7 +2761,7 @@ def phase_shifted_floquet_errors(m: float) -> dict[str, float]:
 
 
 def check_phase_shifted_floquet_projection() -> None:
-    """Phase-uniform finite-chain Floquet profile and frozen slip."""
+    """Phase-uniform Floquet profile and frozen slip on a fixed window."""
     speeds = (4.0, 8.0, 16.0, 32.0, 64.0)
     results = [phase_shifted_floquet_errors(m) for m in speeds]
     print("\nPhase-shifted finite-chain Floquet projection")
@@ -2939,6 +2941,86 @@ def regime_payoff_floquet_errors(
     }
 
 
+def frozen_layer_long_end_obstruction(m: float = 64.0) -> dict[str, float]:
+    """Show why a local frozen layer cannot be uniform over all maturities.
+
+    At phase zero the local Perron root of ``A_m(0)`` lies above the exact
+    Floquet exponent in this benchmark.  Any nonzero projection of the
+    Floquet-complementary datum onto that local Perron eigenspace is therefore
+    amplified by ``exp((alpha_local-lambda_floquet) T)``.  For the chosen
+    observation row the projection is negative, so the proposed positive
+    logarithmic bracket eventually crosses zero.
+    """
+    payoff = np.array([1.35, 0.72, 1.08])
+    bond = np.ones(3)
+    prior = np.array([0.8, 0.1, 0.1])
+    stationary = stationary_row(periodic_three_state_generator(0.0))
+
+    def matrix(time: float) -> np.ndarray:
+        return (
+            m * periodic_three_state_generator(time)
+            + periodic_three_state_forcing(time)
+        )
+
+    def matrix_rhs(time: float, state: np.ndarray) -> np.ndarray:
+        return (matrix(time) @ state.reshape(3, -1)).ravel()
+
+    fundamental = solve_ivp(
+        matrix_rhs,
+        (0.0, PERIOD),
+        np.eye(3).ravel(),
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    assert fundamental.success
+    monodromy = fundamental.y[:, -1].reshape(3, 3)
+    values, left, right = eig(monodromy, left=True, right=True)
+    index = int(np.argmax(values.real))
+    multiplier = float(values[index].real)
+    right_vector = right[:, index].real
+    left_vector = left[:, index].real
+    if stationary @ right_vector < 0:
+        right_vector *= -1
+        left_vector *= -1
+    right_vector /= stationary @ right_vector
+    left_vector /= left_vector @ right_vector
+    exponent = float(np.log(multiplier) / PERIOD)
+
+    frozen = matrix(0.0)
+    local_values = eig(frozen, left=False, right=False)
+    local_root = float(np.max(local_values.real))
+    gap = local_root - exponent
+    frozen_matrix = frozen - exponent * np.eye(3)
+
+    def crossing(data: np.ndarray) -> tuple[float, float, float]:
+        coefficient = float(left_vector @ data)
+        fast_initial = data - coefficient * right_vector
+        principal = coefficient * float(prior @ right_vector)
+        previous = principal + float(prior @ fast_initial)
+        for period_index in range(1, 1000):
+            maturity = period_index * PERIOD
+            bracket = principal + float(
+                prior @ (expm(frozen_matrix * maturity) @ fast_initial)
+            )
+            if previous * bracket < 0:
+                return maturity - PERIOD, maturity, bracket
+            previous = bracket
+        raise AssertionError("frozen layer did not cross zero on the search grid")
+
+    bond_left, bond_right, bond_value = crossing(bond)
+    payoff_left, payoff_right, payoff_value = crossing(payoff)
+    return {
+        "gap": gap,
+        "bond_left": bond_left,
+        "bond_right": bond_right,
+        "bond_value": bond_value,
+        "payoff_left": payoff_left,
+        "payoff_right": payoff_right,
+        "payoff_value": payoff_value,
+    }
+
+
 def check_regime_dependent_payoff_layer() -> None:
     """Sharp frozen-layer orders for a nonconstant positive payoff."""
     speeds = (8.0, 16.0, 32.0, 64.0, 128.0)
@@ -2984,6 +3066,17 @@ def check_regime_dependent_payoff_layer() -> None:
         "m=128 discrepancies "
         f"{moving[-1]['profile_discrepancy']:.3e}, "
         f"{fixed[-1]['profile_discrepancy']:.3e}"
+    )
+    obstruction = frozen_layer_long_end_obstruction()
+    assert obstruction["gap"] > 0.05
+    assert obstruction["bond_value"] < 0.0
+    assert obstruction["payoff_value"] < 0.0
+    print(
+        "frozen-layer long-end obstruction at m=64: local/Floquet gap "
+        f"{obstruction['gap']:.12f}; bond zero bracket "
+        f"({obstruction['bond_left']:.6f}, {obstruction['bond_right']:.6f}); "
+        "payoff zero bracket "
+        f"({obstruction['payoff_left']:.6f}, {obstruction['payoff_right']:.6f})"
     )
 
 
@@ -3591,9 +3684,9 @@ def main() -> None:
     print("Periodic Floquet-phase theorem: passed")
     print("Unequal-rate periodic phase-and-slip theorem: passed")
     print("Moving-generator periodic phase-and-slip theorem: passed")
-    print("Finite-chain periodic Floquet-profile theorem: passed")
-    print("Phase-uniform Floquet-projection theorem: passed")
-    print("Regime-dependent payoff boundary-layer orders: passed")
+    print("Finite-chain bounded-horizon frozen-layer theorem: passed")
+    print("Phase-uniform bounded-horizon Floquet theorem: passed")
+    print("Regime-dependent payoff boundary-layer orders and long-end obstruction: passed")
 
 
 if __name__ == "__main__":
