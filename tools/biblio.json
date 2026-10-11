@@ -2517,5 +2517,27 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Kalman1960",
+  "authors": "Kalman, R. E.",
+  "year": 1960,
+  "title": "Contributions to the Theory of Optimal Control",
+  "venue": "Boletín de la Sociedad Matemática Mexicana 5:102-119",
+  "doi": "",
+  "url": "https://boletin.math.org.mx/pdf/2/5/BSMM(2).5.102-119.pdf",
+  "annotation": "Introduces the state-space controllability and observability viewpoint. The yield-curve note turns its finite-horizon observability Gramian into the Fisher information for a continuously observed maturity response."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Hautus1969",
+  "authors": "Hautus, M. L. J.",
+  "year": 1969,
+  "title": "Controllability and Observability Conditions of Linear Autonomous Systems",
+  "venue": "Indagationes Mathematicae (Proceedings) 72(5):443-448",
+  "doi": "",
+  "url": "https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/",
+  "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
  }
 ]

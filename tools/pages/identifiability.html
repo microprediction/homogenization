@@ -1,0 +1,1224 @@
+<!-- title: What a fast-switching yield curve identifies · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_identifiability.py">numerical certificate</a></span></p>
+    <h1>What a fast-switching yield curve identifies</h1>
+    <p class="subtitle">A first-order identifiability theorem, exact loading and initial-mixture rank boundaries, and an explicit finite-rate remainder.</p>
+    <p class="muted">Research note, 23 September 2026. This note develops the <a href="./yield-curve.html">three-number example</a>;
+      the asymptotic statements concern a fixed finite maturity interval as the generator is sped up.</p>
+
+    <h2>Model and convention</h2>
+    <p>Let $Q_0$ be an irreducible generator on $n$ states, with stationary row vector $\pi$, and let the
+      regime generator be $mQ_0$, $m\to\infty$. The short rate obeys
+      $dr_t=\kappa(\theta_{y_t}-r_t)dt+\sqrt{s_{y_t}}\,dW_t$, with
+      $\kappa>0$, $s_i\ge0$, and $y_t$ independent of $W$. Define</p>
+    $$B(T)=\frac{1-e^{-\kappa T}}{\kappa},\quad I_j(T)=\int_0^T B(t)^jdt,\quad
+      u=\theta-(\pi\theta){\bf1},\quad v=s-(\pi s){\bf1}.$$
+    <p>For a known initial rate $x$, write $P_i(T)=e^{-B(T)x}a_i(T)$ for a specified
+      starting regime and $P_\pi(T)=e^{-B(T)x}\pi a(T)$ for a stationary start. The exact finite-dimensional equation is</p>
+    $$a'(T)=\{mQ_0+\operatorname{diag}g(T)\}a(T),\quad a(0)={\bf1},
+      \qquad g(T)=-\kappa\theta B(T)+\tfrac12 s B(T)^2.$$
+    <p>In particular, $g(0)=0$. Put $R=I-{\bf1}\pi$ and $H=-Q_0^{\#}
+      =\int_0^\infty e^{Q_0t}R\,dt$. The symmetric Green&ndash;Kubo form is
+      $\mathcal K_0^{\rm sym}(f,h)
+      =\frac12\{\pi[f(Hh)]+\pi[h(Hf)]\}$ on centered vectors.
+      The coefficients below are computed with <em>$Q_0$</em>; their actual contribution at rate $mQ_0$ is divided by $m$.</p>
+
+    <h2>Theorem: the first-order information</h2>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log P_\pi(T)+B(T)x
+        &=\beta_1 I_1+\beta_2 I_2+\beta_3 I_3+\beta_4 I_4+E_\pi(T),\\
+      \beta_1&=-\kappa\bar\theta,\qquad
+      \beta_2=\tfrac12\bar s+\frac{\kappa^2}{m}\mathcal K_0(u,u),\\
+      \beta_3&=-\frac{\kappa}{m}\mathcal K_0^{\rm sym}(u,v),\qquad
+      \beta_4=\frac{1}{4m}\mathcal K_0(v,v).
+    \end{aligned}$$
+    </div>
+    <p>For every fixed $L<\infty$, $\sup_{0\le T\le L}|E_\pi(T)|=O_L(m^{-2})$.
+      With $\kappa$ and $x$ fixed, the four functions $I_1,\ldots,I_4$ are linearly independent
+      on every open maturity interval. Hence an <em>ideal first-order stationary curve</em> uniquely determines
+      these four coefficients. It does not separately determine $\bar s$ and
+      $\mathcal K_0(u,u)/m$ from $\beta_2$, nor the underlying chain. Two chains can share all four
+      first-order coefficients and have different exact curves at order $m^{-2}$.
+      Finite-rate observations do not recover these coefficients without error; a bound appears below.</p>
+    <p>Let $c_2=\kappa^2\mathcal K_0(u,u)/m$, $c_3=\beta_3$ and
+      $c_4=\beta_4$. The $2\times2$ Green&ndash;Kubo matrix is positive semidefinite, so
+      $c_3^2\le4c_2c_4$, and the observable restriction is
+      $\beta_3^2\le4\beta_2\beta_4$. When $\beta_4=0$, necessarily $\beta_3=0$.
+      Equality for the <em>latent</em> $c$'s holds with two regimes, including
+      the degenerate zero-variance case. Strict inequality for the <em>observable</em> $\beta$'s alone
+      cannot establish three regimes: $\bar s>0$ makes it strict even for two states.
+      If $\bar s$ is separately known, strict inequality among the $c$'s implies at least three
+      regimes. It still does not identify their transition graph.</p>
+
+    <h2>The general fixed-feature Gram theorem</h2>
+    <p>The two-feature restriction is a special case. Suppose the centered forcing separates as</p>
+    $$g_i(t)-\pi g(t)=\sum_{r=1}^d\phi_r(t)f_r(i),\qquad \pi f_r=0,$$
+    <p>and let $F=[f_1\ \cdots\ f_d]$ be the $n\times d$ feature matrix. Define the fixed-parameter
+      Green&ndash;Kubo Gram matrix</p>
+    $$G_{rs}=\mathcal K_0^{\rm sym}(f_r,f_s).$$
+    <p>Then the stationary first correction is</p>
+    $$\frac1m\int_0^T\phi(t)^\top G\phi(t)\,dt,$$
+    <p>and, for every irreducible finite chain,</p>
+    <div class="equation-card">
+    $$G\succeq0,\qquad
+      \ker G=\ker F,\qquad
+      \operatorname{rank}G=\operatorname{rank}F\le\min(d,n-1).$$
+    </div>
+    <p>The equality of kernels is stronger than the rank upper bound. For any coefficient vector $a$,
+      $a^\top Ga=\mathcal K_0^{\rm sym}(Fa,Fa)$. The additive-functional martingale argument in the
+      proof below makes this zero exactly when the centered state function $Fa$ is zero. Thus an
+      identified fixed-feature rank $r$ requires at least $r+1$ regimes. It does not identify the
+      generator: many chains and feature embeddings produce the same $G$.</p>
+    <p>Identification of the whole matrix still requires the maturity functions
+      $\int_0^T\phi_r(t)\phi_s(t)\,dt$ to be linearly independent over the observed interval. Without
+      that design condition, a curve identifies only the corresponding linear combinations of the
+      entries of $G$.</p>
+
+    <h3>The exact finite-horizon covariance</h3>
+    <p>The Green&ndash;Kubo matrix is a covariance <em>rate</em>, not the covariance at a finite
+      horizon. Let $Y$ start in stationarity, let its generator be $mQ_0$, put
+      $H=-Q_0^\#$, and define</p>
+    $$Z_T=\int_0^T F^\top e_{Y_s}\,ds,\qquad
+      J_m(T)=\frac{T}{m}H-\frac1{m^2}H^2(I-e^{mQ_0T}).$$
+    <p>Here the columns of $F$ are centered and $e_i$ is the state basis vector. Direct
+      integration of the two-time covariance gives the exact identity</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}_\pi(Z_T)
+      =F^\top\operatorname{diag}(\pi)J_m(T)F
+       +F^\top J_m(T)^\top\operatorname{diag}(\pi)F
+      =\frac{2T}{m}G+O(m^{-2}).$$
+    </div>
+    <p>The remainder is uniform over every $T\ge0$: exponential mixing bounds
+      $H^2(I-e^{mQ_0T})$ independently of $T$. For each fixed $T&gt;0$ the exponentially
+      small part also yields the explicit boundary correction</p>
+    $$\operatorname{Cov}_\pi(Z_T)
+      =\frac{2T}{m}G-\frac1{m^2}
+       \left[F^\top\operatorname{diag}(\pi)H^2F
+       +F^\top(H^2)^\top\operatorname{diag}(\pi)F\right]+O(e^{-m\delta T}/m^2).$$
+    <p>At every finite $T&gt;0$ this exact covariance is positive semidefinite and has
+      $\ker\operatorname{Cov}_\pi(Z_T)=\ker F$. The rank statement is stronger than the
+      closed stationary formula: it remains true for <em>every</em> initial regime prior $\nu$,
+      including a deterministic start, although the covariance formula itself then changes.</p>
+    <p>To prove this, suppose the variance of $\int_0^T f(Y_s)ds$ vanishes and choose a state
+      $i_0$ in the support of $\nu$. The integral is constant almost surely. On the no-jump
+      path it equals $Tf_{i_0}$. For any directed path $i_0\to i_1\to\cdots\to i_k$, consider
+      paths that make exactly these $k$ jumps and then no more before $T$. Their ordered jump
+      times have a strictly positive density on the open simplex. The integral is the continuous
+      affine function
+      $f_{i_0}t_1+\cdots+f_{i_{k-1}}(t_k-t_{k-1})+f_{i_k}(T-t_k)$.
+      Since it is almost surely constant, it is constant throughout that simplex, forcing
+      $f_{i_{r-1}}=f_{i_r}$ for every edge. Irreducibility gives a directed path from $i_0$ to
+      every state, so $f$ is constant; after centering, $f=0$. Hence for arbitrary $\nu$</p>
+    $$\ker\operatorname{Cov}_\nu(Z_T)=\ker F,\qquad
+      \operatorname{rank}\operatorname{Cov}_\nu(Z_T)=\operatorname{rank}F.$$
+    <p>This still says nothing about rank after different time-dependent loadings have been
+      integrated. For a stationary start and reversible $Q_0$, spectral calculus also gives
+      the Loewner bound $0\preceq\operatorname{Cov}_\pi(Z_T)\preceq2TG/m$; neither the closed
+      formula nor that upper bound is asserted for a nonstationary start.</p>
+    <p>The certificate independently integrates the joint first- and second-moment equations.
+      Across 48 dense nonreversible chain/prior cases, including point-mass starts, every numerical
+      covariance has the predicted rank; under stationarity the ODE and closed formula agree within
+      $1.6\times10^{-14}$.</p>
+
+    <h3>Why an integrated rank is not a regime count</h3>
+    <p>The rank statement applies to one fixed feature matrix. If $p$ contracts have a
+      maturity-dependent loading matrix $L(t)\in\mathbb R^{p\times d}$, their integrated coefficient
+      matrix is</p>
+    $$D(T)=\int_0^T L(t)G L(t)^\top dt.$$
+    <p>Let $r=\operatorname{rank}G$ and choose any full-column factor $G=RR^\top$ with
+      $R\in\mathbb R^{d\times r}$. Then for every $x\in\mathbb R^p$,</p>
+    $$x^\top D(T)x=\int_0^T\|R^\top L(t)^\top x\|^2dt.$$
+    <p>Consequently, writing essential span to ignore measure-zero values of a merely measurable loading,</p>
+    <div class="equation-card">
+    $$\ker D(T)=\{x:R^\top L(t)^\top x=0\text{ for a.e. }t\},\qquad
+      \operatorname{rank}D(T)=\dim\operatorname*{ess\,span}_{t\in[0,T]}\operatorname{range}(L(t)R).$$
+    </div>
+    <p>For continuous loadings, &ldquo;almost everywhere&rdquo; can be replaced by &ldquo;everywhere.&rdquo;
+      This is the exact rank boundary: integrating does not recover another property of the hidden
+      chain; it measures the span swept out by the loaded fixed-feature range.</p>
+    <p>A useful finite-dimensional specialization makes the possible inflation explicit. If</p>
+    $$L(t)=\sum_{j=1}^q\psi_j(t)L_j,\qquad
+      \Gamma_{ij}=\int_0^T\psi_i(t)\psi_j(t)dt\succ0,$$
+    <p>and $\mathcal B=[L_1R\ \cdots\ L_qR]$, then</p>
+    $$D(T)=\mathcal B(\Gamma\otimes I_r)\mathcal B^\top,\qquad
+      \operatorname{rank}D(T)=\operatorname{rank}\mathcal B\le\min(p,qr).$$
+    <p>The matrix $D(T)$ is a finite-horizon controllability Gramian with input matrix $L(t)R$;
+      the rank interpretation goes back to
+      <a href="./bibliography.html#Kalman1960">Kalman (1960)</a>.</p>
+    <p>Although every integrand has rank at most $r$, its range can rotate with $t$, so $D(T)$
+      can attain the larger bound $qr$. The smallest counterexample uses only two regimes and one
+      centered feature. Take scalar $G=[g]$ with $g>0$ and
+      $L(t)=(1,t,t^2)^\top$. At $T=1$,</p>
+    $$D(1)=g\begin{pmatrix}
+      1&1/2&1/3\\
+      1/2&1/3&1/4\\
+      1/3&1/4&1/5
+    \end{pmatrix},$$
+    <p>the positive-definite $3\times3$ Hilbert matrix. Hence $\operatorname{rank}D(1)=3$ even though
+      $n-1=1$. A rank lower bound on the number of regimes is valid for the fixed Green&ndash;Kubo
+      Gram matrix after known loadings have been removed, not for a matrix obtained by integrating
+      heterogeneous maturity loadings. The certificate also checks a rank-two, three-basis example
+      attaining rank six and reproduces the factorization by independent quadrature within
+      $2\times10^{-12}$. This is the same distinction needed in multi-name credit and multi-factor
+      term-structure applications.</p>
+
+    <h2>Known starting regime</h2>
+    <p>For any specified state $i$, the same theorem adds two unintegrated terms:</p>
+    <div class="equation-card">
+    $$\log P_i(T)+B(T)x
+      =\sum_{j=1}^4\beta_j I_j(T)
+       +\frac1m\left[-\kappa(Hu)_iB(T)+\tfrac12(Hv)_iB(T)^2\right]
+       +E_i(T),\qquad
+       \sup_{0\le T\le L}|E_i(T)|=O_L(m^{-2}).$$
+    </div>
+    <p>The coefficients of $B$ and $B^2$ record the Poisson solutions for the initial state.
+      Their $\pi$-weighted averages are zero, recovering the stationary formula. They are two
+      distinct functions, but they do <em>not</em> contribute two new independent shapes to a
+      single curve. The identities</p>
+    $$B(T)=T-\kappa I_1(T),\qquad B(T)^2=2I_1(T)-2\kappa I_2(T)$$
+    <p>show that the six displayed functions span only
+      $\{T,I_1,I_2,I_3,I_4\}$, a five-dimensional space. Writing the known-start coefficients as
+      $\gamma_{1i}=-\kappa(Hu)_i/m$ and $\gamma_{2i}=(Hv)_i/(2m)$, one curve determines only</p>
+    $$(\gamma_{1i},\;\beta_1-\kappa\gamma_{1i}+2\gamma_{2i},\;
+      \beta_2-2\kappa\gamma_{2i},\;\beta_3,\;\beta_4)$$
+    <p>at this order. If separately labeled curves for several initial regimes are available,
+      their differences isolate $(\gamma_{1i}-\gamma_{1j})B+
+      (\gamma_{2i}-\gamma_{2j})B^2$. Both relative coefficients can then be read from a
+      maturity interval; a stationary-start curve also isolates the common $\beta$'s.</p>
+    <p>The approximation has a uniform <em>value</em> error but no claimed uniform derivative
+      error near $T=0$. In particular, differentiating its known-start term at zero
+      would give a spurious $O(m^{-1})$ initial slope; the order-$m^{-2}$ initial layer
+      cancels it in a window of width $O(m^{-1})$.</p>
+
+    <h2>An unobserved initial mixture: outer and boundary information</h2>
+    <p>Let the initial regime have an unknown row distribution $\nu$. Averaging the
+      statewise expansion before taking its logarithm gives, uniformly on a fixed bounded
+      maturity interval,</p>
+    <div class="equation-card">
+    $$\log P_\nu(T)+B(T)x
+      =\sum_{j=1}^4\beta_jI_j(T)
+       +\frac1m\left[-\kappa\nu Hu\,B(T)+\tfrac12\nu Hv\,B(T)^2\right]
+       +O_L(m^{-2}).$$
+    </div>
+    <p>Thus the fixed-maturity outer expansion sees the unknown mixture only through
+      $\nu H[u\ v]$. If the common stationary coefficients are known separately, the
+      whole distribution $\nu$ is identified at this order exactly when
+      $\operatorname{rank}[u\ v]=n-1$; otherwise any zero-sum row vector in the kernel of
+      $H[u\ v]$ is an observationally equivalent perturbation (while it remains inside
+      the probability simplex). Without a stationary baseline, the shape aliases in the
+      preceding section further mix these projections with $\beta_1$ and $\beta_2$.</p>
+
+    <h3>Exact transient observability</h3>
+    <p>The underlying rank boundary is clearest for a general centered feature matrix
+      $F\in\mathbb R^{n\times d}$. For
+      $Z_T=\int_0^T F^\top e_{Y_s}ds$ and any initial distribution $\nu$, direct semigroup
+      integration gives the exact mean</p>
+    $$\mathbb E_\nu Z_T
+      =\frac1m\nu H(I-e^{mQ_0T})F.$$
+    <p>At maturities $T_1,\ldots,T_q$, define the transient observability matrix</p>
+    $$\mathcal O_m=[H(I-e^{mQ_0T_1})F\ \cdots\
+      H(I-e^{mQ_0T_q})F].$$
+    <p>Two priors $\nu,\nu'$ have the same mean responses exactly when
+      $(\nu-\nu')\mathcal O_m=0$. Consequently the responses identify every prior if and
+      only if</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ \mathcal O_m]=n,
+      \qquad\text{equivalently}\qquad
+      \operatorname{rank}\mathcal O_m=n-1.$$
+    </div>
+    <p>This is the observability counterpart of
+      <a href="./bibliography.html#Kalman1960">Kalman's 1960 rank framework</a>.
+      It concerns initial-distribution information, not the fixed-feature Green&ndash;Kubo
+      rank and not the rank created by maturity-dependent contract loadings.</p>
+
+    <h3>The whole maturity curve: an exact Krylov criterion</h3>
+    <p>The finite list above leaves open whether some choice of scaled maturities can identify
+      the prior. This has an intrinsic answer. For $\tau&gt;0$ put
+      $R(\tau)=H(I-e^{Q_0\tau})F$. Then</p>
+    <div class="equation-card">
+    $$\operatorname*{span}_{\tau&gt;0}\operatorname{range}R(\tau)
+      =\operatorname{range}[F\ Q_0F\ \cdots\ Q_0^{n-2}F].$$
+    </div>
+    <p>Consequently the complete scaled-maturity mean curve identifies every initial
+      distribution if and only if</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{n-2}F]=n.$$
+    </div>
+    <p>This is the classical Kalman reachability condition on the centered state space,
+      used here through its observability dual. Equivalently, the PBH obstruction is a
+      nonzero left eigenvector $\ell Q_0=\lambda\ell$, $\lambda\ne0$, with $\ell F=0$;
+      see <a href="./bibliography.html#Hautus1969">Hautus (1969)</a>.
+      For a reversible chain and one scalar feature, full identification therefore requires
+      every nonzero eigenvalue to be simple and the feature to have a nonzero component in
+      every nonconstant eigenmode. A repeated eigenspace is a genuine obstruction: varying
+      maturity cannot create more than one direction from one vector inside that eigenspace.</p>
+
+    <h3>A continuous maturity interval: exact Fisher information</h3>
+    <p>The whole-curve rank criterion has an exact statistical counterpart. Suppose the
+      centered response is observed continuously on $0\le\tau\le L$ in the Gaussian white-noise
+      experiment</p>
+    $$dY_\tau=R(\tau)^\top(\nu-\pi)^\top d\tau+\Gamma^{1/2}dW_\tau,
+      \qquad \Gamma\succ0.$$
+    <p>Its Fisher information for the initial prior is the continuous observability Gramian</p>
+    <div class="equation-card">
+    $$\mathcal W_{L,\Gamma}=\int_0^L
+      R(\tau)\Gamma^{-1}R(\tau)^\top d\tau.$$
+    </div>
+    <p>For every $L&gt;0$, not merely in the limit $L\to\infty$, analyticity gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \ker\mathcal W_{L,\Gamma}
+      &=\ker[F\ Q_0F\ \cdots\ Q_0^{n-2}F]^\top,\\
+      \operatorname{rank}\mathcal W_{L,\Gamma}
+      &=\operatorname{rank}[F\ Q_0F\ \cdots\ Q_0^{n-2}F].
+    \end{aligned}$$
+    </div>
+    <p>Indeed, $x^\top\mathcal W_{L,\Gamma}x=0$ if and only if the analytic function
+      $x^\top R(\tau)$ vanishes throughout the interval. Since</p>
+    $$R(\tau)=\tau F+{\tau^2\over2!}Q_0F+
+      {\tau^3\over3!}Q_0^2F+\cdots,$$
+    <p>this is equivalent to $x$ annihilating the Krylov space. If $U$ is any orthonormal
+      basis of the prior tangent space $\{x:{\bf1}^\top x=0\}$, the constrained Fisher matrix
+      is $U^\top\mathcal W_{L,\Gamma}U$. It is positive definite exactly when
+      $\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{n-2}F]=n$.
+      Thus continuum observation introduces no new algebraic condition beyond the PBH/Krylov
+      theorem; it turns that condition into a quantitative information matrix.</p>
+
+    <h3>Short maturity windows: an explicit Fisher hierarchy</h3>
+    <p>Rank alone hides a severe short-window conditioning law. Consider one scalar centered feature,
+      scalar white-noise variance $\Gamma=\gamma&gt;0$, and put $r=n-1$. Assume the feature is cyclic, and let
+      $U$ be an orthonormal prior-tangent basis. Define the square centered Krylov matrix</p>
+    $$K_c=U^\top[F\ Q_0F\ \cdots\ Q_0^{r-1}F]=Q_KR_K.$$
+    <p>Let $H_r$ be the factorial Hilbert matrix and $C$ its lower Cholesky factor:</p>
+    $$ (H_r)_{k\ell}={1\over k!\ell!(k+\ell+1)},\qquad H_r=CC^\top,qquad 1\le k,\ell\le r.$$
+    <p>Then the constrained Fisher eigenvalues, ordered decreasingly, obey</p>
+    <div class="equation-card">
+    $$\lambda_k(U^\top\mathcal W_{L,\gamma}U)
+      ={(R_K)_{kk}^2C_{kk}^2\over\gamma}
+      L^{2k+1}\{1+O(L)\},\qquad 1\le k\le r,$$
+    </div>
+    <p>with the completely explicit universal factor</p>
+    $$C_{kk}^2={[(k-1)!]^2[(k+1)!]^2
+      \over(k!)^2(2k)!(2k+1)!}.$$
+    <p>Consequently</p>
+    $$\det(U^\top\mathcal W_{L,\gamma}U)
+      ={(\det K_c)^2\det H_r\over\gamma^r}
+      L^{r(r+2)}\{1+O(L)\},
+      \qquad
+      \kappa_2(\mathcal W_{L,\gamma}|_{{\bf1}^\perp})
+      =\Theta(L^{-2(r-1)}).$$
+    <p>The proof inserts
+      $R(\tau)=\sum_{k\ge1}\tau^kQ_0^{k-1}F/k!$ into the Gramian, rescales
+      $\tau=Lx$, and factors the result as
+      $K_cD_L\{H_r+O(L)\}D_LK_c^\top/\gamma$, where
+      $D_L=\operatorname{diag}(L^{3/2},L^{5/2},\ldots,L^{r+1/2})$.
+      Exterior powers after QR and Cholesky give the individual constants. This is a Fisher-information
+      statement about the initial mixture. It is not the discrete-maturity response hierarchy and does not
+      change the fixed-feature Green&ndash;Kubo rank or any rank obtained after contract-loading integration.</p>
+    <p>The odd-power hierarchy is the shifted analogue of the single-input controllability-Gramian law developed
+      by <a href="./bibliography.html#TrelatZuazua2026">Trélat and Zuazua (2026)</a>: their ordinary response is
+      nonzero at time zero and begins with powers $L,L^3,\ldots$, whereas the yield response itself starts at
+      order $\tau$, shifting every information power by two.</p>
+
+    <p>For the four-state cyclic certificate, the predicted constants for powers $(L^3,L^5,L^7)$ are</p>
+    $$1.0300000000,\qquad4.66565231\times10^{-3},\qquad5.12386811\times10^{-7}.$$
+    <p>At $L=0.0125$, the 80-digit measured scaled eigenvalues are
+      $(1.00987837,4.55027653\times10^{-3},5.00661036\times10^{-7})$; the largest relative error is
+      $2.48\%$ and decreases at observed first order. The normalized determinant is $0.934336$, consistent with
+      its $L^{15}$ limit.</p>
+
+    <p>There is also a sharp long-interval distinction between fixed-feature information and
+      transiently created information. Put $B=HF$ and let $r=\operatorname{rank}F$. Exponential
+      mixing gives</p>
+    $$\mathcal W_{L,\Gamma}
+      =L B\Gamma^{-1}B^\top+\mathcal C_\Gamma+O(e^{-cL}).$$
+    <p>Under full prior observability, exactly $r$ eigenvalues of the constrained Fisher matrix
+      are $\Theta(L)$. The remaining $n-1-r$ eigenvalues converge to finite strictly positive
+      limits. To see positivity, take a tangent direction with $B^\top x=0$; then</p>
+    <div class="equation-card">
+    $$x^\top\mathcal W_{L,\Gamma}x
+      =\int_0^L\left\|\Gamma^{-1/2}B^\top e^{Q_0^\top\tau}x\right\|^2d\tau
+      \longrightarrow
+      \int_0^\infty\left\|\Gamma^{-1/2}B^\top e^{Q_0^\top\tau}x\right\|^2d\tau.$$
+    </div>
+    <p>The limit can vanish only in a PBH-obstructed direction. Therefore adding ever longer
+      maturities keeps accumulating information only in the fixed-feature span. The extra
+      prior directions revealed by maturity rotation are identifiable, but their total
+      transient information is finite. This is a continuous-observation statement about the
+      initial mixture, not a change to the fixed-feature Green&ndash;Kubo rank and not a rank claim
+      for integrated contract loadings.</p>
+
+    <p>The certificate evaluates the Gramian independently by a Van Loan block exponential and
+      direct quadrature in 24 random finite-chain cases; the maximum discrepancy is
+      $1.99\times10^{-13}$. In the four-state cyclic scalar example, fixed-feature rank one
+      becomes continuous-prior rank three. At $L=256$ the constrained information eigenvalues
+      are</p>
+    $$1.73166112\times10^{-5},\qquad 1.05121653\times10^{-2},\qquad 1.75301704\times10^2.$$
+    <p>The growing eigenvalue divided by its predicted linear term is $0.997278$; the two
+      transient eigenvalues change by only $0.465\%$ and $0.421\%$ between $L=128$ and $256$.
+      This is the finite-horizon observability-Gramian form of the classical Kalman/Hautus
+      criterion already cited above.</p>
+
+    <p>Reversibility is sufficient for a real spectrum, but neither reversibility nor
+      diagonalizability is necessary for the all-maturity conclusion. Suppose the restriction
+      of $Q_0$ to the centered state space has only real eigenvalues, repeated eigenvalues and
+      Jordan blocks being allowed, and a centered scalar feature $F$ is cyclic:</p>
+    <div class="equation-card">
+    $$\operatorname{rank}[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{r-1}F]=n,
+      \qquad r=n-1.$$
+    </div>
+    <p>Then every ordered tuple $0&lt;\tau_1&lt;\cdots&lt;\tau_r$ identifies the prior:</p>
+    <div class="equation-card">
+    $$\det[ {\bf1}\ R(\tau_1)\ \cdots\ R(\tau_r)]\ne0.$$
+    </div>
+    <p>Indeed, if a nonzero centered row vector $\ell$ annihilated all response columns,
+      $h(t)=\ell R(t)$ would have the $r+1$ distinct zeros
+      $0,\tau_1,\ldots,\tau_r$. Cyclicity makes
+      $h'(t)=\ell e^{Q_0t}F$ nonzero. In a real Jordan basis this derivative is an exponential
+      polynomial</p>
+    $$h'(t)=\sum_{q=1}^s p_q(t)e^{-a_qt},
+      \qquad \deg p_q&lt;m_q,\qquad \sum_qm_q=r.$$
+    <p>These functions form an extended Chebyshev system, so a nonzero $h'$ has at most
+      $r-1$ real zeros counting multiplicity. Rolle&apos;s theorem would give at least $r$,
+      a contradiction. Cyclicity also explains exactly which repetitions are permitted:
+      it forces one Jordan chain per eigenvalue. A repeated eigenspace with two independent
+      eigenvectors remains an obstruction to any scalar feature.</p>
+    <p>For a simple spectrum the theorem has an explicit determinant. Write
+      $0,-a_1,\ldots,-a_r$, with $0&lt;a_1&lt;\cdots&lt;a_r$, choose a real right-eigenvector basis
+      $\psi_0={\bf1},\psi_1,\ldots,\psi_r$, and expand
+      $F=\sum_{k=1}^r f_k\psi_k$. Cyclicity is then equivalent to every $f_k\ne0$, and</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \det[ {\bf1}\ R(\tau_1)\ \cdots\ R(\tau_r)]
+      &=\det[\psi_0\ \cdots\ \psi_r]
+        \left(\prod_{k=1}^r{f_k\over a_k}\right)
+        \det[1-e^{-a_k\tau_j}]_{k,j=1}^r,\\
+      \operatorname{sgn}\det[1-e^{-a_k\tau_j}]_{k,j=1}^r
+      &=(-1)^{r(r-1)/2},
+    \end{aligned}$$
+    </div>
+    <p>The sign follows by continuity and the small-maturity exponential Vandermonde limit.
+      The ordinary and confluent cases are the classical exponential
+      Chebyshev/total-positivity mechanism developed by
+      <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
+
+    <h3>Sharp conditioning when all maturities move to the long end</h3>
+    <p>Exact rank at every finite maturity does not imply a uniformly stable inverse.
+      The simple real-spectrum case above gives the sharp loss. Fix distinct offsets
+      $c_1&lt;\cdots&lt;c_r$ and translate the entire scaled-maturity design by $M$:</p>
+    $$A_M=[{\bf1}\ R(M+c_1)\ \cdots\ R(M+c_r)].$$
+    <p>Order its singular values as $\sigma_1(A_M)\ge\cdots\ge\sigma_n(A_M)$.
+      If $0&lt;a_1&lt;\cdots&lt;a_r$, the scalar feature is cyclic, and $M+c_1&gt;0$, then</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \sigma_1(A_M),\sigma_2(A_M)&amp;=\Theta(1),\\
+      \sigma_{j+2}(A_M)&amp;=\Theta(e^{-a_jM}),
+        &&j=1,\ldots,r-1,\\
+      |\det A_M|&amp;=\Theta\!\left(
+        e^{-M(a_1+\cdots+a_{r-1})}\right),\\
+      \kappa_2(A_M)&amp;=\Theta(e^{a_{r-1}M}).
+    \end{aligned}$$
+    </div>
+    <p>Thus all $r$ distinct maturities retain exact rank for every finite $M$, while
+      the weakest prior direction vanishes at the <em>second-fastest</em> decay rate.
+      The fastest rate $a_r$ does not enter the leading determinant.</p>
+    <p>To see why, use the eigenbasis and remove the fixed nonzero modal factors. The
+      response block becomes
+      $B_M=[1-e^{-a_k(M+c_j)}]_{k,j=1}^r$. Keep its first column and subtract it
+      from every other column. With
+      $D_M=\operatorname{diag}(e^{-a_1M},\ldots,e^{-a_rM})$, the result is</p>
+    $$\left[\,{\bf1}-D_Mz_1\ \middle|\
+      D_M(z_1-z_2)\ \middle|\ \cdots\ \middle|\ D_M(z_1-z_r)\,\right],
+      \qquad (z_j)_k=e^{-a_kc_j}.$$
+    <p>The exponential Chebyshev property makes every required leading minor of the
+      difference block nonzero. Exterior powers then have successive orders
+      $1,e^{-a_1M},e^{-M(a_1+a_2)},\ldots,
+      e^{-M(a_1+\cdots+a_{r-1})}$, which gives the singular-value hierarchy by
+      taking consecutive ratios. In the determinant the unscaled common column uses
+      the fastest row, leaving precisely the $r-1$ slower rates. Fixed eigenvector and
+      column transformations change constants, not these exponents.</p>
+    <p>A nonreversible four-state certificate has rates
+      $(0.43537897,1.02585656,2.13876447)$. Translating offsets
+      $(0.2,0.8,1.5)$ gives measured augmented singular-value rates
+      $(-0.00130,0,0.43609,1.02644)$, determinant rate $1.46123$, and
+      condition-number rate $1.02775$, against predictions
+      $(0,0,0.43538,1.02586)$, $1.46124$, and $1.02586$.
+      This result concerns transient initial-mixture observability across maturities;
+      it is not a claim about fixed-feature Green&ndash;Kubo rank or rank created by
+      integrating different contract loadings.</p>
+
+    <h3>Defective long end: the Jordan polynomial changes the threshold</h3>
+    <p>The distinct-rate hypothesis in the preceding hierarchy matters even when every
+      maturity tuple remains identifying. The sharp three-state defective case makes the
+      missing factor explicit. Suppose the centered restriction has one size-two Jordan
+      block at $-a$, $a&gt;0$. Normalize a Jordan chain and cyclic scalar feature so that</p>
+    $$Q_0v=-av,\qquad Q_0w=\eta v-aw,\qquad F=w,\qquad \eta\ne0.$$
+    <p>Then the exact response is</p>
+    <div class="equation-card">
+    $$R(t)=g_0(t)w+\eta g_1(t)v,\qquad
+      g_0(t)={1-e^{-at}\over a},\qquad
+      g_1(t)={1-(1+at)e^{-at}\over a^2}.$$
+    </div>
+    <p>For any fixed offsets $c_1&lt;c_2$, put
+      $A_M=[\mathbf1\ R(M+c_1)\ R(M+c_2)]$. If
+      $K=[\mathbf1\ v\ w]$, direct expansion gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \det A_M
+      &amp;=\det K\,\eta\{g_1(M+c_1)g_0(M+c_2)
+        -g_1(M+c_2)g_0(M+c_1)\},\\
+      {\det A_M\over M e^{-aM}}
+      &amp;\longrightarrow {\det K\,\eta\over a^2}
+        \{e^{-ac_2}-e^{-ac_1}\}\ne0.
+    \end{aligned}$$
+    </div>
+    <p>The first two singular values converge to positive limits, so the determinant
+      identity and the product formula for singular values yield the complete hierarchy</p>
+    <div class="equation-card">
+    $$\sigma_1(A_M),\sigma_2(A_M)=\Theta(1),\qquad
+      \sigma_3(A_M)=\Theta(M e^{-aM}),\qquad
+      \kappa_2(A_M)=\Theta(e^{aM}/M).$$
+    </div>
+    <p>The centered-prior weakest signal has the same order
+      $s_M=\Theta(M e^{-aM})$. Consequently every Gaussian, correlated-noise, and
+      deterministic minimax statement below remains valid after replacing the simple-spectrum
+      scale by this Jordan scale under their stated covariance assumptions. Exact noiseless rank
+      still holds at each finite $M$; the polynomial factor weakens the pure exponential loss
+      by one power of $M$ but does not prevent it. This is the Jordan-chain specialization of the
+      <a href="./bibliography.html#Kalman1960">Kalman rank framework</a>,
+      not a statement about fixed-feature Green&ndash;Kubo rank or maturity-integrated loading rank.</p>
+    <p>The existing irreducible defective certificate has $a=1$, $\eta=0.1$, and offsets
+      $(0.4,1.7)$. After dividing the augmented and centered-prior least singular values by
+      $M e^{-M}$, their fitted exponential rates are both $0.999461$. At $M=16$ their scaled
+      values are both $0.042053486$. The scaled determinant is $0.581981281$, against its
+      exact limit $0.585163826$, and the direct Jordan factorization error is below
+      $6.4\times10^{-15}$.</p>
+
+    <h3>Gaussian quote noise: exact rank is not statistical recovery</h3>
+    <p>The preceding condition number has a direct minimax consequence. Let
+      $C_M=[R(M+c_1)\ \cdots\ R(M+c_r)]$, let
+      $\mathcal H_0=\{h:h^\top\mathbf1=0\}$, and define the weakest prior signal</p>
+    $$s_M=\min_{h\in\mathcal H_0,\ \|h\|_2=1}\|C_M^\top h\|_2.$$
+    <p>Under the simple real-spectrum and cyclicity hypotheses of the long-end theorem,</p>
+    <div class="equation-card">
+    $$s_M=\Theta(e^{-a_{r-1}M}).$$
+    </div>
+    <p>Indeed, choose an orthonormal basis $U$ of $\mathcal H_0$. Orthogonally reducing
+      $[\mathbf1\ C_M]$ and eliminating its bounded normalization row turns it, through
+      uniformly bounded invertible transformations, into a block matrix with lower block
+      $U^\top C_M$. Hence its least singular value and $s_M$ have the same order.</p>
+    <p>Now idealize noisy curve measurements as</p>
+    $$Y=C_M^\top\nu+\sigma Z,\qquad Z\sim N(0,I_r),$$
+    <p>where $\nu$ is an unknown initial distribution and $\sigma$ is a quote-noise scale.
+      Fix $0&lt;\rho\le\min_i\pi_i$, choose a unit minimizer $h_M\in\mathcal H_0$, and put
+      $\nu_\pm=\pi\pm\rho h_M$. Both are probability vectors because
+      $\|h_M\|_\infty\le1$. For every estimator $\widehat\nu(Y)$, the exact Gaussian
+      two-point testing calculation gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \max_{\pm}\Pr_{\nu_\pm}\{\|\widehat\nu-\nu_\pm\|_2\ge\rho\}
+      &amp;\ge \Phi\!\left(-{\rho s_M\over\sigma}\right),\\
+      \max_{\pm}\mathbb E_{\nu_\pm}\|\widehat\nu-\nu_\pm\|_2^2
+      &amp;\ge \rho^2\Phi\!\left(-{\rho s_M\over\sigma}\right).
+    \end{aligned}$$
+    </div>
+    <p>The two Gaussian means are separated by $2\rho s_M$, so their optimal equal-prior
+      classification error is exactly the displayed normal tail. Any estimator with error
+      below $\rho$ induces the correct nearest-prior classifier, proving both bounds. Thus
+      fixed noise makes the lower bounds tend to $1/2$ and $\rho^2/2$ as the design moves
+      right. To make the first probability smaller than a fixed $\delta&lt;1/2$, it is
+      necessary that</p>
+    $$\sigma\le {\rho s_M\over\Phi^{-1}(1-\delta)}
+      =O(e^{-a_{r-1}M}).$$
+    <p>This is a local two-prior lower bound for the stated Gaussian observation model,
+      not a claim about market microstructure or a change to noiseless identifiability.
+      It is the finite-dimensional two-point method originating
+      in <a href="./bibliography.html#LeCam1973">Le Cam (1973)</a>.</p>
+    <p>In the four-state certificate, the restricted least-singular-value rate is
+      $1.02644$ against $a_{r-1}=1.02586$. With $\rho=0.1$ and
+      $\sigma=10^{-5}$, the exact testing lower bound rises from $0.0709$ at $M=4$
+      to $0.499998$ at $M=16$. A Gaussian simulation with 200,000 draws per prior
+      at $M=4$ agrees
+      with the exact testing error within $0.002$.</p>
+
+    <p>The exponential threshold is also sufficient. Let $U$ have orthonormal columns spanning
+      $\mathcal H_0$, put $A_M=C_M^\top U$, and let $\Pi_\Delta$ denote Euclidean projection onto
+      the probability simplex. Since $A_M$ is nonsingular, define the projected inverse estimator</p>
+    <div class="equation-card">
+    $$\widetilde\nu=\pi+UA_M^{-1}(Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\widetilde\nu).$$
+    </div>
+    <p>For every true prior $\nu\in\Delta$, exact inversion and nonexpansiveness of metric
+      projection relative to points in $\Delta$ give</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \mathbb E_\nu\|\widehat\nu-\nu\|_2^2
+      &amp;\le\sigma^2\|A_M^{-1}\|_F^2
+       \le {r\sigma^2\over s_M^2},\\
+      \Pr_\nu\{\|\widehat\nu-\nu\|_2\ge\rho\}
+      &amp;\le\Pr\{\chi_r\ge\rho s_M/\sigma\}.
+    \end{aligned}$$
+    </div>
+    <p>Here $s_M=\sigma_{\min}(A_M)$ and $\chi_r$ is the Euclidean norm of an
+      $r$-dimensional standard Gaussian. If $q_{r,1-\delta}$ is its
+      $(1-\delta)$ quantile, then</p>
+    $$\sigma\le {\rho s_M\over q_{r,1-\delta}}$$
+    <p>is sufficient for error probability at most $\delta$, uniformly over the entire
+      simplex. Together with the two-prior converse, this proves that the noise scale
+      $s_M=\Theta(e^{-a_{r-1}M})$ is sharp: uniform consistent recovery along a translated
+      long-end design is possible if $\sigma_M/s_M\to0$ and impossible if that ratio stays
+      bounded away from zero along a subsequence.</p>
+    <p>At $M=4$ the certificate directly inverts 200,000 Gaussian observations. The empirical
+      unconstrained mean-square error agrees with the exact trace formula within one percent;
+      simplex projection never increases the samplewise error, and the empirical projected tail
+      lies below the displayed $\chi_3$ bound.</p>
+
+    <h3>Correlated quote noise: whitened observability</h3>
+    <p>Independence and equal quote variances are not essential. Let $\Gamma_M$ be a known
+      positive-definite covariance across the $r$ maturity quotes and consider</p>
+    $$Y=C_M^\top\nu+\sigma\Gamma_M^{1/2}Z,
+      \qquad Z\sim N(0,I_r).$$
+    <p>With $U$ as above, put</p>
+    $$B_M=\Gamma_M^{-1/2}C_M^\top U,
+      \qquad s_{M,\Gamma}=\sigma_{\min}(B_M).$$
+    <p>The entire two-point argument holds in this whitened geometry. Choosing a right
+      singular vector of $B_M$ for its weakest direction gives, for every estimator,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \max_{\pm}\Pr_{\nu_\pm}
+        \{\|\widehat\nu-\nu_\pm\|_2\ge\rho\}
+        &amp;\ge\Phi\!\left(-{\rho s_{M,\Gamma}\over\sigma}\right),\\
+      \max_{\pm}\mathbb E_{\nu_\pm}
+        \|\widehat\nu-\nu_\pm\|_2^2
+        &amp;\ge\rho^2\Phi\!\left(
+          -{\rho s_{M,\Gamma}\over\sigma}\right).
+    \end{aligned}$$
+    </div>
+    <p>Conversely, the generalized least-squares coordinate estimator</p>
+    $$\widehat x=B_M^\dagger\Gamma_M^{-1/2}
+      (Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\pi+U\widehat x)$$
+    <p>satisfies the matching bounds</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \mathbb E_\nu\|\widehat\nu-\nu\|_2^2
+      &amp;\le \sigma^2\operatorname{tr}
+        \{(B_M^\top B_M)^{-1}\}
+       \le {r\sigma^2\over s_{M,\Gamma}^2},\\
+      \Pr_\nu\{\|\widehat\nu-\nu\|_2\ge\rho\}
+      &amp;\le\Pr\{\chi_r\ge\rho s_{M,\Gamma}/\sigma\}.
+    \end{aligned}$$
+    </div>
+    <p>Thus $s_{M,\Gamma}$, not the unweighted condition number, is the exact noise scale.
+      If constants $0&lt;\gamma_-\le\gamma_+&lt;\infty$ satisfy
+      $\gamma_-I\preceq\Gamma_M\preceq\gamma_+I$ uniformly in $M$, then</p>
+    $$ {s_M\over\sqrt{\gamma_+}}
+       \le s_{M,\Gamma}\le
+       {s_M\over\sqrt{\gamma_-}},$$
+    <p>so the sharp exponent remains $a_{r-1}$. No such conclusion is made when the quote
+      covariance itself becomes ill-conditioned with maturity: in that case its eigenvalue
+      scale is part of the inverse problem. Whitening and generalized least squares go back
+      to <a href="./bibliography.html#Aitken1936">Aitken's original treatment</a>; here the
+      calculation is finite dimensional and exact because $\Gamma_M$ is assumed known.</p>
+    <p>The certificate uses a correlated, heteroskedastic three-quote covariance with
+      eigenvalues $(0.3846,0.6088,2.6066)$. Its whitened weakest-signal decay rate is
+      $1.02644$, against $a_{r-1}=1.02586$. At $M=4$, 200,000 Gaussian draws reproduce
+      the exact two-prior testing error and generalized least-squares mean-square error
+      within $0.002$ and one percent respectively; simplex projection again obeys the
+      $\chi_3$ tail bound.</p>
+
+    <h3>Deterministic quote-error balls: the same sharp scale</h3>
+    <p>The singular-value threshold is not an artifact of Gaussian tails. Consider the
+      adversarial observation model</p>
+    $$Y=C_M^\top\nu+e,\qquad
+      \|\Gamma_M^{-1/2}e\|_2\le\delta,$$
+    <p>with no probability law for $e$. Keep the definitions
+      $B_M=\Gamma_M^{-1/2}C_M^\top U$ and
+      $s_{M,\Gamma}=\sigma_{\min}(B_M)&gt;0$. The projected generalized inverse</p>
+    $$\widehat x=B_M^\dagger\Gamma_M^{-1/2}
+      (Y-C_M^\top\pi),\qquad
+      \widehat\nu=\Pi_\Delta(\pi+U\widehat x)$$
+    <p>obeys the deterministic, uniform bound</p>
+    <div class="equation-card">
+    $$\sup_{\nu\in\Delta}\ \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+      \|\widehat\nu-\nu\|_2
+      \le {\delta\over s_{M,\Gamma}}.$$
+    </div>
+    <p>To see this, write $\nu=\pi+Ux$. Full column rank gives
+      $\widehat x-x=B_M^\dagger\Gamma_M^{-1/2}e$; the operator norm of
+      $B_M^\dagger$ is $1/s_{M,\Gamma}$, $U$ is an isometry, and projection onto
+      the simplex cannot increase distance from the true $\nu\in\Delta$.</p>
+    <p>The scale is also necessary, with no constants hidden. Fix
+      $0&lt;\rho\le\min_i\pi_i$ and let $x_M$ be a unit right singular vector for
+      $s_{M,\Gamma}$, $h_M=Ux_M$, and $\nu_\pm=\pi\pm\rho h_M$. If
+      $\delta\ge\rho s_{M,\Gamma}$, the two admissible observation sets intersect
+      at $y_*=C_M^\top\pi$: the errors
+      $e_\pm=y_*-C_M^\top\nu_\pm$ have whitened norm exactly
+      $\rho s_{M,\Gamma}$. Since $\|\nu_+-\nu_-\|_2=2\rho$, every estimator
+      evaluated at $y_*$ is at distance at least $\rho$ from one of the two priors.
+      Therefore</p>
+    <div class="equation-card">
+    $$\inf_{\widehat\nu}\ \sup_{\nu\in\Delta}\
+      \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+      \|\widehat\nu(Y)-\nu\|_2\ge\rho
+      \quad\text{whenever}\quad
+      \delta\ge\rho s_{M,\Gamma}.$$
+    </div>
+    <p>A local parameter ball makes the whole phase transition exact, not only its
+      threshold. Define</p>
+    $$\Theta_\rho=\{\pi+Ux:\|x\|_2\le\rho\},
+      \qquad 0&lt;\rho\le\min_i\pi_i.$$
+    <p>The displayed restriction on $\rho$ is sufficient for
+      $\Theta_\rho\subset\Delta$, since every row of the isometry $U$ has norm at
+      most one. For estimators allowed to depend on the known radii $\rho$ and
+      $\delta$, the deterministic local minimax risk is exactly</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      R^*_{M,\Gamma}(\rho,\delta)
+      &amp;:=\inf_{\widehat\nu}\ \sup_{\nu\in\Theta_\rho}\
+        \sup_{\|\Gamma_M^{-1/2}e\|_2\le\delta}
+        \|\widehat\nu(C_M^\top\nu+e)-\nu\|_2\\
+      &amp;=\min\!\left\{\rho,{\delta\over s_{M,\Gamma}}\right\}.
+    \end{aligned}$$
+    </div>
+    <p>For the upper bound, use the constant estimator $\pi$ when
+      $\delta\ge\rho s_{M,\Gamma}$. Below that threshold, apply the generalized
+      inverse and project onto the convex set $\Theta_\rho$; metric projection
+      cannot increase its distance from the true point, so its error is at most
+      $\delta/s_{M,\Gamma}$. For the converse, put
+      $a=\min\{\rho,\delta/s_{M,\Gamma}\}$ and replace $\rho$ by $a$ in the two
+      weakest-direction priors above. Their error balls meet at $C_M^\top\pi$,
+      and the triangle inequality forces loss at least $a$ for one of them. This
+      proves the identity at every noise radius, including the saturation regime.</p>
+    <p>Thus uniform robust consistency holds when
+      $\delta_M/s_{M,\Gamma}\to0$ and fails whenever
+      $\delta_M\ge\rho s_{M,\Gamma}$ along a subsequence for some fixed feasible
+      $\rho$. Under the uniformly bounded covariance hypothesis above, the real-spectrum
+      long-end tolerance is again
+      $\Theta(e^{-a_{r-1}M})$. This is a worst-case deterministic statement, distinct
+      from the preceding Gaussian probability statements. The comparison belongs
+      to the optimal-recovery/statistical-estimation correspondence developed by
+      <a href="./bibliography.html#Donoho1994">Donoho (1994)</a>; the constants here are
+      exact because the finite-dimensional ellipsoid is resolved directly by the SVD.</p>
+    <p>For the correlated four-state certificate at $M=4$, the two adversarial
+      Mahalanobis balls touch exactly at the common midpoint. Direct generalized
+      inversion attains $\delta/s_{M,\Gamma}$ in the weakest left-singular direction,
+      and 10,000 errors sampled throughout a smaller ball all satisfy the uniform bound.
+      The local-ball certificate also checks six noise-to-threshold ratios from zero to
+      three: the two-point lower certificate and the projected-inverse/constant upper
+      certificate both equal $\rho\min\{1,\delta/(\rho s_{M,\Gamma})\}$.</p>
+
+    <h3>Oscillatory long-end converse: infinitely many translated aliases</h3>
+    <p>The real-spectrum hypothesis is essential for a uniform long-end lower bound.
+      In three states, suppose the centered eigenvalues are $-a\pm ib$, with $a,b&gt;0$,
+      and the scalar feature is cyclic. Fix any offsets $c_1&lt;c_2$, and write</p>
+    $$D(M)=\det[\,\mathbf1\ R(M+c_1)\ R(M+c_2)\,].$$
+    <p>Substitution in the exact aliasing kernel below gives, for a nonzero
+      model-dependent constant $C_0$, the identity</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      D(M)&amp;=C_0e^{-aM}\{L(M)+Ce^{-aM}\},\\
+      L(M)&amp;=e^{-ac_1}\sin\{b(M+c_1)\}
+             -e^{-ac_2}\sin\{b(M+c_2)\},\\
+      C&amp;=e^{-a(c_1+c_2)}\sin\{b(c_2-c_1)\}.
+    \end{aligned}$$
+    </div>
+    <p>The leading term is a nonzero sinusoid:
+      $L(M)=A\sin(bM+\phi)$ with</p>
+    $$A=\left|e^{(-a+ib)c_1}-e^{(-a+ib)c_2}\right|&gt;0.$$
+    <p>Consequently, if $\widehat M_k=(k\pi-\phi)/b$, then for every sufficiently
+      large $k$ there is an exact singular translation</p>
+    $$M_k=\widehat M_k+O(e^{-a\widehat M_k}),\qquad D(M_k)=0.$$
+    <p>This follows directly from the simple zeros of $L$ and the implicit-function
+      theorem (or a sign change on an $O(e^{-a\widehat M_k})$ neighborhood).
+      Hence a translated complex-spectrum design loses rank infinitely often; no
+      global claim $\sigma_3(A_M)=\Theta(e^{-aM})$ is possible. On any phase-separated
+      set $|L(M)|\ge\eta&gt;0$, however,</p>
+    $$\sigma_1(A_M),\sigma_2(A_M)=\Theta(1),\qquad
+      \sigma_3(A_M)=\Theta(e^{-aM}),\qquad
+      \kappa_2(A_M)=\Theta(e^{aM}).$$
+    <p>Locally at a sufficiently large $M_k$, the simple zero sharpens this to
+      $\sigma_3(A_M)=\Theta(e^{-aM_k}|M-M_k|)$ and
+      $\kappa_2(A_M)=\Theta(e^{aM_k}/|M-M_k|)$. Thus the ordinary exponential
+      deterioration is the regular-phase behavior, interrupted by reciprocal
+      conditioning walls and exact aliases. This is the translated-maturity form
+      of the eigenvalue-cycle aliasing mechanism studied for irregularly sampled
+      linear systems by <a href="./bibliography.html#ParkSahai2013">Park and
+      Sahai</a>.</p>
+    <p>For the directed-cycle certificate with offsets $(0.4,1.7)$,
+      $A=0.520001659599$. The first four asymptotic phase zeros are
+      $(3.384584565,7.012183293,10.639782022,14.267380750)$, while the exact
+      singular translations are
+      $(3.385120036,7.012180971,10.639782032,14.267380750)$.
+      The normalized root shift approaches the predicted magnitude
+      $|C|/(bA)=0.085890490311$, and the direct determinant factorization error
+      over 41 translations is below $8.2\times10^{-15}$.</p>
+
+    <p>An exact defective example makes the confluent case explicit. Let</p>
+    $$Q_J=\begin{pmatrix}
+      -8/15&amp;1/15&amp;7/15\\1/3&amp;-2/3&amp;1/3\\1/5&amp;3/5&amp;-4/5
+      \end{pmatrix},\quad
+      v=(-4,0,4)^\top,\quad w=(-4,1,3)^\top.$$
+    <p>Every off-diagonal rate is positive, while $Q_Jv=-v$ and
+      $Q_Jw=0.1v-w$, so the eigenvalue $-1$ has a size-two Jordan block.
+      With $F=w$,</p>
+    $$R(t)=g_0(t)w+0.1g_1(t)v,\qquad
+      g_0(t)=1-e^{-t},\quad g_1(t)=1-(1+t)e^{-t}.$$
+    <p>The ratio $g_1/g_0$ is strictly increasing because its derivative is
+      $e^{-t}(t-1+e^{-t})/(1-e^{-t})^2&gt;0$. Thus every positive ordered pair
+      works directly, despite the defective generator.</p>
+    <p>A complex spectrum marks a real boundary to that statement, not merely a limitation of
+      the proof. For the directed three-cycle</p>
+    $$Q_\circlearrowright=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\1&amp;0&amp;-1\end{pmatrix},
+      \qquad F=(1,-1,0)^\top,$$
+    <p>the Krylov determinant is $-3$, so almost every pair of maturities identifies the
+      prior. But the nonzero eigenvalues are $-3/2\pm i\sqrt3/2$. If
+      $b=\sqrt3/2$, then at $\tau_1=\pi/b$ and $\tau_2=2\pi/b$ the factors
+      $1-e^{(-3/2+ib)\tau_j}$ are both real. The two real response vectors are therefore
+      collinear and</p>
+    <div class="equation-card">
+    $$\det[ {\bf1}\ R(2\pi/\sqrt3)\ R(4\pi/\sqrt3)]=0.$$
+    </div>
+    <p>Thus a cyclic feature still gives generic identifiability, but distinct maturities need
+      not all work once oscillatory modes are present. The theorem assumes a real nonzero
+      spectrum; it does not claim that this condition is necessary for every particular chain.</p>
+    <p>For three states, however, the boundary is exact. A cyclic centered scalar feature has
+      the all-pairs property</p>
+    $$\det[ {\bf1}\ R(\tau_1)\ R(\tau_2)]\ne0
+      \quad\text{for every }0&lt;\tau_1&lt;\tau_2$$
+    <p>if and only if the two nonzero eigenvalues are real. Sufficiency is the real-spectrum
+      theorem above. Conversely, write a complex pair as $-a\pm ib$, with $a,b&gt;0$, and
+      identify the centered real plane with $\mathbb C$. Apart from a fixed nonzero feature
+      factor, the response is</p>
+    $$z(t)={e^{(-a+ib)t}-1\over -a+ib}.$$
+    <p>At $\tau_1=\pi/b$ and $\tau_2=2\pi/b$, direct substitution gives the exact relation</p>
+    <div class="equation-card">
+    $$R(2\pi/b)=\left(1-e^{-a\pi/b}\right)R(\pi/b).$$
+    </div>
+    <p>Hence every three-state complex-spectrum generator has an exceptional positive
+      maturity pair, not just the directed cycle. This converse is special to a two-dimensional
+      centered space; in higher dimensions a complex pair does not by itself force two full
+      response columns to be collinear.</p>
+    <h3>The complete three-state aliasing equation</h3>
+    <p>The obstruction is not a single accidental pair. In the same complex coordinate,
+      the real determinant is a nonzero model-dependent constant times the oriented area
+      $\operatorname{Im}\{\overline{z(\tau_1)}z(\tau_2)\}$. Consequently, for every
+      cyclic centered feature, its complete exceptional set is the zero set of</p>
+    <div class="equation-card">
+    $$\mathcal K_{a,b}(\tau_1,\tau_2)
+      =e^{-a(\tau_1+\tau_2)}\sin\{b(\tau_2-\tau_1)\}
+       -e^{-a\tau_2}\sin(b\tau_2)
+       +e^{-a\tau_1}\sin(b\tau_1).$$
+    </div>
+    <p>This formula gives a universal infinite aliasing lattice. Put
+      $\tau_k=k\pi/b$. Since</p>
+    $$\mathcal K_{a,b}(\tau_k,t)
+      =e^{-at}\left\{(-1)^ke^{-a\tau_k}-1\right\}\sin(bt),$$
+    <p>every pair $(\tau_k,\tau_\ell)$ with $1\le k&lt;\ell$ is exceptional.
+      Each lattice zero is simple in its second maturity, because</p>
+    $$\partial_{\tau_2}\mathcal K_{a,b}(\tau_k,\tau_\ell)
+      =b(-1)^\ell e^{-a\tau_\ell}
+       \left\{(-1)^ke^{-a\tau_k}-1\right\}\ne0.$$
+    <p>Thus each lattice point lies on a locally smooth exceptional curve. Conversely,
+      if $\sin(b\tau_1)\ne0$, every exceptional partner must satisfy the explicit bound</p>
+    $$\tau_2\le \tau_1+{1\over a}
+      \log\!\left({1+e^{-a\tau_1}\over|\sin(b\tau_1)|}\right).$$
+    <p>Indeed, beyond this bound the two terms multiplied by $e^{-a\tau_2}$ cannot
+      cancel the nonzero limit $e^{-a\tau_1}\sin(b\tau_1)$. Analyticity then implies
+      that a fixed off-lattice first maturity has only finitely many exceptional
+      partners. The lattice is therefore infinite but nongeneric. This is the same
+      eigenvalue-cycle aliasing mechanism that
+      <a href="./bibliography.html#ParkSahai2013">Park and Sahai</a> show can be broken
+      by nonuniform sampling in linear observation problems.</p>
+    <p>For the directed-cycle certificate,
+      $\det[{\bf1}\ R(\tau_1)\ R(\tau_2)]
+      =-(2/\sqrt3)\mathcal K_{3/2,\sqrt3/2}(\tau_1,\tau_2)$.
+      Two hundred arbitrary maturity pairs reproduce this identity within
+      $1.1\times10^{-14}$. Across 100 random positive-rate complex-spectrum
+      generators, all six lattice pairs with $1\le k&lt;\ell\le4$ are singular:
+      the maximum relative determinant is $3.7\times10^{-16}$ and the maximum
+      exact collinearity residual is $4.4\times10^{-16}$.</p>
+    <h3>Generic maturity tuples and exceptional-set fragility</h3>
+    <p>The word <em>generic</em> can be made measure-theoretic, for an arbitrary vector
+      feature and any fixed number $q$ of maturity blocks. On the connected chamber</p>
+    $$\mathcal C_q=\{(\tau_1,\ldots,\tau_q):0&lt;\tau_1&lt;\cdots&lt;\tau_q\},$$
+    <p>let</p>
+    $$\mathcal A(\tau_1,\ldots,\tau_q)
+      =[\,{\bf1}\ R(\tau_1)\ \cdots\ R(\tau_q)\,],
+      \qquad
+      \rho=\max_{\mathcal C_q}\operatorname{rank}\mathcal A.$$
+    <div class="equation-card">
+    <p><strong>Generic-rank theorem.</strong> The exceptional set</p>
+    $$\mathcal E_q=\{\tau\in\mathcal C_q:
+      \operatorname{rank}\mathcal A(\tau)&lt;\rho\}$$
+    <p>has empty interior and Lebesgue measure zero.</p>
+    </div>
+    <p>Indeed, every entry of $R(\tau)=H(I-e^{Q_0\tau})F$ is real analytic.
+      Choose a maturity tuple attaining rank $\rho$ and one nonzero
+      $\rho\times\rho$ minor there. That minor is a nontrivial real-analytic
+      function on $\mathcal C_q$, and every rank-deficient tuple lies in its zero
+      set. A nontrivial real-analytic function has a null zero set, by
+      <a href="./bibliography.html#Mityagin2020">Mityagin's short primary proof</a>;
+      it also cannot vanish on an open subset. This argument does not assert that
+      the exceptional set is empty, nor does it give a uniform conditioning bound.</p>
+    <p>For a cyclic scalar feature, the small-maturity expansion below supplies one
+      full-rank tuple with $q=r=n-1$. Consequently, for an arbitrary real or complex
+      spectrum, almost every ordered positive $r$-tuple identifies the initial prior.
+      The real-spectrum theorem is stronger: it says the exceptional set is empty.</p>
+    <p>The directed-cycle zero above is locally a smooth codimension-one obstruction,
+      and its numerical instability is sharp. Write</p>
+    $$\Delta(\tau_1,\tau_2)
+      =\det[\,{\bf1}\ R(\tau_1)\ R(\tau_2)\,],
+      \qquad (\tau_1^\star,\tau_2^\star)
+      =(2\pi/\sqrt3,4\pi/\sqrt3).$$
+    <p>Since $R'(t)=e^{Q_0t}F$ for the centered feature, direct evaluation gives</p>
+    <div class="equation-card">
+    $$\partial_{\tau_2}\Delta(\tau_1^\star,\tau_2^\star)
+      =1.885990859775\times10^{-5}\ne0.$$
+    </div>
+    <p>The implicit-function theorem therefore makes the nearby exceptional set a
+      smooth curve. If $A_0=\mathcal A(\tau_1^\star,\tau_2^\star)$ has nonzero
+      singular values $s_1\ge s_2&gt;0$, then a transverse displacement $\delta$ in
+      the second maturity satisfies</p>
+    $$\sigma_{\min}\!\left(\mathcal A(\tau_1^\star,
+        \tau_2^\star+\delta)\right)
+      ={|\partial_{\tau_2}\Delta|\over s_1s_2}|\delta|+O(\delta^2),$$
+    $$\kappa_2\!\left(\mathcal A(\tau_1^\star,
+        \tau_2^\star+\delta)\right)
+      ={s_1^2s_2\over|\partial_{\tau_2}\Delta|}
+       |\delta|^{-1}+O(1).$$
+    <p>The certified coefficients are $9.409632470013\times10^{-6}$ and
+      $184072.099850$, respectively. At $|\delta|=0.00125$, the measured
+      determinant slope, smallest-singular-value slope, and condition coefficient
+      are all within $0.2\%$ of these limits; the last determinant-slope convergence
+      order is $0.9988$. Thus measure-zero exceptions can still create an exact
+      reciprocal conditioning wall nearby.</p>
+    <p>The scalar cyclic case also makes the near-zero conditioning explicit. Let $r=n-1$, let
+      $K=[{\bf1}\ F\ Q_0F\ \cdots\ Q_0^{r-1}F]$, and take
+      $\tau_j=\epsilon c_j$ with $0&lt;c_1&lt;\cdots&lt;c_r$. Then</p>
+    <div class="equation-card">
+    $$\det[ {\bf1}\ R(\epsilon c_1)\ \cdots\ R(\epsilon c_r)]
+      =\det K\,
+      \frac{\left(\prod_jc_j\right)
+      \left(\prod_{i&lt;j}(c_j-c_i)\right)}{\prod_{k=1}^r k!}
+      \epsilon^{r(r+1)/2}\{1+O(\epsilon)\}.$$
+    </div>
+    <p>Thus distinct sufficiently small maturities do identify a cyclic prior, but their
+      determinant collapses at a precisely polynomial rate. This small-$\tau$ loss is
+      different from the exponential loss at fixed positive maturities as $m\to\infty$.</p>
+    <p>The determinant gives the product of the singular values but not the actual noise
+      amplification. That hierarchy is also exact. Put
+      $C_\epsilon=[R(\epsilon c_1)\ \cdots\ R(\epsilon c_r)]$ and
+      $A_\epsilon=[{\bf1}\ C_\epsilon]$, and order singular values from largest to
+      smallest. Then, as $\epsilon\downarrow0$,</p>
+    <div class="equation-card">
+    $$\sigma_k(C_\epsilon)\asymp\epsilon^k\quad(1\le k\le r),\qquad
+      \sigma_{k+1}(A_\epsilon)\asymp\epsilon^k\quad(0\le k\le r),$$
+    $$\kappa(C_\epsilon)\asymp\epsilon^{-(r-1)},\qquad
+      \kappa(A_\epsilon)\asymp\epsilon^{-r}.$$
+    </div>
+    <p>Here $x_\epsilon\asymp y_\epsilon$ means their ratio stays between positive
+      constants depending on $Q_0,F$ and the fixed distinct $c_j$, but not on
+      $\epsilon$. The smallest singular value is therefore order $\epsilon^r$.
+      Consequently any fixed coordinate chart on the zero-sum prior contrasts has
+      worst-case observation-noise amplification of order $\epsilon^{-r}$, even though
+      its relative condition number is only order $\epsilon^{-(r-1)}$ after the
+      normalization direction has been removed.</p>
+    <p>The proof exposes the confluent Vandermonde structure. Cayley&ndash;Hamilton gives
+      an exact analytic factorization</p>
+    $$A_\epsilon
+      =K\,\operatorname{diag}(1,\epsilon,\ldots,\epsilon^r)
+       \{V(c)+O(\epsilon)\},$$
+    <p>where the lower-right block of $V(c)$ is
+      $[c_j^k/k!]_{k,j=1}^r$. It is invertible because the $c_j$ are positive and
+      distinct. Both outer factors remain uniformly invertible, so the standard
+      singular-value inequalities transfer the powers on the diagonal to
+      $A_\epsilon$; deleting the normalization column and using the centered Krylov
+      block gives the statement for
+      $C_\epsilon$. This is the small-node instability of Vandermonde inversion studied
+      classically by <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>,
+      here pulled back through the Krylov basis.</p>
+    <p>The hidden constants in $\asymp$ are also explicit. This matters when maturities
+      are chosen rather than merely proved to exist. Take a QR factorization $K=U_KR_K$
+      and an LQ factorization $V(c)=L_VU_V$, with positive or negative diagonal entries
+      allowed in the triangular factors. Then the separated powers in the diagonal imply</p>
+    <div class="equation-card">
+    $$\lim_{\epsilon\downarrow0}{\sigma_{k+1}(A_\epsilon)\over\epsilon^k}
+      =\left|(R_K)_{k+1,k+1}(L_V)_{k+1,k+1}\right|,
+      \qquad 0\le k\le r.$$
+    </div>
+    <p>The formula is independent of the sign conventions in QR and LQ. For
+      $C_\epsilon$, replace $K$ by the centered Krylov block
+      $K_c=[F\ Q_0F\ \cdots\ Q_0^{r-1}F]$ and $V(c)$ by
+      $V_c=[c_j^k/k!]_{k,j=1}^r$. If $K_c=U_cR_c$ and $V_c=L_cW_c$, then</p>
+    $$\lim_{\epsilon\downarrow0}{\sigma_k(C_\epsilon)\over\epsilon^k}
+      =\left|(R_c)_{kk}(L_c)_{kk}\right|,
+      \qquad 1\le k\le r.$$
+    <p>To prove the limit, orthogonal invariance reduces the matrix to
+      $R_KD_\epsilon\{L_V+E_\epsilon\}$, where
+      $D_\epsilon=\operatorname{diag}(1,\epsilon,\ldots,\epsilon^r)$ and
+      $\|E_\epsilon\|=O(\epsilon)$.
+      In its $j$th exterior power, the unique minor with the smallest exponent uses
+      the first $j$ rows and columns. Therefore the product of the largest $j$
+      singular values, divided by $\epsilon^{j(j-1)/2}$, converges to the product of
+      the first $j$ absolute diagonal pairs. Dividing consecutive product limits gives
+      the displayed individual constant. The analytic remainder has one additional
+      power in every flag row, so it cannot alter the limit.</p>
+
+    <h3>Determinant-optimal maturities under a cap</h3>
+    <p>The determinant formula also solves an exact local design problem. Fix a maximum
+      scaled maturity and write $\tau_j=\epsilon T_{\max}c_j$, with
+      $0&lt;c_1&lt;\cdots&lt;c_r\le1$. All model-dependent factors are fixed, so maximizing
+      the magnitude of the leading determinant is equivalent to maximizing</p>
+    <div class="equation-card">
+    $$\Delta(0,c_1,\ldots,c_r)
+      =\left(\prod_{j=1}^r c_j\right)
+       \left(\prod_{1\le i&lt;j\le r}(c_j-c_i)\right).$$
+    </div>
+    <p>The unique maximizer is the affine Legendre&ndash;Gauss&ndash;Lobatto design. Let
+      $-1=x_0&lt;x_1&lt;\cdots&lt;x_r=1$, where the interior $x_j$ are the zeros of
+      $P_r'$, the derivative of the degree-$r$ Legendre polynomial. Then</p>
+    <div class="equation-card">
+    $$c_j^\star={1+x_j\over2},\qquad 1\le j\le r.$$
+    </div>
+    <p>Indeed, the last node must equal one, and the log Vandermonde is strictly concave
+      in the remaining ordered interior nodes. Its equilibrium equations are
+      $\sum_{j\ne i}(x_i-x_j)^{-1}=0$. If
+      $w(x)=\prod_{j=0}^r(x-x_j)=(x^2-1)p(x)$, these equations say that $w''$ vanishes
+      at every interior node. Degree and leading-coefficient comparison give
+      $w''=r(r+1)p$, whose polynomial solution is $p\propto P_r'$. Strict concavity
+      proves global uniqueness. This is the interval Fekete geometry originating in
+      <a href="./bibliography.html#Fejer1932">Fej&eacute;r's interpolation work</a>.</p>
+    <p>This is a determinant or local D-optimality statement. It does not claim that the
+      same nodes maximize the smallest singular value or minimize the condition number.
+      For four states ($r=3$), the normalized design is</p>
+    $$\left({1-1/\sqrt5\over2},
+             {1+1/\sqrt5\over2},1\right)
+      =(0.276393202,0.723606798,1).$$
+    <p>At the cap used in the certificate, it improves the leading determinant by
+      $1.250725436$ over the previous $(0.7,1.3,2.2)/2.2$ design, hence improves the
+      corresponding information determinant by the square, $1.564314115$. At
+      $\epsilon=0.0015625$, the exact response determinant ratio is $1.250158127$.
+      The equilibrium equations are verified through nine states with maximum residual
+      $2.4\times10^{-13}$; the exact gains over equally spaced nodes from three through
+      nine states are
+      $(1,1.086729,1.302945,1.733914,2.568915,4.244826,7.831480)$.</p>
+
+    <h3>Three states: D-, E-, and condition-optimal designs differ</h3>
+    <p>The caveat is substantive even in the smallest nontrivial case. For three states,
+      write the two normalized maturities as $(c,1)$, $0&lt;c&lt;1$. The response
+      coefficient matrix is</p>
+    $$V_c=\begin{pmatrix}c&amp;1\\ c^2/2&amp;1/2\end{pmatrix}.$$
+    <p>Its LQ diagonal entries, in absolute value, are</p>
+    <div class="equation-card">
+    $$\ell_1(c)=\sqrt{1+c^2},\qquad
+      \ell_2(c)={c(1-c)\over2\sqrt{1+c^2}}.$$
+    </div>
+    <p>The model-dependent Krylov QR factors multiply these quantities but do not change
+      their optimizers. Consequently three natural local criteria give three different
+      designs:</p>
+    <div class="equation-card">
+    $$\begin{array}{c|c|c}
+      \text{criterion}&amp;\text{objective}&amp;c^\star\\ \hline
+      \text{determinant (D)}&amp;|\det V_c|&amp;1/2\\
+      \text{weakest direction (E)}&amp;\ell_2(c)&amp;
+        c_E^3+2c_E-1=0\\
+      \text{response condition}&amp;\ell_1(c)/\ell_2(c)&amp;\sqrt2-1
+    \end{array}$$
+    </div>
+    <p>Here
+      $c_E=0.4533976515$. The cubic has exactly one root in $(0,1)$ because its
+      derivative is positive. Direct differentiation gives all three optima and shows
+      they are unique. The condition row concerns the response-only matrix
+      $C_\epsilon$; for the augmented matrix $A_\epsilon$, the largest normalization
+      singular value is node-independent to leading order, so its condition optimum
+      coincides with the E-optimum.</p>
+    <p>The E-design raises the weakest-direction constant by $0.941474\%$ relative to
+      the D-design. In a cyclic three-state certificate at $\epsilon=0.001$, the measured
+      weakest constants for the D/E/response-condition designs are respectively
+      $(0.0538838754,0.0543941976,0.0540253769)$, while the corresponding response
+      condition coefficients are $(22.5707789,21.9579293,21.7937489)$. Every measured
+      coefficient is within $0.3\%$ of its QR/LQ limit. Thus maximizing the determinant
+      cannot be silently reinterpreted as optimizing the hardest prior direction.</p>
+
+    <h3>The $T=O(m^{-1})$ boundary layer</h3>
+    <p>If $T_j=\tau_j/m$, then $\mathcal O_m$ is exactly independent of $m$ after the
+      trivial $1/m$ response scaling:</p>
+    $$m\mathbb E_\nu Z_{\tau_j/m}
+      =\nu H(I-e^{Q_0\tau_j})F.$$
+    <p>Different $\tau_j$ can rotate a single feature through enough directions to identify
+      the full prior. By contrast, for fixed positive $T_j$ all blocks converge to $HF$.
+      If $\|e^{Q_0t}R\|\le Ce^{-\delta t}$, then $\mathcal O_m$ lies within
+      $O(e^{-m\delta T_{\min}})$ of $[HF\ \cdots\ HF]$. Hence every singular value beyond
+      $\operatorname{rank}F$ is exponentially small: exact finite-$m$ rank can survive,
+      but the extra identification is exponentially ill-conditioned. The sharp theorem
+      above resolves every exponent when the scaled maturities have fixed gaps and a
+      simple real spectrum. This is why the
+      fixed-maturity first-order theorem correctly retains only $\nu HF$.</p>
+    <p>The actual bond curve has a compatible, but one order smaller, initial layer because
+      $g(0)=0$. Put $T=\tau/m$, $u=\theta-\bar\theta{\bf1}$, and
+      $v=s-\bar s{\bf1}$. A rescaled Duhamel expansion through the first volatility term gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log P_\nu(\tau/m)-\log P_\pi(\tau/m)
+      &=-\frac{\kappa}{m^2}(\nu-\pi)K_1(\tau)
+        +\frac1{2m^3}(\nu-\pi)K_2(\tau)+O_L(m^{-4}),\\
+      K_1(\tau)&=\int_0^\tau(\tau-s)e^{Q_0s}u\,ds,\\
+      K_2(\tau)&=\int_0^\tau(\tau-s)^2e^{Q_0s}(\kappa^2u+v)\,ds,
+      \qquad 0\le\tau\le L.
+    \end{aligned}$$
+    </div>
+    <p>For several scaled maturities, $[K_1(\tau_1)\ \cdots\ K_1(\tau_q)]$ gives the
+      order-$m^{-2}$ rank test. If both displayed coefficients are resolved, append the
+      $K_2$ columns. The next coefficient contains volatility only through the combination
+      $\kappa^2u+v$; it does not separately identify both unknown features without additional
+      information. In the important special case of constant $\theta$, $u=0$ and the
+      order-$m^{-2}$ initial-prior signal vanishes. Switched variance then becomes the leading
+      signal at order $m^{-3}$, and the augmented rank of
+      $[K_2(\tau_1)\ \cdots\ K_2(\tau_q)]$ determines initial-prior identification.</p>
+    <p>In the certificate, one centered feature on a nonreversible three-state chain has
+      fixed rank one, yet two scaled maturities $\tau=(0.4,1.7)$ give observability rank two
+      and recover the prior $(0.15,0.55,0.30)$. The exact mean formula agrees with independent
+      quadrature within $1.4\times10^{-16}$. After subtracting the $m^{-2}$ term, the
+      bond-price remainder has orders $2.9997$ and $2.9983$; after also subtracting the new
+      $m^{-3}$ term, these improve to $4.0015$ and $4.0009$. A separate positive-variance,
+      constant-$\theta$ example recovers the same prior from volatility alone, with remainder
+      orders $3.9988$ and $3.9946$ after its leading $m^{-3}$ term.
+      At fixed maturities, the second singular value falls from $4.47\times10^{-2}$ at $m=2$
+      to $1.05\times10^{-6}$ at $m=16$, displaying the predicted loss of conditioning.</p>
+    <p>A separate four-state certificate has one scalar cyclic feature. Three maturities
+      $(0.25,0.8,1.9)$ recover the prior $(0.10,0.25,0.40,0.25)$ to $2\times10^{-13}$,
+      while 32 random finite-chain cases verify equality of the sampled response and Krylov
+      ranks. The normalized small-maturity determinant approaches its Vandermonde coefficient
+      and the QR/LQ formula predicts all seven augmented and response-only leading singular-value
+      constants; at $\epsilon=0.00625$ the largest relative discrepancies are $1.44\%$ and
+      $1.44\%$ respectively. The augmented constants are
+      $(2,4.65744565,0.80736962,0.01315675)$ and the response-only constants are
+      $(4.68629884,0.80766818,0.01331125)$. The normalized determinant converges
+      with measured order $0.9725$. The four augmented singular values have measured exponents
+      $(0.000005,0.9823,1.9790,2.9838)$, while the response-only condition number has exponent
+      $2.0015$, verifying the full hierarchy rather than only its product.
+      For a four-state complete-graph generator, whose nonzero
+      eigenvalue has multiplicity three, the scalar-feature response rank remains exactly one
+      at every maturity, confirming the spectral obstruction.</p>
+    <p>The all-maturities certificate adds a circulation to a four-state reversible chain.
+      Detailed balance fails by $0.05$, while all three nonzero eigenvalues remain real and
+      simple. Across 200 randomly ordered positive maturity triples, it verifies the
+      determinant factorization and its fixed sign; the maximum relative discrepancy is below
+      $5\times10^{-13}$. A representative prior is recovered within $2.2\times10^{-15}$.
+      A separate irreducible three-state chain has the genuine Jordan relations
+      $Q_0v=-v$ and $Q_0w=0.1v-w$. With $F=w$, its Krylov determinant is $1.2$;
+      200 ordered maturity pairs verify the confluent factorization within
+      $5\times10^{-13}$, and recover a prior within $4.2\times10^{-15}$.
+      For the directed-cycle counterexample, the Krylov determinant is $-3$, a generic pair
+      has response determinant $-0.170100185$, but the exceptional pair has determinant
+      $4.46\times10^{-16}$ and smallest singular value $1.75\times10^{-16}$.
+      Finally, 100 random irreducible three-state chains with complex spectra verify the
+      universal exceptional-pair ratio: the maximum collinearity residual is
+      $5.8\times10^{-16}$, while the smallest relative determinant at a generic comparison
+      pair remains above $0.029$.</p>
+
+    <h2>A computable finite-rate bound</h2>
+    <p>The following deliberately conservative estimate makes the $O(m^{-2})$ statement
+      explicit, including $T=0$. Use the row-sum operator norm $\|\cdot\|_\infty$.
+      Since $Q_0$ is finite and irreducible, choose $C,\delta>0$ such that</p>
+    $$\|e^{Q_0t}R\|_\infty\le C e^{-\delta t},\qquad t\ge0.$$
+    <p>These constants can be certified numerically: select $t_0>0$ with
+      $\rho=\|e^{Q_0t_0}R\|_\infty<1$, then take
+      $C=2/\rho$ and $\delta=-\log\rho/t_0$.
+      On $[0,L]$ set $f(t)=g(t)-(\pi g(t)){\bf1}$,
+      $G=\sup\|f(t)\|_\infty$ and $J=\sup\|f'(t)\|_\infty$.
+      For the model here, for example, one may take
+      $G=\|u\|_\infty+\|v\|_\infty/(2\kappa^2)$ and
+      $J=\kappa\|u\|_\infty+\|v\|_\infty/\kappa$.
+      Write</p>
+    $$\alpha=\frac{C}{m\delta},\qquad
+      W=\alpha^2e^{GL}(4G^2+J+2\alpha G^3).$$
+    <p>If $4\alpha G e^{2GL}\le1$ (automatically true when $G=0$),
+      then for every $0\le T\le L$ the remainders in the theorem obey</p>
+    <div class="equation-card">
+    $$|E_\pi(T)|\le LG e^{GL}W,\qquad
+      |E_i(T)|\le (LG+1)e^{GL}W+4\alpha^2G^2e^{4GL}.$$
+    </div>
+    <p>These are analytic upper bounds, not confidence intervals for noisy bond quotes.
+      Their rate threshold and constants are intentionally loose; they establish uniform
+      finite-rate control for an arbitrary irreducible finite chain, including a nonreversible
+      one. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_identifiability.py">certificate</a>
+      checks both bounds and the $m^{-2}$ numerical behavior on the three-state example.</p>
+
+    <h2>Proof</h2>
+    <p><strong>Expansion and error.</strong> Divide $a(t)$ by
+      $\exp(\int_0^t\bar g)$ and call the resulting vector $b$. Decompose it as
+      $b=p{\bf1}+z$, with $p=\pi b$ and $\pi z=0$. Then</p>
+    $$p'=\pi[fz],\qquad
+      z'=mQ_0z+p f+R\,\operatorname{diag}(f)z,\qquad p(0)=1,\ z(0)=0.$$
+    <p>Positivity of the finite-state Feynman&ndash;Kac functional gives
+      $e^{-GL}\le p\le e^{GL}$. Write $h=Hf$, so $Q_0h=-f$ and
+      $\|h\|\le CG/\delta$, $\|h'\|\le CJ/\delta$.
+      The semigroup estimate and variation of constants, with $4\alpha G\le1$,
+      give $\sup\|z\|\le 2\alpha G e^{GL}$. For
+      $w=z-ph/m$, the condition $f(0)=0$ gives $w(0)=0$, and</p>
+    $$w'=mQ_0w+R\,\operatorname{diag}(f)z
+         -\frac1m(h'p+hp').$$
+    <p>Here $\|R\|_\infty\le2$ and $|p'|\le G\|z\|$.
+      Another variation-of-constants estimate gives $\sup\|w\|\le W$.
+      Consequently</p>
+    $$\left|(\log p)'-\frac1m\pi[fh]\right|
+       \le G e^{GL}W.$$
+    <p>Integration proves the first bound. Since
+      $b_i=p(1+z_i/p)$, $|z_i/p|\le2\alpha Ge^{2GL}\le1/2$, and
+      $|\log(1+q)-q|\le q^2$ for $|q|\le1/2$,
+      the second bound follows. Substituting
+      $f=-\kappa uB+vB^2/2$ into $\pi[fh]$ yields the three
+      Green&ndash;Kubo coefficients and the displayed known-start term.</p>
+    <p><strong>Information and rank.</strong> If
+      $\sum_{j=1}^4 d_j I_j(T)=0$ on an open interval, differentiation gives
+      $\sum_{j=1}^4d_j B(T)^j=0$. Because $B$ ranges over an interval,
+      every $d_j$ vanishes. The same argument with the constant polynomial term
+      proves independence of $T,I_1,\ldots,I_4$.
+      Finally, the long-run covariance rate of additive functionals is
+      $2\mathcal K_0^{\rm sym}$. For an irreducible finite chain this quadratic form
+      is strictly positive for any nonzero centered vector: writing $h=Hf$,
+      the martingale quadratic variation is
+      $\sum_{i,j}\pi_i(Q_0)_{ij}(h_j-h_i)^2$,
+      which vanishes only if $h$ is constant along every transition, hence $f=0$.
+      Thus the Gram matrix of centered regime features has precisely their
+      linear rank, at most $n-1$. For two features this proves the latent
+      determinant restriction, including the two-state equality case.</p>
+    <p><strong>Initial mixture and boundary layer.</strong> Since $Q_0H=H Q_0=\Pi-I$ and
+      $\pi F=0$, integration of $\nu e^{mQ_0t}F$ gives the exact transient-mean formula.
+      Stacking its values gives $\mathcal O_m$, and the augmented rank criterion is simply
+      injectivity on the affine hyperplane $\nu{\bf1}=1$. Exponential mixing proves the
+      fixed-maturity singular-value bound by comparison with the repeated block $HF$.
+      Moreover, on centered columns, $HQ_0=-I$, so the analytic expansion is
+      $R(\tau)=\tau F+\tau^2Q_0F/2!+\cdots$. Its derivatives at zero generate the Krylov
+      space, while Cayley&ndash;Hamilton stops that space at power $n-2$; this proves both
+      inclusions in the whole-curve theorem. In the scalar cyclic case, expressing the
+      response columns in the Krylov basis and taking the lowest-degree determinant gives
+      the displayed Vandermonde coefficient.
+      For the yield boundary, set $t=r/m$ in the backward equation and expand</p>
+    $$g(r/m)=-\frac{\kappa r\theta}{m}
+      +\frac{r^2(\kappa^2\theta+s)}{2m^2}+O_L(m^{-3}).$$
+    <p>The rescaled equation therefore has potential terms first at orders $m^{-2}$ and
+      $m^{-3}$. Variation of constants around $e^{Q_0r}$ gives the two displayed integrals
+      after changing variables and subtracting the stationary start. A product of two
+      potential insertions, and hence the first quadratic Dyson term, cannot occur before
+      order $m^{-4}$; the quadratic term from the logarithm also first occurs there. This
+      proves the $O_L(m^{-4})$ remainder uniformly for $\tau$ in a fixed compact interval.</p>
+    <p>This finite-state proof is the elementary Poisson-equation version of the additive-functional
+      central-limit framework. For broader state spaces see
+      <a href="https://doi.org/10.1007/BF01210789">Kipnis and Varadhan (1986)</a> in the reversible
+      case and <a href="https://doi.org/10.1214/aop/1039639370">Glynn and Meyn (1996)</a> for
+      irreducible discrete- and continuous-time Markov processes.</p>
+    <p class="muted">Scope: common fixed $\kappa$, fixed known $x$, finite $n$, and a fixed bounded maturity interval.
+      The exact fixed-feature covariance-rank theorem permits any initial prior. The pricing-identification formulas
+      cover stationarity, a labeled starting state, and an unobserved fixed initial mixture. The Krylov theorem
+      characterizes noiseless mean observability across the complete scaled-maturity curve; its determinant formula
+      and the real-spectrum all-maturity sharpening also warn that formal rank need not imply stable statistical recovery. The boundary theorem
+      concerns $T=\tau/m$ with $\tau$ in a fixed compact interval; it is distinct from the fixed-maturity outer theorem.
+      Stochastic reversion speed and simultaneous limits $T\to\infty$ require separate analyses. The integrated-loading theorem only requires
+      $G\succeq0$ and square-integrable deterministic $L$; its finite-basis equality assumes the scalar loading Gram
+      matrix $\Gamma$ is positive definite.</p>
+  </main>
