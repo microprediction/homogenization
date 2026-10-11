@@ -372,6 +372,36 @@
     </div>
     <p>These are fixed-$Q$, fixed-maturity contractions of the Green&ndash;Kubo matrix. They do not assert the same rank
     after combining different maturity-dependent loadings.</p>
+    <h4>Power-law maturity phase diagram</h4>
+    <p>The gap between fixed maturity and the critical layer has a complete scaling description. Put
+      $T_s=\tau s^{-\beta}$, $L_s=sT_s$, and center and normalize the return as</p>
+    $$Y_s=\frac{X_{T_s}-\mathbb E X_{T_s}}{\sqrt{T_s}},\qquad \beta\ge0.$$
+    <p>After the time change $u=st$, conditional means carry the factor $\sqrt{T_s}/L_s$ and conditional
+      covariances the factor $1/L_s$. A singleton&ndash;pair partition with $q$ blocks and $r$ singleton blocks
+      therefore contributes</p>
+    $$T_s^{r/2}L_s^{-q}\,operatorname{cum}_q(A_{L_s}).$$
+    <p>If $0\le\beta&lt;1$, then $L_s\to\infty$ and every order-$q\ge2$ occupation cumulant is $O(L_s)$.
+      The partitions with the fewest blocks give, for $p\ge1$,</p>
+    <div class="equation-card">
+    $$\kappa_{2p}(Y_s)=O\!\left(L_s^{,1-p}\right)
+      =O\!\left(s^{-(p-1)(1-\beta)}\right),$$
+    $$\kappa_{2p+1}(Y_s)=O\!\left(\sqrt{T_s}\,L_s^{-p}\right)
+      =O\!\left(s^{-p(1-\beta)-\beta/2}\right).$$
+    </div>
+    <p>Thus $Y_s$ converges to the Gaussian law with stationary averaged covariance. These are upper orders: tensor
+      contractions or symmetry may cancel the leading coefficient.</p>
+    <p>At $\beta=1$, $L_s=\tau$ and the exact finite-switch covariance mixture below remains. If $\beta&gt;1$,
+      $L_s\to0$: with probability tending to one the chain never leaves its initial regime, and</p>
+    $$Y_s\Longrightarrow Y_{\rm fr},\qquad
+      Y_{\rm fr}\mid Y_0=i\sim N(0,C^i).$$
+    <p>Hence a mixed initial law generally leaves persistent even cumulants at both sides of the critical point for
+      entirely different reasons: finite occupation randomness at $\beta=1$, and a frozen initial-regime mixture at
+      $\beta&gt;1$. A deterministic initial regime makes the latter limit Gaussian.</p>
+    <p>The certificate checks the interpolation at $\beta=1/2$. The measured speed exponents for one-asset cumulants
+      of orders three through six are $0.744523$, $0.495374$, $1.239972$, and $0.990538$, against
+      $0.75$, $0.50$, $1.25$, and $1.00$. At $\beta=3/2$ and $s=16384$, the order-two, order-four, and order-six
+      cumulants differ from their frozen-mixture limits by $6.0\times10^{-5}$, $1.6\times10^{-5}$, and
+      $1.4\times10^{-6}$; the odd cumulants are already below $3.9\times10^{-6}$ and $3.2\times10^{-7}$.</p>
     <h4>The critical boundary layer $sT=\tau$</h4>
     <p>The excluded near end has a different, exact scaling law. Put $T_s=\tau/s$ and
       $Z_s=\sqrt{s}\,X_{T_s}$. Under the time change $u=st$, the regime process has generator $Q$ on

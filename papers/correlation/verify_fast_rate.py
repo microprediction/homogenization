@@ -106,6 +106,71 @@ def main():
               f"(target {target})")
         ok &= return_rate > target - 0.1
 
+    print("power-law maturity phase diagram")
+    tau = 0.75
+    phase_initial = np.array([0.2, 0.3, 0.5])
+
+    def normalized_power_horizon(speed, beta):
+        """Exact law of X_T/sqrt(T) after the time change u=s*t."""
+        maturity = tau * speed ** (-beta)
+        exposure = speed * maturity
+        return cumulants_exact(
+            exposure, Q,
+            MU1 * math.sqrt(maturity) / exposure,
+            MU2 * math.sqrt(maturity) / exposure,
+            VOL1 / math.sqrt(exposure),
+            VOL2 / math.sqrt(exposure), RHO,
+            r=0.32, N=64, max_order=6, initial=phase_initial
+        )
+
+    phase_speeds = [4, 16, 64, 256, 1024]
+    beta = 0.5
+    homogenized = [normalized_power_horizon(speed, beta)
+                   for speed in phase_speeds]
+    measured_rates = {}
+    for order in range(3, 7):
+        key = 'k' + '1' * order
+        measured = math.log(
+            abs(homogenized[-2][key] / homogenized[-1][key]), 4
+        )
+        p = order // 2
+        predicted = (
+            (p - 1) * (1.0 - beta) if order % 2 == 0
+            else p * (1.0 - beta) + beta / 2.0
+        )
+        measured_rates[order] = measured
+        print(f"  beta={beta:.1f}, order {order}: rate {measured:.6f}; "
+              f"target {predicted:.6f}")
+        ok &= abs(measured - predicted) < 0.02
+
+    beta = 1.5
+    frozen_speeds = [64, 256, 1024, 4096, 16384]
+    frozen = [normalized_power_horizon(speed, beta)
+              for speed in frozen_speeds]
+    state_variances = VOL1 ** 2
+    frozen_mean = float(phase_initial @ state_variances)
+    centered_variances = state_variances - frozen_mean
+    frozen_limits = {
+        2: frozen_mean,
+        4: 3.0 * float(phase_initial @ centered_variances ** 2),
+        6: 15.0 * float(phase_initial @ centered_variances ** 3),
+    }
+    frozen_errors = {}
+    for order, limit in frozen_limits.items():
+        key = 'k' + '1' * order
+        error = abs(frozen[-1][key] - limit)
+        frozen_errors[order] = error
+        print(f"  beta={beta:.1f}, order {order}: terminal "
+              f"{frozen[-1][key]:.10e}; frozen limit {limit:.10e}; "
+              f"error {error:.2e}")
+    print(f"  beta={beta:.1f}, terminal odd cumulants: "
+          f"{frozen[-1]['k111']:+.3e}, {frozen[-1]['k11111']:+.3e}")
+    ok &= frozen_errors[2] < 7e-5
+    ok &= frozen_errors[4] < 2e-5
+    ok &= frozen_errors[6] < 2e-6
+    ok &= abs(frozen[-1]['k111']) < 4e-6
+    ok &= abs(frozen[-1]['k11111']) < 4e-7
+
     c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
     means = np.column_stack([MU1, MU2])
     covariances = np.array([
