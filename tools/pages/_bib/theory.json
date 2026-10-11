@@ -24,5 +24,14 @@
   "venue": "Numerische Mathematik 4:117-123",
   "doi": "10.1007/BF01386302",
   "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
+ },
+ {
+  "key": "Rebolledo1980",
+  "authors": "Rebolledo, R.",
+  "year": 1980,
+  "title": "Central limit theorems for local martingales",
+  "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
+  "doi": "10.1007/BF00587353",
+  "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
  }
 ]
