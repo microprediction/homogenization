@@ -101,6 +101,23 @@ class TwoState:
         return 2 * self.K * T ** 3 * self.postfit_gk_factor(degree)
 
     @staticmethod
+    def postfit_boundary_coefficient(degree=2):
+        """Leading relative finite-correlation correction for a polynomial fit.
+
+        For every degree d >= 1, the exact continuous uniformly weighted
+        residual divided by its Green--Kubo limit is
+
+            1 - coefficient / (gamma*T)^2 + O((gamma*T)^-3).
+
+        A constant-only fit is exceptional and has a nonzero inverse-linear
+        correction, so it is deliberately excluded here.
+        """
+        if not isinstance(degree, (int, np.integer)) or degree < 1:
+            raise ValueError("degree must be a positive integer")
+        d = degree
+        return 4 * (2 * d - 1) * (2 * d + 5)
+
+    @staticmethod
     def _postfit_shape(x):
         """Dimensionless finite-correlation shape F(x) for the continuous quadratic timing fit.
 

@@ -158,6 +158,40 @@ def integrated_brownian_postfit_quadrature(degrees, n):
     return np.asarray(values)
 
 
+def finite_rate_polynomial_ratio(degree, x, n=40):
+    """Independent quadrature for the exact finite-rate polynomial-fit ratio.
+
+    On the triangle 0 <= u <= z <= 1, project the impulse
+    k_z(t)=(t-z)_+ in an orthogonal shifted-Legendre basis.  The remaining
+    z-integral is polynomial and Gauss--Legendre exact; q=x(z-u) removes the
+    exponentially thin direction from the outer integral.
+    """
+    nodes, weights = np.polynomial.legendre.leggauss(n)
+    moments = []
+    for order in range(degree + 1):
+        poly = np.polynomial.Legendre.basis(order, domain=[0, 1]).convert(
+            kind=np.polynomial.Polynomial)
+        anti = poly.integ()
+        anti_t = (poly * np.polynomial.Polynomial([0, 1])).integ()
+        moments.append(lambda a, anti=anti, anti_t=anti_t:
+                       anti_t(1) - anti_t(a) - a * (anti(1) - anti(a)))
+
+    def diagonal_lag_kernel(lag):
+        z = lag + (1 - lag) * (nodes + 1) / 2
+        u = z - lag
+        width = 1 - z
+        raw = width ** 3 / 3 + lag * width ** 2 / 2
+        fitted = sum((2 * order + 1) * moments[order](z) * moments[order](u)
+                     for order in range(degree + 1))
+        return (1 - lag) * float(weights @ (raw - fitted))
+
+    f0 = 2 * TwoState.postfit_gk_factor(degree)
+    upper = min(float(x), 60.0)
+    scaled = quad(lambda q: math.exp(-q) * diagonal_lag_kernel(q / x),
+                  0, upper, epsabs=1e-15, epsrel=1e-12, limit=200)[0]
+    return scaled / f0
+
+
 def arbitrary_start_phase_quadrature(m, u, v, initial_p1):
     """Independent semigroup quadrature of E Phi(u), E Phi(v), and E[Phi(u)Phi(v)]."""
     u, v = min(float(u), float(v)), max(float(u), float(v))
@@ -320,6 +354,43 @@ def main():
     out['postfit_polynomial'] = dict(degrees=degrees.tolist(), factors=factors.tolist(),
                                      trace_extrapolated=extrapolated.tolist(),
                                      max_relative_error=float(factor_error))
+
+    print("   all-degree finite-correlation boundary cancellation")
+    boundary_rows = []
+    xs = (128.0, 256.0, 512.0, 1024.0)
+    constant_ratios = [finite_rate_polynomial_ratio(0, x) for x in xs]
+    constant_errors = [abs(value - (1 - 5 / (4 * x)))
+                       for value, x in zip(constant_ratios, xs)]
+    constant_convergence = [constant_errors[j] / constant_errors[j + 1]
+                            for j in range(len(constant_errors) - 1)]
+    print(f"     degree 0: inverse-linear coefficient 1.25, "
+          f"last error ratio {constant_convergence[-1]:.6f}")
+    ok &= 3.9 < constant_convergence[-1] < 4.1
+    last_ratios = []
+    for degree in range(1, 7):
+        coefficient = m.postfit_boundary_coefficient(degree)
+        exact_ratios = [finite_rate_polynomial_ratio(degree, x) for x in xs]
+        errors = [abs(value - (1 - coefficient / x ** 2))
+                  for value, x in zip(exact_ratios, xs)]
+        convergence = [errors[j] / errors[j + 1] for j in range(len(errors) - 1)]
+        last_ratios.append(convergence[-1])
+        boundary_rows.append(dict(degree=degree, coefficient=coefficient,
+                                  x=list(xs), exact_ratio=exact_ratios,
+                                  third_order_errors=errors,
+                                  doubling_ratios=convergence))
+        print(f"     degree {degree}: coefficient {coefficient:4d}, "
+              f"last error ratio {convergence[-1]:.6f}")
+    ok &= min(last_ratios) > 7.8 and max(last_ratios) < 8.1
+    try:
+        m.postfit_boundary_coefficient(0)
+        ok = False
+    except ValueError:
+        pass
+    out['postfit_boundary'] = dict(
+        constant_fit=dict(coefficient=1.25, x=list(xs), exact_ratio=constant_ratios,
+                          second_order_errors=constant_errors,
+                          doubling_ratios=constant_convergence),
+        degrees_1_to_6=boundary_rows)
 
     print("   sampled-design trace theorem")
     dense = []

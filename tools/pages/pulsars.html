@@ -171,6 +171,30 @@
     coefficient for the integrated-frequency-noise kernel. An independent covariance-trace calculation for
     every $0\le d\le12$ agrees to relative error below $1.3\times10^{-9}$.</p>
 
+    <h3>All-degree finite-correlation boundary cancellation</h3>
+    <p>The missing finite-rate statement is also explicit at its first nonzero order. Let $R_d(x)$ be the exact
+    continuous post-fit mean square divided by $2KT^3c_d$, with $x=\gamma T$. For every fixed integer $d\ge1$,</p>
+    <div class="equation-card">
+    $$R_d(x)=1-\frac{4(2d-1)(2d+5)}{x^2}+O_d(x^{-3}),\qquad x\to\infty.$$
+    </div>
+    <p>Thus fitting a line already cancels the relative $x^{-1}$ endpoint error, and every higher polynomial fit
+    retains that cancellation. The result is for each fixed degree; it is not uniform when $d$ grows with $x$.
+    A constant-only fit is exceptional:</p>
+    $$R_0(x)=1-\frac{5}{4x}+O(x^{-2}).$$
+    <p>To prove the claim, put $k_z(t)=(t-z)_+$,
+    $H_d(z,u)=\langle(I-P_d)k_z,(I-P_d)k_u\rangle$, and</p>
+    $$F_d(y)=2\int_y^1 H_d(z,z-y)\,dz.$$
+    <p>The exact dimensionless covariance integral is
+    $\int_0^1e^{-xy}F_d(y)\,dy$. Direct shifted-Legendre projection gives</p>
+    $$F_d(0)=2c_d,\qquad F_d'(0)=0,\qquad
+      F_d''(0)=-\frac{d+1}{(2d+1)(2d+3)}.$$
+    <p>The middle identity is structural: $k_0(t)=t$ is removed whenever $d\ge1$, $k_1=0$, and symmetry of
+    $H_d$ cancels the two diagonal derivatives. Watson's endpoint expansion then gives the displayed coefficient,
+    since $F_d''(0)/F_d(0)=-4(2d-1)(2d+5)$. This complements the exact quadratic formula below and keeps its
+    scope to stationary exponential covariance and continuous uniformly weighted ordinary least squares.
+    Independent projection quadrature for degrees one through six gives last-doubling remainder ratios from
+    $7.89$ to $7.97$, confirming the predicted third-order residual.</p>
+
     <h3>Exact finite-rate quadratic</h3>
     <p>For the two-state chain the continuous, uniformly weighted quadratic least-squares calculation is exact at
     every switching rate. Put $x=\gamma T$. Then</p>
