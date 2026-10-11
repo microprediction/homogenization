@@ -7,7 +7,10 @@ polynomial-semigroup exponential, verifies the constant-coefficient Gamma
 special case, tests the explicit inverse-speed expansion through cubic order,
 and checks convergence of the full Taylor series inside the computable pole
 disk on a nonreversible three-state chain.  It also verifies a noncancellation
-criterion under which that disk is the exact Taylor disk.
+criterion under which that disk is the exact Taylor disk, and checks a
+switching-speed-uniform factorial moment bound through order eighty.  The
+latter proves exponential integrability and moment determinacy without
+claiming that the inverse-speed expansion is uniform in moment order.
 """
 import math
 import os
@@ -26,6 +29,8 @@ SPEEDS = (8, 16, 32, 64, 128)
 ASYMPTOTIC_ORDER = 3
 CONVERGENCE_ORDER = 30
 SHARPNESS_ORDER = 100
+MOMENT_BOUND_DEGREE = 80
+BOUND_SPEEDS = (0.25, 1, 8, 128)
 
 
 def stationary_moments(speed, q0, pi, c, kappa, variance, degree=DEGREE):
@@ -101,6 +106,82 @@ def gamma_moments(c, kappa, variance, degree=DEGREE):
     for order in range(1, degree + 1):
         values.append(values[-1] * (c + (order - 1) * variance / 2) / kappa)
     return np.asarray(values)
+
+
+def factorial_moment_bound(c, kappa, variance, degree=MOMENT_BOUND_DEGREE):
+    """Uniform Gamma-majorant bound implied by the exact moment recursion."""
+    c_star = float(np.max(c))
+    kappa_star = float(np.min(kappa))
+    variance_star = float(np.max(variance))
+    bound = np.ones(degree + 1)
+    for order in range(1, degree + 1):
+        bound[order] = (
+            bound[order - 1]
+            * (c_star + (order - 1) * variance_star / 2)
+            / kappa_star
+        )
+    return bound
+
+
+def exponential_integrability_certificate(q0, pi, c, kappa, variance):
+    """Check the speed-uniform factorial bound, including beyond Feller.
+
+    Multiplying the exact pth stationary moment equation by the all-ones
+    vector gives
+
+        r_p kappa = r_(p-1) (c + (p-1) variance/2).
+
+    Positivity therefore majorizes every scalar moment by Gamma moments with
+    the worst statewise coefficients.  The check uses eighty moments at four
+    switching speeds and repeats the test after violating every statewise
+    Feller inequality.
+    """
+    bound = factorial_moment_bound(c, kappa, variance)
+    ratios = []
+    mgf_partials = []
+    variance_star = float(np.max(variance))
+    kappa_star = float(np.min(kappa))
+    c_star = float(np.max(c))
+    theta = variance_star / (2 * kappa_star)
+    beta = 2 * c_star / variance_star
+    eta = 0.8 / theta
+    mgf_bound = (1 - eta * theta) ** (-beta)
+    for speed in BOUND_SPEEDS:
+        moments = stationary_moments(
+            speed, q0, pi, c, kappa, variance, degree=MOMENT_BOUND_DEGREE
+        ).sum(axis=1)
+        ratios.append(float(np.max(moments[1:] / bound[1:])))
+        mgf_partials.append(sum(
+            eta ** order * moments[order] / math.factorial(order)
+            for order in range(MOMENT_BOUND_DEGREE + 1)
+        ))
+    assert max(ratios) < 1
+    assert max(mgf_partials) < mgf_bound
+
+    # Moment finiteness is distinct from boundary inaccessibility.  This
+    # positive example violates 2*c_i >= variance_i in every regime.
+    nonfeller_c = np.array([0.010, 0.030, 0.020])
+    assert np.max(2 * nonfeller_c - variance) < 0
+    nonfeller_bound = factorial_moment_bound(nonfeller_c, kappa, variance)
+    nonfeller_ratios = []
+    for speed in BOUND_SPEEDS:
+        moments = stationary_moments(
+            speed, q0, pi, nonfeller_c, kappa, variance,
+            degree=MOMENT_BOUND_DEGREE,
+        ).sum(axis=1)
+        nonfeller_ratios.append(
+            float(np.max(moments[1:] / nonfeller_bound[1:]))
+        )
+    assert max(nonfeller_ratios) < 1
+    return (
+        theta,
+        beta,
+        eta,
+        mgf_bound,
+        max(ratios),
+        max(mgf_partials),
+        max(nonfeller_ratios),
+    )
 
 
 def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
@@ -389,6 +470,16 @@ def main():
     )
     assert gamma_error < 2e-14
 
+    (
+        majorant_scale,
+        majorant_shape,
+        test_eta,
+        exponential_bound,
+        largest_moment_ratio,
+        largest_mgf_partial,
+        largest_nonfeller_ratio,
+    ) = exponential_integrability_certificate(q0, pi, c, kappa, variance)
+
     coefficients, scalar, centered = fast_coefficients(
         q0, pi, c, kappa, variance
     )
@@ -434,6 +525,22 @@ def main():
     print("stationary law:", np.array2string(pi, precision=10))
     print("semigroup discrepancy:", f"{semigroup_error:.3e}")
     print("Gamma reduction discrepancy:", f"{gamma_error:.3e}")
+    print(
+        "Gamma majorant scale/shape:",
+        f"{majorant_scale:.12f}/{majorant_shape:.12f}",
+    )
+    print(
+        "largest exact-moment / majorant ratio through p=80:",
+        f"{largest_moment_ratio:.12f}",
+    )
+    print(
+        "largest non-Feller moment / majorant ratio through p=80:",
+        f"{largest_nonfeller_ratio:.12f}",
+    )
+    print(
+        "80-term exponential partial / rigorous bound at eta="
+        f"{test_eta:.6f}: {largest_mgf_partial:.12f}/{exponential_bound:.12f}",
+    )
     print("leading moments p=1..6:", np.array2string(scalar[1:, 0], precision=10))
     print("first coefficients p=1..6:", np.array2string(scalar[1:, 1], precision=10))
     print("scalar residual orders n=0..3:", np.array2string(scalar_rates, precision=6))

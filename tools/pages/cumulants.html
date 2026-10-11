@@ -356,12 +356,41 @@
     <p>Thus every component moment is nonnegative and</p>
     $$\mathbb E_{\Pi_m}v^p\le
       {\max_i d_{p,i}\over p\kappa_*}\mathbb E_{\Pi_m}v^{p-1}.$$
+    <p>This inequality also gives a moment-order-uniform conclusion that is separate from the inverse-speed
+      expansion below. Put</p>
+    $$c^*=\max_i c_i,\qquad a^*=\max_i a_i,\qquad
+      \vartheta={a^*\over2\kappa_*},\qquad \beta={2c^*\over a^*}.$$
+    <div class="equation-card">
+    <p><strong>Uniform Gamma-majorant theorem.</strong> If $a^*&gt;0$, then, simultaneously for every switching
+      speed $m&gt;0$ and integer $p\ge0$,</p>
+    $$\mathbb E_{\Pi_m}v^p\le \vartheta^p(\beta)_p,$$
+    <p>and hence, for every $0\le\eta&lt;\vartheta^{-1}=2\kappa_*/a^*$,</p>
+    $$\mathbb E_{\Pi_m}e^{\eta v}
+      \le (1-\vartheta\eta)^{-\beta}.$$
+    <p>If $a^*=0$, the corresponding bounds are
+      $\mathbb E v^p\le(c^*/\kappa_*)^p$ and
+      $\mathbb E e^{\eta v}\le e^{\eta c^*/\kappa_*}$ for every $\eta\ge0$.</p>
+    </div>
+    <p>A bounded-cutoff Foster&ndash;Lyapunov argument first justifies finiteness of the displayed moments. Then
+      multiplying the exact moment equation by $\mathbf1$ gives the sharper identity</p>
+    $$r^{(p)}\kappa
+      =r^{(p-1)}\left(c+{p-1\over2}a\right).$$
+    <p>Positivity and iteration yield the rising-factorial bound. Monotone convergence then sums its exponential
+      series to the displayed Gamma moment-generating function. In particular the invariant variance law is
+      moment-determinate; equivalently, the bound implies Carleman&apos;s divergent series. The conclusion is
+      uniform in the switching speed and does not use the statewise Feller inequalities. It does <em>not</em>
+      make the inverse-speed Taylor series below uniform in $p$.</p>
     <p>The same generator inequality is a Foster&ndash;Lyapunov bound, so all positive integer invariant moments
       are finite. This conclusion needs mean reversion, not the statewise Feller inequality
       $2c_i\ge a_i$: boundary inaccessibility and moment existence are separate questions. The finite-dimensional
       closure is the switched-CIR instance of the polynomial-process framework of
       <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann
       (2012)</a>, while the displayed recursion follows here directly from the generator.</p>
+    <p>For the nonreversible three-state certificate, $(\vartheta,\beta)=(0.057142857143,3)$. Across switching
+      speeds $m\in\{0.25,1,8,128\}$ and moments through order $80$, the largest exact-moment/majorant ratio is
+      $0.521637381880$. Replacing the drift levels so that every state violates the Feller inequality still gives
+      a maximum ratio $0.468400940311$. At $\eta=14$, which is $80\%$ of the certified endpoint, the largest
+      80-term exact exponential partial sum is $4.813353422729$, below the rigorous full-MGF bound $125$.</p>
 
     <h3>Every fixed inverse-speed coefficient at every fixed moment order</h3>
     <p>The recursion in fact determines the complete formal fast-switching expansion, coefficient by coefficient.
