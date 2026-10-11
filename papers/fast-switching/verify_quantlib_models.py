@@ -9,6 +9,8 @@
 3. With the regimes frozen (both regimes equal) the characteristic function is exp(int g), and its Lewis call price
    matches an independent price: Merton's series of Black-Scholes prices, and QuantLib's VarianceGammaEngine and
    BatesEngine (skipped when QuantLib is not installed: pip install QuantLib).
+4. Variance gamma with switched martingale corrections: the half-difference of the exponents grows like
+   i u (omega_1 - omega_2) / 2, so the expansion's window in frequency is of order lambda.
 `python3 verify_quantlib_models.py`
 """
 import math
@@ -134,6 +136,23 @@ def main():
         d = max(abs(a - b) for a, b in zip(ours, quantlib_calls('bates', Ks, **bp)))
         ok &= d < 1e-8
         print(f"{'ok ' if d < 1e-8 else 'BAD'} Bates against QuantLib BatesEngine: largest difference {d:.1e}")
+
+    print("4. variance gamma with switched martingale corrections: the half-difference of the exponents grows linearly")
+    g = lambda u: [f(0.0) for f in variance_gamma(u, [0.25, 0.12], [0.5, 0.2], [-0.25, -0.10])[1]]
+    gt = lambda u: 0.5 * (g(u)[0] - g(u)[1])
+    gb = lambda u: 0.5 * (g(u)[0] + g(u)[1])
+    omt = (gt(1e9) / 1e9).imag
+    slopes = [abs(gt(u - 0.5j)) / u for u in (200.0, 1e3, 1e5)]
+    lo, hi = 1.0, 1e4                          # the frequency at which |g~| reaches lambda = 25
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if abs(gt(mid - 0.5j)) < 25.0 else (lo, mid)
+    tail = abs(cmath.exp(gb(lo - 0.5j))) / (lo * lo + 0.25)
+    good = (abs(omt - 0.0578221309) < 1e-9 and abs(200 * slopes[0] - 12.28095356) < 1e-7
+            and abs(slopes[2] - omt) < 1e-6 and slopes[0] > slopes[1] > slopes[2] and abs(lo - 418.886) < 1e-2 and tail < 1e-14)
+    ok &= good
+    print(f"{'ok ' if good else 'BAD'} omega~ {omt:.10f}; |g~|/u at 200, 1e3, 1e5: " + ", ".join(f"{x:.8f}" for x in slopes)
+          + f"; |g~| = 25 at u = {lo:.3f}, Lewis integrand there {tail:.1e}")
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
 

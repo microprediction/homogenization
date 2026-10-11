@@ -5,6 +5,8 @@
 2. Vasicek with switching reversion speed and volatility (non-commuting): same, on the discretized pricing equation.
 3. Black-Scholes with switching variance: call prices from the rule against the numerical solution.
 4. Many-name credit: joint survival of every subset from one Green-Kubo matrix of hazards.
+5. Two-channel race under a three-state cycle: which channel fires first depends on the direction of the cycle,
+   by (K_12 - K_21) / hbar at first order, while joint survival does not.
 """
 import math, cmath, os, sys
 import numpy as np
@@ -144,6 +146,24 @@ def main():
     w = np.linalg.eigvalsh(Ks)
     print(f"   eigenvalues of the dependence matrix {np.array2string(w, precision=2)}: rank at most 2 for three states")
     ok &= abs(w).min() < 1e-12 * abs(w).max() and w.min() > -1e-12 * abs(w).max()
+
+    print("5. two channels, three-state cycle: probability that channel 1 fires first, cycle forward and reversed")
+    h = np.array([[0.07, 0.01, 0.01], [0.01, 0.07, 0.01]])
+    first = lambda Q: float(stationary(Q) @ np.linalg.solve(np.diag(h.sum(0)) - Q, h[0]))
+    errs, gaps = [], []
+    for m in [10, 20, 40, 80]:
+        Q = m * QC
+        K, hb = gk(Q, list(h)), averages(Q, list(h))
+        rule = hb[0] / hb.sum() + (hb[0] / hb.sum() * K.sum() - K[0, 0] - K[1, 0]) / hb.sum()
+        fwd, rev = first(Q), first(Q.T)
+        errs.append(abs(rule - fwd)); gaps.append(abs(fwd - rev - (K[0, 1] - K[1, 0]) / hb.sum()))
+        surv = [abs(math.log(stationary(Q) @ expm(5.0 * (R - np.diag(h.sum(0)))) @ np.ones(3))) for R in (Q, Q.T)]
+        print(f"   generator x{m:2d}: forward {fwd:.10f}  reversed {rev:.10f}  rule error {errs[-1]:.2e}"
+              f"  gap error {gaps[-1]:.2e}  joint survival differs by {abs(surv[0] - surv[1]):.1e}")
+        if m == 10:
+            ok &= abs(fwd - 0.5001500361) < 1e-10 and abs(rev - 0.4998499639) < 1e-10
+        ok &= abs(surv[0] - surv[1]) < 1e-12
+    ok &= all(3.8 < errs[i] / errs[i + 1] < 4.2 and 3.8 < gaps[i] / gaps[i + 1] < 4.2 for i in range(3))
     print("PASS" if ok else "FAIL")
 
 

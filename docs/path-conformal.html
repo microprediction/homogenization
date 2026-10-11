@@ -721,6 +721,47 @@
       consequence of the uniform-spacing argument in
       <a href="https://doi.org/10.1214/aoms/1177731788">Wilks (1941)</a>.</p>
 
+    <h3>Dependent transfer of the full tail-allocation law</h3>
+    <p>The scalar covered-mass transfer extends to the complete three-component allocation. Let $X$ be the
+      calibration panel with law $\mu$, let $\nu=F^{\otimes N}$, and let $P_x$ be the conditional test-score law
+      given $X=x$. Define</p>
+    $$\eta_{\rm cal}=\|\mu-\nu\|_{\rm TV},\qquad
+      \eta_{\rm test}=\|P-\mu\otimes F\|_{\rm TV}.$$
+    <p>For the two calibration ranks $\ell&lt;u$, put</p>
+    $$V_P(X)=\big(P_X\{S\le Q_\ell\},\ P_X\{Q_\ell&lt;S\le Q_u\},\
+      P_X\{S&gt;Q_u\}\big).$$
+    <p>If $D\sim\operatorname{Dirichlet}(\ell,u-\ell,N+1-u)$, then, for the $\ell^1$ transport cost on the
+      probability simplex,</p>
+    <div class="equation-card">
+    $$W_{1,\ell^1}\{\mathcal L_\mu(V_P),\mathcal L(D)\}
+      \le 2\min\{1,\eta_{\rm cal}+\eta_{\rm test}\}.$$
+    </div>
+    <p>Indeed, for a fixed panel the three cells form a measurable partition, so their probability-vector
+      distance is at most twice the total variation between $P_x$ and $F$. Integrating gives the test term.
+      A maximal coupling of $\mu$ and $\nu$ fails with probability $\eta_{\rm cal}$, and the $\ell^1$ diameter of
+      the simplex is two, giving the calibration term. The factor two is sharp at this partition step.</p>
+    <p>This vector result yields an explicit dependent two-tail PAC certificate. For any
+      $0&lt;\gamma&lt;\min(a,b)$, write $\Psi_{N,\ell,u}(a,b)$ for the exact iid multinomial confidence above. Then</p>
+    <div class="equation-card">
+    $$\Pr_\mu\{V_{P,L}\le a,\ V_{P,R}\le b\}
+      \ge \left[\Psi_{N,\ell,u}(a-\gamma,b-\gamma)
+      -\frac{2\min\{1,\eta_{\rm cal}+\eta_{\rm test}\}}{\gamma}\right]_+.$$
+    </div>
+    <p>The proof couples $V_P$ to $D$: if their $\ell^1$ distance is at most $\gamma$ and the reference tail
+      masses lie $\gamma$ inside both caps, both dependent caps hold; Markov&apos;s inequality controls the
+      complementary coupling event. The slack is one-dimensional and should be optimized, not fixed by
+      convention.</p>
+    <p>For the $N=100$ sample range with two five-percent caps and
+      $\eta_{\rm cal}+\eta_{\rm test}=10^{-4}$, the iid confidence is $0.988185503$. The optimized slack is
+      $0.00829018248$, giving certified dependent confidence $0.947808420$. A separate exact contamination
+      benchmark has $\eta_{\rm test}=0.072$ and mean three-cell $\ell^1$ displacement $0.144$, attaining the
+      factor two in the conditional partition inequality.</p>
+    <p>This remains a PAC statement over the random calibration panel. It controls the joint law of two
+      training-conditional tail errors; it is neither pointwise validity for every panel nor coverage conditional
+      on a test feature or latent state. For separated path blocks, Berbee coupling supplies
+      $\eta_{\rm cal}$ from the calibration gaps and $\eta_{\rm test}$ from the final test gap exactly as in the
+      scalar transfer below.</p>
+
     <h2>An exact lifted recursion for overlapping and thinned path scores</h2>
     <p>The random threshold can also be treated exactly when the score itself is a sliding path functional. Let
       $Y_j\in\{-1,+1\}$ be the same stationary chain and define consecutive length-$L$ blocks and noisy scores</p>

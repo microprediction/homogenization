@@ -29,7 +29,11 @@ choice of calibration order statistic.  It also checks the exact beta-spacing
 law and sharp PAC rank-width design for an interval with two finite calibration
 order-statistic endpoints.  The stronger three-component Dirichlet law gives
 an exact joint certificate for the lower- and upper-tail allocation and its
-sharp sample-range feasibility rule.  Finally,
+sharp sample-range feasibility rule.  It transfers that complete
+three-component law to dependent panels in Wasserstein distance and gives a
+simultaneous two-tail PAC bound with an explicit optimized slack.  A
+contamination construction attains the factor two in the underlying
+partition-distance inequality.  Finally,
 it checks total-variation transfers from that iid beta law to conservative
 training-conditional tail bounds under absolute regularity, both for regular
 and irregular deterministic block spacing.  It checks the exact convex
@@ -234,6 +238,42 @@ def sample_range_two_tail_confidence(
         - (1.0 - upper_cap) ** calibration_count
         + (1.0 - lower_cap - upper_cap) ** calibration_count
     )
+
+
+def dependent_two_tail_confidence_lower(
+    calibration_count: int,
+    lower_order: int,
+    upper_order: int,
+    lower_cap: float,
+    upper_cap: float,
+    calibration_total_variation: float,
+    test_total_variation: float,
+    slack: float,
+) -> float:
+    """Lower bound for simultaneous dependent training-conditional tails.
+
+    The iid reference vector of lower, covered, and upper conditional masses
+    is Dirichlet.  Coupling the calibration panel to iid and then decoupling
+    the test score moves this simplex-valued vector by expected l1 distance
+    at most ``2 * (eta_cal + eta_test)``.  If both iid tail masses lie at
+    least ``slack`` inside their requested caps, Markov's inequality gives
+    the robust confidence bound.
+    """
+    if calibration_total_variation < 0.0 or test_total_variation < 0.0:
+        raise ValueError("total-variation budgets must be nonnegative")
+    if not 0.0 < slack < min(lower_cap, upper_cap):
+        raise ValueError("slack must lie below both positive tail caps")
+    reference = iid_two_tail_confidence(
+        calibration_count,
+        lower_order,
+        upper_order,
+        lower_cap - slack,
+        upper_cap - slack,
+    )
+    transfer_budget = min(
+        1.0, calibration_total_variation + test_total_variation
+    )
+    return max(0.0, reference - 2.0 * transfer_budget / slack)
 
 
 def integer_beta_cdf(value: float, alpha: int, beta: int) -> float:
@@ -3178,6 +3218,94 @@ def main() -> None:
         )
     )
 
+    # Transfer the complete lower/covered/upper conditional-mass vector, not
+    # just its scalar covered-mass coordinate.  The l1 distance between the
+    # three masses induced by two test laws is twice the total variation of
+    # their three-cell pushforwards.  Coupling the actual calibration panel
+    # to iid contributes the same factor two.  For N=100 and the sample
+    # range, optimize the resulting simultaneous-tail PAC lower bound over a
+    # common inward slack.
+    robust_count = 100
+    robust_lower, robust_upper = 1, robust_count
+    robust_cap = 0.05
+    eta_cal, eta_test = 4.0e-5, 6.0e-5
+    robust_objective = lambda slack: -dependent_two_tail_confidence_lower(
+        robust_count,
+        robust_lower,
+        robust_upper,
+        robust_cap,
+        robust_cap,
+        eta_cal,
+        eta_test,
+        slack,
+    )
+    robust_fit = minimize_scalar(
+        robust_objective,
+        bounds=(1.0e-10, robust_cap - 1.0e-10),
+        method="bounded",
+        options={"xatol": 2e-14},
+    )
+    robust_slack = float(robust_fit.x)
+    robust_confidence = float(-robust_fit.fun)
+    robust_iid_confidence = iid_two_tail_confidence(
+        robust_count,
+        robust_lower,
+        robust_upper,
+        robust_cap,
+        robust_cap,
+    )
+    assert abs(robust_slack - 0.008290182477015118) < 2e-9
+    assert abs(robust_confidence - 0.9478084202221205) < 2e-9
+
+    # The factor two is sharp before the final Wasserstein coupling.  With an
+    # iid uniform panel, replace the test law by
+    # (1-epsilon) Unif(0,1) + epsilon Unif(0,Q_1).  Its conditional TV from
+    # uniform is epsilon(1-Q_1), while the l1 displacement of the three-cell
+    # probability vector is exactly twice that quantity.
+    contamination = 0.08
+    lower_thresholds = ordered_uniforms[:, 0]
+    upper_thresholds = ordered_uniforms[:, -1]
+    reference_partitions = np.column_stack(
+        (
+            lower_thresholds,
+            upper_thresholds - lower_thresholds,
+            1.0 - upper_thresholds,
+        )
+    )
+    contaminated_partitions = np.column_stack(
+        (
+            (1.0 - contamination) * lower_thresholds + contamination,
+            (1.0 - contamination)
+            * (upper_thresholds - lower_thresholds),
+            (1.0 - contamination) * (1.0 - upper_thresholds),
+        )
+    )
+    empirical_partition_l1 = float(
+        np.mean(
+            np.sum(
+                np.abs(contaminated_partitions - reference_partitions),
+                axis=1,
+            )
+        )
+    )
+    exact_test_tv = contamination * calibration_count / (
+        calibration_count + 1.0
+    )
+    exact_partition_l1 = 2.0 * exact_test_tv
+    assert abs(empirical_partition_l1 - exact_partition_l1) < 2e-4
+    print("\nDependent transfer of the full tail-allocation law")
+    print(
+        "N=100 sample range, two 5% caps, eta_cal+eta_test=1e-4: "
+        f"iid confidence={robust_iid_confidence:.9f}; "
+        f"optimal slack={robust_slack:.11f}; "
+        f"certified dependent confidence={robust_confidence:.9f}"
+    )
+    print(
+        "factor-two partition certificate: "
+        f"2 eta_test={exact_partition_l1:.9f}; "
+        f"simulated mean l1 displacement={empirical_partition_l1:.9f}"
+    )
+
     # Transfer the iid beta tail to a dependent training-conditional
     # statement.  The score (Y + U)/2 has an exactly uniform stationary
     # marginal but reveals the binary state.  Its conditional coverage law is
@@ -4624,7 +4752,7 @@ def main() -> None:
         "fixed-span gap allocation and discrete-score tie handling, "
         "iid training-conditional beta law including randomized atoms, "
         "sharp one-sided and two-finite-endpoint PAC designs including "
-        "exact joint tail allocation, "
+        "exact joint tail allocation and its full-vector dependent transfer, "
         "symmetric and unequal-mass all-order "
         "fixed-test-memory laws, and dependent "
         "total-variation transfer with coefficient-only and actual-law "
