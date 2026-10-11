@@ -227,9 +227,42 @@
       <li>
         Cotton, P. (2026). <em>The Direction of a Regime Cycle in the Heston Smile</em>. Note in preparation.
         <a href="./cycle-smile.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">certificate</a>.
-        <em>A chain cycling in one direction through variance levels and vol-of-vol moves the smile, an effect no
-        reversible driver produces.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">chain certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">circle certificate</a>.
+        <em>A chain cycling through variance level and vol-of-vol moves the smile through an antisymmetric
+        Green&ndash;Kubo commutator. For every stationary Markov driver, time reversal transposes the Green&ndash;Kubo
+        form. More strongly, under a stationary start the complete occupation-measure law is exactly reversal-blind
+        at every switching rate; a time-dependent loading instead reverses its schedule, so asymmetric schedules
+        can recover direction. An energy-normalized resolvent factorization gives sharp variance-reduction and directional-response
+        bounds, while intrinsic normalization by the actual symmetric Green&ndash;Kubo form gives a sharp sector
+        constant $\lVert C\rVert$. Symmetry on all centered observables characterizes reversibility under a resolvent-invertibility
+        hypothesis; one selected feature is always blind, while two independent Gaussian feature probes detect
+        every finite-state irreversible chain almost surely and have mean-square signal equal to the squared
+        Hilbert&ndash;Schmidt norm of the skew resolvent. A fourth-moment bound turns this into a finite certificate:
+        47 independent pairs have a universal miss probability below one percent at half the root-mean-square
+        signal scale. Bounded Rademacher probes obey the same finite guarantee and a smaller exact fourth moment,
+        with the sharper dimension-$d$ constant $6-8/d$; the four-state certificate needs 25 rather than 47 pairs.
+        Median block means turn the corresponding finite-variance energy estimator into an explicit
+        $O(\varepsilon^{-2}\log(1/\delta))$ relative-error confidence certificate for the population skew-resolvent
+        energy. When the full action $Jx$ is available, quadratic trace probes reduce the worst-case relative-variance
+        constant from five to one and the half-scale one-percent miss certificate from 47 probes to 14; this stronger
+        result does not apply to scalar-only bilinear queries. Normalizing Gaussian directions to the sphere of
+        radius $\sqrt d$ removes radial noise: the exact relative variance is at most $(d-2)/(d+2)$, and the
+        three-dimensional certificate needs eight probes for one-percent half-scale detection and 100 actions for
+        the displayed median-of-means guarantee. Haar-orthogonal blocks add a finite-population factor
+        $(d-k)/(d-1)$ to the $k$-action variance; a full frame is exact, and in the three-dimensional certificate a
+        two-action frame has exact relative variance $1/20$ and deterministically estimates the energy within 50%.
+        This orthogonal-block result still requires a full action oracle. Given a supplied operator-norm error radius for an
+        estimated generator, an estimator-centered fixed-point
+        group-inverse theorem propagates that error into a fully computable interval for the population energy,
+        retaining both the observed stationary-law norm and coordinatewise group-inverse sensitivities;
+        for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale
+        bounds supply entrywise rate intervals from holding times and transition counts without a known rate cap.
+        For small chains, exact vertex propagation gives the sharp spectral-norm radius of this rectangular
+        confidence set; analytic Frobenius and induced-norm bounds remain the large-state fallback.
+        This finite-path guarantee does not cover hidden or discretely observed regimes.
+        The dimension-free constant $6$ is asymptotically sharp, but sign probes can return zero with positive
+        probability and therefore are not almost-sure identifiers.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Switching Correlation: Correlation Smiles and Downside Co-Skewness</em>. Note in preparation.

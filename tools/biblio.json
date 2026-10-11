@@ -507,6 +507,94 @@
  },
  {
   "role": "survey_theory",
+  "key": "Aalen1978",
+  "authors": "Aalen, O. O.",
+  "year": 1978,
+  "title": "Nonparametric Inference for a Family of Counting Processes",
+  "venue": "Annals of Statistics 6(4):701-726",
+  "doi": "10.1214/aos/1176344247",
+  "url": "https://doi.org/10.1214/aos/1176344247",
+  "annotation": "Develops martingale-based nonparametric inference for counting processes, the framework used to obtain finite-path transition-count confidence bounds."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Hutchinson1989",
+  "authors": "Hutchinson, M. F.",
+  "year": 1989,
+  "title": "A Stochastic Estimator of the Trace of the Influence Matrix for Laplacian Smoothing Splines",
+  "venue": "Communications in Statistics - Simulation and Computation 18(3):1059-1076",
+  "doi": "10.1080/03610918908812806",
+  "url": "https://doi.org/10.1080/03610918908812806",
+  "annotation": "Introduces the unbiased Rademacher quadratic trace estimator used as the bounded action-probe benchmark."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Pavliotis2010",
+  "authors": "Pavliotis, G. A.",
+  "year": 2010,
+  "title": "Asymptotic analysis of the Green-Kubo formula",
+  "venue": "IMA Journal of Applied Mathematics 75(6):951-967",
+  "doi": "10.1093/imamat/hxq039",
+  "url": "https://doi.org/10.1093/imamat/hxq039",
+  "annotation": "Represents the Green-Kubo formula through a Poisson equation and studies asymptotic limits of the self-diffusion coefficient."
+ },
+ {
+  "role": "survey_theory",
+  "key": "DuncanLelievrePavliotis2016",
+  "authors": "Duncan, A. B., Lelièvre, T. and Pavliotis, G. A.",
+  "year": 2016,
+  "title": "Variance Reduction Using Nonreversible Langevin Samplers",
+  "venue": "Journal of Statistical Physics 163:457-491",
+  "doi": "10.1007/s10955-016-1491-2",
+  "url": "https://doi.org/10.1007/s10955-016-1491-2",
+  "annotation": "Analyzes how antisymmetric perturbations of Langevin dynamics change asymptotic variance, providing a continuous-state comparison for the energy-normalized skew-resolvent factorization."
+ },
+ {
+  "role": "survey_theory",
+  "key": "JerrumValiantVazirani1986",
+  "authors": "Jerrum, M. R., Valiant, L. G. and Vazirani, V. V.",
+  "year": 1986,
+  "title": "Random generation of combinatorial structures from a uniform distribution",
+  "venue": "Theoretical Computer Science 43:169-188",
+  "doi": "10.1016/0304-3975(86)90174-X",
+  "url": "https://doi.org/10.1016/0304-3975(86)90174-X",
+  "annotation": "Develops polynomial-time approximate counting and sampling, including the repeat-and-take-the-median confidence amplification used for finite-variance probe estimators."
+ },
+ {
+  "role": "survey_theory",
+  "key": "AvronToledo2011",
+  "authors": "Avron, H. and Toledo, S.",
+  "year": 2011,
+  "title": "Randomized algorithms for estimating the trace of an implicit symmetric positive semi-definite matrix",
+  "venue": "Journal of the ACM 58(2), Article 8",
+  "doi": "10.1145/1944345.1944349",
+  "url": "https://doi.org/10.1145/1944345.1944349",
+  "annotation": "Analyzes matrix-free randomized trace estimators and finite sample guarantees for positive semidefinite matrices, the general framework containing the action-probe energy estimator."
+ },
+ {
+  "role": "survey_theory",
+  "key": "ChoromanskiEtAl2019",
+  "authors": "Choromanski, K., Rowland, M., Chen, W. and Weller, A.",
+  "year": 2019,
+  "title": "Unifying Orthogonal Monte Carlo Methods",
+  "venue": "Proceedings of Machine Learning Research 97:1203-1212",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v97/choromanski19a.html",
+  "annotation": "Studies variance reduction obtained by coupling Monte Carlo samples to be mutually orthogonal; the cycle-smile page gives an exact quadratic Haar-projector specialization."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Meyer1980",
+  "authors": "Meyer, C. D., Jr.",
+  "year": 1980,
+  "title": "The Condition of a Finite Markov Chain and Perturbation Bounds for the Limiting Probabilities",
+  "venue": "SIAM Journal on Algebraic and Discrete Methods 1(3):273-283",
+  "doi": "10.1137/0601031",
+  "url": "https://doi.org/10.1137/0601031",
+  "annotation": "Derives sharp perturbation bounds for the limiting probabilities of an ergodic finite Markov chain, the finite-chain stability theory used in the plug-in certificate."
+ },
+ {
+  "role": "survey_theory",
   "key": "Kubo1962",
   "authors": "Kubo, R.",
   "year": 1962,
@@ -955,6 +1043,28 @@
   "doi": "10.1103/revmodphys.69.1269",
   "url": "https://doi.org/10.1103/revmodphys.69.1269",
   "annotation": "Molecular motors as particles switching between potentials under a chemical cycle that breaks detailed balance."
+ },
+ {
+  "role": "survey_physics",
+  "key": "Nagasawa1964",
+  "authors": "Nagasawa, M.",
+  "year": 1964,
+  "title": "Time Reversions of Markov Processes",
+  "venue": "Nagoya Mathematical Journal 24:177-204",
+  "doi": "10.1017/S0027763000011405",
+  "url": "https://projecteuclid.org/euclid.nmj/1118801344",
+  "annotation": "Develops time reversal for general Markov processes; the stationary reversed semigroup is the adjoint used in the Green-Kubo transpose identity."
+ },
+ {
+  "role": "survey_physics",
+  "key": "HaussmannPardoux1986",
+  "authors": "Haussmann, U. G. and Pardoux, E.",
+  "year": 1986,
+  "title": "Time Reversal of Diffusions",
+  "venue": "Annals of Probability 14(4):1188-1205",
+  "doi": "10.1214/aop/1176992362",
+  "url": "https://doi.org/10.1214/aop/1176992362",
+  "annotation": "Derives the reverse-time drift and generator of a diffusion; on a stationary circle it flips the probability current."
  },
  {
   "role": "survey_physics",
