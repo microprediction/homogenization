@@ -100,6 +100,28 @@
  },
  {
   "role": "classics",
+  "key": "Berry1984",
+  "authors": "Michael V. Berry",
+  "year": 1984,
+  "title": "Quantal Phase Factors Accompanying Adiabatic Changes",
+  "venue": "Proceedings of the Royal Society of London A 392(1802):45-57",
+  "doi": "10.1098/rspa.1984.0023",
+  "url": "https://doi.org/10.1098/rspa.1984.0023",
+  "annotation": "Introduces the geometric phase of a cyclically transported eigenspace and its gauge-invariant closed-loop content. The corrector connection here obeys the same exact-differential gauge law, but governs a backward-equation amplitude rather than a quantum phase."
+ },
+ {
+  "role": "classics",
+  "key": "SinitsynNemenman2007",
+  "authors": "N. A. Sinitsyn, Ilya Nemenman",
+  "year": 2007,
+  "title": "Universal Geometric Theory of Mesoscopic Stochastic Pumps and Reversible Ratchets",
+  "venue": "Physical Review Letters 99:220408",
+  "doi": "10.1103/physrevlett.99.220408",
+  "url": "https://doi.org/10.1103/PhysRevLett.99.220408",
+  "annotation": "Develops geometric phase contributions for slowly driven stochastic kinetics and shows that the periodic contribution depends on the oriented parameter-space protocol rather than its traversal speed; the observable there is a pump current, not the backward-equation amplitude used here."
+ },
+ {
+  "role": "classics",
   "key": "IlinKhasminskiiYin1999",
   "authors": "A. M. Il'in, R. Z. Khasminskii, G. Yin",
   "year": 1999,
@@ -485,6 +507,115 @@
  },
  {
   "role": "survey_theory",
+  "key": "FlajoletOdlyzko1990",
+  "authors": "Philippe Flajolet, Andrew M. Odlyzko",
+  "year": 1990,
+  "title": "Singularity Analysis of Generating Functions",
+  "venue": "SIAM Journal on Discrete Mathematics 3(2):216-240",
+  "doi": "10.1137/0403019",
+  "url": "https://doi.org/10.1137/0403019",
+  "annotation": "Transfers local algebraic and logarithmic singular expansions into sharp Taylor-coefficient asymptotics; applied on the Clumpy Media page to the conjugate square-root branch points of the exact binary transmission law."
+ },
+ {
+  "key": "Aalen1978",
+  "authors": "Aalen, O. O.",
+  "year": 1978,
+  "title": "Nonparametric Inference for a Family of Counting Processes",
+  "venue": "Annals of Statistics 6(4):701-726",
+  "doi": "10.1214/aos/1176344247",
+  "url": "https://doi.org/10.1214/aos/1176344247",
+  "annotation": "Develops martingale-based nonparametric inference for counting processes, the framework used to obtain finite-path transition-count confidence bounds."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Hutchinson1989",
+  "authors": "Hutchinson, M. F.",
+  "year": 1989,
+  "title": "A Stochastic Estimator of the Trace of the Influence Matrix for Laplacian Smoothing Splines",
+  "venue": "Communications in Statistics - Simulation and Computation 18(3):1059-1076",
+  "doi": "10.1080/03610918908812806",
+  "url": "https://doi.org/10.1080/03610918908812806",
+  "annotation": "Introduces the unbiased Rademacher quadratic trace estimator used as the bounded action-probe benchmark."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Pavliotis2010",
+  "authors": "Pavliotis, G. A.",
+  "year": 2010,
+  "title": "Asymptotic analysis of the Green-Kubo formula",
+  "venue": "IMA Journal of Applied Mathematics 75(6):951-967",
+  "doi": "10.1093/imamat/hxq039",
+  "url": "https://doi.org/10.1093/imamat/hxq039",
+  "annotation": "Represents the Green-Kubo formula through a Poisson equation and studies asymptotic limits of the self-diffusion coefficient."
+ },
+ {
+  "role": "survey_theory",
+  "key": "DuncanLelievrePavliotis2016",
+  "authors": "Duncan, A. B., Lelièvre, T. and Pavliotis, G. A.",
+  "year": 2016,
+  "title": "Variance Reduction Using Nonreversible Langevin Samplers",
+  "venue": "Journal of Statistical Physics 163:457-491",
+  "doi": "10.1007/s10955-016-1491-2",
+  "url": "https://doi.org/10.1007/s10955-016-1491-2",
+  "annotation": "Analyzes how antisymmetric perturbations of Langevin dynamics change asymptotic variance, providing a continuous-state comparison for the energy-normalized skew-resolvent factorization."
+ },
+ {
+  "role": "survey_theory",
+  "key": "JerrumValiantVazirani1986",
+  "authors": "Jerrum, M. R., Valiant, L. G. and Vazirani, V. V.",
+  "year": 1986,
+  "title": "Random generation of combinatorial structures from a uniform distribution",
+  "venue": "Theoretical Computer Science 43:169-188",
+  "doi": "10.1016/0304-3975(86)90174-X",
+  "url": "https://doi.org/10.1016/0304-3975(86)90174-X",
+  "annotation": "Develops polynomial-time approximate counting and sampling, including the repeat-and-take-the-median confidence amplification used for finite-variance probe estimators."
+ },
+ {
+  "role": "survey_theory",
+  "key": "AvronToledo2011",
+  "authors": "Avron, H. and Toledo, S.",
+  "year": 2011,
+  "title": "Randomized algorithms for estimating the trace of an implicit symmetric positive semi-definite matrix",
+  "venue": "Journal of the ACM 58(2), Article 8",
+  "doi": "10.1145/1944345.1944349",
+  "url": "https://doi.org/10.1145/1944345.1944349",
+  "annotation": "Analyzes matrix-free randomized trace estimators and finite sample guarantees for positive semidefinite matrices, the general framework containing the action-probe energy estimator."
+ },
+ {
+  "role": "survey_theory",
+  "key": "ChoromanskiEtAl2019",
+  "authors": "Choromanski, K., Rowland, M., Chen, W. and Weller, A.",
+  "year": 2019,
+  "title": "Unifying Orthogonal Monte Carlo Methods",
+  "venue": "Proceedings of Machine Learning Research 97:1203-1212",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v97/choromanski19a.html",
+  "annotation": "Studies variance reduction obtained by coupling Monte Carlo samples to be mutually orthogonal; the cycle-smile page gives an exact quadratic Haar-projector specialization."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Meyer1980",
+  "authors": "Meyer, C. D., Jr.",
+  "year": 1980,
+  "title": "The Condition of a Finite Markov Chain and Perturbation Bounds for the Limiting Probabilities",
+  "venue": "SIAM Journal on Algebraic and Discrete Methods 1(3):273-283",
+  "doi": "10.1137/0601031",
+  "url": "https://doi.org/10.1137/0601031",
+  "annotation": "Derives sharp perturbation bounds for the limiting probabilities of an ergodic finite Markov chain, the finite-chain stability theory used in the plug-in certificate."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Curtiss1942",
+  "authors": "Curtiss, J. H.",
+  "year": 1942,
+  "title": "A Note on the Theory of Moment Generating Functions",
+  "venue": "Annals of Mathematical Statistics 13(4):430-433",
+  "doi": "10.1214/aoms/1177731541",
+  "url": "https://doi.org/10.1214/aoms/1177731541",
+  "annotation": "Establishes uniqueness and convergence results for moment-generating functions on a neighborhood of the origin; the switched-CIR note adds an explicit uniform complex zero-free disk and cumulant bounds from a Gamma moment majorant."
+ },
+ {
+  "role": "survey_theory",
   "key": "Kubo1962",
   "authors": "Kubo, R.",
   "year": 1962,
@@ -584,6 +715,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "Kac1949",
+  "authors": "Kac, M.",
+  "year": 1949,
+  "title": "On Distributions of Certain Wiener Functionals",
+  "venue": "Transactions of the American Mathematical Society 65(1):1-13",
+  "doi": "10.1090/S0002-9947-1949-0027960-X",
+  "url": "https://doi.org/10.1090/S0002-9947-1949-0027960-X",
+  "annotation": "A primary source for the Feynman-Kac representation, used here in its finite-state killed-semigroup form to obtain a switching-rate-uniform contraction bound."
+ },
+ {
+  "role": "survey_theory",
   "key": "PardouxVeretennikov2001",
   "authors": "Pardoux, E. and Veretennikov, A. Yu.",
   "year": 2001,
@@ -592,6 +734,17 @@
   "doi": "10.1214/aop/1015345596",
   "url": "https://doi.org/10.1214/aop/1015345596",
   "annotation": "Solves the Poisson equation for the generator of an ergodic diffusion on the whole space and uses it to prove diffusion approximations; the continuous-state version of solving Q w = f."
+ },
+ {
+  "role": "survey_theory",
+  "key": "KontoyiannisMeyn2003",
+  "authors": "Kontoyiannis, I. and Meyn, S. P.",
+  "year": 2003,
+  "title": "Spectral Theory and Limit Theorems for Geometrically Ergodic Markov Processes",
+  "venue": "Annals of Applied Probability 13(1):304-362",
+  "doi": "10.1214/aoap/1042765670",
+  "url": "https://doi.org/10.1214/aoap/1042765670",
+  "annotation": "Develops multiplicative Poisson equations and analytic cumulant limits for geometrically ergodic Markov processes; the switched-CIR calculation here obtains its third-cumulant coefficients directly from ordered correlations and polynomial closure."
  },
  {
   "role": "survey_theory",
@@ -936,6 +1089,28 @@
  },
  {
   "role": "survey_physics",
+  "key": "Nagasawa1964",
+  "authors": "Nagasawa, M.",
+  "year": 1964,
+  "title": "Time Reversions of Markov Processes",
+  "venue": "Nagoya Mathematical Journal 24:177-204",
+  "doi": "10.1017/S0027763000011405",
+  "url": "https://projecteuclid.org/euclid.nmj/1118801344",
+  "annotation": "Develops time reversal for general Markov processes; the stationary reversed semigroup is the adjoint used in the Green-Kubo transpose identity."
+ },
+ {
+  "role": "survey_physics",
+  "key": "HaussmannPardoux1986",
+  "authors": "Haussmann, U. G. and Pardoux, E.",
+  "year": 1986,
+  "title": "Time Reversal of Diffusions",
+  "venue": "Annals of Probability 14(4):1188-1205",
+  "doi": "10.1214/aop/1176992362",
+  "url": "https://doi.org/10.1214/aop/1176992362",
+  "annotation": "Derives the reverse-time drift and generator of a diffusion; on a stationary circle it flips the probability current."
+ },
+ {
+  "role": "survey_physics",
   "key": "Reimann2002",
   "authors": "Reimann, P.",
   "year": 2002,
@@ -1153,6 +1328,104 @@
   "doi": "10.1111/j.2517-6161.1955.tb00188.x",
   "url": "https://doi.org/10.1111/j.2517-6161.1955.tb00188.x",
   "annotation": "Series of events, introducing the doubly stochastic Poisson process now called the Cox process."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Teicher1961",
+  "authors": "Teicher, H.",
+  "year": 1961,
+  "title": "Identifiability of Mixtures",
+  "venue": "Annals of Mathematical Statistics 32(1):244-248",
+  "doi": "10.1214/aoms/1177705155",
+  "url": "https://doi.org/10.1214/aoms/1177705155",
+  "annotation": "Proves identifiability for mixtures from one-parameter additively closed families, including the Poisson-mixture setting used to recover the integrated-intensity law from the full count law."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Stieltjes1894",
+  "authors": "Stieltjes, T.-J.",
+  "year": 1894,
+  "title": "Recherches sur les fractions continues",
+  "venue": "Annales de la Faculté des sciences de Toulouse 8(4):J1-J122; continuation 9(1):A5-A47 (1895)",
+  "doi": "",
+  "url": "https://www.numdam.org/item/AFST_1894_1_8_4_J1_0/",
+  "annotation": "Introduces the moment problem on the positive half-line. The resulting Hankel and shifted-Hankel positivity criterion gives the exact mixed-Poisson membership test used on the counts page."
+ },
+ {
+  "role": "survey_choice",
+  "key": "KubaPanholzer2016",
+  "authors": "Kuba, M. and Panholzer, A.",
+  "year": 2016,
+  "title": "On moment sequences and mixed Poisson distributions",
+  "venue": "Probability Surveys 13:89-155",
+  "doi": "10.1214/14-PS244",
+  "url": "https://doi.org/10.1214/14-PS244",
+  "annotation": "Surveys mixed Poisson laws through factorial moments and the Stirling transform, linking nonnegative moment sequences to mixed-Poisson distributions."
+ },
+ {
+  "role": "survey_choice",
+  "key": "LeCam1973",
+  "authors": "Le Cam, L.",
+  "year": 1973,
+  "title": "Convergence of Estimates Under Dimensionality Restrictions",
+  "venue": "Annals of Statistics 1(1):38-53",
+  "doi": "10.1214/aos/1193342380",
+  "url": "https://doi.org/10.1214/aos/1193342380",
+  "annotation": "Develops lower-bound and convergence methods for statistical experiments under metric restrictions; the count-law note uses the corresponding two-point testing reduction to bound metric estimation risk."
+ },
+ {
+  "role": "survey_choice",
+  "key": "RoueffRyden2005",
+  "authors": "Roueff, F. and Rydén, T.",
+  "year": 2005,
+  "title": "Nonparametric estimation of mixing densities for discrete distributions",
+  "venue": "Annals of Statistics 33(5):2066-2108",
+  "doi": "10.1214/009053605000000381",
+  "url": "https://doi.org/10.1214/009053605000000381",
+  "annotation": "Develops nonparametric estimators and minimax theory for mixing densities in discrete mixture models, including Poisson mixtures, under explicit smoothness restrictions; it supplies the estimation context for the distinction between identifiability and stable inversion."
+ },
+ {
+  "role": "survey_choice",
+  "key": "MiaoEtAl2024",
+  "authors": "Miao, Z., Kong, W., Vinayak, R. K., Sun, W. and Han, F.",
+  "year": 2024,
+  "title": "Fisher-Pitman permutation tests based on nonparametric Poisson mixtures with application to single cell genomics",
+  "venue": "Journal of the American Statistical Association 119(545):394-406",
+  "doi": "10.1080/01621459.2022.2120401",
+  "url": "https://doi.org/10.1080/01621459.2022.2120401",
+  "annotation": "Proves that the Poisson-mixture NPMLE is minimax-rate optimal under ordinary Wasserstein-1 loss. On a fixed support [0,B], the upper and lower orders are both B loglog(n)/log(n)."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Jackson1921",
+  "authors": "Jackson, D.",
+  "year": 1921,
+  "title": "The general theory of approximation by polynomials and trigonometric sums",
+  "venue": "Bulletin of the American Mathematical Society 27(9-10):415-431",
+  "url": "https://projecteuclid.org/euclid.bams/1183425725",
+  "annotation": "Establishes the polynomial approximation inequality used to approximate Lipschitz Kantorovich test functions with uniform error of order one over the degree."
+ },
+ {
+  "role": "survey_choice",
+  "key": "LimHan2024",
+  "authors": "Lim, K. and Han, F.",
+  "year": 2024,
+  "title": "Smoothed NPMLEs in nonparametric Poisson mixtures and beyond",
+  "venue": "arXiv:2406.08808",
+  "doi": "10.48550/arXiv.2406.08808",
+  "url": "https://arxiv.org/abs/2406.08808",
+  "annotation": "Proves nearly root-n convergence for Poisson-mixture NPMLE and minimum-distance estimators under Gaussian-smoothed optimal transport, providing a precise contrast with the ordinary unsmoothed Wasserstein obstruction derived on the count-law page."
+ },
+ {
+  "role": "survey_choice",
+  "key": "Kelly1976",
+  "authors": "Kelly, F. P.",
+  "year": 1976,
+  "title": "Networks of Queues",
+  "venue": "Advances in Applied Probability 8(2):416-432",
+  "doi": "10.2307/1425912",
+  "url": "https://doi.org/10.2307/1425912",
+  "annotation": "Uses stationary time reversal to analyse irreversible queueing networks; the competing-arrivals section uses the same reversed-generator construction to isolate the observable arrow of time."
  },
  {
   "role": "survey_choice",
@@ -2365,6 +2638,28 @@
   "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
  },
  {
+  "role": "survey_econometrics",
+  "key": "Kudo1963",
+  "authors": "Kudô, A.",
+  "year": 1963,
+  "title": "A multivariate analogue of the one-sided test",
+  "venue": "Biometrika 50(3/4):403-418",
+  "doi": "10.1093/biomet/50.3-4.403",
+  "url": "https://doi.org/10.1093/biomet/50.3-4.403",
+  "annotation": "Develops the multivariate one-sided Gaussian test. For several inequality constraints, its chi-bar-square weights depend on the covariance geometry; the independent orthant gives binomial weights as a special case."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Sheppard1899",
+  "authors": "Sheppard, W. F.",
+  "year": 1899,
+  "title": "On the application of the theory of error to cases of normal distribution and normal correlation",
+  "venue": "Philosophical Transactions of the Royal Society of London A 192:101-167",
+  "doi": "10.1098/rsta.1899.0003",
+  "url": "https://doi.org/10.1098/rsta.1899.0003",
+  "annotation": "Gives the bivariate Gaussian quadrant arcsine identity; combined with central symmetry, it yields the trivariate positive-orthant probability used for the exact three-constraint weights."
+ },
+ {
   "role": "survey_finance",
   "key": "CuchieroKellerResselTeichmann2012",
   "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
@@ -2374,6 +2669,17 @@
   "doi": "10.1007/s00780-012-0188-x",
   "url": "https://doi.org/10.1007/s00780-012-0188-x",
   "annotation": "Markov processes whose generator maps polynomials of degree n to polynomials of degree at most n, so that moments follow from a finite matrix exponential; the square-root process and its integral are examples, used here for exact cumulants under a switching level."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "HervePene2010",
+  "authors": "Hervé, L. and Pène, F.",
+  "year": 2010,
+  "title": "The Nagaev-Guivarc'h method via the Keller-Liverani theorem",
+  "venue": "Bulletin de la Société Mathématique de France 138(3):415-489",
+  "doi": "10.24033/bsmf.2594",
+  "url": "https://doi.org/10.24033/bsmf.2594",
+  "annotation": "Develops spectral Taylor and Edgeworth expansions for additive functionals of Markov processes; the critical-score calculation uses the corresponding finite-state Poisson and moment mechanism."
  },
  {
   "role": "survey_conformal",
@@ -2407,6 +2713,105 @@
   "doi": "",
   "url": "https://jmlr.org/papers/v25/23-1553.html",
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Esseen1945",
+  "authors": "Esseen, C.-G.",
+  "year": 1945,
+  "title": "Fourier analysis of distribution functions: A mathematical study of the Laplace-Gaussian law",
+  "venue": "Acta Mathematica 77:1-125",
+  "doi": "10.1007/bf02392223",
+  "url": "https://doi.org/10.1007/bf02392223",
+  "annotation": "Develops the Fourier method behind central-limit refinements for lattice laws, including the discontinuous lattice correction represented here by the half-integer tail coordinate."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "DattaMcCormick1993",
+  "authors": "Datta, S. and McCormick, W. P.",
+  "year": 1993,
+  "title": "On the first-order Edgeworth expansion for a Markov chain",
+  "venue": "Journal of Multivariate Analysis 44(2):345-359",
+  "doi": "10.1006/jmva.1993.1020",
+  "url": "https://doi.org/10.1006/jmva.1993.1020",
+  "annotation": "Establishes a first-order Edgeworth expansion for sums related to a homogeneous Markov chain and corrects inaccuracies in earlier Markov-chain formulations."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Csiszar1963",
+  "authors": "Csiszár, I.",
+  "year": 1963,
+  "title": "Eine informationstheoretische Ungleichung und ihre Anwendung auf den Beweis der Ergodizität von Markoffschen Ketten",
+  "venue": "A Magyar Tudományos Akadémia Matematikai Kutató Intézetének Közleményei 8(1-2):85-108",
+  "doi": "",
+  "url": "https://real.mtak.hu/201426/",
+  "annotation": "Proves that general information divergences cannot increase through a stochastic channel. The joint panel theorem uses this data-processing principle after comparing the hidden Markov path with the iid stationary path."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Ruschendorf2009",
+  "authors": "Rüschendorf, L.",
+  "year": 2009,
+  "title": "On the distributional transform, Sklar's theorem, and the empirical copula process",
+  "venue": "Journal of Statistical Planning and Inference 139(11):3921-3927",
+  "doi": "10.1016/j.jspi.2009.05.030",
+  "url": "https://doi.org/10.1016/j.jspi.2009.05.030",
+  "annotation": "Develops the randomized distributional transform for arbitrary, possibly discontinuous distributions. It supplies the exact uniformization used to transfer the full beta order-statistic law when pooled conformity scores have ties."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "MarquesF2023",
+  "authors": "Marques F., P. C.",
+  "year": 2023,
+  "title": "On the Universal Distribution of the Coverage in Split Conformal Prediction",
+  "venue": "arXiv:2303.02770",
+  "doi": "10.48550/arXiv.2303.02770",
+  "url": "https://arxiv.org/abs/2303.02770",
+  "annotation": "Derives the exact universal finite-batch empirical-coverage law for split conformal prediction under exchangeability using a Polya-urn representation. The repeated-future theorem transfers this iid beta-binomial benchmark to fast hidden Markov scores."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Pyke1965",
+  "authors": "Pyke, R.",
+  "year": 1965,
+  "title": "Spacings",
+  "venue": "Journal of the Royal Statistical Society: Series B 27(3):395-436",
+  "doi": "10.1111/j.2517-6161.1965.tb00602.x",
+  "url": "https://doi.org/10.1111/j.2517-6161.1965.tb00602.x",
+  "annotation": "Develops the distribution theory of uniform spacings. The multilevel conformal theorem uses the Dirichlet law of grouped uniform spacings to obtain its exact Dirichlet-multinomial future-count benchmark."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Renyi1961",
+  "authors": "Rényi, A.",
+  "year": 1961,
+  "title": "On Measures of Entropy and Information",
+  "venue": "Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability, Volume I:547-561",
+  "doi": "",
+  "url": "https://projecteuclid.org/ebook/PreviewFirstPage?urlId=bsmsp%2F1200512181",
+  "annotation": "Introduces the order-indexed information measures. Monotonicity from order one to order two gives the logarithmic refinement between the exact mutual-information and Hilbert--Schmidt panel bounds."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "LeCam1960",
+  "authors": "Le Cam, L.",
+  "year": 1960,
+  "title": "Locally asymptotically normal families of distributions",
+  "venue": "University of California Publications in Statistics 3(2):37-98",
+  "doi": "",
+  "url": "https://books.google.com/books?id=ytBUAAAAYAAJ",
+  "annotation": "Introduces local asymptotic normality. The joint burn-in/panel theorem uses the Bernoulli likelihood-ratio limit, while retaining the separate finite initial-state likelihood factor."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BickelRitov1996",
+  "authors": "Bickel, P. J. and Ritov, Y.",
+  "year": 1996,
+  "title": "Inference in hidden Markov models I: Local asymptotic normality in the stationary case",
+  "venue": "Bernoulli 2(3):199-228",
+  "doi": "10.3150/bj/1178291719",
+  "url": "https://doi.org/10.3150/bj/1178291719",
+  "annotation": "Establishes local asymptotic normality for stationary hidden Markov models. The overlapping-emission theorem computes the observed score and Fisher information explicitly at hidden independence, then uses this LAN result together with an exact likelihood second moment to obtain the sharp total-variation limit."
  },
  {
   "role": "examples",
@@ -2465,6 +2870,28 @@
  },
  {
   "role": "examples",
+  "key": "SchragerPelsser2006",
+  "authors": "Schrager, D. F. and Pelsser, A. A. J.",
+  "year": 2006,
+  "title": "Pricing Swaptions and Coupon Bond Options in Affine Term Structure Models",
+  "venue": "Mathematical Finance 16(4):673-694",
+  "doi": "10.1111/j.1467-9965.2006.00289.x",
+  "url": "https://doi.org/10.1111/j.1467-9965.2006.00289.x",
+  "annotation": "Develops a general affine approximation for swaptions and coupon-bond options. The exact one-dimensional G2++ conditional-Gaussian quadrature here is narrower and does not claim an exact formula for general affine or finite-rate switching models."
+ },
+ {
+  "role": "examples",
+  "key": "ChoiShin2016",
+  "authors": "Choi, J. and Shin, S.",
+  "year": 2016,
+  "title": "Fast Swaption Pricing in Gaussian Term Structure Models",
+  "venue": "Mathematical Finance 26(4):962-982",
+  "doi": "10.1111/mafi.12077",
+  "url": "https://doi.org/10.1111/mafi.12077",
+  "annotation": "Treats the nonlinear exercise boundary in multi-factor Gaussian term-structure models, combining exact lower-dimensional numerical integration with a fast tangent-hyperplane approximation."
+ },
+ {
+  "role": "examples",
   "key": "Schroder1989",
   "authors": "Schroder, M.",
   "year": 1989,
@@ -2473,6 +2900,17 @@
   "doi": "10.1111/j.1540-6261.1989.tb02414.x",
   "url": "https://doi.org/10.1111/j.1540-6261.1989.tb02414.x",
   "annotation": "Writes the constant elasticity of variance option price in terms of the noncentral chi-square distribution; the CEV example mixes that formula over a random total variance."
+ },
+ {
+  "role": "examples",
+  "key": "Pedler1971",
+  "authors": "Pedler, P. J.",
+  "year": 1971,
+  "title": "Occupation Times for Two State Markov Chains",
+  "venue": "Journal of Applied Probability 8(2):381-390",
+  "doi": "10.2307/3211908",
+  "url": "https://doi.org/10.2307/3211908",
+  "annotation": "Derives occupation-time distributions for two-state Markov chains; the unequal-rate CEV benchmark uses the corresponding atom-plus-Bessel-density law."
  },
  {
   "role": "examples",
@@ -2495,5 +2933,115 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_pulsars",
+  "key": "Lee2012",
+  "authors": "Lee, K. J. and Bassa, C. G. and Janssen, G. H. and Karuppusamy, R. and Kramer, M. and Smits, R. and Stappers, B. W.",
+  "year": 2012,
+  "title": "The optimal schedule for pulsar timing array observations",
+  "venue": "Monthly Notices of the Royal Astronomical Society 423(3):2642-2655",
+  "doi": "10.1111/j.1365-2966.2012.21070.x",
+  "url": "https://doi.org/10.1111/j.1365-2966.2012.21070.x",
+  "annotation": "Appendix A represents a continuous polynomial timing fit as a time-varying projector in the Legendre basis and quantifies how the fit modifies red-noise covariance and power."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "KantorovichRubinstein1958",
+  "authors": "Kantorovich, L. V. and Rubinstein, G. S.",
+  "year": 1958,
+  "title": "On a space of completely additive functions",
+  "venue": "Vestnik Leningrad University 13(7):52-59",
+  "doi": "",
+  "url": "https://www.mathnet.ru/links/d483d221217d29f60d6f93617c387415/rm6527_eng.pdf",
+  "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Prony1795",
+  "authors": "de Prony, G. R.",
+  "year": 1795,
+  "title": "Essai expérimental et analytique sur les lois de la dilatabilité des fluides élastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, à différentes températures",
+  "venue": "Journal de l'École Polytechnique 1(2):24-76",
+  "doi": "",
+  "url": "",
+  "annotation": "Introduces the annihilating-polynomial reconstruction now known as Prony's method; the finite-atomic Cox-mixture result uses its Hankel and Vandermonde steps."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Gautschi1962",
+  "authors": "Gautschi, W.",
+  "year": 1962,
+  "title": "On inverses of Vandermonde and confluent Vandermonde matrices",
+  "venue": "Numerische Mathematik 4:117-123",
+  "doi": "10.1007/bf01386302",
+  "url": "https://doi.org/10.1007/bf01386302",
+  "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Rebolledo1980",
+  "authors": "Rebolledo, R.",
+  "year": 1980,
+  "title": "Central limit theorems for local martingales",
+  "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
+  "doi": "10.1007/bf00587353",
+  "url": "https://doi.org/10.1007/bf00587353",
+  "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BarberCandesRamdasTibshirani2021",
+  "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
+  "year": 2021,
+  "title": "The limits of distribution-free conditional predictive inference",
+  "venue": "Information and Inference 10(2):455-482",
+  "doi": "10.1093/imaiai/iaaa017",
+  "url": "https://doi.org/10.1093/imaiai/iaaa017",
+  "annotation": "Shows that exact distribution-free conditional predictive validity is impossible without assumptions; the rare-group calculation on the conformal crossover page gives an elementary finite-sample split-conformal witness while preserving marginal validity."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Kalman1960",
+  "authors": "Kalman, R. E.",
+  "year": 1960,
+  "title": "Contributions to the Theory of Optimal Control",
+  "venue": "Boletín de la Sociedad Matemática Mexicana 5:102-119",
+  "doi": "",
+  "url": "https://boletin.math.org.mx/pdf/2/5/BSMM(2).5.102-119.pdf",
+  "annotation": "Introduces the state-space controllability and observability viewpoint. The yield-curve note turns its finite-horizon observability Gramian into the Fisher information for a continuously observed maturity response."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Hautus1969",
+  "authors": "Hautus, M. L. J.",
+  "year": 1969,
+  "title": "Controllability and Observability Conditions of Linear Autonomous Systems",
+  "venue": "Indagationes Mathematicae (Proceedings) 72(5):443-448",
+  "doi": "",
+  "url": "https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/",
+  "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
+ },
+ {
+  "role": "survey_theory",
+  "key": "SchmerlingJansonPavone2015",
+  "authors": "Schmerling, E., Janson, L. and Pavone, M.",
+  "year": 2015,
+  "title": "Optimal sampling-based motion planning under differential constraints: The drift case with linear affine dynamics",
+  "venue": "54th IEEE Conference on Decision and Control:2574-2581",
+  "doi": "10.1109/cdc.2015.7402604",
+  "url": "https://doi.org/10.1109/cdc.2015.7402604",
+  "annotation": "Uses controllability indices to prove the multi-input small-time Gramian eigenvalue orders. The yield-curve note supplies the shifted-response powers and explicit leading block constants for its continuous-maturity Fisher matrix."
+ },
+ {
+  "role": "survey_theory",
+  "key": "TrelatZuazua2026",
+  "authors": "Trélat, E. and Zuazua, E.",
+  "year": 2026,
+  "title": "Two-term small-time spectral expansions for controllability Gramians",
+  "venue": "arXiv:2609.37077",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2609.37077",
+  "annotation": "Derives the small-time odd-power eigenvalue hierarchy and refined spectral expansions for controllable single-input Gramians. The yield-curve Fisher response vanishes once more at zero maturity, shifting the hierarchy from powers 1,3,... to 3,5,...; the note gives the corresponding factorial-Hilbert leading constants directly."
  }
 ]

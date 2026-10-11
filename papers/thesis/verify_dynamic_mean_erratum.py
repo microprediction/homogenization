@@ -14,8 +14,10 @@ switching ratio, and permits the contrast to vary with the switching rate.
 An unequal-rate extension makes the cancellation mechanism precise: the
 linear log-ratio error is generally quadratic in contrast/switching speed,
 and improves to cubic exactly when the two transition rates coincide.
-For constant forcing, a signed fourth-order equilibrium expansion identifies
-the sharp quadratic and cubic coefficients behind those rates.
+For constant forcing, the equilibrium is explicitly invertible.  An all-order
+Legendre-series certificate identifies its exact unit convergence radius,
+a uniform truncation bound, and the sharp low-order coefficients behind those
+rates.
 """
 
 from __future__ import annotations
@@ -212,6 +214,95 @@ def constant_forcing_expansion_coefficients(
         asymmetry**2 / 2.0 - 1.0 / 6.0,
         asymmetry * (5.0 * asymmetry**2 - 3.0) / 8.0,
     )
+
+
+def constant_forcing_all_order_coefficients(
+    asymmetry: mp.mpf, order: int
+) -> list[mp.mpf]:
+    """Revert the unequal-rate equilibrium equation through ``order``.
+
+    With ``x=q/(r12+r21)`` and
+    ``alpha=(r12-r21)/(r12+r21)``, the equilibrium log ratio is the local
+    inverse at zero of
+
+        h(ell) = sinh(ell) - alpha * (cosh(ell) - 1).
+
+    The returned list is indexed from zero and satisfies
+
+        ell(x) = sum(coefficients[n] * x**n, n=1,...,order)
+                 + O(x**(order+1)).
+
+    This formal reversion is independent of the explicit quadratic root used
+    elsewhere in the certificate.
+    """
+    if order < 1:
+        raise ValueError("order must be positive")
+    alpha = mp.mpf(asymmetry)
+    if abs(alpha) >= 1:
+        raise ValueError("positive transition rates require |asymmetry| < 1")
+
+    coefficients = [mp.mpf(0)] * (order + 1)
+    coefficients[1] = mp.mpf(1)
+    for degree in range(2, order + 1):
+        base = coefficients[: degree + 1]
+        power = [mp.mpf(0)] * (degree + 1)
+        power[0] = mp.mpf(1)
+        contribution = mp.mpf(0)
+        for exponent in range(1, degree + 1):
+            product = [mp.mpf(0)] * (degree + 1)
+            for left, left_value in enumerate(power):
+                if left_value == 0:
+                    continue
+                for right, right_value in enumerate(base):
+                    if left + right > degree:
+                        break
+                    product[left + right] += left_value * right_value
+            power = product
+            if exponent >= 2:
+                h_coefficient = (
+                    mp.mpf(1) / mp.factorial(exponent)
+                    if exponent % 2 == 1
+                    else -alpha / mp.factorial(exponent)
+                )
+                contribution += h_coefficient * power[degree]
+        coefficients[degree] = -contribution
+    return coefficients
+
+
+def constant_forcing_legendre_coefficients(
+    asymmetry: mp.mpf, order: int
+) -> list[mp.mpf]:
+    """Return the closed all-order coefficients from Legendre polynomials.
+
+    The exact inverse satisfies
+
+        ell'(x) = (1 - 2*alpha*x + x**2)**(-1/2),
+
+    so its x**n coefficient is P_(n-1)(alpha)/n.  The implementation uses
+    the three-term Legendre recurrence and is independent of formal series
+    reversion.
+    """
+    if order < 1:
+        raise ValueError("order must be positive")
+    alpha = mp.mpf(asymmetry)
+    if abs(alpha) >= 1:
+        raise ValueError("positive transition rates require |asymmetry| < 1")
+    coefficients = [mp.mpf(0)] * (order + 1)
+    previous = mp.mpf(1)
+    coefficients[1] = previous
+    if order == 1:
+        return coefficients
+    current = alpha
+    coefficients[2] = current / 2
+    for legendre_degree in range(1, order - 1):
+        following = (
+            (2 * legendre_degree + 1) * alpha * current
+            - legendre_degree * previous
+        ) / (legendre_degree + 1)
+        coefficient_degree = legendre_degree + 2
+        coefficients[coefficient_degree] = following / coefficient_degree
+        previous, current = current, following
+    return coefficients
 
 
 def unequal_rate_log_ratio_bound(
@@ -758,11 +849,11 @@ def main() -> None:
                 )
                 residuals.append(abs(equilibrium - expansion))
 
-            orders = [
+            local_orders = [
                 mp.log(residuals[index] / residuals[index + 1], 2)
                 for index in range(len(residuals) - 1)
             ]
-            expansion_orders.append(float(orders[-1]))
+            expansion_orders.append(float(local_orders[-1]))
 
             smallest = expansion_grid[-1]
             linear = smallest - rate_12_mp + rate_21_mp
@@ -783,6 +874,101 @@ def main() -> None:
 
     assert min(expansion_orders) > 4.98
     assert max(leading_coefficient_errors) < 2.1e-3
+
+    # Extend the displayed fourth-order calculation to all orders.  The
+    # series is obtained by formal reversion of h_alpha(ell), while the check
+    # below uses the independent explicit positive quadratic root.  The two
+    # inverse-function branch points alpha +/- i*sqrt(1-alpha^2) have modulus
+    # one for every pair of positive transition rates.
+    all_order_degree = 20
+    all_order_errors = []
+    all_order_residuals = []
+    all_order_bound_utilization = []
+    coefficient_symmetry_errors = []
+    legendre_coefficient_errors = []
+    branch_radius_errors = []
+    with mp.workdps(80):
+        coefficient_tables = {}
+        for asymmetry in expansion_asymmetries:
+            alpha = mp.mpf(str(asymmetry))
+            coefficients = constant_forcing_all_order_coefficients(
+                alpha, all_order_degree
+            )
+            legendre_coefficients = constant_forcing_legendre_coefficients(
+                alpha, all_order_degree
+            )
+            coefficient_tables[asymmetry] = coefficients
+            legendre_coefficient_errors.extend(
+                float(abs(coefficients[index] - legendre_coefficients[index]))
+                for index in range(1, all_order_degree + 1)
+            )
+            explicit = (
+                alpha / 2,
+                alpha**2 / 2 - mp.mpf(1) / 6,
+                alpha * (5 * alpha**2 - 3) / 8,
+            )
+            assert max(
+                abs(coefficients[index] - explicit[index - 2])
+                for index in range(2, 5)
+            ) < mp.mpf("1e-75")
+
+            branch = alpha + 1j * mp.sqrt(1 - alpha**2)
+            branch_radius_errors.append(float(abs(abs(branch) - 1)))
+            for scaled_forcing in (mp.mpf("-0.35"), mp.mpf("0.35")):
+                discriminant = (
+                    1 - 2 * alpha * scaled_forcing + scaled_forcing**2
+                )
+                exact = mp.log(
+                    (
+                        scaled_forcing
+                        - alpha
+                        + mp.sqrt(discriminant)
+                    )
+                    / (1 - alpha)
+                )
+                approximation = mp.fsum(
+                    coefficients[index] * scaled_forcing**index
+                    for index in range(1, all_order_degree + 1)
+                )
+                all_order_errors.append(float(abs(exact - approximation)))
+                remainder_bound = (
+                    abs(scaled_forcing) ** (all_order_degree + 1)
+                    / (
+                        (all_order_degree + 1)
+                        * (1 - abs(scaled_forcing))
+                    )
+                )
+                all_order_bound_utilization.append(float(
+                    abs(exact - approximation) / remainder_bound
+                ))
+                all_order_residuals.append(float(abs(
+                    mp.sinh(approximation)
+                    - alpha * (mp.cosh(approximation) - 1)
+                    - scaled_forcing
+                )))
+
+        for asymmetry in (0.2, 0.65, 0.9):
+            positive = coefficient_tables[asymmetry]
+            negative = coefficient_tables[-asymmetry]
+            coefficient_symmetry_errors.extend(
+                float(abs(
+                    negative[index]
+                    - (-1) ** (index + 1) * positive[index]
+                ))
+                for index in range(1, all_order_degree + 1)
+            )
+        symmetric_coefficients = coefficient_tables[0.0]
+        assert max(
+            abs(symmetric_coefficients[index])
+            for index in range(2, all_order_degree + 1, 2)
+        ) < mp.mpf("1e-75")
+
+    assert max(branch_radius_errors) < 1e-75
+    assert max(coefficient_symmetry_errors) < 1e-75
+    assert max(legendre_coefficient_errors) < 1e-75
+    assert max(all_order_bound_utilization) < 1.0
+    assert max(all_order_errors) < 3.4e-12
+    assert max(all_order_residuals) < 3.0e-12
 
     # At equal rates the general log-ratio theorem has no quadratic term.
     # Its radius and bound reduce to asinh(M/S) and sinh(L)-L exactly.
@@ -892,6 +1078,12 @@ def main() -> None:
         f"order {min(expansion_orders):.6f}; maximum leading-coefficient "
         f"error {max(leading_coefficient_errors):.3e}"
     )
+    print(
+        f"all-order equilibrium series through degree {all_order_degree}: "
+        f"maximum value error {max(all_order_errors):.3e}; maximum equation "
+        f"residual {max(all_order_residuals):.3e}; maximum bound utilization "
+        f"{max(all_order_bound_utilization):.6f}; branch radius 1"
+    )
     print("lambda  kappa   T       printed       corrected      exact switched")
     for rate, speed, maturity, printed, corrected, exact in rows:
         print(
@@ -903,7 +1095,7 @@ def main() -> None:
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
         "orders and endpoint coefficients, maturity-uniform finite-rate "
         "all-ratio bound, unequal-rate quadratic/cubic transition and signed "
-        "equilibrium coefficients, joint "
+        "all-order equilibrium series, joint "
         "contrast/switching rate, and both thesis examples"
     )
 

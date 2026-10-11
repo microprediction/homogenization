@@ -5,11 +5,18 @@
 2. Vasicek with switching reversion speed and volatility (non-commuting): same, on the discretized pricing equation.
 3. Black-Scholes with switching variance: call prices from the rule against the numerical solution.
 4. Many-name credit: joint survival of every subset from one Green-Kubo matrix of hazards.
+5. Competing arrivals: a two-channel reversal gap detects exactly the hazards' antisymmetric Green-Kubo pairing.
+   A centered resolvent expansion supplies every inverse-speed coefficient and a finite-rate geometric remainder
+   bound. A positive pair witnesses the cycle, while an affine pair is exactly blind at every switching speed.
 """
 import math, cmath, os, sys
 import numpy as np
 from scipy.linalg import expm
-from effective_generator import stationary, gk, averages, effective_generator, full_generator
+from effective_generator import (
+    stationary, gk, averages, effective_generator, full_generator,
+    time_reversal, first_arrival_probability, first_arrival_first_order,
+    first_arrival_series, first_arrival_reversal_gap_first_order,
+)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fast-switching'))
 
 Q3 = np.array([[-3, 2, 1], [1, -2, 1], [0.5, 1.5, -2]], float)          # irreversible
@@ -144,6 +151,109 @@ def main():
     w = np.linalg.eigvalsh(Ks)
     print(f"   eigenvalues of the dependence matrix {np.array2string(w, precision=2)}: rank at most 2 for three states")
     ok &= abs(w).min() < 1e-12 * abs(w).max() and w.min() > -1e-12 * abs(w).max()
+
+    print("5. two-channel first-arrival race under a three-state irreversible cycle")
+    race_hazards = np.array([[0.07, 0.01, 0.01], [0.01, 0.07, 0.01]])
+    race_speeds = np.array([5.0, 10.0, 20.0, 40.0, 80.0])
+    forward, reverse, approximations, errors, reversal_errors = [], [], [], [], []
+    for m in race_speeds:
+        Q = m * QC
+        p_forward = first_arrival_probability(Q, race_hazards)
+        p_reverse = first_arrival_probability(time_reversal(Q), race_hazards)
+        p_first = first_arrival_first_order(Q, race_hazards)
+        predicted_gap = first_arrival_reversal_gap_first_order(Q, race_hazards)
+        forward.append(p_forward)
+        reverse.append(p_reverse)
+        approximations.append(p_first)
+        errors.append(abs(p_forward - p_first))
+        reversal_errors.append(abs((p_forward - p_reverse) - predicted_gap))
+    ratios = np.array(errors[:-1]) / np.array(errors[1:])
+    reversal_ratios = np.array(reversal_errors[:-1]) / np.array(reversal_errors[1:])
+    i10 = list(race_speeds).index(10.0)
+    print(f"   speed 10: forward {forward[i10]:.10f}, reversed {reverse[i10]:.10f}, "
+          f"first order {approximations[i10]:.10f}")
+    print("   approximation error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
+    print("   reversal-gap error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in reversal_ratios))
+    ok &= abs(forward[i10] - 0.5001500360718357) < 1e-12
+    ok &= abs(reverse[i10] - 0.4998499639281751) < 1e-12
+    ok &= all(3.95 < x < 4.05 for x in ratios)
+    ok &= all(3.95 < x < 4.05 for x in reversal_ratios)
+    ok &= abs(forward[i10] - reverse[i10]) > 3e-4
+
+    # The centered Schur/Neumann expansion is exact to all orders within its
+    # convergence disk. The 2-norm condition is only sufficient, but gives a
+    # directly computable nonasymptotic tail bound.
+    series_rows, worst_bound_ratio = [], 0.0
+    for m in (0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0):
+        truth = first_arrival_probability(m * QC, race_hazards)
+        row = {'speed': m, 'exact': truth, 'orders': []}
+        for order in range(1, 5):
+            expansion = first_arrival_series(QC, race_hazards, m, order=order)
+            error = abs(expansion['value'] - truth)
+            bound = expansion['remainder_bound']
+            worst_bound_ratio = max(worst_bound_ratio, error / bound)
+            row['orders'].append((order, expansion['value'], error, bound))
+            ok &= error <= bound * (1 + 2e-12)
+            if order == 1:
+                ok &= abs(expansion['value'] - first_arrival_first_order(m * QC, race_hazards)) < 2e-15
+        series_rows.append(row)
+    benchmark = first_arrival_series(QC, race_hazards, 0.1, order=4)
+    print(f"   centered series: rho(M) {benchmark['spectral_radius']:.8f}, "
+          f"||M||_2 {benchmark['matrix_norm']:.8f}; at speed .1, order-4 error "
+          f"{series_rows[0]['orders'][-1][2]:.3e}, bound {series_rows[0]['orders'][-1][3]:.3e}")
+    print(f"   largest error/bound ratio over 28 certified truncations: {worst_bound_ratio:.6f}")
+    ok &= benchmark['spectral_radius'] < benchmark['matrix_norm'] < 0.1
+    ok &= series_rows[-1]['orders'][-1][2] < 1e-13
+
+    rng_series = np.random.default_rng(20261012)
+    random_bound_ratio, random_first_difference = 0.0, 0.0
+    for _ in range(24):
+        rates = rng_series.uniform(0.1, 2.0, (4, 4))
+        np.fill_diagonal(rates, 0.0)
+        rates[np.diag_indices(4)] = -rates.sum(axis=1)
+        hazards = rng_series.uniform(0.005, 0.12, (2, 4))
+        scale = first_arrival_series(rates, hazards, 1.0, order=0)
+        m = max(0.05, 1.5 * scale['matrix_norm'])
+        expansion = first_arrival_series(rates, hazards, m, order=3)
+        truth = first_arrival_probability(m * rates, hazards)
+        error = abs(expansion['value'] - truth)
+        random_bound_ratio = max(random_bound_ratio, error / expansion['remainder_bound'])
+        first = first_arrival_series(rates, hazards, m, order=1)['value']
+        random_first_difference = max(
+            random_first_difference, abs(first - first_arrival_first_order(m * rates, hazards)))
+        ok &= error <= expansion['remainder_bound'] * (1 + 2e-12)
+    print(f"   24 random four-state chains: largest error/bound ratio {random_bound_ratio:.6f}; "
+          f"first-order identity error {random_first_difference:.2e}")
+    ok &= random_first_difference < 2e-14
+
+    # Nonreversibility of the driver is not sufficient for a fixed pair of
+    # hazards to see it.  If h2 is affine in h1, then h1 is affine in the
+    # total hazard.  The exact forward and reverse probabilities coincide.
+    blind_hazards = np.array([race_hazards[0], 0.02 + 0.5 * race_hazards[0]])
+    blind_gaps = []
+    for m in (1.0, 5.0, 10.0, 20.0, 40.0, 80.0):
+        Q = m * Q3  # deliberately nonuniform stationary law
+        blind_gaps.append(abs(
+            first_arrival_probability(Q, blind_hazards)
+            - first_arrival_probability(time_reversal(Q), blind_hazards)
+        ))
+    rng = np.random.default_rng(20261011)
+    for _ in range(20):
+        rates = rng.uniform(0.1, 2.0, (4, 4))
+        np.fill_diagonal(rates, 0.0)
+        rates[np.diag_indices(4)] = -rates.sum(axis=1)
+        h1 = rng.uniform(0.01, 0.1, 4)
+        affine_hazards = np.array([h1, rng.uniform(0.005, 0.03) + rng.uniform(0.2, 1.5) * h1])
+        for m in (0.5, 3.0, 20.0):
+            Q = m * rates
+            blind_gaps.append(abs(
+                first_arrival_probability(Q, affine_hazards)
+                - first_arrival_probability(time_reversal(Q), affine_hazards)
+            ))
+    blind_anti = abs(gk(Q3, blind_hazards)[0, 1] - gk(Q3, blind_hazards)[1, 0])
+    print(f"   affine-hazard blind family (66 cases): max exact reversal gap {max(blind_gaps):.2e}; "
+          f"antisymmetric pairing {blind_anti:.2e}")
+    ok &= max(blind_gaps) < 5e-13 and blind_anti < 5e-15
     print("PASS" if ok else "FAIL")
 
 

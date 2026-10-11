@@ -6,20 +6,27 @@
    through orders 0, 1, 2 equals the fast-switching engine at those orders.
 3. Worked example (dense clumps in thin gas): errors in log T against the matrix exponential fall like
    lam_c^(n+1) at order n, for n = 0, 1, 2, 3, 4, 6, 8.
-4. The series in lam_c converges for lam_c |Sigma_A - Sigma_B| < 1 and diverges beyond: Cauchy-integral
-   Taylor coefficients of the decay rate grow like |Sigma_A - Sigma_B|^k, and engine partial sums settle at
-   lam_c = 0.16 and blow up at lam_c = 0.32.
-5. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
+4. The outer series in lam_c converges for lam_c |Sigma_A - Sigma_B| < 1 and diverges beyond: Cauchy-integral
+   Taylor coefficients of the slow decay rate grow like |Sigma_A - Sigma_B|^k, and engine partial sums settle
+   at lam_c = 0.16 and blow up at lam_c = 0.32.
+5. Singularity analysis gives the sharp oscillatory high-order coefficients of both the slow rate and its weight.
+6. The exact two-mode decomposition isolates the positive, exponentially small finite-slab entry layer and
+   supplies a computable bound on the error made by the all-orders outer series.
+7. The double scaling L=ell*lam_c has a uniform crossover expansion.  The entry layer contributes at second
+   algebraic order and cancels the outer boundary shift at zero thickness.
+8. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
    exponential and the engine, with the same orders of convergence.
-6. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
+9. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
    sampling of the chain, agree with the matrix exponential within three standard errors.
 Writes results.json for the page.
 """
 import json
 import math
 import os
+import mpmath as mp
 import numpy as np
 from clumpy import (binary_Q, binary_lams, tessellation_Q, exact_T, two_exponential_T, two_exponential_parts,
+                    two_exponential_decomposition,
                     coefficients, binary_coefficients, log_T_closed, engine_log_T, mc_chain, mc_tessellation,
                     stationary, tau_cumulants)
 
@@ -29,6 +36,37 @@ LCS = [0.16, 0.08, 0.04, 0.02, 0.01]
 ORDERS = [0, 1, 2, 3, 4, 6, 8]
 SIG3, PI3 = [0.05, 1.0, 10.0], (0.85, 0.10, 0.05)
 ELLS = [0.025, 0.0125, 0.00625, 0.003125]
+
+
+def outer_series_coefficients(p_a, order, dps=100):
+    """Dimensionless coefficients of (r_- - mean)/Delta and log(w_-).
+
+    The square-root coefficients are generated from D(x)^2 = 1 + 2 delta x + x^2.
+    Reciprocal and logarithm recurrences then avoid numerical differentiation near the
+    unit-circle branch points.
+    """
+    with mp.workdps(dps):
+        delta = mp.mpf(1) - 2 * mp.mpf(p_a)
+        root = [mp.mpf(0)] * (order + 2)
+        root[0] = mp.mpf(1)
+        for n in range(1, order + 2):
+            rhs = 2 * delta if n == 1 else (mp.mpf(1) if n == 2 else mp.mpf(0))
+            root[n] = (rhs - sum(root[j] * root[n - j] for j in range(1, n))) / 2
+
+        rate = [-root[k + 1] / 2 for k in range(order + 1)]
+        inverse = [mp.mpf(0)] * (order + 1)
+        inverse[0] = mp.mpf(1)
+        for n in range(1, order + 1):
+            inverse[n] = -sum(root[j] * inverse[n - j] for j in range(1, n + 1))
+        weight = [mp.mpf(0)] * (order + 1)
+        weight[0] = mp.mpf(1)
+        for n in range(1, order + 1):
+            weight[n] = (inverse[n] + delta * inverse[n - 1]) / 2
+        log_weight = [mp.mpf(0)] * (order + 1)
+        for n in range(1, order + 1):
+            log_weight[n] = weight[n] - sum(
+                k * log_weight[k] * weight[n - k] for k in range(1, n)) / n
+        return delta, rate, log_weight
 
 
 def nested_Q(ell, pi=PI3):
@@ -139,7 +177,161 @@ def main():
     ok &= rad[0]['errors'][12] < 0.01 * rad[0]['errors'][0] and rad[1]['errors'][12] > 10 * rad[1]['errors'][0]
     out['radius'] = dict(growth=growth, d=d, rows=rad)
 
-    print("5. three nested phases: gas, envelopes, cores")
+    print("5. sharp high-order coefficient asymptotics")
+    coefficient_rows = []
+    for p_a in (0.1, 0.3, 0.5, 0.8):
+        delta, rate_coef, weight_coef = outer_series_coefficients(p_a, 640)
+        zeta = mp.mpc(-delta, mp.sqrt(1 - delta ** 2))
+        theta = mp.arg(zeta)
+        branch = mp.sqrt(1 - zeta ** 2)
+
+        def predicted_rate(k):
+            return mp.re(branch * zeta ** (-(k + 1))) / (
+                2 * mp.sqrt(mp.pi) * (k + 1) ** mp.mpf('1.5'))
+
+        def predicted_weight(k):
+            return mp.cos(k * theta) / k
+
+        block_rows = []
+        for start in (80, 160, 320):
+            stop = 2 * start
+            rate_error = mp.sqrt(sum(
+                (rate_coef[k] - predicted_rate(k)) ** 2 for k in range(start, stop)) /
+                sum(rate_coef[k] ** 2 for k in range(start, stop)))
+            weight_error = mp.sqrt(sum(
+                (weight_coef[k] - predicted_weight(k)) ** 2 for k in range(start, stop)) /
+                sum(weight_coef[k] ** 2 for k in range(start, stop)))
+            block_rows.append(dict(start=start, stop=stop,
+                                   rate_relative_l2=float(rate_error),
+                                   log_weight_relative_l2=float(weight_error)))
+        rate_order = math.log2(block_rows[-2]['rate_relative_l2'] /
+                               block_rows[-1]['rate_relative_l2'])
+        weight_order = math.log2(block_rows[-2]['log_weight_relative_l2'] /
+                                 block_rows[-1]['log_weight_relative_l2'])
+        print(f"   p_A {p_a:.1f}: terminal relative L2 errors rate {block_rows[-1]['rate_relative_l2']:.3e}, "
+              f"log weight {block_rows[-1]['log_weight_relative_l2']:.3e}; "
+              f"orders {rate_order:.3f}, {weight_order:.3f}")
+        ok &= block_rows[-1]['rate_relative_l2'] < 0.0023
+        ok &= block_rows[-1]['log_weight_relative_l2'] < 0.053
+        ok &= 0.9 < rate_order < 1.1 and 0.45 < weight_order < 0.65
+        coefficient_rows.append(dict(pA=p_a, delta=float(delta), theta=float(theta),
+                                     blocks=block_rows, rate_order=rate_order,
+                                     log_weight_order=weight_order))
+    out['coefficient_asymptotics'] = coefficient_rows
+
+    print("6. exact finite-slab entry layer")
+    layer_rows = []
+    layer_identity = 0.0
+    # Check both opacity orderings, unequal fractions, and zero contrast.
+    for pA_ in (0.1, 0.5, 0.9):
+        for SA_, SB_ in ((5.0, 0.05), (0.2, 4.0), (1.0, 1.0)):
+            for lc_ in (0.01, 0.08, 0.3):
+                lA_, lB_ = binary_lams(pA_, lc_)
+                dec_ = two_exponential_decomposition(SA_, SB_, lA_, lB_, 0.7)
+                direct_ = two_exponential_T(SA_, SB_, lA_, lB_, 0.7)
+                layer_identity = max(layer_identity, abs(dec_['exact'] - direct_) / direct_)
+                ok &= dec_['slow_weight'] > 0 and dec_['fast_weight'] >= -2e-16
+                ok &= 0.0 <= dec_['log_layer'] <= dec_['relative_layer'] * (1 + 1e-14)
+    for lc in LCS:
+        lA, lB = binary_lams(PA, lc)
+        dec = two_exponential_decomposition(SA, SB, lA, lB, L)
+        direct = two_exponential_T(SA, SB, lA, lB, L)
+        layer_identity = max(layer_identity, abs(dec['exact'] - direct) / direct)
+        # log(1+z) is positive and no larger than z for z >= 0.
+        ok &= 0.0 <= dec['log_layer'] <= dec['relative_layer'] * (1 + 1e-14)
+        layer_rows.append(dict(lam_c=lc, gap=dec['gap'], slow_weight=dec['slow_weight'],
+                               fast_weight=dec['fast_weight'], relative_layer=dec['relative_layer'],
+                               log_layer=dec['log_layer']))
+        print(f"   lam_c {lc:<6} gap {dec['gap']:.6f}  fast weight {dec['fast_weight']:.6e}  "
+              f"relative layer <= {dec['relative_layer']:.3e}")
+    # A shorter slab keeps the flat term visible numerically.  Its ratio to
+    # every fixed algebraic power still vanishes as lam_c decreases.
+    short_L, short_lcs, power = 0.25, [0.08, 0.04, 0.02, 0.01], 4
+    flat = []
+    for lc in short_lcs:
+        lA, lB = binary_lams(PA, lc)
+        dec = two_exponential_decomposition(SA, SB, lA, lB, short_L)
+        flat.append(dict(lam_c=lc, log_layer=dec['log_layer'], scaled=dec['log_layer'] / lc ** power))
+    print("   short-slab log-layer / lam_c^4: " + ", ".join(f"{r['scaled']:.3e}" for r in flat))
+    ok &= layer_identity < 2e-14 and all(flat[j + 1]['scaled'] < flat[j]['scaled'] for j in range(len(flat) - 1))
+    out['entry_layer'] = dict(identity_diff=layer_identity, rows=layer_rows, short_L=short_L,
+                              power=power, flat=flat)
+
+    print("7. thin-slab/correlation-length crossover")
+    # Put L=ell*lam_c and let lam_c tend to zero with ell in a fixed compact
+    # interval.  If v=p_A p_B and Delta=Sigma_A-Sigma_B, the exact logarithm is
+    #
+    # -mean*ell*lam_c
+    # + v*Delta^2*lam_c^2*(ell - 1 + exp(-ell)) + O(lam_c^3).
+    #
+    # The first two terms in parentheses are the slow outer rate and boundary
+    # weight.  exp(-ell) is the fast entry layer, now algebraic rather than flat.
+    crossover_lcs = [0.04, 0.02, 0.01, 0.005, 0.0025]
+    ell_grid = np.linspace(0.0, 8.0, 161)
+    delta_sigma = SA - SB
+    mean_sigma = PA * SA + (1.0 - PA) * SB
+    volume_product = PA * (1.0 - PA)
+    crossover_rows = []
+    for lc in crossover_lcs:
+        lA, lB = binary_lams(PA, lc)
+        approximation_errors = []
+        layer_profile_errors = []
+        for ell in ell_grid:
+            dec = two_exponential_decomposition(SA, SB, lA, lB, ell * lc)
+            exact_log = (
+                -dec['r_minus'] * ell * lc
+                + math.log(dec['slow_weight'])
+                + dec['log_layer']
+            )
+            crossover = (
+                -mean_sigma * ell * lc
+                + volume_product * delta_sigma ** 2 * lc ** 2
+                * (ell - 1.0 + math.exp(-ell))
+            )
+            approximation_errors.append(abs(exact_log - crossover))
+            layer_profile_errors.append(abs(
+                dec['log_layer'] / (lc * delta_sigma) ** 2
+                - volume_product * math.exp(-ell)
+            ))
+        crossover_rows.append(dict(
+            lam_c=lc,
+            max_log_error=max(approximation_errors),
+            max_error_over_lam_c_cubed=max(approximation_errors) / lc ** 3,
+            max_scaled_layer_profile_error=max(layer_profile_errors),
+        ))
+    crossover_order = math.log2(
+        crossover_rows[-2]['max_log_error'] / crossover_rows[-1]['max_log_error']
+    )
+    layer_profile_order = math.log2(
+        crossover_rows[-2]['max_scaled_layer_profile_error']
+        / crossover_rows[-1]['max_scaled_layer_profile_error']
+    )
+    print(
+        "   max log errors: "
+        + ", ".join(f"{row['max_log_error']:.3e}" for row in crossover_rows)
+    )
+    print(
+        f"   terminal orders: crossover {crossover_order:.6f}, "
+        f"scaled entry profile {layer_profile_order:.6f}"
+    )
+    ok &= 2.95 < crossover_order < 3.05
+    ok &= 0.95 < layer_profile_order < 1.05
+    ok &= crossover_rows[-1]['max_error_over_lam_c_cubed'] < 53.0
+    ok &= crossover_rows[-1]['max_scaled_layer_profile_error'] < 0.0018
+    out['thin_slab_crossover'] = dict(
+        ell_max=float(ell_grid[-1]),
+        ell_points=len(ell_grid),
+        formula=dict(
+            mean_sigma=mean_sigma,
+            volume_product=volume_product,
+            delta_sigma=delta_sigma,
+        ),
+        rows=crossover_rows,
+        crossover_order=crossover_order,
+        scaled_layer_profile_order=layer_profile_order,
+    )
+
+    print("8. three nested phases: gas, envelopes, cores")
     rows3, errs3 = [], []
     for ell in ELLS:
         Q = nested_Q(ell)
@@ -160,7 +352,7 @@ def main():
     out['nested'] = rows3
     out['nested_slopes'] = {str(n): s for n, s in sl3.items()}
 
-    print("6. Monte Carlo")
+    print("9. Monte Carlo")
     rng = np.random.default_rng(20260923)
     mcs = []
     for lc, media in [(0.16, 300), (0.08, 300), (0.04, 600)]:

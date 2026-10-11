@@ -9,6 +9,7 @@ from pages_examples import table, e, write, sym, two_state_expansion, error_rows
 from model_pages import cz, cg, half, lewis, SECOND_ORDER, U0
 
 SRC = 'https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages2.py'
+SRC_CEV_OCC = 'https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_cev_occupation.py'
 
 
 def Is(k, T):
@@ -526,9 +527,23 @@ def equity_rates_page():
 
 # ====================================================================================== CEV
 def cev_page():
-    from scipy.stats import ncx2
+    from scipy.stats import ncx2, poisson
     from scipy.integrate import solve_ivp
     from numpy.polynomial import chebyshev as ch
+    from verify_cev_occupation import (
+        bessel_endpoint_price,
+        bessel_price,
+        finite_rate_bounds,
+        poisson_beta_price,
+        unequal_moment_ode_endpoint_price,
+        unequal_moment_ode_price,
+        unequal_occupation_moments,
+        unequal_transition_probability,
+        weighted_finite_rate_bounds,
+        weighted_laplace_kummer_endpoint,
+        weighted_laplace_ode_endpoint,
+        weighted_occupation_moments,
+    )
     S0, r, q, beta, K, T, sig = 100.0, 0.02, 0.0, 0.6, 100.0, 1.0, [2.5, 1.2]
     F = S0 * math.exp((r - q) * T)
 
@@ -586,6 +601,77 @@ def cev_page():
               [r'memory term $\frac\varepsilon2\tilde sh_TC_v$, before discounting', f'{eps / 2 * st * hT * D[1]:.6f}']]
     o_rows = [[lab, f'{order(10.0, 1, o):.6f}', e(abs(order(10.0, 1, o) - ex10))] for o, lab in ((0, 'averaged CEV'), (1, 'first order'), (2, 'second order'))]
     o_rows.append(['exact mixture', f'{ex10:.6f}', ''])
+    occ_rows = []
+    occ_bound = S0 * math.exp(-0.02 * T) * poisson.sf(30, 10.0)
+    for start in (0, 1):
+        partial = poisson_beta_price(start, 30)
+        reference = poisson_beta_price(start, 70)
+        occ_rows.append([str(start + 1), f'{partial:.10f}', e(reference - partial), e(occ_bound)])
+    unequal_rows = []
+    for start in (0, 1):
+        bessel = bessel_price(start, 7.0, 13.0)
+        moment = unequal_moment_ode_price(start, 7.0, 13.0)
+        unequal_rows.append([str(start + 1), f'{bessel:.10f}', f'{moment:.10f}', e(abs(bessel - moment))])
+    endpoint_rows = []
+    for start in (0, 1):
+        for end in (0, 1):
+            bessel = bessel_endpoint_price(start, end, 7.0, 13.0)
+            moment = unequal_moment_ode_endpoint_price(start, end, 7.0, 13.0)
+            probability = unequal_transition_probability(start, end, 7.0, 13.0)
+            endpoint_rows.append([
+                str(start + 1),
+                str(end + 1),
+                f'{probability:.10f}',
+                f'{bessel:.10f}',
+                e(abs(bessel - moment)),
+            ])
+    weighted_endpoint_rows = []
+    for start in (0, 1):
+        for end in (0, 1):
+            kummer = weighted_laplace_kummer_endpoint(
+                start, end, 7.0, 13.0, 0.032, 1.0
+            )
+            ode = weighted_laplace_ode_endpoint(
+                start, end, 7.0, 13.0, 0.032, 1.0
+            )
+            weighted_endpoint_rows.append([
+                str(start + 1),
+                str(end + 1),
+                f'{float(kummer.real):.10f}',
+                e(abs(float(kummer.real) - ode)),
+            ])
+    finite_rows = []
+    for multiplier in (1, 2, 4, 8):
+        a, b = 7.0 * multiplier, 13.0 * multiplier
+        for start in (0, 1):
+            _, variance = unequal_occupation_moments(start, a, b)
+            exact_, centered, centered_bound, stationary, stationary_bound = finite_rate_bounds(
+                start, a, b, 2.625, 0.919
+            )
+            finite_rows.append([
+                f'{a+b:g}',
+                str(start + 1),
+                f'{variance:.8f}',
+                f'{abs(exact_-centered):.3e} / {centered_bound:.3e}',
+                f'{abs(exact_-stationary):.3e} / {stationary_bound:.3e}',
+            ])
+    weighted_rows = []
+    carry_rate, carry_dividend = 0.05, 0.01
+    carry_growth = 2.0 * (1.0 - beta) * (carry_rate - carry_dividend)
+    for multiplier in (1, 2, 4, 8):
+        a, b = 7.0 * multiplier, 13.0 * multiplier
+        for start in (0, 1):
+            _, variance = weighted_occupation_moments(start, a, b, carry_growth)
+            exact_, centered, centered_bound, stationary, stationary_bound = weighted_finite_rate_bounds(
+                start, a, b, carry_rate, carry_dividend, 2.58, 0.87
+            )
+            weighted_rows.append([
+                f'{a+b:g}',
+                str(start + 1),
+                f'{variance:.8f}',
+                f'{abs(exact_-centered):.3e} / {centered_bound:.3e}',
+                f'{abs(exact_-stationary):.3e} / {stationary_bound:.3e}',
+            ])
 
     body = r'''    <h1>CEV with a switching volatility</h1>
     <p class="subtitle">A model that is not affine, in which the regime nevertheless factors out: the price is a mixture of CEV prices over one random variance.</p>
@@ -643,6 +729,521 @@ def cev_page():
     <p>with $\chi^2(\cdot\,;\ d,\ \nu)$ the noncentral chi-square distribution function with $d$ degrees of freedom and
     noncentrality $\nu$. This is exact for any chain and any number of regimes. When $r = q$ the weight $h$ is one and
     $V$ depends on the path only through the time spent in each regime.</p>
+
+    <h2>Exact finite-rate occupation mixtures</h2>
+    <h3>Equal transition rates: a Poisson&ndash;Beta series</h3>
+    <p>In the zero-carry case $r=q$, the two-state benchmark can be made fully explicit, without reconstructing the
+    clock law from moments. Let $N$ be the number of switches, $U_T=\int_0^T\mathbf 1_{\{y_t=1\}}dt$, and
+    $B=U_T/T$. Equal transition rates imply $N\sim\operatorname{Poisson}(\lambda T)$. Conditional on $N=n$, the switch
+    times are the order statistics of $n$ independent uniforms, so their $n+1$ spacings are Dirichlet; this is the
+    classical uniform-spacing result of <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>. Summing the alternating
+    spacings gives, for a start in regime 1,</p>
+    <div class="equation-card">
+    $$B\mid N=n,\ y_0=1\ \sim\
+      \begin{cases}
+        1, & n=0,\\
+        \operatorname{Beta}(k+1,k), & n=2k\ge2,\\
+        \operatorname{Beta}(k+1,k+1), & n=2k+1.
+      \end{cases}$$
+    </div>
+    <p>For a start in regime 2, reflect this distribution: $B\mapsto1-B$. Since
+    $V=T[\sigma_2^2+(\sigma_1^2-\sigma_2^2)B]$, the exact price is the absolutely convergent Poisson&ndash;Beta series</p>
+    $$u_i=e^{-rT}\sum_{n=0}^{\infty}e^{-\lambda T}\frac{(\lambda T)^n}{n!}
+      \;\mathbb E\!\left[C\!\left(F_0,T\{\sigma_2^2+(\sigma_1^2-\sigma_2^2)B_{n,i}\}\right)\right].$$
+    <p>This is a finite-rate identity, not a fast-switching approximation. It also supplies a deterministic numerical
+    certificate. Because $0\le C(F,v)\le F$, truncating after $m$ switches has absolute error at most</p>
+    $$S_0e^{-qT}\,\mathbb P\{\operatorname{Poisson}(\lambda T)>m\}.$$
+    <p>At $r=q=2\%$, with the other page parameters unchanged, 80-node Gauss&ndash;Jacobi quadrature evaluates each Beta
+    expectation. At $\lambda T=10$ and $m=30$:</p>
+''' + table(['starting regime', 'partial price', 'actual omitted tail', 'certified bound'], occ_rows) + r'''    <p>The corresponding values summed through $n=70$ are 12.2433793024 and 11.8617426114. They agree to
+    $1.3\times10^{-14}$ with the independent moment-ODE/Chebyshev reconstruction. The same certificate checks
+    $\mathbb E[U_T\mid y_0=1]=T/2+(1-e^{-2\lambda T})/(4\lambda)$ and the reflected formula for regime 2.
+    Certificate: <a href="''' + SRC_CEV_OCC + r'''">verify_cev_occupation.py</a>.</p>
+
+    <h3>Unequal transition rates: a Bessel density</h3>
+    <p>The occupation law remains explicit when the transition rate from state 1 to 2 is $a$ and the reverse rate is
+    $b$. There is an atom $e^{-aT}$ at $U_T=T$ from a state-1 start, and an atom $e^{-bT}$ at $U_T=0$ from a state-2
+    start. Put $z=ab\,u(T-u)$. On $0&lt;u&lt;T$, the two interior densities are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    f_1(u)&=e^{-au-b(T-u)}\left[aI_0(2\sqrt z)+\frac{ab\,u}{\sqrt z}I_1(2\sqrt z)\right],\\
+    f_2(u)&=e^{-au-b(T-u)}\left[bI_0(2\sqrt z)+\frac{ab\,(T-u)}{\sqrt z}I_1(2\sqrt z)\right],
+    \end{aligned}$$
+    </div>
+    <p>where the endpoint ratios use their continuous limits. To prove the formula, condition on the number of
+    alternating jumps. For a state-1 start, paths with $2k+1$ jumps contribute
+    $a^{k+1}b^ke^{-au-b(T-u)}u^k(T-u)^k/(k!)^2$; summing gives the $I_0$ term. Paths with $2k\ge2$ jumps contribute
+    $a^kb^ke^{-au-b(T-u)}u^k(T-u)^{k-1}/[k!(k-1)!]$; summing gives the $I_1$ term. The state-2 formula follows by
+    exchanging the states. This is the two-state occupation law studied by
+    <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.</p>
+    <p>Keeping jump parity rather than summing it out gives the stronger joint law with the terminal regime. Write
+      $f_{ij}(u)\,du=\mathbb P_i\{U_T\in du,\ y_T=j\}$ on $0&lt;u&lt;T$. Then</p>
+    <div class="equation-card">
+    $$\begin{pmatrix}f_{11}(u)&f_{12}(u)\\f_{21}(u)&f_{22}(u)\end{pmatrix}
+      =e^{-au-b(T-u)}
+      \begin{pmatrix}
+      \dfrac{ab\,u}{\sqrt z}I_1(2\sqrt z)&aI_0(2\sqrt z)\\
+      bI_0(2\sqrt z)&\dfrac{ab\,(T-u)}{\sqrt z}I_1(2\sqrt z)
+      \end{pmatrix}.$$
+    </div>
+    <p>The no-jump atoms are $e^{-aT}$ at $(U_T,y_T)=(T,1)$ from state 1 and $e^{-bT}$ at
+      $(0,2)$ from state 2. Odd jump counts give the off-diagonal $I_0$ entries; positive even counts give the
+      diagonal $I_1$ entries. Integrating each entry plus its atom recovers the exact transition matrix</p>
+    <div class="equation-card">
+    $$P(T)={1\over a+b}
+      \begin{pmatrix}
+      b+ae^{-(a+b)T}&a(1-e^{-(a+b)T})\\
+      b(1-e^{-(a+b)T})&a+be^{-(a+b)T}
+      \end{pmatrix}.$$
+    </div>
+    <p>Therefore an endpoint-contingent call has the exact finite-rate price</p>
+    $$u_{ij}=e^{-rT}\left[p_{ij}^{\rm atom}C(F_0,V_i^{\rm atom})+
+      \int_0^T C\!\left(F_0,T\sigma_2^2+(\sigma_1^2-\sigma_2^2)u\right)f_{ij}(u)\,du\right].$$
+    <p>This prices $(S_T-K)^+\mathbf1_{\{y_T=j\}}$; division by $P_{ij}(T)$ gives the conditional call value
+      given the terminal regime. It also supplies exact continuation values when a later payoff depends on the
+      observed regime. For $(a,b)=(7,13)$, quadrature recovers all four transition probabilities to machine
+      precision, and an independent terminal-resolved polynomial-moment ODE gives:</p>
+''' + table(['start', 'terminal', 'probability', 'endpoint price', 'ODE difference'], endpoint_rows) + r'''
+    <p>Integrating the transition probabilities gives the first moments used below:</p>
+    $$\mathbb E_1U_T=\frac{bT}{a+b}+\frac{a}{(a+b)^2}\big(1-e^{-(a+b)T}\big),\qquad
+      \mathbb E_2U_T=\frac{bT}{a+b}-\frac{b}{(a+b)^2}\big(1-e^{-(a+b)T}\big).$$
+    <p>Consequently, at zero carry the arbitrary-rate CEV price is one atom plus one ordinary integral,</p>
+    $$u_i=e^{-rT}\left[p_i^{\rm atom}C(F_0,V_i^{\rm atom})+
+      \int_0^T C\!\left(F_0,T\sigma_2^2+(\sigma_1^2-\sigma_2^2)u\right)f_i(u)\,du\right].$$
+    <p>For $(a,b)=(7,13)$, the density plus its atom integrates to one within $1.2\times10^{-16}$ in each starting
+    state; its first moment matches the transition-semigroup formula to the same accuracy. Prices against the
+    independent polynomial-moment ODE are:</p>
+''' + table(['starting regime', 'Bessel density', 'moment ODE', 'difference'], unequal_rows) + r'''    <p>This removes the equal-rate restriction from the exact finite-rate benchmark. The zero-carry restriction remains:
+    when $r\ne q$, the clock contains the nonconstant weight $h(T-t)$ and is no longer determined by occupation time
+    alone.</p>
+
+    <h3>Finite-rate bounds for the averaged clock</h3>
+    <p>The same occupation law gives a deterministic approximation bound, not only an exact quadrature. Put
+    $\kappa=a+b$, $p=b/\kappa$, $q=a/\kappa$, and $d_1=q$, $d_2=-p$. Define</p>
+    $$L=\frac{1-e^{-\kappa T}}{\kappa},\qquad
+      J=\frac{T}{\kappa}-\frac{1-e^{-\kappa T}}{\kappa^2},\qquad
+      H=\frac{1-e^{-\kappa T}(1+\kappa T)}{\kappa^2}.$$
+    <p>For either known starting regime $i$, direct integration of
+    $\mathbb P_i(y_s=1,y_t=1)=\mathbb P_i(y_s=1)\mathbb P_1(y_{t-s}=1)$ gives</p>
+    <div class="equation-card">
+    $$m_i:=\mathbb E_iU_T=pT+d_iL,$$
+    $$\mathbb E_iU_T^2=p^2T^2+2p(q+d_i)J+2d_iqH,\qquad
+      v_i:=\operatorname{Var}_i(U_T)=\mathbb E_iU_T^2-m_i^2.$$
+    </div>
+    <p>Let $\Delta=\sigma_1^2-\sigma_2^2$, $G(v)=C(F_0,v)$, and let
+    $M_j=\sup_{v\in I}|G^{(j)}(v)|$ on the attainable interval
+    $I=[T\min_i\sigma_i^2,T\max_i\sigma_i^2]$. Taylor&apos;s theorem around the exact mean clock
+    $\mu_i=T\sigma_2^2+\Delta m_i$ and then the mean-value theorem give the two bounds</p>
+    <div class="equation-card">
+    $$\left|u_i-e^{-rT}G(\mu_i)\right|\le
+      \frac{e^{-rT}}2M_2\Delta^2v_i,$$
+    $$\left|u_i-e^{-rT}G(\bar v)\right|\le e^{-rT}
+      \left(M_1|\Delta d_i|L+\frac12M_2\Delta^2v_i\right),\qquad
+      \bar v=T(\sigma_2^2+\Delta p).$$
+    </div>
+    <p>The first approximation retains the known-start memory in its mean; the second uses the stationary averaged
+    clock and displays that memory as a separate term. If $a$ and $b$ grow proportionally, then at fixed $T$,
+    $v_i=2pqT/\kappa+O(\kappa^{-2})$ and $L=\kappa^{-1}+O(e^{-\kappa T}/\kappa)$, so both bounds are
+    $O(\kappa^{-1})$. This is a fixed-maturity statement, not a maturity-uniform one. These particular formulas use
+    zero carry; nonzero carry requires the weighted moments below.</p>
+    <p>For the parameters on this page, degree-48 and degree-56 Chebyshev differentiations agree to $10^{-7}$ on a
+    20,001-point grid; rounding those numerical supremum estimates upward gives $M_1=2.625$ and $M_2=0.919$.
+    This derivative calculation is a numerical check, not interval arithmetic. Each table entry is observed error /
+    plug-in right-hand side:</p>
+''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(U_T)$', 'mean clock', 'stationary clock'], finite_rows) + r'''
+
+    <h3>A sharp regularity gap</h3>
+    <p>The $O(\left(\kappa^{-1}\right))$ conclusion above uses two derivatives of the payoff. It cannot be
+    extended uniformly to all Lipschitz functions. For the weighted clock below, let
+    $\mu_i=\mathbb E_iV$ and let $\operatorname{Lip}(\Phi)\le1$. Kantorovich duality against the point mass at
+    $\mu_i$ gives the exact identity</p>
+    <div class="equation-card">
+    $$\sup_{\operatorname{Lip}(\Phi)\le1}
+      \left|\mathbb E_i\Phi(V)-\Phi(\mu_i)\right|
+      =W_1(\mathcal L_i(V),\delta_{\mu_i})
+      =\mathbb E_i|V-\mu_i|
+      =|\Delta|\mathbb E_i|W_T-\mathbb E_iW_T|
+      \le |\Delta|\sqrt{\operatorname{Var}_i(W_T)}.$$
+    </div>
+    <p>The supremum is attained by $\Phi(v)=|v-\mu_i|$. More precisely, set
+    $a=\kappa q$, $b=\kappa p$, $p+q=1$, and keep $T$ and $h$ fixed. Then, for either known starting state,</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\left(W_T-\mathbb E_iW_T\right)
+      \Longrightarrow N\!\left(0,2pqA_h\right),\qquad
+      A_h=\int_0^T e^{2h(T-t)}dt=\frac{e^{2hT}-1}{2h},$$
+    $$\mathbb E_i|W_T-\mathbb E_iW_T|
+      \sim\sqrt{\frac{4pqA_h}{\pi\kappa}}.$$
+    </div>
+    <p>Here $A_0=T$. For a short proof, put $g(1)=q$, $g(2)=-p$. The base two-state generator satisfies
+    $Q_0g=-g$, so Dynkin&apos;s formula makes
+    $M_t=g(y_t)-g(y_0)+\kappa\int_0^t g(y_s)ds$ a martingale. Deterministic integration by parts leaves
+    $\kappa^{-1/2}\int_0^T e^{h(T-t)}dM_t$ as the leading term. Its predictable bracket converges to
+    $2pqA_h$, and the bounded jumps give the martingale central limit theorem of
+    <a href="./bibliography.html#Rebolledo1980">Rebolledo (1980)</a>. Uniform boundedness of the second moments
+    then transfers the normal limit to absolute first moments. Indeed,
+    $\mathbb E_iW_T=pR(0)+d_iR(\kappa)$, so the known-start displacement from the stationary mean is
+    $O(\left(\kappa^{-1}\right))$ and vanishes after $\sqrt\kappa$ scaling.</p>
+    <p>Thus generic one-Lipschitz clock payoffs have a sharp $\Theta(\left(\kappa^{-1/2}\right))$ worst-case error,
+    while the centered $C^2$ CEV call retains its $O(\left(\kappa^{-1}\right))$ error. This is a fixed-$T$, fixed-$h$
+    statement; it is not uniform over maturity or carry. At zero carry with $(p,q)=(0.65,0.35)$, exact Bessel-density
+    quadrature for $\kappa=20,\ldots,1280$ gives ratios to the displayed sharp equivalent increasing from
+    $0.9670641$ to $0.9994997$ from state 1 and from $0.9840057$ to $0.9997574$ from state 2. At $\kappa=1280$,
+    $W_1/\sqrt{\operatorname{Var}}=0.798025$, against $\sqrt{2/\pi}=0.797885$.</p>
+
+    <h3>Nonzero carry: exact weighted moments</h3>
+    <p>Although occupation time alone no longer determines the clock when $r\ne q$, its exponentially weighted
+    counterpart still has elementary first two moments. This is a time-inhomogeneous
+    <a href="./bibliography.html#ReibmanSmithTrivedi1989">Markov reward functional</a>. Put
+    $h=2(1-\beta)(r-q)$ and</p>
+    $$W_T=\int_0^T e^{h(T-t)}\mathbf 1_{\{y_t=1\}}dt,\qquad
+      V=\sigma_2^2R(0)+\Delta W_T,$$
+    $$R(c)=e^{hT}\frac{1-e^{-(h+c)T}}{h+c}.$$
+    <p>With $\kappa,p,q,d_i$ as above, define</p>
+    $$\begin{aligned}
+    A&=\frac{e^{2hT}}{\kappa-h}\left(\frac{1-e^{-2hT}}{2h}
+       -\frac{1-e^{-(h+\kappa)T}}{h+\kappa}\right),\\
+    B&=\frac1h\left(e^{2hT}\frac{1-e^{-(2h+\kappa)T}}{2h+\kappa}
+       -e^{hT}\frac{1-e^{-(h+\kappa)T}}{h+\kappa}\right),\\
+    D&=\frac{e^{2hT}}h\left(\frac{1-e^{-(h+\kappa)T}}{h+\kappa}
+       -\frac{1-e^{-(2h+\kappa)T}}{2h+\kappa}\right).
+    \end{aligned}$$
+    <p>The apparent singularities have continuous limits. Directly integrating the same two-time transition
+    probability as above gives</p>
+    <div class="equation-card">
+    $$\mathbb E_iW_T=pR(0)+d_iR(\kappa),$$
+    $$\mathbb E_iW_T^2=p^2R(0)^2+2pqA+2d_ipB+2d_iqD.$$
+    </div>
+    <p>The entire finite-rate Laplace transform is also explicit. For $z\ge0$, let
+    $F_i(\tau;z)=\mathbb E_i\exp[-zW_\tau]$. Feynman&ndash;Kac gives</p>
+    $$F'=\begin{pmatrix}-a-ze^{h\tau}&a\\b&-b\end{pmatrix}F,
+      \qquad F(0;z)=\mathbf1.$$
+    <p>When $h\ne0$, put $\alpha=b/h$, $\gamma=1+(a+b)/h$, and
+    $w_\tau=-(z/h)e^{h\tau}$. If $M(\alpha,\gamma,w)$ and $U(\alpha,\gamma,w)$ are Kummer&apos;s and Tricomi&apos;s
+    confluent hypergeometric functions, with primes denoting derivatives in $w$, define</p>
+    $$\mathcal Y(w)=
+      \frac{U'(w_0)M(w)-M'(w_0)U(w)}{M(w_0)U'(w_0)-M'(w_0)U(w_0)}.$$
+    <p>Eliminating $F_1$ shows that $F_2$ solves
+    $F_2''+(a+b+ze^{h\tau})F_2'+bze^{h\tau}F_2=0$, which becomes Kummer&apos;s equation. The initial conditions
+    $F_2(0)=1$, $F_2'(0)=0$ therefore give the exact transform</p>
+    <div class="equation-card">
+    $$F_2(T;z)=\mathcal Y(w_T),\qquad
+      F_1(T;z)=\mathcal Y(w_T)+\frac{hw_T}{b}\mathcal Y'(w_T).$$
+    </div>
+    <p>The same reduction retains the terminal regime. Define
+      $F_{ij}(T;z)=\mathbb E_i[e^{-zW_T}\mathbf1_{\{y_T=j\}}]$. For $j=1,2$, set</p>
+    $$\eta_1=0,\quad \eta_2=1,\qquad
+      \xi_1=\frac{b}{hw_0},\quad \xi_2=-\frac{b}{hw_0},$$
+    $$\mathcal Y_j(w)=\frac{(\eta_jU'(w_0)-\xi_jU(w_0))M(w)
+      +(\xi_jM(w_0)-\eta_jM'(w_0))U(w)}
+      {M(w_0)U'(w_0)-M'(w_0)U(w_0)}.$$
+    <p>These constants are exactly the terminal-basis initial data:
+      $\mathcal Y_j(w_0)=\mathbf1_{\{j=2\}}$ and
+      $hw_0\mathcal Y_j'(w_0)=b(\mathbf1_{\{j=1\}}-\mathbf1_{\{j=2\}})$. Hence</p>
+    <div class="equation-card">
+    $$F_{2j}(T;z)=\mathcal Y_j(w_T),\qquad
+      F_{1j}(T;z)=\mathcal Y_j(w_T)+\frac{hw_T}{b}\mathcal Y_j'(w_T).$$
+    </div>
+    <p>Summing over $j$ recovers the unconditional transform above. At $z=0$ the continuous limit is the ordinary
+      transition matrix, and at $h=0$ it is
+      $\exp\{T(Q-z\operatorname{diag}(1,0))\}$. Thus terminal-regime-contingent clock claims have an exact transform
+      even with nonzero carry. This remains a transform identity, not a direct one-dimensional quadrature for a
+      nonlinear CEV payoff. For $(a,b,h,z)=(7,13,0.032,1)$, an independent terminal-basis Feynman&ndash;Kac solve gives:</p>
+''' + table(['start', 'terminal', 'joint transform', 'ODE difference'], weighted_endpoint_rows) + r'''
+    <h3>Endpoint reversal swaps carry</h3>
+    <p>The endpoint matrix has an exact path-reversal symmetry that is useful precisely because the loading is
+    time-dependent. Let $F^{Q,h}_{ij}(T;z)$ denote the preceding transform for a stationary finite chain $Q$, and
+    let $Q^{\leftarrow}=\Pi^{-1}Q^\top\Pi$ be its stationary reverse. Reversing a path swaps its endpoints and sends</p>
+    $$W_h=\int_0^T e^{h(T-t)}\mathbf1_{\{y_t=1\}}\,dt
+      \quad\longmapsto\quad
+      e^{hT}W_{-h}.$$
+    <p>Therefore the complete endpoint-resolved identity is</p>
+    <div class="equation-card">
+    $$F^{Q^{\leftarrow},h}_{ij}(T;z)
+      =\frac{\pi_j}{\pi_i}
+       F^{Q,-h}_{ji}(T;ze^{hT}).$$
+    </div>
+    <p>Every irreducible two-state chain is reversible, so here $Q^{\leftarrow}=Q$. At zero carry this reduces to
+    the killed-semigroup detailed-balance relation
+    $\pi_iF_{ij}(T;z)=\pi_jF_{ji}(T;z)$. At nonzero carry, reversal must also reverse the loading schedule: comparing
+    the same $h$ in both directions would be incorrect. This is the endpoint form of the general stationary
+    time-reversal framework of
+    <a href="https://doi.org/10.1017/S0027763000011405">Nagasawa (1964)</a>.</p>
+    <p>The identity also resolves a numerical singularity of the displayed Kummer basis. For
+    $(a,b,h)=(7,13,-0.032)$ one has $\gamma=1+(a+b)/h=-624$, where that $M/U$ pair degenerates. Evaluation through
+    the positive-carry reversed partner supplies the analytic continuation and agrees with an independent
+    time-inhomogeneous Feynman&ndash;Kac solve within $7.67\times10^{-15}$. Across positive, negative, and generic
+    parameter cases, the independently integrated reversal identity has maximum error $1.80\times10^{-13}$.</p>
+    <p>At isolated parameter values where this particular fundamental pair degenerates, the formula is read by
+    analytic continuation; uniqueness of the two-state system fixes the limit, and the reversal identity above gives
+    a stable evaluation whenever the negative-carry $\gamma$ is a nonpositive integer. For $h=0$ it reduces continuously to
+    $F(T;z)=\exp\{T(Q-z\operatorname{diag}(1,0))\}\mathbf1$. On the negative $w$ axis the individual principal-branch
+    $U$ terms can be complex, but their Wronskian combination is real. Finally, the full CEV-clock transform is</p>
+    $$\mathbb E_i e^{-zV}=e^{-z\sigma_2^2R(0)}F_i(T;z\Delta),$$
+    $$\mathbb E_i[e^{-zV}\mathbf1_{\{y_T=j\}}]
+      =e^{-z\sigma_2^2R(0)}F_{ij}(T;z\Delta),$$
+    <p>with analytic continuation in the bounded-clock transform if $\Delta&lt;0$.</p>
+    <p>This is an exact transform benchmark for nonzero carry, not an atom-plus-Bessel density or a direct
+    one-dimensional price quadrature. Across positive carry $h=0.032$ and a negative-$h$ test, 14 state/argument
+    cases agree with an independently integrated Feynman&ndash;Kac system within $8\times10^{-15}$; the largest cancelled
+    imaginary part is below $10^{-94}$.</p>
+    <p>Therefore the mean-clock bound remains valid after replacing $\Delta^2\operatorname{Var}(U_T)$ by
+    $\Delta^2\operatorname{Var}(W_T)$. For the stationary clock
+    $\bar v=(\sigma_2^2+\Delta p)R(0)$, the separate memory term becomes
+    $M_1|\Delta d_i|R(\kappa)$. At fixed $T$ and $h$, proportional rate scaling gives</p>
+    $$\operatorname{Var}_i(W_T)=\frac{2pq}{\kappa}
+      \frac{e^{2hT}-1}{2h}+O(\kappa^{-2}),\qquad
+      R(\kappa)=\frac{e^{hT}}\kappa+O(\kappa^{-2}).$$
+    <h3>First non-Gaussian correction and the known-start layer</h3>
+    <p>The leading characteristic-function error is also explicit when the chain starts in stationarity. For
+    $0\le t_1\le t_2\le t_3\le T$, the eigenfunction identity and
+    $g^2=pq+(q-p)g$ give</p>
+    $$\mathbb E_\pi[g(y_{t_1})g(y_{t_2})g(y_{t_3})]
+      =pq(q-p)e^{-\kappa(t_3-t_1)}.$$
+    <p>Writing $A_{3,h}=\int_0^T e^{3h(T-t)}dt=(e^{3hT}-1)/(3h)$, symmetry of the cube therefore gives the exact
+    third-cumulant integral and its limit</p>
+    <div class="equation-card">
+    $$\operatorname{Cum}_{3,\pi}(W_T)=6pq(q-p)
+      \int_{0\le t_1\le t_2\le t_3\le T}
+      e^{h(3T-t_1-t_2-t_3)}e^{-\kappa(t_3-t_1)}\,dt_1dt_2dt_3,$$
+    $$\kappa^2\operatorname{Cum}_{3,\pi}(W_T)\longrightarrow6pq(q-p)A_{3,h}.$$
+    </div>
+    <p>The second display follows after $u=\kappa(t_2-t_1)$ and $v=\kappa(t_3-t_2)$ by dominated convergence.
+    The finite-state Feynman&ndash;Kac cumulant expansion then yields, for each fixed real $s$,</p>
+    $$\sqrt\kappa\left[
+      \mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
+      -e^{-pqA_hs^2}\bigr]
+      \longrightarrow-i s^3pq(q-p)A_{3,h}e^{-pqA_hs^2}.$$
+    <p>The stationary expansion can be continued through relative order $\kappa^{-1}$. Put
+    $r=pq$, $c=q-p$, and $A_{j,h}=\int_0^T e^{jh(T-t)}dt$. For ordered times, with consecutive gaps
+    $u=t_2-t_1$, $v=t_3-t_2$, and $z=t_4-t_3$, direct conditioning gives the exact connected four-point function</p>
+    $$\operatorname{Cum}_\pi(g_{t_1},g_{t_2},g_{t_3},g_{t_4})
+      =rc^2e^{-\kappa(u+v+z)}-2r^2e^{-\kappa(u+2v+z)}.$$
+    <p>After integration over the ordered simplex, dominated convergence yields</p>
+    $$\kappa^3\operatorname{Cum}_{4,\pi}(W_T)
+      \longrightarrow24r(1-5r)A_{4,h}.$$
+    <p>The variance must also be retained one order beyond its Gaussian limit. Its exact covariance integral gives</p>
+    $$\kappa\operatorname{Var}_\pi(W_T)
+      =2rA_h-\frac{r(1+e^{2hT})}{\kappa}+O(\kappa^{-2}).$$
+    <p>Expanding the cumulant exponential, including the square of the skew term, therefore gives</p>
+    <div class="equation-card">
+    $$\mathbb E_\pi e^{is\sqrt\kappa(W_T-pR(0))}
+      =e^{-rA_hs^2}\left\{1+\frac{E_1(s)}{\sqrt\kappa}
+      +\frac{E_2(s)}{\kappa}+O(\kappa^{-3/2})\right\},$$
+    $$E_1(s)=-is^3rcA_{3,h},$$
+    $$E_2(s)=\frac r2(1+e^{2hT})s^2
+      +r(1-5r)A_{4,h}s^4
+      -\frac12r^2c^2A_{3,h}^2s^6.$$
+    </div>
+    <p>The remainder statement is pointwise for fixed $s,T,h,p,q$. It is not uniform on a growing frequency window
+    and is not a Berry&ndash;Esseen bound.</p>
+    <p>The known-start layer can also be computed exactly. Put $c=q-p$ and
+    $d_1=q$, $d_2=-p$. For a fixed initial regime $i$, the ordered three-time joint cumulant is the stationary bulk
+    term plus</p>
+    <div class="equation-card">
+    $$\operatorname{Cum}_i(g_{t_1},g_{t_2},g_{t_3})
+      =pqc\,e^{-\kappa(t_3-t_1)}+\mathcal R_i(t_1,t_2,t_3),$$
+    $$\begin{aligned}
+    \mathcal R_i={}&c^2d_i e^{-\kappa t_3}
+      -cd_i^2e^{-\kappa(t_1+t_3)}
+      -2pqd_i e^{-\kappa(t_2+t_3-t_1)}\\
+      &-2cd_i^2e^{-\kappa(t_2+t_3)}
+      +2d_i^3e^{-\kappa(t_1+t_2+t_3)}.
+    \end{aligned}$$
+    </div>
+    <p>Each remainder term is confined to the initial corner of the ordered simplex and contributes
+    $O(\kappa^{-3})$ after integration against the bounded clock weights. Thus the $\kappa^{-2}$ third-cumulant
+    coefficient is unchanged. The mean layer is larger:
+    $\mathbb E_iW_T-pR(0)=d_iR(\kappa)$ and $\kappa R(\kappa)\to e^{hT}$. Since the variance remainder is
+    $O(\kappa^{-2})$, the fixed-start first correction is</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\left[
+      \mathbb E_i e^{is\sqrt\kappa(W_T-pR(0))}-e^{-pqA_hs^2}\right]
+      \longrightarrow
+      \left\{is d_i e^{hT}-is^3pq(q-p)A_{3,h}\right\}e^{-pqA_hs^2}.$$
+    </div>
+    <p>At the next order, the start changes the variance as well. For $s\le t$, direct conditioning gives the exact
+    covariance</p>
+    $$\operatorname{Cov}_i(g_s,g_t)
+      =r e^{-\kappa(t-s)}+cd_i e^{-\kappa t}-d_i^2e^{-\kappa(s+t)},$$
+    <p>and therefore</p>
+    $$\kappa\operatorname{Var}_i(W_T)=2rA_h+\frac{V_{1,i}}\kappa+O(\kappa^{-2}),
+      \qquad
+      V_{1,i}=-r(1+e^{2hT})+e^{2hT}(2cd_i-d_i^2).$$
+    <p>Expanding the binary identity $g^2=r+cg$ in the fixed-start ordered fourth cumulant shows that every boundary
+    monomial contains $e^{-\kappa(t_1+u+v+z)}$ as a factor. Its weighted simplex integral is therefore
+    $O(\kappa^{-4})$, so the $\kappa^{-3}$ bulk coefficient remains $24r(1-5r)A_{4,h}$. Put</p>
+    $$L_{1,i}(s)=is d_i e^{hT}-is^3rcA_{3,h},$$
+    $$E_{2,i}(s)=-\frac{s^2V_{1,i}}2+r(1-5r)A_{4,h}s^4+\frac12L_{1,i}(s)^2.$$
+    <p>The complete known-start second correction is then</p>
+    <div class="equation-card">
+    $$\mathbb E_i e^{is\sqrt\kappa(W_T-pR(0))}
+      =e^{-rA_hs^2}\left\{1+\frac{L_{1,i}(s)}{\sqrt\kappa}
+      +\frac{E_{2,i}(s)}\kappa+O(\kappa^{-3/2})\right\}.$$
+    </div>
+    <p>If the clock is instead centered at its exact conditional mean $\mathbb E_iW_T$, the $is d_i e^{hT}$ term
+    is deleted from $L_{1,i}$ and its square, but the start-dependent $V_{1,i}$ remains. Both statements are
+    pointwise in fixed $s,T,h,p,q$;
+    neither is a frequency-uniform or Berry&ndash;Esseen bound. The eigenvalue-versus-boundary-amplitude interpretation
+    is placed against the primary first-order Markov Edgeworth framework of
+    <a href="https://doi.org/10.24033/bsmf.2594">Herv&eacute; and P&egrave;ne (2010)</a>; the weighted two-state
+    coefficients displayed here are derived directly.</p>
+    <h3>Several loadings: a joint clock limit</h3>
+    <p>The same calculation gives cross-loading dependence, rather than only one marginal clock. Let
+    $w_1,\ldots,w_m$ be bounded piecewise $C^2$ deterministic loadings on $[0,T]$, with finitely many breakpoints,
+    and define</p>
+    $$W_j^{(\kappa)}=\int_0^T w_j(t)\mathbf1_{\{y_t=1\}}dt,\qquad
+      m_j=p\int_0^T w_j(t)dt.$$
+    <p>For either specified initial regime, Cram&eacute;r&ndash;Wold and the two-state Poisson equation give the joint limit</p>
+    <div class="equation-card">
+    $$\sqrt\kappa\bigl(W^{(\kappa)}-m\bigr)\Longrightarrow N(0,\Sigma),\qquad
+      \Sigma_{jk}=2pq\int_0^T w_j(t)w_k(t)dt.$$
+    </div>
+    <p>This is a Gram matrix: its rank is exactly the dimension of the span of the loadings in $L^2[0,T]$.
+    In fact, this is not merely a limiting-rank statement. For every finite $\kappa>0$, every $T>0$, and either a
+    specified or stationary initial regime,</p>
+    <div class="equation-card">
+    $$\ker\operatorname{Cov}(W^{(\kappa)})
+      =\left\{\theta:\sum_j\theta_jw_j=0\ \text{a.e. on }[0,T]\right\}.$$
+    </div>
+    <p>One inclusion is immediate. For the converse, if $f=\sum_j\theta_jw_j$ is not zero a.e., its absolutely
+    continuous primitive $F(t)=\int_0^t f(s)ds$ is nonconstant. Conditional on exactly one jump, the jump time has
+    a strictly positive density on $(0,T)$ and the projected clock is $F(\tau)$ from state 1, or
+    $F(T)-F(\tau)$ from state 2. Its conditional variance is therefore positive, and so is its unconditional
+    variance. Thus finite switching neither creates nor destroys covariance directions: the exact covariance and
+    its fast-switching Gram limit have the same nullspace. This rank is created by integrating <em>different
+    deterministic loadings</em>; it is not a claim that a fixed-parameter Green&ndash;Kubo matrix acquires extra rank.</p>
+    <p>The same one-jump argument gives a quantitative, computable lower bound. Write the loading vector as
+    $w(t)=(w_1(t),\ldots,w_m(t))^\top$, put</p>
+    $$F(t)=\int_0^tw(s)ds,\qquad
+      \bar F=\frac1T\int_0^TF(t)dt,\qquad
+      H_F=\int_0^T(F(t)-\bar F)(F(t)-\bar F)^\top dt,$$
+    <p>and let the two jump rates be $a$ and $b$, with initial law $\nu=(\nu_1,\nu_2)$. The two exactly-one-jump
+    path densities and clock values are</p>
+    $$\rho_1(t)=\nu_1a e^{-at-b(T-t)},\quad x_1(t)=F(t),\qquad
+      \rho_2(t)=\nu_2b e^{-bt-a(T-t)},\quad x_2(t)=F(T)-F(t).$$
+    <p>Let $M_1=\int_0^T(\rho_1+\rho_2)$,
+      $\bar x=M_1^{-1}\sum_{s=1}^2\int_0^T\rho_s(t)x_s(t)dt$, and define the one-jump scatter</p>
+    $$J_\nu=\sum_{s=1}^2\int_0^T\rho_s(t)
+      (x_s(t)-\bar x)(x_s(t)-\bar x)^\top dt.$$
+    <p>Then the following Loewner inequalities hold at every finite rate:</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}_\nu(W)\succeq J_\nu\succeq
+      \eta_\nu H_F,\qquad
+      \eta_\nu=e^{-\max(a,b)T}(\nu_1a+\nu_2b).$$
+    </div>
+    <p>The first inequality is total covariance split by the event of exactly one jump: $J_\nu$ is that event's
+      probability times its conditional covariance. For the second, each $\rho_s$ is bounded below by its
+      coefficient times $e^{-\max(a,b)T}$; minimizing the resulting quadratic form over its centering constant
+      gives $H_F$ for both $F(t)$ and $F(T)-F(t)$. Moreover,
+      $\ker H_F=\{\theta:\theta^\top w=0\text{ a.e.}\}$, so this also proves the rank theorem and supplies an
+      explicit lower bound for every identifiable direction. The elementary $\eta_\nu H_F$ bound can become very
+      conservative when exactly-one-jump paths are rare; $J_\nu$ is the sharper computable certificate.</p>
+    <p>For $a=1.7$, $b=0.4$, the stationary initial law, and loadings
+      $e^{0.8(T-t)}$ and $e^{-0.7(T-t)}$, the weakest eigenvalues of the exact covariance, $J_\nu$, and
+      $\eta_\nu H_F$ are respectively $0.002272262$, $0.001768855$, and $0.000152092$.
+      Thus the one-jump matrix has $77.85\%$ of the exact covariance's smallest eigenvalue in this example.</p>
+    <p>The first joint non-Gaussian term is explicit as well. For a fixed Fourier vector $\theta$, put
+    $w_\theta=\sum_j\theta_jw_j$, $r=pq$, $c=q-p$, and $d_1=q,d_2=-p$. Then</p>
+    <div class="equation-card">
+    $$\mathbb E_i\exp\!\left(i\sqrt\kappa\,\theta^\top(W^{(\kappa)}-m)\right)
+      =e^{-r\int_0^T w_\theta^2}
+      \left[1+\frac{i d_iw_\theta(0)-irc\int_0^T w_\theta^3}{\sqrt\kappa}
+      +O(\kappa^{-1})\right].$$
+    </div>
+    <p>The mean-memory term $i d_iw_\theta(0)$ vanishes when each component is centered at its exact conditional
+    mean; the cubic bulk term remains. To see the coefficients, use the exact fixed-start covariance displayed above:
+    after multiplication by $\kappa$, its stationary term is an approximate identity and the two initial-corner
+    terms vanish. The ordered three-time cumulant has the same bulk term as the scalar clock with $w$ replaced by
+    $w_\theta$; all fixed-start remainders occupy an initial corner of volume $O(\kappa^{-3})$.
+    Finite-dimensional Feynman&ndash;Kac perturbation controls the remaining cumulants. The expansion is pointwise for
+    fixed $\theta,T$ and fixed loadings, not uniform in a growing Fourier ball.</p>
+    <p>The joint expansion also continues through second order, including loadings with finitely many value jumps.
+    For a fixed $\theta$, let $t_a$ run over the interior breakpoints of $w_\theta$ and write</p>
+    $$A_{\ell,\theta}=\int_0^T w_\theta(t)^\ell dt,\qquad
+      u_0=w_\theta(0+),\qquad u_T=w_\theta(T-),\qquad
+      \Delta_a=w_\theta(t_a+)-w_\theta(t_a-),$$
+    $$V_{1,i}(\theta)=-r\left(u_0^2+u_T^2+\sum_a\Delta_a^2\right)
+      +u_0^2(2cd_i-d_i^2),$$
+    $$L_{1,i}(\theta)=id_i u_0-ircA_{3,\theta},\qquad
+      E_{2,i}(\theta)=-\frac{V_{1,i}(\theta)}2+r(1-5r)A_{4,\theta}
+      +\frac12L_{1,i}(\theta)^2.$$
+    <p>Then the complete fixed-frequency correction is</p>
+    <div class="equation-card">
+    $$\mathbb E_i\exp\!\left(i\sqrt\kappa\,\theta^\top(W^{(\kappa)}-m)\right)
+      =e^{-rA_{2,\theta}}
+      \left\{1+\frac{L_{1,i}(\theta)}{\sqrt\kappa}
+      +\frac{E_{2,i}(\theta)}\kappa+O(\kappa^{-3/2})\right\}.$$
+    </div>
+    <p>For a stationary initial law set $d_i=0$. With exact conditional-mean centering, delete $id_i u_0$ from
+    $L_{1,i}$ and from its square, while retaining $V_{1,i}$. The endpoint coefficient follows directly from</p>
+    $$\operatorname{Var}_\pi(\theta^\top W)=2r\int_0^T e^{-\kappa u}
+      \int_0^{T-u}w_\theta(s)w_\theta(s+u)\,ds\,du.$$
+    <p>The inner integral has value $A_{2,\theta}$ and right derivative</p>
+    $$-\frac12\left(u_0^2+u_T^2+\sum_a\Delta_a^2\right).$$
+    <p>Indeed, smooth integration on either side of a breakpoint and the width-$u$ strip that crosses it combine to
+    $-\Delta_a^2/2$: only the jump size, not the two levels separately, remains. The two fixed-start covariance corners add
+    $u_0^2(2cd_i-d_i^2)$ to the coefficient. The diagonal three- and four-point layers give, respectively,
+    $6rcA_{3,\theta}$ and $24r(1-5r)A_{4,\theta}$ after their natural scaling; exponentiating adds
+    $L_{1,i}^2/2$. Thus a jump always decreases the order-$\kappa^{-2}$ variance coefficient by
+    $r\Delta_a^2$; its sign cannot depend on the direction of the jump. As before, the result is pointwise in fixed
+    $\theta,T$ and fixed piecewise-$C^2$ loadings with finitely many breakpoints, not a uniform Fourier-domain
+    error bound.</p>
+    <p>The same result has a useful matrix form. Write $w(t)=(w_1(t),\ldots,w_m(t))^\top$,
+    $w_0=w(0+)$, $w_T=w(T-)$, and $\Delta_a=w(t_a+)-w(t_a-)$. Then</p>
+    $$\kappa\operatorname{Cov}_i(W^{(\kappa)})
+      =2r\int_0^T w(t)w(t)^\top dt+\frac{\mathcal V_{1,i}}\kappa+O(\kappa^{-2}),$$
+    $$\mathcal V_{1,i}=-r\left(w_0w_0^\top+w_Tw_T^\top
+      +\sum_a\Delta_a\Delta_a^\top\right)
+      +(2cd_i-d_i^2)w_0w_0^\top.$$
+    <p>This follows by applying the scalar identity to every projection and polarizing. The pure interface term
+    $-r\sum_a\Delta_a\Delta_a^\top$ is negative semidefinite, and its rank is exactly the dimension of the span of
+    the jump vectors. This is a rank statement about a second-order boundary/interface coefficient. It is neither
+    the rank of the leading loading Gram matrix nor the rank of a fixed-parameter Green&ndash;Kubo matrix.</p>
+    <p>A two-loading certificate uses $w_1(t)=e^{0.032(T-t)}$ and
+    $w_2(t)=e^{-0.018(T-t)}$. An independent bivariate polynomial Feynman&ndash;Kac hierarchy gives maximum errors in
+    $\kappa\operatorname{Cov}(W)-\Sigma$ of
+    $2.06,1.03,0.515,0.258,0.129$ times $10^{-2}$ for
+    $\kappa=40,80,160,320,640$, with order one. Across three non-axis Fourier directions and both starts, the maximum
+    residual after the displayed first correction falls from $4.38\times10^{-2}$ to $1.06\times10^{-2}$, with
+    halving orders tending to $1/2$. After subtracting the joint second correction, the scaled residual falls from
+    $6.55\times10^{-2}$ to $1.59\times10^{-2}$ with the same half-order behavior. Independently, the maximum error
+    in the projected variance endpoint coefficient falls from $2.20\times10^{-4}$ to $1.38\times10^{-5}$ with
+    order one. A separate one-jump loading, evaluated by exact constant-matrix exponentials rather than a smoothed
+    ODE, gives second-correction residuals
+    $1.289\times10^{-1},8.944\times10^{-2},6.265\times10^{-2},4.410\times10^{-2},3.111\times10^{-2}$,
+    again with half-order convergence; the terminal error in the new jump-adjusted variance coefficient is
+    $2.4\times10^{-10}$. Omitting the interface term leaves an asymptotic coefficient miss of $0.145600000$,
+    exactly $pq\Delta^2$ for the certificate's jump. A two-loading, two-jump certificate uses non-collinear jump
+    vectors. Its interface-penalty eigenvalues are $0.175626851$ and $0.438623149$, hence rank two; the spectral-norm
+    error in the full covariance coefficient is $1.8\times10^{-10}$ at $\kappa=640$. Adding
+    a separate pair $w_1(t)=e^{0.8(T-t)}$, $w_2(t)=e^{-0.7(T-t)}$, and
+    $w_3=1.7w_1-0.4w_2$ gives an exact null direction $(-1.7,0.4,1)$ at every finite rate. Across both starts and
+    $\kappa=40,80,160,320,640$, the largest scaled null residual is below $5.1\times10^{-16}$, while the smallest
+    nonzero eigenvalue of $\kappa\operatorname{Cov}(W_1,W_2,W_3)$ stays above $0.042$, numerically certifying exact
+    rank two rather than only asymptotic rank two.</p>
+    <p>Thus the $O(\kappa^{-1})$ bound survives nonzero carry, even though the exact atom-plus-Bessel price does not.
+    For $r=5\%$, $q=1\%$ ($h=0.032$), direct nested numerical integration recovers the moment formulas within
+    $7\times10^{-16}$. The price benchmark is the independent clock-moment ODE. Degree-48 and degree-56 derivative
+    estimates agree to $10^{-7}$ and are rounded upward to $M_1=2.58$, $M_2=0.87$ for this illustrative plug-in
+    table. An independent complex Feynman&ndash;Kac calculation checks the weighted-clock Gaussian limit on 17
+    frequencies: for $\kappa=20,40,80,160,320,640$, the maximum characteristic-function errors are
+    $5.76,3.80,2.59,1.80,1.26,0.889$ times $10^{-2}$, with successive orders tending to $1/2$. After subtracting
+    the stationary first correction, the maximum scaled residual on $s=0.5,1,1.5$ falls from $3.20\times10^{-2}$ at
+    $\kappa=40$ to $7.72\times10^{-3}$ at $\kappa=640$. For the two specified starts, subtracting the new mean-plus-skew
+    correction reduces the corresponding residual from $4.45\times10^{-2}$ to $1.06\times10^{-2}$. The exact
+    ordered-simplex cumulant formula agrees with an independent moment hierarchy within $7.4\times10^{-16}$, and that
+    hierarchy drives the maximum error in $\kappa^2\operatorname{Cum}_3(W_T)$ from
+    $4.20\times10^{-2}$ to $2.63\times10^{-3}$. The characteristic residuals have half-order convergence and the
+    cumulant error has first-order convergence. For the new stationary second correction, the scaled characteristic
+    residual falls from $1.12\times10^{-2}$ at $\kappa=40$ to $2.67\times10^{-3}$ at $\kappa=640$. The exact
+    four-point simplex integral and independent degree-four moment hierarchy agree within $4.7\times10^{-16}$;
+    the error in the scaled fourth-cumulant limit falls from $4.36\times10^{-2}$ to $2.72\times10^{-3}$ with order
+    one, and the terminal variance-coefficient error is $7.5\times10^{-7}$. For the two fixed starts, the new
+    stationary-clock second-correction residual falls from $7.87\times10^{-2}$ to $1.90\times10^{-2}$; after exact
+    conditional-mean centering it falls from $5.15\times10^{-2}$ to $1.22\times10^{-2}$. Both have the predicted
+    half-order residual. At $\kappa=640$, the maximum start-specific variance- and fourth-cumulant-coefficient errors
+    are $4.74\times10^{-5}$ and $5.15\times10^{-3}$:</p>
+''' + table([r'$\kappa$', 'start', r'$\operatorname{Var}(W_T)$', 'mean clock', 'stationary clock'], weighted_rows) + r'''
 
     <h2>Reduction to a linear system</h2>
     <p>All that is needed about the regime is the law of $V$, and its Laplace transform is a reduced system of the
@@ -852,7 +1453,7 @@ def instruments_page():
     $\partial_Ta(T) = (Q + \operatorname{diag} g(T))\,a(T)$.</p>
 
     <h2>Options on bonds, swaptions and caps</h2>
-    <p>Under a Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
+    <p>Under a one-factor Gaussian short rate the bond at the option&apos;s expiry $T$, for maturity $S$, seen from regime $j$, is
     $A_j\,e^{-b\,x_T}$ with $A_j = a_j(S - T)$ and $b = B(S - T)$. The call pays $(A_je^{-bx_T} - K)^+$, which is positive
     when $x_T < x_j^* = \log(A_j/K)/b$: one exercise boundary per regime. Its value is a sum over the regime at
     expiry of two terms of the form</p>
@@ -862,7 +1463,7 @@ def instruments_page():
     terminal exponent changes the coefficient of the state from $B$ to
     $B_c(t) = c\,e^{-\kappa t} + (1 - e^{-\kappa t})/\kappa$ and leaves the form of the forcing alone. The derivation,
     and the closed forms, are on the <a href="./bond-options.html">bond options</a> page.</p>
-    <p>A coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
+    <p>In the same one-factor model, a coupon bond $\sum_k c_k\,A_{kj}\,e^{-b_kx}$ is decreasing in $x$ in every regime, so
     <a href="./bibliography.html#Jamshidian1989">Jamshidian&apos;s decomposition</a> holds regime by regime. In regime $j$
     there is one $x_j^*$ at which the coupon bond equals the strike, and the option on the coupon bond is the sum of
     options on its zero-coupon parts with strikes $K_{kj} = A_{kj}e^{-b_kx_j^*}$:</p>
@@ -875,9 +1476,215 @@ def instruments_page():
         struck at $1/(1 + \tau_kK)$ and expiring at $t_{k-1}$;</li>
       <li>under <a href="./hull-white.html">Hull&ndash;White</a> the deterministic shift scales each cash flow by
         $e^{-\int\varphi}$ and the rest is unchanged;</li>
-      <li>under <a href="./g2.html">G2++</a> a zero-coupon bond depends on the factors through the single Gaussian variable
-        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor.</li>
+      <li>under <a href="./g2.html">G2++</a> a single zero-coupon bond still depends on one Gaussian linear combination,
+        so its option remains one-dimensional; this does not extend to a coupon bond.</li>
     </ul>
+    <h3>Why G2++ swaptions are not Jamshidian decompositions</h3>
+    <p>At expiry, a cash flow with residual maturity $\tau_k$ has loading vector</p>
+    $$b_k = \big(B_a(\tau_k), B_b(\tau_k)\big), \qquad
+      B_c(\tau) = \frac{1-e^{-c\tau}}{c}.$$
+    <p>Thus the regime-$j$ coupon bond is
+    $C_j(x,z)=\sum_k c_kA_{kj}\exp(-b_k\cdot(x,z))$. An exact pathwise decomposition of Jamshidian&apos;s kind exists
+    exactly when all active nonzero $b_k$ lie on one positive ray. For standard positive G2++ bond loadings this is
+    equivalent to collinearity. For two distinct residual maturities it fails when $a\ne b$, because</p>
+    $$R(\tau)=\frac{B_a(\tau)}{B_b(\tau)}, \qquad
+      \frac{d}{d\tau}\log R(\tau)=\frac{a}{e^{a\tau}-1}-\frac{b}{e^{b\tau}-1},$$
+    <p>and $c/(e^{c\tau}-1)$ is strictly decreasing in $c>0$. With the G2++ parameters on this site,
+    $a=0.5$, $b=0.1$, and residual maturities one and four years,</p>
+    $$\det(b_1,b_2)=0.94870454.$$
+    <p>The exercise boundary is therefore curved rather than a Gaussian half-space. For two unit cash flows struck at
+    two, the boundary through the origin has</p>
+    $$z''(0)=\frac{2\det(b_1,b_2)^2}{(B_b(1)+B_b(4))^3}=0.02347513.$$
+    <p>G2++ coupon-bond options and swaptions consequently require a two-dimensional Gaussian integral, or conditioning
+    on one factor and solving the monotone boundary in the other. The one-factor decomposition above remains valid for
+    Vasicek and Hull&ndash;White, while zero-coupon bond options and caplets remain one-dimensional under G2++.</p>
+    <h3>The exact positive-ray criterion</h3>
+    <p>The distinction between rank one and common orientation is essential. At any boundary point $x^*$ write</p>
+    $$P_k(x)=K_k\exp[-b_k^\top(x-x^*)],\qquad
+      K=\sum_kw_kK_k,\qquad w_k,K_k&gt;0.$$
+    <p>Then the receiver identity</p>
+    $$\left(\sum_kw_k(P_k(x)-K_k)\right)^+
+      =\sum_kw_k(P_k(x)-K_k)^+\quad\hbox{for every }x$$
+    <p>(and equivalently the payer identity with every difference reversed) holds if and only if all active nonzero
+      loading vectors have the form $b_k=\beta_kb$ for one $b\ne0$ and scalars $\beta_k&gt;0$. Zero loadings are
+      harmless constant cash flows. Thus a nominally multifactor Gaussian model can still admit Jamshidian&apos;s
+      pathwise decomposition when the particular coupon-date loadings occupy one positive ray; conversely, matrix
+      rank one alone is insufficient if some loadings point in opposite directions.</p>
+    <p>The proof is algebraic. For real numbers $a_k$,</p>
+    $$\left(\sum_ka_k\right)^+\leq\sum_ka_k^+,$$
+    <p>with equality exactly when the nonzero $a_k$ have one sign. Here
+      $\operatorname{sgn}(P_k(x)-K_k)=\operatorname{sgn}[-b_k^\top(x-x^*)]$. Positive-ray loadings therefore give
+      a common sign for every $x$. If two nonzero loadings are not positive multiples, there is a displacement $h$
+      with $b_i^\top h&gt;0&gt;b_j^\top h$; at $x^*+h$ those two component differences have opposite signs, so
+      cancellation makes the displayed inequality strict. This proves necessity as well as sufficiency.</p>
+    <p>This criterion is strictly stronger than the convex-hull condition below. The latter asks only for one direction
+      along which every cash flow is monotone and yields exact conditional quadrature; it does not align all exercise
+      half-spaces and therefore does not produce a sum of component options. In the numerical certificate, positive-ray
+      loadings satisfy both receiver and payer identities to $2\times10^{-15}$, while the non-collinear G2++ pair has
+      projections $(1/2,-1/2)$ at an explicit witness and a decomposition gap
+      $1-e^{-1/2}=0.393469340287$. Oppositely oriented rank-one loadings have the same strict gap.</p>
+    <h3>An exact one-dimensional G2++ price</h3>
+    <p>The curved boundary does not require two-dimensional numerical quadrature. In ordinary fixed-parameter G2++,
+      work under the $T$-forward measure and write $(X,Z)$ for the bivariate Gaussian factors at option expiry. Put
+      $w_k=c_kA_k&gt;0$, $p_k=B_a(\tau_k)$ and $q_k=B_b(\tau_k)$. For every fixed $x$,</p>
+    $$C(x,z)=\sum_kw_k e^{-p_kx-q_kz}$$
+    <p>decreases continuously from infinity to zero as $z$ increases, so there is a unique root
+      $z=\zeta(x)$ of $C(x,z)=K$. If $Z\mid X=x\sim N(m(x),s^2)$, Gaussian exponential tilting gives the exact receiver
+      forward value</p>
+    $$\int \phi_X(x)\left[\sum_k w_k e^{-p_kx-q_km(x)+q_k^2s^2/2}
+      \Phi\!\left({\zeta(x)-m(x)+q_ks^2\over s}\right)
+      -K\Phi\!\left({\zeta(x)-m(x)\over s}\right)\right]dx.$$
+    <p>The reduction is not special to two factors or to a coordinate chosen in advance. Let the cash-flow loading
+      vectors be $b_k\in\mathbb R^d$. There is a direction $u$ with $b_k^\top u&gt;0$ for every $k$ exactly when</p>
+    $$0\notin\operatorname{conv}\{b_1,\ldots,b_n\}.$$
+    <p>Indeed, strict separation of the compact finite convex hull from the origin supplies such a $u$; conversely,
+      taking the inner product with a convex combination rules out the origin. Complete $u$ to an orthonormal frame
+      and write the Gaussian factor as $Vy+uz$. Then $p_k=V^\top b_k$ and $q_k=u^\top b_k&gt;0$.
+      Conditional Gaussian regression gives $Z\mid Y=y\sim N(m(y),s^2)$ with affine $m$ and constant
+      $s^2$. For each $y$, the equation
+      $\sum_kw_k\exp(-p_k^\top y-q_kz)=K$ has one root $z=\zeta(y)$, and the same displayed tilted-normal formula,
+      with $p_kx$ replaced by $p_k^\top y$, integrates out $Z$ exactly. A $d$-factor coupon option is therefore
+      reduced to a $(d-1)$-dimensional Gaussian integral exactly when the loading hull excludes the origin. The
+      conditioning direction may be oblique: requiring one of the original coordinates to have positive loadings is
+      only a sufficient special case. If the origin lies in the hull, no direction makes the coupon globally strictly
+      monotone in this way; this obstruction concerns this root-based reduction, not every conceivable pricing
+      algorithm.</p>
+    <h3>The unique max-margin conditioning direction</h3>
+    <p>The hull criterion is constructive. Let $C=\operatorname{conv}\{b_1,\ldots,b_n\}$ and let
+      $x_*=\operatorname*{argmin}_{x\in C}\|x\|$. If $0\notin C$, put $\delta=\|x_*\|$ and
+      $u_*=x_*/\delta$. Then</p>
+    $$\max_{\|u\|=1}\min_k b_k^\top u=\delta,$$
+    <p>and $u_*$ is the unique maximizer. The projection theorem gives
+      $(x-x_*)^\top x_*\geq0$ for every $x\in C$, hence
+      $b_k^\top u_*\geq\delta$. Equality holds for at least one active vertex because $x_*$ is a convex
+      combination of the $b_k$. Conversely, for any unit $u$,</p>
+    $$\min_k b_k^\top u=\min_{x\in C}u^\top x\leq u^\top x_*\leq\|x_*\|.$$
+    <p>Equality in the last step forces $u=u_*$. Thus the strict-separation margin is exactly the distance from the
+      origin to the loading hull, not merely a positive existence certificate. Computationally, solve the simplex
+      quadratic program</p>
+    $$\min_{\alpha_k\geq0,\ \sum_k\alpha_k=1}
+      \left\|\sum_k\alpha_kb_k\right\|^2,$$
+    <p>then normalize its image. This maximizes the worst cash-flow slope in the conditioned coordinate and avoids an
+      unnecessarily flat scalar root. The statement is Euclidean in the chosen factor coordinates. If the Gaussian
+      factor is written $X=\mu+LZ$ with $Z$ standard normal, it should be applied to the whitened loadings
+      $L^\top b_k$. It does not claim to minimize the remaining $(d-1)$-dimensional quadrature error. The minimum-norm
+      polytope formulation and its equivalence to an optimal separating hyperplane go back to
+      <a href="./bibliography.html#Wolfe1976">Wolfe (1976)</a>.</p>
+    <p>The boundary is a convex hypersurface. With
+      $d_k=w_k\exp(-p_k^\top y-q_k\zeta(y))$ and
+      $D=\sum_kd_kq_k$, implicit differentiation gives</p>
+    $$\nabla\zeta=-{\sum_kd_kp_k\over D},\qquad
+      \nabla^2\zeta={1\over D}\sum_kd_k
+      (p_k+q_k\nabla\zeta)(p_k+q_k\nabla\zeta)^\top\succeq0.$$
+    <p>If $r_k=p_k/q_k$, the Hessian rank is the affine-span dimension of the active ratio vectors $r_k$.
+      Consequently it is positive definite exactly when those ratios affinely span
+      $\mathbb R^{d-1}$. This is a local coupon-boundary rank statement under a fixed Gaussian expiry law; it is
+      unrelated to fixed-parameter Green&ndash;Kubo rank or to rank after integrating maturity loadings.</p>
+    <p>Multiplication by $P(0,T)$ gives the time-zero price; the payer follows by parity. For G2++ this is exact
+      one-dimensional quadrature, not a Jamshidian sum. The remaining numerical truncation has a closed-form
+      certificate. Write
+      $X=\mu_X+\sigma_X\xi$, where $\xi$ is standard normal, and let
+      $s^2=\sigma_Z^2(1-\rho^2)$ and $a_k=p_k\sigma_X+q_k\rho\sigma_Z$. If the receiver integral is restricted to
+      $|\xi|\le L$, positivity and $(C-K)^+\le C$ give</p>
+    $$0\le V-V_L\le\sum_k w_k
+      e^{-p_k\mu_X-q_k\mu_Z+q_k^2s^2/2+a_k^2/2}
+      \{\Phi(a_k-L)+\Phi(-a_k-L)\}.$$
+    <p>This is the exact exponentially tilted Gaussian tail of each cash flow, not an asymptotic estimate. The payer
+      tail is bounded more simply by $2K\Phi(-L)$. Both bounds are forward values; multiplication by $P(0,T)$ gives
+      time-zero bounds. Implicit differentiation also quantifies the geometry. With
+      $d_k=w_ke^{-p_kx-q_k\zeta(x)}$,</p>
+    $$\zeta'(x)=-{\sum_kd_kp_k\over\sum_kd_kq_k},\qquad
+      \zeta''(x)={\sum_kd_k(p_k+q_k\zeta'(x))^2\over\sum_kd_kq_k}\ge0.$$
+    <p>The inequality is strict exactly when the positive-cash-flow loading vectors are not collinear. Thus unequal
+      G2++ reversion speeds and at least two distinct payment maturities give a strictly convex boundary, while $a=b$
+      recovers the one-factor Jamshidian limit.</p>
+    <p>There is also an exact local variance identity. Set
+      $\alpha_k=d_kq_k/\sum_jd_jq_j$, $r_k=p_k/q_k$ and
+      $\bar r_\alpha=\sum_k\alpha_kr_k=-\zeta'(x)$. Then</p>
+    $$\zeta''(x)=\sum_k\alpha_kq_k(r_k-\bar r_\alpha)^2.$$
+    <p>Thus the boundary bends precisely where multiple loading directions remain relevant; its second derivative is
+      a positive weighted dispersion, not merely a sign calculation.</p>
+    <h3>The global boundary and its exact wings</h3>
+    <p>Convexity is global and the two wings are determined by different cash flows. Put
+      $r_k=p_k/q_k$, $r_{\min}=\min_kr_k$ and $r_{\max}=\max_kr_k$. Since</p>
+    $$-\zeta'(x)={\sum_kd_kq_kr_k\over\sum_kd_kq_k},$$
+    <p>the slope obeys
+      $-r_{\max}\leq\zeta'(x)\leq-r_{\min}$, strictly between the endpoints whenever the loading directions differ.
+      More precisely, if $I_R=\{k:r_k=r_{\min}\}$ and $I_L=\{k:r_k=r_{\max}\}$, let $c_R,c_L$ be the unique
+      solutions of</p>
+    $$\sum_{k\in I_R}w_ke^{-q_kc_R}=K,\qquad
+      \sum_{k\in I_L}w_ke^{-q_kc_L}=K.$$
+    <p>Then the exact asymptotes are</p>
+    $$\zeta(x)+r_{\min}x\longrightarrow c_R\quad(x\to+\infty),\qquad
+      \zeta(x)+r_{\max}x\longrightarrow c_L\quad(x\to-\infty).$$
+    <p>Combining these limiting slopes with convexity gives the exact global slope-turning identities. If
+      $\Gamma=\{(x,\zeta(x)):x\in\mathbb R\}$, then</p>
+    $$\int_{-\infty}^{\infty}\zeta''(x)\,dx=r_{\max}-r_{\min},\qquad
+      \int_{\Gamma}\kappa_{\rm geom}\,ds
+      =\arctan r_{\max}-\arctan r_{\min}.$$
+    <p>The second formula is the Euclidean turning angle of the graph. The distribution of bending depends on the
+      cash-flow weights and strike, but its total second-derivative mass and total turning angle depend only on the
+      two extreme loading directions.</p>
+    <p>To prove this, substitute $z=-r_{\min}x+c$ in $C(x,z)=K$. Terms outside $I_R$ acquire the factor
+      $\exp[-q_k(r_k-r_{\min})x]$ and vanish locally uniformly in $c$; the limiting left-hand side is continuous,
+      strictly decreasing and crosses $K$ once. Monotonicity therefore carries its root to $c_R$. The left wing is
+      identical after substituting $z=-r_{\max}x+c$ and sending $x$ to minus infinity.</p>
+    <p>If each extreme is unique, attained at $i_R$ and $i_L$, this also supplies convergence rates:</p>
+    $$\begin{aligned}
+      \zeta(x)&=-r_{\min}x+{1\over q_{i_R}}\log{w_{i_R}\over K}
+        +O(e^{-\delta_Rx}),
+        &\delta_R&=\min_{k\ne i_R}q_k(r_k-r_{\min}),\\
+      \zeta(x)&=-r_{\max}x+{1\over q_{i_L}}\log{w_{i_L}\over K}
+        +O(e^{-\delta_L|x|}),
+        &\delta_L&=\min_{k\ne i_L}q_k(r_{\max}-r_k).
+    \end{aligned}$$
+    <p>There is also an explicit finite-$x$ bound. Set
+      $A_R=\sum_{k\ne i_R}w_ke^{-q_kc_R}$ and $u_R(x)=(A_R/K)e^{-\delta_Rx}$. Whenever $x\ge0$ and $u_R(x)&lt;1$,</p>
+    $$0\leq \zeta(x)+r_{\min}x-c_R
+      \leq-{1\over q_{i_R}}\log(1-u_R(x)).$$
+    <p>The analogous left-wing bound has
+      $A_L=\sum_{k\ne i_L}w_ke^{-q_kc_L}$ and $u_L(x)=(A_L/K)e^{-\delta_L|x|}$ for $x\le0$.
+      Indeed the dominant term equals $K e^{-q_i\eta(x)}$ after subtracting the stated line. Positivity gives
+      $\eta\ge0$, and bounding every competing exponential by $e^{-\delta|x|}$ gives the displayed inequality.
+      For $a&gt;b$, the
+      ratio $B_a(\tau)/B_b(\tau)$ decreases with residual maturity. Hence the longest payment determines the right
+      wing and the shortest payment the left wing&mdash;a global obstruction to replacing the boundary by one
+      Gaussian half-space.</p>
+    <p>For the certificate above, $(r_{\min},c_R,\delta_R)=(0.524547948012,-0.119219437938,0.287765309607)$ and
+      $(r_{\max},c_L,\delta_L)=(0.826941287566,-1.181063053835,0.996930222634)$. Boundary roots at increasing
+      magnitudes recover exponential rates $0.287766603132$ and $0.996923880456$, respectively. At $x=20$ the
+      right-wing error is $3.496798408893\times10^{-4}$ against the rigorous bound
+      $3.497962883732\times10^{-4}$; at $x=-10$ the left-wing error is $1.622785325623\times10^{-3}$ against
+      $1.631497250470\times10^{-3}$. Direct curvature quadrature on $[-50,100]$ gives
+      $0.302393339554306$ against the exact extreme-ratio spread $0.302393339554316$.</p>
+    <p><a href="./bibliography.html#ChoiShin2016">Choi and Shin (2016)</a> likewise formulate exact pricing in
+      multi-factor Gaussian term-structure models by root-finding on the nonlinear boundary and integrating in the
+      remaining dimensions, alongside a tangent-hyperplane approximation. Here the two-factor monotonicity makes
+      the root unique for every conditioning value and the Gaussian tilting evaluates the other dimension exactly.
+      This direct Gaussian formula is narrower than the general affine approximations of
+      <a href="./bibliography.html#SchragerPelsser2006">Schrager and Pelsser (2006)</a>: it assumes a fixed-parameter
+      Gaussian expiry law. It is exact for standard G2++ and its averaged fast-switching limit, not for the full
+      finite-rate switching model.</p>
+    <p>For the two-cash-flow certificate, conditional quadrature gives $0.669351292291$ and independent nested Gaussian
+      quadrature gives the same value within $2.22\times10^{-16}$. In the $a=b$ limit it agrees with the scalar
+      Jamshidian price within $1.67\times10^{-16}$. Truncating the standardized conditioning factor to $[-6,6]$
+      changes the receiver value by less than $8.00\times10^{-9}$, inside the closed-form bound above. A separate
+      three-factor certificate uses three maturities and a genuinely two-dimensional boundary: its Hessian eigenvalues
+      are $5.14636\times10^{-5}$ and $3.65439\times10^{-2}$, the loading-ratio affine determinant is
+      $8.73332\times10^{-3}$, and centered finite differences agree with the Hessian identity within
+      $3.38\times10^{-9}$. The analytic conditional formula gives
+      $1.252075854512$ at both 28- and 36-point tensor Gauss&ndash;Hermite orders and agrees with independent adaptive
+      integration of the final Gaussian coordinate within $2.22\times10^{-16}$. An oblique certificate has loading
+      rows $(2,-0.4,-0.4)$ and their cyclic permutations, so every coordinate changes sign. Nevertheless
+      $u=(1,1,1)/\sqrt3$ strictly separates their convex hull from zero with margin $0.692820323028$.
+      The simplex quadratic program recovers barycentric weights $(1/3,1/3,1/3)$ and certifies that this direction is
+      the unique max-margin choice; the distinct direction proportional to $(1.2,1,1)$ has the smaller margin
+      $0.603863529939$. Across 24 nonsymmetric random loading hulls in dimensions two through five, the projection
+      inequalities and margin identity hold within $4\times10^{-15}$, and 24,000 sampled competing directions never
+      exceed the certified optimum.
+      Conditioning along this direction and along the distinct direction proportional to $(1.2,1,1)$ gives the same
+      price, $0.216109447065$, within $2.78\times10^{-16}$; independent adaptive integration of the final coordinate
+      agrees within $1.11\times10^{-16}$.</p>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding
     time, as computed by <a href="https://github.com/microprediction/regimelib/blob/main/papers/regimelib/verify_tables.py">regimelib</a>:</p>
@@ -979,7 +1786,9 @@ def instruments_page():
     using $QQ^\# = I - \mathbf 1\pi$ and $d\pi\,\mathbf 1 = 0$. The Green&ndash;Kubo matrix
     $K_{jk} = -\pi\cdot(\tilde f_j\odot Q^\#\tilde f_k)$ and the memory vector $m = Q^\#\tilde g$ then vary by the
     product rule.</p>
-    <p>Certificate: <a href="''' + SRC + r'''">model_pages2.py</a>. The instruments are implemented in
+    <p>Certificates: <a href="''' + SRC + r'''">model_pages2.py</a> and
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">verify_g2_coupon_geometry.py</a>.
+    The instruments are implemented in
     <a href="https://github.com/microprediction/regimelib">regimelib</a>.</p>
 '''
     write('instruments.html', 'Instruments', body)

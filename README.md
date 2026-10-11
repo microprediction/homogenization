@@ -32,8 +32,9 @@ papers/regime-switching-survival/
   verify_all_orders.py     orders 1 to 6 against a 30-digit numerical solution
   general_orders.py        any switching rates (unequal occupancy), all orders
   verify_general_orders.py symmetric reduction; orders 1 to 6 at p = 0.3
+  verify_thesis_errata.py  errata for the 2001 thesis: switching-rate convention, dynamic-mean kernel, Appendix B shift factors
 papers/thesis/
-  verify_dynamic_mean_erratum.py  corrected Chapter 3 kernel, equal/unequal-rate uniform log-ratio bounds and thesis-table checks
+  verify_dynamic_mean_erratum.py  corrected Chapter 3 kernel, uniform log-ratio bounds, all-order unequal-rate equilibrium series and thesis-table checks
 papers/fast-switching/
   fastswitch.py            the engine: any finite chain, all orders, exponential-sum or Chebyshev coefficients
   fastswitch_op.py         a general coupling operator (a continuous fast factor in the Hermite basis)
@@ -41,21 +42,25 @@ papers/fast-switching/
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
+  verify_g2_coupon_geometry.py  curved G2++ exercise boundary and exact conditional-Gaussian quadrature
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
   long_end.py              the long yield as a principal eigenvalue; its convergent series in the switching time
   verify_three_numbers.py  formula order, positive semidefiniteness, two-state equality, two matched chains, long end
-  verify_uniform_long_end.py  the composite with the exact eigenvalue: uniform in maturity, two-state proof, chain A checked
+  verify_uniform_long_end.py  uniform long-maturity, initial-slip, moving-generator, and Floquet phase/slip certificates
+  verify_identifiability.py exact covariance, fixed-feature/loading/Krylov rank, whitened noisy and robust minimax recovery, and finite-rate bounds
   make_data.py             writes docs/three-numbers.js for the yield-curve page
 papers/conformal/
   pooled.py                exact conditional laws of terminal, path-average and slow-state scores under a two-state chain
   verify_pooled_residuals.py  conditional coverage of the pooled threshold, calibration dependence, regime-aware thresholds
+  verify_path_crossover.py exact dependent path thresholds, posterior cancellation geometry, thinning, randomized-atom beta laws and PAC bounds
 papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
   verify_counts.py         factorial cumulants of a switched Poisson count equal the cumulants of the integrated rate
+  verify_count_cumulants.py  joint Cox-count identities, common shocks, law identification and minimax inverse bounds
 papers/layers/
   verify_layer.py          the two-state initial layer to second order with a forcing that does not vanish at the start
 papers/general/
@@ -64,8 +69,9 @@ papers/general/
 papers/smile/
   cycle_smile.py           Heston with switched level and vol-of-vol on a finite-difference grid; the first-order rule
   verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
+  verify_circle_factor.py  stationary reversal and sharp energy-normalized Green-Kubo bounds
 docs/                      the site (GitHub Pages from main /docs)
-tools/assemble.py          builds docs/*.html from tools/pages/ with one canonical header
+tools/assemble.py          builds docs/*.html from tools/pages/, including the identifiability note
 tools/biblio.json          the verified bibliography
 ```
 
