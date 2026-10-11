@@ -81,9 +81,24 @@ class TwoState:
     def kappa3_phase_first(self, T):
         return 1.5 * self.lam3 * T ** 4
 
-    def postfit_ms(self, T):
-        """First-order mean-square phase residual over [0, T] after a fitted quadratic: 2 K T^3 / 2520."""
-        return 2 * self.K * T ** 3 / 2520
+    @staticmethod
+    def postfit_gk_factor(degree=2):
+        """Green--Kubo residual factor after a continuous polynomial fit.
+
+        If phase is the integral of Brownian frequency noise and ``P_degree``
+        is uniformly weighted L2 projection on polynomials through ``degree``,
+        then E ||(I-P_degree) phase||^2 / T = 2*K*T^3 times this factor.
+        """
+        if not isinstance(degree, (int, np.integer)) or degree < 0:
+            raise ValueError("degree must be a nonnegative integer")
+        if degree == 0:
+            return 1 / 30
+        d = degree
+        return (d + 1) / (8 * (2 * d - 1) * (2 * d + 1) * (2 * d + 3) * (2 * d + 5))
+
+    def postfit_ms(self, T, degree=2):
+        """Green--Kubo mean-square phase residual after a fitted polynomial."""
+        return 2 * self.K * T ** 3 * self.postfit_gk_factor(degree)
 
     @staticmethod
     def _postfit_shape(x):
@@ -198,8 +213,8 @@ class TwoState:
         mean = self.phase_mean(times, initial_p1)
         return self.phase_second_moment(times, initial_p1) - np.outer(mean, mean)
 
-    def postfit_ms_sampled(self, times, weights=None, initial_p1=None, centered=False):
-        """Exact weighted residual power for sampled OLS on 1, t and t^2.
+    def postfit_ms_sampled(self, times, weights=None, initial_p1=None, centered=False, degree=2):
+        """Exact weighted residual power for sampled polynomial OLS.
 
         The returned objective is E[sum_i w_i r_i^2], with positive weights
         normalized to sum to one. Equal weights give the sampled mean square.
@@ -207,10 +222,12 @@ class TwoState:
         centered=True, which returns the conditional stochastic variance only.
         """
         times = np.asarray(times, float)
-        if times.ndim != 1 or len(times) < 3 or np.any(times < 0):
-            raise ValueError("at least three nonnegative sample times are required")
+        if not isinstance(degree, (int, np.integer)) or degree < 0:
+            raise ValueError("degree must be a nonnegative integer")
+        if times.ndim != 1 or len(times) < degree + 1 or np.any(times < 0):
+            raise ValueError("times must be nonnegative and outnumber the fitted coefficients")
         scale = max(float(np.max(times)), 1.0)
-        design = np.column_stack((np.ones_like(times), times / scale, (times / scale) ** 2))
+        design = np.vander(times / scale, N=degree + 1, increasing=True)
         if weights is None:
             weights = np.ones(len(times))
         weights = np.asarray(weights, float)
@@ -218,8 +235,8 @@ class TwoState:
             raise ValueError("weights must be positive and match times")
         weights = weights / weights.sum()
         gram = design.T @ (weights[:, None] * design)
-        if np.linalg.matrix_rank(gram) < 3:
-            raise ValueError("the quadratic timing design is rank deficient")
+        if np.linalg.matrix_rank(gram) < degree + 1:
+            raise ValueError("the polynomial timing design is rank deficient")
         hat = design @ np.linalg.solve(gram, design.T * weights)
         second = (self.phase_covariance(times, initial_p1) if centered
                   else self.phase_second_moment(times, initial_p1))

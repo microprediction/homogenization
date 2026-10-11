@@ -141,6 +141,23 @@ def postfit_covariance_quadrature(m, T):
     return c0 * T ** 4 * val
 
 
+def integrated_brownian_postfit_quadrature(degrees, n):
+    """Independent Gauss--Legendre trace calculation for unit integrated Brownian motion."""
+    z, weights = np.polynomial.legendre.leggauss(n)
+    times, weights = (z + 1) / 2, weights / 2
+    u, v = np.minimum.outer(times, times), np.maximum.outer(times, times)
+    covariance = u ** 2 * (3 * v - u) / 6
+    values = []
+    for degree in degrees:
+        # This basis spans the monomials but avoids their poor conditioning.
+        design = np.polynomial.legendre.legvander(z, degree)
+        gram = design.T @ (weights[:, None] * design)
+        hat = design @ np.linalg.solve(gram, design.T * weights)
+        values.append(float(weights @ np.diag(covariance)
+                            - np.sum(weights[:, None] * hat * covariance.T)))
+    return np.asarray(values)
+
+
 def arbitrary_start_phase_quadrature(m, u, v, initial_p1):
     """Independent semigroup quadrature of E Phi(u), E Phi(v), and E[Phi(u)Phi(v)]."""
     u, v = min(float(u), float(v)), max(float(u), float(v))
@@ -282,6 +299,28 @@ def main():
     ok &= abs(rows[-1][4] - asym) < 3e-9
     out['postfit_exact'] = rows
 
+    print("   all-degree Green--Kubo polynomial-fit theorem")
+    degrees = np.arange(13)
+    factors = np.array([m.postfit_gk_factor(int(d)) for d in degrees])
+    # The kernel is piecewise cubic across the diagonal.  Nested Gauss rules
+    # have fourth-order error, so Richardson extrapolation is an independent
+    # numerical certificate for the closed Legendre-tail formula.
+    coarse = integrated_brownian_postfit_quadrature(degrees, 200)
+    fine = integrated_brownian_postfit_quadrature(degrees, 400)
+    extrapolated = fine + (fine - coarse) / 15
+    factor_error = np.max(np.abs(extrapolated / factors - 1))
+    print(f"     degrees 0--12, max Richardson trace relative error {factor_error:.2e}; "
+          f"quadratic factor {factors[2]:.12g}, degree-12 factor {factors[-1]:.12g}")
+    ok &= factor_error < 2e-9 and abs(factors[2] - 1 / 2520) < 1e-18
+    try:
+        m.postfit_gk_factor(-1)
+        ok = False
+    except ValueError:
+        pass
+    out['postfit_polynomial'] = dict(degrees=degrees.tolist(), factors=factors.tolist(),
+                                     trace_extrapolated=extrapolated.tolist(),
+                                     max_relative_error=float(factor_error))
+
     print("   sampled-design trace theorem")
     dense = []
     continuous = m.postfit_ms_exact(100.0)
@@ -291,6 +330,10 @@ def main():
         print(f"     uniform n {n:3d}: sampled {val:.8e}, relative continuous error {val/continuous-1:+.6e}")
     orders = [math.log(abs(dense[i - 1][2] / dense[i][2]), 2) for i in range(2, len(dense))]
     ok &= min(orders[-3:]) > 0.95
+    degree_grid = np.linspace(0, 100.0, 65)
+    sampled_degrees = [m.postfit_ms_sampled(degree_grid, degree=d) for d in range(7)]
+    print("     exact sampled degrees 0--6: " + ", ".join(f"{v:.6e}" for v in sampled_degrees))
+    ok &= all(sampled_degrees[d + 1] < sampled_degrees[d] for d in range(6))
     irregular = 100 * np.array([0, .03, .08, .15, .27, .40, .58, .73, .86, .95, 1.0])
     iw = np.linspace(.7, 1.4, len(irregular))
     exact_irregular = m.postfit_ms_sampled(irregular, iw)
@@ -303,7 +346,8 @@ def main():
     ok &= eigmin > -1e-10
     out['postfit_sampled'] = dict(dense=dense, dense_orders=orders, irregular_times=irregular.tolist(),
                                   irregular_weights=iw.tolist(), exact=exact_irregular,
-                                  mc=float(mc_irregular.mean()), mc_se=float(se_irregular), cov_min_eig=float(eigmin))
+                                  mc=float(mc_irregular.mean()), mc_se=float(se_irregular), cov_min_eig=float(eigmin),
+                                  degrees_0_to_6=sampled_degrees)
 
     print("8. arbitrary-start phase covariance and post-fit entry layer")
     start_rows, quadrature_errors = [], []
