@@ -68,6 +68,8 @@ papers/smile/
   cycle_smile.py           Heston with switched level and vol-of-vol on a finite-difference grid; the first-order rule
   verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
   verify_circle_factor.py  stationary reversal and sharp energy-normalized Green-Kubo bounds
+papers/credit/
+  verify_cir_geometry.py   positive CIR names: exact integrated-rank criteria and joint survival
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/, including the identifiability note
 tools/biblio.json          the verified bibliography
