@@ -3021,6 +3021,125 @@ def frozen_layer_long_end_obstruction(m: float = 64.0) -> dict[str, float]:
     }
 
 
+def transported_floquet_layer_certificate(m: float = 64.0) -> dict[str, float]:
+    """Certify the exact all-maturity complementary Floquet layer.
+
+    Scaling the monodromy by its Perron multiplier gives ``G = Pi + C``,
+    where ``Pi`` is the Perron projection and ``C`` acts on its complement.
+    Periodicity then transports ``C**k`` through the final partial period.
+    Unlike the locally frozen full matrix, this representation is exact and
+    its complementary part has spectral radius below one.
+    """
+    payoff = np.array([1.35, 0.72, 1.08])
+    bond = np.ones(3)
+    prior = np.array([0.8, 0.1, 0.1])
+    stationary = stationary_row(periodic_three_state_generator(0.0))
+
+    def matrix(time: float) -> np.ndarray:
+        return (
+            m * periodic_three_state_generator(time)
+            + periodic_three_state_forcing(time)
+        )
+
+    def matrix_rhs(time: float, state: np.ndarray) -> np.ndarray:
+        return (matrix(time) @ state.reshape(3, -1)).ravel()
+
+    partial_times = PERIOD * np.array([0.0, 0.17, 0.61, 0.93, 1.0])
+    fundamental = solve_ivp(
+        matrix_rhs,
+        (0.0, PERIOD),
+        np.eye(3).ravel(),
+        t_eval=partial_times,
+        method="DOP853",
+        rtol=2e-12,
+        atol=2e-14,
+    )
+    assert fundamental.success
+    partial_evolutions = fundamental.y.T.reshape(-1, 3, 3)
+    monodromy = partial_evolutions[-1]
+    values, left, right = eig(monodromy, left=True, right=True)
+    index = int(np.argmax(values.real))
+    assert abs(values[index].imag) < 2e-11
+    multiplier = float(values[index].real)
+    right_vector = right[:, index].real
+    left_vector = left[:, index].real
+    if stationary @ right_vector < 0:
+        right_vector *= -1
+        left_vector *= -1
+    right_vector /= stationary @ right_vector
+    left_vector /= left_vector @ right_vector
+    exponent = float(np.log(multiplier) / PERIOD)
+
+    projection = np.outer(right_vector, left_vector)
+    scaled_monodromy = monodromy / multiplier
+    complement = scaled_monodromy @ (np.eye(3) - projection)
+    complement_radius = float(np.max(np.abs(np.linalg.eigvals(complement))))
+    assert complement_radius < 1.0
+    assert np.max(np.abs(scaled_monodromy - projection - complement)) < 3e-14
+    assert np.max(np.abs(projection @ complement)) < 3e-13
+    assert np.max(np.abs(complement @ projection)) < 3e-13
+
+    maximum_vector_error = 0.0
+    minimum_observed_bracket = np.inf
+    for data in (bond, payoff):
+        coefficient = float(left_vector @ data)
+        complementary_datum = data - coefficient * right_vector
+        assert abs(left_vector @ complementary_datum) < 3e-12
+        for period_count in (0, 1, 5, 29, 43, 80):
+            complement_power = np.linalg.matrix_power(
+                complement, period_count
+            )
+            monodromy_power = np.linalg.matrix_power(
+                scaled_monodromy, period_count
+            )
+            for relative_time, evolution in zip(
+                partial_times[:-1], partial_evolutions[:-1]
+            ):
+                partial = np.exp(-exponent * relative_time) * evolution
+                direct = partial @ (monodromy_power @ data)
+                transported = partial @ (
+                    coefficient * right_vector
+                    + complement_power @ complementary_datum
+                )
+                maximum_vector_error = max(
+                    maximum_vector_error,
+                    float(np.max(np.abs(direct - transported))),
+                )
+                minimum_observed_bracket = min(
+                    minimum_observed_bracket, float(prior @ transported)
+                )
+
+    obstruction = frozen_layer_long_end_obstruction(m)
+
+    def crossing_bracket(data: np.ndarray, period_count: int) -> float:
+        coefficient = float(left_vector @ data)
+        complementary_datum = data - coefficient * right_vector
+        transported = (
+            coefficient * right_vector
+            + np.linalg.matrix_power(complement, period_count)
+            @ complementary_datum
+        )
+        return float(prior @ transported)
+
+    bond_period = int(round(obstruction["bond_right"] / PERIOD))
+    payoff_period = int(round(obstruction["payoff_right"] / PERIOD))
+    bond_bracket = crossing_bracket(bond, bond_period)
+    payoff_bracket = crossing_bracket(payoff, payoff_period)
+    assert maximum_vector_error < 2e-12
+    assert minimum_observed_bracket > 0.0
+    assert obstruction["bond_value"] < 0.0 < bond_bracket
+    assert obstruction["payoff_value"] < 0.0 < payoff_bracket
+    return {
+        "complement_radius": complement_radius,
+        "maximum_vector_error": maximum_vector_error,
+        "minimum_observed_bracket": float(minimum_observed_bracket),
+        "bond_bracket": bond_bracket,
+        "payoff_bracket": payoff_bracket,
+        "bond_period": float(bond_period),
+        "payoff_period": float(payoff_period),
+    }
+
+
 def check_regime_dependent_payoff_layer() -> None:
     """Sharp frozen-layer orders for a nonconstant positive payoff."""
     speeds = (8.0, 16.0, 32.0, 64.0, 128.0)
@@ -3077,6 +3196,16 @@ def check_regime_dependent_payoff_layer() -> None:
         f"({obstruction['bond_left']:.6f}, {obstruction['bond_right']:.6f}); "
         "payoff zero bracket "
         f"({obstruction['payoff_left']:.6f}, {obstruction['payoff_right']:.6f})"
+    )
+    transported = transported_floquet_layer_certificate()
+    print(
+        "exact transported Floquet layer at m=64: complementary radius "
+        f"{transported['complement_radius']:.9e}; maximum vector identity "
+        f"error {transported['maximum_vector_error']:.3e}; positive brackets "
+        f"at {transported['bond_period']:.0f}P and "
+        f"{transported['payoff_period']:.0f}P: "
+        f"{transported['bond_bracket']:.9e}, "
+        f"{transported['payoff_bracket']:.9e}"
     )
 
 
@@ -3686,7 +3815,10 @@ def main() -> None:
     print("Moving-generator periodic phase-and-slip theorem: passed")
     print("Finite-chain bounded-horizon frozen-layer theorem: passed")
     print("Phase-uniform bounded-horizon Floquet theorem: passed")
-    print("Regime-dependent payoff boundary-layer orders and long-end obstruction: passed")
+    print(
+        "Regime-dependent payoff boundary-layer orders, long-end obstruction, "
+        "and exact transported layer: passed"
+    )
 
 
 if __name__ == "__main__":

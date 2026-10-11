@@ -876,6 +876,39 @@
       estimates. A genuinely all-maturity matched layer must use the transported nonautonomous complementary
       bundle (or an explicitly stable surrogate), not the exponential of one locally frozen full matrix.</p>
 
+    <h4>The exact transported repair uses only one-period data</h4>
+    <p>The stable replacement is explicit. Fix a start phase $s$, let
+      $\Pi_{m,s}=v_{m,s}w_{m,s}^{\top}$, and normalize the monodromy on the principal Floquet scale:</p>
+    $$G_{m,s}=e^{-\lambda_mP}F_{m,s},\qquad
+      C_{m,s}=G_{m,s}(I-\Pi_{m,s})=G_{m,s}-\Pi_{m,s}.$$
+    <p>The identities $G_{m,s}\Pi_{m,s}=\Pi_{m,s}G_{m,s}=\Pi_{m,s}$ show that $C_{m,s}$ is the exact
+      complementary monodromy. For $T=kP+\tau$, where $k\in\mathbb N_0$ and $0\leq\tau&lt;P$, define</p>
+    $$b^{\rm tr}_{m,s}(T;x)=e^{-\lambda_m\tau}U_m(s+\tau,s)
+      C_{m,s}^{k}z_{m,s}(x).$$
+    <div class="equation-card">
+    <p><strong>Exact transported-layer identity.</strong> For every vector $x$ and every $T\geq0$,</p>
+    $$e^{-\lambda_mT}U_m(s+T,s)x
+      =c_{m,s}(x)r_{m,s}(T)+b^{\rm tr}_{m,s}(T;x).$$
+    <p>Consequently, for a positive payoff and probability row $\nu$,</p>
+    $$\log\{\nu U_m(s+T,s)x\}=\lambda_mT+
+      \log\{c_{m,s}(x)\nu r_{m,s}(T)+\nu b^{\rm tr}_{m,s}(T;x)\}$$
+    <p>exactly, with a strictly positive logarithmic bracket.</p>
+    </div>
+    <p>Indeed, periodicity factors the normalized evolution as
+      $e^{-\lambda_mT}U_m(s+T,s)=e^{-\lambda_m\tau}U_m(s+\tau,s)G_{m,s}^k$,
+      while $G_{m,s}^kx=c_{m,s}(x)v_{m,s}+C_{m,s}^kz_{m,s}(x)$. Positivity and
+      irreducibility make the Perron multiplier simple and give $\rho(C_{m,s})&lt;1$; under the uniform fast-gap
+      hypotheses its powers obey the same uniform complementary decay as the nonautonomous dichotomy. Thus this
+      is an exact all-maturity representation, not a new asymptotic error claim. It requires the one-period
+      monodromy and only the final within-period propagator, so it avoids both long-horizon integration and the
+      unstable local-Perron leakage of the frozen full matrix. The locally frozen layer remains the simpler
+      analytic approximation on fixed bounded horizons.</p>
+    <p>At $m=64$ the three-state certificate finds $\rho(C_{m,0})=6.15\times10^{-17}$ and checks the vector
+      identity at six period counts through $80P$ and four non-integer phases with maximum discrepancy
+      $1.74\times10^{-14}$. At the very maturities where the frozen brackets have become negative, the exact
+      transported brackets are $0.999925971$ at $43P$ for the bond and $1.055504121$ at $29P$ for the
+      regime-dependent payoff.</p>
+
     <p>The certificate uses $x=(1.35,0.72,1.08)$ and $\nu=(0.8,0.1,0.1)$. It compares the moving
       three-state chain with the defective fixed-generator control and maximizes over two periods.</p>
     <div class="table-wrap">
