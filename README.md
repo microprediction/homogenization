@@ -58,7 +58,7 @@ papers/layers/
   verify_layer.py          the two-state initial layer to second order with a forcing that does not vanish at the start
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
-  verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit
+  verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit, two-channel race
 papers/smile/
   cycle_smile.py           Heston with switched level and vol-of-vol on a finite-difference grid; the first-order rule
   verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
