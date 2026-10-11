@@ -15,6 +15,9 @@
    loading directions can nevertheless raise rank above every fixed-maturity rank.  A nonreversible example
    checks quantitative coercivity: the integrated Green-Kubo eigenvalues and condition number are controlled by
    the ordinary maturity-integrated loading Gram and the symmetric resolvent spectrum.
+5. D-optimal maturity design: the Kiefer sensitivity certificate is checked for the exact two-state loading
+   family H(tau)=z(1,tau).  Equal endpoint mass is globally optimal on [0,1], has determinant 1/16, and improves
+   the determinant by a factor three over uniform maturity averaging.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -394,6 +397,59 @@ def main():
         upper_loewner_slack=upper_slack.tolist(),
         quantitative_condition=quantitative_condition,
         condition_bound=condition_bound,
+    )
+
+    # D-optimal maturity design for the exact two-state rank-one family
+    # G(tau)=K(z,z) [1,tau]^T[1,tau].  The general equivalence theorem says
+    # that a positive-definite design Gbar is D-optimal precisely when
+    # tr(Gbar^{-1}G(tau)) <= p everywhere, with equality at support points.
+    print("5. D-optimal maturity design")
+    endpoint_design = 0.5 * contrast_k * (
+        np.outer([1.0, 0.0], [1.0, 0.0])
+        + np.outer([1.0, 1.0], [1.0, 1.0])
+    )
+    endpoint_det = float(np.linalg.det(endpoint_design))
+    endpoint_inv = np.linalg.inv(endpoint_design)
+    design_grid = np.linspace(0.0, 1.0, 10001)
+    sensitivity = np.array([
+        np.trace(
+            endpoint_inv
+            @ (contrast_k * np.outer([1.0, maturity], [1.0, maturity]))
+        )
+        for maturity in design_grid
+    ])
+    max_sensitivity = float(np.max(sensitivity))
+    support_sensitivity = [float(sensitivity[0]), float(sensitivity[-1])]
+    uniform_det = float(np.linalg.det(integrated))
+    determinant_gain = endpoint_det / uniform_det
+    sensitivity_formula_error = float(np.max(np.abs(
+        sensitivity - (2.0 - 4.0 * design_grid * (1.0 - design_grid))
+    )))
+    print(
+        f"      endpoint determinant {endpoint_det:.12f}; uniform determinant {uniform_det:.12f}; "
+        f"gain {determinant_gain:.12f}"
+    )
+    print(
+        f"      max sensitivity {max_sensitivity:.12f}; support values "
+        f"{support_sensitivity[0]:.12f}, {support_sensitivity[1]:.12f}"
+    )
+    ok &= abs(endpoint_det - 1.0 / 16.0) < 2e-15
+    ok &= abs(uniform_det - 1.0 / 48.0) < 2e-15
+    ok &= abs(determinant_gain - 3.0) < 2e-14
+    ok &= max_sensitivity <= 2.0 + 2e-14
+    ok &= max(abs(value - 2.0) for value in support_sensitivity) < 2e-14
+    ok &= sensitivity_formula_error < 2e-14
+    out['d_optimal_maturity'] = dict(
+        parameter_dimension=2,
+        support=[0.0, 1.0],
+        weights=[0.5, 0.5],
+        information_matrix=endpoint_design.tolist(),
+        determinant=endpoint_det,
+        uniform_determinant=uniform_det,
+        determinant_gain_over_uniform=determinant_gain,
+        maximum_sensitivity=max_sensitivity,
+        support_sensitivity=support_sensitivity,
+        sensitivity_formula_error=sensitivity_formula_error,
     )
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)

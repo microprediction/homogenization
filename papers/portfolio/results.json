@@ -545,5 +545,35 @@
   ],
   "quantitative_condition": 25.978267020673396,
   "condition_bound": 34.50072562325479
+ },
+ "d_optimal_maturity": {
+  "parameter_dimension": 2,
+  "support": [
+   0.0,
+   1.0
+  ],
+  "weights": [
+   0.5,
+   0.5
+  ],
+  "information_matrix": [
+   [
+    0.5,
+    0.25
+   ],
+   [
+    0.25,
+    0.25
+   ]
+  ],
+  "determinant": 0.0625,
+  "uniform_determinant": 0.020833333333333356,
+  "determinant_gain_over_uniform": 2.999999999999997,
+  "maximum_sensitivity": 2.0,
+  "support_sensitivity": [
+   2.0,
+   2.0
+  ],
+  "sensitivity_formula_error": 4.440892098500626e-16
  }
 }

@@ -356,6 +356,40 @@
       $(0.02023073,0.52555920)$; both Loewner inequalities hold with positive numerical slack. The observed
       condition number is $25.97827$, below the certified bound $34.50073$.</p>
 
+    <h3>D-optimal maturity design</h3>
+    <p>Rank restoration leaves a design question: which maturities should receive weight? Let the maturity set
+      $\mathcal T$ be compact, let the pointwise symmetric Green&ndash;Kubo matrices $G(\tau)\succeq0$ vary
+      continuously, and let $\nu$ range over probability measures on $\mathcal T$. Write</p>
+    $$M(\nu)=\int_{\mathcal T}G(\tau)\,\nu(d\tau).$$
+    <p>Assume at least one design has $M(\nu)\succ0$, and let $p$ be the coefficient dimension. Then a
+      $D$-optimal design maximizing $\log\det M(\nu)$ exists. A positive-definite design $\nu_*$ is optimal if
+      and only if its sensitivity obeys</p>
+    <div class="equation-card">
+    $$s_*(\tau)=\operatorname{tr}\{M(\nu_*)^{-1}G(\tau)\}\le p
+      \quad\text{for every }\tau\in\mathcal T.$$
+    </div>
+    <p>Moreover $s_*(\tau)=p$ for $\nu_*$-almost every support point, and some optimal design is supported on at
+      most $p(p+1)/2$ maturities. The proof is short. Moving an infinitesimal amount of mass toward $\tau$ has
+      directional derivative $s_*(\tau)-p$; concavity of $\log\det$ makes the resulting inequalities both necessary
+      and sufficient. Their integral under $\nu_*$ is zero, so equality holds on its support. The supported
+      information matrices lie in one affine hyperplane of the $p(p+1)/2$-dimensional symmetric-matrix space;
+      Carath&eacute;odory&apos;s theorem then gives the stated finite support.</p>
+    <p>This is the Green&ndash;Kubo maturity-design specialization of
+      <a href="https://doi.org/10.1214/aos/1176342810">Kiefer&apos;s general equivalence theory</a>. It optimizes the
+      <em>integrated</em> information matrix and does not change the fixed-maturity rank theorem.</p>
+    <p>The two-state example above is exactly solvable. Since
+      $G(\tau)=\tfrac12(1,\tau)^\top(1,\tau)$ on $0\le\tau\le1$, equal mass at the two endpoints gives</p>
+    $$M_*=
+      \begin{pmatrix}1/2&amp;1/4\\1/4&amp;1/4\end{pmatrix},\qquad
+      \det M_*=\frac1{16},$$
+    <p>and</p>
+    $$s_*(\tau)=2-4\tau(1-\tau)\le2,$$
+    <p>with equality exactly at $0$ and $1$. This is therefore globally optimal. Uniform maturity averaging has
+      determinant $1/48$, so the endpoint design triples determinant information. Equivalently,
+      $\det M(\nu)=\operatorname{Var}_{\nu}(\tau)/4$, and the endpoint law attains the sharp variance bound
+      $1/4$ on $[0,1]$. The certificate evaluates the sensitivity on 10,001 maturities and reproduces every constant
+      to machine precision.</p>
+
     <h2>Worked example</h2>
     <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are
     2.78 in the bull market and &minus;0.30 in the bear market: leveraged long, then short. The Green&ndash;Kubo number is</p>
