@@ -5,6 +5,28 @@ import numpy as np
 from explicit import I_k, J_1, J_2, cir_B, cir_int_B, cir_int_B2, two_state_constant_exact
 from fastswitch import FastSwitch, numerical_a_callable
 from models import cir_switching_mean, vasicek_jumps, mmpp, bs_switching
+from verify_count_cumulants import (bivariate_count_mixed_cumulants,
+                                    bivariate_factorial_cumulant_grid,
+                                    count_cumulants,
+                                    common_shock_factorial_cumulant,
+                                    common_shock_factorial_cumulants22,
+                                    finite_cumulant_twins,
+                                    finite_atomic_jacobian_certificate,
+                                    finite_atomic_prony_certificate,
+                                    integrated_intensity_cumulants,
+                                    integrated_intensity_mixed_cumulants,
+                                    mark_factorial_moments,
+                                    marked_common_shock_factorial_cumulant,
+                                    mixed_factorial_cumulants22,
+                                    mixed_poisson_hankel_certificate,
+                                    poisson_inverse_instability,
+                                    poisson_mixture_w1_inverse_modulus,
+                                    poisson_mixture_w1_moment_upper,
+                                    poisson_mixture_w1_nonparametric_lower,
+                                    poisson_mixture_w1_local_minimax,
+                                    poisson_point_mass_w1_upper,
+                                    stationary_time_reversal_count_certificate,
+                                    ordered_window_reversal_certificate)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'pages', 'explicit')
 sym = lambda lam: lam * np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -259,6 +281,18 @@ def black_scholes():
 
 
 def counts():
+    hankel = mixed_poisson_hankel_certificate()
+    twins = finite_cumulant_twins()
+    atomic = finite_atomic_prony_certificate()
+    atomic_jacobian = finite_atomic_jacobian_certificate()
+    instability = poisson_inverse_instability()
+    w1_minimax = poisson_mixture_w1_local_minimax()
+    w1_point_mass = poisson_point_mass_w1_upper()
+    w1_nonparametric = poisson_mixture_w1_nonparametric_lower()
+    w1_moment_upper = poisson_mixture_w1_moment_upper()
+    w1_inverse_modulus = poisson_mixture_w1_inverse_modulus()
+    reversal = stationary_time_reversal_count_certificate()
+    ordered = ordered_window_reversal_certificate()
     ell, T, lam = [8.0, 1.0], 1.0, 10.0
     lb, lt, eps = np.mean(ell), (ell[0] - ell[1]) / 2, 1 / lam
     L = 1 - math.exp(-2 * lam * T)
@@ -271,7 +305,57 @@ def counts():
     var_ex = sum(k * k * p for k, p in enumerate(p_exact)) - mean_ex ** 2
     mean_1 = lb * T + eps / 2 * lt * L
     var_1 = lb * T + eps * lt * lt * T + eps / 2 * lt * L
-    var_2 = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    var_exact = var_1 - eps ** 2 * lt * lt * (L / 2 + L * L / 4)
+    Q = sym(lam)
+    count_kappa, _ = count_cumulants(Q, ell, T, [1.0, 0.0])
+    factorial_kappa = integrated_intensity_cumulants(Q, ell, T, [1.0, 0.0])
+    Q3 = np.array([[-3.0, 2.0, 1.0], [1.0, -4.0, 3.0], [2.0, 1.0, -3.0]])
+    rates_a = np.array([0.5, 3.0, 6.0])
+    rates_b = np.array([4.0, 0.75, 2.5])
+    prior3 = np.array([0.2, 0.5, 0.3])
+    mixed_count, _ = bivariate_count_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    mixed_factorial = mixed_factorial_cumulants22(mixed_count)
+    mixed_intensity = integrated_intensity_mixed_cumulants(Q3, rates_a, rates_b, 1.3, prior3)
+    common_rates = np.array([0.4, 1.2, 0.7])
+    common_count, common_distribution = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=80,
+        common_rates=common_rates)
+    common_factorial = mixed_factorial_cumulants22(common_count)
+    common_predicted = common_shock_factorial_cumulants22(
+        Q3, rates_a, rates_b, common_rates, 1.3, prior3)
+    common_factorial_33 = bivariate_factorial_cumulant_grid(
+        common_distribution, degree=3)[2, 2]
+    common_predicted_33 = common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, 3, 3, 1.3, prior3)
+    common_marks = np.array([
+        [1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [1, 3]])
+    common_mark_probabilities = np.array([0.25, 0.20, 0.20, 0.15, 0.10, 0.10])
+    mark_moments = mark_factorial_moments(
+        common_marks, common_mark_probabilities, degree=3)
+    _, marked_distribution = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=110,
+        common_rates=common_rates, common_marks=common_marks,
+        common_mark_probabilities=common_mark_probabilities)
+    marked_factorial_33 = bivariate_factorial_cumulant_grid(
+        marked_distribution, degree=3)[2, 2]
+    marked_predicted_33 = marked_common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, mark_moments, 3, 3, 1.3, prior3)
+    state_mark_probabilities = np.array([
+        [0.35, 0.20, 0.15, 0.10, 0.10, 0.10],
+        [0.10, 0.25, 0.25, 0.20, 0.10, 0.10],
+        [0.15, 0.10, 0.20, 0.15, 0.20, 0.20],
+    ])
+    state_mark_moments = mark_factorial_moments(
+        common_marks, state_mark_probabilities, degree=3)
+    _, state_marked_distribution = bivariate_count_mixed_cumulants(
+        Q3, rates_a, rates_b, 1.3, prior3, max_count=110,
+        common_rates=common_rates, common_marks=common_marks,
+        common_mark_probabilities=state_mark_probabilities)
+    state_marked_grid = bivariate_factorial_cumulant_grid(
+        state_marked_distribution, degree=3)
+    state_marked_predicted_33 = marked_common_shock_factorial_cumulant(
+        Q3, rates_a, rates_b, common_rates, state_mark_moments,
+        3, 3, 1.3, prior3)
     html = r'''
     <h2>The generating function in closed form</h2>
     <p>The forcing $g_i = (z - 1)\ell_i$ is constant, so the generating function is exact:</p>
@@ -292,14 +376,664 @@ def counts():
       - \varepsilon^2\,\tilde\ell^{\,2}\Big(\frac L2 + \frac{L^2}{4}\Big) .$$
     <p>At fixed $T &gt; 0$ the first term leads. It is the Green&ndash;Kubo overdispersion. The second term is the memory
     of the starting regime, and at horizons short against $1/\lambda$ it nearly cancels the first.</p>
-    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_2 - mean_1:.5f}' + r''',
+    <p>At $\ell = (8, 1)$, $T = 1$, $\lambda = 10$ and a start in the busy regime the excess is ''' + f'{var_exact - mean_1:.5f}' + r''',
     against ''' + f'{eps * lt * lt * T:.5f}' + r''' from the first term alone:</p>
-''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_2:.5f}', f'{var_ex:.5f}']],
+''' + table([['mean', f'{mean_1:.5f}', f'{mean_1:.5f}', f'{mean_ex:.5f}'], ['variance', f'{var_1:.5f}', f'{var_exact:.5f}', f'{var_ex:.5f}']],
             head=('', 'first order', 'second order (exact)', 'numerical')) + r'''    <p>The numerical column evaluates the generating function at the 64 roots of unity, as described above, and the
     distribution itself follows the same way. A Monte Carlo check over 400,000 regime paths, sampled exactly from
     exponential holding times, gives each path a Poisson law for the count. It agrees with the moments and with
     every probability up to $k = 15$ within two standard errors. Certificate:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>.</p>
+    <h2>Factorial cumulants remove Poisson noise</h2>
+    <p>The preceding identity extends to every order and any stochastic intensity whose transform is finite near the
+    origin. Define the factorial cumulant generating function by</p>
+    $$H_N(t)=\log\mathbb E[(1+t)^{N_T}].$$
+    <p>Conditional Poisson sampling gives the exact identity</p>
+    $$H_N(t)=\log\mathbb E[e^{t\Lambda_T}].$$
+    <p>Therefore the $r$th factorial cumulant of $N_T$ is the ordinary $r$th cumulant of $\Lambda_T$. In particular,</p>
+    $$\begin{aligned}
+      \kappa_2^{(F)}(N_T)&=\kappa_2(N_T)-\kappa_1(N_T),\\
+      \kappa_3^{(F)}(N_T)&=\kappa_3(N_T)-3\kappa_2(N_T)+2\kappa_1(N_T),\\
+      \kappa_4^{(F)}(N_T)&=\kappa_4(N_T)-6\kappa_3(N_T)+11\kappa_2(N_T)-6\kappa_1(N_T).
+    \end{aligned}$$
+    <p>Beyond the mean, these combinations strip out Poisson shot noise and leave only fluctuations of the integrated
+    rate. For several counts that are conditionally independent given cumulative intensities $\Lambda_1,\ldots,\Lambda_d$,
+    the joint identity is</p>
+    $$\log\mathbb E\!\left[\prod_{j=1}^d(1+t_j)^{N_j}\right]
+      =\log\mathbb E\!\left[e^{\sum_jt_j\Lambda_j}\right].$$
+    <p>Thus mixed factorial cumulants identify the joint cumulants of the integrated rates exactly. For two streams,
+    writing $\kappa_{rs}$ for the ordinary joint cumulant with $r$ copies of $N_1$ and $s$ copies of $N_2$, the
+    signed-Stirling conversion through bidegree $(2,2)$ is</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa_{11},&
+      \kappa^{(F)}_{21}&=\kappa_{21}-\kappa_{11},\\
+      \kappa^{(F)}_{12}&=\kappa_{12}-\kappa_{11},&
+      \kappa^{(F)}_{22}&=\kappa_{22}-\kappa_{21}-\kappa_{12}+\kappa_{11}.
+    \end{aligned}$$
+    <p>The transform is applied separately in each coordinate. Conditional independence is essential; without it,
+      shared-event shot noise is not removed.</p>
+''' + table([[str(k + 1), f'{count_kappa[k]:.8f}', f'{factorial_kappa[k]:.8f}'] for k in range(4)],
+            head=('order', 'ordinary count cumulant', 'factorial / intensity cumulant')) + r'''
+''' + table([[label, f'{ordinary:.8f}', f'{factorial:.8f}', f'{intensity:.8f}']
+             for label, ordinary, factorial, intensity in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 mixed_count, mixed_factorial, mixed_intensity)],
+            head=('mixed order', 'ordinary count', 'factorial count', 'integrated intensities')) + r'''
+    <h3>What the count law identifies</h3>
+    <p>At the level of the entire distribution there is a stronger, moment-free result. For a Cox count with
+      nonnegative integrated intensity $\Lambda$,</p>
+    $$G_N(z)=\mathbb E[z^N]=\mathbb E[e^{-(1-z)\Lambda}]
+      =\mathcal L_{\Lambda}(1-z),\qquad 0\le z\le1.$$
+    <p>Hence the full count law determines the Laplace transform of $\Lambda$ on $[0,1]$. Two count laws can agree
+      only if the corresponding Laplace transforms agree on $(0,1)$; analyticity on the positive half-plane and
+      uniqueness of Laplace transforms then imply equality of the mixing laws. Thus the mixed-Poisson family is
+      identifiable, with no moment-determinacy assumption. This is the Poisson-mixture case of
+      <a href="./bibliography.html#Teicher1961">Teicher&apos;s identifiability theorem</a>.</p>
+    <h3>What it does not identify: the arrow of latent time</h3>
+    <p>Identifying the law of $\Lambda_T$ is not the same as identifying the hidden generator. Let $Y$ be an
+      irreducible finite-state chain with row generator $Q$, stationary law $\pi$, and
+      $\Pi=\operatorname{diag}(\pi)$. Its stationary time reversal has generator</p>
+    $$Q^\leftarrow=\Pi^{-1}Q^\top\Pi.$$
+    <p>For state rates $\ell_i\ge0$, put $D=\operatorname{diag}(\ell)$ and
+      $\Lambda_T=\int_0^T\ell_{Y_s}\,ds$. Reversing a path preserves every occupation time, so under a stationary
+      start $Q$ and $Q^\leftarrow$ give exactly the same law of $\Lambda_T$ and hence exactly the same Cox count
+      law for every $T$. This is a genuine non-identification whenever $Q\ne Q^\leftarrow$; the underlying
+      time-reversal construction is classical, going back to
+      <a href="https://doi.org/10.1017/S0027763000011405">Nagasawa (1964)</a>.</p>
+    <p>The endpoint-resolved Feynman&ndash;Kac matrices make both the theorem and its boundary explicit. Define</p>
+    $$K_Q(T,z)=\exp\{T[Q+(z-1)D]\},\qquad
+      [K_Q(T,z)]_{ij}=\mathbb E_i[z^{N_T}\mathbf1\{Y_T=j\}].$$
+    <p>Because $D$ commutes with $\Pi$,</p>
+    <div class="equation-card">
+    $$K_{Q^\leftarrow}(T,z)=\Pi^{-1}K_Q(T,z)^\top\Pi,
+      \qquad
+      [K_{Q^\leftarrow}]_{ij}={\pi_j\over\pi_i}[K_Q]_{ji}.$$
+    </div>
+    <p>Multiplication on the left by $\pi$ and on the right by $\mathbf1$ erases this weighted transpose, proving</p>
+    $$\pi K_{Q^\leftarrow}(T,z)\mathbf1=\pi K_Q(T,z)\mathbf1.$$
+    <p>The same proof covers several conditionally independent count streams by replacing $(z-1)D$ with a sum
+      of diagonal state-rate potentials. It also covers state-dependent compound-Poisson marks by using their
+      diagonal probability-generating exponents. Thus neither additional terminal count coordinates nor arbitrary
+      contemporaneous state marks recover the arrow of time if all observations remain occupation based.</p>
+    <p>The stationarity and aggregation qualifications are essential. With a known start $i$, the transform is
+      $e_i^\top K_Q\mathbf1$, which generally differs after reversal. Recording the terminal state also retains the
+      weighted-transpose relation above, and ordered event-time or path data can retain temporal direction. The
+      theorem concerns terminal occupation-based counts, not those richer experiments.</p>
+    <h3>Ordered windows recover the arrow of time</h3>
+    <p>A minimal enrichment already breaks that non-identification. Let $N_a^-$ count stream $a$ on $[0,A]$ and
+      $N_b^+$ count stream $b$ on $[A+\Delta,A+\Delta+B]$, where stream $a$ has state rate $\ell^{(a)}$.
+      Write $F_{ia}=\ell_i^{(a)}-\pi\ell^{(a)}$, $P_t=e^{tQ}$ and
+      $H_T(Q)=\int_0^T P_s\,ds$. Conditional Poisson increments on disjoint windows are independent, so there is
+      no shot-noise term across the boundary and the entire early/late covariance matrix is exactly</p>
+    <div class="equation-card">
+    $$C_{A,B,\Delta}(Q)=\operatorname{Cov}(N^-,N^+)
+      =F^\top\Pi H_A(Q)e^{\Delta Q}H_B(Q)F.$$
+    </div>
+    <p>Since $e^{tQ^\leftarrow}=\Pi^{-1}e^{tQ^\top}\Pi$, time reversal transposes this matrix:</p>
+    $$C_{A,B,\Delta}(Q^\leftarrow)=C_{A,B,\Delta}(Q)^\top.$$
+    <p>Thus the antisymmetric part is an exact arrow-of-time statistic. It vanishes for reversible chains, but it
+      need not vanish for irreversible ones. This conclusion uses ordered, stream-labelled windows; summing the
+      windows returns to the occupation-only experiment and loses the direction. This is a finite-window,
+      time-domain counterpart of the second-order point-process analysis initiated by
+      <a href="https://doi.org/10.1111/j.2517-6161.1963.tb00508.x">Bartlett (1963)</a>.</p>
+    <p>The fast-switching scale is a boundary effect. Put $Q_m=mQ_0$, take adjacent fixed windows
+      $A,B&gt;0$, and let $R=-Q_0^\#$ be the zero-mean potential operator. Then</p>
+    $$m^2 C_{A,B,0}(Q_m)\longrightarrow F^\top\Pi R^2F.$$
+    <p>More generally, for a microscopic gap $\Delta=\delta/m$ the middle factor survives and the limit is
+      $F^\top\Pi R e^{\delta Q_0}RF$; for a fixed positive gap the covariance instead decays exponentially.
+      This $m^{-2}$ ordered-boundary signal is distinct from the $m^{-1}$ Green&ndash;Kubo variance accumulated
+      inside one macroscopic window.</p>
+    <p>For the four-state irreversible certificate with $A=0.7$ and $B=1.1$, the off-diagonal antisymmetric signal
+      is ''' + f'{ordered["antisymmetric_signal"]:.12f}' + r'''. Reversal agrees with the transpose to
+      ''' + f'{ordered["transpose_error"]:.1e}' + r'''; an independent mixed derivative of the sequential count PGF
+      agrees with the semigroup covariance to ''' + f'{ordered["pgf_error"]:.1e}' + r'''. At $m=40$, the scaled
+      covariance is within ''' + f'{ordered["fast_limit_error"]:.1e}' + r''' of $F^\top\Pi R^2F$.</p>
+    <p>The certificate uses a nonreversible four-state generator whose maximum entrywise difference from its reverse
+      is ''' + f'{reversal["generator_gap"]:.12f}' + r'''. Across four PGF arguments, stationary transforms agree
+      within ''' + f'{reversal["stationary_pgf_error"]:.1e}' + r''' and the weighted endpoint identity within
+      ''' + f'{reversal["endpoint_transpose_error"]:.1e}' + r'''. An independent count-resolved master equation
+      agrees within ''' + f'{reversal["count_pmf_error"]:.1e}' + r''', with omitted mass below
+      ''' + f'{reversal["tail_bound"]:.1e}' + r'''. In contrast, a known start in state 1 gives count-law total
+      variation ''' + f'{reversal["fixed_start_total_variation"]:.12f}' + r'''.</p>
+    <h3>Which count laws are mixed Poisson?</h3>
+    <p>Injectivity answers uniqueness after a mixed-Poisson representation is known to exist. Existence itself has
+      an exact test. Let $p_n=\Pr\{N=n\}$ and $q_n=n!p_n$. Then $N$ is mixed Poisson if and only if, for every
+      $r\ge0$, both Hankel matrices</p>
+    $$H_r^{(0)}=(q_{i+j})_{i,j=0}^r,\qquad
+      H_r^{(1)}=(q_{i+j+1})_{i,j=0}^r$$
+    <p>are positive semidefinite. This is precisely the classical
+      <a href="./bibliography.html#Stieltjes1894">Stieltjes moment criterion</a>; its connection with mixed Poisson
+      laws and factorial moments is also discussed by
+      <a href="./bibliography.html#KubaPanholzer2016">Kuba and Panholzer</a>.</p>
+    <p>The proof is short and also explains the factorial weighting. If
+      $p_n=\int e^{-\lambda}\lambda^n/n!\,\mu(d\lambda)$, then</p>
+    $$q_n=\int_0^\infty \lambda^n\,\rho(d\lambda),\qquad
+      \rho(d\lambda)=e^{-\lambda}\mu(d\lambda),$$
+    <p>so both matrix families are Gram matrices of polynomials in $L^2(\rho)$ and hence are positive
+      semidefinite. Conversely, the two Hankel conditions give a measure $\rho$ on $[0,\infty)$ with moments
+      $q_n$. Since $\sum_nq_n/n!=\sum_np_n=1$, monotone convergence gives
+      $\int e^\lambda\rho(d\lambda)=1$. Therefore
+      $\mu(d\lambda)=e^\lambda\rho(d\lambda)$ is a probability measure and reproduces $p_n$. The same exponential
+      moment makes $\rho$ moment-determinate, so the mixing law is unique.</p>
+    <p>This yields a nested falsification hierarchy. The first two nontrivial minors require</p>
+    $$2p_0p_2\ge p_1^2,\qquad 3p_1p_3\ge2p_2^2,$$
+    <p>but finitely many such inequalities are not sufficient. For example, let $B$ have probabilities
+      $(0.3,0.1,0.1,0.2,0.3)$ on $\{0,1,2,3,4\}$, let
+      $\Pr\{G=n\}=2^{-n-1}$, and take $N$ to have law $0.9\mathcal L(B)+0.1\mathcal L(G)$. This law has full
+      support and is overdispersed:</p>
+    $$\mathbb E N=''' + f'{hankel["counterexample_mean"]:.4f}' + r''',\qquad
+      \operatorname{Var}(N)=''' + f'{hankel["counterexample_variance"]:.4f}' + r'''>\mathbb E N.$$
+    <p>Its two order-one Hankel determinants are
+      ''' + f'{hankel["order_one_determinants"][0]:.7f}' + r''' and
+      ''' + f'{hankel["order_one_determinants"][1]:.7f}' + r''', yet</p>
+    $$\det H_2^{(0)}=''' + f'{hankel["order_two_determinant"]:.9f}' + r'''<0,$$
+    <p>which proves it is not mixed Poisson. As a positive control, the certificate constructs a four-atom mixing
+      law; after diagonal normalization, the smallest eigenvalues of $H_2^{(0)}$ and $H_2^{(1)}$ are
+      ''' + f'{hankel["valid_min_eigenvalues"][0]:.8f}' + r''' and
+      ''' + f'{hankel["valid_min_eigenvalues"][1]:.8f}' + r'''. Thus overdispersion is only the first coarse
+      necessary condition, while the full Hankel hierarchy is necessary and sufficient.</p>
+    <p>The multivariate statement is identical under conditional independence:</p>
+    $$G_{N_1,\ldots,N_d}(z_1,\ldots,z_d)
+      =\mathcal L_{\boldsymbol\Lambda}(1-z_1,\ldots,1-z_d),
+      \qquad 0\le z_j\le1.$$
+    <p>Finite cumulant lists are fundamentally weaker. Fix any order $k$, set $n=k+1$ and $x_j=j+1$ for
+      $j=0,\ldots,n$. For any $0&lt;\delta&lt;2^{-n}$, define two strictly positive probability laws by</p>
+    $$p_j^{\pm}={n\choose j}\left(2^{-n}\pm\delta(-1)^j\right).$$
+    <p>The $n$th finite-difference identity gives</p>
+    $$\sum_{j=0}^{n}(-1)^j{n\choose j}(j+1)^r=0,\qquad r&lt;n.$$
+    <p>Consequently the two intensities have the same first $k$ moments and cumulants, so their mixed-Poisson
+      counts have the same first $k$ factorial cumulants. They are nevertheless different count laws because</p>
+    $$\mathbb P_+(N=0)-\mathbb P_-(N=0)
+      =2\delta e^{-1}(1-e^{-1})^n\ne0.$$
+    <p>For the certificate&apos;s $k=4$ construction, the maximum discrepancy among the first four factorial
+      cumulants is ''' + f'{twins["factorial_gap"]:.2e}' + r''', while the zero-count probability differs by
+      ''' + f'{twins["zero_gap"]:.12f}' + r''' and the numerically summed total-variation distance is
+      ''' + f'{twins["total_variation"]:.12f}' + r''', with omitted contribution below
+      ''' + f'{twins["total_variation_tail_bound"]:.2e}' + r'''. Full-law identification, all-order analytic
+      identification, and finite-order cumulant identification are therefore distinct claims.</p>
+    <h3>The sharp finite-atomic exception</h3>
+    <p>A sparsity assumption changes the last conclusion completely. Suppose the mixing law has at most $r$ atoms,</p>
+    $$\mu=\sum_{j=1}^{s}w_j\delta_{x_j},\qquad
+      1\le s\le r,\quad 0\le x_1&lt;\cdots&lt;x_s,\quad w_j&gt;0.$$
+    <p>Then factorial cumulants of orders $1,\ldots,2r-1$ identify $\mu$, and this order is sharp without
+      additional separation or weight assumptions. Indeed, factorial cumulants of the count are ordinary
+      cumulants of $\Lambda$, and the triangular moment-cumulant relations recover
+      $m_k=\mathbb E[\Lambda^k]$ for $0\le k\le2r-1$, with $m_0=1$.</p>
+    <p>To reconstruct the law, first read $s$ as the rank of
+      $H_{r-1}=(m_{i+j})_{i,j=0}^{r-1}$. For the actual support size,</p>
+    $$H_{s-1}=V\operatorname{diag}(w_1,\ldots,w_s)V^\top\succ0,
+      \qquad V_{ij}=x_j^i.$$
+    <p>Let $P(x)=x^s+c_{s-1}x^{s-1}+\cdots+c_0$ be the monic support polynomial. Since
+      $P(x_j)=0$, its coefficients are the unique solution of the Hankel system</p>
+    $$H_{s-1}\begin{pmatrix}c_0\\ \vdots\\ c_{s-1}\end{pmatrix}
+      =-\begin{pmatrix}m_s\\ \vdots\\ m_{2s-1}\end{pmatrix}.$$
+    <p>The roots of $P$ are the atoms $x_j$, after which the first $s$ moment equations form a nonsingular
+      Vandermonde system for the weights. This is the classical annihilating-polynomial mechanism behind
+      <a href="./bibliography.html#Prony1795">Prony&apos;s method</a>.</p>
+    <p>The count $2r-1$ cannot be reduced. On the $2r$ nodes $x_j=j+1$, split the signed coefficients</p>
+    $$a_j=(-1)^j{2r-1\choose j},\qquad j=0,\ldots,2r-1,$$
+    <p>into their positive and negative parts and normalize each by $2^{2r-2}$. Each part is an $r$-atomic
+      probability law. The finite-difference identity makes their moments, and hence cumulants, identical through
+      order $2r-2$, while their order-$(2r-1)$ moment gap is</p>
+    $$\frac{1}{2^{2r-2}}\sum_{j=0}^{2r-1}(-1)^j{2r-1\choose j}(j+1)^{2r-1}
+      =-\frac{(2r-1)!}{2^{2r-2}}\ne0.$$
+    <p>For $r=4$, the certificate recovers a four-atom law with maximum support and weight errors
+      ''' + f'{atomic["support_error"]:.2e}' + r''' and ''' + f'{atomic["weight_error"]:.2e}' + r'''. Its exact
+      sharpness pair agrees through order six and has order-seven moment and cumulant gap
+      ''' + f'{atomic["sharp_moment_gap"]:.2f}' + r'''. This result is purely about exact identification: Hankel and
+      Vandermonde systems can become arbitrarily ill-conditioned as atoms collide or weights vanish, so it does not
+      assert uniform stable recovery.</p>
+    <h3>Exact local conditioning geometry</h3>
+    <p>The instability boundary has an exact algebraic description. For an exactly $r$-atomic law, eliminate the
+      last weight by $w_r=1-\sum_{j&lt;r}w_j$ and define the square parameter-to-moment map</p>
+    $$\Phi(w_1,\ldots,w_{r-1},x_1,\ldots,x_r)=(m_1,\ldots,m_{2r-1}).$$
+    <p>On the ordered interior $w_j&gt;0$ and $x_1&lt;\cdots&lt;x_r$, its Jacobian satisfies</p>
+    <div class="equation-card">
+    $$\left|\det D\Phi\right|
+      =\left(\prod_{j=1}^r w_j\right)
+       \left(\prod_{1\le i&lt;j\le r}(x_j-x_i)^4\right).$$
+    </div>
+    <p>The moment-to-cumulant transformation is unit triangular, so the parameter-to-factorial-cumulant map has
+      the same determinant.</p>
+    <p>To prove the identity, temporarily retain all $r$ weights and include $m_0$. The $j$th weight and atom
+      columns of the full Jacobian are respectively</p>
+    $$v(x_j)=(1,x_j,\ldots,x_j^{2r-1})^\top,\qquad
+      w_jv'(x_j).$$
+    <p>After interlacing these columns, this is a weighted confluent Vandermonde matrix, whose determinant is the
+      fourth power of the ordinary Vandermonde product times $\prod_jw_j$. Changing coordinates from the weights
+      to $(w_1,\ldots,w_{r-1},m_0)$ and expanding along $m_0=1$ leaves the displayed reduced determinant. The
+      classical inverse and conditioning analysis of these matrices goes back to
+      <a href="./bibliography.html#Gautschi1962">Gautschi (1962)</a>.</p>
+    <p>The inverse-function theorem now gives a locally analytic inverse everywhere in the ordered interior. It
+      also yields an explicit differential bound. Put $d=2r-1$, suppose $0\le x_j\le R$,
+      $w_j\ge w_*$, and $x_{j+1}-x_j\ge\delta$, and set
+      $A_R=\max\{1,R^{2r-1}\}$. Every entry of $D\Phi$ is bounded by $dA_R$, so</p>
+    $$\|D\Phi\|_2\le d^2A_R,\qquad
+      \sigma_{\min}(D\Phi)
+      \ge {w_*^r\delta^{2r(r-1)}\over(d^2A_R)^{d-1}}.$$
+    <p>Thus separated atoms with weights bounded away from zero have uniformly bounded infinitesimal inverse
+      sensitivity. The determinant formula also pinpoints both degeneracies: it vanishes linearly with a disappearing
+      weight and to fourth order for each colliding pair. This is a local parameter-stability statement, not a claim
+      of total-variation stability for unrestricted mixing measures.</p>
+    <p>The certificate evaluates the reduced Jacobian directly for two through five atoms. Its maximum relative
+      determinant error is ''' + f'{atomic_jacobian["determinant_relative_error"]:.2e}' + r'''; a centered directional
+      derivative agrees within ''' + f'{atomic_jacobian["derivative_error"]:.2e}' + r'''; and after removing the
+      noncolliding factors, a shrinking pair has measured volume-collapse order
+      ''' + f'{atomic_jacobian["collision_order"]:.9f}' + r'''.</p>
+    <h3>Identification is not stable inversion</h3>
+    <p>Injectivity is qualitative. It does not make recovery of an unrestricted mixing law stable in total
+      variation. For two point-mass mixing laws $\delta_a$ and $\delta_b$,</p>
+    $$d_{\rm TV}(\delta_a,\delta_b)=1\qquad(a\ne b),$$
+    <p>whereas their count laws are $\operatorname{Pois}(a)$ and $\operatorname{Pois}(b)$. Their Hellinger affinity is</p>
+    $$\sum_{k\ge0}\sqrt{p_a(k)p_b(k)}
+      =\exp\!\left\{-\frac12(\sqrt a-\sqrt b)^2\right\},$$
+    <p>so</p>
+    $$d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(b))
+      \le \sqrt{1-e^{-(\sqrt a-\sqrt b)^2}}.$$
+    <p>For $0&lt;a&lt;b$, the likelihood ratio $p_a(k)/p_b(k)=e^{b-a}(a/b)^k$ crosses one once. Therefore the exact
+      total variation is</p>
+    $$d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(b))
+      =F_a(k_*)-F_b(k_*),\qquad
+      k_*=\left\lfloor\frac{b-a}{\log(b/a)}\right\rfloor.$$
+    <p>Thus even on a fixed compact intensity interval, taking $b\to a$ leaves mixing-law total variation equal to
+      one while count-law total variation tends to zero. More precisely, at a noninteger $a$ and for sufficiently
+      small $h&gt;0$, the likelihood-ratio crossing is $k=\lfloor a\rfloor$, and</p>
+    $$\frac{d_{\rm TV}(\operatorname{Pois}(a),\operatorname{Pois}(a+h))}{h}
+      \longrightarrow \Pr\{\operatorname{Pois}(a)=\lfloor a\rfloor\}.$$
+    <p>There is no global Wasserstein rescue without an intensity bound. For integer $m$, the crossing of
+      $\operatorname{Pois}(m)$ and $\operatorname{Pois}(m+1)$ is exactly $k=m$, so</p>
+    $$d_{\rm TV}(\operatorname{Pois}(m),\operatorname{Pois}(m+1))
+      =F_m(m)-F_{m+1}(m)
+      \sim\frac1{\sqrt{2\pi m}},$$
+    <p>although $W_1(\delta_m,\delta_{m+1})=1$. At $a=4.5$ and $h=10^{-5}$ the certificate gives
+      $d_{\rm TV}/h=$ ''' + f'{instability["local_tv"][-1] / instability["steps"][-1]:.12f}' + r''',
+      against the limit ''' + f'{instability["local_limit"]:.12f}' + r'''. At $m=10^6$ it gives
+      $\sqrt m\,d_{\rm TV}=$ ''' + f'{instability["scaled_tv"][-1]:.12f}' + r''', against
+      $1/\sqrt{2\pi}=$ ''' + f'{instability["asymptotic_constant"]:.12f}' + r'''.</p>
+    <p>This does not contradict identifiability. It says that finite-sample recovery needs a weaker loss and/or
+      structural restrictions such as bounded support and smoothness. The nonparametric Poisson-mixture estimation
+      theory of <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n (2005)</a> makes such regularity
+      assumptions explicit. For a fixed finite-state intensity model, $\Lambda_T$ is bounded; that removes the
+      escaping-mass example but not the total-variation discontinuity created by moving atoms.</p>
+    <h3>A finite-sample impossibility theorem</h3>
+    <p>The discontinuity implies more than the absence of a convenient inverse bound. Suppose
+      $N_1,\ldots,N_n$ are iid mixed-Poisson observations with unknown mixing law $\mu$ supported on a fixed
+      compact interval containing more than one point. For any estimator $\widehat\mu_n$, including a randomized
+      estimator,</p>
+    <div class="equation-card">
+    $$\sup_{\mu}\mathbb E_\mu d_{\rm TV}(\widehat\mu_n,\mu)\ge\frac12,
+      \qquad n\ge1.$$
+    </div>
+    <p>Thus the unrestricted mixing law is not uniformly consistently estimable in total variation, even though it
+      is identified by the population count law and even though its support is compact.</p>
+    <p>The proof is a two-point coupling argument. For any two mixing laws $\mu_0,\mu_1$, let $P_i$ be the
+      corresponding one-count laws and put
+      $R_i=\mathbb E_i d_{\rm TV}(\widehat\mu_n,\mu_i)$. A maximal coupling of
+      $P_0^{\otimes n}$ and $P_1^{\otimes n}$, using the same estimator randomization when the samples agree, and
+      the triangle inequality give</p>
+    $$\max(R_0,R_1)\ge {d_{\rm TV}(\mu_0,\mu_1)\over2}
+      \{1-d_{\rm TV}(P_0^{\otimes n},P_1^{\otimes n})\}.$$
+    <p>Choose distinct point masses $\mu_0=\delta_a$ and $\mu_1=\delta_b$ inside the interval. Their distance is
+      one, while the product count distance tends to zero as $b\to a$. Letting $b$ approach $a$ proves the displayed
+      lower bound for every fixed $n$.</p>
+    <p>There is also an exact quantitative certificate. Take $a=4.5$, $b_n=a+1/n$, and even $n$. Under the two
+      hypotheses, the sufficient statistic $\sum_iN_i$ has laws
+      $\operatorname{Pois}(na)$ and $\operatorname{Pois}(na+1)$; conditional on the sum, the allocation among the
+      $n$ observations is the same multinomial law. Hence</p>
+    $$d_{\rm TV}\{P_a^{\otimes n},P_{a+1/n}^{\otimes n}\}
+      =F_{na}(na)-F_{na+1}(na)
+      \sim {1\over\sqrt{2\pi an}}.$$
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>$n$</th><th>product count TV</th><th>mixing-law TV risk lower bound</th></tr></thead>
+      <tbody>
+        <tr><td>10</td><td>0.059144045738</td><td>0.470427977131</td></tr>
+        <tr><td>100</td><td>0.018795883152</td><td>0.490602058424</td></tr>
+        <tr><td>1,000</td><td>0.005946750031</td><td>0.497026624985</td></tr>
+        <tr><td>10,000</td><td>0.001880621497</td><td>0.499059689251</td></tr>
+        <tr><td>1,000,000</td><td>0.000188063184</td><td>0.499905968408</td></tr>
+      </tbody>
+    </table></div>
+    <p>At $n=10^6$, $\sqrt n$ times the product distance is $0.188063184068$, versus
+      $1/\sqrt{2\pi a}=0.188063194516$. The lower bound concerns total-variation recovery of an unrestricted
+      measure. It does not rule out weak-loss consistency, parametric finite-state recovery under separation, or
+      density estimation on smoothness classes; those are precisely the kinds of restrictions used by
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>.</p>
+    <h3>A local Wasserstein lower bound</h3>
+    <p>Compact support does make Wasserstein loss qualitatively weaker than total variation, but it does not permit
+      a uniformly faster-than-parametric rate. Let $\mathcal M_{[4,5]}$ be all probability laws on $[4,5]$ and define</p>
+    $$R_n^{(1)}=\inf_{\widehat\mu_n}\sup_{\mu\in\mathcal M_{[4,5]}}
+      \mathbb E_\mu W_1(\widehat\mu_n,\mu).$$
+    <p>For any $a$ in the interior of the interval and any fixed $h&gt;0$, compare
+      $\mu_{0,n}=\delta_a$ with $\mu_{1,n}=\delta_{a+h/\sqrt n}$. They lie in the class for all sufficiently large
+      $n$ and have $W_1(\mu_{0,n},\mu_{1,n})=h/\sqrt n$. The same two-point coupling inequality used above gives</p>
+    $$\sqrt n R_n^{(1)}\ge {h\over2}
+      \left[1-d_{\rm TV}\{\operatorname{Pois}(na),
+      \operatorname{Pois}(na+h\sqrt n)\}\right].$$
+    <p>This is a restriction to the point-mass submodel, so it is a valid lower bound for the full class. It is the
+      classical two-point testing reduction of <a href="./bibliography.html#LeCam1973">Le Cam</a>, here with the
+      distance and testing affinity evaluated exactly.</p>
+    <p>Put $z=h/(2\sqrt a)$. The one-crossing formula has cutoff</p>
+    $$k_n=\left\lfloor {h\sqrt n\over
+      \log(1+h/(a\sqrt n))}\right\rfloor
+      =na+{h\over2}\sqrt n+O(1).$$
+    <p>Applying the normal limit to the two Poisson distribution functions at this cutoff yields</p>
+    $$d_{\rm TV}\{\operatorname{Pois}(na),\operatorname{Pois}(na+h\sqrt n)\}
+      \longrightarrow 2\Phi(z)-1,$$
+    <p>and therefore</p>
+    <div class="equation-card">
+    $$\liminf_{n\to\infty}\sqrt n R_n^{(1)}\ge h\Phi(-z).$$
+    </div>
+    <p>The right side is optimized by $h=2\sqrt a\,z_*$, where $z_*$ is the unique positive root of
+      $\Phi(-z)=z\phi(z)$. At $a=4.5$,</p>
+    $$z_*=''' + f'{w1_minimax["z_star"]:.12f}' + r''',\qquad
+      h_*=''' + f'{w1_minimax["h_star"]:.12f}' + r''',\qquad
+      h_*\Phi(-z_*)=''' + f'{w1_minimax["asymptotic_constant"]:.12f}' + r'''.$$
+''' + table([[f'{n:,}', f'{tv:.12f}', f'{bound:.12f}']
+             for n, tv, bound in zip(
+                 w1_minimax['sample_sizes'], w1_minimax['product_tv'],
+                 w1_minimax['scaled_risk_lower_bounds'])],
+            head=('$n$', 'product count TV', r'$\sqrt n$ times $W_1$ risk lower bound')) + r'''
+    <p>The final column tends to $0.721126760493$. This proves only a lower bound: it rules out uniform
+      $o(n^{-1/2})$ Wasserstein-1 recovery, even on the point-mass submodel, but it does not claim that the unrestricted
+      mixing class has an $O(n^{-1/2})$ estimator.</p>
+    <h3>A nonparametric logarithmic obstruction</h3>
+    <p>The unrestricted compact class is substantially harder than its point-mass submodel. More generally, for
+      $a\ge0$ and $B&gt;0$, put $\mathcal M_{[a,a+B]}$ for all laws on that intensity interval, and let
+      $R_n^{(1)}(a,B)$ denote the same minimax risk with this class. Then</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \liminf_{n\to\infty}{\log n\over\log\log n}R_n^{(1)}(a,B)\ge {B\over2}.}$$
+    </div>
+    <p>Thus no estimator has worst-case $W_1$ risk
+      $o((\log\log n)/\log n)$ on the unrestricted class.</p>
+    <p>The construction is explicit. Fix an integer $L\ge2$, let $J\sim\operatorname{Bin}(L,1/2)$, put
+      $h=B/L$, and define</p>
+    $$\mu_{L,+}=\mathcal L(a+hJ\mid J\ {\rm even}),\qquad
+      \mu_{L,-}=\mathcal L(a+hJ\mid J\ {\rm odd}).$$
+    <p>The finite-difference identity</p>
+    $$\sum_{j=0}^L(-1)^j{L\choose j}(a+hj)^r=0,\qquad 0\le r&lt;L,$$
+    <p>shows that the two laws have identical first $L-1$ moments. Yet on
+      $[a+kh,a+(k+1)h)$ their CDF difference is</p>
+    $$2^{1-L}\sum_{j=0}^k(-1)^j{L\choose j}
+      =2^{1-L}(-1)^k{L-1\choose k},$$
+    <p>so summing the absolute areas gives the exact separation</p>
+    $$W_1(\mu_{L,+},\mu_{L,-})={B\over L}.$$
+    <p>The induced mixed-Poisson count laws are nevertheless exponentially close in $L$. To see this without an
+      analytic inversion bound, write a count as</p>
+    $$N=Z+\sum_{i=1}^L B_iX_i,$$
+    <p>where $Z\sim\operatorname{Pois}(a)$, the $B_i$ are fair Bernoulli variables conditioned on even or odd
+      parity, and the independent $X_i\sim\operatorname{Pois}(h)$. Whenever some $X_i=0$, flipping the first
+      corresponding $B_i$ changes parity without changing $N$ and maps the uniform even-parity law bijectively to
+      the uniform odd-parity law. Therefore, for the one-count laws $P_{L,+},P_{L,-}$,</p>
+    $$d_{\rm TV}(P_{L,+},P_{L,-})\le\Pr\{X_1&gt;0,\ldots,X_L&gt;0\}
+      =(1-e^{-B/L})^L,$$
+    <p>and product coupling gives</p>
+    $$d_{\rm TV}(P_{L,+}^{\otimes n},P_{L,-}^{\otimes n})
+      \le n(1-e^{-B/L})^L.$$
+    <p>Le Cam&apos;s two-point metric inequality now yields, for every $L\ge2$,</p>
+    $$R_n^{(1)}(a,B)\ge {B\over2L}
+      \left[1-n(1-e^{-B/L})^L\right].$$
+    <p>For fixed $\epsilon&gt;0$, take
+      $L=\lceil(1+\epsilon)\log n/\log\log n\rceil$. Since
+      $n(1-e^{-B/L})^L\le n(B/L)^L\to0$, the scaled lower limit is at least
+      $B/[2(1+\epsilon)]$; letting $\epsilon$ decrease to zero proves the boxed result.</p>
+    <p>The certificate below first checks exact moment matching, exact $W_1$, and the count-law coupling for
+      $[a,a+B]=[4,5]$. It then optimizes the displayed finite-$n$ lower bound over integer $L$.</p>
+''' + table([[f'{order}', f'{w1:.12f}', f'{tv:.3e}', f'{coupling:.3e}']
+             for order, w1, tv, coupling in zip(
+                 w1_nonparametric['check_orders'], w1_nonparametric['exact_w1'],
+                 w1_nonparametric['count_tv'], w1_nonparametric['coupling_bounds'])],
+            head=('$L$', 'exact $W_1$', 'count TV', 'coupling upper bound')) + r'''
+''' + table([[label, f'{order}', f'{risk:.12e}', f'{scaled:.12f}']
+             for label, order, risk, scaled in zip(
+                 w1_nonparametric['sample_labels'], w1_nonparametric['optimal_orders'],
+                 w1_nonparametric['risk_lower_bounds'],
+                 w1_nonparametric['scaled_lower_bounds'])],
+            head=('$n$', 'optimizing $L$', '$W_1$ risk lower bound',
+                  r'$(\log n/\log\log n)$ times bound')) + r'''
+    <p>The scaled certificate approaches its proved asymptotic lower constant $1/2$ slowly. This ordinary,
+      unsmoothed $W_1$ obstruction is consistent with the smoothness-class theory of
+      <a href="./bibliography.html#RoueffRyden2005">Roueff and Ryd&eacute;n</a>. For support $[0,B]$,
+      <a href="./bibliography.html#MiaoEtAl2024">Miao et al.</a> prove the matching upper order for the NPMLE and a
+      matching minimax lower order; <a href="./bibliography.html#LimHan2024">Lim and Han</a> obtain a nearly
+      root-$n$ rate only after replacing ordinary transport by Gaussian-smoothed optimal transport.</p>
+    <h3>A matching moment-estimator upper rate</h3>
+    <p>The upper order can also be recovered by a direct estimator on any fixed interval $[a,a+B]$. Put
+      $M=a+B$ and, from iid counts $N_1,\ldots,N_n$, define the unbiased normalized factorial-moment estimates</p>
+    $$\widehat m_k={1\over n}\sum_{i=1}^n{(N_i)_k\over M^k},\qquad 1\le k\le L.$$
+    <p>Choose any probability law on $[a,M]$ minimizing the largest moment residual,</p>
+    $$\widehat\mu_{n,L}\in\arg\min_{\nu\in\mathcal P([a,M])}
+      \max_{1\le k\le L}\left|\int(\theta/M)^k\,d\nu(\theta)-\widehat m_k\right|.$$
+    <p>A minimizer exists by weak compactness; the compact-valued argmin correspondence has a Borel graph, so fix
+      any measurable selection. If
+      $\epsilon_L=\max_{k\le L}|\widehat m_k-m_k|$, comparison with the true law gives a discrepancy of at most
+      $2\epsilon_L$ in every fitted moment.</p>
+    <p>For every $n,L\ge1$, the following nonasymptotic bound is explicit up to the universal Jackson constant
+      $C_J$:</p>
+    <div class="equation-card">
+    $$\sup_{\mu\in\mathcal P([a,a+B])}\mathbb E_\mu W_1(\widehat\mu_{n,L},\mu)
+      \le {2C_JM\over L}
+      +{6(B+C_JM)(L+1)^{3/2}\over\sqrt n}
+       \{14\sqrt{A_ML}\}^{L},$$
+    $$A_M=\max(1,M^{-1}).$$
+    </div>
+    <p>To prove it, use Kantorovich duality and subtract the value of each Lipschitz test function at $a$. Extend it
+      constantly to $[0,a]$, rescale to $[0,1]$, and apply
+      <a href="./bibliography.html#Jackson1921">Jackson&apos;s polynomial approximation theorem</a>. A degree-$L$
+      polynomial approximates the test function within $C_JM/L$. In the shifted Chebyshev basis
+      $q_j(x)=T_j(2x-1)$, the recurrence
+      $q_{j+1}=(4x-2)q_j-q_{j-1}$ implies that the monomial coefficient $\ell^1$ norm of $q_j$ is at most $7^j$.
+      The Chebyshev coefficients of a bounded polynomial are at most twice its sup norm, so the approximant&apos;s
+      monomial coefficient norm is at most $3(B+C_JM)7^L$.</p>
+    <p>The stochastic term follows from the exact falling-factorial product identity</p>
+    $$(N)_k^2=\sum_{j=0}^k{k\choose j}^2j!(N)_{2k-j}.$$
+    <p>Since $N\mid\theta\sim\operatorname{Pois}(\theta)$ and $\theta\le M$, it gives</p>
+    $$\mathbb E\epsilon_L\le { (L+1)^{3/2}\over\sqrt n}
+      \{2\sqrt{A_ML}\}^{L}.$$
+    <p>Combining the approximation and moment errors proves the displayed bound. For any fixed $0&lt;c&lt;1$, take
+      $L_n=\lfloor c\log n/\log\log n\rfloor$. The logarithm of the stochastic factor is
+      $-\tfrac12(1-c)\log n+o(\log n)$, while the approximation term is $O(\log\log n/\log n)$. Consequently,</p>
+    <div class="equation-card">
+    $$\sup_{\mu\in\mathcal P([a,a+B])}\mathbb E_\mu
+      W_1(\widehat\mu_{n,L_n},\mu)
+      =O\!\left({\log\log n\over\log n}\right).$$
+    </div>
+    <p>Together with the preceding lower theorem, this proves that the unrestricted compact minimax rate is exactly
+      $\Theta((\log\log n)/\log n)$ for every fixed $a\ge0$ and $B&gt;0$. The certificate checks the factorial
+      second-moment identity through order eight to relative error
+      ''' + f'{w1_moment_upper["relative_second_moment_error"]:.2e}' + r''' and verifies the coefficient recurrence.
+      For $M=5$ and $c=1/2$, the derived stochastic factor decays as follows.</p>
+''' + table([[f'$e^{{{log_n:.0f}}}$', f'{degree}', f'{log_factor:.6f}']
+             for log_n, degree, log_factor in zip(
+                 w1_moment_upper['log_sample_sizes'],
+                 w1_moment_upper['moment_degrees'],
+                 w1_moment_upper['log_stochastic_factors'])],
+            head=('$n$', '$L_n$', 'log stochastic factor')) + r'''
+    <h3>The compact inverse has an optimal logarithmic modulus</h3>
+    <p>The statistical upper bound also yields a population stability theorem. For a mixing law $\mu$ on
+      $[a,a+B]$, write $P_\mu$ for its one-count mixed-Poisson law and define</p>
+    $$\omega_{a,B}(\delta)=\sup\{W_1(\mu,\nu):
+      d_{\rm TV}(P_\mu,P_\nu)\le\delta\}.$$
+    <p>Fix one measurable version of the moment estimator above. Maximally couple $n$ iid counts from
+      $P_\mu$ and $P_\nu$, and apply the same estimator to the coupled samples. They agree with probability at
+      least $(1-\delta)^n$. On the complementary event, two estimator outputs supported on $[a,a+B]$ are at
+      Wasserstein distance at most $B$. The triangle inequality therefore gives</p>
+    $$\omega_{a,B}(\delta)\le 2R_{n,L}+B\{1-(1-\delta)^n\},$$
+    <p>where $R_{n,L}$ is the preceding worst-case estimator bound. In particular, with $M=a+B$ and
+      $A_M=\max(1,M^{-1})$,</p>
+    <div class="equation-card">
+    $$\omega_{a,B}(\delta)\le {4C_JM\over L}
+      +{12(B+C_JM)(L+1)^{3/2}\over\sqrt n}
+       \{14\sqrt{A_ML}\}^{L}
+      +B\{1-(1-\delta)^n\}.$$
+    </div>
+    <p>This holds for every positive integer $n,L$. Taking
+      $n=\lfloor\delta^{-1/2}\rfloor$ and
+      $L=\lfloor c\log n/\log\log n\rfloor$ for any fixed $0&lt;c&lt;1$ makes the last two terms negligible
+      relative to $1/L$, and proves</p>
+    $$\omega_{a,B}(\delta)=O\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right).$$
+    <p>The order cannot be improved. For the even/odd binomial pair used in the minimax lower bound,</p>
+    $$W_1(\mu_{L,+},\mu_{L,-})={B\over L},\qquad
+      d_{\rm TV}(P_{L,+},P_{L,-})\le
+      \delta_L=(1-e^{-B/L})^L.$$
+    <p>Hence $\omega_{a,B}(\delta_L)\ge B/L$. More generally, for every sufficiently small $\delta$, choosing
+      $L$ of order $\log(1/\delta)/\log\log(1/\delta)$ makes $\delta_L\le\delta$ and gives the reverse order.
+      Therefore</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \omega_{a,B}(\delta)=\Theta\!\left(
+      {\log\log(1/\delta)\over\log(1/\delta)}\right),
+      \qquad \delta\downarrow0.}$$
+    </div>
+    <p>This is a positive compact-support stability statement in $W_1$, not in total variation. It complements
+      the minimax theorem of <a href="./bibliography.html#MiaoEtAl2024">Miao et al.</a>: the same logarithmic
+      ill-posedness governs both population inversion and unrestricted statistical recovery. On $[4,5]$, the
+      certificate&apos;s lower scaled separation reaches
+      ''' + f'{w1_inverse_modulus["lower_scaled_separation"][-1]:.12f}' + r''' at $L=1024$ on its slow approach to
+      one. At $\log(1/\delta)=10{,}000$, the upper construction selects $L=''' + f'{w1_inverse_modulus["degrees"][-1]}' + r'''$;
+      the logarithms of its stochastic and sample-disagreement
+      terms are ''' + f'{w1_inverse_modulus["log_stochastic_terms"][-1]:.6f}' + r''' and
+      ''' + f'{w1_inverse_modulus["log_coupling_terms"][-1]:.6f}' + r'''.</p>
+    <h3>The point-mass submodel has the parametric rate</h3>
+    <p>The preceding lower bound is rate-sharp on the submodel that generated it. Define</p>
+    $$R_{n,\delta}^{(1)}=\inf_{\widehat\mu_n}\sup_{4\le\lambda\le5}
+      \mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda).$$
+    <p>When the truth is $\delta_\lambda$, the observations are iid $\operatorname{Pois}(\lambda)$. Put
+      $S_n=\sum_iN_i$, project $S_n/n$ onto $[4,5]$, and put a point mass at the projected value. Since projection
+      cannot increase distance to $\lambda$ and $S_n\sim\operatorname{Pois}(n\lambda)$,</p>
+    $$\mathbb E_\lambda W_1(\widehat\mu_n,\delta_\lambda)
+      \le {1\over n}\mathbb E|S_n-n\lambda|
+      =2\lambda\Pr\{\operatorname{Pois}(n\lambda)=\lfloor n\lambda\rfloor\}
+      \le\sqrt{\lambda\over n}.$$
+    <p>The equality follows by splitting the centered Poisson variable at its mean and using
+      $k p_\mu(k)=\mu p_\mu(k-1)$; the inequality is Cauchy&ndash;Schwarz. Combining this estimator with the local
+      two-point lower bound gives the rigorous sandwich</p>
+    <div class="equation-card">
+    $$0.721126760493\le\liminf_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}
+      \le\limsup_{n\to\infty}\sqrt n\,R_{n,\delta}^{(1)}\le\sqrt5.$$
+    </div>
+    <p>So $R_{n,\delta}^{(1)}=\Theta(n^{-1/2})$. At the certificate point $\lambda=4.5$, projection changes the
+      interior risk only by exponentially small tails, and the unprojected sample-mean benchmark has the sharper
+      pointwise limit</p>
+    $$\sqrt n\,\mathbb E_{4.5}|S_n/n-4.5|\longrightarrow
+      \sqrt{9/\pi}=''' + f'{w1_point_mass["pointwise_limit"]:.12f}' + r'''.$$
+''' + table([[f'{n:,}', f'{risk:.12f}', f'{scaled:.12f}']
+             for n, risk, scaled in zip(
+                 w1_point_mass['sample_sizes'], w1_point_mass['exact_risks'],
+                 w1_point_mass['scaled_exact_risks'])],
+            head=('$n$', 'exact sample-mean risk', r'$\sqrt n$ times risk')) + r'''
+    <p>This sample-mean upper bound applies only to the one-parameter family of point masses. An arbitrary law in
+      $\mathcal M_{[4,5]}$ cannot be estimated by reducing it to its mean; the moment estimator above attains the
+      slower unrestricted logarithmic rate.</p>
+    <h3>What common shocks add</h3>
+    <p>The correction is exact. Index independent Poisson event streams by the nonempty subsets
+      $A\subseteq\{1,\ldots,d\}$ of coordinates that each event increments. Conditional on their cumulative
+      intensities $\Lambda_A$, put $N_j=\sum_{A\ni j}C_A$. Then</p>
+    $$\log\mathbb E\prod_{j=1}^d(1+t_j)^{N_j}
+      =\log\mathbb E\exp\left\{\sum_{A\ne\varnothing}\Lambda_A
+      \left(\prod_{j\in A}(1+t_j)-1\right)\right\}.$$
+    <p>For two counts, write $\Lambda_0$ for the common-event intensity and
+      $A=\Lambda_1+\Lambda_0$, $B=\Lambda_2+\Lambda_0$, $C=\Lambda_0$. Expanding the preceding identity through
+      arbitrary bidegree $(r,s)$ gives the all-order identity</p>
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{k=0}^{\min(r,s)}
+      {r\choose k}{s\choose k}k!\,
+      \kappa\!\left(A^{[r-k]},B^{[s-k]},C^{[k]}\right)}.$$
+    <p>Here the brackets denote repeated arguments of the joint cumulant; when only one argument remains, it is its
+      expectation. The coefficient counts which $k$ derivatives in each coordinate strike the bilinear common-event
+      term. In particular, through bidegree $(2,2)$,</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa(A,B)+\mathbb EC,\\
+      \kappa^{(F)}_{21}&=\kappa(A,A,B)+2\kappa(A,C),\\
+      \kappa^{(F)}_{12}&=\kappa(A,B,B)+2\kappa(B,C),\\
+      \kappa^{(F)}_{22}&=\kappa(A,A,B,B)+4\kappa(A,B,C)+2\kappa(C,C).
+    \end{aligned}$$
+    <p>Thus mixed factorial cumulants identify marginal-intensity dependence only after the common-shock terms are
+      modeled or ruled out. The sharp counterexample has deterministic $C=cT$ and no idiosyncratic intensity:
+      $N_1=N_2\sim\operatorname{Poisson}(cT)$. The cumulative intensities have zero covariance, but
+      $\kappa^{(F)}_{11}=cT$. At $c=0.8$ and $T=1.3$, the certificate obtains $1.04000000$.</p>
+''' + table([[label, f'{observed:.8f}', f'{predicted:.8f}']
+             for label, observed, predicted in zip(
+                 ('(1,1)', '(2,1)', '(1,2)', '(2,2)'),
+                 common_factorial, common_predicted)],
+            head=('mixed order', 'factorial count', 'common-shock formula')) + r'''
+    <h3>Arbitrary integer marks</h3>
+    <p>The unit-jump restriction is unnecessary. Let each common event carry an iid nonnegative integer mark
+      $J=(J_1,J_2)$, independent of the cumulative intensities and of the other marks. Conditional on the common
+      cumulative intensity $C$, the number of marked events is Poisson with mean $C$. If $\Lambda_1,\Lambda_2$ are
+      the idiosyncratic cumulative intensities, then the exact factorial cumulant generating function is</p>
+    $$H(t,u)=\log\mathbb E\exp\!\left\{t\Lambda_1+u\Lambda_2
+      +C\left(\mathbb E[(1+t)^{J_1}(1+u)^{J_2}]-1\right)\right\}.$$
+    <p>Put $\mu_{ab}=\mathbb E[(J_1)_a(J_2)_b]$, where $(j)_a$ is a falling factorial, and define the integrated-rate
+      variables</p>
+    $$W_{10}=\Lambda_1+\mu_{10}C,\qquad
+      W_{01}=\Lambda_2+\mu_{01}C,\qquad
+      W_{ab}=\mu_{ab}C\quad(a+b\ge2).$$
+    <p>Take $r$ labelled symbols of type 1 and $s$ of type 2. For a block $B$ of a set partition, let
+      $a_B,b_B$ be its numbers of the two symbol types. The all-order marked theorem is</p>
+    <div class="equation-card">
+    $$\boxed{\displaystyle
+      \kappa^{(F)}_{rs}=\sum_{\pi\in\Pi_{r,s}}
+      \kappa\!\left(W_{a_Bb_B}:B\in\pi\right).}$$
+    </div>
+    <p>This is the multivariate logarithmic Fa&agrave; di Bruno formula applied to $H$. It requires the displayed
+      falling-factorial mark moments and the corresponding integrated-rate cumulants to be finite. For example,</p>
+    $$\begin{aligned}
+      \kappa^{(F)}_{11}&=\kappa(W_{10},W_{01})+\mathbb EW_{11},\\
+      \kappa^{(F)}_{21}&=\kappa(W_{10},W_{10},W_{01})
+        +\kappa(W_{20},W_{01})+2\kappa(W_{10},W_{11})+\mathbb EW_{21}.
+    \end{aligned}$$
+    <p>When $J=(1,1)$ almost surely, every $\mu_{ab}$ vanishes except those with $a,b\le1$. Only singleton blocks
+      and disjoint type-1/type-2 pairs survive, and the partition formula reduces exactly to the preceding
+      ${r\choose k}{s\choose k}k!$ matching formula. Thus larger or asymmetric common marks do not invalidate
+      factorial-cumulant identification; they change the shared-shot-noise correction through their factorial
+      moments.</p>
+    <h3>Regime-dependent mark laws</h3>
+    <p>The iid mark law may be replaced by a law that depends on the hidden regime at the event time. Write
+      $c_i$ for the common-event rate and
+      $\mu_{ab}(i)=\mathbb E[(J_1)_a(J_2)_b\mid Y_t=i]$. Conditional on the complete regime path, the exact
+      factorial cumulant generating function becomes</p>
+    $$H(t,u)=\log\mathbb E\exp\!\left\{t\Lambda_1+u\Lambda_2+
+      \int_0^T c_{Y_v}\left(M_{Y_v}(t,u)-1\right)\,dv\right\},$$
+    <p>where $M_i(t,u)=\mathbb E[(1+t)^{J_1}(1+u)^{J_2}\mid Y=i]$. Therefore the same partition theorem holds
+      after replacing the variables above by</p>
+    $$\begin{aligned}
+      W_{10}&=\Lambda_1+\int_0^T c_{Y_v}\mu_{10}(Y_v)\,dv,\\
+      W_{01}&=\Lambda_2+\int_0^T c_{Y_v}\mu_{01}(Y_v)\,dv,\\
+      W_{ab}&=\int_0^T c_{Y_v}\mu_{ab}(Y_v)\,dv,\qquad a+b\ge2.
+    \end{aligned}$$
+    <p>This is a finite-state Markov additive process in the sense of
+      <a href="https://doi.org/10.1007/BF00532536">&Ccedil;inlar (1972)</a>. The condition is pathwise: marks are
+      conditionally independent given the regime path and their law at an event depends only on the contemporaneous
+      regime. It does not cover dependence between different event marks beyond that hidden-state dependence.</p>
+    <p>The
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_count_cumulants.py">certificate</a>
+    obtains the factorial-count and integrated-intensity columns independently from the regime/count master equation and a polynomial Feynman&ndash;Kac
+    hierarchy. It checks the univariate identity through order four and the bivariate identity through bidegree $(2,2)$
+    for a nonreversible three-state chain. The mixed calculation agrees within $5.3\times10^{-14}$, with omitted count
+    mass bounded by $1.6\times10^{-47}$. A separate master equation with simultaneous $(1,1)$ jumps checks the
+    common-shock formula through every mixed order $(r,s)$ with $1\leq r,s\leq3$ within
+    $7.9\times10^{-12}$; at $(3,3)$ the two independent values are
+    ''' + f'{common_factorial_33:.8f}' + r''' and ''' + f'{common_predicted_33:.8f}' + r'''. A second marked master
+    equation uses six mark vectors, including $(3,1)$ and $(1,3)$, and agrees with the marked partition theorem
+    through bidegree $(3,3)$ within $9.6\times10^{-10}$; the independent values of
+    $\kappa^{(F)}_{33}$ are ''' + f'{marked_factorial_33:.8f}' + r''' and ''' + f'{marked_predicted_33:.8f}' + r''',
+    with omitted mass below $8.7\times10^{-49}$. Substituting the degenerate mark $(1,1)$ recovers the matching
+    formula within $1.1\times10^{-11}$. A third master equation uses a different six-point mark distribution in
+    every regime. It agrees with the state-dependent partition formula through bidegree $(3,3)$ within
+    $6.5\times10^{-10}$; at $(3,3)$ the independent values are
+    ''' + f'{state_marked_grid[2, 2]:.8f}' + r''' and ''' + f'{state_marked_predicted_33:.8f}' + r''', and omitted
+    mass is below $1.4\times10^{-44}$. The partition calculation follows the joint-cumulant method of
+    <a href="https://doi.org/10.1137/1104031">Leonov and Shiryaev (1959)</a>. The certificate also measures
+    second-order decay of the univariate omitted boundary term.
+    The conditioning argument is the defining construction of a
+    <a href="./bibliography.html#Cox1955">Cox process</a>, specialized here to the
+    <a href="./bibliography.html#FischerMeierHellstern1993">Markov-modulated Poisson process</a>. The common-component
+    construction is the classical bivariate Poisson model of
+    <a href="https://doi.org/10.1093/biomet/51.1-2.241">Holgate (1964)</a>; the arbitrary-mark construction is a
+    multivariate compound-Poisson law in the sense of
+    <a href="https://doi.org/10.1214/aoms/1177731359">Feller (1943)</a>.</p>
 '''
     write('counts', html)
 

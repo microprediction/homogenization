@@ -7,5 +7,22 @@
   "venue": "Communications in Mathematical Physics 104(1):1-19",
   "doi": "10.1007/BF01210789",
   "annotation": "Proves the central limit theorem for time integrals of a function of a reversible Markov process, with the long-run variance given through the resolvent; the reversibility assumption is essential to the proof."
+ },
+ {
+  "key": "Prony1795",
+  "authors": "de Prony, G. R.",
+  "year": 1795,
+  "title": "Essai exp\u00e9rimental et analytique sur les lois de la dilatabilit\u00e9 des fluides \u00e9lastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, \u00e0 diff\u00e9rentes temp\u00e9ratures",
+  "venue": "Journal de l'\u00c9cole Polytechnique 1(2):24-76",
+  "annotation": "Introduces the annihilating-polynomial reconstruction now known as Prony's method; the finite-atomic Cox-mixture result uses its Hankel and Vandermonde steps."
+ },
+ {
+  "key": "Gautschi1962",
+  "authors": "Gautschi, W.",
+  "year": 1962,
+  "title": "On inverses of Vandermonde and confluent Vandermonde matrices",
+  "venue": "Numerische Mathematik 4:117-123",
+  "doi": "10.1007/BF01386302",
+  "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
  }
 ]
