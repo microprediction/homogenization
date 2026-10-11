@@ -264,7 +264,8 @@
       -\frac{2P_n(z)}{(2n-1)(2n+3)}
       +\frac{P_{n-2}(z)}{(2n+1)(2n-1)}\right\}.$$
     <p>Legendre orthogonality then shows that its variance is $c_{n-1}-c_n$. Summing the
-    unremoved modes $n>d$ telescopes to $c_d$. This extends the Legendre-projector treatment of arbitrary
+    unremoved modes $n>d$ telescopes to $c_d$.</p>
+    <p>This extends the Legendre-projector treatment of arbitrary
     polynomial timing fits in <a href="./bibliography.html#Lee2012">Lee et al. (2012, Appendix A)</a> to a closed
     coefficient for the integrated-frequency-noise kernel. An independent covariance-trace calculation for
     every $0\le d\le12$ agrees to relative error below $1.3\times10^{-9}$.</p>
@@ -288,7 +289,8 @@
       F_d''(0)=-\frac{d+1}{(2d+1)(2d+3)}.$$
     <p>The middle identity is structural: $k_0(t)=t$ is removed whenever $d\ge1$, $k_1=0$, and symmetry of
     $H_d$ cancels the two diagonal derivatives. Watson's endpoint expansion then gives the displayed coefficient,
-    since $F_d''(0)/F_d(0)=-4(2d-1)(2d+5)$. This complements the exact quadratic formula below and keeps its
+    since $F_d''(0)/F_d(0)=-4(2d-1)(2d+5)$.</p>
+    <p>This complements the exact quadratic formula below and keeps its
     scope to stationary exponential covariance and continuous uniformly weighted ordinary least squares.
     Independent projection quadrature for degrees one through six gives last-doubling remainder ratios from
     $7.89$ to $7.97$, confirming the predicted third-order residual.</p>
@@ -315,7 +317,8 @@
       =-\frac{u^2(z-1)^2}{12}\big(15u^2z^2-30uz^2+4uz+2u+15z^2-6z\big).$$
     <p>Integrating this kernel against $2e^{-x(z-u)}$ yields the displayed $R(x)$. This covariance-projection
     calculation follows the transfer-function treatment of pulsar timing noise in
-    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>. It applies to a
+    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>.</p>
+    <p>It applies to a
     continuous, uniformly weighted ordinary least-squares fit. Irregular arrival times, measurement weights and
     generalized least squares require the corresponding discrete design and covariance matrices; the scalar
     factor $R(x)$ should not be reused in those settings.</p>
@@ -342,7 +345,8 @@
     </div>
     <p>The second equality uses $H^2=H$ and $H^\top W=WH$. More generally, the first trace formula applies to
     any specified linear fitting matrix, including a generalized least-squares timing fit; measurement noise is
-    included by adding its covariance to $C$. Thus irregular sampling and weights do not need a new
+    included by adding its covariance to $C$.</p>
+    <p>Thus irregular sampling and weights do not need a new
     homogenization approximation&mdash;they need the correct finite design. This is the covariance-matrix viewpoint
     advocated for correlated pulsar timing data by
     <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>.</p>
@@ -392,7 +396,8 @@
     <p>On the same 100-day irregular B1931+24 design, the stationary expected energy is $154.452$. Conditioning on
     an on-state start gives $167.131=163.217+3.914$, where the last number is the projected squared mean; an
     off-state start gives $151.283=151.038+0.245$. Thus using the stationary law changes this finite-span benchmark
-    by $+8.21\%$ or $-2.05\%$, depending on the observed initial state. Independent matrix-semigroup quadrature
+    by $+8.21\%$ or $-2.05\%$, depending on the observed initial state.</p>
+    <p>Independent matrix-semigroup quadrature
     agrees with the closed form within $7.2\times10^{-15}$, label swapping is invariant to $2.0\times10^{-16}$,
     and conditioned exact-path simulations agree within Monte Carlo uncertainty. The relevance of conditioning is
     empirical rather than hypothetical here: <a href="./bibliography.html#Kramer2006">Kramer et al. (2006)</a>

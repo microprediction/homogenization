@@ -186,7 +186,8 @@
     \end{pmatrix}\succeq0.$$
     <p>The antisymmetric part of the directed Green&ndash;Kubo matrix cancels from every scalar contraction
     $\mathcal K(h,h)$. Consequently reversing a regime cycle can transpose $\mathcal K$ but cannot change the
-    blind investor&apos;s first-order certainty equivalent. This cancellation does not say that direction is invisible
+    blind investor&apos;s first-order certainty equivalent.</p>
+    <p>This cancellation does not say that direction is invisible
     to every problem: it survives when distinct, noncommuting slow operators multiply the two feature directions.
     Under detailed balance the directed form is already symmetric, the Markov-chain version of
     <a href="./bibliography.html#Onsager1931">Onsager&apos;s reciprocal relation</a>.</p>
@@ -201,7 +202,8 @@
     <h3>Exact Gram rank and maturity aggregation</h3>
     <p>The positive-semidefinite statement has an exact identification converse. Let $Q$ be the generator of any
     finite irreducible chain, let $F\in\mathbb R^{n\times p}$ collect regime features, and center its columns as
-    $H=(I-\mathbf 1\pi)F$. Define the symmetric Green&ndash;Kubo Gram matrix by
+    $H=(I-\mathbf 1\pi)F$.</p>
+    <p>Define the symmetric Green&ndash;Kubo Gram matrix by
     $G_{ab}=\mathcal K^{\rm sym}(H_a,H_b)$. Then</p>
     $$\ker G=\ker H,\qquad \operatorname{rank}G=\operatorname{rank}H\le n-1.$$
     <p>This does not require reversibility. Indeed, for any coefficient vector $c$, put
@@ -253,7 +255,8 @@
       <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman&apos;s original 1960 control paper</a>.
       It does not say that any fixed-maturity Gram matrix has the integrated rank.</p>
     <p>For a nonreversible, nonnormal three-state chain, the certificate obtains
-      $[a,b]=[0.24887872,0.33445461]$. Its maturity family has pointwise rank one but integrated rank two. The
+      $[a,b]=[0.24887872,0.33445461]$. Its maturity family has pointwise rank one but integrated rank two.</p>
+    <p>The
       loading-Gram eigenvalues are $(0.06143693,1.57727834)$ and the integrated Green&ndash;Kubo eigenvalues are
       $(0.02023073,0.52555920)$; both Loewner inequalities hold with positive numerical slack. The observed
       condition number is $25.97827$, below the certified bound $34.50073$.</p>
@@ -273,7 +276,8 @@
     <p>Moreover $s_*(\tau)=p$ for $\nu_*$-almost every support point, and some optimal design is supported on at
       most $p(p+1)/2$ maturities. The proof is short. Moving an infinitesimal amount of mass toward $\tau$ has
       directional derivative $s_*(\tau)-p$; concavity of $\log\det$ makes the resulting inequalities both necessary
-      and sufficient. Their integral under $\nu_*$ is zero, so equality holds on its support. The supported
+      and sufficient.</p>
+    <p>Their integral under $\nu_*$ is zero, so equality holds on its support. The supported
       information matrices lie in one affine hyperplane of the $p(p+1)/2$-dimensional symmetric-matrix space;
       Carath&eacute;odory&apos;s theorem then gives the stated finite support.</p>
     <p>This is the Green&ndash;Kubo maturity-design specialization of
@@ -287,7 +291,8 @@
     <p>and</p>
     $$s_*(\tau)=2-4\tau(1-\tau)\le2,$$
     <p>with equality exactly at $0$ and $1$. This is therefore globally optimal. Uniform maturity averaging has
-      determinant $1/48$, so the endpoint design triples determinant information. Equivalently,
+      determinant $1/48$, so the endpoint design triples determinant information.</p>
+    <p>Equivalently,
       $\det M(\nu)=\operatorname{Var}_{\nu}(\tau)/4$, and the endpoint law attains the sharp variance bound
       $1/4$ on $[0,1]$. The certificate evaluates the sensitivity on 10,001 maturities and reproduces every constant
       to machine precision.</p>

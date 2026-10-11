@@ -118,7 +118,8 @@
     <p>is a stationary-start transition <em>composite</em> likelihood. The distinction matters: after the regime is
     hidden, $x_t$ alone is generally not Markov, because the past observations filter the current regime. Fast mixing
     makes endpoint regime memory exponentially small, but that fact by itself does not make the displayed product the
-    exact observed-data likelihood. A full likelihood propagates the hidden-state filter. The fixed-panel theorem below
+    exact observed-data likelihood.</p>
+    <p>A full likelihood propagates the hidden-state filter. The fixed-panel theorem below
     shows when the two likelihoods nevertheless agree through first order; it does not make the observations exactly
     Markov or give a uniform long-panel equivalence.</p>
 
@@ -139,7 +140,8 @@
     $$\ell_F-\ell_C=O(Nm^{-2}),$$
     <p>where $\ell_F$ is the exact filtered log likelihood. An arbitrary initial regime prior changes the first
     predictive density by $O(m^{-1})$; after that observation the filter is $\pi+O(m^{-1})$, so the remaining gap is
-    $O(Nm^{-2})$. For a growing panel the displayed bound tends to zero only if $N/m^2\to0$, and it is $o(m^{-1})$
+    $O(Nm^{-2})$.</p>
+    <p>For a growing panel the displayed bound tends to zero only if $N/m^2\to0$, and it is $o(m^{-1})$
     only if $N/m\to0$. No long-panel equivalence is asserted.</p>
     <p>The second-order likelihood coefficient is explicit. For transition $k$, write</p>
     $$K_{m,k}=p_k\mathbf1\pi^\top+m^{-1}K_{1,k}+O(m^{-2}),\qquad h_k=K_{1,k}\mathbf1.$$
@@ -223,7 +225,8 @@
     <p>The ordinary <a href="./bibliography.html#JarqueBera1980">Jarque&ndash;Bera</a> statistic is $Z_3^2+Z_4^2$;
     it tests both positive and negative excess kurtosis. That is not the score statistic for this model.</p>
     <p>Here $A_4\geq0$. After the variance correction $A_2$ is profiled into the Gaussian variance, the closure of the
-    local alternative cone in the skewness&ndash;kurtosis coordinates is $\mathbb R\times\mathbb R_+$. Indeed, for every
+    local alternative cone in the skewness&ndash;kurtosis coordinates is $\mathbb R\times\mathbb R_+$.</p>
+    <p>Indeed, for every
     $A_4&gt;0$ and either sign of $A_3$, the positive-semidefinite constraint $A_3^2\leq4A_2A_4$ can be met by choosing
     $A_2$ large enough, while $A_2$ is absorbed by the interior variance nuisance parameter. Projecting the Gaussian
     score onto that cone gives</p>
@@ -245,11 +248,13 @@
     unrestricted score is essential. Let $Z=(X,Y)\in\mathbb R^p\times\mathbb R$ be the unconstrained Gaussian local
     estimator after profiling the regular nuisance parameters, with positive-definite covariance</p>
     $$\Sigma=\begin{pmatrix}A&b\\b^\top&s\end{pmatrix},\qquad s&gt;0,$$
-    <p>and local cone $\mathbb R^p\times\mathbb R_+$. Equivalently, $\Sigma^{-1}$ is the Fisher metric. Its Schur
+    <p>and local cone $\mathbb R^p\times\mathbb R_+$. Equivalently, $\Sigma^{-1}$ is the Fisher metric.</p>
+    <p>Its Schur
     complement $C=A-bb^\top/s$ is positive definite. Put</p>
     $$V=Y/\sqrt{s},\qquad U=C^{-1/2}(X-bY/s).$$
     <p>Under the null, $U\sim N_p(0,I_p)$ and $V\sim N(0,1)$ are independent. To see the projection explicitly, the
-    block inverse of $\Sigma$ has upper-left block $C^{-1}$ and upper-right block $-C^{-1}b/s$. If $Y&lt;0$, the
+    block inverse of $\Sigma$ has upper-left block $C^{-1}$ and upper-right block $-C^{-1}b/s$.</p>
+    <p>If $Y&lt;0$, the
     Karush&ndash;Kuhn&ndash;Tucker equations put the projected point on the face $Y=0$ and set its unrestricted coordinate to
     $X-bY/s$; if $Y\geq0$, the point is already feasible. Its squared Fisher norm is therefore</p>
     <div class="equation-card">
@@ -264,13 +269,15 @@
       \tfrac12\chi_p^2+\tfrac12\chi_{p+1}^2.$$
     <p>The proof is just the block-Gaussian regression identity: $X-bY/s$ is independent of $Y$ with covariance $C$.
     What is invariant is the Fisher-metric projection, not marginal standardization followed by coordinatewise
-    clipping. The latter generally has the wrong null law when the coordinates are correlated. The skewness&ndash;kurtosis
+    clipping.</p>
+    <p>The latter generally has the wrong null law when the coordinates are correlated. The skewness&ndash;kurtosis
     statistic above is the $p=1$, $\Sigma=I$ specialization supplied by Hermite orthogonality.</p>
     <h3>Several one-sided directions: the orthogonal case</h3>
     <p>There is a similarly explicit result for a product orthant, but it needs an additional assumption. After
     profiling nuisances and residualizing the unrestricted scores, suppose the canonical Gaussian score is
     $(U,V)\in\mathbb R^p\times\mathbb R^q$, where $U\sim N_p(0,I_p)$, $V\sim N_q(0,I_q)$, and the two blocks are
-    independent. Thus the <em>constrained canonical coordinates are Fisher-orthogonal</em>. For the cone
+    independent.</p>
+    <p>Thus the <em>constrained canonical coordinates are Fisher-orthogonal</em>. For the cone
     $\mathbb R^p\times\mathbb R_+^q$, metric projection is coordinatewise in this canonical system and</p>
     <div class="equation-card">
     $$\mathrm{LM}_{p,q}=\lVert U\rVert^2+\sum_{r=1}^q(V_r^+)^2
@@ -278,13 +285,15 @@
     </div>
     <p>Indeed, the $q$ signs are independent fair coins. Conditional on exactly $j$ positive coordinates, the sum
     contains $p+j$ independent squared standard normals; averaging over the binomial number of positive coordinates
-    proves the formula. Correlation between the unrestricted and constrained blocks does not invalidate it: regress
+    proves the formula.</p>
+    <p>Correlation between the unrestricted and constrained blocks does not invalidate it: regress
     the unrestricted block on the constrained block first. The constrained covariance itself must remain diagonal, so
     that its positive rescaling preserves the orthant.</p>
     <p>The binomial weights are <strong>not</strong> universal once $q\geq2$. Correlation within the constrained block
     changes the cone angles and therefore the chi-bar-square weights, as in the multivariate one-sided tests of
     <a href="./bibliography.html#Kudo1963">Kudô (1963)</a> and the cone formulation of
-    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>. The two-constraint case remains explicit even with
+    <a href="./bibliography.html#Shapiro1988">Shapiro (1988)</a>.</p>
+    <p>The two-constraint case remains explicit even with
     unrestricted scores. Partition the profiled Gaussian covariance as</p>
     $$\Sigma=\begin{pmatrix}A&B\\B^\top&S\end{pmatrix},\qquad
       C=A-BS^{-1}B^\top,$$
@@ -321,10 +330,12 @@
     interior exactly when $Y>0$. Expanding
     $\mathbf1_{\{Y>0\}}=\prod_{i=1}^3(1+\operatorname{sgn}Y_i)/8$, central symmetry kills the odd sign moments, and
     the bivariate quadrant identity of <a href="./bibliography.html#Sheppard1899">Sheppard (1899)</a> gives
-    $\mathbb E[\operatorname{sgn}Y_i\operatorname{sgn}Y_j]=2\arcsin(R_{ij})/\pi$. Hence
+    $\mathbb E[\operatorname{sgn}Y_i\operatorname{sgn}Y_j]=2\arcsin(R_{ij})/\pi$.</p>
+    <p>Hence
     $w_3=\Pr(Y>0)=\Omega(R)$. Projection lands at the vertex exactly when
     $S^{-1}Y\leq0$; this vector has covariance $S^{-1}$, so symmetry gives $w_0=\Omega(R^\#)$. The conic
-    Gauss&ndash;Bonnet identities $w_0+w_2=w_1+w_3=1/2$ give the two remaining weights. As before, $B$ affects only
+    Gauss&ndash;Bonnet identities $w_0+w_2=w_1+w_3=1/2$ give the two remaining weights.</p>
+    <p>As before, $B$ affects only
     the independent residualized unrestricted block. The precision correlation enters only the vertex weight: neither
     $R^\#$ nor $R$ may be replaced by the correlation of $Y$ conditional on the unrestricted scores.</p>
     <p>When $R=I_3$, both endpoint probabilities are $1/8$ and the formula reduces to the orthogonal binomial weights
@@ -362,14 +373,16 @@
       =t^q H_{S^{-1}}(t^{-1}).$$
     </div>
     <p>Thus covariance inversion reverses, rather than preserves, the chi-bar dimensions. In particular the mean
-    face dimensions satisfy $\sum_j j\,w_j(S)+\sum_j j\,w_j(S^{-1})=q$. This is the covariance-coordinate version of
+    face dimensions satisfy $\sum_j j\,w_j(S)+\sum_j j\,w_j(S^{-1})=q$.</p>
+    <p>This is the covariance-coordinate version of
     conic intrinsic-volume polarity, $v_j(C)=v_{q-j}(C^\circ)$; see
     <a href="./bibliography.html#AmelunxenLotz2017">Amelunxen and Lotz (2017)</a>. It is an exact algebraic identity,
     not an asymptotic or numerical symmetry.</p>
     <p>This use of a conditional covariance <em>inside a specified constrained face</em> should not be confused with
     replacing the entire marginal constrained covariance $S$ by $\operatorname{Cov}(Y\mid X)$ after looking at the
     unrestricted scores. The latter remains wrong. The cross block $B$ disappears only because $X-BS^{-1}Y$ is
-    first residualized and contributes an independent $\chi_p^2$ term. The formula is exact for every finite $q$;
+    first residualized and contributes an independent $\chi_p^2$ term.</p>
+    <p>The formula is exact for every finite $q$;
     its computational cost is the evaluation of Gaussian orthant probabilities and a sum over $2^q$ faces. It
     reduces to the preceding $q=2$ and $q=3$ formulas and to binomial weights when $S$ is diagonal.</p>
     <h3>Local alternatives and power</h3>
@@ -395,7 +408,8 @@
     </div>
     <p>For $p=1$, $\overline F_{1,\delta_3^2}(a^2)=\Pr\{|G+\delta_3|&gt;a\}$, so this is exactly the
     skewness&ndash;kurtosis formula. It is generally not a noncentral chi-bar-square with fixed one-half weights: when
-    $d&gt;0$, the boundary-face probability is $\Phi(-d)$ rather than $1/2$. At $(\eta,d)=(0,0)$ the formula reduces
+    $d&gt;0$, the boundary-face probability is $\Phi(-d)$ rather than $1/2$.</p>
+    <p>At $(\eta,d)=(0,0)$ the formula reduces
     exactly to the chi-bar-square null law. The result is confined to the local Gaussian score experiment; it does not
     assert finite-sample optimality, a rate relating $n$ to switching speed, or equivalence to the full filtered
     likelihood test.</p>
@@ -430,33 +444,39 @@
     <p>A separate cone-test certificate simulates 20,000 Gaussian samples of size 4,000. At the chi-bar-square 95%
     cutoff, $\mathrm{LM}_+$ rejects 5.46% while the unprojected square rejects 7.45%; sample excess kurtosis is negative
     52.29% of the time. For a standardized uniform sample, ordinary Jarque&ndash;Bera is 11964.19 because excess kurtosis
-    is $-1.19819$, whereas the cone statistic is only 0.41. An independent simulation of two million limiting
+    is $-1.19819$, whereas the cone statistic is only 0.41.</p>
+    <p>An independent simulation of two million limiting
     Gaussian score pairs agrees with the power integral within $9.6\times10^{-4}$. At local shifts
     $(\delta_3,\delta_4)=(1,0),(0,1),(1,1),(0,2)$, the exact directional powers are respectively
     $0.141681$, $0.177730$, $0.283486$, and $0.490980$; the size-matched ordinary Jarque&ndash;Bera powers are
     $0.132710$, $0.132710$, $0.225545$, and $0.415427$.</p>
     <p>The same certificate tests correlated Gaussian coordinates with correlation $0.75$. The canonical formula and
-    the direct piecewise Fisher-metric projection agree within $1.42\times10^{-14}$. At the same chi-bar cutoff, the
+    the direct piecewise Fisher-metric projection agree within $1.42\times10^{-14}$.</p>
+    <p>At the same chi-bar cutoff, the
     metric statistic rejects $5.0056\%$ under the null, whereas marginal standardization followed by naive clipping
     rejects $5.9701\%$. For a raw mean shift corresponding to canonical shift $(1,1)$, simulated power is $0.283067$
     against the exact value $0.283486$.</p>
     <p>For the general theorem, the certificate also uses three unrestricted coordinates and one one-sided coordinate
     with a dense $4\times4$ covariance. The 95% point of
-    $\tfrac12\chi_3^2+\tfrac12\chi_4^2$ is $8.761053$. Across 1.5 million null draws, rejection is $4.9966\%$ and the
+    $\tfrac12\chi_3^2+\tfrac12\chi_4^2$ is $8.761053$.</p>
+    <p>Across 1.5 million null draws, rejection is $4.9966\%$ and the
     canonical statistic agrees with the direct piecewise Fisher projection within $4.98\times10^{-14}$. At canonical
     mean $(0.6,-0.8,0.4,0.9)$, the noncentral-$\chi^2$ integral gives power $0.202280$ and simulation gives
     $0.203155$.</p>
     <p>For the orthant extension, one million draws with $p=2$, $q=3$, dense cross-block covariance, and a diagonal
     constrained covariance block give face frequencies $(0.125228,0.374093,0.374995,0.125684)$ against exact binomial
     weights $(1,3,3,1)/8$. The 95% critical value is $8.946572$ and null rejection is $5.0178\%$. A second million-draw
-    experiment deliberately correlates two constrained scores at $\rho=0.70$. Its exact weights are
+    experiment deliberately correlates two constrained scores at $\rho=0.70$.</p>
+    <p>Its exact weights are
     $(0.126592,0.5,0.373408)$; the simulated face frequencies are $(0.126491,0.499893,0.373616)$. With $p=2$, its
     correctly calibrated 95% critical value $8.410794$ gives $5.0320\%$ rejection. Incorrectly imposing the
-    independent-binomial cutoff $8.022108$ raises rejection to $5.9396\%$. The conditional constrained correlation is
+    independent-binomial cutoff $8.022108$ raises rejection to $5.9396\%$.</p>
+    <p>The conditional constrained correlation is
     $-0.011608$ and its cutoff gives $5.9540\%$ rejection, directly checking that the theorem uses marginal $S$.</p>
     <p>A third million-draw experiment uses $p=2$, three correlated constraints, and a dense cross block. The exact
     weights $(0.059323,0.320310,0.440677,0.179690)$ agree with simulated face frequencies
-    $(0.059344,0.320617,0.440516,0.179523)$ to $3.1\times10^{-4}$. The exact critical value $9.305539$ gives
+    $(0.059344,0.320617,0.440516,0.179523)$ to $3.1\times10^{-4}$.</p>
+    <p>The exact critical value $9.305539$ gives
     $4.9824\%$ rejection, while the independent-binomial cutoff $8.946572$ gives $5.7718\%$. Thus the new formula is
     numerically calibrated and the binomial shortcut is again rejected.</p>
     <p>Finally, a dense four-constraint experiment checks all 16 active sets in the general formula. Its exact weights
@@ -464,7 +484,8 @@
     $(0.018262,0.157558,0.362940,0.343282,0.117958)$, with maximum dimension-weight error
     $7.57\times10^{-4}$; the maximum error over the 16 individual face probabilities is $5.33\times10^{-4}$. The
     exact 95% cutoff $10.398896$ rejects at $5.0215\%$; imposing the independent-binomial weights rejects at
-    $6.2549\%$. Repeating the only numerical four-dimensional orthant integrations with four randomizations changes
+    $6.2549\%$.</p>
+    <p>Repeating the only numerical four-dimensional orthant integrations with four randomizations changes
     any weight by at most $7.1\times10^{-8}$, and the even/odd Gauss&ndash;Bonnet sums equal $1/2$ within
     $3.5\times10^{-8}$. Under covariance inversion, the maximum complementary-face and reversed-dimension
     discrepancies are $2.72\times10^{-8}$, at the scale of that integration, while the two block identities agree
@@ -473,7 +494,8 @@
     six-transition path. Doubling $m$ through $40,80,160,320$ gives observed orders $2.045$ for the stationary-start
     log-likelihood gap, $2.043$ for the specified-start tail after the first observation, and $1.019$ for the filter&apos;s
     distance from $\pi$. The specified-start first-observation gap has order $0.906$, confirming the stated
-    $O(m^{-1})$ initial-prior caveat. Refining both Fourier and time grids changes the fastest-rate log gap by less than
+    $O(m^{-1})$ initial-prior caveat.</p>
+    <p>Refining both Fourier and time grids changes the fastest-rate log gap by less than
     $4\times10^{-15}$. The kernel formula predicts coefficients $-2.529716$, $-0.183148$, and $-2.530169$ for the
     stationary gap, specified-start first interval, and specified-start tail. Richardson extrapolation of the exact
     filtered likelihood gives $-2.528356$, $-0.183174$, and $-2.528853$, respectively; the largest discrepancy is
