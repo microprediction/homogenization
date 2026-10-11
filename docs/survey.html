@@ -383,7 +383,8 @@
     Green&ndash;Kubo term for the switched rate, as on the <a href="./counts.html">Poisson counts</a> page.
     At finite horizons the exact excess includes a boundary correction; more generally, count factorial cumulants equal
     the ordinary cumulants of the integrated stochastic rate, so higher-order upstream fluctuations can be separated
-    from Poisson shot noise. For multiple conditionally independent count streams the identity is coordinatewise;
+    from Poisson shot noise.</p>
+    <p>For multiple conditionally independent count streams the identity is coordinatewise;
     common events instead leave shared-shot-noise terms given by an exact all-order partition formula, including
     arbitrary integer-valued event marks through their falling-factorial moments.
     <a href="./bibliography.html#Paulsson2004">Paulsson (2004)</a> analyses how time-averaging of fluctuating upstream
@@ -409,7 +410,8 @@
     (<a href="./bibliography.html#FischerMeierHellstern1993">Fischer and Meier-Hellstern 1993</a>), with marked versions
     in <a href="./bibliography.html#HeNeuts1998">He and Neuts (1998)</a>. Their long-run count variance exceeds the
     Poisson variance by twice the Green&ndash;Kubo integral of the rate, and that excess drives queue lengths in heavy traffic
-    (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>). At finite horizons the exact excess is the variance
+    (<a href="./bibliography.html#Asmussen2003">Asmussen 2003</a>).</p>
+    <p>At finite horizons the exact excess is the variance
     of the cumulative intensity, including its initial-condition boundary term. A request sent to several servers, with the first
     reply winning, is a race under a shared driver (<a href="./bibliography.html#DeanBarroso2013">Dean and Barroso 2013</a>).</p>
 
@@ -449,9 +451,80 @@
     <ul>
       <li>the first two arrivals identify everything the arrival law reveals about $K$ at that order;</li>
       <li>the diagonal of $K$ cannot be observed;</li>
-      <li>the asymmetry of $K$ is already visible with two channels, provided the driver has at least three states
-        and violates detailed balance (<a href="./any-equation.html">worked for two names</a>).</li>
+      <li>two channels can reveal the asymmetry of $K$; the exact condition is a nonzero antisymmetric pairing of
+        their two hazards.</li>
     </ul>
+    <p>The number of observed channels and the number of hidden states play different roles. For two hazards
+    $h_1,h_2$ and a stationary hidden chain with fast generator $Q_m=mQ$, the exact first-arrival probability is</p>
+    $$p_1(m)=\pi^\top\big(\operatorname{diag}(h_1+h_2)-Q_m\big)^{-1}h_1.$$
+    <p>Writing $\bar h=\bar h_1+\bar h_2$ and computing the directed Green&ndash;Kubo matrix $K$ for $Q_m$, its
+    first-order expansion is</p>
+    $$p_1(m)=\frac{\bar h_1}{\bar h}
+      +\frac1{\bar h}\left\{\frac{\bar h_1}{\bar h}\sum_{j,k=1}^2K_{jk}-K_{11}-K_{21}\right\}
+      +O(m^{-2}).$$
+    <p>To see this, solve $(\operatorname{diag}(h_1+h_2)-mQ)u=h_1$ and insert
+    $u=u_0\mathbf1+m^{-1}u_1+\cdots$. The first solvability condition gives
+    $u_0=\bar h_1/\bar h$; the next Poisson equation, followed by its solvability condition, gives the displayed
+    Green&ndash;Kubo coefficient.</p>
+    <h3>Every order, with a finite-rate bound</h3>
+    <p>The same calculation has an exact centered resolvent form. Put $d=h_1+h_2$, $R=Q^{\#}$,</p>
+    $$c_0=\frac{\pi h_1}{\pi d},\qquad
+      \ell^\top=\frac{\pi\operatorname{diag}(d)}{\pi d},\qquad
+      B=I-\mathbf1\ell^\top,$$
+    $$a=R(dc_0-h_1),\qquad M=R\operatorname{diag}(d)B.$$
+    <p>Splitting $u$ into its stationary scalar and centered parts gives the exact identity</p>
+    <div class="equation-card">
+    $$p_1(m)=c_0-\frac1m\ell^\top\left(I-\frac{M}{m}\right)^{-1}a.$$
+    </div>
+    <p>Consequently, whenever $m&gt;\rho(M)$,</p>
+    $$p_1(m)=c_0-\sum_{k\ge1}\frac{\ell^\top M^{k-1}a}{m^k}.$$
+    <p>This supplies every inverse-speed coefficient without repeatedly solving Poisson equations. More importantly,
+      truncation after order $N$ has the exact remainder</p>
+    $$\mathcal R_N=-\frac1{m^{N+1}}\ell^\top M^N
+      \left(I-\frac{M}{m}\right)^{-1}a.$$
+    <p>The directly checkable sufficient condition $m&gt;\lVert M\rVert_2$ therefore gives the nonasymptotic bound</p>
+    <div class="equation-card">
+    $$|\mathcal R_N|\le
+      \frac{\lVert\ell\rVert_2\lVert a\rVert_2}{m}
+      \frac{(\lVert M\rVert_2/m)^N}{1-\lVert M\rVert_2/m}.$$
+    </div>
+    <p>The norm condition is sufficient rather than necessary; the sharp power-series radius is controlled by
+      $\rho(M)$. For the three-state race below, $\rho(M)=0.01613437$ and
+      $\lVert M\rVert_2=0.02251066$.</p>
+    <p>Already at speed $m=0.1$, the fourth-order error is
+      $2.20\times10^{-5}$ against the rigorous bound $2.53\times10^{-4}$; at $m=10$ it is below
+      $10^{-14}$. The first coefficient is algebraically the Green&ndash;Kubo formula above.</p>
+    <h3>Exactly when two channels see the arrow of time</h3>
+    <p>Let $Q^\dagger=\operatorname{diag}(\pi)^{-1}Q^\top\operatorname{diag}(\pi)$ be the stationary time reversal
+    (<a href="./bibliography.html#Kelly1976">Kelly 1976</a>). Its directed Green&ndash;Kubo matrix is $K^\top$. Hence,
+    for two hazards,</p>
+    <div class="equation-card">
+    $$p_{1,Q_m}-p_{1,Q_m^\dagger}
+      =\frac{K_{12}-K_{21}}{\bar h}+O(m^{-2}).$$
+    </div>
+    <p>Here $K$ is computed for the already-scaled generator $Q_m=mQ$, so its entries are $O(m^{-1})$. Thus a
+    fixed pair sees the arrow of time at first order if and only if $K_{12}\ne K_{21}$. Merely having three hidden
+    states and violating detailed balance is not sufficient for an arbitrary pair of hazards.</p>
+    <p>The existential statement is exact: an irreducible finite-state chain is reversible if and only if
+    $K(f,g)=K(g,f)$ for every pair of state observables. On the centered subspace, $Q^\#$ is the inverse of $Q$;
+    therefore symmetry of every Green&ndash;Kubo pairing is equivalent to self-adjointness of $Q^\#$, hence of $Q$,
+    in the stationary inner product.</p>
+    <p>If $Q$ is not reversible, choose $f,g$ with a nonzero antisymmetric pairing
+    and add sufficiently large constants to make both positive. Two positive arrival channels then witness the
+    irreversibility.</p>
+    <p>There is also an exact blind family. Put $H=h_1+h_2$ and
+    $A=\operatorname{diag}(H)-mQ$. If $h_1=\alpha H+\beta\mathbf1$ &mdash; equivalently, the two hazards are affine
+    functions of one another &mdash; then</p>
+    $$p_{1,Q_m}=\langle\mathbf1,A^{-1}h_1\rangle_\pi
+      =\langle A^{-1}\mathbf1,h_1\rangle_\pi=p_{1,Q_m^\dagger}$$
+    <p>for every switching speed, not just asymptotically. The two equalities use
+    $A\mathbf1=H$ and $A^\dagger\mathbf1=H$. The certificate checks this exact blindness for a nonreversible
+    three-state chain with a nonuniform stationary law.</p>
+    <p>For a visible example, a three-state cycle with rates $2$ clockwise and $0.1$
+    counterclockwise, $h_1=(0.07,0.01,0.01)$ and $h_2=(0.01,0.07,0.01)$ has a nonzero pairing. The certificate gives
+    $p_1(10)=0.5001500361$; reversing the cycle gives $0.4998499639$. The first-order and reversal-gap errors both
+    fall by a factor of four when $m$ doubles, confirming the $O(m^{-2})$ remainder
+    (<a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">certificate</a>).</p>
     <p>The horse-race model of choice and response times is its psychological ancestor
     (<a href="./bibliography.html#MarleyColonius1992">Marley and Colonius 1992</a>).</p>
 

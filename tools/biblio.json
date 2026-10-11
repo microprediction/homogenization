@@ -1385,6 +1385,17 @@
  },
  {
   "role": "survey_choice",
+  "key": "Kelly1976",
+  "authors": "Kelly, F. P.",
+  "year": 1976,
+  "title": "Networks of Queues",
+  "venue": "Advances in Applied Probability 8(2):416-432",
+  "doi": "10.2307/1425912",
+  "url": "https://doi.org/10.2307/1425912",
+  "annotation": "Uses stationary time reversal to analyse irreversible queueing networks; the competing-arrivals section uses the same reversed-generator construction to isolate the observable arrow of time."
+ },
+ {
+  "role": "survey_choice",
   "key": "MarleyColonius1992",
   "authors": "Marley, A. A. J. and Colonius, H.",
   "year": 1992,
