@@ -28,5 +28,25 @@
   "doi": "",
   "url": "https://jmlr.org/papers/v25/23-1553.html",
   "annotation": "Bounds the marginal coverage gap of split conformal prediction under stationary beta-mixing data in terms of the mixing coefficients and the calibration size; the fast-regime pages give the same gap exactly for a finite chain."
+ },
+ {
+  "key": "KantorovichRubinstein1958",
+  "authors": "Kantorovich, L. V. and Rubinstein, G. S.",
+  "year": 1958,
+  "title": "On a space of completely additive functions",
+  "venue": "Vestnik Leningrad University 13(7):52-59",
+  "doi": "",
+  "url": "https://www.mathnet.ru/links/d483d221217d29f60d6f93617c387415/rm6527_eng.pdf",
+  "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
+ },
+ {
+  "key": "Ruschendorf2009",
+  "authors": "Rüschendorf, L.",
+  "year": 2009,
+  "title": "On the distributional transform, Sklar's theorem, and the empirical copula process",
+  "venue": "Journal of Statistical Planning and Inference 139(11):3921-3927",
+  "doi": "10.1016/j.jspi.2009.05.030",
+  "url": "https://doi.org/10.1016/j.jspi.2009.05.030",
+  "annotation": "Develops the randomized distributional transform that maps an arbitrary, possibly atomic distribution to a uniform variable; the path-conformal page uses it to extend the exact training-conditional beta law to randomized ties."
  }
 ]

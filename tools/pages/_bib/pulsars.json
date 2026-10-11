@@ -54,6 +54,15 @@
   "annotation": "Treats red timing noise as a Gaussian process and shows how to analyse it together with the timing-model fit."
  },
  {
+  "key": "Lee2012",
+  "authors": "Lee, K. J. and Bassa, C. G. and Janssen, G. H. and Karuppusamy, R. and Kramer, M. and Smits, R. and Stappers, B. W.",
+  "year": 2012,
+  "title": "The optimal schedule for pulsar timing array observations",
+  "venue": "Monthly Notices of the Royal Astronomical Society 423(3):2642-2655",
+  "doi": "10.1111/j.1365-2966.2012.21070.x",
+  "annotation": "Appendix A represents a continuous polynomial timing fit as a time-varying projector in the Legendre basis and quantifies how the fit modifies red-noise covariance and power."
+ },
+ {
   "key": "KeithNitu2023",
   "authors": "Keith, M. J. and Niţu, I. C.",
   "year": 2023,
