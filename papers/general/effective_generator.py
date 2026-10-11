@@ -37,6 +37,13 @@ def averages(Q, phis):
     return np.array([pi @ np.asarray(p, float) for p in phis])
 
 
+def time_reversal(Q):
+    """Stationary time reversal Q* = diag(pi)^(-1) Q.T diag(pi)."""
+    Q = np.asarray(Q, float)
+    pi = stationary(Q)
+    return Q.T * pi[None, :] / pi[:, None]
+
+
 def first_arrival_probability(Q, hazards, winner=0, initial=None):
     """Exact probability that one of several Markov-modulated Cox channels arrives first."""
     Q = np.asarray(Q, float)
@@ -55,6 +62,19 @@ def first_arrival_first_order(Q, hazards, winner=0):
     K = gk(Q, hazards)
     correction = (leading * K.sum() - K[:, winner].sum()) / total_mean
     return float(leading + correction)
+
+
+def first_arrival_reversal_gap_first_order(Q, hazards, winner=0):
+    """Leading forward-minus-time-reversed first-arrival probability.
+
+    ``Q`` is the fast generator itself, so its Green--Kubo matrix already
+    contains the inverse-speed factor.  For two channels and winner zero this
+    is simply ``(K[0, 1] - K[1, 0]) / sum(mean hazards)``.
+    """
+    hazards = np.asarray(hazards, float)
+    total_mean = averages(Q, hazards).sum()
+    K = gk(Q, hazards)
+    return float((K[winner, :].sum() - K[:, winner].sum()) / total_mean)
 
 
 def effective_generator(Lbar, As, K, part='full'):

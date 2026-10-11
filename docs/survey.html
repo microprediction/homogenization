@@ -442,8 +442,8 @@
     <ul>
       <li>the first two arrivals identify everything the arrival law reveals about $K$ at that order;</li>
       <li>the diagonal of $K$ cannot be observed;</li>
-      <li>two channels already reveal the asymmetry of $K$, provided the hidden driver has at least three states
-        and violates detailed balance.</li>
+      <li>two channels can reveal the asymmetry of $K$; the exact condition is a nonzero antisymmetric pairing of
+        their two hazards.</li>
     </ul>
     <p>The number of observed channels and the number of hidden states play different roles. For two hazards
     $h_1,h_2$ and a stationary hidden chain with fast generator $Q_m=mQ$, the exact first-arrival probability is</p>
@@ -457,9 +457,33 @@
     $u=u_0\mathbf1+m^{-1}u_1+\cdots$. The first solvability condition gives
     $u_0=\bar h_1/\bar h$; the next Poisson equation, followed by its solvability condition, gives the displayed
     Green&ndash;Kubo coefficient.</p>
-    <p>The unsymmetrized entry $K_{21}$ is therefore observable with only two channels. A two-state hidden chain is
-    necessarily reversible, but a three-state chain can carry a directed cycle. For rates $2$ clockwise and $0.1$
-    counterclockwise, $h_1=(0.07,0.01,0.01)$ and $h_2=(0.01,0.07,0.01)$, the certificate gives
+    <h3>Exactly when two channels see the arrow of time</h3>
+    <p>Let $Q^\dagger=\operatorname{diag}(\pi)^{-1}Q^\top\operatorname{diag}(\pi)$ be the stationary time reversal
+    (<a href="./bibliography.html#Kelly1976">Kelly 1976</a>). Its directed Green&ndash;Kubo matrix is $K^\top$. Hence,
+    for two hazards,</p>
+    <div class="equation-card">
+    $$p_{1,Q_m}-p_{1,Q_m^\dagger}
+      =\frac{K_{12}-K_{21}}{\bar h}+O(m^{-2}).$$
+    </div>
+    <p>Here $K$ is computed for the already-scaled generator $Q_m=mQ$, so its entries are $O(m^{-1})$. Thus a
+    fixed pair sees the arrow of time at first order if and only if $K_{12}\ne K_{21}$. Merely having three hidden
+    states and violating detailed balance is not sufficient for an arbitrary pair of hazards.</p>
+    <p>The existential statement is exact: an irreducible finite-state chain is reversible if and only if
+    $K(f,g)=K(g,f)$ for every pair of state observables. On the centered subspace, $Q^\#$ is the inverse of $Q$;
+    therefore symmetry of every Green&ndash;Kubo pairing is equivalent to self-adjointness of $Q^\#$, hence of $Q$,
+    in the stationary inner product. If $Q$ is not reversible, choose $f,g$ with a nonzero antisymmetric pairing
+    and add sufficiently large constants to make both positive. Two positive arrival channels then witness the
+    irreversibility.</p>
+    <p>There is also an exact blind family. Put $H=h_1+h_2$ and
+    $A=\operatorname{diag}(H)-mQ$. If $h_1=\alpha H+\beta\mathbf1$ &mdash; equivalently, the two hazards are affine
+    functions of one another &mdash; then</p>
+    $$p_{1,Q_m}=\langle\mathbf1,A^{-1}h_1\rangle_\pi
+      =\langle A^{-1}\mathbf1,h_1\rangle_\pi=p_{1,Q_m^\dagger}$$
+    <p>for every switching speed, not just asymptotically. The two equalities use
+    $A\mathbf1=H$ and $A^\dagger\mathbf1=H$. The certificate checks this exact blindness for a nonreversible
+    three-state chain with a nonuniform stationary law.</p>
+    <p>For a visible example, a three-state cycle with rates $2$ clockwise and $0.1$
+    counterclockwise, $h_1=(0.07,0.01,0.01)$ and $h_2=(0.01,0.07,0.01)$ has a nonzero pairing. The certificate gives
     $p_1(10)=0.5001500361$; reversing the cycle gives $0.4998499639$. The first-order and reversal-gap errors both
     fall by a factor of four when $m$ doubles, confirming the $O(m^{-2})$ remainder
     (<a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">certificate</a>).</p>

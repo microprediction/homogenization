@@ -5,15 +5,17 @@
 2. Vasicek with switching reversion speed and volatility (non-commuting): same, on the discretized pricing equation.
 3. Black-Scholes with switching variance: call prices from the rule against the numerical solution.
 4. Many-name credit: joint survival of every subset from one Green-Kubo matrix of hazards.
-5. Competing arrivals: two observed channels driven by a three-state irreversible cycle already detect the
-   antisymmetric Green-Kubo sector; the first-order error falls like |Q|^-2.
+5. Competing arrivals: a two-channel reversal gap detects exactly the hazards' antisymmetric Green-Kubo pairing.
+   A positive pair witnesses the three-state cycle with |Q|^-2 error, while an affine pair is exactly blind at
+   every switching speed despite the same irreversible hidden driver.
 """
 import math, cmath, os, sys
 import numpy as np
 from scipy.linalg import expm
 from effective_generator import (
     stationary, gk, averages, effective_generator, full_generator,
-    first_arrival_probability, first_arrival_first_order,
+    time_reversal, first_arrival_probability, first_arrival_first_order,
+    first_arrival_reversal_gap_first_order,
 )
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fast-switching'))
 
@@ -157,11 +159,9 @@ def main():
     for m in race_speeds:
         Q = m * QC
         p_forward = first_arrival_probability(Q, race_hazards)
-        p_reverse = first_arrival_probability(Q.T, race_hazards)
+        p_reverse = first_arrival_probability(time_reversal(Q), race_hazards)
         p_first = first_arrival_first_order(Q, race_hazards)
-        K_race = gk(Q, race_hazards)
-        total_mean = averages(Q, race_hazards).sum()
-        predicted_gap = (K_race[0, 1] - K_race[1, 0]) / total_mean
+        predicted_gap = first_arrival_reversal_gap_first_order(Q, race_hazards)
         forward.append(p_forward)
         reverse.append(p_reverse)
         approximations.append(p_first)
@@ -175,10 +175,39 @@ def main():
     print("   approximation error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
     print("   reversal-gap error ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in reversal_ratios))
     ok &= abs(forward[i10] - 0.5001500360718357) < 2e-15
-    ok &= abs(reverse[i10] - 0.4998499639281751) < 2e-15
+    ok &= abs(reverse[i10] - 0.4998499639281751) < 2e-14
     ok &= all(3.95 < x < 4.05 for x in ratios)
     ok &= all(3.95 < x < 4.05 for x in reversal_ratios)
     ok &= abs(forward[i10] - reverse[i10]) > 3e-4
+
+    # Nonreversibility of the driver is not sufficient for a fixed pair of
+    # hazards to see it.  If h2 is affine in h1, then h1 is affine in the
+    # total hazard.  The exact forward and reverse probabilities coincide.
+    blind_hazards = np.array([race_hazards[0], 0.02 + 0.5 * race_hazards[0]])
+    blind_gaps = []
+    for m in (1.0, 5.0, 10.0, 20.0, 40.0, 80.0):
+        Q = m * Q3  # deliberately nonuniform stationary law
+        blind_gaps.append(abs(
+            first_arrival_probability(Q, blind_hazards)
+            - first_arrival_probability(time_reversal(Q), blind_hazards)
+        ))
+    rng = np.random.default_rng(20261011)
+    for _ in range(20):
+        rates = rng.uniform(0.1, 2.0, (4, 4))
+        np.fill_diagonal(rates, 0.0)
+        rates[np.diag_indices(4)] = -rates.sum(axis=1)
+        h1 = rng.uniform(0.01, 0.1, 4)
+        affine_hazards = np.array([h1, rng.uniform(0.005, 0.03) + rng.uniform(0.2, 1.5) * h1])
+        for m in (0.5, 3.0, 20.0):
+            Q = m * rates
+            blind_gaps.append(abs(
+                first_arrival_probability(Q, affine_hazards)
+                - first_arrival_probability(time_reversal(Q), affine_hazards)
+            ))
+    blind_anti = abs(gk(Q3, blind_hazards)[0, 1] - gk(Q3, blind_hazards)[1, 0])
+    print(f"   affine-hazard blind family (66 cases): max exact reversal gap {max(blind_gaps):.2e}; "
+          f"antisymmetric pairing {blind_anti:.2e}")
+    ok &= max(blind_gaps) < 5e-13 and blind_anti < 5e-15
     print("PASS" if ok else "FAIL")
 
 
