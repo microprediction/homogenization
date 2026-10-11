@@ -12,9 +12,11 @@
 5. Singularity analysis gives the sharp oscillatory high-order coefficients of both the slow rate and its weight.
 6. The exact two-mode decomposition isolates the positive, exponentially small finite-slab entry layer and
    supplies a computable bound on the error made by the all-orders outer series.
-7. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
+7. The double scaling L=ell*lam_c has a uniform crossover expansion.  The entry layer contributes at second
+   algebraic order and cancels the outer boundary shift at zero thickness.
+8. Three nested phases (cores inside envelopes inside gas): the N-material closed form against the matrix
    exponential and the engine, with the same orders of convergence.
-8. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
+9. Monte Carlo: rays traced through realizations of a coloured 3D Poisson plane tessellation, and chord-length
    sampling of the chain, agree with the matrix exponential within three standard errors.
 Writes results.json for the page.
 """
@@ -255,7 +257,81 @@ def main():
     out['entry_layer'] = dict(identity_diff=layer_identity, rows=layer_rows, short_L=short_L,
                               power=power, flat=flat)
 
-    print("7. three nested phases: gas, envelopes, cores")
+    print("7. thin-slab/correlation-length crossover")
+    # Put L=ell*lam_c and let lam_c tend to zero with ell in a fixed compact
+    # interval.  If v=p_A p_B and Delta=Sigma_A-Sigma_B, the exact logarithm is
+    #
+    # -mean*ell*lam_c
+    # + v*Delta^2*lam_c^2*(ell - 1 + exp(-ell)) + O(lam_c^3).
+    #
+    # The first two terms in parentheses are the slow outer rate and boundary
+    # weight.  exp(-ell) is the fast entry layer, now algebraic rather than flat.
+    crossover_lcs = [0.04, 0.02, 0.01, 0.005, 0.0025]
+    ell_grid = np.linspace(0.0, 8.0, 161)
+    delta_sigma = SA - SB
+    mean_sigma = PA * SA + (1.0 - PA) * SB
+    volume_product = PA * (1.0 - PA)
+    crossover_rows = []
+    for lc in crossover_lcs:
+        lA, lB = binary_lams(PA, lc)
+        approximation_errors = []
+        layer_profile_errors = []
+        for ell in ell_grid:
+            dec = two_exponential_decomposition(SA, SB, lA, lB, ell * lc)
+            exact_log = (
+                -dec['r_minus'] * ell * lc
+                + math.log(dec['slow_weight'])
+                + dec['log_layer']
+            )
+            crossover = (
+                -mean_sigma * ell * lc
+                + volume_product * delta_sigma ** 2 * lc ** 2
+                * (ell - 1.0 + math.exp(-ell))
+            )
+            approximation_errors.append(abs(exact_log - crossover))
+            layer_profile_errors.append(abs(
+                dec['log_layer'] / (lc * delta_sigma) ** 2
+                - volume_product * math.exp(-ell)
+            ))
+        crossover_rows.append(dict(
+            lam_c=lc,
+            max_log_error=max(approximation_errors),
+            max_error_over_lam_c_cubed=max(approximation_errors) / lc ** 3,
+            max_scaled_layer_profile_error=max(layer_profile_errors),
+        ))
+    crossover_order = math.log2(
+        crossover_rows[-2]['max_log_error'] / crossover_rows[-1]['max_log_error']
+    )
+    layer_profile_order = math.log2(
+        crossover_rows[-2]['max_scaled_layer_profile_error']
+        / crossover_rows[-1]['max_scaled_layer_profile_error']
+    )
+    print(
+        "   max log errors: "
+        + ", ".join(f"{row['max_log_error']:.3e}" for row in crossover_rows)
+    )
+    print(
+        f"   terminal orders: crossover {crossover_order:.6f}, "
+        f"scaled entry profile {layer_profile_order:.6f}"
+    )
+    ok &= 2.95 < crossover_order < 3.05
+    ok &= 0.95 < layer_profile_order < 1.05
+    ok &= crossover_rows[-1]['max_error_over_lam_c_cubed'] < 53.0
+    ok &= crossover_rows[-1]['max_scaled_layer_profile_error'] < 0.0018
+    out['thin_slab_crossover'] = dict(
+        ell_max=float(ell_grid[-1]),
+        ell_points=len(ell_grid),
+        formula=dict(
+            mean_sigma=mean_sigma,
+            volume_product=volume_product,
+            delta_sigma=delta_sigma,
+        ),
+        rows=crossover_rows,
+        crossover_order=crossover_order,
+        scaled_layer_profile_order=layer_profile_order,
+    )
+
+    print("8. three nested phases: gas, envelopes, cores")
     rows3, errs3 = [], []
     for ell in ELLS:
         Q = nested_Q(ell)
@@ -276,7 +352,7 @@ def main():
     out['nested'] = rows3
     out['nested_slopes'] = {str(n): s for n, s in sl3.items()}
 
-    print("8. Monte Carlo")
+    print("9. Monte Carlo")
     rng = np.random.default_rng(20260923)
     mcs = []
     for lc, media in [(0.16, 300), (0.08, 300), (0.04, 600)]:

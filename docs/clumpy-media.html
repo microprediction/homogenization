@@ -309,6 +309,38 @@
     small-correlation-length/entry-layer distinction in stochastic transport
     (<a href="./bibliography.html#MalvagiLevermorePomraning1989">Malvagi, Levermore and Pomraning 1989</a>).</p>
 
+    <h3>The thin-slab crossover</h3>
+    <p>The nonuniform regime also has a closed asymptotic law. Fix $0&lt;p_A,p_B&lt;1$ and a bounded
+      dimensionless thickness $0\le\ell\le H$, and scale the physical slab as $L=\ell\lambda_c$. Put
+      $v=p_Ap_B$, $\Delta=\Sigma_A-\Sigma_B$, and
+      $\bar\Sigma=p_A\Sigma_A+p_B\Sigma_B$. Then, uniformly for $\ell\in[0,H]$,</p>
+    <div class="equation-card">
+    $$\log T(\ell\lambda_c)
+      =-\bar\Sigma\,\ell\lambda_c
+      +v\Delta^2\lambda_c^2\{\ell-1+e^{-\ell}\}
+      +O_H(\lambda_c^3).$$
+    </div>
+    <p>The three pieces of the second-order coefficient have different origins. The slow eigenvalue contributes
+      $v\Delta^2\ell\lambda_c^2$, the slow-mode weight contributes
+      $-v\Delta^2\lambda_c^2$, and the fast mode contributes
+      $v\Delta^2e^{-\ell}\lambda_c^2$. In particular, at $\ell=0$ the entry layer cancels the nonzero outer
+      boundary shift exactly, as it must because $T(0)=1$.</p>
+    <p>To prove the formula, expand the exact quantities jointly at $x=\lambda_c\Delta=0$:</p>
+    $$\begin{aligned}
+      r_-&=\bar\Sigma-v\Delta^2\lambda_c+O(\lambda_c^2),\\
+      \log w_-&=-vx^2+O(x^3),\\
+      \log\!\left(1+\frac{w_+}{w_-}e^{-D(x)\ell}\right)
+        &=vx^2e^{-\ell}+O_H(x^3).
+    \end{aligned}$$
+    <p>All factors are analytic jointly in $(x,\ell)$ on a neighborhood of
+      $\{0\}\times[0,H]$, which makes the remainder uniform on the stated compact interval. The result is not
+      uniform as $H\to\infty$, as a material fraction degenerates, or as the opacity contrast varies with
+      $\lambda_c$.</p>
+    <p>The certificate evaluates 161 values of $\ell$ in $[0,8]$. Under five halvings of $\lambda_c$, the maximum
+      log-transmission error has observed order $2.99$, while the scaled entry layer
+      $\log(1+\text{relative layer})/(\lambda_c\Delta)^2$ approaches $ve^{-\ell}$ with order $0.98$. Thus the crossover
+      formula quantitatively joins the zero-thickness cancellation to the fixed-slab beyond-all-orders regime.</p>
+
     <h2>Any number of materials</h2>
     <p>Nothing in Steps 1 to 4 used two materials. For a chain with any number of materials, generator $Q$ and volume
     fractions $\pi$, the same result holds with matrix coefficients:</p>
