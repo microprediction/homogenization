@@ -6,8 +6,8 @@
 3. Black-Scholes with switching variance: call prices from the rule against the numerical solution.
 4. Many-name credit: joint survival of every subset from one Green-Kubo matrix of hazards.
 5. Competing arrivals: a two-channel reversal gap detects exactly the hazards' antisymmetric Green-Kubo pairing.
-   A positive pair witnesses the three-state cycle with |Q|^-2 error, while an affine pair is exactly blind at
-   every switching speed despite the same irreversible hidden driver.
+   A centered resolvent expansion supplies every inverse-speed coefficient and a finite-rate geometric remainder
+   bound. A positive pair witnesses the cycle, while an affine pair is exactly blind at every switching speed.
 """
 import math, cmath, os, sys
 import numpy as np
@@ -15,7 +15,7 @@ from scipy.linalg import expm
 from effective_generator import (
     stationary, gk, averages, effective_generator, full_generator,
     time_reversal, first_arrival_probability, first_arrival_first_order,
-    first_arrival_reversal_gap_first_order,
+    first_arrival_series, first_arrival_reversal_gap_first_order,
 )
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fast-switching'))
 
@@ -179,6 +179,52 @@ def main():
     ok &= all(3.95 < x < 4.05 for x in ratios)
     ok &= all(3.95 < x < 4.05 for x in reversal_ratios)
     ok &= abs(forward[i10] - reverse[i10]) > 3e-4
+
+    # The centered Schur/Neumann expansion is exact to all orders within its
+    # convergence disk. The 2-norm condition is only sufficient, but gives a
+    # directly computable nonasymptotic tail bound.
+    series_rows, worst_bound_ratio = [], 0.0
+    for m in (0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0):
+        truth = first_arrival_probability(m * QC, race_hazards)
+        row = {'speed': m, 'exact': truth, 'orders': []}
+        for order in range(1, 5):
+            expansion = first_arrival_series(QC, race_hazards, m, order=order)
+            error = abs(expansion['value'] - truth)
+            bound = expansion['remainder_bound']
+            worst_bound_ratio = max(worst_bound_ratio, error / bound)
+            row['orders'].append((order, expansion['value'], error, bound))
+            ok &= error <= bound * (1 + 2e-12)
+            if order == 1:
+                ok &= abs(expansion['value'] - first_arrival_first_order(m * QC, race_hazards)) < 2e-15
+        series_rows.append(row)
+    benchmark = first_arrival_series(QC, race_hazards, 0.1, order=4)
+    print(f"   centered series: rho(M) {benchmark['spectral_radius']:.8f}, "
+          f"||M||_2 {benchmark['matrix_norm']:.8f}; at speed .1, order-4 error "
+          f"{series_rows[0]['orders'][-1][2]:.3e}, bound {series_rows[0]['orders'][-1][3]:.3e}")
+    print(f"   largest error/bound ratio over 28 certified truncations: {worst_bound_ratio:.6f}")
+    ok &= benchmark['spectral_radius'] < benchmark['matrix_norm'] < 0.1
+    ok &= series_rows[-1]['orders'][-1][2] < 1e-13
+
+    rng_series = np.random.default_rng(20261012)
+    random_bound_ratio, random_first_difference = 0.0, 0.0
+    for _ in range(24):
+        rates = rng_series.uniform(0.1, 2.0, (4, 4))
+        np.fill_diagonal(rates, 0.0)
+        rates[np.diag_indices(4)] = -rates.sum(axis=1)
+        hazards = rng_series.uniform(0.005, 0.12, (2, 4))
+        scale = first_arrival_series(rates, hazards, 1.0, order=0)
+        m = max(0.05, 1.5 * scale['matrix_norm'])
+        expansion = first_arrival_series(rates, hazards, m, order=3)
+        truth = first_arrival_probability(m * rates, hazards)
+        error = abs(expansion['value'] - truth)
+        random_bound_ratio = max(random_bound_ratio, error / expansion['remainder_bound'])
+        first = first_arrival_series(rates, hazards, m, order=1)['value']
+        random_first_difference = max(
+            random_first_difference, abs(first - first_arrival_first_order(m * rates, hazards)))
+        ok &= error <= expansion['remainder_bound'] * (1 + 2e-12)
+    print(f"   24 random four-state chains: largest error/bound ratio {random_bound_ratio:.6f}; "
+          f"first-order identity error {random_first_difference:.2e}")
+    ok &= random_first_difference < 2e-14
 
     # Nonreversibility of the driver is not sufficient for a fixed pair of
     # hazards to see it.  If h2 is affine in h1, then h1 is affine in the

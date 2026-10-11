@@ -64,6 +64,49 @@ def first_arrival_first_order(Q, hazards, winner=0):
     return float(leading + correction)
 
 
+def first_arrival_series(Q, hazards, speed, winner=0, order=1):
+    """Centered all-order expansion and a finite-rate remainder bound.
+
+    ``Q`` is the fixed generator and ``speed * Q`` is the actual fast
+    generator.  The returned ``value`` keeps terms through ``speed**(-order)``.
+    The geometric bound is finite when ``speed > ||M||_2``; convergence of the
+    power series itself only requires ``speed > rho(M)``.
+    """
+    Q = np.asarray(Q, float)
+    hazards = np.asarray(hazards, float)
+    if speed <= 0 or order < 0:
+        raise ValueError("speed must be positive and order nonnegative")
+    pi, R = stationary(Q), group_inverse(Q)
+    total = hazards.sum(axis=0)
+    mean_total = float(pi @ total)
+    leading = float(pi @ hazards[winner] / mean_total)
+    ell = pi * total / mean_total
+    B = np.eye(len(pi)) - np.outer(np.ones(len(pi)), ell)
+    a = R @ (total * leading - hazards[winner])
+    M = R @ np.diag(total) @ B
+
+    coefficients = []
+    term = a.copy()
+    value = leading
+    for k in range(1, order + 1):
+        coefficient = -float(ell @ term)
+        coefficients.append(coefficient)
+        value += coefficient / speed ** k
+        term = M @ term
+
+    matrix_norm = float(np.linalg.norm(M, 2))
+    spectral_radius = float(np.max(np.abs(np.linalg.eigvals(M))))
+    ratio = matrix_norm / speed
+    if ratio < 1:
+        remainder_bound = (float(np.linalg.norm(ell) * np.linalg.norm(a)) / speed
+                           * ratio ** order / (1.0 - ratio))
+    else:
+        remainder_bound = float('inf')
+    return dict(value=float(value), leading=leading, coefficients=coefficients,
+                spectral_radius=spectral_radius, matrix_norm=matrix_norm,
+                remainder_bound=remainder_bound)
+
+
 def first_arrival_reversal_gap_first_order(Q, hazards, winner=0):
     """Leading forward-minus-time-reversed first-arrival probability.
 
