@@ -4,11 +4,13 @@ References, all independent of the expansions:
   mean growth         principal eigenvalue of the combined system Q^T (x) I + blockdiag(A_i) (numerical linear algebra),
                       and, for two states, its closed form (SIR) or scalar fixed point (SEIR);
   mean itself         Monte Carlo of E[I_t] over regime paths, against exp(t G) of the combined system;
-  almost-sure growth  Monte Carlo of the switched ODE, each holding interval propagated exactly by exp(tau A_i).
+  almost-sure growth  exact invariant-density quadrature for two-state SEIR, plus Monte Carlo of the switched ODE
+                      with each holding interval propagated exactly by exp(tau A_i).
 Checks:
   1. SIR, beta switched: mean = bbar - gamma + K, almost-sure = bbar - gamma exactly.
-  2. SEIR, beta switched: no first-order mean correction (second order, closed form), almost-sure drops by
-     K (ybar_E xbar_I)^2 = K sigma^2 / D; errors fall at the expected orders.
+  2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; strict global monotonicity in
+     the common switching-speed scale; slow- and fast-switching endpoint expansions; no first-order mean correction
+     (second order, closed form); almost-sure growth drops by K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
   3. SEIR, beta and gamma switched on a three-state cycle, forward and reversed: first-order mean and almost-sure
      growth, and the forward-minus-reversed gap against 2 K^anti sigma / sqrt(D).
   4. A three-compartment structured example for the general formulas.
@@ -17,8 +19,11 @@ Writes results.json for the page.
 import json, math, os
 import numpy as np
 from scipy.linalg import expm
+from scipy.optimize import brentq
 from epidemics import (stationary, gk, two_state_K, sir_mean_two_state, seir_vectors, seir_beta_mean_two_state,
-                       seir_beta_formulas, seir_beta_gamma_formulas, first_order, mean_growth, lyapunov_mc,
+                       seir_beta_formulas, seir_beta_lyapunov_two_state, seir_beta_slow_switching,
+                       seir_beta_gamma_formulas,
+                       first_order, mean_growth, lyapunov_mc,
                        cycle_generator, cycle_K, regime_matrices, principal, E_I, I_I)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -111,15 +116,22 @@ def main():
         num, _ = mean_growth(Q, As)
         fp = seir_beta_mean_two_state(*BETA2, SIGMA, GAMMA, lam)
         f = seir_beta_formulas(*BETA2, SIGMA, GAMMA, lam)
+        exact_as = seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, lam)
         gen = first_order(Q, seir(bb, GAMMA), [E_I], [list(BETA2)])
         mc, se = lyapunov_mc(Q, As, jumps=mc_jumps(lam), chains=2000, seed=lam)
-        rows.append({'lam': lam, 'K': f['K'], 'mean_num': num, 'mean_fp': fp, 'mean2': f['mean2'], 'as_mc': mc, 'as_se': se,
-                     'as1': f['as1'], 'mean_err0': num - r, 'mean_err2': f['mean2'] - num, 'as_err': f['as1'] - mc})
+        rows.append({'lam': lam, 'K': f['K'], 'mean_num': num, 'mean_fp': fp, 'mean2': f['mean2'],
+                     'as_exact': exact_as['lyapunov'], 'as_mc': mc, 'as_se': se, 'as1': f['as1'],
+                     'mean_err0': num - r, 'mean_err2': f['mean2'] - num,
+                     'as_err': f['as1'] - exact_as['lyapunov']})
         print(f"  lam {lam:2d}  mean: numerical {num:.6f} fixed point {fp:.6f} second order {f['mean2']:.6f}"
-              f"  | almost-sure: Monte Carlo {mc:.6f} +- {se:.1e}  first order {f['as1']:.6f}")
+              f"  | almost-sure: exact {exact_as['lyapunov']:.6f}, Monte Carlo {mc:.6f} +- {se:.1e},"
+              f" first order {f['as1']:.6f}")
         check(abs(num - fp) < 1e-11, "fixed-point formula equals the combined-system eigenvalue")
         check(abs(gen[0] - r) < 1e-14 and abs(gen[1] - f['as1']) < 1e-12, "general formulas: no first-order mean term, "
               "almost-sure term matches")
+        check(abs(mc - exact_as['lyapunov']) < 4 * se, "exact projective quadrature agrees with path Monte Carlo")
+        check(max(abs(x - 0.5) for x in exact_as['state_mass']) < 2e-13,
+              "projective invariant density has the correct regime marginal")
     e0, e2, ea = [[row[k] for row in rows] for k in ('mean_err0', 'mean_err2', 'as_err')]
     print(f"  (mean - r) lam^2: {', '.join(f'{v * l * l:.5f}' for v, l in zip(e0, LAMS))}"
           f"   predicted bt^2 sigma^2 / (4 sqrt D) = {bt ** 2 * SIGMA ** 2 / (4 * sD):.5f}")
@@ -128,6 +140,95 @@ def main():
     ra = [rate(ea[i], ea[i + 1]) for i in range(1, 4)]
     print(f"  almost-sure error rates: {', '.join(f'{v:.2f}' for v in ra)}")
     check(all(1.6 < v < 2.4 for v in ra), "almost-sure first-order error falls at order 2")
+    # Independent numerical stability and unequal-rate marginal checks.
+    exact96 = seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, 2, nodes=96)
+    exact192 = seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, 2, nodes=192)
+    check(abs(exact96['lyapunov'] - exact192['lyapunov']) < 2e-14,
+          "Gauss-Jacobi quadrature is stable under node doubling")
+    unequal = seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, 1.7, 0.4)
+    target_mass = [0.4 / 2.1, 1.7 / 2.1]
+    check(max(abs(x - y) for x, y in zip(unequal['state_mass'], target_mass)) < 2e-13,
+          "unequal switching reproduces the chain's stationary regime masses")
+    relabelled = seir_beta_lyapunov_two_state(BETA2[1], BETA2[0], SIGMA, GAMMA, 0.4, 1.7)
+    check(abs(unequal['lyapunov'] - relabelled['lyapunov']) < 2e-14 and
+          max(abs(x - y) for x, y in zip(unequal['state_mass'], relabelled['state_mass'][::-1])) < 2e-13,
+          "the exact exponent and regime masses are invariant under relabelling")
+    exact_threshold = brentq(
+        lambda lam: seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, lam)['lyapunov'], 2.0, 4.0,
+        xtol=2e-13)
+    first_threshold = bt ** 2 * SIGMA ** 2 / (2 * sD ** 2 * r)
+    print(f"  exact invasion threshold lam = {exact_threshold:.12f}; first-order threshold {first_threshold:.12f}")
+    check(abs(seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, exact_threshold)['lyapunov']) < 2e-14,
+          "exact projective quadrature resolves the extinction/invasion threshold")
+    out['seir_threshold'] = {'exact': exact_threshold, 'first_order': first_threshold, 'unique': True}
+    # Slow switching: each transition contributes a deterministic relaxation
+    # area, while the stationary transition flux is linear in the common
+    # speed c.  The next error is quadratic because entry-point errors are O(c).
+    slow_rows = []
+    for label, (rate12_scale, rate21_scale) in (
+            ('symmetric', (1.0, 1.0)), ('asymmetric', (1.7, 0.4))):
+        asymptotic = seir_beta_slow_switching(
+            *BETA2, SIGMA, GAMMA, rate12_scale, rate21_scale)
+        speeds = [0.08, 0.04, 0.02, 0.01, 0.005]
+        errors = []
+        values = []
+        for speed in speeds:
+            exact = seir_beta_lyapunov_two_state(
+                *BETA2, SIGMA, GAMMA,
+                speed * rate12_scale, speed * rate21_scale, nodes=256)['lyapunov']
+            approximation = asymptotic['limit'] + speed * asymptotic['coefficient']
+            values.append(exact)
+            errors.append(exact - approximation)
+        orders = [rate(errors[i], errors[i + 1]) for i in range(len(errors) - 1)]
+        check(asymptotic['cross_ratio'] > 1.0,
+              f"{label} slow-switching coefficient is strictly positive")
+        check(all(1.8 < order < 2.2 for order in orders[-2:]),
+              f"{label} slow-switching remainder is second order")
+        slow_rows.append({
+            'label': label, 'rate_scales': [rate12_scale, rate21_scale],
+            'limit': asymptotic['limit'], 'coefficient': asymptotic['coefficient'],
+            'cross_ratio': asymptotic['cross_ratio'], 'speeds': speeds,
+            'exact': values, 'errors': errors, 'orders': orders,
+        })
+        print(f"  slow {label}: limit {asymptotic['limit']:.9f}, coefficient "
+              f"{asymptotic['coefficient']:.9f}, terminal remainder order {orders[-1]:.6f}")
+    # Relabelling exchanges the base switching rates but not the expansion.
+    slow_original = seir_beta_slow_switching(*BETA2, SIGMA, GAMMA, 1.7, 0.4)
+    slow_relabelled = seir_beta_slow_switching(BETA2[1], BETA2[0], SIGMA, GAMMA, 0.4, 1.7)
+    check(max(abs(slow_original[key] - slow_relabelled[key]) for key in ('limit', 'coefficient', 'cross_ratio')) < 1e-14,
+          "the slow-switching expansion is invariant under regime relabelling")
+    out['seir_slow_switching'] = slow_rows
+
+    # Global monotonicity certificate.  In the symmetrized Riccati coordinate
+    # y = sigma*z + (sigma-gamma)/2, stationarity gives E[y^2] equal to the
+    # fixed stationary average of a_i=(sigma-gamma)^2/4+sigma*beta_i at every
+    # common speed.  The theorem proves convex-order concentration as speed
+    # rises; here we check both the invariant moment and strict growth directly.
+    monotone_rows = []
+    monotone_speeds = np.geomspace(0.01, 64.0, 29)
+    for label, (rate12_scale, rate21_scale) in (
+            ('symmetric', (1.0, 1.0)), ('asymmetric', (1.7, 0.4))):
+        exacts = [seir_beta_lyapunov_two_state(
+            *BETA2, SIGMA, GAMMA,
+            speed * rate12_scale, speed * rate21_scale, nodes=160)
+            for speed in monotone_speeds]
+        values = np.array([item['lyapunov'] for item in exacts])
+        square_errors = np.array([
+            item['riccati_square_mean'] - item['riccati_square_target'] for item in exacts])
+        increments = np.diff(values)
+        check(np.min(increments) > 0.0,
+              f"{label} exact Lyapunov exponent is strictly increasing on the speed grid")
+        check(np.max(np.abs(square_errors)) < 5e-11,
+              f"{label} Riccati-square mean is speed-invariant")
+        monotone_rows.append({
+            'label': label, 'rate_scales': [rate12_scale, rate21_scale],
+            'speeds': monotone_speeds.tolist(), 'lyapunov': values.tolist(),
+            'minimum_increment': float(np.min(increments)),
+            'max_riccati_square_error': float(np.max(np.abs(square_errors))),
+        })
+        print(f"  monotone {label}: minimum grid increment {np.min(increments):.6e}, "
+              f"max Riccati-square error {np.max(np.abs(square_errors)):.3e}")
+    out['seir_speed_monotonicity'] = monotone_rows
     out['seir_beta'] = rows
 
     # ---------------------------------------------------------------- 3. the cycle
