@@ -11,7 +11,8 @@
         Cotton, P. (2001). <em>An Analytic Approach to Ornstein&ndash;Uhlenbeck Processes with Fluctuating Parameters
         and Applications in the Modeling of Fixed Income Securities</em>. PhD thesis, Stanford University.
         <a href="https://raw.githubusercontent.com/microprediction/home/main/papers/Cotton_2001_PhD_Thesis_An_Analytic_Approach_to_Ornstein-Uhlenbeck_Processes_with_Fluctuating_Parameters.pdf">PDF</a>
-        &middot; <a href="https://www.proquest.com/openview/77a94e16467c20c2e86103967640f3dd/1?pq-origsite=gscholar&amp;cbl=18750&amp;diss=y">ProQuest</a>.
+        &middot; <a href="https://www.proquest.com/openview/77a94e16467c20c2e86103967640f3dd/1?pq-origsite=gscholar&amp;cbl=18750&amp;diss=y">ProQuest</a>
+        &middot; <a href="./thesis-errata.html">errata</a>.
         <em>Vasicek short rates and hazard rates whose mean level and volatility are driven by a fast process, continuous
         or two-state; the reduction to linear systems and the fast-switching expansions.</em>
       </li>
@@ -70,9 +71,23 @@
       <li>
         Cotton, P. (2026). <em>Closed-Form Bond Options Under Fast Regime Switching</em>. Note in preparation.
         <a href="./bond-options.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/bond_option_explicit.py">code</a>.
-        <em>Jamshidian&apos;s formula plus an explicit first-order correction, including the memory of the regime at
-        expiry, in Gaussian integrals.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/bond_option_explicit.py">code</a>
+        &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">G2++ certificate</a>.
+        <em>One-factor Jamshidian decomposition plus an explicit first-order correction, including the memory of the
+        regime at expiry, in Gaussian integrals. In G2++, only a single zero-coupon bond has a scalar Gaussian loading;
+        coupon-bond exercise boundaries are strictly convex when the reversion speeds differ. Their two exact affine
+        wings are selected by the shortest and longest residual cash-flow maturities, with explicit exponential
+        approach rates; the boundary curvature is a weighted loading-ratio variance whose total mass equals the
+        spread between the extreme loading ratios. For ordinary fixed-parameter G2++, Gaussian conditioning
+        nevertheless gives an exact one-dimensional quadrature over the unique nonlinear boundary, with an explicit
+        exponentially tilted Gaussian bound for truncating the last integral. Exact pathwise Jamshidian decomposition
+        holds precisely when all active nonzero coupon-date loadings lie on one positive ray; loading-matrix rank one
+        without common orientation is not enough. More generally, a monotone Gaussian
+        conditioning direction exists exactly when the origin is outside the convex hull of the cash-flow loading
+        vectors, and it can be oblique to every original coordinate. Conditioning on that direction reduces a
+        $d$-factor coupon option to $d-1$ dimensions;
+        the boundary Hessian is positive semidefinite and its rank is the affine-span dimension of the loading-ratio
+        vectors. These fixed-Gaussian results do not extend unchanged to the full finite-rate switching model.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Three Numbers in a Yield Curve</em>. Working paper in preparation.
@@ -86,11 +101,22 @@
       <li>
         Cotton, P. (2026). <em>The Likelihood of a Fast-Switching Short Rate</em>. Note in preparation.
         <a href="./likelihood.html">Summary</a> &middot;
-        <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">certificate</a>.
-        <em>The first-order transition density of a discretely observed Vasicek rate with fast hidden regimes is a
-        Hermite correction with Green&ndash;Kubo coefficients, and its composite likelihood agrees with the filtered
-        likelihood to first order; it identifies the same matrix as the yield curve, and its score test is a
-        Jarque&ndash;Bera test with the kurtosis part projected onto positive excess kurtosis.</em>
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">transition certificate</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_filtered_likelihood.py">filter certificate</a>.
+        <em>The stationary-start transition composite likelihood of a discretely observed Vasicek rate is a Hermite
+        correction with Green&ndash;Kubo coefficients. For fixed panels it agrees with the exact filtered likelihood through
+        first order, with an explicit second-order coefficient and an arbitrary-prior first-observation term; its
+        directional score test projects Jarque&ndash;Bera onto the positive-kurtosis cone in the Fisher metric. More
+        generally, $p$ unrestricted scores and one one-sided score have null law
+        $\tfrac12\chi_p^2+\tfrac12\chi_{p+1}^2$, with an exact one-dimensional local-power integral. With $q$
+        Fisher-orthogonal one-sided scores the weights are binomial,
+        $2^{-q}{q\choose j}$ on $\chi_{p+j}^2$. Two correlated constraints have arcsine weights; for three, the
+        endpoint weights are trivariate orthant probabilities of the constrained correlation and its precision
+        correlation, with the middle weights fixed by conic Gauss&ndash;Bonnet. For arbitrary correlated $q$, each
+        active-face weight factors exactly into a conditional-residual orthant probability and a precision orthant
+        probability. Covariance inversion exchanges each face with its complement, so
+        $w_A(S)=w_{A^c}(S^{-1})$ and $w_j(S)=w_{q-j}(S^{-1})$. These formulas show why binomial weights are not
+        covariance-invariant when $q\geq2$.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Fast Regimes in Any Pricing Equation</em>. Note in preparation.
@@ -98,6 +124,29 @@
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">certificate</a>.
         <em>The first-order effective generator for any Markov pricing equation with fast switched parameters; the
         antisymmetric part of the Green&ndash;Kubo matrix enters through commutators.</em>
+      </li>
+      <li>
+        Cotton, P. (2026). <em>Solvability Beyond the Centered Corrector</em>. Note in preparation.
+        <a href="./solvability.html">Summary</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>.
+        <em>The group inverse determines only the centered shape of each corrector; the next Fredholm condition fixes
+        its null-space amplitude. When the fast generator varies slowly, differentiating the moving centering
+        condition adds a signed geometric transport coefficient distinct from the instantaneous Green&ndash;Kubo term;
+        for a two-state periodic protocol it is exactly the oriented line integral
+        $\oint (g_0-g_1)(\alpha+\beta)^{-1}\,d\pi_0$, invariant to traversal speed and odd under loop reversal.
+        For a general smooth finite-state family this term is a parameter-space one-form
+        $\mathcal A_a=\pi(\partial_aQ)(Q^{\#})^2f$; its exterior derivative gives an explicit curvature, and
+        Stokes&apos; theorem converts a closed-loop correction into a curvature-area integral. Changing the particular
+        Poisson corrector sends $\mathcal A$ to $\mathcal A-dc$, so curvature and closed-loop holonomy are gauge
+        invariant even though the open-path connection is not.
+        For constant scalar forcing an all-orders recursion yields the Green&ndash;Kubo variance coefficient and signed
+        three- and four-time cumulant coefficients. A resolvent-contour certificate
+        gives computable Cauchy remainders for both the slow eigenvalue and the spectral projector selecting the
+        initial-data amplitude; a separate fast-spectrum contour retains nonnormal transient amplification while
+        proving exponential layer decay. Combining all three gives an explicit all-time semigroup bound that exposes
+        the maturity loss from eigenvalue truncation and remains second order on a certified
+        $t=O(\varepsilon^{-2})$ window. An explicit initial layer gives a uniform second-order remainder on fixed time
+        intervals.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Cumulants of Integrated Variance Under a Fast Regime</em>. Note in preparation.
@@ -125,7 +174,13 @@
         Cotton, P. (2026). <em>Portfolio Choice with Fast Regimes</em>. Note in preparation.
         <a href="./portfolio.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_portfolio.py">certificate</a>.
-        <em>Merton, the Markowitz frontier and a regime-blind investor with bull and bear regimes: each first correction is one Green&ndash;Kubo number, and observed-regime weights stay exactly myopic.</em>
+        <em>Merton, the Markowitz frontier and a regime-blind investor with bull and bear regimes: each first correction
+        is a scalar contraction of the symmetric Green&ndash;Kubo Gram form, even for a nonreversible driver, and
+        observed-regime weights stay exactly myopic. At fixed maturity the Gram nullspace is exactly the centered
+        feature nullspace; maturity integration can increase rank, while an explicit resolvent spectral interval
+        controls the integrated Gram&apos;s eigenvalues and condition number. A D-optimal equivalence theorem reduces
+        maturity selection to a leverage bound and guarantees an optimum with at most $p(p+1)/2$ support points;
+        the two-feature benchmark is solved exactly by equal endpoint mass.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Pooled Conformal Residuals Under a Fast Hidden Regime</em>. Note in preparation.
@@ -153,6 +208,9 @@
         independent fixed-probability multinomial, an exact atomic-score comparator for
         deterministic ties, and their state-specific PAC consequence, an exact two-state
         Hellinger phase diagram and persistent-plus-diffuse critical limit, and an exact
+        overlapping-emission Fisher-information theorem showing how score-channel
+        informativeness attenuates the sharp local total-variation constant, plus an exact
+        replicated-chain chi-square identity, and an exact
         joint burn-in/panel likelihood limit with a closed Gaussian-CDF phase surface,
         monotonicity, and sharp two-source bounds, Perron large-deviation rate,
         sharp lattice tail prefactor with its initial-law amplitude and first
@@ -167,16 +225,63 @@
         starts.</em>
       </li>
       <li>
+        Cotton, P. (2026). <em>Path-Dependent Conformal Pooling Under Fast Regime Switching</em>. Note in preparation.
+        <a href="./path-conformal.html">Summary</a> &middot;
+        <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_path_crossover.py">certificate</a>.
+        <em>Exact path-score and dynamically filtered-predictor crossovers, including finite-chain Poisson-equation
+        coefficients through second order, a gradient/Hessian theorem for smooth nonlinear functions of several
+        path averages, and the explicit $c^{-2}$ boundary-covariance/third-derivative coefficient when the score
+        gradient vanishes. The model-conditional errors can be unequal; stationary weighting cancels them exactly,
+        while posterior-cancellation slices have an exact affine-dimension formula, including nonstationary
+        simultaneous first- and second-order cancellation with four or more regimes;
+        finite-sample marginal rank bounds under absolute
+        regularity for regular or irregular deterministic block spacing, randomized tie handling, and an exact
+        iid beta/PAC law for arbitrary score distributions conditional on the realized tie-augmented calibration
+        panel. For intervals with two finite calibration endpoints, the corresponding conditional coverage is an
+        exact beta spacing depending only on rank width; its sharp finite-sample PAC rule exposes the stricter
+        feasibility cost of estimating both tails. The full three-component Dirichlet spacing law also gives an
+        exact multinomial certificate and a sharp sample-range feasibility test for controlling the lower and
+        upper conditional tail errors separately. A simplex-valued Wasserstein transfer controls that entire
+        tail-allocation law under dependence and yields an optimized simultaneous two-tail PAC bound with separate
+        calibration-panel and final-test total-variation budgets. Under an exponential mixing envelope, equal gaps optimally allocate a fixed span for marginal
+        coverage, while an explicit logarithmic water fill assigns extra separation to the final test gap in the
+        training-conditional PAC bound. The dependent high-probability bound keeps
+        every calibration gap distinct from the final test gap; an iid-beta rearrangement removes the free slack
+        using only the two TV budgets, and the actual panel order-statistic law sharpens it further. The same two
+        TV budgets control the complete random training-conditional coverage law in $W_1$ distance from its iid
+        beta benchmark, proving that fixed-$N$ conditional variability persists even under arbitrarily fast
+        mixing. The beta benchmark&apos;s mean absolute deviation has an exact closed form and a sharp
+        $N^{-1/2}$ law, yielding a finite calibration-size rule that adds the dependence budget without confusing
+        marginal and calibration-conditional coverage. An exact
+        binomial-beta mixture gives the fixed-test-memory limit for every calibration order statistic, and an exact
+        binomial-tail coefficient gives the resulting marginal-coverage shift. The same law extends to unequal
+        stationary two-state masses, with an exact finite-sum coefficient, asymmetric outer-rank limits, and a
+        Gaussian critical-window interpolation with an $O(N^{-1/2})$ remainder at the stationary mass.
+        Finite-$N$ Chernoff envelopes
+        away from the median rank and a Gaussian central crossover with an explicit Berry&ndash;Esseen remainder: the
+        panel can converge in total variation to iid while the final gap changes both the training-conditional tail
+        and, generally, marginal coverage.
+        Independent fitting preserves these guarantees conditional
+        on the learned score map; remote same-series training pays one additional mixing term, while reusing
+        calibration labels can reduce ordinary split coverage to zero. None of these statements claims
+        feature-conditional validity.</em>
+      </li>
+      <li>
         Cotton, P. (2026). <em>Pulsar Spin-Down Switching and Timing Noise</em>. Note in preparation.
         <a href="./pulsars.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/pulsars/verify_pulsars.py">certificate</a>.
-        <em>Timing noise from a spin-down rate that switches between two values: exact two-state formulas, the Green&ndash;Kubo strength, and what timing data can identify.</em>
+        <em>Timing noise from a spin-down rate that switches between two values: exact two-state formulas, the
+        Green&ndash;Kubo strength, exact sampled-design covariances, and an all-degree theorem showing that every
+        polynomial timing fit containing a linear term cancels the first finite-correlation boundary error.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Light Through Clumpy Media to All Orders in the Correlation Length</em>. Note in preparation.
         <a href="./clumpy-media.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/clumpy-media/verify_clumpy_media.py">certificate</a>.
-        <em>Transmission through binary and nested Markovian mixtures as a fast-switching expansion around atomic mix, with the Green&ndash;Kubo first correction and the radius of convergence.</em>
+        <em>Transmission through binary and nested Markovian mixtures as a fast-switching expansion around atomic mix,
+        with the Green&ndash;Kubo first correction, sharp high-order coefficient asymptotics, an exact exponentially
+        small finite-slab entry-layer bound, and a uniform thin-slab crossover formula when
+        $L/\lambda_c$ remains bounded.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Epidemic Growth in a Fast-Switching Environment</em>. Note in preparation.

@@ -915,6 +915,73 @@
       bounds at scaled spacings $mh=1,1.5,2$ are respectively
       $0.35621999$, $0.05660622$, and $0.00899518$.</p>
 
+    <h3>Overlapping emissions attenuate the sharp constant</h3>
+    <p>Disjoint supports prove that the hidden-path scale is sharp uniformly
+      over all score laws, but they are the most informative possible
+      emissions. The sharp constant for a fixed overlapping score channel is
+      smaller and can be identified. Keep the stationary symmetric hidden
+      signs $X_j$, with transition correlation $a$, and let $K_+$ and $K_-$
+      be the two score laws. With
+      $ar K=(K_++K_-)/2$, suppose</p>
+    $$rac{dK_x}{d\bar K}(r)=1+xg(r),\qquad
+      \mathbb E_{\bar K}g=0,\qquad
+      \tau:=\mathbb E_{\bar K}g^2\in[0,1].$$
+    <p>The number $\tau$ measures how much of the hidden sign one score
+      reveals: it is zero for identical emissions and one for mutually
+      singular emissions. If ${\cal R}_{n,a}$ denotes the emitted-panel law
+      and ${\cal R}_{n,0}=\bar K^{\otimes n}$ its iid pooled counterpart,
+      direct differentiation at hidden independence gives the observed score
+      and Fisher information</p>
+    <div class="equation-card">
+    $$\left.\partial_a\log\frac{d{\cal R}_{n,a}}
+      {d\bar K^{\otimes n}}\right|_{a=0}
+      =\sum_{j=1}^{n-1}g(R_j)g(R_{j+1}),\qquad
+      {\cal I}_{n}(0)=(n-1)\tau^2.$$
+    </div>
+    <p>The edge summands are one-dependent under the iid law, but distinct
+      summands are uncorrelated because $\mathbb E_{\bar K}g=0$. Thus the
+      hidden-path information $(n-1)$ is multiplied by $\tau^2$ after the
+      score channel; data processing can change the critical constant, not
+      merely make a finite bound smaller.</p>
+    <p>There is also an exact finite-panel identity. Take two independent
+      copies of the hidden chain and put $U_j=X_jX'_j$. Then $U$ is a fair
+      two-state chain with transition correlation $a^2$, and integrating the
+      two emission likelihoods gives the vertex weight $1+\tau U_j$. Hence,
+      with</p>
+    $$T_b=\frac12\begin{pmatrix}1+b&1-b\\1-b&1+b\end{pmatrix},
+      \qquad D_\tau=\operatorname{diag}(1-\tau,1+\tau),$$
+    <div class="equation-card">
+    $$1+\chi^2({\cal R}_{n,a}\Vert\bar K^{\otimes n})
+      =\tfrac12(1,1)D_\tau(T_{a^2}D_\tau)^{n-1}{\bf1}.$$
+    </div>
+    <p>This gives the nonasymptotic bound
+      $d_{\rm TV}\le\tfrac12\sqrt{\chi^2}$. The Perron root of
+      $T_bD_\tau$ is</p>
+    $$\lambda_+(b,\tau)=\frac{1+b+
+      \sqrt{(1-b)^2+4b\tau^2}}2
+      =1+\tau^2b+O(b^2).$$
+    <p>Consequently, if $(n-1)a_n^2\to c$, the likelihood second moment
+      tends to $e^{c\tau^2}$. Under standard dominated HMM regularity, for
+      example $|g|\le1-\eta$, stationary hidden-Markov LAN
+      (<a href="./bibliography.html#BickelRitov1996">Bickel and Ritov,
+      1996</a>) and the explicit information above give</p>
+    <div class="equation-card">
+    $$\log\frac{d{\cal R}_{n,a_n}}{d\bar K^{\otimes n}}
+      \Longrightarrow N\!\left(-\frac{c\tau^2}{2},c\tau^2\right),
+      \qquad
+      d_{\rm TV}({\cal R}_{n,a_n},\bar K^{\otimes n})
+      \longrightarrow 2\Phi\!\left(\frac{\tau\sqrt c}{2}\right)-1.$$
+    </div>
+    <p>The exact second-moment formula supplies the uniform integrability
+      needed to pass from likelihood convergence to total variation. At
+      $\tau=1$ this recovers the hidden-path limit; at $\tau=0$ the two panel
+      laws coincide for every $n$ and $a$. For a binary symmetric score
+      channel with fidelity $0.8$, $\tau=0.64$. At $c=1$, exact enumeration
+      at $n=18$ gives TV $0.252356800$, approaching the emitted limit
+      $0.251031669$, whereas the recoverable hidden path has limit
+      $0.382924923$. This is still a marginal comparison of random score
+      panels, not conditional conformal coverage.</p>
+
     <h3>Sharp joint burn-in and panel limit</h3>
     <p>The additive burn-in term is not merely a proof artifact. In the same
       symmetric two-state model, let the initial sign imbalance before burn-in

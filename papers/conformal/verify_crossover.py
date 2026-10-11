@@ -52,7 +52,10 @@ symmetric two-state example reduces
 exactly to homogeneous or heterogeneous biased-versus-fair Bernoulli products
 and proves that the resulting square-root information scale is sharp,
 including its critical local-asymptotic-normal and persistent-plus-diffuse
-limits.  The same factorization
+limits.  A complementary overlapping-emission calculation identifies the
+observed Fisher information lost through the score channel, proves an exact
+finite-panel chi-square identity, and checks the attenuated critical TV limit.
+The same factorization
 with an arbitrary burned-in start gives the exact two-parameter limit in which
 residual initial memory and the Gaussian transition experiment coexist.
 """
@@ -1453,6 +1456,154 @@ def persistent_diffuse_lan_limit(persistent_correlations, information):
     return 0.5 * total / 2 ** len(persistent_correlations)
 
 
+def symmetric_binary_channel_law(panel_size, correlation, fidelity):
+    """Exact binary-score law from a symmetric hidden binary chain.
+
+    Hidden and observed states are encoded by signs.  The hidden transition
+    correlation is ``correlation`` and the binary symmetric emission channel
+    has E[R | X] = fidelity * X.  The pooled score law is therefore fair.
+    A vectorized forward recursion returns the probabilities in the same
+    prefix order as the accompanying observation-sign array.
+    """
+    transition = np.array([
+        [(1 + correlation) / 2, (1 - correlation) / 2],
+        [(1 - correlation) / 2, (1 + correlation) / 2],
+    ])
+    emit_minus = np.array([(1 + fidelity) / 2, (1 - fidelity) / 2])
+    emit_plus = emit_minus[::-1]
+    forward = np.stack([0.5 * emit_minus, 0.5 * emit_plus])
+    observations = np.array([[-1], [1]], dtype=np.int8)
+    for _ in range(1, panel_size):
+        predicted = forward @ transition
+        forward = np.concatenate([
+            predicted * emit_minus,
+            predicted * emit_plus,
+        ])
+        observations = np.concatenate([
+            np.column_stack([observations,
+                             -np.ones(len(observations), dtype=np.int8)]),
+            np.column_stack([observations,
+                             np.ones(len(observations), dtype=np.int8)]),
+        ])
+    return forward.sum(axis=1), observations
+
+
+def symmetric_emission_second_moment(panel_size, correlation,
+                                     channel_information):
+    """Exact iid-reference second moment of the emitted likelihood ratio.
+
+    If ``g=dK_+/dKbar-1`` and tau=E_Kbar[g^2], two hidden replicas reduce the
+    second moment to a two-state Feynman--Kac recursion.  Their product sign
+    has transition correlation ``correlation**2`` and vertex weight 1+tau*u.
+    """
+    replica_correlation = correlation ** 2
+    transition = np.array([
+        [(1 + replica_correlation) / 2,
+         (1 - replica_correlation) / 2],
+        [(1 - replica_correlation) / 2,
+         (1 + replica_correlation) / 2],
+    ])
+    weight = np.array([1 - channel_information,
+                       1 + channel_information])
+    forward = 0.5 * weight
+    for _ in range(1, panel_size):
+        forward = (forward @ transition) * weight
+    return forward.sum()
+
+
+def overlapping_emission_lan_checks():
+    """Certify emission attenuation of the two-state panel threshold.
+
+    For a dominated symmetric channel, dK_x/dKbar=1+x*g and
+    tau=E_Kbar[g^2].  At hidden independence the observed score for the
+    transition correlation is sum g(R_j)g(R_{j+1}), with exact information
+    (n-1)tau^2.  The replicated-chain recursion independently checks the
+    complete finite-n likelihood second moment.  A binary symmetric channel
+    permits exact enumeration of the emitted TV distance and its LAN limit.
+    """
+    fidelity = 0.8
+    tau = fidelity ** 2
+
+    derivative_size = 8
+    step = 1e-5
+    law_plus, observations = symmetric_binary_channel_law(
+        derivative_size, step, fidelity
+    )
+    law_minus, observations_minus = symmetric_binary_channel_law(
+        derivative_size, -step, fidelity
+    )
+    assert np.array_equal(observations, observations_minus)
+    iid_probability = 2.0 ** -derivative_size
+    numerical_score = (
+        (law_plus - law_minus) / (2 * step * iid_probability)
+    )
+    exact_score = tau * np.sum(
+        observations[:, :-1] * observations[:, 1:], axis=1
+    )
+    score_error = float(np.max(np.abs(numerical_score - exact_score)))
+    exact_information = float(
+        iid_probability * np.sum(exact_score ** 2)
+    )
+    assert score_error < 2e-8
+    assert abs(exact_information - (derivative_size - 1) * tau ** 2) < 2e-13
+
+    moment_size = 10
+    moment_correlation = 0.23
+    moment_law, _ = symmetric_binary_channel_law(
+        moment_size, moment_correlation, fidelity
+    )
+    enumerated_second_moment = (
+        2.0 ** moment_size * np.sum(moment_law ** 2)
+    )
+    replicated_second_moment = symmetric_emission_second_moment(
+        moment_size, moment_correlation, tau
+    )
+    assert abs(enumerated_second_moment
+               - replicated_second_moment) < 3e-14
+
+    critical_rows = []
+    for panel_size in (6, 10, 14, 18):
+        correlation = 1 / math.sqrt(panel_size - 1)
+        law, _ = symmetric_binary_channel_law(
+            panel_size, correlation, fidelity
+        )
+        exact_tv = 0.5 * np.abs(
+            law - 2.0 ** -panel_size
+        ).sum()
+        critical_rows.append((panel_size, correlation, exact_tv))
+    critical_limit = 2 * ndtr(tau / 2) - 1
+    hidden_limit = 2 * ndtr(0.5) - 1
+    assert abs(critical_rows[-1][2] - critical_limit) < 0.002
+    assert critical_limit < hidden_limit
+
+    second_moment_rows = []
+    for panel_size in (64, 256, 1024, 4096):
+        correlation = 1 / math.sqrt(panel_size - 1)
+        value = symmetric_emission_second_moment(
+            panel_size, correlation, tau
+        )
+        second_moment_rows.append((panel_size, value))
+    second_moment_limit = math.exp(tau ** 2)
+    assert abs(second_moment_rows[-1][1]
+               - second_moment_limit) < 3e-4
+
+    print("overlapping-emission LAN attenuation:")
+    print(f"  score finite-difference error {score_error:.3e}; "
+          f"information {(derivative_size - 1) * tau ** 2:.12f}")
+    print(f"  exact/enumerated likelihood second moment "
+          f"{replicated_second_moment:.12f}")
+    print("  n       a=(n-1)^-1/2    exact emitted TV")
+    for panel_size, correlation, exact_tv in critical_rows:
+        print(f"  {panel_size:2d}      {correlation:.9f}       {exact_tv:.9f}")
+    print(f"  emitted LAN limit {critical_limit:.9f}; "
+          f"hidden-path limit {hidden_limit:.9f}")
+    print(f"  local second moment n=4096 "
+          f"{second_moment_rows[-1][1]:.9f}; limit "
+          f"{second_moment_limit:.9f}")
+
+    return critical_rows, critical_limit, second_moment_rows
+
+
 def joint_panel_mixing_checks(Q, pi, gamma_s):
     """Check the joint long-panel/fast-switching TV theorem.
 
@@ -1638,6 +1789,8 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
         print(f" {a:8.6f}    {subcritical:10.8f}  {critical:10.8f}"
               f"  {supercritical:10.8f}")
     print(f"  critical LAN limit: {critical_limit:.8f}")
+
+    overlapping_emission_lan_checks()
 
     # Joint burn-in/panel sharpness.  For a symmetric two-state chain, a
     # pre-panel imbalance eta becomes delta=eta*exp(-2*m*b).  The bijection
@@ -2615,7 +2768,8 @@ def main():
           " regular- and"
           " irregular-grid and arbitrary-start joint panel-size/"
           "fast-switching TV bounds and sharp stationary, heterogeneous,"
-          " persistent-plus-diffuse, and burned-start two-state limits,"
+          " persistent-plus-diffuse, overlapping-emission, and burned-start"
+          " two-state limits,"
           " Perron tail rate,"
           " sharp prefactor and first two"
           " relative saddle-point corrections, the moderate-deviation"

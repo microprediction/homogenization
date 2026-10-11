@@ -32,6 +32,7 @@ papers/regime-switching-survival/
   verify_all_orders.py     orders 1 to 6 against a 30-digit numerical solution
   general_orders.py        any switching rates (unequal occupancy), all orders
   verify_general_orders.py symmetric reduction; orders 1 to 6 at p = 0.3
+  verify_thesis_errata.py  errata for the 2001 thesis: switching-rate convention, dynamic-mean kernel, Appendix B shift factors
 papers/fast-switching/
   fastswitch.py            the engine: any finite chain, all orders, exponential-sum or Chebyshev coefficients
   fastswitch_op.py         a general coupling operator (a continuous fast factor in the Hermite basis)
@@ -39,6 +40,7 @@ papers/fast-switching/
   models.py                two-factor rates and credit, CIR, jumps, Poisson counts, Heston, a fast factor
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
+  verify_g2_coupon_geometry.py  curved G2++ exercise boundary and exact conditional-Gaussian quadrature
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
@@ -50,6 +52,7 @@ papers/yield-curve/
 papers/conformal/
   pooled.py                exact conditional laws of terminal, path-average and slow-state scores under a two-state chain
   verify_pooled_residuals.py  conditional coverage of the pooled threshold, calibration dependence, regime-aware thresholds
+  verify_path_crossover.py exact dependent path thresholds, posterior cancellation geometry, thinning, randomized-atom beta laws and PAC bounds
 papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
