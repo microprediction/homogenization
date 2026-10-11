@@ -8,7 +8,13 @@
    agrees with their general formula when r is constant and with exact Monte Carlo of the optimal feedback;
    beta ~ exp(-T<lam^2> + T K(lam^2, lam^2)) with second-order errors.
 3. Regime-blind constant fraction: CE(w) and the weight shift against a numerical solve and numerical maximization,
-   and exact Monte Carlo over chain paths; on a three-state cycle the cross coefficient is the symmetric half-sum.
+   and exact Monte Carlo over chain paths.  A nonreversible three-state example verifies that the drift/variance
+   cross coefficient must be the symmetric Green-Kubo form; the one-sided coefficient fails at first order.
+4. Gram identification: for a finite irreducible chain, the symmetric Green-Kubo Gram matrix has exactly the
+   nullspace of the centered feature matrix.  A two-state example verifies that integrating maturity-dependent
+   loading directions can nevertheless raise rank above every fixed-maturity rank.  A nonreversible example
+   checks quantitative coercivity: the integrated Green-Kubo eigenvalues and condition number are controlled by
+   the ordinary maturity-integrated loading Gram and the symmetric resolvent spectrum.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -177,25 +183,218 @@ def main():
     ok &= abs(ce_mc - ce_ex) < 4 * se
     out['blind_mc'] = dict(mc=float(ce_mc), se=float(se), exact=ce_ex)
 
-    print("   three-state cycle: the cross coefficient is the symmetric one")
-    Qc = np.array([[-4.2, 4, 0.2], [0.2, -4.2, 4], [4, 0.2, -4.2]])
-    mu3, sig3, w, Tc = [1.0, 0.0, -1.0], np.sqrt([2.0, 3.0, 1.0]), 0.5, 2.0
-    s3 = np.asarray(sig3) ** 2
-    Kms_dir, Ksm_dir = K(Qc, mu3, s3), K(Qc, s3, mu3)
-    Kmm, Kms, Kss = blind_K(Qc, mu3, sig3)
-    h3 = h_blind(w, 0.0, mu3, sig3, GAMMA)
-    Khh = K(Qc, h3, h3)
-    poly = lambda c: w ** 2 * Kmm - GAMMA * w ** 3 * c + 0.25 * GAMMA ** 2 * w ** 4 * Kss
-    lim = [m * (ce_blind_exact(m * Qc, w, 0.0, mu3, sig3, GAMMA, Tc) - float(stationary(Qc) @ h3)) for m in (128, 256, 512)]
-    print(f"   K(mu, s) {Kms_dir:.10f}  K(s, mu) {Ksm_dir:.10f}  K(h, h) {Khh:.10f}  symmetric {poly(Kms):.10f}"
-          f"  one-sided {poly(Kms_dir):.10f}")
-    print(f"   m (CE_m - hbar) at m = 128, 256, 512: " + ", ".join(f"{x:.8f}" for x in lim)
-          + f";  (1 - gamma) K(h, h) = {(1 - GAMMA) * Khh:.8f}")
-    ok &= abs(Kms_dir - Ksm_dir) > 0.07 and abs(poly(Kms) - Khh) < 1e-15 and abs(poly(Kms_dir) - Khh) > 0.8 * Khh
-    ok &= abs(lim[2] - (1 - GAMMA) * Khh) < 1e-5 and 1.8 < (lim[0] - (1 - GAMMA) * Khh) / (lim[1] - (1 - GAMMA) * Khh) < 2.2
-    ok &= abs(K(Qc.T, h3, h3) - Khh) < 1e-15                    # reversing the cycle leaves the contraction alone
-    out['blind_cycle'] = dict(K_mu_s=Kms_dir, K_s_mu=Ksm_dir, K_sym=Kms, Khh=Khh, one_sided=poly(Kms_dir),
-                              limit_m512=lim[2], limit=(1 - GAMMA) * Khh)
+    print("   nonreversible three-state cross coefficient")
+    Qc = np.array([[-4.2, 4.0, 0.2], [0.2, -4.2, 4.0], [4.0, 0.2, -4.2]])
+    muc = np.array([1.0, 0.0, -1.0])
+    sc = np.array([2.0, 3.0, 1.0])
+    sigc = np.sqrt(sc)
+    wc, rc, gc, tc = 0.5, 0.0, 3.0, 2.0
+    k_mu_s = K(Qc, muc, sc)
+    k_s_mu = K(Qc, sc, muc)
+    k_sym = Ksym(Qc, muc, sc)
+    k_mm, k_ss = K(Qc, muc, muc), K(Qc, sc, sc)
+    hc = h_blind(wc, rc, muc, sigc, gc)
+    k_direct = K(Qc, hc, hc)
+    k_symmetric_expansion = (
+        wc**2 * k_mm - gc * wc**3 * k_sym + 0.25 * gc**2 * wc**4 * k_ss
+    )
+    k_one_sided = (
+        wc**2 * k_mm - gc * wc**3 * k_mu_s + 0.25 * gc**2 * wc**4 * k_ss
+    )
+    pi_c = stationary(Qc)
+    hbar_c = float(pi_c @ hc)
+    limit = (1.0 - gc) * k_direct
+    speeds = np.array([16.0, 32.0, 64.0, 128.0, 256.0, 512.0])
+    scaled = np.array(
+        [m * (ce_blind_exact(m * Qc, wc, rc, muc, sigc, gc, tc) - hbar_c) for m in speeds]
+    )
+    errors = np.abs(scaled - limit)
+    ratios = errors[:-1] / errors[1:]
+    print(f"      K(mu,s) {k_mu_s:.12e}, K(s,mu) {k_s_mu:.12e}, symmetric {k_sym:.12e}")
+    print(f"      K(h,h) direct {k_direct:.12e}, symmetric expansion {k_symmetric_expansion:.12e}, "
+          f"one-sided expansion {k_one_sided:.12e}")
+    print(f"      scaled exact coefficient at speed 512 {scaled[-1]:.12e}, limit {limit:.12e}, "
+          f"one-sided prediction {(1.0-gc)*k_one_sided:.12e}")
+    print("      first-order convergence ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
+    ok &= abs(k_mu_s - k_s_mu) > 0.07
+    ok &= abs(k_direct - k_symmetric_expansion) < 2e-16
+    ok &= abs(k_one_sided / k_direct - 1.0) > 0.8
+    ok &= abs(scaled[-1] / limit - 1.0) < 3e-4
+    ok &= all(1.95 < x < 2.05 for x in ratios[1:])
+    out['nonreversible_cross'] = dict(
+        pi=pi_c.tolist(),
+        K_mu_s=k_mu_s,
+        K_s_mu=k_s_mu,
+        K_sym=k_sym,
+        K_h_h=k_direct,
+        K_symmetric_expansion=k_symmetric_expansion,
+        K_one_sided_expansion=k_one_sided,
+        scaled_limit=limit,
+        speeds=speeds.tolist(),
+        scaled_exact=scaled.tolist(),
+        convergence_ratios=ratios.tolist(),
+    )
+
+    print("4. exact Green-Kubo Gram rank and maturity aggregation")
+    features = np.column_stack([muc, sc, muc + 2.0 * sc, np.ones(3)])
+    centered = features - np.outer(np.ones(3), pi_c @ features)
+    gram = green_kubo_gram(Qc, features)
+    feature_rank = int(np.linalg.matrix_rank(centered, tol=1e-11))
+    gram_rank = int(np.linalg.matrix_rank(gram, tol=1e-11))
+    coeffs = [
+        np.array([1.0, -0.4, 0.3, 2.0]),
+        np.array([-0.2, 0.7, -0.5, 1.0]),
+        np.array([0.6, 0.1, -0.8, -3.0]),
+    ]
+    dirichlet_errors = []
+    for c in coeffs:
+        h = centered @ c
+        potential = -group_inverse(Qc) @ h
+        energy = np.sum(
+            pi_c[:, None] * Qc * (potential[None, :] - potential[:, None]) ** 2
+        )
+        dirichlet_errors.append(abs(2.0 * c @ gram @ c - energy))
+    max_dirichlet_error = float(max(dirichlet_errors))
+    print(f"      centered feature rank {feature_rank}, Gram rank {gram_rank}, "
+          f"max Dirichlet identity error {max_dirichlet_error:.3e}")
+    ok &= feature_rank == gram_rank == 2
+    ok &= max_dirichlet_error < 2e-14
+
+    Q_two = two_state(1.0, 1.0)
+    contrast = np.array([1.0, -1.0])
+    contrast_k = K(Q_two, contrast, contrast)
+    nodes, weights = np.polynomial.legendre.leggauss(8)
+    maturities, weights = 0.5 * (nodes + 1.0), 0.5 * weights
+    integrated = sum(
+        weight * green_kubo_gram(Q_two, np.outer(contrast, [1.0, maturity]))
+        for maturity, weight in zip(maturities, weights)
+    )
+    integrated_exact = 0.5 * np.array([[1.0, 0.5], [0.5, 1.0 / 3.0]])
+    quadrature_error = float(np.max(np.abs(integrated - integrated_exact)))
+    integrated_det = float(np.linalg.det(integrated))
+    pointwise_ranks = [
+        int(np.linalg.matrix_rank(green_kubo_gram(Q_two, np.outer(contrast, [1.0, maturity])), tol=1e-12))
+        for maturity in [0.0, 0.25, 0.5, 0.75, 1.0]
+    ]
+    integrated_rank = int(np.linalg.matrix_rank(integrated, tol=1e-12))
+    print(f"      two-state K(z,z) {contrast_k:.12f}; pointwise ranks {pointwise_ranks}, "
+          f"integrated rank {integrated_rank}, determinant {integrated_det:.12f}")
+    print(f"      Gauss-Legendre versus exact integrated Gram error {quadrature_error:.3e}")
+    ok &= abs(contrast_k - 0.5) < 1e-15
+    ok &= pointwise_ranks == [1, 1, 1, 1, 1]
+    ok &= integrated_rank == 2
+    ok &= abs(integrated_det - 1.0 / 48.0) < 2e-15
+    ok &= quadrature_error < 2e-15
+
+    # Quantitative version of the rank theorem.  On centered L2(pi), let
+    # R_sym be the self-adjoint part of (-Q)^(-1).  If its positive spectrum
+    # lies in [a,b], then for M=int H^*H and Gbar=int H^*R_sym H,
+    #
+    #                 a M <= Gbar <= b M.
+    #
+    # Check the Loewner inequalities, their eigenvalue consequences, and the
+    # resulting condition-number bound on a nonreversible, nonnormal chain.
+    Q_quant = QA
+    pi_quant = stationary(Q_quant)
+    Pi_quant = np.diag(pi_quant)
+    sqrt_pi = np.sqrt(pi_quant)
+    inverse_centered = -group_inverse(Q_quant)
+    inverse_adjoint = (
+        np.diag(1.0 / pi_quant) @ inverse_centered.T @ Pi_quant
+    )
+    resolvent_sym = 0.5 * (inverse_centered + inverse_adjoint)
+    resolvent_similarity = (
+        np.diag(sqrt_pi)
+        @ resolvent_sym
+        @ np.diag(1.0 / sqrt_pi)
+    )
+    resolvent_eigenvalues = np.linalg.eigvalsh(resolvent_similarity)
+    positive_resolvent_eigenvalues = resolvent_eigenvalues[
+        resolvent_eigenvalues > 1e-12
+    ]
+    coercivity_lower = float(positive_resolvent_eigenvalues[0])
+    coercivity_upper = float(positive_resolvent_eigenvalues[-1])
+
+    mu_quant = muc - float(pi_quant @ muc)
+    s_quant = sc - float(pi_quant @ sc)
+    quantitative_gram = np.zeros((2, 2))
+    loading_gram = np.zeros((2, 2))
+    quantitative_pointwise_ranks = []
+    for maturity, weight in zip(maturities, weights):
+        state_direction = mu_quant + maturity * s_quant
+        H_maturity = np.outer(state_direction, [1.0, maturity])
+        pointwise_gram = green_kubo_gram(Q_quant, H_maturity)
+        quantitative_gram += weight * pointwise_gram
+        loading_gram += weight * H_maturity.T @ Pi_quant @ H_maturity
+        quantitative_pointwise_ranks.append(
+            int(np.linalg.matrix_rank(pointwise_gram, tol=1e-12))
+        )
+
+    lower_slack = np.linalg.eigvalsh(
+        quantitative_gram - coercivity_lower * loading_gram
+    )
+    upper_slack = np.linalg.eigvalsh(
+        coercivity_upper * loading_gram - quantitative_gram
+    )
+    loading_eigenvalues = np.linalg.eigvalsh(loading_gram)
+    quantitative_eigenvalues = np.linalg.eigvalsh(quantitative_gram)
+    quantitative_condition = float(np.linalg.cond(quantitative_gram))
+    condition_bound = float(
+        (coercivity_upper / coercivity_lower) * np.linalg.cond(loading_gram)
+    )
+    quantitative_rank = int(
+        np.linalg.matrix_rank(quantitative_gram, tol=1e-12)
+    )
+    print(
+        "      nonnormal resolvent interval "
+        f"[{coercivity_lower:.12f}, {coercivity_upper:.12f}]"
+    )
+    print(
+        "      loading eigenvalues "
+        f"{loading_eigenvalues[0]:.12f}, {loading_eigenvalues[1]:.12f}; "
+        "integrated Green-Kubo eigenvalues "
+        f"{quantitative_eigenvalues[0]:.12f}, {quantitative_eigenvalues[1]:.12f}"
+    )
+    print(
+        "      Loewner minimum slacks "
+        f"{lower_slack[0]:.12e}, {upper_slack[0]:.12e}; "
+        f"condition {quantitative_condition:.8f} <= {condition_bound:.8f}"
+    )
+    ok &= quantitative_pointwise_ranks == [1] * len(maturities)
+    ok &= quantitative_rank == 2
+    ok &= lower_slack[0] > -2e-14
+    ok &= upper_slack[0] > -2e-14
+    ok &= np.all(
+        quantitative_eigenvalues
+        >= coercivity_lower * loading_eigenvalues - 2e-14
+    )
+    ok &= np.all(
+        quantitative_eigenvalues
+        <= coercivity_upper * loading_eigenvalues + 2e-14
+    )
+    ok &= quantitative_condition <= condition_bound + 2e-12
+    out['gram_rank'] = dict(
+        nonreversible_feature_rank=feature_rank,
+        nonreversible_gram_rank=gram_rank,
+        max_dirichlet_identity_error=max_dirichlet_error,
+        two_state_contrast_K=contrast_k,
+        pointwise_ranks=pointwise_ranks,
+        integrated_gram=integrated.tolist(),
+        integrated_rank=integrated_rank,
+        integrated_determinant=integrated_det,
+        quadrature_error=quadrature_error,
+        quantitative_pointwise_ranks=quantitative_pointwise_ranks,
+        quantitative_integrated_rank=quantitative_rank,
+        resolvent_interval=[coercivity_lower, coercivity_upper],
+        loading_gram=loading_gram.tolist(),
+        quantitative_integrated_gram=quantitative_gram.tolist(),
+        loading_eigenvalues=loading_eigenvalues.tolist(),
+        quantitative_eigenvalues=quantitative_eigenvalues.tolist(),
+        lower_loewner_slack=lower_slack.tolist(),
+        upper_loewner_slack=upper_slack.tolist(),
+        quantitative_condition=quantitative_condition,
+        condition_bound=condition_bound,
+    )
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)
     print("PASS" if ok else "FAIL")

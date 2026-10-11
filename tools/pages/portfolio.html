@@ -89,15 +89,14 @@
     $$\operatorname{Var}\int_0^T g_{y_s}\,ds \approx 2T\,\mathcal K(g, g), \qquad
       \mathcal K(f, h) = \int_0^\infty \operatorname{Cov}_\pi\big(f(y_0),\,h(y_\tau)\big)\,d\tau = -\,\pi\cdot\big(\tilde f\,Q^{\#}\tilde h\big),$$
     <p>where $Q^{\#}$ is the group inverse of the generator from the <a href="./solvability.html">solvability page</a>
-    and $\tilde f = f - \pi\cdot f$. The integral is nearly Gaussian, so the exponential moment adds half the
-    variance to the mean:</p>
+    and $\tilde f = f - \pi\cdot f$. For a nonreversible chain $\mathcal K(f,h)$ need not equal
+    $\mathcal K(h,f)$. Its covariance-rate Gram form is the symmetric part</p>
+    $$\mathcal K^{\rm sym}(f,h)=\tfrac12\{\mathcal K(f,h)+\mathcal K(h,f)\}.$$
+    <p>The integral is nearly Gaussian, so the exponential moment adds half the variance to the mean:</p>
     $$\log \mathbb E_\pi\exp\Big(\int_0^T g_{y_s}\,ds\Big) \approx T\,\bar g + T\,\mathcal K(g, g) .$$
     <p>This is the rule of the <a href="./any-equation.html">general page</a> with every operator a multiplication.
     Multiplications commute, so only the symmetric part of $\mathcal K$ enters, and the direction in which a chain
     cycles through its regimes cannot matter at first order.</p>
-    <p>With more than two regimes $\mathcal K(f, h)$ and $\mathcal K(h, f)$ can differ. A cross coefficient below is
-    always the symmetric one,</p>
-    $$\mathcal K_{fh} = \tfrac12\big(\mathcal K(f, h) + \mathcal K(h, f)\big) .$$
     <p>A known starting regime $i$ adds the memory term of the first corrector:</p>
     $$\log \mathbb E_i\exp\Big(\int_0^T g_{y_s}\,ds\Big) \approx T\,\bar g + T\,\mathcal K(g, g) - \big(Q^{\#}\tilde g\big)_i .$$
     <p>For a single relaxation mode $-Q^{\#}\tilde g$ is $\tilde g$ times the relaxation time: the starting regime&apos;s
@@ -110,10 +109,11 @@
     <p><em>Regime-blind.</em> Put $g = (1-\gamma)h(w)$:</p>
     $$\mathrm{CE}(w) \approx \bar h(w) + (1-\gamma)\,\mathcal K\big(h(w), h(w)\big) .$$
     <p>Since $\tilde h(w) = w\,\tilde\mu - \tfrac12\gamma w^2\tilde s$, with $s = \sigma^2$, the correction is a
-    polynomial in $w$ with three Green&ndash;Kubo coefficients:</p>
-    $$\mathcal K\big(h(w), h(w)\big) = w^2\,\mathcal K_{\mu\mu} - \gamma\,w^3\,\mathcal K_{\mu s} + \tfrac14\,\gamma^2 w^4\,\mathcal K_{ss} .$$
+    polynomial in $w$ with three coefficients from the symmetric Green&ndash;Kubo Gram matrix:</p>
+    $$\mathcal K\big(h(w), h(w)\big) = w^2\,\mathcal K_{\mu\mu} - \gamma\,w^3\,\mathcal K^{\rm sym}_{\mu s} + \tfrac14\,\gamma^2 w^4\,\mathcal K_{ss},$$
+    $$\mathcal K^{\rm sym}_{\mu s}=\tfrac12\{\mathcal K(\mu,s)+\mathcal K(s,\mu)\}.$$
     <p>Persistent drift regimes act like extra return variance $2\mathcal K_{\mu\mu}$ on top of $\bar s$. When the bear
-    market is the volatile one, $\mathcal K_{\mu s} < 0$ and the cubic term adds to the penalty.</p>
+    market is the volatile one, $\mathcal K^{\rm sym}_{\mu s} < 0$ and the cubic term adds to the penalty.</p>
     <p><em>Markowitz.</em> Put $g = -\lambda^2$:</p>
     $$\beta \approx \exp\Big(-T\,\langle\lambda^2\rangle + T\,\mathcal K(\lambda^2, \lambda^2)\Big).$$
     <p>To first order the frontier sees the chain through two numbers only: $\langle\lambda^2\rangle$ and
@@ -128,9 +128,9 @@
     certificate confirms this by maximizing over regime-dependent fractions numerically.</p>
     <p>The regime-blind investor&apos;s best fraction does move. Setting the derivative of $\mathrm{CE}(w)$ to zero
     gives a cubic,</p>
-    $$\bar\mu - r - \gamma\,\bar s\,w + (1-\gamma)\big(2w\,\mathcal K_{\mu\mu} - 3\gamma w^2\,\mathcal K_{\mu s} + \gamma^2 w^3\,\mathcal K_{ss}\big) = 0,$$
+    $$\bar\mu - r - \gamma\,\bar s\,w + (1-\gamma)\big(2w\,\mathcal K_{\mu\mu} - 3\gamma w^2\,\mathcal K^{\rm sym}_{\mu s} + \gamma^2 w^3\,\mathcal K_{ss}\big) = 0,$$
     <p>and linearizing around $w_0$ gives the first-order shift</p>
-    $$\delta w = \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s} .$$
+    $$\delta w = \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K^{\rm sym}_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s} .$$
     <p>For $\gamma > 1$ and a bear market that is both worse and more volatile, all three terms shrink the
     position.</p>
 
@@ -164,21 +164,99 @@
       + (1-\gamma)\,\frac{\pi_1\pi_2\,w^2\big(\mu_1 - \mu_2 - \tfrac12\gamma w\,(\sigma_1^2 - \sigma_2^2)\big)^2}{q_1 + q_2}, \\
     w^{*} &= w_0 + \delta w, \\
     w_0 &= \frac{\bar\mu - r}{\gamma\,\bar s}, \\
-    \delta w &= \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s}, \\
+    \delta w &= \frac{(1-\gamma)\big(2w_0\,\mathcal K_{\mu\mu} - 3\gamma w_0^2\,\mathcal K^{\rm sym}_{\mu s} + \gamma^2 w_0^3\,\mathcal K_{ss}\big)}{\gamma\,\bar s}, \\
     \mathcal K_{\mu\mu} &= \frac{\pi_1\pi_2\,(\mu_1 - \mu_2)^2}{q_1 + q_2}, \\
-    \mathcal K_{\mu s} &= \frac{\pi_1\pi_2\,(\mu_1 - \mu_2)(\sigma_1^2 - \sigma_2^2)}{q_1 + q_2}, \\
+    \mathcal K^{\rm sym}_{\mu s} &= \frac{\pi_1\pi_2\,(\mu_1 - \mu_2)(\sigma_1^2 - \sigma_2^2)}{q_1 + q_2}, \\
     \mathcal K_{ss} &= \frac{\pi_1\pi_2\,(\sigma_1^2 - \sigma_2^2)^2}{q_1 + q_2}, \\
     \bar\mu &= \pi_1\mu_1 + \pi_2\mu_2, \\
     \bar s &= \pi_1\sigma_1^2 + \pi_2\sigma_2^2 .
     \end{aligned}$$
     </div>
     <p>With two regimes the three Green&ndash;Kubo numbers of the blind investor satisfy
-    $\mathcal K_{\mu s}^2 = \mathcal K_{\mu\mu}\mathcal K_{ss}$, and the correction is a perfect square: it is
+    $(\mathcal K^{\rm sym}_{\mu s})^2 = \mathcal K_{\mu\mu}\mathcal K_{ss}$, and the correction is a perfect square: it is
     $(1-\gamma)\,\mathcal K(h, h)$ with $h_1 - h_2$ written out. With more regimes the three numbers are free, subject
     to the symmetric matrix they form being positive semidefinite.</p>
-    <p>The certificate checks the cross term on a three-state cycle, where $\mathcal K(\mu, s) = 0.07918$ and
-    $\mathcal K(s, \mu) = 0.00396$. The symmetric coefficient reproduces $\mathcal K(h, h) = 0.016887$ at $\gamma = 3$,
-    $w = \tfrac12$; the one-sided $\mathcal K(\mu, s)$ would give 0.002784.</p>
+
+    <h3>Why the symmetric cross coefficient matters</h3>
+    <p>For any real $a,b$, the long-run variance of the additive functional $a\mu+b s$ is
+    $2\mathcal K(a\mu+b s,a\mu+b s)$. Therefore</p>
+    $$G_{\mu,s}=\begin{pmatrix}
+      \mathcal K(\mu,\mu)&amp;\mathcal K^{\rm sym}(\mu,s)\\
+      \mathcal K^{\rm sym}(\mu,s)&amp;\mathcal K(s,s)
+    \end{pmatrix}\succeq0.$$
+    <p>The antisymmetric part of the directed Green&ndash;Kubo matrix cancels from every scalar contraction
+    $\mathcal K(h,h)$. Consequently reversing a regime cycle can transpose $\mathcal K$ but cannot change the
+    blind investor&apos;s first-order certainty equivalent. This cancellation does not say that direction is invisible
+    to every problem: it survives when distinct, noncommuting slow operators multiply the two feature directions.
+    Under detailed balance the directed form is already symmetric, the Markov-chain version of
+    <a href="./bibliography.html#Onsager1931">Onsager&apos;s reciprocal relation</a>.</p>
+    <p>The certificate makes the distinction visible with a clockwise-biased three-state chain. It finds</p>
+    $$\mathcal K(\mu,s)=0.07917656,\qquad
+      \mathcal K(s,\mu)=0.00395883,$$
+    <p>yet the symmetric expansion reproduces $\mathcal K(h,h)=0.01688688$ to machine precision. Substituting only
+    $\mathcal K(\mu,s)$ gives $0.00278355$, an $83.5\%$ understatement. For $Q_m=mQ$, the exact matrix-exponential
+    coefficient $m\{\mathrm{CE}_m-\bar h\}$ converges to the symmetric prediction $-0.03377375$; at $m=512$ it is
+    $-0.03376714$, while the one-sided formula predicts $-0.00556710$.</p>
+
+    <h3>Exact Gram rank and maturity aggregation</h3>
+    <p>The positive-semidefinite statement has an exact identification converse. Let $Q$ be the generator of any
+    finite irreducible chain, let $F\in\mathbb R^{n\times p}$ collect regime features, and center its columns as
+    $H=(I-\mathbf 1\pi)F$. Define the symmetric Green&ndash;Kubo Gram matrix by
+    $G_{ab}=\mathcal K^{\rm sym}(H_a,H_b)$. Then</p>
+    $$\ker G=\ker H,\qquad \operatorname{rank}G=\operatorname{rank}H\le n-1.$$
+    <p>This does not require reversibility. Indeed, for any coefficient vector $c$, put
+    $h=Hc$ and $\phi=-Q^\#h$, so that $-Q\phi=h$. Stationarity gives the Dirichlet identity</p>
+    $$2c^\top Gc=\sum_{i,j}\pi_iq_{ij}(\phi_j-\phi_i)^2.$$
+    <p>The right side vanishes only when $\phi$ is constant on the strongly connected state graph. The group-inverse
+    normalization makes that constant zero, and hence $h=0$. Thus the Gram matrix loses precisely the feature
+    combinations that are already constant across regimes; the antisymmetric directed sector changes neither this
+    nullspace nor its rank.</p>
+    <p>There is an important scope distinction. If the centered loading matrix depends on maturity and a nonnegative
+    measure $\nu$ is used to aggregate it, then, subject to integrability,</p>
+    $$\bar G=\int G(\tau)\,\nu(d\tau),\qquad
+      \ker\bar G=\{c:H(\tau)c=0\ \text{for }\nu\text{-almost every }\tau\}.$$
+    <p>Consequently the integrated rank can exceed every fixed-maturity rank. For the two-state chain
+    $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$, contrast $z=(1,-1)^\top$, and loadings
+    $H(\tau)=z(1,\tau)$, one has $\mathcal K(z,z)=1/2$. Every $G(\tau)$ has rank one, while uniform integration over
+    $0\le\tau\le1$ gives</p>
+    $$\bar G=\frac12\begin{pmatrix}1&amp;1/2\\1/2&amp;1/3\end{pmatrix},\qquad
+      \det\bar G=\frac1{48},\qquad \operatorname{rank}\bar G=2.$$
+    <p>The certificate verifies the Dirichlet identity on the nonreversible three-state chain to machine precision
+    and reproduces this integrated matrix by Gauss&ndash;Legendre quadrature. The first theorem is a fixed-generator,
+    fixed-feature statement; it must not be used as a rank bound after combining different maturity-loading
+    directions.</p>
+
+    <h3>Quantitative coercivity after maturity integration</h3>
+    <p>The same argument gives more than rank. On the centered real Hilbert space $L^2_0(\pi)$, let</p>
+    $$\mathscr R=\operatorname{Sym}_{L^2(\pi)}(-Q)^{-1},\qquad
+      0&lt;a=\lambda_{\min}(\mathscr R)\le
+      \lambda_{\max}(\mathscr R)=b&lt;\infty.$$
+    <p>For a measurable centered loading family $H(\tau)$ with finite second moment, define the ordinary loading
+      Gram matrix and the integrated Green&ndash;Kubo Gram matrix by</p>
+    $$M=\int H(\tau)^*H(\tau)\,\nu(d\tau),\qquad
+      \bar G=\int H(\tau)^*\mathscr R H(\tau)\,\nu(d\tau),$$
+    <p>where the adjoints use the $L^2(\pi)$ inner product in state space. Then</p>
+    <div class="equation-card">
+    $$aM\preceq\bar G\preceq bM.$$
+    </div>
+    <p>Indeed, the pointwise inequality
+      $a\|H(\tau)c\|_\pi^2\le
+      \langle H(\tau)c,\mathscr R H(\tau)c\rangle_\pi
+      \le b\|H(\tau)c\|_\pi^2$ integrates for every coefficient vector $c$. Consequently, with eigenvalues in
+      increasing order,</p>
+    $$a\lambda_j(M)\le\lambda_j(\bar G)\le b\lambda_j(M),$$
+    <p>and, on the common nonzero support,</p>
+    $$\kappa(\bar G)\le\frac ba\,\kappa(M).$$
+    <p>This is a quantitative persistent-excitation theorem: variation in the maturity loadings determines $M$,
+      while the fixed Markov driver changes its scale and conditioning only through $[a,b]$. It is the
+      Green&ndash;Kubo analogue of the Gram/observability viewpoint introduced in
+      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman&apos;s original 1960 control paper</a>.
+      It does not say that any fixed-maturity Gram matrix has the integrated rank.</p>
+    <p>For a nonreversible, nonnormal three-state chain, the certificate obtains
+      $[a,b]=[0.24887872,0.33445461]$. Its maturity family has pointwise rank one but integrated rank two. The
+      loading-Gram eigenvalues are $(0.06143693,1.57727834)$ and the integrated Green&ndash;Kubo eigenvalues are
+      $(0.02023073,0.52555920)$; both Loewner inequalities hold with positive numerical slack. The observed
+      condition number is $25.97827$, below the certified bound $34.50073$.</p>
 
     <h2>Worked example</h2>
     <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are
@@ -188,7 +266,7 @@
     7.46 basis points in the numerical solution. Starting in the bull market adds
     $\pi_2(\psi_1 - \psi_2)/(12 \times 5) = 6.45$ basis points.</p>
     <p>The blind investor holds $w_0 = 0.701$ in the averaged model. The regime numbers are</p>
-    $$\mathcal K_{\mu\mu} = 6.25\times 10^{-4}, \qquad \mathcal K_{\mu s} = -2.36\times 10^{-4}, \qquad \mathcal K_{ss} = 0.893\times 10^{-4},$$
+    $$\mathcal K_{\mu\mu} = 6.25\times 10^{-4}, \qquad \mathcal K^{\rm sym}_{\mu s} = -2.36\times 10^{-4}, \qquad \mathcal K_{ss} = 0.893\times 10^{-4},$$
     <p>against $\bar s = 0.0333$. The extra effective variance $2\mathcal K_{\mu\mu}$ is 3.8% of $\bar s$.</p>
     <p>The
     shift is $\delta w = &minus;0.0440$, and the root of the cubic is 0.6609, against 0.6607 from numerical maximization.

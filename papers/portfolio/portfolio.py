@@ -15,8 +15,12 @@ For two regimes with exit rates q1 (from regime 1) and q2 (from regime 2),
    beta ~ exp(-T <lam^2> + T K(lam^2, lam^2)) for a stationary start, times exp((Q# lam2~)_i) from regime i.
 3. Regime-blind constant fraction w: E X_T^(1-g) = x^(1-g) E exp((1-g) int h_y(w)),
    h_y(w) = r + w (mu_y - r) - g w^2 s_y / 2,  s = sigma^2.
-   CE(w) ~ hbar(w) + (1-g)[w^2 K_mm - g w^3 K_ms + g^2 w^4 K_ss / 4],
-   w0 = (mubar - r)/(g sbar),  dw = (1-g)[2 w0 K_mm - 3 g w0^2 K_ms + g^2 w0^3 K_ss] / (g sbar).
+   With Ksym(f,h) = [K(f,h)+K(h,f)]/2,
+   CE(w) ~ hbar(w) + (1-g)[w^2 K_mm - g w^3 Ksym_ms + g^2 w^4 K_ss / 4],
+   w0 = (mubar - r)/(g sbar),
+   dw = (1-g)[2 w0 K_mm - 3 g w0^2 Ksym_ms + g^2 w0^3 K_ss] / (g sbar).
+   The symmetrization is essential for a nonreversible chain; the antisymmetric Green-Kubo sector cancels from
+   the scalar contraction K(h(w), h(w)).
 """
 import os, sys
 import numpy as np
@@ -45,6 +49,24 @@ def K(Q, f, h):
     pi, Qs = stationary(Q), group_inverse(Q)
     f, h = np.asarray(f, float), np.asarray(h, float)
     return float(-pi @ ((f - pi @ f) * (Qs @ (h - pi @ h))))
+
+
+def Ksym(Q, f, h):
+    """Symmetric Green-Kubo form, the covariance-rate Gram bilinear form."""
+    return 0.5 * (K(Q, f, h) + K(Q, h, f))
+
+
+def green_kubo_gram(Q, features):
+    """Symmetric Green-Kubo Gram matrix for the columns of ``features``."""
+    features = np.asarray(features, float)
+    if features.ndim == 1:
+        features = features[:, None]
+    p = features.shape[1]
+    directed = np.empty((p, p))
+    for a in range(p):
+        for b in range(p):
+            directed[a, b] = K(Q, features[:, a], features[:, b])
+    return 0.5 * (directed + directed.T)
 
 
 def K2(q1, q2, f, h):
@@ -201,7 +223,7 @@ def ce_blind_exact(Q, w, r, mu, sigma, gamma, T):
 
 def blind_K(Q, mu, sigma):
     s = np.asarray(sigma, float) ** 2
-    return K(Q, mu, mu), 0.5 * (K(Q, mu, s) + K(Q, s, mu)), K(Q, s, s)
+    return K(Q, mu, mu), Ksym(Q, mu, s), K(Q, s, s)
 
 
 def ce_blind_first(Q, w, r, mu, sigma, gamma):
