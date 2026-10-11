@@ -66,7 +66,27 @@
         <a href="https://github.com/microprediction/homogenization/tree/main/papers/fast-switching">code and certificates</a>.
         <em>Any irreducible finite chain, including defective generators, driving any model whose state factors out of an
         exponential-affine formula: several regimes, two-factor rates and credit, CIR, jumps, counts, Heston, Bates,
-        Merton and variance gamma.</em>
+        Merton and variance gamma; for multivariate Cox counts, exact mixed factorial-cumulant identities separate each
+        stream&apos;s Poisson noise from integrated-rate dependence, with all-order partition formulas for unit or
+        arbitrarily marked common shocks, including mark laws that change with the hidden regime. The full count law
+        identifies the full integrated-intensity law, although no fixed finite list of factorial cumulants does
+        without structure. Stationary terminal counts are exactly blind to reversal of a nonreversible hidden chain,
+        but ordered early/late count windows recover its time direction through the antisymmetric cross-covariance;
+        under fast switching this is an $m^{-2}$ boundary signal, distinct from the $m^{-1}$ Green&ndash;Kubo variance.
+        Sharply, a mixing law with at most $r$ atoms is identified by factorial cumulants through
+        order $2r-1$, via a Hankel&ndash;Prony reconstruction, while order $2r-2$ is insufficient; the exact
+        confluent-Vandermonde Jacobian quantifies local conditioning, with each atom collision contributing a
+        fourth-power degeneracy and each vanishing weight a linear one;
+        a count law $(p_n)$ is mixed Poisson exactly when $q_n=n!p_n$ has positive-semidefinite Hankel and shifted
+        Hankel matrices of every order, giving a complete falsification hierarchy beyond overdispersion;
+        this inverse is not total-variation stable, even for mixing laws on a compact intensity interval; indeed,
+        without structural restrictions every finite-sample estimator has worst-case expected total-variation loss
+        at least one half. Under Wasserstein-1 loss, a parity-conditioned binomial construction gives the
+        genuinely nonparametric $(\log\log n)/\log n$ lower obstruction on the unrestricted compact class. A local
+        point-mass experiment and the sample mean separately prove the matching $n^{-1/2}$ rate on that parametric
+        submodel, while a factorial-moment estimator and Jackson approximation prove the matching unrestricted
+        upper rate. Coupling that estimator across two count laws yields the optimal compact-support inverse modulus
+        $\Theta(\log\log(1/\delta)/\log(1/\delta))$ in Wasserstein-1.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Closed-Form Bond Options Under Fast Regime Switching</em>. Note in preparation.
