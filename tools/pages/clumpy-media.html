@@ -161,6 +161,32 @@
     <p>The correlation length must be shorter than the mean free path set by the contrast between the materials. The
     volume fractions do not enter.</p>
 
+    <h3>What the high orders look like</h3>
+    <p>The same two branch points determine the individual high-order coefficients, including the oscillations seen
+    in the numerical partial sums. For fixed nondegenerate fractions $0&lt;p_A,p_B&lt;1$, put</p>
+    $$\theta=\arccos(-\delta),\qquad \zeta=e^{i\theta},\qquad
+      C=(1-\zeta^2)^{1/2},$$
+    <p>where the square-root branch is the continuation of $D(0)=1$. Define the dimensionless coefficients by</p>
+    $$\frac{r_-(\lambda_c)-\langle\Sigma\rangle}{\Delta}
+      =\sum_{k\ge1}a_kx^k,qquad
+      \log w_- =\sum_{k\ge1}b_kx^k,qquad x=\lambda_c\Delta.$$
+    <p>Singularity analysis at the conjugate points $\zeta$ and $\bar\zeta$ gives</p>
+    <div class="equation-card">
+    $$a_k=\frac{\operatorname{Re}\{C\zeta^{-(k+1)}\}}
+      {2\sqrt\pi\,(k+1)^{3/2}}+O(k^{-5/2}),$$
+    $$b_k=\frac{\cos(k\theta)}{k}+O(k^{-3/2}).$$
+    </div>
+    <p>Indeed,
+      $D(x)=C(1-x/\zeta)^{1/2}\{1+O(1-x/\zeta)\}$ near $\zeta$. Since
+      $(r_--\langle\Sigma\rangle)/\Delta=\delta/2+(1-D)/(2x)$, the square-root transfer law gives the
+      first formula. Meanwhile $w_-$ has a pole of order $1/2$ at each branch point, so $\log w_-$ has the local
+      singularity $-\tfrac12\log(1-x/\zeta)$, giving the second formula. This is the coefficient-transfer method of
+      <a href="./bibliography.html#FlajoletOdlyzko1990">Flajolet and Odlyzko (1990)</a>.</p>
+    <p>Thus the slow-rate coefficients have a $k^{-3/2}$ envelope, whereas the boundary-weight coefficients have the
+      larger $k^{-1}$ envelope. The fractions control the oscillatory phase $\theta$, but both exponential growth
+      rates remain one in $x$, or $|\Delta|$ in the original correlation-length variable. The error estimates are
+      for fixed positive fractions and are not uniform as one material fraction tends to zero.</p>
+
     <h3>What the all-orders series sums to</h3>
     <p>The power series describes the slow outer mode, not the entire finite-slab answer. This distinction is exact.
     Put $\Delta=\Sigma_A-\Sigma_B$, $\delta=p_B-p_A$, $x=\lambda_c\Delta$, and</p>
