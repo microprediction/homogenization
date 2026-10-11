@@ -13,7 +13,9 @@
     $b$. The rates may differ, so the pulsar can spend most of its time in one state. The spin-down rate is
     $\dot\nu_{y_t}$, and frequency and phase (in cycles) are its integrals:</p>
     $$\nu(t) = \nu(0) + \int_0^t \dot\nu_{y_s}\,ds, \qquad \phi(t) = \phi(0) + \int_0^t \nu(s)\,ds .$$
-    <p>The chain starts from its stationary law, since an observer does not know the state when timing begins.</p>
+    <p>The main formulas start the chain from its stationary law, appropriate when the initial magnetospheric state is
+    unknown. For an intermittent pulsar the radio on/off state can instead be observed at the beginning of a timing
+    campaign; an exact known-start correction is derived below.</p>
     <p>There are two time scales. The state persists for $1/a$ or $1/b$, from days to years.</p>
     <p>The pulsar is timed over
     a span $T$ of years. The expansion parameter is $1/(\gamma T)$ with $\gamma = a + b$.</p>
@@ -139,6 +141,107 @@
     all but $1/210$ of the mean-square phase wander. The root-mean-square timing residual after the fit, in
     seconds, is</p>
     $$r_{\mathrm{rms}} = \frac1\nu\sqrt{\frac{2K\,T^3}{2520}} .$$
+    <p>This last formula is the white-noise, or $\gamma T\to\infty$, limit. For the two-state chain the continuous,
+    uniformly weighted least-squares calculation is exact at every switching rate. Put $x=\gamma T$. Then</p>
+    <div class="equation-card">
+    $$\frac1T\,\mathbb{E}\int_0^T r(t)^2\,dt
+      = \frac{2KT^3}{2520}\,R(x), \qquad
+      R(x)=\frac{A(x)+e^{-x}B(x)}{x^9},$$
+    $$\begin{aligned}
+      A(x)&=x^9-108x^7+1260x^6-7560x^5+22680x^4-181440x^2+1814400,\\
+      B(x)&=-7560x^4-120960x^3-725760x^2-1814400x-1814400.
+    \end{aligned}$$
+    </div>
+    <p>The timing fit cancels the relative $1/x$ boundary correction that appears before fitting:</p>
+    $$R(x)=1-\frac{108}{x^2}+\frac{1260}{x^3}-\frac{7560}{x^4}+O(x^{-5})+O(e^{-x}x^{-5}).$$
+    <p>At the opposite extreme, $R(x)=x^2/22+O(x^3)$. A chain that barely switches produces an almost
+    deterministic quadratic phase drift, which the fit removes.</p>
+    <p>For completeness, the proof does not assume a Gaussian telegraph signal. If $k_s(t)=(t-s)_+$ and $P_2$
+    is the $L^2[0,1]$ projection onto $\{1,t,t^2\}$, direct polynomial projection gives, for $0\le u\le z\le1$,</p>
+    $$\langle(I-P_2)k_z,(I-P_2)k_u\rangle
+      =-\frac{u^2(z-1)^2}{12}\big(15u^2z^2-30uz^2+4uz+2u+15z^2-6z\big).$$
+    <p>Integrating this kernel against $2e^{-x(z-u)}$ yields the displayed $R(x)$. This covariance-projection
+    calculation follows the transfer-function treatment of pulsar timing noise in
+    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>. It applies to a
+    continuous, uniformly weighted ordinary least-squares fit. Irregular arrival times, measurement weights and
+    generalized least squares require the corresponding discrete design and covariance matrices; the scalar
+    factor $R(x)$ should not be reused in those settings.</p>
+
+    <h3>Exact sampled-design version</h3>
+    <p>There is nevertheless an exact finite-sample answer. For observation times $t_i$, let $C_{ij}$ be the
+    covariance of the phase residuals before the timing fit. If $u=\min(t_i,t_j)$ and $v=\max(t_i,t_j)$, direct
+    integration of the exponential rate covariance gives</p>
+    $$C_{ij}=\pi_1\pi_2\Delta^2\,J_\gamma(u,v),$$
+    $$\begin{aligned}
+    J_\gamma(u,v)={}&-\frac{u^3}{3\gamma}+\frac{u^2v}{\gamma}-\frac{uv}{\gamma^2}
+      +\frac{v-u}{\gamma^3}-\frac{u e^{-\gamma v}+v e^{-\gamma u}}{\gamma^3}\\
+      &+\frac{e^{-\gamma(v-u)}+1-e^{-\gamma v}-e^{-\gamma u}}{\gamma^4}.
+    \end{aligned}$$
+    <p>Let $X_i=(1,t_i,t_i^2)$, let $W=\operatorname{diag}(w_i)$ with positive weights summing to one, and let</p>
+    $$H=X(X^\top W X)^{-1}X^\top W.$$
+    <p>The sampled weighted least-squares residual $r=(I-H)\Phi$ satisfies the exact trace identity</p>
+    <div class="equation-card">
+    $$\mathbb E(r^\top Wr)
+      =\operatorname{tr}\!\left(W(I-H)C(I-H)^\top\right)
+      =\operatorname{tr}(WC)-\operatorname{tr}(WHC).$$
+    </div>
+    <p>The second equality uses $H^2=H$ and $H^\top W=WH$. More generally, the first trace formula applies to
+    any specified linear fitting matrix, including a generalized least-squares timing fit; measurement noise is
+    included by adding its covariance to $C$. Thus irregular sampling and weights do not need a new
+    homogenization approximation&mdash;they need the correct finite design. This is the covariance-matrix viewpoint
+    advocated for correlated pulsar timing data by
+    <a href="./bibliography.html#vanHaasterenLevin2012">van Haasteren and Levin (2012)</a>.</p>
+    <p>For B1931+24 over 100 days, equally weighted grids with 17 and 257 observations give mean-square residuals
+    $164.416$ and $139.865$ nHz$^2$ day$^2$, respectively, converging to the continuous value $138.075$.
+    The endpoint grid has first-order quadrature error. On an eleven-point irregular weighted design, the exact
+    trace is $154.452$; exact-path simulation gives $155.726\pm0.852$.</p>
+
+    <h3>A known starting regime: the exact entry layer</h3>
+    <p>The stationary calculation is not the conditional answer when the radio state is known at the first
+    observation. Put $q=\Pr(y_0=1)$, $d=q-\pi_1$, and let $I_t$ indicate state 1. The two-state semigroup gives, for
+    $s\le t$,</p>
+    $$\mathbb E(I_t-\pi_1\mid I_s)=e^{-\gamma(t-s)}(I_s-\pi_1).$$
+    <p>Consequently the nonstationary first and raw second moments of the centered spin-down rate are exactly</p>
+    <div class="equation-card">
+    $$\mathbb E_q g(y_s)=\Delta d e^{-\gamma s},$$
+    $$\mathbb E_q\{g(y_s)g(y_t)\}
+      =\Delta^2\left\{\pi_1\pi_2e^{-\gamma|t-s|}
+      +d(\pi_2-\pi_1)e^{-\gamma\max(s,t)}\right\}.$$
+    </div>
+    <p>The second term is the exact entry layer. It is linear in the initial law, as every raw Markov expectation
+    must be. After integrating twice, the phase mean is</p>
+    $$m_q(t)=\Delta d\left\{\frac{t}{\gamma}
+      -\frac{1-e^{-\gamma t}}{\gamma^2}\right\}.$$
+    <p>For $u=\min(t_i,t_j)$, $v=\max(t_i,t_j)$ and
+      $E_k(u)=\int_0^u s^k e^{-\gamma s}\,ds$, the raw phase second moment is</p>
+    $$M_{q,ij}=\pi_1\pi_2\Delta^2J_\gamma(u,v)
+      +d(\pi_2-\pi_1)\Delta^2L_\gamma(u,v),$$
+    $$\begin{aligned}
+    L_\gamma(u,v)={}&\frac{u^2e^{-\gamma v}}{2\gamma^2}
+      +u\left(\frac v\gamma-\frac1{\gamma^2}\right)E_0(u)\\
+      &+\left(uv-\frac u\gamma-\frac v\gamma+\frac1{\gamma^2}\right)E_1(u)
+      +\left(\frac1\gamma-v-\frac u2\right)E_2(u)+\frac12E_3(u).
+    \end{aligned}$$
+    <p>The conditional covariance is $C_q=M_q-m_qm_q^\top$. Therefore the expected fitted residual energy uses the
+    raw second moment,</p>
+    <div class="equation-card">
+    $$\mathbb E_q(r^\top Wr)=\operatorname{tr}\{W(I-H)M_q(I-H)^\top\},$$
+    $$\mathbb E_q(r^\top Wr)
+      =\operatorname{tr}\{W(I-H)C_q(I-H)^\top\}
+       +\|(I-H)m_q\|_W^2.$$
+    </div>
+    <p>This separates stochastic timing noise conditional on the starting state from a deterministic transient mean
+    that is not exactly quadratic and hence is not completely removed by the timing fit. When $q=\pi_1$, $d=0$ and
+    all formulas reduce to the stationary theorem above. The derivation uses only the two-state Markov semigroup,
+    not Gaussianity.</p>
+    <p>On the same 100-day irregular B1931+24 design, the stationary expected energy is $154.452$. Conditioning on
+    an on-state start gives $167.131=163.217+3.914$, where the last number is the projected squared mean; an
+    off-state start gives $151.283=151.038+0.245$. Thus using the stationary law changes this finite-span benchmark
+    by $+8.21\%$ or $-2.05\%$, depending on the observed initial state. Independent matrix-semigroup quadrature
+    agrees with the closed form within $7.2\times10^{-15}$, label swapping is invariant to $2.0\times10^{-16}$,
+    and conditioned exact-path simulations agree within Monte Carlo uncertainty. The relevance of conditioning is
+    empirical rather than hypothetical here: <a href="./bibliography.html#Kramer2006">Kramer et al. (2006)</a>
+    identify B1931+24&apos;s radio on/off state and its associated spin-down change directly.</p>
 
     <h2>What timing data identify</h2>
     <p>The two-state chain has four parameters: $\dot\nu_1$, $\dot\nu_2$, $a$ and $b$. To first order timing data see two
@@ -186,7 +289,7 @@
     $$K = \frac{0.2\times0.8\times(5.5\times10^{-15})^2}{1/(6\ \text{days})} = 2.51\times10^{-24}\ \text{Hz}^2/\text{s} .$$
     <p>The averaged rate is within the duty-cycle uncertainty of the published long-term value,
     $-12.2488\times10^{-15}$ Hz/s. Over spans of months to years:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th>sd of frequency residual</th><th>Green&ndash;Kubo</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>rms after quadratic fit</th><th>same, quasi-periodic</th><th>skewness</th></tr></thead><tbody><tr><td>100 days</td><td>6.38 nHz</td><td>6.58 nHz</td><td>0.026 s</td><td>0.027 s</td><td>0.9 ms</td><td>0.1 ms</td><td>&minus;0.86</td></tr><tr><td>300 days</td><td>11.29 nHz</td><td>11.40 nHz</td><td>0.137 s</td><td>0.139 s</td><td>4.8 ms</td><td>0.7 ms</td><td>&minus;0.46</td></tr><tr><td>1000 days</td><td>20.76 nHz</td><td>20.82 nHz</td><td>0.841 s</td><td>0.845 s</td><td>29.2 ms</td><td>4.4 ms</td><td>&minus;0.25</td></tr><tr><td>3000 days</td><td>36.03 nHz</td><td>36.07 nHz</td><td>4.385 s</td><td>4.392 s</td><td>151.5 ms</td><td>23.1 ms</td><td>&minus;0.14</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">span $T$</th><th>sd of frequency residual</th><th>Green&ndash;Kubo</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>exact rms after quadratic fit</th><th>quasi-periodic, leading</th><th>skewness</th></tr></thead><tbody><tr><td>100 days</td><td>6.38 nHz</td><td>6.58 nHz</td><td>0.026 s</td><td>0.027 s</td><td>0.8 ms</td><td>0.1 ms</td><td>&minus;0.86</td></tr><tr><td>300 days</td><td>11.29 nHz</td><td>11.40 nHz</td><td>0.137 s</td><td>0.139 s</td><td>4.7 ms</td><td>0.7 ms</td><td>&minus;0.46</td></tr><tr><td>1000 days</td><td>20.76 nHz</td><td>20.82 nHz</td><td>0.841 s</td><td>0.845 s</td><td>29.1 ms</td><td>4.4 ms</td><td>&minus;0.25</td></tr><tr><td>3000 days</td><td>36.03 nHz</td><td>36.07 nHz</td><td>4.385 s</td><td>4.392 s</td><td>151.5 ms</td><td>23.1 ms</td><td>&minus;0.14</td></tr></tbody></table></div>
     <p>The frequency residual grows like $\sqrt T$ and the timing residual like $T^{3/2}$. The Green&ndash;Kubo column
     is within about 3% of the exact value at 100 days and 0.3% at 1000 days. The quadratic fit absorbs most of the wander, leaving
     milliseconds to a fraction of a second.</p>
@@ -198,7 +301,7 @@
     <p>The split of the cycle between the two states is not in their table;
     take one third in the faster state as an illustration, with mean durations 167 and 334 days, so
     $\dot\nu = (-367.41,\ -364.81)\times10^{-15}$ Hz/s and $1/\gamma = 111$ days. Then $K = 1.44\times10^{-23}$ Hz$^2$/s, and:</p>
-    <div class="table-wrap"><table class="impl"><thead><tr><th>span</th><th style="text-transform:none">$\gamma T$</th><th>sd of frequency residual</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>rms after quadratic fit</th><th>skewness</th></tr></thead><tbody><tr><td>5 years</td><td>16</td><td>65 nHz</td><td>2.4 s</td><td>2.5 s</td><td>86 ms</td><td>&minus;0.41</td></tr><tr><td>10 years</td><td>33</td><td>94 nHz</td><td>6.9 s</td><td>7.0 s</td><td>243 ms</td><td>&minus;0.27</td></tr><tr><td>20 years</td><td>66</td><td>134 nHz</td><td>19.7 s</td><td>19.9 s</td><td>686 ms</td><td>&minus;0.19</td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>span</th><th style="text-transform:none">$\gamma T$</th><th>sd of frequency residual</th><th>sd of timing residual</th><th style="text-transform:none">leading $T^3$ term</th><th>exact rms after quadratic fit</th><th>skewness</th></tr></thead><tbody><tr><td>5 years</td><td>16</td><td>65 nHz</td><td>2.4 s</td><td>2.5 s</td><td>77 ms</td><td>&minus;0.41</td></tr><tr><td>10 years</td><td>33</td><td>94 nHz</td><td>6.9 s</td><td>7.0 s</td><td>234 ms</td><td>&minus;0.27</td></tr><tr><td>20 years</td><td>66</td><td>134 nHz</td><td>19.7 s</td><td>19.9 s</td><td>679 ms</td><td>&minus;0.19</td></tr></tbody></table></div>
     <p>Here a switching time of months meets a timing span of years, and $\gamma T$ is between 16 and 66. Lyne et
     al. find a narrow periodic peak in the spin-down spectrum of B1828&minus;11, so the Markov figures overstate its random-walk
     component in the same way as for B1931+24.</p>

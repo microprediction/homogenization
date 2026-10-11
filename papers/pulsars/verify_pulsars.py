@@ -7,9 +7,11 @@ Units: days, nHz, nHz per day (1e-15 Hz/s = 0.0864 nHz/day). Phase in nHz day = 
     error ~ (gamma T)^(-1/2), with layer constant and skewness ~ (gamma T)^(-1).
  4. Characteristic function of the phase residual: engine ODE a' = (Q + i u t diag g) a vs Gaussian / adiabatic.
  5. Cumulant rates lambda_2, lambda_3 against the eigenvalue of Q + s diag g by finite differences.
- 6. Exact (discretization-free) Monte Carlo of the switching process: variances, skewness, post-fit residual.
- 7. Spectrum: Lorentzian vs numerical Fourier transform of the matrix-exponential covariance.
- 8. Quasi-periodic switching: renewal formula vs Erlang-chain Green-Kubo (group inverse) vs Monte Carlo.
+ 6. Exact (discretization-free) Monte Carlo of the switching process: variances and skewness.
+ 7. Finite-rate post-fit theorem: closed form vs independent covariance-kernel quadrature and Monte Carlo.
+ 8. Arbitrary-start sampled covariance: exact entry kernel vs matrix-semigroup quadrature and conditioned paths.
+ 9. Spectrum: Lorentzian vs numerical Fourier transform of the matrix-exponential covariance.
+10. Quasi-periodic switching: renewal formula vs Erlang-chain Green-Kubo (group inverse) vs Monte Carlo.
 """
 import json, math, os, sys
 import numpy as np
@@ -63,9 +65,12 @@ def cf_phase_ode(m, u, T):
     return m.pi @ sol.y[:, -1]
 
 
-def simulate(m, T, N, rng, grid=None):
-    """Exact simulation of the stationary two-state chain; returns X(T), Phi(T) (and switch lists if grid)."""
-    y = (rng.random(N) < m.p2).astype(int)             # 0 = state 1, 1 = state 2
+def simulate(m, T, N, rng, grid=None, initial_p1=None):
+    """Exact simulation; initial_p1 is the probability of state 1 (stationary by default)."""
+    if initial_p1 is None:
+        y = (rng.random(N) < m.p2).astype(int)
+    else:
+        y = (rng.random(N) >= float(initial_p1)).astype(int)
     rates = np.array([m.a, m.b])
     t = np.zeros(N)
     X = np.zeros(N)
@@ -84,19 +89,24 @@ def simulate(m, T, N, rng, grid=None):
     return X, P
 
 
-def postfit_mc(m, T, N, rng, n=1001):
-    """Mean-square residual of the phase after a least-squares quadratic fit on n equally spaced samples."""
-    tg = np.linspace(0, T, n)
+def postfit_mc(m, T, N, rng, n=1001, times=None, weights=None, initial_p1=None):
+    """Mean-square residual after a sampled weighted least-squares quadratic fit."""
+    tg = np.linspace(0, T, n) if times is None else np.asarray(times, float)
+    if np.any(np.diff(tg) <= 0) or tg[0] < 0 or tg[-1] > T:
+        raise ValueError("sample times must be strictly increasing in [0,T]")
+    weights = np.ones(len(tg)) if weights is None else np.asarray(weights, float)
+    weights = weights / weights.sum()
     V = np.vander(tg / T, 3)
-    H = V @ np.linalg.pinv(V)
+    H = V @ np.linalg.solve(V.T @ (weights[:, None] * V), V.T * weights)
     out = np.empty(N)
     for k in range(N):
         s = [0.0]
-        y = int(rng.random() < m.p2)
+        y0 = (int(rng.random() < m.p2) if initial_p1 is None
+              else int(rng.random() >= float(initial_p1)))
+        y = y0
         while s[-1] < T:
             s.append(s[-1] + rng.exponential(1 / (m.a if y == 0 else m.b)))
             y = 1 - y
-        y0 = y if (len(s) - 1) % 2 == 0 else 1 - y      # state at time 0
         s = np.array(s)
         s[-1] = T
         states = (y0 + np.arange(len(s) - 1)) % 2
@@ -106,8 +116,54 @@ def postfit_mc(m, T, N, rng, n=1001):
         Ph = np.concatenate([[0.0], np.cumsum(0.5 * (Xp[1:] + Xp[:-1]) * np.diff(pts))])
         r = np.interp(tg, pts, Ph)
         r = r - H @ r
-        out[k] = np.mean(r ** 2)
+        out[k] = weights @ (r ** 2)
     return out
+
+
+def postfit_covariance_quadrature(m, T):
+    """Independent continuous-time covariance-kernel calculation of post-fit mean square.
+
+    For 0 <= u <= z <= 1, H(z,u) is the L2 inner product of the two
+    integrated impulses (t-z)_+ and (t-u)_+ after projecting both off
+    span{1,t,t^2}.  The telegraph covariance is c0 exp(-x|z-u|).
+    """
+    x = m.gamma * T
+    c0 = m.p1 * m.p2 * m.Delta ** 2
+
+    def h(z, u):
+        return (-u ** 2 * (z - 1) ** 2
+                * (15 * u ** 2 * z ** 2 - 30 * u * z ** 2 + 4 * u * z
+                   + 2 * u + 15 * z ** 2 - 6 * z) / 12)
+
+    val = 2 * quad(lambda z: quad(lambda u: math.exp(-x * (z - u)) * h(z, u), 0, z,
+                                  epsabs=1e-14, epsrel=2e-11)[0],
+                   0, 1, epsabs=1e-14, epsrel=2e-11)[0]
+    return c0 * T ** 4 * val
+
+
+def arbitrary_start_phase_quadrature(m, u, v, initial_p1):
+    """Independent semigroup quadrature of E Phi(u), E Phi(v), and E[Phi(u)Phi(v)]."""
+    u, v = min(float(u), float(v)), max(float(u), float(v))
+    initial = np.array([initial_p1, 1 - initial_p1])
+    G = np.diag(m.g)
+
+    def mean(t):
+        return quad(lambda s: (t - s) * float(initial @ expm(s * m.Q) @ m.g),
+                    0, t, epsabs=2e-11, epsrel=2e-11, limit=300)[0]
+
+    def later_inner(s):
+        return quad(lambda t: (v - t) * float(
+            initial @ expm(s * m.Q) @ G @ expm((t - s) * m.Q) @ m.g),
+            s, v, epsabs=2e-10, epsrel=2e-10, limit=300)[0]
+
+    def earlier_inner(s):
+        return quad(lambda t: (v - t) * float(
+            initial @ expm(t * m.Q) @ G @ expm((s - t) * m.Q) @ m.g),
+            0, s, epsabs=2e-10, epsrel=2e-10, limit=300)[0]
+
+    raw = quad(lambda s: (u - s) * (later_inner(s) + earlier_inner(s)),
+               0, u, epsabs=2e-9, epsrel=2e-9, limit=300)[0]
+    return mean(u), mean(v), raw
 
 
 def main():
@@ -210,18 +266,95 @@ def main():
               f"{m.var_phase(T):.5e}; skew X {sk:+.3f} vs first order {rows[-1][-1]:+.3f}")
         ok &= abs(vx - v2) < 4 * sex and abs(vp - m.var_phase(T)) < 4 * sep
     out['mc'] = rows
+    print("7. exact finite-rate residual after a continuous quadratic fit")
+    rows = []
+    for T in (30.0, 100.0, 300.0, 1000.0, 3000.0):
+        exact = m.postfit_ms_exact(T)
+        direct = postfit_covariance_quadrature(m, T)
+        leading = m.postfit_ms(T)
+        rows.append([T, m.gamma * T, exact, direct, exact / leading, abs(exact - direct) / exact])
+        print(f"   T {T:5.0f}: exact {exact:.8e}, covariance quadrature {direct:.8e}, "
+              f"exact/GK {exact/leading:.9f}, rel diff {abs(exact-direct)/exact:.2e}")
+        ok &= abs(exact - direct) / exact < 2e-9
+    # The fit cancels the O(1/x) relative boundary correction: 1-R(x) ~ 108/x^2.
+    xlast = rows[-1][1]
+    asym = 1 - 108 / xlast ** 2 + 1260 / xlast ** 3 - 7560 / xlast ** 4
+    ok &= abs(rows[-1][4] - asym) < 3e-9
+    out['postfit_exact'] = rows
+
+    print("   sampled-design trace theorem")
+    dense = []
+    continuous = m.postfit_ms_exact(100.0)
+    for n in (9, 17, 33, 65, 129, 257):
+        val = m.postfit_ms_sampled(np.linspace(0, 100.0, n))
+        dense.append([n, val, val / continuous - 1])
+        print(f"     uniform n {n:3d}: sampled {val:.8e}, relative continuous error {val/continuous-1:+.6e}")
+    orders = [math.log(abs(dense[i - 1][2] / dense[i][2]), 2) for i in range(2, len(dense))]
+    ok &= min(orders[-3:]) > 0.95
+    irregular = 100 * np.array([0, .03, .08, .15, .27, .40, .58, .73, .86, .95, 1.0])
+    iw = np.linspace(.7, 1.4, len(irregular))
+    exact_irregular = m.postfit_ms_sampled(irregular, iw)
+    mc_irregular = postfit_mc(m, 100.0, 50000, np.random.default_rng(806), times=irregular, weights=iw)
+    se_irregular = mc_irregular.std() / math.sqrt(len(mc_irregular))
+    eigmin = np.linalg.eigvalsh(m.phase_covariance(irregular)).min()
+    print(f"     irregular weighted: trace {exact_irregular:.8e}, MC {mc_irregular.mean():.8e} "
+          f"+- {se_irregular:.2e}; covariance min eigenvalue {eigmin:.3e}")
+    ok &= abs(mc_irregular.mean() - exact_irregular) < 4 * se_irregular
+    ok &= eigmin > -1e-10
+    out['postfit_sampled'] = dict(dense=dense, dense_orders=orders, irregular_times=irregular.tolist(),
+                                  irregular_weights=iw.tolist(), exact=exact_irregular,
+                                  mc=float(mc_irregular.mean()), mc_se=float(se_irregular), cov_min_eig=float(eigmin))
+
+    print("8. arbitrary-start phase covariance and post-fit entry layer")
+    start_rows, quadrature_errors = [], []
+    swapped = TwoState(m.n2, m.n1, m.b, m.a)
+    for q in (1.0, 0.0, 0.37):
+        analytic_mean = m.phase_mean(np.array([30.0, 100.0]), q)
+        analytic_raw = m.phase_second_moment(np.array([30.0, 100.0]), q)[0, 1]
+        q_mean_u, q_mean_v, q_raw = arbitrary_start_phase_quadrature(m, 30.0, 100.0, q)
+        err = max(abs(analytic_mean[0] - q_mean_u), abs(analytic_mean[1] - q_mean_v),
+                  abs(analytic_raw - q_raw)) / max(1.0, abs(analytic_raw))
+        # Drop t=0, whose phase is deterministically zero and hence supplies a trivial null eigenvalue.
+        cov_min = np.linalg.eigvalsh(m.phase_covariance(irregular[1:], q)).min()
+        relabel = np.max(abs(m.phase_second_moment(irregular, q)
+                             - swapped.phase_second_moment(irregular, 1 - q)))
+        relabel /= max(1.0, np.max(abs(m.phase_second_moment(irregular, q))))
+        total = m.postfit_ms_sampled(irregular, iw, q)
+        stochastic = m.postfit_ms_sampled(irregular, iw, q, centered=True)
+        start_rows.append([q, analytic_mean[0], analytic_mean[1], analytic_raw, err,
+                           cov_min, relabel, total, stochastic, total - stochastic])
+        quadrature_errors.append(err)
+        print(f"   P(Y0=state 1) {q:.2f}: semigroup rel error {err:.2e}, cov min eig {cov_min:.3e}, "
+              f"relabel {relabel:.2e}; post-fit total {total:.6e} = stochastic {stochastic:.6e} "
+              f"+ mean {total-stochastic:.6e}")
+        ok &= err < 2e-9 and cov_min > -2e-9 and relabel < 2e-12
+        ok &= total + 1e-10 >= stochastic
+
+    start_mc = []
+    for q in (1.0, 0.0):
+        exact = m.postfit_ms_sampled(irregular, iw, q)
+        vals = postfit_mc(m, 100.0, 30000, np.random.default_rng(860 + int(q)),
+                          times=irregular, weights=iw, initial_p1=q)
+        se = vals.std() / math.sqrt(len(vals))
+        start_mc.append([q, exact, float(vals.mean()), float(se)])
+        print(f"   conditioned paths, start {q:.0f}: trace {exact:.6e}, MC {vals.mean():.6e} +- {se:.2e}")
+        ok &= abs(vals.mean() - exact) < 4 * se
+    out['arbitrary_start'] = dict(rows=start_rows, mc=start_mc,
+                                  max_semigroup_error=max(quadrature_errors))
+
     rows = []
     for T in (300.0, 1000.0, 3000.0):
         N = 4000
         ms = postfit_mc(m, T, N, rng)
-        pred = m.postfit_ms(T)
-        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred])
+        sampled = m.postfit_ms_sampled(np.linspace(0, T, 1001))
+        pred = m.postfit_ms_exact(T)
+        rows.append([T, ms.mean(), ms.std() / math.sqrt(N), pred, sampled, m.postfit_ms(T)])
         print(f"   post-fit mean-square phase residual, T {T:5.0f}: MC {ms.mean():.4e} +- {ms.std()/math.sqrt(N):.1e}"
-              f" vs 2KT^3/2520 = {pred:.4e} (ratio {ms.mean()/pred:.3f})")
-    ok &= abs(rows[-1][1] / rows[-1][3] - 1) < 0.08
+              f" vs sampled trace {sampled:.4e}, continuous {pred:.4e}")
+    ok &= abs(rows[-1][1] / rows[-1][4] - 1) < 0.08
     out['postfit'] = rows
 
-    print("7. spectrum of the spin-down rate")
+    print("9. spectrum of the spin-down rate")
     C = lambda tau: m.pi @ (m.g * (expm(tau * m.Q) @ m.g))
     rows = []
     for f in (0.0, 0.01, 0.03, 0.1):     # cycles per day
@@ -232,7 +365,7 @@ def main():
     ok &= abs(float(m.S_nudot(0.0)) - 2 * m.K) < 1e-12 * m.K
     out['spectrum'] = rows
 
-    print("8. quasi-periodic switching")
+    print("10. quasi-periodic switching")
     s_on, s_off = 5 / math.sqrt(12), 10 / math.sqrt(12)        # uniform on 5-10 and 25-35 days
     Kq = K_renewal(m.Delta, M_ON, s_on, M_OFF, s_off)
     k_on, k_off = round((M_ON / s_on) ** 2), round((M_OFF / s_off) ** 2)
@@ -268,7 +401,7 @@ def main():
         for T in (100.0, 300.0, 1000.0, 3000.0):
             sdnu = math.sqrt(mod.var_nu(T))
             sdph = math.sqrt(mod.var_phase(T)) * CYC
-            pf = math.sqrt(mod.postfit_ms(T)) * CYC
+            pf = math.sqrt(mod.postfit_ms_exact(T)) * CYC
             pfq = math.sqrt(mod.postfit_ms(T) * Kq / mod.K) * CYC
             ex.append([T, sdnu, math.sqrt(mod.var_nu_gk(T)), sdph, sdph / NU,
                        math.sqrt(mod.var_phase_gk(T)) * CYC / NU, pf / NU * 1e3, pfq / NU * 1e3,
@@ -291,7 +424,7 @@ def main():
     for yrs in (5.0, 10.0, 20.0):
         T = yrs * 365.25
         ex8.append([yrs, m8.gamma * T, math.sqrt(m8.var_nu(T)), math.sqrt(m8.var_phase(T)) * CYC / nu8,
-                    math.sqrt(m8.var_phase_gk(T)) * CYC / nu8, math.sqrt(m8.postfit_ms(T)) * CYC / nu8 * 1e3,
+                    math.sqrt(m8.var_phase_gk(T)) * CYC / nu8, math.sqrt(m8.postfit_ms_exact(T)) * CYC / nu8 * 1e3,
                     m8.kappa3_nu_first(T) / m8.var_nu(T) ** 1.5])
         print(f"   B1828-11 T {yrs:4.0f} yr (gamma T {ex8[-1][1]:.1f}): sd nu {ex8[-1][2]:.2f} nHz, sd timing "
               f"{ex8[-1][3]:.2f} s (T^3: {ex8[-1][4]:.2f}), post-fit rms {ex8[-1][5]:.1f} ms, skew {ex8[-1][6]:+.3f}")

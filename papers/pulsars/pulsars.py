@@ -1,7 +1,8 @@
 """Pulsar spin-down switching: closed forms for the two-state model.
 
 The spin-down rate nudot(y_t) switches between nudot_1 and nudot_2 with a hidden Markov chain y_t that leaves
-state 1 at rate a and state 2 at rate b, started from its stationary law. With the averaged spin-down removed,
+state 1 at rate a and state 2 at rate b.  The stationary-start formulas remain the default; the sampled-design
+methods also accept an arbitrary initial probability of state 1. With the stationary averaged spin-down removed,
     X(T)   = nu(T) - nu(0) - nubar_dot T        = int_0^T g(y_s) ds,          g = nudot - nubar_dot,
     Phi(T) = phi(T) - phi(0) - nu(0)T - nubar_dot T^2/2 = int_0^T (T - s) g(y_s) ds.
 Any consistent units; the certificate uses days, nHz and nHz per day.
@@ -83,6 +84,148 @@ class TwoState:
     def postfit_ms(self, T):
         """First-order mean-square phase residual over [0, T] after a fitted quadratic: 2 K T^3 / 2520."""
         return 2 * self.K * T ** 3 / 2520
+
+    @staticmethod
+    def _postfit_shape(x):
+        """Dimensionless finite-correlation shape F(x) for the continuous quadratic timing fit.
+
+        The exact mean square is p1*p2*Delta**2*T**4*F(gamma*T).  A Taylor
+        series avoids cancellation when the correlation time is long compared
+        with the observing span.
+        """
+        if x <= 0:
+            raise ValueError("gamma*T must be positive")
+        if x <= 2:
+            terms = (
+                (1, 27720), (-1, 100800), (1, 576576), (-1, 4233600),
+                (1, 37065600), (-1, 372556800), (1, 4200768000),
+                (-1, 52306974720), (1, 711075456000),
+                (-1, 10461394944000), (1, 165407090688000),
+                (-1, 2794686935040000), (1, 50217592732876800),
+                (-1, 955782931783680000), (1, 19200844280217600000),
+                (-1, 405889151697469440000), (1, 9004185396670464000000),
+            )
+            return math.fsum(sign * x ** (j + 1) / den for j, (sign, den) in enumerate(terms))
+        p = (x ** 9 - 108 * x ** 7 + 1260 * x ** 6 - 7560 * x ** 5
+             + 22680 * x ** 4 - 181440 * x ** 2 + 1814400)
+        q = (-7560 * x ** 4 - 120960 * x ** 3 - 725760 * x ** 2
+             - 1814400 * x - 1814400)
+        return (p + math.exp(-x) * q) / (1260 * x ** 10)
+
+    def postfit_ms_exact(self, T):
+        """Exact continuous-time OLS residual power after fitting 1, t and t^2."""
+        c0 = self.p1 * self.p2 * self.Delta ** 2
+        return c0 * T ** 4 * self._postfit_shape(self.gamma * T)
+
+    def postfit_ratio(self, T):
+        """Exact post-fit mean square divided by its Green--Kubo limit."""
+        return self.postfit_ms_exact(T) / self.postfit_ms(T)
+
+    @staticmethod
+    def _exp_moment(n, upper, rate):
+        """Return int_0^upper s^n exp(-rate*s) ds, stably for small rate*upper."""
+        upper = np.asarray(upper, float)
+        x = rate * upper
+        out = np.empty_like(upper)
+        small = x < 0.5
+        if np.any(small):
+            xs, us = x[small], upper[small]
+            series = np.zeros_like(xs)
+            term = np.ones_like(xs)
+            for k in range(40):
+                if k:
+                    term *= -xs / k
+                series += term / (n + k + 1)
+            out[small] = us ** (n + 1) * series
+        if np.any(~small):
+            xl = x[~small]
+            partial = np.zeros_like(xl)
+            term = np.ones_like(xl)
+            for k in range(n + 1):
+                if k:
+                    term *= xl / k
+                partial += term
+            out[~small] = (math.factorial(n) / rate ** (n + 1)
+                           * (1 - np.exp(-xl) * partial))
+        return out
+
+    def _entry_phase_kernel(self, u, v):
+        """Double-integrated kernel exp(-gamma*max(s,t)) for 0 <= s <= u, 0 <= t <= v."""
+        u, v = np.minimum(u, v), np.maximum(u, v)
+        g = self.gamma
+        e0, e1, e2, e3 = (self._exp_moment(n, u, g) for n in range(4))
+        return (u ** 2 * np.exp(-g * v) / (2 * g ** 2)
+                + u * (v / g - 1 / g ** 2) * e0
+                + (u * v - u / g - v / g + 1 / g ** 2) * e1
+                + (-u / 2 - v + 1 / g) * e2 + e3 / 2)
+
+    def _initial_p1(self, initial_p1):
+        q = self.p1 if initial_p1 is None else float(initial_p1)
+        if not 0 <= q <= 1:
+            raise ValueError("initial_p1 must lie in [0,1]")
+        return q
+
+    def phase_mean(self, times, initial_p1=None):
+        """Exact mean of Phi(t) for an arbitrary initial probability of state 1."""
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) == 0 or np.any(times < 0):
+            raise ValueError("times must be a nonempty vector of nonnegative values")
+        d = self._initial_p1(initial_p1) - self.p1
+        e0 = self._exp_moment(0, times, self.gamma)
+        e1 = self._exp_moment(1, times, self.gamma)
+        return self.Delta * d * (times * e0 - e1)
+
+    def phase_second_moment(self, times, initial_p1=None):
+        """Exact matrix E[Phi(t_i) Phi(t_j)] for an arbitrary initial law."""
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) == 0 or np.any(times < 0):
+            raise ValueError("times must be a nonempty vector of nonnegative values")
+        u = np.minimum.outer(times, times)
+        v = np.maximum.outer(times, times)
+        g = self.gamma
+        e_u, e_v = np.exp(-g * u), np.exp(-g * v)
+        shape = (-u ** 3 / (3 * g) + u ** 2 * v / g - u * v / g ** 2
+                 + (v - u) / g ** 3 - (u * e_v + v * e_u) / g ** 3
+                 + (np.exp(-g * (v - u)) + 1 - e_v - e_u) / g ** 4)
+        shape[u == 0] = 0.0
+        c0 = self.p1 * self.p2 * self.Delta ** 2
+        d = self._initial_p1(initial_p1) - self.p1
+        entry = d * (self.p2 - self.p1) * self.Delta ** 2 * self._entry_phase_kernel(u, v)
+        return c0 * shape + entry
+
+    def phase_covariance(self, times, initial_p1=None):
+        """Exact centered covariance matrix of Phi(t) for an arbitrary initial law."""
+        mean = self.phase_mean(times, initial_p1)
+        return self.phase_second_moment(times, initial_p1) - np.outer(mean, mean)
+
+    def postfit_ms_sampled(self, times, weights=None, initial_p1=None, centered=False):
+        """Exact weighted residual power for sampled OLS on 1, t and t^2.
+
+        The returned objective is E[sum_i w_i r_i^2], with positive weights
+        normalized to sum to one. Equal weights give the sampled mean square.
+        For an arbitrary start this includes the projected squared mean unless
+        centered=True, which returns the conditional stochastic variance only.
+        """
+        times = np.asarray(times, float)
+        if times.ndim != 1 or len(times) < 3 or np.any(times < 0):
+            raise ValueError("at least three nonnegative sample times are required")
+        scale = max(float(np.max(times)), 1.0)
+        design = np.column_stack((np.ones_like(times), times / scale, (times / scale) ** 2))
+        if weights is None:
+            weights = np.ones(len(times))
+        weights = np.asarray(weights, float)
+        if weights.shape != times.shape or np.any(weights <= 0):
+            raise ValueError("weights must be positive and match times")
+        weights = weights / weights.sum()
+        gram = design.T @ (weights[:, None] * design)
+        if np.linalg.matrix_rank(gram) < 3:
+            raise ValueError("the quadratic timing design is rank deficient")
+        hat = design @ np.linalg.solve(gram, design.T * weights)
+        second = (self.phase_covariance(times, initial_p1) if centered
+                  else self.phase_second_moment(times, initial_p1))
+        # Weighted orthogonal projection gives H'W=WH and H^2=H, hence
+        # tr[W(I-H)C(I-H)'] = tr(WC)-tr(WHC), avoiding a cubic matrix product.
+        return float(weights @ np.diag(second) - np.sum(weights[:, None] * hat * second.T))
 
     # ---- spectra (two-sided, per Hz) ----------------------------------------------------------------------
     def S_nudot(self, f):
