@@ -329,6 +329,57 @@
       $2.48\%$ and decreases at observed first order. The normalized determinant is $0.934336$, consistent with
       its $L^{15}$ limit.</p>
 
+    <h3>Several features: the block-Krylov Fisher hierarchy</h3>
+    <p>The single-feature powers do not simply persist once several correlated
+      features are observed. Whiten the feature matrix and restrict it to the
+      prior tangent space:</p>
+    $$A=U^\top Q_0U,\qquad S=U^\top F\Gamma^{-1/2}.$$
+    <p>Let
+      $\mathcal K_q=\operatorname{range}[S,AS,\ldots,A^{q-1}S]$,
+      $d_q=\dim\mathcal K_q-\dim\mathcal K_{q-1}$, and choose an orthonormal
+      block $U_q$ for $\mathcal K_q\ominus\mathcal K_{q-1}$. Put</p>
+    $$B_q={U_q^\top A^{q-1}S\over q!},\qquad
+      G_{qp}={B_qB_p^\top\over q+p+1}.$$
+    <p>Each $B_q$ has full row rank, and the complete graded block matrix
+      $G=(G_{qp})$ is positive definite: its quadratic form is the integral
+      of the squared vector polynomial $\sum_qt^qB_q^\top x_q$.</p>
+    <p>Let $s_q=d_1+\cdots+d_q$ and let $\Sigma_q$ be the $q$th successive
+      Schur pivot of $G$, eliminating grades $1,\ldots,q-1$. Then every
+      individual positive constrained-Fisher eigenvalue has a leading
+      constant:</p>
+    <div class="equation-card">
+    $$\lambda_{s_{q-1}+j}(U^\top\mathcal W_{L,\Gamma}U)
+      =\lambda_j(\Sigma_q)L^{2q+1}\{1+O(L)\},
+      \qquad 1\le j\le d_q,$$
+    $$\operatorname{pdet}(U^\top\mathcal W_{L,\Gamma}U)
+      =\det G\,L^{\sum_qd_q(2q+1)}\{1+O(L)\}.$$
+    </div>
+    <p>Eigenvalues are ordered decreasingly, and those within each grade use
+      the decreasing eigenvalues of $\Sigma_q$. The proof is the graded
+      factorization</p>
+    $$[U_q^\top R(Lt)\Gamma^{-1/2}]_q
+      =\operatorname{diag}(L^qI_{d_q})
+       \{[t^qB_q]_q+O(L)\},$$
+    <p>followed by successive block Gaussian elimination and the min--max
+      principle. This includes noncyclic and rank-deficient inputs by stopping
+      when the block-Krylov flag stabilizes. It is the shifted-response,
+      constant-level refinement of the multi-input controllability orders used
+      by <a href="./bibliography.html#SchmerlingJansonPavone2015">Schmerling,
+      Janson and Pavone (2015)</a>; the recent two-term result of
+      <a href="./bibliography.html#TrelatZuazua2026">Trélat and Zuazua (2026)</a>
+      is explicitly single-input.</p>
+    <p>A six-state, two-feature certificate has block increments $(2,2,1)$,
+      hence powers $(3,3,5,5,7)$. Its Schur-pivot constants are</p>
+    $$3.39207657161,\quad1.79642812270,\quad
+      0.076403477122,\quad0.024168466111,\quad0.000224329192.$$
+    <p>At $L=0.0015625$, all five scaled eigenvalues are within $0.945\%$
+      of these limits, with observed first-order convergence. The normalized
+      determinant is $0.962244402$ for the predicted $L^{23}$ law.</p>
+    <p>This theorem concerns initial-mixture Fisher information. Its
+      block-Krylov rank is neither the fixed-feature Green&ndash;Kubo rank nor
+      the rank of a matrix obtained by integrating heterogeneous contract
+      loadings.</p>
+
     <p>There is also a sharp long-interval distinction between fixed-feature information and
       transiently created information. Put $B=HF$ and let $r=\operatorname{rank}F$. Exponential
       mixing gives</p>

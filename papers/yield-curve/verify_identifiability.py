@@ -388,6 +388,120 @@ def verify_continuous_observability_gramian():
           f"{determinant_ratios[-1]:.9f}; power {determinant_power}")
 
 
+def verify_block_short_window_fisher():
+    """Block-Krylov powers and Schur-pivot constants for several features."""
+    rng = np.random.default_rng(11102026)
+    states, feature_count = 6, 2
+    Q = random_generator(states, rng)
+    pi = stationary(Q)
+    features = rng.normal(size=(states, feature_count))
+    centered = features - np.outer(np.ones(states), pi @ features)
+    tangent = null_space(np.ones((1, states)))
+    dynamics = tangent.T @ Q @ tangent
+    input_matrix = tangent.T @ centered
+
+    # Build an orthonormal basis adapted to the block-Krylov flag.  The q-th
+    # layer is the part of A^(q-1)S orthogonal to all preceding layers.
+    dimension = states - 1
+    adapted = np.zeros((dimension, 0))
+    layers = []
+    degrees = []
+    for degree in range(1, dimension + 1):
+        residual = ((np.eye(dimension) - adapted @ adapted.T)
+                    @ np.linalg.matrix_power(dynamics, degree - 1)
+                    @ input_matrix)
+        left, singular_values, _ = np.linalg.svd(
+            residual, full_matrices=False)
+        increment = int(np.sum(singular_values > 1e-10))
+        if increment:
+            layer = left[:, :increment]
+            layers.append(layer)
+            degrees.append(degree)
+            adapted = np.column_stack([adapted, layer])
+        if adapted.shape[1] == dimension:
+            break
+    increments = tuple(layer.shape[1] for layer in layers)
+    assert tuple(degrees) == (1, 2, 3)
+    assert increments == (2, 2, 1)
+
+    jets = [
+        layer.T @ np.linalg.matrix_power(dynamics, degree - 1)
+        @ input_matrix / math.factorial(degree)
+        for layer, degree in zip(layers, degrees)
+    ]
+    graded_gram = np.block([
+        [
+            jets[left] @ jets[right].T
+            / (degrees[left] + degrees[right] + 1)
+            for right in range(len(layers))
+        ]
+        for left in range(len(layers))
+    ])
+    assert np.linalg.eigvalsh(graded_gram)[0] > 1e-5
+
+    # The constants within each repeated power are the eigenvalues of the
+    # successive leading-block Schur pivot of the graded Gram matrix.
+    constants = []
+    offset = 0
+    for layer in layers:
+        increment = layer.shape[1]
+        diagonal = graded_gram[
+            offset:offset + increment, offset:offset + increment]
+        if offset:
+            cross = graded_gram[offset:offset + increment, :offset]
+            diagonal = diagonal - cross @ np.linalg.solve(
+                graded_gram[:offset, :offset], cross.T)
+        constants.extend(np.linalg.eigvalsh(diagonal)[::-1])
+        offset += increment
+    constants = np.asarray(constants)
+    expected_constants = np.array([
+        3.3920765716083925,
+        1.7964281226965617,
+        0.07640347712187356,
+        0.024168466111019637,
+        0.00022432919181012562,
+    ])
+    assert np.allclose(constants, expected_constants, rtol=2e-11, atol=2e-13)
+
+    horizons = np.array([0.0125, 0.00625, 0.003125, 0.0015625])
+    eigenvalue_powers = np.concatenate([
+        np.repeat(2 * degree + 1, increment)
+        for degree, increment in zip(degrees, increments)
+    ])
+    determinant_power = int(sum(eigenvalue_powers))
+    relative_errors = []
+    determinant_ratios = []
+    final_scaled = None
+    for horizon in horizons:
+        eigenvalues, determinant = high_precision_restricted_series(
+            Q, centered, tangent, horizon, terms=50)
+        scaled = eigenvalues / horizon ** eigenvalue_powers
+        relative_errors.append(np.max(abs(scaled / constants - 1.0)))
+        determinant_ratios.append(
+            determinant
+            / (np.linalg.det(graded_gram) * horizon ** determinant_power)
+        )
+        final_scaled = scaled
+    relative_errors = np.asarray(relative_errors)
+    observed_orders = np.log2(relative_errors[:-1] / relative_errors[1:])
+    assert np.all(np.diff(relative_errors) < 0)
+    assert relative_errors[-1] < 0.01
+    assert np.min(observed_orders) > 0.95
+    assert abs(determinant_ratios[-1] - 1.0) < 0.04
+
+    print("\nBlock short-window Fisher hierarchy")
+    print(f"block-Krylov increments: {increments}; powers: "
+          f"{tuple(eigenvalue_powers)}")
+    print("Schur-pivot constants: "
+          + " ".join(f"{value:.11e}" for value in constants))
+    print("scaled eigenvalues at L=0.0015625: "
+          + " ".join(f"{value:.11e}" for value in final_scaled))
+    print(f"maximum relative constant error: {relative_errors[-1]:.6f}; "
+          f"observed order {observed_orders[-1]:.6f}")
+    print(f"normalized determinant: {determinant_ratios[-1]:.9f}; "
+          f"power {determinant_power}")
+
+
 def project_simplex(values):
     """Euclidean projection of one or many row vectors onto the simplex."""
     values = np.asarray(values, dtype=float)
@@ -2223,6 +2337,7 @@ def main():
     verify_arbitrary_prior_rank()
     verify_krylov_observability()
     verify_continuous_observability_gramian()
+    verify_block_short_window_fisher()
     verify_real_spectrum_all_maturities()
     verify_long_end_conditioning()
     verify_defective_long_end_conditioning()
@@ -2252,6 +2367,7 @@ def main():
         "PASS: general and arbitrary-prior finite-horizon Gram rank, exact covariance, "
         "exact integrated-loading rank, Krylov, real-spectrum, generic-rank, and "
         "continuous-maturity Fisher information, "
+        "block-Krylov short-window Fisher spectrum, "
         "three-state exceptional-set observability, sharp simple-spectrum, "
         "defective, and oscillatory long-end conditioning and whitened noisy recovery, "
         "shape identities, "

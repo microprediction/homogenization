@@ -18,6 +18,15 @@
   "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
  },
  {
+  "key": "SchmerlingJansonPavone2015",
+  "authors": "Schmerling, E., Janson, L. and Pavone, M.",
+  "year": 2015,
+  "title": "Optimal sampling-based motion planning under differential constraints: The drift case with linear affine dynamics",
+  "venue": "54th IEEE Conference on Decision and Control:2574-2581",
+  "doi": "10.1109/CDC.2015.7402604",
+  "annotation": "Uses controllability indices to prove the multi-input small-time Gramian eigenvalue orders. The yield-curve note supplies the shifted-response powers and explicit leading block constants for its continuous-maturity Fisher matrix."
+ },
+ {
   "key": "TrelatZuazua2026",
   "authors": "Trélat, E. and Zuazua, E.",
   "year": 2026,

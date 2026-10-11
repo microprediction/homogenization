@@ -2539,5 +2539,27 @@
   "doi": "",
   "url": "https://research.tue.nl/en/publications/controllability-and-observability-conditions-of-linear-autonomous/",
   "annotation": "Gives the spectral observability criterion used here to characterize the null space of the continuous-maturity Fisher Gramian, including nondiagonalizable generators."
+ },
+ {
+  "role": "survey_theory",
+  "key": "SchmerlingJansonPavone2015",
+  "authors": "Schmerling, E., Janson, L. and Pavone, M.",
+  "year": 2015,
+  "title": "Optimal sampling-based motion planning under differential constraints: The drift case with linear affine dynamics",
+  "venue": "54th IEEE Conference on Decision and Control:2574-2581",
+  "doi": "10.1109/cdc.2015.7402604",
+  "url": "https://doi.org/10.1109/cdc.2015.7402604",
+  "annotation": "Uses controllability indices to prove the multi-input small-time Gramian eigenvalue orders. The yield-curve note supplies the shifted-response powers and explicit leading block constants for its continuous-maturity Fisher matrix."
+ },
+ {
+  "role": "survey_theory",
+  "key": "TrelatZuazua2026",
+  "authors": "Trélat, E. and Zuazua, E.",
+  "year": 2026,
+  "title": "Two-term small-time spectral expansions for controllability Gramians",
+  "venue": "arXiv:2609.37077",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2609.37077",
+  "annotation": "Derives the small-time odd-power eigenvalue hierarchy and refined spectral expansions for controllable single-input Gramians. The yield-curve Fisher response vanishes once more at zero maturity, shifting the hierarchy from powers 1,3,... to 3,5,...; the note gives the corresponding factorial-Hilbert leading constants directly."
  }
 ]
