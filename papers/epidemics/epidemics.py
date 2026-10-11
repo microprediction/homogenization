@@ -100,8 +100,11 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
         raise ValueError("rates and transmission parameters must be positive")
     if abs(beta1 - beta2) <= 1e-15 * max(beta1, beta2):
         pi1 = rate21 / (rate12 + rate21)
+        riccati_square = (sigma - gamma) ** 2 / 4 + sigma * beta1
         return {'lyapunov': seir_rate(beta1, sigma, gamma), 'mean_z': None,
-                'state_mass': [pi1, 1 - pi1], 'roots': None, 'powers': None}
+                'state_mass': [pi1, 1 - pi1], 'roots': None, 'powers': None,
+                'riccati_square_mean': float(riccati_square),
+                'riccati_square_target': float(riccati_square)}
 
     # Re-label by transmission level.  a is high -> low and b is low -> high.
     if beta1 > beta2:
@@ -135,18 +138,26 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
             log_smooth = -khi * np.log(z - bhi) - (klo + 1) * np.log(z - blo)
         entries.append((weights, z, log_smooth))
     scale = max(np.max(entry[2]) for entry in entries)
-    masses, moments = [], []
+    masses, moments, square_moments = [], [], []
     for weights, z, log_smooth in entries:
         w = weights * np.exp(log_smooth - scale)
+        riccati = sigma * z + 0.5 * (sigma - gamma)
         masses.append(float(w.sum()))
         moments.append(float(w @ z))
+        square_moments.append(float(w @ (riccati ** 2)))
     total = sum(masses)
     mean_z = sum(moments) / total
+    riccati_square_mean = sum(square_moments) / total
     normalized = [m / total for m in masses]
     state_mass = normalized if high_first else normalized[::-1]
+    pi_hi = b / (a + b)
+    riccati_square_target = ((sigma - gamma) ** 2 / 4
+                              + sigma * (pi_hi * beta_hi + (1.0 - pi_hi) * beta_lo))
     return {'lyapunov': float(sigma * mean_z - gamma), 'mean_z': float(mean_z),
             'state_mass': state_mass, 'roots': [float(alo), float(ahi), float(blo), float(bhi)],
-            'powers': [float(klo), float(khi)]}
+            'powers': [float(klo), float(khi)],
+            'riccati_square_mean': float(riccati_square_mean),
+            'riccati_square_target': float(riccati_square_target)}
 
 
 def seir_beta_slow_switching(beta1, beta2, sigma, gamma, rate12_scale=1.0, rate21_scale=None):

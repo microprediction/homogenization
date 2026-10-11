@@ -60,7 +60,12 @@
       <li>under <a href="./hull-white.html">Hull&ndash;White</a> the deterministic shift scales each cash flow by
         $e^{-\int\varphi}$ and the rest is unchanged;</li>
       <li>under <a href="./g2.html">G2++</a> a zero-coupon bond depends on the factors through the single Gaussian variable
-        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor.</li>
+        $B_ax_T + B_bz_T$, which takes the place of $x_T$, with a terminal exponent in each factor. That covers options
+        on zero-coupon bonds and caplets;</li>
+      <li>a coupon bond under G2++ has one loading pair $(B_a(\tau_k), B_b(\tau_k))$ per payment, and for $a \ne b$ the
+        ratio $B_a/B_b$ is strictly monotone in $\tau$, so no two payments share a direction. The exercise boundary is
+        a curve in $(x, z)$, the decomposition does not apply, and swaptions need a two-dimensional integral
+        (<a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon.py">certificate</a>).</li>
     </ul>
     <p>For a 2&times;5 payer swaption under a two-regime Vasicek model, with mean levels 6% and 2% and volatilities 1.5%
     and 0.8%, the relative error of the expansion at each order against the numerical solution, by mean holding

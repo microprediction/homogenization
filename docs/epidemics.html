@@ -347,19 +347,49 @@
       {c(\alpha+\delta)^3\bar D}+O(c^{-2}),\qquad c\to\infty.$$
     </div>
     <p>Since $r(\beta)$ is strictly concave, the fast limit $r(\bar\beta)$ strictly exceeds the slow limit
-      $\pi_h r_h+\pi_\ell r_\ell$ when the transmission rates differ. The positive slow coefficient and negative
-      fast correction show that increasing the switching speed initially and eventually raises growth. They do not,
-      by themselves, prove global monotonicity at every intermediate speed.</p>
+      $\pi_h r_h+\pi_\ell r_\ell$ when the transmission rates differ. Here the endpoint signs are part of a stronger
+      global result.</p>
+
+    <h4>Strict global monotonicity by convex order</h4>
+    <p>For this two-state, transmission-only model the almost-sure exponent is strictly increasing in the common
+      switching-speed scale $c$. To see why, remove the constant damping from the infectious component and use the
+      Riccati coordinate</p>
+    $$y=\sigma z+\frac{\sigma-\gamma}{2},\qquad
+      \dot y=A_i-y^2,qquad
+      A_i=\frac{(\sigma-\gamma)^2}{4}+\sigma\beta_i.$$
+    <p>Put $\rho_i=\sqrt{A_i}$ and $\bar A=\pi_hA_h+\pi_\ell A_\ell$. The total invariant density of $y$ on
+      $(\rho_\ell,\rho_h)$ can be written</p>
+    <div class="equation-card">
+    $$f_c(y)=Z_c^{-1}e^{c\phi(y)}w(y),$$
+    $$\phi(y)=\frac{\alpha}{2\rho_h}\log\frac{\rho_h-y}{\rho_h+y}
+      +\frac{\delta}{2\rho_\ell}\log\frac{y-\rho_\ell}{y+\rho_\ell},$$
+    $$w(y)=\frac{A_h-A_\ell}{(A_h-y^2)(y^2-A_\ell)}>0.$$
+    </div>
+    <p>Let $X_c=y^2$. Stationarity applied to $y$ gives the speed-independent mean</p>
+    $$\mathbb E X_c=\mathbb E A_{Y}=\bar A.$$
+    <p>If $\psi(x)=\phi(\sqrt x)$, direct differentiation gives</p>
+    $$\psi'(x)=\frac{(\alpha+\delta)(\bar A-x)}
+      {2\sqrt x\,(A_h-x)(x-A_\ell)}.$$
+    <p>Thus $\psi$ rises strictly to its unique maximum at the common mean $\bar A$ and then falls strictly. For
+      $c_2&gt;c_1$, the likelihood ratio of $X_{c_2}$ to $X_{c_1}$ is proportional to
+      $e^{(c_2-c_1)\psi(x)}$: it is larger on one central interval and smaller in both tails. Because the two laws
+      have the same mean, their distribution functions cross once, so
+      $X_{c_2}\preceq_{\rm cx}X_{c_1}$. This is the classical convex-order crossing argument of
+      <a href="https://doi.org/10.1017/S0515036100008102">Ohlin (1969)</a>. Since $\sqrt{x}$ is strictly concave,</p>
+    $$\mathbb E\sqrt{X_{c_2}}>\mathbb E\sqrt{X_{c_1}},\qquad
+      \Lambda_{\rm as}(c)=\mathbb E\sqrt{X_c}-\frac{\sigma+\gamma}{2}.$$
+    <p>This proves strict global monotonicity whenever $\beta_h\ne\beta_\ell$. It is special to the ordered
+      two-environment model in which only transmission changes; it does not assert monotonicity when recovery also
+      switches or for a general family of cooperative matrices.</p>
     <p>After $z=a_\ell+(a_h-a_\ell)t$, the two integrals have Jacobi weights
     $t^{\kappa_\ell}(1-t)^{\kappa_h-1}$ and
     $t^{\kappa_\ell-1}(1-t)^{\kappa_h}$. The certificate therefore evaluates them by Gauss&ndash;Jacobi quadrature,
     without time discretization or endpoint clipping.</p>
     <p>For the parameters here and symmetric switching, the exact extinction&ndash;invasion threshold is</p>
     $$\lambda_* = 2.3126879896\ \text{per week}.$$
-    <p>The slow limit is negative and the fast limit positive, so continuity guarantees at least one
-      extinction&ndash;invasion crossing. Exact quadrature finds the displayed crossing, with negative values on the
-      tested slower grid and positive values on the tested faster grid. No uniqueness or global monotonicity claim is
-      needed. The first-order formula predicts $2.6316808690$, about $13.8\%$ too high. This exact reduction is
+    <p>The slow limit is negative and the fast limit positive, so strict monotonicity proves that this
+      extinction&ndash;invasion crossing is unique. The first-order formula predicts $2.6316808690$, about $13.8\%$
+      too high. This exact reduction is
       special to two regimes with only $\beta$ switched; with three or more regimes,
     or with switched recovery, the projective invariant law is no longer this one-dimensional two-flow problem.</p>
     <p>For any chain the almost-sure formula holds with $K_{\beta\beta} = -\pi\cdot(\tilde\beta\,Q^{\#}\tilde\beta)$, and the

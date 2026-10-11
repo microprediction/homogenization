@@ -8,9 +8,9 @@ References, all independent of the expansions:
                       with each holding interval propagated exactly by exp(tau A_i).
 Checks:
   1. SIR, beta switched: mean = bbar - gamma + K, almost-sure = bbar - gamma exactly.
-  2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; slow- and fast-switching
-     endpoint expansions; no first-order mean correction (second order, closed form); almost-sure growth drops by
-     K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
+  2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; strict global monotonicity in
+     the common switching-speed scale; slow- and fast-switching endpoint expansions; no first-order mean correction
+     (second order, closed form); almost-sure growth drops by K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
   3. SEIR, beta and gamma switched on a three-state cycle, forward and reversed: first-order mean and almost-sure
      growth, and the forward-minus-reversed gap against 2 K^anti sigma / sqrt(D).
   4. A three-compartment structured example for the general formulas.
@@ -160,7 +160,7 @@ def main():
     print(f"  exact invasion threshold lam = {exact_threshold:.12f}; first-order threshold {first_threshold:.12f}")
     check(abs(seir_beta_lyapunov_two_state(*BETA2, SIGMA, GAMMA, exact_threshold)['lyapunov']) < 2e-14,
           "exact projective quadrature resolves the extinction/invasion threshold")
-    out['seir_threshold'] = {'exact': exact_threshold, 'first_order': first_threshold}
+    out['seir_threshold'] = {'exact': exact_threshold, 'first_order': first_threshold, 'unique': True}
     # Slow switching: each transition contributes a deterministic relaxation
     # area, while the stationary transition flux is linear in the common
     # speed c.  The next error is quadratic because entry-point errors are O(c).
@@ -198,6 +198,37 @@ def main():
     check(max(abs(slow_original[key] - slow_relabelled[key]) for key in ('limit', 'coefficient', 'cross_ratio')) < 1e-14,
           "the slow-switching expansion is invariant under regime relabelling")
     out['seir_slow_switching'] = slow_rows
+
+    # Global monotonicity certificate.  In the symmetrized Riccati coordinate
+    # y = sigma*z + (sigma-gamma)/2, stationarity gives E[y^2] equal to the
+    # fixed stationary average of a_i=(sigma-gamma)^2/4+sigma*beta_i at every
+    # common speed.  The theorem proves convex-order concentration as speed
+    # rises; here we check both the invariant moment and strict growth directly.
+    monotone_rows = []
+    monotone_speeds = np.geomspace(0.01, 64.0, 29)
+    for label, (rate12_scale, rate21_scale) in (
+            ('symmetric', (1.0, 1.0)), ('asymmetric', (1.7, 0.4))):
+        exacts = [seir_beta_lyapunov_two_state(
+            *BETA2, SIGMA, GAMMA,
+            speed * rate12_scale, speed * rate21_scale, nodes=160)
+            for speed in monotone_speeds]
+        values = np.array([item['lyapunov'] for item in exacts])
+        square_errors = np.array([
+            item['riccati_square_mean'] - item['riccati_square_target'] for item in exacts])
+        increments = np.diff(values)
+        check(np.min(increments) > 0.0,
+              f"{label} exact Lyapunov exponent is strictly increasing on the speed grid")
+        check(np.max(np.abs(square_errors)) < 5e-11,
+              f"{label} Riccati-square mean is speed-invariant")
+        monotone_rows.append({
+            'label': label, 'rate_scales': [rate12_scale, rate21_scale],
+            'speeds': monotone_speeds.tolist(), 'lyapunov': values.tolist(),
+            'minimum_increment': float(np.min(increments)),
+            'max_riccati_square_error': float(np.max(np.abs(square_errors))),
+        })
+        print(f"  monotone {label}: minimum grid increment {np.min(increments):.6e}, "
+              f"max Riccati-square error {np.max(np.abs(square_errors)):.3e}")
+    out['seir_speed_monotonicity'] = monotone_rows
     out['seir_beta'] = rows
 
     # ---------------------------------------------------------------- 3. the cycle

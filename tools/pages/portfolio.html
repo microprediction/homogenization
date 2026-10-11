@@ -95,6 +95,9 @@
     <p>This is the rule of the <a href="./any-equation.html">general page</a> with every operator a multiplication.
     Multiplications commute, so only the symmetric part of $\mathcal K$ enters, and the direction in which a chain
     cycles through its regimes cannot matter at first order.</p>
+    <p>With more than two regimes $\mathcal K(f, h)$ and $\mathcal K(h, f)$ can differ. A cross coefficient below is
+    always the symmetric one,</p>
+    $$\mathcal K_{fh} = \tfrac12\big(\mathcal K(f, h) + \mathcal K(h, f)\big) .$$
     <p>A known starting regime $i$ adds the memory term of the first corrector:</p>
     $$\log \mathbb E_i\exp\Big(\int_0^T g_{y_s}\,ds\Big) \approx T\,\bar g + T\,\mathcal K(g, g) - \big(Q^{\#}\tilde g\big)_i .$$
     <p>For a single relaxation mode $-Q^{\#}\tilde g$ is $\tilde g$ times the relaxation time: the starting regime&apos;s
@@ -172,7 +175,10 @@
     <p>With two regimes the three Green&ndash;Kubo numbers of the blind investor satisfy
     $\mathcal K_{\mu s}^2 = \mathcal K_{\mu\mu}\mathcal K_{ss}$, and the correction is a perfect square: it is
     $(1-\gamma)\,\mathcal K(h, h)$ with $h_1 - h_2$ written out. With more regimes the three numbers are free, subject
-    to the matrix they form being positive semidefinite.</p>
+    to the symmetric matrix they form being positive semidefinite.</p>
+    <p>The certificate checks the cross term on a three-state cycle, where $\mathcal K(\mu, s) = 0.07918$ and
+    $\mathcal K(s, \mu) = 0.00396$. The symmetric coefficient reproduces $\mathcal K(h, h) = 0.016887$ at $\gamma = 3$,
+    $w = \tfrac12$; the one-sided $\mathcal K(\mu, s)$ would give 0.002784.</p>
 
     <h2>Worked example</h2>
     <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are

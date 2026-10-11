@@ -8,7 +8,7 @@
    agrees with their general formula when r is constant and with exact Monte Carlo of the optimal feedback;
    beta ~ exp(-T<lam^2> + T K(lam^2, lam^2)) with second-order errors.
 3. Regime-blind constant fraction: CE(w) and the weight shift against a numerical solve and numerical maximization,
-   and exact Monte Carlo over chain paths.
+   and exact Monte Carlo over chain paths; on a three-state cycle the cross coefficient is the symmetric half-sum.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -176,6 +176,26 @@ def main():
     print(f"   Monte Carlo {ce_mc:.6f} +- {se:.6f}, numerical {ce_ex:.6f}")
     ok &= abs(ce_mc - ce_ex) < 4 * se
     out['blind_mc'] = dict(mc=float(ce_mc), se=float(se), exact=ce_ex)
+
+    print("   three-state cycle: the cross coefficient is the symmetric one")
+    Qc = np.array([[-4.2, 4, 0.2], [0.2, -4.2, 4], [4, 0.2, -4.2]])
+    mu3, sig3, w, Tc = [1.0, 0.0, -1.0], np.sqrt([2.0, 3.0, 1.0]), 0.5, 2.0
+    s3 = np.asarray(sig3) ** 2
+    Kms_dir, Ksm_dir = K(Qc, mu3, s3), K(Qc, s3, mu3)
+    Kmm, Kms, Kss = blind_K(Qc, mu3, sig3)
+    h3 = h_blind(w, 0.0, mu3, sig3, GAMMA)
+    Khh = K(Qc, h3, h3)
+    poly = lambda c: w ** 2 * Kmm - GAMMA * w ** 3 * c + 0.25 * GAMMA ** 2 * w ** 4 * Kss
+    lim = [m * (ce_blind_exact(m * Qc, w, 0.0, mu3, sig3, GAMMA, Tc) - float(stationary(Qc) @ h3)) for m in (128, 256, 512)]
+    print(f"   K(mu, s) {Kms_dir:.10f}  K(s, mu) {Ksm_dir:.10f}  K(h, h) {Khh:.10f}  symmetric {poly(Kms):.10f}"
+          f"  one-sided {poly(Kms_dir):.10f}")
+    print(f"   m (CE_m - hbar) at m = 128, 256, 512: " + ", ".join(f"{x:.8f}" for x in lim)
+          + f";  (1 - gamma) K(h, h) = {(1 - GAMMA) * Khh:.8f}")
+    ok &= abs(Kms_dir - Ksm_dir) > 0.07 and abs(poly(Kms) - Khh) < 1e-15 and abs(poly(Kms_dir) - Khh) > 0.8 * Khh
+    ok &= abs(lim[2] - (1 - GAMMA) * Khh) < 1e-5 and 1.8 < (lim[0] - (1 - GAMMA) * Khh) / (lim[1] - (1 - GAMMA) * Khh) < 2.2
+    ok &= abs(K(Qc.T, h3, h3) - Khh) < 1e-15                    # reversing the cycle leaves the contraction alone
+    out['blind_cycle'] = dict(K_mu_s=Kms_dir, K_s_mu=Ksm_dir, K_sym=Kms, Khh=Khh, one_sided=poly(Kms_dir),
+                              limit_m512=lim[2], limit=(1 - GAMMA) * Khh)
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)
     print("PASS" if ok else "FAIL")
