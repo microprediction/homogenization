@@ -507,6 +507,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "Curtiss1942",
+  "authors": "Curtiss, J. H.",
+  "year": 1942,
+  "title": "A Note on the Theory of Moment Generating Functions",
+  "venue": "Annals of Mathematical Statistics 13(4):430-433",
+  "doi": "10.1214/aoms/1177731541",
+  "url": "https://doi.org/10.1214/aoms/1177731541",
+  "annotation": "Establishes uniqueness and convergence results for moment-generating functions on a neighborhood of the origin; the switched-CIR note adds an explicit uniform complex zero-free disk and cumulant bounds from a Gamma moment majorant."
+ },
+ {
+  "role": "survey_theory",
   "key": "Kubo1962",
   "authors": "Kubo, R.",
   "year": 1962,

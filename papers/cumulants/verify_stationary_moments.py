@@ -9,8 +9,10 @@ and checks convergence of the full Taylor series inside the computable pole
 disk on a nonreversible three-state chain.  It also verifies a noncancellation
 criterion under which that disk is the exact Taylor disk, and checks a
 switching-speed-uniform factorial moment bound through order eighty.  The
-latter proves exponential integrability and moment determinacy without
-claiming that the inverse-speed expansion is uniform in moment order.
+latter proves exponential integrability, moment determinacy, and a uniform
+zero-free disk on which the cumulant series has explicit Cauchy coefficient
+and truncation bounds, without claiming that the inverse-speed expansion is
+uniform in moment order.
 """
 import math
 import os
@@ -31,6 +33,7 @@ CONVERGENCE_ORDER = 30
 SHARPNESS_ORDER = 100
 MOMENT_BOUND_DEGREE = 80
 BOUND_SPEEDS = (0.25, 1, 8, 128)
+CUMULANT_TRUNCATION_ORDER = 30
 
 
 def stationary_moments(speed, q0, pi, c, kappa, variance, degree=DEGREE):
@@ -182,6 +185,142 @@ def exponential_integrability_certificate(q0, pi, c, kappa, variance):
         max(mgf_partials),
         max(nonfeller_ratios),
     )
+
+
+def uniform_cumulant_disk_certificate(q0, c, kappa, variance):
+    """Certify the zero-free MGF disk and its cumulant-series bounds.
+
+    The Gamma moment majorant gives, for complex z with theta*abs(z) < 1,
+
+        abs(M_m(z) - 1) <= (1 - theta*abs(z))**(-beta) - 1.
+
+    The right side is below one on the disk of radius
+    theta**(-1) * (1 - 2**(-1/beta)), uniformly in the switching speed.
+    Thus the analytic branch K_m=log(M_m), K_m(0)=0, exists there.  On a
+    smaller circle of radius r its modulus is at most
+
+        L_r = -log(2 - (1 - theta*r)**(-beta)).
+
+    Cauchy's estimate then bounds the nth cumulant by n!*L_r/r**n and the
+    order-N Taylor tail at eta by
+    L_r*(eta/r)**(N+1)/(1-eta/r).  The high-precision check below verifies
+    these inequalities at four switching speeds.  It also brackets the exact
+    positive-real MGF by an 80-term moment sum plus the remaining Gamma-
+    majorant tail, so the cumulant truncation is tested without exponentiating
+    a truncated cumulant polynomial.
+    """
+    old_dps = mp.mp.dps
+    mp.mp.dps = 140
+    try:
+        size = len(kappa)
+        q_mp = mp.matrix([[mp.mpf(str(value)) for value in row] for row in q0])
+        c_mp = [mp.mpf(str(value)) for value in c]
+        kappa_mp = [mp.mpf(str(value)) for value in kappa]
+        variance_mp = [mp.mpf(str(value)) for value in variance]
+
+        stationary_system = q_mp.T.copy()
+        stationary_rhs = mp.matrix(size, 1)
+        for column in range(size):
+            stationary_system[size - 1, column] = 1
+        stationary_rhs[size - 1] = 1
+        pi_mp = mp.lu_solve(stationary_system, stationary_rhs).T
+
+        theta = max(variance_mp) / (2 * min(kappa_mp))
+        beta = 2 * max(c_mp) / max(variance_mp)
+        zero_free_radius = (1 - mp.power(2, -1 / beta)) / theta
+        circle_radius = mp.mpf("0.8") * zero_free_radius
+        circle_deviation = (1 - theta * circle_radius) ** (-beta) - 1
+        log_bound = -mp.log(1 - circle_deviation)
+        evaluation_point = circle_radius / 2
+        truncation_order = CUMULANT_TRUNCATION_ORDER
+        tail_bound = (
+            log_bound
+            * (evaluation_point / circle_radius) ** (truncation_order + 1)
+            / (1 - evaluation_point / circle_radius)
+        )
+
+        largest_coefficient_ratio = mp.mpf("0")
+        largest_actual_tail = mp.mpf("0")
+        largest_mgf_bracket = mp.mpf("0")
+        for speed in BOUND_SPEEDS:
+            rows = [pi_mp]
+            speed_mp = mp.mpf(str(speed))
+            for order in range(1, MOMENT_BOUND_DEGREE + 1):
+                forcing = mp.matrix([
+                    rows[-1][index]
+                    * (order * c_mp[index]
+                       + mp.mpf(order * (order - 1))
+                       * variance_mp[index] / 2)
+                    for index in range(size)
+                ])
+                killed = (
+                    mp.diag([order * value for value in kappa_mp])
+                    - speed_mp * q_mp
+                )
+                rows.append(mp.lu_solve(killed.T, forcing).T)
+            moments = [sum(row) for row in rows]
+
+            cumulants = [mp.mpf("0")] * (MOMENT_BOUND_DEGREE + 1)
+            for order in range(1, MOMENT_BOUND_DEGREE + 1):
+                cumulants[order] = moments[order] - sum(
+                    mp.binomial(order - 1, index - 1)
+                    * cumulants[index]
+                    * moments[order - index]
+                    for index in range(1, order)
+                )
+                coefficient_bound = (
+                    mp.factorial(order) * log_bound / circle_radius ** order
+                )
+                ratio = abs(cumulants[order]) / coefficient_bound
+                largest_coefficient_ratio = max(
+                    largest_coefficient_ratio, ratio
+                )
+                assert ratio < 1
+
+            cumulant_partial = sum(
+                cumulants[order] * evaluation_point ** order
+                / mp.factorial(order)
+                for order in range(1, truncation_order + 1)
+            )
+            moment_partial = sum(
+                moments[order] * evaluation_point ** order
+                / mp.factorial(order)
+                for order in range(MOMENT_BOUND_DEGREE + 1)
+            )
+            majorant_partial = sum(
+                mp.rf(beta, order) * (theta * evaluation_point) ** order
+                / mp.factorial(order)
+                for order in range(MOMENT_BOUND_DEGREE + 1)
+            )
+            majorant_full = (1 - theta * evaluation_point) ** (-beta)
+            lower_log_mgf = mp.log(moment_partial)
+            upper_log_mgf = mp.log(
+                moment_partial + majorant_full - majorant_partial
+            )
+            assert lower_log_mgf >= cumulant_partial - tail_bound
+            assert upper_log_mgf <= cumulant_partial + tail_bound
+            largest_actual_tail = max(
+                largest_actual_tail,
+                abs(cumulant_partial - lower_log_mgf),
+                abs(cumulant_partial - upper_log_mgf),
+            )
+            largest_mgf_bracket = max(
+                largest_mgf_bracket, upper_log_mgf - lower_log_mgf
+            )
+
+        return (
+            zero_free_radius,
+            circle_radius,
+            circle_deviation,
+            log_bound,
+            evaluation_point,
+            tail_bound,
+            largest_coefficient_ratio,
+            largest_actual_tail,
+            largest_mgf_bracket,
+        )
+    finally:
+        mp.mp.dps = old_dps
 
 
 def convergence_certificate(q0, c, kappa, variance, degree=DEGREE,
@@ -479,6 +618,17 @@ def main():
         largest_mgf_partial,
         largest_nonfeller_ratio,
     ) = exponential_integrability_certificate(q0, pi, c, kappa, variance)
+    (
+        cumulant_radius,
+        cumulant_circle,
+        cumulant_deviation,
+        cumulant_log_bound,
+        cumulant_evaluation_point,
+        cumulant_tail_bound,
+        largest_cumulant_bound_ratio,
+        largest_actual_cumulant_tail,
+        largest_mgf_log_bracket,
+    ) = uniform_cumulant_disk_certificate(q0, c, kappa, variance)
 
     coefficients, scalar, centered = fast_coefficients(
         q0, pi, c, kappa, variance
@@ -540,6 +690,27 @@ def main():
     print(
         "80-term exponential partial / rigorous bound at eta="
         f"{test_eta:.6f}: {largest_mgf_partial:.12f}/{exponential_bound:.12f}",
+    )
+    print("uniform zero-free cumulant radius:", mp.nstr(cumulant_radius, 13))
+    print(
+        "Cauchy circle radius/deviation/log bound:",
+        "/".join(mp.nstr(value, 13) for value in (
+            cumulant_circle, cumulant_deviation, cumulant_log_bound
+        )),
+    )
+    print(
+        "largest cumulant / Cauchy coefficient bound through p=80:",
+        mp.nstr(largest_cumulant_bound_ratio, 13),
+    )
+    print(
+        f"order-{CUMULANT_TRUNCATION_ORDER} tail bound at eta="
+        f"{mp.nstr(cumulant_evaluation_point, 13)}:",
+        mp.nstr(cumulant_tail_bound, 13),
+    )
+    print(
+        "largest certified actual tail / MGF-log bracket width:",
+        f"{mp.nstr(largest_actual_cumulant_tail, 7)}/"
+        f"{mp.nstr(largest_mgf_log_bracket, 7)}",
     )
     print("leading moments p=1..6:", np.array2string(scalar[1:, 0], precision=10))
     print("first coefficients p=1..6:", np.array2string(scalar[1:, 1], precision=10))

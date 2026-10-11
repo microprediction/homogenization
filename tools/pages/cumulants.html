@@ -392,6 +392,39 @@
       a maximum ratio $0.468400940311$. At $\eta=14$, which is $80\%$ of the certified endpoint, the largest
       80-term exact exponential partial sum is $4.813353422729$, below the rigorous full-MGF bound $125$.</p>
 
+    <h3>An explicit uniform cumulant disk</h3>
+    <p>The same majorant controls a genuinely convergent cumulant series, not just each finite list of moments.
+      For complex $z$, let $M_m(z)=\mathbb E_{\Pi_m}e^{zv}$. Absolute convergence and the moment bound give</p>
+    $$|M_m(z)-1|\le\sum_{p\ge1}{\vartheta^p(\beta)_p|z|^p\over p!}
+      =(1-\vartheta|z|)^{-\beta}-1.$$
+    <p>Consequently $M_m$ has no zero in the switching-speed-uniform disk</p>
+    <div class="equation-card">
+    $$|z|&lt;R_0:={1-2^{-1/\beta}\over\vartheta}.$$
+    <p>There is therefore a unique analytic branch $K_m(z)=\log M_m(z)$ with $K_m(0)=0$ throughout that disk.
+      For any $0&lt;r&lt;R_0$, put</p>
+    $$q_r=(1-\vartheta r)^{-\beta}-1,\qquad
+      L_r=-\log(1-q_r)=-\log\!\left(2-(1-\vartheta r)^{-\beta}\right).$$
+    <p>Then, simultaneously for every switching speed $m&gt;0$ and cumulant order $p\ge1$,</p>
+    $$|\kappa_{p,m}|\le {p!L_r\over r^p},$$
+    <p>and for $|z|&lt;r$ and every $N\ge0$,</p>
+    $$\left|K_m(z)-\sum_{p=1}^N{\kappa_{p,m}z^p\over p!}\right|
+      \le L_r{(|z|/r)^{N+1}\over1-|z|/r}.$$
+    </div>
+    <p>Indeed, $|M_m-1|\le q_r&lt;1$ on the closed $r$-disk, so the power series for
+      $\log(1+(M_m-1))$ gives $|K_m|\le-\log(1-q_r)=L_r$. Cauchy&apos;s estimate and summing the
+      remaining geometric series prove the two displayed bounds. This elementary complex-analytic argument
+      complements the classical local uniqueness and convergence theory for moment-generating functions in
+      <a href="./bibliography.html#Curtiss1942">Curtiss (1942)</a>.</p>
+    <p>For the three-state benchmark, $R_0=3.610240795278$. Taking $r=0.8R_0$ gives
+      $(r,q_r,L_r)=(2.888192636223,0.717917611792,1.265556093947)$. Through cumulant order $80$ and the four
+      switching speeds above, the largest exact cumulant/Cauchy-bound ratio is $0.204078225577$. At
+      $z=r/2=1.444096318111$, the order-$30$ bound is $1.178640960\times10^{-9}$; an independent 80-moment
+      bracket of the exact MGF places the largest observed log-MGF truncation error below
+      $9.7\times10^{-45}$, with bracket width below $5.7\times10^{-85}$.</p>
+    <p>This theorem concerns the cumulant-generating series at each exact switching speed. It does <em>not</em>
+      make the separate inverse-speed expansion below uniform in moment or cumulant order, and it does not
+      interchange the cumulant-order and fast-switching limits.</p>
+
     <h3>Every fixed inverse-speed coefficient at every fixed moment order</h3>
     <p>The recursion in fact determines the complete formal fast-switching expansion, coefficient by coefficient.
       Let $S=Q_0^\#$, $\bar\kappa=\pi\kappa$, and write</p>
