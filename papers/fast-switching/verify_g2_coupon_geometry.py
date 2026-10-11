@@ -20,7 +20,7 @@ from math import exp, expm1, log, pi, sqrt
 
 import numpy as np
 from scipy.integrate import quad
-from scipy.optimize import brentq
+from scipy.optimize import brentq, minimize
 from scipy.special import ndtr, roots_hermitenorm
 
 
@@ -35,6 +35,59 @@ def loading(a, b, tau):
 
 def determinant(u, v):
     return u[0] * v[1] - u[1] * v[0]
+
+
+def nearest_hull_point(loadings):
+    """Return barycentric weights and the minimum-norm hull point.
+
+    If the rows of ``loadings`` are b_k, this solves
+    min ||sum_k alpha_k b_k||^2 over the probability simplex.  The nearest
+    point supplies the unique max-margin conditioning direction whenever it
+    is nonzero.
+    """
+    loadings = np.asarray(loadings, dtype=float)
+    count = len(loadings)
+
+    def objective(alpha):
+        point = alpha @ loadings
+        return 0.5 * float(point @ point)
+
+    def gradient(alpha):
+        return loadings @ (alpha @ loadings)
+
+    result = minimize(
+        objective,
+        np.full(count, 1.0 / count),
+        jac=gradient,
+        bounds=[(0.0, None)] * count,
+        constraints={
+            "type": "eq",
+            "fun": lambda alpha: float(np.sum(alpha) - 1.0),
+            "jac": lambda alpha: np.ones_like(alpha),
+        },
+        method="SLSQP",
+        options={"ftol": 1e-14, "maxiter": 1000},
+    )
+    assert result.success, result.message
+
+    # SLSQP identifies the optimal face reliably here but may stop with an
+    # O(1e-8) first-order residual.  Solve the equality-constrained KKT system
+    # on that face to recover the projection to near machine precision.
+    active = np.flatnonzero(result.x > 1e-7)
+    gram = loadings[active] @ loadings[active].T
+    kkt = np.block([
+        [gram, np.ones((len(active), 1))],
+        [np.ones((1, len(active))), np.zeros((1, 1))],
+    ])
+    rhs = np.r_[np.zeros(len(active)), 1.0]
+    active_weights = np.linalg.lstsq(kkt, rhs, rcond=None)[0][:-1]
+    assert np.min(active_weights) > -1e-10
+    weights = np.zeros(count)
+    weights[active] = np.maximum(active_weights, 0.0)
+    weights /= np.sum(weights)
+    point = weights @ loadings
+    assert np.min((loadings - point) @ point) > -1e-10
+    return weights, point
 
 
 def jamshidian_decomposition_gaps(
@@ -697,8 +750,8 @@ def main():
     # No original coordinate works in this example: every column contains
     # both positive and negative loadings.  But the loading hull lies in the
     # plane b.u=1.2/sqrt(3), so u=(1,1,1)/sqrt(3) strictly separates it from
-    # the origin.  The barycenter is the closest hull point, proving the
-    # separation margin (and hull distance) exactly for this symmetric case.
+    # the origin.  The minimum-norm hull point determines the unique direction
+    # maximizing the smallest projected loading.
     oblique_loadings = np.array([
         [2.0, -0.4, -0.4],
         [-0.4, 2.0, -0.4],
@@ -711,8 +764,17 @@ def main():
     first_direction = np.ones(3) / sqrt(3)
     first_margins = oblique_loadings @ first_direction
     separation_margin = float(np.min(first_margins))
-    hull_nearest_point = np.mean(oblique_loadings, axis=0)
+    hull_weights, hull_nearest_point = nearest_hull_point(oblique_loadings)
     hull_distance = float(np.linalg.norm(hull_nearest_point))
+    optimal_direction = hull_nearest_point / hull_distance
+    optimal_margin = float(np.min(oblique_loadings @ optimal_direction))
+    projection_residual = float(np.min(
+        (oblique_loadings - hull_nearest_point) @ hull_nearest_point
+    ))
+    assert np.linalg.norm(hull_weights - 1.0 / 3.0) < 1e-12
+    assert np.linalg.norm(optimal_direction - first_direction) < 1e-12
+    assert projection_residual > -1e-13
+    assert abs(optimal_margin - hull_distance) < 1e-13
     assert np.max(first_margins) - separation_margin < 1e-14
     assert np.linalg.norm(
         hull_nearest_point - separation_margin * first_direction
@@ -722,6 +784,51 @@ def main():
     second_direction /= np.linalg.norm(second_direction)
     second_margin = float(np.min(oblique_loadings @ second_direction))
     assert second_margin > 0
+    assert second_margin < optimal_margin
+
+    # Exercise the general max-margin construction away from symmetry.  Each
+    # random hull lies strictly in the half-space x_1>0.  Projection
+    # optimality requires (b_k-x_*).x_* >= 0; it gives
+    # min_k b_k.u_* = ||x_*||, while Cauchy--Schwarz bounds every competing
+    # unit direction by the same hull distance.
+    rng = np.random.default_rng(20261011)
+    maximum_projection_violation = 0.0
+    maximum_margin_identity_error = 0.0
+    maximum_sampled_margin_excess = 0.0
+    random_case_count = 24
+    for _ in range(random_case_count):
+        dimension = int(rng.integers(2, 6))
+        point_count = int(rng.integers(dimension + 1, dimension + 6))
+        random_loadings = rng.normal(size=(point_count, dimension))
+        random_loadings[:, 0] = rng.uniform(0.25, 1.75, size=point_count)
+        _, nearest_point = nearest_hull_point(random_loadings)
+        distance = float(np.linalg.norm(nearest_point))
+        direction = nearest_point / distance
+        projection_slacks = (
+            random_loadings - nearest_point
+        ) @ nearest_point
+        margin = float(np.min(random_loadings @ direction))
+        sampled_directions = rng.normal(size=(1000, dimension))
+        sampled_directions /= np.linalg.norm(
+            sampled_directions, axis=1, keepdims=True
+        )
+        sampled_margins = np.min(
+            sampled_directions @ random_loadings.T, axis=1
+        )
+        maximum_projection_violation = max(
+            maximum_projection_violation,
+            max(0.0, -float(np.min(projection_slacks))),
+        )
+        maximum_margin_identity_error = max(
+            maximum_margin_identity_error, abs(margin - distance),
+        )
+        maximum_sampled_margin_excess = max(
+            maximum_sampled_margin_excess,
+            max(0.0, float(np.max(sampled_margins)) - distance),
+        )
+    assert maximum_projection_violation < 1e-12
+    assert maximum_margin_identity_error < 1e-12
+    assert maximum_sampled_margin_excess < 1e-12
 
     oblique_weights = [0.7, 0.9, 1.1]
     oblique_strike = sum(oblique_weights)
@@ -820,6 +927,10 @@ def main():
     print("oblique separation margin / hull distance / second margin:",
           f"{separation_margin:.12f}", f"{hull_distance:.12f}",
           f"{second_margin:.12f}")
+    print("max-margin random cases / projection violation / identity error / sampled excess:",
+          random_case_count, f"{maximum_projection_violation:.3e}",
+          f"{maximum_margin_identity_error:.3e}",
+          f"{maximum_sampled_margin_excess:.3e}")
     print("oblique prices along two directions:",
           *(f"{price:.15f}" for price in oblique_prices_44))
     print("oblique direction / numerical-inner discrepancies:",

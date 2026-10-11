@@ -948,6 +948,27 @@ def instruments_page():
       only a sufficient special case. If the origin lies in the hull, no direction makes the coupon globally strictly
       monotone in this way; this obstruction concerns this root-based reduction, not every conceivable pricing
       algorithm.</p>
+    <h3>The unique max-margin conditioning direction</h3>
+    <p>The hull criterion is constructive. Let $C=\operatorname{conv}\{b_1,\ldots,b_n\}$ and let
+      $x_*=\operatorname*{argmin}_{x\in C}\|x\|$. If $0\notin C$, put $\delta=\|x_*\|$ and
+      $u_*=x_*/\delta$. Then</p>
+    $$\max_{\|u\|=1}\min_k b_k^\top u=\delta,$$
+    <p>and $u_*$ is the unique maximizer. The projection theorem gives
+      $(x-x_*)^\top x_*\geq0$ for every $x\in C$, hence
+      $b_k^\top u_*\geq\delta$. Equality holds for at least one active vertex because $x_*$ is a convex
+      combination of the $b_k$. Conversely, for any unit $u$,</p>
+    $$\min_k b_k^\top u=\min_{x\in C}u^\top x\leq u^\top x_*\leq\|x_*\|.$$
+    <p>Equality in the last step forces $u=u_*$. Thus the strict-separation margin is exactly the distance from the
+      origin to the loading hull, not merely a positive existence certificate. Computationally, solve the simplex
+      quadratic program</p>
+    $$\min_{\alpha_k\geq0,\ \sum_k\alpha_k=1}
+      \left\|\sum_k\alpha_kb_k\right\|^2,$$
+    <p>then normalize its image. This maximizes the worst cash-flow slope in the conditioned coordinate and avoids an
+      unnecessarily flat scalar root. The statement is Euclidean in the chosen factor coordinates. If the Gaussian
+      factor is written $X=\mu+LZ$ with $Z$ standard normal, it should be applied to the whitened loadings
+      $L^\top b_k$. It does not claim to minimize the remaining $(d-1)$-dimensional quadrature error. The minimum-norm
+      polytope formulation and its equivalence to an optimal separating hyperplane go back to
+      <a href="./bibliography.html#Wolfe1976">Wolfe (1976)</a>.</p>
     <p>The boundary is a convex hypersurface. With
       $d_k=w_k\exp(-p_k^\top y-q_k\zeta(y))$ and
       $D=\sum_kd_kq_k$, implicit differentiation gives</p>
@@ -1055,6 +1076,11 @@ def instruments_page():
       integration of the final Gaussian coordinate within $2.22\times10^{-16}$. An oblique certificate has loading
       rows $(2,-0.4,-0.4)$ and their cyclic permutations, so every coordinate changes sign. Nevertheless
       $u=(1,1,1)/\sqrt3$ strictly separates their convex hull from zero with margin $0.692820323028$.
+      The simplex quadratic program recovers barycentric weights $(1/3,1/3,1/3)$ and certifies that this direction is
+      the unique max-margin choice; the distinct direction proportional to $(1.2,1,1)$ has the smaller margin
+      $0.603863529939$. Across 24 nonsymmetric random loading hulls in dimensions two through five, the projection
+      inequalities and margin identity hold within $4\times10^{-15}$, and 24,000 sampled competing directions never
+      exceed the certified optimum.
       Conditioning along this direction and along the distinct direction proportional to $(1.2,1,1)$ gives the same
       price, $0.216109447065$, within $2.78\times10^{-16}$; independent adaptive integration of the final coordinate
       agrees within $1.11\times10^{-16}$.</p>
