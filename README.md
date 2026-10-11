@@ -42,7 +42,6 @@ papers/fast-switching/
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
   verify_g2_coupon_geometry.py  curved G2++ exercise boundary and exact conditional-Gaussian quadrature
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
-  verify_g2_coupon.py      G2++ coupon bonds: the loadings of two payment dates are never collinear, so the exercise boundary is curved
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
@@ -53,6 +52,7 @@ papers/yield-curve/
 papers/conformal/
   pooled.py                exact conditional laws of terminal, path-average and slow-state scores under a two-state chain
   verify_pooled_residuals.py  conditional coverage of the pooled threshold, calibration dependence, regime-aware thresholds
+  verify_path_crossover.py exact dependent path thresholds, posterior cancellation geometry, thinning, randomized-atom beta laws and PAC bounds
 papers/cumulants/
   polymoments.py           exact moments of integrated variance and the log return from polynomial moment systems
   verify_cumulants.py      Green-Kubo remainder bounds uniform in maturity, the log-return identity, the CIR case, leverage
@@ -61,7 +61,7 @@ papers/layers/
   verify_layer.py          the two-state initial layer to second order with a forcing that does not vanish at the start
 papers/general/
   effective_generator.py   first-order rule for any pricing equation: L_bar + sum K_jk A_j A_k
-  verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit, two-channel race
+  verify_general.py        random non-commuting operators, Vasicek speed and volatility, Black-Scholes smile, many-name credit
 papers/smile/
   cycle_smile.py           Heston with switched level and vol-of-vol on a finite-difference grid; the first-order rule
   verify_cycle_smile.py    the direction of a regime cycle moves the smile, and the rule predicts it
