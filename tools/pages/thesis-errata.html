@@ -1,0 +1,51 @@
+<!-- title: Errata for the 2001 thesis · homogenization | math -->
+  <main>
+    <h1>Errata for the 2001 thesis</h1>
+    <p class="subtitle">Corrections to Chapter 3 and Appendix B of the thesis listed on the <a href="./papers.html">papers</a> page.</p>
+
+    <p class="lead">Page numbers are the printed ones; the page of the PDF is ten higher. The site&apos;s own formulas
+    do not use the expressions corrected here.</p>
+
+    <h2>Chapter 3: the switching rate</h2>
+    <p>The generator printed on p. 85 has off-diagonal rate $\lambda/2$, so the regime contrast decays like
+    $e^{-\lambda s}$ and a regime lasts $2/\lambda$ on average. On p. 125, $\lambda = 5$ is described as five switches a
+    year, a rate $\lambda$ out of each state and a contrast decaying like $e^{-2\lambda s}$. The simulations on pp. 126
+    and 128 follow the second convention, as does this site.</p>
+
+    <h2>Chapter 3: the dynamic mean Vasicek formula</h2>
+    <p>Eq. (3.7) on p. 106 replaces the level and the variance by their means given the starting regime. A coefficient
+    at calendar time $s$ is weighted by the remaining maturity, so with $b(u) = (1 - e^{-\kappa u})/\kappa$ and rate
+    $\lambda$ out of each state the exponent is</p>
+    $$a_{\mathrm{dmv}}(T) = \kappa\int_0^T\big(\bar\theta \pm \tilde\theta\,e^{-2\lambda s}\big)\,b(T - s)\,ds
+      - \frac12\int_0^T\big(\bar s \pm \tilde s\,e^{-2\lambda s}\big)\,b(T - s)^2\,ds ,$$
+    <p>with $\tilde\theta$ and $\tilde s$ the half-differences of the level and the variance, and the upper sign for a
+    start in the first regime. As printed, Eq. (3.7) pairs $e^{-\lambda s}$ with $b(s)$. The remaining maturity is
+    needed under either convention for $\lambda$.</p>
+    <p>The two examples have levels 0.35 and 0.15 and a negligible volatility. The size of the antisymmetric
+    correction, $|P_1 - P_2|$ over twice the mean Vasicek price, is:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>pages</th><th>$\lambda$, $\kappa$, $T$</th><th>Eq. (3.7) as printed</th><th>corrected</th><th>two-state system</th><th>thesis simulation</th></tr></thead><tbody><tr><td>125&ndash;126</td><td>5, 2, 15</td><td>0.0057143</td><td>0.0100002</td><td>0.0101419</td><td>0.010020 &plusmn; 0.0003</td></tr><tr><td>127&ndash;128</td><td>1, 25, 5</td><td>0.0956252</td><td>0.0500184</td><td>0.0509952</td><td>0.0516 &plusmn; 0.0004</td></tr></tbody></table></div>
+    <p>The printed column reproduces the dynamic-mean entries of the thesis tables, 0.0057143 and 0.0956. With the
+    p. 85 generator the two-state system would give 0.0206 and 0.1023, far from the simulations.</p>
+    <p>Two smaller points in the second example. The table of time scales at the foot of p. 127 is carried over from
+    the first example and should read $1/\kappa = 0.04$, $1/\lambda = 1$, $T = 5$. The antisymmetric entries on p. 128
+    are magnitudes: the first regime has the higher level and the cheaper bond, as the negative entries on p. 126
+    show.</p>
+
+    <h2>Appendix B.4: the deterministic shift</h2>
+    <p>The short rate is $\mathit{fudge}(u) + \beta\cdot X(u)$, and $\Lambda(t, u) = \exp\big(-\int_t^u \mathit{fudge}\big)$
+    scales the bond from $t$ to $u$.</p>
+    <ul>
+      <li>Caplet and floorlet, pp. 172&ndash;173. The shifted formulas carry $\Lambda(T, \tau)$ and need
+        $\Lambda(t, T)\,\Lambda(T, \tau) = \Lambda(t, \tau)$: the discount from today to the quote day is missing.</li>
+      <li>Swaplet, p. 175. The second bond matures at $\tau + \Delta\tau$ and takes $\Lambda(t, \tau + \Delta\tau)$, so
+        $$\mathit{swaplet}^\Lambda = \Lambda(t, \tau)\,B(t, \tau) - (1 + \Delta\tau K)\,\Lambda(t, \tau + \Delta\tau)\,B(t, \tau + \Delta\tau) .$$</li>
+      <li>Futures, p. 177. Under the risk-neutral expectation the recursion is
+        $f_{i-1} = B(T_{i-1}, T_i)^{-1}\,\mathbb E\big[e^{-\int r}f_i\big]$, with a negative exponent. If the expectation
+        is already under the forward measure, neither the discount nor $B^{-1}$ appears.</li>
+    </ul>
+    <p>A check with $X = 0$ and a shift of 5%: $t = 0$, $T = \tau = 1$, $\Delta\tau = 1$, $K = 0$. The caplet and the
+    swaplet are both worth $e^{-0.05} - e^{-0.10} = 0.046392$. The printed caplet formula gives 0.048771, too high by
+    the factor $e^{0.05}$, and the printed swaplet formula gives zero.</p>
+    <p>Certificate:
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/regime-switching-survival/verify_thesis_errata.py">verify_thesis_errata.py</a>.</p>
+  </main>
