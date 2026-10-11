@@ -18,6 +18,7 @@ and the cross-cumulants kappa_112 ~ 2t [2 K(mu1, c12) + K(mu2, c11)], kappa_122 
 Two-state chain: calm (state 0) -> crisis (state 1) at rate a, crisis -> calm at rate b.
     pi = (b, a) / (a + b),   K(f, h) = pi0 pi1 (f0 - f1)(h0 - h1) / (a + b).
 """
+import itertools
 import math
 import numpy as np
 from scipy.linalg import expm
@@ -41,8 +42,10 @@ def Q2(a, b):
 
 
 # ---------------------------------------------------------------- occupation time of the crisis state
-def occupation_nodes(T, a, b, n=80):
-    """Nodes v and weights w with sum w f(v) = E_pi[f(tau)], tau the time spent in state 1 on [0, T].
+def occupation_nodes(T, a, b, n=80, initial_p1=None):
+    """Nodes v and weights w with sum w f(v) = E[f(tau)], tau the time spent in state 1 on [0, T].
+
+    The default initial law is stationary; initial_p1 supplies an arbitrary probability of state 1.
 
     Start in 0, end in 0 (n >= 1 visits to 1):  e^{-a u - b v} sqrt(a b u / v) I1(2 sqrt(a b u v)),
     start in 0, end in 1:                     a e^{-a u - b v} I0(2 sqrt(a b u v)),     u = T - v,
@@ -58,16 +61,534 @@ def occupation_nodes(T, a, b, n=80):
     E = np.exp(z - a * u - b * v)
     s = np.sqrt(a * b * u / v) * i1e(z) * E + a * i0e(z) * E            # start calm, tau = v
     s1 = np.sqrt(a * b * v / u) * i1e(z) * E + b * i0e(z) * E           # start crisis, time in calm = u
-    p = pi2(a, b)
+    p = pi2(a, b) if initial_p1 is None else np.array([1 - initial_p1, initial_p1], float)
+    if np.any(p < 0) or np.any(p > 1):
+        raise ValueError("initial_p1 must lie in [0, 1]")
     nodes = np.concatenate([[0.0], v, [T]])
     w = np.concatenate([[p[0] * math.exp(-a * T)], wq * (p[0] * s + p[1] * s1), [p[1] * math.exp(-b * T)]])
     return nodes, w
 
 
-def simulate_occupation(T, a, b, n, rng):
-    """Exact samples of tau, the time in state 1 on [0, T], from a stationary start."""
+def occupation_cumulants(T, a, b, initial_p1=None):
+    """First four cumulants of the time A_T spent in state 1.
+
+    The centered two-state indicator X_t = 1_{Y_t=1} - pi_1 has
+
+        E[X_0 X_t] = pi_0 pi_1 exp(-r t),
+        E[X_s X_t X_u] = pi_0 pi_1 (pi_0-pi_1) exp(-r (u-s)),  s <= t <= u,
+
+    where r=a+b.  Integrating over [0,T]^2 and [0,T]^3 gives the stationary formulas.
+    For an arbitrary initial crisis probability q, write delta=q-pi_1.  The extra terms come
+    from log(1 + delta R), where R=(M_1-M_0)/M_pi is the normalized difference of the two
+    conditional moment generating functions.  The fourth stationary formula follows by
+    expanding the exact two-state tilted-generator eigenvalue expression; the arbitrary-start
+    correction is the fourth derivative of the same log(1 + delta R) term.
+    """
+    if min(T, a, b) <= 0:
+        raise ValueError("T and both switching rates must be positive")
+    p0, p1 = pi2(a, b)
+    q = p1 if initial_p1 is None else float(initial_p1)
+    if not 0 <= q <= 1:
+        raise ValueError("initial_p1 must lie in [0, 1]")
+    r, x = a + b, (a + b) * T
+    if x < 1e-3:
+        g2 = x ** 2 / 2 - x ** 3 / 6 + x ** 4 / 24 - x ** 5 / 120 + x ** 6 / 720
+        g3 = x ** 3 / 6 - x ** 4 / 12 + x ** 5 / 40 - x ** 6 / 180 + x ** 7 / 1008
+        h1 = x - x ** 2 / 2 + x ** 3 / 6 - x ** 4 / 24 + x ** 5 / 120 - x ** 6 / 720
+        h2 = ((1 - 2 * p1) * x ** 2 + (4 * p1 / 3 - 2 / 3) * x ** 3
+              + (1 / 4 - p1 / 2) * x ** 4 + (2 * p1 / 15 - 1 / 15) * x ** 5
+              + (1 / 72 - p1 / 36) * x ** 6)
+        h3 = ((1 - 6 * p0 * p1) * x ** 3 + (5 * p0 * p1 - 3 / 4) * x ** 4
+              + (3 / 10 - 23 * p0 * p1 / 10) * x ** 5
+              + (23 * p0 * p1 / 30 - 1 / 12) * x ** 6)
+        g4 = ((-6 * p1 ** 4 + 12 * p1 ** 3 - 7 * p1 ** 2 + p1) * x ** 4
+              + (4 * p1 ** 4 - 8 * p1 ** 3 + 23 * p1 ** 2 / 5 - 3 * p1 / 5) * x ** 5
+              + (-23 * p1 ** 4 / 15 + 46 * p1 ** 3 / 15 - 26 * p1 ** 2 / 15
+                 + p1 / 5) * x ** 6
+              + (46 * p1 ** 4 / 105 - 92 * p1 ** 3 / 105 + 17 * p1 ** 2 / 35
+                 - p1 / 21) * x ** 7
+              + (-29 * p1 ** 4 / 280 + 29 * p1 ** 3 / 140 - 9 * p1 ** 2 / 80
+                 + p1 / 112) * x ** 8)
+        h4 = ((-24 * p1 ** 3 + 36 * p1 ** 2 - 14 * p1 + 1) * x ** 4
+              + (24 * p1 ** 3 - 36 * p1 ** 2 + 68 * p1 / 5 - 4 / 5) * x ** 5
+              + (-196 * p1 ** 3 / 15 + 98 * p1 ** 2 / 5 - 36 * p1 / 5
+                 + 1 / 3) * x ** 6
+              + (536 * p1 ** 3 / 105 - 268 * p1 ** 2 / 35 + 96 * p1 / 35
+                 - 2 / 21) * x ** 7
+              + (-67 * p1 ** 3 / 42 + 67 * p1 ** 2 / 28 - 47 * p1 / 56
+                 + 1 / 48) * x ** 8)
+    else:
+        e = math.exp(-x)
+        g2 = x + math.expm1(-x)
+        g3 = x - 2 + (x + 2) * e
+        h1 = -math.expm1(-x)
+        h2 = 2 * (p0 - p1) * (1 - (1 + x) * e)
+        h3 = (6 * (1 - e) - 3 * x ** 2 * e - 6 * x * e
+              + p0 * p1 * (12 * x ** 2 * e + 36 * x * e - 30 + 24 * e + 6 * e ** 2))
+        u = p0 * p1
+        g4 = 12 * u * (2 * x - 6 + (x ** 2 + 4 * x + 6) * e
+                       + u * (29 - 10 * x - (4 * x ** 2 + 20 * x + 28) * e - e ** 2))
+        h4 = -4 * (p1 - p0) * (u * (12 * x + 18) * e ** 2
+                               + u * (4 * x ** 3 + 24 * x ** 2 + 48 * x + 24) * e
+                               - (x ** 3 + 3 * x ** 2 + 6 * x + 6) * e - 42 * u + 6)
+    delta = q - p1
+    k1_stationary = p1 * T
+    k2_stationary = 2 * p0 * p1 * g2 / r ** 2
+    k3_stationary = 6 * p0 * p1 * (p0 - p1) * g3 / r ** 3
+    k4_stationary = g4 / r ** 4
+    return {
+        'k1': float(k1_stationary + delta * h1 / r),
+        'k2': float(k2_stationary + (delta * h2 - delta ** 2 * h1 ** 2) / r ** 2),
+        'k3': float(k3_stationary + (delta * h3 - 3 * delta ** 2 * h1 * h2
+                                     + 2 * delta ** 3 * h1 ** 3) / r ** 3),
+        'k4': float(k4_stationary + (delta * h4
+                                     - delta ** 2 * (4 * h1 * h3 + 3 * h2 ** 2)
+                                     + 12 * delta ** 3 * h1 ** 2 * h2
+                                     - 6 * delta ** 4 * h1 ** 4) / r ** 4),
+    }
+
+
+def occupation_cumulants_quadrature(T, a, b, max_order, initial_p1=None, n=120):
+    """Occupation cumulants of arbitrary fixed order from the exact Bessel law.
+
+    This is primarily a numerical certificate for orders beyond the four
+    closed formulas above.  It uses the standard raw-moment-to-cumulant
+    recursion.
+    """
+    if max_order < 1:
+        raise ValueError("max_order must be positive")
+    nodes, weights = occupation_nodes(T, a, b, n=n, initial_p1=initial_p1)
+    moments = [1.0] + [float(weights @ nodes ** j)
+                       for j in range(1, max_order + 1)]
+    cumulants = [0.0] * (max_order + 1)
+    for order in range(1, max_order + 1):
+        cumulants[order] = moments[order] - sum(
+            math.comb(order - 1, j - 1) * cumulants[j] * moments[order - j]
+            for j in range(1, order)
+        )
+    return {f'k{j}': float(cumulants[j]) for j in range(1, max_order + 1)}
+
+
+def _singleton_pair_partitions(positions):
+    """Generate partitions of labelled positions into singletons and pairs."""
+    if not positions:
+        yield ()
+        return
+    first = positions[0]
+    for rest in _singleton_pair_partitions(positions[1:]):
+        yield ((first,),) + rest
+    for j in range(1, len(positions)):
+        partner = positions[j]
+        remaining = positions[1:j] + positions[j + 1:]
+        for rest in _singleton_pair_partitions(remaining):
+            yield ((first, partner),) + rest
+
+
+def occupation_joint_cumulants_cauchy(T, Q, max_order, r=0.25, N=24,
+                                      initial=None):
+    """Mixed cumulants of non-reference occupation times by Cauchy FFT.
+
+    State zero is the reference and the returned dictionary is indexed by a
+    sorted tuple of occupation coordinates: ``(0, 0, 1)`` denotes
+    cum(A_1, A_1, A_2).  This is an independent numerical certificate, not a
+    claim of a closed occupation law for a general finite-state chain.  Its
+    cost grows as ``N ** (number_of_states - 1)``.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    contrasts = states - 1
+    if Q.shape != (states, states) or contrasts < 1:
+        raise ValueError("Q must be a square generator with at least two states")
+    if max_order < 1 or max_order >= N:
+        raise ValueError("max_order must lie between 1 and N-1")
+    if initial is None:
+        initial = np.linalg.solve(
+            np.vstack([Q.T[:-1], np.ones(states)]),
+            np.r_[np.zeros(states - 1), 1.0]
+        )
+    else:
+        initial = np.asarray(initial, float)
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+
+    roots = r * np.exp(2j * np.pi * np.arange(N) / N)
+    values = np.empty((N,) * contrasts, complex)
+    ones = np.ones(states)
+    for grid_index in np.ndindex(values.shape):
+        tilt = np.r_[0.0, [roots[k] for k in grid_index]]
+        values[grid_index] = np.log(
+            initial @ expm(T * (Q + np.diag(tilt))) @ ones
+        )
+    coefficients = np.fft.fftn(values) / N ** contrasts
+
+    result = {}
+    for counts in itertools.product(range(max_order + 1), repeat=contrasts):
+        order = sum(counts)
+        if not 1 <= order <= max_order:
+            continue
+        key = tuple(color for color, count in enumerate(counts)
+                    for _ in range(count))
+        scale = r ** order
+        factorial = math.prod(math.factorial(count) for count in counts)
+        result[key] = float((coefficients[counts] / scale).real * factorial)
+    return result
+
+
+def occupation_joint_cumulant_bulk_cauchy(Q, max_order, r=0.2, N=32):
+    """Derivatives of the principal tilted-generator eigenvalue.
+
+    For non-reference occupation coordinates, let ``lambda(z)`` be the
+    eigenvalue continuing zero from ``Q + diag(0, z)``.  The returned mixed
+    derivatives of ``lambda`` are the bulk coefficients in
+
+        cum(A_T^{a_1}, ..., A_T^{a_k})
+        = T s**(1-k) D_{a_1}...D_{a_k} lambda(0) + O(s**(-k))
+
+    for the chain with generator ``s * Q`` at fixed positive ``T``.  The
+    Cauchy radius must remain inside the analytic neighborhood of the simple
+    eigenvalue zero; this routine is intended as a numerical certificate.
+    Its cost grows as ``N ** (number_of_states - 1)``.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    contrasts = states - 1
+    if Q.shape != (states, states) or contrasts < 1:
+        raise ValueError("Q must be a square generator with at least two states")
+    if max_order < 1 or max_order >= N:
+        raise ValueError("max_order must lie between 1 and N-1")
+
+    roots = r * np.exp(2j * np.pi * np.arange(N) / N)
+    values = np.empty((N,) * contrasts, complex)
+    for grid_index in np.ndindex(values.shape):
+        tilt = np.r_[0.0, [roots[k] for k in grid_index]]
+        eigenvalues = np.linalg.eigvals(Q + np.diag(tilt))
+        values[grid_index] = eigenvalues[np.argmin(np.abs(eigenvalues))]
+    coefficients = np.fft.fftn(values) / N ** contrasts
+
+    result = {}
+    for counts in itertools.product(range(max_order + 1), repeat=contrasts):
+        order = sum(counts)
+        if not 1 <= order <= max_order:
+            continue
+        key = tuple(color for color, count in enumerate(counts)
+                    for _ in range(count))
+        scale = r ** order
+        factorial = math.prod(math.factorial(count) for count in counts)
+        result[key] = float((coefficients[counts] / scale).real * factorial)
+    return result
+
+
+def occupation_covariance_rate(Q):
+    """Green--Kubo rate matrix for non-reference occupation times.
+
+    Entry ``(a,b)`` is the second derivative of the principal eigenvalue
+    tilted by the indicators of states ``a+1`` and ``b+1``.  Equivalently it
+    is the two-sided integrated covariance rate
+
+        -pi[f_a Q# f_b] - pi[f_b Q# f_a],
+
+    with centered indicators and the group inverse ``Q#``.  The matrix is
+    symmetric positive semidefinite.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    indicators = np.eye(states)[:, 1:].T - pi[1:, None]
+    one_sided = np.array([
+        [-pi @ (f * (group_inverse @ h)) for h in indicators]
+        for f in indicators
+    ])
+    return one_sided + one_sided.T
+
+
+def initial_layer_coefficient(Q, values, initial):
+    """Leading arbitrary-start correction for an integrated state field.
+
+    ``values[y]`` is a scalar, vector, or tensor attached to state ``y`` and
+    ``initial`` is the row distribution of the chain at time zero.  If the
+    generator is ``s * Q``, then
+
+        E_initial integral_0^T values[Y_t] dt
+        = T * pi[values] + initial_layer_coefficient / s
+          + O(exp(-c*s*T) / s),
+
+    where the returned coefficient is ``-initial Q# (values-pi[values])``.
+    Trailing dimensions of ``values`` are preserved.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    if values.ndim < 1 or values.shape[0] != states:
+        raise ValueError("the first values dimension must index the states")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    stationary_value = np.tensordot(pi, values, axes=(0, 0))
+    centered = values - stationary_value
+    return -np.tensordot(initial @ group_inverse, centered, axes=(0, 0))
+
+
+def initial_covariance_boundary(Q, values, initial):
+    """Second spectral boundary coefficient for integrated state fields.
+
+    ``values`` has one row per state and either one scalar field or one column
+    per field.  If ``A_a = integral_0^T values[Y_t, a] dt`` under generator
+    ``s * Q``, then
+
+        cum(A_a, A_b) = T * Gamma(a, b) / s
+                          + boundary(a, b) / s**2
+                          + O(exp(-c*s*T)).
+
+    The returned coefficient is the Hessian at zero of the logarithmic
+    principal-spectral-projection amplitude.  A one-dimensional ``values``
+    input returns a scalar; a matrix input returns its field-by-field Hessian.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    scalar = values.ndim == 1
+    if scalar:
+        values = values[:, None]
+    if values.ndim != 2 or values.shape[0] != states:
+        raise ValueError("values must have one row per state")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    centered = values - np.outer(np.ones(states), pi @ values)
+    first = -initial @ group_inverse @ centered
+    fields = values.shape[1]
+    boundary = np.empty((fields, fields))
+    group_inverse_squared = group_inverse @ group_inverse
+    for a in range(fields):
+        f = centered[:, a]
+        for b in range(fields):
+            g = centered[:, b]
+            projection_second = (
+                initial @ group_inverse
+                @ (f * (group_inverse @ g) + g * (group_inverse @ f))
+                - pi @ (f * (group_inverse_squared @ g)
+                        + g * (group_inverse_squared @ f))
+            )
+            boundary[a, b] = projection_second - first[a] * first[b]
+    return float(boundary[0, 0]) if scalar else boundary
+
+
+def occupation_third_cumulant_rate(Q):
+    """Third bulk-cumulant tensor for non-reference occupation times.
+
+    For centered state indicators ``f_a`` and the group inverse ``Q#``,
+
+        D_abc lambda(0) = sum_{sigma in S_3}
+            pi[f_{sigma(a)} Q# f_{sigma(b)} Q# f_{sigma(c)}].
+
+    Here ``lambda`` is the principal eigenvalue of the diagonally tilted
+    generator.  Entry ``(a,b,c)`` is therefore the coefficient of
+    ``T / s**2`` in the corresponding third occupation cumulant for the
+    chain with generator ``s * Q``.  The tensor is symmetric but need not
+    have a fixed sign.
+    """
+    Q = np.asarray(Q, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    indicators = np.eye(states)[:, 1:].T - pi[1:, None]
+    contrasts = states - 1
+    tensor = np.empty((contrasts, contrasts, contrasts))
+    for a, b, c in np.ndindex(tensor.shape):
+        value = 0.0
+        for x, y, z in itertools.permutations((a, b, c)):
+            value += pi @ (
+                indicators[x]
+                * (group_inverse @ (
+                    indicators[y] * (group_inverse @ indicators[z])
+                ))
+            )
+        tensor[a, b, c] = value
+    return tensor
+
+
+def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
+                                        baseline_covariance, mean_contrasts,
+                                        covariance_contrasts, occupation):
+    """Exact Gaussian-mixture cumulant for a vector of occupation times.
+
+    The conditional mean and covariance are a baseline times ``T`` plus a
+    linear combination of occupation coordinates.  ``occupation[key]`` is
+    the mixed cumulant whose coordinate labels are the sorted tuple ``key``.
+    Summing block colorings is the multivariate singleton/pair formula.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    baseline_mean = np.asarray(baseline_mean, float)
+    baseline_covariance = np.asarray(baseline_covariance, float)
+    mean_contrasts = np.asarray(mean_contrasts, float)
+    covariance_contrasts = np.asarray(covariance_contrasts, float)
+    if baseline_mean.ndim != 1:
+        raise ValueError("baseline_mean must be a vector")
+    dimension = len(baseline_mean)
+    colors = len(mean_contrasts)
+    if (baseline_covariance.shape != (dimension, dimension)
+            or mean_contrasts.shape != (colors, dimension)
+            or covariance_contrasts.shape != (colors, dimension, dimension)
+            or colors < 1):
+        raise ValueError("incompatible baseline and occupation contrasts")
+    if any(index < 0 or index >= dimension for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    order = len(indices)
+    value = 0.0
+    if order == 1:
+        value += T * baseline_mean[indices[0]]
+    elif order == 2:
+        value += T * baseline_covariance[indices[0], indices[1]]
+    for partition in _singleton_pair_partitions(tuple(range(order))):
+        for coloring in itertools.product(range(colors), repeat=len(partition)):
+            term = occupation[tuple(sorted(coloring))]
+            for block, color in zip(partition, coloring):
+                if len(block) == 1:
+                    term *= mean_contrasts[color, indices[block[0]]]
+                else:
+                    term *= covariance_contrasts[
+                        color, indices[block[0]], indices[block[1]]
+                    ]
+            value += term
+    return float(value)
+
+
+def critical_return_cumulant_coefficients(indices, tau, baseline_mean,
+                                          baseline_covariance,
+                                          mean_contrasts,
+                                          covariance_contrasts, occupation):
+    """Coefficients in the exact ``s*T=tau`` scaled-return identity.
+
+    If the regime chain has generator ``s Q``, ``T=tau/s``, and
+    ``Z_s=sqrt(s) X_T``, Brownian scaling gives
+
+        cumulant(indices, Z_s) = sum_q coefficient[q] * s**(-q/2).
+
+    Here ``q`` is the number of singleton blocks in the corresponding
+    singleton/pair partition.  The occupation cumulants in ``occupation``
+    are those of the unit-speed ``Q`` chain over ``[0, tau]``.  Thus even
+    cumulants can have a nonzero ``q=0`` Gaussian-mixture limit, whereas
+    odd cumulants have at least one singleton and are ``O(s**(-1/2))``.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    baseline_mean = np.asarray(baseline_mean, float)
+    baseline_covariance = np.asarray(baseline_covariance, float)
+    mean_contrasts = np.asarray(mean_contrasts, float)
+    covariance_contrasts = np.asarray(covariance_contrasts, float)
+    if baseline_mean.ndim != 1:
+        raise ValueError("baseline_mean must be a vector")
+    dimension = len(baseline_mean)
+    colors = len(mean_contrasts)
+    if (baseline_covariance.shape != (dimension, dimension)
+            or mean_contrasts.shape != (colors, dimension)
+            or covariance_contrasts.shape != (colors, dimension, dimension)
+            or colors < 1):
+        raise ValueError("incompatible baseline and occupation contrasts")
+    if any(index < 0 or index >= dimension for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    order = len(indices)
+    coefficients = {}
+    if order == 1:
+        coefficients[1] = tau * baseline_mean[indices[0]]
+    elif order == 2:
+        coefficients[0] = tau * baseline_covariance[
+            indices[0], indices[1]
+        ]
+    for partition in _singleton_pair_partitions(tuple(range(order))):
+        singletons = sum(len(block) == 1 for block in partition)
+        for coloring in itertools.product(range(colors), repeat=len(partition)):
+            term = occupation[tuple(sorted(coloring))]
+            for block, color in zip(partition, coloring):
+                if len(block) == 1:
+                    term *= mean_contrasts[color, indices[block[0]]]
+                else:
+                    term *= covariance_contrasts[
+                        color, indices[block[0]], indices[block[1]]
+                    ]
+            coefficients[singletons] = coefficients.get(singletons, 0.0) + term
+    return {q: float(value) for q, value in sorted(coefficients.items())}
+
+
+def gaussian_occupation_cumulant(indices, T, regime_means, regime_covariances,
+                                  occupation):
+    """Exact joint cumulant for a Gaussian law affine in one occupation time.
+
+    ``indices`` labels coordinates of the return vector.  ``regime_means``
+    has shape (2,d), ``regime_covariances`` has shape (2,d,d), and
+    ``occupation['kM']`` is the Mth cumulant of time spent in state one.
+    The formula is the all-order singleton/pair specialization of the law of
+    total cumulance.
+    """
+    indices = tuple(indices)
+    if not indices:
+        raise ValueError("at least one coordinate index is required")
+    means = np.asarray(regime_means, float)
+    covariances = np.asarray(regime_covariances, float)
+    if means.ndim != 2 or means.shape[0] != 2:
+        raise ValueError("expected two regime mean vectors")
+    d = means.shape[1]
+    if means.shape != (2, d) or covariances.shape != (2, d, d):
+        raise ValueError("expected two regime means and covariance matrices")
+    if any(index < 0 or index >= d for index in indices):
+        raise ValueError("coordinate index out of range")
+
+    mixed_occupation = {
+        (0,) * order: occupation[f'k{order}']
+        for order in range(1, len(indices) + 1)
+    }
+    return gaussian_vector_occupation_cumulant(
+        indices, T, means[0], covariances[0],
+        (means[1] - means[0])[None, :],
+        (covariances[1] - covariances[0])[None, :, :],
+        mixed_occupation
+    )
+
+
+def simulate_occupation(T, a, b, n, rng, initial_p1=None):
+    """Exact samples of tau, the time in state 1 on [0, T]."""
     p = pi2(a, b)
-    state = (rng.random(n) < p[1]).astype(int)
+    q = p[1] if initial_p1 is None else float(initial_p1)
+    if not 0 <= q <= 1:
+        raise ValueError("initial_p1 must lie in [0, 1]")
+    state = (rng.random(n) < q).astype(int)
     t = np.zeros(n)
     tau = np.zeros(n)
     alive = np.ones(n, bool)
@@ -193,13 +714,62 @@ def cumulants_first_order(t, a, b, mu1, mu2, sig1, sig2, rho):
     }
 
 
-def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16):
+def cumulants_two_state_closed(t, a, b, mu1, mu2, sig1, sig2, rho, initial_p1=None):
+    """Exact covariance through fourth-cumulant tensors for two-state Markov-modulated Gaussian returns.
+
+    Conditional on the occupation time A of state 1, the return vector is Gaussian with
+    mean mu_0*t + Delta_mu*A and covariance c_0*t + Delta_c*A.  Composing its quadratic
+    conditional cumulant generator with the cumulant generator of A gives the result.
+    """
+    c11, c22, c12 = cov_entries(sig1, sig2, rho)
+    mu1, mu2 = np.asarray(mu1, float), np.asarray(mu2, float)
+    ka = occupation_cumulants(t, a, b, initial_p1)
+    d1, d2 = mu1[1] - mu1[0], mu2[1] - mu2[0]
+    dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
+    v, s, k = ka['k2'], ka['k3'], ka['k4']
+    return {
+        'k11': float(t * c11[0] + ka['k1'] * dc11 + v * d1 * d1),
+        'k22': float(t * c22[0] + ka['k1'] * dc22 + v * d2 * d2),
+        'k12': float(t * c12[0] + ka['k1'] * dc12 + v * d1 * d2),
+        'k111': float(3 * v * d1 * dc11 + s * d1 ** 3),
+        'k222': float(3 * v * d2 * dc22 + s * d2 ** 3),
+        'k112': float(v * (2 * d1 * dc12 + d2 * dc11) + s * d1 * d1 * d2),
+        'k122': float(v * (2 * d2 * dc12 + d1 * dc22) + s * d1 * d2 * d2),
+        'k1111': float(3 * v * dc11 ** 2 + 6 * s * d1 ** 2 * dc11 + k * d1 ** 4),
+        'k2222': float(3 * v * dc22 ** 2 + 6 * s * d2 ** 2 * dc22 + k * d2 ** 4),
+        'k1112': float(3 * v * dc11 * dc12
+                       + 3 * s * (dc11 * d1 * d2 + dc12 * d1 ** 2) + k * d1 ** 3 * d2),
+        'k1122': float(v * (dc11 * dc22 + 2 * dc12 ** 2)
+                       + s * (dc11 * d2 ** 2 + dc22 * d1 ** 2 + 4 * dc12 * d1 * d2)
+                       + k * d1 ** 2 * d2 ** 2),
+        'k1222': float(3 * v * dc22 * dc12
+                       + 3 * s * (dc22 * d1 * d2 + dc12 * d2 ** 2) + k * d1 * d2 ** 3),
+        'occupation': ka,
+    }
+
+
+def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16,
+                    initial_p1=None, max_order=4, initial=None):
     """Exact cumulants from the Markov-modulated cumulant generating function
         log E exp(th1 X1 + th2 X2) = log pi . exp(t (Q + diag g(th))) 1,   g = th.mu + th' c th / 2,
     by Cauchy's formula on a polydisc of radius r (two-dimensional FFT of the exact function)."""
+    if max_order < 2 or max_order >= N:
+        raise ValueError("max_order must lie between 2 and N-1")
     c11, c22, c12 = cov_entries(sig1, sig2, rho)
     mu1, mu2 = np.array(mu1, float), np.array(mu2, float)
     pi = np.linalg.solve(np.vstack([Q.T[:-1], np.ones(len(Q))]), np.r_[np.zeros(len(Q) - 1), 1.0])
+    if initial is not None and initial_p1 is not None:
+        raise ValueError("supply initial or initial_p1, not both")
+    if initial is not None:
+        initial = np.asarray(initial, float)
+        if (initial.shape != (len(Q),) or np.any(initial < 0)
+                or not np.isclose(initial.sum(), 1)):
+            raise ValueError("initial must be a probability vector")
+        pi = initial
+    if initial_p1 is not None:
+        if len(Q) != 2 or not 0 <= initial_p1 <= 1:
+            raise ValueError("initial_p1 requires a two-state chain and must lie in [0, 1]")
+        pi = np.array([1 - initial_p1, initial_p1], float)
     ang = 2 * np.pi * np.arange(N) / N
     F = np.zeros((N, N), complex)
     for i, al in enumerate(ang):
@@ -209,8 +779,13 @@ def cumulants_exact(t, Q, mu1, mu2, sig1, sig2, rho, r=0.05, N=16):
             F[i, j] = np.log(pi @ expm(t * (Q + np.diag(g))) @ np.ones(len(Q)))
     C = np.fft.fft2(F) / N / N          # C[m, n] r^{m+n} = Taylor coefficient of th1^m th2^n
     coef = lambda m, n: (C[m, n] / r ** (m + n)).real * math.factorial(m) * math.factorial(n)
-    return {'k11': coef(2, 0), 'k22': coef(0, 2), 'k12': coef(1, 1), 'k111': coef(3, 0), 'k222': coef(0, 3),
-            'k112': coef(2, 1), 'k122': coef(1, 2)}
+    result = {}
+    for order in range(2, max_order + 1):
+        for number_two in range(order + 1):
+            number_one = order - number_two
+            key = 'k' + '1' * number_one + '2' * number_two
+            result[key] = coef(number_one, number_two)
+    return result
 
 
 def simulate_returns(t, a, b, mu1, mu2, sig1, sig2, rho, n, rng):
