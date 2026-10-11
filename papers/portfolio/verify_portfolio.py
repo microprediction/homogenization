@@ -12,7 +12,9 @@
    cross coefficient must be the symmetric Green-Kubo form; the one-sided coefficient fails at first order.
 4. Gram identification: for a finite irreducible chain, the symmetric Green-Kubo Gram matrix has exactly the
    nullspace of the centered feature matrix.  A two-state example verifies that integrating maturity-dependent
-   loading directions can nevertheless raise rank above every fixed-maturity rank.
+   loading directions can nevertheless raise rank above every fixed-maturity rank.  A nonreversible example
+   checks quantitative coercivity: the integrated Green-Kubo eigenvalues and condition number are controlled by
+   the ordinary maturity-integrated loading Gram and the symmetric resolvent spectrum.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, os, sys
@@ -283,6 +285,94 @@ def main():
     ok &= integrated_rank == 2
     ok &= abs(integrated_det - 1.0 / 48.0) < 2e-15
     ok &= quadrature_error < 2e-15
+
+    # Quantitative version of the rank theorem.  On centered L2(pi), let
+    # R_sym be the self-adjoint part of (-Q)^(-1).  If its positive spectrum
+    # lies in [a,b], then for M=int H^*H and Gbar=int H^*R_sym H,
+    #
+    #                 a M <= Gbar <= b M.
+    #
+    # Check the Loewner inequalities, their eigenvalue consequences, and the
+    # resulting condition-number bound on a nonreversible, nonnormal chain.
+    Q_quant = QA
+    pi_quant = stationary(Q_quant)
+    Pi_quant = np.diag(pi_quant)
+    sqrt_pi = np.sqrt(pi_quant)
+    inverse_centered = -group_inverse(Q_quant)
+    inverse_adjoint = (
+        np.diag(1.0 / pi_quant) @ inverse_centered.T @ Pi_quant
+    )
+    resolvent_sym = 0.5 * (inverse_centered + inverse_adjoint)
+    resolvent_similarity = (
+        np.diag(sqrt_pi)
+        @ resolvent_sym
+        @ np.diag(1.0 / sqrt_pi)
+    )
+    resolvent_eigenvalues = np.linalg.eigvalsh(resolvent_similarity)
+    positive_resolvent_eigenvalues = resolvent_eigenvalues[
+        resolvent_eigenvalues > 1e-12
+    ]
+    coercivity_lower = float(positive_resolvent_eigenvalues[0])
+    coercivity_upper = float(positive_resolvent_eigenvalues[-1])
+
+    mu_quant = muc - float(pi_quant @ muc)
+    s_quant = sc - float(pi_quant @ sc)
+    quantitative_gram = np.zeros((2, 2))
+    loading_gram = np.zeros((2, 2))
+    quantitative_pointwise_ranks = []
+    for maturity, weight in zip(maturities, weights):
+        state_direction = mu_quant + maturity * s_quant
+        H_maturity = np.outer(state_direction, [1.0, maturity])
+        pointwise_gram = green_kubo_gram(Q_quant, H_maturity)
+        quantitative_gram += weight * pointwise_gram
+        loading_gram += weight * H_maturity.T @ Pi_quant @ H_maturity
+        quantitative_pointwise_ranks.append(
+            int(np.linalg.matrix_rank(pointwise_gram, tol=1e-12))
+        )
+
+    lower_slack = np.linalg.eigvalsh(
+        quantitative_gram - coercivity_lower * loading_gram
+    )
+    upper_slack = np.linalg.eigvalsh(
+        coercivity_upper * loading_gram - quantitative_gram
+    )
+    loading_eigenvalues = np.linalg.eigvalsh(loading_gram)
+    quantitative_eigenvalues = np.linalg.eigvalsh(quantitative_gram)
+    quantitative_condition = float(np.linalg.cond(quantitative_gram))
+    condition_bound = float(
+        (coercivity_upper / coercivity_lower) * np.linalg.cond(loading_gram)
+    )
+    quantitative_rank = int(
+        np.linalg.matrix_rank(quantitative_gram, tol=1e-12)
+    )
+    print(
+        "      nonnormal resolvent interval "
+        f"[{coercivity_lower:.12f}, {coercivity_upper:.12f}]"
+    )
+    print(
+        "      loading eigenvalues "
+        f"{loading_eigenvalues[0]:.12f}, {loading_eigenvalues[1]:.12f}; "
+        "integrated Green-Kubo eigenvalues "
+        f"{quantitative_eigenvalues[0]:.12f}, {quantitative_eigenvalues[1]:.12f}"
+    )
+    print(
+        "      Loewner minimum slacks "
+        f"{lower_slack[0]:.12e}, {upper_slack[0]:.12e}; "
+        f"condition {quantitative_condition:.8f} <= {condition_bound:.8f}"
+    )
+    ok &= quantitative_pointwise_ranks == [1] * len(maturities)
+    ok &= quantitative_rank == 2
+    ok &= lower_slack[0] > -2e-14
+    ok &= upper_slack[0] > -2e-14
+    ok &= np.all(
+        quantitative_eigenvalues
+        >= coercivity_lower * loading_eigenvalues - 2e-14
+    )
+    ok &= np.all(
+        quantitative_eigenvalues
+        <= coercivity_upper * loading_eigenvalues + 2e-14
+    )
+    ok &= quantitative_condition <= condition_bound + 2e-12
     out['gram_rank'] = dict(
         nonreversible_feature_rank=feature_rank,
         nonreversible_gram_rank=gram_rank,
@@ -293,6 +383,17 @@ def main():
         integrated_rank=integrated_rank,
         integrated_determinant=integrated_det,
         quadrature_error=quadrature_error,
+        quantitative_pointwise_ranks=quantitative_pointwise_ranks,
+        quantitative_integrated_rank=quantitative_rank,
+        resolvent_interval=[coercivity_lower, coercivity_upper],
+        loading_gram=loading_gram.tolist(),
+        quantitative_integrated_gram=quantitative_gram.tolist(),
+        loading_eigenvalues=loading_eigenvalues.tolist(),
+        quantitative_eigenvalues=quantitative_eigenvalues.tolist(),
+        lower_loewner_slack=lower_slack.tolist(),
+        upper_loewner_slack=upper_slack.tolist(),
+        quantitative_condition=quantitative_condition,
+        condition_bound=condition_bound,
     )
 
     json.dump(out, open(os.path.join(HERE, 'results.json'), 'w'), indent=1)

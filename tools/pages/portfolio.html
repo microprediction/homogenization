@@ -226,6 +226,38 @@
     fixed-feature statement; it must not be used as a rank bound after combining different maturity-loading
     directions.</p>
 
+    <h3>Quantitative coercivity after maturity integration</h3>
+    <p>The same argument gives more than rank. On the centered real Hilbert space $L^2_0(\pi)$, let</p>
+    $$\mathscr R=\operatorname{Sym}_{L^2(\pi)}(-Q)^{-1},\qquad
+      0&lt;a=\lambda_{\min}(\mathscr R)\le
+      \lambda_{\max}(\mathscr R)=b&lt;\infty.$$
+    <p>For a measurable centered loading family $H(\tau)$ with finite second moment, define the ordinary loading
+      Gram matrix and the integrated Green&ndash;Kubo Gram matrix by</p>
+    $$M=\int H(\tau)^*H(\tau)\,\nu(d\tau),\qquad
+      \bar G=\int H(\tau)^*\mathscr R H(\tau)\,\nu(d\tau),$$
+    <p>where the adjoints use the $L^2(\pi)$ inner product in state space. Then</p>
+    <div class="equation-card">
+    $$aM\preceq\bar G\preceq bM.$$
+    </div>
+    <p>Indeed, the pointwise inequality
+      $a\|H(\tau)c\|_\pi^2\le
+      \langle H(\tau)c,\mathscr R H(\tau)c\rangle_\pi
+      \le b\|H(\tau)c\|_\pi^2$ integrates for every coefficient vector $c$. Consequently, with eigenvalues in
+      increasing order,</p>
+    $$a\lambda_j(M)\le\lambda_j(\bar G)\le b\lambda_j(M),$$
+    <p>and, on the common nonzero support,</p>
+    $$\kappa(\bar G)\le\frac ba\,\kappa(M).$$
+    <p>This is a quantitative persistent-excitation theorem: variation in the maturity loadings determines $M$,
+      while the fixed Markov driver changes its scale and conditioning only through $[a,b]$. It is the
+      Green&ndash;Kubo analogue of the Gram/observability viewpoint introduced in
+      <a href="https://doi.org/10.1016/S1474-6670(17)70094-8">Kalman&apos;s original 1960 control paper</a>.
+      It does not say that any fixed-maturity Gram matrix has the integrated rank.</p>
+    <p>For a nonreversible, nonnormal three-state chain, the certificate obtains
+      $[a,b]=[0.24887872,0.33445461]$. Its maturity family has pointwise rank one but integrated rank two. The
+      loading-Gram eigenvalues are $(0.06143693,1.57727834)$ and the integrated Green&ndash;Kubo eigenvalues are
+      $(0.02023073,0.52555920)$; both Loewner inequalities hold with positive numerical slack. The observed
+      condition number is $25.97827$, below the certified bound $34.50073$.</p>
+
     <h2>Worked example</h2>
     <p>At speed $m = 1$ the regime rates are $\psi = (0.1967,\ 0.0419)$ and $\bar\psi = 0.1580$. The Merton fractions are
     2.78 in the bull market and &minus;0.30 in the bear market: leveraged long, then short. The Green&ndash;Kubo number is</p>
