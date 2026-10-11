@@ -381,6 +381,26 @@
     <p>This proves strict global monotonicity whenever $\beta_h\ne\beta_\ell$. It is special to the ordered
       two-environment model in which only transmission changes; it does not assert monotonicity when recovery also
       switches or for a general family of cooperative matrices.</p>
+    <p>The same speed-invariant mean gives a quantitative bound at every finite switching speed, rather than only an
+      endpoint expansion. Let $\Lambda_\infty=\sqrt{\bar A}-(\sigma+\gamma)/2$. The tangent remainder of the square
+      root is the exact identity</p>
+    <div class="equation-card">
+    $$\Lambda_\infty-\Lambda_{\rm as}(c)
+      =\frac{1}{2\sqrt{\bar A}}\,\mathbb E\!\left[
+      \frac{(X_c-\bar A)^2}{(\sqrt{X_c}+\sqrt{\bar A})^2}\right],$$
+    $$\frac{\operatorname{Var}(X_c)}
+      {2\sqrt{\bar A}(\sqrt{A_h}+\sqrt{\bar A})^2}
+      \leq \Lambda_\infty-\Lambda_{\rm as}(c) \leq
+      \frac{\operatorname{Var}(X_c)}
+      {2\sqrt{\bar A}(\sqrt{A_\ell}+\sqrt{\bar A})^2}.$$
+    </div>
+    <p>The equality follows from
+      $\sqrt{\bar A}+(x-\bar A)/(2\sqrt{\bar A})-\sqrt{x}
+      =(x-\bar A)^2/[2\sqrt{\bar A}(\sqrt{x}+\sqrt{\bar A})^2]$
+      after taking expectations. The inequalities use only $A_\ell&lt;X_c&lt;A_h$, so they are non-asymptotic and
+      uniform over every $c&gt;0$. Convex-order concentration also makes $\operatorname{Var}(X_c)$ strictly decrease
+      with speed. These bounds quantify convergence to the fast limit; they do not supply a rate in $c$ until the
+      variance itself is estimated.</p>
     <p>After $z=a_\ell+(a_h-a_\ell)t$, the two integrals have Jacobi weights
     $t^{\kappa_\ell}(1-t)^{\kappa_h-1}$ and
     $t^{\kappa_\ell-1}(1-t)^{\kappa_h}$. The certificate therefore evaluates them by Gauss&ndash;Jacobi quadrature,
@@ -486,6 +506,10 @@
     mean moves at second order, and $(\Lambda_{\mathrm{mean}} - r)\lambda^2$ tends to
     $\tilde\beta^2\sigma^2/(4\sqrt D) = 0.00330$. The almost-sure error falls by four per doubling:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$\lambda$</th><th>mean, numerical</th><th style="text-transform:none">$(\Lambda_{\mathrm{mean}} - r)\lambda^2$</th><th>almost-sure, exact</th><th>Monte Carlo</th><th>first order</th><th>first-order error</th></tr></thead><tbody><tr><td>1</td><td>0.005703</td><td>0.00238</td><td>&minus;0.003310</td><td>&minus;0.003307</td><td>&minus;0.005415</td><td>&minus;2.1e&minus;3</td></tr><tr><td>2</td><td>0.004012</td><td>0.00278</td><td>&minus;0.000448</td><td>&minus;0.000450</td><td>&minus;0.001048</td><td>&minus;6.0e&minus;4</td></tr><tr><td>4</td><td>0.003507</td><td>0.00302</td><td>0.001297</td><td>0.001301</td><td>0.001135</td><td>&minus;1.6e&minus;4</td></tr><tr><td>8</td><td>0.003368</td><td>0.00315</td><td>0.002269</td><td>0.002268</td><td>0.002227</td><td>&minus;4.2e&minus;5</td></tr><tr><td>16</td><td>0.003331</td><td>0.00323</td><td>0.002784</td><td>0.002783</td><td>0.002773</td><td>&minus;1.1e&minus;5</td></tr></tbody></table></div>
+    <p>Across 29 switching speeds from $0.01$ to $64$, for both symmetric rates and the asymmetric ratio
+      $q_{h\ell}:q_{\ell h}=1.7:0.4$, the certificate checks the exact weighted-variance identity and its bounds, and
+      verifies that $\operatorname{Var}(X_c)$ strictly decreases. The lower bound is at least $53.9\%$ of the exact
+      gap, while the upper bound is at most $1.933$ times the gap over this grid.</p>
     <p>The three-regime cycle. The closed-form $K$ agrees with $-\pi\cdot(f\,Q^{\#}g)$ to $10^{-13}$. Both first-order
     formulas have errors falling at second order in each direction:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$c$</th><th>forward mean, numerical</th><th>first order</th><th>reversed mean, numerical</th><th>first order</th></tr></thead><tbody><tr><td>1</td><td>0.017530</td><td>0.018593</td><td>0.011917</td><td>0.010392</td></tr><tr><td>2</td><td>0.010650</td><td>0.010956</td><td>0.007269</td><td>0.006855</td></tr><tr><td>4</td><td>0.007055</td><td>0.007137</td><td>0.005195</td><td>0.005087</td></tr><tr><td>8</td><td>0.005207</td><td>0.005228</td><td>0.004230</td><td>0.004203</td></tr><tr><td>16</td><td>0.004268</td><td>0.004273</td><td>0.003768</td><td>0.003761</td></tr></tbody></table></div>

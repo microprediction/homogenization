@@ -93,6 +93,10 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
     its normalization and first moment without endpoint singularities.  Since
     (log I)' = sigma z-gamma and z stays bounded, the top exponent is
     sigma E[z]-gamma.
+
+    In the symmetrized Riccati coordinate y, X=y^2 has a speed-independent
+    mean.  The returned Jensen-gap identity and bounds quantify the exact
+    gap from the finite-speed exponent to its fast-switching limit.
     """
     if rate21 is None:
         rate21 = rate12
@@ -104,7 +108,10 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
         return {'lyapunov': seir_rate(beta1, sigma, gamma), 'mean_z': None,
                 'state_mass': [pi1, 1 - pi1], 'roots': None, 'powers': None,
                 'riccati_square_mean': float(riccati_square),
-                'riccati_square_target': float(riccati_square)}
+                'riccati_square_target': float(riccati_square),
+                'riccati_square_variance': 0.0, 'fast_growth_gap': 0.0,
+                'jensen_gap_identity': 0.0,
+                'jensen_gap_bounds': [0.0, 0.0]}
 
     # Re-label by transmission level.  a is high -> low and b is low -> high.
     if beta1 > beta2:
@@ -123,6 +130,10 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
     alo, blo, dlo = projective_roots(beta_lo)
     khi, klo = a / dhi, b / dlo
     width = ahi - alo
+    pi_hi = b / (a + b)
+    riccati_square_target = ((sigma - gamma) ** 2 / 4
+                              + sigma * (pi_hi * beta_hi + (1.0 - pi_hi) * beta_lo))
+    root_mean = np.sqrt(riccati_square_target)
 
     # After z = alo + width*t, the common irrelevant factor is suppressed.
     # State hi has weight t^klo (1-t)^(khi-1); state lo has
@@ -138,26 +149,39 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
             log_smooth = -khi * np.log(z - bhi) - (klo + 1) * np.log(z - blo)
         entries.append((weights, z, log_smooth))
     scale = max(np.max(entry[2]) for entry in entries)
-    masses, moments, square_moments = [], [], []
+    masses, moments, square_moments, fourth_moments, gap_moments = [], [], [], [], []
     for weights, z, log_smooth in entries:
         w = weights * np.exp(log_smooth - scale)
         riccati = sigma * z + 0.5 * (sigma - gamma)
         masses.append(float(w.sum()))
         moments.append(float(w @ z))
         square_moments.append(float(w @ (riccati ** 2)))
+        fourth_moments.append(float(w @ (riccati ** 4)))
+        square = riccati ** 2
+        gap_moments.append(float(w @ ((square - riccati_square_target) ** 2
+                                      / (np.sqrt(square) + root_mean) ** 2)))
     total = sum(masses)
     mean_z = sum(moments) / total
     riccati_square_mean = sum(square_moments) / total
     normalized = [m / total for m in masses]
     state_mass = normalized if high_first else normalized[::-1]
-    pi_hi = b / (a + b)
-    riccati_square_target = ((sigma - gamma) ** 2 / 4
-                              + sigma * (pi_hi * beta_hi + (1.0 - pi_hi) * beta_lo))
+    riccati_square_second = sum(fourth_moments) / total
+    riccati_square_variance = max(0.0, riccati_square_second - riccati_square_target ** 2)
+    root_lo, root_hi = np.sqrt((sigma - gamma) ** 2 / 4 + sigma * beta_lo), np.sqrt(
+        (sigma - gamma) ** 2 / 4 + sigma * beta_hi)
+    fast_growth_gap = root_mean - (sigma * mean_z + (sigma - gamma) / 2)
+    jensen_gap_identity = sum(gap_moments) / total / (2 * root_mean)
+    gap_lower = riccati_square_variance / (2 * root_mean * (root_hi + root_mean) ** 2)
+    gap_upper = riccati_square_variance / (2 * root_mean * (root_lo + root_mean) ** 2)
     return {'lyapunov': float(sigma * mean_z - gamma), 'mean_z': float(mean_z),
             'state_mass': state_mass, 'roots': [float(alo), float(ahi), float(blo), float(bhi)],
             'powers': [float(klo), float(khi)],
             'riccati_square_mean': float(riccati_square_mean),
-            'riccati_square_target': float(riccati_square_target)}
+            'riccati_square_target': float(riccati_square_target),
+            'riccati_square_variance': float(riccati_square_variance),
+            'fast_growth_gap': float(fast_growth_gap),
+            'jensen_gap_identity': float(jensen_gap_identity),
+            'jensen_gap_bounds': [float(gap_lower), float(gap_upper)]}
 
 
 def seir_beta_slow_switching(beta1, beta2, sigma, gamma, rate12_scale=1.0, rate21_scale=None):
