@@ -79,6 +79,28 @@ def two_exponential_parts(SA, SB, lamA, lamB):
     return rm, rp, (St - rm) / (rp - rm)
 
 
+def two_exponential_decomposition(SA, SB, lamA, lamB, L):
+    """Exact slow outer mode and the finite-slab entry-layer correction.
+
+    If ``w`` is the slow-mode weight and ``gap = r_+ - r_-``, then
+
+        T = w exp(-r_- L) (1 + q exp(-gap L)),  q = (1-w)/w.
+
+    The additive error in log transmission made by dropping the fast mode
+    is exactly ``log1p(q exp(-gap L))``.
+    """
+    rm, rp, w = two_exponential_parts(SA, SB, lamA, lamB)
+    fast_weight = 1.0 - w
+    if abs(SA - SB) < 1e-14 * max(1.0, abs(SA), abs(SB)):
+        fast_weight = 0.0
+    q = fast_weight / w
+    relative_layer = q * math.exp(-(rp - rm) * L)
+    outer = w * math.exp(-rm * L)
+    return dict(r_minus=rm, r_plus=rp, gap=rp - rm, slow_weight=w,
+                fast_weight=fast_weight, outer=outer, relative_layer=relative_layer,
+                log_layer=math.log1p(relative_layer), exact=outer * (1.0 + relative_layer))
+
+
 # ------------------------------------------------------------------ closed forms
 def coefficients(Q, Sig):
     """<Sigma>, K, M3, C1 for any chain."""

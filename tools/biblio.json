@@ -507,6 +507,17 @@
  },
  {
   "role": "survey_theory",
+  "key": "FlajoletOdlyzko1990",
+  "authors": "Philippe Flajolet, Andrew M. Odlyzko",
+  "year": 1990,
+  "title": "Singularity Analysis of Generating Functions",
+  "venue": "SIAM Journal on Discrete Mathematics 3(2):216-240",
+  "doi": "10.1137/0403019",
+  "url": "https://doi.org/10.1137/0403019",
+  "annotation": "Transfers local algebraic and logarithmic singular expansions into sharp Taylor-coefficient asymptotics; applied on the Clumpy Media page to the conjugate square-root branch points of the exact binary transmission law."
+ },
+ {
+  "role": "survey_theory",
   "key": "Kubo1962",
   "authors": "Kubo, R.",
   "year": 1962,
