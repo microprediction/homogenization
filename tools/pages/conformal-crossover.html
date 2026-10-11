@@ -125,6 +125,46 @@
       $0.91256$ and $0.88744$. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">certificate</a>
       simulates the Markov transitions and fresh scores to check these
       figures.</p>
+    <h3>Marginal validity cannot be upgraded by faster mixing</h3>
+    <p>There is a sharp, dependence-free obstruction. If an event $A$ has
+      probability $p>0$ and a predictor has marginal miscoverage at most
+      $\alpha$, then only</p>
+    $$\Pr\{\text{coverage}\mid A\}\ge
+      \max\!\left(0,1-\frac{\alpha}{p}\right)$$
+    <p>follows without additional structure. Indeed,
+      $\Pr\{\text{miscoverage}\cap A\}\le\alpha$ proves the bound, and
+      concentrating all admissible errors inside $A$ proves sharpness. In
+      particular it is vacuous for groups of mass $p\le\alpha$.</p>
+    <p>A finite-sample split-conformal example nearly realizes the zero
+      branch while remaining i.i.d. Let the group $G$ and score $R$ satisfy
+      $R=G\in\{0,1\}$ and $\Pr(G=1)=\delta$, with group 1 rare. For $n$
+      calibration scores use the conventional nonrandomized threshold
+      $R_{(k)}$, where</p>
+    $$k=\left\lceil(n+1)(1-\alpha)\right\rceil\le n,
+      \qquad r=n-k+1.$$
+    <p>If $J\sim\operatorname{Bin}(n,\delta)$ counts rare calibration
+      points, a rare test point is covered exactly when $J\ge r$. Hence</p>
+    $$c_{n,\alpha}(\delta)
+      :=\Pr\{\text{coverage}\mid G_{n+1}=1\}
+      =\Pr\{\operatorname{Bin}(n,\delta)\ge r\},$$
+    $$\Pr\{\text{coverage}\}
+      =1-\delta+\delta c_{n,\alpha}(\delta)
+      \ge \frac{k}{n+1}\ge1-\alpha.$$
+    <p>For fixed $n$, $c_{n,\alpha}(\delta)=O(\delta^r)\to0$ as
+      $\delta\downarrow0$, although the marginal coverage tends to one.
+      At $\alpha=0.1$, $n=99$, and $\delta=0.01$, the exact rare-group
+      conditional coverage is $6.93098396\times10^{-8}$ while marginal
+      coverage is $0.990000000693$. The binary ties make the usual marginal
+      guarantee conservative and are handled by the standard $R\le R_{(k)}$
+      rule. The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">certificate</a>
+      evaluates the binomial tail exactly for four panel sizes.</p>
+    <p>This example has no temporal dependence at all. Thus faster regime
+      mixing, thinning, effective-sample-size corrections, and the panel
+      variance results below cannot by themselves turn marginal conformal
+      validity into subgroup-conditional validity. This is the elementary
+      finite-sample counterpart of the general impossibility results of
+      <a href="https://doi.org/10.1093/imaiai/iaaa017">Barber, Candès,
+      Ramdas and Tibshirani (2021)</a>.</p>
     <p>The certificate also uses a nonreversible three-state chain with a
       nonuniform invariant law. It obtains $\gamma_s=3.67885921$; over forty
       scaled horizons the largest score-vector ratio of the exact $L^2(\pi)$
@@ -1200,5 +1240,7 @@
       and overlapping path-score calibration require different formulas;
       those are treated separately in
       <a href="https://github.com/microprediction/homogenization/pull/60">PR #60</a>.
-      No result here asserts distribution-free conditional coverage.</p>
+      No result here asserts distribution-free conditional coverage; the
+      i.i.d. construction above shows why such a claim would require
+      assumptions beyond fast mixing.</p>
   </main>

@@ -43,6 +43,10 @@ An all-order eigenvector recursion supplies every dependent-panel cumulant
 rate and the local expansion of the large-deviation rate function.  A
 spectral-projector calculation also identifies the complete order-one
 boundary correction for every fixed cumulant order and every initial law.
+An exact i.i.d. split-conformal calculation finally separates all of these
+dependence results from conditional validity: a rare group's conditional
+coverage can tend to zero while the ordinary finite-sample marginal guarantee
+remains conservative.
 """
 import itertools
 import math
@@ -1669,6 +1673,46 @@ def finite_chain_checks(rng):
           f"spectral bound {spectral_bound:.8f}, gap {gap:.6f}")
 
 
+def rare_group_split_conformal_check():
+    """Certify conditional failure in an i.i.d. two-group example.
+
+    Let both the group label and score be Bernoulli(delta), so common scores
+    are zero and rare scores are one. With the conventional nonrandomized
+    split-conformal rule, q is the k-th calibration order statistic, where
+    k=ceil((n+1)(1-alpha)). A rare test point is covered exactly when at
+    least n-k+1 calibration points are rare. Ties only make the usual
+    marginal guarantee conservative; they do not weaken the counterexample.
+    """
+    alpha = 0.1
+    delta = 0.01
+    expected = {
+        19: 0.015273761488896613,
+        49: 0.00013221002446730005,
+        99: 6.930983962862892e-08,
+        199: 2.6281101520802502e-14,
+    }
+    rare_coverages = []
+    for n, target in expected.items():
+        k = math.ceil((n + 1) * (1 - alpha))
+        required_rare = n - k + 1
+        rare_coverage = sum(
+            math.comb(n, j) * delta ** j * (1 - delta) ** (n - j)
+            for j in range(required_rare, n + 1)
+        )
+        marginal_coverage = 1 - delta + delta * rare_coverage
+        assert abs(rare_coverage - target) < 2e-16
+        assert marginal_coverage >= k / (n + 1) >= 1 - alpha
+        rare_coverages.append(rare_coverage)
+        print(
+            "iid rare-group split conformal:",
+            f"n={n}, k={k}, required rare={required_rare},",
+            f"conditional={rare_coverage:.12g},",
+            f"marginal={marginal_coverage:.12g}",
+        )
+    assert all(x > y for x, y in zip(rare_coverages, rare_coverages[1:]))
+    assert rare_coverages[2] < 7e-8
+
+
 def main():
     rng = np.random.default_rng(20260923)
     q = brentq(lambda x: pooled_cdf(x) - TARGET, 0.0, 30.0)
@@ -1703,6 +1747,7 @@ def main():
     print(f"exact calibration-CDF variance:     {predicted_var:.8f}")
     assert abs(empirical_var - predicted_var) / predicted_var < 0.07
     finite_chain_checks(rng)
+    rare_group_split_conformal_check()
     print("PASS: finite-chain crossover, additive/reversible spectral bounds,"
           " regular and irregular calibration variance, exact polynomial"
           " count law, optimal calibration design and its cost rule, the"
@@ -1716,6 +1761,7 @@ def main():
           " correction,"
           " one-sided order-statistic PAC"
           " conversion,"
+          " iid rare-group conditional failure,"
           " nonstationary burn-in transfer, and transient panel moments")
 
 

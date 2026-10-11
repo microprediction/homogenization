@@ -85,10 +85,13 @@
     $\mp\tfrac12\varepsilon\,\tilde g(0)\,e^{-2\lambda t}$ to the first-order bracket, which returns the bracket to $1$
     at $t = 0$; when $\tilde g(0) \ne 0$ the first-order formula above is therefore accurate to $O(\varepsilon^2)$ only
     at fixed $t > 0$. The <a href="./engine.html">engine</a> page gives the version for any number of regimes.</p>
-    <p>The half-difference $\tilde g$ grows only like $\log u$, because each exponent does. The expansion parameter
-    $|\tilde g|/\lambda$ therefore stays small far out along the Fourier integral, and no cutoff of the kind used for
-    <a href="./black-scholes.html">Black&ndash;Scholes</a> is needed: at $u = 200$, $|\tilde g|$ is 12.3. The price of that is slow decay. The characteristic function falls like a power of $u$,
-    and the integral is carried to $u = 600$.</p>
+    <p>Each exponent $\psi_i$ grows only like $\log u$, but the martingale corrections differ by regime, so the
+    half-difference grows linearly: $\tilde g/(iu) \to \tilde\omega = \tfrac12(\omega_1 - \omega_2)$, which is 0.0578
+    here. At $u = 200$, $|\tilde g|$ is 12.3. The expansion needs $|\tilde g| < \lambda$, that is $|u|$ below about
+    $\lambda/|\tilde\omega| \approx 17\lambda$.</p>
+    <p>That window is of order $\lambda$, wider than the $\sqrt\lambda$ left by a diffusion&apos;s $u^2$, but it is a
+    window. The characteristic function falls only like a power of $u$, and the integral is carried to $u = 600$. At
+    $\lambda = 25$ the window ends at $u = 419$, where the integrand is below $10^{-14}$.</p>
 
     <h2>The characteristic function in closed form</h2>
     <p>The forcing is constant, so the two-state system can be solved exactly. The characteristic function of the log

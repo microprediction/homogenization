@@ -2539,5 +2539,16 @@
   "doi": "10.1016/0378-4266(90)90039-5",
   "url": "https://doi.org/10.1016/0378-4266(90)90039-5",
   "annotation": "Gives the closed-form price of an option on the continuous geometric average under Black-Scholes; the instruments page carries it to a switching volatility."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BarberCandesRamdasTibshirani2021",
+  "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
+  "year": 2021,
+  "title": "The limits of distribution-free conditional predictive inference",
+  "venue": "Information and Inference 10(2):455-482",
+  "doi": "10.1093/imaiai/iaaa017",
+  "url": "https://doi.org/10.1093/imaiai/iaaa017",
+  "annotation": "Shows that exact distribution-free conditional predictive validity is impossible without assumptions; the rare-group calculation on the conformal crossover page gives an elementary finite-sample split-conformal witness while preserving marginal validity."
  }
 ]
