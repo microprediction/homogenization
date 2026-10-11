@@ -7,5 +7,14 @@
   "venue": "Communications in Mathematical Physics 104(1):1-19",
   "doi": "10.1007/BF01210789",
   "annotation": "Proves the central limit theorem for time integrals of a function of a reversible Markov process, with the long-run variance given through the resolvent; the reversibility assumption is essential to the proof."
+ },
+ {
+  "key": "Rebolledo1980",
+  "authors": "Rebolledo, R.",
+  "year": 1980,
+  "title": "Central limit theorems for local martingales",
+  "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
+  "doi": "10.1007/BF00587353",
+  "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
  }
 ]
