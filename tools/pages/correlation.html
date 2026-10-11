@@ -214,6 +214,325 @@
     <p>A regime whose mean is low when its covariance is high makes $K(\mu, c) &lt; 0$ and a negative third cumulant. The
     term $2w_1w_2\,c_{12}$ inside $w^{\top}c\,w$ is the part carried by the correlation.</p>
 
+    <h3>Exact finite-rate cumulants for two regimes</h3>
+    <p>For two states the covariance, co-skewness and co-kurtosis need not be approximated. Let
+    $A_T=\int_0^T\mathbf 1_{\{y_t=1\}}\,dt$ be the time spent in crisis, put $r=a+b$, and write
+    $p_0=b/r$, $p_1=a/r$, $u=p_0p_1$ and $x=rT$. With a stationary start its first four cumulants are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_1(A_T)&=p_1T,\\
+    \kappa_2(A_T)&=\frac{2p_0p_1}{r^2}\big(rT-1+e^{-rT}\big),\\
+    \kappa_3(A_T)&=\frac{6p_0p_1(p_0-p_1)}{r^3}
+       \big(x-2+(x+2)e^{-x}\big),\\
+    \kappa_4(A_T)&=\frac{12u}{r^4}\Big[2x-6+(x^2+4x+6)e^{-x}\\
+      &\qquad\qquad+u\{29-10x-(4x^2+20x+28)e^{-x}-e^{-2x}\}\Big].
+    \end{aligned}$$
+    </div>
+    <p>For completeness, put $D(z)=\sqrt{1+2(p_1-p_0)z+z^2}$. Diagonalizing the dimensionless tilted generator gives
+    the stationary moment generating function in closed form:</p>
+    $$\mathbb E_\pi e^{zrA_T}=e^{(z-1)x/2}\left[
+      \cosh\!\left(\frac{xD(z)}2\right)
+      +\frac{1+(p_1-p_0)z}{D(z)}\sinh\!\left(\frac{xD(z)}2\right)\right].$$
+    <p>Four derivatives of its logarithm at zero give the displayed stationary cumulants, including the fourth; this
+    also shows that the formula is finite-horizon exact rather than a large-$r$ expansion.</p>
+    <p>Indeed, for $Z_t=\mathbf 1_{\{y_t=1\}}-p_1$, stationarity and the two-state semigroup give
+    $\mathbb E[Z_0Z_t]=p_0p_1e^{-rt}$. Since $Z_t^2=(p_0-p_1)Z_t+p_0p_1$, for
+    $s\leq t\leq u$ they also give
+    $\mathbb E[Z_sZ_tZ_u]=p_0p_1(p_0-p_1)e^{-r(u-s)}$. Integrating over the square and the six
+    orderings of the cube proves the first three formulas. The fourth follows by expanding the exact tilted two-state
+    generator. The modified-Bessel occupation density used above is a special case of
+    the finite-state construction of <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
+    Nir (2010)</a>.</p>
+    <p>The stationary-start restriction can also be removed exactly. Let $q=\mathbb P(y_0=1)$,
+    $\delta=q-p_1$ and $x=rT$. Define</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    H_1={}&1-e^{-x},\\
+    H_2={}&2(p_0-p_1)\{1-(1+x)e^{-x}\},\\
+    H_3={}&6(1-e^{-x})-3x^2e^{-x}-6xe^{-x}\\
+      &+u\{12x^2e^{-x}+36xe^{-x}-30+24e^{-x}+6e^{-2x}\},\\
+    H_4={}&-4(p_1-p_0)\Big[u(12x+18)e^{-2x}\\
+      &+u(4x^3+24x^2+48x+24)e^{-x}\\
+      &-(x^3+3x^2+6x+6)e^{-x}-42u+6\Big].
+    \end{aligned}$$
+    </div>
+    <p>Then the arbitrary-start occupation cumulants are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{1,q}(A_T)&=\kappa_{1,\pi}(A_T)+\frac{\delta H_1}{r},\\
+    \kappa_{2,q}(A_T)&=\kappa_{2,\pi}(A_T)+\frac{\delta H_2-\delta^2H_1^2}{r^2},\\
+    \kappa_{3,q}(A_T)&=\kappa_{3,\pi}(A_T)
+       +\frac{\delta H_3-3\delta^2H_1H_2+2\delta^3H_1^3}{r^3},\\
+    \kappa_{4,q}(A_T)&=\kappa_{4,\pi}(A_T)+\frac{1}{r^4}\Big[\delta H_4
+      -\delta^2(4H_1H_3+3H_2^2)\\
+      &\qquad\qquad+12\delta^3H_1^2H_2-6\delta^4H_1^4\Big].
+    \end{aligned}$$
+    </div>
+    <p>For the proof, let $M_i(z)=\mathbb E_i e^{zA_T}$ and
+    $M_\pi=(1-p_1)M_0+p_1M_1$. Linearity in the initial law gives
+    $M_q=M_\pi\{1+\delta R(z)\}$ with $R=(M_1-M_0)/M_\pi$ and $R(0)=0$.
+    Direct integration of the two-state transition probabilities gives
+    $R^{(j)}(0)=H_j/r^j$ for $j=1,\ldots,4$. Differentiating
+    $\log M_q=\log M_\pi+\log(1+\delta R)$ gives the displayed corrections. This conditional-cumulant organization is
+    the finite-mixture specialization of <a href="./bibliography.html#Brillinger1969">Brillinger (1969)</a> and exposes
+    the corrections as a
+    finite-horizon initial layer rather than part of the stationary Green&ndash;Kubo coefficient.</p>
+    <p>Now use differences from calm to crisis,
+    $d\mu=\mu_{mathrm{crisis}}-\mu_{mathrm{calm}}$ and
+    $dc=c_{mathrm{crisis}}-c_{mathrm{calm}}$. Conditional on $A_T$,</p>
+    $$X\mid A_T\sim N\big(\mu_{mathrm{calm}}T+d\mu\,A_T,
+      c_{mathrm{calm}}T+dc\,A_T\big),$$
+    <p>so its cumulant generating function is the calm Gaussian exponent plus
+    $K_{A_T}(\theta\cdot d\mu+\tfrac12\theta^\top dc\,\theta)$. Differentiating gives the exact finite-rate identities</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{ij}(X)&=Tc_{ij,\mathrm{calm}}+\kappa_1(A_T)dc_{ij}
+       +\kappa_2(A_T)d\mu_i d\mu_j,\\
+    \kappa_{ijk}(X)&=\kappa_2(A_T)
+       \big(d\mu_i dc_{jk}+d\mu_j dc_{ik}+d\mu_k dc_{ij}\big)
+       +\kappa_3(A_T)d\mu_i d\mu_j d\mu_k,\\
+    \kappa_{ijkl}(X)&=\kappa_2(A_T)\!\sum_{\mathrm{3\ pairings}}dc_{ij}dc_{kl}
+       +\kappa_3(A_T)\!\sum_{\mathrm{6\ pairs}}dc_{ij}d\mu_kd\mu_l\\
+       &\qquad+\kappa_4(A_T)d\mu_id\mu_jd\mu_kd\mu_l.
+    \end{aligned}$$
+    </div>
+    <p>The result is exact for every $T,a,b&gt;0$ and every initial probability $q\in[0,1]$ under a two-state chain
+    independent of the Brownian shocks.
+    For a stationary start, the Green&ndash;Kubo rule is recovered by replacing
+    $\kappa_2(A_T)$ with $2p_0p_1T/r$ and omitting $\kappa_3(A_T)$, which is one order smaller in the fast rate.
+    For a symmetric chain $p_0=p_1$, the occupation-skew term vanishes exactly.</p>
+
+    <h4>All orders: singleton&ndash;pair partitions</h4>
+    <p>The preceding tensors are the first cases of one exact identity. Let
+    $\mathcal M_n$ be the set of partitions of the labelled positions $\{1,\ldots,n\}$ into singleton and pair blocks.
+    For $n\geq3$,</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(X)=
+      \sum_{\mathcal P\in\mathcal M_n}\kappa_{|\mathcal P|}(A_T)
+      \prod_{\{a\}\in\mathcal P}d\mu_{i_a}
+      \prod_{\{a,b\}\in\mathcal P}dc_{i_ai_b}.$$
+    </div>
+    <p>For $n=1$ add $T\mu_{i_1,\mathrm{calm}}$, and for $n=2$ add
+    $Tc_{i_1i_2,\mathrm{calm}}$. This is the singleton&ndash;pair specialization of the multivariate
+    Fa&agrave; di Bruno formula applied to
+    $K_{A_T}(\theta\cdot d\mu+\tfrac12\theta^\top dc\,\theta)$; it is also the conditional-Gaussian
+    form of <a href="./bibliography.html#Brillinger1969">Brillinger&apos;s conditional-cumulant formula</a>. The statement is exact at finite rate and horizon for every two-state initial
+    law.</p>
+    <p>There is an exact finite-state version, but it is genuinely vector-valued. Choose state zero as reference, write
+    $A_T^a$ for time in state $a=1,\ldots,m-1$, and let $d\mu^a=\mu^a-\mu^0$ and
+    $dc^a=c^a-c^0$. Color every block $B$ of $\mathcal P$ by a state contrast $z(B)$. Then, for $n\geq3$,</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(X)=
+      \sum_{\mathcal P\in\mathcal M_n}\ \sum_{z:\mathcal P\to\{1,\ldots,m-1\}}
+      \operatorname{cum}\!\big(A_T^{z(B)}:B\in\mathcal P\big)
+      \prod_{\{a\}\in\mathcal P}d\mu^{z(\{a\})}_{i_a}
+      \prod_{\{a,b\}\in\mathcal P}dc^{z(\{a,b\})}_{i_ai_b}.$$
+    </div>
+    <p>The order-one and order-two baseline additions are unchanged. This formula follows by applying the same
+    multivariate chain rule to the joint occupation CGF. It is invariant to the chosen reference state, although its
+    contrast coordinates are not. Unlike the two-state case, its inputs include mixed occupation cumulants; replacing
+    them by separate marginal cumulants is generally wrong.</p>
+    <h4>Finite-state fast-rate theorem</h4>
+    <p>The rate law is not special to two states. Let $Q$ be any fixed irreducible finite-state generator, let the
+    accelerated chain have generator $sQ$, and fix $T&gt;0$ and an arbitrary initial law $\nu$. For bounded state
+    observables $f_a$, put $A_T^a=\int_0^T f_a(Y_t)\,dt$. Define $\lambda(z)$ to be the simple eigenvalue continuing zero
+    from $Q+\operatorname{diag}(\sum_a z_af_a)$, $P(z)$ its analytic spectral projection, and
+    $b_\nu(z)=\log[\nu P(z){\bf1}]$. Then every mixed occupation cumulant of order $k\geq2$ has the expansion</p>
+    <div class="equation-card">
+    $$\operatorname{cum}(A_T^{a_1},\ldots,A_T^{a_k})=
+      T s^{1-k}\,\partial_{a_1}\cdots\partial_{a_k}\lambda(0)
+      +s^{-k}\,\partial_{a_1}\cdots\partial_{a_k}b_\nu(0)
+      +O(e^{-c sT}).$$
+    </div>
+    <p>The bulk coefficient is independent of the initial law; the first initial-law contribution is one inverse-rate
+    order smaller. To prove the display, write the occupation CGF as</p>
+    $$K_s(z)=\log\!\left[\nu e^{T(sQ+D(z))}{\bf1}\right]
+      =\log\!\left[\nu e^{sT(Q+D(z/s))}{\bf1}\right].$$
+    <p>Analytic perturbation of the isolated simple eigenvalue zero and the spectral gap give, uniformly on a fixed
+    complex polydisc in $z$ for all sufficiently large $s$,</p>
+    $$K_s(z)=sT\lambda(z/s)+b_\nu(z/s)+O(e^{-csT}).$$
+    <p>Cauchy estimates permit termwise mixed differentiation and give the theorem. This is a finite-dimensional use of
+    <a href="./bibliography.html#Kato1995">Kato&apos;s analytic eigenvalue and projection perturbation theory</a>; the
+    broader singular-perturbation and occupation-measure setting is treated by
+    <a href="./bibliography.html#YinZhang1998">Yin and Zhang</a>. The statement is a fixed-horizon fast-rate result. It
+    is also uniform on compact maturity intervals bounded away from zero, but it does not cover a joint limit with
+    $sT=O(1)$.</p>
+    <p>The first nontrivial eigenvalue coefficient is explicit. For centered state indicators $f_a$, the group inverse
+    $Q^{\#}$ gives the symmetric Green&ndash;Kubo rate matrix</p>
+    $$\Gamma_{ab}=\partial_{ab}\lambda(0)
+      =-\pi\!\left[f_aQ^{\#}f_b\right]-\pi\!\left[f_bQ^{\#}f_a\right].$$
+    <p>Therefore the leading finite-state co-skewness and co-kurtosis tensors are</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{ijk}(X)&=\frac{T}{s}\sum_{a,b}\Gamma_{ab}
+      \left(d\mu_i^a dc_{jk}^b+d\mu_j^a dc_{ik}^b+d\mu_k^a dc_{ij}^b\right)+O(s^{-2}),\\
+    \kappa_{ijkl}(X)&=\frac{T}{s}\sum_{a,b}\Gamma_{ab}
+      \left(dc_{ij}^a dc_{kl}^b+dc_{ik}^a dc_{jl}^b+dc_{il}^a dc_{jk}^b\right)+O(s^{-2}).
+    \end{aligned}$$
+    </div>
+    <p>These are fixed-$Q$, fixed-maturity contractions of the Green&ndash;Kubo matrix. They do not assert the same rank
+    after combining different maturity-dependent loadings.</p>
+    <h4>The critical boundary layer $sT=\tau$</h4>
+    <p>The excluded near end has a different, exact scaling law. Put $T_s=\tau/s$ and
+      $Z_s=\sqrt{s}\,X_{T_s}$. Under the time change $u=st$, the regime process has generator $Q$ on
+      $[0,\tau]$, while Brownian scaling removes $s$ from the conditional covariance. If $A_\tau^a$ are the
+      non-reference occupation times of that unit-speed chain, then exactly</p>
+    <div class="equation-card">
+    $$Z_s\mid A_\tau\sim N\!\left(
+      s^{-1/2}\left\{\mu^0\tau+\sum_a d\mu^aA_\tau^a\right\},
+      C^0\tau+\sum_a dC^aA_\tau^a\right).$$
+    </div>
+    <p>Consequently, if $r(\mathcal P)$ is the number of singleton blocks in a singleton&ndash;pair partition,
+      the all-order tensor has the exact finite-$s$ identity</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(Z_s)=
+      \sum_{\mathcal P\in\mathcal M_n}\ \sum_z
+      s^{-r(\mathcal P)/2}
+      \operatorname{cum}\!\left(A_\tau^{z(B)}:B\in\mathcal P\right)
+      \prod_{\{j\}\in\mathcal P}d\mu_{i_j}^{z(\{j\})}
+      \prod_{\{j,k\}\in\mathcal P}dC_{i_ji_k}^{z(\{j,k\})}.$$
+    </div>
+    <p>For even $n$, perfect pairings have no singleton, so covariance switching can leave a nonzero limiting
+      cumulant of every even order. For odd $n$, every partition has a singleton, giving
+      $\kappa_n(Z_s)=O(s^{-1/2})$; the leading term uses one drift contrast and $(n-1)/2$ covariance contrasts.
+      Thus</p>
+    $$Z_s\ \Longrightarrow\ Z_\infty,\qquad
+      Z_\infty\mid A_\tau\sim N\!\left(0,
+      C^0\tau+\sum_a dC^aA_\tau^a\right),$$
+    <p>which is generally a non-Gaussian covariance mixture. It becomes Gaussian when the integrated covariance is
+      deterministic in every observed direction; in particular, pure mean switching disappears at this scale.
+      This proves that the fixed-maturity fast-rate hierarchy above cannot be uniform down to $T=O(s^{-1})$.
+      The process is the finite-state Markov-modulated Brownian motion studied by
+      <a href="./bibliography.html#Breuer2012">Breuer</a>; the occupation vector, rather than a new limiting object,
+      carries the entire crossover.</p>
+    <p>For the nonreversible three-state certificate with $\tau=0.75$, the limiting asset-one variance is
+      $0.03133818$, the fourth and sixth cumulants are $3.20891983\times10^{-4}$ and
+      $1.30228960\times10^{-5}$, and the limiting excess kurtosis is $0.326747$. The exact coefficient polynomial
+      agrees with independent tilted-matrix extraction through order six within $6.8\times10^{-12}$. Under each
+      quadrupling of $s$, the residuals after the odd $s^{-1/2}$ limits and the persistent even limits fall by
+      factors $4.000$, $4.010$, $3.999$, and $4.038$ at orders three through six. A separate calculation at
+      $s=16$ compares the original horizon $\tau/s$ directly with the rescaled unit-speed system through order
+      four and agrees within $2.8\times10^{-10}$.</p>
+    <h4>Arbitrary-start covariance layer</h4>
+    <p>The abstract boundary coefficient above has a simple first-order form. For any state field $f$, write
+    $\widetilde f=f-\pi f$. The semigroup identity is exact:</p>
+    <div class="equation-card">
+    $$\mathbb E_\nu\!\int_0^T f(Y_t)\,dt
+      =T\pi f-\frac1s\nu Q^{\#}\widetilde f
+       +\frac1s\nu e^{sTQ}Q^{\#}\widetilde f.$$
+    </div>
+    <p>Thus the initial-layer coefficient is $-\nu Q^{\#}\widetilde f$. In the row-generator convention used here,
+    $-Q^{\#}$ is the continuous-time deviation matrix
+    $\int_0^\infty(e^{tQ}-P)\,dt$ studied by
+    <a href="./bibliography.html#CoolenSchrijnerVanDoorn2002">Coolen-Schrijner and van Doorn</a>. Applying the identity
+    to the drift and covariance fields gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E_\nu X_i
+      &=T\bar\mu_i-\frac1s\nu Q^{\#}\widetilde\mu_i
+        +O(e^{-csT}/s),\\
+    \operatorname{Cov}_\nu(X_i,X_j)
+      &=T\bar c_{ij}+\frac1s\left\{
+        T\Gamma(\widetilde\mu_i,\widetilde\mu_j)
+        -\nu Q^{\#}\widetilde c_{ij}\right\}
+        +O(s^{-2})+O(e^{-csT}/s).
+    \end{aligned}$$
+    </div>
+    <p>Here $\Gamma(f,g)=-\pi[fQ^{\#}g]-\pi[gQ^{\#}f]$. The covariance-field transient is therefore at the same
+    inverse-rate order as the stationary Green&ndash;Kubo drift term; it vanishes for $\nu=\pi$, but not for a known
+    starting regime. This is a fixed-$T$ expansion, uniform for maturities bounded away from zero, and does not cover
+    $sT=O(1)$.</p>
+    <p>The next boundary coefficient is explicit as well. Put $R=Q^{\#}$ and let products of state fields denote
+    pointwise multiplication. For centered $f,g$, define</p>
+    <div class="equation-card">
+    $$\mathcal B_\nu(f,g)=
+      \nu R\{f(Rg)+g(Rf)\}
+      -\pi\{f(R^2g)+g(R^2f)\}
+      -(\nu Rf)(\nu Rg).$$
+    </div>
+    <p>For the proof, normalize the left eigenvector by $\ell(z){\bf1}=1$ and the right one by
+    $\ell(z)r(z)=1$, so that $P(z){\bf1}=r(z)$. The differentiated eigenvector equations give</p>
+    $$r_f=-Rf,\qquad
+      r_{fg}=R\{f(Rg)+g(Rf)\}
+      -\pi\{f(R^2g)+g(R^2f)\}{\bf1}.$$
+    <p>Since $b_\nu(z)=\log[\nu r(z)]$, its Hessian is exactly $\mathcal B_\nu$. Hence the
+    integrated-field covariance has the sharper expansion</p>
+    $$\operatorname{cum}_\nu(A_T^f,A_T^g)
+      =\frac{T}{s}\Gamma(f,g)+\frac1{s^2}\mathcal B_\nu(f,g)+O(e^{-csT}).$$
+    <p>Even when $\nu=\pi$, the constant boundary term need not vanish: it records the two finite-horizon endpoints,
+    not merely failure to start in equilibrium. This refines the classical linear variance-growth description for
+    continuous-time Markov reward chains studied by
+    <a href="./bibliography.html#VanDijkSladky2006">van Dijk and Sladk&yacute;</a>.</p>
+    <p>The next spectral coefficient is also explicit. Write $(u_1,u_2,u_3)=(a,b,c)$. Differentiating the normalized
+    right eigenvector of the tilted generator twice gives the symmetric third occupation-rate tensor</p>
+    $$\Theta_{abc}=\partial_{abc}\lambda(0)
+      =\sum_{\sigma\in S_3}\pi\!\left[
+      f_{u_{\sigma(1)}}Q^{\#}f_{u_{\sigma(2)}}Q^{\#}f_{u_{\sigma(3)}}\right].$$
+    <p>Products here mean multiplication by the indicated state function. Centering makes every first derivative of
+    $\lambda$ vanish, so no lower-order correction terms appear. More explicitly, if $r(z)$ is the right eigenvector
+    normalized by $\pi r(z)=1$, the first perturbation equation gives
+    $\partial_a r(0)=-Q^{\#}f_a$; projecting the first and second differentiated eigenvector equations onto $\pi$
+    yields the displayed six-permutation sum.</p>
+    <p>Together, $\mathcal B_\nu$ and $\Theta$ give the complete second-order co-skewness and co-kurtosis correction.
+    Let $\mathcal M_n^{(q)}$ denote singleton&ndash;pair partitions with $q$ blocks, and put</p>
+    $$W(\mathcal P,z)=
+      \prod_{\{j\}\in\mathcal P}d\mu^{z(\{j\})}_{i_j}
+      \prod_{\{j,k\}\in\mathcal P}dc^{z(\{j,k\})}_{i_ji_k}.$$
+    <p>Then, for $n=3,4$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \kappa_{i_1\cdots i_n}(X)
+    ={}&\frac{T}{s}\sum_{\mathcal P\in\mathcal M_n^{(2)}}\sum_z
+      \Gamma_{z(B_1)z(B_2)}W(\mathcal P,z)\\
+    &+\frac1{s^2}\left\{
+      \sum_{\mathcal P\in\mathcal M_n^{(2)}}\sum_z
+      \mathcal B_{\nu,z(B_1)z(B_2)}W(\mathcal P,z)
+      +T\sum_{\mathcal P\in\mathcal M_n^{(3)}}\sum_z
+      \Theta_{z(B_1)z(B_2)z(B_3)}W(\mathcal P,z)\right\}\\
+    &+O(s^{-3})+O(e^{-csT}).
+    \end{aligned}$$
+    </div>
+    <p>For order three these are the singleton&ndash;pair and all-singleton partitions. For order four they are the two-pair
+    and pair&ndash;singleton&ndash;singleton partitions. The initial law enters only through $\mathcal B_\nu$ at this order.</p>
+    <p>Let $\mathcal M_n^{(3)}$ be the singleton&ndash;pair partitions of $\{1,\ldots,n\}$ having exactly three blocks.
+    The leading fifth- and sixth-order return tensors are therefore, for $n=5,6$,</p>
+    <div class="equation-card">
+    $$\kappa_{i_1\cdots i_n}(X)=\frac{T}{s^2}
+      \sum_{\mathcal P\in\mathcal M_n^{(3)}}\ \sum_{z:\mathcal P\to\{1,\ldots,m-1\}}
+      \Theta_{z(B_1)z(B_2)z(B_3)}
+      \prod_{\{j\}\in\mathcal P}d\mu^{z(\{j\})}_{i_j}
+      \prod_{\{j,k\}\in\mathcal P}dc^{z(\{j,k\})}_{i_ji_k}
+      +O(s^{-3}).$$
+    </div>
+    <p>For order five the 15 partitions have one singleton and two pairs; for order six they are the 15 perfect
+    pairings. Thus leading fifth-order non-Gaussianity requires both mean and covariance switching, whereas leading
+    sixth order can be generated by covariance switching alone. This is again a fixed-generator, fixed-maturity
+    contraction, not a rank statement after mixing maturity-dependent loadings.</p>
+    <p>Choosing the $m-1$ non-reference state indicators as the $f_a$ proves that every mixed finite-state occupation
+    cumulant is $O(s^{1-k})$. Every singleton&ndash;pair partition has at least $\lceil n/2\rceil$ blocks, so the exact
+    colored formula above yields</p>
+    $$\kappa_{i_1\cdots i_n}(X)=O\!\left(s^{1-\lceil n/2\rceil}\right),\qquad n\geq3.$$
+    <p>The bound is generically attained, although symmetry or parameter contractions can cancel its leading
+    coefficient. Thus orders three and four are $O(s^{-1})$, orders five and six are $O(s^{-2})$, and so on.
+    If only covariance switches ($d\mu=0$), every odd cumulant of order at least three vanishes exactly and the even formula reduces to pairings.
+    If only the mean switches ($dc=0$), only the all-singleton partition remains, giving
+    $\kappa_n(A_T)\prod_a d\mu_{i_a}=O(s^{1-n})$.</p>
+    <p>For example, the exact mixed fourth cumulant is</p>
+    $$\begin{aligned}
+    \kappa_{1122}(X)={}&\kappa_2(A_T)(dc_{11}dc_{22}+2dc_{12}^2)\\
+      &+\kappa_3(A_T)(dc_{11}d\mu_2^2+dc_{22}d\mu_1^2+4dc_{12}d\mu_1d\mu_2)\\
+      &+\kappa_4(A_T)d\mu_1^2d\mu_2^2.
+    \end{aligned}$$
+    <p>At fast switching, its leading term is
+    $(2p_0p_1T/r)(dc_{11}dc_{22}+2dc_{12}^2)$; the occupation-skew and occupation-kurtosis
+    pieces begin at orders $r^{-2}$ and $r^{-3}$. Thus covariance switching alone creates an order-$r^{-1}$ excess
+    co-kurtosis even when the regime drifts coincide.</p>
+    <p>For a nonstationary start, the leading covariance correction has an additional initial-layer term:</p>
+    $$\kappa_{ij}(X)=T\bar c_{ij}+\frac{\delta}{r}dc_{ij}
+      +\frac{2p_0p_1T}{r}d\mu_i d\mu_j+O(r^{-2}),$$
+    <p>whereas the leading third-cumulant formula is unchanged, with the initial-law dependence entering at
+    $O(r^{-2})$. Thus one must not apply the stationary covariance rule to a known starting regime.</p>
+
     <h3>Written out for two regimes</h3>
     <p>For the two-state chain $K(f, h) = ab\,\Delta f\,\Delta h/(a + b)^3$, with $\Delta$ the calm value minus the crisis
     value. Every cumulant through third order is then:</p>
@@ -244,14 +563,24 @@
     <p>For the equal-weight portfolio, $\kappa_3 \approx -3.79\times10^{-3}$, half of it from the correlation switch. Its
     skewness over one year is $-0.64$ in the numerical solution. The averaged model is Gaussian, with no skewness at
     all.</p>
+    <p>At the unscaled rates the exact formula instead gives $\kappa_{112}=-3.58034\times10^{-3}$: the
+    mean&ndash;covariance term contributes $-3.20936\times10^{-3}$ and the skewed occupation time contributes
+    $-0.37098\times10^{-3}$. Thus the finite-rate discrepancy is not numerical noise; it is the explicit boundary and
+    occupation-skew correction omitted by the first-order rule.</p>
+    <p>The initial regime is visible at this horizon. Starting certainly calm gives
+    $\kappa_{112}=-2.92476\times10^{-3}$; starting certainly in crisis gives
+    $-3.80148\times10^{-3}$. Both values converge to the same stationary fast-rate law as the initial layer decays.</p>
     <p>The same simulated returns show the asymmetry that the empirical literature measures.</p>
     <p>The correlation of the two
     returns, given that both lie below their means, is $0.563$. Given that both lie above, it is $0.254$. A Gaussian with
     the same overall correlation, $0.612$, gives $0.367$ on both sides.</p>
 
     <h3>Checks for the cumulants</h3>
-    <p>The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
-    two-dimensional FFT of $\Lambda$ on a polydisc of radius $0.05$, with the matrix exponential evaluated at each node. At
+    <p>The closed finite-rate tensor agrees with the independent numerical solution to at most $8.6\times10^{-12}$ over
+    stationary and nonstationary starts and rate multipliers through $m=16$. Occupation-density quadrature independently
+    reproduces all four arbitrary-start cumulants to $1.2\times10^{-16}$, and relabelling the regimes gives a residual below
+    $2\times10^{-19}$. The numerical solution reads the cumulants off the exact generating function by Cauchy&apos;s formula: a
+    two-dimensional FFT of $\Lambda$ on polydiscs of radii $0.05$ through third order and $0.15$ at fourth order, with the matrix exponential evaluated at each node. At
     one point it agrees with the engine&apos;s high-precision ODE solver to $10^{-14}$. Third cumulants in units of
     $10^{-3}$:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th style="text-transform:none">$\kappa_{12}$, averaged</th><th style="text-transform:none">$\kappa_{12}$, numerical</th><th style="text-transform:none">$\kappa_{12}$, rule</th><th style="text-transform:none">$\kappa_{112}$, numerical</th><th style="text-transform:none">$\kappa_{112}$, rule</th><th style="text-transform:none">$\kappa_{122}$, numerical</th><th style="text-transform:none">$\kappa_{122}$, rule</th></tr></thead><tbody>
@@ -264,6 +593,46 @@
     <p>The relative error of the rule falls from $10\%$ with three-month crises to $1.3\%$ at $m = 4$ and $0.3\%$ at
     $m = 16$. Over the last doubling the absolute errors fall at rate 2.06 for the third cumulants and 2.00 for the
     second, as a second-order remainder should.</p>
+    <p>The fourth-order tensor has the same independent check. At $m=1$, the exact
+    $\kappa_{1122}=9.78461\times10^{-4}$, while its leading variance-switching term is
+    $6.75610\times10^{-4}$. By $m=16$ these are $4.43009\times10^{-5}$ and
+    $4.22256\times10^{-5}$. Across all five tensor entries and rate multipliers the closed formula agrees with the
+    matrix-exponential extraction within $8\times10^{-12}$; the error of the leading term falls at rate $1.96$ over the
+    last doubling.</p>
+    <p>An additional certificate checks the all-order partition identity against an independent matrix-exponential
+    extraction through order six. It covers all 100 symmetric bivariate tensor entries of orders two through six under
+    stationary, calm, mixed, and crisis initial laws (including 52 fifth- and sixth-order entries); the maximum absolute
+    discrepancy is $2.4\times10^{-12}$. For the displayed parameters, two stationary higher-order examples are
+    $\kappa_{11112}=-2.29443\times10^{-4}$ and $\kappa_{111222}=2.10610\times10^{-5}$.</p>
+    <p>A separate nonreversible three-state certificate computes the mixed cumulants of two reference-state occupation
+    coordinates by a two-dimensional Cauchy transform of the tilted generator. Across stationary, deterministic, and
+    mixed initial laws, all 54 symmetric bivariate return-tensor entries of orders two through five agree with a direct
+    return-CGF extraction within $2.8\times10^{-13}$; recomputing all stationary entries with each of the other two
+    reference states leaves at most a $2.4\times10^{-13}$ residual. Its stationary example gives
+    $\kappa_{11122}=-6.09744\times10^{-6}$. This verifies the vector formula, not a closed-form law for general
+    finite-state occupation times.</p>
+    <p>A <a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_fast_rate.py">focused
+    three-state certificate</a> checks the fast-rate theorem independently. For mixed occupation orders two through
+    six, the observed decay exponents at the last rate doubling are $0.983$, $1.968$, $2.961$, $3.939$, and $4.937$;
+    after subtracting $Ts^{1-k}\partial^k\lambda(0)$, the residual exponents are $2.000$, $3.000$, $4.000$, $4.998$,
+    and $5.886$. The corresponding maximum return-tensor magnitudes have exponents $0.987$, $1.005$, $1.954$, and
+    $1.902$ at orders three through six, matching $s^{1-\lceil n/2\rceil}$. The principal-eigenvalue derivatives are obtained by an
+    independent two-dimensional Cauchy transform, and their first derivatives recover the stationary probabilities to
+    numerical precision. The group-inverse $\Gamma$ agrees with the second eigenvalue derivatives within
+    $2.0\times10^{-15}$; the errors of the explicit third- and fourth-order Green&ndash;Kubo tensors decay with exponents
+    $2.014$ and $1.978$, respectively. The group-inverse $\Theta$ agrees with the independently extracted third
+    eigenvalue derivatives within $2.8\times10^{-15}$; the errors of the explicit fifth- and sixth-order leading tensors
+    decay with exponents $2.981$ and $2.989$, matching the $O(s^{-3})$ remainder. For initial laws
+    $(1,0,0)$ and $(0.2,0.3,0.5)$, the exact occupation means also agree with the displayed semigroup identity within
+    $1.3\times10^{-15}$, and the covariance errors after subtracting the arbitrary-start first correction decay with
+    exponent $2.000$. For the state-zero start, the asset-two covariance-field boundary coefficient is
+    $-9.18107\times10^{-3}$, which overwhelms the stationary Green&ndash;Kubo coefficient
+    $+6.40041\times10^{-3}$ and reverses the total first correction to $-2.78066\times10^{-3}$.</p>
+    <p>The same certificate checks the explicit $\mathcal B_\nu$ matrix. At rate multiplier four, the residual after
+    extracting it from the exact occupation covariance is $3.4\times10^{-10}$ for the deterministic start and
+    $6.5\times10^{-11}$ for the mixed start. After subtracting both the $s^{-1}$ and complete $s^{-2}$ terms, the
+    co-skewness errors decay with exponent $3.000$ for both starts; the co-kurtosis exponents are $2.981$ and $2.996$.
+    These are direct return-CGF checks of the full tensor correction, not only of the occupation inputs.</p>
     <p>Monte Carlo with no discretization: given the time spent in crisis the returns are exactly Gaussian with the
     integrated mean and covariance, so only the chain path and one Gaussian pair are drawn, four million times.</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th style="text-transform:none">$m$</th><th>cumulant</th><th>Monte Carlo</th><th>numerical</th><th>rule</th></tr></thead><tbody>
@@ -276,6 +645,8 @@
     </tbody></table></div>
     <p>The third cumulant of the equal-weight portfolio, rule against numerical, in units of $10^{-3}$: $-3.79$ against
     $-3.48$ at $m = 1$, $-0.949$ against $-0.939$ at $m = 4$, and $-0.2371$ against $-0.2367$ at $m = 16$.</p>
+    <p>The same exact tensor gives excess kurtosis $1.030$ for the equal-weight one-year portfolio at $m=1$, falling
+    to $0.278$ at $m=4$ and $0.068$ at $m=16$. This is excess over the Gaussian value, not raw kurtosis.</p>
 
     <h2>Prior art</h2>
     <p>That correlations rise in falling markets is well documented.</p>
@@ -316,6 +687,9 @@
         integrated covariance matrix.</li>
       <li>Under the pricing measure the drift is $r$ in every regime, so the co-skewness of the second part matters for
         allocation, risk and density forecasts, not for prices, unless the regime carries a risk premium.</li>
+      <li>The exact finite-rate cumulant tensor allows any specified initial probability for a two-state chain independent
+        of the Brownian shocks. The displayed Green&ndash;Kubo formulas remain fast-rate approximations outside that exact
+        two-state calculation.</li>
       <li>A chain independent of the price shocks gives an exchange-option smile that is even in log-moneyness. A fast diffusive
         correlation factor whose shocks are correlated with the prices would add a term of order $\sqrt\varepsilon$, odd
         in moneyness, that skews the implied correlation, in the manner of the

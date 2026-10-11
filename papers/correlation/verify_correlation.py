@@ -4,7 +4,8 @@ Two assets; a two-state chain, calm (correlation 0.2) and crisis (correlation 0.
 and back at rate b = 4 (crises last three months on average and occupy a quarter of the time), sped up by m.
 
 Part 1, pricing (volatilities fixed, only the correlation switches):
- 1. the exact law of the time spent in crisis (Bessel density) against its known mean and variance;
+ 1. the exact law of the time spent in crisis (Bessel density) against its first four cumulants, including
+    nonstationary initial laws and regime relabelling;
  2. exchange option: the exact price E[Margrabe(integrated exchange variance)] by quadrature over that law, against
     Lewis's Fourier formula with the matrix-exponential characteristic function, and against chain-path Monte Carlo;
     the first-order rule (Margrabe at the averaged exchange variance plus the volga term) converges at second order;
@@ -12,9 +13,11 @@ Part 1, pricing (volatilities fixed, only the correlation switches):
  3. spread option (S1 - S2 - K)^+ by Gauss-Hermite quadrature at fixed correlation: exact E[C(rho_hat)] against the
     rule C(rho_bar) + (K_rhorho / T) C_rhorho, second-order convergence, Monte Carlo, implied correlations.
 Part 2, physical measure (drifts, volatilities and correlation co-switch; bear regime: low drifts, high correlation):
- 4. second and third cumulants of the log returns from the rule against the exact cumulant generating function
-    (Cauchy formula on exp(t (Q + diag g))), second-order convergence, a cross-check with the engine's ODE solver,
-    and exact-in-law Monte Carlo;
+ 4. exact finite-rate cumulants of every order from singleton/pair partitions and occupation-time cumulants, with
+    orders two through six checked for two states and orders two through five checked for three states against the exact
+    cumulant generating function (Cauchy formula on exp(t (Q + diag g))), the finite-state fast-rate hierarchy checked
+    against principal-eigenvalue derivatives, plus second-order convergence of the Green--Kubo rule, a cross-check with
+    the engine's ODE solver, and exact-in-law Monte Carlo;
  5. the third cumulant of a portfolio, 6 t K(w'mu, w'c w), and the part due to the correlation switch.
 Writes results.json for the page. Ends with PASS or FAIL.
 """
@@ -29,7 +32,16 @@ sys.path.insert(0, os.path.join(HERE, '..', 'general'))
 from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, margrabe, margrabe_greeks, exch_var,
                          margrabe_first_order, implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
-                         cumulants_exact, simulate_returns, cov_entries)
+                         cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
+                         occupation_cumulants, occupation_cumulants_quadrature,
+                         initial_covariance_boundary,
+                         initial_layer_coefficient,
+                         occupation_covariance_rate,
+                         occupation_third_cumulant_rate,
+                         occupation_joint_cumulants_cauchy,
+                         occupation_joint_cumulant_bulk_cauchy,
+                         gaussian_occupation_cumulant,
+                         gaussian_vector_occupation_cumulant)
 
 A, B = 4 / 3, 4.0
 RHO = [0.2, 0.8]
@@ -60,11 +72,55 @@ def main():
         p = pi2(a, b)
         lam = a + b
         var = 2 * p[0] * p[1] / lam * (T - (1 - math.exp(-lam * T)) / lam)
+        oc = occupation_cumulants(T, a, b)
         mv = w @ v
-        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var))
+        third = w @ (v - mv) ** 3
+        fourth = w @ (v - mv) ** 4 - 3 * (w @ (v - mv) ** 2) ** 2
+        e = max(abs(w.sum() - 1), abs(mv - p[1] * T), abs(w @ (v - mv) ** 2 - var),
+                abs(third - oc['k3']), abs(fourth - oc['k4']))
         rows.append(e)
-        print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance {w @ (v-mv)**2:.10f} (want {var:.10f})")
+        print(f"   m={m}: total mass {w.sum():.12f}, mean {mv:.10f} (want {p[1]*T:.10f}), variance "
+              f"{w @ (v-mv)**2:.10f} (want {var:.10f}), third cumulant {third:.10f} (want {oc['k3']:.10f}), "
+              f"fourth {fourth:.10f} (want {oc['k4']:.10f})")
     ok &= max(rows) < 1e-10
+
+    print("1b. nonstationary occupation cumulants and initial layer")
+    nonstationary = []
+    relabel_error = 0.0
+    for m in (1, 4, 16):
+        a, b = m * A, m * B
+        for q in (0.0, 0.1, 0.7, 1.0):
+            oc = occupation_cumulants(T, a, b, q)
+            v, w = occupation_nodes(T, a, b, initial_p1=q)
+            mean = w @ v
+            var_q = w @ (v - mean) ** 2
+            quad = {'k1': mean, 'k2': var_q, 'k3': w @ (v - mean) ** 3,
+                    'k4': w @ (v - mean) ** 4 - 3 * var_q ** 2}
+            quad_error = max(abs(quad[k] - oc[k]) for k in quad)
+            swapped = occupation_cumulants(T, b, a, 1 - q)
+            relabel_error = max(relabel_error, abs(oc['k1'] + swapped['k1'] - T),
+                                abs(oc['k2'] - swapped['k2']), abs(oc['k3'] + swapped['k3']),
+                                abs(oc['k4'] - swapped['k4']))
+            closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO, q)
+            exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO,
+                                    r=0.15, N=24, initial_p1=q)
+            tensor_error = max(abs(closed[k] - exact[k]) for k in exact)
+            nonstationary.append({'m': m, 'initial_p1': q, 'occupation': oc,
+                                  'quadrature_error': quad_error, 'tensor_error': tensor_error,
+                                  'k112': closed['k112']})
+            print(f"   m={m:2d}, q={q:.1f}: occupation error {quad_error:.1e}, tensor error {tensor_error:.1e}, "
+                  f"kappa_112 {closed['k112']:.6e}")
+    frozen = occupation_cumulants(T, 3e-9, 7e-9, 0.8)
+    frozen_target = {'k1': 0.8 * T, 'k2': 0.8 * 0.2 * T ** 2,
+                     'k3': 0.8 * 0.2 * (1 - 2 * 0.8) * T ** 3,
+                     'k4': 0.8 * 0.2 * (1 - 6 * 0.8 * 0.2) * T ** 4}
+    frozen_error = max(abs(frozen[k] - frozen_target[k]) for k in frozen)
+    print(f"   relabelling error {relabel_error:.1e}; near-frozen Bernoulli error {frozen_error:.1e}")
+    ok &= max(row['quadrature_error'] for row in nonstationary) < 1e-10
+    ok &= max(row['tensor_error'] for row in nonstationary) < 1e-10
+    ok &= relabel_error < 1e-13 and frozen_error < 1e-8
+    out['nonstationary'] = {'rows': nonstationary, 'relabel_error': relabel_error,
+                            'frozen_error': frozen_error, 'frozen': frozen}
 
     print("2. exchange option (S1 - q S2)^+")
     out['exchange'] = {'speeds': SPEEDS, 'q': QS, 'rows': []}
@@ -188,21 +244,474 @@ def main():
         a, b = m * A, m * B
         fo = cumulants_first_order(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
         ex = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO)
+        closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
         c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
         p = pi2(a, b)
         avg = {'k11': T * p @ c11, 'k22': T * p @ c22, 'k12': T * p @ c12, 'k111': 0, 'k222': 0, 'k112': 0, 'k122': 0}
+        closed_err = max(abs(closed[k] - ex[k]) for k in keys)
         out['cumulants']['rows'].append({'m': m, 'first': {k: fo[k] for k in keys}, 'exact': {k: ex[k] for k in keys},
+                                         'closed': {k: closed[k] for k in keys}, 'closed_error': closed_err,
+                                         'occupation': closed['occupation'],
                                          'averaged': avg, 'K_mu1_c12': K2(MU1, c12, a, b), 'K_mu2_c11': K2(MU2, c11, a, b),
                                          'K_mu2_c12': K2(MU2, c12, a, b), 'K_mu1_c22': K2(MU1, c22, a, b)})
         e112.append(max(abs(fo[k] - ex[k]) for k in ['k111', 'k222', 'k112', 'k122']))
         e12.append(max(abs(fo[k] - ex[k]) for k in ['k11', 'k22', 'k12']))
         print(f"   m={m:2d}: kappa_112 rule {fo['k112']:.4e} exact {ex['k112']:.4e};  kappa_122 rule {fo['k122']:.4e} "
-              f"exact {ex['k122']:.4e};  kappa_12 rule {fo['k12']:.5f} exact {ex['k12']:.5f}")
+              f"exact {ex['k122']:.4e};  kappa_12 rule {fo['k12']:.5f} exact {ex['k12']:.5f}; closed error {closed_err:.1e}")
+        ok &= closed_err < 2e-11
     r3, r2 = rate(e112), rate(e12)
     print(f"   rates over the last doubling: third cumulants {r3:.2f}, second cumulants {r2:.2f} (want 2)")
     ok &= r3 > 1.8 and r2 > 1.8
     out['cumulants']['rate3'], out['cumulants']['rate2'] = r3, r2
     out['cumulants']['err3'], out['cumulants']['err2'] = e112, e12
+    out['cumulants']['max_closed_error'] = max(row['closed_error'] for row in out['cumulants']['rows'])
+
+    print("4b. exact fourth-cumulant tensor and leading variance-switching term")
+    keys4 = ['k1111', 'k1112', 'k1122', 'k1222', 'k2222']
+    fourth_rows, fourth_errors = [], []
+    c11, c22, c12 = cov_entries(VOL1, VOL2, RHO)
+    dc11, dc22, dc12 = c11[1] - c11[0], c22[1] - c22[0], c12[1] - c12[0]
+    for m in SPEEDS + [16]:
+        a, b = m * A, m * B
+        p = pi2(a, b)
+        lead_scale = 2 * p[0] * p[1] * T / (a + b)
+        lead = {
+            'k1111': 3 * lead_scale * dc11 ** 2,
+            'k1112': 3 * lead_scale * dc11 * dc12,
+            'k1122': lead_scale * (dc11 * dc22 + 2 * dc12 ** 2),
+            'k1222': 3 * lead_scale * dc22 * dc12,
+            'k2222': 3 * lead_scale * dc22 ** 2,
+        }
+        closed = cumulants_two_state_closed(T, a, b, MU1, MU2, VOL1, VOL2, RHO)
+        exact = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO, r=0.15, N=24)
+        closed_error = max(abs(closed[k] - exact[k]) for k in keys4)
+        lead_error = max(abs(closed[k] - lead[k]) for k in keys4)
+        fourth_errors.append(lead_error)
+        fourth_rows.append({'m': m, 'closed': {k: closed[k] for k in keys4},
+                            'matrix_exponential': {k: exact[k] for k in keys4}, 'leading': lead,
+                            'closed_error': closed_error, 'leading_error': lead_error})
+        print(f"   m={m:2d}: kappa_1122 exact {closed['k1122']:.6e}, leading {lead['k1122']:.6e}; "
+              f"tensor error {closed_error:.1e}, leading error {lead_error:.1e}")
+        ok &= closed_error < 1e-10
+    fourth_rate = rate(fourth_errors)
+    print(f"   fourth-cumulant leading-error rate {fourth_rate:.2f} (want 2)")
+    ok &= fourth_rate > 1.8
+    out['fourth_cumulants'] = {'rows': fourth_rows, 'leading_error_rate': fourth_rate,
+                               'max_closed_error': max(row['closed_error'] for row in fourth_rows)}
+
+    print("4c. all-order singleton/pair theorem through sixth order")
+    regime_means = np.array([MU1, MU2]).T
+    regime_covariances = np.array([
+        [[c11[z], c12[z]], [c12[z], c22[z]]] for z in range(2)
+    ])
+    all_order_errors, higher_order_errors = [], []
+    examples = {}
+    for initial_p1 in (None, 0.0, 0.35, 1.0):
+        occupation = occupation_cumulants_quadrature(
+            T, A, B, max_order=6, initial_p1=initial_p1, n=160
+        )
+        matrix = cumulants_exact(
+            T, Q2(A, B), MU1, MU2, VOL1, VOL2, RHO,
+            r=0.35, N=48, initial_p1=initial_p1, max_order=6
+        )
+        for order in range(2, 7):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_occupation_cumulant(
+                    indices, T, regime_means, regime_covariances, occupation
+                )
+                error = abs(partition_value - matrix[key])
+                all_order_errors.append(error)
+                if order >= 5:
+                    higher_order_errors.append(error)
+        if initial_p1 is None:
+            examples = {'k11112': matrix['k11112'],
+                        'k111222': matrix['k111222']}
+    all_order_error = max(all_order_errors)
+    print(f"   100 tensor entries (52 of orders five/six), four initial laws: "
+          f"max error {all_order_error:.1e}")
+    print(f"   stationary examples: kappa_11112 {examples['k11112']:.6e}, "
+          f"kappa_111222 {examples['k111222']:.6e}")
+    ok &= all_order_error < 3e-12
+    out['all_order_cumulants'] = {
+        'orders': [2, 3, 4, 5, 6],
+        'initial_p1': ['stationary', 0.0, 0.35, 1.0],
+        'checked_entries': len(all_order_errors),
+        'checked_higher_entries': len(higher_order_errors),
+        'max_matrix_exponential_error': all_order_error,
+        'examples': examples,
+    }
+
+    print("4d. vector-occupation theorem for a three-state chain")
+    q3 = np.array([[-3.0, 2.0, 1.0],
+                   [1.0, -4.0, 3.0],
+                   [2.0, 1.0, -3.0]])
+    mu1_3 = np.array([0.10, -0.15, 0.03])
+    mu2_3 = np.array([0.05, 0.08, -0.20])
+    vol1_3 = np.array([0.15, 0.28, 0.18])
+    vol2_3 = np.array([0.12, 0.22, 0.30])
+    rho_3 = np.array([0.10, 0.75, -0.35])
+    c11_3, c22_3, c12_3 = cov_entries(vol1_3, vol2_3, rho_3)
+    means_3 = np.column_stack([mu1_3, mu2_3])
+    covariances_3 = np.array([
+        [[c11_3[z], c12_3[z]], [c12_3[z], c22_3[z]]]
+        for z in range(3)
+    ])
+    starts_3 = [None, np.array([1.0, 0.0, 0.0]),
+                np.array([0.2, 0.3, 0.5])]
+    vector_errors, reference_errors, vector_examples = [], [], {}
+    for initial in starts_3:
+        occupation_3 = occupation_joint_cumulants_cauchy(
+            T, q3, max_order=5, r=0.32, N=32, initial=initial
+        )
+        matrix_3 = cumulants_exact(
+            T, q3, mu1_3, mu2_3, vol1_3, vol2_3, rho_3,
+            r=0.32, N=48, max_order=5, initial=initial
+        )
+        for order in range(2, 6):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_vector_occupation_cumulant(
+                    indices, T, means_3[0], covariances_3[0],
+                    means_3[1:] - means_3[0],
+                    covariances_3[1:] - covariances_3[0], occupation_3
+                )
+                vector_errors.append(abs(partition_value - matrix_3[key]))
+        if initial is None:
+            vector_examples['k11122'] = matrix_3['k11122']
+            stationary_matrix_3 = matrix_3
+    for permutation in (np.array([1, 0, 2]), np.array([2, 0, 1])):
+        permuted_q = q3[np.ix_(permutation, permutation)]
+        permuted_means = means_3[permutation]
+        permuted_covariances = covariances_3[permutation]
+        permuted_occupation = occupation_joint_cumulants_cauchy(
+            T, permuted_q, max_order=5, r=0.32, N=32
+        )
+        for order in range(2, 6):
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                partition_value = gaussian_vector_occupation_cumulant(
+                    indices, T, permuted_means[0], permuted_covariances[0],
+                    permuted_means[1:] - permuted_means[0],
+                    permuted_covariances[1:] - permuted_covariances[0],
+                    permuted_occupation
+                )
+                reference_errors.append(
+                    abs(partition_value - stationary_matrix_3[key])
+                )
+    vector_error = max(vector_errors)
+    reference_error = max(reference_errors)
+    print(f"   54 tensor entries through order five, three initial laws: "
+          f"max error {vector_error:.1e}")
+    print(f"   two alternative reference states: max residual "
+          f"{reference_error:.1e}")
+    print(f"   stationary kappa_11122 {vector_examples['k11122']:.6e}")
+    ok &= vector_error < 4e-13 and reference_error < 4e-13
+    out['vector_occupation_cumulants'] = {
+        'states': 3,
+        'orders': [2, 3, 4, 5],
+        'initial_laws': ['stationary', 'state_zero', [0.2, 0.3, 0.5]],
+        'checked_entries': len(vector_errors),
+        'max_matrix_exponential_error': vector_error,
+        'reference_state_checks': len(reference_errors),
+        'max_reference_state_error': reference_error,
+        'examples': vector_examples,
+    }
+
+    print("4e. finite-state fast-rate occupation-cumulant theorem")
+    fast_speeds = [1, 2, 4, 8, 16]
+    bulk_3 = occupation_joint_cumulant_bulk_cauchy(
+        q3, max_order=6, r=0.2, N=32
+    )
+    stationary_3 = np.linalg.solve(
+        np.vstack([q3.T[:-1], np.ones(3)]), np.r_[np.zeros(2), 1.0]
+    )
+    first_derivative_error = max(
+        abs(bulk_3[(color,)] - stationary_3[color + 1])
+        for color in range(2)
+    )
+    covariance_rate_3 = occupation_covariance_rate(q3)
+    second_derivative_error = max(abs(
+        bulk_3[tuple(sorted((a, b)))] - covariance_rate_3[a, b]
+    ) for a in range(2) for b in range(2))
+    third_rate_3 = occupation_third_cumulant_rate(q3)
+    third_derivative_error = max(abs(
+        bulk_3[tuple(sorted((a, b, c)))] - third_rate_3[a, b, c]
+    ) for a in range(2) for b in range(2) for c in range(2))
+    occupation_rows = []
+    magnitude_rates, remainder_rates = {}, {}
+    exact_occupations = {}
+    for speed in fast_speeds:
+        exact_occupations[speed] = occupation_joint_cumulants_cauchy(
+            T, speed * q3, max_order=6, r=0.32, N=32
+        )
+    for order in range(2, 7):
+        order_keys = [key for key in bulk_3 if len(key) == order]
+        magnitudes, remainders = [], []
+        for speed in fast_speeds:
+            exact_occupation = exact_occupations[speed]
+            magnitudes.append(max(abs(exact_occupation[key])
+                                  for key in order_keys))
+            remainders.append(max(abs(
+                exact_occupation[key]
+                - T * speed ** (1 - order) * bulk_3[key]
+            ) for key in order_keys))
+        magnitude_rates[order] = rate(magnitudes)
+        remainder_rates[order] = rate(remainders)
+        occupation_rows.append({
+            'order': order, 'magnitudes': magnitudes,
+            'bulk_remainders': remainders,
+            'magnitude_rate': magnitude_rates[order],
+            'bulk_remainder_rate': remainder_rates[order],
+        })
+        print(f"   occupation order {order}: magnitude rate "
+              f"{magnitude_rates[order]:.3f} (want {order - 1}), "
+              f"bulk-remainder rate {remainder_rates[order]:.3f} "
+              f"(want {order})")
+    return_rates = {}
+    return_rows = []
+    for speed in fast_speeds:
+        tensor = cumulants_exact(
+            T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3, rho_3,
+            r=0.32, N=48, max_order=6
+        )
+        return_rows.append({'m': speed, 'tensor': tensor})
+    for order in range(3, 7):
+        order_keys = [
+            'k' + '1' * (order - number_of_twos) + '2' * number_of_twos
+            for number_of_twos in range(order + 1)
+        ]
+        magnitudes = [max(abs(row['tensor'][key]) for key in order_keys)
+                      for row in return_rows]
+        return_rates[order] = rate(magnitudes)
+        print(f"   return order {order}: magnitude rate "
+              f"{return_rates[order]:.3f} "
+              f"(want {math.ceil(order / 2) - 1})")
+    leading_occupation = {
+        tuple(sorted((a, b))): covariance_rate_3[a, b]
+        for a in range(2) for b in range(2)
+    }
+    for order in range(3, 5):
+        for colors in np.ndindex(*(2,) * order):
+            leading_occupation[tuple(sorted(colors))] = 0.0
+    leading_error_rates = {}
+    green_kubo_leading = {}
+    for order in (3, 4):
+        leading = {}
+        for number_of_twos in range(order + 1):
+            indices = ((0,) * (order - number_of_twos)
+                       + (1,) * number_of_twos)
+            key = ('k' + '1' * (order - number_of_twos)
+                   + '2' * number_of_twos)
+            leading[key] = gaussian_vector_occupation_cumulant(
+                indices, T, means_3[0], covariances_3[0],
+                means_3[1:] - means_3[0],
+                covariances_3[1:] - covariances_3[0], leading_occupation
+            )
+        green_kubo_leading[order] = leading
+        errors = [max(abs(row['tensor'][key] - leading[key] / row['m'])
+                      for key in leading) for row in return_rows]
+        leading_error_rates[order] = rate(errors)
+        print(f"   return order {order}: Green--Kubo leading-error rate "
+              f"{leading_error_rates[order]:.3f} (want 2)")
+    third_spectral_leading_error_rates = {}
+    third_leading_occupation = {}
+    for occupation_order in range(1, 7):
+        for colors in np.ndindex(*(2,) * occupation_order):
+            key = tuple(sorted(colors))
+            third_leading_occupation[key] = (
+                T * third_rate_3[key] if occupation_order == 3 else 0.0
+            )
+    for order in (5, 6):
+        leading = {}
+        for number_of_twos in range(order + 1):
+            indices = ((0,) * (order - number_of_twos)
+                       + (1,) * number_of_twos)
+            key = ('k' + '1' * (order - number_of_twos)
+                   + '2' * number_of_twos)
+            leading[key] = gaussian_vector_occupation_cumulant(
+                indices, T, means_3[0], covariances_3[0],
+                means_3[1:] - means_3[0],
+                covariances_3[1:] - covariances_3[0],
+                third_leading_occupation
+            )
+        errors = [max(abs(
+            row['tensor'][key] - leading[key] / row['m'] ** 2
+        ) for key in leading) for row in return_rows]
+        third_spectral_leading_error_rates[order] = rate(errors)
+        print(f"   return order {order}: third-spectral leading-error rate "
+              f"{third_spectral_leading_error_rates[order]:.3f} (want 3)")
+    projection_3 = np.outer(np.ones(3), stationary_3)
+    group_inverse_3 = np.linalg.inv(q3 - projection_3) + projection_3
+    mean_contrasts_3 = means_3[1:] - means_3[0]
+    mean_covariance_rate_3 = (
+        mean_contrasts_3.T @ covariance_rate_3 @ mean_contrasts_3
+    )
+    stationary_covariance_3 = np.tensordot(
+        stationary_3, covariances_3, axes=(0, 0)
+    )
+    initial_layer_rows = []
+    for label, initial in (
+        ('state_zero', np.array([1.0, 0.0, 0.0])),
+        ('mixed', np.array([0.2, 0.3, 0.5])),
+    ):
+        occupation_boundary = initial_layer_coefficient(
+            q3, np.eye(3), initial
+        )
+        covariance_boundary = initial_layer_coefficient(
+            q3, covariances_3, initial
+        )
+        occupation_covariance_boundary = initial_covariance_boundary(
+            q3, np.eye(3)[:, 1:], initial
+        )
+        semigroup_errors, covariance_errors = [], []
+        occupation_boundary_errors, initial_tensors = [], []
+        for speed in fast_speeds:
+            occupation = occupation_joint_cumulants_cauchy(
+                T, speed * q3, max_order=2, r=0.32, N=32,
+                initial=initial
+            )
+            exact_occupation_mean = np.array([
+                T - occupation[(0,)] - occupation[(1,)],
+                occupation[(0,)], occupation[(1,)]
+            ])
+            semigroup_mean = (
+                T * stationary_3 + occupation_boundary / speed
+                + initial @ expm(speed * T * q3) @ group_inverse_3 / speed
+            )
+            semigroup_errors.append(float(np.max(np.abs(
+                exact_occupation_mean - semigroup_mean
+            ))))
+            exact_occupation_covariance = np.array([
+                [occupation[(0, 0)], occupation[(0, 1)]],
+                [occupation[(0, 1)], occupation[(1, 1)]]
+            ])
+            occupation_boundary_errors.append(float(np.max(np.abs(
+                speed ** 2 * (
+                    exact_occupation_covariance
+                    - T * covariance_rate_3 / speed
+                ) - occupation_covariance_boundary
+            ))))
+            tensor = cumulants_exact(
+                T, speed * q3, mu1_3, mu2_3, vol1_3, vol2_3,
+                rho_3, r=0.32, N=48, max_order=4, initial=initial
+            )
+            initial_tensors.append(tensor)
+            exact_covariance = np.array([
+                [tensor['k11'], tensor['k12']],
+                [tensor['k12'], tensor['k22']]
+            ])
+            first_order_covariance = (
+                T * stationary_covariance_3
+                + (covariance_boundary + T * mean_covariance_rate_3)
+                / speed
+            )
+            covariance_errors.append(float(np.max(np.abs(
+                exact_covariance - first_order_covariance
+            ))))
+        covariance_remainder_rate = rate(covariance_errors)
+        total_first_coefficient = (
+            covariance_boundary + T * mean_covariance_rate_3
+        )
+        second_occupation = {}
+        for occupation_order in range(1, 5):
+            for colors in np.ndindex(*(2,) * occupation_order):
+                key = tuple(sorted(colors))
+                if occupation_order == 2:
+                    second_occupation[key] = (
+                        occupation_covariance_boundary[key]
+                    )
+                elif occupation_order == 3:
+                    second_occupation[key] = T * third_rate_3[key]
+                else:
+                    second_occupation[key] = 0.0
+        second_order_return_rates = {}
+        second_order_return_coefficients = {}
+        for order in (3, 4):
+            second = {}
+            for number_of_twos in range(order + 1):
+                indices = ((0,) * (order - number_of_twos)
+                           + (1,) * number_of_twos)
+                key = ('k' + '1' * (order - number_of_twos)
+                       + '2' * number_of_twos)
+                second[key] = gaussian_vector_occupation_cumulant(
+                    indices, T, means_3[0], covariances_3[0],
+                    means_3[1:] - means_3[0],
+                    covariances_3[1:] - covariances_3[0],
+                    second_occupation
+                )
+            errors = [max(abs(
+                tensor[key] - green_kubo_leading[order][key] / speed
+                - second[key] / speed ** 2
+            ) for key in second)
+                for speed, tensor in zip(fast_speeds, initial_tensors)]
+            second_order_return_rates[order] = rate(errors)
+            second_order_return_coefficients[order] = second
+        initial_layer_rows.append({
+            'label': label,
+            'initial': initial.tolist(),
+            'occupation_semigroup_error': max(semigroup_errors),
+            'covariance_boundary': covariance_boundary.tolist(),
+            'green_kubo_mean_rate':
+                (T * mean_covariance_rate_3).tolist(),
+            'total_first_covariance_coefficient':
+                total_first_coefficient.tolist(),
+            'covariance_errors': covariance_errors,
+            'covariance_remainder_rate': covariance_remainder_rate,
+            'occupation_covariance_boundary':
+                occupation_covariance_boundary.tolist(),
+            'occupation_second_boundary_error_at_speed_4':
+                occupation_boundary_errors[2],
+            'second_order_return_error_rates': second_order_return_rates,
+            'second_order_return_coefficients':
+                second_order_return_coefficients,
+        })
+        print(f"   initial layer {label}: occupation error "
+              f"{max(semigroup_errors):.2e}, covariance remainder rate "
+              f"{covariance_remainder_rate:.3f} (want 2)")
+        print(f"     second boundary at speed 4: occupation error "
+              f"{occupation_boundary_errors[2]:.2e}; return rates "
+              f"order 3 {second_order_return_rates[3]:.3f}, "
+              f"order 4 {second_order_return_rates[4]:.3f} (want 3)")
+        ok &= max(semigroup_errors) < 3e-13
+        ok &= occupation_boundary_errors[2] < 1e-8
+        ok &= covariance_remainder_rate > 1.95
+        ok &= all(second_order_return_rates[order] > 2.9
+                  for order in (3, 4))
+    ok &= first_derivative_error < 2e-13
+    ok &= second_derivative_error < 2e-13
+    ok &= third_derivative_error < 2e-13
+    ok &= all(magnitude_rates[order] > order - 1.1
+              for order in range(2, 7))
+    ok &= all(remainder_rates[order] > order - 0.15
+              for order in range(2, 7))
+    ok &= all(return_rates[order] > math.ceil(order / 2) - 1.1
+              for order in range(3, 7))
+    ok &= all(leading_error_rates[order] > 1.9 for order in (3, 4))
+    ok &= all(third_spectral_leading_error_rates[order] > 2.85
+              for order in (5, 6))
+    out['finite_state_fast_rate'] = {
+        'speeds': fast_speeds,
+        'first_derivative_error': first_derivative_error,
+        'group_inverse_second_derivative_error': second_derivative_error,
+        'group_inverse_third_derivative_error': third_derivative_error,
+        'occupation_rows': occupation_rows,
+        'return_rates': return_rates,
+        'green_kubo_leading_error_rates': leading_error_rates,
+        'third_spectral_leading_error_rates':
+            third_spectral_leading_error_rates,
+        'initial_layer_rows': initial_layer_rows,
+    }
+
     # cross-check of the exact generating function with the engine's high-precision ODE solver
     from fastswitch import numerical_a, ExpSum
     th1, th2 = 0.7, -0.4
@@ -255,11 +764,15 @@ def main():
         ex = cumulants_exact(T, Q2(a, b), MU1, MU2, VOL1, VOL2, RHO)
         exact = (w_[0] ** 3 * ex['k111'] + 3 * w_[0] ** 2 * w_[1] * ex['k112'] + 3 * w_[0] * w_[1] ** 2 * ex['k122']
                  + w_[1] ** 3 * ex['k222'])
+        exact4 = (w_[0] ** 4 * ex['k1111'] + 4 * w_[0] ** 3 * w_[1] * ex['k1112']
+                  + 6 * w_[0] ** 2 * w_[1] ** 2 * ex['k1122']
+                  + 4 * w_[0] * w_[1] ** 3 * ex['k1222'] + w_[1] ** 4 * ex['k2222'])
         var = w_[0] ** 2 * ex['k11'] + 2 * w_[0] * w_[1] * ex['k12'] + w_[1] ** 2 * ex['k22']
         prow.append({'m': m, 'rule': rule, 'exact': exact, 'corr_part': corr_part, 'skew_exact': exact / var ** 1.5,
-                     'skew_rule': rule / var ** 1.5})
+                     'skew_rule': rule / var ** 1.5, 'fourth_exact': exact4,
+                     'excess_kurtosis_exact': exact4 / var ** 2})
         print(f"   m={m:2d}: kappa_3 rule {rule:.4e}, exact {exact:.4e}; part from the correlation switch {corr_part:.4e}; "
-              f"skewness {exact/var**1.5:.3f}")
+              f"skewness {exact/var**1.5:.3f}; excess kurtosis {exact4/var**2:.3f}")
     ok &= abs(prow[-1]['rule'] - prow[-1]['exact']) < 0.01 * abs(prow[-1]['exact'])
     out['portfolio'] = prow
 
