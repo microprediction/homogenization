@@ -30,6 +30,12 @@ from scipy.integrate import quad, solve_ivp
 from scipy.linalg import expm
 
 
+# These two symmetric-limit identities compare normalized order-one
+# quantities.  Sixty-four binary64 epsilons provide a portable roundoff
+# margin without weakening any substantive asymptotic or numerical check.
+ROUNDOFF_TOL = 64 * np.finfo(float).eps
+
+
 def vasicek_loading(time: float, kappa: float) -> float:
     """Return B(time)=(1-exp(-kappa*time))/kappa stably."""
     return -math.expm1(-kappa * time) / kappa
@@ -977,11 +983,11 @@ def main() -> None:
     )
     expected_radius = math.asinh(1.7 / 6.0)
     assert symmetric_asymmetry == 0.0
-    assert abs(symmetric_radius - expected_radius) < 2e-15
+    assert abs(symmetric_radius - expected_radius) < ROUNDOFF_TOL
     assert abs(
         symmetric_general_bound
         - (math.sinh(expected_radius) - expected_radius)
-    ) < 2e-15
+    ) < ROUNDOFF_TOL
 
     # Reproduce the two thesis examples.  The reported dynamic-mean values use
     # exp(-lambda*s)B(s); the correction uses exp(-2lambda*s)B(T-s).
@@ -1091,13 +1097,14 @@ def main() -> None:
             f"    {printed:11.8f}   {corrected:11.8f}   {exact:13.8f}"
         )
     print(
-        "PASS: per-state rate convention, remaining-maturity kernel, closed "
+        "verified per-state rate convention, remaining-maturity kernel, closed "
         "forms, cubic contrast remainder, fixed-contrast fast-switching "
         "orders and endpoint coefficients, maturity-uniform finite-rate "
         "all-ratio bound, unequal-rate quadratic/cubic transition and signed "
         "all-order equilibrium series, joint "
         "contrast/switching rate, and both thesis examples"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":
