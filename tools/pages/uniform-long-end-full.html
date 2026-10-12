@@ -224,6 +224,10 @@
       \int_0^T\{\bar g(t)-\bar g_\infty\}\,dt+
       {1\over m}\int_0^T\{k(t)-k_\infty\}\,dt$$
     $$\sup_{T\geq0}|\log(\pi u_m(T))-C_m(T)|\leq {C\over m^2}.$$
+    <p>For every fixed regime prior $\nu$, the same scalar composite with the instantaneous Perron endpoint factor
+    satisfies</p>
+    $$\sup_{T\geq0}|\log(\nu u_m(T))-C_m(T)-\log\{\nu r_m(T)\}|
+      \leq {C_\nu\over m^2}.$$
     </div>
     <p>This is a theorem for every fixed finite irreducible generator, including defective ones; it is not merely
     a fixed-maturity expansion. It keeps the exact limiting Perron root, so no omitted constant-forcing eigenvalue
@@ -237,7 +241,8 @@
     $Cm^{-2}\|D(t)-D_\infty\|$. In the gauge $\pi r_m=1$, one has
     $r_m'=O(m^{-1}\|D'\|)$ and $\ell_m-\pi=O(m^{-1})$, hence</p>
     $$|\gamma_m|=|(\ell_m-\pi)^\top r_m'|\leq {C\over m^2}\|D'(t)\|.$$
-    <p>Integrating these two estimates and applying the moving-projection theorem proves the displayed uniform
+    <p>Integrating these two estimates and applying the stationary part of the moving-projection theorem proves the
+    first bound. Combining the same estimate for $L_m-C_m$ with its arbitrary-prior part proves the endpoint-corrected
     bound. The assumptions are important: without an integrable approach to $D_\infty$, a transient second-order
     coefficient can itself accumulate.</p>
 
@@ -247,18 +252,20 @@
     through $T=\max(20,m^2)$ and evaluates both transient integrals in $C_m$ analytically.</p>
     <div class="table-wrap">
     <table class="impl">
-      <thead><tr><th style="text-transform:none">$m$</th><th>maximum log error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <thead><tr><th style="text-transform:none">$m$</th><th>stationary error</th><th style="text-transform:none">$m^2\times$error</th><th>largest pure-start error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
       <tbody>
-        <tr><td>4</td><td>8.3411e-4</td><td>0.013346</td></tr>
-        <tr><td>8</td><td>1.9578e-4</td><td>0.012530</td></tr>
-        <tr><td>16</td><td>4.6889e-5</td><td>0.012003</td></tr>
-        <tr><td>32</td><td>1.1430e-5</td><td>0.011704</td></tr>
-        <tr><td>64</td><td>2.8186e-6</td><td>0.011545</td></tr>
+        <tr><td>4</td><td>8.3411e-4</td><td>0.013346</td><td>7.8324e-3</td><td>0.125318</td></tr>
+        <tr><td>8</td><td>1.9578e-4</td><td>0.012530</td><td>2.3179e-3</td><td>0.148349</td></tr>
+        <tr><td>16</td><td>4.6889e-5</td><td>0.012003</td><td>6.4790e-4</td><td>0.165862</td></tr>
+        <tr><td>32</td><td>1.1430e-5</td><td>0.011704</td><td>1.7417e-4</td><td>0.178350</td></tr>
+        <tr><td>64</td><td>2.8186e-6</td><td>0.011545</td><td>4.5166e-5</td><td>0.184999</td></tr>
       </tbody>
     </table>
     </div>
-    <p>The final observed order is $2.0198$. This independently certifies the simpler composite, rather than
-    evaluating the moving-eigenvector formula that proves it.</p>
+    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts controls every fixed
+    mixture because the ratio of two positive mixtures lies between the componentwise ratios. This independently
+    certifies the simpler composite and its endpoint factor, rather than evaluating the moving-eigenvector formula
+    that proves them.</p>
 
     <h3>Nonzero near-end forcing: the sharp loss without a slip</h3>
     <p>The same transport formula remains uniformly useful when $D(0)\ne0$, but its initial slow projection must be

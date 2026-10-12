@@ -85,26 +85,32 @@
       \int_0^T\{\bar g(t)-\bar g_\infty\}\,dt+
       {1\over m}\int_0^T\{k(t)-k_\infty\}\,dt$$
     $$\sup_{T\geq0}|\log(\pi u_m(T))-C_m(T)|\leq {C\over m^2}.$$
+    <p>For every fixed regime prior $\nu$, the same scalar composite with the instantaneous Perron endpoint factor
+    satisfies</p>
+    $$\sup_{T\geq0}|\log(\nu u_m(T))-C_m(T)-\log\{\nu r_m(T)\}|
+      \leq {C_\nu\over m^2}.$$
     </div>
     <p>This is a theorem for every fixed finite irreducible generator, including defective ones; it is not merely
     a fixed-maturity expansion. It keeps the exact limiting Perron root, so no omitted constant-forcing eigenvalue
     coefficient can accumulate with maturity.</p>
-    <p>The assumptions are important: without an integrable approach to $D_\infty$, a transient second-order
-    coefficient can itself accumulate.</p>
+    <p>The prior-dependent statement follows by combining the same comparison of transported exponents with the
+    moving-projection theorem above. The assumptions are important: without an integrable approach to
+    $D_\infty$, a transient second-order coefficient can itself accumulate.</p>
     <p>The certificate uses a defective three-state generator with
     $D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2,-0.4)$. It integrates the normalized exact system
     through $T=\max(20,m^2)$ and evaluates both transient integrals in $C_m$ analytically.</p>
     <div class="table-wrap">
     <table class="impl">
-      <thead><tr><th style="text-transform:none">$m$</th><th>maximum log error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <thead><tr><th style="text-transform:none">$m$</th><th>stationary error</th><th style="text-transform:none">$m^2\times$error</th><th>largest pure-start error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
       <tbody>
-        <tr><td>4</td><td>8.3411e-4</td><td>0.013346</td></tr>
-        <tr><td>16</td><td>4.6889e-5</td><td>0.012003</td></tr>
-        <tr><td>64</td><td>2.8186e-6</td><td>0.011545</td></tr>
+        <tr><td>4</td><td>8.3411e-4</td><td>0.013346</td><td>7.8324e-3</td><td>0.125318</td></tr>
+        <tr><td>16</td><td>4.6889e-5</td><td>0.012003</td><td>6.4790e-4</td><td>0.165862</td></tr>
+        <tr><td>64</td><td>2.8186e-6</td><td>0.011545</td><td>4.5166e-5</td><td>0.184999</td></tr>
       </tbody>
     </table>
     </div>
-    <p>The final observed order is $2.0198$.</p>
+    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts controls every fixed
+    mixture because the ratio of two positive mixtures lies between the componentwise ratios.</p>
 
     <h2>When the fast generator moves</h2>
     <p>The third-order stationary cancellation above uses more than a spectral gap: it uses the fixed invariant

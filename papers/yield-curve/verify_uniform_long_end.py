@@ -491,8 +491,12 @@ def check_limiting_perron_composite() -> None:
     )
 
     print("\nLimiting-Perron composite on a defective three-state chain")
-    print(" m      maximum log error   m^2 error")
+    print(
+        " m      stationary max error   m^2 error"
+        "      specified-start max error   m^2 error"
+    )
     errors = []
+    specified_errors = []
     for m in (2.0, 4.0, 8.0, 16.0, 32.0, 64.0):
         limiting_eigenvalue = dominant_projection(
             m * Q + limiting_matrix
@@ -537,16 +541,48 @@ def check_limiting_perron_composite() -> None:
             + covariance_transient / m
         )
         error = float(np.max(np.abs(answer.y[2] - approximation)))
+        specified_error = 0.0
+        for index, time in enumerate(times):
+            normalized = np.r_[
+                answer.y[:2, index],
+                3.0 - answer.y[0, index] - answer.y[1, index],
+            ]
+            right_at_time = moving_spectral_data(
+                m, float(time), limiting_forcing
+            )[2]
+            # Pure starts are the extremal priors.  Positivity then bounds
+            # every fixed mixture between their componentwise ratios.
+            for state_index in range(3):
+                exact = answer.y[2, index] + np.log(
+                    normalized[state_index]
+                )
+                endpoint_corrected = approximation[index] + np.log(
+                    right_at_time[state_index]
+                )
+                specified_error = max(
+                    specified_error,
+                    abs(exact - endpoint_corrected),
+                )
         errors.append(error)
-        print(f"{m:3.0f}      {error:18.10e}   {m*m*error:12.8f}")
+        specified_errors.append(specified_error)
+        print(
+            f"{m:3.0f}      {error:18.10e}   {m*m*error:12.8f}"
+            f"      {specified_error:18.10e}"
+            f"   {m*m*specified_error:12.8f}"
+        )
 
     rates = np.log2(
         np.asarray(errors[:-1]) / np.asarray(errors[1:])
     )
     assert rates[-1] > 1.95
+    specified_rates = np.log2(
+        np.asarray(specified_errors[:-1])
+        / np.asarray(specified_errors[1:])
+    )
+    assert specified_rates[-1] > 1.9
     print(
-        "limiting-Perron composite residual rate: "
-        f"{rates[-1]:.6f}"
+        "limiting-Perron composite residual rates (stationary, specified): "
+        f"{rates[-1]:.6f}, {specified_rates[-1]:.6f}"
     )
 
 
