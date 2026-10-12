@@ -129,7 +129,8 @@
     case.</p>
     <p>This smile is known. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>
     derive it for a fast ergodic volatility driver whose integrated fluctuations obey a central limit theorem, as
-    a finite-state chain does. Stationarity and ergodicity alone are not enough:
+    a finite-state chain does.</p>
+    <p>Stationarity and ergodicity alone are not enough:
     <a href="./mixing-scale.html">the covariance tail sets the correction scale</a>.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
     Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order.</p>
@@ -186,11 +187,25 @@
     </ul>
     <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more.</p>
     <p>Which name defaults first
-    is a race under a shared driver, and two names already suffice for its law to reveal the asymmetry of $K$,
-    provided the chain has at least three states and is not reversible. Races of this kind are studied on the
+    is a race under a shared driver, and two names can reveal time asymmetry when their hazards have a nonzero
+    pairing with the exact reversal witness below. Nonreversibility of a chain alone is not sufficient. Races of this kind are studied on the
     <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>
     <p>For two names, starting from the stationary law, the probability that name 1 defaults first is</p>
     $$p_1 = \pi^{\top}\big(\operatorname{diag}(h_1 + h_2) - Q\big)^{-1}h_1 .$$
+    <p>There is an exact finite-rate characterization. For total hazard $d=\sum_rh_r$, put
+      $R=(\operatorname{diag}d-Q)^{-1}$, let $Q^*$ be stationary time reversal, and put
+      $R^*=(\operatorname{diag}d-Q^*)^{-1}$. Then</p>
+    <div class="equation-card">
+    $$p_r(Q)-p_r(Q^*)=\langle w_d,h_r\rangle_\pi,
+      \qquad w_d=(R^*-R)\mathbf1.$$
+    </div>
+    <p>Taking adjoints proves the identity and gives $\langle w_d,\mathbf1\rangle_\pi=0$.
+      Since $Rd=R^*d=\mathbf1$, it also gives $\langle w_d,d\rangle_\pi=0$.</p>
+    <p>Thus, for a fixed total hazard, the invisible allocations form exactly the nullspace
+      $\langle w_d,h_r\rangle_\pi=0$, a hyperplane unless $w_d=0$. Every hazard affine in $d$ is blind, and the
+      causewise gaps always sum to zero.</p>
+    <p>If $d$ is constant then $w_d=0$, so every allocation is blind even for a nonreversible chain.
+      With nonconstant $d$ and four or more regimes there are generally non-affine blind allocations too.</p>
     <p>Expanding the resolvent for a fast chain, with $\bar h = \bar h_1 + \bar h_2$,</p>
     $$p_1 = \frac{\bar h_1}{\bar h} + \frac{1}{\bar h}\Big(\frac{\bar h_1}{\bar h}\sum_{j,k}K_{jk} - K_{11} - K_{21}\Big)
       + O(\varepsilon^2) .$$
@@ -201,7 +216,7 @@
       and $h_2 = (0.01, 0.07, 0.01)$, and the generator multiplied by 10. Name 1 defaults first with probability
       0.500150 with the cycle one way and 0.499850 the other way. Every single-name and joint survival probability
       is the same for both directions.</p>
-    <p>With three or more causes, however, one unweighted race sees only the row sums of the antisymmetric matrix
+    <p>At first order, with three or more causes, one unweighted race sees only the row sums of the antisymmetric matrix
       and can miss a nonzero cyclic current completely. The <a href="./credit-geometry.html">joint-default note</a>
       proves that varying positive cause exposures recovers the full antisymmetric matrix and gives an exact
       three-cause counterexample to identification from one unweighted race.</p>
@@ -252,5 +267,6 @@
       <li>When the payoff depends on the regime at expiry, an <a href="./layers.html">initial layer</a> enters at
         order zero, as on the <a href="./bond-options.html">bond options</a> page.</li>
     </ul>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">verify_general.py</a>.</p>
+    <p class="muted">Certificates: <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">effective-generator checks</a> and
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_exact_reversal_witness.py">exact reversal witness</a>.</p>
   </main>
