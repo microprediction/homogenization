@@ -467,6 +467,89 @@ def check_general_time_dependent_forcing() -> None:
     )
 
 
+def check_limiting_perron_composite() -> None:
+    """Uniform limiting-Perron/Green--Kubo composite for a finite chain.
+
+    This is the simpler formula used on the yield-curve page: retain the
+    exact Perron root only at the limiting forcing, and use the first two
+    instantaneous eigenvalue coefficients for the integrable transient.
+    The moving-projection theorem implies a uniform O(m^-2) remainder.
+    """
+    Q = defective_generator()
+    pi = np.ones(3) / 3
+    one = np.ones(3)
+    limiting_forcing = np.array([-0.6, -0.2, -0.4])
+    limiting_matrix = np.diag(limiting_forcing)
+    stationary_projection = np.outer(one, pi)
+    group_inverse = (
+        np.linalg.inv(Q - stationary_projection) + stationary_projection
+    )
+    forcing_mean = float(pi @ limiting_forcing)
+    centered = limiting_forcing - forcing_mean
+    green_kubo = float(
+        -pi @ (centered * (group_inverse @ centered))
+    )
+
+    print("\nLimiting-Perron composite on a defective three-state chain")
+    print(" m      maximum log error   m^2 error")
+    errors = []
+    for m in (2.0, 4.0, 8.0, 16.0, 32.0, 64.0):
+        limiting_eigenvalue = dominant_projection(
+            m * Q + limiting_matrix
+        )[0]
+        horizon = max(20.0, m**2)
+        times = np.unique(
+            np.r_[np.linspace(0.0, min(20.0, horizon), 401), m, horizon]
+        )
+
+        def rhs(time: float, state: np.ndarray) -> np.ndarray:
+            normalized = np.r_[
+                state[:2], 3.0 - state[0] - state[1]
+            ]
+            alpha = -np.expm1(-time)
+            matrix = m * Q + np.diag(alpha * limiting_forcing)
+            log_derivative = float(pi @ matrix @ normalized)
+            normalized_derivative = (
+                matrix @ normalized - log_derivative * normalized
+            )
+            return np.r_[normalized_derivative[:2], log_derivative]
+
+        answer = solve_ivp(
+            rhs,
+            (0.0, horizon),
+            np.array([1.0, 1.0, 0.0]),
+            t_eval=times,
+            method="Radau",
+            rtol=2e-10,
+            atol=2e-12,
+        )
+        assert answer.success
+
+        # Here D(t)=(1-e^-t)D_inf, so both transient integrals are exact.
+        mean_transient = -forcing_mean * (1.0 - np.exp(-times))
+        covariance_transient = green_kubo * (
+            -2.0 * (1.0 - np.exp(-times))
+            + 0.5 * (1.0 - np.exp(-2.0 * times))
+        )
+        approximation = (
+            limiting_eigenvalue * times
+            + mean_transient
+            + covariance_transient / m
+        )
+        error = float(np.max(np.abs(answer.y[2] - approximation)))
+        errors.append(error)
+        print(f"{m:3.0f}      {error:18.10e}   {m*m*error:12.8f}")
+
+    rates = np.log2(
+        np.asarray(errors[:-1]) / np.asarray(errors[1:])
+    )
+    assert rates[-1] > 1.95
+    print(
+        "limiting-Perron composite residual rate: "
+        f"{rates[-1]:.6f}"
+    )
+
+
 def check_nonzero_initial_forcing() -> None:
     """Uniform orders when the slow eigenspace is mismatched at time zero."""
     Q = defective_generator()
@@ -3775,6 +3858,7 @@ def main() -> None:
     check_constant_projection()
     check_general_constant_forcing()
     check_general_time_dependent_forcing()
+    check_limiting_perron_composite()
     check_nonzero_initial_forcing()
     check_time_dependent_generator()
     check_periodic_forcing()
@@ -3813,6 +3897,7 @@ def main() -> None:
     print("Specified-start boundary-layer bounds: passed")
     print("Defective finite-chain constant-forcing theorem: passed")
     print("Defective finite-chain moving-projection theorem: passed")
+    print("Limiting-Perron finite-chain composite theorem: passed")
     print("Nonzero-endpoint mismatch and frozen-slip orders: passed")
     print("Time-dependent-generator sharp-loss theorem: passed")
     print("Periodic Floquet-phase theorem: passed")

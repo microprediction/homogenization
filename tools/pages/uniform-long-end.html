@@ -210,6 +210,55 @@
     cancellation and retains $O(m^{-2})$. The assumption $D(0)=0$ makes $u_m(0)=r_m(0)=\mathbf1$ exactly; if the
     forcing is already regime-dependent at the near endpoint, an additional decaying initial-slip term is required.</p>
 
+    <h3 id="limiting-perron-corollary">A limiting-Perron corollary</h3>
+    <p>The exact moving eigendata can be replaced by the simpler matched formula used on the yield-curve page.
+    In addition to the hypotheses above, assume that $D(t)\to D_\infty$ and</p>
+    $$\int_0^\infty\{\|D'(t)\|+\|D(t)-D_\infty\|\}\,dt&lt;\infty.$$
+    <p>Write $g(t)=\operatorname{diag}D(t)$, $\bar g(t)=\pi g(t)$,
+    $\widetilde g(t)=g(t)-\bar g(t)\mathbf1$, and let $Q_0^\#$ be the group inverse. Define</p>
+    $$k(t)=-\pi\{\widetilde g(t)\odot Q_0^\#\widetilde g(t)\},$$
+    <p>and let $\Lambda_{m,\infty}$ be the exact principal eigenvalue of $mQ_0+D_\infty$. Then</p>
+    <div class="equation-card">
+    $$C_m(T)=\Lambda_{m,\infty}T+
+      \int_0^T\{\bar g(t)-\bar g_\infty\}\,dt+
+      {1\over m}\int_0^T\{k(t)-k_\infty\}\,dt$$
+    $$\sup_{T\geq0}|\log(\pi u_m(T))-C_m(T)|\leq {C\over m^2}.$$
+    </div>
+    <p>This is a theorem for every fixed finite irreducible generator, including defective ones; it is not merely
+    a fixed-maturity expansion. It keeps the exact limiting Perron root, so no omitted constant-forcing eigenvalue
+    coefficient can accumulate with maturity.</p>
+
+    <h3>Proof of the corollary</h3>
+    <p>Uniform analytic perturbation on the bounded range of $D(t)$ gives</p>
+    $$\lambda_m(t)=\bar g(t)+{k(t)\over m}+{R_m(D(t))\over m^2},$$
+    <p>where $R_m$ is uniformly Lipschitz in $D$ for all sufficiently large $m$. Subtracting the same expansion at
+    $D_\infty$ leaves an integrable remainder bounded by
+    $Cm^{-2}\|D(t)-D_\infty\|$. In the gauge $\pi r_m=1$, one has
+    $r_m'=O(m^{-1}\|D'\|)$ and $\ell_m-\pi=O(m^{-1})$, hence</p>
+    $$|\gamma_m|=|(\ell_m-\pi)^\top r_m'|\leq {C\over m^2}\|D'(t)\|.$$
+    <p>Integrating these two estimates and applying the moving-projection theorem proves the displayed uniform
+    bound. The assumptions are important: without an integrable approach to $D_\infty$, a transient second-order
+    coefficient can itself accumulate.</p>
+
+    <h3>Limiting-Perron certificate</h3>
+    <p>For the defective three-state generator above, take
+    $D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2,-0.4)$. The certificate integrates the normalized exact system
+    through $T=\max(20,m^2)$ and evaluates both transient integrals in $C_m$ analytically.</p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th style="text-transform:none">$m$</th><th>maximum log error</th><th style="text-transform:none">$m^2\times$error</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>8.3411e-4</td><td>0.013346</td></tr>
+        <tr><td>8</td><td>1.9578e-4</td><td>0.012530</td></tr>
+        <tr><td>16</td><td>4.6889e-5</td><td>0.012003</td></tr>
+        <tr><td>32</td><td>1.1430e-5</td><td>0.011704</td></tr>
+        <tr><td>64</td><td>2.8186e-6</td><td>0.011545</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The final observed order is $2.0198$. This independently certifies the simpler composite, rather than
+    evaluating the moving-eigenvector formula that proves it.</p>
+
     <h3>Nonzero near-end forcing: the sharp loss without a slip</h3>
     <p>The same transport formula remains uniformly useful when $D(0)\ne0$, but its initial slow projection must be
     retained. Define</p>
