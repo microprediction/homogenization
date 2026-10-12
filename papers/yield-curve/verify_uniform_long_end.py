@@ -551,7 +551,9 @@ def check_limiting_perron_composite() -> None:
                 m, float(time), limiting_forcing
             )[2]
             # Pure starts are the extremal priors.  Positivity then bounds
-            # every fixed mixture between their componentwise ratios.
+            # every mixture, even one depending on m and T, between their
+            # componentwise ratios.
+            pure_log_errors = []
             for state_index in range(3):
                 exact = answer.y[2, index] + np.log(
                     normalized[state_index]
@@ -559,10 +561,47 @@ def check_limiting_perron_composite() -> None:
                 endpoint_corrected = approximation[index] + np.log(
                     right_at_time[state_index]
                 )
+                pure_log_errors.append(exact - endpoint_corrected)
                 specified_error = max(
                     specified_error,
                     abs(exact - endpoint_corrected),
                 )
+            pure_envelope = max(abs(value) for value in pure_log_errors)
+            varying_prior = np.array(
+                [
+                    1.0 + (index % 3),
+                    2.0 + (int(m) % 5),
+                    3.0 + ((index + int(m)) % 7),
+                ]
+            )
+            varying_prior /= np.sum(varying_prior)
+            mixture_exact = answer.y[2, index] + np.log(
+                varying_prior @ normalized
+            )
+            mixture_approximation = approximation[index] + np.log(
+                varying_prior @ right_at_time
+            )
+            rounding_tolerance = (
+                256.0
+                * np.finfo(float).eps
+                * max(1.0, pure_envelope)
+            )
+            assert (
+                abs(mixture_exact - mixture_approximation)
+                <= pure_envelope + rounding_tolerance
+            )
+            extremal_index = int(np.argmax(np.abs(pure_log_errors)))
+            extremal_prior = np.eye(3)[extremal_index]
+            extremal_exact = answer.y[2, index] + np.log(
+                extremal_prior @ normalized
+            )
+            extremal_approximation = approximation[index] + np.log(
+                extremal_prior @ right_at_time
+            )
+            assert abs(
+                abs(extremal_exact - extremal_approximation)
+                - pure_envelope
+            ) <= rounding_tolerance
         errors.append(error)
         specified_errors.append(specified_error)
         print(
@@ -584,6 +623,7 @@ def check_limiting_perron_composite() -> None:
         "limiting-Perron composite residual rates (stationary, specified): "
         f"{rates[-1]:.6f}, {specified_rates[-1]:.6f}"
     )
+    print("exact pure-start prior-simplex envelope checks: passed")
 
 
 def check_nonzero_initial_forcing() -> None:
@@ -3945,6 +3985,7 @@ def main() -> None:
         "Regime-dependent payoff boundary-layer orders, long-end obstruction, "
         "and exact transported layer: passed"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":

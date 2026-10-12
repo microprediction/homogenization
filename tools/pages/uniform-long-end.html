@@ -64,9 +64,11 @@
     <p><strong>Moving-projection theorem.</strong> Let $u_m'=A_m(t)u_m$ and $u_m(0)=\mathbf1$. There are constants
     $m_0,C&lt;\infty$ such that, for every $m\ge m_0$,</p>
     $$\sup_{T\ge0}\left|\log(\pi u_m(T))-L_m(T)\right|\le \frac{C}{m^3}.$$
-    <p>For any fixed regime prior $\nu$, the endpoint-corrected approximation satisfies</p>
-    $$\sup_{T\ge0}\left|\log(\nu u_m(T))-L_m(T)-\log(\nu r_m(T))\right|
-      \le \frac{C_\nu}{m^2}.$$
+    <p>Writing $\Delta_{d-1}$ for the probability simplex, the endpoint-corrected approximation is uniform over
+    all regime priors, even when the prior depends on $m$ or $T$:</p>
+    $$\sup_{\nu\in\Delta_{d-1}}\sup_{T\ge0}
+      \left|\log(\nu u_m(T))-L_m(T)-\log(\nu r_m(T))\right|
+      \le \frac{C}{m^2}.$$
     </div>
     <p>The connection term is essential for a nonreversible chain: integrating only the instantaneous eigenvalue
     omits transport of the moving slow eigenspace. It is the finite-dimensional spectral transport introduced in
@@ -85,16 +87,18 @@
       \int_0^T\{\bar g(t)-\bar g_\infty\}\,dt+
       {1\over m}\int_0^T\{k(t)-k_\infty\}\,dt$$
     $$\sup_{T\geq0}|\log(\pi u_m(T))-C_m(T)|\leq {C\over m^2}.$$
-    <p>For every fixed regime prior $\nu$, the same scalar composite with the instantaneous Perron endpoint factor
-    satisfies</p>
-    $$\sup_{T\geq0}|\log(\nu u_m(T))-C_m(T)-\log\{\nu r_m(T)\}|
-      \leq {C_\nu\over m^2}.$$
+    <p>The same scalar composite with the instantaneous Perron endpoint factor is uniform over the prior simplex:</p>
+    $$\sup_{\nu\in\Delta_{d-1}}\sup_{T\geq0}
+      |\log(\nu u_m(T))-C_m(T)-\log\{\nu r_m(T)\}|
+      \leq {C\over m^2}.$$
     </div>
     <p>This is a theorem for every fixed finite irreducible generator, including defective ones; it is not merely
     a fixed-maturity expansion. It keeps the exact limiting Perron root, so no omitted constant-forcing eigenvalue
     coefficient can accumulate with maturity.</p>
-    <p>The prior-dependent statement follows by combining the same comparison of transported exponents with the
-    moving-projection theorem above. The assumptions are important: without an integrable approach to
+    <p>For each pure start, the prior-dependent statement follows by combining the same comparison of transported
+    exponents with the moving-projection theorem above. Positivity makes any mixture ratio a convex combination
+    of the pure-start ratios, so at every $m,T$ the largest absolute log error over the simplex equals the largest
+    pure-start error. The assumptions are important: without an integrable approach to
     $D_\infty$, a transient second-order coefficient can itself accumulate.</p>
     <p>The certificate uses a defective three-state generator with
     $D(t)=(1-e^{-t})\operatorname{diag}(-0.6,-0.2,-0.4)$. It integrates the normalized exact system
@@ -109,8 +113,8 @@
       </tbody>
     </table>
     </div>
-    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts controls every fixed
-    mixture because the ratio of two positive mixtures lies between the componentwise ratios.</p>
+    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts exhausts the whole prior
+    simplex: the exact worst prior is one of those starts.</p>
 
     <h2>When the fast generator moves</h2>
     <p>The third-order stationary cancellation above uses more than a spectral gap: it uses the fixed invariant
