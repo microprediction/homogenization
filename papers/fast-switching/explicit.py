@@ -3,7 +3,8 @@
 For a two-state chain switching at rate lam each way, eps = 1/lam, gbar = (g1+g2)/2, gt = (g1-g2)/2 and gt(0) = 0:
     log m(t) = int gbar + (eps/2) int gt^2 - (eps^2/8) gt(t)^2 + O(eps^3)
     omega(t) = (eps/2) gt(t) - (eps^2/4) gt'(t) + O(eps^3),       a_{1,2} = m (1 +/- omega).
-(The initial layer adds (eps^2/4) gt'(0) exp(-2 lam t) to omega, and first enters log m at eps^4.)
+(The initial layer adds (eps^2/4) gt'(0) exp(-2 lam t) to omega.  With that term the displayed second-order
+formula is uniform down to t = 0; the layer first enters log m at eps^4.)
 For constant g the two-state system is solved exactly:
     a_{1,2}(t) = exp((gbar - lam) t) [cosh(s t) + (lam +/- gt) sinh(s t) / s],   s = sqrt(lam^2 + gt^2).
 """

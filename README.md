@@ -41,6 +41,8 @@ papers/fast-switching/
   quantlib_models.py       Merton76, variance gamma and Bates with switched parameters
   explicit.py, bond_option_explicit.py   closed-form terms for the example pages
   verify_g2_coupon_geometry.py  curved G2++ exercise boundary and exact conditional-Gaussian quadrature
+  uniform_layer.py          maturity-uniform two-state composite formulas
+  verify_uniform_layer.py   uniform finite-chain composites for common or arbitrary terminal data, bounds and crossovers
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
@@ -88,6 +90,7 @@ Each certificate runs from its own folder and ends with PASS or FAIL:
 ```
 cd papers/fast-switching
 python3 verify_engine.py
+python3 verify_uniform_layer.py
 python3 verify_models.py
 python3 verify_fast_factor.py
 python3 verify_quantlib_models.py
