@@ -205,6 +205,45 @@
     over the approximated frequency window. This is the matrix-transform form of the two-state occupation problem
     studied by <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
 
+    <h2>Faster switching orders every real constant forcing</h2>
+    <p>Let $Q$ be any irreducible finite-state generator, not necessarily reversible, and let $g$ be real and
+    nonconstant. For switching speed $m&gt;0$, denote the principal eigenvalue of
+    $mQ+\operatorname{diag}g$ by $\Lambda(m)$.</p>
+    <p>The finite-state Feynman&ndash;Kac formula identifies $\Lambda(m)$ as the long-time log growth rate of
+    $\mathbb E_i\exp\{\int_0^Tg(Y_s)ds\}$. The empirical-measure variational principle of
+    <a href="./bibliography.html#DonskerVaradhan1975">Donsker and Varadhan (1975)</a> gives</p>
+    <div class="equation-card">
+    $$\Lambda(m)=\sup_{\mu\in\mathcal P}
+      \{\mu g-mI_Q(\mu)\},\qquad
+      I_Q(\mu)=-\inf_{u&gt;0}\sum_i\mu_i{(Qu)_i\over u_i}\geq0.$$
+    </div>
+    <p>It follows at once that $\Lambda$ is decreasing and convex. If a derivative vanished or a chord were affine,
+    convexity would create a constant or affine interval; Perron analyticity would extend it to all $m&gt;0$,
+    contradicting the unequal endpoint limits.</p>
+    <div class="equation-card">
+    $$\Lambda(0+)=\max_i g_i,\qquad \Lambda(\infty)=\pi g,$$
+    $$\pi g&lt;\Lambda(m)&lt;\max_i g_i,\qquad
+      \Lambda'(m)&lt;0,\qquad
+      \Lambda\text{ is strictly convex},\qquad m&gt;0.$$
+    </div>
+    <p>Thus faster switching reduces the long-time convexity premium at a diminishing rate, without reversibility,
+    diagonalizability or a large-$m$ approximation. If $Q$ is reversible, the same theorem is the elementary
+    Rayleigh&ndash;Ritz identity</p>
+    $$\Lambda(m)=\max_{\pi(f^2)=1}
+      \{\pi(gf^2)-m\mathcal E_Q(f,f)\},\qquad
+      \mathcal E_Q(f,f)=-\pi(fQf).$$
+    <p>The endpoints connect the exact order to the fast-switching expansion. With
+    $\widetilde g=g-(\pi g)\mathbf1$,</p>
+    $$\Lambda(m)=\pi g+{K_g\over m}+O(m^{-2}),\qquad
+      K_g=-\pi\{\widetilde g\,Q^\#\widetilde g\}&gt;0,\qquad m\to\infty.$$
+    <p>If $g$ has a unique maximizing state $i_*$, ordinary perturbation at the other endpoint gives
+    $\Lambda(m)=g_{i_*}+mQ_{i_*i_*}+O(m^2)$ as $m\downarrow0$. The fast remainder is for fixed $Q$ and $g$;
+    the exact inequalities themselves hold for every $m&gt;0$.</p>
+    <p>The certificate checks 24 reversible and 24 nonreversible dense chains. Its largest normalized
+    eigenvalue/similarity discrepancy is $5.412\times10^{-15}$, its largest derivative discrepancy is
+    $1.658\times10^{-8}$, and the worst relative errors in the fast and slow endpoint coefficients are
+    $4.303\times10^{-4}$ and $2.660\times10^{-5}$.</p>
+
     <h2>Fourier inversion is a separate estimate</h2>
     <p>For Lewis inversion, if the exact shifted transform and an approximation differ by at most $E(u)$ on
     $[0,R]$, then stopping the approximate integral at $R$ gives</p>
@@ -241,6 +280,7 @@
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a> and <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, Lewis inversion tail control, and the variance-gamma frequency envelope and polynomial-decay certificate.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_switching_speed_order.py">verify_switching_speed_order.py</a>: exact speed monotonicity and convexity, endpoint coefficients and reversible Rayleigh identities on dense reversible and nonreversible chains.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>
