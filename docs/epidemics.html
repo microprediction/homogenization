@@ -403,8 +403,28 @@
       after taking expectations. The inequalities use only $A_\ell&lt;X_c&lt;A_h$, so they are non-asymptotic and
       uniform over every $c&gt;0$.</p>
     <p>Convex-order concentration also makes $\operatorname{Var}(X_c)$ strictly decrease
-      with speed. These bounds quantify convergence to the fast limit; they do not supply a rate in $c$ until the
-      variance itself is estimated.</p>
+      with speed. A stationary-generator identity supplies the missing rate explicitly.</p>
+    <p>Write $\Delta A=A_h-A_\ell$, $s=\alpha+\delta$, and let $u_h=-\Delta A/(2cs)$ and
+      $u_\ell=\Delta A/(2cs)$. Then the switching generator satisfies
+      $Q_cu=A-\bar A$.</p>
+    <p>Stationarity applied to $y^3$ first gives $\mathbb E(X_cA_Y)=\mathbb E(X_c^2)$. Applying the full stationary
+      generator to $u_YX_c$ then gives the exact identity</p>
+    <div class="equation-card">
+    $$\operatorname{Var}(X_c)
+      =-2\,\mathbb E\{u_Y\sqrt{X_c}(A_Y-X_c)\}.$$
+    </div>
+    <p>In the high state both $A_h-X_c$ and $-u_h$ are positive; in the low state both
+      $X_c-A_\ell$ and $u_\ell$ are positive. Since
+      $\sqrt{A_\ell}&lt;\sqrt{X_c}&lt;\sqrt{A_h}$, the identity yields</p>
+    <div class="equation-card">
+    $$\operatorname{Var}(X_c)\leq
+      \frac{\sqrt{A_h}(\Delta A)^2}{cs},$$
+    $$0&lt;\Lambda_\infty-\Lambda_{\rm as}(c)\leq
+      \frac{\sqrt{A_h}(\Delta A)^2}
+      {2cs\sqrt{\bar A}(\sqrt{A_\ell}+\sqrt{\bar A})^2}.$$
+    </div>
+    <p>The second inequality combines the first with the all-speed tangent bound above. It is uniform for every
+      $c&gt;0$, makes the $O(c^{-1})$ fast-limit error explicit, and does not assert that its constant is sharp.</p>
     <p>After $z=a_\ell+(a_h-a_\ell)t$, the two integrals have Jacobi weights
     $t^{\kappa_\ell}(1-t)^{\kappa_h-1}$ and
     $t^{\kappa_\ell-1}(1-t)^{\kappa_h}$. The certificate therefore evaluates them by Gauss&ndash;Jacobi quadrature,

@@ -109,7 +109,9 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
                 'state_mass': [pi1, 1 - pi1], 'roots': None, 'powers': None,
                 'riccati_square_mean': float(riccati_square),
                 'riccati_square_target': float(riccati_square),
-                'riccati_square_variance': 0.0, 'fast_growth_gap': 0.0,
+                'riccati_square_variance': 0.0, 'riccati_variance_identity': 0.0,
+                'riccati_variance_rate_bound': 0.0, 'fast_growth_gap': 0.0,
+                'fast_growth_rate_bound': 0.0,
                 'jensen_gap_identity': 0.0,
                 'jensen_gap_bounds': [0.0, 0.0]}
 
@@ -150,7 +152,13 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
         entries.append((weights, z, log_smooth))
     scale = max(np.max(entry[2]) for entry in entries)
     masses, moments, square_moments, fourth_moments, gap_moments = [], [], [], [], []
-    for weights, z, log_smooth in entries:
+    generator_moments = []
+    delta_a = sigma * (beta_hi - beta_lo)
+    rate_sum = a + b
+    poisson_values = (-delta_a / (2 * rate_sum), delta_a / (2 * rate_sum))
+    regime_a = ((sigma - gamma) ** 2 / 4 + sigma * beta_hi,
+                (sigma - gamma) ** 2 / 4 + sigma * beta_lo)
+    for state, (weights, z, log_smooth) in enumerate(entries):
         w = weights * np.exp(log_smooth - scale)
         riccati = sigma * z + 0.5 * (sigma - gamma)
         masses.append(float(w.sum()))
@@ -160,6 +168,8 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
         square = riccati ** 2
         gap_moments.append(float(w @ ((square - riccati_square_target) ** 2
                                       / (np.sqrt(square) + root_mean) ** 2)))
+        generator_moments.append(float(w @ (
+            poisson_values[state] * riccati * (regime_a[state] - square))))
     total = sum(masses)
     mean_z = sum(moments) / total
     riccati_square_mean = sum(square_moments) / total
@@ -173,13 +183,20 @@ def seir_beta_lyapunov_two_state(beta1, beta2, sigma, gamma, rate12, rate21=None
     jensen_gap_identity = sum(gap_moments) / total / (2 * root_mean)
     gap_lower = riccati_square_variance / (2 * root_mean * (root_hi + root_mean) ** 2)
     gap_upper = riccati_square_variance / (2 * root_mean * (root_lo + root_mean) ** 2)
+    variance_identity = -2 * sum(generator_moments) / total
+    variance_rate_bound = root_hi * delta_a ** 2 / rate_sum
+    fast_growth_rate_bound = variance_rate_bound / (
+        2 * root_mean * (root_lo + root_mean) ** 2)
     return {'lyapunov': float(sigma * mean_z - gamma), 'mean_z': float(mean_z),
             'state_mass': state_mass, 'roots': [float(alo), float(ahi), float(blo), float(bhi)],
             'powers': [float(klo), float(khi)],
             'riccati_square_mean': float(riccati_square_mean),
             'riccati_square_target': float(riccati_square_target),
             'riccati_square_variance': float(riccati_square_variance),
+            'riccati_variance_identity': float(variance_identity),
+            'riccati_variance_rate_bound': float(variance_rate_bound),
             'fast_growth_gap': float(fast_growth_gap),
+            'fast_growth_rate_bound': float(fast_growth_rate_bound),
             'jensen_gap_identity': float(jensen_gap_identity),
             'jensen_gap_bounds': [float(gap_lower), float(gap_upper)]}
 

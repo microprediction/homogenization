@@ -9,9 +9,10 @@ References, all independent of the expansions:
 Checks:
   1. SIR, beta switched: mean = bbar - gamma + K, almost-sure = bbar - gamma exactly.
   2. SEIR, beta switched: exact projective invariant density and Lyapunov exponent; strict global monotonicity in
-     the common switching-speed scale; an exact Jensen-gap identity and all-speed variance bounds relative to the
-     fast limit; slow- and fast-switching endpoint expansions; no first-order mean correction (second order, closed
-     form); almost-sure growth drops by K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
+     the common switching-speed scale; exact Jensen-gap and stationary-generator identities, all-speed variance
+     bounds, and an explicit finite-rate bound relative to the fast limit; slow- and fast-switching endpoint
+     expansions; no first-order mean correction (second order, closed form); almost-sure growth drops by
+     K (ybar_E xbar_I)^2 = K sigma^2 / D at the fast endpoint.
   3. SEIR, beta and gamma switched on a three-state cycle, forward and reversed: first-order mean and almost-sure
      growth, and the forward-minus-reversed gap against 2 K^anti sigma / sqrt(D).
   4. A three-compartment structured example for the general formulas.
@@ -219,7 +220,10 @@ def main():
         square_errors = np.array([
             item['riccati_square_mean'] - item['riccati_square_target'] for item in exacts])
         variances = np.array([item['riccati_square_variance'] for item in exacts])
+        variance_identities = np.array([item['riccati_variance_identity'] for item in exacts])
+        variance_rate_bounds = np.array([item['riccati_variance_rate_bound'] for item in exacts])
         fast_gaps = np.array([item['fast_growth_gap'] for item in exacts])
+        fast_rate_bounds = np.array([item['fast_growth_rate_bound'] for item in exacts])
         gap_identities = np.array([item['jensen_gap_identity'] for item in exacts])
         gap_lowers = np.array([item['jensen_gap_bounds'][0] for item in exacts])
         gap_uppers = np.array([item['jensen_gap_bounds'][1] for item in exacts])
@@ -235,24 +239,38 @@ def main():
               f"{label} weighted-variance identity equals the fast-limit gap")
         check(np.max(np.diff(variances)) < 0.0,
               f"{label} Riccati-square variance strictly decreases on the speed grid")
+        check(np.max(np.abs(variances - variance_identities)) < 5e-10,
+              f"{label} stationary-generator identity equals the Riccati-square variance")
+        check(np.min(variance_rate_bounds - variances) > -2e-13,
+              f"{label} Riccati-square variance obeys the explicit finite-rate bound")
+        check(np.min(fast_rate_bounds - fast_gaps) > -2e-13,
+              f"{label} fast-limit growth gap obeys the explicit finite-rate bound")
         monotone_rows.append({
             'label': label, 'rate_scales': [rate12_scale, rate21_scale],
             'speeds': monotone_speeds.tolist(), 'lyapunov': values.tolist(),
             'riccati_square_variance': variances.tolist(),
+            'riccati_variance_identity': variance_identities.tolist(),
+            'riccati_variance_rate_bound': variance_rate_bounds.tolist(),
             'fast_growth_gap': fast_gaps.tolist(),
+            'fast_growth_rate_bound': fast_rate_bounds.tolist(),
             'jensen_gap_identity': gap_identities.tolist(),
             'jensen_gap_lower': gap_lowers.tolist(),
             'jensen_gap_upper': gap_uppers.tolist(),
             'minimum_increment': float(np.min(increments)),
             'max_riccati_square_error': float(np.max(np.abs(square_errors))),
             'max_jensen_identity_error': float(np.max(np.abs(fast_gaps - gap_identities))),
+            'max_generator_identity_error': float(np.max(np.abs(variances - variance_identities))),
+            'maximum_variance_rate_ratio': float(np.max(variances / variance_rate_bounds)),
+            'maximum_growth_rate_ratio': float(np.max(fast_gaps / fast_rate_bounds)),
             'minimum_lower_ratio': float(np.min(gap_lowers / fast_gaps)),
             'maximum_upper_ratio': float(np.max(gap_uppers / fast_gaps)),
         })
         print(f"  monotone {label}: minimum grid increment {np.min(increments):.6e}, "
               f"max Riccati-square error {np.max(np.abs(square_errors)):.3e}, "
               f"gap bracket ratios {np.min(gap_lowers / fast_gaps):.3f}--"
-              f"{np.max(gap_uppers / fast_gaps):.3f}")
+              f"{np.max(gap_uppers / fast_gaps):.3f}, finite-rate ratios "
+              f"{np.max(variances / variance_rate_bounds):.3f}/"
+              f"{np.max(fast_gaps / fast_rate_bounds):.3f}")
     out['seir_speed_monotonicity'] = monotone_rows
     out['seir_beta'] = rows
 
