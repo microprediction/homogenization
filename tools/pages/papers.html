@@ -12,29 +12,10 @@
         <a href="./identifiability.html">Full note</a> &middot;
         <a href="./yield-curve.html">Interactive example</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_identifiability.py">certificate</a>.
-        <em>The first-order coefficient theorem, the general fixed-feature Green&ndash;Kubo Gram/rank result,
-        an arbitrary-prior exact finite-horizon covariance-rank theorem, the exact maturity-loading kernel and rank
-        characterization, a Krylov/PBH criterion for initial-mixture observability across maturities, the exact
-        continuous-curve Fisher Gramian, its explicit single- and multi-feature short-window eigenvalue hierarchies
-        with QR&ndash;factorial-Hilbert and block-Schur constants, and its separation between linearly
-        accumulating fixed-feature information and finitely saturated transient information, an exact
-        all-distinct-maturities theorem for cyclic scalar features with real spectrum, including Jordan blocks, a sharp
-        three-state converse, and a directed-cycle counterexample showing the exceptional tuples created by complex modes,
-        the exact three-state aliasing kernel and its universal infinite exceptional lattice,
-        a general theorem that submaximal-rank maturity designs have measure zero and a sharp reciprocal conditioning law
-        transverse to the directed-cycle exceptional curve,
-        the sharp exponential singular-value hierarchy for simple real-spectrum maturity designs translated to the long end,
-        its defective three-state Jordan refinement with weakest signal $M e^{-aM}$,
-        matching Gaussian lower and projected-inverse upper bounds proving the sharp long-end noise threshold,
-        including its exact correlated/heteroskedastic generalized least-squares form,
-        and matching deterministic adversarial-error lower and upper bounds on that same whitened singular-value scale,
-        sharpened to the exact local minimax identity
-        $\min\{\rho,\delta/s_{M,\Gamma}\}$ for every deterministic noise radius,
-        the complete small-maturity singular-value hierarchy, its explicit QR/LQ leading constants, the exact
-        Legendre&ndash;Gauss&ndash;Lobatto determinant-optimal design under a maturity cap, the sharp three-state
-        separation of D-, E-, and response-condition-optimal designs, and sharp prior-recovery noise amplification,
-        a two-order yield boundary layer, known-start shapes,
-        and a computable finite-rate remainder.</em>
+        <em>For a short rate whose mean level and variance switch with a fast hidden regime: what a bond yield curve can and
+        cannot identify. To first order the curve fixes four coefficients; a fixed-feature Green&ndash;Kubo rank
+        $r$ implies at least $r+1$ regimes, a rank from integrated maturity loadings does not count regimes, and
+        the initial regime mixture is recoverable only from very short maturities.</em>
       </li>
     </ul>
 
@@ -48,21 +29,10 @@
         &middot; <a href="./thesis-errata.html">errata</a>
         &middot; <a href="./regime-switching.html#thesis-dynamic-mean-erratum">Chapter 3 erratum in detail</a>
         &middot; <a href="./thesis-appendix-b.html">Appendix B erratum in detail</a>.
-        <em>Vasicek short rates and hazard rates whose mean level and volatility are driven by a fast process, continuous
-        or two-state; the reduction to linear systems and the fast-switching expansions. The erratum resolves two
-        incompatible switching-rate conventions and replaces the reversed dynamic-mean kernel by the correct
-        remaining-maturity formula, with an explicit finite-rate log-ratio error bound uniform over maturity and
-        valid at every finite contrast-to-switching ratio. For unequal transition rates the bound isolates a
-        quadratic asymmetry term, and a signed constant-forcing expansion identifies its sharp coefficient while
-        proving that the cubic symmetric-rate error is a cancellation. The constant-forcing equilibrium also has
-        the exact all-order Legendre series
-        $\sum_{n\ge1}P_{n-1}(\alpha)x^n/n$, with convergence radius one for every positive rate pair and an explicit
-        uniform truncation bound. The Appendix B erratum
-        restores deterministic discount factors in shifted caplets, floorlets and swaplets, and corrects the
-        change-of-numeraire sign in a futures recursion. Deterministic shifts leave every bond-forward measure,
-        and matched-moneyness Black implied volatility, exactly unchanged; a sharp converse shows why
-        multi-date annuity measures generally do change. Their total-variation change is bounded sharply by
-        $\tanh(\Delta/4)$, where $\Delta$ is the range of accumulated deterministic shifts across payment dates.</em>
+        <em>Vasicek short rates and hazard rates whose mean level and volatility are driven by a fast process, continuous or
+        two-state; the reduction to linear systems and the fast-switching expansions. The errata cover the
+        switching-rate convention, the dynamic-mean kernel of Chapter 3 and the deterministic-shift factors of
+        Appendix B.</em>
       </li>
       <li id="volatility">
         Cotton, P., Fouque, J.-P., Papanicolaou, G. and Sircar, R. (2004). <em>Stochastic Volatility Corrections for
@@ -105,66 +75,10 @@
         <a href="./credit-geometry.html">Full note</a> &middot;
         <a href="./credit.html">Two-name CIR example</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>.
-        <em>A positive CIR construction separates fixed Green&ndash;Kubo rank from rank created by heterogeneous
-        maturity loadings: the sharp bound is $\operatorname{rank}(K\circ J)\le
-        \operatorname{rank}(K)\operatorname{rank}(J)$, yet two regimes can produce a full-rank integrated
-        correction for arbitrarily many names. For distinct CIR mean-reversion rates the exact criterion is
-        $K\circ J(T)\succ0$ at every $T&gt;0$ if and only if every diagonal entry of $K$ is positive, regardless
-        of the fixed rank of $K$. When loading shapes repeat in clusters $C_c$, the exact rank is instead
-        $\sum_c\operatorname{rank}K_{C_c,C_c}$, so full rank is equivalent to positive definiteness of every
-        within-cluster block. For two names with heterogeneous CIR parameters, the loading Gramian is singular
-        exactly when both $(\kappa,\sigma)$ pairs coincide: equal mean reversion alone does not collapse rank
-        when vol-of-vol differs. For arbitrarily many heterogeneous names, distinct full parameter pairs always
-        give linearly independent loadings, with no common-volatility or common-decay restriction. Expanding each
-        loading in exponential harmonics and using prime-indexed harmonics isolates the slowest decay group even
-        when rational decay ratios create collisions. Consequently the same exact cluster formula holds for
-        unrestricted heterogeneous parameter collections. The resulting sharp regime-count inference is
-        $n\ge1+\lceil\operatorname{rank}(K\circ J)/\operatorname{rank}(J)\rceil$;
-        it reduces to rank-plus-one only for a single loading shape. When $d$ CIR mean-reversion rates coalesce on scale $\epsilon$,
-        the integrated eigenvalues have the sharp hierarchy $1,\epsilon^2,\ldots,\epsilon^{2(d-1)}$,
-        with explicit QR/LQ leading constants, so full rank coexists with condition number
-        $\Theta(\epsilon^{-2(d-1)})$. For several distinct collision centers, the exponent multiset is instead
-        twice the union of the within-cluster derivative orders; the largest cluster controls conditioning while
-        all clusters contribute to the explicit determinant power. The required joint jet independence is
-        automatic for CIR loadings: their time-Taylor coefficients form a polynomial basis in $\kappa$, reducing
-        every clustered jet matrix to a nonsingular confluent Vandermonde system. At short maturity, distinct
-        common-volatility loadings have the explicit eigenvalue hierarchy
-        $T^3,T^5,\ldots,T^{2d+1}$, determinant order $T^{d(d+2)}$, and condition number
-        $\Theta(T^{-2(d-1)})$, with QR&ndash;shifted-Hilbert leading constants. More generally, if
-        $K=FF^\top$, $A_q=\operatorname{diag}(v_q)F$, and
-        $s_q=\operatorname{rank}[A_1\ \cdots\ A_q]$, then exactly
-        $s_q-s_{q-1}$ integrated eigenvalues have order $T^{2q+1}$; an
-        explicit positive-definite block Gram matrix gives both the leading
-        pseudo-determinant constant and, through its successive Schur pivots,
-        every individual eigenvalue constant for arbitrary fixed rank. Distinct common-volatility
-        CIR rates and positive diagonal $K$ force $s_d=d$: full fixed rank gives only $T^3$
-        powers, rank one gives the full odd-power ladder, and intermediate rank gives repeated
-        graded powers. Here $s_1=\operatorname{rank}K$ remains the fixed Green&ndash;Kubo rank;
-        later blocks measure rank created by maturity integration. At long maturity, for arbitrary
-        heterogeneous CIR pairs, including repeated full-pair clusters satisfying the exact within-cluster
-        criterion, the number of linearly growing information eigenvalues is exactly the fixed Green&ndash;Kubo rank $r$;
-        if maturity integration creates full rank, the other $d-r$ eigenvalues converge to a positive transient
-        complement, so conditioning still grows linearly. The inverse converges to the Moore&ndash;Penrose inverse
-        of that complement, with an explicit rank-$r$ stationary&ndash;transient correction of order $T^{-1}$ and
-        operator-norm remainder $O(T^{-2})$. The normalized determinant has a complete degree-$r$ inverse-maturity
-        polynomial: its coefficients are the elementary symmetric polynomials of the stationary Schur-complement
-        correction after whitening by the stationary block. This includes the cross-coupling through the transient
-        block; the log-determinant follows to every fixed algebraic order from the corresponding trace-power series.
-        The same stationary Schur complement gives the full matrix-valued inverse-maturity series: after $p+1$
-        explicit rank-at-most-$r$ terms its operator-norm remainder is $O(T^{-p-2})$, with a geometric bound once
-        $T$ exceeds the whitened Schur-correction norm.
-        The same inverse expansion gives a minimum-variance dichotomy: a budget or normalization vector with a
-        transient-kernel component has a finite long-maturity risk floor, whereas a vector entirely in the
-        stationary Green&ndash;Kubo range has minimum variance growing linearly with maturity.
-        Thus exact finite-maturity rank does not imply that every exposure
-        gains unbounded long-end precision.
-        It also separates arbitrary-prior marginal memory from first-order pair dependence.
-        Cause-specific first-default races identify cycle orientation: one unweighted multi-name race sees only
-        antisymmetric row sums, while $d-1$ independent positive exposure designs are necessary and sufficient
-        to identify every $d$-cause oriented matrix. The design-frame spectrum gives exact singular values and
-        an explicit positive, closed-form reconstruction with quantified noise amplification. Among minimal
-        designs the sharp condition-number infimum is $\sqrt2$; strict positivity approaches but cannot attain
-        the equal-norm orthogonal optimum.</em>
+        <em>Several names with CIR intensities whose mean levels follow a shared hidden regime chain. To first order in fast
+        switching, pairwise survival curves identify a fixed Green&ndash;Kubo matrix whatever the initial regime
+        prior, and the order of defaults reveals the direction of a cycle. The rank of the maturity-integrated
+        correction does not bound the number of regimes; the note gives the corrected bound.</em>
       </li>
     </ul>
 
@@ -183,58 +97,10 @@
         preparation. <a href="./engine.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/tree/main/papers/fast-switching">code and certificates</a>.
         <em>Any irreducible finite chain, including defective generators, driving any model whose state factors out of an
-        exponential-affine formula: several regimes, two-factor rates and credit, CIR, jumps, counts, Heston, Bates,
-        Merton and variance gamma; for multivariate Cox counts, exact mixed factorial-cumulant identities separate each
-        stream&apos;s Poisson noise from integrated-rate dependence, with all-order partition formulas for unit or
-        arbitrarily marked common shocks, including mark laws that change with the hidden regime. The full count law
-        identifies the full integrated-intensity law, although no fixed finite list of factorial cumulants does
-        without structure. Stationary terminal counts are exactly blind to reversal of a nonreversible hidden chain,
-        but ordered early/late count windows recover its time direction through the antisymmetric cross-covariance;
-        under fast switching this is an $m^{-2}$ boundary signal, distinct from the $m^{-1}$ Green&ndash;Kubo variance.
-        Sharply, a mixing law with at most $r$ atoms is identified by factorial cumulants through
-        order $2r-1$, via a Hankel&ndash;Prony reconstruction, while order $2r-2$ is insufficient; the exact
-        confluent-Vandermonde Jacobian quantifies local conditioning, with each atom collision contributing a
-        fourth-power degeneracy and each vanishing weight a linear one;
-        a count law $(p_n)$ is mixed Poisson exactly when $q_n=n!p_n$ has positive-semidefinite Hankel and shifted
-        Hankel matrices of every order, giving a complete falsification hierarchy beyond overdispersion;
-        this inverse is not total-variation stable, even for mixing laws on a compact intensity interval; indeed,
-        without structural restrictions every finite-sample estimator has worst-case expected total-variation loss
-        at least one half. Under Wasserstein-1 loss, a parity-conditioned binomial construction gives the
-        genuinely nonparametric $(\log\log n)/\log n$ lower obstruction on the unrestricted compact class. A local
-        point-mass experiment and the sample mean separately prove the matching $n^{-1/2}$ rate on that parametric
-        submodel, while a factorial-moment estimator and Jackson approximation prove the matching unrestricted
-        upper rate. Coupling that estimator across two count laws yields the optimal compact-support inverse modulus
-        $\Theta(\log\log(1/\delta)/\log(1/\delta))$ in Wasserstein-1. A nonlinear CEV example has an exact random-clock reduction and, at zero carry,
-        certified finite-rate occupation mixtures: Poisson&ndash;Beta for equal rates and an atom-plus-Bessel density for
-        arbitrary two-state rates. Splitting the Bessel law by jump parity retains the terminal regime and gives exact
-        endpoint-contingent prices. Exact first two occupation moments yield explicit fixed-maturity price bounds that
-        separate curvature from known-start memory; exponentially weighted moments extend those bounds to nonzero
-        carry, where both the full weighted-clock transform and its terminal-regime decomposition have exact
-        Kummer-function representations. The endpoint matrix obeys an exact stationary-weighted transpose identity:
-        time reversal swaps the endpoints, reverses the carry loading, and regularizes degenerate Kummer parameters.
-        A weighted-clock
-        martingale CLT and sharp Wasserstein equivalent separate the $\kappa^{-1}$ rate for centered $C^2$ prices
-        from the generic $\kappa^{-1/2}$ rate for merely Lipschitz clock payoffs, including nonzero carry. An exact
-        three-time correlation gives the first non-Gaussian characteristic correction; an exact four-time cumulant
-        and the variance endpoint term give the stationary second correction. For a specified initial regime, the
-        first boundary term is an explicit mean-memory layer and the second correction retains a start-dependent
-        variance endpoint even after exact-mean centering. Several deterministic loadings have a joint Gaussian
-        clock limit whose covariance is their $L^2$ Gram matrix; at every finite switching rate, the exact covariance
-        has precisely the same loading-space nullspace, with a computable one-jump Loewner lower bound for every
-        identifiable direction. The result also has explicit multivariate first and second
-        corrections, an explicit negative-semidefinite jump-interface matrix whose rank is the span dimension of the
-        jump vectors, and a clear separation from both leading loading-Gram and fixed-parameter Green&ndash;Kubo rank.
-        For constant forcing the exact slow/fast-mode split gives a radius-one expansion
-        for symmetric or unequal two-state transition rates, an explicit exponentially small initial-layer bound,
-        and the frequency envelope needed before integrating a characteristic-function approximation. A separate
-        Lewis-inversion theorem splits price error into the weighted compact-frequency transform error and an exact
-        half-moment tail bound, showing why pointwise cubic accuracy alone does not imply a cubic price rate. For
-        switched variance gamma, conditioning on the regime path sharpens that tail to
-        $O(R^{-(2T/\nu_{\max}+1)})$, uniformly in the switching generator. Averaged VG decay makes the cubic Taylor
-        envelope integrable on a parabolic frequency window, while an explicit occupation-time Chernoff bound makes
-        the omitted exact tail higher order. This proves $O(m^{-3})$ error for the truncated quadratic call price under
-        fixed positive, possibly unequal two-state transition rates whenever the stationary and good-occupation decay
-        exponents are both strictly above $5/2$.</em>
+        exponential-affine formula: several regimes, two-factor rates and credit, CIR, jumps, counts, Heston,
+        Bates, Merton and variance gamma. The example pages add what Cox counts identify about the intensity
+        law, exact finite-rate occupation mixtures for CEV, and the frequency window of the Fourier pricing
+        integrals.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Uniform Initial-Layer Bounds for a Fast Finite-State Switch</em>. Note in preparation.
@@ -251,21 +117,10 @@
         <a href="./bond-options.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/bond_option_explicit.py">code</a>
         &middot; <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_g2_coupon_geometry.py">G2++ certificate</a>.
-        <em>One-factor Jamshidian decomposition plus an explicit first-order correction, including the memory of the
-        regime at expiry, in Gaussian integrals. In G2++, only a single zero-coupon bond has a scalar Gaussian loading;
-        coupon-bond exercise boundaries are strictly convex when the reversion speeds differ. Their two exact affine
-        wings are selected by the shortest and longest residual cash-flow maturities, with explicit exponential
-        approach rates; the boundary curvature is a weighted loading-ratio variance whose total mass equals the
-        spread between the extreme loading ratios. For ordinary fixed-parameter G2++, Gaussian conditioning
-        nevertheless gives an exact one-dimensional quadrature over the unique nonlinear boundary, with an explicit
-        exponentially tilted Gaussian bound for truncating the last integral. Exact pathwise Jamshidian decomposition
-        holds precisely when all active nonzero coupon-date loadings lie on one positive ray; loading-matrix rank one
-        without common orientation is not enough. More generally, a monotone Gaussian
-        conditioning direction exists exactly when the origin is outside the convex hull of the cash-flow loading
-        vectors, and it can be oblique to every original coordinate. Conditioning on that direction reduces a
-        $d$-factor coupon option to $d-1$ dimensions;
-        the boundary Hessian is positive semidefinite and its rank is the affine-span dimension of the loading-ratio
-        vectors. These fixed-Gaussian results do not extend unchanged to the full finite-rate switching model.</em>
+        <em>One-factor Jamshidian decomposition plus an explicit first-order correction, including the memory of the regime
+        at expiry, in Gaussian integrals. Under G2++ the decomposition stops at zero-coupon claims: coupon-bond
+        exercise boundaries are curved, and Gaussian conditioning reduces the option to a one-dimensional
+        quadrature instead.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Three Numbers in a Yield Curve</em>. Working paper in preparation.
@@ -280,58 +135,21 @@
         Cotton, P. (2026). <em>One Curve from Short to Long Maturities</em>. Note in preparation.
         <a href="./uniform-long-end.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_uniform_long_end.py">certificate</a>.
-        <em>A matched finite-chain approximation with maturity-uniform error bounds, including a proved
-        limiting-Perron plus transient Green&ndash;Kubo composite for every fixed irreducible generator, geometric
-        Perron transport, and explicit frozen initial slips. A moving invariant law has a sharp $O(m^{-2})$ cost, while periodic
-        forcing with infinite total variation is handled by exact Floquet growth, including asymmetric and
-        periodically moving two-state generators, their geometric drift, and a uniform third-order
-        phase-and-slip formula. For an arbitrary fixed initial prior, an explicit $O(m^{-1})$ observation layer
-        is necessary on bounded horizons and restores the sharp $O(m^{-2})$ error there. An exact
-        Floquet-profile theorem extends the all-maturity principal term to any finite periodic chain, including a
-        defective three-state control. For a positive regime-dependent payoff, the locally frozen boundary layer
-        is sharply first order when the fast generator moves and second order when it is fixed on fixed bounded
-        horizons; explicit fast-clock Duhamel profiles identify both leading errors, and the stronger bond order
-        is characterized exactly by alignment with the fast nullspace. A local-Perron counterexample shows why
-        that frozen exponential itself cannot be used at arbitrarily long maturities: it can grow and cross zero.
-        Replacing it by powers of the normalized complementary monodromy gives an exact, positive all-maturity
-        transported layer using only one-period data and the final within-period propagator. An all-order
-        solvability
-        recursion separates dynamic Green&ndash;Kubo terms from geometric transport of the moving invariant law; its
-        coefficients are certified on a nonreversible moving three-state chain. A positive periodic trial profile
-        gives a computable signed, asymmetric finite-speed enclosure of the exact Floquet exponent from separate
-        Fourier bounds on its componentwise residual and positive profile; a phase-mesh extremum theorem uses
-        periodic stationarity to sharpen that enclosure at order $h^2$ while still controlling every phase
-        between collocation nodes. The same relative residual now gives a direct finite-horizon price bracket,
-        including the initial normalization, and makes its $T=O(m^{N+1})$ critical-scale width explicit.
-        Retaining the first omitted Floquet coefficient and one more profile corrector turns the former
-        $T=2\pi m^4$ critical-window certificate from an $O(1)$ bracket into a proof-grade $O(m^{-1})$ bracket;
-        a further exact-rational recursion step does the same at $T=2\pi m^5$.
-        For the moving three-state benchmark, exact rational convolution and verified upward modulus bounds turn
-        the global Fourier construction into a proof-grade finite-speed certificate.
-        The first nonzero omitted
-        coefficient determines the sharp critical maturity, including an all-order odd-power theorem and explicit
-        fifth-order coefficient for the symmetric two-state model, and shows exactly when a finite exponent
-        truncation develops secular log-price error.</em>
+        <em>Matched bond-curve formulas that keep the exact Perron or Floquet growth rate stay accurate at every maturity,
+        for any finite irreducible regime chain, with explicit error orders. A moving invariant law costs one
+        order, and a locally frozen boundary layer is valid only on bounded horizons, where an exact transported
+        layer works at all maturities.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>The Likelihood of a Fast-Switching Short Rate</em>. Note in preparation.
         <a href="./likelihood.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">transition certificate</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_filtered_likelihood.py">filter certificate</a>.
-        <em>The stationary-start transition composite likelihood of a discretely observed Vasicek rate is a Hermite
-        correction with Green&ndash;Kubo coefficients. For fixed panels it agrees with the exact filtered likelihood through
-        first order, with an explicit second-order coefficient and an arbitrary-prior first-observation term; its
-        directional score test projects Jarque&ndash;Bera onto the positive-kurtosis cone in the Fisher metric. More
-        generally, $p$ unrestricted scores and one one-sided score have null law
-        $\tfrac12\chi_p^2+\tfrac12\chi_{p+1}^2$, with an exact one-dimensional local-power integral. With $q$
-        Fisher-orthogonal one-sided scores the weights are binomial,
-        $2^{-q}{q\choose j}$ on $\chi_{p+j}^2$. Two correlated constraints have arcsine weights; for three, the
-        endpoint weights are trivariate orthant probabilities of the constrained correlation and its precision
-        correlation, with the middle weights fixed by conic Gauss&ndash;Bonnet. For arbitrary correlated $q$, each
-        active-face weight factors exactly into a conditional-residual orthant probability and a precision orthant
-        probability. Covariance inversion exchanges each face with its complement, so
-        $w_A(S)=w_{A^c}(S^{-1})$ and $w_j(S)=w_{q-j}(S^{-1})$. These formulas show why binomial weights are not
-        covariance-invariant when $q\geq2$.</em>
+        <em>The first-order transition density of a discretely observed Vasicek rate with fast hidden regimes is a Hermite
+        correction with Green&ndash;Kubo coefficients, and its composite likelihood agrees with the filtered
+        likelihood to first order. Its score test is a Jarque&ndash;Bera test with the kurtosis part projected
+        onto positive excess kurtosis; with several one-sided scores the null weights depend on their
+        correlation.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Fast Regimes in Any Pricing Equation</em>. Note in preparation.
@@ -346,24 +164,10 @@
         Cotton, P. (2026). <em>Solvability Beyond the Centered Corrector</em>. Note in preparation.
         <a href="./solvability.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_solvability_hierarchy.py">certificate</a>.
-        <em>The group inverse determines only the centered shape of each corrector; the next Fredholm condition fixes
-        its null-space amplitude. When the fast generator varies slowly, differentiating the moving centering
-        condition adds a signed geometric transport coefficient distinct from the instantaneous Green&ndash;Kubo term;
-        for a two-state periodic protocol it is exactly the oriented line integral
-        $\oint (g_0-g_1)(\alpha+\beta)^{-1}\,d\pi_0$, invariant to traversal speed and odd under loop reversal.
-        For a general smooth finite-state family this term is a parameter-space one-form
-        $\mathcal A_a=\pi(\partial_aQ)(Q^{\#})^2f$; its exterior derivative gives an explicit curvature, and
-        Stokes&apos; theorem converts a closed-loop correction into a curvature-area integral. Changing the particular
-        Poisson corrector sends $\mathcal A$ to $\mathcal A-dc$, so curvature and closed-loop holonomy are gauge
-        invariant even though the open-path connection is not.
-        For constant scalar forcing an all-orders recursion yields the Green&ndash;Kubo variance coefficient and signed
-        three- and four-time cumulant coefficients. A resolvent-contour certificate
-        gives computable Cauchy remainders for both the slow eigenvalue and the spectral projector selecting the
-        initial-data amplitude; a separate fast-spectrum contour retains nonnormal transient amplification while
-        proving exponential layer decay. Combining all three gives an explicit all-time semigroup bound that exposes
-        the maturity loss from eigenvalue truncation and remains second order on a certified
-        $t=O(\varepsilon^{-2})$ window. An explicit initial layer gives a uniform second-order remainder on fixed time
-        intervals.</em>
+        <em>The group inverse determines only the centered shape of each corrector; the next Fredholm condition fixes its
+        null-space amplitude. When the fast generator varies slowly a signed geometric transport term appears,
+        distinct from the Green&ndash;Kubo term: a parameter-space one-form whose curvature and closed-loop
+        holonomy do not depend on the choice of corrector.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Cumulants of Integrated Variance Under a Fast Regime</em>. Note in preparation.
@@ -372,140 +176,45 @@
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_kappa.py">switching-$\kappa$ certificate</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_stationary_moments.py">stationary moments</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_switching_feller.py">boundary certificate</a>.
-        <em>Exact integrated-variance and return cumulants for a positive switched CIR variance, with a
-        maturity-uniform Green&ndash;Kubo bound, fixed-maturity leverage and simultaneous-coefficient corrections,
-        uniform and growing-window first-moment composites, an exact all-order recursion for every regime-resolved
-        invariant variance moment with every inverse-speed coefficient, a switching-speed-uniform Gamma majorant
-        proving a positive exponential-moment interval and moment determinacy (including beyond the statewise
-        Feller condition), an explicit switching-speed-uniform zero-free MGF disk with Cauchy cumulant and
-        truncation bounds, a convergent fixed-moment Taylor series
-        inside an explicit generalized-eigenvalue disk, a computable Cauchy remainder bound, and a residue
-        noncancellation criterion proving when that disk is the exact Taylor disk (with no moment-uniform radius),
-        exact long-run second-cumulant slope and
-        intercept with a
-        switching-rate-uniform exponential remainder, exact nested-Poisson third-cumulant slope and intercept, an
-        exact centered-Poisson recursion for every fixed long-run cumulant rate, explicit slow-fast formulas for
-        every fixed-order first and second inverse-speed coefficient with $O(m^{-3})$ residual, and computable
-        arbitrary-start boundary constants with fixed-order switching-rate-uniform exponential remainders. Every
-        exponent strictly below the stable-block gap is valid; an exact resonant two-state CIR example shows that
-        the endpoint exponent can fail through a $T e^{-\alpha T}$ term, while an exact nonresonant formula shows
-        that the endpoint is recovered for each fixed separated pair of chain and CIR relaxation rates and that
-        its constant blows up as the rates collide. An exact compact-detuning profile resolves that collision on
-        the scale $(\lambda-\kappa)T=O(1)$ with a uniform $O(T^{-1})$ error, and the same leading profile holds
-        for arbitrary dependent initial regime&ndash;variance laws with a finite variance mean. An
-        MGF-free finite-moment jet theorem shows that these fixed-order conclusions need only the corresponding
-        initial moments, including for the switching-rate-uniform envelope when those moments are uniformly
-        bounded. Exact normalization of the slope&ndash;boundary decomposition gives two-term long-maturity
-        formulas and explicit finite-time bounds for every fixed standardized cumulant; in particular it resolves
-        the boundary corrections to skewness and excess-kurtosis decay without asserting an Edgeworth or
-        Berry&ndash;Esseen theorem. An exact triangular finite-jet map transfers every slope, arbitrary-start boundary constant, and
-        exponential remainder to the corresponding fixed-order independent-price return cumulant, without adding
-        an MGF assumption. A separate tilted-generator recursion proves the same exact-slope, arbitrary-start
-        boundary, and switching-rate-uniform remainder theorem for every fixed-order leveraged-return cumulant,
-        even with switching correlation and only finitely many initial moments. The note also gives a sharp
-        initial-law-specific boundary criterion for reducible chains: the statewise Feller test is necessary and
-        sufficient exactly on regimes reachable from the initial support. It also gives sharp
-        homogenized-correlation admissibility criteria. Vol-of-vol
-        heterogeneity contracts the attainable effective-correlation interval to
-        $|\rho_{\rm eff}|\le1/\sqrt{1+\operatorname{CV}_\pi(\xi)^2}$.</em>
+        <em>The fourth cumulant of a return under a switched variance is three times the variance of integrated variance
+        only for independent Brownian noise, and that variance is its Green&ndash;Kubo term up to a remainder
+        bounded uniformly in maturity. The full note adds leverage, option-price and implied-volatility
+        corrections, a statewise Feller test, and long-maturity cumulant rates when mean reversion and
+        vol-of-vol switch too.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>What Sets the Homogenization Scale?</em> Note in preparation.
         <a href="./mixing-scale.html">Full note</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/long-memory/verify_long_memory.py">certificate</a>.
-        <em>Exact covariance-tail and cumulative low-frequency spectral theorems separating invariant zero-frequency
-        mass, Green&ndash;Kubo, critical, long-memory and the complete zero-Green&ndash;Kubo cancellation trichotomy. A
-        Fej&eacute;r-kernel limit also classifies the frozen, finite-crossover, and long-window regimes for every limit
-        of $T_\varepsilon/\varepsilon$. Its vector form gives matrix-norm covariance limits but an ergodic
-        two-frequency example shows that finite-maturity rank can vary nonmonotonically. A matrix regular-variation
-        theorem further permits a singular leading low-frequency matrix: exact integrated covariance can remain
-        full rank while successive directions appear at different powers of $\varepsilon$, producing a spectral
-        rank hierarchy and an explicit condition-number law. The
-        spectral result needs no density, including at the divergent $\alpha=2$ endpoint, and holds on every joint
-        maturity/switching path with $T_\varepsilon/\varepsilon\to\infty$. It remains sharp for pure-point spectra
-        and covariances that oscillate forever. For a Gaussian driver and $0&lt;\alpha&lt;2$, the normalized integrated
-        path converges in the separable little-H&ouml;lder space $c_0^\gamma[0,1]$ to fractional Brownian motion for
-        every $\gamma&lt;H=1-\alpha/2$; this topology is sharp, while the functional conclusion is not claimed for
-        general processes. At the divergent $\alpha=2$ endpoint, the Gaussian paths instead have
-        an explicit finite-dimensional limit with covariance $1/2$ at distinct positive times and are not tight even
-        in Skorokhod $D[0,1]$ under either $J_1$ or $M_1$, so the fractional-Brownian conclusion cannot be extrapolated
-        to a formal Hurst index zero or rescued by allowing jumps. For
-        logarithmically corrected critical spectra, shrinking lags $R^{-\beta}$ have limiting normalized variance
-        profile $(1-\beta)_+^{p+1}$, quantifying the transition from fixed-time Gaussian dust to continuity at the
-        correlation-time scale and showing that the microscopic modulus is not universal. An
-        explicit stationary ergodic second-chaos process has the same
-        regularly varying covariance and Hurst scaling but a strictly positive limiting standardized third
-        cumulant. More strongly, a covariance-matched hierarchy of mixing Gaussian transforms has exactly the same
-        covariance at every lag for every Hermite rank, while its normalized paths converge to distinct rank-$q$
-        Hermite processes. Thus covariance scaling and ergodicity do not identify the fBm limit. At the
-        saturated $\varepsilon^2$ boundary, a finite inverse spectral
-        moment gives a uniform bound but a limiting coefficient exists precisely when the real part of its weighted
-        Fourier&ndash;Stieltjes transform vanishes; a stationary pure tone shows that the coefficient can otherwise
-        oscillate between zero and twice the inverse moment. Nevertheless its Ces&agrave;ro mean always converges, while
-        the limiting mean-square oscillation is half the sum of squared spectral-atom masses; nonatomic spectra
-        therefore average out even when they are not Rajchman. Nonergodic-offset, bounded-volatility and
-        periodic-flow examples further delimit the scope.</em>
+        <em>For a fast stationary driver the size of the first correction is set by the covariance tail, not by ergodicity.
+        Long-range dependence gives a variance of order $\varepsilon^\alpha$ with $0&lt;\alpha&lt;1$, larger
+        than $\varepsilon$; a vanishing Green&ndash;Kubo integral gives a smaller one; and the covariance alone
+        does not determine the limit law.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>The Direction of a Regime Cycle in the Heston Smile</em>. Note in preparation.
         <a href="./cycle-smile.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">chain certificate</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">circle certificate</a>.
-        <em>A chain cycling through variance level and vol-of-vol moves the smile through an antisymmetric
-        Green&ndash;Kubo commutator. For every stationary Markov driver, time reversal transposes the Green&ndash;Kubo
-        form. More strongly, under a stationary start the complete occupation-measure law is exactly reversal-blind
-        at every switching rate; a time-dependent loading instead reverses its schedule, so asymmetric schedules
-        can recover direction. An energy-normalized resolvent factorization gives sharp variance-reduction and directional-response
-        bounds, while intrinsic normalization by the actual symmetric Green&ndash;Kubo form gives a sharp sector
-        constant $\lVert C\rVert$. Symmetry on all centered observables characterizes reversibility under a resolvent-invertibility
-        hypothesis; one selected feature is always blind, while two independent Gaussian feature probes detect
-        every finite-state irreversible chain almost surely and have mean-square signal equal to the squared
-        Hilbert&ndash;Schmidt norm of the skew resolvent. A fourth-moment bound turns this into a finite certificate:
-        47 independent pairs have a universal miss probability below one percent at half the root-mean-square
-        signal scale. Bounded Rademacher probes obey the same finite guarantee and a smaller exact fourth moment,
-        with the sharper dimension-$d$ constant $6-8/d$; the four-state certificate needs 25 rather than 47 pairs.
-        Median block means turn the corresponding finite-variance energy estimator into an explicit
-        $O(\varepsilon^{-2}\log(1/\delta))$ relative-error confidence certificate for the population skew-resolvent
-        energy. When the full action $Jx$ is available, quadratic trace probes reduce the worst-case relative-variance
-        constant from five to one and the half-scale one-percent miss certificate from 47 probes to 14; this stronger
-        result does not apply to scalar-only bilinear queries. Normalizing Gaussian directions to the sphere of
-        radius $\sqrt d$ removes radial noise: the exact relative variance is at most $(d-2)/(d+2)$, and the
-        three-dimensional certificate needs eight probes for one-percent half-scale detection and 100 actions for
-        the displayed median-of-means guarantee. Haar-orthogonal blocks add a finite-population factor
-        $(d-k)/(d-1)$ to the $k$-action variance; a full frame is exact, and in the three-dimensional certificate a
-        two-action frame has exact relative variance $1/20$ and deterministically estimates the energy within 50%.
-        This orthogonal-block result still requires a full action oracle. Given a supplied operator-norm error radius for an
-        estimated generator, an estimator-centered fixed-point
-        group-inverse theorem propagates that error into a fully computable interval for the population energy,
-        retaining both the observed stationary-law norm and coordinatewise group-inverse sensitivities;
-        for a continuously and fully observed finite-state path, simultaneous exponential counting-martingale
-        bounds supply entrywise rate intervals from holding times and transition counts without a known rate cap.
-        For small chains, exact vertex propagation gives the sharp spectral-norm radius of this rectangular
-        confidence set; analytic Frobenius and induced-norm bounds remain the large-state fallback.
-        This finite-path guarantee does not cover hidden or discretely observed regimes.
-        The dimension-free constant $6$ is asymptotically sharp, but sign probes can return zero with positive
-        probability and therefore are not almost-sure identifiers.</em>
+        <em>A chain cycling in one direction through variance levels and vol-of-vol moves the smile, an effect no reversible
+        driver produces. The reversal property extends from finite chains to any stationary Markov driver, with
+        drifted Brownian motion on a circle as a closed-form case.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Switching Correlation: Correlation Smiles and Downside Co-Skewness</em>. Note in preparation.
         <a href="./correlation.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_correlation.py">certificate</a>.
-        <em>A correlation that jumps between regimes: a closed-form correlation volga in exchange and spread options,
-        an exact all-order finite-state joint cumulant partition theorem, explicit group-inverse tensors through sixth
-        order, complete second-order arbitrary-start corrections, and a power-law maturity phase diagram separating
-        Gaussian homogenization, the exact non-Gaussian $sT=O(1)$ layer, and the frozen initial-regime mixture.</em>
+        <em>A correlation that jumps between calm and crisis regimes: a closed-form correlation volga in exchange and spread
+        options, and a negative third cross-cumulant when correlation rises in down markets. For two regimes the
+        joint return cumulants of every order are exact at finite switching rate.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Portfolio Choice with Fast Regimes</em>. Note in preparation.
         <a href="./portfolio.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_portfolio.py">certificate</a>.
-        <em>Merton, the Markowitz frontier and a regime-blind investor with bull and bear regimes: each first correction
-        is a scalar contraction of the symmetric Green&ndash;Kubo Gram form, even for a nonreversible driver, and
-        observed-regime weights stay exactly myopic. At fixed maturity the Gram nullspace is exactly the centered
-        feature nullspace; maturity integration can increase rank, while an explicit resolvent spectral interval
-        controls the integrated Gram&apos;s eigenvalues and condition number. A D-optimal equivalence theorem reduces
-        maturity selection to a leverage bound and guarantees an optimum with at most $p(p+1)/2$ support points;
-        the two-feature benchmark is solved exactly by equal endpoint mass.</em>
+        <em>Merton, the Markowitz frontier and a regime-blind investor with bull and bear regimes: each first correction is
+        a contraction of the symmetric Green&ndash;Kubo form, even for a nonreversible driver, and
+        observed-regime weights stay exactly myopic.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Pooled Conformal Residuals Under a Fast Hidden Regime</em>. Note in preparation.
@@ -519,82 +228,19 @@
         Cotton, P. (2026). <em>Path-Dependent Conformal Pooling Under Fast Regime Switching</em>. Note in preparation.
         <a href="./path-conformal.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_path_crossover.py">certificate</a>.
-        <em>Exact path-score and dynamically filtered-predictor crossovers, including finite-chain Poisson-equation
-        coefficients through second order, a gradient/Hessian theorem for smooth nonlinear functions of several
-        path averages, and the explicit $c^{-2}$ boundary-covariance/third-derivative coefficient when the score
-        gradient vanishes. The model-conditional errors can be unequal; stationary weighting cancels them exactly,
-        while posterior-cancellation slices have an exact affine-dimension formula, including nonstationary
-        simultaneous first- and second-order cancellation with four or more regimes;
-        finite-sample marginal rank bounds under absolute
-        regularity for regular or irregular deterministic block spacing, randomized tie handling, and an exact
-        iid beta/PAC law for arbitrary score distributions conditional on the realized tie-augmented calibration
-        panel. For intervals with two finite calibration endpoints, the corresponding conditional coverage is an
-        exact beta spacing depending only on rank width; its sharp finite-sample PAC rule exposes the stricter
-        feasibility cost of estimating both tails. The full three-component Dirichlet spacing law also gives an
-        exact multinomial certificate and a sharp sample-range feasibility test for controlling the lower and
-        upper conditional tail errors separately. A simplex-valued Wasserstein transfer controls that entire
-        tail-allocation law under dependence and yields an optimized simultaneous two-tail PAC bound with separate
-        calibration-panel and final-test total-variation budgets. Under an exponential mixing envelope, equal gaps optimally allocate a fixed span for marginal
-        coverage, while an explicit logarithmic water fill assigns extra separation to the final test gap in the
-        training-conditional PAC bound. The dependent high-probability bound keeps
-        every calibration gap distinct from the final test gap; an iid-beta rearrangement removes the free slack
-        using only the two TV budgets, and the actual panel order-statistic law sharpens it further. The same two
-        TV budgets control the complete random training-conditional coverage law in $W_1$ distance from its iid
-        beta benchmark, proving that fixed-$N$ conditional variability persists even under arbitrarily fast
-        mixing. The beta benchmark&apos;s mean absolute deviation has an exact closed form and a sharp
-        $N^{-1/2}$ law, yielding a finite calibration-size rule that adds the dependence budget without confusing
-        marginal and calibration-conditional coverage. An exact
-        binomial-beta mixture gives the fixed-test-memory limit for every calibration order statistic, and an exact
-        binomial-tail coefficient gives the resulting marginal-coverage shift. The same law extends to unequal
-        stationary two-state masses, with an exact finite-sum coefficient, asymmetric outer-rank limits, and a
-        Gaussian critical-window interpolation with an $O(N^{-1/2})$ remainder at the stationary mass.
-        Finite-$N$ Chernoff envelopes
-        away from the median rank and a Gaussian central crossover with an explicit Berry&ndash;Esseen remainder: the
-        panel can converge in total variation to iid while the final gap changes both the training-conditional tail
-        and, generally, marginal coverage.
-        Independent fitting preserves these guarantees conditional
-        on the learned score map; remote same-series training pays one additional mixing term, while reusing
-        calibration labels can reduce ordinary split coverage to zero. None of these statements claims
-        feature-conditional validity.</em>
+        <em>A conformal score accumulated along the forecast path forgets its starting regime only like
+        $\varepsilon/\Delta$, where a terminal score forgets exponentially, so a pooled threshold keeps marginal
+        coverage while its conditional coverage error decays slowly. The note also quantifies how overlapping or
+        dependent calibration windows break iid rank coverage, and what thinning restores.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>When Fast Mixing Justifies Pooled Residuals</em>. Note in preparation.
         <a href="./conformal-crossover.html">Summary</a> &middot;
         <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_crossover.py">certificate</a>.
-        <em>An exact finite-chain horizon-to-switching crossover for terminal-score coverage, with
-        a sharp i.i.d. rare-group counterexample separating marginal from
-        subgroup-conditional conformal validity,
-        the sharp nonreversible $L^2(\pi)$ contraction exponent, exact regular- and
-        irregular-grid finite-panel moments with explicit minimum-variance
-        nonnegative weights, a jointly optimal equal-time design and its
-        dense-grid endpoint-atom limit with a sharp global finite-budget error
-        bound and an exact cost-optimal cube-root panel rule, the sharp joint panel-size/switching-rate
-        variance profile, its two finite-panel Euler&ndash;Maclaurin corrections with
-        a computable remainder bound, and
-        dense- and resolved-grid limits, a one-sided spectral-Cantelli PAC
-        guarantee, exact polynomial count law, regular- and irregular-grid
-        joint panel-size/fast-switching total-variation theorems with exact
-        mutual-information and R&eacute;nyi-2/Hilbert&ndash;Schmidt effective-rank
-        refinements, an exact arbitrary-start path-entropy bound that jointly
-        accounts for burn-in and within-panel dependence, a full finite-sample Beta-law transfer for randomized
-        realized pooled coverage, a calibration-plus-future theorem transferring the whole repeated-coverage
-        count law to its beta-binomial benchmark, a multilevel
-        theorem transferring nested coverage counts to their Dirichlet&ndash;multinomial benchmark, an exact
-        atomic-score comparator for deterministic ties, an exact two-state
-        Hellinger phase diagram and persistent-plus-diffuse critical limit, an exact
-        overlapping-emission Fisher-information theorem, and an exact
-        joint burn-in/panel likelihood limit with a closed Gaussian-CDF phase surface,
-        Perron large-deviation rate,
-        sharp lattice tail prefactor with its initial-law amplitude and first
-        two relative saddle-point corrections, its moderate-deviation bridge
-        to the mean, a second-order central lattice Edgeworth expansion
-        uniform over every (even panel-size-dependent) initial regime law, exact
-        Green&ndash;Kubo variance intercept, all-order cumulant recursion,
-        explicit arbitrary-start boundary constants for every fixed cumulant
-        order with ordinary amplitude derivatives kept distinct from logarithmic
-        boundary cumulants, and local skewness/kurtosis corrections for the realized threshold,
-        plus sharp burn-in and within-panel relaxation bounds for arbitrary
-        starts.</em>
+        <em>A finite-state benchmark for when a pooled conformal threshold is accurate conditional on the current regime:
+        the conditional coverage error is an exact function of the horizon relative to the switching time. The
+        calibration spacing separately controls the variance of the empirical threshold; none of this gives
+        distribution-free conditional coverage.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Pulsar Spin-Down Switching and Timing Noise</em>. Note in preparation.
