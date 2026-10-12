@@ -73,7 +73,7 @@
   "key": "MarquesF2023",
   "authors": "Marques F., P. C.",
   "year": 2023,
-  "title": "On the Universal Distribution of the Coverage in Split Conformal Prediction",
+  "title": "Universal distribution of the empirical coverage in split conformal prediction",
   "venue": "arXiv:2303.02770",
   "doi": "10.48550/arXiv.2303.02770",
   "url": "https://arxiv.org/abs/2303.02770",
@@ -126,7 +126,7 @@
   "title": "On a space of completely additive functions",
   "venue": "Vestnik Leningrad University 13(7):52-59",
   "doi": "",
-  "url": "https://www.mathnet.ru/links/d483d221217d29f60d6f93617c387415/rm6527_eng.pdf",
+  "url": "",
   "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
  }
 ]
