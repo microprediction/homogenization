@@ -590,6 +590,18 @@ def check_limiting_perron_composite() -> None:
                 abs(mixture_exact - mixture_approximation)
                 <= pure_envelope + rounding_tolerance
             )
+            extremal_index = int(np.argmax(np.abs(pure_log_errors)))
+            extremal_prior = np.eye(3)[extremal_index]
+            extremal_exact = answer.y[2, index] + np.log(
+                extremal_prior @ normalized
+            )
+            extremal_approximation = approximation[index] + np.log(
+                extremal_prior @ right_at_time
+            )
+            assert abs(
+                abs(extremal_exact - extremal_approximation)
+                - pure_envelope
+            ) <= rounding_tolerance
         errors.append(error)
         specified_errors.append(specified_error)
         print(
@@ -611,7 +623,7 @@ def check_limiting_perron_composite() -> None:
         "limiting-Perron composite residual rates (stationary, specified): "
         f"{rates[-1]:.6f}, {specified_rates[-1]:.6f}"
     )
-    print("prior-simplex envelope checks: passed")
+    print("exact pure-start prior-simplex envelope checks: passed")
 
 
 def check_nonzero_initial_forcing() -> None:

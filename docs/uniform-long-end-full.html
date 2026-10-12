@@ -313,8 +313,12 @@
     $$\frac{\nu u_m(T)e^{-L_m(T)}}{\nu r_m(T)}
       =\sum_i\frac{\nu_i r_{m,i}(T)}{\nu r_m(T)}\rho_i.$$
     <p>The coefficients are nonnegative and sum to one, so the logarithm of the mixture ratio lies between the
-    pure-state logarithms. Taking the maximum of the finitely many pure-state constants proves the displayed
-    bound, even when $\nu$ varies with $m$ and $T$. The assumption $D(0)=0$ makes $u_m(0)=r_m(0)=\mathbf1$ exactly; if the
+    pure-state logarithms. Since every pure row is itself an admissible prior, this gives the exact identity</p>
+    $$\sup_{\nu\in\Delta_{d-1}}
+      \left|\log(\nu u_m(T))-L_m(T)-\log(\nu r_m(T))\right|
+      =\max_i\left|\log(e_i u_m(T))-L_m(T)-\log(e_i r_m(T))\right|.$$
+    <p>Thus the worst prior is always a pure starting regime. Taking the maximum of the finitely many pure-state
+    constants proves the displayed bound, even when $\nu$ varies with $m$ and $T$. The assumption $D(0)=0$ makes $u_m(0)=r_m(0)=\mathbf1$ exactly; if the
     forcing is already regime-dependent at the near endpoint, an additional decaying initial-slip term is required.</p>
 
     <h3 id="limiting-perron-corollary">A limiting-Perron corollary</h3>
@@ -368,8 +372,8 @@
       </tbody>
     </table>
     </div>
-    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts controls the whole prior
-    simplex because the ratio of two positive mixtures lies between the componentwise ratios. This independently
+    <p>The final observed orders are $2.0198$ and $1.9472$. Checking the three pure starts exhausts the whole prior
+    simplex: the exact worst prior is one of those starts. This independently
     certifies the simpler composite and its endpoint factor, rather than evaluating the moving-eigenvector formula
     that proves them.</p>
 
