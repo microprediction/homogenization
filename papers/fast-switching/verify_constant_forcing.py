@@ -17,6 +17,12 @@ from scipy.integrate import quad
 from scipy.optimize import brentq
 
 
+# The exact discriminant checks below compare normalized order-one
+# quantities.  This leaves a portable binary64 roundoff margin while staying
+# far below every substantive decomposition and inversion threshold.
+ROUNDOFF_TOL = 64 * np.finfo(float).eps
+
+
 def exact(gbar, gtilde, eps, maturity, sign):
     lam = 1.0 / eps
     s = cmath.sqrt(lam * lam + gtilde * gtilde)
@@ -231,7 +237,7 @@ def main():
             ref = exact(gbar, gtilde, eps, maturity, sign)
             max_identity_error = max(max_identity_error, abs(ref - outer - layer))
 
-            assert d.real >= math.sqrt(1.0 - rho * rho) - 2e-15
+            assert d.real >= math.sqrt(1.0 - rho * rho) - ROUNDOFF_TOL
             bound = (math.exp(gbar.real * maturity) * layer_constant
                      * math.exp(-(1.0 + math.sqrt(1.0 - rho * rho)) * maturity / eps))
             max_layer_ratio = max(max_layer_ratio, abs(layer) / bound)
@@ -270,7 +276,7 @@ def main():
         theta + 1j * math.sqrt(1.0 - theta * theta),
         theta - 1j * math.sqrt(1.0 - theta * theta),
     ])
-    assert np.max(np.abs(np.abs(branch_points) - 1.0)) < 3e-16
+    assert np.max(np.abs(np.abs(branch_points) - 1.0)) < ROUNDOFF_TOL
 
     # The slow-mode polynomial is third-order accurate in inverse total
     # switching speed.  The fast mode is omitted because its separate compact-
