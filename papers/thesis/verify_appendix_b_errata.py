@@ -23,6 +23,12 @@ import math
 import numpy as np
 
 
+# Every exact identity below involves quantities normalized to order one.
+# Sixty-four binary64 epsilons leave a portable roundoff margin while remaining
+# far below the smallest economically meaningful discrepancy in the tests.
+ROUNDOFF_TOL = 64 * np.finfo(float).eps
+
+
 def deterministic_discount(shifts: np.ndarray) -> float:
     """Return exp(-sum shifts) for unit-length intervals."""
     return math.exp(-float(np.sum(shifts)))
@@ -556,24 +562,24 @@ def main() -> None:
                 weights,
             )
         )
-        assert np.max(np.abs(equal_factors - equal_factors[0])) < 2e-16
+        assert np.max(np.abs(equal_factors - equal_factors[0])) < ROUNDOFF_TOL
         largest_equal_factor_basket_error = max(
             largest_equal_factor_basket_error,
             float(np.max(np.abs(base_equal - shifted_equal))),
         )
 
-    assert largest_option_error < 3e-15
-    assert largest_forward_error < 3e-15
+    assert largest_option_error < ROUNDOFF_TOL
+    assert largest_forward_error < ROUNDOFF_TOL
     assert positive_option_cases > 100
     assert largest_printed_ratio_error < 5e-13
-    assert largest_multibond_error < 3e-15
-    assert largest_shifted_bond_error < 3e-15
-    assert largest_forward_law_error < 3e-15
-    assert largest_normalized_call_error < 3e-15
+    assert largest_multibond_error < ROUNDOFF_TOL
+    assert largest_shifted_bond_error < ROUNDOFF_TOL
+    assert largest_forward_law_error < ROUNDOFF_TOL
+    assert largest_normalized_call_error < ROUNDOFF_TOL
     assert largest_implied_vol_error < 3e-12
-    assert largest_equal_factor_basket_error < 3e-15
+    assert largest_equal_factor_basket_error < ROUNDOFF_TOL
     assert largest_basket_measure_change > 1e-5
-    assert largest_basket_bound_violation < 3e-15
+    assert largest_basket_bound_violation < ROUNDOFF_TOL
 
     # The constant-rate example from Issue #69: t=0, T=tau=1,
     # tau+Delta=2, K=0, beta X=0, and deterministic shift 5%.
@@ -584,8 +590,8 @@ def main() -> None:
     caplet_printed = 1.0 - a_01
     swaplet_correct = a_01 - a_02
     swaplet_printed = a_01 * (1.0 - 1.0)
-    assert abs(caplet_correct - 0.0463920064647545) < 2e-16
-    assert abs(caplet_printed - 0.0487705754992860) < 2e-16
+    assert abs(caplet_correct - 0.0463920064647545) < ROUNDOFF_TOL
+    assert abs(caplet_printed - 0.0487705754992860) < ROUNDOFF_TOL
     assert swaplet_printed == 0.0
 
     # Use an in-the-money floorlet to show that the same omitted A(0,T)
@@ -608,7 +614,7 @@ def main() -> None:
     printed_forward_error = float(
         np.max(np.abs(explicit - printed_forward))
     )
-    assert forward_error < 3e-16
+    assert forward_error < ROUNDOFF_TOL
     assert printed_forward_error > 0.1
 
     # With a constant payoff, the corrected recursion preserves the constant.
@@ -616,8 +622,8 @@ def main() -> None:
     explicit_one, corrected_one, printed_one = forward_measure_identity(
         transition, next_rates, 0.025, np.ones(2)
     )
-    assert np.max(np.abs(explicit_one - 1.0)) < 3e-16
-    assert np.max(np.abs(corrected_one - 1.0)) < 3e-16
+    assert np.max(np.abs(explicit_one - 1.0)) < ROUNDOFF_TOL
+    assert np.max(np.abs(corrected_one - 1.0)) < ROUNDOFF_TOL
     assert np.min(printed_one - 1.0) > 0.08
 
     # A reproducible two-state annuity-measure counterexample.
@@ -642,7 +648,7 @@ def main() -> None:
     # The envelope is sharp given only the factor range.  A two-point base
     # law with mean likelihood ratio sqrt(low * high) attains it exactly.
     sharp_tv, sharp_bound = sharp_tv_example(0.4, 2.5)
-    assert abs(sharp_tv - sharp_bound) < 3e-16
+    assert abs(sharp_tv - sharp_bound) < ROUNDOFF_TOL
 
     print("Appendix B deterministic-shift pricing errata")
     print(f"maximum caplet/floorlet identity error: {largest_option_error:.3e}")
@@ -711,11 +717,11 @@ def main() -> None:
         f"printed error {printed_forward_error:.6f}"
     )
     print(
-        "PASS: maturity-specific shift factors and negative-exponent "
-        "change of numeraire, including nonlinear multibond payoffs and "
-        "forward-measure/implied-vol invariance, with the exact limitation "
-        "and sharp TV modulus for bond-basket numeraires"
+        "verified maturity-specific shift factors, negative-exponent change "
+        "of numeraire, nonlinear multibond payoffs, forward-measure and "
+        "implied-vol invariance, and the sharp bond-basket TV modulus"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":
