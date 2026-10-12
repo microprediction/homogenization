@@ -81,6 +81,8 @@ papers/credit/
 docs/                      the site (GitHub Pages from main /docs)
 tools/assemble.py          builds docs/*.html from tools/pages/, including the identifiability note
 tools/biblio.json          the verified bibliography
+tools/check_pages.py       checks page sources: LaTeX backslashes, paragraph length, page length, bibliography links
+AGENTS.md                  instructions for coding agents opening PRs here
 ```
 
 ## Running the certificates
