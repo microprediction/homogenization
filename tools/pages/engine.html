@@ -144,6 +144,16 @@
     <p>The stationary start is essential. With equal transition rates, $g=(0,1)$, $T=1$ and a start in the
     lower-forcing state, the transform at $m=0.2$ is $1.1255480567$ and its speed derivative is
     $+0.5459291779$; a fixed nonstationary start can therefore move in the opposite direction.</p>
+    <p>Two states are also essential for the convexity conclusion. For the irreducible nonreversible generator</p>
+    $$Q=\begin{pmatrix}-5&amp;4&amp;1\\13&amp;-79&amp;66\\4&amp;1&amp;-5\end{pmatrix},\qquad
+      \pi={1\over99}(47,3,49),\qquad g=(-4,3,5),$$
+    <p>the stationary transform
+    $\Phi_m(1/2)=\pi^\top\exp\{\tfrac12(mQ+\operatorname{diag}g)\}\mathbf1$ satisfies, at $m=0.01$,</p>
+    $$\Phi_m=6.1666724874,\qquad \partial_m\Phi_m=-6.3301599931,\qquad
+      \partial_m^2\Phi_m=-2.5371897073.$$
+    <p>Thus this witness still decreases locally but is strictly concave there. A $9\times9$ block exponential and
+    an independent Cauchy-contour differentiation agree on the curvature within $2.4\times10^{-11}$; the example
+    rules out extrapolating the two-state convexity theorem to arbitrary nonreversible finite chains.</p>
     <p>This theorem is finite-horizon and nonasymptotic, but its scope is exactly a stationary two-state chain with
     real constant forcing. The certificate checks 64 unequal-rate parameter sets at 13 speeds: its largest
     normalized transform, derivative and curvature discrepancies are $2.267\times10^{-14}$,
@@ -187,7 +197,7 @@
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a> and <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, Lewis inversion tail control, and the variance-gamma frequency envelope and polynomial-decay certificate.</li>
-      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_finite_horizon_order.py">verify_finite_horizon_order.py</a>: exact stationary two-state finite-horizon speed monotonicity and convexity, the endpoint envelope and a nonstationary counterexample.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_finite_horizon_order.py">verify_finite_horizon_order.py</a>: exact stationary two-state finite-horizon speed monotonicity and convexity, the endpoint envelope, a nonstationary monotonicity counterexample and a stationary three-state convexity counterexample.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>

@@ -5,7 +5,8 @@ Feynman--Kac transform at every positive horizon decreases strictly and is
 strictly convex in the common speed multiplier.  The certificate compares the
 closed transform and its first two analytic speed derivatives with independent
 block-matrix exponential calculations.  It also records why stationarity is
-essential.
+essential and gives a stationary nonreversible three-state counterexample to
+extending strict convexity beyond the two-state theorem.
 """
 
 import numpy as np
@@ -14,6 +15,7 @@ from scipy.linalg import expm, expm_frechet
 
 EPS = np.finfo(float).eps
 ROUND_TOL = 2048.0 * EPS
+CAUCHY_TOL = 1.0e-8
 
 
 def closed_value_and_derivatives(a, b, g1, g2, speed, maturity):
@@ -44,28 +46,63 @@ def closed_value_and_derivatives(a, b, g1, g2, speed, maturity):
     return value, derivative, curvature
 
 
-def matrix_value_and_derivatives(a, b, g1, g2, speed, maturity, prior):
-    """Independent matrix exponential and first two speed derivatives."""
-    generator = np.array([[-a, a], [b, -b]], dtype=float)
-    tilted = speed * generator + np.diag([g1, g2])
+def general_matrix_value_and_derivatives(
+    generator, forcing, speed, maturity, prior
+):
+    """Matrix exponential and first two speed derivatives in any dimension."""
+    generator = np.asarray(generator, dtype=float)
+    forcing = np.asarray(forcing, dtype=float)
+    prior = np.asarray(prior, dtype=float)
+    dimension = len(forcing)
+    tilted = speed * generator + np.diag(forcing)
     semigroup, derivative = expm_frechet(
         maturity * tilted, maturity * generator
     )
-    one = np.ones(2)
-    block = np.zeros((6, 6))
+    one = np.ones(dimension)
+    block = np.zeros((3 * dimension, 3 * dimension))
     block_generator = maturity * generator
     block_tilted = maturity * tilted
     for index in range(3):
-        block[2 * index:2 * index + 2,
-              2 * index:2 * index + 2] = block_tilted
-    block[0:2, 2:4] = block_generator
-    block[2:4, 4:6] = block_generator
-    second_derivative = 2.0 * expm(block)[0:2, 4:6]
+        start = dimension * index
+        block[start:start + dimension, start:start + dimension] = block_tilted
+    block[0:dimension, dimension:2 * dimension] = block_generator
+    block[dimension:2 * dimension, 2 * dimension:3 * dimension] = block_generator
+    second_derivative = 2.0 * expm(block)[
+        0:dimension, 2 * dimension:3 * dimension
+    ]
     return (
         float(prior @ semigroup @ one),
         float(prior @ derivative @ one),
         float(prior @ second_derivative @ one),
     )
+
+
+def matrix_value_and_derivatives(a, b, g1, g2, speed, maturity, prior):
+    """Independent two-state specialization of the matrix calculation."""
+    generator = np.array([[-a, a], [b, -b]], dtype=float)
+    return general_matrix_value_and_derivatives(
+        generator, [g1, g2], speed, maturity, prior
+    )
+
+
+def cauchy_speed_derivatives(
+    generator, forcing, speed, maturity, prior, radius=0.003, nodes=64
+):
+    """Independent Cauchy-contour derivatives of the entire speed transform."""
+    angles = 2.0 * np.pi * np.arange(nodes) / nodes
+    circle = speed + radius * np.exp(1j * angles)
+    one = np.ones(len(forcing))
+    values = np.array([
+        prior @ expm(
+            maturity * (point * generator + np.diag(forcing))
+        ) @ one
+        for point in circle
+    ])
+    first = np.mean(values * np.exp(-1j * angles)) / radius
+    second = (
+        2.0 * np.mean(values * np.exp(-2j * angles)) / radius**2
+    )
+    return first, second
 
 
 def scaled_error(lhs, rhs):
@@ -171,6 +208,47 @@ def main():
     assert low_derivative > 0.0
     assert high_derivative < 0.0
 
+    # The two-state convexity conclusion is not dimension-free.  This
+    # irreducible three-state chain is stationary under (47, 3, 49) / 99 but
+    # is nonreversible: pi_0 Q_01 != pi_1 Q_10.  Its stationary transform has
+    # a strictly negative second speed derivative at the displayed point.
+    three_generator = np.array([
+        [-5.0, 4.0, 1.0],
+        [13.0, -79.0, 66.0],
+        [4.0, 1.0, -5.0],
+    ])
+    three_prior = np.array([47.0, 3.0, 49.0]) / 99.0
+    three_forcing = np.array([-4.0, 3.0, 5.0])
+    three_speed = 0.01
+    three_maturity = 0.5
+    assert np.max(abs(three_prior @ three_generator)) <= ROUND_TOL
+    assert abs(three_prior[0] * three_generator[0, 1]
+               - three_prior[1] * three_generator[1, 0]) > 1.0
+    (
+        three_value,
+        three_derivative,
+        three_curvature,
+    ) = general_matrix_value_and_derivatives(
+        three_generator,
+        three_forcing,
+        three_speed,
+        three_maturity,
+        three_prior,
+    )
+    cauchy_derivative, cauchy_curvature = cauchy_speed_derivatives(
+        three_generator,
+        three_forcing,
+        three_speed,
+        three_maturity,
+        three_prior,
+    )
+    cauchy_derivative_error = abs(cauchy_derivative - three_derivative)
+    cauchy_curvature_error = abs(cauchy_curvature - three_curvature)
+    assert cauchy_derivative_error <= CAUCHY_TOL
+    assert cauchy_curvature_error <= CAUCHY_TOL
+    assert three_derivative < 0.0
+    assert three_curvature < 0.0
+
     print("finite-horizon switching-speed order certificate")
     print("  random unequal-rate parameter sets", 64)
     print("  speeds per parameter set", len(speeds))
@@ -187,6 +265,11 @@ def main():
           f"{low_value:.10f}", f"{low_derivative:.10f}")
     print("  high-state nonstationary value and derivative",
           f"{high_value:.10f}", f"{high_derivative:.10f}")
+    print("  three-state stationary value", f"{three_value:.10f}")
+    print("  three-state speed derivative", f"{three_derivative:.10f}")
+    print("  three-state speed curvature", f"{three_curvature:.10f}")
+    print("  Cauchy derivative discrepancy", f"{cauchy_derivative_error:.3e}")
+    print("  Cauchy curvature discrepancy", f"{cauchy_curvature_error:.3e}")
     print("PASS")
 
 
