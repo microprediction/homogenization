@@ -211,9 +211,29 @@
         proportional to $\bar s + 2\kappa^2\mathcal K(u, u)$. The yield curve sees the same combination, so neither the
         time series nor the cross section separates the average variance from the level&apos;s Green&ndash;Kubo term.</li>
       <li>$A_3$ and $A_4$ are identified, and they give $\mathcal K_{\mathrm{sym}}(u, w)$ and $\mathcal K(w, w)$.</li>
-      <li>The matrix is positive semidefinite, so $A_3^2 \le 4A_2A_4$ by the Cauchy&ndash;Schwarz inequality applied to
-        $e^{-2\kappa t}$ and $e^{-4\kappa t}$.</li>
+      <li>The matrix is positive semidefinite. The explicit maturity loadings sharpen its generic constraint to the
+        exact bound below.</li>
     </ul>
+
+    <h3>The sharp maturity-dependent coefficient cone</h3>
+    <p>Put $I_j=\int_0^\Delta e^{-j\kappa t}\,dt$ and $a=\kappa\Delta$. Cauchy&ndash;Schwarz in the
+      symmetrized Green&ndash;Kubo form gives</p>
+    <div class="equation-card">
+    $$A_3^2\leq4\rho(a)A_2A_4,\qquad
+      \rho(a)=\frac{I_3^2}{I_2I_4}
+      =\frac{8(1-e^{-3a})^2}{9(1-e^{-2a})(1-e^{-4a})}.$$
+    </div>
+    <p>This is sharper than $A_3^2\leq4A_2A_4$ at every positive sampling interval. Indeed, with $x=e^{-a}$,</p>
+    $$\rho(a)=\frac{8(1+x+x^2)^2}{9(1+x)^2(1+x^2)},\qquad
+      1-\rho(a)=\frac{(1-x)^2(x^2+4x+1)}{9(1+x)^2(1+x^2)},$$
+    <p>Direct differentiation gives</p>
+    $$\frac{d\rho}{da}=-\frac{16x^2(1-x)(1+x+x^2)}{9(1+x)^3(1+x^2)^2}&lt;0.$$
+    <p>Thus $\rho$ decreases from $1$ to $8/9$ as $a$ increases from zero to infinity. The coefficient is sharp:
+      equality holds when $w$ is proportional to $u$ in the symmetrized Green&ndash;Kubo seminorm.</p>
+    <p>Profiling $A_2$ into the Gaussian variance still leaves the same closed local cone
+      $\mathbb R\times\mathbb R_+$ in $(A_3,A_4)$. For every $A_4&gt;0$ and either sign of $A_3$, one can choose
+      $A_2\geq A_3^2/\{4\rho(a)A_4\}$, while $A_4=0$ forces $A_3=0$; the projected feasible set is therefore
+      $\{(0,0)\}\cup\{(A_3,A_4):A_4&gt;0\}$ and its closure is the stated half-space.</p>
 
     <h2>The cone-corrected test for switching</h2>
     <p>With no switching the matrix is zero. The scores for $A_3$ and $A_4$ at zero are sums of Hermite polynomials of
@@ -226,10 +246,8 @@
     it tests both positive and negative excess kurtosis. That is not the score statistic for this model.</p>
     <p>Here $A_4\geq0$. After the variance correction $A_2$ is profiled into the Gaussian variance, the closure of the
     local alternative cone in the skewness&ndash;kurtosis coordinates is $\mathbb R\times\mathbb R_+$.</p>
-    <p>Indeed, for every
-    $A_4&gt;0$ and either sign of $A_3$, the positive-semidefinite constraint $A_3^2\leq4A_2A_4$ can be met by choosing
-    $A_2$ large enough, while $A_2$ is absorbed by the interior variance nuisance parameter. Projecting the Gaussian
-    score onto that cone gives</p>
+    <p>The preceding sharp constraint has the same profiled closure because $\rho(\kappa\Delta)&gt;0$, while $A_2$ is
+    absorbed by the interior variance nuisance parameter. Projecting the Gaussian score onto that cone gives</p>
     <div class="equation-card">
     $$\mathrm{LM}_+=Z_3^2+(Z_4^+)^2
       =n\left\{\frac{\hat S^2}{6}+\frac{\max(\hat K,0)^2}{24}\right\}.$$
@@ -516,7 +534,8 @@
     <a href="./bibliography.html#AitSahalia2002">A&iuml;t-Sahalia (2002)</a>.</p>
     <p class="muted">Certificates: <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_likelihood.py">transition expansion</a>,
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_filtered_likelihood.py">filtered likelihood</a>,
-    and <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_cone_test.py">cone test</a>.</p>
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_cone_test.py">cone test</a>,
+    and <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_loading_cone.py">sharp loading cone</a>.</p>
   </main>
 
   <footer>
