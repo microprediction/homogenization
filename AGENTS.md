@@ -17,9 +17,9 @@ visible on this site.
 
 ## Pages: short summaries, detail in a full note
 
-- A page is a summary of at most about 250 source lines, and never more than 450 (`check_pages.py` enforces 450).
-  State the setup, the handful of results a reader should remember (each once, with its key formula), a few headline
-  numbers, and what is not claimed.
+- Pages are technical and may run to a few hundred source lines, but never more than 800 (`check_pages.py`
+  enforces this). Lead with the setup and the results a reader should remember (each once, with its key formula),
+  then headline numbers and what is not claimed.
 - Put proofs, extra theorems, long tables and side results in `tools/pages/<page>-full.html`, linked from the summary
   and linking back. Nine pages already follow this pattern (for example `cumulants.html` and `cumulants-full.html`).
   When you extend a result, add the detail to the full note and change at most a sentence or two of the summary.

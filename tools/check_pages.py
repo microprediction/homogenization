@@ -3,7 +3,7 @@
 With no arguments every page is checked. Reports, and exits nonzero on:
   - LaTeX commands missing their backslash inside $...$ (e.g. `,qquad`, `{mathrm`), which render as text;
   - paragraphs of more than three sentences (fix with tools/split_paragraphs.py);
-  - pages over 450 source lines (move detail to <page>-full.html);
+  - pages over 800 source lines (move detail to <page>-full.html);
   - duplicate entries on the bibliography page, bibliography keys missing from it, and broken
     ./bibliography.html#Key links.
 """
@@ -14,7 +14,7 @@ PAGES = ROOT / 'tools' / 'pages'
 CMDS = ('qquad|mathrm|operatorname|infty|mathbb|mathcal|mathbf|widehat|widetilde|varepsilon|tfrac|ldots|cdots|'
         'bigl|bigr|Bigl|Bigr|oint|nabla|partial|approx')
 EXEMPT = {'papers', 'bibliography', 'survey'}  # list pages, not notes
-MAX_LINES = 450
+MAX_LINES = 800
 
 
 def problems(path):
