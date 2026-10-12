@@ -76,20 +76,21 @@
     </div>
     <p>Thus only two event types are required; at least three hidden states
       are needed for a finite irreducible chain to violate detailed balance.</p>
-    <p>For two hidden states the finite-rate answer is sharper. Write
+    <p>For two hidden states the finite-rate answer is sharper, even with any number of competing causes. Write
       $Q_0=\left(\begin{smallmatrix}-a&amp;a\\b&amp;-b\end{smallmatrix}\right)$,
-      let $g_i$ be the cause-1 hazard, and let $d_i$ be the total hazard in state $i$.</p>
+      let $g_{r,i}$ be the cause-$r$ hazard, and let $d_i=\sum_r g_{r,i}$ be the total hazard in state $i$.</p>
     <p>Put $D_1=ad_1+bd_0$, $D_0=d_0d_1$,
-      $N_1=ag_1+bg_0$, $N_0=(bd_1g_0+ad_0g_1)/(a+b)$,
-      $p_0=N_1/D_1$, and $A=N_0-p_0D_0$. Direct inversion gives</p>
+      $N_{1r}=ag_{r,1}+bg_{r,0}$, $N_{0r}=(bd_1g_{r,0}+ad_0g_{r,1})/(a+b)$,
+      $p_{0r}=N_{1r}/D_1$, and $A_r=N_{0r}-p_{0r}D_0$. Direct inversion gives</p>
     <div class="equation-card">
-    $$p_1(m)=p_0+{A\over mD_1+D_0},\qquad
-      \left|p_1(m)-p_0-{A\over mD_1}\right|
-      \le { |A|D_0\over m^2D_1^2}.$$
+    $$p_r(m)=p_{0r}+{A_r\over mD_1+D_0},\qquad
+      \left|p_r(m)-p_{0r}-{A_r\over mD_1}\right|
+      \le { |A_r|D_0\over m^2D_1^2}.$$
     </div>
-    <p>The remainder has the opposite sign to the first-order coefficient whenever $A\ne0$.
-      This is an exact global bound for every $m&gt;0$, not an asymptotic claim; the certificate also verifies that
-      $A/D_1$ equals the Green&ndash;Kubo coefficient above.</p>
+    <p>The coefficients satisfy $\sum_rA_r=0$, so the expansion preserves the probability simplex exactly.
+      Each remainder has the opposite sign to its first-order coefficient whenever $A_r\ne0$.</p>
+    <p>This is an exact global bound for every $m&gt;0$, not an asymptotic claim; the certificate also verifies that
+      $A_r/D_1$ equals the Green&ndash;Kubo coefficient above.</p>
     <p>With $d$ competing causes, one unweighted race does not generally identify the whole oriented matrix.
       Let $w_a>0$ scale cause $a$ and write $A=\tfrac12(K^{(0)}-K^{(0)\top})$. One unweighted race sees only
       $A\mathbf1$, a $(d-1)$-dimensional contrast, whereas $q=d-1$ linearly independent positive designs $w$
