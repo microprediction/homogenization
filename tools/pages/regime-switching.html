@@ -354,11 +354,37 @@
       \left(\frac{\alpha^2}{2}-\frac16\right)x^3+
       \frac{\alpha(5\alpha^2-3)}8x^4+O(x^5).$$
     </div>
+    <p>The equilibrium is actually explicit to every order. With the square-root and logarithm branches selected
+      continuously from $x=0$,</p>
+    $$\ell_\alpha(x)=\log\!\left(
+      {x-\alpha+\sqrt{1-2\alpha x+x^2}\over1-\alpha}\right),
+      \qquad
+      \ell_\alpha'(x)={1\over\sqrt{1-2\alpha x+x^2}}.$$
+    <p>The generating function for the Legendre polynomials $P_n$ therefore gives the complete series</p>
+    <div class="equation-card">
+    $$\ell_\alpha(x)=\sum_{n\ge1}{P_{n-1}(\alpha)\over n}x^n,
+      \qquad |x|&lt;1.$$
+    </div>
+    <p>The only nearest inverse-function branch points are
+      $x_\pm=\alpha\pm i\sqrt{1-\alpha^2}$, and both have modulus one. Hence the convergence radius is exactly one
+      for every pair of positive transition rates: unequal rate proportions change every coefficient but not the
+      natural scale $|q|&lt;r_{12}+r_{21}$. Since $|P_n(\alpha)|\le1$ for real
+      $|\alpha|\le1$, truncating after degree $N$ has the explicit uniform bound</p>
+    $$\left|\ell_\alpha(x)-\sum_{n=1}^N{P_{n-1}(\alpha)\over n}x^n\right|
+      \le {|x|^{N+1}\over(N+1)(1-|x|)},\qquad |x|&lt;1.$$
+    <p>The symmetry $\ell_{-\alpha}(-x)=-\ell_\alpha(x)$ gives
+      $c_n(-\alpha)=(-1)^{n+1}c_n(\alpha)$. At equal rates this removes every even coefficient and reduces the
+      formula to $\ell_0(x)=\operatorname{asinh}x$. This is an exact constant-forcing theorem; it does not replace
+      the preceding maturity-uniform bound for time-dependent forcing.</p>
     <p>Consequently, the signed dynamic-mean equilibrium error is
       $\ell_*-D_*=\tfrac12\alpha x^2+O(x^3)$ whenever the rates are unequal. If the rates are equal,
       $\alpha=0$ and the leading error is instead $-x^3/6+O(x^5)$. This expansion is a constant-forcing
       sharpness result; the preceding nonasymptotic bound, not this local series, is the claim for general
       bounded time-dependent forcing.</p>
+    <p>The all-order certificate independently reverts the implicit equilibrium equation through degree $20$ and
+      compares those coefficients with the Legendre recurrence. Across seven signed asymmetries and
+      $x=\pm0.35$, the maximum value error is $3.347\times10^{-12}$, the maximum equilibrium-equation residual is
+      $2.349\times10^{-12}$, and the largest error is $0.171530$ of the displayed uniform remainder bound.</p>
     <p>A finite-contrast certificate with $\kappa=1.3$, $T=4$, $\theta=(0.18,0.04)$ and
       $\sigma=(0.16,0.05)$ gives:</p>
     <table>
