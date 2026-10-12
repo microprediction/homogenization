@@ -45,6 +45,15 @@
   "annotation": "Proves the central limit theorem for time integrals of a function of a reversible Markov process, with the long-run variance given through the resolvent; the reversibility assumption is essential to the proof."
  },
  {
+  "key": "DonskerVaradhan1975",
+  "authors": "Donsker, M. D. and Varadhan, S. R. S.",
+  "year": 1975,
+  "title": "Asymptotic evaluation of certain Markov process expectations for large time, I",
+  "venue": "Communications on Pure and Applied Mathematics 28(1):1-47",
+  "doi": "10.1002/cpa.3160280102",
+  "annotation": "Develops the large-time variational principle for exponential functionals of Markov processes. For a finite chain, scaling the generator makes its empirical-measure cost linear in switching speed, which gives the exact convex ordering of the tilted principal eigenvalue."
+ },
+ {
   "key": "Prony1795",
   "authors": "de Prony, G. R.",
   "year": 1795,
