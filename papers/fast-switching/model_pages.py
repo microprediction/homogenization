@@ -103,6 +103,103 @@ CONSTANT_PROOF = r'''    <p>The first line follows from the matrix exponential. 
     Green&ndash;Kubo factor, and expand the remaining bracket in $\varepsilon$.</p>
 '''
 
+CONSTANT_SCOPE = r'''    <h3>Where the expansion applies</h3>
+    <p>This expansion is pointwise in the Fourier frequency. Put $z = \varepsilon\tilde g$ and take the principal
+    square root $d(z) = \sqrt{1 + z^2}$. The exact answer separates into its slow outer mode and its fast initial
+    layer:</p>
+    <div class="equation-card">
+    $$\phi_\pm=e^{\bar gT}\left[A_\pm(z)e^{(d(z)-1)T/\varepsilon}
+      +B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right],\qquad
+      A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+      B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).$$
+    </div>
+    <p>The branch points $z=\pm i$ give the natural radius one. More quantitatively, fix $0&lt;\rho&lt;1$. If
+    $|z|\leq\rho$, then the principal-root identity
+    $(\operatorname{Re}d)^2=(|1+z^2|+\operatorname{Re}(1+z^2))/2$ gives
+    $\operatorname{Re}d(z)\geq\sqrt{1-\rho^2}$, and hence</p>
+    $$\left|e^{\bar gT}B_\pm(z)e^{-(d(z)+1)T/\varepsilon}\right|
+      \leq e^{\operatorname{Re}\bar gT}
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}.$$
+    <p>For fixed $\tilde g$, the outer factor is analytic for $|z|&lt;1$. If $P_{2,\pm}$ is its quadratic Taylor
+    polynomial,</p>
+    $$P_{2,\pm}(z)=1+\frac{T\tilde g\pm1}{2}z+
+      \left(\frac{(T\tilde g)^2}{8}\pm\frac{T\tilde g}{4}-\frac14\right)z^2,$$
+    <p>then for $|z|\leq r&lt;\rho&lt;1$, Cauchy&apos;s estimate gives the explicit remainder</p>
+    $$\left|A_\pm(z)e^{T\tilde g(d(z)-1)/z}-P_{2,\pm}(z)\right|
+      \leq \frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3,\qquad
+      M_\rho=\max_{|w|=\rho}\left|A_\pm(w)e^{T\tilde g(d(w)-1)/w}\right|.$$
+    <p>Combining the two estimates gives the absolute error bound</p>
+    $$\left|\phi_\pm-e^{\bar gT}P_{2,\pm}(z)\right|\leq e^{\operatorname{Re}\bar gT}
+      \left[\frac{M_\rho}{\rho^3(1-r/\rho)}|z|^3+
+      \frac{\sqrt{1+\rho^2}+1+\rho}{2\sqrt{1-\rho^2}}
+      e^{-(1+\sqrt{1-\rho^2})T/\varepsilon}\right].$$
+    <p>Thus the fixed-frequency second-order error is $O(\lambda^{-3})$ plus an explicitly bounded exponential
+    layer. A Fourier price needs the separate frequency-envelope condition
+    $|\tilde g(u)|/\lambda\leq\rho$ on the part of the integral where the approximation is used; the statement is
+    not uniform over all frequencies.</p>
+
+    <h3>From a transform bound to a price bound</h3>
+    <p>The passage through Lewis inversion can be made exact, but it introduces a separate tail term. Let
+    $\phi_\lambda$ be the exact log-return transform, let $\widehat\phi_\lambda$ be any approximation used only on
+    $0\leq u\leq R$, and suppose
+    $|\phi_\lambda(u-i/2)-\widehat\phi_\lambda(u-i/2)|\leq E_\lambda(u)$ there. If
+    $M_{1/2,\lambda}=\mathbb E[e^{X_\lambda/2}]&lt;\infty$, then the Lewis call with the approximate transform
+    stopped at $R$ satisfies</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    |C_\lambda-\widehat C_{\lambda,R}|
+    \leq \frac{\sqrt{S_0K}\,e^{-rT}}{\pi}\left[
+    \int_0^R\frac{E_\lambda(u)}{u^2+1/4}\,du
+\mathrel{+}M_{1/2,\lambda}\{\pi-2\arctan(2R)\}\right].
+    \end{aligned}$$
+    </div>
+    <p>Indeed, $|\phi_\lambda(u-i/2)|\leq M_{1/2,\lambda}$ and
+    $\int_R^\infty(u^2+1/4)^{-1}du=\pi-2\arctan(2R)$. This proves convergence by first fixing $R$, taking the
+    fast-switching limit on that compact interval, and then sending $R$ to infinity, provided the half-moments are
+    uniformly bounded. It does <em>not</em> transfer the compact-frequency order automatically. If the forcing
+    condition permits only $R=O(\lambda)$, as for variance gamma with switching martingale corrections, this
+    model-independent tail certificate is only $O(\lambda^{-1})$; for a diffusive $u^2$ contrast and
+    $R=O(\sqrt\lambda)$ it is only $O(\lambda^{-1/2})$. Faster price rates require a model-specific decay bound for
+    the shifted characteristic function. These are upper-bound limitations, not lower bounds on the actual error.</p>
+
+    <h3>Unequal transition rates</h3>
+    <p>The radius-one conclusion is not an artifact of symmetric switching. Let the generator be
+    $m\left(\begin{smallmatrix}-a&a\\b&-b\end{smallmatrix}\right)$ with $a,b&gt;0$, put
+    $\kappa=a+b$, $\vartheta=(a-b)/\kappa$, $\varepsilon=(m\kappa)^{-1}$,
+    $\delta=g_1-g_2$, $z=\varepsilon\delta$, and
+    $\bar g_\pi=(bg_1+ag_2)/\kappa$. Direct diagonalization gives</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \phi_\pm={}&e^{\bar g_\pi T}\left[A_\pm(z)
+      e^{\{d(z)-1+\vartheta z\}T/(2\varepsilon)}
+      +B_\pm(z)e^{-\{d(z)+1-\vartheta z\}T/(2\varepsilon)}\right],\\
+    d(z)={}&\sqrt{1-2\vartheta z+z^2},\qquad
+    A_\pm=\frac12\left(1+\frac{1\pm z}{d}\right),\quad
+    B_\pm=\frac12\left(1-\frac{1\pm z}{d}\right).
+    \end{aligned}$$
+    </div>
+    <p>The branch points are
+    $z=\vartheta\pm i\sqrt{1-\vartheta^2}$, again on the unit circle. Thus the slow mode is analytic for
+    $|z|&lt;1$. On every closed disk $|z|\leq\rho&lt;1$,
+    $\eta_{\vartheta,\rho}=\min\operatorname{Re}d(z)&gt;0$ and
+    $|B_\pm(z)|\leq(1-\rho)^{-1}$, so the second term is bounded by</p>
+    $$\frac{e^{\operatorname{Re}\bar g_\pi T}}{1-\rho}
+      \exp\left[-\frac{\eta_{\vartheta,\rho}+1-|\vartheta|\rho}
+      {2\varepsilon}T\right].$$
+    <p>The quadratic slow-mode polynomial therefore has an $O((m\kappa)^{-3})$ fixed-frequency remainder plus this
+    exponential layer by Cauchy&apos;s estimate on nested disks. Explicitly, if
+    $c_1=T\delta(1-\vartheta^2)/4$, $c_2=T\delta\vartheta(1-\vartheta^2)/4$,
+    $a_{1,\pm}=(\vartheta\pm1)/2$, and
+    $a_{2,\pm}=(3\vartheta^2-1)/4\pm\vartheta/2$, the slow multiplier after
+    $e^{\bar g_\pi T}$ is</p>
+    $$P_{2,\pm}(z)=1+(a_{1,\pm}+c_1)z+
+      \left(a_{2,\pm}+c_2+a_{1,\pm}c_1+\tfrac12c_1^2\right)z^2+O(z^3).$$
+    <p>Symmetric switching is the special case $\vartheta=0$, $\delta=2\tilde g$. This transform is
+    the finite-state Feynman&ndash;Kac counterpart of the two-state occupation transforms studied by
+    <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
+'''
+
 
 # ====================================================================================== Merton
 def merton_mc(S0, K, T, r, sig, ell, mu, de, lam, N=400000, seed=7):
@@ -235,7 +332,7 @@ def merton_page():
     \phi_J(u) &= \exp\big(iu\mu_J - \tfrac12u^2\delta^2\big), \qquad \bar k = e^{\mu_J + \delta^2/2} - 1, \\
     \bar s, \tilde s &= \frac{\sigma_1^2 \pm \sigma_2^2}{2}, \qquad \bar\ell, \tilde\ell = \frac{\ell_1 \pm \ell_2}{2} .
     \end{aligned}$$
-''' + CONSTANT_PROOF + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
+''' + CONSTANT_PROOF + CONSTANT_SCOPE + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: Merton&apos;s characteristic
     function at the averaged variance and intensity, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$
     and the memory of the starting regime. The upper sign is for a start in the stressed regime.</p>
     <p>The Green&ndash;Kubo exponent has three parts, from the square of $\tilde g$:</p>
@@ -309,7 +406,8 @@ def variance_gamma_page():
             ref = call(K, lam_, None)
             rows.append([f'{lam_:g}', f'{K}', f'{ref:.6f}'] + [e(abs(call(K, lam_, o) - ref)) for o in (0, 1, 2)])
     gbig = gparts(200 - 0.5j)
-    print('VG: |g~| at u = 200:', abs(gbig[1]))
+    omtilde = (om[0] - om[1]) / 2
+    print('VG: |g~| at u = 200:', abs(gbig[1]), '|g~|/u:', abs(gbig[1]) / 200, 'omega~:', omtilde)
 
     body = r'''    <h1>Variance gamma with switching parameters</h1>
     <p class="subtitle">A pure-jump stock whose volatility, kurtosis and skew all change with a hidden regime; European option prices in closed form.</p>
@@ -355,10 +453,15 @@ def variance_gamma_page():
 '''
     body += two_state_expansion(r'$\tilde g = \tfrac12\,iu\,(\omega_1 - \omega_2) + \tfrac12\big(\psi_1(u) - \psi_2(u)\big)$',
                                 complex_g='here $g$ is complex for every $u$',
-                                extra=r''' The half-difference $\tilde g$ grows only like $\log u$, because each exponent does: at $u = 200$, $|\tilde g|$ is '''
-                                + f'{abs(gbig[1]):.1f}' + r''', where the <a href="./black-scholes.html">Black&ndash;Scholes</a> forcing would have grown like $u^2$. The
-    price of that is slow decay. The characteristic function falls like a power of $u$, not like a Gaussian, so the
-    Fourier integral is carried to $u = 600$, and the closed form below is used along all of it.''')
+                                extra=r''' The L&eacute;vy-exponent difference grows logarithmically, but the martingale
+    correction $iu\tilde\omega$ is linear unless $\omega_1=\omega_2$. Here $\tilde\omega = '''
+                                + f'{omtilde:.8f}' + r'''$, and at $u=200-i/2$, $|\tilde g| = '''
+                                + f'{abs(gbig[1]):.2f}' + r'''$. Thus the pointwise condition $|\tilde g|/\lambda&lt;1$
+    gives a frequency window of order $\lambda$, wider than the order-$\sqrt{\lambda}$ window for the $u^2$ forcing
+    in <a href="./black-scholes.html">Black&ndash;Scholes</a>, but not an exponentially wide window. The
+    characteristic function falls like a power of $u$, not like a Gaussian, so the exact closed form below is used
+    along the whole Fourier integral. The asymptotic price columns are finite-$\lambda$ diagnostics, not a uniform
+    term-by-term expansion out to $u=600$.''')
     body += r'''
     <h2>The characteristic function in closed form</h2>
     <p>The forcing is constant, so the two-state system can be solved exactly. The characteristic function of the log
@@ -371,7 +474,7 @@ def variance_gamma_page():
     \omega_i &= \frac{1}{\nu_i}\log\big(1 - \theta_i\nu_i - \tfrac12\sigma_i^2\nu_i\big), \qquad
     \bar\omega, \tilde\omega = \frac{\omega_1 \pm \omega_2}{2} .
     \end{aligned}$$
-''' + CONSTANT_PROOF + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: the averaged L&eacute;vy
+''' + CONSTANT_PROOF + CONSTANT_SCOPE + r'''    <p>The first line is exact. The second is its expansion in $\varepsilon = 1/\lambda$: the averaged L&eacute;vy
     process, times the Green&ndash;Kubo factor $e^{\varepsilon\tilde g^2T/2}$ and the memory of the starting regime.
     The upper sign is for a start in the first regime.</p>
     <p>Written out, the characteristic function of the averaged process is</p>
@@ -379,14 +482,126 @@ def variance_gamma_page():
       \big(1 - iu\,\theta_1\nu_1 + \tfrac12\sigma_1^2\nu_1u^2\big)^{-T/(2\nu_1)}\,
       \big(1 - iu\,\theta_2\nu_2 + \tfrac12\sigma_2^2\nu_2u^2\big)^{-T/(2\nu_2)},$$
     <p>and the Green&ndash;Kubo factor is $\exp\big(\tfrac18\varepsilon T\,[\,2iu\tilde\omega + \psi_1(u) - \psi_2(u)\,]^2\big)$.</p>
+
+    <h3>A variance-gamma tail certificate</h3>
+    <p>For variance gamma the Fourier decay can be bounded directly, uniformly in the switching rate and, in fact,
+    uniformly over the generator of any finite-state regime chain. Put</p>
+    $$a_i=\tfrac12\sigma_i^2\nu_i,\qquad b_i=\theta_i\nu_i,\qquad
+      c_i=1-\tfrac12b_i-\tfrac14a_i,$$
+    <p>and assume $c_i&gt;0$ in every regime. On the Lewis line $z=u-i/2$,</p>
+    $$\operatorname{Re}\big(1-ib_i z+a_i z^2\big)=c_i+a_i u^2.$$
+    <p>Therefore, with</p>
+    $$q=\min_i\frac{a_i}{c_i},\qquad \alpha=\min_i\frac1{\nu_i},\qquad
+      H=\max_i\left\{\frac{r+\omega_i}{2}-\frac{\log c_i}{\nu_i}\right\},$$
+    <p>the real part of every regime exponent obeys</p>
+    $$\operatorname{Re}g_i(u-i/2)\leq H-\alpha\log(1+qu^2).$$
+    <p>Conditional on the whole regime path, the transform is the exponential of the time integral of the active
+    exponent. Taking absolute values before averaging gives</p>
+    <div class="equation-card">
+    $$|\phi_i(u-i/2)|\leq e^{HT}(1+qu^2)^{-\alpha T},$$
+    $$\int_R^\infty\frac{|\phi_i(u-i/2)|}{u^2+1/4}\,du
+      \leq\frac{e^{HT}q^{-\alpha T}}{2\alpha T+1}\,R^{-(2\alpha T+1)}.$$
+    </div>
+    <p>The last line uses $u^2+1/4\geq u^2$ and $1+qu^2\geq qu^2$. Thus an admissible
+    $R=O(\lambda)$ window has a tail certificate of order $O(\lambda^{-(2\alpha T+1)})$, rather than the
+    model-independent $O(\lambda^{-1})$. For the present parameters $q=0.001426250941$, $\alpha=2$ and
+    $H=0.013005504422$, so the generator-uniform tail power is five. This improves the half-moment tail bound but,
+    by itself, says nothing about the integrated approximation error on an expanding interior window.</p>
+
+    <h3>A uniform cubic price theorem, including unequal switching rates</h3>
+    <p>The pointwise expansion does transfer to a third-order call-price approximation when it is used on a
+    parabolic, rather than maximal, frequency window. Set $R_\lambda=c\sqrt\lambda$ for any fixed $c&gt;0$, use the
+    quadratic slow multiplier $P_{2,+}$ only on $0\leq u\leq R_\lambda$, and discard the remaining approximate
+    integral. Then, for fixed $S_0,K$ and the parameters above,</p>
+    $$|C_\lambda-\widehat C_{\lambda,R_\lambda}|=O(\lambda^{-3}).$$
+    <p>Here is a direct proof, including the two different tail mechanisms. On the Lewis line put
+    $a_i=\sigma_i^2\nu_i/2$, $b_i=\theta_i\nu_i$ and
+    $c_i=1-b_i/2-a_i/4&gt;0$. With $q=\min_i a_i/c_i$, the averaged factor obeys</p>
+    $$|e^{\bar g(u-i/2)T}|\leq e^{\bar H T}(1+qu^2)^{-\beta},\qquad
+      \beta=\frac{T}{2}\left(\frac1{\nu_1}+\frac1{\nu_2}\right)=\frac72.$$
+    <p>Also $|\tilde g(u-i/2)|\leq L(1+u)$ for a finite model constant $L$. Write
+    $z=\tilde g/\lambda$, $d=\sqrt{1+z^2}$ and note the exact identity</p>
+    $$\tilde g\,\frac{d-1}{z}=\frac{\lambda^{-1}\tilde g^2}{d+1}.$$
+    <p>On $u\leq c\sqrt\lambda$, $z\to0$ uniformly and the exponent on the right stays bounded. Differentiating
+    $A_+(z)\exp\{T\lambda^{-1}\tilde g^2/(d+1)\}$ three times with respect to $\lambda^{-1}$ therefore gives,
+    uniformly on this expanding window,</p>
+    $$|\phi_\lambda-e^{\bar gT}P_{2,+}(z)|
+      \leq C\lambda^{-3}|e^{\bar gT}|(1+|\tilde g|)^6+C e^{-c_0\lambda} |e^{\bar gT}|.$$
+    <p>The first term is integrable against $(u^2+1/4)^{-1}du$ uniformly in the upper limit precisely because
+    $\beta=7/2&gt;5/2$. Thus the integrated interior error is $O(\lambda^{-3})$.</p>
+    <p>For the omitted exact tail, let $L_2$ be the time spent in regime 2. Conditional on a regime path, the
+    shifted transform is bounded by</p>
+    $$e^{HT}(1+qu^2)^{-\{2T+3L_2\}}.$$
+    <p>The event $L_2\geq T/3$ therefore gives power $3T=3$. On its complement, the exact two-state occupation
+    transform (the same Feynman&ndash;Kac calculation used by
+    <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>) and a Chernoff bound at parameter $s=\lambda$ give</p>
+    $$\Pr(L_2&lt;T/3)\leq \frac12\left(1+\frac3{\sqrt5}\right)
+      \exp\left[-\left(\frac76-\frac{\sqrt5}{2}\right)\lambda T\right].$$
+    <p>Consequently, for $T=1$ and $R&gt;0$,</p>
+    $$\int_R^\infty\frac{|\phi_\lambda(u-i/2)|}{u^2+1/4}\,du
+      \leq e^H\left[\frac{q^{-3}}7R^{-7}
+      +\Pr(L_2&lt;1/3)\frac{q^{-2}}5R^{-5}\right].$$
+    <p>At $R=R_\lambda$ this is $O(\lambda^{-7/2})$ plus an exponentially small term, so it is strictly smaller
+    than the cubic interior remainder.</p>
+
+    <h4>Unequal rates</h4>
+    <p>The symmetry of the preceding display is convenient, not essential. Let</p>
+    $$Q_m=m\begin{pmatrix}-a&a\\ b&-b\end{pmatrix},\qquad
+      \kappa=a+b,\qquad \pi_1=\frac b\kappa,\quad \pi_2=\frac a\kappa,$$
+    <p>with fixed $a,b&gt;0$, and suppose regime 2 has the faster VG decay, $\nu_2&lt;\nu_1$. For a chain starting in
+    regime 1, killing state 2 at rate $md$ gives</p>
+    $$\mathbb E_1 e^{-mdL_2}
+      =C_d e^{m\zeta_+T}+(1-C_d)e^{m\zeta_-T},$$
+    $$\Delta_d=\sqrt{(\kappa+d)^2-4ad},\qquad
+      \zeta_\pm=-\frac{\kappa+d\mp\Delta_d}{2},\qquad
+      C_d=\frac{\kappa+d+\Delta_d}{2\Delta_d}.$$
+    <p>Since $1-C_d&lt;0$, Chernoff&apos;s inequality yields the explicit one-mode bound</p>
+    $$\Pr_1(L_2\leq \ell T)
+      \leq C_d\exp\{-mT I_d(\ell)\},\qquad
+      I_d(\ell)=\frac{\kappa+d-\Delta_d}{2}-d\ell.$$
+    <p>For every $0&lt;\ell&lt;\pi_2$ a sufficiently small $d&gt;0$ makes $I_d(\ell)&gt;0$, because
+    $\partial_d I_d(\ell)|_{d=0}=\pi_2-\ell$. Thus, if</p>
+    $$\beta_\pi=T\left(\frac{\pi_1}{\nu_1}+\frac{\pi_2}{\nu_2}\right)>\frac52,$$
+    <p>one can choose $\ell&lt;\pi_2$ close enough to $\pi_2$ that</p>
+    $$\alpha_\ell=T\left(\frac{1-\ell}{\nu_1}+\frac{\ell}{\nu_2}\right)>\frac52.$$
+    <p>For the unequal-rate slow mode, put $\vartheta=(a-b)/\kappa$ and
+    $z=(g_1-g_2)/(m\kappa)$. Its discriminant is
+    $\sqrt{1-2\vartheta z+z^2}$; both branch points have modulus one. Hence $z\to0$ uniformly on the parabolic
+    window and the same third-derivative argument gives the cubic interior envelope, now around the stationary
+    average $\pi_1g_1+\pi_2g_2$. The averaged slow factor makes this envelope integrable on
+    $R_m=c\sqrt{m\kappa}$, while the exact tail is bounded by a constant times</p>
+    $$R_m^{-(2\alpha_\ell+1)}
+      +e^{-mT I_d(\ell)}R_m^{-(2T/\nu_1+1)}=o(m^{-3}).$$
+    <p>Consequently the same truncated quadratic Lewis price has $O(m^{-3})$ error for fixed $a,b$ and fixed model
+    parameters. This is a fixed-parameter theorem: its constant is not asserted to remain uniform as a transition rate
+    tends to zero or as either strict exponent condition approaches $5/2$. It also concerns the truncated price
+    integral, not a characteristic-function expansion uniform over all frequencies.</p>
     <p>At $\lambda = 25$, $T = 1$ and the Lewis frequency $u = 1 - i/2$:</p>
 ''' + table(['quantity', 'value', 'error'], ex_rows) + r'''
     <h2>Results</h2>
     <p>Call prices from the exact characteristic function, and the error of the expansion after each order:</p>
 ''' + table(['switching rate', 'strike', 'exact', 'order 0', 'order 1', 'order 2'], rows) + r'''    <p>The exact characteristic function agrees with the numerical solution of the two-state system to $10^{-10}$.
-    Certificates:
+    The inversion certificate stops the quadratic slow mode at the largest window satisfying
+    $|\tilde g|/\lambda\leq0.35$. For $\lambda=25,50,100,200$, those windows are
+    $140.64,289.28,592.38,1199.97$. The generator-uniform VG tail ceilings are
+    $5.59\times10^{-5},1.52\times10^{-6},4.22\times10^{-8},1.24\times10^{-9}$, with measured orders
+    $5.203,5.170,5.092$. Adding the numerically integrated interior absolute errors gives triangle ceilings
+    $6.94\times10^{-5},3.25\times10^{-6},2.62\times10^{-7},2.88\times10^{-8}$, which dominate the observed
+    windowed-price errors $7.48\times10^{-6},9.38\times10^{-7},1.17\times10^{-7},1.47\times10^{-8}$.
+    For the new analytic cubic theorem, the verifier instead takes $R_\lambda=10\sqrt\lambda$. At
+    $\lambda=50,100,200,400$, the certified triangle bounds are
+    $3.55\times10^{-4},1.84\times10^{-5},1.39\times10^{-6},1.24\times10^{-7}$ and dominate the observed price
+    errors $2.04\times10^{-6},2.10\times10^{-7},1.55\times10^{-8},2.02\times10^{-9}$; the measured orders of the
+    interior absolute error are $2.969,2.985,2.992$. An unequal-rate certificate takes
+    $(a,b)=(1.7,0.4)$, so $\pi_2=17/21$, and $\ell=1/3$, $d=a+b$. It has
+    $\beta_\pi=4.428571$, $\alpha_\ell=3$ and $I_d(\ell)=0.483484861$. At
+    $m=40,80,160,320$, the observed price-error orders are $2.941,2.956,2.992$ and the absolute-interior orders are
+    $2.979,2.989,2.994$; the explicit triangle bounds dominate every observed error.</p>
+    <p>Certificates:
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/model_pages.py">model_pages.py</a>
-    and, for the convergence orders,
+    for the prices,
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>
+    for the analytic envelope, and
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_quantlib_models.py">verify_quantlib_models.py</a>.</p>
     <p>In <a href="https://github.com/microprediction/regimelib">regimelib</a> this model is
     <code>SwitchingVarianceGammaProcess</code>.</p>

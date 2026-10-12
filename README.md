@@ -44,6 +44,7 @@ papers/fast-switching/
   uniform_layer.py          maturity-uniform two-state composite formulas
   verify_uniform_layer.py   uniform finite-chain composites for common or arbitrary terminal data, bounds and crossovers
   verify_engine.py, verify_models.py, verify_fast_factor.py, verify_quantlib_models.py, verify_explicit.py   certificates
+  verify_constant_forcing.py   exact slow/fast split, Lewis/VG tail bounds, and a uniform cubic VG price certificate
   make_pages.py            computes the tables on the example pages
 papers/yield-curve/
   three_numbers.py         first-order Vasicek curve under a fast chain: three Green-Kubo numbers
@@ -97,6 +98,7 @@ python3 verify_models.py
 python3 verify_fast_factor.py
 python3 verify_quantlib_models.py
 python3 verify_explicit.py
+python3 verify_constant_forcing.py
 cd ../regime-switching-survival
 python3 verify_expansion.py
 python3 verify_all_orders.py
