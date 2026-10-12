@@ -205,6 +205,59 @@
     over the approximated frequency window. This is the matrix-transform form of the two-state occupation problem
     studied by <a href="https://doi.org/10.2307/3211908">Pedler (1971)</a>.</p>
 
+    <h3>Finite-horizon stationary ordering</h3>
+    <p>For real $g_1,g_2$ there is also an exact all-speed order for the complete transform, not only for an
+    asymptotic coefficient. Start the chain in its stationary law $\pi=(b,a)/\kappa$ and put</p>
+    $$\Phi_m(T)=\pi^\top\exp\{T[mQ_0+\operatorname{diag}(g_1,g_2)]\}\mathbf1,$$
+    $$r=m\kappa-\vartheta\delta,\qquad
+      q^2=(1-\vartheta^2)\delta^2,\qquad
+      \Delta=\sqrt{r^2+q^2},\qquad \tau=T/2.$$
+    <p>Summing the two starting-state formulas, or directly exponentiating the $2\times2$ matrix, gives</p>
+    <div class="equation-card">
+    $$\Phi_m(T)=e^{\bar g_\pi T-r\tau}
+      \left\{\cosh(\tau\Delta)+{r\over\Delta}\sinh(\tau\Delta)\right\},$$
+    $$\frac{\partial\Phi_m(T)}{\partial m}
+      ={\kappa q^2e^{\bar g_\pi T-r\tau}\over\Delta^3}
+      \left\{\sinh(\tau\Delta)-\tau\Delta\cosh(\tau\Delta)\right\}.$$
+    </div>
+    <p>Since $x\cosh x-\sinh x&gt;0$ for $x&gt;0$, the derivative is strictly negative whenever $T&gt;0$ and
+    $g_1\ne g_2$. Thus for every finite speed $m&gt;0$,</p>
+    $$e^{\bar g_\pi T}&lt;\Phi_m(T)&lt;
+      {b e^{g_1T}+a e^{g_2T}\over\kappa}.$$
+    <p>The finite-horizon transform is also strictly convex in speed. Put
+    $x=\tau\Delta$, $u=r/\Delta$ and $f(x)=x\cosh x-\sinh x$; a second differentiation gives</p>
+    $$\frac{\partial^2\Phi_m(T)}{\partial m^2}
+      ={\kappa^2q^2e^{\bar g_\pi T-r\tau}\over\Delta^4}
+      \left[x f(x)+u\{3f(x)-x^2\sinh x\}\right]&gt;0.$$
+    <p>For the sign, $C(x)=x^2\sinh x-3f(x)$ satisfies $C(0)=0$ and
+    $C'(x)=xf(x)&gt;0$. For $D(x)=xf(x)-C(x)$, direct simplification gives</p>
+    $$e^xD(x)=x^2+2x+\tfrac32+(x-\tfrac32)e^{2x},\qquad
+      \{e^xD(x)\}'=2(1+x)-2(1-x)e^{2x}&gt;0.$$
+    <p>The last sign follows from
+    $\log\{(1+x)/(1-x)\}=2\operatorname{artanh}x&gt;2x$ for $0&lt;x&lt;1$ and is immediate for $x\geq1$.
+    Since $D(0)=0$, this proves $xf-C&gt;0$.</p>
+    <p>Since $|u|&lt;1$, the bracket is $xf-uC&gt;xf-C&gt;0$. Hence the negative speed derivative increases toward
+    zero: the finite-horizon reduction from faster switching has diminishing magnitude.</p>
+    <p>The stationary start is essential. With equal transition rates, $g=(0,1)$, $T=1$ and a start in the
+    lower-forcing state, the transform at $m=0.2$ is $1.1255480567$ and its speed derivative is
+    $+0.5459291779$; a fixed nonstationary start can therefore move in the opposite direction.</p>
+    <p>Two states are also essential for the convexity conclusion. For the irreducible nonreversible generator</p>
+    $$Q=\begin{pmatrix}-5&amp;4&amp;1\\13&amp;-79&amp;66\\4&amp;1&amp;-5\end{pmatrix},\qquad
+      \pi={1\over99}(47,3,49),\qquad g=(-4,3,5),$$
+    <p>the stationary transform
+    $\Phi_m(1/2)=\pi^\top\exp\{\tfrac12(mQ+\operatorname{diag}g)\}\mathbf1$ satisfies, at $m=0.01$,</p>
+    $$\Phi_m=6.1666724874,\qquad \partial_m\Phi_m=-6.3301599931,\qquad
+      \partial_m^2\Phi_m=-2.5371897073.$$
+    <p>Thus this witness still decreases locally but is strictly concave there. A $9\times9$ block exponential and
+    an independent Cauchy-contour differentiation agree on the curvature within $2.4\times10^{-11}$; the example
+    rules out extrapolating the two-state convexity theorem to arbitrary nonreversible finite chains.</p>
+    <p>This theorem is finite-horizon and nonasymptotic, but its scope is exactly a stationary two-state chain with
+    real constant forcing. The certificate checks 64 unequal-rate parameter sets at 13 speeds: its largest
+    normalized transform, derivative and curvature discrepancies are $2.267\times10^{-14}$,
+    $9.687\times10^{-15}$ and $1.958\times10^{-13}$.</p>
+    <p>The underlying occupation-time law is due to <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>;
+    the displayed derivative and order are derived directly here, without a priority claim.</p>
+
     <h2>Fourier inversion is a separate estimate</h2>
     <p>For Lewis inversion, if the exact shifted transform and an approximation differ by at most $E(u)$ on
     $[0,R]$, then stopping the approximate integral at $R$ gives</p>
@@ -241,6 +294,7 @@
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/models.py">models.py</a> and <a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/options.py">options.py</a>: the $g_i$ for each model, and option prices.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_engine.py">verify_engine.py</a>: agreement with the two-state code, and orders 1 to 6 on a three-state chain against a 30-digit numerical solution, and a chain with a Jordan block.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_constant_forcing.py">verify_constant_forcing.py</a>: exact symmetric- and unequal-rate slow/layer decompositions, radius-one branch geometry, Taylor order, Lewis inversion tail control, and the variance-gamma frequency envelope and polynomial-decay certificate.</li>
+      <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_finite_horizon_order.py">verify_finite_horizon_order.py</a>: exact stationary two-state finite-horizon speed monotonicity and convexity, the endpoint envelope, a nonstationary monotonicity counterexample and a stationary three-state convexity counterexample.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_models.py">verify_models.py</a>: Monte Carlo of the switching model for two Gaussian factors, CIR and Vasicek with jumps, and each expansion&apos;s convergence.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_option_mc.py">verify_option_mc.py</a>: Monte Carlo over exactly simulated regime paths for Poisson counts, Black&ndash;Scholes, Heston and bond options, each path priced in closed form given the path.</li>
       <li><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/mc_credit_exact.py">mc_credit_exact.py</a>: the same for two-name credit.</li>
