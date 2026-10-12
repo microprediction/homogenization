@@ -76,6 +76,20 @@
     </div>
     <p>Thus only two event types are required; at least three hidden states
       are needed for a finite irreducible chain to violate detailed balance.</p>
+    <p>For two hidden states the finite-rate answer is sharper. Write
+      $Q_0=\left(\begin{smallmatrix}-a&amp;a\\b&amp;-b\end{smallmatrix}\right)$,
+      let $g_i$ be the cause-1 hazard, and let $d_i$ be the total hazard in state $i$.</p>
+    <p>Put $D_1=ad_1+bd_0$, $D_0=d_0d_1$,
+      $N_1=ag_1+bg_0$, $N_0=(bd_1g_0+ad_0g_1)/(a+b)$,
+      $p_0=N_1/D_1$, and $A=N_0-p_0D_0$. Direct inversion gives</p>
+    <div class="equation-card">
+    $$p_1(m)=p_0+{A\over mD_1+D_0},\qquad
+      \left|p_1(m)-p_0-{A\over mD_1}\right|
+      \le { |A|D_0\over m^2D_1^2}.$$
+    </div>
+    <p>The remainder has the opposite sign to the first-order coefficient whenever $A\ne0$.
+      This is an exact global bound for every $m&gt;0$, not an asymptotic claim; the certificate also verifies that
+      $A/D_1$ equals the Green&ndash;Kubo coefficient above.</p>
     <p>With $d$ competing causes, one unweighted race does not generally identify the whole oriented matrix.
       Let $w_a>0$ scale cause $a$ and write $A=\tfrac12(K^{(0)}-K^{(0)\top})$. One unweighted race sees only
       $A\mathbf1$, a $(d-1)$-dimensional contrast, whereas $q=d-1$ linearly independent positive designs $w$
@@ -177,6 +191,7 @@
 
     <p>The full note also covers the proofs, the multi-name race expansion and the conditioning of its designs,
       the explicit short-maturity, long-maturity and coalescence constants, partial collisions of loading shapes,
-      and the two-name benchmark in detail. See the <a href="./credit-geometry-full.html">full note</a> and the
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">certificate</a>.</p>
+      and the two-name benchmark in detail. See the <a href="./credit-geometry-full.html">full note</a>, the
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_cir_geometry.py">main certificate</a>, and the
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_two_state_race_bound.py">finite-rate certificate</a>.</p>
   </main>
