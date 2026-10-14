@@ -175,7 +175,54 @@
       which gives $\tfrac23|M_3-2v^2/\mu|+\tfrac13(M_4+3v^2+6v^3/\mu^2)$.
       Substitution of $\mu\geq aT$ and the moment estimates bounds this by
       $S_2/\beta^2+S_3/\beta^3$, completing the proof.</p>
-    <h2>Certificate and scope</h2>
+    <h2>Zero-intensity regimes: a uniform extension</h2>
+    <p>The statewise positive floor can be removed, with different constants.
+      Now assume only $\ell\geq0$, nonconstant and not identically zero, so $\bar\ell=\pi\ell&gt;0$.
+      The finite-chain moment estimates above still hold.</p>
+    <p>Choose $\theta,h&gt;0$ and define the killed semigroup
+      $K_t=e^{t(Q-\theta\operatorname{diag}\ell)}$.
+      Put $r=\|K_h\|_{\infty\to\infty}\in(0,1)$ and $k=-\log r/h$.</p>
+    <p>Every initial state has positive probability of reaching a positive-intensity state within $h$,
+      so each row sum is strictly below one.
+      Conditioning on an initial time increment gives
+      $u'=m(Q-\theta\operatorname{diag}\ell)u$, $u(0)=\mathbf1$.
+      Thus $\mathbb E_\nu e^{-\theta m\Lambda_T}=\nu K_{mT}\mathbf1$.</p>
+    <p>Submultiplicativity and $\|K_s\|_\infty\leq1$ give
+      $\nu K_{mT}\mathbf1\leq r^{\lfloor mT/h\rfloor}\leq r^{-1}e^{-kmT}$.
+      Set $a_*=k/(2\theta)$ and $d=k/(2\gamma)$.
+      Chernoff's inequality then yields</p>
+    $$\sup_\nu\Pr_\nu(\Lambda_T&lt;a_*T)\leq r^{-1}e^{-d\beta T}.$$
+    <p>Jensen's inequality under stationary initialization gives $r\geq e^{-\theta\bar\ell h}$,
+      hence $a_*\leq\bar\ell/2$.
+      Put $\mathcal H=2CF/\bar\ell$.
+      For $T\geq\mathcal H/\beta$, the mean estimate implies $\mu\geq\bar\ell T/2\geq a_*T$.</p>
+    <p>On $\Lambda_T\geq a_*T$, use the previous smoothed remainder with $a=a_*$.
+      On its complement, $|\Lambda_T-\mu|\leq\mu\leq bT$ and the unsmoothed derivative bound adds at most
+      $b^4T^4e^{-d\beta T}/(3r)$ to total variation.
+      This is bounded by $8b^4/(rd^4\beta^4)$, uniformly over $T$.</p>
+    <p>The remaining very short horizons need no positive mean lower bound.
+      Since $0\leq\Lambda_T\leq bT$, one has $v\leq bT\mu$,
+      $|M_3|\leq bTv$ and $M_4\leq(bT)^2v$.
+      The unsmoothed moment comparison therefore gives</p>
+    $$d_{\rm TV}\leq2b^3T^3+\frac{10}{3}b^4T^4
+       \quad(0&lt;T\leq\mathcal H/\beta).$$
+    <p>Evaluate the previously displayed $A_2,A_3,A_4$ at $a=a_*$, not at $\min_i\ell_i$.
+      Adding the short-horizon and true-intensity tail budgets gives an all-speed, all-prior bound:</p>
+    <div class="equation-card">
+    $$\widehat A_2=A_2,\qquad
+      \widehat A_3=A_3+2b^3\mathcal H^3,\qquad
+      \widehat A_4=A_4+\frac{8b^4}{rd^4}+\frac{10}{3}b^4\mathcal H^4,$$
+    $$\sup_{T&gt;0,\nu}d_{\rm TV}(\mathcal L_\nu(N_T),\mathcal L(N_{*,T,\nu}))
+      \leq\min\{1,\widehat A_2/\beta^2+\widehat A_3/\beta^3+\widehat A_4/\beta^4\}
+      =O(m^{-2}).$$
+    </div>
+    <p>For $T\geq\mathcal H/\beta$, split again at $\tau$ as in the positive-floor proof.
+      For smaller $T$, the displayed bounded-support estimate supplies the added inverse-speed terms.
+      Thus no minimum speed or minimum horizon is imposed.</p>
+    <p>The effective $a_*$ is a concentration threshold, not a pathwise intensity floor.
+      Both the true integrated intensity and its gamma surrogate require separate lower-tail budgets.
+      If all intensities are zero, the count is exactly zero and no gamma fit is used.</p>
+    <h2>Certificates and scope</h2>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_uniform_positive_counts.py">verify_uniform_positive_counts.py</a>
       independently checks Poisson derivative norms, the Charlier squared-norm identity and gamma tail bounds.
       It compares 168 count laws at horizons $0.02,0.2,1,5,20,100$, using exact triangular intensity moments
@@ -190,10 +237,19 @@
     <p>The symmetric cases also cross-check the matrix generating function against an independently
       evaluated, overflow-safe closed-form two-state transform.
       The maximum probability-vector $\ell^1$ discrepancy is $7.340\times10^{-12}$.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_nonnegative_uniform_counts.py">verify_nonnegative_uniform_counts.py</a>
+      checks the zero-intensity extension separately, including starts in an inactive regime,
+      a defective chain, very short horizons and the all-zero exact case.
+      It compares 168 count laws, including 40 short-layer cases, and checks 18 killed-kernel bounds.</p>
+    <p>For symmetric switching with intensities $(3,0)$, $\theta=0.1$, $h=5$, $\tau=1$ and speed 320,
+      the all-horizon bound is $0.0550543576$; the pure zero-regime start error at $T=1$ is $0.0000050773$.
+      The zero-intensity defective example at speed 1280 has common bound $0.0305855767$.
+      The new certificate ends in literal <code>PASS</code>.</p>
     <p>Uniformity concerns individual count marginals at all horizons, not a single negative-binomial arrival
       process with consistent independent increments.
-      The positive intensity floor and fixed mixing envelope are assumptions of this theorem; zero-intensity
-      regimes, vanishing floors and closing spectral gaps are outside its uniform claim.</p>
+      Zero-intensity regimes are covered by the extension, while a statewise positive floor gives the shorter bound.
+      Constants depend on fixed mixing data and a positive stationary mean; vanishing stationary means and closing
+      spectral gaps are outside the uniform claim.</p>
   </main>
 
   <footer>
