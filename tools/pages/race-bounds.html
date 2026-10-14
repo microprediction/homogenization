@@ -1,0 +1,32 @@
+<!-- title: All-speed competing-cause bounds · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="./race-bounds-full.html">proof and constants</a></span></p>
+    <h1>All-speed competing-cause bounds</h1>
+    <p class="subtitle">Any finite irreducible chain, any initial prior, an explicit error budget.</p>
+    <p>Let the hidden regime have row generator $mQ$ and stationary law $\pi$.
+      There are finitely many nonnegative statewise cause hazards $h_r$, with strictly positive
+      total hazard $d=\sum_rh_r$ in every state; put $D=\operatorname{diag}d$ and $\bar d=\pi d$.</p>
+    <p>For any initial probability row $\nu$, independent of the event triggers, the exact first-cause law is</p>
+    $$p_{\nu r}(m)=\nu(D-mQ)^{-1}h_r.$$
+    <p>Let $H=(-Q)^\#$, $p_{0r}=\pi h_r/\bar d$ and
+      $\alpha_i=\pi_i d_i/\bar d$. The first coefficient and all-speed bound are</p>
+    <div class="equation-card">
+    $$a_{\nu r}=(\nu-\alpha)H(h_r-p_{0r}d),\qquad
+      \left|p_{\nu r}(m)-p_{0r}-\frac{a_{\nu r}}m\right|
+        \leq\frac{C_r}{m^2}\quad(m&gt;0).$$
+    </div>
+    <p>The <a href="./race-bounds-full.html">full note</a> constructs $C_r$ explicitly from a restricted inverse.
+      One constant works for all $\nu$, including priors varying with $m$; no reversibility or
+      diagonalizability is required.</p>
+    <p>The approximation and its exact remainder have total mass one and zero respectively, but the
+      truncated coordinates need not be nonnegative at slow speeds.
+      At the event-stationary prior $\alpha$, the exact cause probabilities equal $p_{0r}$ at every speed.</p>
+    <p>This extends the stationary Green&ndash;Kubo coefficient in
+      <a href="./credit-geometry.html">joint-default geometry</a> with the explicit prior correction
+      $(\nu-\pi)H(h_r-p_{0r}d)$. It concerns constant statewise hazards, not switched CIR intensities,
+      finite-horizon survival order or a maturity-integrated rank bound.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_general_race_bound.py">Certificate</a>:
+      direct killed inverses, independent group-inverse coefficients, pure-prior envelopes,
+      simplex identities and an irreducible defective generator; final line <code>PASS</code>.</p>
+  </main>

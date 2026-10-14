@@ -69,5 +69,15 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "AsanjaraniNazarathy2019",
+  "authors": "Asanjarani, A. and Nazarathy, Y.",
+  "year": 2019,
+  "title": "Stationary Markovian Arrival Processes, Results and Open Problems",
+  "venue": "arXiv:1905.01736v1, Proposition 2.2 and Section 2",
+  "doi": "10.48550/arXiv.1905.01736",
+  "url": "https://arxiv.org/abs/1905.01736",
+  "annotation": "States the phase-type first-event survival formula and distinguishes time-stationary from event-stationary initialization. The mean-wait speed law uses the former, not the constant event-stationary mean."
  }
 ]

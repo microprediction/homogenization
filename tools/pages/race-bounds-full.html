@@ -1,0 +1,100 @@
+<!-- title: All-speed competing-cause bounds (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./race-bounds.html">&larr; summary</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>Competing causes: exact remainder and prior correction</h1>
+    <p>Fix a finite irreducible row generator $Q$, its stationary law $\pi$, and nonnegative cause hazards
+      $h_r$ with total $d_i&gt;0$ in every state.
+      Conditional on the regime path, independent Cox triggers compete to produce the first cause.</p>
+    $$D=\operatorname{diag}d,\quad \bar d=\pi d,\quad
+      p_{\nu r}(m)=\nu(D-mQ)^{-1}h_r,\quad p_{0r}=\frac{\pi h_r}{\bar d}.$$
+    <p>The killed semigroup integrated against $h_r$ proves the exact probability formula; positive minimum
+      total hazard ensures absorption and integrability.
+      The phase-type and event/time-stationarity background is classical; see
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy (2019)</a>, Proposition 2.2.</p>
+
+    <h2>Remove the zero mode before expanding</h2>
+    <p>All inner products and norms below are in $L^2(\pi)$.
+      Define</p>
+    $$C=D^{-1/2}(-Q)D^{-1/2},\qquad v_0=\frac{D^{1/2}\mathbf1}{\sqrt{\bar d}},
+      \qquad P_0u=v_0\langle v_0,u\rangle_\pi.$$
+    <p>Both $C$ and $C^*$ annihilate $v_0$, so $v_0^\perp$ is invariant.
+      The symmetric part of $-Q$ is the additive-reversibilization Dirichlet form, with kernel exactly
+      the constants; thus the symmetric part of $C$ is strictly positive on $v_0^\perp$.</p>
+    <p>Let $J$ be the inverse of $C$ on that complement, extended by zero on $v_0$.
+      It can be computed without spectral decomposition as $J=(C+P_0)^{-1}-P_0$.</p>
+    $$x_\nu=(I-P_0)D^{-1/2}(\nu_i/\pi_i)_i,\qquad
+      y_r=(I-P_0)D^{-1/2}h_r.$$
+    <p>Factoring the killed inverse and projecting its zero mode gives the exact identity</p>
+    $$p_{\nu r}(m)=p_{0r}+\langle x_\nu,(I+mC)^{-1}y_r\rangle_\pi.$$
+    <p>The inverse $J$ is accretive: for $x=Cy$ on the complement,
+      $\langle x,Jx\rangle_\pi=\langle Cy,y\rangle_\pi\geq0$.
+      Consequently $\|(I+J/m)^{-1}\|_\pi\leq1$, by Cauchy&ndash;Schwarz applied to
+      $\langle u,(I+J/m)u\rangle_\pi\geq\|u\|_\pi^2$.</p>
+    <p>Apply the finite resolvent identity on the complement once; it is valid at every positive speed:</p>
+    $$a_{\nu r}=\langle x_\nu,Jy_r\rangle_\pi,\qquad
+      p_{\nu r}(m)-p_{0r}-\frac{a_{\nu r}}m
+       =-\frac{\langle J^*x_\nu,(I+J/m)^{-1}Jy_r\rangle_\pi}{m^2}.$$
+    <div class="equation-card">
+    $$\left|p_{\nu r}(m)-p_{0r}-\frac{a_{\nu r}}m\right|
+      \leq\frac{\|J^*x_\nu\|_\pi\|Jy_r\|_\pi}{m^2}
+      \leq\frac{C_r}{m^2},\qquad
+      C_r=\max_i\|J^*x_{e_i}\|_\pi\,\|Jy_r\|_\pi.$$
+    </div>
+    <p>The last inequality uses $x_\nu=\sum_i\nu_i x_{e_i}$ and the triangle inequality.
+      The constant is explicit and finite for fixed $Q,d,h_r$, but is not claimed sharp or uniform over
+      chains approaching reducibility.</p>
+    <p>The existing <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/effective_generator.py">centered Neumann calculation</a>
+      supplies higher-order stationary expansions with a geometric bound when speed exceeds its matrix norm.
+      This first-order result instead uses accretivity to remove that speed threshold and includes every
+      initial prior; it does not replace the higher-order calculation.</p>
+    <p>Because the residual itself is linear in $\nu$, its exact worst-prior magnitude at fixed speed is</p>
+    $$\sup_{\nu\in\Delta_{n-1}}\left|p_{\nu r}(m)-p_{0r}-a_{\nu r}/m\right|
+       =\max_i\left|p_{e_i r}(m)-p_{0r}-a_{e_i r}/m\right|.$$
+
+    <h2>The original-chain coefficient and its stationary contraction</h2>
+    <p>Put $H=(-Q)^\#=-Q^\#$ and $k_r=h_r-p_{0r}d$, so $\pi k_r=0$.
+      Solving the first two orders of $(D+m(-Q))u_r=h_r$ gives</p>
+    $$u_{0r}=p_{0r}\mathbf1,\qquad
+      u_{1r}=Hk_r-\frac{\pi DHk_r}{\bar d}\mathbf1,\qquad
+      a_{\nu r}=(\nu-\alpha)Hk_r,\quad \alpha_i=\frac{\pi_i d_i}{\bar d}.$$
+    <p>These coefficients agree with the rigorous finite identity above, not merely a formal series.
+      In particular, $a_{\nu r}=a_{\pi r}+(\nu-\pi)Hk_r$ separates the observation-time stationary
+      coefficient from the prior correction.</p>
+    $$a_{\pi r}=\frac{p_{0r}K_{d,d}-K_{d,h_r}}{\bar d},\qquad
+      K_{u,v}=\langle u-(\pi u)\mathbf1,H\{v-(\pi v)\mathbf1\}\rangle_\pi.$$
+    <p>This is the oriented fixed-feature Green&ndash;Kubo coefficient in the joint-default note.
+      It is not a rank statement about maturity-integrated loadings.</p>
+    <p>Since $\sum_r y_r=0$, the coefficients and exact remainder sum to zero across causes.
+      The first-order approximation therefore preserves total mass, but slow-speed truncation can still
+      produce negative coordinates; the bound does not certify nonnegativity of that approximation.</p>
+    <p>The event-stationary case has an exact cancellation, not merely a vanishing first coefficient:</p>
+    $$\alpha(D-mQ)^{-1}h_r=\frac{\pi h_r}{\bar d}=p_{0r},$$
+    <p>because $\pi(D-mQ)=\pi D$.
+      This statement assumes no event-triggered regime reset and a fresh future trigger independent of
+      the initial regime; it does not assert the same cancellation for arbitrary priors.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_general_race_bound.py">certificate</a>
+      checks direct killed inverses against the exact remainder, contraction norms, independent original-chain
+      group inverses, simplex identities and changing-prior envelopes.
+      It also covers an irreducible three-state generator with a nontrivial Jordan block.</p>
+    <p>It checks 42 random chains in dimensions 2 through 8, with three causes at 13 speeds,
+      plus constant-total-hazard and zero-cause boundaries.
+      The defective benchmark uses</p>
+    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\4&amp;0&amp;-4\end{pmatrix},\qquad
+      \pi=(4,4,1)/9,\qquad
+      [h_1\ h_2\ h_3]=\begin{pmatrix}1&amp;.5&amp;.5\\.25&amp;.5&amp;.25\\2&amp;3&amp;5\end{pmatrix}.$$
+    <p>At $m=1$, a pure start in state 1 gives probabilities
+      $(0.4187500000,0.3000000000,0.2812500000)$ and first coefficients
+      $(0.2004132231,-0.0041322314,-0.1962809917)$.
+      The all-prior bound constants are $(0.2478292046,0.1059233972,0.2485467717)$.</p>
+    <p>No diagonalizability or reversibility is used, and no lower speed threshold is imposed.
+      The proof is an elementary finite-matrix accretive resolvent argument; the related symmetric/skew
+      resolvent framework is in
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>.
+      No priority claim is made.</p>
+    <p>The hazards are constant within each regime, not switched CIR processes.
+      No finite-horizon survival order, conditional conformal guarantee or joint recovery of the hidden
+      generator is claimed.</p>
+  </main>
