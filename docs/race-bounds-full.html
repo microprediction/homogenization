@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>All-speed competing-cause bounds (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./race-bounds.html">&larr; summary</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>Competing causes: exact remainder and prior correction</h1>
+    <p>Fix a finite irreducible row generator $Q$, its stationary law $\pi$, and nonnegative cause hazards
+      $h_r$; first suppose the total $d_i&gt;0$ in every state, then remove that restriction below.
+      Conditional on the regime path, independent Cox triggers compete to produce the first cause.</p>
+    $$D=\operatorname{diag}d,\quad \bar d=\pi d,\quad
+      p_{\nu r}(m)=\nu(D-mQ)^{-1}h_r,\quad p_{0r}=\frac{\pi h_r}{\bar d}.$$
+    <p>The killed semigroup integrated against $h_r$ proves the exact probability formula; positive minimum
+      total hazard ensures absorption and integrability.
+      The phase-type and event/time-stationarity background is classical; see
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy (2019)</a>, Proposition 2.2.</p>
+
+    <h2>Remove the zero mode before expanding</h2>
+    <p>All inner products and norms below are in $L^2(\pi)$.
+      Define</p>
+    $$C=D^{-1/2}(-Q)D^{-1/2},\qquad v_0=\frac{D^{1/2}\mathbf1}{\sqrt{\bar d}},
+      \qquad P_0u=v_0\langle v_0,u\rangle_\pi.$$
+    <p>Both $C$ and $C^*$ annihilate $v_0$, so $v_0^\perp$ is invariant.
+      The symmetric part of $-Q$ is the additive-reversibilization Dirichlet form, with kernel exactly
+      the constants; thus the symmetric part of $C$ is strictly positive on $v_0^\perp$.</p>
+    <p>Let $J$ be the inverse of $C$ on that complement, extended by zero on $v_0$.
+      It can be computed without spectral decomposition as $J=(C+P_0)^{-1}-P_0$.</p>
+    $$x_\nu=(I-P_0)D^{-1/2}(\nu_i/\pi_i)_i,\qquad
+      y_r=(I-P_0)D^{-1/2}h_r.$$
+    <p>Factoring the killed inverse and projecting its zero mode gives the exact identity</p>
+    $$p_{\nu r}(m)=p_{0r}+\langle x_\nu,(I+mC)^{-1}y_r\rangle_\pi.$$
+    <p>The inverse $J$ is accretive: for $x=Cy$ on the complement,
+      $\langle x,Jx\rangle_\pi=\langle Cy,y\rangle_\pi\geq0$.
+      Consequently $\|(I+J/m)^{-1}\|_\pi\leq1$, by Cauchy&ndash;Schwarz applied to
+      $\langle u,(I+J/m)u\rangle_\pi\geq\|u\|_\pi^2$.</p>
+    <p>Apply the finite resolvent identity on the complement once; it is valid at every positive speed:</p>
+    $$a_{\nu r}=\langle x_\nu,Jy_r\rangle_\pi,\qquad
+      p_{\nu r}(m)-p_{0r}-\frac{a_{\nu r}}m
+       =-\frac{\langle J^*x_\nu,(I+J/m)^{-1}Jy_r\rangle_\pi}{m^2}.$$
+    <div class="equation-card">
+    $$\left|p_{\nu r}(m)-p_{0r}-\frac{a_{\nu r}}m\right|
+      \leq\frac{\|J^*x_\nu\|_\pi\|Jy_r\|_\pi}{m^2}
+      \leq\frac{C_r}{m^2},\qquad
+      C_r=\max_i\|J^*x_{e_i}\|_\pi\,\|Jy_r\|_\pi.$$
+    </div>
+    <p>The last inequality uses $x_\nu=\sum_i\nu_i x_{e_i}$ and the triangle inequality.
+      The constant is explicit and finite for fixed $Q,d,h_r$, but is not claimed sharp or uniform over
+      chains approaching reducibility.</p>
+    <p>The existing <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/effective_generator.py">centered Neumann calculation</a>
+      supplies higher-order stationary expansions with a geometric bound when speed exceeds its matrix norm.
+      This first-order result instead uses accretivity to remove that speed threshold and includes every
+      initial prior; it does not replace the higher-order calculation.</p>
+    <p>Because the residual itself is linear in $\nu$, its exact worst-prior magnitude at fixed speed is</p>
+    $$\sup_{\nu\in\Delta_{n-1}}\left|p_{\nu r}(m)-p_{0r}-a_{\nu r}/m\right|
+       =\max_i\left|p_{e_i r}(m)-p_{0r}-a_{e_i r}/m\right|.$$
+
+    <h2>The original-chain coefficient and its stationary contraction</h2>
+    <p>Put $H=(-Q)^\#=-Q^\#$ and $k_r=h_r-p_{0r}d$, so $\pi k_r=0$.
+      Solving the first two orders of $(D+m(-Q))u_r=h_r$ gives</p>
+    $$u_{0r}=p_{0r}\mathbf1,\qquad
+      u_{1r}=Hk_r-\frac{\pi DHk_r}{\bar d}\mathbf1,\qquad
+      a_{\nu r}=(\nu-\alpha)Hk_r,\quad \alpha_i=\frac{\pi_i d_i}{\bar d}.$$
+    <p>These coefficients agree with the rigorous finite identity above, not merely a formal series.
+      In particular, $a_{\nu r}=a_{\pi r}+(\nu-\pi)Hk_r$ separates the observation-time stationary
+      coefficient from the prior correction.</p>
+    $$a_{\pi r}=\frac{p_{0r}K_{d,d}-K_{d,h_r}}{\bar d},\qquad
+      K_{u,v}=\langle u-(\pi u)\mathbf1,H\{v-(\pi v)\mathbf1\}\rangle_\pi.$$
+    <p>This is the oriented fixed-feature Green&ndash;Kubo coefficient in the joint-default note.
+      It is not a rank statement about maturity-integrated loadings.</p>
+    <p>Since $\sum_r y_r=0$, the coefficients and exact remainder sum to zero across causes.
+      The first-order approximation therefore preserves total mass, but slow-speed truncation can still
+      produce negative coordinates; the bound does not certify nonnegativity of that approximation.</p>
+    <p>The event-stationary case has an exact cancellation, not merely a vanishing first coefficient:</p>
+    $$\alpha(D-mQ)^{-1}h_r=\frac{\pi h_r}{\bar d}=p_{0r},$$
+    <p>because $\pi(D-mQ)=\pi D$.
+      This statement assumes no event-triggered regime reset and a fresh future trigger independent of
+      the initial regime; it does not assert the same cancellation for arbitrary priors.</p>
+
+    <h2>Zero-hazard regimes: exact trace reduction</h2>
+    <p>Strict positivity in every state can be dropped for cause probabilities.
+      Assume only $d\geq0$ and $\pi d&gt;0$, and put $A=\{i:d_i&gt;0\}$ and $Z=A^c$.
+      Every cause hazard vanishes on $Z$.</p>
+    <p>When $Z$ is nonempty, the chain killed on entering $A$ has transient generator $Q_{ZZ}$,
+      so this block is invertible.
+      Define the entrance probabilities, trace generator and effective initial prior by</p>
+    $$R=-Q_{ZZ}^{-1}Q_{ZA},\qquad
+      \widehat Q=Q_{AA}+Q_{AZ}R,\qquad
+      \widehat\nu=\nu_A+\nu_ZR,\qquad
+      \widehat\pi=\frac{\pi_A}{\pi(A)}.$$
+    <p>The matrix $R$ is nonnegative with row sums one; it records the first state hit in $A$.
+      The trace chain deletes time spent in $Z$, has irreducible generator $\widehat Q$, and stationary law
+      $\widehat\pi$; these standard trace facts are in
+      <a href="./bibliography.html#BeltranLandim2009">Beltr&aacute;n and Landim (2009)</a>,
+      Corollary 6.2 and Proposition 6.3.</p>
+    <p>Irreducibility follows by collapsing paths through $Z$ into transitions between states of $A$.
+      The stationary block equations give $\pi_Z=-\pi_AQ_{AZ}Q_{ZZ}^{-1}$ and
+      $\pi_A\widehat Q=0$, proving the displayed stationary law directly.</p>
+    <p>For a direct algebraic proof of the cause law, the inactive rows of
+      $(D-mQ)u_r=h_r$ give $u_{r,Z}=Ru_{r,A}$.
+      Substitution into the active rows gives the exact Schur-complement identity</p>
+    $$p_{\nu r}(m)=\widehat\nu
+      (D_A-m\widehat Q)^{-1}h_{r,A}\qquad(m&gt;0).$$
+    <p>Hence the positive-hazard theorem applies on $A$, with $C_r$ computed there and independent of the
+      original prior: every $\widehat\nu$ is a probability row.
+      Its leading ratio remains $\pi h_r/\pi d$, and the original-chain coefficient remains
+      $(\nu-\alpha)(-Q)^\#(h_r-p_{0r}d)$ by the same solvability calculation.</p>
+    <p>For each $m&gt;0$, every regime reaches $A$ and the finite chain killed at positive rate on $A$ is
+      transient, so $D-mQ$ is invertible.
+      No artificial positive hazard or limiting regularization is used.</p>
+    <p>If $A$ has one state, the cause probabilities are exactly $h_{r,A}/d_A$ for every prior and speed,
+      and every correction and bound constant is zero.
+      If $A$ is empty, no event occurs and a first-cause law is undefined; that case is excluded.</p>
+    <p>Do not silently initialize the trace chain in $\widehat\pi$ when the original chain starts in $\pi$.
+      The correct entrance prior is $\pi_A+\pi_ZR$, which generally differs from $\widehat\pi$.</p>
+    <p>For the defective generator displayed below, take $h_1=(1,0,.5)$ and $h_2=(1,0,3.5)$.
+      The trace generator is $\left(\begin{smallmatrix}-1&amp;1\\4&amp;-4\end{smallmatrix}\right)$,
+      with stationary law $(4/5,1/5)$, but the original stationary start enters it with prior $(4/9,5/9)$.</p>
+    <p>At $m=1$, its cause probabilities are $(41/120,79/120)$, with first coefficients $(-1/18,1/18)$.
+      Deleting inactive time preserves the cause label, not the calendar waiting time, so the scalar mean-wait
+      theorem cannot be transferred by this argument.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_zero_hazard_race.py">verify_zero_hazard_race.py</a>
+      checks 36 random chains at 13 speeds, every pure-start reduction and bound, the original-chain
+      coefficient, event-stationary cancellation and the single-active-state case.
+      It compares the defective benchmark with the displayed exact fractions.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_general_race_bound.py">certificate</a>
+      checks direct killed inverses against the exact remainder, contraction norms, independent original-chain
+      group inverses, simplex identities and changing-prior envelopes.
+      It also covers an irreducible three-state generator with a nontrivial Jordan block.</p>
+    <p>It checks 42 random chains in dimensions 2 through 8, with three causes at 13 speeds,
+      plus constant-total-hazard and zero-cause boundaries.
+      The defective benchmark uses</p>
+    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\4&amp;0&amp;-4\end{pmatrix},\qquad
+      \pi=(4,4,1)/9,\qquad
+      [h_1\ h_2\ h_3]=\begin{pmatrix}1&amp;.5&amp;.5\\.25&amp;.5&amp;.25\\2&amp;3&amp;5\end{pmatrix}.$$
+    <p>At $m=1$, a pure start in state 1 gives probabilities
+      $(0.4187500000,0.3000000000,0.2812500000)$ and first coefficients
+      $(0.2004132231,-0.0041322314,-0.1962809917)$.
+      The all-prior bound constants are $(0.2478292046,0.1059233972,0.2485467717)$.</p>
+    <p>No diagonalizability or reversibility is used, and no lower speed threshold is imposed.
+      The proof is an elementary finite-matrix accretive resolvent argument; the related symmetric/skew
+      resolvent framework is in
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>.
+      No priority claim is made.</p>
+    <p>The hazards are constant within each regime, not switched CIR processes.
+      No finite-horizon survival order, conditional conformal guarantee or joint recovery of the hidden
+      generator is claimed.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
