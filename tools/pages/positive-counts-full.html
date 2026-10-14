@@ -62,6 +62,51 @@
       enter the general bound.
       This keeps the approximation scope separate from maturity-uniform cumulant statements.</p>
 
+    <h2>Arbitrary initial priors: the same rate, uniformly</h2>
+    <p>Symmetric switching rates do not require a stationary start.
+      Let $\eta=\mathbb E Z_0\in[-1,1]$, $I_T=\int_0^T Z_t\,dt$, $x=\lambda T$ and
+      $e=e^{-2x}$. Ordered one-, two- and three-point correlations give</p>
+    $$a=\frac{1-e}{2\lambda},\qquad
+      b=\frac T\lambda-\frac{1-e}{2\lambda^2},\qquad
+      c=\frac{3}{2\lambda^2}\left\{T(1+e)-\frac{1-e}{\lambda}\right\},$$
+    $$\mathbb E I_T=\eta a,\qquad \mathbb E I_T^2=b,\qquad \mathbb E I_T^3=\eta c,
+      \qquad \mu_\eta=\bar\ell T+\delta\eta a,\quad
+      v_\eta=\delta^2(b-\eta^2a^2).$$
+    <p>These are the exact moments used to fit the negative binomial for that prior.
+      The underlying two-state occupation law is classical; see
+      <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.
+      The moment identities here also follow directly from the Markov conditional expectation
+      $\mathbb E(Z_t\mid Z_s)=Z_s e^{-2\lambda(t-s)}$.</p>
+    <p>Centering the third moment cancels its order-$\lambda^{-2}$ raw term:</p>
+    $$m_{3,\eta}=\frac{\delta^3}{4\lambda^3}
+      \{3\eta(4xe+e^2-1)+\eta^3(1-e)^3\},\qquad
+      |m_{3,\eta}|\leq\frac{|\delta|^3}{\lambda^3}.$$
+    <p>For the inequality, $H(x)=1-e^{-4x}-4xe^{-2x}$ increases from zero and is at most one, because
+      $H'(x)=4e^{-2x}(e^{-2x}+2x-1)\geq0$.
+      Also $0\leq(1-e)^3\leq1$ and $|\eta|\leq1$, proving the bound.</p>
+    <p>The raw fourth moment has the same bound as for the stationary start, because the ordered four-point
+      correlation is independent of the initial sign.
+      Since $a,c\geq0$, its centered counterpart satisfies</p>
+    $$m_{4,\eta}=\delta^4\{\mathbb EI_T^4-4\eta^2ac+6\eta^2a^2b-3\eta^4a^4\}
+      \leq\frac{3\delta^4T^2}{\lambda^2}+\frac{3\delta^4T}{2\lambda^3}.$$
+    <p>Here $a\leq1/(2\lambda)$ and $b\leq T/\lambda$.
+      Put $\mu_{\min}=\bar\ell T-|\delta|a&gt;0$; positivity follows from $a&lt;T$ and
+      $\bar\ell\geq|\delta|$.</p>
+    <div class="equation-card">
+    $$\sup_{\eta\in[-1,1]}d_{\rm TV}(\mathcal L(N_{T,\eta}),\mathcal L(N_{*,\eta}))
+      \leq\min\{1,B(\lambda,T)\},$$
+    $$B(\lambda,T)=\frac{\delta^4}{\lambda^2}
+       \left(2T^2+\frac{4T^2}{3\mu_{\min}}\right)
+       +\frac1{\lambda^3}\left(\frac{2|\delta|^3}{3}
+          +\frac{\delta^4T}{2}+\frac{2\delta^6T^3}{\mu_{\min}^2}\right).$$
+    </div>
+    <p>This follows from the general moment theorem, $v_\eta\leq\delta^2T/\lambda$ and
+      $\mu_\eta\geq\mu_{\min}$.
+      At fixed $T$ and intensities, $\mu_{\min}\to\bar\ell T&gt;0$, so the second-order rate is uniform
+      over every initial prior, even one depending on switching speed.</p>
+    <p>The symmetric-rate assumption remains; no unequal-rate or general-chain speed bound is asserted.
+      The approximation fits the exact prior-specific moments, not the stationary moments for every prior.</p>
+
     <h2>Certificate</h2>
     <p>For intensities $(8,1)$, stationary start and $T=1$, the certificate independently computes count
       probabilities from the two-state matrix generating function and centered intensity moments from a
@@ -83,7 +128,11 @@
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_positive_counts.py">verify_positive_counts.py</a>
       also checks moment matching, the fourth-moment bound and the constant-intensity Poisson case.
       Its final line is literal <code>PASS</code>.</p>
-    <p>The explicit telegraph bound assumes stationary symmetric initialization.
+    <p>The arbitrary-prior extension adds 90 cases, including a zero-intensity regime and three horizons.
+      For $(8,1)$ and $T=1$ at rate 40, the pure low- and high-start negative-binomial errors are
+      $0.0005062441$ and $0.0004917368$, below the common bound $0.2201520867$.</p>
+    <p>The explicit telegraph bounds require symmetric switching rates; the shorter stationary bound and
+      the arbitrary-prior bound have different constants.
       The general moment theorem still applies to other nonnegative mixing laws, but their third and fourth
       centered moments must be controlled separately to conclude a second-order rate.</p>
     <p>This is a one-horizon marginal count approximation, not an exact gamma intensity distribution,

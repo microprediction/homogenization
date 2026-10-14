@@ -10,15 +10,63 @@ from verify_counts import count_distribution
 ROUND_TOL = 8192*np.finfo(float).eps
 
 
-def central_moments(rate, contrast, maturity):
+def central_moments(rate, contrast, maturity, prior=(.5, .5)):
     q = rate*np.array([[-1., 1.], [1., -1.]])
     system = np.kron(np.eye(5), q)
     for degree in range(1, 5):
         system[2*degree:2*degree+2, 2*degree-2:2*degree] = degree*np.diag([contrast, -contrast])
     initial = np.zeros(10)
     initial[:2] = 1
-    moments = (expm(maturity*system) @ initial).reshape(5, 2).mean(axis=1)
+    moments = (expm(maturity*system) @ initial).reshape(5, 2) @ np.asarray(prior)
     return moments
+
+
+def arbitrary_prior_checks():
+    largest_error, cases = 0., 0
+    endpoint_distances = {-1.: [], 1.: []}
+    for intensities in [np.array([8., 1.]), np.array([2., 0.])]:
+        average, contrast = intensities.mean(), (intensities[0]-intensities[1])/2
+        designs = [(r, 1.) for r in [1., 5., 10., 20., 40., 80., 160.]]+[(2., .2), (2., 3.)]
+        for rate, maturity in designs:
+            e = np.exp(-2*rate*maturity)
+            a = -np.expm1(-2*rate*maturity)/(2*rate)
+            b = maturity/rate + np.expm1(-2*rate*maturity)/(2*rate**2)
+            minimum_mean = average*maturity-abs(contrast)*a
+            uniform_bound = min(1., contrast**4*(2*maturity**2+4*maturity**2/(3*minimum_mean))/rate**2
+                                +(2*abs(contrast)**3/3+contrast**4*maturity/2
+                                  +2*contrast**6*maturity**3/minimum_mean**2)/rate**3)
+            for eta in [-1., -.5, 0., .5, 1.]:
+                prior = np.array([(1+eta)/2, (1-eta)/2])
+                raw = central_moments(rate, contrast, maturity, prior)
+                mean = average*maturity+contrast*eta*a
+                variance = contrast**2*(b-eta**2*a*a)
+                third = raw[3]-3*raw[1]*raw[2]+2*raw[1]**3
+                fourth = raw[4]-4*raw[1]*raw[3]+6*raw[1]**2*raw[2]-3*raw[1]**4
+                exact_third = contrast**3*(3*eta*(4*rate*maturity*e+e*e-1)+eta**3*(1-e)**3)/(4*rate**3)
+                largest_error = max(largest_error, abs(third-exact_third)/max(1., abs(raw[3])),
+                                    abs(raw[2]-raw[1]**2-variance)/max(1., raw[2]),
+                                    abs(average*maturity+raw[1]-mean)/max(1., mean))
+                assert abs(third) <= abs(contrast)**3/rate**3+ROUND_TOL*max(1., abs(raw[3]))
+                assert fourth <= 3*contrast**4*maturity**2/rate**2+1.5*contrast**4*maturity/rate**3+ROUND_TOL*max(1., raw[4])
+                shape, success = mean**2/variance, mean/(mean+variance)
+                q = rate*np.array([[-1., 1.], [1., -1.]])
+                exact = count_distribution(q, intensities, maturity, prior)
+                distance = .5*np.sum(abs(exact[:80]-nbinom.pmf(np.arange(80), shape, success)))
+                tail = .5*(nbinom.sf(79, shape, success)+poisson.sf(79, intensities.max()*maturity)
+                           +poisson.sf(255, intensities.max()*maturity))
+                moment_bound = min(1., 2*abs(third-2*variance**2/mean)/3
+                                   +(fourth+3*variance**2+6*variance**3/mean**2)/3)
+                assert distance+tail <= moment_bound+ROUND_TOL
+                assert moment_bound <= uniform_bound+ROUND_TOL
+                if intensities[0] == 8. and eta in endpoint_distances and maturity == 1.:
+                    endpoint_distances[eta].append(distance)
+                    if rate == 40.:
+                        print("pure-start eta, NB TV, uniform-prior bound", eta, f"{distance:.10f}", f"{uniform_bound:.10f}")
+                cases += 1
+    assert largest_error <= ROUND_TOL
+    print("arbitrary-prior grid cases", cases, "including zero lower intensity; horizons", [.2, 1., 3.])
+    print("maximum arbitrary-prior moment discrepancy", f"{largest_error:.3e}")
+    print("pure-start last measured orders", *(f"{np.log2(x[-2]/x[-1]):.6f}" for x in endpoint_distances.values()))
 
 
 def main():
@@ -89,6 +137,7 @@ def main():
     print("last measured negative-binomial error order", f"{order:.6f}")
     print("maximum central-moment identity discrepancy", f"{largest_error:.3e}")
     print("maximum omitted-tail TV budget", f"{tail_budget:.3e}")
+    arbitrary_prior_checks()
     print("roundoff tolerance", f"{ROUND_TOL:.3e}")
     print("PASS")
 

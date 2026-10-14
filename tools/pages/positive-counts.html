@@ -27,13 +27,15 @@
     <p>Thus the approximation is $O(\lambda^{-2})$ at fixed intensities and horizon, while remaining a
       probability law for every $\lambda&gt;0$.
       The constants are conservative, not sharp, and this is not a maturity-uniform bound.</p>
+    <p>The full note also proves the same second-order rate uniformly over all starting priors under symmetric
+      switching, with a separate explicit bound and exact prior-specific mean and variance.</p>
     <p>With intensities $(8,1)$, stationary start and $T=1$, at $\lambda=40$ the Poisson approximation has
       total-variation error $0.0160856124$, versus $0.0005052802$ for the negative binomial.
       The rigorous explicit bound there is $0.2182043065$; the last measured error order is $1.962215$.</p>
     <p>The <a href="./positive-counts-full.html">full note</a> proves a general moment comparison bound,
       then specializes it to the telegraph rate.
       This is a fixed-horizon count approximation, not an exact gamma law for the integrated intensity,
-      a model for the full arrival process or a claim about nonstationary starts.</p>
+      or a model for the full arrival process; unequal switching rates are outside the explicit speed bounds.</p>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_positive_counts.py">Certificate</a>:
       independent matrix-exponential count probabilities and centered moment equations, with explicit
       omitted-tail budgets; final line <code>PASS</code>.</p>
