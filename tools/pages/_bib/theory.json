@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "ZacharovasHwang2010",
+  "authors": "Zacharovas, V. and Hwang, H.-K.",
+  "year": 2010,
+  "title": "A Charlier-Parseval approach to Poisson approximation and its applications",
+  "venue": "Lithuanian Mathematical Journal 50(1):88-119",
+  "doi": "10.1007/s10986-010-9073-5",
+  "annotation": "Uses Charlier orthogonality and Parseval identities for Poisson approximation. Lemma 2.1 supplies the classical squared-norm identity behind the uniform-count note's Poisson derivative smoothing bound; the gamma lower-tail and maturity-uniform estimates are proved directly in that note."
  }
 ]
