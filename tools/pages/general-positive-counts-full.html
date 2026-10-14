@@ -1,0 +1,119 @@
+<!-- title: Finite-chain positive count bound (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./general-positive-counts.html">&larr; summary</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>A finite-chain gamma-Poisson error bound</h1>
+    <p>Let $Q$ be a row generator of a finite irreducible chain, with stationary row $\pi$,
+      $\Pi=\mathbf1\pi$ and semigroup $P_t=e^{tQ}$.
+      Let $\ell\geq0$ be nonconstant, $\bar\ell=\pi\ell&gt;0$,
+      $f=\ell-\bar\ell\mathbf1$ and $F=\|f\|_\infty$.</p>
+    <p>The chain $Y$ has generator $mQ$, initial prior $\nu$ and horizon $T&gt;0$.
+      Write $J=\int_0^T f(Y_t)\,dt$, $\Lambda=\bar\ell T+J$, $\mu_\nu=\mathbb E_\nu\Lambda$,
+      $v_\nu=\operatorname{Var}_\nu\Lambda$ and $M_{j,\nu}=\mathbb E_\nu(\Lambda-\mu_\nu)^j$.</p>
+    <p>Choose constants $C,\gamma&gt;0$ satisfying the induced sup-norm bound
+      $\|P_t-\Pi\|_{\infty\to\infty}\leq Ce^{-\gamma t}$ for all $t\geq0$.
+      Put $\beta=m\gamma$ and $\mu_{\min}=\min_i\mathbb E_i\Lambda&gt;0$.</p>
+    <h2>The all-prior bound</h2>
+    <p>For every $\nu$, let $N_\nu\mid\Lambda\sim\operatorname{Poisson}(\Lambda)$,
+      and replace $\Lambda$ by a gamma variable with shape $\mu_\nu^2/v_\nu$ and scale $v_\nu/\mu_\nu$.
+      Its Poisson mixture $N_{*,\nu}$ matches the first two count moments exactly.</p>
+    $$V=\frac{2CF^2T}{\beta},\qquad
+      B_3=\frac{18C^2F^3T}{\beta^2}+\frac{2C^3F^3}{\beta^3},\qquad
+      B_4=\frac{24C^2F^4T^2}{\beta^2}+\frac{60C^3F^4T}{\beta^3}.$$
+    <div class="equation-card">
+    $$\sup_\nu d_{\rm TV}(\mathcal L(N_\nu),\mathcal L(N_{*,\nu}))
+       \leq\min\{1,B(m,T)\},$$
+    $$B(m,T)=\frac23\left(B_3+\frac{2V^2}{\mu_{\min}}\right)
+       +\frac13\left(B_4+3V^2+\frac{6V^3}{\mu_{\min}^2}\right).$$
+    </div>
+    <p>This holds at every $m,T&gt;0$, though the bound may be uninformative at small speed.
+      Since $|\mu_\nu-\bar\ell T|\leq CF/\beta$, $\mu_{\min}\to\bar\ell T&gt;0$ as $m\to\infty$.
+      Hence the bound is $O(m^{-2})$ for fixed $Q,\ell,T$, uniformly over every initial prior.</p>
+    <p>Use the exact prior-specific moments, not stationary moments for every prior.
+      The constant-intensity case is exactly Poisson and needs no gamma parameterization.</p>
+    <h2>Computable constants without an eigenvector assumption</h2>
+    <p>For any $h&gt;0$, set
+      $\rho=\tfrac12\max_{i,j}\sum_k|(P_h)_{ik}-(P_h)_{jk}|$.
+      For at least two states, positivity and invertibility of $P_h$ give $0&lt;\rho&lt;1$.</p>
+    $$C=\frac2\rho,\qquad \gamma=-\frac{\log\rho}{h}.$$
+    <p>The row-difference contraction of a stochastic matrix is submultiplicative.
+      Indeed, separating a zero-sum row into positive and negative parts gives
+      $\|aP_h\|_1\leq\rho\|a\|_1$.
+      Since $\pi$ is a convex combination of the rows of $P_{kh}$,
+      $\|P_{kh}-\Pi\|_{\infty\to\infty}\leq2\rho^k$.</p>
+    <p>For $t=kh+s$, $0\leq s&lt;h$, stochastic sup-norm contraction gives the same bound.
+      The inequality $\rho^{\lfloor t/h\rfloor}\leq\rho^{-1}e^{-\gamma t}$ supplies the displayed envelope.
+      Thus defective generators are included; the constants are conservative, not optimal.</p>
+    <p>The exact positive number $\mu_{\min}$ is computable as
+      $\min_i[\int_0^T P_{ms}\ell\,ds]_i$.
+      Every component of $P_{ms}\ell$ is positive for $s&gt;0$ when $\ell$ is nonzero, even if some
+      individual intensities vanish.</p>
+    <h2>Why the signed third moment is second order</h2>
+    <p>Write $a=\mathbb E_\nu J$ and $R_j=\mathbb E_\nu J^j$.
+      Markov conditioning and $\pi f=0$ give
+      $|a|\leq CF/\beta$ and $0\leq R_2\leq2CF^2T/\beta$.</p>
+    <p>For three ordered times $(t,t+s,t+s+u)$, put $g=fP_{mu}f$, with products componentwise.
+      Split $P_{ms}g=\Pi g+(P_{ms}-\Pi)g$.
+      The constant part uses the decay of $\nu P_{mt}f$, and the remainder uses the decay across $s$:</p>
+    $$|\mathbb E_\nu[f(Y_t)f(Y_{t+s})f(Y_{t+s+u})]|
+      \leq C^2F^3\{e^{-\beta(t+u)}+e^{-\beta(s+u)}\}.$$
+    <p>Each integral over $t,s,u\geq0$, $t+s+u\leq T$, is at most $T/\beta^2$.
+      Multiplying by $3!$ yields $|R_3|\leq12C^2F^3T/\beta^2$.
+      Centering via $M_{3,\nu}=R_3-3aR_2+2a^3$ proves $|M_{3,\nu}|\leq B_3$.</p>
+    <p>For four ordered times $(t,t+s,t+s+u,t+s+u+w)$, split the propagation across the middle gap $u$.
+      With $g=fP_{mw}f$, the constant term is $(\pi g)\mathbb E_\nu[f(Y_t)f(Y_{t+s})]$.
+      Sup-norm contraction bounds the remainder, giving</p>
+    $$|\mathbb E_\nu[f(Y_t)f(Y_{t+s})f(Y_{t+s+u})f(Y_{t+s+u+w})]|
+      \leq C^2F^4\{e^{-\beta(s+w)}+e^{-\beta(u+w)}\}.$$
+    <p>Each four-variable ordered integral is at most $T^2/(2\beta^2)$.
+      Thus $0\leq R_4\leq24C^2F^4T^2/\beta^2$.
+      The identity $M_{4,\nu}=R_4-4aR_3+6a^2R_2-3a^4$ gives $0\leq M_{4,\nu}\leq B_4$.</p>
+    <p>Finally $v_\nu=R_2-a^2\leq V$.
+      Bounding the absolute third moment instead would not preserve the signed cancellation used above.
+      No reversible spectral expansion or stationary-start assumption enters this argument.</p>
+    <h2>From intensity moments to count total variation</h2>
+    <p>Let $p(x)$ be the Poisson probability vector and $S$ its right-shift operator.
+      Then $p^{(j)}(x)=(S-I)^jp(x)$ and $\|p^{(j)}(x)\|_1\leq2^j$ for $x\geq0$.
+      Taylor expansion through degree three at $\mu_\nu$ has remainder norm at most
+      $16|x-\mu_\nu|^4/24$.</p>
+    <p>The matched mean and variance cancel the first three terms after expectation.
+      Gamma centered moments are $2v_\nu^2/\mu_\nu$ and $3v_\nu^2+6v_\nu^3/\mu_\nu^2$.
+      Taking half the $\ell^1$ distance gives</p>
+    $$d_{\rm TV}\leq\frac23\left|M_{3,\nu}-\frac{2v_\nu^2}{\mu_\nu}\right|
+      +\frac13\left(M_{4,\nu}+3v_\nu^2+\frac{6v_\nu^3}{\mu_\nu^2}\right).$$
+    <p>Substitution of the uniform moment bounds proves the theorem.
+      Mixed-Poisson approximation by Poisson laws and finite signed corrections is classical; see
+      <a href="./bibliography.html#Roos2003">Roos (2003)</a>.
+      The comparison and constants here are proved directly, with no sharpness or priority claim.</p>
+    <h2>Certificate and scope</h2>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_general_positive_counts.py">verify_general_positive_counts.py</a>
+      computes intensity moments through a triangular matrix exponential and count probabilities through the
+      independent matrix generating function.
+      It checks every pure prior, a stationary prior and a uniform prior on unequal-rate, directed-cycle,
+      defective-cycle and four-state examples, each including a zero-intensity regime.</p>
+    <p>The certificate prints the mixing constants, finite-rate bounds, moment-matching discrepancies and
+      a Poisson-domination plus negative-binomial omitted-tail budget.
+      Its final line is literal <code>PASS</code>.</p>
+    <p>There are 420 moment checks over horizons $0.2,1,3$ and 100 count-law comparisons at $T=1$.
+      For the directed cycle $Q_{12}=Q_{23}=Q_{31}=1$ with intensities $(3,1,0)$, pure first-state start
+      and $T=1$, the following errors are below the bound uniform over all priors.</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>speed $m$</th><th>negative-binomial TV error</th><th>all-prior bound</th></tr></thead>
+      <tbody>
+        <tr><td>80</td><td>0.0000282599</td><td>0.2738805210</td></tr>
+        <tr><td>160</td><td>0.0000072317</td><td>0.0660426578</td></tr>
+        <tr><td>320</td><td>0.0000018292</td><td>0.0162087908</td></tr>
+      </tbody>
+    </table></div>
+    <p>The last measured error order is $1.983104$; the proof, not the fit, establishes the rate.
+      Here $m^2M_{3,\nu}=1.473843$ at speed 320, so the telegraph's extra signed-third-moment
+      cancellation is not required for second-order count accuracy.</p>
+    <p>The maximum omitted-tail TV budget across all count comparisons is $1.658\times10^{-80}$,
+      separate from matrix-exponential roundoff.
+      The largest scaled negative-binomial moment-matching discrepancy is $1.615\times10^{-13}$,
+      below the roundoff tolerance $7.276\times10^{-12}$.</p>
+    <p>This is a marginal approximation at one fixed horizon, not a gamma law for the actual integrated
+      intensity, independent increments, a full-process approximation or hidden-chain identification.
+      Constants depend on the chain's mixing envelope and horizon, so no joint long-maturity or
+      vanishing-gap uniformity is asserted.</p>
+  </main>
