@@ -79,5 +79,15 @@
   "doi": "10.48550/arXiv.1905.01736",
   "url": "https://arxiv.org/abs/1905.01736",
   "annotation": "States the phase-type first-event survival formula and distinguishes time-stationary from event-stationary initialization. The mean-wait speed law uses the former, not the constant event-stationary mean."
+ },
+ {
+  "key": "BeltranLandim2009",
+  "authors": "Beltrán, J. and Landim, C.",
+  "year": 2009,
+  "title": "Tunneling and Metastability of continuous time Markov chains",
+  "venue": "arXiv:0910.4088v1, Section 6",
+  "doi": "10.48550/arXiv.0910.4088",
+  "url": "https://arxiv.org/abs/0910.4088",
+  "annotation": "Corollary 6.2 gives the trace-chain jump rates through entrance probabilities; Proposition 6.3 gives the invariant measure restricted to the retained states. The competing-cause note uses the finite-state Schur complement to remove zero-hazard regimes without changing the cause label."
  }
 ]

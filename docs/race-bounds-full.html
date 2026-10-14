@@ -101,7 +101,7 @@
       <span><a href="./papers.html">papers</a></span></p>
     <h1>Competing causes: exact remainder and prior correction</h1>
     <p>Fix a finite irreducible row generator $Q$, its stationary law $\pi$, and nonnegative cause hazards
-      $h_r$ with total $d_i&gt;0$ in every state.
+      $h_r$; first suppose the total $d_i&gt;0$ in every state, then remove that restriction below.
       Conditional on the regime path, independent Cox triggers compete to produce the first cause.</p>
     $$D=\operatorname{diag}d,\quad \bar d=\pi d,\quad
       p_{\nu r}(m)=\nu(D-mQ)^{-1}h_r,\quad p_{0r}=\frac{\pi h_r}{\bar d}.$$
@@ -170,6 +170,53 @@
     <p>because $\pi(D-mQ)=\pi D$.
       This statement assumes no event-triggered regime reset and a fresh future trigger independent of
       the initial regime; it does not assert the same cancellation for arbitrary priors.</p>
+
+    <h2>Zero-hazard regimes: exact trace reduction</h2>
+    <p>Strict positivity in every state can be dropped for cause probabilities.
+      Assume only $d\geq0$ and $\pi d&gt;0$, and put $A=\{i:d_i&gt;0\}$ and $Z=A^c$.
+      Every cause hazard vanishes on $Z$.</p>
+    <p>When $Z$ is nonempty, the chain killed on entering $A$ has transient generator $Q_{ZZ}$,
+      so this block is invertible.
+      Define the entrance probabilities, trace generator and effective initial prior by</p>
+    $$R=-Q_{ZZ}^{-1}Q_{ZA},\qquad
+      \widehat Q=Q_{AA}+Q_{AZ}R,\qquad
+      \widehat\nu=\nu_A+\nu_ZR,\qquad
+      \widehat\pi=\frac{\pi_A}{\pi(A)}.$$
+    <p>The matrix $R$ is nonnegative with row sums one; it records the first state hit in $A$.
+      The trace chain deletes time spent in $Z$, has irreducible generator $\widehat Q$, and stationary law
+      $\widehat\pi$; these standard trace facts are in
+      <a href="./bibliography.html#BeltranLandim2009">Beltr&aacute;n and Landim (2009)</a>,
+      Corollary 6.2 and Proposition 6.3.</p>
+    <p>Irreducibility follows by collapsing paths through $Z$ into transitions between states of $A$.
+      The stationary block equations give $\pi_Z=-\pi_AQ_{AZ}Q_{ZZ}^{-1}$ and
+      $\pi_A\widehat Q=0$, proving the displayed stationary law directly.</p>
+    <p>For a direct algebraic proof of the cause law, the inactive rows of
+      $(D-mQ)u_r=h_r$ give $u_{r,Z}=Ru_{r,A}$.
+      Substitution into the active rows gives the exact Schur-complement identity</p>
+    $$p_{\nu r}(m)=\widehat\nu
+      (D_A-m\widehat Q)^{-1}h_{r,A}\qquad(m&gt;0).$$
+    <p>Hence the positive-hazard theorem applies on $A$, with $C_r$ computed there and independent of the
+      original prior: every $\widehat\nu$ is a probability row.
+      Its leading ratio remains $\pi h_r/\pi d$, and the original-chain coefficient remains
+      $(\nu-\alpha)(-Q)^\#(h_r-p_{0r}d)$ by the same solvability calculation.</p>
+    <p>For each $m&gt;0$, every regime reaches $A$ and the finite chain killed at positive rate on $A$ is
+      transient, so $D-mQ$ is invertible.
+      No artificial positive hazard or limiting regularization is used.</p>
+    <p>If $A$ has one state, the cause probabilities are exactly $h_{r,A}/d_A$ for every prior and speed,
+      and every correction and bound constant is zero.
+      If $A$ is empty, no event occurs and a first-cause law is undefined; that case is excluded.</p>
+    <p>Do not silently initialize the trace chain in $\widehat\pi$ when the original chain starts in $\pi$.
+      The correct entrance prior is $\pi_A+\pi_ZR$, which generally differs from $\widehat\pi$.</p>
+    <p>For the defective generator displayed below, take $h_1=(1,0,.5)$ and $h_2=(1,0,3.5)$.
+      The trace generator is $\left(\begin{smallmatrix}-1&amp;1\\4&amp;-4\end{smallmatrix}\right)$,
+      with stationary law $(4/5,1/5)$, but the original stationary start enters it with prior $(4/9,5/9)$.</p>
+    <p>At $m=1$, its cause probabilities are $(41/120,79/120)$, with first coefficients $(-1/18,1/18)$.
+      Deleting inactive time preserves the cause label, not the calendar waiting time, so the scalar mean-wait
+      theorem cannot be transferred by this argument.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_zero_hazard_race.py">verify_zero_hazard_race.py</a>
+      checks 36 random chains at 13 speeds, every pure-start reduction and bound, the original-chain
+      coefficient, event-stationary cancellation and the single-active-state case.
+      It compares the defective benchmark with the displayed exact fractions.</p>
 
     <h2>Certificate and scope</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_general_race_bound.py">certificate</a>

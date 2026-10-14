@@ -102,8 +102,8 @@
     <h1>All-speed competing-cause bounds</h1>
     <p class="subtitle">Any finite irreducible chain, any initial prior, an explicit error budget.</p>
     <p>Let the hidden regime have row generator $mQ$ and stationary law $\pi$.
-      There are finitely many nonnegative statewise cause hazards $h_r$, with strictly positive
-      total hazard $d=\sum_rh_r$ in every state; put $D=\operatorname{diag}d$ and $\bar d=\pi d$.</p>
+      There are finitely many nonnegative statewise cause hazards $h_r$, with total
+      $d=\sum_rh_r$ not identically zero; put $D=\operatorname{diag}d$ and $\bar d=\pi d$.</p>
     <p>For any initial probability row $\nu$, independent of the event triggers, the exact first-cause law is</p>
     $$p_{\nu r}(m)=\nu(D-mQ)^{-1}h_r.$$
     <p>Let $H=(-Q)^\#$, $p_{0r}=\pi h_r/\bar d$ and
@@ -116,6 +116,9 @@
     <p>The <a href="./race-bounds-full.html">full note</a> constructs $C_r$ explicitly from a restricted inverse.
       One constant works for all $\nu$, including priors varying with $m$; no reversibility or
       diagonalizability is required.</p>
+    <p>Zero-hazard regimes are removed by an exact trace-chain Schur complement, with the initial prior
+      mapped to its entrance law.
+      This preserves cause probabilities, not calendar waiting times.</p>
     <p>The approximation and its exact remainder have total mass one and zero respectively, but the
       truncated coordinates need not be nonnegative at slow speeds.
       At the event-stationary prior $\alpha$, the exact cause probabilities equal $p_{0r}$ at every speed.</p>
