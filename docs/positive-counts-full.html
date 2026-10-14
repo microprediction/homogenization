@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A positive Cox-count corrector (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./positive-counts.html">&larr; summary</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>A gamma-Poisson replacement with a finite-rate bound</h1>
+    <p>Let $N\mid\Lambda\sim\operatorname{Poisson}(\Lambda)$, where $\Lambda\geq0$ has positive mean
+      $\mu$, variance $v&gt;0$ and a finite fourth moment.
+      Put $m_j=\mathbb E(\Lambda-\mu)^j$, and let $G$ be gamma with shape $r=\mu^2/v$ and scale
+      $\theta=v/\mu$.</p>
+    <p>Define $N_*\mid G\sim\operatorname{Poisson}(G)$.
+      Integrating the gamma density gives the negative-binomial generating function</p>
+    $$\mathbb Ez^{N_*}=(1+\theta(1-z))^{-r},\qquad
+      \mathbb EN_*=\mu,\quad \operatorname{Var}N_*=\mu+v.$$
+    <p>It is a genuine probability law, unlike a generic finite signed corrector.
+      The third and fourth mixing cumulants need not match those of $\Lambda$; matching two moments alone
+      is not an accuracy guarantee.</p>
+
+    <h2>A general fourth-moment comparison theorem</h2>
+    <p>Use $d_{\rm TV}(P,Q)=\tfrac12\sum_{k\geq0}|P\{k\}-Q\{k\}|$.
+      The gamma centered moments are $\mathbb E(G-\mu)^3=2v^2/\mu$ and
+      $\mathbb E(G-\mu)^4=3v^2+6v^3/\mu^2$.</p>
+    <div class="equation-card">
+    $$d_{\rm TV}(\mathcal L(N),\mathcal L(N_*))\leq
+      \min\left\{1,\frac23\left|m_3-\frac{2v^2}\mu\right|
+       +\frac13\left(m_4+3v^2+\frac{6v^3}{\mu^2}\right)\right\}.$$
+    </div>
+    <p>To prove it, let $p(x)$ denote the entire probability vector of a Poisson variable with mean $x$.
+      If $S$ shifts this vector one place to the right, then $p^{(j)}(x)=(S-I)^jp(x)$, so</p>
+    $$\|p^{(j)}(x)\|_1\leq2^j\quad(x\geq0).$$
+    <p>Taylor-expand in the Banach space $\ell^1$ through degree three at $\mu$.
+      Every point between $\mu$ and either nonnegative mixing variable lies in the domain of this derivative
+      bound, so the remainder norm is at most $2^4|x-\mu|^4/4!$.</p>
+    <p>Taking expectations cancels the constant, linear and quadratic terms because the mean and variance match.
+      The cubic difference has norm at most $2^3|m_3-2v^2/\mu|/3!$; the two remainder norms sum.
+      Dividing by two gives the displayed total-variation bound.</p>
+    <p>Mixed-Poisson expansions by Poisson laws and finite signed measures are classical; see
+      <a href="./bibliography.html#Roos2003">Roos (2003)</a>.
+      The loose gamma-Poisson comparison above is proved directly here, with no sharpness or priority claim.</p>
+
+    <h2>A stationary telegraph intensity supplies the required orders</h2>
+    <p>Let $Z_t\in\{-1,1\}$ start symmetrically and flip at rate $\lambda$ in each direction, and let
+      $\Lambda_T=\bar\ell T+\delta\int_0^T Z_t\,dt$, with $\bar\ell&gt;0$ and
+      $\bar\ell\pm\delta\geq0$.
+      Then $\mu=\bar\ell T$, $m_3=0$ by symmetry, and</p>
+    $$v=\delta^2\left\{\frac T\lambda-\frac{1-e^{-2\lambda T}}{2\lambda^2}\right\}
+      \leq\frac{\delta^2T}{\lambda}.$$
+    <p>For ordered times $t_1&lt;t_2&lt;t_3&lt;t_4$, conditional expectation and $Z_t^2=1$ give</p>
+    $$\mathbb E(Z_{t_1}Z_{t_2}Z_{t_3}Z_{t_4})
+      =e^{-2\lambda(t_2-t_1)}e^{-2\lambda(t_4-t_3)}.$$
+    <p>Fixing $t_1&lt;t_3$, each of the two intervening gap integrals is at most $1/(2\lambda)$.
+      The $(t_1,t_3)$ domain has area $T^2/2$ and there are $4!$ orderings, yielding</p>
+    $$m_4\leq\frac{3\delta^4T^2}{\lambda^2}.$$
+    <p>Substituting these inequalities into the general theorem proves, at every positive speed and horizon,</p>
+    $$d_{\rm TV}(\mathcal L(N_T),\mathcal L(N_*))\leq
+      \min\left\{1,\frac{\delta^4}{\lambda^2}
+        \left(2T^2+\frac{4T}{3\bar\ell}\right)
+       +\frac{2\delta^6T}{\bar\ell^2\lambda^3}\right\}.$$
+    <p>If $\delta=0$, $v=0$ and the exact law is Poisson, so no gamma parameterization is needed.
+      With fixed $T$ and intensities, the bound is second order in inverse speed; it grows with $T$ and
+      does not assert a joint long-maturity approximation.</p>
+    <p>The finite-horizon variance and centered fourth moment, not just their Green&ndash;Kubo leading terms,
+      enter the general bound.
+      This keeps the approximation scope separate from maturity-uniform cumulant statements.</p>
+
+    <h2>Certificate</h2>
+    <p>For intensities $(8,1)$, stationary start and $T=1$, the certificate independently computes count
+      probabilities from the two-state matrix generating function and centered intensity moments from a
+      degree-four triangular system.
+      The table gives total-variation errors and the explicit speed bound.</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>$\lambda$</th><th>Poisson error</th><th>negative-binomial error</th><th>explicit bound</th></tr></thead>
+      <tbody>
+        <tr><td>20</td><td>0.0312293339</td><td>0.0018301875</td><td>0.8841645448</td></tr>
+        <tr><td>40</td><td>0.0160856124</td><td>0.0005052802</td><td>0.2182043065</td></tr>
+        <tr><td>80</td><td>0.0081640416</td><td>0.0001329852</td><td>0.0541964729</td></tr>
+        <tr><td>160</td><td>0.0041127534</td><td>0.0000341285</td><td>0.0135047928</td></tr>
+      </tbody>
+    </table></div>
+    <p>The maximum omitted-tail total-variation budget is $4.556\times10^{-30}$, using Poisson domination
+      for the true count and the exact negative-binomial tail.
+      The last measured negative-binomial error order is $1.962215$; the theorem, not this fit, establishes
+      the stated rate.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_positive_counts.py">verify_positive_counts.py</a>
+      also checks moment matching, the fourth-moment bound and the constant-intensity Poisson case.
+      Its final line is literal <code>PASS</code>.</p>
+    <p>The explicit telegraph bound assumes stationary symmetric initialization.
+      The general moment theorem still applies to other nonnegative mixing laws, but their third and fourth
+      centered moments must be controlled separately to conclude a second-order rate.</p>
+    <p>This is a one-horizon marginal count approximation, not an exact gamma intensity distribution,
+      independent increments for the full arrival process, or hidden-chain identification.
+      The finite-rate bound is deliberately conservative.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
