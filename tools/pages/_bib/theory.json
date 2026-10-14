@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Roos2003",
+  "authors": "Roos, B.",
+  "year": 2003,
+  "title": "Improvements in the Poisson approximation of mixed Poisson distributions",
+  "venue": "Journal of Statistical Planning and Inference 113(2):467-483",
+  "doi": "10.1016/S0378-3758(02)00095-2",
+  "annotation": "Studies mixed-Poisson approximation by Poisson laws and finite signed measures. The positive-count note gives a self-contained gamma-Poisson moment-matching comparison bound, without a sharpness or priority claim."
  }
 ]

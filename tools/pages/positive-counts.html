@@ -1,0 +1,42 @@
+<!-- title: A positive Cox-count corrector · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./counts.html">&larr; switching counts</a>
+      <span><a href="./positive-counts-full.html">proof and error budget</a></span></p>
+    <h1>A positive Cox-count corrector</h1>
+    <p class="subtitle">Keep the overdispersion correction without losing a probability distribution.</p>
+    <p>For a Cox count $N\mid\Lambda\sim\operatorname{Poisson}(\Lambda)$, write
+      $\mu=\mathbb E\Lambda&gt;0$ and $v=\operatorname{Var}\Lambda$.
+      Replace $\Lambda$ by a gamma variable with the same mean and variance; the resulting count is
+      negative binomial, with generating function</p>
+    $$G_*(z)=\left(1+\frac v\mu(1-z)\right)^{-\mu^2/v}.$$
+    <p>This is nonnegative and normalized at every speed and matches $\mathbb EN=\mu$ and
+      $\operatorname{Var}N=\mu+v$ exactly.
+      If $v=0$, use the exact Poisson law instead.</p>
+    <h2>A second-order distributional error</h2>
+    <p>For a stationary two-state chain flipping at rate $\lambda$ in each direction, with nonnegative
+      intensities $\ell_1,\ell_2$, put $\bar\ell=(\ell_1+\ell_2)/2&gt;0$ and
+      $\delta=(\ell_1-\ell_2)/2$. At horizon $T&gt;0$, use the exact moments</p>
+    $$\mu=\bar\ell T,\qquad
+      v=\delta^2\left\{\frac T\lambda-\frac{1-e^{-2\lambda T}}{2\lambda^2}\right\}.$$
+    <div class="equation-card">
+    $$d_{\rm TV}(\mathcal L(N),\mathcal L(N_*))\leq
+      \min\left\{1,\frac{\delta^4}{\lambda^2}
+         \left(2T^2+\frac{4T}{3\bar\ell}\right)
+       +\frac{2\delta^6T}{\bar\ell^2\lambda^3}\right\}.$$
+    </div>
+    <p>Thus the approximation is $O(\lambda^{-2})$ at fixed intensities and horizon, while remaining a
+      probability law for every $\lambda&gt;0$.
+      The constants are conservative, not sharp, and this is not a maturity-uniform bound.</p>
+    <p>The full note also proves the same second-order rate uniformly over all starting priors under symmetric
+      switching, with a separate explicit bound and exact prior-specific mean and variance.</p>
+    <p>With intensities $(8,1)$, stationary start and $T=1$, at $\lambda=40$ the Poisson approximation has
+      total-variation error $0.0160856124$, versus $0.0005052802$ for the negative binomial.
+      The rigorous explicit bound there is $0.2182043065$; the last measured error order is $1.962215$.</p>
+    <p>The <a href="./positive-counts-full.html">full note</a> proves a general moment comparison bound,
+      then specializes it to the telegraph rate.
+      This is a fixed-horizon count approximation, not an exact gamma law for the integrated intensity,
+      or a model for the full arrival process; unequal switching rates are outside the explicit speed bounds.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_positive_counts.py">Certificate</a>:
+      independent matrix-exponential count probabilities and centered moment equations, with explicit
+      omitted-tail budgets; final line <code>PASS</code>.</p>
+  </main>
