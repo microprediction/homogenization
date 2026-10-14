@@ -1,0 +1,97 @@
+<!-- title: Mean waiting time under fast switching (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./mean-wait.html">&larr; summary</a>
+    <span><a href="./papers.html">papers</a></span></p>
+    <h1>Mean waiting time: proof and scope</h1>
+    <p>Let $Q$ be an irreducible finite row generator with stationary probability row $\pi$, and let $d_i&gt;0$.
+      Start $Y$ in $\pi$, independently of a unit-exponential trigger, and set
+      $\tau_m=\inf\{t:\int_0^t d_{Y_s}\,ds\geq E\}$ for generator $mQ$.</p>
+    <p>Write $D=\operatorname{diag}d$, $\bar d=\pi d$, and
+      $\langle u,v\rangle_\pi=\sum_i\pi_i u_i v_i$. The killed semigroup gives</p>
+    $$\Pr_\pi(\tau_m&gt;t)=\pi e^{t(mQ-D)}\mathbf1,\qquad
+      W(m)=\mathbb E_\pi\tau_m=\langle\mathbf1,(D-mQ)^{-1}\mathbf1\rangle_\pi.$$
+    <p>Integration is justified by the upper bound $e^{-t\min_i d_i}$, including at $m=0$.
+      This is the standard phase-type first-event representation in
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy</a>, Proposition 2.2.</p>
+
+    <h2>The positive spectral law</h2>
+    <p>Assume detailed balance $\pi_iQ_{ij}=\pi_jQ_{ji}$. Then $L=-Q$ is self-adjoint in $L^2(\pi)$,
+      positive semidefinite, and has kernel $\operatorname{span}\{\mathbf1\}$.</p>
+    $$A=D^{-1/2}LD^{-1/2},\qquad z=D^{-1/2}\mathbf1,\qquad
+      W(m)=\langle z,(I+mA)^{-1}z\rangle_\pi.$$
+    <p>The spectral theorem gives an orthonormal eigenbasis $v_0,\ldots,v_{n-1}$ of $A$ with
+      $\lambda_0=0$ and $\lambda_k&gt;0$ for $k\geq1$. Its normalized zero mode is
+      $v_0=D^{1/2}\mathbf1/\sqrt{\bar d}$, so $\langle z,v_0\rangle_\pi^2=1/\bar d$.</p>
+    <div class="equation-card">
+    $$W(m)=\frac1{\bar d}+\sum_{k=1}^{n-1}\frac{w_k}{1+m\lambda_k},
+      \qquad w_k=\langle z,v_k\rangle_\pi^2\geq0.$$
+    </div>
+    <p>Repeated eigenvalues may be combined; their total weights do not depend on the chosen eigenbasis.
+      This positive-resolvent mixture is a specialization of the reversible spectral framework in
+      <a href="./bibliography.html#AldousFill2002">Aldous and Fill</a>, Sections 3.4&ndash;3.5, without a priority claim.</p>
+    $$(-1)^jW^{(j)}(m)=j!\sum_{k=1}^{n-1}
+      \frac{w_k\lambda_k^j}{(1+m\lambda_k)^{j+1}},\qquad j\geq1.$$
+    <p>At least one weight is positive exactly when $d$ is nonconstant: otherwise $z$ is proportional to $v_0$.
+      Therefore all these alternating derivatives are strictly positive for nonconstant hazards, and</p>
+    $$\frac1{\bar d}&lt;W(m)&lt;\pi(1/d)\quad(m&gt;0),\qquad
+      W(0)=\pi(1/d),\quad \lim_{m\to\infty}W(m)=\frac1{\bar d}.$$
+
+    <h2>Every truncation has an explicit signed remainder</h2>
+    <p>For $j\geq1$, define $A_j=\sum_kw_k\lambda_k^{-j}$ and
+      $S_p(m)=1/\bar d+\sum_{j=1}^p(-1)^{j-1}A_jm^{-j}$. The finite geometric identity yields, for
+      every $m&gt;0$ and integer $p\geq1$,</p>
+    $$(-1)^p\{W(m)-S_p(m)\}
+      =\sum_k\frac{w_k(m\lambda_k)^{-p}}{1+m\lambda_k},$$
+    <div class="equation-card">
+    $$0\leq(-1)^p\{W(m)-S_p(m)\}\leq\frac{A_{p+1}}{m^{p+1}}.$$
+    </div>
+    <p>This bound holds outside the convergence radius of the infinite inverse-speed series too.
+      For nonconstant hazards its lower inequality is strict; no maturity limit or interchange of limits is used.</p>
+    <p>The first coefficient is precisely the fixed-feature Green&ndash;Kubo form.
+      Let $f=d-\bar d\mathbf1$ and $H=-Q^\#$, the inverse of $L$ on centered vectors.</p>
+    $$A_1=\frac{\langle f,Hf\rangle_\pi}{\bar d^2}
+      =\frac1{\bar d^2}\int_0^\infty\operatorname{Cov}_\pi(d_{Y_0},d_{Y_t})\,dt,$$
+    <p>where the covariance uses the unscaled generator $Q$. To verify the equality, expand
+      $u_m=(D+mL)^{-1}\mathbf1=u_0+m^{-1}u_1+O(m^{-2})$ in the exact equation.</p>
+    $$u_0=\frac{\mathbf1}{\bar d},\qquad
+      Lu_1=-\frac f{\bar d},\qquad
+      u_1=-\frac{Hf}{\bar d}+c\mathbf1.$$
+    <p>The next solvability condition $\pi Du_1=0$ gives
+      $c=\langle f,Hf\rangle_\pi/\bar d^2$. Since $\pi H=0$, this is the coefficient of $m^{-1}$ in $W$,
+      agreeing with the spectral expansion above.</p>
+
+    <h2>A different stationary start gives a different question</h2>
+    <p>For the repeated Cox arrival process, an event epoch samples the regime according to
+      $\alpha_i=\pi_i d_i/\bar d$, not $\pi$. Because $\pi(D-mQ)=\pi D$,</p>
+    $$\mathbb E_\alpha\tau_m=\alpha(D-mQ)^{-1}\mathbf1=\frac1{\bar d}.$$
+    <p>This identity does not require reversibility.
+      The time-stationary versus event-stationary distinction is also made explicitly by
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy</a>.</p>
+    <p>For any $Q$, let $Q^*$ denote its $L^2(\pi)$ adjoint. Since the two killed resolvents are adjoints,</p>
+    $$W_Q(m)=\langle\mathbf1,(D-mQ)^{-1}\mathbf1\rangle_\pi
+      =W_{Q^*}(m).$$
+    <p>Thus this mean cannot detect cycle direction, although the cause of first arrival can.
+      There is no fixed-feature or maturity-integrated matrix rank claim here.</p>
+
+    <h2>The nonreversible boundary is exact</h2>
+    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\1&amp;0&amp;-1\end{pmatrix},\qquad
+      \pi=(1,1,1)/3,\qquad d=(1,2,3).$$
+    <p>Direct inversion gives a stationary positive-hazard counterexample:</p>
+    $$W(m)=\frac{9m^2+18m+11}{3(6m^2+11m+6)},\qquad
+      W^{(5)}(1/100)=\frac{734042964660710000000000000}{813435571879525131193330129}&gt;0.$$
+    <p>Complete monotonicity would require this fifth derivative to be nonpositive.
+      This example disproves that extension, not ordinary first-derivative monotonicity for general chains.</p>
+
+    <h2>Certificate and scope</h2>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_mean_wait.py">verify_mean_wait.py</a>
+      checks 56 reversible chains in dimensions 2 through 8 at 11 speeds, derivatives through order 6,
+      and signed truncation bounds through order 4. It compares the first coefficient with a separate
+      group-inverse calculation and the cycle derivative with exact rational arithmetic.</p>
+    <p>The reversible benchmark uses
+      $Q=\left(\begin{smallmatrix}-1&amp;1&amp;0\\1&amp;-3&amp;2\\0&amp;2&amp;-2\end{smallmatrix}\right)$,
+      $\pi=(1,1,1)/3$ and $d=(1,2,3)$. It prints $W(1)=0.5585585586$, $A_1=0.125$,
+      $A_2=0.1423611111$ and cycle fifth derivative $0.9023984075$.</p>
+    <p>These are positive constant statewise hazards, not CIR intensity processes.
+      The result controls the integrated mean, not survival at each finite horizon, arbitrary starting priors,
+      or regime-dependent event-trigger resets.</p>
+  </main>
