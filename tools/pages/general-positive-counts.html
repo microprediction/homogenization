@@ -1,0 +1,29 @@
+<!-- title: Positive count approximation for a finite chain · homogenization | math -->
+  <main>
+    <h1>A positive count corrector for any finite regime chain</h1>
+    <p class="subtitle">Exact moment matching and an all-prior, second-order total-variation bound.</p>
+    <p>Let a finite irreducible chain have generator $mQ$ and nonnegative arrival intensities $\ell$,
+      not all zero. At a fixed horizon $T&gt;0$, its Cox count is Poisson conditional on
+      $\Lambda_T=\int_0^T\ell(Y_t)\,dt$.</p>
+    <p>For each initial prior $\nu$, fit a gamma variable to the exact mean $\mu_\nu$ and variance $v_\nu$
+      of $\Lambda_T$. Its Poisson mixture is a genuine negative-binomial law with generating function</p>
+    $$\mathbb Ez^{N_{*,\nu}}=
+      \left(1+\frac{v_\nu}{\mu_\nu}(1-z)\right)^{-\mu_\nu^2/v_\nu}.$$
+    <p>The count mean $\mu_\nu$ and variance $\mu_\nu+v_\nu$ match exactly.
+      If $v_\nu=0$, use the exact Poisson law instead.</p>
+    <div class="equation-card">
+    $$\sup_\nu d_{\rm TV}\big(\mathcal L_\nu(N_T),\mathcal L(N_{*,\nu})\big)
+      \leq \min\{1,B(m,T)\}=O(m^{-2}).$$
+    </div>
+    <p>The <a href="./general-positive-counts-full.html">full note</a> gives $B$ explicitly from a
+      computable semigroup mixing envelope. No reversibility, diagonalizability, symmetric rates or
+      stationary start is required; zero-intensity regimes are allowed.</p>
+    <p>The certificate checks 420 moment cases and 100 count laws, including a defective generator.
+      For a directed cycle, a pure start and $T=1$, the error at speed 320 is $0.0000018292$,
+      below the all-prior bound $0.0162087908$.</p>
+    <p>The rate holds for fixed $Q,\ell,T$, uniformly over initial priors, including speed-dependent ones.
+      It does not give a bound uniform over closing spectral gaps, long maturities or the full arrival process.</p>
+    <p><a href="./counts.html">&larr; Cox counts</a> &middot;
+      <a href="./general-positive-counts-full.html">proof and certificate</a> &middot;
+      <a href="./papers.html">papers</a></p>
+  </main>
