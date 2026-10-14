@@ -3,20 +3,21 @@
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="./mean-wait-full.html">proofs and scope</a></span></p>
     <h1>Mean waiting time under fast switching</h1>
-    <p class="subtitle">An exact speed law for reversible hidden regimes, not just a first-order correction.</p>
+    <p class="subtitle">Strict speed order for every hidden chain; stronger signed bounds under reversibility.</p>
     <p>Start a finite irreducible regime chain in its stationary law $\pi$, with generator $mQ$ and positive
       statewise total event hazard $d_i$. A fresh independent exponential trigger defines the first-event time
       $\tau_m$; write $D=\operatorname{diag}d$ and $\bar d=\pi d$.</p>
     $$W(m)=\mathbb E_\pi\tau_m=\pi(D-mQ)^{-1}\mathbf1.$$
-    <p>When $Q$ is reversible, the full mean has a positive spectral representation</p>
+    <p>For every finite irreducible $Q$ and nonconstant hazard vector, $W'(m)&lt;0$ at every $m&gt;0$.
+      Reversibility strengthens this exact speed order to a positive spectral representation:</p>
     <div class="equation-card">
     $$W(m)=\frac1{\bar d}+\sum_{k=1}^{n-1}\frac{w_k}{1+m\lambda_k},
       \qquad \lambda_k&gt;0,\quad w_k\geq0.$$
     </div>
     <p>For nonconstant hazards it is strictly decreasing and strictly convex, with alternating derivatives
       of every order. Its endpoints are $W(0)=\pi(1/d)$ and $W(\infty)=1/\bar d$.</p>
-    <h2>A signed, all-speed Green&ndash;Kubo bound</h2>
-    <p>Put $H=-Q^\#$, $f=d-\bar d\mathbf1$, $A_1=\langle f,Hf\rangle_\pi/\bar d^2$ and
+    <h2>A reversible, all-speed Green&ndash;Kubo bound</h2>
+    <p>Under reversibility put $H=-Q^\#$, $f=d-\bar d\mathbf1$, $A_1=\langle f,Hf\rangle_\pi/\bar d^2$ and
       $A_2=\sum_kw_k/\lambda_k^2$. For every $m&gt;0$,</p>
     $$0\leq\frac1{\bar d}+\frac{A_1}{m}-W(m)\leq\frac{A_2}{m^2}.$$
     <p>The <a href="./mean-wait-full.html">full note</a> constructs the spectrum and proves alternating
@@ -25,12 +26,14 @@
     <h2>Initialization and reversibility matter</h2>
     <p>This is waiting from an observation time, not an event epoch. The event-stationary regime prior
       $\alpha_i=\pi_i d_i/\bar d$ instead gives mean interarrival time exactly $1/\bar d$ at every speed.</p>
-    <p>A stationary directed three-cycle has $W^{(5)}(0.01)=+0.9023984075$, violating complete monotonicity.
+    <p>A stationary directed three-cycle has $W''(0.01)=-0.0401230539$, so convexity can fail.
       The mean also stays exactly unchanged under time reversal, so it cannot replace the
       <a href="./credit-geometry.html">cause-label reversal witness</a>.</p>
     <p class="muted">Scope: positive constant statewise hazards and stationary initialization, not switched CIR
       intensities or arbitrary starting priors. The speed theorem does not assert finite-horizon survival ordering.</p>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_mean_wait.py">Certificate</a>:
       56 reversible chains in dimensions 2 through 8, independent resolvent derivatives, signed bounds,
-      and an exact rational nonreversible counterexample; final line <code>PASS</code>.</p>
+      and an exact rational nonreversible counterexample; final line <code>PASS</code>.
+      The <a href="./mean-wait-full.html">full note</a> adds the all-chain proof, exact reversibilization
+      comparison and a separate nonreversible certificate.</p>
   </main>

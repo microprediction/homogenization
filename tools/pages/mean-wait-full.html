@@ -14,7 +14,43 @@
       This is the standard phase-type first-event representation in
       <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy</a>, Proposition 2.2.</p>
 
-    <h2>The positive spectral law</h2>
+    <h2>Strict speed monotonicity needs no reversibility</h2>
+    <p>Let $L=-Q$, $L_s=(L+L^*)/2$ and $A=(L-L^*)/2$, where adjoints use $L^2(\pi)$.
+      Stationarity gives $L_s\succeq0$ with kernel $\operatorname{span}\{\mathbf1\}$, and $A^*=-A$ with
+      $A\mathbf1=0$. Set</p>
+    $$S_m=D+mL_s,\qquad R_m=(S_m+mA)^{-1},\qquad
+      B_m=S_m+m^2A^*S_m^{-1}A.$$
+    <p>The matrix $S_m$ is positive definite because every hazard is positive.
+      The symmetric-resolvent identity is</p>
+    $$\frac{R_m+R_m^*}{2}=R_m^*S_mR_m=B_m^{-1},\qquad
+      W(m)=\langle\mathbf1,B_m^{-1}\mathbf1\rangle_\pi.$$
+    <p>Indeed, the inverse of $R_m^*S_mR_m$ is
+      $(S_m+mA)S_m^{-1}(S_m-mA)=B_m$.
+      This is the finite-matrix killed-resolvent specialization of Lemma 3 in
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>.</p>
+    <p>Here speed scales both the symmetric and skew sectors, so their fixed-symmetric-sector comparison
+      alone does not prove speed order. Differentiating and using $mL_s=S_m-D$ gives</p>
+    $$B_m'=L_s+mA^*\{S_m^{-1}+S_m^{-1}DS_m^{-1}\}A\succeq L_s.$$
+    <div class="equation-card">
+    $$W'(m)=-\langle v_m,B_m'v_m\rangle_\pi\leq0,\qquad v_m=B_m^{-1}\mathbf1.$$
+    </div>
+    <p>Equality would force $v_m$ to be constant, because $\ker L_s$ contains only constants.
+      But $B_m\mathbf1=d$, so $B_mv_m=\mathbf1$ with constant $v_m$ is possible only if $d$ is constant.
+      Thus $W'(m)&lt;0$ for every $m&gt;0$ and every nonconstant hazard vector, even under nonreversibility.</p>
+    <p>The endpoints remain $\pi(1/d)$ and $1/\bar d$.
+      For the fast limit, fixed-time ergodic averaging makes the survival converge to $e^{-t\bar d}$,
+      and $e^{-t\min_i d_i}$ justifies integration by dominated convergence.</p>
+    <p>At fixed speed, comparison with the additive reversibilization $Q_s=(Q+Q^*)/2$ is also exact:</p>
+    $$W_Q(m)\leq W_{Q_s}(m),\qquad
+      W_Q(m)=W_{Q_s}(m)\ \Longleftrightarrow\ A S_m^{-1}\mathbf1=0.$$
+    <p>The inequality follows from $B_m\succeq S_m$ and inverse order.
+      Whitening by $S_m^{1/2}$ shows that the quadratic-form gap is zero exactly when
+      $mS_m^{-1/2}A S_m^{-1}\mathbf1=0$, proving the equality condition.</p>
+    <p>Equality need not mean reversibility or constant hazards.
+      A directed four-cycle with equal unit transition rates and hazards $(1,2,1,2)$ has equality at every
+      speed because $A$ annihilates the alternating two-dimensional subspace preserved by $S_m$.</p>
+
+    <h2>The stronger reversible spectral law</h2>
     <p>Assume detailed balance $\pi_iQ_{ij}=\pi_jQ_{ji}$. Then $L=-Q$ is self-adjoint in $L^2(\pi)$,
       positive semidefinite, and has kernel $\operatorname{span}\{\mathbf1\}$.</p>
     $$A=D^{-1/2}LD^{-1/2},\qquad z=D^{-1/2}\mathbf1,\qquad
@@ -36,8 +72,8 @@
     $$\frac1{\bar d}&lt;W(m)&lt;\pi(1/d)\quad(m&gt;0),\qquad
       W(0)=\pi(1/d),\quad \lim_{m\to\infty}W(m)=\frac1{\bar d}.$$
 
-    <h2>Every truncation has an explicit signed remainder</h2>
-    <p>For $j\geq1$, define $A_j=\sum_kw_k\lambda_k^{-j}$ and
+    <h2>Every reversible truncation has an explicit signed remainder</h2>
+    <p>Under reversibility, for $j\geq1$ define $A_j=\sum_kw_k\lambda_k^{-j}$ and
       $S_p(m)=1/\bar d+\sum_{j=1}^p(-1)^{j-1}A_jm^{-j}$. The finite geometric identity yields, for
       every $m&gt;0$ and integer $p\geq1$,</p>
     $$(-1)^p\{W(m)-S_p(m)\}
@@ -73,24 +109,30 @@
     <p>Thus this mean cannot detect cycle direction, although the cause of first arrival can.
       There is no fixed-feature or maturity-integrated matrix rank claim here.</p>
 
-    <h2>The nonreversible boundary is exact</h2>
-    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\1&amp;0&amp;-1\end{pmatrix},\qquad
-      \pi=(1,1,1)/3,\qquad d=(1,2,3).$$
-    <p>Direct inversion gives a stationary positive-hazard counterexample:</p>
-    $$W(m)=\frac{9m^2+18m+11}{3(6m^2+11m+6)},\qquad
-      W^{(5)}(1/100)=\frac{734042964660710000000000000}{813435571879525131193330129}&gt;0.$$
-    <p>Complete monotonicity would require this fifth derivative to be nonpositive.
-      This example disproves that extension, not ordinary first-derivative monotonicity for general chains.</p>
+    <h2>Convexity does require additional structure</h2>
+    $$Q=\begin{pmatrix}-6&amp;0&amp;6\\1&amp;-1&amp;0\\0&amp;1&amp;-1\end{pmatrix},\qquad
+      \pi=(1,6,6)/13,\qquad d=(2,1,10).$$
+    <p>This irreducible directed three-cycle is stationary but not reversible.
+      Direct inversion gives</p>
+    $$W(m)=\frac{169m^2+509m+142}{26(34m^2+41m+10)},\qquad
+      W''(1/100)=-\frac{73624947750000}{1834978659601919}&lt;0.$$
+    <p>At $m=0.01$, $W=0.5433343281$, $W'=-0.2822566807$ and $W''=-0.0401230539$.
+      Thus mean-wait monotonicity survives nonreversibility but convexity, and hence complete monotonicity,
+      can fail in three states already.</p>
 
     <h2>Certificate and scope</h2>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_mean_wait.py">verify_mean_wait.py</a>
       checks 56 reversible chains in dimensions 2 through 8 at 11 speeds, derivatives through order 6,
       and signed truncation bounds through order 4. It compares the first coefficient with a separate
-      group-inverse calculation and the cycle derivative with exact rational arithmetic.</p>
+      group-inverse calculation and retains a fifth-derivative cycle witness using exact rational arithmetic.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_nonreversible_mean_wait.py">verify_nonreversible_mean_wait.py</a>
+      checks the resolvent and derivative identities on 48 nonreversible chains in dimensions 3 through 8
+      at 11 speeds, the reversibilization comparison and its nonconstant equality case.
+      It checks the concave three-cycle against exact rational derivatives.</p>
     <p>The reversible benchmark uses
       $Q=\left(\begin{smallmatrix}-1&amp;1&amp;0\\1&amp;-3&amp;2\\0&amp;2&amp;-2\end{smallmatrix}\right)$,
       $\pi=(1,1,1)/3$ and $d=(1,2,3)$. It prints $W(1)=0.5585585586$, $A_1=0.125$,
-      $A_2=0.1423611111$ and cycle fifth derivative $0.9023984075$.</p>
+      $A_2=0.1423611111$.</p>
     <p>These are positive constant statewise hazards, not CIR intensity processes.
       The result controls the integrated mean, not survival at each finite horizon, arbitrary starting priors,
       or regime-dependent event-trigger resets.</p>
