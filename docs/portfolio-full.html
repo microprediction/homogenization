@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Exact constant-fraction portfolio geometry · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>When a constant-fraction optimizer has a global certificate</h1>
+    <p>The first-order weight shift on the <a href="./portfolio.html">portfolio page</a> is an asymptotic rule,
+      not a global optimization certificate.
+      The exact objective supplies one for relative risk aversion $\gamma\geq1$, but not in general for $0&lt;\gamma&lt;1$.</p>
+    <h2>An exact tilted-variance identity</h2>
+    <p>Let a finite-state regime chain $Y$ with any initial prior $\nu$ be independent of the Brownian stock noise.
+      Fix a positive horizon $T$, constant interest rate $r$, regime excess returns $b_i=\mu_i-r$,
+      and variances $s_i=\sigma_i^2\geq s_{\min}&gt;0$.</p>
+    <p>The investor selects a single deterministic fraction $w\in\mathbb R$ and holds it throughout the horizon.
+      For CRRA risk aversion $\gamma&gt;0$ define</p>
+    $$h_i(w)=r+b_iw-\tfrac12\gamma s_iw^2,\qquad
+      H(w)=\int_0^T h_{Y_t}(w)\,dt,\qquad
+      C(w)=\frac{\log\mathbb E_\nu e^{(1-\gamma)H(w)}}{(1-\gamma)T}.$$
+    <p>At $\gamma=1$ use the log-utility limit $C(w)=\mathbb E_\nu H(w)/T$.
+      Write $V=\int_0^T s_{Y_t}\,dt$ and $R(w)=\int_0^T(b_{Y_t}-\gamma w s_{Y_t})\,dt$,
+      and let $\mathbb E_w$ denote expectation under the path tilt proportional to $e^{(1-\gamma)H(w)}$.</p>
+    <div class="equation-card">
+    $$C'(w)=\frac{\mathbb E_w R(w)}T,\qquad
+      C''(w)=-\frac\gamma T\mathbb E_w V
+        +\frac{1-\gamma}T\operatorname{Var}_w R(w).$$
+    </div>
+    <p>Differentiate the normalizing log moment twice, using $H'=R$ and $H''=-\gamma V$.
+      Finite regime coefficients and fixed $T$ bound every integrand locally in $w$, justifying differentiation.
+      The same formula at $\gamma=1$ has no variance term and uses the untilted path law.</p>
+    <h2>Strong concavity and residual bounds</h2>
+    <p>For $\gamma\geq1$, the variance term is nonpositive and $V\geq Ts_{\min}$, so</p>
+    $$C''(w)\leq-\kappa,\qquad \kappa=\gamma s_{\min}&gt;0.$$
+    <p>This is exact at every switching speed, with no stationary start, reversibility or fast-switching assumption.
+      The certainty equivalent lies between the smallest and largest possible path-average $h$;
+      hence $C(w)\leq r+\max_i|b_i|\,|w|-\gamma s_{\min}w^2/2\to-\infty$.</p>
+    <p>There is therefore exactly one unconstrained maximizer $w_*$, characterized by $C'(w_*)=0$.
+      Every proposed fraction, including the first-corrected one, obeys</p>
+    <div class="equation-card">
+    $$|w-w_*|\leq\frac{|C'(w)|}{\kappa},\qquad
+      0\leq C(w_*)-C(w)\leq\frac{C'(w)^2}{2\kappa}.$$
+    </div>
+    <p>The distance bound follows by integrating $C''\leq-\kappa$ between $w$ and $w_*$.
+      For the value bound maximize the quadratic majorant
+      $C(v)\leq C(w)+C'(w)(v-w)-\kappa(v-w)^2/2$ over $v$.
+      This is the usual strong-convexity residual argument, with signs reversed; see
+      <a href="./bibliography.html#BoydVandenberghe2004">Boyd and Vandenberghe (2004)</a>, &sect;9.1.2, equation (9.9).</p>
+    <p>If a derivative evaluation has a certified absolute error $\eta$, replace $|C'(w)|$ by
+      $|\widehat C'(w)|+\eta$ in both bounds.
+      A floating-point identity check alone is not a validated bound on that evaluation error.</p>
+    <p>For the main page's bull/bear parameters at speed one, the first-corrected fraction is $0.6567301154$
+      and the exact-objective optimum is numerically $0.6607275296$.
+      The residual bounds give fraction error at most $0.0102079501$ and certainty-equivalent rate loss at most
+      $0.0000022508$; these are evaluations of the analytic bounds, not interval-arithmetic certificates.</p>
+    <h2>Below log utility, uniqueness can fail</h2>
+    <p>Take the symmetric unit-rate two-state chain with stationary prior, $r=0$, drifts $(2,-2)$,
+      common volatility one, $T=1$ and $\gamma=1/2$.
+      The averaged Merton fraction is zero, while the exact objective is the even function</p>
+    $$C(w)=-\frac{w^2}{4}
+      +2\log\left[e^{-1}\left\{\cosh\sqrt{1+w^2}
+        +\frac{\sinh\sqrt{1+w^2}}{\sqrt{1+w^2}}\right\}\right].$$
+    <p>Since the stationary telegraph integral has variance $(1+e^{-2})/2$,</p>
+    $$C'(0)=0,\qquad C''(0)=\tfrac12+e^{-2}=0.6353352832&gt;0.$$
+    <p>Zero is a strict local minimum, not a maximum.
+      The coercive upper bound above still applies, and evenness then forces at least two distinct nonzero
+      global maximizers, one of each sign.</p>
+    <p>The certificate gives $C(0)=0$ and $C(\pm1)=0.2819124942$.
+      It also finds a positive local maximizer $3.6411106114$, with value $1.3216481724$;
+      no numerical assertion of uniqueness on either half-line is needed for the counterexample.</p>
+    <p>This does not contradict concavity of utility in terminal wealth: terminal wealth is nonlinear in a
+      constant rebalanced fraction, and mixing two such strategies does not generally remain in that family.
+      Nor is the example a claim about optimal adaptive or filtered trading, or a realistic calibration.</p>
+    <h2>Matrix verification and scope</h2>
+    <p>For $A(w)=mQ+(1-\gamma)\operatorname{diag}h(w)$, the exact transform is
+      $Z(w)=\nu e^{TA(w)}\mathbf1$.
+      If $u'=Au$, then its first two weight derivatives satisfy</p>
+    $$v'=Av+A'u,\qquad z'=Az+2A'v+A''u,\qquad
+      u(0)=\mathbf1,\quad v(0)=z(0)=0.$$
+    <p>A separate triangular Feynman&ndash;Kac moment system computes the tilted moments of $R$ and $V$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_blind_concavity.py">certificate</a>
+      compares these routes and finite differences across 1,188 prior/chain/speed/horizon/fraction cases,
+      including point priors, directed cycles and a defective generator; its last line is literal <code>PASS</code>.</p>
+    <p>It also checks optimizer residual bounds for the original example at three speeds and the exact
+      nonconcavity witness above.
+      The claims concern unrestricted constant fractions with strictly positive state variances; they do not
+      bound the full adaptive-control value, or assert that a truncated Green&ndash;Kubo objective is globally concave.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
