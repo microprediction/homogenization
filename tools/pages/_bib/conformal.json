@@ -1,5 +1,25 @@
 [
  {
+  "key": "Rosenthal1995",
+  "authors": "Rosenthal, J. S.",
+  "year": 1995,
+  "title": "Minorization Conditions and Convergence Rates for Markov Chain Monte Carlo",
+  "venue": "Journal of the American Statistical Association 90(430):558-566",
+  "doi": "10.1080/01621459.1995.10476548",
+  "url": "https://probability.ca/jeff/ftpdir/minor.pdf",
+  "annotation": "Section 2 and the Appendix establish the classical common-minorization coupling and its geometric coalescence bound. Applied to a finite-chain skeleton and conditional bridges, it gives computable bounds for tapered path-score memory without reversibility."
+ },
+ {
+  "key": "VanDijkBrummelenBoucherie2018",
+  "authors": "van Dijk, N. M., van Brummelen, S. P. J. and Boucherie, R. J.",
+  "year": 2018,
+  "title": "Uniformization: Basics, extensions and applications",
+  "venue": "Performance Evaluation 118:8-32",
+  "doi": "10.1016/j.peva.2017.09.008",
+  "url": "https://ris.utwente.nl/ws/files/24801192/2018_XDijkBrummelenBoucherie_S0166531617301451_main.pdf",
+  "annotation": "Reviews exact Poisson uniformization, including reward models. Section 3.2 supplies the classical construction specialized here to a common Bernoulli refresh clock for tapered path-score memory."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
