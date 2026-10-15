@@ -1,0 +1,87 @@
+<!-- title: Switching speed and stationary CIR variance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; cumulants summary</a>
+      &middot; <a href="./cumulants-full.html">general moment and Poisson formulas</a></p>
+    <h1>Faster switching need not reduce CIR variance</h1>
+    <p class="subtitle">An exact speed classification when the mean level and vol-of-vol switch in a two-state model.</p>
+    <h2>Setup and result</h2>
+    <p>Let $Y$ have row generator $mQ_0$, where
+      $Q_0=\left(\begin{smallmatrix}-\alpha&amp;\alpha\\ \beta&amp;-\beta\end{smallmatrix}\right)$,
+      $\alpha,\beta,m&gt;0$, and invariant law $\pi=(\beta,\alpha)/(\alpha+\beta)$.</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)\,dt+\sqrt{a_{Y_t}v_t}\,dB_t,\qquad
+      V_T=\int_0^T v_t\,dt.$$
+    <p>Here $\kappa&gt;0$ is common to both states, $a_i=\xi_i^2&gt;0$, $\theta_i&gt;0$, and $B$ is independent
+      of $Y$. Assume $2\kappa\theta_i\ge a_i$ and start in the joint invariant law at each $m$,
+      with finite second moment; the statewise Feller condition keeps positive paths away from zero.</p>
+    <p>Write $\bar\theta=\pi\theta$, $\bar a=\pi a$, $s_\theta^2=\operatorname{Var}_\pi(\theta)$,
+      $c_{\theta a}=\operatorname{Cov}_\pi(\theta,a)$, $r=m(\alpha+\beta)$, and
+      $A=\kappa s_\theta^2+c_{\theta a}/2$.</p>
+    <div class="equation-card">
+      $$\mathbb E v=\bar\theta,\qquad
+        \operatorname{Var}(v)=\frac{\bar a\bar\theta}{2\kappa}+\frac{A}{\kappa+r},$$
+      $$\Gamma_2(r):=\lim_{T\to\infty}\frac{\operatorname{Var}(V_T)}{T}
+        =\frac{\bar a\bar\theta}{\kappa^2}+\frac{2s_\theta^2}{r}
+          +\frac{c_{\theta a}}{\kappa(\kappa+r)}.$$
+    </div>
+    <p>If $s_\theta^2=0$, then $c_{\theta a}=0$ and both quantities are constant in $m$, even if $a$ switches.
+      For $s_\theta^2&gt;0$, the classification is complete:</p>
+    <table>
+      <thead><tr><th>Condition</th><th>Stationary $\operatorname{Var}(v)$</th><th>Long-run rate $\Gamma_2$</th></tr></thead>
+      <tbody>
+        <tr><td>$A&gt;0$</td><td>Strictly decreasing</td><td>Strictly decreasing</td></tr>
+        <tr><td>$A=0$</td><td>Constant</td><td>Strictly decreasing</td></tr>
+        <tr><td>$A&lt;0$</td><td>Strictly increasing</td><td>Exactly one minimum</td></tr>
+      </tbody>
+    </table>
+    <p>In the last case put $q=\sqrt{2\kappa s_\theta^2/(-c_{\theta a})}\in(0,1)$.
+      The minimum is attained at</p>
+    $$r_*=\frac{\kappa q}{1-q},\qquad m_*=\frac{\kappa q}{(\alpha+\beta)(1-q)}.$$
+    <h2>Proof</h2>
+    <p>Every centered two-state feature is an eigenfunction of $mQ_0$ with eigenvalue $-r$.
+      Stationarity applied to $v$, $v(\theta_Y-\bar\theta)$ and $v(a_Y-\bar a)$ therefore gives</p>
+    $$\mathbb E v=\bar\theta,\qquad u_r:=\operatorname{Cov}(v,\theta_Y)
+      =\frac{\kappa s_\theta^2}{\kappa+r},\qquad
+      \operatorname{Cov}(v,a_Y)=\frac{\kappa c_{\theta a}}{\kappa+r}.$$
+    <p>Applying the generator to $v^2$ gives
+      $\operatorname{Var}(v)=u_r+\mathbb E[a_Yv]/(2\kappa)$, proving the first boxed variance formula.
+      The conditional mean solves a scalar forced linear equation:</p>
+    $$\mathbb E[v_t\mid v_0,Y_0=i]
+      =\bar\theta+e^{-\kappa t}(v_0-\bar\theta)
+        +\kappa(\theta_i-\bar\theta)h_{\kappa,r}(t),$$
+    $$h_{\kappa,r}(t)=\frac{e^{-rt}-e^{-\kappa t}}{\kappa-r}\quad(r\ne\kappa),
+      \qquad h_{\kappa,\kappa}(t)=t e^{-\kappa t}.$$
+    <p>Consequently the stationary covariance and its integrated rate are</p>
+    $$C_v(t)=e^{-\kappa t}\operatorname{Var}(v)+\kappa u_r h_{\kappa,r}(t),\qquad
+      \Gamma_2=2\int_0^\infty C_v(t)\,dt
+        =\frac{2\operatorname{Var}(v)}{\kappa}+\frac{2u_r}{r}.$$
+    <p>Both terms in $C_v$ are nonnegative and exponentially integrable, including at resonance.
+      The identity $\operatorname{Var}(V_T)=2\int_0^T(T-t)C_v(t)\,dt$ proves existence of the rate
+      and the second boxed formula.</p>
+    $$\Gamma_2'(r)=-\frac{2s_\theta^2}{r^2}
+      -\frac{c_{\theta a}}{\kappa(\kappa+r)^2}.$$
+    <p>If $c_{\theta a}\ge0$ this derivative is negative.
+      Otherwise put $q=\sqrt{2\kappa s_\theta^2/(-c_{\theta a})}$; its sign is the sign of
+      $(r/(\kappa+r))^2-q^2$, which crosses zero exactly once
+      when $q&lt;1$ and never when $q\ge1$; this proves the classification.</p>
+    <h2>A strictly positive U-shaped benchmark</h2>
+    <p>Take $\alpha=\beta=\kappa=1$, $\theta=(0.03,0.04)$ and $a=(0.05,0.001)$.
+      The Feller margins $2\kappa\theta-a=(0.01,0.079)$ are strictly positive, and</p>
+    $$s_\theta^2=0.000025,\qquad c_{\theta a}=-0.0001225,\qquad A=-0.00003625,$$
+    $$\operatorname{Var}(v)=0.00044625-\frac{0.00003625}{1+2m},\qquad
+      \Gamma_2=0.0008925+\frac{0.00005}{2m}-\frac{0.0001225}{1+2m}.$$
+    <p>The minimum occurs at $m_*=0.8845681325$, with rate $0.0008765248$, below the averaged limit $0.0008925$.
+      The rate first falls and then rises, while stationary variance increases throughout.
+      Faster switching can raise diffusion noise because it changes the stationary dependence
+      between $a_Y$ and $v$; negative autocovariance is not the mechanism.</p>
+    <h2>Scope and certificate</h2>
+    <p>For $M_T=\int_0^T\sqrt{v_t}\,dW_t$ with $W$ independent of $(B,Y,v_0)$,
+      $\kappa_4(M_T)=3\operatorname{Var}(V_T)$, so its fourth-cumulant rate has the same classification.
+      This is not a claim about risk-neutral log returns, leverage, option-price ordering, or finite-maturity
+      speed monotonicity, and no classification with switching $\kappa$ or more states is asserted.</p>
+    <p>The proof specializes the existing stationary moment and Poisson formulas, rather than claiming a new
+      moment method; finite polynomial semigroups are standard in
+      <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_speed.py">certificate</a>
+      compares the formulas with generic moment/Poisson solves and finite-horizon covariance quadrature with
+      a degree-two matrix exponential, including $r=\kappa$.</p>
+  </main>
