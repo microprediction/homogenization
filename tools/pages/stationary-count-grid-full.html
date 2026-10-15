@@ -99,6 +99,52 @@
     <p>The initial-state memory lemma supplies $d(L_B)$ even though the actual future start is $\sigma_{L_A}$,
       not $\pi$: the stationary mixture is only a convenient reference canceled by the zero regime sum.
       Telescoping over cuts proves the all-prior theorem without any inverse prior mass or burn-in penalty.</p>
+    <h2>The second-order rate is sharp</h2>
+    <p>Take the symmetric base generator $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$,
+      intensities $(\bar\ell+\delta,\bar\ell-\delta)$ with $\bar\ell\geq|\delta|&gt;0$, and stationary start.
+      Observe two bins of lengths $A,B&gt;0$, separated by an unobserved gap $g\geq0$, and let $D_m(g)$
+      be TV between their joint law and the product of their exact marginals.</p>
+    <p>Write $p_x$ for the Poisson probability sequence of mean $x$ and
+      $M(x)=\max_k p_x(k)=p_x(\lfloor x\rfloor)$.
+      Then the following finite-speed bound holds, including a zero intensity in one state:</p>
+    $$\left|D_m(g)-\frac{e^{-2mg}\delta^2}{2m^2}M(\bar\ell A)M(\bar\ell B)\right|
+      \leq e^{-2mg}\left\{\frac{\delta^2}{2m^2}(e^{-2mA}+e^{-2mB})
+        +\frac{\delta^4(A+B)}{m^3}\right\}.$$
+    <p>Thus for fixed adjacent bins,
+      $m^2D_m(0)\longrightarrow\delta^2M(\bar\ell A)M(\bar\ell B)/2&gt;0$:
+      the general $m^{-2}$ order cannot be improved.
+      A fixed positive gap adds exponential suppression; the limiting coefficient is only asserted for fixed positive bin lengths.</p>
+    <p>For the proof let $u_\pm(T)$ be the bin-count laws conditional on the starting regime,
+      $s_T=(u_+(T)+u_-(T))/2$ and $h_T=(u_+(T)-u_-(T))/2$.
+      Reversal at the first endpoint and the gap transition
+      $e^{mgQ}=\Pi+e^{-2mg}(I-\Pi)$ give the exact signed-measure identity</p>
+    $$\mathcal L(X_1,X_2)-s_A\otimes s_B=e^{-2mg}h_A\otimes h_B,
+      \qquad D_m(g)=\tfrac12e^{-2mg}\|h_A\|_1\|h_B\|_1.$$
+    <p>On count measures write $B_0=S-I$, $\|B_0\|\leq2$, and
+      $P_T=e^{\bar\ell T B_0}$ for the Poisson-convolution contraction.
+      The backward equations reduce to</p>
+    $$s'=\bar\ell B_0s+\delta B_0h,\qquad
+      h'=(\bar\ell B_0-2m)h+\delta B_0s,\qquad s_0=\delta_0,\quad h_0=0.$$
+    <p>Duhamel and $\|s_t\|_1=1$ give $\|h_T\|_1\leq|\delta|/m$ and
+      $\|s_T-p_{\bar\ell T}\|_1\leq2\delta^2T/m$.
+      Substituting the latter estimate in
+      $h_T=\delta\int_0^Te^{-2m(T-t)}P_{T-t}B_0s_t\,dt$ yields</p>
+    $$\left\|h_T-\frac{\delta}{2m}B_0p_{\bar\ell T}\right\|_1
+      \leq R_m(T):=\frac{|\delta|}{m}e^{-2mT}+\frac{2|\delta|^3T}{m^2}.$$
+    <p>Indeed the Poisson part integrates exactly, since
+      $P_{T-t}B_0p_{\bar\ell t}=B_0p_{\bar\ell T}$, and the remaining integral is at most
+      $4|\delta|^3m^{-1}\int_0^Te^{-2m(T-t)}t\,dt\leq2|\delta|^3T/m^2$.
+      Poisson unimodality gives $\|B_0p_x\|_1=2M(x)$ by telescoping successive differences.</p>
+    <p>Both $\|h_T\|_1$ and $\|\delta B_0p_{\bar\ell T}/(2m)\|_1$ are at most $|\delta|/m$.
+      The reverse triangle inequality and the exact product formula therefore bound the TV error by
+      $e^{-2mg}|\delta|\{R_m(A)+R_m(B)\}/(2m)$, proving the display.</p>
+    <p>For intensities $(3,1)$ and two unit bins the coefficient is $0.0366312778$.
+      At speed 80 the leading term is $0.0000057236$, while the exact error is $0.0000057234$;
+      the explicit absolute remainder bound is $0.0000039063$.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_count_grid_sharpness.py">verify_count_grid_sharpness.py</a>
+      checks 240 parameter/grid/speed/gap cases, including zero and constant intensities and shrinking bins.
+      It verifies the exact factorization, the signed-law remainder and the finite-speed TV bound,
+      keeping modulo-alias tails separate from scaled roundoff; its final line is literal <code>PASS</code>.</p>
     <h2>Replacing the marginals</h2>
     <p>If $\widetilde p_j$ are any probability laws with $d_{\rm TV}(p_{\nu,j},\widetilde p_j)\leq\eta_j$,
       product telescoping gives the explicit joint bound</p>
