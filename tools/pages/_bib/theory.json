@@ -1,5 +1,23 @@
 [
  {
+  "key": "BandeiraCahillMixonNelson2014",
+  "authors": "Bandeira, A. S., Cahill, J., Mixon, D. G. and Nelson, A. A.",
+  "year": 2014,
+  "title": "Saving phase: Injectivity and stability for phase retrieval",
+  "venue": "Applied and Computational Harmonic Analysis 37(1):106-125",
+  "doi": "10.1016/j.acha.2013.10.002",
+  "annotation": "Section 3 studies stability on the real sign quotient and separates injectivity from reconstruction under noise. The covariance note has a related quadratic sign-quotient inverse, but its explicit bounds concern noise on a complete boundary matrix, not frame intensity observations."
+ },
+ {
+  "key": "AwadGlynn2007",
+  "authors": "Awad, H. P. and Glynn, P. W.",
+  "year": 2007,
+  "title": "On the Theoretical Comparison of Low-Bias Steady-State Estimators",
+  "venue": "ACM Transactions on Modeling and Computer Simulation 17(1), article 4, 30 pages",
+  "doi": "10.1145/1177357.1183274",
+  "annotation": "Proposition 2.2 gives the classical stationary variance rate and constant boundary; Theorem 2.8 adds nonstationary Markov initializations through Poisson solutions. The covariance-identification note uses the rate and boundary matrices as inverse data, separately from this established variance expansion."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

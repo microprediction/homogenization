@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>What covariance boundaries identify · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a></p>
+    <h1>The covariance boundary recovers a low-state generator up to reversal</h1>
+    <p class="subtitle">Complete fixed-feature data, known stationary law, and a sharp four-state boundary.</p>
+    <h2>Setup and result</h2>
+    <p>Let $Q$ be an irreducible row generator on $n\ge2$ known states, with known positive stationary law $\pi$.
+      Fix the time unit and a known full centered basis $U$, with $\pi U=0$ and
+      $U^\top D_\pi U=I_{n-1}$, where $D_\pi=\operatorname{diag}\pi$.
+      Put</p>
+    $$L=-U^\top D_\pi Q U,\quad H=L^{-1},\quad
+      G=\operatorname{sym}H,\quad K=\operatorname{skew}H,\quad B=\operatorname{sym}(H^2).$$
+    <p>For $Y_0\sim\pi$, observe the complete stationary covariance curve
+      $C(T)=\operatorname{Cov}_\pi(\int_0^T U(Y_t)\,dt)$.
+      Its rate and constant boundary determine</p>
+    $$G=\lim_{T\to\infty}\frac{C(T)}{2T},\qquad
+      B=\lim_{T\to\infty}\left\{TG-\frac{C(T)}2\right\},\qquad K^2=B-G^2.$$
+    <div class="equation-card">
+    <p>For $n\le4$, the pair $(G,B)$ determines $Q$ up to stationary time reversal
+      $Q^*=D_\pi^{-1}Q^\top D_\pi$.
+      The two candidates coincide exactly when $Q$ is reversible.</p>
+    </div>
+    <p>The threshold is sharp: two strictly positive-rate five-state generators below share
+      the entire $C(T)$ for every $T\ge0$, but are neither time reversals nor relabelings.
+      These are fixed state features, not maturity-dependent loadings or a covariance inferred from a yield curve alone.</p>
+    <h2>Exact covariance and finite-horizon error</h2>
+    <p>Integrating the stationary two-time covariance gives</p>
+    $$C(T)=2TG-2B+2\operatorname{sym}(H^2e^{-TL}).$$
+    <p>Let $\lambda=\lambda_{\min}(\operatorname{sym}L)&gt;0$ and use the operator two-norm.
+      The energy inequality gives $\|e^{-TL}\|_2\le e^{-\lambda T}$, hence</p>
+    $$\left\|TG-\frac{C(T)}2-B\right\|_2
+       \le\|H\|_2^2e^{-\lambda T}.$$
+    <p>This bound assumes exact $G$: an error of size $\eta$ in $G$ adds at most $T\eta$.
+      It controls extraction of the boundary matrix, not statistical error in observed covariances
+      or a uniform generator-recovery error near reversibility.</p>
+    <h2>Proof of low-state recovery</h2>
+    <p>Writing $H=G+K$ shows $\operatorname{sym}(H^2)=G^2+K^2$.
+      A real skew matrix of size at most three is determined by its square up to its overall sign.</p>
+    <p>In size one it is zero; in size two it is $kJ$, with $J^2=-I$, so its square gives $|k|$.
+      In size three write $Kx=w\times x$; then</p>
+    $$K^2=ww^\top-\|w\|^2I,\qquad
+      ww^\top=K^2-\tfrac12\operatorname{tr}(K^2)I.$$
+    <p>The rank-one matrix determines $w$ up to sign, including the zero case.
+      The two resulting ordered matrices $G\pm K$ reconstruct</p>
+    $$Q_\pm=-U(G\pm K)^{-1}U^\top D_\pi.$$
+    <p>For realizable data these are the actual generator and its reversal, so both satisfy the Markov sign constraints.
+      Time reversal leaves the stationary integral covariance unchanged at every horizon;
+      no collection of these covariances can choose between them.</p>
+    <h2>Stability: a sharp square-root loss near reversibility</h2>
+    <p>Compare two realizable models on the same known representation, with $n\le4$ and $G_i\succeq gI$, $g&gt;0$.
+      Write $\|M\|_\pi=\|D_\pi^{1/2}MD_\pi^{-1/2}\|_2$ and</p>
+    $$d_\pi(Q_1,Q_2)=\min\{\|Q_1-Q_2\|_\pi,\|Q_1-Q_2^*\|_\pi\},\quad
+      e_G=\|G_1-G_2\|_2,\quad e_B=\|B_1-B_2\|_2,$$
+    $$E=e_B+(\|G_1\|_2+\|G_2\|_2)e_G,\qquad
+      d_\pi(Q_1,Q_2)\le g^{-2}\{e_G+\sqrt{2E}\}.$$
+    <p>If $a=\max_i\|K_i\|_2&gt;0$, the square-root term can instead be replaced by $2E/a$.
+      This gives Lipschitz continuity away from reversibility and uniform one-half H&ouml;lder continuity
+      when $g$ is bounded below and the $G_i$ are bounded above.
+      This bounds distances between admissible fits, not the output of an unspecified algorithm on arbitrary noisy matrices.</p>
+    <p>For the proof put $\delta=\|K_1^2-K_2^2\|_2\le E$ and
+      $d_K=\min_\pm\|K_1\pm K_2\|_2$.
+      For skew matrices of size at most three,</p>
+    $$d_K\le\sqrt{2\delta},\qquad d_K\le2\delta/a\quad(a&gt;0).$$
+    <p>In size three, use the axial vectors $w,v$ and set $\alpha=\|w\|$, $\beta=\|v\|$,
+      $c=|w^\top v|/(\alpha\beta)$ when both are nonzero.
+      Direct diagonalization gives</p>
+    $$\zeta=\sqrt{(\alpha^2+\beta^2)^2-4\alpha^2\beta^2c^2},\quad
+      2\delta=\zeta+|\alpha^2-\beta^2|,\quad
+      \zeta^2=d_K^2(\alpha^2+\beta^2+2\alpha\beta c).$$
+    <p>Hence $d_K^2\le\zeta\le2\delta$ and $a d_K\le\zeta\le2\delta$; zero vectors follow directly.
+      The scalar size-two case has stronger bounds.
+      Finally $\|(G_i\pm K_i)^{-1}\|_2\le g^{-1}$ and the inverse-difference identity give the generator bounds.</p>
+    <p>The exponent cannot improve near reversibility, already in three states with exact $G$.
+      For uniform three-state $\pi$, take $H_k=I_2+kJ$ with $0&lt;k&lt;1/\sqrt3$;
+      the reconstructed circulant generator has positive forward/backward rates
+      $(1/3\pm k/\sqrt3)/(1+k^2)$.</p>
+    $$G_k=I_2,\qquad B_k=(1-k^2)I_2,\qquad
+      d_\pi(Q_0,Q_k)=\frac{k}{\sqrt{1+k^2}}.$$
+    <p>For $k=\sqrt{2\eta}$ and $0&lt;\eta&lt;1/6$, the single reported boundary
+      $\widehat B=(1-\eta)I_2$ is within operator-norm error $\eta$ of both models.
+      Every estimator using only $(G,\widehat B)$ therefore has worst-case reversal-quotient error at least</p>
+    $$\frac{\sqrt{2\eta}}{2\sqrt{1+2\eta}}.$$
+    <p>This follows from the quotient-metric triangle inequality and proves a deterministic minimax lower bound
+      of order $\sqrt\eta$, not a statistical sampling lower bound.
+      The sign-quotient viewpoint is familiar from <a href="./bibliography.html#BandeiraCahillMixonNelson2014">phase retrieval</a>;
+      here the noise is on the complete covariance boundary, not frame intensity measurements.</p>
+    <h2>Five states: even the whole covariance curve can be blind</h2>
+    <p>Take uniform $\pi$, $\Pi=\mathbf1\pi$, $P=I-\Pi$, and define</p>
+    $$p=(1,1,1,-3,0)^\top,\quad q=(1,1,1,1,-4)^\top,\quad
+      A=\begin{pmatrix}0&1&-1&0&0\\-1&0&1&0&0\\1&-1&0&0&0\\
+                        0&0&0&0&0\\0&0&0&0&0\end{pmatrix},\quad
+      D=\frac{pq^\top-qp^\top}{4}.$$
+    <p>Set</p>
+    $$S=P+\frac{pp^\top}{1000},\qquad
+      \mathcal H_\pm=S+\frac{A\pm D}{100},\qquad
+      Q_\pm=\Pi-(\Pi+\mathcal H_\pm)^{-1}.$$
+    <p>These matrices have zero row and column sums.
+      Since $\|pp^\top\|_2=12$ and $\|A\pm D\|_2=\sqrt{15}&lt;4$, the centered perturbation of $P$
+      has norm at most $13/250$.
+      A Neumann inverse bound therefore yields</p>
+    $$\|Q_\pm+P\|_2\le\frac{13}{237},\qquad
+      (Q_\pm)_{ij}\ge\frac15-\frac{13}{237}=\frac{172}{1185}&gt;0\quad(i\ne j).$$
+    <p>The centered space splits orthogonally into the first-three-state zero-sum plane and
+      $\operatorname{span}\{p,q\}$.
+      Both $S$ and $\mathcal H_\pm$ preserve this split: the first blocks agree, and the second blocks are transposes.
+      Inversion and exponentiation preserve these relations, so the symmetric semigroups, and hence all $C(T)$, agree.</p>
+    <p>The generators differ on the second plane but not the first, whereas reversal changes both nonzero skew parts.
+      They are not relabelings either: any relabeling must preserve the diagonal of $S$, which fixes states four and five
+      and permits only permutations of the first three states.
+      Such permutations preserve $D$ and cannot change its sign.</p>
+    <h2>Scope, attribution and checks</h2>
+    <p>The result requires the full known state-feature basis, known $\pi$, stationary initialization, and exact covariance data.
+      Partial observations or an unknown state embedding add ambiguity; no maturity-integrated rank is used.
+      If $Q=mQ_0$ with unknown factors, recovery concerns $Q$, not its factorization.</p>
+    <p>The variance rate and constant boundary are classical; see
+      <a href="./bibliography.html#AwadGlynn2007">Awad and Glynn (2007)</a>, Proposition 2.2,
+      and the <a href="./identifiability-full.html">existing finite-chain covariance identity</a>.
+      Here those two matrices are used as inverse data; no priority claim is made for the variance expansion.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_covariance_identification.py">certificate</a>
+      checks low-state reconstruction, independent covariance quadrature and the finite-horizon bound.
+      The five-state sign constraints, squared-inverse equality and lack of relabeling are checked in exact rational arithmetic.</p>
+    <p>A <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_covariance_stability.py">stability certificate</a>
+      checks both skew bounds, their transfer to generators, and the common-observation lower-bound construction.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
