@@ -1,0 +1,222 @@
+<!-- title: Mean waiting time under fast switching (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./mean-wait.html">&larr; summary</a>
+    <span><a href="./papers.html">papers</a></span></p>
+    <h1>Mean waiting time: proof and scope</h1>
+    <p>Let $Q$ be an irreducible finite row generator with stationary probability row $\pi$, and let $d_i&gt;0$.
+      Start $Y$ in $\pi$, independently of a unit-exponential trigger, and set
+      $\tau_m=\inf\{t:\int_0^t d_{Y_s}\,ds\geq E\}$ for generator $mQ$.</p>
+    <p>Write $D=\operatorname{diag}d$, $\bar d=\pi d$, and
+      $\langle u,v\rangle_\pi=\sum_i\pi_i u_i v_i$. The killed semigroup gives</p>
+    $$\Pr_\pi(\tau_m&gt;t)=\pi e^{t(mQ-D)}\mathbf1,\qquad
+      W(m)=\mathbb E_\pi\tau_m=\langle\mathbf1,(D-mQ)^{-1}\mathbf1\rangle_\pi.$$
+    <p>Integration is justified by the upper bound $e^{-t\min_i d_i}$, including at $m=0$.
+      This is the standard phase-type first-event representation in
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy</a>, Proposition 2.2.</p>
+
+    <h2>Strict speed monotonicity needs no reversibility</h2>
+    <p>Let $L=-Q$, $L_s=(L+L^*)/2$ and $A=(L-L^*)/2$, where adjoints use $L^2(\pi)$.
+      Stationarity gives $L_s\succeq0$ with kernel $\operatorname{span}\{\mathbf1\}$, and $A^*=-A$ with
+      $A\mathbf1=0$. Set</p>
+    $$S_m=D+mL_s,\qquad R_m=(S_m+mA)^{-1},\qquad
+      B_m=S_m+m^2A^*S_m^{-1}A.$$
+    <p>The matrix $S_m$ is positive definite because every hazard is positive.
+      The symmetric-resolvent identity is</p>
+    $$\frac{R_m+R_m^*}{2}=R_m^*S_mR_m=B_m^{-1},\qquad
+      W(m)=\langle\mathbf1,B_m^{-1}\mathbf1\rangle_\pi.$$
+    <p>Indeed, the inverse of $R_m^*S_mR_m$ is
+      $(S_m+mA)S_m^{-1}(S_m-mA)=B_m$.
+      This is the finite-matrix killed-resolvent specialization of Lemma 3 in
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>.</p>
+    <p>Here speed scales both the symmetric and skew sectors, so their fixed-symmetric-sector comparison
+      alone does not prove speed order. Differentiating and using $mL_s=S_m-D$ gives</p>
+    $$B_m'=L_s+mA^*\{S_m^{-1}+S_m^{-1}DS_m^{-1}\}A\succeq L_s.$$
+    <div class="equation-card">
+    $$W'(m)=-\langle v_m,B_m'v_m\rangle_\pi\leq0,\qquad v_m=B_m^{-1}\mathbf1.$$
+    </div>
+    <p>Equality would force $v_m$ to be constant, because $\ker L_s$ contains only constants.
+      But $B_m\mathbf1=d$, so $B_mv_m=\mathbf1$ with constant $v_m$ is possible only if $d$ is constant.
+      Thus $W'(m)&lt;0$ for every $m&gt;0$ and every nonconstant hazard vector, even under nonreversibility.</p>
+    <p>The endpoints remain $\pi(1/d)$ and $1/\bar d$.
+      For the fast limit, fixed-time ergodic averaging makes the survival converge to $e^{-t\bar d}$,
+      and $e^{-t\min_i d_i}$ justifies integration by dominated convergence.</p>
+    <p>At fixed speed, comparison with the additive reversibilization $Q_s=(Q+Q^*)/2$ is also exact:</p>
+    $$W_Q(m)\leq W_{Q_s}(m),\qquad
+      W_Q(m)=W_{Q_s}(m)\ \Longleftrightarrow\ A S_m^{-1}\mathbf1=0.$$
+    <p>The inequality follows from $B_m\succeq S_m$ and inverse order.
+      Whitening by $S_m^{1/2}$ shows that the quadratic-form gap is zero exactly when
+      $mS_m^{-1/2}A S_m^{-1}\mathbf1=0$, proving the equality condition.</p>
+    <p>Equality need not mean reversibility or constant hazards.
+      A directed four-cycle with equal unit transition rates and hazards $(1,2,1,2)$ has equality at every
+      speed because $A$ annihilates the alternating two-dimensional subspace preserved by $S_m$.</p>
+
+    <h2>The stronger reversible spectral law</h2>
+    <p>Assume detailed balance $\pi_iQ_{ij}=\pi_jQ_{ji}$. Then $L=-Q$ is self-adjoint in $L^2(\pi)$,
+      positive semidefinite, and has kernel $\operatorname{span}\{\mathbf1\}$.</p>
+    $$A=D^{-1/2}LD^{-1/2},\qquad z=D^{-1/2}\mathbf1,\qquad
+      W(m)=\langle z,(I+mA)^{-1}z\rangle_\pi.$$
+    <p>The spectral theorem gives an orthonormal eigenbasis $v_0,\ldots,v_{n-1}$ of $A$ with
+      $\lambda_0=0$ and $\lambda_k&gt;0$ for $k\geq1$. Its normalized zero mode is
+      $v_0=D^{1/2}\mathbf1/\sqrt{\bar d}$, so $\langle z,v_0\rangle_\pi^2=1/\bar d$.</p>
+    <div class="equation-card">
+    $$W(m)=\frac1{\bar d}+\sum_{k=1}^{n-1}\frac{w_k}{1+m\lambda_k},
+      \qquad w_k=\langle z,v_k\rangle_\pi^2\geq0.$$
+    </div>
+    <p>Repeated eigenvalues may be combined; their total weights do not depend on the chosen eigenbasis.
+      This positive-resolvent mixture is a specialization of the reversible spectral framework in
+      <a href="./bibliography.html#AldousFill2002">Aldous and Fill</a>, Sections 3.4&ndash;3.5, without a priority claim.</p>
+    $$(-1)^jW^{(j)}(m)=j!\sum_{k=1}^{n-1}
+      \frac{w_k\lambda_k^j}{(1+m\lambda_k)^{j+1}},\qquad j\geq1.$$
+    <p>At least one weight is positive exactly when $d$ is nonconstant: otherwise $z$ is proportional to $v_0$.
+      Therefore all these alternating derivatives are strictly positive for nonconstant hazards, and</p>
+    $$\frac1{\bar d}&lt;W(m)&lt;\pi(1/d)\quad(m&gt;0),\qquad
+      W(0)=\pi(1/d),\quad \lim_{m\to\infty}W(m)=\frac1{\bar d}.$$
+
+    <h2>Every reversible truncation has an explicit signed remainder</h2>
+    <p>Under reversibility, for $j\geq1$ define $A_j=\sum_kw_k\lambda_k^{-j}$ and
+      $S_p(m)=1/\bar d+\sum_{j=1}^p(-1)^{j-1}A_jm^{-j}$. The finite geometric identity yields, for
+      every $m&gt;0$ and integer $p\geq1$,</p>
+    $$(-1)^p\{W(m)-S_p(m)\}
+      =\sum_k\frac{w_k(m\lambda_k)^{-p}}{1+m\lambda_k},$$
+    <div class="equation-card">
+    $$0\leq(-1)^p\{W(m)-S_p(m)\}\leq\frac{A_{p+1}}{m^{p+1}}.$$
+    </div>
+    <p>This bound holds outside the convergence radius of the infinite inverse-speed series too.
+      For nonconstant hazards its lower inequality is strict; no maturity limit or interchange of limits is used.</p>
+    <p>The first coefficient is precisely the fixed-feature Green&ndash;Kubo form.
+      Let $f=d-\bar d\mathbf1$ and $H=-Q^\#$, the inverse of $L$ on centered vectors.</p>
+    $$A_1=\frac{\langle f,Hf\rangle_\pi}{\bar d^2}
+      =\frac1{\bar d^2}\int_0^\infty\operatorname{Cov}_\pi(d_{Y_0},d_{Y_t})\,dt,$$
+    <p>where the covariance uses the unscaled generator $Q$. To verify the equality, expand
+      $u_m=(D+mL)^{-1}\mathbf1=u_0+m^{-1}u_1+O(m^{-2})$ in the exact equation.</p>
+    $$u_0=\frac{\mathbf1}{\bar d},\qquad
+      Lu_1=-\frac f{\bar d},\qquad
+      u_1=-\frac{Hf}{\bar d}+c\mathbf1.$$
+    <p>The next solvability condition $\pi Du_1=0$ gives
+      $c=\langle f,Hf\rangle_\pi/\bar d^2$. Since $\pi H=0$, this is the coefficient of $m^{-1}$ in $W$,
+      agreeing with the spectral expansion above.</p>
+
+    <h2>An unsigned all-speed bound without reversibility</h2>
+    <p>Now allow any irreducible $Q$ and nonnegative hazards $d_i\geq0$, with $\bar d&gt;0$.
+      Work on the centered space $\mathcal H_0=\{y:\pi y=0\}$ in $L^2(\pi)$, and set
+      $P_0=I-\mathbf1\pi$, $L=-Q|_{\mathcal H_0}$, $H=L^{-1}$ and $f=d-\bar d\mathbf1$.</p>
+    $$K=P_0DP_0-\frac{f\otimes_\pi f}{\bar d},\qquad
+      (f\otimes_\pi f)y=f\langle f,y\rangle_\pi.$$
+    <p>The operator $K$ is self-adjoint and nonnegative: for centered $y$,
+      $\langle y,Ky\rangle_\pi=\pi(dy^2)-\{\pi(dy)\}^2/\bar d\geq0$ by weighted Cauchy&ndash;Schwarz.
+      The symmetric part of $L$ is positive definite on $\mathcal H_0$.</p>
+    <p>For $m&gt;0$, $D-mQ$ is invertible: its quadratic form has symmetric part $D+mL_s\succ0$,
+      because a constant vector cannot also vanish on the nonempty positive-hazard set.
+      Writing $(D-mQ)^{-1}\mathbf1=c\mathbf1+y$, with $\pi y=0$, and eliminating $c$ gives</p>
+    $$c=\frac{1-\langle f,y\rangle_\pi}{\bar d},\qquad
+      (mL+K)y=-\frac f{\bar d},\qquad
+      W(m)=\frac1{\bar d}+\frac{\langle f,(mL+K)^{-1}f\rangle_\pi}{\bar d^2}.$$
+    <p>The matrix $D-mQ$ has all eigenvalues with positive real part, justifying the integrated survival
+      representation even when the pointwise hazard lower bound is zero.
+      Let $G=K^{1/2}HK^{1/2}$ and define</p>
+    $$a_1=\frac{\langle f,Hf\rangle_\pi}{\bar d^2},\qquad
+      c_2=\frac{\|K^{1/2}H^*f\|_\pi\,\|K^{1/2}Hf\|_\pi}{\bar d^2}.$$
+    <p>Since $\langle x,Hx\rangle_\pi=\langle Ly,y\rangle_\pi\geq0$ for $y=Hx$, both $H$ and $G$
+      are accretive. Consequently $\|(I+G/m)^{-1}\|_\pi\leq1$, including when $K$ is singular.</p>
+    $$W(m)-\frac1{\bar d}-\frac{a_1}{m}
+      =-\frac1{m^2\bar d^2}\langle K^{1/2}H^*f,(I+G/m)^{-1}K^{1/2}Hf\rangle_\pi.$$
+    <div class="equation-card">
+    $$\left|W(m)-\frac1{\bar d}-\frac{a_1}{m}\right|\leq\frac{c_2}{m^2}
+      \qquad(m&gt;0).$$
+    </div>
+    <p>The identity follows by multiplying out the Woodbury resolvent formula for $mL+K$;
+      it needs no inverse of $D$ or $K$. For reversible $Q$, $c_2=A_2$ and the earlier negative remainder
+      sign is recovered; the constants are for fixed $Q,d$, not uniform as $\bar d$ vanishes.</p>
+    <p>The sign is not valid for general $Q$.
+      Take the directed unit-rate six-cycle $Q_{i,i+1}=1$, $Q_{ii}=-1$ (indices modulo six),
+      stationary uniform $\pi$, and $d=(3,4,4,3,2,2)$.</p>
+    $$W(m)=\frac{18m^5+135m^4+537m^3+1176m^2+1342m+624}
+      {3(9m^2+26m+24)(2m^3+9m^2+26m+24)},\qquad
+      W(m)=\frac13+\frac1{27m}+\frac{28}{243m^2}+O(m^{-3}).$$
+    <p>Direct rational inversion gives
+      $W(10)-1/3-1/270=77633/127232640=0.0006101658&gt;0$.
+      Thus the first Green&ndash;Kubo approximation can underestimate the mean even with strictly
+      positive hazards and a stationary start; the unsigned bound remains valid.</p>
+
+    <h2>Zero-hazard regimes: speed order and the slow pole</h2>
+    <p>For $d\geq0$, $d\not\equiv0$ and $m&gt;0$, the earlier $B_m$ proof still applies:
+      $D+mL_s$ is positive definite by the same kernel argument above, and $B_m'\succeq L_s$.
+      Thus every nonconstant hazard vector still has $W'(m)&lt;0$, with fast limit $1/\bar d$
+      and the explicit $c_2/m^2$ remainder just proved.</p>
+    <p>Under reversibility define $V=L^{-1/2}KL^{-1/2}$ and $g=L^{-1/2}f/\bar d$ on $\mathcal H_0$.
+      The finite spectral theorem now gives a representation that allows zero eigenvalues:</p>
+    $$W(m)=\frac1{\bar d}+\langle g,(mI+V)^{-1}g\rangle_\pi
+      =\frac1{\bar d}+\frac{b_0}{m}+\sum_{\rho_k&gt;0}\frac{\omega_k}{m+\rho_k},
+      \qquad b_0,\omega_k\geq0.$$
+    <p>Here $b_0$ is the squared projection of $g$ onto $\ker V$.
+      For nonconstant hazards the excess has strictly alternating derivatives of every positive order.
+      Defining $\widehat A_j=\langle g,V^{j-1}g\rangle_\pi$ and
+      $\widehat S_p=1/\bar d+\sum_{j=1}^p(-1)^{j-1}\widehat A_j/m^j$ gives</p>
+    $$0\leq(-1)^p\{W(m)-\widehat S_p(m)\}
+      =\sum_{\rho_k&gt;0}\frac{\omega_k\rho_k^p}{m^p(m+\rho_k)}
+      \leq\frac{\widehat A_{p+1}}{m^{p+1}},\qquad p\geq1.$$
+    <p>These coefficients agree with $A_j$ when hazards are strictly positive, and
+      $\widehat A_1=a_1$, $\widehat A_2=c_2$ under reversibility.
+      Unlike the positive-hazard case, the remainder may vanish identically for nonconstant hazards.</p>
+    <p>To identify the slow pole without reversibility, partition states into $Z=\{i:d_i=0\}$
+      and $A=Z^c$, assuming $Z$ is nonempty. Irreducibility makes $Q_{ZZ}$ transient; put</p>
+    $$H_Z=(-Q_{ZZ})^{-1},\quad R=H_ZQ_{ZA},\quad
+      \widehat Q=Q_{AA}+Q_{AZ}R,\quad c_A=\mathbf1_A+Q_{AZ}H_Z\mathbf1_Z.$$
+    <p>Block elimination in $(D-mQ)u=\mathbf1$ gives
+      $u_A=(D_A-m\widehat Q)^{-1}c_A$ and $u_Z=H_Z\mathbf1_Z/m+Ru_A$.
+      Since $R\mathbf1_A=\mathbf1_Z$ and $\widehat Q$ is a row generator,</p>
+    $$b_0=\pi_ZH_Z\mathbf1_Z&gt;0,\qquad
+      0\leq mW(m)-b_0
+      =m(\pi_A+\pi_ZR)u_A\leq m\frac{\max_i(c_A)_i}{\min_{i\in A}d_i}.$$
+    <p>Thus $W(m)$ diverges as $b_0/m$ at slow switching; in the reversible case this identifies the spectral
+      $b_0$ above. Deleting inactive time preserves first-cause probabilities, not calendar waiting times.</p>
+    <p>For $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$,
+      $d=(0,2)$ and $\pi=(1,1)/2$, exactly $W(m)=1+1/(2m)$ and $c_2=0$.
+      At $m=1$ the calendar mean is $1.5$, while the active-clock trace mean is $0.5$.</p>
+
+    <h2>A different stationary start gives a different question</h2>
+    <p>For the repeated Cox arrival process, an event epoch samples the regime according to
+      $\alpha_i=\pi_i d_i/\bar d$, not $\pi$. Because $\pi(D-mQ)=\pi D$,</p>
+    $$\mathbb E_\alpha\tau_m=\alpha(D-mQ)^{-1}\mathbf1=\frac1{\bar d}.$$
+    <p>This identity does not require reversibility.
+      The time-stationary versus event-stationary distinction is also made explicitly by
+      <a href="./bibliography.html#AsanjaraniNazarathy2019">Asanjarani and Nazarathy</a>.</p>
+    <p>For any $Q$, let $Q^*$ denote its $L^2(\pi)$ adjoint. Since the two killed resolvents are adjoints,</p>
+    $$W_Q(m)=\langle\mathbf1,(D-mQ)^{-1}\mathbf1\rangle_\pi
+      =W_{Q^*}(m).$$
+    <p>Thus this mean cannot detect cycle direction, although the cause of first arrival can.
+      There is no fixed-feature or maturity-integrated matrix rank claim here.</p>
+
+    <h2>Convexity does require additional structure</h2>
+    $$Q=\begin{pmatrix}-6&amp;0&amp;6\\1&amp;-1&amp;0\\0&amp;1&amp;-1\end{pmatrix},\qquad
+      \pi=(1,6,6)/13,\qquad d=(2,1,10).$$
+    <p>This irreducible directed three-cycle is stationary but not reversible.
+      Direct inversion gives</p>
+    $$W(m)=\frac{169m^2+509m+142}{26(34m^2+41m+10)},\qquad
+      W''(1/100)=-\frac{73624947750000}{1834978659601919}&lt;0.$$
+    <p>At $m=0.01$, $W=0.5433343281$, $W'=-0.2822566807$ and $W''=-0.0401230539$.
+      Thus mean-wait monotonicity survives nonreversibility but convexity, and hence complete monotonicity,
+      can fail in three states already.</p>
+
+    <h2>Certificate and scope</h2>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_mean_wait.py">verify_mean_wait.py</a>
+      checks 56 reversible chains in dimensions 2 through 8 at 11 speeds, derivatives through order 6,
+      and signed truncation bounds through order 4. It compares the first coefficient with a separate
+      group-inverse calculation and retains a fifth-derivative cycle witness using exact rational arithmetic.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_nonreversible_mean_wait.py">verify_nonreversible_mean_wait.py</a>
+      checks the resolvent and derivative identities on 48 nonreversible chains in dimensions 3 through 8
+      at 11 speeds, the reversibilization comparison and its nonconstant equality case.
+      It checks the unsigned remainder identity and bound on the same grid, the concave three-cycle
+      against exact rational derivatives, and the six-cycle remainder against rational inversion.</p>
+    <p>The reversible benchmark uses
+      $Q=\left(\begin{smallmatrix}-1&amp;1&amp;0\\1&amp;-3&amp;2\\0&amp;2&amp;-2\end{smallmatrix}\right)$,
+      $\pi=(1,1,1)/3$ and $d=(1,2,3)$. It prints $W(1)=0.5585585586$, $A_1=0.125$,
+      $A_2=0.1423611111$.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/credit/verify_zero_hazard_mean_wait.py">verify_zero_hazard_mean_wait.py</a>
+      checks 1,143 chain-speed cases, including 765 with zero hazards, for the centered and killed resolvents,
+      unsigned bound, strict speed order and slow-pole bound. Its reversible tests also check the zero spectral mass, derivatives through
+      order 6 and signed truncations through order 4, including the exact two-state calendar-clock example.</p>
+    <p>These are nonnegative constant statewise hazards with positive stationary mean, not CIR intensity processes.
+      The result controls the integrated mean, not survival at each finite horizon, arbitrary starting priors,
+      or regime-dependent event-trigger resets.</p>
+  </main>
