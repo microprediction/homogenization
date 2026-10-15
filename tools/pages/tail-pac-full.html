@@ -1,0 +1,112 @@
+<!-- title: Integrated margins for two-tail PAC coverage · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a> &middot;
+      <a href="./path-conformal-full.html">full path note</a></p>
+    <h1>A slack-free certificate for both conditional tails</h1>
+    <p class="lead">The exact iid Dirichlet allocation law gives a sharper dependent two-tail guarantee than
+      a Markov bound with a free slack. Calibration dependence is paid once; test dependence spends an integrated
+      distance-to-failure budget.</p>
+    <h2>Setup and the one-dimensional margin</h2>
+    <p>Let $X=(S_1,\ldots,S_N)$ be a calibration panel with law $\mu$, let $P_x$ be the conditional test-score law,
+      and assume all scores have the same continuous marginal CDF $F$.
+      Put $\nu=F^{\otimes N}$ and use the half-$L^1$ convention for total variation:</p>
+    $$\eta_{\rm cal}=\|\mu-\nu\|_{\rm TV},\qquad
+      \eta_{\rm test}=\|P-\mu\otimes F\|_{\rm TV}.$$
+    <p>For ranks $1\le\ell&lt;u\le N$, let $Q_\ell,Q_u$ be calibration order statistics and put
+      $V_{P,L}(X)=P_X(S\le Q_\ell)$, $V_{P,R}(X)=P_X(S&gt;Q_u)$.
+      Fix caps $a,b&gt;0$ with $a+b&lt;1$.</p>
+    <p>Under iid calibration and an independent test score, the lower, covered and upper masses have law</p>
+    $$D\sim\operatorname{Dirichlet}(\ell,u-\ell,N+1-u),\qquad
+      \Psi(a,b)=\Pr(D_L\le a,D_R\le b).$$
+    <p>Define the nonnegative margin
+      $W=\{\min(a-D_L,b-D_R)\}_+$, with $z_+=\max(z,0)$.
+      It is zero on the iid failure set, and for $0\le v&lt;\min(a,b)$,</p>
+    $$\Pr(W&gt;v)=\Psi(a-v,b-v),\qquad
+      J(q)=E[W\mathbf1_{\{0&lt;W\le q\}}]
+        =\int_0^q\Psi(a-v,b-v)dv-q\Psi(a-q,b-q).$$
+    <h2>The dependent confidence bound</h2>
+    <p>If $0&lt;\eta_{\rm test}&lt;EW$, let $q\in(0,\min(a,b))$ be the unique solution of
+      $J(q)=\eta_{\rm test}$. Then</p>
+    <div class="equation-card">
+    $$\Pr_\mu\{V_{P,L}\le a,\ V_{P,R}\le b\}
+        \ge[\Psi(a-q,b-q)-\eta_{\rm cal}]_+.$$
+    </div>
+    <p>At $\eta_{\rm test}=0$ take $q=0$.
+      At $\eta_{\rm test}\ge EW$ the certificate is zero.
+      Thus no free slack remains to optimize.</p>
+    <p>For nonoverlapping blocks from a stationary absolutely regular process, one may substitute
+      $\eta_{\rm cal}\le\min\{1,\sum_{j=0}^{N-2}\beta_X(h_j)\}$ and
+      $\eta_{\rm test}\le\beta_X(h_{N-1})$, using the actual separation gaps from the path note.</p>
+    <h2>Proof and sharpness scope</h2>
+    <p>For an actual panel set $V_{0,L}=F(Q_\ell)$, $V_{0,R}=1-F(Q_u)$ and
+      $w(X)=\{\min(a-V_{0,L},b-V_{0,R})\}_+$.
+      If either actual tail exceeds its cap, at least $w(X)$ probability must have moved from the independent
+      test law, so $w(X)\le\|P_X-F\|_{\rm TV}$ on the failure event $A$.</p>
+    <p>Disintegrating over the common panel marginal gives $\int_A w\,d\mu\le\eta_{\rm test}$.
+      Couple $\mu$ and $\nu$ maximally; the matched part of $A$ has mass at least
+      $(\mu(A)-\eta_{\rm cal})_+$ and is a subprobability of the iid panel law.</p>
+    <p>Of all iid subprobabilities with a specified mass, the cheapest integral of $W$ selects its lowest values,
+      with fractional selection at an atom. Hence, writing $Q_W$ for the lower quantile function of $W$,</p>
+    $$\int_0^{(\mu(A)-\eta_{\rm cal})_+}Q_W(s)ds\le\eta_{\rm test}.$$
+    <p>The atom at zero costs nothing; the additional selected mass consists of $0&lt;W\le q$.
+      Its cost is $J(q)$ and its total mass is $1-\Psi(a-q,b-q)$, proving the confidence bound.</p>
+    <p>This rearrangement is sharp for the scalar margin-and-deficit relaxation: moving allocations nearest a
+      violated cap to that boundary spends exactly their margins, and strict violations are approached by an
+      arbitrarily small additional transfer.</p>
+    <p>It is not a claim that an arbitrary extremal allocation is realizable by a stationary score process with the
+      prescribed common marginal. Optimal-transport worst-event bounds are classical; see
+      <a href="./bibliography.html#BlanchetMurthy2019">Blanchet and Murthy (2019), Theorem 1</a>.
+      The Dirichlet margin and separated dependence budgets here are the specialization being computed.</p>
+    <h2>How much calibration can overcome a fixed budget?</h2>
+    <p>Hold the caps and TV budgets fixed while changing $N\ge2$.
+      Among intervals whose two finite endpoints are calibration order statistics, the sample range
+      $[Q_1,Q_N]$ maximizes the margin on every iid panel, hence maximizes this certificate.</p>
+    <p>Let $C_N$ denote its integrated-margin lower bound and $c=\min(a,b)$.
+      Then $C_N$ is nondecreasing in $N$ and, with $C_\infty=[1-\eta_{\rm cal}-\eta_{\rm test}/c]_+$,</p>
+    <div class="equation-card">
+    $$[C_\infty-\tfrac{3}{2c(N+1)}]_+\le C_N\le C_\infty.$$
+    </div>
+    <p>Consequently, for $0&lt;\delta&lt;1$, some finite order-statistic interval certifies confidence
+      at least $1-\delta$ if and only if</p>
+    $$\eta_{\rm cal}&lt;\delta,\qquad
+      \eta_{\rm test}&lt;c(\delta-\eta_{\rm cal}).$$
+    <p>When these strict inequalities hold, a sufficient size satisfies
+      $N+1&gt;3/[2\{c(\delta-\eta_{\rm cal})-\eta_{\rm test}\}]$.
+      The exact minimum is obtained by monotone search using the finite sample-range cost, not this coarse size bound.</p>
+    $$\Psi_N(a-q,b-q)=1-(1-a+q)^N-(1-b+q)^N+(1-a-b+2q)^N.$$
+    <p>To prove it, couple nested iid uniform panels and write their outer spacings as $L_N=U_{(1)}$ and
+      $R_N=1-U_{(N)}$. Both decrease, so $W_N=\{\min(a-L_N,b-R_N)\}_+$ increases towards $c$.</p>
+    <p>Pointwise $0\le c-W_N\le\max(L_N,R_N)$.
+      The pair is part of $\operatorname{Dirichlet}(1,N-1,1)$, so its sum has mean $2/(N+1)$ and the conditional
+      split is uniform, giving $E\max(L_N,R_N)=3/[2(N+1)]$.</p>
+    <p>For every selected mass $z$, its least possible margin cost $K_N(z)=\int_0^z Q_{W_N}(s)ds$ obeys
+      $cz-3/[2(N+1)]\le K_N(z)\le cz$.
+      Inverting these inequalities in the preceding rearrangement bound gives the enclosure and limit.</p>
+    <p>For every finite $N$, $W_N&lt;c$ almost surely, so the ceiling cannot be attained when it is positive.
+      This proves the strict feasibility boundary; the sample-range domination transfers impossibility of
+      certification to every narrower finite order-statistic interval.</p>
+    <p>This is a limitation of this coefficient-only certificate, not a universal impossibility theorem for actual
+      coverage. If adding observations increases the calibration dependence budget, recompute that budget:
+      fixed-budget monotonicity does not justify treating more correlated scores as free information.</p>
+    <p>The uniform-spacing ingredients are classical; see
+      <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>.
+      No interval-width optimality or optimality among procedures with infinite endpoints is claimed.</p>
+    <p>For two five-percent caps, 95% confidence and $\eta_{\rm cal}=0$, the minimum certified sizes for
+      $\eta_{\rm test}=0,10^{-4},10^{-3},2\times10^{-3}$ are respectively $72,85,154,466$.
+      At $\eta_{\rm test}=0.0025$, no finite size meets this certificate.</p>
+    <h2>Computation and benchmark</h2>
+    <p>The iid confidence is a finite multinomial probability: among $N$ iid uniforms, at least $\ell$ must lie
+      below $a$ and at least $N+1-u$ above $1-b$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_two_tail_pac.py">certificate</a>
+      computes $J$ by integrating $v$ against the positive margin density, avoiding subtraction near zero.</p>
+    <p>For the sample range with $N=100$, $a=b=.05$, $\eta_{\rm cal}=0$ and
+      $\eta_{\rm test}=10^{-4}$, iid confidence is $0.988185503$.
+      The integrated-margin certificate is $0.969279247$, with $q=0.00916232072$, versus $0.947808420$
+      from optimizing the earlier free-slack bound.</p>
+    <p>The checks include independent Dirichlet integration, finite multinomial enumeration, the cost identity,
+      fractional-knapsack linear programs, and exact state-revealing binary Markov panels.
+      These floating-point checks complement the proof; they are not interval-validated numerical bounds.</p>
+    <p>This is confidence over random calibration panels that both training-conditional tail caps hold.
+      It is not pointwise validity for every panel, latent-state-conditional validity, or feature-conditional
+      conformal coverage.</p>
+  </main>

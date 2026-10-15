@@ -1,5 +1,14 @@
 [
  {
+  "key": "BlanchetMurthy2019",
+  "authors": "Blanchet, J. and Murthy, K.",
+  "year": 2019,
+  "title": "Quantifying Distributional Model Risk via Optimal Transport",
+  "venue": "Mathematics of Operations Research 44(2):565-600",
+  "doi": "10.1287/moor.2018.0936",
+  "annotation": "Theorem 1 gives transport duality for worst-case expectations and event probabilities. The two-tail PAC note specializes the cheapest-distance-to-failure principle to Dirichlet tail allocations and separate calibration/test dependence budgets."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
