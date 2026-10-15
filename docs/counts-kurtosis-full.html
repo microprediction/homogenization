@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The fourth factorial-cumulant sign diagram · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./counts.html">&larr; Cox counts</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>A fourth cumulant that changes sign exactly once</h1>
+    <p>Let a stationary two-state chain have rates $\alpha&gt;0$ from state 1 to state 2 and
+      $\beta&gt;0$ in the reverse direction.
+      Put $r=\alpha+\beta$, $p=\beta/r$, $w=p(1-p)$, $x=rT$ and $\Delta=\ell_1-\ell_2\neq0$.</p>
+    <p>For nonnegative intensities, $N_T\mid\Lambda_T\sim\operatorname{Poisson}(\Lambda_T)$ with
+      $\Lambda_T=\int_0^T\ell(Y_t)\,dt$.
+      The result below concerns $\kappa_4(\Lambda_T)=\kappa_4^{\rm F}(N_T)$, the fourth
+      <em>factorial</em> cumulant of the count, not its ordinary fourth cumulant.</p>
+    <h2>Exact formula and complete sign classification</h2>
+    $$B(x)=x-3+\left(\frac{x^2}{2}+2x+3\right)e^{-x},\qquad
+      C(x)=x-\frac52+2(x+1)e^{-x}+\frac12e^{-2x},$$
+    <div class="equation-card">
+    $$\kappa_4(\Lambda_T)=\frac{24\Delta^4w}{r^4}
+          \{B(x)-w[4B(x)+C(x)]\},\qquad
+      q(x)=\frac{B(x)}{4B(x)+C(x)}.$$
+    $$q'(x)&gt;0,\qquad q(0+)=\frac16,\qquad q(\infty)=\frac15.$$
+    </div>
+    <p>Both $B$ and $C$ are positive for $x&gt;0$, so the sign is exactly that of $q(x)-w$.</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>stationary weight $w$</th><th>sign at finite positive maturity</th></tr></thead>
+      <tbody>
+        <tr><td>$0&lt;w\leq1/6$</td><td>strictly positive at every maturity</td></tr>
+        <tr><td>$1/6&lt;w&lt;1/5$</td><td>negative, then one zero, then positive</td></tr>
+        <tr><td>$1/5\leq w\leq1/4$</td><td>strictly negative at every maturity</td></tr>
+      </tbody>
+    </table></div>
+    <p>In the middle range, $T_*=q^{-1}(w)/r$ is the unique crossing.
+      Equal switching rates have $p=1/2$, $w=1/4$ and recover the strictly negative symmetric result.
+      Boundedness alone determines none of these signs.</p>
+    <h2>Derivation from ordered correlations</h2>
+    <p>Write $f_t=\mathbf1_{\{Y_t=1\}}-p$ and $J_T=\int_0^T f_t\,dt$.
+      Then $\mathbb E(f_{t+s}\mid Y_t)=e^{-rs}f_t$ and
+      $f_t^2=(1-2p)f_t+w$.</p>
+    <p>For $t_1&lt;t_2&lt;t_3&lt;t_4$, repeated conditioning gives</p>
+    $$\mathbb E(f_{t_1}f_{t_2}f_{t_3}f_{t_4})
+       =w^2e^{-r(t_2-t_1+t_4-t_3)}
+          +w(1-4w)e^{-r(t_4-t_1)}.$$
+    <p>Let $H(x)=x-1+e^{-x}$ and
+      $A(x)=x^2/2-2x+3-(x+3)e^{-x}$.
+      Integrating the two ordered-gap terms, with their $4!$ orderings, yields</p>
+    $$\mathbb E J_T^2=\frac{2w}{r^2}H(x),\qquad
+      \mathbb E J_T^4=\frac{24}{r^4}\{w^2A(x)+w(1-4w)B(x)\}.$$
+    <p>For example, the gap integrals defining $A$ and $B$ have Laplace transforms
+      $1/[z^3(z+1)^2]$ and $1/[z^2(z+1)^3]$, respectively.
+      Subtracting $3(\mathbb EJ_T^2)^2$, using $C=H^2/2-A$, gives the displayed cumulant.
+      A deterministic shift $\ell_2T$ contributes nothing to this fourth cumulant.</p>
+    <h2>Why the crossing is unique</h2>
+    <p>The initial values and first derivatives of $B,C$ vanish at zero, and</p>
+    $$B''(x)=\frac{x^2}{2}e^{-x}&gt;0,\qquad
+      C''(x)=2e^{-x}(x-1+e^{-x})&gt;0,$$
+    $$\frac{C''(x)}{B''(x)}
+       =4\frac{x-1+e^{-x}}{x^2}
+       =4\int_0^1(1-u)e^{-xu}\,du.$$
+    <p>The last integral strictly decreases with $x$.
+      Since $C'/B'$ is a weighted average of $C''/B''$, its derivative is strictly negative;
+      applying the same argument once more makes $C/B$ strictly decreasing.</p>
+    <p>Taylor expansion gives $B(x)\sim x^4/24$ and $C(x)\sim x^4/12$ at zero.
+      At infinity both functions are asymptotic to $x$.
+      Thus $C/B$ decreases strictly from two to one, proving the asserted behavior of $q=1/(4+C/B)$.</p>
+    <p>As checks on the two endpoints,</p>
+    $$\lim_{T\downarrow0}\frac{\kappa_4(\Lambda_T)}{T^4}
+         =\Delta^4w(1-6w),\qquad
+      \lim_{T\to\infty}\frac{\kappa_4(\Lambda_T)}{T}
+         =\frac{24\Delta^4w(1-5w)}{r^3}.$$
+    <p>The endpoint limits alone would not establish uniqueness of a crossing.
+      The monotone-ratio argument does.</p>
+    <h2>Certificate, literature and scope</h2>
+    <p>For $p=0.25$, $r=1$, $\Delta=1$, the crossing is $T_*=3.0464755667$.
+      The integrated-rate fourth cumulants at $T=1$ and $T=5$ are
+      $-0.0068086443$ and $0.2656789881$.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_unequal_fourth_sign.py">verify_unequal_fourth_sign.py</a>
+      checks 243 cases against an independent triangular moment system, 300 points of the threshold curve,
+      the symmetric reduction, the crossing and the factorial-cumulant transfer from count probabilities.
+      Its final line is literal <code>PASS</code>.</p>
+    <p>Two-state occupation-time laws are classical; see
+      <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.
+      The moment identities and sign classification are proved directly here, without a priority claim.</p>
+    <p>Stationary initialization and two states are assumptions of the classification.
+      No analogous sign assertion is made for arbitrary initial priors or larger chains.
+      If $\Delta=0$, the integrated intensity is deterministic and every fourth factorial cumulant is zero.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

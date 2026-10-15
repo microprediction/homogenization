@@ -103,8 +103,9 @@
     count data would examine, as the <a href="./likelihood.html">likelihood page</a> examines the residuals of a
     rate. For a stationary start with two symmetric regimes the third vanishes, and the fourth has an exact sign.</p>
     <p>Write $\ell_{Y_t}=\bar\ell+\tilde\ell Z_t$, where $Z_t\in\{-1,1\}$ flips at rate $\lambda$, and put
-      $x=\lambda T$. Direct differentiation of the classical
-      <a href="./bibliography.html#BogachevRatanov2011">telegraph-process transform</a> gives</p>
+      $x=\lambda T$. Two-state occupation-time laws are classical; see
+      <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.
+      The two-state matrix exponential directly gives</p>
     <div class="equation-card">
     $$\mathbb E\exp\!\left(u\tilde\ell\int_0^T Z_s\,ds\right)
       =e^{-\lambda T}\left[\cosh(Td)+\frac{\lambda}{d}\sinh(Td)\right],
@@ -116,6 +117,9 @@
     $$F'(x)=6e^{-2x}\{\sinh(2x)-2x\}>0\qquad(x>0).$$
     <p>Thus the fourth factorial cumulant is strictly negative whenever $T>0$ and the two rates differ. Boundedness
       alone would not determine the sign; it is the symmetric telegraph structure that does.</p>
+    <p>For unequal switching rates, the <a href="./counts-kurtosis-full.html">complete sign diagram</a>
+      has a regime with exactly one negative-to-positive maturity crossing.
+      The full note gives the exact formula and the stationary-weight thresholds.</p>
     <p>At $T = 1$, computing the factorial cumulants from the count law at the
     roots of unity and the cumulants of $\Lambda_T$ from its polynomial moment system, the two agree to the rounding
     of the count law:</p>
