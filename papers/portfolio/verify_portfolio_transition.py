@@ -31,6 +31,67 @@ def matrix(speed, duration, tilt):
     return np.log(z)+duration*shift, first/z, second/z-(first/z)**2
 
 
+def premium_cases(critical_speed):
+    cases, max_score, max_grid_gap = 0, 0., 0.
+    for gamma in [.25, .5, .8]:
+        for amplitude in [1., 2.]:
+            for duration in [.25, 1., 3.]:
+                previous_premium_optima = {}
+                for premium in [.01, .2]:
+                    last = np.inf
+                    for speed in [.1, 1., 5., 20.]:
+                        def score(w):
+                            return premium+w*(-gamma+(1-gamma)*amplitude**2
+                                *closed(speed, duration, (1-gamma)*amplitude*w)[1]/duration)
+                        upper = (premium+amplitude)/gamma
+                        optimum = brentq(score, 0., upper, xtol=1e-12)
+                        assert premium/gamma < optimum < upper
+                        assert optimum < last
+                        assert optimum > previous_premium_optima.get(speed, 0.)
+                        previous_premium_optima[speed] = optimum
+                        last = optimum
+                        tilt = (1-gamma)*amplitude*optimum
+                        _, first, second = matrix(speed, duration, tilt)
+                        residual = abs(premium-gamma*optimum+amplitude*first/duration)
+                        curvature = -gamma+(1-gamma)*amplitude**2*second/duration
+                        assert curvature < 0
+                        assert residual <= ROUND*max(1., premium, amplitude, optimum)
+                        max_score = max(max_score, residual)
+                        def value(w):
+                            return premium*w-gamma*w*w/2+closed(
+                                speed, duration, (1-gamma)*amplitude*w)[0]/((1-gamma)*duration)
+                        grid = np.linspace(-upper, upper, 81)
+                        gap = max(value(w)-value(optimum) for w in grid)
+                        assert gap <= ROUND*max(1., upper**2)
+                        assert value(optimum) > value(-optimum)
+                        max_grid_gap = max(max_grid_gap, gap)
+                        cases += 1
+    print(f"positive-premium optimizer cases {cases}; largest matrix-score residual {max_score:.3e}")
+    print(f"largest grid improvement over the optimizer {max_grid_gap:.3e}")
+    # Critical cubic coefficient: independent fourth moments and a spectral sum.
+    q = critical_speed*np.array([[-1., 1.], [1., -1.]])
+    system = np.kron(np.eye(5), q)
+    for order in range(1, 5):
+        system[2*order:2*order+2, 2*order-2:2*order] = order*np.diag([1., -1.])
+    moments = (expm(system) @ np.r_[np.ones(2), np.zeros(8)]).reshape(5, 2).mean(axis=1)
+    cubic = -(moments[4]-3*moments[2]**2)/3  # gamma=.5, a=2, T=sigma=1
+    roots = np.array([brentq(lambda u: np.cos(u)+critical_speed*np.sin(u)/u,
+                            (j+.5)*np.pi, (j+1)*np.pi, xtol=2e-12) for j in range(512)])
+    partial = 4*np.sum((critical_speed**2+roots**2)**-2)
+    tail = 4/(3*np.pi**4*(512-.5)**3)
+    assert partial-ROUND <= cubic <= partial+tail+ROUND
+    fifth_bound = (partial+tail)/(critical_speed**2+np.pi**2/4)
+    curvature = 2*closed(critical_speed, 1., 0.)[1]-.5
+    print(f"critical cubic coefficient {cubic:.10f}; spectral omitted-tail bound {tail:.3e}")
+    for premium in [1e-2, 1e-4, 1e-6, 1e-8]:
+        optimum = brentq(lambda w: premium+w*(2*closed(critical_speed, 1., w)[1]-.5),
+                         0., 5., xtol=1e-12)
+        remainder = cubic*optimum**3-premium-curvature*optimum
+        assert -ROUND <= remainder <= fifth_bound*optimum**5+ROUND
+        print(f"critical premium {premium:.0e}: optimum {optimum:.10f}; cubic-root ratio "
+              f"{optimum/(premium/cubic)**(1/3):.9f}")
+
+
 def main():
     size, cases, largest = 512, 0, 0.
     largest_tail = 0.
@@ -99,6 +160,7 @@ def main():
         optimum = brentq(lambda w: 2*closed(speed, 1., w)[1]-.5, 0., 8., xtol=1e-12) if criterion > ROUND else 0.
         value = -optimum**2/4+2*closed(speed, 1., optimum)[0]
         print(f"speed {speed:.10f}: curvature at zero {criterion:.10f}; nonnegative optimum {optimum:.10f}; CE {value:.10f}")
+    premium_cases(critical_float)
     print("PASS")
 
 
