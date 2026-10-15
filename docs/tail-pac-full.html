@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Integrated margins for two-tail PAC coverage · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a> &middot;
+      <a href="./path-conformal-full.html">full path note</a></p>
+    <h1>A slack-free certificate for both conditional tails</h1>
+    <p class="lead">The exact iid Dirichlet allocation law gives a sharper dependent two-tail guarantee than
+      a Markov bound with a free slack. Calibration dependence is paid once; test dependence spends an integrated
+      distance-to-failure budget.</p>
+    <h2>Setup and the one-dimensional margin</h2>
+    <p>Let $X=(S_1,\ldots,S_N)$ be a calibration panel with law $\mu$, let $P_x$ be the conditional test-score law,
+      and assume all scores have the same continuous marginal CDF $F$.
+      Put $\nu=F^{\otimes N}$ and use the half-$L^1$ convention for total variation:</p>
+    $$\eta_{\rm cal}=\|\mu-\nu\|_{\rm TV},\qquad
+      \eta_{\rm test}=\|P-\mu\otimes F\|_{\rm TV}.$$
+    <p>For ranks $1\le\ell&lt;u\le N$, let $Q_\ell,Q_u$ be calibration order statistics and put
+      $V_{P,L}(X)=P_X(S\le Q_\ell)$, $V_{P,R}(X)=P_X(S&gt;Q_u)$.
+      Fix caps $a,b&gt;0$ with $a+b&lt;1$.</p>
+    <p>Under iid calibration and an independent test score, the lower, covered and upper masses have law</p>
+    $$D\sim\operatorname{Dirichlet}(\ell,u-\ell,N+1-u),\qquad
+      \Psi(a,b)=\Pr(D_L\le a,D_R\le b).$$
+    <p>Define the nonnegative margin
+      $W=\{\min(a-D_L,b-D_R)\}_+$, with $z_+=\max(z,0)$.
+      It is zero on the iid failure set, and for $0\le v&lt;\min(a,b)$,</p>
+    $$\Pr(W&gt;v)=\Psi(a-v,b-v),\qquad
+      J(q)=E[W\mathbf1_{\{0&lt;W\le q\}}]
+        =\int_0^q\Psi(a-v,b-v)dv-q\Psi(a-q,b-q).$$
+    <h2>The dependent confidence bound</h2>
+    <p>If $0&lt;\eta_{\rm test}&lt;EW$, let $q\in(0,\min(a,b))$ be the unique solution of
+      $J(q)=\eta_{\rm test}$. Then</p>
+    <div class="equation-card">
+    $$\Pr_\mu\{V_{P,L}\le a,\ V_{P,R}\le b\}
+        \ge[\Psi(a-q,b-q)-\eta_{\rm cal}]_+.$$
+    </div>
+    <p>At $\eta_{\rm test}=0$ take $q=0$.
+      At $\eta_{\rm test}\ge EW$ the certificate is zero.
+      Thus no free slack remains to optimize.</p>
+    <p>For nonoverlapping blocks from a stationary absolutely regular process, one may substitute
+      $\eta_{\rm cal}\le\min\{1,\sum_{j=0}^{N-2}\beta_X(h_j)\}$ and
+      $\eta_{\rm test}\le\beta_X(h_{N-1})$, using the actual separation gaps from the path note.</p>
+    <h2>Proof and sharpness scope</h2>
+    <p>For an actual panel set $V_{0,L}=F(Q_\ell)$, $V_{0,R}=1-F(Q_u)$ and
+      $w(X)=\{\min(a-V_{0,L},b-V_{0,R})\}_+$.
+      If either actual tail exceeds its cap, at least $w(X)$ probability must have moved from the independent
+      test law, so $w(X)\le\|P_X-F\|_{\rm TV}$ on the failure event $A$.</p>
+    <p>Disintegrating over the common panel marginal gives $\int_A w\,d\mu\le\eta_{\rm test}$.
+      Couple $\mu$ and $\nu$ maximally; the matched part of $A$ has mass at least
+      $(\mu(A)-\eta_{\rm cal})_+$ and is a subprobability of the iid panel law.</p>
+    <p>Of all iid subprobabilities with a specified mass, the cheapest integral of $W$ selects its lowest values,
+      with fractional selection at an atom. Hence, writing $Q_W$ for the lower quantile function of $W$,</p>
+    $$\int_0^{(\mu(A)-\eta_{\rm cal})_+}Q_W(s)ds\le\eta_{\rm test}.$$
+    <p>The atom at zero costs nothing; the additional selected mass consists of $0&lt;W\le q$.
+      Its cost is $J(q)$ and its total mass is $1-\Psi(a-q,b-q)$, proving the confidence bound.</p>
+    <p>This rearrangement is sharp for the scalar margin-and-deficit relaxation: moving allocations nearest a
+      violated cap to that boundary spends exactly their margins, and strict violations are approached by an
+      arbitrarily small additional transfer.</p>
+    <p>It is not a claim that an arbitrary extremal allocation is realizable by a stationary score process with the
+      prescribed common marginal. Optimal-transport worst-event bounds are classical; see
+      <a href="./bibliography.html#BlanchetMurthy2019">Blanchet and Murthy (2019), Theorem 1</a>.
+      The Dirichlet margin and separated dependence budgets here are the specialization being computed.</p>
+    <h2>Computation and benchmark</h2>
+    <p>The iid confidence is a finite multinomial probability: among $N$ iid uniforms, at least $\ell$ must lie
+      below $a$ and at least $N+1-u$ above $1-b$.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_two_tail_pac.py">certificate</a>
+      computes $J$ by integrating $v$ against the positive margin density, avoiding subtraction near zero.</p>
+    <p>For the sample range with $N=100$, $a=b=.05$, $\eta_{\rm cal}=0$ and
+      $\eta_{\rm test}=10^{-4}$, iid confidence is $0.988185503$.
+      The integrated-margin certificate is $0.969279247$, with $q=0.00916232072$, versus $0.947808420$
+      from optimizing the earlier free-slack bound.</p>
+    <p>The checks include independent Dirichlet integration, finite multinomial enumeration, the cost identity,
+      fractional-knapsack linear programs, and exact state-revealing binary Markov panels.
+      These floating-point checks complement the proof; they are not interval-validated numerical bounds.</p>
+    <p>This is confidence over random calibration panels that both training-conditional tail caps hold.
+      It is not pointwise validity for every panel, latent-state-conditional validity, or feature-conditional
+      conformal coverage.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
