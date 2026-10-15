@@ -1,5 +1,14 @@
 [
  {
+  "key": "vanGinkelVanGisbergenRedig2021",
+  "authors": "van Ginkel, B., van Gisbergen, B. and Redig, F.",
+  "year": 2021,
+  "title": "Run-and-Tumble Motion: The Role of Reversibility",
+  "venue": "Journal of Statistical Physics 183:44",
+  "doi": "10.1007/s10955-021-02787-1",
+  "annotation": "Lemma A.2 proves that the weighted symmetric part of an irreducible finite Markov generator is itself an irreducible reversible generator. The full-Gram inverse note uses this classical fact to prove reversible realization through three states; in four states the symmetric inverse need not define a Markov generator."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

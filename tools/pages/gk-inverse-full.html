@@ -26,6 +26,9 @@
     <p>There is at most one reversible member: the candidate $K=0$, if its off-diagonal entries are nonnegative.
       For $n=2$ there is no skew parameter and the full Gram does identify the generator.
       Stationary time reversal sends $K$ to $-K$; it is only one symmetry inside the identified set.</p>
+    <p>For $n\le3$, every realizable full Gram has a reversible representative.
+      With four states this can fail even when all original transition rates are strictly positive:
+      a symmetric Gram can exclude reversibility without identifying the generator.</p>
     <h2>Proof</h2>
     <p>On the centered space put $L=-U^\top D_\pi Q U$.
       Since $U$ is a complete weighted orthonormal basis, $H=L^{-1}$ and
@@ -62,6 +65,36 @@
       In particular $s=1/4$ has rates $(20/49,12/49)$, whereas $s=1/2$ has rates $(6/13,2/13)$:
       they have the same full Gram but are not time reversals or relabelings of one another.
       Their total exit rates differ, while reversal sends $s$ to $-s$.</p>
+    <h2>When does the reversible representative exist?</h2>
+    <p>In three states write $K=kJ$, with $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$,
+      and put $d=\det G&gt;0$.
+      A direct two-by-two inverse gives</p>
+    $$\operatorname{sym}(G+kJ)^{-1}
+        =\frac{d}{d+k^2}G^{-1},\qquad
+      \frac{Q+Q^*}{2}=\frac{d}{d+k^2}Q_{\rm rev},\qquad
+      Q_{\rm rev}=-UG^{-1}U^\top D_\pi.$$
+    <p>The additive reversibilization $(Q+Q^*)/2$ is an irreducible Markov generator
+      (<a href="./bibliography.html#vanGinkelVanGisbergenRedig2021">van Ginkel, van Gisbergen and Redig (2021)</a>, Lemma A.2).
+      Thus $Q_{\rm rev}$ is its positive scalar multiple and is a valid reversible representative.
+      Together with the two-state result, this proves existence for every realizable full Gram on at most three states,
+      not for every arbitrary positive-definite matrix.</p>
+    <p>Four states are the first possible obstruction.
+      For uniform $\pi$ take the irreducible generator</p>
+    $$Q=\begin{pmatrix}-4&amp;0&amp;3&amp;1\\0&amp;-1&amp;1&amp;0\\
+         1&amp;0&amp;-4&amp;3\\3&amp;1&amp;0&amp;-4\end{pmatrix}.$$
+    <p>Writing $\Pi=\mathbf1\pi$ and $B=\operatorname{sym}(-Q^\#)$, direct rational inversion gives
+      the unique reversible candidate</p>
+    $$Q_{\rm rev}=\Pi-(B+\Pi)^{-1}
+      =\frac1{44}\begin{pmatrix}-192&amp;-8&amp;100&amp;100\\
+       -8&amp;-48&amp;28&amp;28\\100&amp;28&amp;-207&amp;79\\100&amp;28&amp;79&amp;-207\end{pmatrix}.$$
+    <p>Its entry $(1,2)$ is $-2/11$, so it is not a Markov generator.
+      This is not just a missing-edge phenomenon: for
+      $Q_+=Q+\tfrac1{10}(\Pi-I)$ every off-diagonal rate is at least $1/40$,
+      yet its reversible candidate has entry $(1,2)$ equal to $-43/280$.
+      The negative entry persists under sufficiently small perturbations, since inversion is continuous.</p>
+    <p>Positive definiteness of the centered inverse is therefore weaker than the Markov sign constraints.
+      The criterion concerns the same known stationary law, state labels and full fixed-feature embedding;
+      it does not exclude reversible models with different hidden-state representations.</p>
     <h2>What extra data would recover the generator?</h2>
     <p>The full ordered matrix does determine it:</p>
     $$H_{ab}=\int_0^\infty\mathbb E_\pi[U_a(Y_0)U_b(Y_t)]\,dt,\qquad
@@ -84,4 +117,7 @@
       checks reconstruction, time reversal, positive-rate perturbations, arbitrary projected features and independent
       semigroup quadrature.
       The displayed three-state Poisson identity is also checked in exact rational arithmetic.</p>
+    <p>A <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_reversible_realization.py">reversible-realization certificate</a>
+      checks the three-state identity for nonuniform stationary laws and verifies both four-state obstructions
+      with exact rational arithmetic and independent semigroup quadrature.</p>
   </main>
