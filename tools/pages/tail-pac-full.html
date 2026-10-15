@@ -57,6 +57,43 @@
       prescribed common marginal. Optimal-transport worst-event bounds are classical; see
       <a href="./bibliography.html#BlanchetMurthy2019">Blanchet and Murthy (2019), Theorem 1</a>.
       The Dirichlet margin and separated dependence budgets here are the specialization being computed.</p>
+    <h2>How much calibration can overcome a fixed budget?</h2>
+    <p>Hold the caps and TV budgets fixed while changing $N\ge2$.
+      Among intervals whose two finite endpoints are calibration order statistics, the sample range
+      $[Q_1,Q_N]$ maximizes the margin on every iid panel, hence maximizes this certificate.</p>
+    <p>Let $C_N$ denote its integrated-margin lower bound and $c=\min(a,b)$.
+      Then $C_N$ is nondecreasing in $N$ and, with $C_\infty=[1-\eta_{\rm cal}-\eta_{\rm test}/c]_+$,</p>
+    <div class="equation-card">
+    $$[C_\infty-\tfrac{3}{2c(N+1)}]_+\le C_N\le C_\infty.$$
+    </div>
+    <p>Consequently, for $0&lt;\delta&lt;1$, some finite order-statistic interval certifies confidence
+      at least $1-\delta$ if and only if</p>
+    $$\eta_{\rm cal}&lt;\delta,\qquad
+      \eta_{\rm test}&lt;c(\delta-\eta_{\rm cal}).$$
+    <p>When these strict inequalities hold, a sufficient size satisfies
+      $N+1&gt;3/[2\{c(\delta-\eta_{\rm cal})-\eta_{\rm test}\}]$.
+      The exact minimum is obtained by monotone search using the finite sample-range cost, not this coarse size bound.</p>
+    $$\Psi_N(a-q,b-q)=1-(1-a+q)^N-(1-b+q)^N+(1-a-b+2q)^N.$$
+    <p>To prove it, couple nested iid uniform panels and write their outer spacings as $L_N=U_{(1)}$ and
+      $R_N=1-U_{(N)}$. Both decrease, so $W_N=\{\min(a-L_N,b-R_N)\}_+$ increases towards $c$.</p>
+    <p>Pointwise $0\le c-W_N\le\max(L_N,R_N)$.
+      The pair is part of $\operatorname{Dirichlet}(1,N-1,1)$, so its sum has mean $2/(N+1)$ and the conditional
+      split is uniform, giving $E\max(L_N,R_N)=3/[2(N+1)]$.</p>
+    <p>For every selected mass $z$, its least possible margin cost $K_N(z)=\int_0^z Q_{W_N}(s)ds$ obeys
+      $cz-3/[2(N+1)]\le K_N(z)\le cz$.
+      Inverting these inequalities in the preceding rearrangement bound gives the enclosure and limit.</p>
+    <p>For every finite $N$, $W_N&lt;c$ almost surely, so the ceiling cannot be attained when it is positive.
+      This proves the strict feasibility boundary; the sample-range domination transfers impossibility of
+      certification to every narrower finite order-statistic interval.</p>
+    <p>This is a limitation of this coefficient-only certificate, not a universal impossibility theorem for actual
+      coverage. If adding observations increases the calibration dependence budget, recompute that budget:
+      fixed-budget monotonicity does not justify treating more correlated scores as free information.</p>
+    <p>The uniform-spacing ingredients are classical; see
+      <a href="./bibliography.html#Pyke1965">Pyke (1965)</a>.
+      No interval-width optimality or optimality among procedures with infinite endpoints is claimed.</p>
+    <p>For two five-percent caps, 95% confidence and $\eta_{\rm cal}=0$, the minimum certified sizes for
+      $\eta_{\rm test}=0,10^{-4},10^{-3},2\times10^{-3}$ are respectively $72,85,154,466$.
+      At $\eta_{\rm test}=0.0025$, no finite size meets this certificate.</p>
     <h2>Computation and benchmark</h2>
     <p>The iid confidence is a finite multinomial probability: among $N$ iid uniforms, at least $\ell$ must lie
       below $a$ and at least $N+1-u$ above $1-b$.

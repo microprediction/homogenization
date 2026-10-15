@@ -64,6 +64,53 @@ def binary_reference(n, lower, upper, a, b, rho):
     return success, distance
 
 
+def range_cost(n, a, b, q):
+    """Sample-range survival and integrated margin, without quadrature."""
+    x, y = a-q, b-q
+    residuals = np.array([x, y, x+y])
+    powers = np.exp(n*np.log1p(-residuals))
+    baseline = np.exp((n+1)*np.log1p(-np.array([a, b, a+b])))
+    survival = 1-powers[0]-powers[1]+powers[2]
+    integral = np.dot([1., 1., -.5], (1-residuals)*powers-baseline)/(n+1)
+    cost = q*(powers[0]+powers[1]-powers[2])-integral
+    return max(0., survival), max(0., cost)
+
+
+def range_certificate(n, a, b, eta_cal, eta_test):
+    if eta_test == 0:
+        return max(0., range_cost(n, a, b, 0.)[0]-eta_cal)
+    if eta_test >= range_cost(n, a, b, min(a, b))[1]:
+        return 0.
+    q = brentq(lambda v: range_cost(n, a, b, v)[1]-eta_test,
+               0., min(a, b), xtol=np.finfo(float).tiny, rtol=8*np.finfo(float).eps)
+    return max(0., range_cost(n, a, b, q)[0]-eta_cal)
+
+
+def minimum_range_size(a, b, eta_cal, eta_test, delta):
+    """Finite-formula search; reject unresolved boundaries or very large sizes."""
+    if not (0 < min(a, b) and a+b < 1 and 0 < delta < 1
+            and 0 <= eta_cal <= 1 and 0 <= eta_test <= 1):
+        raise ValueError("invalid caps, confidence, or TV budgets")
+    capacity = min(a, b)*(delta-eta_cal)
+    if delta <= eta_cal or eta_test >= capacity:
+        return None
+    if capacity-eta_test <= ROUND*max(capacity, eta_test):
+        raise ValueError("feasibility margin needs higher precision")
+    lower, upper = 1, 2
+    feasible = lambda n: range_certificate(n, a, b, eta_cal, eta_test) >= 1-delta
+    while not feasible(upper):
+        lower, upper = upper, 2*upper
+        if upper > 65536:
+            raise ValueError("minimum-size search needs higher precision")
+    while upper-lower > 1:
+        middle = (lower+upper)//2
+        if feasible(middle):
+            upper = middle
+        else:
+            lower = middle
+    return upper
+
+
 def main():
     cases = comparisons = identities = 0
     setups = [(12, 1, 12, .2, .15), (30, 2, 28, .15, .2),
@@ -127,6 +174,56 @@ def main():
         if rho == 0:
             assert abs(exact-confidence(8, 1, 8, .2, .2)) <= ROUND
         print(f"Markov rho={rho:g}: exact confidence {exact:.9f}; certificate {bound:.9f}")
+    designs = enclosures = closed_checks = 0
+    for a, b in ((.05, .05), (.03, .08), (.2, .1)):
+        c = min(a, b)
+        for n in (12, 30, 100):
+            for fraction in (.1, .5, .9):
+                q = fraction*c
+                survival, cost = range_cost(n, a, b, q)
+                reference = quad(lambda v: v*margin_density(n, 1, n, a, b, v), 0, q)[0]
+                assert abs(cost-reference) <= ROUND
+                assert abs(survival-confidence(n, 1, n, a-q, b-q)) <= ROUND
+                closed_checks += 1
+        for delta in (.05, .1):
+            for eta_cal in (0., .001):
+                for fraction in (0., .1, .5, .9):
+                    eta_test = fraction*c*(delta-eta_cal)
+                    size = minimum_range_size(a, b, eta_cal, eta_test, delta)
+                    assert size >= 2
+                    assert range_certificate(size, a, b, eta_cal, eta_test) >= 1-delta-ROUND
+                    assert size == 2 or range_certificate(size-1, a, b, eta_cal, eta_test) < 1-delta
+                    previous = 0.
+                    ceiling = max(0., 1-eta_cal-eta_test/c)
+                    for n in (2, 8, 32, 128, 512, 2048):
+                        value = range_certificate(n, a, b, eta_cal, eta_test)
+                        assert previous-ROUND <= value <= ceiling+ROUND
+                        assert value >= max(0., ceiling-3/(2*c*(n+1)))-ROUND
+                        previous = value
+                        enclosures += 1
+                    assert minimum_range_size(a, b, eta_cal, c*(delta-eta_cal), delta) is None
+                    designs += 1
+    for n in (2, 8, 32, 128, 512):
+        moment = quad(lambda x: 2*(1-x)**n-max(0., 1-2*x)**n, 0, 1, epsabs=2e-12)[0]
+        assert abs(moment-3/(2*(n+1))) <= ROUND
+    boundary = .05*.05
+    try:
+        minimum_range_size(.05, .05, 0., np.nextafter(boundary, 0.), .05)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("roundoff-indistinguishable feasibility was accepted")
+    print(f"closed-form cost checks {closed_checks}; minimum-size designs {designs}; ceiling enclosures {enclosures}")
+    print("independent outer-spacing moment checks 5; near-boundary precision guard PASS")
+    print("two 5% caps, 95% confidence, eta_cal=0; eta_test : minimum N")
+    for budget in (0., .0001, .001, .002, boundary):
+        size = minimum_range_size(.05, .05, 0., budget, .05)
+        if size is not None:
+            for count in (size-1, size):
+                reference, _ = transfer(count, 1, count, .05, .05, 0., budget)
+                assert abs(reference-range_certificate(count, .05, .05, 0., budget)) <= 1e-9
+        print(f"{budget:g} : {size}")
+    print("independent quadrature at eight minimum-size boundary cases PASS")
     print("PASS")
 
 
