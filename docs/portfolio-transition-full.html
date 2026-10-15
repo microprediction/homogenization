@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>An exact portfolio switching-speed transition · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>Faster switching removes two nonzero portfolio optima</h1>
+    <p>A symmetric two-state market admits a complete constant-fraction optimization theorem, not just a
+      fast-switching expansion.
+      A Robin&ndash;Dirichlet resolvent proves that the exact objective has either one optimum at zero or exactly two
+      nonzero optima, with a unique switching-speed threshold when a transition exists.</p>
+    <p>A nonzero common excess-return premium breaks the tie: it gives a unique global optimum at every speed,
+      with an explicit cube-root response to a small premium at the critical speed.</p>
+    <h2>The model and classification</h2>
+    <p>Let $Y_t\in\{-1,1\}$ flip at rate $m&gt;0$ in each direction and start in its stationary law.
+      The stock has drift $r+aY_t$, common volatility $\sigma&gt;0$, and Brownian noise independent of $Y$,
+      with constant interest rate $r$ and $a&gt;0$.</p>
+    <p>Choose a single deterministic, unrestricted fraction $w\in\mathbb R$ for horizon $T&gt;0$,
+      with relative risk aversion $0&lt;\gamma&lt;1$.
+      Put $I_T=\int_0^T Y_t\,dt$, $M_m(\theta)=\mathbb E e^{\theta I_T}$ and</p>
+    $$C_m(w)=r-\tfrac12\gamma\sigma^2w^2
+      +\frac{\log M_m((1-\gamma)aw)}{(1-\gamma)T},$$
+    $$v_m=\operatorname{Var}I_T=\frac Tm-\frac{1-e^{-2mT}}{2m^2},\qquad
+      b_m=\frac{(1-\gamma)a^2v_m}{T}-\gamma\sigma^2.$$
+    <div class="equation-card">
+    $$\begin{array}{ll}
+      b_m\leq0:&amp; w=0\text{ is the unique global maximizer};\\
+      b_m&gt;0:&amp; \text{exactly two global maximizers }\pm w_*(m),\quad w_*(m)&gt;0.
+      \end{array}$$
+    </div>
+    <p>In the second case zero is a strict local minimum, and $C_m$ increases up to $w_*(m)$ and decreases
+      afterwards on the positive half-line.
+      If $b_m&lt;0$ the objective is strongly concave with modulus $-b_m$; at equality it still has a unique maximum,
+      but its curvature at zero vanishes.</p>
+    <p>A transition exists exactly when $(1-\gamma)a^2T&gt;\gamma\sigma^2$.
+      In that case there is a unique critical speed $m_c&gt;0$, determined by $b_{m_c}=0$:
+      two optima occur for $m&lt;m_c$, and only zero for $m\geq m_c$.
+      The positive optimum decreases strictly with speed before vanishing at the threshold.</p>
+    <p>If the displayed strict inequality fails, zero is uniquely optimal at every positive speed.
+      Indeed $v_m/T=2T^{-1}\int_0^T(T-t)e^{-2mt}dt$ decreases strictly from $T$ to zero as $m$ increases.</p>
+    <h2>The decreasing response is a spectral trace</h2>
+    <p>The two-by-two Feynman&ndash;Kac system gives, with $d=\sqrt{m^2+\theta^2}$,</p>
+    $$M_m(\theta)=e^{-mT}\left\{\cosh(dT)+\frac m d\sinh(dT)\right\}.$$
+    <p>Define the continuous even response
+      $L_m(\theta)=(\log M_m)'(\theta)/\theta$, with $L_m(0)=v_m$.
+      On $[0,T]$ consider the positive self-adjoint operator</p>
+    $$\mathcal A_m=-\frac{d^2}{dt^2}+m^2,\qquad
+      u'(0)=mu(0),\quad u(T)=0.$$
+    <p>Its quadratic form is
+      $\int_0^T(|u'|^2+m^2|u|^2)dt+m|u(0)|^2$.
+      The eigenvalues are $\lambda_j=m^2+\omega_j^2&gt;0$, where</p>
+    $$\omega_j\cos(\omega_jT)+m\sin(\omega_jT)=0,\qquad
+      \frac{(j+1/2)\pi}{T}&lt;\omega_j&lt;\frac{(j+1)\pi}{T},\quad j=0,1,\ldots.$$
+    <div class="equation-card">
+    $$L_m(\theta)=2\operatorname{tr}(\mathcal A_m+\theta^2)^{-1}
+      =2\sum_{j=0}^\infty\frac1{\lambda_j+\theta^2}.$$
+    </div>
+    <p>This series is strictly decreasing in $\theta&gt;0$ and tends to zero.
+      The root bounds make the series and its derivative locally uniformly convergent; dominated convergence
+      also proves the limit at infinity.</p>
+    <p>For a direct proof of the trace identity put
+      $u_\theta(t)=\cosh(dt)+(m/d)\sinh(dt)$ and $F(\theta^2)=u_\theta(T)$.
+      The Green kernel of $\mathcal A_m+\theta^2$ is</p>
+    $$G_\theta(s,t)=\frac{u_\theta(\min\{s,t\})\sinh(d(T-\max\{s,t\}))}{dF(\theta^2)}.$$
+    <p>Differentiating $u_\theta''=(m^2+\theta^2)u_\theta$ with respect to $\theta^2$, with fixed initial data,
+      and solving the inhomogeneous equation gives</p>
+    $$\frac{dF}{d(\theta^2)}=\int_0^T
+      u_\theta(t)\frac{\sinh(d(T-t))}{d}\,dt,
+      \qquad \frac{d\log F}{d(\theta^2)}=\int_0^T G_\theta(t,t)dt.$$
+    <p>The diagonal integral is the resolvent trace, proving the series without an assumption about complex zeros
+      of the telegraph transform.
+      This is a regular separated-boundary instance of the classical characteristic-function trace identity;
+      <a href="./bibliography.html#FucciPiorkowskiStanfill2025">Fucci, Piorkowski and Stanfill (2025)</a>,
+      Theorem 3.4, equation (3.35), treats a broader Sturm&ndash;Liouville setting.</p>
+    <h2>Why it determines every optimum</h2>
+    $$\frac{C_m'(w)}{w}=-\gamma\sigma^2
+      +\frac{(1-\gamma)a^2}{T}L_m((1-\gamma)aw),\qquad w&gt;0.$$
+    <p>The right-hand side decreases strictly from $b_m$ to $-\gamma\sigma^2$.
+      Thus it has exactly one positive root when $b_m&gt;0$ and none otherwise, giving the derivative signs above.
+      Evenness and the bound $C_m(w)\leq r+a|w|-\gamma\sigma^2w^2/2$ complete the global classification.</p>
+    <p>Moreover $(\log M_m)''(\theta)=L_m(\theta)+\theta L_m'(\theta)\leq L_m(0)=v_m$.
+      Therefore $C_m''(w)\leq b_m$, proving the stated strong-concavity modulus when $b_m&lt;0$.</p>
+    <p>The operator forms share the domain $\{u\in H^1(0,T):u(T)=0\}$.
+      Increasing $m$ strictly increases the form by a positive multiple of $\|u\|_2^2$ plus a nonnegative boundary
+      term, so its positive resolvent trace $L_m(\theta)/2$ decreases strictly at each fixed $\theta$.</p>
+    <p>The unique positive root of $L_m((1-\gamma)aw)=\gamma\sigma^2T/((1-\gamma)a^2)$ consequently decreases
+      with speed.
+      Continuity and strict decrease of the response imply that this root tends to zero as $m\uparrow m_c$.</p>
+    <h2>A common premium selects one global optimum</h2>
+    <p>Now change the stock drift to $r+h+aY_t$, keeping the stationary symmetric chain, common volatility and
+      $0&lt;\gamma&lt;1$. The exact certainty equivalent is simply $C_{m,h}(w)=C_m(w)+hw$.</p>
+    <p>For every $h\ne0$, there is exactly one global maximizer $w_{m,h}$, with the sign of $h$.
+      Its magnitude increases strictly with $|h|$ and decreases strictly with $m$, and</p>
+    <div class="equation-card">
+    $$\frac{|h|}{\gamma\sigma^2}&lt;|w_{m,h}|&lt;\frac{|h|+a}{\gamma\sigma^2},
+      \qquad \lim_{m\to\infty}w_{m,h}=\frac{h}{\gamma\sigma^2}.$$
+    </div>
+    <p>Thus a nonzero average premium removes the global-optimum tie and the finite-speed collapse to zero.
+      It does not make the whole objective concave or exclude additional local extrema on the disfavored side.</p>
+    <p>For the proof take $h&gt;0$ and write $B_m(w)=C_m'(w)/w$ for $w&gt;0$.
+      Reflection gives $C_{m,h}(w)-C_{m,h}(-w)=2hw$, and $C_{m,h}'(0)=h$, so no global maximizer is nonpositive.</p>
+    <p>On the positive half-line the derivative is $h+wB_m(w)$.
+      Where $B_m\ge0$ it is positive; where $B_m&lt;0$ its derivative is
+      $B_m+wB_m'&lt;0$, since the spectral trace above gives $B_m'&lt;0$.</p>
+    <p>It therefore crosses zero exactly once, because $B_m(w)\to-\gamma\sigma^2$.
+      Coercivity gives global existence, and the tilted mean of $I_T$ lies strictly between zero and $T$ for
+      positive tilt, proving the displayed bounds.</p>
+    <p>The curvature at this optimum is strictly negative, so the implicit function theorem applies.
+      Increasing $h$ shifts the derivative upward; increasing $m$ decreases $B_m(w)$ at every fixed $w&gt;0$,
+      proving both strict comparative statics.</p>
+    <p>The bounded-weight estimate and $0&lt;L_m(\theta)\le v_m\to0$ give the fast-speed limit.
+      Negative premiums follow by reflection.</p>
+    <h3>The small-premium law at the critical speed</h3>
+    <p>Suppose the zero-premium transition exists and define the positive cubic coefficient</p>
+    $$d_m=\frac{2(1-\gamma)^3a^4}{T}\sum_{j=0}^\infty\lambda_j^{-2}.$$
+    <p>The resolvent expansion gives a global remainder bound for $w\ge0$:</p>
+    $$B_m(w)=b_m-d_mw^2+R_m(w),\qquad
+      0\le R_m(w)\le
+      \frac{(1-\gamma)^2a^2d_m}{\lambda_0}w^4.$$
+    <p>Indeed apply $1/(\lambda+x)=1/\lambda-x/\lambda^2+x^2/\{\lambda^2(\lambda+x)\}$ term by term.
+      At $m=m_c$, the unique positive optimizer tends to zero with $h\downarrow0$, and its score equation yields</p>
+    <div class="equation-card">
+    $$w_{m_c,h}\sim(h/d_{m_c})^{1/3}\qquad(h\downarrow0).$$
+    </div>
+    <p>For fixed $m&gt;m_c$ the response is linear, $w_{m,h}\sim h/(-b_m)$.
+      For fixed $m&lt;m_c$, $w_{m,h}\to w_*(m)&gt;0$ as $h\downarrow0$; reflection supplies the negative-premium
+      limits.</p>
+    <p>The convergence statements follow by compactness of the bounded optimizers and the zero-premium
+      classification; the score expansion then gives the critical and above-critical equivalents.
+      The cubic-root exponent is the usual local cubic balance, while the global uniqueness and speed order
+      here follow from the exact spectral response, not a polynomial truncation.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>For $\gamma=1/2$, $a=2$, $\sigma=T=1$, the critical speed is $m_c=3.4149776722$.
+      At speed one the only global maximizers are $\pm3.6411106114$ and their certainty-equivalent rate is
+      $1.3216481724$ when $r=0$; at speed four the unique optimum is zero.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_portfolio_transition.py">certificate</a>
+      checks 75 transform/response cases using independent matrix derivatives, Green-kernel quadrature and
+      512-term spectral sums, plus 72 portfolio classifications, 19 with two optima.
+      Its final line is literal <code>PASS</code>.</p>
+    <p>Another 144 nonzero-premium cases check the optimizer bounds, strict speed order, independent matrix
+      score and curvature, and global comparisons on two-sided grids.
+      The largest matrix-score residual is $1.80\times10^{-13}$.</p>
+    <p>For the displayed critical benchmark, $d_{m_c}=0.0159807245$.
+      A premium $h=10^{-8}$ gives $w=0.0085533259$, whose ratio to $(h/d_{m_c})^{1/3}$ is $1.000001168$;
+      the certificate checks the explicit fifth-order score remainder, not an arbitrary asymptotic tolerance.</p>
+    <p>The spectral sum is not silently treated as exact: for $N\geq1$ the omitted response satisfies</p>
+    $$0&lt;2\sum_{j=N}^\infty\frac1{\lambda_j+\theta^2}
+      \leq\frac{2T^2}{\pi^2(N-1/2)}.$$
+    <p>The numerical checks keep this analytic tail bound separate from scaled floating-point roundoff and
+      quadrature error estimates.
+      The displayed critical speed and optimizer values are numerical root evaluations, not interval enclosures.</p>
+    <p>This is a stationary, symmetric two-state theorem with common volatility and opposite drift deviations,
+      optionally around a common premium.
+      It does not extend the classification to arbitrary priors, unequal switching rates, switched volatility,
+      constrained fractions or adaptive trading; the extreme numerical example is not a market calibration.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
