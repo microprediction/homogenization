@@ -1,5 +1,14 @@
 [
  {
+  "key": "VanDijkBrummelenBoucherie2018",
+  "authors": "van Dijk, N. M., van Brummelen, S. P. J. and Boucherie, R. J.",
+  "year": 2018,
+  "title": "Uniformization: Basics, extensions and applications",
+  "venue": "Performance Evaluation 118:8-32",
+  "doi": "10.1016/j.peva.2017.09.008",
+  "annotation": "Section 3.2 reviews classical Poisson uniformization. The covariance-floor note uses its jump-count domination to bound the remainder of a direct shortest-path occupation-moment expansion."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
