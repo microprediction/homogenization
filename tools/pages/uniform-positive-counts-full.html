@@ -125,6 +125,50 @@
     <p>The effective $a_*$ is a concentration threshold, not a pathwise intensity floor.
       Both the true integrated intensity and its gamma surrogate require separate lower-tail budgets.
       If all intensities are zero, the count is exactly zero and no gamma fit is used.</p>
+    <h2>A first-order obstruction for the standard process extension</h2>
+    <p>Fix $T&gt;0$ and stationary initialization, with nonnegative nonconstant $\ell$.
+      Set $\bar\ell=\pi\ell$, $\theta_m=v/(\bar\ell T)$ and $a_m=\bar\ell/\theta_m$.
+      At each speed, consider a gamma subordinator $\Gamma_t$ of shape $a_mt$ and scale $\theta_m$,
+      independent of a unit-rate Poisson process $P$, and put $M_t=P(\Gamma_t)$.</p>
+    <p>Then $M_T$ has exactly the fitted negative-binomial law above, but this construction fixes its
+      parameters using the chosen $T$, not all horizons simultaneously.
+      Its independent-increment compound-Poisson representation is classical; see
+      <a href="./bibliography.html#ZhouCarin2015">Zhou and Carin (2015), Section 4.2</a>.</p>
+    $$\log\mathbb E z^{M_t}=-a_mt\log\{1+\theta_m(1-z)\}
+      =t\sum_{j\geq1}\frac{a_mq_m^j}{j}(z^j-1),\qquad
+      q_m=\frac{\theta_m}{1+\theta_m}.$$
+    <p>Thus jumps of size at least two occur at rate
+      $r_m=a_m\{\log(1+\theta_m)-\theta_m/(1+\theta_m)\}$.
+      The true Cox process has only unit jumps almost surely, since its bounded statewise intensity
+      gives a continuous integrated clock.</p>
+    <div class="equation-card">
+    $$D_m:=d_{\rm TV}\big(\mathcal L((N_t)_{0\leq t\leq T}),
+      \mathcal L((M_t)_{0\leq t\leq T})\big)
+      \geq B_m:=1-e^{-Tr_m}.$$
+    </div>
+    <p>This is total variation on the usual measurable space of c&agrave;dl&agrave;g count paths:
+      use the event that some jump has size at least two, whose probabilities are zero and $B_m$.
+      It is not a bound for counts observed only on a fixed time grid.</p>
+    <p>Let $g=\langle f,(-Q)^\# f\rangle_\pi&gt;0$.
+      Indeed, if $h=(-Q)^\#f$, then $g=\langle(-Q)h,h\rangle_\pi&gt;0$ by the Dirichlet form
+      on centered nonzero vectors, without reversibility.</p>
+    $$\left|v-\frac{2Tg}{m}\right|\leq\frac{2CF^2}{\beta^2},\qquad
+      0\leq\frac{\bar\ell\theta_m}{2}-r_m
+         \leq\frac{2\bar\ell\theta_m^2}{3}.$$
+    <p>The first inequality integrates the stationary covariance envelope, including its tail beyond $T$.
+      The second follows from
+      $\log(1+\theta)-\theta/(1+\theta)=\int_0^\theta s/(1+s)^2\,ds$ and
+      $0\leq1-(1+s)^{-2}\leq2s$.</p>
+    $$\left|B_m-\frac{Tg}{m}\right|\leq
+      \frac{CF^2}{\beta^2}+\frac{2T\bar\ell\theta_m^2}{3}
+      +\frac{T^2\bar\ell^2\theta_m^2}{8}=O(m^{-2}).$$
+    <p>Here $0\leq x-(1-e^{-x})\leq x^2/2$ and $r_m\leq\bar\ell\theta_m/2$ give the last term.
+      Hence $\liminf_{m\to\infty}mD_m\geq Tg&gt;0$ for this standard process extension,
+      even though its terminal count has the proved $O(m^{-2})$ error.</p>
+    <p>For symmetric switching with intensities $(3,1)$, $T=1$ and speed 80,
+      the terminal TV error is $0.0000077919$, while the path lower bound is $0.0061409272$.
+      This obstruction concerns the independent-increment gamma clock; it does not rule out simple
+      temporally dependent surrogates or second-order approximation on a fixed observation grid.</p>
     <h2>Certificates and scope</h2>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_uniform_positive_counts.py">verify_uniform_positive_counts.py</a>
       independently checks Poisson derivative norms, the Charlier squared-norm identity and gamma tail bounds.
@@ -148,6 +192,11 @@
       the all-horizon bound is $0.0550543576$; the pure zero-regime start error at $T=1$ is $0.0000050773$.
       The zero-intensity defective example at speed 1280 has common bound $0.0305855767$.
       The new certificate ends in literal <code>PASS</code>.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_count_path_obstruction.py">verify_count_path_obstruction.py</a>
+      checks the compound-Poisson representation and batch rate, and 45 stationary count comparisons
+      including a defective chain and zero intensities.
+      It checks the explicit finite-rate remainder for $B_m$, independently of the terminal-count error;
+      its final line is literal <code>PASS</code>.</p>
     <p>Uniformity concerns individual count marginals at all horizons, not a single negative-binomial arrival
       process with consistent independent increments.
       Zero-intensity regimes are covered by the extension, while a statewise positive floor gives the shorter bound.
