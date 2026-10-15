@@ -1,0 +1,93 @@
+<!-- title: Finite-horizon covariance coercivity · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a> &middot;
+      <a href="./identifiability-full.html">full identification note</a></p>
+    <h1>A quantitative covariance floor at every horizon</h1>
+    <p class="subtitle">Jump paths prove positivity; conditional bridges make the lower bound grow with time.</p>
+    <p class="lead">The exact finite-horizon feature covariance has the same kernel for every starting prior.
+      The following explicit bound makes that rank statement quantitative, without stationarity, reversibility,
+      diagonalizability or a lower bound on prior masses.</p>
+    <h2>The all-prior, all-horizon bound</h2>
+    <p>Let $Q$ be an irreducible row generator on $n\ge2$ states, with stationary row $\pi$, and let $Y$
+      have generator $mQ$, $m&gt;0$. Let $D$ be the directed diameter of the positive-rate graph and define</p>
+    $$a=\max_i(-Q_{ii}),\qquad
+      \rho=\frac{\min_{i\ne j:\,Q_{ij}&gt;0}Q_{ij}}a\in(0,1],\qquad
+      c_Q=\frac{e^{-2}}{32}\left\{\frac{(\rho/12)^D}{D!}\right\}^{\!2}.$$
+    <p>For a centered feature matrix $F\in\mathbb R^{n\times d}$, $\pi F=0$, put
+      $Z_T=\int_0^T F^\top e_{Y_t}dt$ and $s=maT$. For every initial law $\nu$ and every $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}_\nu(Z_T)\succeq
+      \frac{4c_Q}{(ma)^2}\min\{s^{D+2},s\}\,
+      F^\top\operatorname{diag}(\pi)F.$$
+    </div>
+    <p>In particular its kernel is exactly $\ker F$.
+      For $s\ge1$ this is an explicit $T/m$ lower bound; below one it is a conservative short-time bound.
+      The constant is deliberately small, and no sharp constant or optimal diameter exponent is claimed.</p>
+    <p>This is a covariance for fixed state features, not a Green&ndash;Kubo matrix and not a covariance after
+      heterogeneous maturity loadings have been integrated. It strengthens the finite-horizon rank theorem
+      without changing any regime-count interpretation.</p>
+    <h2>Scalar proof in normalized time</h2>
+    <p>Rescale to generator $Q/a$, whose exit rates are at most one and positive edge rates at least $\rho$.
+      It suffices to show, for every real state function $f$ with range $r_f=\max f-\min f$,</p>
+    $$\operatorname{Var}_\nu\!\left(\int_0^s f(Y_t)dt\right)
+      \ge c_Qr_f^2\min\{s^{D+2},s\}.$$
+    <p>Constant $f$ is immediate. Otherwise, for every initial state $i$, choose $j$ with
+      $|f_j-f_i|\ge r_f/2$ and a directed path from $i$ to $j$ of length $1\le k\le D$.</p>
+    <h3>A short interval</h3>
+    <p>Suppose $0&lt;s\le1$.
+      The no-jump path has probability at least $e^{-s}$ and integral $sf_i$.</p>
+    <p>The event of following the chosen path with all $k$ jumps in $[0,s/6]$, and no other jumps before $s$,
+      has probability at least $e^{-s}\rho^k(s/6)^k/k!$.
+      Its integral differs from $sf_i$ by at least $sr_f/4$: time outside $j$ is at most $s/6$.</p>
+    <p>For two independent copies of the integral, use $\operatorname{Var}A=\mathbb E(A-A')^2/2$ and both orders
+      of these disjoint events. Hence for every $i$,</p>
+    $$\operatorname{Var}_i A\ge
+      \frac{e^{-2}}{16}\frac{(\rho/6)^D}{D!}\,r_f^2s^{D+2}
+      \ge c_Qr_f^2s^{D+2}.$$
+    <p>Total variance extends this bound to every prior $\nu$.</p>
+    <h3>Unit bridges and long intervals</h3>
+    <p>For a unit interval beginning at $i$, also choose a return path $j\to i$ of length $1\le\ell\le D$.
+      Require the outbound jumps in $[0,1/12]$ and return jumps in $[11/12,1]$, with no others.</p>
+    <p>This event ends at $i$, has probability at least
+      $e^{-1}(\rho/12)^{k+\ell}/(k!\ell!)$, and its integral differs from the no-jump value $f_i$ by at least
+      $r_f/4$.</p>
+    <p>Let $p_{ii}=\Pr_i(Y_1=i)$.
+      Conditioning both paths on this endpoint and using the same two-copy identity gives</p>
+    $$p_{ii}\operatorname{Var}_i(A\mid Y_1=i)
+      \ge\frac{e^{-2}}{16p_{ii}}
+        \frac{(\rho/12)^{k+\ell}}{k!\ell!}r_f^2
+      \ge2c_Qr_f^2.$$
+    <p>For $s\ge1$, condition on the states at all integer times through $\lfloor s\rfloor$, and at time $s$.
+      Given this skeleton, integrals on separate intervals are independent Markov bridges, so their conditional
+      variances add.</p>
+    <p>Each complete unit interval contributes at least $2c_Qr_f^2$ after averaging over its endpoint,
+      whatever its starting-state law; the final remainder contributes a nonnegative variance.
+      Thus total variance is at least $2c_Qr_f^2\lfloor s\rfloor\ge c_Qr_f^2s$.</p>
+    <h3>From scalar range to a matrix bound</h3>
+    <p>For $f=Fx$, centering gives
+      $\sum_i\pi_if_i^2=\operatorname{Var}_\pi f\le r_f^2/4$, by centering at the midpoint of its range.
+      Applying the scalar result for every $x$ and undoing the time rescaling proves the Loewner inequality.</p>
+    <h2>Why a uniform short-time quadratic floor is impossible</h2>
+    <p>Take the symmetric two-state chain with unit flip rate, $f=(1,-1)$, and a deterministic positive start.
+      Its exact covariance kernel for $0\le u\le t$ is $e^{-2(t-u)}(1-e^{-4u})$, so</p>
+    $$V(s)=2\int_0^s\int_0^t e^{-2(t-u)}(1-e^{-4u})du\,dt
+      =\frac43s^3+O(s^4).$$
+    <p>More precisely, for $0&lt;s\le1/2$ the elementary exponential bounds give</p>
+    $$\frac43-2s\le V(s)/s^3\le\frac43.$$
+    <p>The stationary-start variance instead begins at $s^2$.
+      Thus no positive $s^2$ floor can hold uniformly over starting priors, even for two states with $D=1$;
+      the cubic power in this simplest all-prior case is necessary.</p>
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_covariance_coercivity.py">certificate</a>
+      checks 224 prior/horizon matrix inequalities on five chains, including sparse directed graphs and a
+      defective generator, plus 15 independent moment-ODE comparisons and 20 physical time/rate rescalings.</p>
+    <p>The smallest measured ratio of a generalized covariance eigenvalue to its lower bound is $3241.071595$,
+      illustrating the conservatism of the constant.
+      The largest normalized matrix-exponential versus ODE discrepancy is $1.74\times10^{-13}$.</p>
+    <p>At $s=0.001$ the deterministic two-state value $V(s)/s^3$ is $1.331335199$, within the explicit
+      remainder interval above. All checks end with literal <code>PASS</code>.</p>
+    <p>The proof is a finite jump-path and conditional-bridge argument, not a central limit theorem.
+      Classical long-run additive-functional results such as
+      <a href="./bibliography.html#KipnisVaradhan1986">Kipnis and Varadhan (1986)</a> concern a different asymptotic
+      question; no reversibility or limiting Gaussian law is asserted here.</p>
+  </main>
