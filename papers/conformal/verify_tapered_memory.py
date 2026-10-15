@@ -24,25 +24,27 @@ def generator(rate):
     return rate * np.array([[-P, P], [1 - P, -(1 - P)]])
 
 
-def cdf_function(rate, degree, nodes=128, rtol=2e-11):
+def cdf_function(rate, degree, nodes=128, rtol=2e-11, q=None, feature=None):
     """Delta=1; reverse physical time in the backward equation."""
     cutoff = 10 / SIGMA
     x, weights = roots_legendre(nodes)
     frequencies, weights = (x + 1) * cutoff / 2, weights * cutoff / 2
-    q = generator(rate)
+    q = generator(rate) if q is None else rate * q
+    feature = F if feature is None else feature
+    states = len(feature)
 
     def rhs(t, flat):
-        v = flat.reshape(2, nodes)
+        v = flat.reshape(states, nodes)
         potential = 1j * MU * (degree + 1) * (1 - t)**degree
-        return (q @ v + potential * F[:, None] * frequencies * v).ravel()
+        return (q @ v + potential * feature[:, None] * frequencies * v).ravel()
 
-    sol = solve_ivp(rhs, (0, 1), np.ones(2 * nodes, complex),
+    sol = solve_ivp(rhs, (0, 1), np.ones(states * nodes, complex),
                     method="DOP853", rtol=rtol, atol=rtol / 20)
     assert sol.success
-    cf = sol.y[:, -1].reshape(2, nodes)
+    cf = sol.y[:, -1].reshape(states, nodes)
     if degree == 0:  # Independent constant-potential matrix exponential.
         for j in (0, nodes // 2, nodes - 1):
-            exact = expm(q + 1j * MU * frequencies[j] * np.diag(F)) @ np.ones(2)
+            exact = expm(q + 1j * MU * frequencies[j] * np.diag(feature)) @ np.ones(states)
             assert np.max(abs(cf[:, j] - exact)) < 300 * rtol
     kernel = weights * np.exp(-SIGMA**2 * frequencies**2 / 2) / (pi * frequencies)
 
@@ -52,19 +54,22 @@ def cdf_function(rate, degree, nodes=128, rtol=2e-11):
     return cdf, np.exp(-50) / (100 * pi)
 
 
-def stationary_variance(rate, degree):
-    q = generator(rate)
+def stationary_variance(rate, degree, q=None, feature=None, stationary=None):
+    q = generator(rate) if q is None else rate * q
+    feature = F if feature is None else feature
+    stationary = STATIONARY if stationary is None else stationary
+    states = len(feature)
 
     def rhs(t, moments):
-        m1, m2 = moments.reshape(2, 2)
+        m1, m2 = moments.reshape(2, states)
         w = (degree + 1) * t**degree
-        return np.concatenate((q.T @ m1 + w * F * STATIONARY,
-                               q.T @ m2 + 2 * w * F * m1))
+        return np.concatenate((q.T @ m1 + w * feature * stationary,
+                               q.T @ m2 + 2 * w * feature * m1))
 
-    sol = solve_ivp(rhs, (0, 1), np.zeros(4), method="DOP853",
+    sol = solve_ivp(rhs, (0, 1), np.zeros(2 * states), method="DOP853",
                     rtol=2e-12, atol=1e-14)
     assert sol.success
-    return sum(sol.y[2:, -1])
+    return sum(sol.y[states:, -1])
 
 
 def main():

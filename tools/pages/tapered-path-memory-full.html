@@ -5,7 +5,7 @@
     <h1>Tapering the start of a path score</h1>
     <p class="lead">A path average remembers its starting regime at first order because it weights early observations.
     Making the weight vanish to order $d$ at the origin suppresses that memory to order $(r\Delta)^{-d-1}$ in this
-    two-state benchmark, at the cost of a larger stationary path-variance constant.</p>
+    finite-chain benchmark, at the cost of a larger stationary path-variance constant.</p>
 
     <h2>Setup and finite-rate bound</h2>
     <p>Use states $0,1$, rather than the summary&apos;s $-1,+1$ convention. Let $p\in(0,1)$ and let the row generator be
@@ -79,7 +79,64 @@
     <p>Thus the stationary variance factor relative to the boxcar is $1,4/3,9/5$ for $d=0,1,2$.
     This is a bias/variance tradeoff in the path component, not a statement that total forecast error is optimized.</p>
 
-    <h2>Numerical check and scope</h2>
+    <h2>Any finite irreducible chain</h2>
+    <p>The power law does not require a two-state, reversible, or diagonalizable generator.
+    Let $Q$ be any fixed irreducible row generator on $n\ge2$ states, with stationary law $\pi$, and let $f$ be real with
+    $\pi f=0$. On the rescaled interval $[0,1]$, let $X$ have generator $\lambda Q$ and define</p>
+    $$A_d=(d+1)\int_0^1 t^d f(X_t)\,dt,\qquad
+      H=(-Q+\mathbf1\pi)^{-1}-\mathbf1\pi=-Q^\#.$$
+    <p>Keep the same Gaussian score, pooled quantile, and $M_2$ as above, now with states indexed by $i=1,\ldots,n$.
+    Here $\lambda=m\Delta$ corresponds to physical generator $mQ$ over horizon $\Delta$.</p>
+    <div class="equation-card">
+    $$F_i(q_\pi)-(1-\alpha)=
+      -\frac\mu\sigma\phi(z_{1-\alpha})\frac{(d+1)!(H^{d+1}f)_i}{\lambda^{d+1}}
+      +O_Q(\lambda^{-d-3/2}).$$
+    </div>
+    <p>All parameters other than $\lambda$ are fixed. For nonzero $f$ and $\mu\ne0$, at least one state has a
+    nonzero leading coefficient, because $H$ is invertible on the centered subspace.
+    An individual state coefficient may vanish; no uniformity over degenerating chains is asserted.</p>
+
+    <h3>Computable finite-rate constants</h3>
+    <p>Choose any $h&gt;0$ and put $P_h=e^{hQ}$,
+    $\epsilon=\sum_j\min_i(P_h)_{ij}&gt;0$. Define $M_k(\epsilon)=\mathbb EN^k$ for
+    $N\sim\operatorname{Geometric}(\epsilon)$ on $\{1,2,\ldots\}$; these constants obey</p>
+    $$M_0=1,\qquad M_k=\frac{1+(1-\epsilon)\sum_{j=1}^{k-1}{k\choose j}M_j}{\epsilon}
+       \quad(k\ge1).$$
+    <p>Write $R=\max_i f_i-\min_i f_i$, $\|u\|_\pi^2=\sum_i\pi_i u_i^2$, and let
+    $\gamma=\inf_{\pi u=0,u\ne0}-\langle u,Qu\rangle_\pi/\|u\|_\pi^2&gt;0$
+    be the additive-reversibilization gap. Set</p>
+    $$B_d=R\min\left\{1,\frac{h^{d+1}M_{d+1}}{\lambda^{d+1}}\right\},\qquad
+      D_d=R^2\min\left\{1,\frac{h^{2d+2}M_{2d+2}}{\lambda^{2d+2}}\right\},\qquad
+      V_d=\frac{2\|f\|_\pi^2(d+1)^2}{(2d+1)\gamma\lambda}.$$
+    <p>With the exact mean vector $a_d=(d+1)\int_0^1t^d e^{\lambda Qt}f\,dt$, for every $\lambda&gt;0$,</p>
+    $$\sup_x|F_i(x)-F_\pi(x)|\le\frac{|\mu|B_d}{\sigma\sqrt{2\pi}},\qquad
+      \left|F_i(x)-F_\pi(x)+\frac\mu\sigma\phi(x/\sigma)(a_d)_i\right|
+        \le M_2\left(\sqrt{D_dV_d}+D_d/2\right).$$
+    <p>Indeed $P_h\ge\epsilon\mathbf1\nu$, where $\nu_j=\min_i(P_h)_{ij}/\epsilon$.
+    Split each skeleton transition into a common draw from $\nu$ with probability $\epsilon$ and a residual draw,
+    coupling a fixed start to a stationary start; fill each intervening segment with its conditional Markov bridge.</p>
+    <p>After the first common endpoint, use the same future path, so the paths coalesce by time $hN/\lambda$.
+    Normalization and $\int_0^u(d+1)t^d\,dt=u^{d+1}$ give
+    $\mathbb E|\delta A|\le B_d$ and $\mathbb E(\delta A)^2\le D_d$.
+    This is the classical minorization coupling of <a href="./bibliography.html#Rosenthal1995">Rosenthal (1995,
+    Section 2 and Appendix)</a>, applied to the skeleton; the conditional bridges preserve both continuous-time marginal laws.</p>
+    <p>The energy inequality gives $\|e^{tQ}u\|_\pi\le e^{-\gamma t}\|u\|_\pi$ for centered $u$.
+    The stationary covariance bound then gives $\mathbb E_\pi A_d^2\le V_d$.
+    The preceding Lipschitz/Taylor coupling proof applies unchanged, without requiring reversibility.</p>
+    <p>The semigroup integral for inverse powers also supplies an explicit mean-tail bound:</p>
+    $$\left\|a_d-\frac{(d+1)!}{\lambda^{d+1}}H^{d+1}f\right\|_\pi
+       \le\frac{(d+1)!\|f\|_\pi}{(\gamma\lambda)^{d+1}}
+       e^{-\gamma\lambda}\sum_{j=0}^d\frac{(\gamma\lambda)^j}{j!}.$$
+    <p>To obtain a component bound, divide the right side by $\sqrt{\pi_i}$.
+    This follows by bounding the omitted tail of
+    $\int_0^\infty s^d e^{Qs}f\,ds=d!H^{d+1}f$; the same pooled-quantile argument proves the displayed expansion.</p>
+    <p>The variance tradeoff likewise extends: integrability of the stationary covariance and rescaling give</p>
+    $$\lambda\operatorname{Var}_\pi A_d\longrightarrow
+       2\langle f,Hf\rangle_\pi\frac{(d+1)^2}{2d+1}.$$
+    <p>Thus the same relative variance factor applies for every fixed finite irreducible chain.
+    These conservative coupling constants are computable bounds, not sharp constants.</p>
+
+    <h2>Numerical checks and scope</h2>
     <p>For $\Delta=1$, $p=.3$, $\mu=.8$, $\sigma=.7$, and $\alpha=.1$, the certificate solves the time-dependent
     backward Feynman&ndash;Kac equation and inverts the Gaussian-smoothed transform.
     At $r=128$, the start-$1$ coverage gaps for $d=0,1,2$ are respectively
@@ -90,6 +147,10 @@
     <p>The certificate refines both Fourier quadrature and ODE tolerances and supplies an analytic Fourier-tail
     bound, but does not certify numerical ODE errors by interval arithmetic.
     The proof is self-contained within the classical uniformization framework; no priority claim is made.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_chain_taper.py">finite-chain certificate</a>
+    adds a nonreversible three-state chain, an exactly defective three-state chain, and a sparse directed four-cycle.
+    Its 45 model cases and 135 CDF arguments check the coupling bounds, mean-tail bound, exact inverse-power mean
+    formula, variance limit, and orders for $d=0,1,2$, using independent mean quadrature and moment ODEs.</p>
     <p>The score map and weights are frozen and deterministic. These population, latent-start-conditional results
     do not supply a finite-calibration, adaptive-predictor, or distribution-free feature-conditional guarantee.
     They neither give exponential forgetting nor assert monotone improvement at every finite switching rate.</p>
