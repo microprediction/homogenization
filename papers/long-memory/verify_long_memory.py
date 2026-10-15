@@ -434,21 +434,21 @@ def verify_measure_level_spectral_theorem():
     return mass_ratio, summation_error, order, ratio
 
 
-def verify_measure_level_critical_theorem():
-    """Check the density-free alpha=2 endpoint on a pure-point spectrum.
+def verify_measure_level_critical_benchmark():
+    """Record one alpha=2 pure-point benchmark, not a universal theorem.
 
     Put mass n^(-3) at frequency 1/n.  Then
 
         F(x) ~ x^2 / 2,
 
-    so b=1/2, L=1 and H(x)=log(x).  The cumulative-mass endpoint
-    predicts
+    so b=1/2, L=1 and H(x)=log(x).  Compare numerically with
 
-        Var A_epsilon(1) ~ 2 epsilon^2 log(1/epsilon).
+        2 epsilon^2 log(1/epsilon).
 
-    The convergence is only logarithmic.  Accordingly, the certificate
+    Only finite-scale behavior is checked here.  Accordingly, the certificate
     records both the terminal ratio and the slope of Var/epsilon^2 against
-    log(1/epsilon), whose predicted value is two.
+    log(1/epsilon), with reference value two.  Cumulative regular variation
+    alone does not imply this endpoint law; see verify_critical_resonance.py.
     """
     small_x = 2.0 ** -20
     first_index = int(math.ceil(1.0 / small_x))
@@ -1393,7 +1393,7 @@ def main():
     saturated_spectral = verify_saturated_spectral_criterion()
     spectral_abelian = verify_spectral_abelian_theorem()
     measure_level = verify_measure_level_spectral_theorem()
-    measure_level_critical = verify_measure_level_critical_theorem()
+    measure_level_critical = verify_measure_level_critical_benchmark()
     joint_maturity = verify_joint_maturity_spectral_theorem()
     regular_variation = verify_regular_variation()
     periodic_coefficient = verify_periodic_case()
