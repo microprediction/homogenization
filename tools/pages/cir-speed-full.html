@@ -3,7 +3,7 @@
     <p class="demo-nav"><a href="./cumulants.html">&larr; cumulants summary</a>
       &middot; <a href="./cumulants-full.html">general moment and Poisson formulas</a></p>
     <h1>Faster switching need not reduce CIR variance</h1>
-    <p class="subtitle">An exact speed classification when the mean level and vol-of-vol switch in a two-state model.</p>
+    <p class="subtitle">Exact finite- and long-maturity speed classifications when the mean level and vol-of-vol switch.</p>
     <h2>Setup and result</h2>
     <p>Let $Y$ have row generator $mQ_0$, where
       $Q_0=\left(\begin{smallmatrix}-\alpha&amp;\alpha\\ \beta&amp;-\beta\end{smallmatrix}\right)$,
@@ -73,15 +73,73 @@
       The rate first falls and then rises, while stationary variance increases throughout.
       Faster switching can raise diffusion noise because it changes the stationary dependence
       between $a_Y$ and $v$; negative autocovariance is not the mechanism.</p>
+    <h2>Finite maturity: when does the minimum appear?</h2>
+    <p>For every $T&gt;0$, let $\mathcal V_T(r)=\operatorname{Var}(V_T)$ in the same joint invariant law.
+      If $s_\theta^2&gt;0$ and $A\ge0$, this variance strictly decreases with switching speed at every maturity;
+      if $s_\theta^2=0$, it is constant in speed.</p>
+    <p>If $A&lt;0$, define $D=-A/(\kappa^2s_\theta^2)&gt;0$ and</p>
+    $$F_\kappa(t)=2\int_0^t(t-u)e^{-\kappa u}\,du
+       =\frac{2(\kappa t-1+e^{-\kappa t})}{\kappa^2}.$$
+    <p>There is exactly one critical maturity $T_c&gt;0$, determined by</p>
+    $$\frac{T_c^3}{3F_\kappa(T_c)}=D.$$
+    <p>For $0&lt;T\le T_c$, $\mathcal V_T$ is strictly increasing for every $r&gt;0$.
+      For $T&gt;T_c$, it first decreases and then increases, with exactly one minimum $r_T$.
+      The minimizing speed $m_T=r_T/(\alpha+\beta)$ increases strictly with $T$, from zero as $T\downarrow T_c$
+      to the long-run minimizer $m_*$ as $T\to\infty$, always staying below $m_*$.</p>
+    <h3>Positive-kernel proof</h3>
+    $$H_T(r)=\int_0^T F_\kappa(T-s)e^{-rs}\,ds,\qquad
+      J_T(r)=\int_0^T F_\kappa(T-s)\{1+(\kappa+r)s\}e^{-rs}\,ds.$$
+    <p>Integrating the exact covariance above and differentiating gives</p>
+    $$\mathcal V_T(r)=\frac{\bar a\bar\theta}{2\kappa}F_\kappa(T)
+      +\frac{AF_\kappa(T)+\kappa^2s_\theta^2 H_T(r)}{\kappa+r},\qquad
+      \mathcal V_T'(r)=-\frac{AF_\kappa(T)+\kappa^2s_\theta^2J_T(r)}{(\kappa+r)^2}.$$
+    $$J_T'(r)=-(\kappa+r)\int_0^T s^2F_\kappa(T-s)e^{-rs}\,ds&lt;0,\qquad
+      J_T(0)=T^3/3,\qquad J_T(r)\longrightarrow0\quad(r\to\infty).$$
+    <p>These identities prove the speed classification and the unique-root equation
+      $L_T(r_T)=D$, where $L_T=J_T/F_\kappa(T)$.
+      The critical-maturity ratio is strictly increasing from zero to infinity, since</p>
+    $$\frac{T^3}{3F_\kappa(T)}
+      =\frac{T}{6\int_0^1(1-u)e^{-\kappa Tu}\,du}.$$
+    <p>To compare maturities, observe that $F_\kappa$ is strictly log-concave:</p>
+    $$F_\kappa F_\kappa''-(F_\kappa')^2
+      =\frac4{\kappa^2}\{(1+\kappa t)e^{-\kappa t}-1\}&lt;0\qquad(t&gt;0).$$
+    <p>Thus $F_\kappa(T-s)/F_\kappa(T)$ strictly increases with $T&gt;s$.
+      It follows that $L_T(r)$ strictly increases with $T$ for each $r\ge0$, while it strictly decreases with $r$.
+      These facts prove strict increase of $r_T$ and its zero limit at $T_c$.</p>
+    <p>For $r&gt;0$, dominated convergence and the same kernel give the explicit enclosure</p>
+    $$0&lt;\frac{\kappa+2r}{r^2}-L_T(r)
+      \le\frac{2(2\kappa+3r)}{\kappa F_\kappa(T)r^3}.$$
+    <p>Indeed, extend the normalized kernel by zero for $s&gt;T$ and use
+      $0\le1-F_\kappa((T-s)_+)/F_\kappa(T)\le2s/\{\kappa F_\kappa(T)\}$,
+      which follows from $0\le F_\kappa'\le2/\kappa$.
+      Integrating against $\{1+(\kappa+r)s\}e^{-rs}$ proves the bound.</p>
+    <p>The limiting profile has its unique level-$D$ root at $r_*$, proving $r_T\uparrow r_*$.
+      The enclosure is uniform on every $r\ge r_0&gt;0$, not through $r=0$.</p>
+    <p>Since the magnitude of the limiting profile's derivative decreases with $r$, the mean value theorem gives,
+      for $T&gt;T_c$, the explicit minimizer bound</p>
+    $$0&lt;r_*-r_T\le
+      \frac{r_*^3(2\kappa+3r_T)}
+      {\kappa F_\kappa(T)(\kappa+r_*)r_T^3}.$$
+    <p>Divide by $\alpha+\beta$ to bound $m_*-m_T$.
+      This yields $O(T^{-1})$ uniformly on $T\ge T_0&gt;T_c$; the displayed upper bound diverges
+      as $T\downarrow T_c$.</p>
+    <p>In the benchmark above, $D=1.45$ and $T_c\approx2.3018935934$.
+      At $T=3,4,8,16,64$, the minimizing speeds are respectively
+      $0.3663632166$, $0.5742283564$, $0.7759352488$, $0.8378987478$, $0.8739573031$.</p>
     <h2>Scope and certificate</h2>
     <p>For $M_T=\int_0^T\sqrt{v_t}\,dW_t$ with $W$ independent of $(B,Y,v_0)$,
       $\kappa_4(M_T)=3\operatorname{Var}(V_T)$, so its fourth-cumulant rate has the same classification.
-      This is not a claim about risk-neutral log returns, leverage, option-price ordering, or finite-maturity
-      speed monotonicity, and no classification with switching $\kappa$ or more states is asserted.</p>
+      The finite-maturity variance classification transfers to its fourth cumulant as well.
+      This is not a claim about risk-neutral log returns, leverage or option-price ordering.</p>
+    <p>All speed comparisons here use the joint invariant law at each speed, not a fixed initial variance.
+      No classification with switching $\kappa$ or more states is asserted.</p>
     <p>The proof specializes the existing stationary moment and Poisson formulas, rather than claiming a new
       moment method; finite polynomial semigroups are standard in
       <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
       The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_speed.py">certificate</a>
       compares the formulas with generic moment/Poisson solves and finite-horizon covariance quadrature with
       a degree-two matrix exponential, including $r=\kappa$.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_maturity.py">maturity certificate</a>
+      independently differentiates that matrix exponential and the invariant moments, checking the full speed
+      derivative rather than treating the starting law as speed-independent.</p>
   </main>
