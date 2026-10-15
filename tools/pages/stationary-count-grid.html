@@ -1,26 +1,27 @@
-<!-- title: Counts on a stationary observation grid · homogenization | math -->
+<!-- title: Counts on an observation grid · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
       <span><a href="./stationary-count-grid-full.html">proof and certificate</a></span></p>
     <h1>Count bins decouple one order faster</h1>
-    <p class="subtitle">A joint finite-grid theorem, with stationary initialization and explicit constants.</p>
-    <p>Let a finite irreducible stationary chain with generator $mQ$ drive nonnegative arrival intensities
+    <p class="subtitle">A joint finite-grid theorem, uniform over initial priors and bin lengths.</p>
+    <p>Let a finite irreducible chain with generator $mQ$ and any initial prior $\nu$ drive nonnegative arrival intensities
       $\ell_i$. For successive bins of lengths $T_j$, let $X_j$ count arrivals and
-      $p_j=\mathcal L_\pi(N_{T_j})$ be its exact marginal law.</p>
+      $p_{\nu,j}$ be its exact unconditional transient marginal law.</p>
     <div class="equation-card">
-    $$d_{\rm TV}\left(\mathcal L(X_1,\ldots,X_r),\bigotimes_jp_j\right)
-      \leq\min\left\{1,\frac{2(r-1)CC_*F^2}{m^2\gamma\gamma_*}\right\}.$$
+    $$d_{\rm TV}\left(\mathcal L_\nu(X_1,\ldots,X_r),\bigotimes_jp_{\nu,j}\right)
+      \leq\min\left\{1,\frac{4(r-1)C^2F^2}{m^2\gamma^2}\right\}.$$
     </div>
-    <p>Here $F=\|\ell-(\pi\ell)\mathbf1\|_\infty$, and $(C,\gamma)$ and $(C_*,\gamma_*)$
-      bound exponential mixing of the forward and reversed chains.
-      The proof multiplies an $O(m^{-1})$ boundary-state memory defect on each side of a stationary cut.</p>
+    <p>Here $F=\|\ell-(\pi\ell)\mathbf1\|_\infty$, and $(C,\gamma)$ bounds exponential mixing of $Q$.
+      Two $O(m^{-1})$ count/state memory defects multiply without conditioning on rare boundary states;
+      stationarity permits a sharper reversed-chain constant.</p>
     <p>The bound holds at all speeds and uniformly over bin lengths, with zero intensities and defective
       generators allowed. Replacing each marginal by an approximation adds at most the sum of its TV errors,
       giving a second-order joint-grid approximation whenever the marginal errors are second order.</p>
-    <p>For two unit bins, a unit-rate symmetric base chain, intensities $(3,1)$ and speed 80, the independence error is
+    <p>For a stationary start, two unit bins, a unit-rate symmetric base chain, intensities $(3,1)$ and speed 80, the independence error is
       $0.0000057234$, below the bound $0.0000781250$.
-      The <a href="./stationary-count-grid-full.html">full note</a> gives the proof and 84 certificate cases.</p>
-    <p class="muted">Stationary start and a bounded number of bins matter: the bound grows with $r$.
-      No full-path approximation, refinement consistency or arbitrary-prior theorem is claimed.</p>
+      The <a href="./stationary-count-grid-full.html">full note</a> gives the proofs, 84 stationary cases
+      and 360 additional transient cases.</p>
+    <p class="muted">The bound grows with $r$; a bounded number of bins is needed for the second-order rate.
+      No full-path approximation, filtered conditional-law bound or refinement consistency is claimed.</p>
     <p><a href="./counts.html">&larr; Cox counts</a></p>
   </main>

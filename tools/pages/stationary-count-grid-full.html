@@ -1,4 +1,4 @@
-<!-- title: Stationary count-grid decoupling (full note) · homogenization | math -->
+<!-- title: Count-grid decoupling for every prior (full note) · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./stationary-count-grid.html">&larr; summary</a>
       <span><a href="./papers.html">papers</a></span></p>
@@ -6,22 +6,28 @@
     <p>Let $Q$ be a finite irreducible row generator with stationary row $\pi$,
       $\Pi=\mathbf1\pi$ and stationary reversal $Q^*=\operatorname{diag}(\pi)^{-1}Q^T\operatorname{diag}(\pi)$.
       A Cox process $N$ has nonnegative statewise intensities $\ell_i$ and hidden generator $mQ$,
-      initialized in $\pi$.</p>
-    <p>Choose envelopes $\|e^{tQ}-\Pi\|_\infty\leq Ce^{-\gamma t}$ and
-      $\|e^{tQ^*}-\Pi\|_\infty\leq C_*e^{-\gamma_*t}$ for $t\geq0$.
+      initialized in any probability row $\nu$.</p>
+    <p>Choose an envelope $\|e^{tQ}-\Pi\|_\infty\leq Ce^{-\gamma t}$; the stationary specialization
+      also uses $\|e^{tQ^*}-\Pi\|_\infty\leq C_*e^{-\gamma_*t}$ for $t\geq0$.
       Put $\bar\ell=\pi\ell$, $F=\|\ell-\bar\ell\mathbf1\|_\infty$ and</p>
     $$d(L)=\min\left\{2,\frac{2CF}{m\gamma}(1-e^{-m\gamma L})\right\},\qquad
       d_*(L)=\min\left\{2,\frac{2C_*F}{m\gamma_*}(1-e^{-m\gamma_*L})\right\}.$$
     <p>For a partition $0=s_0&lt;\cdots&lt;s_r$ write $T_j=s_j-s_{j-1}$,
-      $X_j=N_{s_j}-N_{s_{j-1}}$, and $p_j=\mathcal L_\pi(N_{T_j})$.</p>
+      $X_j=N_{s_j}-N_{s_{j-1}}$, $\sigma_j=\nu e^{ms_{j-1}Q}$ and
+      $p_{\nu,j}=\mathcal L_{\sigma_j}(N_{T_j})$.
+      Put $e(L)=\min\{2,4CF(1-e^{-m\gamma L})/(m\gamma)\}$.</p>
     <div class="equation-card">
-    $$d_{\rm TV}\left(\mathcal L(X_1,\ldots,X_r),\bigotimes_{j=1}^r p_j\right)
-      \leq\min\left\{1,\frac12\sum_{j=2}^r d_*(s_{j-1})d(T_j)\right\}
-      \leq\min\left\{1,\frac{2(r-1)CC_*F^2}{m^2\gamma\gamma_*}\right\}.$$
+    $$d_{\rm TV}\left(\mathcal L_\nu(X_1,\ldots,X_r),\bigotimes_{j=1}^r p_{\nu,j}\right)
+      \leq\min\left\{1,\frac12\sum_{j=2}^r e(s_{j-1})d(T_j)\right\}
+      \leq\min\left\{1,\frac{4(r-1)C^2F^2}{m^2\gamma^2}\right\}.$$
     </div>
-    <p>This holds at every positive speed and uniformly over all positive bin lengths, including bins
+    <p>This holds at every positive speed, uniformly over all initial priors and positive bin lengths, including bins
       shrinking with speed and unbounded total horizon.
       The second-order rate concerns a bounded number of bins; the displayed constant grows with $r$.</p>
+    <p>The product uses each bin's own unconditional transient marginal, not a filtered conditional law.
+      For $\nu=\pi$, one can replace $e(s_{j-1})$ by $d_*(s_{j-1})$, recovering the sharper bound</p>
+    $$d_{\rm TV}\left(\mathcal L_\pi(X_1,\ldots,X_r),\bigotimes_jp_{\pi,j}\right)
+      \leq\min\left\{1,\frac{2(r-1)CC_*F^2}{m^2\gamma\gamma_*}\right\}.$$
     <p>Computable envelopes need no diagonalization: for $P_h=e^{hQ}$ set
       $\rho=\tfrac12\max_{i,j}\sum_k|(P_h)_{ik}-(P_h)_{jk}|$.
       For a nontrivial irreducible chain, $0&lt;\rho&lt;1$, and row contraction gives
@@ -63,11 +69,41 @@
     <p>For the first $j$ bins, separate bin $j$ from its prefix and apply this cut bound.
       Induction and invariance of TV under taking a product with a common probability law give the
       displayed sum over $j$, hence the theorem.</p>
+    <h2>Forward endpoint memory for arbitrary priors</h2>
+    <p>The general bound avoids conditioning on a possibly rare boundary state.
+      For any bin schedule up to time $t$, let $\mathsf F_t$ be the row of count measures
+      $\mathsf F_t(a,i)=\Pr_\nu(A_t=a,Y_t=i)$, with $A_t$ the accumulated count vector.</p>
+    <p>Write $\sigma_t=\nu e^{mtQ}$, $a_t=\mathsf F_t\mathbf1$,
+      $\mathsf R_t=\mathsf F_t-a_t\sigma_t$ and $D_f=\operatorname{diag}(f)$.
+      The count shifts now follow the forward bin schedule; the forward equation is</p>
+    $$\mathsf F_t'=m\mathsf F_tQ+B(t)\{\mathsf F_t\operatorname{diag}(\ell)\},\qquad
+      \mathsf F_0=\delta_0\nu.$$
+    <p>Apply Duhamel around the constant intensity $\bar\ell$, using the same count-convolution
+      contraction $\mathcal P$ as before.
+      Subtract the marginal equation multiplied by $\sigma_L$, using
+      $\sigma_L=\sigma_t e^{m(L-t)Q}$, to obtain exactly</p>
+    $$\mathsf R_L=\int_0^L\mathcal P(L,t)B(t)
+      \{\mathsf F_tD_f-(\mathsf F_tf)\sigma_t\}
+      (e^{m(L-t)Q}-\Pi)\,dt.$$
+    <p>The brace has zero regime sum for every count vector, justifying subtraction of $\Pi$.
+      Its total $\ell^1$ norm over counts and regimes is at most $2F$, because
+      $\mathsf F_t$ is a probability measure.
+      Hence, uniformly over $\nu$,</p>
+    $$\|\mathsf R_L\|_{1,1}\leq\min\left\{2,4CF\int_0^Le^{-m\gamma(L-t)}dt\right\}
+      =e(L).$$
+    <p>The last inequality also uses the trivial norm bound two for a difference of probability measures.
+      At a cut with future conditional count laws $u_i$, the joint-minus-product measure is
+      $\sum_i(\mathsf R_L)_i\otimes(u_i-\pi u)$, since $\mathsf R_L\mathbf1=0$.</p>
+    $$d_{\rm TV}(\mathcal L_\nu(A,B),\mathcal L_\nu(A)\otimes\mathcal L_\nu(B))
+      \leq\tfrac12 e(L_A)d(L_B).$$
+    <p>The initial-state memory lemma supplies $d(L_B)$ even though the actual future start is $\sigma_{L_A}$,
+      not $\pi$: the stationary mixture is only a convenient reference canceled by the zero regime sum.
+      Telescoping over cuts proves the all-prior theorem without any inverse prior mass or burn-in penalty.</p>
     <h2>Replacing the marginals</h2>
-    <p>If $\widetilde p_j$ are any probability laws with $d_{\rm TV}(p_j,\widetilde p_j)\leq\eta_j$,
+    <p>If $\widetilde p_j$ are any probability laws with $d_{\rm TV}(p_{\nu,j},\widetilde p_j)\leq\eta_j$,
       product telescoping gives the explicit joint bound</p>
-    $$d_{\rm TV}\left(\mathcal L(X_1,\ldots,X_r),\bigotimes_j\widetilde p_j\right)
-      \leq\min\left\{1,\frac12\sum_{j=2}^r d_*(s_{j-1})d(T_j)+\sum_j\eta_j\right\}.$$
+    $$d_{\rm TV}\left(\mathcal L_\nu(X_1,\ldots,X_r),\bigotimes_j\widetilde p_j\right)
+      \leq\min\left\{1,\frac12\sum_{j=2}^r e(s_{j-1})d(T_j)+\sum_j\eta_j\right\}.$$
     <p>Consequently any uniform $O(m^{-2})$ marginal approximation gives a uniform $O(rm^{-2})$
       grid approximation.
       The exact-moment negative-binomial marginal theorem is developed separately in
@@ -76,13 +112,13 @@
     <p>Each bin's moment fit is made at its own length; the resulting grid surrogates are not asserted
       consistent under arbitrary refinements.
       This is not a full arrival-path TV theorem or a bound uniform over unbounded numbers of bins,
-      and stationary initialization is an explicit assumption.</p>
+      and the original stationary specialization retains its sharper constant.</p>
     <h2>Certificate and background</h2>
     <p>For $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$,
-      $\ell=(3,1)$, two unit bins and speed 80,
+      $\ell=(3,1)$, stationary prior, two unit bins and speed 80,
       TV to independent exact marginals is $0.0000057234$, below $0.0000781250$.
       TV to independent moment-fit negative-binomial laws is $0.0000120047$;
-      adding the separately computed marginal errors gives bound $0.0000937088$.</p>
+      adding the separately computed marginal errors gives numerical triangle bound $0.0000937088$.</p>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_stationary_count_grid.py">verify_stationary_count_grid.py</a>
       checks 84 chain/grid/speed cases with unequal bins, short boundary-scale bins and three-bin vectors.
       It includes nonreversible and defective chains, zero intensities, reversal/cut identities,
@@ -91,8 +127,19 @@
       with base roundoff allowance $1.455\times10^{-11}$ scaled by generator norm and horizon.
       The largest modulo-alias probability and negative-binomial comparison tail budgets are both
       $1.330\times10^{-32}$, kept separate from roundoff.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_transient_count_grid.py">verify_transient_count_grid.py</a>
+      adds 360 prior/chain/grid/speed cases, checking forward endpoint memory, cut identities,
+      transient marginal products and prior-specific negative-binomial replacements.
+      It includes every pure prior, uniform and stationary priors, inactive-state starts and bins shorter
+      than the switching scale; its final line is literal <code>PASS</code>.
+      Direct generating-function quadrature also checks the forward Duhamel identity.</p>
+    <p>For $Q=\left(\begin{smallmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\4&amp;0&amp;-4\end{smallmatrix}\right)$,
+      $\ell=(2,0,1)$, initial prior $(0,1,0)$, speed 80 and bins $(1/80,1)$,
+      TV to independent transient marginals is $0.0000178657$, below $0.0038607079$.
+      TV to the independent prior-specific negative-binomial laws is $0.0000426127$;
+      the numerical triangle bound is $0.0038938268$.</p>
     <p>The matrix count kernel is the classical MMPP construction collected by
       <a href="./bibliography.html#FischerMeierHellstern1993">Fischer and Meier-Hellstern (1993)</a>:
       $\sum_kz^kK_T(k)=e^{T(mQ+(z-1)\operatorname{diag}\ell)}$.
-      The memory estimate and stationary-cut TV proof are supplied directly here, without a priority claim.</p>
+      The memory estimates and both cut proofs are supplied directly here, without a priority claim.</p>
   </main>
