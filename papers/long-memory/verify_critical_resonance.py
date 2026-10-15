@@ -56,6 +56,54 @@ def resonant_variance(n, extra):
     return math.fsum(terms)
 
 
+def window_kernel(z, a, c):
+    """E[1-cos(Uz)], U uniform on [a,c], avoiding small-z cancellation."""
+    if c * abs(z) < 0.1:
+        return math.fsum((-1) ** (r + 1) * z ** (2 * r)
+                         * (c ** (2 * r + 1) - a ** (2 * r + 1))
+                         / ((c - a) * (2 * r + 1) * math.factorial(2 * r))
+                         for r in range(1, 7))
+    return 1 - (math.sin(c * z) - math.sin(a * z)) / ((c - a) * z)
+
+
+def averaged_resonant_variance(n, a, c, extra=30):
+    """Integer window endpoints cancel all old cosine averages exactly."""
+    j = 16 ** n - 1
+    value = 0.0
+    for d in range(1, n + 1):
+        blocks = 16 if d == 1 else 16 ** d - 16 ** (d - 1)
+        value += 2 * blocks * math.fsum((2 * l - 1) / l ** 2
+                                       for l in range(2 ** (d - 1) + 1, 2 ** d + 1))
+    for k in range(j + 1, j + n + extra + 1):
+        d = depth(k)
+        for l in range(2 ** (d - 1) + 1, 2 ** d + 1):
+            z = 2 * math.pi * l * 2.0 ** (j + n - k - d)
+            value += 2 * (2 * l - 1) / l ** 2 * window_kernel(z, a, c)
+    return value
+
+
+def check_window_bound():
+    from scipy.integrate import quad
+    errors = []
+    for a, c in ((0, 1), (1, 2), (0.9, 1.1)):
+        for scale in (0.25, 1, 4, 16, 64):
+            atoms = ((0.03, 0.7), (0.7, 0.2), (2.1, 0.1))
+            value = math.fsum(2 * w / x ** 2 * window_kernel(scale * x, a, c) for x, w in atoms)
+            reference, quad_error = quad(lambda u: math.fsum(
+                4 * w / x ** 2 * math.sin(u * scale * x / 2) ** 2 for x, w in atoms),
+                a, c, epsabs=1e-9, epsrel=1e-11)
+            errors.append(abs(value - reference / (c - a)))
+            budget = 65536 * sys.float_info.epsilon * max(1, value)
+            assert errors[-1] <= budget + quad_error / (c - a)
+            cut_moment = math.fsum(w / x ** 2 for x, w in atoms if x > 1 / scale)
+            bound = ((a * a + a * c + c * c) / 3 * scale ** 2
+                     * math.fsum(w for x, w in atoms if x <= 1 / scale)
+                     + 4 / ((c - a) * scale)
+                     * math.fsum(w / x ** 3 for x, w in atoms if x > 1 / scale))
+            assert abs(value - 2 * cut_moment) <= bound + budget
+    return max(errors)
+
+
 def main():
     cases = check_blocks()
     print(f"exact CDF bound checks: {cases}; total spectral mass: 1")
@@ -74,6 +122,20 @@ def main():
         assert ratio <= upper + budget
         print(f"{n} {j} {value:.12f} {ratio:.9e} {upper:.9e}")
     print(f"omitted variance bound after K=j+n+30: {tail_bound(8, 30):.9e}")
+    print(f"15 window identity/bound checks; quadrature error: {check_window_bound():.3e}")
+    print("n averaged ratios for U uniform on [0,1] and [1,2]")
+    for n in range(1, 9):
+        denominator = 4 * (math.log(2 * math.pi) + (16 ** n + n - 1) * math.log(2))
+        values = []
+        for a, c in ((0, 1), (1, 2)):
+            value = averaged_resonant_variance(n, a, c)
+            shorter = averaged_resonant_variance(n, a, c, extra=12)
+            budget = 65536 * sys.float_info.epsilon * max(1, value)
+            bound = (a * a + a * c + c * c) / 3 * tail_bound(n, 12)
+            assert -budget <= value - shorter <= bound + budget
+            values.append(value / denominator)
+        print(f"{n} {values[0]:.9f} {values[1]:.9f}")
+    print(f"[1,2] omitted averaged variance bound: {7 / 3 * tail_bound(8, 30):.9e}")
     print("PASS")
 
 
