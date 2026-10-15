@@ -1,7 +1,8 @@
 """Certificate: factorial cumulants of a Markov-modulated Poisson count equal the cumulants of its integrated rate.
 
 Given the regime path, N_T is Poisson with mean Lambda_T = int_0^T l(y_s) ds, so E[(1+t)^{N_T}] = E[e^{t Lambda_T}] and
-every factorial cumulant of the count equals the corresponding cumulant of the integrated rate. Data side: the
+every factorial cumulant of the count equals the corresponding cumulant of the integrated rate. For a stationary
+symmetric two-state intensity, the fourth factorial cumulant also has an exact strictly negative closed form. Data side: the
 factorial moments E[N(N-1)...(N-r+1)] come from the count distribution, computed here from the generating function at
 the roots of unity as on the counts page. Rate side: the cumulants of Lambda_T from the polynomial moment system of
 polymoments.py. The two agree to the rounding of the count law, for a stationary start and for a start in the busy regime; and
@@ -29,6 +30,14 @@ def factorial_cumulants(p):
     k = np.arange(len(p))
     fm = [np.sum(k * p), np.sum(k * (k - 1) * p), np.sum(k * (k - 1) * (k - 2) * p), np.sum(k * (k - 1) * (k - 2) * (k - 3) * p)]
     return cumulants(fm)          # cumulants of the factorial moment sequence = factorial cumulants
+
+
+def stationary_telegraph_fourth(lam, T, half_rate_difference):
+    """Exact fourth cumulant of the integrated symmetric telegraph rate."""
+    x = lam * T
+    shape = (3 * x - 15 / 4 + (6 * x + 3) * math.exp(-2 * x)
+             + 3 / 4 * math.exp(-4 * x))
+    return -(half_rate_difference / lam) ** 4 * shape, shape
 
 
 def main():
@@ -61,6 +70,25 @@ def main():
         print(f"   lam={lam:4.0f}: 2K = {2 * K:.5f}; sup_T |kappa_2(Lambda_T) - 2TK| = {sup:.3e} <= bound {bound:.3e}")
     out['uniform'] = rows
     ok &= abs(math.log2(rows[-2][2] / rows[-1][2]) - 2) < 0.05
+    print("3. exact negative fourth cumulant for a stationary symmetric telegraph intensity")
+    rows = []
+    half_rate_difference = (L2[0] - L2[1]) / 2
+    stationary_rows = out['identity'][::2]
+    for identity_row in stationary_rows:
+        lam, exact_moments = identity_row[0], identity_row[2:6]
+        closed, shape = stationary_telegraph_fourth(lam, 1.0, half_rate_difference)
+        error = abs(closed - exact_moments[3])
+        tolerance = 2e-10 * max(1.0, abs(closed), abs(exact_moments[3]))
+        ok &= error < tolerance and shape > 0
+        rows.append([lam, closed, exact_moments[3], error, shape])
+        print(f"   lam={lam:4.0f}: closed {closed:.10f}; moment system {exact_moments[3]:.10f}; "
+              f"error {error:.1e}; positive shape {shape:.10f}")
+    shape_grid = [stationary_telegraph_fourth(1.0, x, 1.0)[1]
+                  for x in np.geomspace(0.05, 50.0, 100)]
+    derivative_grid = [6 * math.exp(-2 * x) * (math.sinh(2 * x) - 2 * x)
+                       for x in np.geomspace(0.05, 10.0, 100)]
+    ok &= min(shape_grid) > 0 and min(derivative_grid) > 0
+    out['stationary_fourth'] = rows
     json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'counts_results.json'), 'w'), indent=1)
     print("PASS" if ok else "FAIL")
 
