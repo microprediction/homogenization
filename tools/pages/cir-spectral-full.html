@@ -1,0 +1,112 @@
+<!-- title: Spectral speed laws for switched CIR variance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; cumulants summary</a>
+      &middot; <a href="./cumulants-full.html">general moment and Poisson formulas</a></p>
+    <h1>Two reversible modes can produce two turning points</h1>
+    <p class="subtitle">Exact common-reversion CIR formulas separate a sufficient speed-order condition from a three-state counterexample.</p>
+    <h2>Setup and spectral formulas</h2>
+    <p>Let $Y$ have generator $mQ$, $m&gt;0$, with $Q$ finite, irreducible and reversible under $\pi$.
+      Consider the joint stationary process</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)\,dt+\sqrt{a_{Y_t}v_t}\,dB_t,\qquad
+      V_T=\int_0^T v_t\,dt.$$
+    <p>Here $\kappa&gt;0$ is common, $a_i=\xi_i^2&gt;0$, $\theta_i&gt;0$, $2\kappa\theta_i\ge a_i$,
+      and $B$ is independent of $Y$.
+      Assume the joint invariant law has finite second moment and use that law at each speed.</p>
+    <p>For every distinct positive eigenvalue $\lambda$ of $-Q$, let $E_\lambda$ be its
+      $L^2(\pi)$-orthogonal projector.
+      Center $\theta,a$ under $\pi$ and define the basis-independent mode weights</p>
+    $$S_\lambda=\|E_\lambda\widetilde\theta\|_\pi^2,\quad
+      C_\lambda=\langle E_\lambda\widetilde\theta,E_\lambda\widetilde a\rangle_\pi,\quad
+      W_\lambda=\kappa S_\lambda+C_\lambda/2.$$
+    <p>Write $\bar\theta=\pi\theta$, $\bar a=\pi a$, $v_\infty=\bar a\bar\theta/(2\kappa)$,
+      and $\Gamma_\infty=\bar a\bar\theta/\kappa^2$.</p>
+    <div class="equation-card">
+      $$\operatorname{Var}(v)=v_\infty+\sum_\lambda\frac{W_\lambda}{\kappa+m\lambda},$$
+      $$\Gamma(m):=\lim_{T\to\infty}\frac{\operatorname{Var}(V_T)}T
+        =\Gamma_\infty+\frac2m\sum_\lambda\frac{S_\lambda}{\lambda}
+          +\frac1\kappa\sum_\lambda\frac{C_\lambda}{\kappa+m\lambda}.$$
+    </div>
+    <p>The $S_\lambda$ are nonnegative, but the mixed $C_\lambda$ and $W_\lambda$ need not be.
+      Reversibility alone therefore does not impose monotonicity or a single turning point.</p>
+    <h2>A sufficient monotonicity cone</h2>
+    <p>If $W_\lambda\ge0$ for every distinct mode, both
+      $\operatorname{Var}(v)-v_\infty$ and $\Gamma-\Gamma_\infty$ are completely monotone in $m$:
+      every derivative of order $p\ge0$ has sign $(-1)^p$ or is zero.
+      If $\theta$ is nonconstant, $\Gamma$ strictly decreases; stationary variance strictly decreases unless
+      all $W_\lambda$ vanish.</p>
+    <p>This is a sufficient condition, not a claimed necessary condition for ordinary monotonicity.
+      Differentiation proves it for stationary variance.
+      For the rate, the modewise alternating derivative divided by $p!$ is</p>
+    $$\frac{2S_\lambda}{\lambda m^{p+1}}
+       +\frac{C_\lambda\lambda^p}{\kappa(\kappa+m\lambda)^{p+1}}\ge0.$$
+    <p>If $C_\lambda\ge0$ both terms are nonnegative.
+      Otherwise $W_\lambda\ge0$ implies $-C_\lambda\le2\kappa S_\lambda$, and
+      $(\kappa+m\lambda)^{p+1}&gt;(m\lambda)^{p+1}$ proves strict positivity whenever $S_\lambda&gt;0$.</p>
+    <h3>Affine loading: a single minimum in any number of states</h3>
+    <p>Suppose $a_i=b_0+b\theta_i$, with the positivity and Feller assumptions still satisfied,
+      and $\theta$ nonconstant.
+      Then $C_\lambda=bS_\lambda$ and $W_\lambda=(\kappa+b/2)S_\lambda$.</p>
+    <p>For $b\ge-2\kappa$ the preceding cone applies; stationary variance is constant precisely at $b=-2\kappa$.
+      For $b&lt;-2\kappa$, stationary variance strictly increases and $\Gamma$ has exactly one minimum.</p>
+    $$m^2\Gamma'(m)=-2K-\frac b\kappa
+      \sum_\lambda S_\lambda\lambda
+      \left(\frac m{\kappa+m\lambda}\right)^2,\qquad
+      K=\sum_\lambda S_\lambda/\lambda&gt;0.$$
+    <p>When $b&lt;-2\kappa$, this expression strictly increases from $-2K$ to $(-2-b/\kappa)K&gt;0$.
+      Thus its unique zero proves the one-minimum statement.
+      If $\theta$ is constant, both boxed quantities are speed-independent even when $a$ switches.</p>
+    <h2>A strict-Feller three-state counterexample</h2>
+    $$Q=\frac16\begin{pmatrix}-31&amp;29&amp;2\\29&amp;-31&amp;2\\2&amp;2&amp;-4\end{pmatrix},\quad
+      \pi=(1,1,1)/3,\quad\kappa=1,$$
+    $$\theta=(128,123,124)/2500,\qquad a=(3,9,3)/100.$$
+    <p>The Feller margins are $(0.0724,0.0084,0.0692)$, all strictly positive.
+      The two nonzero rates are $\lambda=1,10$, with</p>
+    $$ (S_1,S_{10})=(1/12500000,1/1500000),\qquad
+       (C_1,C_{10})=(1/250000,-1/50000).$$
+    <p>Substitution gives the exact rational identity</p>
+    $$\Gamma'(m)=\frac{P(m)}{37500000\,m^2(1+m)^2(1+10m)^2},$$
+    $$P(m)=-8600m^4+9580m^3+5799m^2-242m-11.$$
+    <p>The descending coefficients have two sign changes, so Descartes' rule allows at most two positive roots,
+      counted with multiplicity.
+      Exact rational signs isolate one in $(1/20,1/10)$ and another in $(1,2)$; hence both roots are simple
+      and there are no others.</p>
+    <p>The rate first decreases, then increases, then decreases.
+      Its local minimum is at $m\approx0.0646002933$, rate $0.0024961473751$;
+      its local maximum is at $m\approx1.5396820254$, rate $0.0025005457672$.
+      The averaged limit is $0.0025$.</p>
+    <p>Stationary variance itself first increases and then decreases, with its unique maximum at
+      $m=(R-1)/(10-R)\approx1.7261502725$, $R=\sqrt{1750/39}$.
+      Taking the positive square root in its two-term derivative equation gives
+      $(1+10m)/(1+m)=R$; the left side strictly increases from $1$ to $10$.</p>
+    <h2>Proof of the spectral formulas</h2>
+    <p>For a centered eigenfunction $g$ with $Qg=-\lambda g$, stationarity applied to $vg$ gives
+      $\operatorname{Cov}(v,g_Y)=\kappa\langle\widetilde\theta,g\rangle_\pi/(\kappa+m\lambda)$.
+      Applying the generator to $v$ and $v^2$ gives $\mathbb E v=\bar\theta$ and</p>
+    $$\operatorname{Var}(v)=\operatorname{Cov}(v,\theta_Y)+\mathbb E[a_Yv]/(2\kappa).$$
+    <p>Summing the eigenfunction identities proves the first boxed formula.
+      On centered state functions let $H=(-Q)^{-1}$; the affine function
+      $\phi(v,i)=v/\kappa+(H\widetilde\theta)_i/m$ solves
+      $-\mathcal L\phi=v-\bar\theta$.</p>
+    <p>Affine conditional means decay exponentially, with polynomial factors at resonant rates, so the
+      stationary covariance is integrable.
+      The Poisson covariance identity gives</p>
+    $$\Gamma=2\operatorname{Var}(v)/\kappa
+       +\frac{2\kappa}{m}\sum_\lambda
+          \frac{S_\lambda}{\lambda(\kappa+m\lambda)},$$
+    <p>which simplifies to the second boxed formula.</p>
+    <h2>Scope and verification</h2>
+    <p>These are exact stationary variance and long-run variance-rate statements, not finite-maturity
+      speed classifications.
+      Reversibility and common $\kappa$ are essential hypotheses of this spectral treatment; no conclusion
+      about log-return cumulants, leverage, option prices or heterogeneous maturity-loading rank is inferred.</p>
+    <p>The moment/Poisson method is already used in the
+      <a href="./cumulants-full.html">general full note</a>, and finite polynomial semigroups are classical;
+      see <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and
+      Teichmann (2012)</a>.
+      No novelty claim is made for stationary moment calculations or spectral decomposition.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_spectral.py">certificate</a>
+      compares the mode sums with generic invariant-moment and Poisson solves, including a repeated eigenvalue,
+      and checks alternating derivatives and affine-loading minima.
+      Exact rational identities and signs certify the counterexample's root count; displayed root locations
+      and rates are rounded floating-point calculations.</p>
+  </main>
