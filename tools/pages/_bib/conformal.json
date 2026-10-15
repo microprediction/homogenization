@@ -1,5 +1,15 @@
 [
  {
+  "key": "VanDijkBrummelenBoucherie2018",
+  "authors": "van Dijk, N. M., van Brummelen, S. P. J. and Boucherie, R. J.",
+  "year": 2018,
+  "title": "Uniformization: Basics, extensions and applications",
+  "venue": "Performance Evaluation 118:8-32",
+  "doi": "10.1016/j.peva.2017.09.008",
+  "url": "https://ris.utwente.nl/ws/files/24801192/2018_XDijkBrummelenBoucherie_S0166531617301451_main.pdf",
+  "annotation": "Reviews exact Poisson uniformization, including reward models. Section 3.2 supplies the classical construction specialized here to a common Bernoulli refresh clock for tapered path-score memory."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,

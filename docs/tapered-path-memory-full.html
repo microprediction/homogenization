@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tapered path-score memory (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-score summary</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_tapered_memory.py">certificate</a></span></p>
+    <h1>Tapering the start of a path score</h1>
+    <p class="lead">A path average remembers its starting regime at first order because it weights early observations.
+    Making the weight vanish to order $d$ at the origin suppresses that memory to order $(r\Delta)^{-d-1}$ in this
+    two-state benchmark, at the cost of a larger stationary path-variance constant.</p>
+
+    <h2>Setup and finite-rate bound</h2>
+    <p>Use states $0,1$, rather than the summary&apos;s $-1,+1$ convention. Let $p\in(0,1)$ and let the row generator be
+    $$Q=r\begin{pmatrix}-p&p\\1-p&-(1-p)\end{pmatrix},\qquad \pi=(1-p,p),\qquad r&gt;0.$$
+    Thus $r$ is the relaxation rate, not either individual jump rate.</p>
+    <p>Fix a deterministic nonnegative weight $w\in L^2[0,\Delta]$ with $\int_0^\Delta w=1$, and define
+    $$A=\int_0^\Delta w(t)(Y_t-p)\,dt,\qquad S=\mu A+\sigma Z,$$
+    with independent $Z\sim N(0,1)$, fixed $\mu\in\mathbb R$, and $\sigma&gt;0$. Write $F_i$ for the CDF conditional
+    on $Y_0=i$, and $F_\pi=(1-p)F_0+pF_1$.</p>
+    <p>The unique pooled population quantile $q_\pi$ satisfies $F_\pi(q_\pi)=1-\alpha$, with $\alpha\in(0,1)$.
+    It has exact stationary marginal coverage, not exact coverage conditional on either latent start.</p>
+    <div class="equation-card">
+    $$\sup_x|F_i(x)-F_\pi(x)|\le
+       \frac{|\mu|\,|i-p|}{\sigma\sqrt{2\pi}}L_r(w),\qquad
+       L_r(w)=\int_0^\Delta w(t)e^{-rt}\,dt.$$
+    </div>
+    <p>If $w(t)\le Ct^d$ almost everywhere for an integer $d\ge0$, then $L_r(w)\le Cd!/r^{d+1}$.
+    The displayed CDF bound is nonasymptotic and applies at the exact pooled threshold.</p>
+
+    <h2>Proof by a common refresh clock</h2>
+    <p>At rate $r$, refresh the state with a fresh Bernoulli($p$) draw, allowing self-transitions.
+    Its generator is exactly $Q$, a special case of classical Poisson uniformization
+    (<a href="./bibliography.html#VanDijkBrummelenBoucherie2018">van Dijk, van Brummelen and Boucherie, 2018, Section 3.2</a>).</p>
+    <p>Couple a start at $i$ to a stationary start $J\sim\operatorname{Bernoulli}(p)$ using the same future refreshes.
+    The paths coalesce at the first refresh $\tau\sim\operatorname{Exp}(r)$, independent of $J$.
+    Consequently, with $W(t)=\int_0^t w(s)\,ds$,</p>
+    $$\delta A:=A_i-A_\pi=(i-J)W(\tau\wedge\Delta),\qquad
+      \mathbb E\delta A=(i-p)L_r(w),\qquad
+      \mathbb E|\delta A|=|i-p|L_r(w).$$
+    <p>The derivative of $h_x(a)=\Phi((x-\mu a)/\sigma)$ is bounded by
+    $|\mu|/(\sigma\sqrt{2\pi})$. Apply this Lipschitz bound under the coupling to prove the CDF inequality.</p>
+
+    <h2>A sharp leading term with an explicit remainder</h2>
+    <p>Suppose also $w(t)\le Ct^d$ as above, and set $b_i=|i-p|$. Uniformly over real $x$,</p>
+    $$F_i(x)-F_\pi(x)
+      =-\frac\mu\sigma\phi(x/\sigma)(i-p)L_r(w)+R_i(x),$$
+    $$|R_i(x)|\le M_2\left(\sqrt{D_i V}+\frac{D_i}{2}\right),\qquad
+      M_2=\frac{\mu^2}{\sigma^2\sqrt{2\pi e}},$$
+    $$D_i=\frac{b_i C^2(2d+2)!}{(d+1)^2r^{2d+2}},\qquad
+      V=\frac{2p(1-p)}r\|w\|_2^2.$$
+    <p>Indeed $\mathbb E(\delta A)^2\le D_i$ follows from
+    $W(\tau\wedge\Delta)\le C\tau^{d+1}/(d+1)$ and exponential moments.
+    Stationarity gives $\operatorname{Cov}(Y_s,Y_t)=p(1-p)e^{-r|t-s|}$; extending $w$ by zero and using the
+    convolution kernel&apos;s $L^1$ norm $2/r$ gives $\mathbb EA_\pi^2\le V$.</p>
+    <p>Since $\sup_{x,a}|h_x''(a)|=M_2$, the integral Taylor formula gives</p>
+    $$|h_x(A_i)-h_x(A_\pi)-h_x'(0)\delta A|
+       \le M_2|\delta A|\left(|A_\pi|+\frac{|\delta A|}{2}\right).$$
+    <p>Cauchy&ndash;Schwarz proves the remainder bound; no independence between $A_\pi$ and $\delta A$ is assumed.
+    This is a fixed-$\mu$ result, not a small-signal expansion.</p>
+
+    <h2>Normalized polynomial ramps and their variance cost</h2>
+    <p>For $w_d(t)=(d+1)t^d/\Delta^{d+1}$ and $\lambda=r\Delta$, direct integration gives</p>
+    $$L_r(w_d)=\frac{(d+1)!}{\lambda^{d+1}}
+      \left[1-e^{-\lambda}\sum_{j=0}^d\frac{\lambda^j}{j!}\right],\qquad
+      D_i=\frac{b_i(2d+2)!}{\lambda^{2d+2}},\qquad
+      V=\frac{2p(1-p)(d+1)^2}{(2d+1)\lambda}.$$
+    <p>For fixed $d,p,\mu,\sigma,\alpha$, as $\lambda\to\infty$,</p>
+    <div class="equation-card">
+    $$F_i(q_\pi)-(1-\alpha)
+      =-\frac\mu\sigma\phi(z_{1-\alpha})(i-p)
+        \frac{(d+1)!}{\lambda^{d+1}}+O(\lambda^{-d-3/2}).$$
+    </div>
+    <p>To justify evaluation at the quantile, $\mathbb EA_\pi=0$ and Taylor&apos;s formula give
+    $\sup_x|F_\pi(x)-\Phi(x/\sigma)|\le M_2V/2$, hence
+    $q_\pi=\sigma z_{1-\alpha}+O(\lambda^{-1})$. Combine this with the explicit remainder above and the
+    exponentially small tail in $L_r$; no optimal remainder exponent is claimed.</p>
+    <p>For $\mu\ne0$ the leading coefficient is nonzero in both states, so the power is sharp for each fixed $d$.
+    However the approximate-identity limit of the same covariance kernel gives</p>
+    $$\operatorname{Var}_\pi A\sim
+      \frac{2p(1-p)}\lambda\frac{(d+1)^2}{2d+1}.$$
+    <p>Thus the stationary variance factor relative to the boxcar is $1,4/3,9/5$ for $d=0,1,2$.
+    This is a bias/variance tradeoff in the path component, not a statement that total forecast error is optimized.</p>
+
+    <h2>Numerical check and scope</h2>
+    <p>For $\Delta=1$, $p=.3$, $\mu=.8$, $\sigma=.7$, and $\alpha=.1$, the certificate solves the time-dependent
+    backward Feynman&ndash;Kac equation and inverts the Gaussian-smoothed transform.
+    At $r=128$, the start-$1$ coverage gaps for $d=0,1,2$ are respectively
+    $-1.0995153\times10^{-3}$, $-1.7093332\times10^{-5}$, and $-4.0015134\times10^{-7}$.</p>
+    <p>The final doubling orders are $1.003428$, $1.996824$, and $2.994699$.
+    All fifteen cases check the finite-rate and leading-remainder inequalities at the pooled threshold and four
+    further CDF arguments; an independent forward moment ODE checks the variance bound.</p>
+    <p>The certificate refines both Fourier quadrature and ODE tolerances and supplies an analytic Fourier-tail
+    bound, but does not certify numerical ODE errors by interval arithmetic.
+    The proof is self-contained within the classical uniformization framework; no priority claim is made.</p>
+    <p>The score map and weights are frozen and deterministic. These population, latent-start-conditional results
+    do not supply a finite-calibration, adaptive-predictor, or distribution-free feature-conditional guarantee.
+    They neither give exponential forgetting nor assert monotone improvement at every finite switching rate.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
