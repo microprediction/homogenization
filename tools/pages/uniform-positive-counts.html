@@ -1,0 +1,29 @@
+<!-- title: A count corrector uniform in maturity · homogenization | math -->
+  <main>
+    <h1>A positive count approximation at every maturity</h1>
+    <p class="subtitle">A uniform marginal error bound, not a full-process approximation.</p>
+    <p>Let a finite irreducible chain have generator $mQ$, with arrival intensities
+      $0&lt;a\leq\ell_i\leq b$. At each horizon $T$, replace the integrated intensity by a gamma
+      variable with its exact prior-specific mean and variance.</p>
+    <p>The resulting negative-binomial Cox count is nonnegative and normalized and matches the exact
+      first two count moments. Constant intensity is exactly Poisson.</p>
+    <div class="equation-card">
+    $$\sup_{T&gt;0}\sup_\nu d_{\rm TV}(\mathcal L_\nu(N_T),\mathcal L(N_{*,T,\nu}))
+      \leq\min\left\{1,\frac{A_2}{(m\gamma)^2}
+                      +\frac{A_3}{(m\gamma)^3}+\frac{A_4}{(m\gamma)^4}\right\}.$$
+    </div>
+    <p>The <a href="./uniform-positive-counts-full.html">full note</a> gives explicit constants from a
+      semigroup envelope $\|e^{tQ}-\mathbf1\pi\|_\infty\leq Ce^{-\gamma t}$.
+      No reversibility, diagonalizability or stationary start is required.</p>
+    <p>The certificate checks 168 count laws over six horizons, including a defective chain.
+      For symmetric switching, intensities $(3,1)$ and speed 80, the common all-horizon bound is
+      $0.0125223590$; the pure first-state error at $T=100$ is $0.0000006892$.</p>
+    <p>The full note extends the uniform rate to nonnegative intensities, including zero-intensity regimes,
+      with separate explicit constants.
+      Constants depend on fixed mixing data and a positive stationary mean; no vanishing-gap uniformity is claimed.
+      Even from stationarity, simultaneous batches obstruct second-order path-TV accuracy for the
+      standard independent-increment negative-binomial process.</p>
+    <p><a href="./counts.html">&larr; Cox counts</a> &middot;
+      <a href="./uniform-positive-counts-full.html">proof and certificate</a> &middot;
+      <a href="./papers.html">papers</a></p>
+  </main>

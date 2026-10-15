@@ -1,0 +1,205 @@
+<!-- title: Uniform-maturity positive count bound (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./uniform-positive-counts.html">&larr; summary</a>
+      <span><a href="./papers.html">papers</a></span></p>
+    <h1>Poisson smoothing removes maturity growth from the error bound</h1>
+    <p>Let $Y$ have generator $mQ$, where $Q$ is finite and irreducible, stationary row $\pi$ and
+      $\Pi=\mathbf1\pi$. Assume $0&lt;a\leq\ell_i\leq b$, with nonconstant $\ell$,
+      and $\|e^{tQ}-\Pi\|_{\infty\to\infty}\leq Ce^{-\gamma t}$ for $t\geq0$.</p>
+    <p>Put $f=\ell-(\pi\ell)\mathbf1$, $F=\|f\|_\infty$, $\beta=m\gamma$,
+      $\Lambda_T=\int_0^T\ell(Y_t)\,dt$, $\mu=\mathbb E_\nu\Lambda_T$,
+      $v=\operatorname{Var}_\nu\Lambda_T$ and $M_j=\mathbb E_\nu(\Lambda_T-\mu)^j$.
+      Conditional on $\Lambda_T$, the Cox count $N_T$ is Poisson with that mean.
+      Fit $G$ with gamma shape $\mu^2/v$ and scale $v/\mu$, and mix a Poisson variable over $G$ to obtain $N_*$.</p>
+    <h2>Explicit bound, uniform in both maturity and prior</h2>
+    <p>Choose any split horizon $\tau&gt;0$.
+      Define $\alpha=2CF^2$, $t_3=18C^2F^3$, $u_3=2C^3F^3$,
+      $t_4=24C^2F^4$, $u_4=60C^3F^4$ and $c=(\log2-\tfrac12)a^2/\alpha$.</p>
+    $$S_2=\frac{2\tau}{3}\left(t_3+\frac{2\alpha^2}{a}\right)
+                  +\tau^2\left(\frac{t_4}{3}+\alpha^2\right),\qquad
+      S_3=\frac{2u_3}{3}+\tau\left(\frac{u_4}{3}+\frac{2\alpha^3}{a^2}\right),$$
+    $$L_2=\frac{\sqrt6}{12a^{3/2}\sqrt\tau}\left(t_3+\frac{2\alpha^2}{a}\right)
+                  +\frac{\sqrt{24}}{48a^2}(t_4+12\alpha^2),\qquad
+      L_3=\frac{\sqrt6u_3}{12(a\tau)^{3/2}}
+                  +\frac{\sqrt{24}}{48a^2\tau}\left(u_4+\frac{24\alpha^3}{a^2}\right).$$
+    <div class="equation-card">
+    $$A_2=\max\{S_2,L_2\},\qquad A_3=\max\{S_3,L_3\},\qquad A_4=\frac{8b^4}{c^4},$$
+    $$\sup_{T&gt;0,\nu}d_{\rm TV}(\mathcal L_\nu(N_T),\mathcal L(N_{*,T,\nu}))
+       \leq\min\{1,A_2/\beta^2+A_3/\beta^3+A_4/\beta^4\}=O(m^{-2}).$$
+    </div>
+    <p>This holds at every positive speed; the constants are deliberately conservative.
+      All priors and horizons may depend on $m$.
+      Constant intensity is exactly Poisson and is handled separately, without dividing by $F$ or $v$.</p>
+    <h2>Finite-chain moment estimates</h2>
+    <p>Write $J=\Lambda_T-(\pi\ell)T$ and $R_j=\mathbb E_\nu J^j$.
+      Markov conditioning gives $|\mathbb E_\nu J|\leq CF/\beta$ and
+      $0\leq R_2\leq\alpha T/\beta$.</p>
+    <p>Splitting the propagation across a gap into $\Pi+(P-\Pi)$ gives the following
+      bounds for ordered three- and four-point correlations, with $f_t=f(Y_t)$:</p>
+    $$|\mathbb E_\nu(f_t f_{t+s}f_{t+s+u})|
+        \leq C^2F^3\{e^{-\beta(t+u)}+e^{-\beta(s+u)}\},$$
+    $$|\mathbb E_\nu(f_t f_{t+s}f_{t+s+u}f_{t+s+u+w})|
+        \leq C^2F^4\{e^{-\beta(s+w)}+e^{-\beta(u+w)}\}.$$
+    <p>For three points, condition on the last gap, then split the preceding propagator; the constant part
+      uses $\pi f=0$ and decay from the initial time.
+      For four points, split the middle propagator; its constant part leaves a two-point correlation,
+      and sup-norm contraction bounds the remainder.</p>
+    <p>Integrating over ordered times gives $|R_3|\leq12C^2F^3T/\beta^2$ and
+      $0\leq R_4\leq24C^2F^4T^2/\beta^2$.
+      Centering these raw moments yields</p>
+    $$v\leq V=\frac{\alpha T}{\beta},\qquad
+      |M_3|\leq B_3=\frac{t_3T}{\beta^2}+\frac{u_3}{\beta^3},\qquad
+      M_4\leq B_4=\frac{t_4T^2}{\beta^2}+\frac{u_4T}{\beta^3}.$$
+    <h2>Poisson smoothing and the gamma lower tail</h2>
+    <p>For the Poisson probability vector $p(x)$, the classical Charlier orthogonality gives
+      $\|p^{(j)}(x)\|_1\leq\sqrt{j!}\,x^{-j/2}$ for $x&gt;0$.
+      See <a href="./bibliography.html#ZacharovasHwang2010">Zacharovas and Hwang (2010), Lemma 2.1</a>;
+      the identity needed here has a direct proof.</p>
+    <p>Indeed, $p_k(x+h)/p_k(x)=e^{-h}(1+h/x)^k$.
+      For $K\sim\operatorname{Poisson}(x)$, the expected product at parameters $h,s$ is $e^{hs/x}$.
+      Comparing coefficients gives
+      $\sum_k p_k^{(j)}(x)^2/p_k(x)=j!x^{-j}$, and Cauchy&ndash;Schwarz proves the norm bound.</p>
+    <p>Taylor-expand at $\mu$ through degree three, with matched means and variances.
+      Since $\Lambda_T,\mu\geq aT$, the true intensity remainder uses the smoothed fourth derivative.
+      For $G\geq\mu/2$ its gamma counterpart uses the same bound with an extra factor four.</p>
+    <p>On $G&lt;\mu/2$, instead use $\|p^{(4)}(x)\|_1\leq16$ and $|G-\mu|\leq\mu$.
+      Gamma Laplace transformation gives
+      $\Pr(G&lt;\mu/2)\leq e^{-(\log2-1/2)\mu^2/v}$.
+      Here $\mu^2/v\geq a^2\beta T/\alpha$ and $\mu\leq bT$.</p>
+    $$d_{\rm TV}\leq
+      \frac{\sqrt6}{12(aT)^{3/2}}\left(B_3+\frac{2V^2}{aT}\right)
+      +\frac{\sqrt{24}}{48(aT)^2}
+           \left\{B_4+4\left(3V^2+\frac{6V^3}{(aT)^2}\right)\right\}
+      +\frac{b^4T^4}{3}e^{-c\beta T}.$$
+    <p>For $T\geq\tau$, the first two terms are at most $L_2/\beta^2+L_3/\beta^3$.
+      Since $e^x\geq x^4/24$, the last is at most $A_4/\beta^4$ for every $T&gt;0$.
+      This treats the gamma lower tail rather than assuming it shares the true intensity's positive floor.</p>
+    <p>For $0&lt;T\leq\tau$, use the unsmoothed derivative bound $\|p^{(j)}(x)\|_1\leq2^j$,
+      which gives $\tfrac23|M_3-2v^2/\mu|+\tfrac13(M_4+3v^2+6v^3/\mu^2)$.
+      Substitution of $\mu\geq aT$ and the moment estimates bounds this by
+      $S_2/\beta^2+S_3/\beta^3$, completing the proof.</p>
+    <h2>Zero-intensity regimes: a uniform extension</h2>
+    <p>The statewise positive floor can be removed, with different constants.
+      Now assume only $\ell\geq0$, nonconstant and not identically zero, so $\bar\ell=\pi\ell&gt;0$.
+      The finite-chain moment estimates above still hold.</p>
+    <p>Choose $\theta,h&gt;0$ and define the killed semigroup
+      $K_t=e^{t(Q-\theta\operatorname{diag}\ell)}$.
+      Put $r=\|K_h\|_{\infty\to\infty}\in(0,1)$ and $k=-\log r/h$.</p>
+    <p>Every initial state has positive probability of reaching a positive-intensity state within $h$,
+      so each row sum is strictly below one.
+      Conditioning on an initial time increment gives
+      $u'=m(Q-\theta\operatorname{diag}\ell)u$, $u(0)=\mathbf1$.
+      Thus $\mathbb E_\nu e^{-\theta m\Lambda_T}=\nu K_{mT}\mathbf1$.</p>
+    <p>Submultiplicativity and $\|K_s\|_\infty\leq1$ give
+      $\nu K_{mT}\mathbf1\leq r^{\lfloor mT/h\rfloor}\leq r^{-1}e^{-kmT}$.
+      Set $a_*=k/(2\theta)$ and $d=k/(2\gamma)$.
+      Chernoff's inequality then yields</p>
+    $$\sup_\nu\Pr_\nu(\Lambda_T&lt;a_*T)\leq r^{-1}e^{-d\beta T}.$$
+    <p>Jensen's inequality under stationary initialization gives $r\geq e^{-\theta\bar\ell h}$,
+      hence $a_*\leq\bar\ell/2$.
+      Put $\mathcal H=2CF/\bar\ell$.
+      For $T\geq\mathcal H/\beta$, the mean estimate implies $\mu\geq\bar\ell T/2\geq a_*T$.</p>
+    <p>On $\Lambda_T\geq a_*T$, use the previous smoothed remainder with $a=a_*$.
+      On its complement, $|\Lambda_T-\mu|\leq\mu\leq bT$ and the unsmoothed derivative bound adds at most
+      $b^4T^4e^{-d\beta T}/(3r)$ to total variation.
+      This is bounded by $8b^4/(rd^4\beta^4)$, uniformly over $T$.</p>
+    <p>The remaining very short horizons need no positive mean lower bound.
+      Since $0\leq\Lambda_T\leq bT$, one has $v\leq bT\mu$,
+      $|M_3|\leq bTv$ and $M_4\leq(bT)^2v$.
+      The unsmoothed moment comparison therefore gives</p>
+    $$d_{\rm TV}\leq2b^3T^3+\frac{10}{3}b^4T^4
+       \quad(0&lt;T\leq\mathcal H/\beta).$$
+    <p>Evaluate the previously displayed $A_2,A_3,A_4$ at $a=a_*$, not at $\min_i\ell_i$.
+      Adding the short-horizon and true-intensity tail budgets gives an all-speed, all-prior bound:</p>
+    <div class="equation-card">
+    $$\widehat A_2=A_2,\qquad
+      \widehat A_3=A_3+2b^3\mathcal H^3,\qquad
+      \widehat A_4=A_4+\frac{8b^4}{rd^4}+\frac{10}{3}b^4\mathcal H^4,$$
+    $$\sup_{T&gt;0,\nu}d_{\rm TV}(\mathcal L_\nu(N_T),\mathcal L(N_{*,T,\nu}))
+      \leq\min\{1,\widehat A_2/\beta^2+\widehat A_3/\beta^3+\widehat A_4/\beta^4\}
+      =O(m^{-2}).$$
+    </div>
+    <p>For $T\geq\mathcal H/\beta$, split again at $\tau$ as in the positive-floor proof.
+      For smaller $T$, the displayed bounded-support estimate supplies the added inverse-speed terms.
+      Thus no minimum speed or minimum horizon is imposed.</p>
+    <p>The effective $a_*$ is a concentration threshold, not a pathwise intensity floor.
+      Both the true integrated intensity and its gamma surrogate require separate lower-tail budgets.
+      If all intensities are zero, the count is exactly zero and no gamma fit is used.</p>
+    <h2>A first-order obstruction for the standard process extension</h2>
+    <p>Fix $T&gt;0$ and stationary initialization, with nonnegative nonconstant $\ell$.
+      Set $\bar\ell=\pi\ell$, $\theta_m=v/(\bar\ell T)$ and $a_m=\bar\ell/\theta_m$.
+      At each speed, consider a gamma subordinator $\Gamma_t$ of shape $a_mt$ and scale $\theta_m$,
+      independent of a unit-rate Poisson process $P$, and put $M_t=P(\Gamma_t)$.</p>
+    <p>Then $M_T$ has exactly the fitted negative-binomial law above, but this construction fixes its
+      parameters using the chosen $T$, not all horizons simultaneously.
+      Its independent-increment compound-Poisson representation is classical; see
+      <a href="./bibliography.html#ZhouCarin2015">Zhou and Carin (2015), Section 4.2</a>.</p>
+    $$\log\mathbb E z^{M_t}=-a_mt\log\{1+\theta_m(1-z)\}
+      =t\sum_{j\geq1}\frac{a_mq_m^j}{j}(z^j-1),\qquad
+      q_m=\frac{\theta_m}{1+\theta_m}.$$
+    <p>Thus jumps of size at least two occur at rate
+      $r_m=a_m\{\log(1+\theta_m)-\theta_m/(1+\theta_m)\}$.
+      The true Cox process has only unit jumps almost surely, since its bounded statewise intensity
+      gives a continuous integrated clock.</p>
+    <div class="equation-card">
+    $$D_m:=d_{\rm TV}\big(\mathcal L((N_t)_{0\leq t\leq T}),
+      \mathcal L((M_t)_{0\leq t\leq T})\big)
+      \geq B_m:=1-e^{-Tr_m}.$$
+    </div>
+    <p>This is total variation on the usual measurable space of c&agrave;dl&agrave;g count paths:
+      use the event that some jump has size at least two, whose probabilities are zero and $B_m$.
+      It is not a bound for counts observed only on a fixed time grid.</p>
+    <p>Let $g=\langle f,(-Q)^\# f\rangle_\pi&gt;0$.
+      Indeed, if $h=(-Q)^\#f$, then $g=\langle(-Q)h,h\rangle_\pi&gt;0$ by the Dirichlet form
+      on centered nonzero vectors, without reversibility.</p>
+    $$\left|v-\frac{2Tg}{m}\right|\leq\frac{2CF^2}{\beta^2},\qquad
+      0\leq\frac{\bar\ell\theta_m}{2}-r_m
+         \leq\frac{2\bar\ell\theta_m^2}{3}.$$
+    <p>The first inequality integrates the stationary covariance envelope, including its tail beyond $T$.
+      The second follows from
+      $\log(1+\theta)-\theta/(1+\theta)=\int_0^\theta s/(1+s)^2\,ds$ and
+      $0\leq1-(1+s)^{-2}\leq2s$.</p>
+    $$\left|B_m-\frac{Tg}{m}\right|\leq
+      \frac{CF^2}{\beta^2}+\frac{2T\bar\ell\theta_m^2}{3}
+      +\frac{T^2\bar\ell^2\theta_m^2}{8}=O(m^{-2}).$$
+    <p>Here $0\leq x-(1-e^{-x})\leq x^2/2$ and $r_m\leq\bar\ell\theta_m/2$ give the last term.
+      Hence $\liminf_{m\to\infty}mD_m\geq Tg&gt;0$ for this standard process extension,
+      even though its terminal count has the proved $O(m^{-2})$ error.</p>
+    <p>For symmetric switching with intensities $(3,1)$, $T=1$ and speed 80,
+      the terminal TV error is $0.0000077919$, while the path lower bound is $0.0061409272$.
+      This obstruction concerns the independent-increment gamma clock; it does not rule out simple
+      temporally dependent surrogates or second-order approximation on a fixed observation grid.</p>
+    <h2>Certificates and scope</h2>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_uniform_positive_counts.py">verify_uniform_positive_counts.py</a>
+      independently checks Poisson derivative norms, the Charlier squared-norm identity and gamma tail bounds.
+      It compares 168 count laws at horizons $0.02,0.2,1,5,20,100$, using exact triangular intensity moments
+      and matrix generating functions; both pure and stationary priors are included.</p>
+    <p>For symmetric switching with intensities $(3,1)$, $C=1$, $\gamma=2$, $\tau=1$ and speed 80,
+      the all-horizon bound is $0.0125223590$.
+      Pure first-state TV errors at $T=1,20,100$ are $0.0000077200$, $0.0000015441$ and $0.0000006892$.
+      The defective-chain example at speed 80 has bound $0.0115323596$ and error $0.0000000703$ at $T=100$.</p>
+    <p>The largest omitted-tail TV budget is $3.773\times10^{-22}$, separate from roundoff.
+      Matrix-exponential checks scale the base tolerance $1.455\times10^{-11}$ by the generator-horizon norm.
+      The final certificate line is literal <code>PASS</code>.</p>
+    <p>The symmetric cases also cross-check the matrix generating function against an independently
+      evaluated, overflow-safe closed-form two-state transform.
+      The maximum probability-vector $\ell^1$ discrepancy is $7.340\times10^{-12}$.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_nonnegative_uniform_counts.py">verify_nonnegative_uniform_counts.py</a>
+      checks the zero-intensity extension separately, including starts in an inactive regime,
+      a defective chain, very short horizons and the all-zero exact case.
+      It compares 168 count laws, including 40 short-layer cases, and checks 18 killed-kernel bounds.</p>
+    <p>For symmetric switching with intensities $(3,0)$, $\theta=0.1$, $h=5$, $\tau=1$ and speed 320,
+      the all-horizon bound is $0.0550543576$; the pure zero-regime start error at $T=1$ is $0.0000050773$.
+      The zero-intensity defective example at speed 1280 has common bound $0.0305855767$.
+      The new certificate ends in literal <code>PASS</code>.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_count_path_obstruction.py">verify_count_path_obstruction.py</a>
+      checks the compound-Poisson representation and batch rate, and 45 stationary count comparisons
+      including a defective chain and zero intensities.
+      It checks the explicit finite-rate remainder for $B_m$, independently of the terminal-count error;
+      its final line is literal <code>PASS</code>.</p>
+    <p>Uniformity concerns individual count marginals at all horizons, not a single negative-binomial arrival
+      process with consistent independent increments.
+      Zero-intensity regimes are covered by the extension, while a statewise positive floor gives the shorter bound.
+      Constants depend on fixed mixing data and a positive stationary mean; vanishing stationary means and closing
+      spectral gaps are outside the uniform claim.</p>
+  </main>
