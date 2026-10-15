@@ -1,0 +1,123 @@
+<!-- title: The generator identified by a Green–Kubo Gram · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a></p>
+    <h1>A full Green&ndash;Kubo Gram still leaves a skew family</h1>
+    <p class="subtitle">An exact generator identified set, even with known stationary law and known state features.</p>
+    <h2>Data and result</h2>
+    <p>Fix $n\ge2$, a known strictly positive stationary row law $\pi$, and the time unit.
+      Write $D_\pi=\operatorname{diag}(\pi)$ and choose a known full centered basis
+      $U\in\mathbb R^{n\times r}$, $r=n-1$, with</p>
+    $$\pi U=0,\qquad U^\top D_\pi U=I_r,\qquad UU^\top D_\pi=I-\mathbf1\pi.$$
+    <p>For an irreducible row generator $Q$, the ordered Poisson matrix and the observed symmetric Gram are</p>
+    $$H=-U^\top D_\pi Q^\#U,\qquad G=\operatorname{sym}H\succ0.$$
+    <p>These are fixed-state features spanning all centered functions, not maturity-dependent loadings.
+      The exact set of generators compatible with $\pi,U,G$ is</p>
+    <div class="equation-card">
+    $$\mathcal Q(G)=\left\{Q_K=-U(G+K)^{-1}U^\top D_\pi:
+       K^\top=-K,\ (Q_K)_{ij}\ge0\text{ for }i\ne j\right\}.$$
+    </div>
+    <p>No extra irreducibility test is required in this formula.
+      Every displayed candidate satisfying the off-diagonal inequalities is an irreducible generator
+      with invariant law $\pi$ and Gram $G$.</p>
+    <p>At every member with all off-diagonal rates strictly positive, the compatible set has local dimension
+      $r(r-1)/2=(n-1)(n-2)/2$.
+      Thus a full centered Gram generically fails to identify the generator once $n\ge3$, even when neither
+      $\pi$ nor the feature embedding is unknown.</p>
+    <p>There is at most one reversible member: the candidate $K=0$, if its off-diagonal entries are nonnegative.
+      For $n=2$ there is no skew parameter and the full Gram does identify the generator.
+      Stationary time reversal sends $K$ to $-K$; it is only one symmetry inside the identified set.</p>
+    <p>For $n\le3$, every realizable full Gram has a reversible representative.
+      With four states this can fail even when all original transition rates are strictly positive:
+      a symmetric Gram can exclude reversibility without identifying the generator.</p>
+    <h2>Proof</h2>
+    <p>On the centered space put $L=-U^\top D_\pi Q U$.
+      Since $U$ is a complete weighted orthonormal basis, $H=L^{-1}$ and
+      $Q=-ULU^\top D_\pi$.
+      Fixing $\operatorname{sym}H=G$ is therefore exactly the condition $H=G+K$ with $K$ skew.</p>
+    <p>Conversely $G+K$ is invertible because $x^\top(G+K)x=x^\top Gx&gt;0$ for every nonzero real $x$.
+      Its inverse $L$ has positive-definite symmetric part:</p>
+    $$\operatorname{sym}L=(G+K)^{-\top}G(G+K)^{-1}\succ0.$$
+    <p>The reconstructed $Q_K$ has zero row sums, $\pi Q_K=0$, and rank $n-1$.
+      Off-diagonal nonnegativity makes it a Markov generator.
+      A reducible finite generator with a strictly positive stationary law has at least two closed classes
+      and hence a kernel of dimension at least two, so this candidate is irreducible.</p>
+    <p>Reversibility is equivalent to $L=L^\top$, hence to $H=H^\top$ and $K=0$.
+      The reconstruction and its inverse are analytic; strict off-diagonal inequalities persist under all
+      sufficiently small skew perturbations, proving the dimension count.
+      Taking weighted adjoints proves the time-reversal statement.</p>
+    <h2>A complete rational three-state example</h2>
+    <p>For $\pi=(1,1,1)/3$, put $P=I-\mathbf1\pi$ and</p>
+    $$C=\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},
+      \qquad C^2=-3P.$$
+    <p>For $-1\le s\le1$, define</p>
+    $$a_s=\frac{1+s}{3+s^2},\qquad b_s=\frac{1-s}{3+s^2},\qquad
+      Q_s=\begin{pmatrix}-a_s-b_s&amp;a_s&amp;b_s\\
+        b_s&amp;-a_s-b_s&amp;a_s\\a_s&amp;b_s&amp;-a_s-b_s\end{pmatrix}.$$
+    <p>Every $Q_s$ is irreducible, including the one-way cycles at the endpoints, and</p>
+    $$-Q_s^\#=P+\frac{s}{3}C,\qquad
+      \operatorname{sym}(-Q_s^\#)=P,\qquad G=I_2.$$
+    <p>Indeed $-Q_s=(3P-sC)/(3+s^2)$, and multiplication by $P+sC/3$ gives $P$.
+      The skew state operator restricts to $(s/\sqrt3)J$ in an oriented centered orthonormal basis,
+      where $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
+      Since every skew matrix in two dimensions is a multiple of $J$, this is the entire identified set for $G=I_2$.</p>
+    <p>For any fixed centered feature matrix $F$, all these chains have
+      $G_F=F^\top D_\pi F$.
+      In particular $s=1/4$ has rates $(20/49,12/49)$, whereas $s=1/2$ has rates $(6/13,2/13)$:
+      they have the same full Gram but are not time reversals or relabelings of one another.
+      Their total exit rates differ, while reversal sends $s$ to $-s$.</p>
+    <h2>When does the reversible representative exist?</h2>
+    <p>In three states write $K=kJ$, with $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$,
+      and put $d=\det G&gt;0$.
+      A direct two-by-two inverse gives</p>
+    $$\operatorname{sym}(G+kJ)^{-1}
+        =\frac{d}{d+k^2}G^{-1},\qquad
+      \frac{Q+Q^*}{2}=\frac{d}{d+k^2}Q_{\rm rev},\qquad
+      Q_{\rm rev}=-UG^{-1}U^\top D_\pi.$$
+    <p>The additive reversibilization $(Q+Q^*)/2$ is an irreducible Markov generator
+      (<a href="./bibliography.html#vanGinkelVanGisbergenRedig2021">van Ginkel, van Gisbergen and Redig (2021)</a>, Lemma A.2).
+      Thus $Q_{\rm rev}$ is its positive scalar multiple and is a valid reversible representative.
+      Together with the two-state result, this proves existence for every realizable full Gram on at most three states,
+      not for every arbitrary positive-definite matrix.</p>
+    <p>Four states are the first possible obstruction.
+      For uniform $\pi$ take the irreducible generator</p>
+    $$Q=\begin{pmatrix}-4&amp;0&amp;3&amp;1\\0&amp;-1&amp;1&amp;0\\
+         1&amp;0&amp;-4&amp;3\\3&amp;1&amp;0&amp;-4\end{pmatrix}.$$
+    <p>Writing $\Pi=\mathbf1\pi$ and $B=\operatorname{sym}(-Q^\#)$, direct rational inversion gives
+      the unique reversible candidate</p>
+    $$Q_{\rm rev}=\Pi-(B+\Pi)^{-1}
+      =\frac1{44}\begin{pmatrix}-192&amp;-8&amp;100&amp;100\\
+       -8&amp;-48&amp;28&amp;28\\100&amp;28&amp;-207&amp;79\\100&amp;28&amp;79&amp;-207\end{pmatrix}.$$
+    <p>Its entry $(1,2)$ is $-2/11$, so it is not a Markov generator.
+      This is not just a missing-edge phenomenon: for
+      $Q_+=Q+\tfrac1{10}(\Pi-I)$ every off-diagonal rate is at least $1/40$,
+      yet its reversible candidate has entry $(1,2)$ equal to $-43/280$.
+      The negative entry persists under sufficiently small perturbations, since inversion is continuous.</p>
+    <p>Positive definiteness of the centered inverse is therefore weaker than the Markov sign constraints.
+      The criterion concerns the same known stationary law, state labels and full fixed-feature embedding;
+      it does not exclude reversible models with different hidden-state representations.</p>
+    <h2>What extra data would recover the generator?</h2>
+    <p>The full ordered matrix does determine it:</p>
+    $$H_{ab}=\int_0^\infty\mathbb E_\pi[U_a(Y_0)U_b(Y_t)]\,dt,\qquad
+      Q=-UH^{-1}U^\top D_\pi.$$
+    <p>Thus the missing data are the antisymmetric integrated cross-correlations $K$.
+      Such ordered information can also enter pricing through noncommuting operators.
+      Equal symmetric Grams do not imply equal full first-order pricing operators, finite-time covariances,
+      path laws or exact yield curves.</p>
+    <h2>Scope, attribution and certificate</h2>
+    <p>The result assumes the complete fixed-feature Gram is known, with fixed state labels and known $\pi$.
+      Partial feature observations add further ambiguity; if $Q=mQ_0$ with unknown $m$, even ordered $H$
+      identifies only the product $Q$, not its factorization.
+      No regime-count conclusion is drawn from a matrix obtained by integrating different maturity loadings.</p>
+    <p>The symmetric-Poisson-inverse viewpoint is classical; see
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016)</a>,
+      equation (28) and Lemma 3.
+      Their variance-reduction comparison fixes the symmetric generator part; the family here fixes its
+      symmetric inverse instead, allowing both generator parts to change.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_generator_identified_set.py">certificate</a>
+      checks reconstruction, time reversal, positive-rate perturbations, arbitrary projected features and independent
+      semigroup quadrature.
+      The displayed three-state Poisson identity is also checked in exact rational arithmetic.</p>
+    <p>A <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_reversible_realization.py">reversible-realization certificate</a>
+      checks the three-state identity for nonuniform stationary laws and verifies both four-state obstructions
+      with exact rational arithmetic and independent semigroup quadrature.</p>
+  </main>
