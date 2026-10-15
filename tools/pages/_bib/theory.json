@@ -1,5 +1,14 @@
 [
  {
+  "key": "AwadGlynn2007",
+  "authors": "Awad, H. P. and Glynn, P. W.",
+  "year": 2007,
+  "title": "On the Theoretical Comparison of Low-Bias Steady-State Estimators",
+  "venue": "ACM Transactions on Modeling and Computer Simulation 17(1), article 4, 30 pages",
+  "doi": "10.1145/1177357.1183274",
+  "annotation": "Theorem 2.8 gives the classical second-order scalar variance correction for nonstationary Markov processes through Poisson solutions. The finite-chain covariance note specializes and polarizes this coefficient and supplies explicit uniform-in-prior, all-maturity error bounds."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

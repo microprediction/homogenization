@@ -1,0 +1,93 @@
+<!-- title: Covariance boundaries for arbitrary starting priors · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a> &middot;
+      <a href="./identifiability-full.html">full identification note</a></p>
+    <h1>The initial prior changes the covariance boundary, not its rate</h1>
+    <p class="lead">The Green&ndash;Kubo covariance rate remains valid for every initial regime prior.
+      Its finite-horizon error has a uniform inverse-speed-squared bound, and an explicit boundary matrix
+      identifies the lasting initial-prior correction.</p>
+    <h2>Setup and the classical boundary coefficient</h2>
+    <p>Let $Q$ be a fixed irreducible row generator on $n\ge2$ states, $\pi Q=0$, $P_t=e^{tQ}$ and
+      $H=-Q^\#$. For a centered feature matrix $\pi F=0$, define</p>
+    $$U=HF,\qquad W=H^2F,\qquad A=F^\top\operatorname{diag}(\pi)F,\qquad
+      G=\tfrac12\{F^\top\operatorname{diag}(\pi)U+U^\top\operatorname{diag}(\pi)F\}.$$
+    <p>For an initial row distribution $\nu$, put $b_\nu=\nu U$ and</p>
+    <div class="equation-card">
+    $$B_\nu=F^\top\operatorname{diag}(\nu H)U+U^\top\operatorname{diag}(\nu H)F
+      -F^\top\operatorname{diag}(\pi)W-W^\top\operatorname{diag}(\pi)F-b_\nu^\top b_\nu.$$
+    </div>
+    <p>This is the finite-chain matrix form of a classical Poisson-equation variance correction.
+      For a deterministic start and one observable, it is exactly the coefficient in
+      <a href="./bibliography.html#AwadGlynn2007">Awad and Glynn (2007), Theorem 2.8</a>;
+      polarization and total variance give the matrix and arbitrary-prior forms here.</p>
+    <h2>Explicit bounds, uniform over priors and maturities</h2>
+    <p>Choose valid constants $C\ge1$, $\gamma&gt;0$ such that
+      $\|P_t-\mathbf1\pi\|_\infty\le Ce^{-\gamma t}$ for all $t\ge0$, where the norm is the maximum absolute
+      row sum. Let $\pi_* =\min_i\pi_i&gt;0$.</p>
+    <p>For a chain of generator $mQ$, $m&gt;0$, write
+      $Z_T=\int_0^T F^\top e_{Y_t}dt$, $\Sigma_\nu(T)=\operatorname{Cov}_\nu(Z_T)$ and $s=mT$.
+      For every $\nu$ and $T\ge0$,</p>
+    <div class="equation-card">
+    $$-\frac{5C^2}{m^2\gamma^2\pi_*}A
+      \preceq\Sigma_\nu(T)-\frac{2T}{m}G
+      \preceq\frac{5C^2}{m^2\gamma^2\pi_*}A,$$
+    $$-E(s)A\preceq m^2\Sigma_\nu(T)-2sG-B_\nu\preceq E(s)A,
+      \qquad E(s)=\frac{C^3(6+2\gamma s)e^{-\gamma s}}{\gamma^2\pi_*}.$$
+    </div>
+    <p>The first approximation has an all-maturity $O(m^{-2})$ error uniformly over every prior, including point
+      masses. The second identifies the boundary coefficient with exponential accuracy at fixed positive $T$.</p>
+    <p>Adding $B_\nu/m^2$ does not improve the uniform inverse-speed order through the near-endpoint scale
+      $T=O(m^{-1})$, and that truncated approximation need not be positive semidefinite there.
+      These are fixed-feature covariance results, not functional limits or rank statements for integrated
+      heterogeneous contract loadings.</p>
+    <p>The mixing constants can be constructed without diagonalization: choose $t_0$ so that
+      $r=\|P_{t_0}-\mathbf1\pi\|_\infty\in(0,1)$, and take
+      $C=2/r$, $\gamma=-\log r/t_0$.
+      Splitting $t=kt_0+u$ and using $\|P_u-\mathbf1\pi\|_\infty\le2$ proves this envelope.</p>
+    <h2>Proof from exact second moments</h2>
+    <p>Work first at speed one and take centered scalar features $f,h$, with
+      $g=f\odot Hh+h\odot Hf$ and $a_f(s)=\nu(I-P_s)Hf$.
+      Conditional expectation of the later observation and integration of its semigroup give the exact identity</p>
+    $$\begin{aligned}
+      \operatorname{Cov}_\nu\!\left(\int_0^s f(Y_t)dt,\int_0^s h(Y_t)dt\right)
+      ={}&amp;2sG_{fh}+\nu H(I-P_s)g-a_f(s)a_h(s)\\
+      &amp;-\int_0^s\nu P_t\{f\odot P_{s-t}Hh+h\odot P_{s-t}Hf\}dt.
+    \end{aligned}$$
+    <p>Since $\|H\|_\infty\le C/\gamma$ and
+      $H(I-P_s)=\int_0^s(P_t-\mathbf1\pi)dt$, the three correction terms have absolute bounds
+      $2C^2$, $C^2$ and $2C^2$, respectively, times
+      $\|f\|_\infty\|h\|_\infty/\gamma^2$.
+      This proves the first scalar bound.</p>
+    <p>For the second bound split $\nu P_t=\pi+\nu(P_t-\mathbf1\pi)$ inside the convolution.
+      The stationary part tends to $\pi(f\odot H^2h+h\odot H^2f)$; the other part is bounded by
+      $2C^3s e^{-\gamma s}\|f\|_\infty\|h\|_\infty/\gamma$.</p>
+    <p>The endpoint error in $\nu H(I-P_s)g$ contributes at most $2C^3$, the stationary-convolution tail at most
+      $2C^3$, and replacing $a_f(s)a_h(s)$ by $(\nu Hf)(\nu Hh)$ at most $2C^3$, times
+      $e^{-\gamma s}\|f\|_\infty\|h\|_\infty/\gamma^2$.
+      Their sum is the stated $6+2\gamma s$ envelope.</p>
+    <p>Finally set $f=h=Fx$ and use $\|Fx\|_\infty^2\le x^\top A x/\pi_*$.
+      Rescaling time by $m$ proves both matrix inequalities.</p>
+    <h2>Mixtures and a checkable example</h2>
+    <p>The boundary is not linear in the prior. Its exact mixture identity is</p>
+    $$B_\nu=\sum_i\nu_i B_{e_i}
+      +U^\top\operatorname{diag}(\nu)U-(\nu U)^\top(\nu U).$$
+    <p>The two terms after the sum form the covariance, across starting states, of the Poisson corrector $U$.
+      Under stationarity $B_\pi=-F^\top\operatorname{diag}(\pi)W-W^\top\operatorname{diag}(\pi)F$, recovering the
+      stationary boundary in the identification note.</p>
+    <p>For the unit-flip symmetric two-state chain and $f=(1,-1)$, $G=1/2$ and</p>
+    $$B_\pi=-1/2,\qquad B_{e_+}=-3/4.$$
+    <p>Thus using the stationary boundary for a specified start misses a genuine $-1/(4m^2)$ term at fixed
+      positive maturity, even though the leading variance rate agrees.</p>
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_covariance_boundary.py">certificate</a>
+      checks 192 prior/horizon matrix enclosures, mixture identities, and exact conditional means on four
+      chains, including a defective generator and a sparse directed cycle.</p>
+    <p>Four independent semigroup-moment quadratures and the stationary closed formula agree with the lifted
+      matrix-exponential moments within $2.56\times10^{-15}$.
+      This observed discrepancy is reported, not used as a sub-floor tolerance.</p>
+    <p>The largest observed utilization of the conservative first bound is $0.009083756$.
+      The final line is literal <code>PASS</code>; no Gaussian approximation or stationarity assumption is
+      used in the enclosures.</p>
+    <p>The certificate uses floating-point matrix exponentials, not interval-validated mixing constants.
+      The analytic bounds require a valid envelope; the semigroup construction above supplies one in exact arithmetic.</p>
+  </main>
