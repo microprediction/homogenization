@@ -1,5 +1,23 @@
 [
  {
+  "key": "DuffieGlynn2004",
+  "authors": "Duffie, D. and Glynn, P.",
+  "year": 2004,
+  "title": "Estimation of Continuous-Time Markov Processes Sampled at Random Time Intervals",
+  "venue": "Econometrica 72(6):1773-1808",
+  "doi": "10.1111/j.1468-0262.2004.00553.x",
+  "annotation": "Develops random-time identification and estimation, including state-dependent Cox sampling and the intensity-biased stationary observation law. The event-clock note specializes the classical inverse to finite states and adds an explicit anytime confidence radius."
+ },
+ {
+  "key": "HowardEtAl2021",
+  "authors": "Howard, S. R., Ramdas, A., McAuliffe, J. and Sekhon, J.",
+  "year": 2021,
+  "title": "Time-uniform, nonparametric, nonasymptotic confidence sequences",
+  "venue": "The Annals of Statistics 49(2):1055-1080",
+  "doi": "10.1214/20-AOS1991",
+  "annotation": "Develops time-uniform confidence sequences via nonnegative supermartingales, including mixture constructions. The event-clock note integrates a Dirichlet row likelihood ratio and propagates its simultaneous budget through the generator inverse."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
