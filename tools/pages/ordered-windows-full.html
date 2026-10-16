@@ -1,0 +1,68 @@
+<!-- title: Two ordered window covariances identify a finite generator · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_ordered_windows.py">certificate</a></span></p>
+    <h1>Two ordered window covariances identify any finite generator</h1>
+    <p class="lead">With known stationary law and complete state features, two ordered lag-covariance matrices
+      of equal-window occupation totals recover every finite irreducible generator exactly.
+      Any fixed positive window length works; no long-window limit, reversibility or diagonalizability is required.</p>
+    <h2>Data from three consecutive windows</h2>
+    <p>Let $Q$ be an irreducible row generator on $n\ge2$ states, with known positive stationary law $\pi$ and time unit.
+      Put $D_\pi=\operatorname{diag}\pi$ and choose a known complete centered basis
+      $U\in\mathbb R^{n\times(n-1)}$ with $\pi U=0$ and $U^TD_\pi U=I$.</p>
+    <p>Start the chain in $\pi$ and, for fixed $T&gt;0$, define the column vectors</p>
+    $$X_j=\int_{jT}^{(j+1)T}U^Te_{Y_t}\,dt,\quad j=0,1,2,\qquad
+      J_0=\operatorname{Cov}(X_0,X_1),\quad J_1=\operatorname{Cov}(X_0,X_2).$$
+    <p>Rows refer to the earlier window, columns to the later window.
+      Neither matrix should be symmetrized.
+      A different known complete feature basis can be converted using its stationary feature Gram.</p>
+    <h2>Exact inversion without a matrix logarithm</h2>
+    <p>All matrices in this section act on the centered coordinates.
+      Write $L=-U^TD_\pi QU$, $H=L^{-1}$, and $E=e^{-TL}$.</p>
+    $$J_0=H^2(I-E)^2,\qquad J_1=J_0E.$$
+    <div class="equation-card">
+    $$E=J_0^{-1}J_1,\qquad Z=(I-E)^2J_0^{-1}=L^2,\qquad
+      \boxed{Q=-U\,Z_{\rm pr}^{1/2}\,U^TD_\pi.}$$
+    </div>
+    <p>Here $Z_{\rm pr}^{1/2}$ is the principal matrix square root, not a symmetric positive-semidefinite root or Cholesky factor.
+      The data determine the generator itself, including cycle orientation, not merely its reversal class.</p>
+    <h2>Proof and branch selection</h2>
+    <p>For $u\ge s$, stationarity gives the ordered feature covariance
+      $U^TD_\pi e^{(u-s)Q}U=e^{-(u-s)L}$.
+      Changing variables $v=T-s$ and $w=u-T$ in the adjacent-window double integral gives</p>
+    $$J_0=\int_0^T\int_0^T e^{-(v+w)L}\,dv\,dw
+      =\left(\int_0^T e^{-vL}\,dv\right)^2=H^2(I-E)^2.$$
+    <p>Separating the windows by one additional interval inserts the factor $e^{-TL}$, proving $J_1=J_0E$.
+      These are exact finite-window identities, not mixing approximations.</p>
+    <p>Every eigenvalue of $L$ has positive real part, so $H$ and $I-E$ are invertible and $J_0$ is nonsingular.
+      Moreover $L^2$ has no eigenvalue on the nonpositive real axis, and $L$ is its unique square root with spectrum in the open right half-plane.
+      Thus the principal root equals $L$, including for defective generators.</p>
+    <p>Since $Q\mathbf1=0$ and $\pi Q=0$, lifting its centered restriction gives $Q=-ULU^TD_\pi$.
+      No choice among matrix-logarithm branches remains: the window-covariance amplitude determines $L^2$ in addition to the sampled semigroup $E$.</p>
+    <h2>An exact snapshot alias that ordered windows resolve</h2>
+    <p>For uniform $\pi$ on three states, put $P=I-\mathbf1\pi$ and</p>
+    $$C=\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      Q_\pm=-\frac32P\pm\frac12C,\quad T=\frac{2\pi}{\sqrt3},\quad \epsilon=e^{-\pi\sqrt3}.$$
+    <p>These are the unit directed three-cycle and its reversal.
+      Both have exactly the same snapshot transition matrix $e^{TQ_\pm}=\mathbf1\pi-\epsilon P$,
+      and hence identical snapshot laws at every integer multiple of $T$.</p>
+    <p>Nevertheless their adjacent-window covariance operators in raw state coordinates differ by</p>
+    $$U(J_{0,+}-J_{0,-})U^TD_\pi=\frac{(1+\epsilon)^2}{3}C.$$
+    <p>Indeed $H_\pm=P/2\pm C/6$, so $H_+^2-H_-^2=C/3$.
+      Numerically $T=3.6275987285$, $\epsilon=0.0043334205$, and the operator's $(1,2)$ difference is $0.3362285399$.
+      The two-matrix inversion recovers the correct orientation for both chains.</p>
+    <h2>Verification, literature and scope</h2>
+    <p>The certificate uses independent piecewise Feynman&ndash;Kac mixed derivatives to construct the observed matrices.
+      It checks 120 reconstructions across 30 chains on two to seven states, including nonuniform laws,
+      sparse directed cycles, a defective generator and a five-state occupation-law-equivalent pair.</p>
+    <p>Three independent double-quadrature calculations cross-check the ordered integral identities.
+      These floating-point checks are not interval certificates or uniform numerical-error bounds.</p>
+    <p>The principal-root theorem and its branch condition are classical; see
+      <a href="./bibliography.html#Higham2008">Higham (2008)</a>, Theorem 1.29 and Chapter 6.
+      The reconstruction is a direct combination of stationary semigroup integration and that theorem.</p>
+    <p>This result assumes exact population covariances, known stationary law, known state labels, time unit and complete fixed features.
+      It does not identify an unknown hidden representation or apply to a matrix formed by integrating different maturity loadings.</p>
+    <p>No finite-sample estimation guarantee is claimed: $J_0^{-1}$, the subtraction $I-E$ and the matrix square root can be ill-conditioned.
+      Noisy matrices need not admit this model or the required square-root branch.
+      Symmetrized covariances and one-horizon occupation totals discard ordering and are different data.</p>
+  </main>
