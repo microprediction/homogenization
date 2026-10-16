@@ -1,0 +1,80 @@
+<!-- title: A posteriori bounds for ordered-window generator recovery · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_window_error.py">certificate</a></span></p>
+    <h1>A computable error radius for ordered-window recovery</h1>
+    <p class="lead">Given deterministic error budgets on two ordered window-covariance matrices, a positive
+      symmetric part and a small residual certify an explicit generator error radius.
+      This is not a sampling-confidence statement or a test that the data come from a Markov generator.</p>
+    <h2>Exact model and noisy data</h2>
+    <p>Let $Q$ be a finite irreducible row generator with known stationary law $\pi$, state labels and time unit.
+      Choose a known complete centered basis $U$ with $U^TD_\pi U=I$, $\pi U=0$, and put $L=-U^TD_\pi QU$.</p>
+    <p>For a stationary start and fixed $T&gt;0$, let $X_j=\int_{jT}^{(j+1)T}U^Te_{Y_t}dt$.
+      The ordered matrices $J_0=\operatorname{Cov}(X_0,X_1)$, $J_1=\operatorname{Cov}(X_0,X_2)$ obey</p>
+    $$E=J_0^{-1}J_1=e^{-TL},\qquad J_0=L^{-2}(I-E)^2,\qquad
+      (I-E)^2J_0^{-1}=L^2.$$
+    <p>These identities follow by integrating $e^{-(u-s)L}$ over the two windows.
+      Since $\operatorname{Re}\operatorname{spec}(L)&gt;0$, the principal square root of $L^2$ is $L$, without a diagonalizability assumption.
+      Earlier-window features index rows and later-window features index columns; do not symmetrize.</p>
+    <p>Suppose supplied matrices satisfy known bounds
+      $\|\widehat J_i-J_i\|_F\le\eta_i$, $i=0,1$, and $\widehat J_0$ is invertible.
+      Compute</p>
+    $$\widehat A=\widehat J_0^{-1},\quad \widehat E=\widehat A\widehat J_1,\quad
+      \widehat F=I-\widehat E,\quad \widehat Z=\widehat F^2\widehat A.$$
+    <p>Choose any real candidate $R$ for the centered $L$, not necessarily an exact square root.
+      Require a certified lower bound $(R+R^T)/2\succeq\mu I$ with $\mu&gt;0$, and an upper bound
+      $\zeta\ge\|R^2-\widehat Z\|_F$.</p>
+    <h2>The certificate</h2>
+    <p>The following quantities use only the supplied matrices, their error budgets and the candidate:</p>
+    $$k=\|\widehat A\|_2,\quad q=k\eta_0&lt;1,\quad
+      a=\frac{k}{1-q},\quad b=ak\eta_0,$$
+    $$d=a(\eta_1+\eta_0\|\widehat E\|_2),\quad f=\|\widehat F\|_2,\qquad
+      \Delta=a(2fd+d^2)+f^2b+\zeta.$$
+    <p>If $\Delta&lt;\mu^2$, put</p>
+    <div class="equation-card">
+    $$r=\frac{\Delta}{\mu+\sqrt{\mu^2-\Delta}},\qquad \overline Q=-URU^TD_\pi,$$
+    $$\boxed{\|R-L\|_F=
+      \|D_\pi^{1/2}(\overline Q-Q)D_\pi^{-1/2}\|_F\le r.}$$
+    </div>
+    <p>Consequently each rate obeys
+      $|\overline Q_{ij}-Q_{ij}|\le r\sqrt{\pi_j/\pi_i}$.
+      Failure of either sufficient inequality is inconclusive, not a proof of instability or model failure.</p>
+    <h2>Proof of error propagation</h2>
+    <p>Write $A=J_0^{-1}$ and $F=I-E$.
+      The Neumann inverse bound gives $\|A\|_2\le a$ and $\|A-\widehat A\|_F\le b$.
+      The exact identity</p>
+    $$E-\widehat E=A\bigl[(J_1-\widehat J_1)-(J_0-\widehat J_0)\widehat E\bigr]$$
+    <p>gives $\|E-\widehat E\|_F\le d$, hence $\|F^2-\widehat F^2\|_F\le2fd+d^2$.
+      Expanding $F^2A-\widehat F^2\widehat A$ proves
+      $\|L^2-\widehat Z\|_F\le a(2fd+d^2)+f^2b$ and thus $\|L^2-R^2\|_F\le\Delta$.</p>
+    <h2>Proof of the root radius</h2>
+    <p>The Sylvester operator $\mathcal S(X)=RX+XR$ has inverse
+      $\mathcal S^{-1}(Y)=\int_0^\infty e^{-tR}Ye^{-tR}dt$ with Frobenius norm at most $1/(2\mu)$.
+      For $D=L^2-R^2$, solve</p>
+    $$X=\mathcal S^{-1}(D-X^2).$$
+    <p>On the Frobenius ball of radius $r=\mu-\sqrt{\mu^2-\Delta}$, this map preserves the ball and has contraction factor at most $r/\mu&lt;1$.
+      Its fixed point satisfies $(R+X)^2=L^2$ and $(R+X+(R+X)^T)/2\succeq(\mu-r)I\succ0$.
+      Uniqueness of the principal square root forces $R+X=L$, proving the bound.</p>
+    <p>The weighted lifting identity follows from the orthonormal columns of $D_\pi^{1/2}U$.
+      The root-stage radius is sharp already for candidate $R=1$, true root $L=1/2$, and $\Delta=3/4$, giving $r=1/2$.
+      This does not assert sharpness of the preceding covariance-error propagation bound.</p>
+    <h2>A rational end-to-end benchmark</h2>
+    <p>For the symmetric two-state chain with $L=1$ and $T=\log2$, the exact scalar data are $J_0=1/4$, $J_1=1/8$.
+      Supply $\widehat J_0=1/4$, $\widehat J_1=31/250$, so $\eta_0=0$, $\eta_1=1/1000$, and choose $R=126/125$.</p>
+    <p>Then $\zeta=0$, $\Delta=253/15625$, and the guaranteed radius lies strictly between $0.008064$ and $0.008065$.
+      The actual weighted generator error is $1/125=0.008$.
+      Rational quadratic inequalities verify the interval, independently of floating-point square roots.</p>
+    <h2>Classical tools and precise scope</h2>
+    <p>Accretive square-root perturbation bounds via Sylvester equations are classical; see
+      <a href="./bibliography.html#Schmitt1992">Schmitt (1992)</a> and
+      <a href="./bibliography.html#Higham2008">Higham (2008)</a>, Chapter 6.
+      The proof here gives an explicit residual-aware specialization to the two ordered covariance inputs.</p>
+    <p>For every fixed irreducible chain, $(L+L^T)/2\succ0$ by the stationary Dirichlet form.
+      Thus the test succeeds for sufficiently accurate inputs and candidates, with a locally linear deterministic error bound even at reversible generators.
+      No uniform constant over generators or window lengths is claimed.</p>
+    <p>The certificate checks the scalar benchmark exactly and tests nonuniform, sparse, reversible and defective chains numerically.
+      These floating-point cross-checks are not interval proofs: rigorous numerical use requires bounds on all computed norms, inverses and residuals, including arithmetic error.</p>
+    <p>The theorem assumes an underlying generator exists and that the input error budgets are valid; it does not supply those budgets from data.
+      The candidate $\overline Q$ need not have nonnegative off-diagonal entries, so its generator constraints require a separate check.
+      No stationary-law uncertainty, hidden-state identification, finite-sample confidence, or maturity-integrated rank conclusion is covered.</p>
+  </main>
