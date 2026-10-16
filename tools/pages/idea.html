@@ -28,37 +28,47 @@
     matter at order $1/\lambda$, and each has a simple explanation.</p>
 
     <h2>First correction: the integral fluctuates</h2>
-    <p>The integral $I_t$ is not equal to $\bar g\,t$. It is a sum of many short, nearly independent pieces, so by
-    the central limit theorem it is approximately normal around $\bar g\,t$. For a normal variable,</p>
+    <p>The integral $I_t$ fluctuates around its mean, whose starting-state shift is treated below.
+    A fast switch suggests an approximately normal fluctuation. For a normal variable,</p>
     $$\mathbb{E}\big[e^{I}\big] = e^{\mathbb{E}[I] + \frac12\operatorname{Var}(I)} .$$
     <p>So the fluctuations raise the answer by half the variance of the integral.</p>
     <p>The variance comes from how long the switch remembers its state. Write $\tilde g = \tfrac12(g_1 - g_2)$ for
-    the half-difference, so that $g(y) - \bar g = \pm\tilde g$. The fluctuation $g(y_s) - \bar g$ forgets itself at
-    rate $2\lambda$:</p>
-    $$\operatorname{Cov}\big(g(y_s),\, g(y_{s+\tau})\big) = \tilde g^{\,2}\,e^{-2\lambda\tau}.$$
-    <p>Integrating this over a long time gives</p>
+    the half-difference, so that $g(y) - \bar g = \pm\tilde g$.</p>
+    <p>The fluctuation $g(y_s) - \bar g$ forgets itself at
+    rate $2\lambda$. In stationarity the covariance is</p>
+    $$\operatorname{Cov}_\pi\big(g(y_s),\, g(y_{s+\tau})\big) = \tilde g^{\,2}\,e^{-2\lambda\tau}.$$
+    <p>For the specified start in $a_i$, it is instead
+    $\tilde g^{\,2}e^{-2\lambda\tau}(1-e^{-4\lambda s})$, which is zero at $s=0$.
+    This changes the integrated variance only by a boundary term of order $\lambda^{-2}$.
+    Both starts have the leading variance</p>
     $$\operatorname{Var}(I_t) \approx 2t\int_0^\infty \tilde g^{\,2}\,e^{-2\lambda\tau}\,d\tau = \frac{t\,\tilde g^{\,2}}{\lambda}.$$
     <p>Half of that is the first correction to the exponent:</p>
-    $$\log a_i(t) \approx \bar g\,t + \frac{t\,\tilde g^{\,2}}{2\lambda} .$$
+    $$\text{variance contribution to }\log a_i(t)\approx\frac{t\,\tilde g^{\,2}}{2\lambda} .$$
     <p>The correction is the same for both starting states. It grows with $t$, and it is always positive, because
     randomness in the rate raises the expectation of an exponential.</p>
 
     <h2>First correction: the switch remembers where it started</h2>
     <p>A switch that starts in state 1 is more likely to be in state 1 for a short while. The excess probability of
     being in state 1 decays like $e^{-2\lambda s}$. Over the whole path this shifts the integral by</p>
-    $$\mathbb{E}\big[I_t \mid y_0 = 1\big] - \bar g\,t \approx \int_0^\infty \tilde g\,e^{-2\lambda s}\,ds = \frac{\tilde g}{2\lambda}.$$
+    $$\mathbb{E}\big[I_t \mid y_0 = 1\big] - \bar g\,t
+      =\frac{\tilde g}{2\lambda}(1-e^{-2\lambda t})\sim\frac{\tilde g}{2\lambda}.$$
     <p>Starting in state 2 shifts it by the same amount in the other direction. So the answer carries a factor</p>
     $$e^{\pm\tilde g/(2\lambda)} \approx 1 \pm \frac{\tilde g}{2\lambda} .$$
 
     <h2>The first-order formula</h2>
     <p>With $\varepsilon = 1/\lambda$, the two corrections combine into</p>
     $$a_i(t) \approx \exp\Big(\bar g\,t + \frac{\varepsilon}{2}\,\tilde g^{\,2}\,t\Big)\,\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g\Big).$$
-    <p>When the rates change over time, as they do in bond pricing, $g_i$ becomes a function $g_i(t)$ and the
-    products with $t$ become integrals:</p>
-    $$a_i(t) \approx \exp\Big(\int_0^t \bar g + \frac{\varepsilon}{2}\int_0^t \tilde g^{\,2}\Big)\,\Big(1 \pm \frac{\varepsilon}{2}\,\tilde g(t)\Big).$$
-    <p>This is the first-order formula used on the <a href="./regime-switching.html">regime-switching page</a> and in
-    every example. The shared term is the variance of the fluctuations. The regime-dependent bracket is the
-    memory of the starting state.</p>
+    <p>With a forward-time profile $g_i(s)$, define $a_i^{\rm f}(t)=\mathbb E_i\exp\{\int_0^t g_{y_s}(s)ds\}$.
+    Initial-state memory uses the forcing at the start of the path:</p>
+    $$a_i^{\rm f}(t)\approx\exp\Big(\int_0^t\bar g(s)ds+
+      \frac{\varepsilon}{2}\int_0^t\tilde g(s)^2ds\Big)
+      \Big(1\pm\frac{\varepsilon}{2}\tilde g(0)\Big).$$
+    <p>The <a href="./regime-switching.html">bond-pricing reduction</a> instead uses a maturity clock:
+    $a_i^{\rm b}(t)=\mathbb E_i\exp\{\int_0^t g_{y_s}(t-s)ds\}$ solves
+    $(a^{\rm b})'=(Q+\operatorname{diag}g(t))a^{\rm b}$, $a^{\rm b}(0)=\mathbf1$.
+    Its corresponding bracket is $1\pm\varepsilon\tilde g(t)/2$, because the path starts at remaining maturity $t$.</p>
+    <p>These are fixed-$t&gt;0$ outer approximations as $\lambda\to\infty$, for fixed smooth real profiles on a bounded horizon.
+    The <a href="./conditional-averaging-full.html">proof and certificate</a> give exact conditional variances and an explicit error bound, uniform through the initial layer after restoring its exponential factor.</p>
 
     <h2>Higher orders</h2>
     <p>The heuristic above explains the first corrections, but it does not produce the higher ones. For those the

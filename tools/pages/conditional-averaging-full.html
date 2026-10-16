@@ -1,0 +1,76 @@
+<!-- title: Conditional averaging and the direction of the clock · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./idea.html">&larr; averaging by hand</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_conditional_averaging.py">certificate</a></span></p>
+    <h1>Conditional averaging and the direction of the clock</h1>
+    <p class="lead">A specified initial state changes the covariance near the start, but not its leading fast-switching variance.
+      For a time-dependent profile, initial-state memory samples the forcing at the start of the path, not automatically at the final time.
+      An explicit finite-rate bound makes both distinctions without assuming a Gaussian exponential moment.</p>
+    <h2>Exact fixed-start covariance</h2>
+    <p>Let $X_s\in\{+1,-1\}$ flip at rate $\lambda$ each way and start at $X_0=\sigma\in\{+1,-1\}$.
+      Put $a=2\lambda$ and $J_t=\int_0^t d(s)X_sds$, for a deterministic real profile $d$.
+      Markov conditioning gives, for $u\ge s$,</p>
+    $$\mathbb E_\sigma X_s=\sigma e^{-as},\qquad
+      \mathbb E_\sigma[X_sX_u]=e^{-a(u-s)},\qquad
+      \operatorname{Cov}_\sigma(X_s,X_u)=e^{-a(u-s)}(1-e^{-2as}).$$
+    <p>The stationary covariance lacks the last factor.
+      Writing $M_t=\int_0^t d(s)e^{-as}ds$ yields the exact identities</p>
+    $$\mathbb E_\sigma J_t=\sigma M_t,\qquad
+      \operatorname{Var}_\sigma J_t=\operatorname{Var}_\pi J_t-M_t^2,\qquad
+      \operatorname{Var}_\pi J_t=2\int_0^t\int_0^u d(s)d(u)e^{-a(u-s)}dsdu.$$
+    <p>Indeed the second moment is the same for either fixed start and for their stationary mixture, whereas the fixed-start squared mean is $M_t^2$.
+      For constant $d=\tilde g$, this becomes</p>
+    $$\operatorname{Var}_\sigma J_t=\tilde g^2\left\{\frac{2t}{a}
+      -\frac{2(1-e^{-at})}{a^2}-\frac{(1-e^{-at})^2}{a^2}\right\},\qquad
+      0\le\frac{2t\tilde g^2}{a}-\operatorname{Var}_\sigma J_t\le\frac{3\tilde g^2}{a^2}.$$
+    <p>At $t=\lambda=\tilde g=1$, stationary and specified-start variances are respectively $.567667642$ and $.380756374$.
+      At $s=0$, lag one and $\lambda=1$, the specified-start covariance is zero, not the stationary value $.135335283$.
+      The discrepancy is real, although both integrated variances have the same leading $t\tilde g^2/\lambda$ term.</p>
+    <h2>A uniform bounded-horizon log-transform estimate</h2>
+    <p>Fix $T&lt;\infty$, $d\in C^1([0,T];\mathbb R)$, $D=\|d\|_\infty$ and $L=\|d'\|_\infty$.
+      For any $\lambda&gt;0$, either start and every $0\le t\le T$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log\mathbb E_\sigma e^{J_t}
+        &amp;=\frac1a\int_0^t d(s)^2ds+
+          \frac{\sigma d(0)}a(1-e^{-at})+E_\sigma(t),\\
+      |E_\sigma(t)|&amp;\le\frac{L+DLt+2D^2}{a^2}+\frac{2D^4t}{a^3}.
+    \end{aligned}$$
+    </div>
+    <p>Adding an integrable common profile $b(s)$ adds exactly $\int_0^t b(s)ds$ to the logarithm.
+      The bound is uniform on the stated bounded horizon, for fixed profiles; it is not an all-maturity estimate with a constant independent of $T$.
+      No Gaussian approximation is used in its proof.</p>
+    <p><strong>Proof.</strong> Remove the common profile and let the positive weighted row probabilities solve
+      $z'=z\{Q+\operatorname{diag}(d,-d)\}$, $z(0)=e_\sigma^T$.
+      With $m=z\mathbf1$ and $r=(z_+-z_-)/m$, direct differentiation gives
+      $(\log m)'=dr$, $r'=d(1-r^2)-ar$ and $r(0)=\sigma$.</p>
+    <p>Since $|r|\le1$, variation of constants gives
+      $r(s)=\sigma e^{-as}+\int_0^s e^{-a(s-v)}d(v)(1-r(v)^2)dv$ and
+      $|r(s)|\le e^{-as}+D/a$.
+      Integrating $dr$ therefore yields $\log m=\sigma M_t+K_t-N_t$, where</p>
+    $$K_t=\int_0^t d(u)\int_0^u e^{-a(u-s)}d(s)dsdu,\qquad
+      N_t=\int_0^t d(u)\int_0^u e^{-a(u-s)}d(s)r(s)^2dsdu.$$
+    <p>Lipschitz continuity and the exponential kernel give
+      $|M_t-d(0)(1-e^{-at})/a|\le L/a^2$ and
+      $|K_t-a^{-1}\int_0^t d(s)^2ds|\le(DLt+D^2)/a^2$.
+      Also $\int_0^t r(s)^2ds\le1/a+2D^2t/a^2$, so
+      $|N_t|\le D^2/a^2+2D^4t/a^3$; adding the bounds proves the claim.</p>
+    <h2>Forward time is not remaining maturity</h2>
+    <p>For $g_i(s)=b(s)\pm d(s)$, the forward functional is
+      $a_i^{\rm f}(t)=\mathbb E_i\exp\{\int_0^t g_{Y_s}(s)ds\}$.
+      The bound proves its leading memory is $\pm d(0)/(2\lambda)$ at fixed positive $t$.</p>
+    <p>The column equation $v'=(Q+\operatorname{diag}g(t))v$, $v(0)=\mathbf1$, instead represents
+      $v_i(t)=\mathbb E_i\exp\{\int_0^t g_{Y_s}(t-s)ds\}$.
+      To see this, for a fixed terminal horizon use the backward equation in elapsed time, then substitute remaining time $\tau=t-s$.
+      Applying the same bound to $d_t(s)=d(t-s)$ gives the same integral term but memory $\pm d(t)(1-e^{-at})/a$.</p>
+    <p>Thus the maturity-clock bracket on the pricing pages is consistent with their ODE; it must not be attached silently to a forward calendar-time profile.
+      For the ramp $d(s)=s$ and $t=1$, the forward-start log gap is $O(\lambda^{-2})$, whereas the reversed-profile log gap is $1/\lambda+O(\lambda^{-2})$.
+      At $\lambda=160$, their respective values of $\lambda(\log a_+-\log a_-)$ are $.003125000$ and $.996868611$.</p>
+    <h2>Verification and scope</h2>
+    <p>The certificate checks 72 conditional semigroup covariances, integrated variances against independent joint-moment ODEs and quadrature, and 250 finite-rate log bounds across five smooth real profiles.
+      Its largest measured log-error/bound ratio is $.755271152$; forward row evolution and the reversed-profile column ODE also agree numerically.
+      These checks audit the formulas; the inequalities above supply the error proof.</p>
+    <p>The exponential-functional framework is classical; see <a href="./bibliography.html#Kac1949">Kac (1949)</a> for its foundational Wiener-functional form.
+      The finite-state weighted equations and the explicit bound used here are derived directly above, rather than attributed to that Brownian-motion paper.
+      The result assumes a symmetric two-state switch and fixed real profiles with bounded first derivative, not arbitrary hidden processes or complex-valued pricing transforms.</p>
+  </main>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conditional averaging and the direction of the clock · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./idea.html">&larr; averaging by hand</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/fast-switching/verify_conditional_averaging.py">certificate</a></span></p>
+    <h1>Conditional averaging and the direction of the clock</h1>
+    <p class="lead">A specified initial state changes the covariance near the start, but not its leading fast-switching variance.
+      For a time-dependent profile, initial-state memory samples the forcing at the start of the path, not automatically at the final time.
+      An explicit finite-rate bound makes both distinctions without assuming a Gaussian exponential moment.</p>
+    <h2>Exact fixed-start covariance</h2>
+    <p>Let $X_s\in\{+1,-1\}$ flip at rate $\lambda$ each way and start at $X_0=\sigma\in\{+1,-1\}$.
+      Put $a=2\lambda$ and $J_t=\int_0^t d(s)X_sds$, for a deterministic real profile $d$.
+      Markov conditioning gives, for $u\ge s$,</p>
+    $$\mathbb E_\sigma X_s=\sigma e^{-as},\qquad
+      \mathbb E_\sigma[X_sX_u]=e^{-a(u-s)},\qquad
+      \operatorname{Cov}_\sigma(X_s,X_u)=e^{-a(u-s)}(1-e^{-2as}).$$
+    <p>The stationary covariance lacks the last factor.
+      Writing $M_t=\int_0^t d(s)e^{-as}ds$ yields the exact identities</p>
+    $$\mathbb E_\sigma J_t=\sigma M_t,\qquad
+      \operatorname{Var}_\sigma J_t=\operatorname{Var}_\pi J_t-M_t^2,\qquad
+      \operatorname{Var}_\pi J_t=2\int_0^t\int_0^u d(s)d(u)e^{-a(u-s)}dsdu.$$
+    <p>Indeed the second moment is the same for either fixed start and for their stationary mixture, whereas the fixed-start squared mean is $M_t^2$.
+      For constant $d=\tilde g$, this becomes</p>
+    $$\operatorname{Var}_\sigma J_t=\tilde g^2\left\{\frac{2t}{a}
+      -\frac{2(1-e^{-at})}{a^2}-\frac{(1-e^{-at})^2}{a^2}\right\},\qquad
+      0\le\frac{2t\tilde g^2}{a}-\operatorname{Var}_\sigma J_t\le\frac{3\tilde g^2}{a^2}.$$
+    <p>At $t=\lambda=\tilde g=1$, stationary and specified-start variances are respectively $.567667642$ and $.380756374$.
+      At $s=0$, lag one and $\lambda=1$, the specified-start covariance is zero, not the stationary value $.135335283$.
+      The discrepancy is real, although both integrated variances have the same leading $t\tilde g^2/\lambda$ term.</p>
+    <h2>A uniform bounded-horizon log-transform estimate</h2>
+    <p>Fix $T&lt;\infty$, $d\in C^1([0,T];\mathbb R)$, $D=\|d\|_\infty$ and $L=\|d'\|_\infty$.
+      For any $\lambda&gt;0$, either start and every $0\le t\le T$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \log\mathbb E_\sigma e^{J_t}
+        &amp;=\frac1a\int_0^t d(s)^2ds+
+          \frac{\sigma d(0)}a(1-e^{-at})+E_\sigma(t),\\
+      |E_\sigma(t)|&amp;\le\frac{L+DLt+2D^2}{a^2}+\frac{2D^4t}{a^3}.
+    \end{aligned}$$
+    </div>
+    <p>Adding an integrable common profile $b(s)$ adds exactly $\int_0^t b(s)ds$ to the logarithm.
+      The bound is uniform on the stated bounded horizon, for fixed profiles; it is not an all-maturity estimate with a constant independent of $T$.
+      No Gaussian approximation is used in its proof.</p>
+    <p><strong>Proof.</strong> Remove the common profile and let the positive weighted row probabilities solve
+      $z'=z\{Q+\operatorname{diag}(d,-d)\}$, $z(0)=e_\sigma^T$.
+      With $m=z\mathbf1$ and $r=(z_+-z_-)/m$, direct differentiation gives
+      $(\log m)'=dr$, $r'=d(1-r^2)-ar$ and $r(0)=\sigma$.</p>
+    <p>Since $|r|\le1$, variation of constants gives
+      $r(s)=\sigma e^{-as}+\int_0^s e^{-a(s-v)}d(v)(1-r(v)^2)dv$ and
+      $|r(s)|\le e^{-as}+D/a$.
+      Integrating $dr$ therefore yields $\log m=\sigma M_t+K_t-N_t$, where</p>
+    $$K_t=\int_0^t d(u)\int_0^u e^{-a(u-s)}d(s)dsdu,\qquad
+      N_t=\int_0^t d(u)\int_0^u e^{-a(u-s)}d(s)r(s)^2dsdu.$$
+    <p>Lipschitz continuity and the exponential kernel give
+      $|M_t-d(0)(1-e^{-at})/a|\le L/a^2$ and
+      $|K_t-a^{-1}\int_0^t d(s)^2ds|\le(DLt+D^2)/a^2$.
+      Also $\int_0^t r(s)^2ds\le1/a+2D^2t/a^2$, so
+      $|N_t|\le D^2/a^2+2D^4t/a^3$; adding the bounds proves the claim.</p>
+    <h2>Forward time is not remaining maturity</h2>
+    <p>For $g_i(s)=b(s)\pm d(s)$, the forward functional is
+      $a_i^{\rm f}(t)=\mathbb E_i\exp\{\int_0^t g_{Y_s}(s)ds\}$.
+      The bound proves its leading memory is $\pm d(0)/(2\lambda)$ at fixed positive $t$.</p>
+    <p>The column equation $v'=(Q+\operatorname{diag}g(t))v$, $v(0)=\mathbf1$, instead represents
+      $v_i(t)=\mathbb E_i\exp\{\int_0^t g_{Y_s}(t-s)ds\}$.
+      To see this, for a fixed terminal horizon use the backward equation in elapsed time, then substitute remaining time $\tau=t-s$.
+      Applying the same bound to $d_t(s)=d(t-s)$ gives the same integral term but memory $\pm d(t)(1-e^{-at})/a$.</p>
+    <p>Thus the maturity-clock bracket on the pricing pages is consistent with their ODE; it must not be attached silently to a forward calendar-time profile.
+      For the ramp $d(s)=s$ and $t=1$, the forward-start log gap is $O(\lambda^{-2})$, whereas the reversed-profile log gap is $1/\lambda+O(\lambda^{-2})$.
+      At $\lambda=160$, their respective values of $\lambda(\log a_+-\log a_-)$ are $.003125000$ and $.996868611$.</p>
+    <h2>Verification and scope</h2>
+    <p>The certificate checks 72 conditional semigroup covariances, integrated variances against independent joint-moment ODEs and quadrature, and 250 finite-rate log bounds across five smooth real profiles.
+      Its largest measured log-error/bound ratio is $.755271152$; forward row evolution and the reversed-profile column ODE also agree numerically.
+      These checks audit the formulas; the inequalities above supply the error proof.</p>
+    <p>The exponential-functional framework is classical; see <a href="./bibliography.html#Kac1949">Kac (1949)</a> for its foundational Wiener-functional form.
+      The finite-state weighted equations and the explicit bound used here are derived directly above, rather than attributed to that Brownian-motion paper.
+      The result assumes a symmetric two-state switch and fixed real profiles with bounded first derivative, not arbitrary hidden processes or complex-valued pricing transforms.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
