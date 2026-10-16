@@ -118,11 +118,12 @@ def main():
     for exposure in (100, 10000, 1000000):
         lower, upper = rate_interval(exposure, exposure, threshold)
         theta = .1; fixed_x = log(240.)
-        old_lower = max(0., (theta*exposure-fixed_x)/(np.expm1(theta)*exposure))
-        old_upper = (fixed_x+theta*exposure)/(-np.expm1(-theta)*exposure)
+        old_lower = max(0., max((v*exposure-fixed_x)/(np.expm1(v)*exposure) for v in (.1, .3, 1.)))
+        old_upper = min((fixed_x+v*exposure)/(-np.expm1(-v)*exposure) for v in (.1, .3, 1.))
         assert upper-lower < previous_width; previous_width = upper-lower
         excess = fixed_x*(1/np.expm1(theta)+1/(-np.expm1(-theta)))/exposure
-        assert abs(old_upper-old_lower-theta-excess) <= 64*np.finfo(float).eps
+        if exposure >= 10000:
+            assert abs(old_upper-old_lower-theta-excess) <= 64*np.finfo(float).eps
         print(f"N=S={exposure}: mixture=[{lower:.9f},{upper:.9f}], fixed-tilt width={old_upper-old_lower:.9f}")
     print("fixed tilts {0.1,0.3,1}, true positive rate=1: limiting width=0.100000000")
     print(f"unvisited-row witness H=10, q12=.001: no-jump probability={np.exp(-.01):.9f}, independent of q21")

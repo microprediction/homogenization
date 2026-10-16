@@ -155,14 +155,15 @@
     <p>This follows by bounding off-diagonal errors entrywise and diagonal errors by their row sums.
       The sharper induced-norm and box-vertex bounds in the <a href="./cycle-smile-full.html">existing generator-radius theorem</a> apply too.
       Stationary-law, group-inverse and skew-energy propagation still require their own sufficient tests; the estimated generator need not be irreducible.</p>
-    <h2>Why the mixture is a substantive sharpening</h2>
+    <h2>Width compared with a fixed tilt set</h2>
     <p>The existing fixed-tilt intervals can already be made anytime-valid by applying Ville to their exponential martingales.
       But with one fixed finite nonempty $\Theta\subset(0,\infty)$, $\theta_* =\min\Theta$, fixed confidence and $N/S\to q&gt;0$, their limits are</p>
     $$l\longrightarrow\frac{q\theta_*}{e^{\theta_*}-1},\qquad
       u\longrightarrow\frac{q\theta_*}{1-e^{-\theta_*}},\qquad
       u-l\longrightarrow q\theta_*&gt;0.$$
     <p>Here $\theta/(e^\theta-1)$ decreases and $\theta/(1-e^{-\theta})$ increases on $(0,\infty)$, so both limiting extrema use $\theta_*$.
-      This is a limitation of a fixed finite tilt set, not an error in its finite-path guarantee.</p>
+      This is a limitation of a fixed finite tilt set, not an error in its finite-path guarantee.
+      No pointwise width dominance over every tuned fixed-tilt interval is asserted.</p>
     <p>By Laplace's formula or Stirling's expansion, the gamma mixture instead has
       $\log M(\widehat q)=-\tfrac12\log S+O(1)$ whenever $S\to\infty$ and $\widehat q\to q&gt;0$.
       Expanding $e^z-1-z$ at zero gives interval width $O(\sqrt{\log S/S})$.
