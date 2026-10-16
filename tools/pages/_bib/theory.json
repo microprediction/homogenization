@@ -1,5 +1,32 @@
 [
  {
+  "key": "Davies2010",
+  "authors": "Davies, E. B.",
+  "year": 2010,
+  "title": "Embeddable Markov Matrices",
+  "venue": "Electronic Journal of Probability 15(47):1474-1486",
+  "doi": "10.1214/EJP.v15-733",
+  "annotation": "Theorem 11 presents the determinant-to-generator-strip argument for uniqueness of Markov embeddings. The snapshot confidence note combines it with general principal-logarithm uniqueness and an observed perturbation budget."
+ },
+ {
+  "key": "Higham2008",
+  "authors": "Higham, N. J.",
+  "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation",
+  "venue": "Society for Industrial and Applied Mathematics",
+  "doi": "10.1137/1.9780898717778",
+  "annotation": "Theorem 1.31 and Chapter 11 characterize the unique principal matrix logarithm by its spectral strip, including matrices with repeated eigenvalues and nontrivial Jordan blocks."
+ },
+ {
+  "key": "HowardEtAl2021",
+  "authors": "Howard, S. R., Ramdas, A., McAuliffe, J. and Sekhon, J.",
+  "year": 2021,
+  "title": "Time-uniform, nonparametric, nonasymptotic confidence sequences",
+  "venue": "Annals of Statistics 49(2):1055-1080",
+  "doi": "10.1214/20-AOS1991",
+  "annotation": "Develops mixture confidence sequences, including beta-binomial mixtures; the snapshot notes apply a fixed uniform Bernoulli likelihood mixture at predictable visits to each Markov transition row."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
@@ -48,8 +75,8 @@
   "key": "Prony1795",
   "authors": "de Prony, G. R.",
   "year": 1795,
-  "title": "Essai exp\u00e9rimental et analytique sur les lois de la dilatabilit\u00e9 des fluides \u00e9lastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, \u00e0 diff\u00e9rentes temp\u00e9ratures",
-  "venue": "Journal de l'\u00c9cole Polytechnique 1(2):24-76",
+  "title": "Essai expérimental et analytique sur les lois de la dilatabilité des fluides élastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, à différentes températures",
+  "venue": "Journal de l'École Polytechnique 1(2):24-76",
   "annotation": "Introduces the annihilating-polynomial reconstruction now known as Prony's method; the finite-atomic Cox-mixture result uses its Hankel and Vandermonde steps."
  },
  {
