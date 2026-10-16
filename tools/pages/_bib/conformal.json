@@ -120,6 +120,16 @@
   "annotation": "Establishes local asymptotic normality for stationary hidden Markov models. The overlapping-emission theorem computes the observed score and Fisher information explicitly at hidden independence, then uses this LAN result together with an exact likelihood second moment to obtain the sharp total-variation limit."
  },
  {
+  "key": "DettePepelyshevZhigljavsky2016",
+  "authors": "Dette, H., Pepelyshev, A. and Zhigljavsky, A.",
+  "year": 2016,
+  "title": "Optimal designs in regression with correlated errors",
+  "venue": "The Annals of Statistics 44(1):113-152",
+  "doi": "10.1214/15-AOS1361",
+  "url": "https://arxiv.org/abs/1501.01774",
+  "annotation": "Classical continuous-time design with correlated errors, endpoint atoms and an interior density; Theorems 2.1 and 2.3 and Appendix A.4 supply the surrounding structure and potential criterion. The path-memory frontier adds a nonnegative exponential-memory constraint and proves its optimizer directly."
+ },
+ {
   "key": "KantorovichRubinstein1958",
   "authors": "Kantorovich, L. V. and Rubinstein, G. S.",
   "year": 1958,
