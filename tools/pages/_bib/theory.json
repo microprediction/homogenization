@@ -69,5 +69,23 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Higham2008",
+  "authors": "Higham, N. J.",
+  "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation",
+  "venue": "Society for Industrial and Applied Mathematics",
+  "doi": "10.1137/1.9780898717778",
+  "annotation": "Develops matrix functions and the principal square-root theorem. The ordered-window identification formula uses the unique square root with spectrum in the open right half-plane, not a positive-semidefinite covariance factor."
+ },
+ {
+  "key": "Schmitt1992",
+  "authors": "Schmitt, B. A.",
+  "year": 1992,
+  "title": "Perturbation bounds for matrix square roots and pythagorean sums",
+  "venue": "Linear Algebra and its Applications 174:215-227",
+  "doi": "10.1016/0024-3795(92)90052-C",
+  "annotation": "Studies accretive matrix square-root perturbations using Sylvester-equation bounds. The ordered-window note specializes the classical mechanism to covariance-input error budgets and an approximate-root residual."
  }
 ]
