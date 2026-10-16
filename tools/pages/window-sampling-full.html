@@ -1,0 +1,74 @@
+<!-- title: Single-trajectory confidence budgets for ordered windows · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_window_sampling.py">certificate</a></span></p>
+    <h1>Confidence budgets from one stationary trajectory</h1>
+    <p class="lead">Ordered window products from one trajectory are dependent, even when their observation intervals do not overlap.
+      An independently justified mixing bound gives simultaneous finite-sample covariance error budgets, which can then feed a deterministic generator-error certificate.</p>
+    <h2>Observation model and theorem</h2>
+    <p>Let $Y$ be a stationary finite irreducible row-generator chain with known stationary law $\pi$.
+      Fix $T&gt;0$, $N\ge1$, $r\ge1$, $0&lt;\delta&lt;1$, and a known feature matrix $U\in\mathbb R^{n\times r}$ with $\pi U=0$ before observing the data.
+      Observe the path occupations exactly over $[0,3NT]$ and put</p>
+    $$X_{kj}=\int_{(3k+j)T}^{(3k+j+1)T}U^Te_{Y_t}dt,\quad
+      \widehat J_i=\frac1N\sum_{k=0}^{N-1}X_{k0}X_{k,i+1}^T,\quad i=0,1.$$
+    <p>The expectation $J_i=\mathbb E\widehat J_i$ is the ordered adjacent or one-gap window covariance, since the feature means are known to vanish.
+      Do not subtract fitted sample means or symmetrize these products.</p>
+    <p>Assume a supplied deterministic upper bound $0\le\alpha&lt;1$ on the Dobrushin coefficient</p>
+    $$\frac12\max_{x,y}\sum_z|P_{xz}-P_{yz}|\le\alpha,\qquad P=e^{3TQ}.$$
+    <p>Write $M_a=\max_x|U_{xa}|$ and define $c_0=0$, $c_{m+1}=1+\alpha c_m$, and</p>
+    $$H_N=c_N^2+\sum_{m=0}^{N-1}(1+c_m)^2,\qquad
+      \eta=\frac{T^2\sum_{a=1}^rM_a^2}{N}\sqrt{2H_N\log\frac{4r^2}{\delta}}.$$
+    <div class="equation-card">
+    $$\boxed{\Pr\!\left(\|\widehat J_0-J_0\|_F\le\eta,
+      \ \|\widehat J_1-J_1\|_F\le\eta\right)\ge1-\delta.}$$
+    </div>
+    <p>For fixed design and confidence level, these budgets are $O(N^{-1/2})$, since
+      $H_N\le(1-\alpha)^{-2}+N\{1+(1-\alpha)^{-1}\}^2$.
+      No reversibility or diagonalizability is needed.</p>
+    <h2>Proof for bounded path-block rewards</h2>
+    <p>Apply the same fixed scalar path functional to every block, giving rewards $Z_k$ bounded by $B$ in absolute value.
+      Let $S_k=Y_{3kT}$, $g(x)=\mathbb E[Z_k\mid S_k=x]$, and
+      $V_m=\sum_{j=0}^{m-1}P^jg$, with $V_0=0$.</p>
+    <p>The Markov property and oscillation contraction give
+      $\operatorname{osc}(V_m)\le2Bc_m$.
+      Reveal $S_0$ first and then each complete path block; the Doob martingale for $\sum_{k=0}^{N-1}Z_k$ has initial conditional range at most $2Bc_N$.</p>
+    <p>When revealing block $k$, the only random part of the updated conditional expectation is
+      $Z_k+V_{N-k-1}(S_{k+1})$.
+      Its conditional range is at most $2B(1+c_{N-k-1})$, including dependence between the reward and its endpoint.</p>
+    <p>The conditional Hoeffding lemma gives a centered-increment moment bound $\exp(\lambda^2w^2/8)$ for an interval of length $w$.
+      Multiplying these bounds, including the initial-state increment, gives</p>
+    $$\mathbb E\exp\!\left\{\lambda\left(\sum_kZ_k-\mathbb E\sum_kZ_k\right)\right\}
+       \le\exp(\lambda^2B^2H_N/2),$$
+    $$\Pr\!\left(\left|N^{-1}\sum_kZ_k-\mathbb EZ_0\right|\ge t\right)
+       \le2\exp\{-N^2t^2/(2B^2H_N)\}.$$
+    <p>Stationarity supplies the common mean in the last line.
+      Apply it to each ordered product entry with $B=T^2M_aM_b$, and take a union bound over both matrices and all $r^2$ entries.
+      Summing the squared entry budgets proves the displayed Frobenius bound; a zero feature column gives zero entries exactly.</p>
+    <h2>Where a usable mixing bound comes from</h2>
+    <p>The unknown $Q$ must not be replaced by its fitted estimate inside the confidence calculation without a separate justification.
+      One sufficient known model-class restriction is $Q_{xy}\ge\rho&gt;0$ for every $x\ne y$, giving $\alpha=e^{-3n\rho T}$.</p>
+    <p>Indeed, decompose $Q=\rho(\mathbf1\mathbf1^T-nI)+R$, where $R$ is a row generator.
+      At independent rate $n\rho$, reset the state to a uniform label; coupling two chains at the first shared reset and then using common randomness proves the contraction bound.
+      The abstract theorem also permits sparse chains when another certified contraction bound is available.</p>
+    <h2>Using the budgets without a selection-coverage mistake</h2>
+    <p>For complete weighted-orthonormal features, the exact model obeys
+      $L=-U^TD_\pi QU$, $J_0=L^{-2}(I-e^{-TL})^2$, and $J_0^{-1}J_1=e^{-TL}$.
+      The residual-aware <a href="https://github.com/microprediction/homogenization/pull/143">deterministic reconstruction bound</a> accepts $\eta_0=\eta_1=\eta$ from this theorem.</p>
+    <p>On the single simultaneous event above, every candidate satisfying that deterministic test has its claimed error bound, even if the candidate is chosen using the same data.
+      Thus the probability of reporting an incorrect certified radius is at most $\delta$, allowing abstention when the test fails.
+      This is not a claim of $1-\delta$ coverage conditional on the procedure reporting a radius.</p>
+    <p>The observation design, features and mixing bound must remain fixed or have separately justified simultaneous control.
+      The result does not cover an estimated stationary law, hidden feature embedding, discretization or measurement error, data-dependent stopping, or choosing the window length after inspecting the data.</p>
+    <h2>A design illustration and checks</h2>
+    <p>For the symmetric two-state chain with flip rate $1/2$, use $U=(1,-1)^T$ and $T=\log2$.
+      Then $\alpha=1/8$; at $N=10^6$ and $\delta=0.05$, the budget is $\eta=0.003047870$.</p>
+    <p>At the population input values $J_0=1/4$, $J_1=1/8$ and candidate $L=1$, the reconstruction test with this positive budget gives radius $0.045377255$.
+      This is a design illustration at population values, not a claim that the same radius holds for every realized sample.</p>
+    <p>The certificate checks $96$ conditional-range inequalities exactly on dependent three-state block rewards, plus exact geometric-sum identities and finite-law tail and moment-generating-function comparisons.
+      It also checks the continuous-time ordered-product moments and reset contraction bound in $60$ cases.
+      Floating-point checks support the implementation, not the probability theorem or interval certification.</p>
+    <h2>Classical concentration machinery</h2>
+    <p>Hoeffding bounds for uniformly ergodic Markov chains and their martingale proofs are classical; see
+      <a href="./bibliography.html#GlynnOrmoneit2002">Glynn and Ormoneit (2002)</a>, especially Section 2.
+      The proof here treats path-block rewards, keeps their endpoint dependence and the initial-state increment, and specializes the resulting budgets to ordered covariance recovery.</p>
+  </main>
