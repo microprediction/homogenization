@@ -1,5 +1,24 @@
 [
  {
+  "key": "Higham2008",
+  "authors": "Higham, N. J.",
+  "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation",
+  "venue": "Society for Industrial and Applied Mathematics",
+  "doi": "10.1137/1.9780898717778",
+  "annotation": "Classical theory and computation of matrix functions. Chapter 6 states principal square-root uniqueness and discusses conditioning and residuals; ordered-window inversion uses this machinery without a matrix logarithm."
+ },
+ {
+  "key": "GlynnOrmoneit2002",
+  "authors": "Glynn, P. W. and Ormoneit, D.",
+  "year": 2002,
+  "title": "Hoeffding's inequality for uniformly ergodic Markov chains",
+  "venue": "Statistics & Probability Letters 56(2):143-146",
+  "doi": "10.1016/S0167-7152(01)00158-4",
+  "url": "https://web.stanford.edu/~glynn/papers/2002/GOrmoneit02.pdf",
+  "annotation": "Classical explicit concentration for bounded uniformly ergodic Markov-chain sums, proved with martingale exponential bounds. The ordered-window note supplies a finite-horizon path-block specialization retaining endpoint dependence and the initial-state increment."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
