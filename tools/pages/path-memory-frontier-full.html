@@ -1,0 +1,103 @@
+<!-- title: Exact path variance-memory frontier · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-score summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_memory_frontier.py">certificate</a></span></p>
+    <h1>The exact variance cost of suppressing start memory</h1>
+    <p class="lead">For a two-state chain, the minimum stationary path variance at a prescribed mean-memory budget
+      is explicit at every rate and horizon. Tight budgets remove the start of the path, not just its endpoint weight.</p>
+    <h2>Setup: positive weights, including endpoint observations</h2>
+    <p>Rescale time by the relaxation rate: $R=r\Delta&gt;0$, and let $X_x\in\{0,1\}$ have row generator
+      $Q=\left(\begin{smallmatrix}-p&amp;p\\1-p&amp;-(1-p)\end{smallmatrix}\right)$, $p\in(0,1)$.
+      For a deterministic probability measure $\nu$ on $[0,R]$, define</p>
+    $$A_\nu=\int(X_x-p)\,\nu(dx),\qquad
+      L(\nu)=\int e^{-x}\nu(dx),\qquad
+      E(\nu)=\iint e^{-|x-y|}\nu(dx)\nu(dy).$$
+    <p>The measure can combine a density with point observations; $\delta_t$ denotes unit mass at time $t$.
+      Exact conditional means and stationary covariance give</p>
+    $$\mathbb E_i A_\nu=(i-p)L(\nu),\qquad
+      \operatorname{Var}_\pi A_\nu=p(1-p)E(\nu).$$
+    <p>For $S=\mu A_\nu+\sigma Z$, independent $Z\sim N(0,1)$ and $\sigma&gt;0$, write $F_i$ for its start-$i$ CDF
+      and $F_\pi=(1-p)F_0+pF_1$.
+      A common rate-one Bernoulli refresh clock couples any start to stationarity at its first refresh $\tau$.</p>
+    <p>Before $\tau$ the state difference is $i-J$, where $J\sim\operatorname{Bernoulli}(p)$; afterwards it is zero.
+      Thus $\mathbb E|A_i-A_\pi|=|i-p|L(\nu)$, and the Gaussian CDF Lipschitz bound proves</p>
+    $$\sup_q|F_i(q)-F_\pi(q)|\le
+      \frac{|\mu|\,|i-p|}{\sigma\sqrt{2\pi}}L(\nu).$$
+    <p>This includes the unique pooled population quantile, which has exact stationary marginal coverage.
+      The optimization below constrains exact mean memory and this coverage bound, not the actual coverage gap.</p>
+    <h2>The finite-rate frontier</h2>
+    <p>The unconstrained endpoint-plus-density design already appears in the
+      <a href="./conformal-crossover-full.html">calibration design note</a>.
+      Here the added constraint is an explicit budget on latent-start memory.</p>
+    <p>For $0\le\ell\le1$, minimize $E(\nu)$ over probability measures with $L(\nu)\le\ell$.
+      Budgets below $e^{-R}$ are infeasible; at $\ell=e^{-R}$ the only feasible measure is $\delta_R$, with energy one.
+      Put $\ell_0=2/(R+2)$ and $\ell_1=1/(R+1)$.</p>
+    <div class="equation-card">
+    $$E_*(\ell)=\begin{cases}
+      2/(R+2),&amp;\ell\ge\ell_0,\\
+      \ell^2+2(1-\ell)^2/R,&amp;\ell_1\le\ell\le\ell_0,\\
+      (2d+1)/(d+1)^2,&amp;e^{-R}\le\ell\le\ell_1,
+      \end{cases}$$
+    <p>In the last line, $d=R-a$ and $a\in[0,R]$ is the unique solution of
+      $\ell=e^{-a}/(R-a+1)$.</p>
+    </div>
+    <p>For $\ell\ge\ell_0$, the unique optimizer is
+      $\nu_*=(dx+\delta_0+\delta_R)/(R+2)$ on $[0,R]$.
+      The constraint is inactive above $\ell_0$, where $L(\nu_*)=\ell_0$.</p>
+    <p>For $\ell_1\le\ell\le\ell_0$, set $c=(1-\ell)/R$.
+      The optimizer is $\nu_*=c\,dx+(\ell-c)\delta_0+c\delta_R$; its starting mass decreases to zero at $\ell_1$.</p>
+    <p>For $e^{-R}\le\ell\le\ell_1$, set $c=1/(R-a+1)$.
+      The optimizer is $\nu_*=c\mathbf1_{[a,R]}dx+c\delta_R$, with no starting atom.
+      Its memory decreases strictly as $a$ increases from zero to $R$, and the formulas agree at both transitions.</p>
+    <h2>A global optimality certificate</h2>
+    <p>Let $u_*(x)=\int e^{-|x-y|}\nu_*(dy)$.
+      In every case there are constants $\lambda\ge0$, $\eta$ such that
+      $u_*+\lambda e^{-x}\ge\eta$ everywhere, with equality on the support of $\nu_*$,
+      and $\lambda(L(\nu_*)-\ell)=0$.</p>
+    <p>For the first case take $\eta=2/(R+2)$ and $\lambda=0$.
+      For the middle case, $u_*=2c-(2c-\ell)e^{-x}$, so take $\eta=2c$, $\lambda=2c-\ell\ge0$.</p>
+    <p>For the last case take $\eta=2c$, $\lambda=ce^a$.
+      On $[a,R]$, $u_*(x)=c(2-e^{-(x-a)})$; on $[0,a)$,
+      $u_*(x)+\lambda e^{-x}=2c\cosh(a-x)\ge2c$.</p>
+    <p>For any feasible competitor $\nu$, the mass and memory constraints imply
+      $\int u_*d\nu\ge\eta-\lambda\ell=E(\nu_*)$.
+      Writing $\rho=\nu-\nu_*$ yields the quantitative certificate</p>
+    $$E(\nu)-E(\nu_*)=E(\rho)+2\int u_*d\rho\ge E(\rho)\ge0.$$
+    <p>The exponential kernel is strictly positive definite on finite signed measures:
+      $E(\rho)=(2\pi)^{-1}\int_{\mathbb R}2|\widehat\rho(\omega)|^2/(1+\omega^2)\,d\omega$.
+      Equality forces $\rho=0$, proving uniqueness; integrating the displayed potentials gives the frontier.</p>
+    <h2>Exponential forgetting at a finite variance factor</h2>
+    <p>Fix $0&lt;\beta&lt;1$ and use the last optimizer with $a=\beta R$, $d=(1-\beta)R$.
+      Then exactly</p>
+    $$L(\nu_*)=\frac{e^{-\beta R}}{(1-\beta)R+1},\qquad
+      E(\nu_*)=\frac{2(1-\beta)R+1}{((1-\beta)R+1)^2},\qquad
+      \frac{E(\nu_*)}{2/(R+2)}\longrightarrow\frac1{1-\beta}.$$
+    <p>Thus a fixed early-time cutoff allows exponentially small latent-start coverage bounds with a finite
+      relative cost in the path component of stationary variance.
+      This is not the fixed polynomial-ramp expansion; the weights here depend on the chosen rate and budget.</p>
+    <p>Every optimizer has positive mass at $R$, so if weights must be $L^2$ densities with no atoms,
+      the same frontier is an unattained infimum for
+      every $\ell&gt;e^{-R}$.
+      Approximate an optimizer at a slightly tighter budget by positive densities; continuity of the memory and
+      bounded continuous covariance kernel preserves feasibility and convergence of energy.
+      The budget $e^{-R}$ itself admits no density.</p>
+    <p>For a finite observation grid containing both endpoints with largest gap $h$, the optimal grid energy satisfies
+      $0\le E_{\rm grid}-E_*\le h$.
+      Move each point of $\nu_*$ to the next grid point: this can only decrease memory, while each displacement is
+      in $[0,h]$, so pairwise distances and hence kernel values change by at most $h$.</p>
+    <h2>Checks, literature and scope</h2>
+    <p>At $R=8$, the transition budgets are $0.2$ and $0.1111111111$.
+      The minimum normalized energies at budgets $0.05$ and $0.005$ are $0.2317899808$ and $0.3368964877$.</p>
+    <p>The certificate checks mass, memory, potentials and energy on 32 frontier cases, independently computes
+      means and variances with 96 regime-resolved moment semigroups, and compares four constrained grid optimizations.
+      Four Gaussian-smoothed pooled-quantile calculations check the coverage bound under Fourier refinement;
+      these numerical checks are not interval enclosures.</p>
+    <p>The endpoint-atom/density structure and potential criterion belong to classical correlated-observation
+      design; see <a href="./bibliography.html#DettePepelyshevZhigljavsky2016">Dette, Pepelyshev and Zhigljavsky
+      (2016), Theorems 2.1 and 2.3 and Appendix A.4</a>.
+      The unconstrained formula is the exponential-kernel location-model specialization, not a novelty claim.</p>
+    <p>The added memory constraint is treated self-containedly above with nonnegative measures.
+      This is an exact stationary variance frontier, not an optimization of quantile width, predictive accuracy,
+      calibration dependence, or distribution-free feature-conditional coverage.
+      Weights and the score map are deterministic and frozen; finite calibration and estimated rates require separate analysis.</p>
+  </main>
