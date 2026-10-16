@@ -11,7 +11,8 @@
     <p><a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>, section 3.3, derive it
     for a stationary ergodic volatility driver whose integrated fluctuations obey a central limit theorem, which a
     finite-state Markov chain does. Ergodicity alone does not fix the rate:
-    <a href="./mixing-scale.html">long memory changes the power of the small parameter</a>. The implied volatility is
+    <a href="./mixing-scale.html">long memory changes the power of the small parameter</a>.</p>
+    <p>The implied volatility is
     quadratic in log-moneyness, with a curvature set by the variance of integrated variance.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque, Lorig and Sircar (2016)</a> carry the fast-factor
     expansion to second order with correlation and a terminal layer.</p>
@@ -381,6 +382,8 @@
       stationary identity holds within $5.41\times10^{-16}$, and every energy interval contains the population
       value. The bound is conservative and does not claim sharp constants.</p>
     <h3>A fully observed path supplies the missing generator radius</h3>
+    <p>A <a href="./jump-confidence-full.html">gamma-mixture refinement</a> gives anytime-valid rate intervals that shrink as occupation accumulates, with no mixing bound or rate cap.
+      It also proves why an unvisited row cannot honestly receive a uniformly finite rate bound.</p>
     <p>Suppose the complete CTMC path is observed, including exact jump times. Write</p>
     $$L_i=\int_0^{T_{\rm obs}}\mathbf1_{\{Y_s=i\}}\,ds,
       \qquad N_{ij}=\#\{i\to j\hbox{ jumps on }[0,T_{\rm obs}]\},$$
