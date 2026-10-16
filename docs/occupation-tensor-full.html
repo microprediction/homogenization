@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Third occupation tensors do not identify four-state chains · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_occupation_tensor.py">certificate</a></span></p>
+    <h1>Even all third occupation cumulants miss a four-state generator</h1>
+    <p class="lead">Two positive-rate four-state generators share the complete fixed-state Green&ndash;Kubo Gram
+      and every long-run third occupation-cumulant rate, yet are neither reversals nor relabelings.
+      A constant boundary term in their stationary variance curves distinguishes them.</p>
+    <h2>Exactly which data agree</h2>
+    <p>For a finite irreducible row generator $Q$ with known positive stationary law $\pi$, put
+      $D_\pi=\operatorname{diag}\pi$, $\Pi=\mathbf1\pi$, $H=(\Pi-Q)^{-1}-\Pi$, and
+      $G=(H+H^*)/2$, $K=(H-H^*)/2$, with $H^*=D_\pi^{-1}H^TD_\pi$.</p>
+    <p>For every real centered state function $f$, observe the exact limits</p>
+    $$\gamma_2(f)=\lim_{T\to\infty}\frac{\operatorname{Var}_\pi(\int_0^T f(Y_t)dt)}T
+      =2\langle f,Gf\rangle_\pi,\qquad
+      \gamma_3(f)=\lim_{T\to\infty}\frac{\kappa_{3,\pi}(\int_0^T f(Y_t)dt)}T.$$
+    <p>The entire cubic function $f\mapsto\gamma_3(f)$ determines every mixed long-run third cumulant by polarization.
+      These are integrated occupation rates, not the time-lagged third correlation function or finite-$T$ cumulants.</p>
+    <h2>The cubic Poisson identity</h2>
+    <p>The analytic eigenvalue of $Q+s\operatorname{diag}f$ through zero has cubic coefficient
+      $\langle f,H(fHf)\rangle_\pi$.
+      Weighted adjunction therefore gives</p>
+    $$\boxed{\gamma_3(f)=6\langle H^*f,fHf\rangle_\pi
+      =6\sum_i\pi_i f_i\bigl[(Gf)_i^2-(Kf)_i^2\bigr].}$$
+    <p>For completeness, normalize its right eigenvector by $\pi r(s)=1$.
+      Its first two coefficients are $Hf$ and $H(fHf)$, so the displayed coefficient follows by multiplying the eigenvalue equation by $\pi$.
+      This is local analytic perturbation at fixed $Q,f$, not a finite-horizon error estimate.</p>
+    <h2>An exact four-state pair</h2>
+    <p>Take uniform $\pi$, $P=I-\Pi$, $u=(1,2,3,-6)^T$, and</p>
+    $$G=P+\frac{uu^T}{100},\qquad
+      A=\begin{pmatrix}0&amp;1&amp;0&amp;-1\\-1&amp;0&amp;1&amp;0\\0&amp;-1&amp;0&amp;1\\1&amp;0&amp;-1&amp;0\end{pmatrix},\qquad
+      B=\begin{pmatrix}0&amp;-1&amp;1&amp;0\\1&amp;0&amp;0&amp;-1\\-1&amp;0&amp;0&amp;1\\0&amp;1&amp;-1&amp;0\end{pmatrix}.$$
+    $$H_A=G+A/10,\quad H_B=G+B/10,\qquad
+      Q_J=\Pi-(\Pi+H_J)^{-1},\quad J=A,B.$$
+    <p>Both are generators with uniform stationary law and strictly positive off-diagonal rates.
+      Their minimum rates are $545/7732$ and $2/31$.
+      Their total exit rates are $5050/1933$ and $404/155$, so they cannot be relabelings or stationary reversals, even after relabeling.</p>
+    <p>Both have symmetric inverse $G$.
+      For arbitrary $f\in\mathbb R^4$, direct expansion gives the polynomial identity</p>
+    $$\sum_i f_i\bigl[(Af)_i^2-(Bf)_i^2\bigr]
+      =(f_2-f_1)(f_3-f_4)\sum_i f_i.$$
+    <p>Its right side vanishes on the centered space, so the boxed formula proves equality of the entire third tensor.
+      Adding constants to $f$ does not change cumulants of order two or higher.
+      Thus the third rates agree for every state occupation, every linear combination and every mixed third cumulant.</p>
+    <p>This ambiguity is not confined to one chosen symmetric operator: the cubic cancellation holds for every common $G$.
+      Strict rate positivity and the unequal exit-rate sums persist under sufficiently small common centered symmetric perturbations of the displayed $G$.</p>
+    <h2>The covariance boundary separates the pair</h2>
+    <p>For a centered $f$, stationary integrated variance has the exact identity</p>
+    $$V_J(T)=2T\langle f,Gf\rangle_\pi-2\langle f,H_J^2f\rangle_\pi
+      +2\langle f,H_J^2e^{TQ_J}f\rangle_\pi.$$
+    <p>Indeed, integrate the stationary covariance $\langle f,e^{tQ_J}f\rangle_\pi$ twice and use $H_JQ_J=-P$.
+      For $f=(1,0,-1,0)^T$, the common rates are
+      $\gamma_2=51/50$, $\gamma_3=-153/625$, but the two boundary pairings are $101/200$ and $103/200$.</p>
+    $$\left|V_A(T)-V_B(T)-\frac1{50}\right|
+      \le\frac{289}{50}e^{-8T/31},\qquad T\ge0.$$
+    <p>To prove the bound, every off-diagonal rate is at least $2/31$, so the additive symmetric spectral gap is at least $8/31$.
+      Also $\|G\|_2=3/2$, $\|A\|_2=\|B\|_2=2$, hence $\|H_J\|_2\le17/10$ and $\|f\|_\pi^2=1/2$.
+      Bounding the two exponential remainders gives the displayed constant.</p>
+    <p>Explicitly, for centered $x$ and $\delta=2/31$, the uniform-law Dirichlet form obeys</p>
+    $$\langle x,-Q_Jx\rangle_\pi
+      =\frac18\sum_{i,j}(Q_J)_{ij}(x_i-x_j)^2
+      \ge\frac\delta8\sum_{i,j}(x_i-x_j)^2=4\delta\|x\|_\pi^2.$$
+    <p>Differentiating $\|e^{tQ_J}x\|_\pi^2$ gives decay at rate $8/31$ in norm, without assuming reversibility.
+      Each variance remainder is therefore at most $2(17/10)^2(1/2)e^{-8T/31}$.</p>
+    <p>Consequently $V_A(T)&gt;V_B(T)$ for every $T\ge24$.
+      This threshold needs no floating-point claim: $192/31&gt;6$ and
+      $e^6&gt;\sum_{j=0}^7 6^j/j!&gt;289$.
+      The independent moment semigroup gives $V_A(24)-V_B(24)=0.0199999809$ to the shown precision.</p>
+    <h2>Verification and scope</h2>
+    <p>The certificate checks all ten independent centered third-tensor components and all twenty raw cubic coefficients exactly.
+      It verifies generator inversion, rate positivity, and all 48 possible relabeling/reversal comparisons rationally.</p>
+    <p>It also checks 48 spectral coefficients and twelve independent finite-horizon moment semigroups in floating point.
+      These are cross-checks, not interval enclosures.
+      The classical analytic cumulant framework is described by
+      <a href="./bibliography.html#KontoyiannisMeyn2003">Kontoyiannis and Meyn (2003)</a>; the counterexample and remainder are derived here.</p>
+    <p>This is a failure of universal identification from complete second and third <em>long-run occupation rates</em>,
+      with known state representation, time unit and stationary law.
+      It does not assert equality of finite-horizon occupation laws, full covariance curves, fourth cumulants or ordered observations.
+      It says nothing about generic uniqueness, statistical estimation, partial features, or rank after integrating maturity-dependent loadings.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
