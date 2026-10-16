@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shrinking anytime confidence from observed regime jumps · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile-full.html">&larr; generator-error propagation</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_jump_confidence.py">certificate</a></span></p>
+    <h1>Shrinking anytime confidence from observed jumps</h1>
+    <p class="lead">A complete labeled jump record supplies generator confidence without a mixing bound, stationary start or rate cap.
+      A fixed gamma mixture gives anytime-valid intervals that shrink as state occupation accumulates, including under data-dependent stopping.
+      This uses transition counts as well as holding times; it does not infer a generator from occupation-window moments alone.</p>
+    <h2>Setup and confidence sequence</h2>
+    <p>Let $Y$ have any fixed finite row generator $Q$ on $n\ge2$ known states and any initial law; irreducibility is not needed for coverage.
+      Observe the full continuous path, including jump times and destinations.
+      For $i\ne j$, write</p>
+    $$S_i(t)=\int_0^t\mathbf1_{\{Y_s=i\}}ds,\qquad
+      N_{ij}(t)=\#\{i\to j\text{ jumps in }[0,t]\},\qquad m=n(n-1).$$
+    <p>Fix $0&lt;\delta&lt;1$ and gamma shape $a&gt;0$, rate $b&gt;0$ before observing the path; $b$ has units of time.
+      For a candidate transition rate $u&gt;0$, with $N=N_{ij}(t)$ and $S=S_i(t)$, define</p>
+    $$M_{ij,t}(u)=\frac{b^a\Gamma(a+N)}{\Gamma(a)(b+S)^{a+N}}
+      \frac{e^{uS}}{u^N},\qquad
+      C_{ij}(t)=\{u\ge0:M_{ij,t}(u)\le m/\delta\}.$$
+    <p>At $u=0$, define $M_{ij,t}(0)=(b/(b+S))^a$ if $N=0$, and $+\infty$ if $N&gt;0$.
+      These conventions retain genuinely zero rates.</p>
+    <div class="equation-card">
+    $$\boxed{\inf_x\Pr_x\!\left(\forall t\ge0,\ \forall i\ne j:
+      q_{ij}\in C_{ij}(t)\right)\ge1-\delta.}$$
+    </div>
+    <p>The same event covers every unknown initial mixture and any stopping rule.
+      The gamma distribution is a fixed likelihood-mixture device, not a prior assumption that the true rates are random.
+      No independence of the transition counts is assumed.</p>
+    <h2>Likelihood proof, including the zero-rate boundary</h2>
+    <p>Conditional on any initial state, fix one true edge rate $q=q_{ij}&gt;0$ and an alternative $v&gt;0$.
+      Replacing only that edge by $v$ and adjusting its row diagonal gives another finite generator with the same path support.
+      Its likelihood ratio against the true path law is</p>
+    $$L_t(v,q)=(v/q)^{N_{ij}(t)}\exp\{-(v-q)S_i(t)\}.$$
+    <p>This is a nonnegative mean-one martingale in the full path filtration.
+      Integrating it against the fixed density $b^av^{a-1}e^{-bv}/\Gamma(a)$ gives exactly $M_{ij,t}(q)$; conditional Tonelli preserves the martingale property.
+      If $q=0$, then $N_{ij}(t)=0$ for all $t$ almost surely and $M_{ij,t}(0)$ is nonincreasing, hence a supermartingale starting at one.</p>
+    <p>Ville's inequality bounds the probability that the true rate is ever excluded on one edge by $\delta/m$.
+      A union bound over the $m$ edges proves the displayed event.
+      In particular, do not replace this joint counting-process argument by a claim that $N_{ij}\mid S_i$ is Poisson.</p>
+    <p>For example, in a two-state chain started in state one, stop at its first departure.
+      Then $N_{12}=1$ deterministically while $S_1$ is exponential with rate $q_{12}$.
+      Conditioning on that random exposure does not produce a Poisson count.</p>
+    <h2>Computing the intervals and a generator radius</h2>
+    <p>Put $K=\log(m/\delta)$.
+      If $S=0$, necessarily $N=0$ almost surely, and $C_{ij}=[0,\infty)$.
+      If $S&gt;0$ and $N=0$,</p>
+    $$C_{ij}=\left[0,\frac{K+a\log(1+S/b)}{S}\right].$$
+    <p>If $N&gt;0$, the log mixture is strictly convex in $u$, diverges at both endpoints of $(0,\infty)$, and has minimum at $\widehat q=N/S$.
+      The mixture at that minimum is at most one, since each likelihood is bounded by its maximum.
+      Thus the two roots of $\log M(u)=K$ bound a nonempty finite interval containing $\widehat q$.</p>
+    <p>For stable numerical root finding use $z=\log(u/\widehat q)$ and</p>
+    $$N(e^z-1-z)=K-\log M(\widehat q).$$
+    <p>When all $S_i&gt;0$, set $\widehat q_{ij}=N_{ij}/S_i$ and choose diagonals to give zero row sums.
+      If $C_{ij}=[l_{ij},u_{ij}]$, put $r_{ij}=\max(|\widehat q_{ij}-l_{ij}|,|u_{ij}-\widehat q_{ij}|)$.
+      On the same anytime event,</p>
+    $$\|\widehat Q(t)-Q\|_2\le\|\widehat Q(t)-Q\|_F
+      \le\left\{\sum_{i\ne j}r_{ij}^2+\sum_i\left(\sum_{j\ne i}r_{ij}\right)^2\right\}^{1/2}.$$
+    <p>This follows by bounding off-diagonal errors entrywise and diagonal errors by their row sums.
+      The sharper induced-norm and box-vertex bounds in the <a href="./cycle-smile-full.html">existing generator-radius theorem</a> apply too.
+      Stationary-law, group-inverse and skew-energy propagation still require their own sufficient tests; the estimated generator need not be irreducible.</p>
+    <h2>Width compared with a fixed tilt set</h2>
+    <p>The existing fixed-tilt intervals can already be made anytime-valid by applying Ville to their exponential martingales.
+      But with one fixed finite nonempty $\Theta\subset(0,\infty)$, $\theta_* =\min\Theta$, fixed confidence and $N/S\to q&gt;0$, their limits are</p>
+    $$l\longrightarrow\frac{q\theta_*}{e^{\theta_*}-1},\qquad
+      u\longrightarrow\frac{q\theta_*}{1-e^{-\theta_*}},\qquad
+      u-l\longrightarrow q\theta_*&gt;0.$$
+    <p>Here $\theta/(e^\theta-1)$ decreases and $\theta/(1-e^{-\theta})$ increases on $(0,\infty)$, so both limiting extrema use $\theta_*$.
+      This is a limitation of a fixed finite tilt set, not an error in its finite-path guarantee.
+      No pointwise width dominance over every tuned fixed-tilt interval is asserted.</p>
+    <p>By Laplace's formula or Stirling's expansion, the gamma mixture instead has
+      $\log M(\widehat q)=-\tfrac12\log S+O(1)$ whenever $S\to\infty$ and $\widehat q\to q&gt;0$.
+      Expanding $e^z-1-z$ at zero gives interval width $O(\sqrt{\log S/S})$.
+      At a true zero rate, $N=0$ almost surely and the upper endpoint is $O(\log S/S)$.</p>
+    <p>For an irreducible finite chain, occupation-time ergodicity and the compensated-count strong law give these consistency conditions for every row almost surely.
+      No uniform calendar-time rate over all generators, or optimal iterated-logarithm constant, is asserted.</p>
+    <h2>Why an unvisited row must remain unbounded</h2>
+    <p>Fix a horizon $H&gt;0$ and start state one in the irreducible two-state family</p>
+    $$Q_{\varepsilon,R}=\begin{pmatrix}-\varepsilon&amp;\varepsilon\\R&amp;-R\end{pmatrix},\qquad \varepsilon,R&gt;0.$$
+    <p>The constant path $Y_s=1$ throughout $[0,H]$ has probability $e^{-\varepsilon H}$, independent of $R$.
+      If a deterministic procedure returns a finite upper bound for $q_{21}$ on that path, choose $R$ above it and $\varepsilon$ so small that $e^{-\varepsilon H}&gt;\delta$.
+      Its failure probability then exceeds $\delta$, contradicting coverage uniform over all finite irreducible generators.</p>
+    <p>The same obstruction holds for procedures whose randomized upper bound is finite almost surely on the constant path: as $R\to\infty$ the conditional failure probability tends to one.
+      Thus the unbounded interval at zero exposure is honest missing information, not a defect to repair by a pseudocount.
+      For $H=10$ and $\varepsilon=0.001$, this common-path probability is approximately $0.990049834$ for every $R$.</p>
+    <h2>Checks, literature and observation scope</h2>
+    <p>The certificate checks $216$ gamma integrals, $162$ interval endpoints, exact absorbing-chain identities and analytic first-departure stopping probabilities.
+      It also checks $504$ tilted Feynman&ndash;Kac identities on $8$ chains, including sparse and defective cases.
+      These are algebraic and floating cross-checks, not empirical proof of the anytime theorem or outward-rounded arithmetic.</p>
+    <p>With $n=2$, $\delta=0.05$, $a=b=1$ and algebraic input $N=S=10^6$, the mixture interval is approximately $[0.995385926,1.004628311]$.
+      The existing finite-tilt construction with $\Theta=\{0.1,0.3,1\}$ has width $0.100109704$ at that input and limiting width $0.1$ when the limiting rate is one.
+      This comparison is not an observed trajectory or a Monte Carlo coverage experiment.</p>
+    <p>The complete-record likelihood and $N/S$ estimator are classical; see
+      <a href="./bibliography.html#BladtSorensen2005">Bladt and S&oslash;rensen (2005)</a>, equations (2.1)&ndash;(2.3).
+      Nonnegative-supermartingale confidence sequences are also classical; see
+      <a href="./bibliography.html#HowardEtAl2020">Howard et al. (2020)</a>, Section 2.3.
+      This note supplies the explicit gamma-mixture specialization, shrinking comparison and unvisited-row obstruction, without a priority claim for those tools.</p>
+    <p>Exact jump times and destinations are stronger observations than the window moments in <a href="https://github.com/microprediction/homogenization/pull/148">the ordered-window confidence program</a>.
+      This does not justify substituting a fitted mixing rate into that program, nor conditioning its coverage on reporting.
+      Hidden states, discrete snapshots, data-selected mixture parameters, time-varying rates and numerical error require separate control.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
