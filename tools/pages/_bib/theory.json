@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "ChatterjeeGhoshGurjarRaj2025",
+  "authors": "Chatterjee, A., Ghosh, S., Gurjar, R. and Raj, R.",
+  "year": 2025,
+  "title": "Characterizing and Testing Principal Minor Equivalence of Matrices",
+  "venue": "Proceedings of the 57th Annual ACM Symposium on Theory of Computing (STOC '25)",
+  "doi": "10.1145/3717823.3718146",
+  "annotation": "Characterizes principal-minor equivalence using cut-transpose operations. The occupation-law note uses this classical rank-one-cut mechanism and separately proves equality of the stationary-start scalar resolvent, including its numerator."
  }
 ]

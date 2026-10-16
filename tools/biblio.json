@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "ChatterjeeGhoshGurjarRaj2025",
+  "authors": "Chatterjee, A., Ghosh, S., Gurjar, R. and Raj, R.",
+  "year": 2025,
+  "title": "Characterizing and Testing Principal Minor Equivalence of Matrices",
+  "venue": "Proceedings of the 57th Annual ACM Symposium on Theory of Computing (STOC '25)",
+  "doi": "10.1145/3717823.3718146",
+  "url": "https://doi.org/10.1145/3717823.3718146",
+  "annotation": "Characterizes principal-minor equivalence using cut-transpose operations. The occupation-law note uses this classical rank-one-cut mechanism and separately proves equality of the stationary-start scalar resolvent, including its numerator."
  }
 ]

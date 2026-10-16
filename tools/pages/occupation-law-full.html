@@ -1,0 +1,84 @@
+<!-- title: Full occupation laws and the sharp five-state identification obstruction · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_occupation_law.py">certificate</a></span></p>
+    <h1>Even full occupation laws need not identify five states</h1>
+    <p class="lead">Two strictly positive-rate five-state chains have the same stationary joint occupation-vector law
+      at every fixed horizon, but are neither reversals nor relabelings.
+      Five is the first possible state count when the stationary law and complete state representation are known.</p>
+    <h2>The data: one horizon at a time</h2>
+    <p>For an irreducible row generator $Q$, start in its known stationary law $\pi$ and observe the law of</p>
+    $$L(T)=\left(\int_0^T\mathbf1_{\{Y_t=i\}}dt\right)_{i=1}^n\quad\text{for every }T\ge0.$$
+    <p>This includes every mixed occupation cumulant at each horizon and every stationary integrated-covariance curve.
+      It is not the joint law of $(L(T_1),L(T_2))$ at multiple horizons, the occupation process itself, or ordered observations.</p>
+    <h2>A stationary block-reversal lemma</h2>
+    <p>Let $A$ be $k\times k$, $B$ be $\ell\times\ell$, $a,d\in\mathbb R^k$, and suppose</p>
+    $$Q=\begin{pmatrix}A&amp;a\mathbf1_\ell^T\\\mathbf1_\ell d^T&amp;B\end{pmatrix}
+      \quad\text{is an irreducible generator with uniform stationary law.}$$
+    <p>Then the block-reversed matrix</p>
+    $$\widetilde Q=\begin{pmatrix}A^T&amp;d\mathbf1_\ell^T\\\mathbf1_\ell a^T&amp;B\end{pmatrix}$$
+    <p>is also a generator with the same uniform stationary law and the same fixed-horizon occupation laws.
+      Row and column balance give $A\mathbf1=-\ell a$, $A^T\mathbf1=-\ell d$, $\mathbf1^Ta=\mathbf1^Td$,
+      and $B\mathbf1=B^T\mathbf1=-(\mathbf1^Ta)\mathbf1$, which prove the generator assertions.
+      The underlying undirected graph is unchanged; balance and connectedness imply irreducibility.</p>
+    <h2>Proof including the stationary-start prefactor</h2>
+    <p>For arbitrary real diagonal $D=\operatorname{diag}(D_A,D_B)$, the occupation transform is
+      $M_Q(T,D)=\mathbf1^Te^{T(Q+D)}\mathbf1/(k+\ell)$.
+      For sufficiently large real $z$, write</p>
+    $$R=(zI-A-D_A)^{-1},\quad S=(zI-B-D_B)^{-1},$$
+    $$r=\mathbf1^TR\mathbf1,\quad s=\mathbf1^TS\mathbf1,\quad
+      t=\mathbf1^TRa,\quad v=d^TR\mathbf1,\quad w=d^TRa.$$
+    <p>Solving the two block equations for $(zI-Q-D)^{-1}\mathbf1$ gives</p>
+    $$\int_0^\infty e^{-zT}M_Q(T,D)\,dT
+      =\frac1{k+\ell}\left[r+\frac{s(1+t)(1+v)}{1-sw}\right].$$
+    <p>Block reversal replaces $R$ by $R^T$ and swaps $a,d$; it therefore swaps $t,v$ and preserves $r,s,w$.
+      The displayed scalar transform is unchanged.
+      Uniqueness of the horizon Laplace transform gives equality of $M_Q(T,D)$ for every $T$, since it is continuous and of exponential order.</p>
+    <p>For each fixed $T$, $L(T)$ is bounded, so equality for all diagonal potentials identifies its joint law.
+      This proves the finite-horizon statement, not merely equality of tilted eigenvalues or long-run cumulants.</p>
+    <h2>An exact positive-rate five-state example</h2>
+    $$A=\begin{pmatrix}-5&amp;1\\2&amp;-7\end{pmatrix},\quad
+      a=\begin{pmatrix}4/3\\5/3\end{pmatrix},\quad d=\begin{pmatrix}1\\2\end{pmatrix},\quad
+      B=\begin{pmatrix}-11&amp;4&amp;4\\2&amp;-10&amp;5\\6&amp;3&amp;-12\end{pmatrix}.$$
+    <p>Both assembled generators have minimum off-diagonal rate $1$ and uniform stationary law on five states.
+      Their common diagonal $(-5,-7,-11,-10,-12)$ has distinct entries, so a relabeling between them must be the identity.
+      They are unequal, and $B\ne B^T$ excludes global reversal, even after relabeling.</p>
+    <p>Ordered observations distinguish them: with the state labels above,</p>
+    $$\mathbb P_Q(Y_0=1,Y_t=2)-\mathbb P_{\widetilde Q}(Y_0=1,Y_t=2)
+      =-t/5+O(t^2),\qquad t\downarrow0.$$
+    <p>The coefficient follows directly from $(Q_{12}-\widetilde Q_{12})/5$.
+      At $t=0.1$, the matrix exponentials give a difference of $-0.0094670253$ to the shown precision.</p>
+    <h2>Why four states cannot do this</h2>
+    <p>Now allow any known positive $\pi$, not just uniform.
+      On the centered space put $H=(\Pi-Q)^{-1}-\Pi$, $G=(H+H^*)/2$, $K=(H-H^*)/2$, with $\Pi=\mathbf1\pi$
+      and $*$ the $\pi$-weighted adjoint.</p>
+    <p>Define the occupation covariance operator by
+      $\langle f,C(T)h\rangle_\pi=\operatorname{Cov}_\pi(\int_0^T f(Y_t)dt,\int_0^T h(Y_t)dt)$.
+      With $B_0=(H^2+(H^*)^2)/2$, twice integrating the stationary semigroup gives the exact identity</p>
+    $$C(T)=2TG-2B_0+H^2e^{TQ}+(H^2e^{TQ})^*=2TG-2B_0+o(1).$$
+    <p>Thus the data determine $G$, $B_0$ and $K^2=B_0-G^2$ exactly.
+      The remainder tends to zero for every fixed finite irreducible chain, including defective generators.</p>
+    <p>In a weighted orthonormal centered basis of dimension at most three, a real skew matrix is determined by its square up to sign.
+      In dimension three write $Kx=b\times x$; then $K^2=bb^T-\|b\|^2I$, so
+      $bb^T=K^2-\tfrac12\operatorname{tr}(K^2)I$ determines $b$ up to sign.
+      Dimensions one and two are immediate, with the zero case giving no ambiguity.</p>
+    <p>Hence for $n\le4$ the data determine $H=G+K$ up to weighted adjunction, and
+      $Q=\Pi-(\Pi+H)^{-1}$ up to stationary time reversal.
+      The five-state example makes this threshold sharp for universal identification.</p>
+    <p>Weighted transposition gives $M_{Q^*}(T,D)=M_Q(T,D)$ for
+      $Q^*=D_\pi^{-1}Q^TD_\pi$, so reversal really is invisible to these stationary occupation laws.</p>
+    <h2>Classical mechanism, certificate and scope</h2>
+    <p>Block transposition across a rank-one cut is a known principal-minor-preserving operation; see
+      <a href="./bibliography.html#ChatterjeeGhoshGurjarRaj2025">Chatterjee, Ghosh, Gurjar and Raj (2025)</a>, Definition 2.10 and Lemma 2.12.
+      The proof above additionally tracks the stationary scalar resolvent needed for occupation laws; principal-minor equality of $Q$ alone is not used as a substitute.</p>
+    <p>The certificate checks 62 principal-minor identities for both $Q$ and $Q-\mathbf1\mathbf1^T$ against their partners.
+      Principal-minor expansion and the determinant lemma then certify the numerator and denominator of
+      $\mathbf1^T(zI-Q-D)^{-1}\mathbf1$ as polynomials in arbitrary diagonal variables.</p>
+    <p>It also verifies 24 rational block-resolvent identities, all 240 relabeling/reversal exclusions,
+      and the common full Gram and covariance boundary exactly.
+      Independent floating-point checks compare 544 finite-horizon transforms across 17 block pairs; these are not interval enclosures.</p>
+    <p>The indistinguishability requires the specified stationary start and time-homogeneous occupation totals.
+      It does not cover arbitrary initial priors, joint observations across horizons, time-weighted functionals, or ordered data.
+      The theorem assumes known state labels and time unit; it is not a claim about partial features,
+      statistical estimation or rank after integrating different maturity loadings.</p>
+  </main>
