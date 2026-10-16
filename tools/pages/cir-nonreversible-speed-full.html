@@ -1,0 +1,85 @@
+<!-- title: CIR speed order without reversibility (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; cumulants summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_nonreversible_speed.py">certificate</a></span></p>
+    <h1>Stationary variance decreases without reversibility</h1>
+    <p class="lead">With common mean reversion and constant vol-of-vol, faster switching strictly reduces stationary
+      CIR variance whenever the regime levels differ, for any finite irreducible chain.
+      Complete monotonicity is stronger and can fail already on a directed three-cycle.</p>
+
+    <h2>Setup and exact formulas</h2>
+    <p>Let $Y$ have generator $mQ$, where $m&gt;0$ and $Q$ is a fixed irreducible row generator on $n\ge2$ states with
+      invariant row $\pi$. Consider</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)\,dt+\xi\sqrt{v_t}\,dB_t,$$
+    <p>with common $\kappa,\xi&gt;0$, positive $\theta_i$, and $B$ independent of $Y$.
+      Assume $2\kappa\min_i\theta_i\ge\xi^2$ and use the joint invariant law at each speed, with finite second moment.
+      This compares different stationary laws, not paths sharing a fixed initial variance.</p>
+    <p>Write $f=\theta-\bar\theta\mathbf1$, $\bar\theta=\pi\theta$,
+      $\langle g,h\rangle_\pi=\sum_i\pi_i g_i h_i$, and $H=-Q^\#$, the inverse of $-Q$ on centered functions.</p>
+    <div class="equation-card">
+    $$\mathcal V(m):=\operatorname{Var}(v)
+      =\frac{\xi^2\bar\theta}{2\kappa}
+        +\kappa\langle f,(\kappa I-mQ)^{-1}f\rangle_\pi,$$
+    $$\Gamma(m):=\lim_{T\to\infty}\frac1T\operatorname{Var}\!\left(\int_0^T v_t\,dt\right)
+      =\frac{\xi^2\bar\theta}{\kappa^2}+\frac2m\langle f,Hf\rangle_\pi.$$
+    </div>
+    <p>The first formula follows directly from the invariant first- and second-moment equations in the
+      <a href="./cumulants-full.html">general full note</a>.
+      The second also follows from the affine Poisson solution
+      $\phi(v,i)=v/\kappa+(Hf)_i/m$, since $-\mathcal L\phi=v-\bar\theta$.</p>
+    <p>Affine conditional means decay exponentially, allowing polynomial factors at resonant eigenvalues.
+      The stationary covariance is therefore integrable, which justifies the Poisson covariance formula for $\Gamma$.</p>
+    <p>Specifically, the component first moment is
+      $M=(\kappa I-mQ^\top)^{-1}\kappa D_\pi\theta$, and
+      $\mathcal V=\theta^\top M-\bar\theta^2+\xi^2\bar\theta/(2\kappa)$.
+      Substituting it into $\Gamma=2\mathcal V/\kappa+2M^\top Hf/m$ proves the displayed rate formula.</p>
+
+    <h2>A Loewner order at every switching speed</h2>
+    <p>In an $L^2(\pi)$-orthonormal basis of the centered subspace, write the matrix of $-Q$ as
+      $L=S+A$, where $S=S^\top\succ0$ and $A^\top=-A$.
+      Irreducibility gives strict positivity of $S$ by the Dirichlet form; no diagonalization of $Q$ is needed.</p>
+    <p>Put $X_m=\kappa I+mS$ and $R_m=\operatorname{sym}(\kappa I+mL)^{-1}$.
+      The standard symmetric-resolvent factorization gives</p>
+    $$R_m=P_m^{-1},\qquad P_m=X_m+m^2A^\top X_m^{-1}A.$$
+    <p>This is the finite-matrix version of the factorization in
+      <a href="./bibliography.html#DuncanLelievrePavliotis2016">Duncan, Leli&egrave;vre and Pavliotis (2016),
+      Lemma 3, equation (28)</a>.
+      Here both the symmetric and antisymmetric parts scale with $m$, rather than varying only an antisymmetric perturbation.</p>
+    <p>Differentiating, using that $S$ commutes with $X_m$, gives</p>
+    $$P_m'=S+A^\top\!\left[mX_m^{-1}(2\kappa I+mS)X_m^{-1}\right]A\succ0,
+      \qquad R_m'=-R_mP_m'R_m\prec0.$$
+    <p>Consequently $R_{m_1}\succ R_{m_2}$ whenever $0\le m_1&lt;m_2$.
+      If $\theta$ is nonconstant then $\mathcal V'(m)&lt;0$ for every $m&gt;0$, with limits</p>
+    $$\mathcal V(0+)=\frac{\xi^2\bar\theta}{2\kappa}+\operatorname{Var}_\pi\theta,
+      \qquad \mathcal V(\infty)=\frac{\xi^2\bar\theta}{2\kappa}.$$
+    <p>For constant $\theta$ the variance and rate are speed-independent.
+      For nonconstant $\theta$, $\langle f,Hf\rangle_\pi&gt;0$ by the same Dirichlet form, so $\Gamma$ strictly
+      decreases and its excess above the averaged limit is completely monotone.</p>
+
+    <h2>Complete monotonicity of stationary variance can fail</h2>
+    <p>A completely monotone function obeys $(-1)^k g^{(k)}(m)\ge0$ for every $k\ge0$ and $m&gt;0$.
+      Reversible $Q$ gives a nonnegative sum of reciprocal linear functions in the variance formula, hence this
+      stronger property; the ordinary speed order above does not require it.</p>
+    <p>Take the unit-rate directed cycle and strictly positive CIR parameters</p>
+    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\0&amp;-1&amp;1\\1&amp;0&amp;-1\end{pmatrix},\qquad
+      \pi=(1,1,1)/3,\qquad\kappa=1,\qquad\xi^2=1/1000,\qquad\theta=(3,4,5)/100.$$
+    <p>The Feller margins are $(.059,.079,.099)$, all strictly positive.
+      On the centered subspace, $L+L^\top=3I$ and $LL^\top=3I$, so the resolvent gives exactly</p>
+    $$\mathcal V(m)=\frac1{50000}+\frac1{15000}
+       \frac{1+3m/2}{1+3m+3m^2}.$$
+    <p>Its fourth derivative has right limit $\mathcal V^{(4)}(0)=-9/1250$.
+      At the strictly positive speed $m=1/100$, exact rational arithmetic gives
+      $\mathcal V^{(4)}(1/100)\approx-0.006182577321&lt;0$, contradicting complete monotonicity.
+      The first derivative nevertheless stays strictly negative by the theorem.</p>
+
+    <h2>Scope and verification</h2>
+    <p>The certificate checks 260 precision, derivative, invariant-moment and Poisson identities, plus 208 finite
+      Loewner comparisons, including nonuniform stationary laws, a sparse cycle, and a defective generator.
+      The counterexample&apos;s rational derivative signs are exact; the matrix regressions use scale-aware floating-point tolerances.</p>
+    <p>These are stationary one-time variance and long-run integrated-variance-rate results.
+      They do not classify finite-maturity integrated variance, log-return cumulants, leverage or option prices.
+      Allowing vol-of-vol or mean reversion to switch changes the formulas and can destroy this speed order.</p>
+    <p>No novelty claim is made for the resolvent identity or invariant-moment method.
+      The point here is the all-speed conclusion when both parts of the nonreversible generator scale, and the
+      distinction between monotonicity and alternating signs of every derivative.</p>
+  </main>
