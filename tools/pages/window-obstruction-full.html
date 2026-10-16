@@ -1,0 +1,95 @@
+<!-- title: A sharp uniform stationary-window confidence obstruction · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_window_obstruction.py">certificate</a></span></p>
+    <h1>A sharp uniform window-confidence obstruction</h1>
+    <p class="lead">Without a mixing restriction, stationary raw-window moments have a nonvanishing minimax confidence radius at every finite record length.
+      This holds even with a known exit-rate cap and a complete labeled jump record.
+      The obstruction concerns an unknown stationary law and a known deterministic start; it does not rule out useful data-dependent certificates on informative records.</p>
+    <h2>Precisely which radius is impossible to shrink</h2>
+    <p>Fix $T&gt;0$, an integer $N\ge1$, record length $H=3NT$, a known exit-rate cap $\bar a&gt;0$, and $0&lt;\delta&lt;1/2$.
+      Let $\mathcal Q_{\bar a}$ be all irreducible two-state row generators with $\max_i(-Q_{ii})\le\bar a$.
+      The observed path starts in known state one, not in stationarity.</p>
+    <p>The targets are nevertheless the stationary raw ordered moments</p>
+    $$O_j=\int_{jT}^{(j+1)T}e_{Y_t}dt,\qquad
+      A_i(Q)=\mathbb E_{\pi_Q}[O_0O_{i+1}^T],\quad i=0,1.$$
+    <p>For an estimator pair $\widetilde A=(\widetilde A_0,\widetilde A_1)$ based on the full observed path on $[0,H]$, define
+      $\mathcal L_Q(\widetilde A)=\max_{i=0,1}\|\widetilde A_i-A_i(Q)\|_F$.
+      Estimators may be randomized and may output arbitrary real matrices.
+      Let $R_\delta(H,T;\bar a)$ be the infimum of constant radii $R$ for which some estimator satisfies</p>
+    $$\sup_{Q\in\mathcal Q_{\bar a}}\Pr_{Q,1}\{\mathcal L_Q(\widetilde A)&gt;R\}\le\delta.$$
+    <div class="equation-card">
+    $$\boxed{R_\delta(H,T;\bar a)=T^2/\sqrt2.}$$
+    </div>
+    <p>The result already allows more information than occupation-window matrices, grid observations or snapshots.
+      It concerns a uniform radius over the generator class, not pointwise consistency for one fixed generator.</p>
+    <h2>Exact separated targets and a shared path</h2>
+    <p>Parameterize every irreducible two-state generator as</p>
+    $$Q_{r,p}=r\begin{pmatrix}-(1-p)&amp;1-p\\p&amp;-p\end{pmatrix},\qquad
+      r&gt;0,\quad0&lt;p&lt;1,\quad\pi_p=(p,1-p).$$
+    <p>Put $v=p(1-p)$, $C=\begin{pmatrix}1&amp;-1\\-1&amp;1\end{pmatrix}$ and
+      $a_i=\{(1-e^{-rT})/(rT)\}^2e^{-irT}\in(0,1)$.
+      The ordered stationary kernel gives</p>
+    $$A_i(Q_{r,p})=T^2\{\pi_p^T\pi_p+a_ivC\}.$$
+    <p>Indeed $e^{tQ}=\mathbf1\pi_p+e^{-rt}(I-\mathbf1\pi_p)$.
+      Integrating the kernel over the two ordered windows yields the displayed expression.
+      Since $p$ and $1-p$ share $v$ and $a_i$, their target gap is exactly</p>
+    $$A_i(Q_{r,p})-A_i(Q_{r,1-p})=T^2(2p-1)\operatorname{diag}(1,-1),\qquad
+      D:=\|A_i(Q_{r,p})-A_i(Q_{r,1-p})\|_F=\sqrt2T^2(1-2p)$$
+    <p>for $0&lt;p&lt;1/2$, for both channels and every $r&gt;0$.
+      But the constant observed path $d_0=(Y_t=1\text{ for all }t\le H)$ has probabilities
+      $e^{-r(1-p)H}$ and $e^{-rpH}$ in the two models.
+      Thus both path laws contain the same point mass of size at least $a=e^{-r(1-p)H}$.</p>
+    <p>If $R&lt;D/2$, the success sets for the two targets are disjoint on this common record, even after adding independent algorithmic randomization.
+      If their conditional success probabilities are $s_1,s_2$, then $s_1+s_2\le1$.
+      The sum of the two unconditional failure probabilities is therefore at least $a\{(1-s_1)+(1-s_2)\}\ge a$, proving</p>
+    $$\max_{q\in\{p,1-p\}}\Pr_{Q_{r,q},1}\{\mathcal L_{Q_{r,q}}(\widetilde A)&gt;R\}
+      \ge\tfrac12e^{-r(1-p)H},\qquad R&lt;T^2(1-2p)/\sqrt2.$$
+    <p>For any $R&lt;T^2/\sqrt2$, first choose $p$ small enough for this strict radius inequality.
+      Then choose $r$ small enough that $r\max(p,1-p)\le\bar a$ and $e^{-r(1-p)H}&gt;2\delta$.
+      No estimator can satisfy the uniform confidence requirement at that $R$.</p>
+    <h2>A matching upper bound using no observations</h2>
+    <p>Choose $\widetilde A_0=\widetilde A_1=(T^2/2)I$ on every record.
+      For $z=p-1/2$ and $v=p(1-p)$, the exact target formula gives</p>
+    $$T^{-4}\|A_i-(T^2/2)I\|_F^2
+      =2z^2+4v^2(1-a_i)^2
+      \le2z^2+4v^2=\tfrac14+4z^4\le\tfrac12.$$
+    <p>Both targets lie in these balls with probability one, for every generator in the class.
+      This proves the matching upper bound and hence the exact minimax value.
+      The supremum is approached near a reducible boundary; no reducible generator is included in the parameter class.</p>
+    <h2>What a data-dependent raw-moment budget must do</h2>
+    <p>The empirical triple-window averages
+      $\widehat A_{i,N}=N^{-1}\sum_{k&lt;N}O_{k0}O_{k,i+1}^T$ use occupations on $[(3k+j)T,(3k+j+1)T]$.
+      On $d_0$, both empirical matrices equal $T^2e_1e_1^T$.
+      If a deterministic data-dependent radius $\eta(d)$ is uniformly valid around these empirical matrices at any $0&lt;\delta&lt;1$, then</p>
+    $$\boxed{\eta(d_0)\ge\sqrt2\,T^2.}$$
+    <p>To prove this, let $p\downarrow0$ and $r\downarrow0$.
+      Both stationary targets tend to $T^2e_2e_2^T$, while $\Pr_{Q_{r,p},1}(d_0)\to1$.
+      Any smaller fixed value of $\eta(d_0)$ therefore fails with probability exceeding $\delta$ for some strictly positive-rate model under the cap.</p>
+    <p>This bound is sharp on that record: any two nonnegative matrices whose entries sum to $T^2$ have Frobenius distance at most $\sqrt2T^2$.
+      Consequently an honest procedure must allow a vacuous raw-moment radius or abstain there.
+      It may still give smaller data-dependent radii on other records.</p>
+    <h2>An exact finite-record certificate</h2>
+    <p>Take $T=1$, $N=10^6$, $H=3N$, $p=1/100$, $r=1/(100H)$, known cap $\bar a=1$, and nominal $\delta=1/20$.
+      The half-gap is approximately $0.692964646$, so the radius $R=0.69$ has disjoint success sets.
+      The common-record bound is certified without floating exponentials:</p>
+    $$\tfrac12e^{-r(1-p)H}=\tfrac12e^{-99/10000}
+      \ge\frac{9901}{20000}=0.49505&gt;\delta.$$
+    <p>Thus a million blocks do not make this uniform radius valid: at least one of the two models has failure probability at least $0.49505$.
+      The exact minimax radius is approximately $0.707106781T^2$; the constant-path raw-estimator radius is approximately $1.414213562T^2$.</p>
+    <p>The certificate verifies $561$ exact rational target-gap, positivity and matching-center identities, including closure points, and $231$ exact randomized-decision inequalities on the shared atom.
+      It also checks $120$ target formulas independently with Feynman&ndash;Kac matrix derivatives.
+      These finite checks support the explicit proof; they are not a Monte Carlo proof of a minimax theorem.</p>
+    <h2>Literature, scope and what remains possible</h2>
+    <p>The lower bound uses the classical two-point indistinguishability argument.
+      Related discrete-time sample-path obstructions and useful fully empirical intervals appear in
+      <a href="./bibliography.html#HsuEtAl2019">Hsu et al. (2019)</a>, Sections 3.1 and 4.
+      This note derives the continuous-path stationary-window target gap and its matching constant directly; it does not claim a new general lower-bound technique.</p>
+    <p>There is no contradiction with <a href="https://github.com/microprediction/homogenization/pull/148">fixed-design mixing-controlled window confidence</a> or
+      <a href="https://github.com/microprediction/homogenization/pull/150">mixing-free direct generator confidence from jump records</a>.
+      Direct rate intervals may remain uninformative, and stationary-law propagation can fail its sufficient tests near reducibility.
+      Nor does this contradict exact identification from stationary population moments.</p>
+    <p>The worst-case generator changes with record length and can be arbitrarily slow; a known lower mixing rate excludes the witness.
+      The theorem does not establish the same sharp constant for a stationary start or an externally known stationary law, and it does not rule out pointwise consistency or informative data-dependent certificates.
+      Procedures allowed to keep sampling without any deterministic time cap are also outside this finite-record obstruction.</p>
+  </main>

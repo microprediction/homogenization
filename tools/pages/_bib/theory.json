@@ -69,5 +69,15 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "HsuEtAl2019",
+  "authors": "Hsu, D., Kontorovich, A., Levin, D. A., Peres, Y., Szepesvári, C. and Wolfer, G.",
+  "year": 2019,
+  "title": "Mixing time estimation in reversible Markov chains from a single sample path",
+  "venue": "The Annals of Applied Probability 29(4):2439-2480",
+  "doi": "10.1214/18-AAP1457",
+  "url": "https://www.cs.columbia.edu/~djhsu/papers/mixingest-aap.pdf",
+  "annotation": "Proves discrete-time sample-path lower bounds and constructs fully empirical confidence intervals for stationary probabilities and the spectral gap. This separates generator-dependent sample complexity from useful data-adaptive inference; the window-obstruction note derives its distinct continuous-path target gap and sharp uniform radius directly."
  }
 ]
