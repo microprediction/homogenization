@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Canceling the first rank error by gap design · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a>
+    <span><a href="./papers.html">papers</a> &middot;
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_rank_gap.py">certificate</a></span></p>
+    <h1>Canceling the first rank error by gap design</h1>
+    <p class="subtitle">In a stationary binary terminal-emission model, a shorter final test gap cancels the first-order marginal coverage error at every calibration rank.</p>
+    <p>Let $Y_0,\ldots,Y_N\in\{-1,+1\}$ be balanced stationary binary Markov states at deterministic observation times,
+      with edge correlations $\rho_1,\ldots,\rho_N\in[0,1]$.
+      Given the states, the scores are independent with the same state-specific continuous CDFs at every time.
+      Freeze the score map, use the first $N\ge2$ scores for calibration, and let $Q_k$ be their $k$th order statistic, $1\le k\le N$.</p>
+    <p>The final edge joins the last calibration score to the test score $S_N$.
+      Write $F$ for the stationary mixture CDF, $U=F(S)$, $r(u)=\mathbb E[Y\mid U=u]$,
+      $R(u)=\int_0^u r(v)\,dv$, and $b_{n,j}(u)={n\choose j}u^j(1-u)^{n-j}$, zero outside $0\le j\le n$.
+      Since $U$ is uniform and the state is balanced, $R(0)=R(1)=0$.</p>
+
+    <h2>The cancellation identity</h2>
+    <p>The <a href="./path-conformal-full.html">terminal-threshold calculation</a> gives two first-order coefficients:</p>
+    $$A_{CC}=\int_0^1 R(u)^2\{b_{N-2,k-1}(u)-b_{N-2,k-2}(u)\}\,du,\qquad
+      A_{CT}=-\int_0^1r(u)R(u)b_{N-1,k-1}(u)\,du.$$
+    <p>They are not independent: integration by parts, using $(R^2)'=2rR$ and the zero endpoint values, gives</p>
+    $$A_{CT}=\frac12\int_0^1R^2 b'_{N-1,k-1}\,du
+      =-\frac{N-1}{2}A_{CC}.$$
+    <p>This holds for every rank and every pair of continuous emission laws; Gaussian emissions and symmetric score distributions are not required.
+      At the iid-state baseline the rank event is symmetric in the calibration indices, so every calibration&ndash;calibration edge has coefficient $A_{CC}$ and the final edge has coefficient $A_{CT}$.
+      Therefore, with $C(\rho)=\Pr(S_N\le Q_k)$,</p>
+    $$C(\rho)=\frac{k}{N+1}
+      +A_{CC}\left\{\sum_{j=1}^{N-1}\rho_j-\frac{N-1}{2}\rho_N\right\}
+      +\mathcal E(\rho).$$
+
+    <h2>A finite remainder, not only an asymptotic claim</h2>
+    $$p_0=\frac{k}{N+1},\quad \omega_k=\min(p_0,1-p_0),\qquad
+      |\mathcal E(\rho)|\le\omega_k\left\{\prod_{j=1}^N(1+\rho_j)-1-\sum_{j=1}^N\rho_j\right\}.$$
+    <p>Indeed the state-path likelihood relative to independent balanced states is
+      $\prod_{j=1}^N(1+\rho_jY_{j-1}Y_j)$.
+      The empty subset gives iid rank coverage and singleton subsets give the displayed first-order term.
+      Every nonempty edge subset has a leaf, so its product of state signs is a nonconstant, mean-zero, $\{-1,+1\}$-valued character under the independent-state law.</p>
+    <p>If $H(y)\in[0,1]$ is the rank-event probability conditional on the state path, then $\mathbb E_0H=p_0$ and each such character $\chi$ satisfies
+      $|\mathbb E_0[H\chi]|=|\mathbb E_0[(1-H)\chi]|\le\min(p_0,1-p_0)=\omega_k$.
+      Summing absolute coefficients over subsets of size at least two proves the bound.
+      Thus the remainder estimate is finite-sample and uniform over the emission laws, but explicitly depends on $N$.</p>
+    <p>In particular, choose calibration correlations $\rho_1=\cdots=\rho_{N-1}=\rho$ and final correlation $\rho_N=2\rho$,
+      with $0\le\rho\le1/2$.
+      The linear term vanishes for every emission law and rank simultaneously, and</p>
+    $$\left|C-\frac{k}{N+1}\right|\le
+      \min\!\left\{1,\omega_k\big[(1+\rho)^{N-1}(1+2\rho)-1-(N+1)\rho\big]\right\}
+      =O_N(\rho^2).$$
+    <p>More generally, the same cancellation holds when $\rho_N=2\sum_{j<N}\rho_j/(N-1)$, provided this is a valid correlation.
+      It is not exact rank validity: for $N=k=2$ with emissions uniform on $[0,1]$ in state $-$ and $[2,3]$ in state $+$,
+      the balanced design has exactly $C=2/3+\rho^2/12$.
+      This also proves that the second-order error cannot generally be improved to a smaller order.</p>
+
+    <h2>What this means for observation times</h2>
+    <p>For a stationary telegraph chain flipping at rate $m$, put $a=2m$; an observation gap $h$ has correlation $e^{-ah}$.
+      With equal calibration gaps $h$, the balanced final gap is $g=h-(\log2)/a$, positive when $h>(\log2)/a$.
+      For fixed total span $T=(N-1)h+g$, this is</p>
+    $$h=\frac{T+(\log2)/a}{N},\qquad
+      g=\frac{T-(N-1)(\log2)/a}{N},\qquad
+      T>\frac{(N-1)\log2}{a}.$$
+    <p>Thus the second-order comparison need not spend more calendar time: calibration gaps become slightly longer and the final gap shorter.
+      The rule requires the true decay rate, not an unchecked plug-in estimate.
+      If instead $\rho_N=(2+e)\rho$ with fixed nonzero $e$, the remaining linear term is $-(N-1)e\rho A_{CC}/2$, so the second-order conclusion is generally lost.</p>
+    <p>This does not contradict mixing-based coverage bounds such as
+      <a href="./bibliography.html#OliveiraOrensteinRamosRomano2024">Oliveira et al. (2024)</a>:
+      those bounds control dependence without using this signed, model-specific cancellation.
+      Here the claim is stationary <em>marginal</em> rank coverage for terminal emissions at fixed $N$, not calibration-conditional PAC coverage, feature-conditional coverage or an anytime result.
+      It neither treats overlapping path windows nor proves a globally optimal sampling design.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_rank_gap.py">certificate</a>
+      checks 44 regular-gap and 18 irregular-gap exact rational coverage polynomials for separated uniform emissions, plus 186 finite remainder inequalities.
+      It checks the integration-by-parts identity and zero derivative in 38 Gaussian cases, including unequal emission variances, and independently integrates the test density to audit the Markov count recursion.</p>
+    <p>For $S_j=Y_j+0.5Z_j$, $N=k=9$, the coefficients are $A_{CC}=-0.0027134858$ and $A_{CT}=0.0108539431$;
+      equal gaps leave the coefficient $-0.0108539431$.
+      At balanced calibration correlation $\rho=0.025$, the same-total-span equal-gap error is $-0.0003037256$,
+      while the balanced error is $+0.0000018428$.
+      The last measured balanced-error order is $2.060318$; the explicit finite bound is conservative, not fitted to these values.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
