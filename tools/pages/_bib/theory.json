@@ -1,5 +1,32 @@
 [
  {
+  "key": "BladtSorensen2005",
+  "authors": "Bladt, M. and Sørensen, M.",
+  "year": 2005,
+  "title": "Statistical inference for discretely observed Markov jump processes",
+  "venue": "Journal of the Royal Statistical Society: Series B 67(3):395-410",
+  "doi": "10.1111/j.1467-9868.2005.00508.x",
+  "annotation": "Section 2.1 gives the two-state snapshot embedding and describes its singular boundary; the snapshot note propagates anytime transition-row confidence intervals through this exact inverse."
+ },
+ {
+  "key": "HowardEtAl2021",
+  "authors": "Howard, S. R., Ramdas, A., McAuliffe, J. and Sekhon, J.",
+  "year": 2021,
+  "title": "Time-uniform, nonparametric, nonasymptotic confidence sequences",
+  "venue": "Annals of Statistics 49(2):1055-1080",
+  "doi": "10.1214/20-AOS1991",
+  "annotation": "Develops mixture confidence sequences, including beta-binomial mixtures; the snapshot note applies a fixed uniform Bernoulli likelihood mixture at predictable visits to each Markov transition row."
+ },
+ {
+  "key": "HsuEtAl2019",
+  "authors": "Hsu, D., Kontorovich, A., Levin, D. A., Peres, Y., Szepesvári, C. and Wolfer, G.",
+  "year": 2019,
+  "title": "Mixing time estimation in reversible Markov chains from a single sample path",
+  "venue": "Annals of Applied Probability 29(4):2439-2480",
+  "doi": "10.1214/18-AAP1457",
+  "annotation": "Section 4 develops fully empirical confidence intervals for stationary probabilities and the spectral gap using observed transition rows, without supplying unknown mixing parameters."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
