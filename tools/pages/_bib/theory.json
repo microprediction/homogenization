@@ -75,8 +75,8 @@
   "key": "Prony1795",
   "authors": "de Prony, G. R.",
   "year": 1795,
-  "title": "Essai expérimental et analytique sur les lois de la dilatabilité des fluides élastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, à différentes températures",
-  "venue": "Journal de l'École Polytechnique 1(2):24-76",
+  "title": "Essai exp\u00e9rimental et analytique sur les lois de la dilatabilit\u00e9 des fluides \u00e9lastiques et sur celles de la force expansive de la vapeur de l'eau et de la vapeur de l'alcool, \u00e0 diff\u00e9rentes temp\u00e9ratures",
+  "venue": "Journal de l'\u00c9cole Polytechnique 1(2):24-76",
   "annotation": "Introduces the annihilating-polynomial reconstruction now known as Prony's method; the finite-atomic Cox-mixture result uses its Hankel and Vandermonde steps."
  },
  {
