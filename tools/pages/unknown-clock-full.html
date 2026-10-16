@@ -1,0 +1,91 @@
+<!-- title: Calibrating an unknown observation clock · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+    <span><a href="./papers.html">papers</a> &middot;
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_unknown_clock.py">certificate</a></span></p>
+    <h1>Calibrating an unknown observation clock</h1>
+    <p class="subtitle">Labeled states and one bounded waiting-time transform identify both the generator and the clock, with anytime confidence bounds.</p>
+    <p>Fix an irreducible row generator $Q$ on $n\ge2$ complete known labeled states.
+      Conditional on the entire regime path $Y$, observations form a Poisson process of unknown fixed state-dependent intensity
+      $\lambda_{Y_t}$, where $\Lambda=\operatorname{diag}(\lambda_i)>0$, without feedback on $Y$.
+      Observe $Z_k=Y_{T_k}$ and $\tau_{k+1}=T_{k+1}-T_k$ in physical-time units, starting with $T_0=0$ and any initial state.</p>
+    <p>Keep repeated equal labels and choose a discount $s>0$ before observing data.
+      No clock bounds, generator-speed cap, stationary start or mixing constants are supplied.
+      The Cox mechanism is assumed, not tested; adaptive intensities, noisy labels, rounded timestamps and incomplete state spaces are outside this result.</p>
+
+    <h2>A constructive inverse using bounded moments</h2>
+    <p>Let $R_{ij}=\Pr(Z_{k+1}=j\mid Z_k=i)$ and $f_i=\mathbb E[e^{-s\tau_{k+1}}\mid Z_k=i]$.
+      The next-arrival density is $e^{t(Q-\Lambda)}\Lambda$, giving</p>
+    $$R=(\Lambda-Q)^{-1}\Lambda,\qquad
+      f=(sI+\Lambda-Q)^{-1}\Lambda\mathbf1,\qquad
+      (R^{-1}+s\Lambda^{-1})f=\mathbf1.$$
+    $$d=\mathbf1-R^{-1}f,\qquad
+      \lambda_i=\frac{s f_i}{d_i},\qquad Q=\Lambda(I-R^{-1}).$$
+    <p>Strict diagonal dominance makes both resolvents invertible; also $0<f_i<1$ and $d_i=sf_i/\lambda_i>0$.
+      Thus one label-transition matrix and one bounded waiting-time-transform column identify $Q$ and $\Lambda$ globally, including defective and nonreversible cases.
+      Without timestamps, replacing $(Q,\Lambda)$ by $(DQ,D\Lambda)$ for any positive diagonal $D$ preserves $R$, so labels alone leave rowwise speeds unidentified.</p>
+    <p>Identification with observable random sampling times is classical:
+      <a href="./bibliography.html#DuffieGlynn2004">Duffie and Glynn (2004), Section 4, Proposition 5</a> treats a more general setting.
+      Here the inverse and its confidence propagation are derived explicitly for finite states, without a novelty claim for random-time identification.
+      Bounded $e^{-s\tau}$ replaces a raw waiting-time mean, avoiding an assumed known waiting-time tail bound.</p>
+
+    <h2>Deterministic clock and generator radii</h2>
+    <p>Use the maximum absolute row-sum matrix norm and the maximum absolute coordinate vector norm.
+      Suppose $\widehat R$ is stochastic, $\widehat f\in[0,1]^n$, and
+      $\|\widehat R-R\|_\infty\le\eta$, $\|\widehat f-f\|_\infty\le\zeta$.
+      If $\widehat R$ is singular, abstain; otherwise put</p>
+    $$\widehat G=\widehat R^{-1},\quad \kappa=\|\widehat G\|_\infty,\quad
+      E=\frac{\kappa^2\eta}{1-\kappa\eta},\quad
+      \widehat d=\mathbf1-\widehat G\widehat f,\quad b=E+\kappa\zeta.$$
+    <p>Require $\kappa\eta<1$, $\widehat d_i>b$ and $\widehat f_i>\zeta$ for every state, or abstain.
+      A Neumann series gives $\|R^{-1}-\widehat G\|_\infty\le E$; since $\|f\|_\infty\le1$,
+      $\|d-\widehat d\|_\infty\le E+\kappa\zeta=b$.
+      Hence, defining the following coordinatewise intervals and point estimates,</p>
+    $$L_i=\frac{s\max(0,\widehat f_i-\zeta)}{\widehat d_i+b},\quad
+      U_i=\frac{s\min(1,\widehat f_i+\zeta)}{\widehat d_i-b},\quad
+      \widehat\lambda_i=\frac{s\widehat f_i}{\widehat d_i},\qquad L_i\le\lambda_i\le U_i.$$
+    $$e_\Lambda=\max_i\max(\widehat\lambda_i-L_i,U_i-\widehat\lambda_i),\quad
+      \widehat Q=\operatorname{diag}(\widehat\lambda)(I-\widehat G),\quad
+      \|\widehat Q-Q\|_\infty\le
+      e_\Lambda\|I-\widehat G\|_\infty+(\max_iU_i)E=:\varepsilon_Q.$$
+    <p>The last bound follows by adding and subtracting $\Lambda(I-\widehat G)$.
+      Clip negative off-diagonal entries of $\widehat Q$ and reset its diagonal to obtain a generator $\overline Q$;
+      its radius is $\varepsilon_Q+\|\overline Q-\widehat Q\|_\infty$.
+      No small off-diagonal inverse residual is treated as evidence that the observation model is correct.</p>
+
+    <h2>Anytime input budgets without a known clock floor</h2>
+    <p>At event count $K$, let $V_i=\sum_{k<K}\mathbf1\{Z_k=i\}$ and estimate $R_{ij}$ and $f_i$ by the respective
+      averages of $\mathbf1\{Z_{k+1}=j\}$ and $e^{-s\tau_{k+1}}$ over those visits.
+      For unvisited rows, use the $i$th unit row for $\widehat R_i$ and zero for $\widehat f_i$.
+      Fix $0<\delta<1$ before observing data, put $m=n(n+1)$ and define</p>
+    $$A(v)=1+v/4,\qquad
+      a(v)=\min\!\left\{1,\frac{\sqrt{2A(v)\log[(m/\delta)\sqrt{A(v)}]}}{v}\right\}\ (v>0),
+      \qquad a(0)=1,$$
+    $$\zeta=\max_i a(V_i),\qquad \eta=\min(2,n\zeta).$$
+    <p>With probability at least $1-\delta$, conditional on each initial state, both input budgets hold simultaneously at every $K$.
+      To prove it, take any of the $m$ row/statistic pairs, with bounded reward $W\in[0,1]$ and conditional row mean $\mu$.
+      If $S_K=\sum_{k<K}\mathbf1\{Z_k=i\}(W_{k+1}-\mu)$, conditional Hoeffding's lemma makes
+      $\exp(\theta S_K-\theta^2V_i/8)$ a nonnegative supermartingale for every fixed real $\theta$.</p>
+    <p>Integrating $\theta$ against a fixed standard normal gives
+      $M_K=A(V_i)^{-1/2}\exp\{S_K^2/[2A(V_i)]\}$, also a nonnegative supermartingale starting at one.
+      Ville's inequality and a union bound over $m$ statistics give $M_K\le m/\delta$ simultaneously, except with probability at most $\delta$.
+      Solving this inequality gives $|\widehat\mu-\mu|\le a(V_i)$; summing the $n$ transition-entry errors in a row proves the matrix budget.</p>
+    <p>The row selection is predictable in the filtration containing labels and timestamps through the previous event.
+      Rewards from the next event have the same conditional means $R_{ij},f_i$ by the joint Markov property, but need not be independent across statistics or rows.
+      The Gaussian-mixture method is standard; see <a href="./bibliography.html#HowardEtAl2021">Howard et al. (2021), Section 3.2</a>.</p>
+    <p>The same event covers every reported clock interval and generator radius, including data-selected event counts based on past timestamps and labels.
+      This is initial-state-conditional simultaneous model confidence, not coverage conditional on reporting, on the entire realized clock schedule, or on conformal features.
+      For each fixed model, positivity and irreducibility imply consistent bounded row averages, $V_i\to\infty$, shrinking budgets and eventual gate passage almost surely; no uniform sample-count or calendar-time rate is claimed.</p>
+
+    <h2>Focused certificate</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_unknown_clock.py">certificate</a>
+      enumerates exact finite Markov path laws and numerically evaluates 504 bounded-reward mixture means and 42 first-crossing probabilities.
+      The largest first-crossing probability is $0.000013577$ at $\delta=0.2$; these generic bounded-reward checks audit the concentration mechanism, not the continuous waiting-time law.
+      Independently, 84 continuous-time inverse/quadrature cases include a defective chain, with 283 perturbations certified, 53 abstentions and 97 nonzero clipping costs.</p>
+    <p>For prescribed balanced label-transition counts with each row a cyclic permutation of $(900000,80000,20000)$,
+      $s=1$, $\delta=0.05$, and row transform means $(0.510124518,0.671894456,0.777527424)$,
+      the input budgets are $\zeta=0.002418191$, $\eta=0.007254573$, and the inverse gate product is $0.008919164$.
+      Clock intervals are $[0.968605827,1.033170853]$, $[1.912873121,2.094725519]$, and $[3.718989779,4.324756119]$;
+      the generator radius is $0.122367343$.
+      The point inverse recovers clock $(1,2,4)$; these are prescribed sufficient statistics, not a Monte Carlo coverage claim.</p>
+  </main>
