@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Third occupation cumulants identify three-state generators · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_occupation_inverse.py">certificate</a></span></p>
+    <h1>One occupation third cumulant resolves a three-state Gram</h1>
+    <p class="lead">With known stationary law and complete fixed-state Green&ndash;Kubo data, one additional scalar
+      identifies any irreducible three-state generator up to time reversal. Occupation statistics alone cannot remove that last ambiguity.</p>
+    <h2>Data and exact reconstruction</h2>
+    <p>Fix a three-state irreducible row generator $Q$, its known positive stationary row law $\pi$, state labels and time unit.
+      Put $D_\pi=\operatorname{diag}\pi$, $\Pi=\mathbf1\pi$, $P=I-\Pi$, and</p>
+    $$H=(\Pi-Q)^{-1}-\Pi=-Q^\#,\qquad H^*=D_\pi^{-1}H^TD_\pi,\qquad
+      G=(H+H^*)/2,\qquad K=(H-H^*)/2.$$
+    <p>The observed full symmetric Green&ndash;Kubo form is
+      $\mathcal G(f,h)=\langle f,Gh\rangle_\pi$ on all centered state functions.
+      A known complete fixed-feature basis determines the state operator $G$, with $G\mathbf1=0$ and $\pi G=0$;
+      twice this form is the long-run occupation covariance rate.</p>
+    <p>Choose any one state $i$ and additionally observe the exact long-run third cumulant rate</p>
+    $$\tau_i=\lim_{T\to\infty}\frac1T\kappa_3\left(\int_0^T
+      (\mathbf1_{\{Y_t=i\}}-\pi_i)\,dt\right).$$
+    <p>Every centered weighted-skew operator in three states has the form
+      $K=aD_\pi^{-1}C$, where</p>
+    $$C=\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      K^2=-\eta P,\qquad\eta=\frac{a^2}{\pi_1\pi_2\pi_3}\ge0.$$
+    <div class="equation-card">
+    $$\tau_i=6\pi_i\left[G_{ii}^2-\pi_i(G^2)_{ii}+\pi_i(1-\pi_i)\eta\right],$$
+    $$\eta=\frac{\tau_i/(6\pi_i)-G_{ii}^2+\pi_i(G^2)_{ii}}{\pi_i(1-\pi_i)},\qquad
+      Q_\pm=\Pi-\left(\Pi+G\pm\sqrt{\pi_1\pi_2\pi_3\eta}\,D_\pi^{-1}C\right)^{-1}.$$
+    </div>
+    <p>For exact data from an irreducible generator, these are precisely $Q$ and
+      $Q^*=D_\pi^{-1}Q^TD_\pi$.
+      They coincide when $\eta=0$; otherwise there are exactly two candidates.
+      No reversibility or diagonalizability assumption is needed.</p>
+    <h2>Proof from the third Poisson coefficient</h2>
+    <p>For any centered real $f$, the eigenvalue $\lambda(s)$ of $Q+s\operatorname{diag}f$ through zero is analytic
+      near zero, and the long-run third cumulant rate is $\lambda'''(0)$.
+      Normalize the right eigenvector by $\pi r(s)=1$; successive coefficients give</p>
+    $$\lambda(s)=s^2\langle f,Hf\rangle_\pi
+      +s^3\langle f,H(fHf)\rangle_\pi+O(s^4).$$
+    <p>Here $H$ annihilates constants, so the eigenvector coefficients are $Hf$ and $H(fHf)$.
+      The spectral remainder is local for each fixed $Q,f$; the inversion uses the exact limiting cumulant, not a finite-$T$ approximation.</p>
+    <p>For $f=e_i-\pi_i\mathbf1$, $Hf=He_i$ and
+      $fHf=H_{ii}e_i-\pi_iHe_i$.
+      Since $\pi H=0$, this proves the general finite-chain identity</p>
+    $$\tau_i=6\pi_i\left[H_{ii}^2-\pi_i(H^2)_{ii}\right].$$
+    <p>Weighted skewness makes the diagonal of $K$ and of $GK+KG$ zero.
+      Hence $H_{ii}=G_{ii}$ and $(H^2)_{ii}=(G^2)_{ii}+(K^2)_{ii}$.</p>
+    <p>In three states $D_\pi K$ is a skew matrix with zero row sums, so it is a scalar multiple of $C$.
+      Direct multiplication gives $K^2=-\eta P$, yielding the boxed scalar formula.
+      Only the sign of $a$ remains, and $H\leftrightarrow H^*$ gives exactly stationary time reversal.</p>
+    <h2>A same-Gram family separated by the third rate</h2>
+    <p>For uniform $\pi$, let $P=I-\mathbf1\pi$ and $Q_s=(sC-3P)/(3+s^2)$, $|s|\le1$.
+      These are irreducible generators with $H_s=P+sC/3$, $G=P$ and $\eta=s^2/3$, but</p>
+    $$\tau_i=\frac49\left(1+\frac{s^2}{3}\right).$$
+    <p>Thus $s=1/4$ and $s=1/2$ share the complete Gram, yet have respective third rates
+      $49/108=0.4537037037$ and $13/27=0.4814814815$.
+      One occupation third rate recovers $|s|$, not its orientation.</p>
+    <h2>Why no occupation cumulant can distinguish reversal</h2>
+    <p>Start in $\pi$ and let $D$ be any real diagonal potential.
+      The finite-state Feynman&ndash;Kac transform of the full occupation vector is
+      $M_Q(T,D)=\pi e^{T(Q+D)}\mathbf1$.</p>
+    $$Q^*+D=D_\pi^{-1}(Q+D)^TD_\pi
+      \quad\Longrightarrow\quad M_{Q^*}(T,D)=M_Q(T,D).$$
+    <p>Thus the entire joint occupation vector has the same law under $Q$ and $Q^*$ at every finite horizon.
+      It is bounded, so equality of these transforms identifies its law and every joint occupation cumulant.
+      Ordered observations or time-weighted scores are different data and are not covered by this blindness statement.</p>
+    <h2>One prescribed occupation is not enough in four states</h2>
+    <p>For uniform $\pi=(1,1,1,1)/4$, put $P=I-\Pi$, $C_4=\operatorname{diag}(0,C)$ and</p>
+    $$Q_a=\Pi-(I+aC_4)^{-1},\qquad H_a=P+aC_4,\qquad a=0,1/10.$$
+    <p>Both have full symmetric Gram operator $G=P$ and $\tau_1=9/16$.
+      The nonzero-$a$ generator has all off-diagonal rates at least $59/412&gt;0$ and is nonreversible,
+      whereas $Q_0$ is reversible, so they are neither reversals nor relabelings.</p>
+    <p>In fact, every statistic of the first state's occupation agrees: its binary indicator has exit rate $3/4$
+      and entry rate $1/4$ for both chains, independently of the other regime.
+      Thus even its entire occupation law does not repair the ambiguity; the three-state theorem does not extend to four with this data.</p>
+    <h2>Verification, literature and scope</h2>
+    <p>The certificate checks 39 rational three-state generators, including nonuniform stationary laws,
+      a reversible case, a one-way cycle and a defective generator.
+      All 117 indicator reconstructions and cubic characteristic-polynomial identities are exact; it also checks the four-state obstruction rationally.</p>
+    <p>Seventy-two independent spectral-coefficient calculations and 64 finite-horizon transform comparisons
+      provide floating-point checks, not interval enclosures.
+      The analytic cumulant/Poisson framework is classical; see
+      <a href="./bibliography.html#KontoyiannisMeyn2003">Kontoyiannis and Meyn (2003)</a>.</p>
+    <p>The result requires known state representation, stationary law, time unit and complete fixed-feature Gram.
+      It is not a theorem about partial observations, noisy empirical estimates, regime counting, or a matrix formed by integrating different maturity loadings.
+      No statistical estimation-rate or finite-maturity cumulant-error bound is inferred from this exact inversion.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
