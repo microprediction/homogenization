@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Exact finite-grid variance-memory design · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-score summary</a>
+      &middot; <a href="./conformal-crossover-full.html">unconstrained calibration design</a></p>
+    <h1>Optimal grid weights discard a prefix</h1>
+    <p class="lead">On any fixed irregular grid, minimum stationary path variance under an exponential start-memory
+      budget has explicit breakpoints and weights. Computing the optimum needs only a linear number of arithmetic operations, without a dense covariance matrix.</p>
+    <h2>Setup and the quantity being optimized</h2>
+    <p>Use relaxation-time units: $0=t_0&lt;\cdots&lt;t_{n-1}=R$, $n\ge2$.
+      Let $X_t\in\{0,1\}$ have generator
+      $Q=\left(\begin{smallmatrix}-p&amp;p\\1-p&amp;-(1-p)\end{smallmatrix}\right)$, $p\in(0,1)$,
+      and stationary law $(1-p,p)$.</p>
+    <p>For deterministic nonnegative weights $w_j$ summing to one, define
+      $A_w=\sum_jw_j(X_{t_j}-p)$, $l_j=e^{-t_j}$, and $K_{ij}=e^{-|t_i-t_j|}$.
+      Then exactly</p>
+    $$\mathbb E_i A_w=(i-p)l^Tw,\qquad
+      \operatorname{Var}_\pi A_w=p(1-p)w^TKw.$$
+    <p>For $S=\mu A_w+\sigma Z$, independent $Z\sim N(0,1)$ and $\sigma&gt;0$, a common rate-one Bernoulli
+      refresh couples start $i$ to stationarity, giving
+      $\sup_q|F_i(q)-F_\pi(q)|\le |\mu||i-p|l^Tw/(\sigma\sqrt{2\pi})$.
+      Thus a bound on $l^Tw$ controls exact mean memory and a population coverage-error bound, not actual coverage error.</p>
+    <p>The design problem is
+      $E_*(\ell)=\min\{w^TKw:w\ge0,\ \mathbf1^Tw=1,\ l^Tw\le\ell\}$ for $0\le\ell\le1$.
+      It is infeasible below $l_{n-1}=e^{-R}$; equality permits only the terminal observation, with energy one.</p>
+    <h2>Information and memory breakpoints</h2>
+    <p>Write $\rho_j=e^{-(t_{j+1}-t_j)}\in(0,1)$ and
+      $I_k=1+\sum_{j=k}^{n-2}(1-\rho_j)/(1+\rho_j)$.
+      These suffix information values are obtained by one backward cumulative sum.</p>
+    $$B_{-1}=I_0^{-1},\qquad
+      B_k=\frac{l_{k+1}}{I_k(1+\rho_k)-1}\quad(0\le k\le n-2).$$
+    <p>The breakpoints strictly decrease from $B_{-1}$ to $B_{n-2}=e^{-R}$.
+      For $\ell\ge B_{-1}$, the existing unconstrained GLS design is feasible:
+      $w=K^{-1}\mathbf1/I_0$, with $E_*=1/I_0$.</p>
+    <p>For $e^{-R}&lt;\ell&lt;B_{-1}$, select $k$ such that $B_k\le\ell\le B_{k-1}$.
+      Only the suffix $k,\ldots,n-1$ is needed; its first weight may be zero at a breakpoint.
+      Put</p>
+    $$b=\ell/l_k,\qquad c=\frac{1-b}{I_k-1},\qquad z=c-b,$$
+    $$v_k=\frac1{1+\rho_k},\quad
+      v_j=\frac1{1+\rho_{j-1}}-\frac{\rho_j}{1+\rho_j}\ (k&lt;j&lt;n-1),\quad
+      v_{n-1}=\frac1{1+\rho_{n-2}}.$$
+    <div class="equation-card">
+    $$w_j=0\ (j&lt;k),\qquad
+      w_j=cv_j-z\mathbf1_{\{j=k\}}\ (j\ge k),\qquad
+      E_*(\ell)=b^2+\frac{(1-b)^2}{I_k-1}.$$
+    </div>
+    <p>All later suffix weights are strictly positive.
+      At adjacent breakpoint intervals these formulas agree, so the variance frontier is continuous and piecewise quadratic.</p>
+    <h2>Proof: a covariance column makes the active set explicit</h2>
+    <p>Let $K^{(k)}$ be the covariance submatrix on the suffix.
+      The classical tridiagonal inverse gives $v=(K^{(k)})^{-1}\mathbf1$ with the components above and
+      $\mathbf1^Tv=I_k$; each component is positive.</p>
+    <p>Crucially, $l_{k:n-1}=l_k K^{(k)}e_k$, so
+      $l_{k:n-1}^Tv=l_k$.
+      Therefore the proposed weights have unit mass, memory exactly $\ell$, and potential
+      $u=Kw$ satisfying $u_j+\lambda l_j=c$ on the suffix, where $\lambda=z/l_k\ge0$.</p>
+    <p>The first weight is nonnegative precisely when $\ell\ge B_k$.
+      For $k&gt;0$, the inequality at the preceding point is equivalent to
+      $z\ge b\rho_{k-1}$, or $\ell\le B_{k-1}$; for $k=0$, $\lambda\ge0$ is equivalent to $\ell\le B_{-1}$.</p>
+    <p>For any earlier $i&lt;k$, set $d=t_k-t_i$.
+      Since $u_i=be^{-d}$,</p>
+    $$u_i+\lambda l_i-c=(e^d-1)(z-be^{-d})\ge0,$$
+    <p>because $e^{-d}\le\rho_{k-1}$.
+      The identity $I_{k-1}=I_k+(1-\rho_{k-1})/(1+\rho_{k-1})$ proves that the successive budget intervals meet;
+      their widths are positive since $I_k&gt;1$ and, for $k&gt;0$, $\rho_{k-1}\rho_k&lt;1$.</p>
+    <p>Hence all feasible competitors $\widetilde w$ satisfy
+      $(Kw)^T\widetilde w\ge c-\lambda\ell=w^TKw$.
+      With $\delta=\widetilde w-w$,</p>
+    $$\widetilde w^TK\widetilde w-w^TKw\ge\delta^TK\delta\ge0.$$
+    <p>Strict positive definiteness follows from the Markov covariance determinant
+      $\det K=\prod_j(1-\rho_j^2)&gt;0$, applied also to every leading principal submatrix.
+      This proves uniqueness; $w^TKw=c-\lambda\ell$ simplifies to the boxed expression.</p>
+    <h2>Implementation and exact example</h2>
+    <p>Compute all $I_k$, scan the breakpoints, then form one suffix of weights: $O(n)$ arithmetic operations and $O(n)$ storage.
+      The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_grid_memory.py">certificate</a>
+      supplies this solver and two linear recurrences for $Kw$, avoiding dense matrices even during large-grid validation.</p>
+    <p>For $t=\log(1,2,3,5,8)$ and budget $\ell=1/6$, the exact optimizer is</p>
+    $$w=(0,0,11/100,1/4,16/25),\qquad E_*=77/100.$$
+    <p>The full breakpoint sequence is $(780/1571,260/1051,52/281,13/89,1/8)$.
+      Eleven exact-rational cases verify all feasibility and potential inequalities, including every transition.
+      Independent exact path enumeration checks the mean/variance identities, and a Gaussian-mixture calculation checks the pooled coverage bound.</p>
+    <p>Another 288 floating-point cases check the KKT conditions and dense/recurrence identities, with 20 independent
+      constrained quadratic-program comparisons.
+      On a 100001-point grid over $[0,8]$ at budget $0.005$, the first active time is $3.61464000$ and
+      normalized energy $0.3368964879$.</p>
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#Aitken1936">Generalized least squares</a> and the tridiagonal exponential-kernel
+      weights are classical; the <a href="./conformal-crossover-full.html">existing calibration design note</a>
+      discusses the correlated-observation literature.
+      The added memory constraint and suffix certificate are derived above; no priority claim is made for GLS or covariance inversion.</p>
+    <p>This is an exact fixed-grid, two-state stationary-variance result; times are not optimized, and estimated
+      rates or data-adaptive weights are not covered.
+      The numerical implementation uses floating-point arithmetic unless given exact rational decays and budgets;
+      no uniform numerical-error bound over collapsing gaps or extreme exposures is asserted.</p>
+    <p>In particular, these are model-based population bounds, not finite-calibration conditional validity.
+      An ordinary weighted empirical quantile does not acquire conformal rank validity from this variance calculation.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
