@@ -1,0 +1,89 @@
+<!-- title: Affine CIR loading on a directed cycle · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; cumulants summary</a>
+      &middot; <a href="./cumulants-full.html">moment and Poisson formulas</a></p>
+    <h1>Affine loading need not give monotone variance rates</h1>
+    <p class="subtitle">One complex-conjugate mode pair produces two turning points, even while stationary CIR variance strictly decreases.</p>
+    <h2>Exact affine-loading formulas without reversibility</h2>
+    <p>Let $Y$ have generator $mQ$, $m&gt;0$, where $Q$ is any finite irreducible generator with stationary law $\pi$.
+      Consider the joint stationary process</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)\,dt+\sqrt{a_{Y_t}v_t}\,dB_t,
+      \qquad V_T=\int_0^T v_t\,dt.$$
+    <p>Here $\kappa&gt;0$ is common, $B$ is independent of $Y$, and
+      $a_i=b_0+b\theta_i&gt;0$, $\theta_i&gt;0$, $2\kappa\theta_i&gt;a_i$ in every regime.
+      Use the joint invariant law at each speed, rather than one common deterministic starting state.</p>
+    <p>Write $f=\theta-\bar\theta\mathbf1$, $\bar\theta=\pi\theta$, $\bar a=\pi a$,
+      and let $H=(-Q)^{-1}$ on centered functions.
+      Set $g(m)=\langle f,(\kappa I-mQ)^{-1}f\rangle_\pi$ and $K=\langle f,Hf\rangle_\pi$.</p>
+    <div class="equation-card">
+      $$\operatorname{Var}(v)=\frac{\bar a\bar\theta}{2\kappa}
+        +(\kappa+b/2)g(m),$$
+      $$\Gamma(m):=\lim_{T\to\infty}\frac{\operatorname{Var}(V_T)}T
+        =\Gamma_\infty+\frac{2K}{m}+\frac b\kappa g(m),
+        \qquad\Gamma_\infty=\frac{\bar a\bar\theta}{\kappa^2}.$$
+    </div>
+    <p>To prove these identities, stationarity of $vu(Y)$ for centered $u$ gives
+      $\operatorname{Cov}(v,u_Y)=\kappa\langle f,(\kappa I-mQ)^{-1}u\rangle_\pi$.
+      Applying the generator to $v^2$ gives
+      $\operatorname{Var}(v)=\operatorname{Cov}(v,\theta_Y)+\mathbb E[a_Yv]/(2\kappa)$,
+      proving the first formula.</p>
+    <p>The Poisson solution $\phi(v,i)=v/\kappa+(Hf)_i/m$ satisfies
+      $-\mathcal L\phi=v-\bar\theta$.
+      The covariance identity $\Gamma=2\operatorname{Cov}(v,\phi)$ and
+      $\kappa(\kappa I-mQ)^{-1}H=H-m(\kappa I-mQ)^{-1}$ on centered functions prove the second formula.</p>
+    <p>Finite second moments follow from the common positive mean reversion and bounded regime coefficients.
+      Affine conditional means decay exponentially (with possible polynomial factors), so the covariance integral exists.
+      No diagonalizability or detailed balance is used.</p>
+    <h2>A strict-Feller six-cycle</h2>
+    <p>Index regimes modulo six and take $Q_{j,j+1}=1$, $Q_{jj}=-1$, all other rates zero;
+      then $\pi$ is uniform and the chain is irreducible but nonreversible.
+      Choose $\kappa=1$ and</p>
+    $$h=(2,1,-1,-2,-1,1),\qquad \theta=(40\mathbf1+h)/1000,
+      \qquad a=\frac1{25}\mathbf1-\frac95(\theta-\tfrac1{25}\mathbf1).$$
+    <p>The affine slope is $b=-9/5&gt;-2\kappa$.
+      Both regime coefficients are positive, and the minimum Feller margin is $81/2500=0.0324$.</p>
+    <p>The integer identities $(Q^2+Q+I)h=0$, $h^Th=12$, $h^TQh=-6$ give
+      $S=\|f\|_\pi^2=1/500000$ and $K=S/2$.
+      Indeed, $(I-mQ)^{-1}f=((1+m)I+mQ)f/(1+m+m^2)$, whence</p>
+    $$g(m)=S\frac{1+m/2}{1+m+m^2},\qquad
+      \operatorname{Var}(v)=\frac1{1250}+\frac{g(m)}{10},\qquad
+      \Gamma(m)=\frac1{625}+S\frac{m^2-8m+10}{10m(1+m+m^2)}.$$
+    <p>Since $g'(m)=-S(m^2+4m+1)/(2(1+m+m^2)^2)&lt;0$, stationary variance strictly decreases at every speed.
+      But the rate derivative has a different sign law:</p>
+    $$\Gamma'(m)=\frac{S P(m)}{10m^2(1+m+m^2)^2},\qquad
+      P(m)=-m^4+16m^3-21m^2-20m-10.$$
+    <p>The descending coefficients have two sign changes, hence at most two positive roots counted with multiplicity.
+      Exact signs $P(2)=-22$, $P(3)=92$, $P(15)=-1660$ locate two distinct roots;
+      therefore both are simple and there are no others.</p>
+    <p>Thus $\Gamma$ first decreases, then increases, then decreases.
+      Its local minimum is at $m\approx2.3045224033$, rate $0.0015999685170$;
+      its local maximum is at $m\approx14.4473055464$, rate $0.0016000063696$.</p>
+    <p>Moreover, $\Gamma(3)=0.0015999743590&lt;\Gamma_\infty=0.0016$.
+      More exactly, the rate lies below its averaged limit precisely when
+      $4-\sqrt6&lt;m&lt;4+\sqrt6$.</p>
+    <h2>The effect persists on an open loading interval</h2>
+    <p>Keep $Q,\kappa,\theta$ fixed, but set $a=\tfrac1{25}\mathbf1-2c f$.
+      Positivity and the strict Feller test hold throughout $169/198&lt;c&lt;1$, and stationary variance strictly decreases there.</p>
+    <p>Up to its positive denominator, $\Gamma'$ now has numerator
+      $(c-1)m^4+(4c-2)m^3+(c-3)m^2-2m-1$.
+      It has two coefficient sign changes, is negative at zero and at infinity, and at $m=3$ equals $198c-169&gt;0$;
+      hence it has exactly two simple positive roots throughout this interval.</p>
+    <h2>Scope and verification</h2>
+    <p>For the reversible comparison, write $S_\lambda=\|E_\lambda f\|_\pi^2$ for the orthogonal spectral weights.
+      Then $g=\sum_\lambda S_\lambda/(\kappa+m\lambda)$ and $K=\sum_\lambda S_\lambda/\lambda$.
+      In the derivative of $\Gamma$, each positive mixed contribution is dominated by the $2K/m$ contribution when
+      $-2\kappa\le b&lt;0$, since $(\kappa+m\lambda)^2&gt;m^2\lambda^2$; for $b\ge0$ both derivatives are nonpositive.</p>
+    <p>For reversible chains, affine slopes $b\ge-2\kappa$ make the long-run variance rate decrease;
+      the example shows that reversibility cannot be dropped from that implication.
+      It does not contradict the separate constant-vol-of-vol case $b=0$, where $\Gamma=\Gamma_\infty+2K/m$.</p>
+    <p>These are exact stationary one-time variance and long-run variance-rate statements, not a classification of
+      finite-maturity $\operatorname{Var}(V_T)$, log-return cumulants, or options.
+      No minimal state count or complete affine-loading classification is claimed.</p>
+    <p>Finite polynomial moment calculations are classical; see
+      <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012), Theorem 2.7</a>.
+      No priority claim is made for the moment, Poisson, or invariant-subspace methods.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_affine_cycle.py">certificate</a>
+      proves the polynomial identities and sign brackets in exact rational arithmetic and compares the formulas
+      with independent regime-resolved invariant-moment and Poisson solves, including a defective chain.
+      Displayed turning speeds and rates are rounded floating-point evaluations, not interval enclosures.</p>
+  </main>
