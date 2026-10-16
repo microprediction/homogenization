@@ -1,0 +1,92 @@
+<!-- title: Anytime generator confidence from a known event clock · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+    <span><a href="./papers.html">papers</a> &middot;
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_event_clock.py">certificate</a></span></p>
+    <h1>Anytime generator confidence from a known event clock</h1>
+    <p class="subtitle">A classical resolvent inverse, with a computable confidence radius and no matrix-logarithm alias gate.</p>
+    <p>Fix an irreducible finite row generator $Q$ on $n\ge2$ known labeled states and a known positive diagonal matrix
+      $\Lambda=\operatorname{diag}(\lambda_i)$, specified in physical-time units before observing data.
+      Conditional on the entire regime path $Y$, observations arrive as a Poisson process of intensity $\lambda_{Y_t}$, without feedback on $Y$.
+      Set $T_0=0$, let $T_k$ be the successive arrival times, and record $Z_k=Y_{T_k}$, including repeated equal labels.</p>
+    <p>The ordered labels suffice here: neither physical regime-jump counts nor observation timestamps enter the estimator.
+      Constant $\lambda_i=\rho$ gives an independent rate-$\rho$ Poisson observation clock.
+      Unknown or estimated intensities, adaptive clocks and noisy regime labels are outside the theorem.</p>
+
+    <h2>Population identification and sampling bias</h2>
+    $$R=\int_0^\infty e^{t(Q-\Lambda)}\Lambda\,dt
+       =(\Lambda-Q)^{-1}\Lambda,\qquad Q=\Lambda(I-R^{-1}).$$
+    <p>The killed semigroup gives the density of the next observation and its state; its row mass is at most $e^{-t\min_i\lambda_i}$.
+      Integration proves the identity, and $\Lambda-Q$ is strictly row-diagonally dominant, hence invertible.
+      Thus known $\Lambda$ identifies every finite $Q$, without reversibility, diagonalizability or a spectral branch choice.</p>
+    <p>This is the finite-state form of classical random-time identification, not a new identification principle:
+      see <a href="./bibliography.html#DuffieGlynn2004">Duffie and Glynn (2004), Sections 3&ndash;4 and Proposition 2</a>.
+      If $\pi Q=0$, the stationary event law is
+      $\nu=\pi\Lambda/(\pi\Lambda\mathbf1)$ because $\pi\Lambda R^{-1}=\pi\Lambda$.
+      Consequently $\pi_i\propto\nu_i/\lambda_i$; event frequencies are generally not physical occupation frequencies.</p>
+    <p>The multiplication order matters: $\Lambda$ premultiplies $I-R^{-1}$.
+      If only ordered labels are retained and the clock is unknown, $(Q,\Lambda)$ and $(cQ,c\Lambda)$ have the same $R$ for every $c>0$.
+      Identification using timestamps with unknown intensities is a different problem.</p>
+
+    <h2>Deterministic reconstruction bound</h2>
+    <p>Use the maximum absolute row-sum norm $\|\cdot\|_\infty$.
+      Suppose $\widehat R$ is stochastic, $\|\widehat R-R\|_\infty\le\eta$, and $\widehat R$ is invertible.
+      Define $\kappa=\|\widehat R^{-1}\|_\infty$ and report only when $\kappa\eta<1$.</p>
+    $$\widehat Q=\Lambda(I-\widehat R^{-1}),\qquad
+      \|\widehat Q-Q\|_\infty\le
+      \varepsilon_Q:=\frac{\lambda_{\max}\kappa^2\eta}{1-\kappa\eta}.$$
+    <p>Indeed, $R=\widehat R[I+\widehat R^{-1}(R-\widehat R)]$ gives
+      $\|R^{-1}\|_\infty\le\kappa/(1-\kappa\eta)$ by a Neumann series.
+      Apply the inverse-difference identity and submultiplicativity to obtain the displayed radius.</p>
+    <p>Although $\widehat Q\mathbf1=0$, estimated off-diagonal entries may be negative.
+      Clip those entries to zero and reset the diagonal to obtain a generator $\overline Q$; its radius is
+      $\varepsilon_Q+\|\overline Q-\widehat Q\|_\infty$, not $\varepsilon_Q$ alone.
+      Singular estimates or a failed gate give abstention, not a model-validity test.</p>
+
+    <h2>An explicit anytime input budget</h2>
+    <p>Fix $0<\delta<1$ before sampling and count $N_{ij}(K)=\sum_{k<K}\mathbf1\{Z_k=i,Z_{k+1}=j\}$, with $V_i=\sum_jN_{ij}$.
+      For $V_i>0$ let $\widehat R_{ij}=N_{ij}/V_i$; otherwise set the row to the $i$th unit row and $\eta_i=2$.
+      The uniform Dirichlet row mixture, for a candidate probability row $p$, is</p>
+    $$M_{i,K}(p)=\frac{\Gamma(n)\prod_j\Gamma(N_{ij}+1)}{\Gamma(V_i+n)}
+      \prod_jp_j^{-N_{ij}},\qquad
+      H_i=\log(n/\delta)-\log M_{i,K}(\widehat R_i),$$
+    $$\eta_i=\min\!\left\{2,\sqrt{\frac{2H_i}{V_i}}\right\}\quad(V_i>0),
+      \qquad\eta=\max_i\eta_i.$$
+    <p>Use $0^0=1$ for empty cells; compute the log mixture with log-gamma functions.
+      Since the empirical row maximizes the multinomial likelihood, $M_{i,K}(\widehat R_i)\le1$ and $H_i>0$.
+      With probability at least $1-\delta$, conditional on each initial state, this $\eta$ bounds
+      $\|\widehat R-R\|_\infty$ simultaneously for every integer $K\ge0$.</p>
+    <p>To prove this, fix a probability row $v$ and multiply $v_{Z_{k+1}}/R_{i,Z_{k+1}}$ only when $Z_k=i$.
+      Given all labels and timestamps through event $k$, the next label has row law $R_{Z_k}$, so each factor has conditional mean one.
+      Integrating over the uniform Dirichlet law gives $M_{i,K}(R_i)$, a nonnegative mean-one martingale.</p>
+    <p>Ville's inequality and a union bound over the $n$ rows give $M_{i,K}(R_i)\le n/\delta$ simultaneously, outside an event of probability at most $\delta$.
+      On that event,
+      $\log M_{i,K}(R_i)-\log M_{i,K}(\widehat R_i)=V_iD_{\rm KL}(\widehat R_i\|R_i)\le H_i$.
+      Pinsker's inequality then gives the stated row radius; no independence between rows or binomial law conditional on random $V_i$ is assumed.</p>
+    <p>For completeness, aggregate coordinates where $\widehat R_{ij}\ge R_{ij}$ and apply the log-sum inequality to reduce Pinsker to binary relative entropy.
+      Its curvature in the first argument is $1/[x(1-x)]\ge4$, proving
+      $D_{\rm KL}(a\|b)\ge\tfrac12\|a-b\|_1^2$.
+      This is the standard mixture-martingale route to confidence sequences; see
+      <a href="./bibliography.html#HowardEtAl2021">Howard et al. (2021), Section 3.2</a>.</p>
+
+    <h2>What the guarantee permits</h2>
+    <p>The same probability event covers every reported generator radius, including an event count selected using past labels and timestamps.
+      This is simultaneous initial-state-conditional model confidence, not coverage conditional on reporting or on the entire realized clock schedule.
+      It is not a conformal feature-conditional guarantee or a test of the assumed Cox observation mechanism.</p>
+    <p>For each fixed model, $R$ is strictly positive, all $V_i\to\infty$, and $\widehat R\to R$ almost surely.
+      Stirling's formula gives $\log M_{i,K}(\widehat R_i)=-(n-1)\log V_i/2+O(1)$, so $\eta\to0$ and the gate eventually passes almost surely.
+      Both the unprojected radius and the clipping cost tend to zero, but this is pointwise in $Q,\Lambda$, not a uniform event-count or calendar-time complexity bound.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_event_clock.py">certificate</a>
+      checks 126 exact rational martingale means and 42 first-crossing laws, with maximum failure $0.013369900$ at $\delta=0.2$.
+      It checks 28 killed kernels independently by quadrature and 84 perturbations, including 27 nonzero clipping costs and a defective generator.
+      These finite checks audit the implementation, not the infinite-time proof.</p>
+    <p>For balanced transition counts with each row a cyclic permutation of $(900000,80000,20000)$, $\delta=0.05$ and $\Lambda=\operatorname{diag}(1,2,4)$,
+      the budget is $\eta=0.006107436$, $\kappa=1.229453944$, the gate product is $0.007508811$, and $\varepsilon_Q=0.037206323$.
+      The empirical inverse is already a generator; its physical stationary law is $(4/7,2/7,1/7)$ despite uniform event frequencies.
+      These are prescribed feasible balanced counts, not a simulated coverage experiment.</p>
+    <p>For the directed three-state cyclic permutation matrix $C$, the opposite generators
+      $Q_\pm=(4\pi/\sqrt3)(C^{\pm1}-I)$ have identical unit-spacing snapshot kernels:
+      their nonzero eigenvalues are $-2\pi\sqrt3\pm2\pi i$, so both exponentials are scalar on the centered subspace.
+      Their unit-rate Poisson kernels instead differ in row-sum norm by $0.080310240$.
+      Randomizing a known clock removes that alias, but very fast chains can still make $R$ nearly singular and the finite-data inverse unstable.</p>
+  </main>
