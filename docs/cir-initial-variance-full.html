@@ -166,6 +166,35 @@
       A stationary-start approximation used unchanged for both specified starts therefore cannot have an $O(m^{-2})$ error even at that fixed positive maturity.
       If $\xi=0$, this first-order noise-memory term disappears and the occupation boundary effect remains second order.</p>
 
+    <h2>Random initial variance: stationary regime marginals do not suffice</h2>
+    <p>Now allow a joint initial law with $v_0>0$ almost surely and $\mathbb E v_0^2<\infty$.
+      Conditional on $Y_0$, the future chain is independent of $v_0$; Brownian motion is independent of the initial pair and the chain.
+      Put $\mu_0=\mathbb E v_0$ and $r_i=\mathbb E[(v_0-\mu_0)\mathbf1_{\{Y_0=i\}}]$, so $r\mathbf1=0$.</p>
+    <p>The averaged CIR now uses the same marginal law of $v_0$, independently of its Brownian motion, giving</p>
+    $$\operatorname{Var}_{\rm av}(V_T)=B_\kappa(T)^2\operatorname{Var}(v_0)
+      +\xi^2\{(\pi\theta)I_2(T)+(\mu_0-\pi\theta)J_\kappa(T)\}.$$
+    <p>The extended approximation and its finite-rate bound are</p>
+    $$\operatorname{Var}(V_T)=\operatorname{Var}_{\rm av}(V_T)+\frac{2\kappa^2K}{m}I_2(T)
+      +\frac{\xi^2\kappa}{m}J_\kappa(T)\nu h+\frac{2\kappa}{m}B_\kappa(T)^2rh+R(T,m),$$
+    $$\sup_{T\ge0}|R(T,m)|\le
+      \frac{(4C+3C^2)F^2+2\xi^2CF/\kappa+2CF\|r\|_1}{m^2\gamma^2}.$$
+    <p>Conditioning additionally on $v_0$ preserves the zero conditional mean of the stochastic integral.
+      The deterministic-start decomposition acquires $B_\kappa(T)^2\operatorname{Var}(v_0)$ and the cross term</p>
+    $$L(T,m)=2\kappa B_\kappa(T)\int_0^T B_\kappa(T-u)r e^{muQ}f\,du.$$
+    <p>Extend $B_\kappa$ by zero to negative times; it is globally one-Lipschitz, $\kappa B_\kappa\le1$, and $r\mathbf1=0$.
+      Replacing $B_\kappa(T-u)$ by $B_\kappa(T)$ inside the integral over $[0,\infty)$ therefore gives</p>
+    $$\left|L(T,m)-\frac{2\kappa}{m}B_\kappa(T)^2rh\right|
+      \le 2CF\|r\|_1\int_0^\infty u e^{-m\gamma u}du
+      =\frac{2CF\|r\|_1}{m^2\gamma^2}.$$
+    <p>The earlier two error bounds are unchanged, proving the extension with only a second initial moment and no exponential-moment assumption.
+      The bound is uniform over maturities and joint initial laws with bounded $\|r\|_1$, not with an unrestricted correlation norm.</p>
+    <p>For symmetric switching, let $Y_0=\pm1$ equiprobably, $\theta_\pm=\bar\theta\pm\delta$, and $v_0=\mu_0+aY_0$, where $\mu_0>|a|$.
+      Compare an independent initial variance with the same two-point marginal law; the exact variance difference is $L(T,m)$, with $r e^{muQ}f=a\delta e^{-2mu}$.
+      Thus $m\{\operatorname{Var}_{\rm corr}(V_T)-\operatorname{Var}_{\rm indep}(V_T)\}\to\kappa a\delta B_\kappa(T)^2$, nonzero when $a\delta\ne0$ and $T>0$.</p>
+    <p>Here both regime marginals are stationary, yet only the independent start has $r=0$.
+      This is not joint stationarity of $(v,Y)$, nor a comparison of speed-dependent invariant initial laws.
+      The fourth-cumulant identity remains a finite-moment statement, without requiring a finite cumulant-generating function.</p>
+
     <h2>Certificate and scope</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_initial_variance.py">certificate</a>
       checks 756 prior/speed/maturity cases on four chains, including directed cycles and a defective generator.
@@ -175,8 +204,11 @@
     <p>With $\theta=(0.08,0.02)$, $\kappa=2$, $\xi=0.2$, $v_0=0.04$ and $T=1.5$, the profile is $J_\kappa(T)=0.0873498547$.
       The predicted scaled pure-start variance difference is $0.0002096397$; at $m=128$ the exact value is $0.0002091593$.
       The corrected positive-start approximation has error $-2.6761231\times10^{-8}$ there.</p>
+    <p>Another 1512 bound cases use state-correlated point masses or conditional shape-three Pareto laws, which have finite second moments but no positive moment-generating function.
+      An additional 21 independent stiff-ODE comparisons check random-start moments at long horizons.
+      In the stationary-regime witness with $\mu_0=0.05$, $a=0.02$ and the same model parameters, the predicted scaled correlation gap is $0.0002708714$; at $m=128$ it is $0.0002707596$.</p>
     <p>The theorem fixes $Q,\theta,\kappa,\xi$ and a valid semigroup envelope; its constant is uniform in the regime prior and maturity, not in a closing spectral gap.
-      It assumes deterministic initial variance, switches only the mean level, and supplies no price-level, log-return, leverage or simultaneous parameter-switching approximation.
+      The random-start extension requires the stated conditional independence and a finite second moment; only the mean level switches, with no price-level, log-return, leverage or simultaneous parameter-switching approximation.
       The finite numerical mesh audits the implementation; the integral estimates supply the continuous uniform bound.</p>
   </main>
 

@@ -4,7 +4,7 @@ from scipy.integrate import quad, solve_ivp
 from scipy.linalg import expm
 
 
-def variance(generator, theta, kappa, xi, v0, maturity, prior, method="expm"):
+def variance(generator, theta, kappa, xi, v0, maturity, prior, method="expm", moments=None):
     """Center V by its stationary drift to avoid subtracting O(T^2) moments."""
     size = len(theta)
     stationary = np.linalg.lstsq(np.vstack([generator.T, np.ones(size)]), np.r_[np.zeros(size), 1.], rcond=None)[0]
@@ -25,7 +25,7 @@ def variance(generator, theta, kappa, xi, v0, maturity, prior, method="expm"):
         if b:
             system[target, block((a, b - 1))] += np.diag(b * kappa * theta + b * (b - 1) * xi ** 2 / 2)
         if a == 0:
-            initial[target] = v0 ** b * prior
+            initial[target] = v0 ** b * prior if moments is None else moments[b]
     if method == "expm":
         result = expm(maturity * system) @ initial
     else:
@@ -68,7 +68,8 @@ assert np.array_equal(defective @ np.linalg.matrix_power(defective + 3 * np.eye(
 envelope = np.linalg.norm(centered, np.inf) + np.linalg.norm(jordan, np.inf) / (1.5 * np.e)
 chains.append((defective, pi, envelope, 1.5, np.array([.03, .07, .12])))
 kappa, xi, v0 = 2., .2, .04
-checked = independent = long_checks = 0
+checked = independent = long_checks = random_checks = 0
+random_long_checks = 0
 maximum_ratio = maximum_identity_error = 0.
 for generator, pi, constant, decay, theta in chains:
     size = len(theta)
@@ -92,6 +93,25 @@ for generator, pi, constant, decay, theta in chains:
                 assert abs(exact - approximation) <= bound + slack
                 maximum_ratio = max(maximum_ratio, max(0, abs(exact - approximation) - slack) / bound)
                 checked += 1
+                # Conditional point masses and shape-three Pareto laws have the
+                # same chosen conditional means; the latter have no positive MGF.
+                means = .025 + .03 * np.arange(size) / size
+                for second_factor in (1., 4 / 3):
+                    moments = np.array([prior, prior * means, second_factor * prior * means ** 2])
+                    mu = sum(moments[1])
+                    r = moments[1] - mu * prior
+                    random_av = loading(time, kappa) ** 2 * (sum(moments[2]) - mu ** 2)
+                    random_av += xi ** 2 * ((pi @ theta) * i2 + (mu - pi @ theta) * j)
+                    prediction = random_av + 2 * kappa ** 2 * green_kubo * i2 / speed
+                    prediction += (xi ** 2 * kappa * j * (prior @ h) + 2 * kappa * loading(time, kappa) ** 2 * (r @ h)) / speed
+                    random_bound = bound + 2 * constant * amplitude * np.linalg.norm(r, 1) / (speed * decay) ** 2
+                    observed, random_scale = variance(speed * generator, theta, kappa, xi, v0, time, prior, moments=moments)
+                    assert abs(observed - prediction) <= random_bound + 1e-9 * random_scale
+                    random_checks += 1
+                    if second_factor > 1 and speed == 32 and time == speed ** 2:
+                        referee, referee_scale = variance(speed * generator, theta, kappa, xi, v0, time, prior, "Radau", moments)
+                        assert abs(observed - referee) <= 1e-9 * max(random_scale, referee_scale)
+                        random_long_checks += 1
                 if speed in (8., 32.) and time == speed ** 2:
                     referee, referee_scale = variance(speed * generator, theta, kappa, xi, v0, time, prior, "Radau")
                     assert abs(exact - referee) < 1e-9 * max(scale, referee_scale)
@@ -111,8 +131,11 @@ for generator, pi, constant, decay, theta in chains:
 print(f"All-prior/maturity bound cases: {checked}; maximum roundoff-adjusted utilization={maximum_ratio:.9f}")
 print(f"Independent noise-decomposition checks: {independent}; maximum scaled discrepancy={maximum_identity_error:.3e}")
 print(f"Independent stiff-ODE long-horizon checks: {long_checks}")
+print(f"Correlated finite-second-moment initial-law bound cases: {random_checks}")
+print(f"Independent random-start long-horizon stiff-ODE checks: {random_long_checks}")
 generator, pi, _, _, theta = chains[0]
 time = 1.5
+print(f"Witness parameters: theta={theta}, kappa={kappa}, xi={xi}, deterministic v0={v0}, T={time}")
 limit = xi ** 2 * kappa * .03 * profile(time, kappa)
 print(f"At T=1.5, J={profile(time, kappa):.10f}; predicted limit m*(Var_plus-Var_minus)={limit:.10f}")
 print("m   m*(Var_plus-Var_minus)   corrected plus error")
@@ -126,4 +149,18 @@ for speed in (4., 8., 16., 32., 64., 128.):
     assert abs(plus - approximation) <= (7 * .03 ** 2 + 2 * xi ** 2 * .03 / kappa) / (2 * speed) ** 2 + 1e-10
     print(f"{speed:3.0f} {speed * (plus - minus):.10f} {plus - approximation:+.10e}")
 assert abs(128 * (plus - minus) / limit - 1) < .01
+mu, amplitude = .05, .02
+means = np.array([mu + amplitude, mu - amplitude])
+correlated = np.array([pi, pi * means, pi * means ** 2])
+independent_moments = np.array([pi, pi * mu, pi * (mu ** 2 + amplitude ** 2)])
+limit = kappa * amplitude * .03 * loading(time, kappa) ** 2
+print(f"Stationary-regime same-marginals witness: mu={mu}, a={amplitude}; predicted m*(Var_corr-Var_indep)={limit:.10f}")
+for speed in (4., 16., 64., 128.):
+    corr, scale = variance(speed * generator, theta, kappa, xi, mu, time, pi, moments=correlated)
+    indep, other_scale = variance(speed * generator, theta, kappa, xi, mu, time, pi, moments=independent_moments)
+    exact_gap = 2 * kappa * loading(time, kappa) * amplitude * .03 / speed * quad(
+        lambda u: np.exp(-2 * u) * loading(time - u / speed, kappa), 0, speed * time)[0]
+    assert abs(corr - indep - exact_gap) <= 1e-10 * max(scale, other_scale)
+    print(f"{speed:3.0f} scaled correlation gap={speed * (corr - indep):.10f}")
+assert abs(128 * (corr - indep) / limit - 1) < .01
 print("PASS")
