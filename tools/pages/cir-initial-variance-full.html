@@ -1,0 +1,84 @@
+<!-- title: Initial-regime memory in CIR integrated variance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; integrated-variance cumulants</a>
+    <span><a href="./papers.html">papers</a> &middot;
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_initial_variance.py">certificate</a></span></p>
+    <h1>Initial-regime memory in CIR integrated variance</h1>
+    <p class="subtitle">A known starting regime creates a first-order CIR-noise boundary term; retaining it restores a maturity-uniform second-order error bound.</p>
+    <p>Let $Y$ have generator $mQ$, where $Q$ is a fixed finite irreducible row generator with stationary row $\pi$.
+      Take $Y_0\sim\nu$, independent Brownian motion $B$, a deterministic $v_0>0$, and</p>
+    $$dv_t=\kappa(\theta(Y_t)-v_t)dt+\xi\sqrt{v_t}\,dB_t,\qquad V_T=\int_0^T v_t\,dt.$$
+    <p>Keep $\kappa>0$ and $\xi\ge0$ fixed and assume $2\kappa\min_i\theta_i\ge\xi^2$, so the CIR variance stays positive.
+      Put $f=\theta-(\pi\theta)\mathbf1$, $F=\|f\|_\infty$,
+      $H=\int_0^\infty(e^{tQ}-\mathbf1\pi)dt=-Q^\#$, $h=Hf$ and $K=\pi(f\odot h)$.
+      Assume a justified envelope $\|e^{tQ}-\mathbf1\pi\|_\infty\le Ce^{-\gamma t}$, with $C\ge1$, $\gamma>0$.</p>
+    $$B_\kappa(t)=\frac{1-e^{-\kappa t}}\kappa,\qquad I_2(T)=\int_0^T B_\kappa(t)^2dt,$$
+    $$J_\kappa(T)=\int_0^T B_\kappa(T-u)^2e^{-\kappa u}du
+      =\frac{1-e^{-2\kappa T}-2\kappa T e^{-\kappa T}}{\kappa^3}.$$
+    <p>Let $\operatorname{Var}_{\rm av}(V_T)$ refer to the CIR model with level $\pi\theta$ and the same deterministic $v_0$.
+      Explicitly, it is $\xi^2\{(\pi\theta)I_2(T)+(v_0-\pi\theta)J_\kappa(T)\}$.</p>
+
+    <h2>An all-prior, all-maturity bound</h2>
+    $$\operatorname{Var}_\nu(V_T)=\operatorname{Var}_{\rm av}(V_T)
+      +\frac{2\kappa^2K}{m}I_2(T)
+      +\frac{\xi^2\kappa}{m}J_\kappa(T)\,\nu h+R_\nu(T,m),$$
+    $$\sup_{\nu}\sup_{T\ge0}|R_\nu(T,m)|
+      \le\frac{(4C+3C^2)F^2+2\xi^2CF/\kappa}{m^2\gamma^2},\qquad m>0.$$
+    <p>The first correction is the stationary Green&ndash;Kubo term.
+      The new initial-memory term vanishes when $\nu=\pi$, but generally has order $m^{-1}$ for a specified start.
+      Since $J_\kappa(T)\to\kappa^{-3}$, it approaches the finite offset $\xi^2\nu h/(\kappa^2m)$ at the long end, not a change in the variance slope.</p>
+    <p>For an independent-price Brownian return $M_T=\sqrt{V_T}Z$, with independent standard normal $Z$,
+      $\kappa_4(M_T)=3\operatorname{Var}_\nu(V_T)$ exactly.
+      Multiply every correction and the remainder bound by three to obtain its fourth-cumulant statement.
+      This is not the fourth cumulant of the drifted log return, nor a leverage theorem.</p>
+
+    <h2>Proof: the noise mean and the occupation covariance are different effects</h2>
+    <p>Conditioning on the full regime path makes the CIR stochastic integral mean zero.
+      Hence the regime integral and stochastic integral in the integrated CIR equation are uncorrelated, giving</p>
+    $$\operatorname{Var}_\nu(V_T)=\xi^2\int_0^T B_\kappa(T-s)^2\mathbb E_\nu v_s\,ds
+      +\kappa^2\operatorname{Var}_\nu\!\left(\int_0^T B_\kappa(T-s)f(Y_s)\,ds\right).$$
+    <p>Write $a_\nu(u)=\nu e^{muQ}f$.
+      The difference in variance means from the averaged model is
+      $\mathbb E_\nu v_s-\mathbb E_{\rm av}v_s=\kappa\int_0^s e^{-\kappa(s-u)}a_\nu(u)du$.
+      Interchanging these deterministic integrals identifies the additional noise variance exactly as</p>
+    $$N_\nu(T)=\xi^2\kappa\int_0^T a_\nu(u)J_\kappa(T-u)du.$$
+    <p>Extend $J_\kappa$ by zero to negative arguments.
+      Its integral representation gives $\|J'_\kappa\|_\infty\le2/\kappa^2$, and
+      $\int_0^\infty a_\nu(u)du=\nu h/m$.
+      Therefore the global Lipschitz bound and $|a_\nu(u)|\le CF e^{-m\gamma u}$ give</p>
+    $$\left|N_\nu(T)-\frac{\xi^2\kappa}{m}J_\kappa(T)\nu h\right|
+      \le\frac{2\xi^2CF}{\kappa m^2\gamma^2}.$$
+    <p>For the remaining occupation term, at $0\le s\le t$ the difference between nonstationary and stationary covariances is</p>
+    $$D_\nu(s,t)=(\nu e^{msQ}-\pi)
+      [f\odot(e^{m(t-s)Q}f)]-a_\nu(s)a_\nu(t),$$
+    $$|D_\nu(s,t)|\le C^2F^2\{e^{-m\gamma t}+e^{-m\gamma(s+t)}\}.$$
+    <p>Since $0\le\kappa B_\kappa\le1$, integration over the time triangle gives an all-maturity occupation-variance difference at most
+      $3C^2F^2/(m^2\gamma^2)$.
+      The <a href="./cumulants.html">stationary weighted-kernel bound</a> contributes at most $4CF^2/(m^2\gamma^2)$ when replacing the stationary occupation variance by $2\kappa^2KI_2(T)/m$.
+      Adding these two bounds and the noise-memory error proves the theorem, without reversibility or diagonalizability.</p>
+
+    <h2>A sharp first-order witness</h2>
+    <p>Take the symmetric chain flipping at rate $m$, with $\theta_\pm=\bar\theta\pm\delta$.
+      The regime-integral variances for pure $+$ and pure $-$ starts coincide by path reflection, whereas their noise terms have opposite signs.
+      Thus, exactly,</p>
+    $$\operatorname{Var}_+(V_T)-\operatorname{Var}_-(V_T)
+      =2\xi^2\kappa\delta\int_0^T e^{-2mu}J_\kappa(T-u)du,$$
+    $$m\{\operatorname{Var}_+(V_T)-\operatorname{Var}_-(V_T)\}
+      \longrightarrow\xi^2\kappa\delta J_\kappa(T).$$
+    <p>For $T>0$, $\xi>0$ and $\delta\ne0$, this limit is nonzero.
+      A stationary-start approximation used unchanged for both specified starts therefore cannot have an $O(m^{-2})$ error even at that fixed positive maturity.
+      If $\xi=0$, this first-order noise-memory term disappears and the occupation boundary effect remains second order.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_initial_variance.py">certificate</a>
+      checks 756 prior/speed/maturity cases on four chains, including directed cycles and a defective generator.
+      It also checks 16 independent noise decompositions and 42 independent stiff-ODE comparisons at long horizons.
+      Moments of $V_T-(\pi\theta)T$ avoid subtracting two quadratically growing moments; the finite polynomial-moment method follows
+      <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>, not a new moment-computation principle.</p>
+    <p>With $\theta=(0.08,0.02)$, $\kappa=2$, $\xi=0.2$, $v_0=0.04$ and $T=1.5$, the profile is $J_\kappa(T)=0.0873498547$.
+      The predicted scaled pure-start variance difference is $0.0002096397$; at $m=128$ the exact value is $0.0002091593$.
+      The corrected positive-start approximation has error $-2.6761231\times10^{-8}$ there.</p>
+    <p>The theorem fixes $Q,\theta,\kappa,\xi$ and a valid semigroup envelope; its constant is uniform in the regime prior and maturity, not in a closing spectral gap.
+      It assumes deterministic initial variance, switches only the mean level, and supplies no price-level, log-return, leverage or simultaneous parameter-switching approximation.
+      The finite numerical mesh audits the implementation; the integral estimates supply the continuous uniform bound.</p>
+  </main>
