@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Robust exponential-age ranks near one CDF contrast · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_near_contrast.py">certificate</a></span></p>
+    <h1>Robust exponential-age ranks near one CDF contrast</h1>
+    <p class="subtitle">A uniform statewise CDF error of $\eta$ costs at most $2\eta$ in marginal rank coverage, without a sample-size multiplier.</p>
+    <p>Let $Z_t$, $t\in\mathbb R$, be a jointly measurable strictly stationary latent process.
+      Conditional on its full path and the sampling times, score emissions are independent with fixed continuous CDFs $F_{Z_t}$.
+      Suppose there are continuous reference CDFs on one affine line, with a bounded real function $h$ satisfying $\mathbb E h(Z_0)=0$:</p>
+    $$G_z(s)=\bar G(s)+h(z)H(s),\qquad
+      \sup_s|F_z(s)-G_z(s)|\le\eta,\quad 0\le\eta\le1.$$
+    <p>The error bound is uniform in latent state, up to a stationary null set, and each $G_z$ must be a genuine CDF.
+      It is not merely closeness of the pooled marginal CDFs.
+      No Markov, mixing, ergodicity or density lower-bound assumption is needed.</p>
+
+    <h2>The sampling rule and coverage budget</h2>
+    <p>Choose $\beta>0$ and independently draw chronological gaps $D_j\sim\operatorname{Exp}(j\beta)$, $1\le j\le N$, where the argument is a rate.
+      Calibrate on the scores at $0,D_1,\ldots,D_1+\cdots+D_{N-1}$ and test on the next score at $D_1+\cdots+D_N$.
+      If $Q_k$ is the $k$th calibration order statistic, then</p>
+    $$\boxed{\left|\Pr(S_{\rm test}\le Q_k)-\frac{k}{N+1}\right|\le2\eta,\qquad1\le k\le N.}$$
+    <p>This is a deterministic model-approximation budget, not an estimate of $\eta$ from calibration data.
+      The sampling rule needs neither the reference CDFs nor the latent dynamics, but interpreting its error requires a justified uniform comparison.
+      The bound is conservative; no optimality of its constant is claimed.</p>
+
+    <h2>A more precise finite-sample envelope</h2>
+    <p>Write $p=k/(N+1)$ and $\phi(u)=\Pr\{\operatorname{Bin}(N,u)\le k-1\}$.
+      The proof gives the asymmetric bounds, clipped to $[0,1]$,</p>
+    $$p-\eta-\int_0^\eta\phi(u)\,du
+      \le\Pr(S_{\rm test}\le Q_k)
+      \le p+\eta+\int_{1-\eta}^1[1-\phi(u)]\,du.$$
+    <p>Each integral is at most $\eta$, proving the displayed sample-size-independent budget.
+      For evaluation, with $I_x$ the regularized incomplete beta function,</p>
+    $$\int_0^\eta\phi(u)\,du=\frac1{N+1}\sum_{r=0}^{k-1}I_\eta(r+1,N-r+1),$$
+    $$\int_{1-\eta}^1[1-\phi(u)]\,du=\frac1{N+1}\sum_{r=k}^{N}I_\eta(N-r+1,r+1).$$
+    <p>At $N=k=9$ and $\eta=0.01$, the refined envelope is $[0.880000000000,0.919561792499]$, compared with the simpler $[0.88,0.92]$.</p>
+
+    <h2>Proof: condition on the past, then sandwich CDFs</h2>
+    <p>By stationarity put the test at zero, and draw labeled calibration ages iid $\operatorname{Exp}(\beta)$.
+      Reversing their independent order-statistic spacings gives the chronological schedule above.
+      Define</p>
+    $$U_t=\beta\int_0^\infty e^{-\beta a}h(Z_{t-a})\,da,\qquad
+      G_U(s)=\bar G(s)+U_0H(s).$$
+    <p>The bounded stationary filter has absolutely continuous paths and derivative $\beta(h(Z_t)-U_t)$ almost everywhere.
+      For every continuously differentiable $\psi$ and $T>0$, the chain rule and bounded Fubini give</p>
+    $$0=\mathbb E[\psi(U_T)-\psi(U_0)]
+      =\beta T\mathbb E[\psi'(U_0)(h(Z_0)-U_0)],\qquad
+      \mathbb E[h(Z_0)\mid U_0]=U_0.$$
+    <p>The final identity follows by taking all continuous derivatives on the compact range of $U_0$.
+      Consequently $\mathbb E[G_{Z_0}(s)\mid U_0]=G_U(s)$.</p>
+    <p>Given the full latent past including $Z_0$, the age-labeled calibration scores are iid with CDF
+      $A(s)=\beta\int_0^\infty e^{-\beta a}F_{Z_{-a}}(s)\,da$.
+      Thus $\|A-G_U\|_\infty\le\eta$ and actual conditional coverage is $\int\phi(A(s))\,dF_{Z_0}(s)$.</p>
+    <p>The function $s\mapsto\phi(A(s))$ is decreasing with total variation one.
+      Stieltjes integration by parts therefore changes this integral by at most $\eta$ when $F_{Z_0}$ is replaced by $G_{Z_0}$.
+      Monotonicity then sandwiches the resulting integrand between $\phi([G_U+\eta]_0^1)$ and $\phi([G_U-\eta]_0^1)$, where brackets denote clipping.</p>
+    <p>These two envelopes depend on the past only through $U_0$.
+      Averaging $dG_{Z_0}$ conditional on $U_0$ replaces it by $dG_U$; the continuous probability integral transform then makes $G_U(S)$ uniform.
+      Integrating the two shifted binomial tails over $[0,1]$ yields the finite-sample bounds because $\int_0^1\phi(u)du=p$.</p>
+    <p>In particular, when $\eta=0$ this proves exact marginal ranks for the one-contrast reference model.
+      Conditional iid structure concerns the unsorted age labels; the chronologically ordered scores need not be exchangeable.</p>
+
+    <h2>A second contrast breaks exactness, even with an unchanged pooled CDF</h2>
+    <p>Take the stationary chain with uniform invariant law and</p>
+    $$Q=\tfrac16\begin{pmatrix}-5&1&4\\1&-5&4\\4&4&-8\end{pmatrix},\quad
+      h=(-1,0,1),\quad r=(1/2,-1,1/2),$$
+    $$G_i(s)=s+\tfrac14h_i(s^2-s),\qquad
+      F_i(s)=G_i(s)+\delta r_i(s^3-s),\quad0\le s\le1.$$
+    <p>Extend the CDFs by zero and one outside this interval.
+      At $\delta=1/10$ they have positive densities and uniform statewise CDF error $\eta=2\delta/(3\sqrt3)$.
+      Their pooled CDF is exactly $s$, the same as the reference pooled CDF, but at $N=k=2$ and $\beta=1$ exact coverage is $48384001/72576000=2/3+1/72576000$.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_near_contrast.py">certificate</a>
+      checks 810 chronological multi-contrast coverage budgets through $N=29$, 184 binomial-envelope identities, the exact rational witness, and zero-perturbation controls.
+      These examples verify the formulas, not sharpness of the error constant.</p>
+
+    <h2>Scope and relation to classical robustness bounds</h2>
+    <p>The guarantee is stationary marginal coverage over the latent path, emissions and randomized schedule, not coverage conditional on observed gaps, calibration scores or current state.
+      It does not cover same-panel score refitting, overlapping path emissions or anytime calibration reuse.
+      A small pooled-CDF error alone cannot replace the uniform statewise hypothesis, as the rational witness shows.</p>
+    <p>Kolmogorov-distance coverage control is classical: <a href="./bibliography.html#ClarksonXuCucuringuSwanReinert2025">Clarkson et al. (2025), Lemma 3.1</a>, treat independent contaminated calibration scores and clean test scores.
+      Here the specialization is the stationary latent one-contrast reference and randomized-age panel; ordinary CDF perturbation inequalities are not claimed as new.
+      General concentration and decoupling guarantees remain separate; see <a href="./bibliography.html#OliveiraOrensteinRamosRomano2024">Oliveira et al. (2024)</a>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
