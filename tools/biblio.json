@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_lumping",
+  "key": "PowersReznick2001",
+  "authors": "Powers, V. and Reznick, B.",
+  "year": 2001,
+  "title": "A new bound for Pólya's Theorem with applications to polynomials positive on polyhedra",
+  "venue": "Journal of Pure and Applied Algebra 164(1-2):221-229",
+  "doi": "10.1016/s0022-4049(00)00155-9",
+  "url": "https://www.math.emory.edu/~vicki/pub/polya.pdf",
+  "annotation": "States the classical positive-coefficient theorem for homogeneous polynomials strictly positive on a simplex. The clock-erasure criterion applies this theorem to a centered resolvent's characteristic polynomial; no new polynomial-positivity principle is claimed."
  }
 ]
