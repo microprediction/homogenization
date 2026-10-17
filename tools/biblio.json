@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Eckberg1977",
+  "authors": "Eckberg, A. E., Jr.",
+  "year": 1977,
+  "title": "Sharp Bounds on Laplace-Stieltjes Transforms, with Applications to Various Queueing Problems",
+  "venue": "Mathematics of Operations Research 2(2):135-142",
+  "doi": "10.1287/moor.2.2.135",
+  "url": "https://pubsonline.informs.org/doi/10.1287/moor.2.2.135",
+  "annotation": "Studies sharp transform bounds from partial distribution information, including moments. The clock-bounds note derives its rational inequalities for positive exponential mixtures directly by Jensen and Cauchy-Schwarz, then propagates them to modal rates and reversible Green-Kubo matrix budgets; those particular formulas are not attributed to this paper."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Hirsch1972",
+  "authors": "Hirsch, F.",
+  "year": 1972,
+  "title": "Intégrales de résolvantes et calcul symbolique",
+  "venue": "Annales de l'Institut Fourier 22(4):239-264",
+  "doi": "10.5802/aif.439",
+  "url": "https://www.numdam.org/article/AIF_1972__22_4_239_0.pdf",
+  "annotation": "Develops Stieltjes-transform and positive-resolvent functional calculus, including stability under limits. The clock-bounds note derives its finite-mixture Schur-complement error representation directly and uses accretive resolvents to obtain a nonreversible Green-Kubo budget; no priority claim for the functional calculus is made."
  }
 ]
