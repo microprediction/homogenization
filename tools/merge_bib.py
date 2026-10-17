@@ -7,6 +7,7 @@ import html, json, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SECTION_TITLES = {
+    'mixture-clock': 'Mixture clocks and generator identification',
     'clumpy-media': 'Radiative transfer in stochastic media',
     'pulsars': 'Pulsar timing',
     'epidemics': 'Epidemics in random environments',
