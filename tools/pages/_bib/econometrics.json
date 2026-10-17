@@ -25,5 +25,15 @@
   "venue": "International Statistical Review 56(1):49-62",
   "doi": "10.2307/1403361",
   "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
+ },
+ {
+  "key": "Eckberg1977",
+  "authors": "Eckberg, A. E., Jr.",
+  "year": 1977,
+  "title": "Sharp Bounds on Laplace-Stieltjes Transforms, with Applications to Various Queueing Problems",
+  "venue": "Mathematics of Operations Research 2(2):135-142",
+  "doi": "10.1287/moor.2.2.135",
+  "url": "https://pubsonline.informs.org/doi/10.1287/moor.2.2.135",
+  "annotation": "Studies sharp transform bounds from partial distribution information, including moments. The clock-bounds note derives its rational inequalities for positive exponential mixtures directly by Jensen and Cauchy-Schwarz, then propagates them to modal rates and reversible Green-Kubo matrix budgets; those particular formulas are not attributed to this paper."
  }
 ]

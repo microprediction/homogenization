@@ -1,0 +1,74 @@
+<!-- title: Sharp clock-moment bounds for reversible regimes · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_clock_bounds.py">certificate</a></span></p>
+    <h1>Sharp clock-moment bounds for reversible regimes</h1>
+    <p class="subtitle">An unknown exponential-mixture clock need not identify a generator, but two known interval moments give sharp modal bounds and a deterministic Green&ndash;Kubo uncertainty budget.</p>
+    <p>Let $Q$ be a finite irreducible reversible row generator with stationary law $\pi$.
+      Sample fully observed regime labels at iid intervals $\tau=TE$, where $E\sim\operatorname{Exp}(1)$ and $T&gt;0$ is redrawn independently of $E$ and the chain each interval.
+      Discard all timestamps and total elapsed time, but suppose the population kernel $R$ and the two physical-time moments are known exactly:</p>
+    $$\mu=\mathbb E\tau=\mathbb ET&gt;0,\qquad s=\tfrac12\mathbb E\tau^2=\mathbb ET^2&lt;\infty,\qquad
+      v=s-\mu^2\ge0,\quad p=\frac vs.$$
+    <p>The exponential-mixture model requires $\mathbb E\tau^2\ge2\mu^2$; equality forces $T=\mu$ almost surely, so the clock law is then known.
+      No support bound or other information about the mixing law is assumed.
+      A nonstationary generator mode with decay rate $r&gt;0$ appears in $R$ with eigenvalue $\rho=F(r)=\mathbb E(1+rT)^{-1}\in(0,1)$.</p>
+
+    <h2>The exact modal identified set</h2>
+    <p>If $v=0$, the rate is exactly $r=(1-\rho)/(\mu\rho)$.
+      If $v&gt;0$, the possible rates under the two moment constraints are precisely</p>
+    $$\boxed{\begin{cases}
+      \displaystyle \frac{1-\rho}{\mu\rho}&lt;r&lt;\frac{\mu(1-\rho)}{\mu^2-s(1-\rho)},&amp;\rho&gt;p,\\[6pt]
+      \displaystyle \frac{1-\rho}{\mu\rho}&lt;r&lt;\infty,&amp;0&lt;\rho\le p.
+    \end{cases}}$$
+    <p>These are open sets because $T$ is strictly positive and nonconstant.
+      Each scalar set is sharp, including the unbounded case at the threshold $\rho=p$.
+      It is not asserted that independently choosing every modal rate in these intervals yields one common clock law or a valid generator.</p>
+    <p>For the bounds, Jensen's inequality and Cauchy&ndash;Schwarz give</p>
+    $$\frac1{1+\mu r}\le F(r)\le1-\frac{\mu^2r}{\mu+sr},\qquad
+      \mu^2\le\mathbb E\frac{T}{1+rT}\;\mathbb E[T(1+rT)].$$
+    <p>The second inequality uses $F(r)=1-r\mathbb E[T/(1+rT)]$.
+      Both transform inequalities are strict for $v&gt;0$ and $r&gt;0$, and rearranging gives the displayed rate bounds.
+      The upper transform bound tends to $p$, explaining why no finite upper rate bound remains when $\rho\le p$.</p>
+
+    <h2>Why every interior rate is possible</h2>
+    <p>For each $0&lt;\ell&lt;\mu$, use the strictly positive two-point component-mean law</p>
+    $$u=\mu+\frac v{\mu-\ell},\qquad
+      \Pr(T=\ell)=\frac v{v+(\mu-\ell)^2},\qquad
+      \Pr(T=u)=\frac{(\mu-\ell)^2}{v+(\mu-\ell)^2}.$$
+    <p>Its first two moments are exactly $\mu,s$.
+      Let $r_\ell$ be the unique positive root $F_\ell(r_\ell)=\rho$; it varies continuously with $\ell$.
+      As $\ell\uparrow\mu$, its transform tends pointwise to $(1+\mu r)^{-1}$, so $r_\ell$ tends to the lower rate endpoint.</p>
+    <p>As $\ell\downarrow0$, the transform tends to $1-\mu^2r/(\mu+sr)$.
+      Thus $r_\ell$ tends to the upper endpoint when $\rho&gt;p$, and diverges when $\rho\le p$.
+      Continuity supplies every intervening rate; taking $Q=r(\mathbf1\pi-I)$ on two states realizes the same full observed kernel $\mathbf1\pi+\rho(I-\mathbf1\pi)$ for every such rate.</p>
+    <p>The endpoint constructions use increasingly small or large component means; imposing additional support bounds can tighten the result.
+      The mixing laws at the open endpoints need not be admissible, and no endpoint attainment is claimed.</p>
+
+    <h2>A fixed-feature Green&ndash;Kubo matrix budget</h2>
+    <p>Work on $\mathcal E=\{h:\pi h=0\}$ with inner product $\langle f,h\rangle_\pi$.
+      Reversibility makes $H=(-Q|_{\mathcal E})^{-1}$ and $K_R=\mu R_{\mathcal E}(I_{\mathcal E}-R_{\mathcal E})^{-1}$ commuting self-adjoint positive operators.
+      Applying the scalar bounds to their common eigenbasis gives</p>
+    $$\boxed{[K_R-(v/\mu)I_{\mathcal E}]_+\preceq H\preceq K_R,\qquad
+      0\preceq K_R-H\preceq(v/\mu)I_{\mathcal E}.}$$
+    <p>Here $[\cdot]_+$ is the positive spectral part, not entrywise clipping.
+      The potential uncertainty stays bounded even when a generator rate has no finite upper bound.
+      The constant $v/\mu$ is sharp uniformly over this class by the two-state upper-end construction with $\rho&gt;p$.</p>
+    <p>For any fixed centered feature matrix $B$, define $\Gamma_Q=2B^*HB$, $\Gamma_R=2B^*K_RB$ and $\Sigma=B^*B$, where the adjoint is in $L^2(\pi)$.
+      These are physical-time integrated-covariance and one-time covariance matrices, respectively, and</p>
+    $$0\preceq\Gamma_R-\Gamma_Q\preceq\frac{2v}{\mu}\Sigma.$$
+    <p>This is an exact population uncertainty budget, not a fast-switching approximation.
+      It concerns fixed features, not rank after integrating maturity-dependent loadings.
+      The operator bounds need not be jointly attainable under a single clock and generator for an arbitrary multimode $R$.</p>
+
+    <h2>Numerical scale and scope</h2>
+    <p>For $\mu=1$, $\mathbb E\tau^2=13/6$, one has $v=1/12$ and $p=1/13$.
+      At $\rho=1/2$, the exact rate set is $(1,12/11)$ and a centered unit-variance two-state feature has Green&ndash;Kubo strength in $(11/6,2)$.
+      At $\rho=1/20$, the rate set is $(19,\infty)$ despite the same known finite clock moments.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_clock_bounds.py">certificate</a> checks the rational example, strictly positive two-point endpoint sequences, modal bounds and the operator/feature-Gram inequalities.
+      Moment bounds for transforms are classical; <a href="./bibliography.html#Eckberg1977">Eckberg (1977)</a> studies sharp Laplace&ndash;Stieltjes bounds from partial distribution information.
+      The rational exponential-mixture inequalities and their generator/Green&ndash;Kubo propagation are derived above, without attributing these particular formulas to that paper or making a priority claim.</p>
+    <p>Reversibility is essential to the stated self-adjoint matrix order; no nonreversible extension is asserted.
+      The moment and kernel inputs are exact population quantities, not estimates with confidence guarantees.
+      No finite-sample, calendar-time, conditional-coverage or restricted-support claim is made.</p>
+  </main>
