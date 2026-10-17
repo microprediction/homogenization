@@ -1,4 +1,9 @@
 [
+ {"key": "BatenkovYomdin2013", "authors": "Batenkov, D. and Yomdin, Y.", "year": 2013,
+  "title": "On the Accuracy of Solving Confluent Prony Systems",
+  "venue": "SIAM Journal on Applied Mathematics 73(1):134-154", "doi": "10.1137/110836584",
+  "url": "https://dimabatenkov.info/pdf/batenkov2011accuracy.pdf",
+  "annotation": "Section 2 reviews classical finite-difference annihilation, recurrences and confluent Hankel reconstruction, and separates exact solvability from stability. Background for the matrix-valued Erlang duration-bin inversion; its conditioning results are not imported as a statistical error bound."},
  {"key": "BurkeRosenblatt1958", "authors": "Burke, C. J. and Rosenblatt, M.", "year": 1958,
   "title": "A Markovian Function of a Markov Chain", "venue": "The Annals of Mathematical Statistics 29(4):1112-1122",
   "doi": "10.1214/aoms/1177706444",
