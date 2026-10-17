@@ -1,0 +1,76 @@
+<!-- title: Finite-history calibration without a panel-size penalty · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_age.py">certificate</a></span></p>
+    <h1>Finite-history calibration without a panel-size penalty</h1>
+    <p class="subtitle">Truncated exponential ages give a marginal rank-error budget independent of calibration size, under a stationary one-contrast emission model.</p>
+
+    <h2>Setup and coverage envelope</h2>
+    <p>Let $X_t$, $t\in\mathbb R$, be a bounded, jointly measurable, strictly stationary real signal with $\mathbb E X_0=0$.
+      Conditional on the full signal and the sampling times, all score emissions are independent with genuine continuous CDFs</p>
+    $$F_{X_t}(s)=\bar F(s)+X_tH(s).$$
+    <p>The functions $\bar F,H$ are fixed, and $\bar F$ is the stationary pooled CDF.
+      Any stationary binary regime process with two continuous emission CDFs has this form; three or more arbitrary CDFs need not.
+      No Markov property, ergodicity, mixing or path continuity is required.</p>
+    <p>Fix $N\ge1$, $\beta,L>0$ and $1\le k\le N$.
+      Independently of the signal, draw labeled calibration ages $A_i$ iid from $\operatorname{Exp}(\beta)$ conditioned on $A_i\le L$, where $\beta$ is a rate.
+      Observe calibration scores at $-A_i$ and a test score at zero, and let $Q_k$ be their $k$th calibration order statistic.</p>
+    <p>Put $\delta=e^{-\beta L}$ and $p=k/(N+1)$.
+      Then the marginal coverage $C=\Pr(S_{\rm test}\le Q_k)$ satisfies</p>
+    $$\boxed{(1-\delta)p\le C\le(1-\delta)p+\delta,\qquad
+      -\delta p\le C-p\le\delta(1-p).}$$
+    <p>In fact the test-rank law is $(1-\delta)\operatorname{Unif}\{1,\ldots,N+1\}+\delta\nu$ for some probability law $\nu$ on those ranks.
+      Its total-variation distance from the uniform law is at most $\delta$.
+      These are valid envelopes, not a claim of optimality over the model class.</p>
+
+    <h2>Finite-window filter identity</h2>
+    <p>Define the bounded stationary filter</p>
+    $$U_t=\frac{\beta}{1-\delta}\int_0^L e^{-\beta a}X_{t-a}\,da,\qquad
+      \dot U_t=\frac{\beta}{1-\delta}
+       [X_t-\delta X_{t-L}-(1-\delta)U_t]\quad\hbox{almost everywhere}.$$
+    <p>The convolution has absolutely continuous paths.
+      Write the expression in square brackets as $D_t$; for any continuously differentiable $\varphi$ and $T>0$, the integrated chain rule and Fubini give</p>
+    $$0=\mathbb E[\varphi(U_T)-\varphi(U_0)]
+      =\frac{\beta}{1-\delta}\int_0^T\mathbb E[\varphi'(U_t)D_t]\,dt
+      =\frac{\beta T}{1-\delta}\mathbb E[\varphi'(U_0)D_0].$$
+    <p>The last equality uses joint stationarity, not differentiation at a prescribed exceptional time.
+      Every continuous function on the compact range of $U$ is a derivative of such a $\varphi$, so these identities imply $\mathbb E[D_0\mid U_0]=0$.
+      Consequently</p>
+    $$\mathbb E[X_0\mid U_0]=(1-\delta)U_0+\delta\mathbb E[X_{-L}\mid U_0].$$
+
+    <h2>Why only the boundary weight enters</h2>
+    <p>Conditional on the entire signal, independent labeled ages and emission noise make the calibration scores iid with continuous CDF $G_U=\bar F+U_0H$.
+      This conditional joint law depends on the signal only through $U_0$, so calibration and test scores remain independent given $U_0$.
+      The test CDF conditional on $U_0$ is exactly</p>
+    $$\mathbb E[F_{X_0}(s)\mid U_0]
+      =(1-\delta)G_U(s)+\delta B_U(s),\qquad
+      B_U(s)=\bar F(s)+\mathbb E[X_{-L}\mid U_0]H(s).$$
+    <p>Both $G_U$ and $B_U$ are genuine continuous CDFs: each is a conditional mixture of emission laws.
+      In the first mixture component, all $N+1$ scores are iid given $U_0$, so the test rank is uniform without ties.
+      The second component has an arbitrary rank law $\nu_U$; averaging over $U_0$ proves the stated mixture and coverage envelope.</p>
+    <p>Sorting the ages changes neither $Q_k$ nor the result, but the chronological score vector need not be exchangeable.
+      The probability averages over signal, schedule and scores: it is not coverage conditional on the observed calibration sample, realized times or current regime.
+      Nonstationary starts, overlapping path scores and a score map fitted using this panel are outside the assumptions.</p>
+
+    <h2>Size of the improvement and a nonzero bias</h2>
+    <p>At $\beta=1$, $L=10$, $N=k=9$, the boundary weight is $4.53999297625\times10^{-5}$.
+      The undercoverage budget is $4.08599367862\times10^{-5}$ and the overcoverage budget is $4.53999297625\times10^{-6}$, giving</p>
+    $$0.8999591400632\le C\le0.9000045399930.$$
+    <p>Coupling the entire truncated age panel with untruncated iid exponential ages gives the valid but looser absolute-error budget $1-(1-\delta)^N$.
+      In this example it is $0.0004085251741918$; the filter argument avoids charging once per calibration point.</p>
+    <p>Truncation does not generally retain exact ranks.
+      For the stationary two-state chain $Q=\left(\begin{smallmatrix}-7&amp;7\\3&amp;-3\end{smallmatrix}\right)$ with emissions uniform on $[0,1]$ and $[2,3]$, $\beta=1$, $L=\log2$ and $N=k=2$, the exact coverage is $6708133/10137600=0.661708195234$, not $2/3$.</p>
+
+    <h2>Certificate and literature</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_age.py">certificate</a>
+      checks 27 exact filter-moment identities and 108 exact rank-mixture identities through $N=8$, using rational matrix-polynomial evaluation at $L\in\{\log2,2\log2,5\log2\}$.
+      An independent floating-point matrix exponential checks the moment calculations, and the certificate prints every numerical headline above.</p>
+    <p>For $Z_t=\mathbf1_{\{Y_t=0\}}$ and $V_t=\int_0^t e^{-(t-s)}Z_s\,ds$, the row moments satisfy
+      $m_j'=m_j(Q-jI)+jm_{j-1}\operatorname{diag}(1,0)$, with separate initial rows retaining the boundary state.
+      Integrating the binomial rank tail over the two uniform emission intervals gives exact polynomials in $W=V_L/(1-\delta)$.
+      The all-$N$ statement follows from the proof, not these finite checks.</p>
+    <p><a href="./bibliography.html#BarberCandesRamdasTibshirani2023">Barber, Cand&egrave;s, Ramdas and Tibshirani (2023)</a>
+      bound conformal coverage loss using total-variation distances under swaps of training and test observations.
+      The argument here instead identifies a model-specific boundary mixture; it is not a distribution-free guarantee for arbitrary stationary scores.</p>
+  </main>

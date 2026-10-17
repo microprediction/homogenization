@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finite-history calibration without a panel-size penalty · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_age.py">certificate</a></span></p>
+    <h1>Finite-history calibration without a panel-size penalty</h1>
+    <p class="subtitle">Truncated exponential ages give a marginal rank-error budget independent of calibration size, under a stationary one-contrast emission model.</p>
+
+    <h2>Setup and coverage envelope</h2>
+    <p>Let $X_t$, $t\in\mathbb R$, be a bounded, jointly measurable, strictly stationary real signal with $\mathbb E X_0=0$.
+      Conditional on the full signal and the sampling times, all score emissions are independent with genuine continuous CDFs</p>
+    $$F_{X_t}(s)=\bar F(s)+X_tH(s).$$
+    <p>The functions $\bar F,H$ are fixed, and $\bar F$ is the stationary pooled CDF.
+      Any stationary binary regime process with two continuous emission CDFs has this form; three or more arbitrary CDFs need not.
+      No Markov property, ergodicity, mixing or path continuity is required.</p>
+    <p>Fix $N\ge1$, $\beta,L>0$ and $1\le k\le N$.
+      Independently of the signal, draw labeled calibration ages $A_i$ iid from $\operatorname{Exp}(\beta)$ conditioned on $A_i\le L$, where $\beta$ is a rate.
+      Observe calibration scores at $-A_i$ and a test score at zero, and let $Q_k$ be their $k$th calibration order statistic.</p>
+    <p>Put $\delta=e^{-\beta L}$ and $p=k/(N+1)$.
+      Then the marginal coverage $C=\Pr(S_{\rm test}\le Q_k)$ satisfies</p>
+    $$\boxed{(1-\delta)p\le C\le(1-\delta)p+\delta,\qquad
+      -\delta p\le C-p\le\delta(1-p).}$$
+    <p>In fact the test-rank law is $(1-\delta)\operatorname{Unif}\{1,\ldots,N+1\}+\delta\nu$ for some probability law $\nu$ on those ranks.
+      Its total-variation distance from the uniform law is at most $\delta$.
+      These are valid envelopes, not a claim of optimality over the model class.</p>
+
+    <h2>Finite-window filter identity</h2>
+    <p>Define the bounded stationary filter</p>
+    $$U_t=\frac{\beta}{1-\delta}\int_0^L e^{-\beta a}X_{t-a}\,da,\qquad
+      \dot U_t=\frac{\beta}{1-\delta}
+       [X_t-\delta X_{t-L}-(1-\delta)U_t]\quad\hbox{almost everywhere}.$$
+    <p>The convolution has absolutely continuous paths.
+      Write the expression in square brackets as $D_t$; for any continuously differentiable $\varphi$ and $T>0$, the integrated chain rule and Fubini give</p>
+    $$0=\mathbb E[\varphi(U_T)-\varphi(U_0)]
+      =\frac{\beta}{1-\delta}\int_0^T\mathbb E[\varphi'(U_t)D_t]\,dt
+      =\frac{\beta T}{1-\delta}\mathbb E[\varphi'(U_0)D_0].$$
+    <p>The last equality uses joint stationarity, not differentiation at a prescribed exceptional time.
+      Every continuous function on the compact range of $U$ is a derivative of such a $\varphi$, so these identities imply $\mathbb E[D_0\mid U_0]=0$.
+      Consequently</p>
+    $$\mathbb E[X_0\mid U_0]=(1-\delta)U_0+\delta\mathbb E[X_{-L}\mid U_0].$$
+
+    <h2>Why only the boundary weight enters</h2>
+    <p>Conditional on the entire signal, independent labeled ages and emission noise make the calibration scores iid with continuous CDF $G_U=\bar F+U_0H$.
+      This conditional joint law depends on the signal only through $U_0$, so calibration and test scores remain independent given $U_0$.
+      The test CDF conditional on $U_0$ is exactly</p>
+    $$\mathbb E[F_{X_0}(s)\mid U_0]
+      =(1-\delta)G_U(s)+\delta B_U(s),\qquad
+      B_U(s)=\bar F(s)+\mathbb E[X_{-L}\mid U_0]H(s).$$
+    <p>Both $G_U$ and $B_U$ are genuine continuous CDFs: each is a conditional mixture of emission laws.
+      In the first mixture component, all $N+1$ scores are iid given $U_0$, so the test rank is uniform without ties.
+      The second component has an arbitrary rank law $\nu_U$; averaging over $U_0$ proves the stated mixture and coverage envelope.</p>
+    <p>Sorting the ages changes neither $Q_k$ nor the result, but the chronological score vector need not be exchangeable.
+      The probability averages over signal, schedule and scores: it is not coverage conditional on the observed calibration sample, realized times or current regime.
+      Nonstationary starts, overlapping path scores and a score map fitted using this panel are outside the assumptions.</p>
+
+    <h2>Size of the improvement and a nonzero bias</h2>
+    <p>At $\beta=1$, $L=10$, $N=k=9$, the boundary weight is $4.53999297625\times10^{-5}$.
+      The undercoverage budget is $4.08599367862\times10^{-5}$ and the overcoverage budget is $4.53999297625\times10^{-6}$, giving</p>
+    $$0.8999591400632\le C\le0.9000045399930.$$
+    <p>Coupling the entire truncated age panel with untruncated iid exponential ages gives the valid but looser absolute-error budget $1-(1-\delta)^N$.
+      In this example it is $0.0004085251741918$; the filter argument avoids charging once per calibration point.</p>
+    <p>Truncation does not generally retain exact ranks.
+      For the stationary two-state chain $Q=\left(\begin{smallmatrix}-7&amp;7\\3&amp;-3\end{smallmatrix}\right)$ with emissions uniform on $[0,1]$ and $[2,3]$, $\beta=1$, $L=\log2$ and $N=k=2$, the exact coverage is $6708133/10137600=0.661708195234$, not $2/3$.</p>
+
+    <h2>Certificate and literature</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_age.py">certificate</a>
+      checks 27 exact filter-moment identities and 108 exact rank-mixture identities through $N=8$, using rational matrix-polynomial evaluation at $L\in\{\log2,2\log2,5\log2\}$.
+      An independent floating-point matrix exponential checks the moment calculations, and the certificate prints every numerical headline above.</p>
+    <p>For $Z_t=\mathbf1_{\{Y_t=0\}}$ and $V_t=\int_0^t e^{-(t-s)}Z_s\,ds$, the row moments satisfy
+      $m_j'=m_j(Q-jI)+jm_{j-1}\operatorname{diag}(1,0)$, with separate initial rows retaining the boundary state.
+      Integrating the binomial rank tail over the two uniform emission intervals gives exact polynomials in $W=V_L/(1-\delta)$.
+      The all-$N$ statement follows from the proof, not these finite checks.</p>
+    <p><a href="./bibliography.html#BarberCandesRamdasTibshirani2023">Barber, Cand&egrave;s, Ramdas and Tibshirani (2023)</a>
+      bound conformal coverage loss using total-variation distances under swaps of training and test observations.
+      The argument here instead identifies a model-specific boundary mixture; it is not a distribution-free guarantee for arbitrary stationary scores.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
