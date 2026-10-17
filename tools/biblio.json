@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_lumping",
+  "key": "BatenkovYomdin2013",
+  "authors": "Batenkov, D. and Yomdin, Y.",
+  "year": 2013,
+  "title": "On the Accuracy of Solving Confluent Prony Systems",
+  "venue": "SIAM Journal on Applied Mathematics 73(1):134-154",
+  "doi": "10.1137/110836584",
+  "url": "https://dimabatenkov.info/pdf/batenkov2011accuracy.pdf",
+  "annotation": "Section 2 reviews classical finite-difference annihilation, recurrences and confluent Hankel reconstruction, and separates exact solvability from stability. Background for the matrix-valued Erlang duration-bin inversion; its conditioning results are not imported as a statistical error bound."
+ },
+ {
+  "role": "survey_lumping",
+  "key": "SaundersMoran1978",
+  "authors": "Saunders, I. W. and Moran, P. A. P.",
+  "year": 1978,
+  "title": "On the quantiles of the gamma and F distributions",
+  "venue": "Journal of Applied Probability 15(2):426-432",
+  "doi": "10.2307/3213414",
+  "url": "https://doi.org/10.2307/3213414",
+  "annotation": "Classical Gamma quantile-ratio background: the publisher abstract states monotonicity of the ratio of upper to lower Gamma quantiles with shape. The duration-bin note supplies its own elementary density-crossing proof of two-cutpoint identification; no full-paper proof or numerical bound is imported."
  }
 ]

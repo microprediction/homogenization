@@ -1,0 +1,104 @@
+<!-- title: Finite duration bins identify Erlang-sampled generators · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_binned_erlang.py">certificate</a></span></p>
+    <h1>Finite duration bins identify Erlang-sampled generators</h1>
+    <p class="subtitle">A finite-valued duration category can resolve exact generator aliases without keeping individual timestamps or choosing a matrix-logarithm branch.</p>
+
+    <h2>The experiment and result</h2>
+    <p>Let $Q$ be any finite time-homogeneous row generator on a complete known labeled $n$-state space, and start from a full-support law independent of the clock.
+      Draw $T\sim\operatorname{Erlang}(r,\lambda)$ independently of the whole chain, with unknown integer shape $1\le r\le R$ for a known integer bound $R\ge1$, and unknown rate $\lambda&gt;0$.
+      Equivalently, $T$ is the total of $r$ independent rate-$\lambda$ exponential stages.</p>
+    <p>Fix any known bin width $h&gt;0$ and retain only $(Y_0,Y_T,J)$, where</p>
+    $$J=\min\{\lfloor T/h\rfloor,2R\}.$$
+    <p>The $2R$ finite bins and one overflow category identify $(r,\lambda,Q)$ from the record's population law.
+      This holds for reducible, absorbing and defective generators, without a rate cap, reversibility or simple spectrum.
+      It is not recovery from a single observed record or a claim that $2R+1$ categories are minimal.</p>
+    <p>For $k=0,\ldots,2r-1$, the observed matrices are joint subprobabilities, not transitions normalized within a bin:</p>
+    $$H_k(i,j)=\Pr(Y_T=j,J=k\mid Y_0=i)
+      =\frac{\lambda^r}{(r-1)!}\int_{kh}^{(k+1)h}t^{r-1}e^{t(Q-\lambda I)}\,dt.$$
+    <p>Full support of the starting law exposes every labeled row of the $H_k$.
+      First identify the clock from $p=\Pr(J=0)=F_{r,\lambda}(h)$ and $q=\Pr(J\le1)=F_{r,\lambda}(2h)$, then use its first $2r$ bin matrices below.
+      For known shape, one can take $R=r$ and $p$ alone fixes the rate.</p>
+
+    <h2>Two cutpoints identify Gamma shape and rate</h2>
+    <p>More generally, for any real shape $\alpha&gt;0$ and rate $\lambda&gt;0$, the Gamma CDF values at any two fixed cutpoints $0&lt;u&lt;v$ uniquely determine $(\alpha,\lambda)$.
+      For two candidate densities their log ratio is</p>
+    $$\log\frac{f_{\alpha,\lambda}(t)}{f_{\beta,\eta}(t)}
+      =c+(\alpha-\beta)\log t-(\lambda-\eta)t.$$
+    <p>Unless the parameters coincide, its derivative has at most one zero, so the density difference has at most two distinct positive zeros.
+      Equal CDFs at $u,v$ would make the density difference integrate to zero on each of $(0,u),(u,v),(v,\infty)$.
+      A nonzero analytic difference must change sign inside each such interval, forcing three distinct zeros, a contradiction.</p>
+    <p>For integer candidates $s=1,\ldots,R$, solve $F_{s,\lambda_s}(h)=p$, which is strictly increasing in $\lambda_s$ from zero to one.
+      Exactly one candidate also satisfies $F_{s,\lambda_s}(2h)=q$ at an exact Erlang model law.
+      Gamma quantile-ratio geometry is classical background: see <a href="./bibliography.html#SaundersMoran1978">Saunders and Moran (1978)</a>; the crossing proof above is self-contained.</p>
+    <p>The real-shape lemma calibrates only the clock; the finite matrix reconstruction here uses an integer shape.
+      The known upper bound fixes the category count in advance, and no uniform shape-separation or finite-sample selection guarantee is asserted.</p>
+
+    <h2>Explicit inversion from the finite bins</h2>
+    <p>Set $d=r-1$, $A=Q-\lambda I$ and $B=e^{hA}$.
+      Form the $rn\times rn$ block Hankel matrices, with zero-based block indices,</p>
+    $$\mathsf H_0=[H_{i+j}]_{i,j=0}^{r-1},\qquad
+      \mathsf H_1=[H_{i+j+1}]_{i,j=0}^{r-1}.$$
+    <p>All the inverses below exist at every exact model law.
+      Recover $B$ from a single block, then $Q$ by a finite difference:</p>
+    $$B=\frac1r(\mathsf H_1\mathsf H_0^{-1})_{r-1,r-1},\qquad
+      D=\sum_{k=0}^{d}(-1)^{d-k}\binom dk B^{-k}H_k,$$
+    $$Q=\lambda I+\lambda^r h^d(B-I)D^{-1}.$$
+    <p>No matrix logarithm or root is taken, and no eigenvalues are matched across bins.
+      Thus a large bin width does not impose a Nyquist-type rate restriction on exact population identification.</p>
+
+    <h2>Why the inversion is valid</h2>
+    <p>Translation inside the integral gives $H_k=B^kF(k)$, where $F$ is a matrix polynomial of degree $d$.
+      Its coefficients commute with $B$, and its leading coefficient is</p>
+    $$F_d=\frac{\lambda^r h^d}{d!}\int_0^h e^{uA}\,du
+      =\frac{\lambda^r h^d}{d!}A^{-1}(B-I).$$
+    <p>Every eigenvalue of $A$ has strictly negative real part, so $A$, $B$ and $B-I$ are invertible, including when $Q$ has zero eigenvalues or Jordan blocks.
+      Consequently $F_d$ is invertible.</p>
+    <p>Multiply the block rows and columns of $\mathsf H_0$ by the appropriate powers of $B^{-1}$ to obtain $[F(i+j)]$.
+      Forward-difference row and column operations turn this into $[\Delta^{i+j}F(0)]$.
+      This block matrix has zeros when $i+j&gt;d$ and the same invertible block $d!F_d$ on its antidiagonal, proving $\mathsf H_0$ invertible.</p>
+    <p>The sequence $H_k$ is annihilated by $(S-B)^r$, where $S$ shifts $k$ forward and $B$ multiplies on the left.
+      Hence $\mathsf H_1\mathsf H_0^{-1}$ is a block companion matrix whose last diagonal block is $rB$.
+      Finally $D=\Delta^dF(0)=d!F_d=\lambda^r h^d A^{-1}(B-I)$, which gives the displayed formula for $Q$.</p>
+    <p>This is a matrix-valued confluent-Prony argument: finite differences, recurrences and Hankel reconstruction are classical, as in
+      <a href="./bibliography.html#BatenkovYomdin2013">Batenkov and Yomdin (2013), Section 2</a>.
+      The proof here specializes those elementary ideas to joint labeled endpoint/duration-bin matrices; no new general Prony principle or priority for alias-free sampling is claimed.</p>
+
+    <h2>An exact discarded-time alias that the bins separate</h2>
+    <p>Take shape $r=7$, rate $\lambda=1$, bin width $h=1$, $P=\mathbf1\mathbf1^\top/3$, $E=I-P$ and</p>
+    $$J_0=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      \theta=\pi/7,\quad a=10\cos\theta-1,\quad b=10\sin\theta,\quad Q_\pm=-aE\pm bJ_0.$$
+    <p>Both generators have strictly positive off-diagonal rates, with minimum $0.164867290576$.
+      Because $J_0^2=-E$ and $PJ_0=J_0P=0$, their resolvents and discarded-time kernels satisfy</p>
+    $$(I-Q_\pm)^{-1}=P+\tfrac1{10}\{\cos\theta E\pm\sin\theta J_0\},\qquad
+      R_\pm=(I-Q_\pm)^{-7}=P-10^{-7}E.$$
+    <p>Thus discarding durations gives exactly the same label-path laws, even though the full clock law is known.
+      Retaining the 15-valued category separates the pair: the first-bin matrix infinity-norm gap is $6.614059059312\times10^{-8}$.
+      These are time reversals; no difference in their symmetric Green&ndash;Kubo strengths or ranks is claimed.</p>
+
+    <h2>Identification is not a numerical or statistical guarantee</h2>
+    <p>For this alias example, the block Hankel infinity-condition number has base-ten logarithm $49.001$.
+      The certificate uses 180-digit arithmetic for its recovery; ordinary binary64 inversion is not presented as reliable for this case.
+      Finite invertibility alone supplies no uniform conditioning, finite-sample accuracy or calendar-time efficiency.</p>
+    <p>There is also an exact fixed-clock obstruction to uniform inverse continuity.
+      For two-state reset generators $Q_c=c(P-I)$ with $P=\mathbf1\mathbf1^\top/2$ and a common uniform start, the endpoint/category laws satisfy</p>
+    $$\|\mathcal L(Q_c)-\mathcal L(Q_{2c})\|_{\rm TV}
+      =\frac12\left\{\left(\frac\lambda{\lambda+c}\right)^r-
+      \left(\frac\lambda{\lambda+2c}\right)^r\right\}\longrightarrow0,\qquad
+      \|Q_c-Q_{2c}\|_\infty=c\longrightarrow\infty.$$
+    <p>Indeed $H_k(Q_c)=p_kP+v_k(c)(I-P)$, with
+      $v_k(c)=\mathbb E[e^{-cT}\mathbf1_{\{J=k\}}]$ decreasing in $c$.
+      Summing the nonnegative differences over all bins, including overflow, gives the Erlang Laplace-transform difference above.
+      This does not preclude local error bounds when conditioning is controlled.</p>
+    <p>The Erlang-family assumption is essential when the duration is quantized.
+      For example, with $h=1$ and two stages, let the intervals be iid uniform on $[1/8,1/6]$; double every interval and replace $Q$ by $Q/2$.
+      All sampled label laws are unchanged, and the two totals lie in $[1/4,1/3]$ and $[1/2,2/3]$, both entirely in bin zero.</p>
+    <p>These are continuous-clock counterexamples to identification under an unrestricted unknown interval family, not counterexamples within the stipulated Erlang family.
+      State-dependent sampling, unbounded unknown shape, mislabeled states and elapsed-time stopping are outside this finite-category result.
+      The theorem changes neither fixed-feature Green&ndash;Kubo rank nor rank after integrating maturity-dependent loadings.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_binned_erlang.py">certificate</a>
+      checks exact finite-difference identities, unknown bounded-shape/rate calibration, directed/defective/absorbing recoveries, independent bin integrals and the shape-seven alias.
+      Tolerances are portable and its last line is literal PASS; the high-precision floating calculations are not outward-rounded interval certificates.</p>
+  </main>
