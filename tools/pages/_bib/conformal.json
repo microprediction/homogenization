@@ -1,5 +1,15 @@
 [
  {
+  "key": "BarberCandesRamdasTibshirani2023",
+  "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
+  "year": 2023,
+  "title": "Conformal prediction beyond exchangeability",
+  "venue": "The Annals of Statistics 51(2):816-845",
+  "doi": "10.1214/23-AOS2276",
+  "url": "https://www.stat.cmu.edu/~ryantibs/papers/nexcp.pdf",
+  "annotation": "Bounds conformal coverage loss through total-variation distances under swaps of training and test observations. The finite-history note instead uses a model-specific boundary mixture for stationary one-contrast emissions."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
