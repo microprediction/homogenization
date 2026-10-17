@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Exact ranks for Poisson-refresh regimes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_reset_panel.py">certificate</a></span></p>
+    <h1>Exact ranks for Poisson-refresh regimes</h1>
+    <p class="subtitle">Exponential-age calibration permits arbitrary continuous score laws on a reset chain, not only a single CDF contrast.</p>
+    <p>Let $\pi$ be a strictly positive probability row on a finite state space and consider the stationary chain</p>
+    $$Q_0=c(\mathbf1\pi-I),\qquad c>0.$$
+    <p>Equivalently, at each event of an independent rate-$c$ Poisson process the regime is drawn afresh from $\pi$.
+      These refreshes include draws equal to the previous state; their clock is not the observed state-change clock.
+      Given the chain and sampling times, score emissions are independent with arbitrary fixed continuous state-specific CDFs $F_i$.</p>
+
+    <h2>The exact rank rule</h2>
+    <p>Choose $\beta>0$ and independently draw chronological gaps $D_j\sim\operatorname{Exp}(j\beta)$, $1\le j\le N$, where the argument is a rate.
+      Use scores at $0,D_1,\ldots,D_1+\cdots+D_{N-1}$ for calibration and the next score at $D_1+\cdots+D_N$ for testing.
+      If $Q_k$ is the $k$th calibration order statistic, then</p>
+    $$\boxed{\Pr(S_{\rm test}\le Q_k)=\frac{k}{N+1},\qquad 1\le k\le N.}$$
+    <p>This averages over the stationary chain, scores and randomized schedule.
+      The sampling rule does not require $c$, $\pi$ or the $F_i$, but exactness requires the reset structure.
+      There is no restriction to one CDF contrast, two states or large switching speed.</p>
+
+    <h2>The classical Dirichlet occupation law supplies exchangeability</h2>
+    <p>Move the test time to zero by stationarity and define the exponentially weighted occupation vector</p>
+    $$W_i=\beta\int_0^\infty e^{-\beta a}\mathbf1_{\{Y_{-a}=i\}}\,da,\qquad
+      \alpha=c/\beta.$$
+    <p>The classical reset-chain occupation law gives</p>
+    $$W\sim\operatorname{Dirichlet}(\alpha\pi),\qquad
+      W\mid Y_0=i\sim\operatorname{Dirichlet}(\alpha\pi+e_i),\qquad
+      \Pr(Y_0=i\mid W)=W_i.$$
+    <p>For a constructive proof, backward Poisson inter-refresh intervals $E_j$ are iid $\operatorname{Exp}(c)$, independent of iid state marks $Z_j\sim\pi$.
+      Their normalized exponential weights are the stick-breaking weights with fractions $V_j=1-e^{-\beta E_j}\sim\operatorname{Beta}(1,\alpha)$, so the resulting occupation vector is Dirichlet.
+      This is the construction of <a href="./bibliography.html#Sethuraman1994">Sethuraman (1994)</a>.</p>
+    <p>The first mark is the current state and $W=V_1e_{Z_1}+(1-V_1)W'$, with an independent Dirichlet remainder $W'$.
+      Given $Z_1=i$, Dirichlet aggregation gives the displayed parameter increment; the density ratio to the unconditioned Dirichlet law is $W_i/\pi_i$, giving the posterior identity.
+      The same joint stationary law is explicit in <a href="./bibliography.html#Herbach2019">Herbach (2019), Proposition 4.4</a>.</p>
+    <p>Now draw labeled calibration ages iid $\operatorname{Exp}(\beta)$, independently of the full process.
+      Given the past chain, the labeled calibration scores are iid with mixture CDF $F_W=\sum_iW_iF_i$, and the test CDF given $W$ is the same by the posterior identity.
+      Their joint law conditional on $W$ is therefore iid and continuous, proving the rank rule.</p>
+    <p>The reversed exponential order-statistic spacings have chronological rates $\beta,2\beta,\ldots,N\beta$.
+      Sorting the calibration labels does not alter $Q_k$; the chronologically ordered score vector itself need not be exchangeable.</p>
+
+    <h2>An explicit budget for approximate resets</h2>
+    <p>Let the actual stationary generator $Q$ have the same $\pi$, and compare it with $Q_0=c(\mathbf1\pi-I)$ using</p>
+    $$\delta=\tfrac12\|Q-Q_0\|_\infty,\qquad
+      \|A\|_\infty=\max_i\sum_j|A_{ij}|.$$
+    <p>For the same sampling protocol and continuous emission laws,</p>
+    $$\left|\Pr_Q(S_{\rm test}\le Q_k)-\frac{k}{N+1}\right|
+      \le 1-\prod_{j=1}^N\frac{j\beta}{j\beta+\delta}
+      \le\frac{\delta H_N}{\beta},\qquad H_N=\sum_{j=1}^N\frac1j.$$
+    <p>Start both chains in the same state drawn from $\pi$, uniformize at a common rate $M$, and couple their transitions maximally while their states agree.
+      The per-step disagreement probability is at most $\delta/M$, so disagreement before a fixed span $T$ has probability at most $1-e^{-\delta T}$.
+      Average over the independent sum of exponential gaps and couple equal-state emissions to prove the bound.</p>
+    <p>This is a deterministic generator-perturbation budget with a shared stationary law, not a statistical estimate of $\delta$ or a fast-switching truncation error.
+      Evaluating it requires a justified comparison with a reset generator.</p>
+
+    <h2>Boundary, certificate and scope</h2>
+    <p>Reversibility alone does not suffice.
+      For $Q=\tfrac16\left(\begin{smallmatrix}-5&1&4\\1&-5&4\\4&4&-8\end{smallmatrix}\right)$, uniform $\pi$, state-$i$ emissions uniform on $[2i,2i+1]$, $i=0,1,2$, $\beta=1/2$ and $N=k=2$, exact coverage is $1621/2430=2/3+1/2430$.
+      This is a failure of exactness, not a failure of a conservative one-sided guarantee.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_reset_panel.py">certificate</a>
+      verifies 1,512 exact chronological count/test identities against the Dirichlet mixture and 342 independent multi-contrast Gaussian rank masses.
+      It also checks 12 approximate-reset budgets on nonreversible perturbations and the rational counterexample.</p>
+    <p>The theorem is stationary marginal coverage over the randomized schedule, not coverage conditional on realized gaps, calibration scores or current state.
+      It does not cover overlapping path scores, same-panel score refitting, arbitrary non-reset chains or anytime calibration reuse.
+      Dirichlet occupation laws and stick-breaking are classical; the result here is their rank-calibration specialization.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

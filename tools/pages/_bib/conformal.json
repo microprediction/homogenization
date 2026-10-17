@@ -128,5 +128,25 @@
   "doi": "",
   "url": "",
   "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
+ },
+ {
+  "key": "Sethuraman1994",
+  "authors": "Sethuraman, J.",
+  "year": 1994,
+  "title": "A constructive definition of Dirichlet priors",
+  "venue": "Statistica Sinica 4(2):639-650",
+  "doi": "",
+  "url": "https://www3.stat.sinica.edu.tw/statistica/oldpdf/A4n216.pdf",
+  "annotation": "Classical stick-breaking construction of Dirichlet random measures. Poisson-refresh occupation weights have these beta-distributed fractions; the reset-panel theorem uses their posterior identity to obtain exact marginal ranks."
+ },
+ {
+  "key": "Herbach2019",
+  "authors": "Herbach, U.",
+  "year": 2019,
+  "title": "Stochastic gene expression with a multistate promoter: breaking down exact distributions",
+  "venue": "SIAM Journal on Applied Mathematics 79(3):1007-1029",
+  "doi": "10.1137/18M1181006",
+  "url": "https://arxiv.org/pdf/1804.05740",
+  "annotation": "Proposition 4.4 gives the classical Dirichlet stationary law for a parent-independent switching occupation process and its state-conditional parameter increment. The reset-panel theorem applies that joint law to randomized rank calibration."
  }
 ]
