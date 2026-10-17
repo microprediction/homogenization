@@ -1,0 +1,95 @@
+<!-- title: Which generators can a sampling clock erase? · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_erasure_criterion.py">certificate</a></span></p>
+    <h1>Which generators can a sampling clock erase?</h1>
+    <p class="subtitle">Complete erasure has an exact spectral criterion, and polynomial positivity constructs smooth clocks that attain it.</p>
+
+    <h2>Experiment and characterization</h2>
+    <p>Let $Q$ be an irreducible finite row generator on $n\ge2$ states, with stationary row $\pi$ and $P=\mathbf1\pi$.
+      At each observation independently redraw a positive, almost surely finite interval $\tau$, independently of the chain.
+      Retain all labeled states including repetitions, but discard times, clock-component tags and total elapsed time at a fixed sample count.</p>
+    <p>Call the clock completely erasing if its sampled kernel is $R=\mathbb E e^{\tau Q}=P$.
+      At stationarity the observed labels are then exactly iid with law $\pi$.
+      The following are equivalent:</p>
+    <ol>
+      <li>Some such positive clock completely erases $Q$.</li>
+      <li>Every nonzero eigenvalue of $Q$ is nonreal.</li>
+      <li>A finite mixture of positive-shape Erlang clocks, all with one common rate, completely erases $Q$.</li>
+    </ol>
+    <p>The clock in the last statement has a strictly positive analytic density on $(0,\infty)$ and all moments finite.
+      Jordan blocks are allowed.
+      The clock is constructed for the given generator, not chosen universally for all generators in a dimension.</p>
+
+    <h2>Necessity: a real mode cannot disappear</h2>
+    <p>A nonzero real eigenvalue of an irreducible finite generator is $-r$ for some $r&gt;0$.
+      If $Qv=-rv$, then $\pi v=0$ and</p>
+    $$Rv=\mathbb E[e^{-r\tau}]v\ne0,\qquad Pv=0.$$
+    <p>The scalar expectation is strictly positive because $\tau$ is finite almost surely.
+      Therefore $R=P$ is impossible, regardless of the clock's mean or smoothness.</p>
+
+    <h2>Sufficiency: turn an annihilating polynomial into a clock</h2>
+    <p>Fix any rate $\lambda&gt;0$ and put $C=\lambda(\lambda I-Q)^{-1}$.
+      The stationary decomposition $\mathbb R^n=\operatorname{span}(\mathbf1)\oplus\ker\pi$ is invariant under $C$.
+      Write $C_E$ for its restriction to the centered space and let $m(x)$ be the monic characteristic polynomial of $C_E$.</p>
+    <p>If every nonzero eigenvalue of $Q$ is nonreal, so is every eigenvalue of $C_E$.
+      In conjugate pairs, with algebraic multiplicities included,</p>
+    $$m(x)=\prod_j\{(x-\operatorname{Re}\rho_j)^2+(\operatorname{Im}\rho_j)^2\}^{d_j}.$$
+    <p>Its homogeneous form
+      $M(x,y)=y^d m(x/y)$, where $d=n-1$, is strictly positive on the compact simplex $x,y\ge0$, $x+y=1$.
+      The endpoint values are positive as well, since $C_E$ is invertible and $m$ is monic.</p>
+    <p>The classical positive-coefficient theorem of <a href="./bibliography.html#PowersReznick2001">P&oacute;lya, as stated by Powers and Reznick (2001)</a>, supplies an integer $N\ge0$ for which</p>
+    $$p(x)=(1+x)^N m(x)=\sum_{k=0}^{N+d}a_kx^k,\qquad a_k&gt;0.$$
+    <p>Choose the interval law to be the finite mixture with weights $w_k=a_k/p(1)$ and components $\operatorname{Erlang}(k+1,\lambda)$, where $\lambda$ is a rate.
+      An Erlang interval is a sum of independent exponential stages, hence its sampled kernel is $C^{k+1}$.</p>
+    $$R=\sum_k w_k C^{k+1}=\frac{Cp(C)}{p(1)}=P.$$
+    <p>The final equality uses $m(C_E)=0$ by Cayley&ndash;Hamilton, while $C\mathbf1=\mathbf1$.
+      Algebraic multiplicities in $m$ annihilate the complete centered operator, including its Jordan blocks: cancelling only distinct eigenvalues would not suffice.
+      Positive Erlang weights give the claimed density and moments, completing the equivalence.</p>
+
+    <h2>Why the positive-coefficient step terminates</h2>
+    <p>This step is classical, not a new positivity theorem.
+      For $m(x)=\sum_{j=0}^d m_jx^j$, the coefficient $b_{L,k}$ of $x^k$ in $(1+x)^{L-d}m(x)$ obeys</p>
+    $$\frac{b_{L,k}}{\binom Lk}
+      =\sum_{j=0}^d m_j\frac{(k)_j(L-k)_{d-j}}{(L)_d},\qquad L\ge d,$$
+    <p>where $(u)_j$ is the falling factorial.
+      Uniformly for integers $0\le k\le L$, the right side differs by $O_m(L^{-1})$ from $M(k/L,1-k/L)$.
+      Since $M$ has a strictly positive minimum on the simplex, all coefficients are positive for sufficiently large $L$.</p>
+    <p>Thus repeatedly multiplying by $1+x$ and checking coefficients terminates for every generator satisfying the criterion.
+      No numerical eigenvalue test is needed for the exact examples below, and no clock-size optimum is claimed.</p>
+
+    <h2>Parity, reversibility and identification</h2>
+    <p>The nonstationary dimension $n-1$ must be even, so complete erasure is possible only for odd $n$.
+      Conversely, every odd $n\ge3$ has an example: the unit directed cycle has eigenvalues $e^{2\pi i k/n}-1$, with no nonzero real eigenvalue.
+      Odd dimension alone is not sufficient for a particular generator.</p>
+    <p>A reversible generator has real spectrum, so no nontrivial reversible chain can be completely erased by these clocks.
+      For an erasable $Q$, its stationary time reversal $Q^*=D_\pi^{-1}Q^\top D_\pi$ is distinct and the same clock also gives $R(Q^*)=P$.
+      Thus the constructed, fully known clock fails generator identification even at the population level.</p>
+    <p>This characterizes complete erasure, not all aliasing.
+      A clock may leave a nonzero mode visible yet fail to distinguish generators, and failure of complete erasure does not prove identification.
+      No universal inverse-stability, phase-count, waiting-time-efficiency or finite-sample claim is made.</p>
+
+    <h2>Exact constructive certificates</h2>
+    <p>For the three- and five-state unit cycles at $\lambda=1$, the centered characteristic polynomials, scaled to integers, are</p>
+    $$m_3(x)=7x^2-5x+1,\qquad
+      m_5(x)=31x^4-49x^3+31x^2-9x+1.$$
+    <p>The coefficient search finds $N=44$ and $N=121$, respectively, giving positive weights on Erlang shapes $1,\ldots,47$ and $1,\ldots,126$.
+      These are constructions using this multiplier, not minimal possible clocks.</p>
+    <p>The defective five-state example uses $e_j$ for standard basis columns,</p>
+    $$S=[\mathbf1\ e_1-e_5\ e_2-e_5\ e_3-e_5\ e_4-e_5],\qquad
+      Q=S\operatorname{diag}(0,A)S^{-1},$$
+    $$A=-I_4+\frac9{50}\operatorname{diag}(J_2,J_2)
+      +\frac1{100}\begin{pmatrix}0&amp;I_2\\0&amp;0\end{pmatrix},\qquad
+      J_2=\begin{pmatrix}0&amp;-1\\1&amp;0\end{pmatrix}.$$
+    <p>All off-diagonal rates are at least $7/500$ and the stationary law is uniform.
+      Its conjugate pair $-1\pm9i/50$ has nontrivial Jordan blocks.
+      At $\lambda=1/10$, the centered characteristic polynomial is proportional to $(3106x^2-550x+25)^2$.</p>
+    <p>The search gives $N=787$ and shapes $1,\ldots,792$; the unsquared quadratic does not annihilate the centered matrix.
+      This separately checks that the construction respects Jordan multiplicity.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_erasure_criterion.py">certificate</a>
+      checks 965 strictly positive weights exactly, all three rational matrix annihilators, and exact obstructions for three even cycles and a reversible reset chain.
+      Numerical mixture kernels and two independent semigroup integrals check the construction with portable tolerances; the script ends with literal PASS.</p>
+    <p>The result changes neither fixed-feature Green&ndash;Kubo rank nor rank after integrating maturity-dependent loadings.
+      It describes information lost under a particular observation clock, with no claim that all erasable generators have different Green&ndash;Kubo strengths.</p>
+  </main>
