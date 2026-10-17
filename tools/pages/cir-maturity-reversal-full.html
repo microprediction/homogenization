@@ -1,0 +1,66 @@
+<!-- title: A CIR reversal gap can change sign with maturity · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; integrated-variance cumulants</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_maturity_reversal.py">certificate</a></span></p>
+    <h1>A CIR reversal gap can change sign with maturity</h1>
+    <p class="subtitle">Switching mean reversion can reverse a stationary variance comparison even when the mean level is constant.</p>
+    <p>Let $Q$ be an irreducible finite row generator with stationary law $\pi$, and let $Y$ have generator $mQ$, $m>0$.
+      Consider the common-level model</p>
+    $$dv_t=\kappa_{Y_t}(\theta-v_t)dt+\sqrt{a_{Y_t}v_t}\,dW_t,\qquad V_T=\int_0^T v_tdt,$$
+    <p>where $\theta,\kappa_i,a_i>0$, $2\kappa_i\theta\ge a_i$, and $W$ is independent of the autonomous chain.
+      Each model starts in its own joint invariant law, including when $Q$ is replaced by $Q^\dagger=D_\pi^{-1}Q^\top D_\pi$.
+      This compares reversed regime dynamics, not reversal of the entire joint diffusion or a common fixed initial variance.</p>
+
+    <h2>An exact killed-chain covariance</h2>
+    <p>Put $K=\operatorname{diag}\kappa$, $D_a=\operatorname{diag}a$, $B_m=K-mQ$, $C_m=2K-mQ$ and define the nonnegative row</p>
+    $$u_m=\theta\pi D_a C_m^{-1}.$$
+    <p>Then $\mathbb E[v\mathbf1_{\{Y=i\}}]=\theta\pi_i$, while $u_{m,i}=\mathbb E[(v-\theta)^2\mathbf1_{\{Y=i\}}]$.
+      In particular the conditional stationary mean is constant across regimes, but the covariance still depends on their order:</p>
+    $$\operatorname{Cov}(v_0,v_t)=u_m e^{-tB_m}\mathbf1,$$
+    $$\boxed{\operatorname{Var}(V_T)=2u_m\{TB_m^{-1}-B_m^{-2}(I-e^{-TB_m})\}\mathbf1.}$$
+    <p>For proof, the stationary first-moment row $r$ solves $r(K-mQ)=\theta\pi K$, hence $r=\theta\pi$.
+      The second-moment equation, after subtracting $\theta^2\pi$, gives $u_m(2K-mQ)=\theta\pi D_a$.
+      Conditional expectation of the centered CIR equation gives
+      $\mathbb E[v_t-\theta\mid v_0,Y_0=i]=(v_0-\theta)(e^{-tB_m}\mathbf1)_i$.</p>
+    <p>Multiply by $v_0-\theta$ in stationarity to obtain the covariance and integrate it twice for the variance.
+      Both killed resolvents are nonsingular, with nonnegative inverses; no diagonalization or reversibility is required.</p>
+
+    <h2>A long-maturity remainder uniform over all positive speeds</h2>
+    $$\Gamma_m=2u_mB_m^{-1}\mathbf1,\qquad \chi_m=-2u_mB_m^{-2}\mathbf1,$$
+    $$\operatorname{Var}(V_T)=\Gamma_mT+\chi_m+\rho_m(T),\qquad
+      \rho_m(T)=2u_mB_m^{-2}e^{-TB_m}\mathbf1.$$
+    <p>Write $\kappa_*=\min_i\kappa_i$ and $a^*=\max_i a_i$.
+      Killing at rate at least $\kappa_*$ gives $\|e^{-tB_m}\|_\infty\le e^{-\kappa_*t}$, and therefore, for every $m>0,T\ge0$,</p>
+    $$0\le\rho_m(T)\le\frac{2u_m\mathbf1}{\kappa_*^2}e^{-\kappa_*T}
+      \le\frac{\theta a^*}{\kappa_*^3}e^{-\kappa_*T}.$$
+    <p>The last inequality uses $u_m\mathbf1\le\theta a^*/(2\kappa_*)$ from the second killed resolvent.
+      This is an absolute uniform-in-speed bound with the exact slope and intercept retained, not a uniform error after truncating their inverse-speed expansions.</p>
+
+    <h2>A minimal three-state sign change</h2>
+    <p>At $m=1$, take</p>
+    $$Q=\begin{pmatrix}-1&1&0\\0&-1&1\\1&0&-1\end{pmatrix},\quad
+      \pi=\tfrac13(1,1,1),\quad\theta=1,\quad\kappa=(1,2,4),\quad a=(1,1,9/10).$$
+    <p>The minimum Feller margin is $1$.
+      For forward minus reversed-regime differences, exact rational arithmetic gives</p>
+    $$\Delta\operatorname{Var}(v)=-\frac1{2010}<0,\qquad
+      \Delta\Gamma=\frac9{9715}>0.$$
+    <p>Consequently $\Delta\operatorname{Var}(V_T)/T^2\to-1/2010$ as $T\downarrow0$, but
+      $\Delta\operatorname{Var}(V_T)/T\to9/9715$ as $T\to\infty$.
+      Rational uniformization certifies the finite-maturity brackets</p>
+    $$\Delta\operatorname{Var}(V_1)\in[-0.000009517269,-0.000009517268],$$
+    $$\Delta\operatorname{Var}(V_{11/10})\in[0.000025772847,0.000025772848].$$
+    <p>Continuity gives at least one zero in $(1,11/10)$; uniqueness is not claimed.
+      Three states are minimal because every irreducible two-state generator equals its stationary reversal.</p>
+    <p>With common $\kappa$ as well as common $\theta$, the covariance instead reduces to
+      $\theta(\pi a)e^{-\kappa t}/(2\kappa)$ and has no cycle-direction effect.
+      Thus switching mean reversion is essential to this witness; it does not contradict the fixed-$\kappa$ factorization or compare different switching speeds.</p>
+
+    <h2>Certificate and attribution</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_maturity_reversal.py">certificate</a>
+      checks 352 independent degree-two joint-moment comparisons and uniform tail bounds, plus 88 common-$\kappa$ blindness controls, on random, cyclic and defective chains.
+      Its two sign brackets use exact rational matrix operations and geometric bounds on the omitted uniformization and exponential series, not floating-point sign tests.</p>
+    <p>This is a specialization of the general stationary moment and Poisson formulas in the <a href="./cumulants-full.html">full cumulant note</a>.
+      Polynomial moment methods are classical; see <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+      For independent-price returns $M_T=\sqrt{V_T}Z$, only, the fourth-cumulant gap is three times the displayed variance gap.</p>
+  </main>
