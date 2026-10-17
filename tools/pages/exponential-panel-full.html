@@ -1,0 +1,96 @@
+<!-- title: Exact ranks from exponential-age calibration · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_exponential_panel.py">certificate</a></span></p>
+    <h1>Exact ranks from exponential-age calibration</h1>
+    <p class="subtitle">Randomize the whole panel, not only the last gap: one CDF contrast permits exact marginal rank coverage without a mixing-rate estimate.</p>
+    <p>Let $X_t$, $t\in\mathbb R$, be a bounded, jointly measurable, strictly stationary real signal, with $\mathbb E X_0=0$.
+      Conditional on the full signal and the sampling times, score emissions are independent with fixed continuous CDFs</p>
+    $$F_{X_t}(s)=\bar F(s)+X_tH(s).$$
+    <p>Each realized signal value must give a genuine CDF; $\bar F$ is the stationary pooled CDF.
+      No Markov property, ergodicity, mixing or path continuity is assumed.
+      A stationary finite-state chain is one example, with $X_t=h(Y_t)$ and $\pi h=0$.</p>
+    <p>The one-contrast condition is automatic for any stationary binary regime process, with arbitrary continuous CDFs $F_1,F_2$:
+      take $X_t=\mathbf1_{\{Y_t=1\}}-\pi_1$, $\bar F=\pi_1F_1+\pi_2F_2$ and $H=F_1-F_2$.
+      It is not automatic for three or more regime-specific CDFs.</p>
+
+    <h2>The sampling rule and exact rank theorem</h2>
+    <p>For any $N\ge1$ and $\beta>0$, independently draw chronological gaps $D_j\sim\operatorname{Exp}(j\beta)$, $1\le j\le N$, where the argument is a rate.
+      Observe $N$ calibration scores at $0,D_1,\ldots,D_1+\cdots+D_{N-1}$ and the test score at $D_1+\cdots+D_N$.
+      For their $k$th calibration order statistic $Q_k$,</p>
+    $$\boxed{\Pr(S_{\rm test}\le Q_k)=\frac{k}{N+1},\qquad 1\le k\le N.}$$
+    <p>The probability averages over the stationary signal, scores and randomized schedule.
+      No transition model or mixing rate is needed to choose the rule.
+      The panel span is unbounded, with expectation $H_N/\beta$, where $H_N=\sum_{j=1}^N1/j$.</p>
+    <p>For $N=9$, $\beta=1$, the expected span is $7129/2520=2.828968253968$ and rank-nine marginal coverage is $9/10$.</p>
+
+    <h2>Proof by a self-calibrated scalar filter</h2>
+    <p>By stationarity, place the test time at zero and draw labeled calibration ages $A_1,\ldots,A_N$ iid $\operatorname{Exp}(\beta)$, independently of the full process.
+      Exponential order statistics have independent spacings with rates $N\beta,(N-1)\beta,\ldots,\beta$ going backward from the test.
+      Reversing the spacing list gives the chronological rule above; sorting calibration labels does not change $Q_k$.</p>
+    <p>Define the bounded stationary scalar filter</p>
+    $$U_t=\beta\int_0^\infty e^{-\beta a}X_{t-a}\,da,\qquad
+      \dot U_t=\beta(X_t-U_t)\quad\hbox{almost everywhere}.$$
+    <p>The filter has absolutely continuous paths even when $X$ does not.
+      For every continuously differentiable $\varphi$ and $T>0$, the chain rule, boundedness and Fubini give</p>
+    $$0=\mathbb E[\varphi(U_T)-\varphi(U_0)]
+      =\beta\int_0^T\mathbb E[\varphi'(U_t)(X_t-U_t)]\,dt
+      =\beta T\mathbb E[\varphi'(U_0)(X_0-U_0)].$$
+    <p>The final equality uses joint stationarity of $(X,U)$, not differentiation at a prescribed exceptional time.
+      Every continuous function on the compact range is a derivative of such a $\varphi$, so</p>
+    $$\mathbb E[X_0\mid U_0]=U_0.$$
+    <p>Conditional on the entire past signal including its current value, independently sampled calibration ages and emission noise make the labeled calibration scores iid with CDF $\bar F+U_0H$.
+      Their joint conditional law depends on that past only through $U_0$, while the test CDF given $U_0$ is also $\bar F+U_0H$ by the displayed identity.
+      Consequently the age-labeled calibration scores and test score are iid conditional on $U_0$.</p>
+    <p>These conditional CDFs are continuous mixtures of the emission laws, so there are no ties and the test rank is uniform.
+      This proves the marginal formula without any decorrelation assumption or stationary filter density.
+      The chronologically ordered score vector itself need not be exchangeable: the iid statement uses the unsorted age labels.</p>
+
+    <h2>Why the assumptions matter</h2>
+    <p>The result is not coverage conditional on the realized sampling times, calibration scores or current regime.
+      For the two-state generator $Q=\left(\begin{smallmatrix}-3&3\\1&-1\end{smallmatrix}\right)$, emissions uniform on $[0,1]$ and $[2,3]$, $N=k=2$ and $\beta=1$, current-state conditional coverages are $14/15$ and $26/45$.
+      Their stationary average is $2/3$.</p>
+    <p>The one-contrast assumption also has a genuine boundary.
+      With</p>
+    $$Q=\frac16\begin{pmatrix}-5&1&4\\1&-5&4\\4&4&-8\end{pmatrix},\qquad
+      \pi=\tfrac13(1,1,1),\qquad S\mid Y=i\sim\operatorname{Unif}[2i,2i+1],\quad i=0,1,2,$$
+    <p>take $N=k=2$, $\beta=1/2$.
+      Exact rational enumeration gives coverage $1621/2430=2/3+1/2430$, not $2/3$.
+      The three CDFs do not lie on one affine line.</p>
+    <p>The protocol changes every gap and has a random total span; it is not a fixed-span optimality result or a universal final-gap adjustment.
+      Nonstationary starts, overlapping path scores, score maps updated from this panel and general multi-contrast emission laws are outside the theorem.</p>
+
+    <h2>A nonmixing, non-Markov witness</h2>
+    <p>Let $Y_t=\mathbf1_{\{(t+\Theta)\bmod P&lt;A\}}$, with $P=A+B$, $A,B>0$ and independent $\Theta\sim\operatorname{Unif}[0,P)$.
+      This binary process is stationary, has deterministic holding lengths and is not Markov in its binary state.
+      It is not mixing: $\operatorname{Cov}(Y_0,Y_{mP})=p(1-p)$ for every integer $m$, where $p=A/P$.</p>
+    <p>For $W=\beta\int_0^\infty e^{-\beta a}Y_{-a}\,da$, put $a=e^{-\beta A}$ and $b=e^{-\beta B}$.
+      The filter ranges between $w_-=b(1-a)/(1-ab)$ and $w_+=(1-a)/(1-ab)$, with</p>
+    $$f_W(w)=\frac1{\beta P\,w(1-w)},\quad w_-&lt;w&lt;w_+,\qquad
+      \Pr(Y_0=1\mid W=w)=w.$$
+    <p>The rising and falling branches have phase densities $1/[\beta P(1-w)]$ and $1/(\beta Pw)$, respectively, proving both formulas.
+      Thus arbitrary continuous binary emissions have exact randomized marginal ranks despite dependence that never decays.
+      This does not turn stationarity alone into a guarantee for arbitrary score processes: conditional emission independence and one CDF contrast remain essential.</p>
+
+    <h2>A finite-history variant with an explicit error budget</h2>
+    <p>If each labeled age is instead drawn independently from $\operatorname{Exp}(\beta)$ conditioned to be at most $L$, then the rule stays within a history of length $L$ and</p>
+    $$\left|\Pr(S_{\rm test}\le Q_k)-\frac{k}{N+1}\right|
+      \le 1-(1-e^{-\beta L})^N\le Ne^{-\beta L}.$$
+    <p>Couple the truncated age vector with the untruncated one; they agree unless at least one of the $N$ exponential ages exceeds $L$.
+      The same signal and score draws then couple the rank events, proving the bound without a mixing assumption.
+      At $N=9$, $\beta=1$, $L=10$, the bound is $4.085251741918\times10^{-4}$.</p>
+
+    <h2>Certificate and relation to other guarantees</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_exponential_panel.py">certificate</a>
+      performs 120 exact polynomial rank-mass checks through $N=5$ on two-, three- and four-state chains, including nonreversible and defective examples.
+      An independent count recursion and Gaussian quadrature check 171 rank masses through $N=9$ with unequal Gaussian emission laws.</p>
+    <p>Both counterexamples above use rational arithmetic.
+      Six exact two-gap resolvent identities separately verify $2R_1=R_2+R_1R_2$, where $R_j=j\beta(j\beta I-Q)^{-1}$.
+      The all-$N$ theorem follows from the filter argument, not from a finite mesh.</p>
+    <p>The periodic witness adds 63 exact separated-uniform rank identities and 57 unequal-Gaussian rank comparisons, through $N=9$.
+      An independent phase integral checks the latent calibration-count/current-state weights.</p>
+    <p>The <a href="./path-conformal-full.html">full path-conformal note</a> gives the classical filtered-telegraph conditional-mean identity as a special case.
+      General mixing-based concentration and decoupling guarantees remain separate; see
+      <a href="./bibliography.html#OliveiraOrensteinRamosRomano2024">Oliveira, Orenstein, Ramos and Romano (2024)</a>.</p>
+  </main>
