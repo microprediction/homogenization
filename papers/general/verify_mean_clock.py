@@ -3,6 +3,7 @@ import numpy as np
 import sympy as sp
 from scipy.integrate import quad_vec
 from scipy.linalg import expm
+from scipy.optimize import brentq
 from scipy.stats import poisson
 
 
@@ -97,4 +98,58 @@ for base in chains:
             subchecks += 1
 print(f"Subordination truncation checks: {subchecks}; max error/(Poisson tail+roundoff)={max_ratio:.6f}")
 print("Closeness: coupling tau_a=(1+a*sign)*Exp(1) gives W1<=a; Qbar-Q=a^2*((I-Q)^(-1)-I-Q)")
+
+# Finite-moment extension: exact clock moments and positive divided differences.
+def clock(k):
+    m = k+1
+    scales = [sp.Rational(1, 2)+sp.Rational(j, m) for j in range(m+1)]
+    base = [sp.binomial(m, j)/2**m for j in range(m+1)]
+    plus = [b*(1+sp.Rational((-1)**j, 2)) for j, b in enumerate(base)]
+    minus = [b*(1-sp.Rational((-1)**j, 2)) for j, b in enumerate(base)]
+    return m, scales, base, plus, minus
+
+
+def exact_f(scales, weights, z):
+    return sum(w/(1+t*z) for t, w in zip(scales, weights))
+
+
+v1, v2 = np.array([1., 0, -1]), np.array([1., -2, 1])
+p1, p2, p0 = np.outer(v1, v1)/2, np.outer(v2, v2)/6, np.ones((3, 3))/3
+moment_checks = divided_checks = alias_checks = 0
+moment_kernel_error = 0.
+for k in range(1, 9):
+    m, scales, base, plus, minus = clock(k)
+    for ell in range(k+1):
+        assert sum((u-v)*t**ell for t, u, v in zip(scales, plus, minus)) == 0
+        moment_checks += 1  # Interval moments are ell! times these scale moments.
+    assert sum(t*w for t, w in zip(scales, plus)) == 1
+    for z in map(sp.Rational, ('1/10', '1/2', '1', '2', '5')):
+        d = sp.factorial(m)*(z/m)**m/(2**m*sp.prod(1+t*z for t in scales))
+        assert exact_f(scales, plus, z)-exact_f(scales, minus, z) == d > 0
+        divided_checks += 1
+    if k <= 6:
+        tf, wp, wm = [np.array(x, dtype=float) for x in (scales, plus, minus)]
+        f = lambda x, w: np.sum(w/(1+tf*x))
+        roots = [brentq(lambda b: f(b, wm)-f(x, wp), 0, x, xtol=1e-12) for x in (1., 2.)]
+        assert 0 < roots[1] < 2*roots[0] < 3*roots[0]
+        qb = -roots[0]*p1-roots[1]*p2
+        left, right = p0+f(1, wp)*p1+f(2, wp)*p2, p0+f(roots[0], wm)*p1+f(roots[1], wm)*p2
+        moment_kernel_error = max(moment_kernel_error, norm(left-right))
+        assert np.min(qb-np.diag(np.diag(qb))) >= -2e-10
+        alias_checks += 1
+assert moment_kernel_error <= 2e-9
+print(f"Finite-moment clocks: K=1..8; {moment_checks} exact matching moments including masses; {divided_checks} positive rational-transform identities")
+print(f"Three-state nonproportional aliases: {alias_checks}; maximum kernel discrepancy={moment_kernel_error:.3e}")
+m, scales, base, plus, minus = clock(2)
+assert plus == list(map(sp.Rational, ('3/16', '3/16', '9/16', '1/16')))
+assert minus == list(map(sp.Rational, ('1/16', '9/16', '3/16', '3/16')))
+assert 2*sum(w*t*t for w, t in zip(plus, scales)) == sp.Rational(13, 6)
+bounds = [(sp.Rational(992415305905, 10**12), sp.Rational(992415305907, 10**12)),
+          (sp.Rational(1972100882987, 10**12), sp.Rational(1972100882989, 10**12))]
+for x, (lower, upper) in zip((1, 2), bounds):
+    target = exact_f(scales, plus, x)
+    assert exact_f(scales, minus, lower) > target > exact_f(scales, minus, upper)
+assert bounds[1][1] < 2*bounds[0][0] < 3*bounds[0][0]
+print("K=2 exact scales=(1/2,5/6,7/6,3/2); weights+=(3,3,9,1)/16; weights-=(1,9,3,3)/16; E[tau]=1, E[tau^2]=13/6")
+print("Rational root enclosures: b1 in [0.992415305905,0.992415305907]; b2 in [1.972100882987,1.972100882989]; b2<2*b1<3*b1")
 print("PASS")

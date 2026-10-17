@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Knowing the mean clock does not identify the generator · homogenization</title>
+  <title>Finite clock moments do not identify the generator · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -100,8 +100,8 @@
     <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a>
       <span><a href="./papers.html">papers</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_mean_clock.py">certificate</a></span></p>
-    <h1>Knowing the mean clock does not identify the generator</h1>
-    <p class="subtitle">Exact sampled-label ambiguity survives a known physical mean interval, reversibility and a known stationary law; even the transition graph and Green&ndash;Kubo strength can differ.</p>
+    <h1>Finite clock moments do not identify the generator</h1>
+    <p class="subtitle">Matching any finite number of sampling-interval moments can conceal nonproportional reversible generators and their Green&ndash;Kubo strengths; mean calibration can even conceal the transition graph.</p>
     <p>Let $Q$ be a finite conservative row generator, with fully observed regime labels, including repeats.
       Observation intervals are iid, independent of the chain, but all timing information is discarded and the sample count is fixed.
       Normalize the externally known mean interval to one physical time unit.</p>
@@ -147,6 +147,42 @@
       An arbitrarily small clock perturbation can therefore hide the distinction between a sparse graph and a complete graph.
       This is exact nonidentification when the clock law is unknown, not instability of inversion for one fixed known law.</p>
 
+    <h2>No finite list of clock moments suffices</h2>
+    <p>For every integer $K\ge1$ there exist two independent iid exponential-mixture clocks with identical first $K$ interval moments and mean one, and nonproportional three-state reversible generators with the same uniform stationary law, giving identical complete sampled-label laws.
+      The generators can both have strictly positive off-diagonal rates.
+      To construct the clocks, put $M=K+1$, $t_j=1/2+j/M$ and</p>
+    $$b_j=2^{-M}\binom Mj,\qquad w_j^\pm=b_j\{1\pm\epsilon(-1)^j\},\quad
+      0&lt;\epsilon&lt;1,\qquad \tau_\pm\mid j\sim\operatorname{Exp}(1/t_j).$$
+    <p>The finite-difference identity $\sum_{j=0}^M(-1)^j\binom Mj t_j^\ell=0$ for $0\le\ell&lt;M$ proves equality of masses and the first $K$ interval moments, since $\mathbb E\tau_\pm^\ell=\ell!\sum_jw_j^\pm t_j^\ell$.
+      Both means are one, and all component rates lie in $[2/3,2]$.
+      With $F_\pm=F_0\pm\epsilon D$, where $F_0(z)=\sum_jb_j/(1+t_jz)$, direct partial fractions give</p>
+    $$D(z)=\sum_j\frac{(-1)^jb_j}{1+t_jz}
+      =\frac{M!(z/M)^M}{2^M\prod_{j=0}^M(1+t_jz)}&gt;0\quad(z&gt;0).$$
+    <p>For $x&gt;0$ let $r_\epsilon(x)$ be the unique positive solution of $F_-(r_\epsilon(x))=F_+(x)$.
+      Each transform decreases continuously from one to zero, so the root exists, and $r_\epsilon(x)&lt;x$.
+      At $\epsilon=0$, implicit differentiation yields</p>
+    $$\frac{\partial_\epsilon r_\epsilon(x)|_{\epsilon=0}}x
+      =\frac{2D(x)}{xF_0'(x)}
+      =-\frac{2M!}{2^MM^M}x^{M-1}+O(x^M).$$
+    <p>For sufficiently small $x&gt;0$ this relative derivative differs at $x$ and $2x$, because $M\ge2$.
+      Let $P_1=hh^\top/2$ for $h=(1,0,-1)^\top$ and $P_2=gg^\top/6$ for $g=(1,-2,1)^\top$, and take $Q=-xP_1-2xP_2$.
+      The off-diagonal rates are $2x/3,2x/3,x/6$, hence strictly positive.</p>
+    <p>For sufficiently small positive $\epsilon$, $Q'=-r_\epsilon(x)P_1-r_\epsilon(2x)P_2$ still has strictly positive rates, but is not proportional to $Q$ by the unequal relative derivatives.
+      Its sampled kernel under the minus clock equals that of $Q$ under the plus clock on both nonstationary modes and the stationary mode, proving the claim.
+      The same feature has strengths $4/(3x)$ and $4/\{3r_\epsilon(x)\}$, which differ.</p>
+    <p>The two clock laws have total variation distance at most $\epsilon$, by the corresponding mixture-weight bound.
+      Thus the finite-moment ambiguity also exists with arbitrarily close clocks.
+      The pairs depend on $K$: this does not assert nonidentification after the entire moment sequence is supplied.</p>
+    <p>This is failure of global identification over the clock class, not ambiguity for every particular moment vector.
+      For example, within exponential mixtures, $\mathbb E\tau=1$ and $\mathbb E\tau^2=2$ force the unit-exponential law: the component mean has mean one and variance zero.</p>
+    <p>For an explicit mean-and-variance example, take $K=2$, $\epsilon=1/2$, $x=1$ and modes $(1,2)$.
+      Use scales $(1/2,5/6,7/6,3/2)$ with weights $(3,3,9,1)/16$ and $(1,9,3,3)/16$, respectively; both clocks have $\mathbb E\tau=1$ and $\mathbb E\tau^2=13/6$.
+      Exact rational sign tests enclose the alternative decay rates as</p>
+    $$r_{1/2}(1)\in[0.992415305905,0.992415305907],\qquad
+      r_{1/2}(2)\in[1.972100882987,1.972100882989].$$
+    <p>The enclosures prove $r_{1/2}(2)&lt;2r_{1/2}(1)&lt;3r_{1/2}(1)$, certifying nonproportional generators and positive endpoint rates without trusting floating-point root finding.
+      Kernel equality is exact for the uniquely defined roots, not an approximate alias caused by rounded rates.</p>
+
     <h2>Classical construction and scope</h2>
     <p>The transformed generator is a classical subordinated generator:
       $\widetilde Q_a=(1-a^2)Q+a^2\int_0^\infty e^{-s}(e^{sQ}-I)ds$.
@@ -158,7 +194,7 @@
       Here even a known mean does not replace the full iid interval law: the example changes spectral shape and the graph, rather than merely rescaling all speeds.
       Retained timestamps, elapsed-time stopping, a specified parametric clock family, noisy labels and state-dependent clocks require separate analyses.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_mean_clock.py">certificate</a> proves the displayed benchmark identities with rational arithmetic, checks 126 kernel pairs including a defective chain and absorption, and compares three independent semigroup-integral pairs.
-      It also checks the subordinated semigroup with an explicit omitted-Poisson-mass bound.
+      It also checks the subordinated semigroup with an explicit omitted-Poisson-mass bound, finite-moment identities and the rational root enclosures above.
       These are exact population identities and focused numerical checks, not finite-sample confidence guarantees.</p>
   </main>
 
