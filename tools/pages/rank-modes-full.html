@@ -1,0 +1,61 @@
+<!-- title: A two-mode limit to final-gap calibration · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_rank_modes.py">certificate</a></span></p>
+    <h1>A two-mode limit to final-gap calibration</h1>
+    <p class="subtitle">One emission-blind final gap cannot restore exact marginal rank coverage for two decay modes, even if the gap is randomized independently.</p>
+    <p>Observe a stationary finite-state chain with row generator $Q$ at times $0,d,d+G$.
+      The first two scores calibrate the threshold $\max(S_0,S_d)$ and the third is the test score, whose iid rank-coverage value is $2/3$.
+      The gap $G\ge0$ is drawn independently of the chain and all score noise, using the same law in both emission experiments below.</p>
+
+    <h2>An exact rank identity, not a mixing expansion</h2>
+    <p>For a centered state signal $h$, $\pi h=0$, let the conditionally independent score emissions have densities</p>
+    $$f_i(s)=1+\varepsilon h_i(2s-1),\qquad 0\le s\le1,\qquad |\varepsilon h_i|<1.$$
+    <p>All stationary score marginals are uniform and continuous.
+      Write $r_h(t)=\langle h,e^{tQ}h\rangle_\pi$ and let $C_h(d,G)$ average the rank event over the calibration panel, test score, chain and gap randomization.</p>
+    $$\boxed{C_h(d,G)-\frac23=\frac{\varepsilon^2}{60}
+      \{\mathbb E r_h(G)+\mathbb E r_h(d+G)-2r_h(d)\}.}$$
+    <p>To prove this, condition on the three state signals and abbreviate their density coefficients by $a,b,c$.
+      Direct integration of $f_{\rm test}(s)\{1-F_0(s)F_d(s)\}$ gives</p>
+    $$\frac23+\frac{a+b}{12}-\frac c6-\frac{ab}{30}+\frac{ac+bc}{60}.$$
+    <p>The cubic coefficient vanishes, and stationarity kills the linear terms.
+      The three pair expectations give the boxed identity, without reversibility or a large-gap approximation.</p>
+
+    <h2>Two incompatible Laplace moments on one reversible chain</h2>
+    $$Q=\frac16\begin{pmatrix}-5&1&4\\1&-5&4\\4&4&-8\end{pmatrix},\qquad
+      \pi=\tfrac13(1,1,1),\qquad d=\log2,\qquad\varepsilon=\tfrac14.$$
+    <p>Compare $h_1=(1,-1,0)$ and $h_2=(1,1,-2)$, separately, with all other design choices unchanged.
+      Their decay rates are $1,2$, the minimum off-diagonal rate is $1/6$, and both score-density families are at least $1/2$ on $[0,1]$.</p>
+    <p>Set $y=\mathbb E e^{-G}$ and $z=\mathbb E e^{-2G}$.
+      Since $r_{h_1}(t)=\tfrac23e^{-t}$ and $r_{h_2}(t)=2e^{-2t}$, the exact coverage biases are</p>
+    $$C_{h_1}-\frac23=\frac{y-2/3}{960},\qquad
+      C_{h_2}-\frac23=\frac{z-2/5}{384}.$$
+    <p>Simultaneous exact coverage would require $y=2/3$, $z=2/5$.
+      But Jensen gives $z\ge y^2$, whereas $2/5&lt;4/9$.
+      Thus no independently randomized final-gap law works for both emission laws, even with $Q$ known.</p>
+
+    <h2>A sharp minimax absolute error</h2>
+    <p>The full optimization over such gap laws has an explicit solution:</p>
+    $$\inf_{\mathcal L(G)}\max_{j=1,2}\left|C_{h_j}(d,G)-\frac23\right|
+      =E_*:=\frac{13-\sqrt{159}}{14400}
+      =2.711665188066\times10^{-5}.$$
+    $$y_*:=\frac{\sqrt{159}-3}{15},\qquad
+      G_*=-\log y_*=0.445295905181.$$
+    <p>Indeed $(2/3-y_*)/960=(y_*^2-2/5)/384=E_*$.
+      If $y\le y_*$, the first absolute error is at least $E_*$; if $y\ge y_*$, then $z\ge y^2\ge y_*^2$ makes the second error at least $E_*$.
+      The deterministic gap $G_*$ attains equality, so independent randomization cannot improve this two-experiment minimax value.</p>
+
+    <h2>Scope and certificate</h2>
+    <p>This is an exact finite-sample statement about one fixed rank threshold and a precommitted, emission-blind final-gap law with a fixed calibration gap.
+      It does not rule out emission-specific gaps, score-dependent or state-adaptive designs, changing the threshold, or increasing the calibration spacing.
+      The loss is absolute deviation from exact nominal coverage, not a lower bound on undercoverage or an impossibility of conservative one-sided validity.</p>
+    <p>Coverage here is stationary marginal coverage, not coverage conditional on the realized calibration scores or the current regime.
+      The calculation concerns terminal emissions, not overlapping path-score windows.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_rank_modes.py">certificate</a>
+      checks the exact conditional polynomial and 54 state-path kernels, then compares 60 independent matrix-exponential/resolvent and score-quadrature calculations.
+      It also checks 36 general nonreversible cases and 2,000 randomized-gap laws and independently optimizes the deterministic minimax gap; the universal lower bound follows from the proof, not the mesh.</p>
+    <p>For general concentration and decoupling bounds under dependence, see
+      <a href="./bibliography.html#OliveiraOrensteinRamosRomano2024">Oliveira, Orenstein, Ramos and Romano (2024)</a>.
+      The signed rank polynomial and elementary Laplace-moment obstruction here are a separate model-specific calculation, not attributed to that general theory.</p>
+  </main>
