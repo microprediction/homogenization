@@ -1,6 +1,7 @@
 """Sharp two-moment modal sets and reversible Green--Kubo matrix budgets."""
 import numpy as np
 import sympy as sp
+from scipy.linalg import null_space
 from scipy.optimize import brentq
 
 
@@ -109,5 +110,56 @@ for n in range(2, 8):
                     modal_checks += 1
                 cases += 1
 print(f"Reversible operator/feature-Gram cases: {cases}; modal bounds checked: {modal_checks}; max scaled PSD violation={max_violation:.3e}")
+# Directed and defective generators: positive-resolvent error, without eigenvectors of Q.
+directed = []
+for n in range(2, 8):
+    q = rng.uniform(.05, 1, (n, n))
+    np.fill_diagonal(q, 0)
+    q -= np.diag(q.sum(axis=1))
+    directed.extend([q/max(-np.diag(q)), np.roll(np.eye(n), 1, axis=1)-np.eye(n)])
+directed.append(np.array([[-1., 1, 0], [0, -1, 1], [4, 0, -4]]))
+clocks = [([.5, 1.5], [.5, .5]), ([.1, .7, 2, 5], [.2, .1, .3, .4]), ([.7], [1.])]
+representation_error = directed_violation = 0.
+for q in directed:
+    n, identity = len(q), np.eye(len(q))
+    pi = np.linalg.lstsq(np.vstack([q.T, np.ones(n)]), np.r_[np.zeros(n), 1.], rcond=None)[0]
+    root = np.sqrt(pi)
+    p, center = np.outer(root, root), identity-np.outer(root, root)
+    for speed in (.2, 1., 5.):
+        a = -speed*root[:, None]*q/root[None, :]
+        h = np.linalg.inv(a+p)-p
+        for scales, weights in clocks:
+            t, w = np.array(scales), np.array(weights)
+            mean, second = w @ t, w @ (t*t)
+            budget = second/mean-mean
+            r = sum(ww*np.linalg.inv(identity+tt*a) for tt, ww in zip(t, w))
+            delta = mean*r @ (np.linalg.inv(identity-r+p)-p)-h
+            basis = null_space(np.sqrt(w)[None, :])
+            b = basis.T @ np.diag(1/t) @ np.sqrt(w)
+            c = basis.T @ np.diag(1/t) @ basis
+            poles, vectors = np.linalg.eigh(c)
+            residues = mean*(vectors.T @ b)**2/poles
+            represented = sum((z*np.linalg.solve(a+x*identity, center) for z, x in zip(residues, poles)), np.zeros_like(a))
+            scale = max(1, norm(h), budget)
+            representation_error = max(representation_error, norm(delta-represented)/scale,
+                                       abs(np.sum(residues/poles)-budget)/scale)
+            symmetric = (delta+delta.T)/2
+            violation = max(-np.linalg.eigvalsh(symmetric).min(),
+                            -np.linalg.eigvalsh(budget*center-symmetric).min(),
+                            np.linalg.norm(delta, 2)-budget)/scale
+            directed_violation = max(directed_violation, violation)
+assert max(representation_error, directed_violation) <= 2e-9
+print(f"Directed/defective resolvent checks: 117; max scaled representation error={representation_error:.3e}; bound violation={directed_violation:.3e}")
+q = sp.Matrix([[-1, 1, 0], [0, -1, 1], [1, 0, -1]])
+i, p = sp.eye(3), sp.ones(3)/3
+r = ((i-q/2).inv()+(i-3*q/2).inv())/2
+h, k = (-q+p).inv()-p, r*((i-r+p).inv()-p)
+d = k-h
+assert (d+d.T)/2 == sp.Rational(17, 158)*(i-p)
+assert (d-d.T)/2 == sp.Rational(3, 158)*(q-q.T) and d.T*d == (i-p)/79
+f = sp.Matrix([1, 0, -1])
+assert ((f.T*(h+h.T)*f)[0]/3, (f.T*(k+k.T)*f)[0]/3) == (sp.Rational(2, 3), sp.Rational(64, 79))
+print("Exact directed three-cycle: T=(1/2,3/2) equally; mu=1, v=1/4; Sym(delta)=(17/158)*(I-P); norm(delta)=1/sqrt(79)")
+print("Skew(delta)=(3/158)*(Q-Q.T) is nonzero; feature h=(1,0,-1): true GK=2/3, surrogate GK=64/79")
 print("Moment-model consistency: E[tau^2]>=2*E[tau]^2; equality forces a single exponential clock")
 print("PASS")

@@ -3196,5 +3196,16 @@
   "doi": "10.1287/moor.2.2.135",
   "url": "https://pubsonline.informs.org/doi/10.1287/moor.2.2.135",
   "annotation": "Studies sharp transform bounds from partial distribution information, including moments. The clock-bounds note derives its rational inequalities for positive exponential mixtures directly by Jensen and Cauchy-Schwarz, then propagates them to modal rates and reversible Green-Kubo matrix budgets; those particular formulas are not attributed to this paper."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Hirsch1972",
+  "authors": "Hirsch, F.",
+  "year": 1972,
+  "title": "Intégrales de résolvantes et calcul symbolique",
+  "venue": "Annales de l'Institut Fourier 22(4):239-264",
+  "doi": "10.5802/aif.439",
+  "url": "https://www.numdam.org/article/AIF_1972__22_4_239_0.pdf",
+  "annotation": "Develops Stieltjes-transform and positive-resolvent functional calculus, including stability under limits. The clock-bounds note derives its finite-mixture Schur-complement error representation directly and uses accretive resolvents to obtain a nonreversible Green-Kubo budget; no priority claim for the functional calculus is made."
  }
 ]
