@@ -105,20 +105,33 @@
 
     <h2>The experiment and result</h2>
     <p>Let $Q$ be any finite time-homogeneous row generator on a complete known labeled $n$-state space, and start from a full-support law independent of the clock.
-      Draw $T\sim\operatorname{Erlang}(r,\lambda)$ independently of the whole chain, with known integer shape $r\ge1$ and rate $\lambda&gt;0$ that may be unknown.
+      Draw $T\sim\operatorname{Erlang}(r,\lambda)$ independently of the whole chain, with unknown integer shape $1\le r\le R$ for a known integer bound $R\ge1$, and unknown rate $\lambda&gt;0$.
       Equivalently, $T$ is the total of $r$ independent rate-$\lambda$ exponential stages.</p>
     <p>Fix any known bin width $h&gt;0$ and retain only $(Y_0,Y_T,J)$, where</p>
-    $$J=\min\{\lfloor T/h\rfloor,2r\}.$$
-    <p>The $2r$ finite bins and one overflow category identify both $Q$ and $\lambda$ from the record's population law.
+    $$J=\min\{\lfloor T/h\rfloor,2R\}.$$
+    <p>The $2R$ finite bins and one overflow category identify $(r,\lambda,Q)$ from the record's population law.
       This holds for reducible, absorbing and defective generators, without a rate cap, reversibility or simple spectrum.
-      It is not recovery from a single observed record or a claim that $2r+1$ categories are minimal.</p>
+      It is not recovery from a single observed record or a claim that $2R+1$ categories are minimal.</p>
     <p>For $k=0,\ldots,2r-1$, the observed matrices are joint subprobabilities, not transitions normalized within a bin:</p>
     $$H_k(i,j)=\Pr(Y_T=j,J=k\mid Y_0=i)
       =\frac{\lambda^r}{(r-1)!}\int_{kh}^{(k+1)h}t^{r-1}e^{t(Q-\lambda I)}\,dt.$$
-    <p>Every row sum of $H_0$ is
-      $p_0=1-e^{-\lambda h}\sum_{j=0}^{r-1}(\lambda h)^j/j!$.
-      This increases strictly from zero to one as $\lambda$ increases, so $p_0$ determines the unknown rate.
-      Full support of the starting law exposes every labeled row of the $H_k$.</p>
+    <p>Full support of the starting law exposes every labeled row of the $H_k$.
+      First identify the clock from $p=\Pr(J=0)=F_{r,\lambda}(h)$ and $q=\Pr(J\le1)=F_{r,\lambda}(2h)$, then use its first $2r$ bin matrices below.
+      For known shape, one can take $R=r$ and $p$ alone fixes the rate.</p>
+
+    <h2>Two cutpoints identify Gamma shape and rate</h2>
+    <p>More generally, for any real shape $\alpha&gt;0$ and rate $\lambda&gt;0$, the Gamma CDF values at any two fixed cutpoints $0&lt;u&lt;v$ uniquely determine $(\alpha,\lambda)$.
+      For two candidate densities their log ratio is</p>
+    $$\log\frac{f_{\alpha,\lambda}(t)}{f_{\beta,\eta}(t)}
+      =c+(\alpha-\beta)\log t-(\lambda-\eta)t.$$
+    <p>Unless the parameters coincide, its derivative has at most one zero, so the density difference has at most two distinct positive zeros.
+      Equal CDFs at $u,v$ would make the density difference integrate to zero on each of $(0,u),(u,v),(v,\infty)$.
+      A nonzero analytic difference must change sign inside each such interval, forcing three distinct zeros, a contradiction.</p>
+    <p>For integer candidates $s=1,\ldots,R$, solve $F_{s,\lambda_s}(h)=p$, which is strictly increasing in $\lambda_s$ from zero to one.
+      Exactly one candidate also satisfies $F_{s,\lambda_s}(2h)=q$ at an exact Erlang model law.
+      Gamma quantile-ratio geometry is classical background: see <a href="./bibliography.html#SaundersMoran1978">Saunders and Moran (1978)</a>; the crossing proof above is self-contained.</p>
+    <p>The real-shape lemma calibrates only the clock; the finite matrix reconstruction here uses an integer shape.
+      The known upper bound fixes the category count in advance, and no uniform shape-separation or finite-sample selection guarantee is asserted.</p>
 
     <h2>Explicit inversion from the finite bins</h2>
     <p>Set $d=r-1$, $A=Q-\lambda I$ and $B=e^{hA}$.
@@ -154,7 +167,7 @@
     <p>Take shape $r=7$, rate $\lambda=1$, bin width $h=1$, $P=\mathbf1\mathbf1^\top/3$, $E=I-P$ and</p>
     $$J_0=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
       \theta=\pi/7,\quad a=10\cos\theta-1,\quad b=10\sin\theta,\quad Q_\pm=-aE\pm bJ_0.$$
-    <p>Both generators are strictly positive; their minimum off-diagonal rate is $0.164867290576$.
+    <p>Both generators have strictly positive off-diagonal rates, with minimum $0.164867290576$.
       Because $J_0^2=-E$ and $PJ_0=J_0P=0$, their resolvents and discarded-time kernels satisfy</p>
     $$(I-Q_\pm)^{-1}=P+\tfrac1{10}\{\cos\theta E\pm\sin\theta J_0\},\qquad
       R_\pm=(I-Q_\pm)^{-7}=P-10^{-7}E.$$
@@ -180,10 +193,10 @@
       For example, with $h=1$ and two stages, let the intervals be iid uniform on $[1/8,1/6]$; double every interval and replace $Q$ by $Q/2$.
       All sampled label laws are unchanged, and the two totals lie in $[1/4,1/3]$ and $[1/2,2/3]$, both entirely in bin zero.</p>
     <p>These are continuous-clock counterexamples to identification under an unrestricted unknown interval family, not counterexamples within the stipulated Erlang family.
-      State-dependent sampling, unknown shape, mislabeled states and elapsed-time stopping are outside the result.
+      State-dependent sampling, unbounded unknown shape, mislabeled states and elapsed-time stopping are outside this finite-category result.
       The theorem changes neither fixed-feature Green&ndash;Kubo rank nor rank after integrating maturity-dependent loadings.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_binned_erlang.py">certificate</a>
-      checks exact finite-difference identities, directed/defective/absorbing recoveries, independent bin integrals, the shape-seven alias and its finite-bin recovery.
+      checks exact finite-difference identities, unknown bounded-shape/rate calibration, directed/defective/absorbing recoveries, independent bin integrals and the shape-seven alias.
       Tolerances are portable and its last line is literal PASS; the high-precision floating calculations are not outward-rounded interval certificates.</p>
   </main>
 

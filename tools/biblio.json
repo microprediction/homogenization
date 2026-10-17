@@ -3196,5 +3196,16 @@
   "doi": "10.1137/110836584",
   "url": "https://dimabatenkov.info/pdf/batenkov2011accuracy.pdf",
   "annotation": "Section 2 reviews classical finite-difference annihilation, recurrences and confluent Hankel reconstruction, and separates exact solvability from stability. Background for the matrix-valued Erlang duration-bin inversion; its conditioning results are not imported as a statistical error bound."
+ },
+ {
+  "role": "survey_lumping",
+  "key": "SaundersMoran1978",
+  "authors": "Saunders, I. W. and Moran, P. A. P.",
+  "year": 1978,
+  "title": "On the quantiles of the gamma and F distributions",
+  "venue": "Journal of Applied Probability 15(2):426-432",
+  "doi": "10.2307/3213414",
+  "url": "https://doi.org/10.2307/3213414",
+  "annotation": "Classical Gamma quantile-ratio background: the publisher abstract states monotonicity of the ratio of upper to lower Gamma quantiles with shape. The duration-bin note supplies its own elementary density-crossing proof of two-cutpoint identification; no full-paper proof or numerical bound is imported."
  }
 ]
