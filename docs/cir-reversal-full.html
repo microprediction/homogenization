@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>An exact CIR cycle-reversal profile · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; integrated-variance cumulants</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_reversal.py">certificate</a></span></p>
+    <h1>An exact CIR cycle-reversal profile</h1>
+    <p class="subtitle">With common mean reversion, a stationary cycle-direction effect has the same maturity profile at every switching speed.</p>
+    <p>Let $Q$ be a finite irreducible row generator with stationary law $\pi$, and $Q^\dagger=D_\pi^{-1}Q^\top D_\pi$ its stationary reversal, where $D_\pi=\operatorname{diag}\pi$.
+      Compare regime generators $mQ$ and $mQ^\dagger$ in</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)dt+\sqrt{a_{Y_t}v_t}\,dB_t,\qquad V_T=\int_0^T v_tdt.$$
+    <p>Here $\kappa>0$ is common, $\theta_i,a_i>0$, $2\kappa\theta_i\ge a_i$, and $B$ is independent of the autonomous regime chain.
+      Each model starts in its own joint invariant law for $(v,Y)$, separately at every speed.
+      This is neither a common deterministic $v_0$ nor reversal of the entire joint diffusion.</p>
+    <p>Write $\mu=\pi\theta$, $f=\theta-\mu\mathbf1$, $g=a-(\pi a)\mathbf1$ and $\langle u,w\rangle_\pi=\sum_i\pi_i u_iw_i$.
+      Define</p>
+    $$R_\kappa(m)=(\kappa I-mQ)^{-1},\qquad
+      A_\kappa(m)=\tfrac12\{\langle f,R_\kappa(m)g\rangle_\pi-\langle g,R_\kappa(m)f\rangle_\pi\},$$
+    $$L_\kappa(T)=2\int_0^T(T-t)e^{-\kappa t}dt
+      =\frac{2(\kappa T-1+e^{-\kappa T})}{\kappa^2}.$$
+
+    <h2>Exact factorization at all maturities</h2>
+    <p>Let $\Delta$ denote forward minus reversed-regime values, always with the corresponding invariant initialization.
+      Then, for every $m>0$ and $T\ge0$,</p>
+    $$\boxed{\Delta\operatorname{Var}(v)=A_\kappa(m),\qquad
+      \Delta\operatorname{Var}(V_T)=L_\kappa(T)A_\kappa(m).}$$
+    $$\Delta\!\left\{\lim_{T\to\infty}\frac{\operatorname{Var}(V_T)}T\right\}
+      =\frac{2}{\kappa}A_\kappa(m).$$
+    <p>Since $L_\kappa(T)>0$ for $T>0$, the sign of this reversal gap cannot change with maturity at fixed speed.
+      Constant $a$, or more generally $a=b_0\mathbf1+bf$, makes the gap zero at every speed and maturity.
+      A zero gap does not by itself establish reversibility or determine the complete variance-process law.</p>
+    <p>For independent-price Brownian returns $M_T=\sqrt{V_T}Z$, with independent standard normal $Z$, the fourth-cumulant gap is exactly $3L_\kappa(T)A_\kappa(m)$.
+      This is not a fourth-cumulant formula for drifted log returns or leveraged price noise.</p>
+
+    <h2>Proof: the covariance gap comes from the one-time variance</h2>
+    <p>The stationary first-moment row is $r=\kappa\pi D_\theta R_\kappa(m)$, where $D_\theta=\operatorname{diag}\theta$, and $\mathbb Ev=\mu$.
+      The second-moment identity gives</p>
+    $$\operatorname{Var}(v)=\frac{(\pi a)\mu}{2\kappa}
+      +\kappa\langle f,R_\kappa(m)f\rangle_\pi+\tfrac12\langle f,R_\kappa(m)g\rangle_\pi.$$
+    <p>Under regime reversal, the resolvent becomes its weighted adjoint.
+      The first two terms are unchanged and the last cross pairing is transposed, proving the one-time gap.</p>
+    <p>For $C_v(t)=\operatorname{Cov}(v_0,v_t)$, conditional expectation of the CIR equation, followed by stationary covariance with $v_0$, yields</p>
+    $$C_v(t)=e^{-\kappa t}\operatorname{Var}(v)
+      +\kappa^2\int_0^t e^{-\kappa(t-u)}
+      \langle f,R_\kappa(m)e^{muQ}f\rangle_\pi du.$$
+    <p>The integral is unchanged under regime reversal: the resolvent and semigroup commute, and taking the weighted adjoint transposes their scalar quadratic pairing.
+      Thus $\Delta C_v(t)=e^{-\kappa t}A_\kappa(m)$.
+      Integrating $2\int_0^T(T-t)C_v(t)dt$ proves the finite-maturity identity, and covariance integrability gives the long-run identity.</p>
+
+    <h2>The Green&ndash;Kubo limit, with its precise uniform scope</h2>
+    <p>Assume $\|e^{tQ}-\mathbf1\pi\|_\infty\le Ce^{-\gamma t}$ with a justified $C,\gamma>0$, and put $H=-Q^\#$.</p>
+    $$K^{\rm anti}_{fa}=\tfrac12\{\langle f,Hg\rangle_\pi-\langle g,Hf\rangle_\pi\},$$
+    $$\sup_{T>0}\left|\frac{\Delta\operatorname{Var}(V_T)}{L_\kappa(T)}
+      -\frac{K^{\rm anti}_{fa}}m\right|
+      \le\frac{\kappa C\|f\|_\infty\|g\|_\infty}{m^2\gamma^2}.$$
+    <p>Indeed the resolvent integral differs from $H/m$ by the factor $e^{-\kappa t}-1$, whose magnitude is at most $\kappa t$.
+      Apply the semigroup bound to both centered cross pairings.
+      This is uniform for the normalized profile, not an absolute maturity-uniform error after truncating a growing variance slope.</p>
+
+    <h2>A strict-Feller three-state witness</h2>
+    <p>Take the unit directed three-cycle, $\kappa=1$, $\theta=(0.03,0.04,0.05)$ and $a=(0.02,0.04,0.01)$.
+      The minimum Feller margin is $1/25$, and exact symbolic calculation gives</p>
+    $$A_1(m)=-\frac{m}{12000(1+3m+3m^2)},\qquad K^{\rm anti}_{fa}=-\frac1{36000}.$$
+    <p>For every positive speed and maturity the forward integrated-variance variance is strictly smaller.
+      At $m=T=1$ the gap is $-8.7590343\times10^{-6}$, and the independent-return fourth-cumulant gap is $-2.6277103\times10^{-5}$.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_reversal.py">certificate</a>
+      independently evolves centered degree-two joint moments in 840 profile checks, with 168 affine Poisson comparisons, 168 finite-rate bounds and 168 affine-loading blindness controls on random, cyclic and defective chains.
+      It proves the three-state amplitude in symbolic rational arithmetic and independently checks the displayed finite-maturity witness.</p>
+    <p>The polynomial moment framework is classical; see <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+      The result is an exact stationary second-cumulant specialization, not a new moment method, a finite-speed monotonicity theorem, or a statement with switching mean reversion.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
