@@ -1,8 +1,10 @@
 """Exact rank coverage from exponential-age calibration under one CDF contrast."""
+from math import comb
+
 import numpy as np
 import sympy as sp
 from scipy.integrate import quad_vec
-from scipy.stats import norm
+from scipy.stats import binom, norm
 
 
 def stationary(q):
@@ -118,4 +120,58 @@ for q in models:
         first, second = resolvents(q, beta, 2)
         assert 2 * first == second + first * second
 print('Exact two-gap resolvent cancellation checks: 6; schedules are averaged, not conditioned on')
+
+# Non-Markov deterministic holding lengths with a uniform stationary phase.
+def piece(left, right, exponent, degree):
+    # Integral of w**exponent * (1-w)**degree; exponent may be -1.
+    return sum((-1) ** j * sp.binomial(degree, j) * (
+        sp.log(right / left) if exponent + j == -1 else
+        (right ** (exponent + j + 1) - left ** (exponent + j + 1)) / (exponent + j + 1)
+    ) for j in range(degree + 1))
+
+
+periodic_exact, periodic_numeric, phase_error, rank_error = 0, 0, 0., 0.
+for a, b in ((sp.Rational(1, 2), sp.Rational(1, 2)),
+             (sp.Rational(1, 3), sp.Rational(1, 2)), (sp.Rational(1, 5), sp.Rational(1, 4))):
+    lo, hi, length = b * (1 - a) / (1 - a * b), (1 - a) / (1 - a * b), -sp.log(a * b)
+    for count in (1, 2, 5, 9):
+        weights, masses = [], [sp.Integer(0)] * (count + 1)
+        for high in range(count + 1):
+            joint = [comb(count, high) * piece(lo, hi, high - 1, count - high) / length,
+                     comb(count, high) * piece(1 - hi, 1 - lo, count - high - 1, high) / length]
+            weights.append([float(value) for value in joint])
+            for rank in range(count + 1):
+                if rank <= count - high:
+                    masses[rank] += joint[0] / (count - high + 1)
+                if rank >= count - high:
+                    masses[rank] += joint[1] / (high + 1)
+        for mass in masses:
+            assert sp.simplify(sp.expand_log(mass - sp.Rational(1, count + 1), force=True)) == 0
+            periodic_exact += 1
+        weights = np.array(weights)
+        upper, lower = -np.log(float(a)), -np.log(float(b))
+        for state, duration in ((1, upper), (0, lower)):
+            def phase_integrand(t):
+                value = 1 - (1 - float(lo)) * np.exp(-t) if state else float(hi) * np.exp(-t)
+                return binom.pmf(np.arange(count + 1), count, value) / (upper + lower)
+            direct = quad_vec(phase_integrand, 0, duration, epsabs=1e-11)[0]
+            phase_error = max(phase_error, max(abs(direct - weights[:, state])))
+        if count == 1:
+            continue
+        def score_integrand(t):
+            cdf = norm.cdf((t - np.array([.8, -.6])) / np.array([.35, 1.1]))
+            density = norm.pdf((t - np.array([.8, -.6])) / np.array([.35, 1.1])) / np.array([.35, 1.1])
+            result = np.zeros(count + 1)
+            for high in range(count + 1):
+                low_counts = binom.pmf(np.arange(count - high + 1), count - high, cdf[0])
+                high_counts = binom.pmf(np.arange(high + 1), high, cdf[1])
+                result += np.convolve(low_counts, high_counts) * (weights[high] @ density)
+            return result
+        direct = quad_vec(score_integrand, -np.inf, np.inf, epsabs=1e-10, epsrel=1e-10)[0]
+        rank_error = max(rank_error, max(abs(direct - 1 / (count + 1))))
+        periodic_numeric += count + 1
+assert phase_error <= 2e-9 and rank_error <= 2e-9
+print(f"Nonmixing periodic binary regimes: {periodic_exact} exact separated-uniform ranks; {periodic_numeric} Gaussian ranks; N through 9")
+print(f"Independent phase-weight error={phase_error:.3e}; Gaussian rank-mass error={rank_error:.3e}; portable tolerance=2e-9")
+print("Periodic witness: deterministic holding lengths A,B; covariance at every integer period is p*(1-p), not tending to zero")
 print("PASS")
