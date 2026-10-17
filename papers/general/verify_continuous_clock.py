@@ -1,7 +1,7 @@
 """Continuous exponential-mixture clocks: infinite mean, kernel and inverse checks."""
 import numpy as np
 from scipy.integrate import quad_vec
-from scipy.linalg import expm, logm
+from scipy.linalg import expm, logm, null_space
 
 
 def norm(a):
@@ -36,14 +36,13 @@ def inverse(value):
 
 
 def projection(q):
-    n = len(q)
-    pi = np.linalg.lstsq(np.vstack([q.T, np.ones(n)]), np.r_[np.zeros(n), 1.], rcond=None)[0]
-    return np.ones((n, 1)) @ pi[None, :]
+    right, left = null_space(q, rcond=1e-9), null_space(q.T, rcond=1e-9)
+    return right @ np.linalg.solve(left.T @ right, left.T)
 
 
 def kernel(q):
     pi = projection(q)
-    b = -q + pi  # Zero mode shifted to one; only the centered part sees the logarithm.
+    b = -q + pi  # All zero modes shifted to one; only the complement sees the logarithm.
     return np.eye(len(q)) - b @ logm(np.eye(len(q)) + np.linalg.inv(b)) + np.log(2) * pi
 
 
@@ -102,6 +101,45 @@ for speed in (.1, 1., 5.):
     jordan_error = max(jordan_error, norm(recovered - speed * q) / max(1, norm(speed * q)))
 assert jordan_error <= 2e-8
 print(f"Defective Jordan inversions: 3; maximum scaled error={jordan_error:.3e}")
+
+# Reducible cases: defective absorption, two absorbing classes, two closed classes
+# fed by a transient state, and the all-absorbing zero generator.
+fixtures = [np.array([[-1., 1, 0], [0, -1, 1], [0, 0, 0]]),
+            np.array([[-3., 1, 2], [0, 0, 0], [0, 0, 0]]),
+            np.array([[-5., 1, 1, 2, 1], [0, -1, 1, 0, 0],
+                      [0, 2, -2, 0, 0], [0, 0, 0, -4, 4], [0, 0, 0, 3, -3]]),
+            np.zeros((3, 3))]
+reducible_error = projector_error = reducible_rate_error = 0.
+for index, base in enumerate(fixtures):
+    for speed in (.1, 1., 5.):
+        q, n = speed * base, len(base)
+        r, p = kernel(q), projection(q)
+        observed = projection(r - np.eye(n))
+        center, b = np.eye(n) - p, -q + p
+        direct = p + quad_vec(lambda rate: rate * np.linalg.solve(rate * np.eye(n) + b, center),
+                              0, 1, epsabs=1e-11, epsrel=1e-11)[0]
+        reducible_rate_error = max(reducible_rate_error, norm(r - direct))
+        projector_error = max(projector_error, norm(observed - p), norm(p @ p - p),
+                              norm(np.linalg.matrix_power(r, 2048) - p),
+                              norm(q @ p) / max(1, norm(q)), norm(p @ q) / max(1, norm(q)))
+        if index == 0:  # A transient Jordan block, recovered without diagonalization.
+            f = (np.trace(r) - 1) / 2
+            root = inverse(f).real
+            recovered = -root * (np.eye(n) - observed) - (r - observed - f * (np.eye(n) - observed)) / derivative(root)
+        else:
+            values, vectors = np.linalg.eig(r)
+            roots = [0 if abs(value - 1) < 1e-8 else inverse(value) for value in values]
+            recovered = -(vectors @ np.diag(roots) @ np.linalg.inv(vectors))
+        reducible_error = max(reducible_error, norm(recovered - q) / max(1, norm(q)))
+        assert min(r.real.ravel()) >= -2e-10 and norm(r @ np.ones(n) - 1) <= 2e-9
+assert max(reducible_error, projector_error, reducible_rate_error) <= 2e-8
+print(f"Reducible kernels/inverses: 12; max scaled inverse error={reducible_error:.3e}; projector error={projector_error:.3e}; rate-integral error={reducible_rate_error:.3e}")
+assert norm(projection(fixtures[1]) - np.array([[0., 1/3, 2/3], [0, 1, 0], [0, 0, 1]])) <= 2e-9
+q_unvisited = np.array([[0., 0, 0], [0, -1, 1], [0, 2, -2]])
+first, second = kernel(q_unvisited), kernel(2 * q_unvisited)
+assert norm(first[0] - np.array([1., 0, 0])) <= 2e-9
+assert norm(second[0] - first[0]) <= 2e-9 and norm(second - first) > .01
+print(f"One-path nonidentification: start in absorbing state 0, both label paths constant; full-kernel gap={norm(second-first):.12f}")
 gap = np.log(2.5) - 2 * np.arctan(1 / 3)
 assert abs(norm(kernel(cycle) - kernel(cycle.T)) - gap) <= 2e-9
 print(f"Four-cycle direction gap: log(5/2)-2*atan(1/3)={gap:.12f}")

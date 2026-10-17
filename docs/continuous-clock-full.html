@@ -101,8 +101,8 @@
       <span><a href="./papers.html">papers</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_continuous_clock.py">certificate</a></span></p>
     <h1>Infinite-mean random clocks can identify generators</h1>
-    <p class="subtitle">An arbitrary known positive mixture of exponential intervals identifies a finite irreducible generator, even without a finite mean waiting time.</p>
-    <p>Let $Q$ be an irreducible row generator on $n\ge2$ fully labeled states.
+    <p class="subtitle">An arbitrary known positive mixture of exponential intervals identifies any finite generator, including reducible and absorbing models, even without a finite mean waiting time.</p>
+    <p>Let $Q$ be a conservative row generator on $n\ge1$ fully labeled states.
       Independently of the chain, draw iid rates $\Lambda_k$ from a known probability law $\nu$ on $(0,\infty)$, then independent intervals $\tau_k\mid\Lambda_k\sim\operatorname{Exp}(\Lambda_k)$.
       Keep every sampled label, including repeats, but discard the rates and all realized timing information, including total elapsed time.</p>
     <p>For a fixed sample count the labels are a Markov chain with kernel</p>
@@ -123,16 +123,20 @@
       The same argument at $w=z$ gives $F'(z)\ne0$, so nontrivial Jordan information is retained.
       For $\operatorname{Re}z>0$ one also has $|F(z)|<1$.</p>
 
-    <h2>Why the zero eigenvalue must be separated</h2>
+    <h2>Separate the entire stationary subspace</h2>
     <p>The transform may fail to be analytic at zero, so applying a holomorphic inverse blindly to the whole matrix would not be justified.
-      Instead, $R$ is strictly positive, shares $Q$'s unique stationary row $\pi$, and determines the projector $\Pi=\mathbf1\pi$.
-      On the known invariant subspace $E=\ker\pi$, the operator $A_E=(-Q)|_E$ has spectrum in $\mathcal H$.</p>
+      Nevertheless, zero is semisimple for every finite generator: a nontrivial zero Jordan block would make $e^{tQ}$ grow polynomially, contradicting its stochastic norm one.
+      Every nonzero eigenvalue has strictly negative real part, since $Q=c(C-I)$ for some stochastic $C$ and $c>0$, and $\operatorname{Spec}(C)\subset\{z:|z|\le1\}$.</p>
+    <p>It follows that $P=\lim_{t\to\infty}e^{tQ}$ is the spectral projector at zero.
+      On $\operatorname{ran}P$, every resolvent integrand is the identity, while on $E=\operatorname{ran}(I-P)$ the spectrum of $A_E=(-Q)|_E$ lies in $\mathcal H$.
+      Thus $R$ has semisimple eigenvalue one with projector $P$, and every other eigenvalue has modulus strictly below one.</p>
+    $$\boxed{P=\lim_{k\to\infty}R^k,\qquad Q|_{\operatorname{ran}P}=0,\qquad Q|_E=-G(R_E).}$$
     <p>Restricting the resolvent integral to this subspace gives $R_E=F(A_E)$ by holomorphic functional calculus.
       The integral and all derivatives are locally dominated away from zero, irrespective of the mixing law's behavior near zero or infinity.
-      Hence</p>
-    $$\boxed{Q\mathbf1=0,\qquad Q|_E=-G(R_E).}$$
-    <p>The decomposition $\mathbb R^n=\operatorname{span}\{\mathbf1\}\oplus E$ is recovered from $R$ itself, proving uniqueness of every entry of $Q$.
-      No derivative of $F$ at zero is needed because the stationary eigenvalue of an irreducible generator is simple.</p>
+      The displayed decomposition, recovered from $R$ alone, therefore determines every entry of $Q$.</p>
+    <p>No derivative of $F$ at zero is needed, regardless of the stationary subspace's dimension.
+      For irreducible $Q$, $P=\mathbf1\pi$; in reducible models it also records absorption probabilities and need not have rank one.
+      The generator spectral fact is classical; see the proof of <a href="./bibliography.html#Davies2010">Davies (2010), Proposition 8</a>.</p>
 
     <h2>A clock with infinite mean</h2>
     <p>In fixed time units take $\Lambda\sim\operatorname{Unif}(0,1)$.
@@ -143,21 +147,26 @@
     <p>The logarithm is principal on $\mathcal H$.
       The survival tail makes $\mathbb E\tau=\infty$, while $F(0)=1$ by continuity and $(F(x)-1)/x=-\log(1+1/x)\to-\infty$ as $x\downarrow0$.
       This is exactly the missing-analyticity boundary addressed by the stationary-mode split.</p>
-    <p>For a numerical kernel formula, put $A=-Q$, $B=A+\Pi$ and use the principal matrix logarithm:</p>
-    $$R=I-B\operatorname{Log}(I+B^{-1})+(\log2)\Pi.$$
-    <p>The shift replaces the zero eigenvalue by one, leaves the centered modes unchanged, and the last term restores the stationary eigenvalue to one.
+    <p>For a numerical kernel formula, put $A=-Q$, $B=A+P$ and use the principal matrix logarithm:</p>
+    $$R=I-B\operatorname{Log}(I+B^{-1})+(\log2)P.$$
+    <p>The shift replaces all zero modes by one, leaves the complementary modes unchanged, and the last term restores every stationary mode to one.
       For opposite four-state unit-rate cycles $Q_+=C-I$ and $Q_-=C^\top-I$, the exact direction gap is</p>
     $$\|R(Q_+)-R(Q_-)\|_\infty
       =\log(5/2)-2\arctan(1/3)=0.272789623081.$$
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_continuous_clock.py">certificate</a>
       checks 33 matrix-log kernels against rate integrals and spectral inversions, three independent waiting-density integrals, and three diagonalization-free defective Jordan inversions.
       Numerical inversion is a demonstration on these examples, not a universally certified inversion algorithm.</p>
+    <p>Twelve further reducible checks cover defective transient dynamics, multiple absorbing states, two closed classes fed by a transient state, and $Q=0$.
+      They compare rate integrals and recovered generators, and recover the entire projector from $R$ rather than assuming a unique stationary row.</p>
 
     <h2>Scope and classical context</h2>
     <p>This is an ordinary iid renewal clock started at time zero, not a stationary renewal point process of positive intensity.
       Each finite sample count is reached in finite time almost surely, but its expected calendar time may be infinite.
       No calendar-time rate of estimation, finite-sample confidence guarantee or uniformly stable inverse is claimed.</p>
-    <p>Indeed, for $Q_m=m(\Pi-I)$ the kernel is $\Pi+F(m)(I-\Pi)$, and dominated convergence gives $F(m)\to0$.
+    <p>Population identification assumes the full transition kernel is known, not merely one observed path with a fixed initial distribution.
+      For example, start in an absorbing state and change rates only in a disjoint, unvisited closed class: the entire observed label path remains constant although $Q$ and $R$ change.
+      Reducibility can therefore obstruct single-path estimation despite injectivity of $Q\mapsto R$.</p>
+    <p>Indeed, fix a rank-one stationary projector $P=\mathbf1\pi$ with positive $\pi$; for $Q_m=m(P-I)$ the kernel is $P+F(m)(I-P)$, and dominated convergence gives $F(m)\to0$.
       Kernels at $m$ and $2m$ therefore approach one another while their generator distance diverges.
       Global population identification does not imply uniform inverse continuity.</p>
     <p>The rate law and its physical scale must be known and redrawn independently each interval.

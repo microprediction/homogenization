@@ -3196,5 +3196,16 @@
   "doi": "10.1111/j.1468-0262.2004.00553.x",
   "url": "https://web.stanford.edu/~glynn/papers/2004/DuffieG04.pdf",
   "annotation": "Develops identification and estimation from random arrivals; Proposition 4 uses resolvent identification for a known arrival intensity. The continuous-mixture clock note instead considers iid independent rate mixtures, possibly with infinite mean intervals, and separates the stationary spectral point."
+ },
+ {
+  "role": "survey_econometrics",
+  "key": "Davies2010",
+  "authors": "Davies, E. B.",
+  "year": 2010,
+  "title": "Embeddable Markov Matrices",
+  "venue": "Electronic Journal of Probability 15(47):1474-1486",
+  "doi": "10.1214/ejp.v15-733",
+  "url": "https://www.maths.tcd.ie/EMIS/journals/EJP-ECP/article/download/733/993.pdf",
+  "annotation": "The proof of Proposition 8 records that every nonzero eigenvalue of a finite Markov generator has strictly negative real part, without irreducibility. The continuous-mixture clock note uses this classical fact to separate the full stationary projector, including in absorbing and reducible models."
  }
 ]
