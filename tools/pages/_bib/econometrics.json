@@ -25,5 +25,25 @@
   "venue": "International Statistical Review 56(1):49-62",
   "doi": "10.2307/1403361",
   "annotation": "Chi-bar-square distributions for tests of inequality constraints, with the weights given by the probabilities that the projection of a Gaussian vector onto a cone lands on each face."
+ },
+ {
+  "key": "DuffieGlynn2004",
+  "authors": "Duffie, D. and Glynn, P.",
+  "year": 2004,
+  "title": "Estimation of Continuous-Time Markov Processes Sampled at Random Time Intervals",
+  "venue": "Econometrica 72(6):1773-1808",
+  "doi": "10.1111/j.1468-0262.2004.00553.x",
+  "url": "https://web.stanford.edu/~glynn/papers/2004/DuffieG04.pdf",
+  "annotation": "Section 4 distinguishes identification with known arrival intensity from identification using observed sampling times. The mean-clock note gives an explicit iid interval-law ambiguity with the same physical mean, different nonproportional reversible generators and different transition graphs."
+ },
+ {
+  "key": "Phillips1952",
+  "authors": "Phillips, R. S.",
+  "year": 1952,
+  "title": "On the generation of semigroups of linear operators",
+  "venue": "Pacific Journal of Mathematics 2(3):343-369",
+  "doi": "10.2140/pjm.1952.2.343",
+  "url": "https://msp.org/pjm/1952/2-3/pjm-v2-n3-p09-p.pdf",
+  "annotation": "Theorem 4.3 gives the drift-plus-jump generator formula for subordinated semigroups. The mean-clock note uses its elementary finite-matrix resolvent specialization; subordination itself is classical."
  }
 ]
