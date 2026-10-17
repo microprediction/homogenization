@@ -98,6 +98,56 @@ for shape in (4.1, 5., 6., 8., 12.):
         aliases += 1
 print(f"Numerical alias cases: {aliases}; same label-path law for every fixed sample count")
 
+# The classical n-state generator sector widens the proved principal-inverse shape range.
+dimension_checks, dimension_error, sector_checks = 0, 0., 0
+dimension_chains = [np.array([[-2., 2.], [1., -1.]])] + chains
+for q in dimension_chains:
+    size = len(q)
+    q = q / max(-np.diag(q))
+    shapes = (3., 6., 12.) if size == 2 else (2. + 2. / (size - 2), 2. * size / (size - 2))
+    if size >= 3:
+        eig = np.linalg.eigvals(q)
+        assert max(abs(eig.imag) + eig.real / np.tan(np.pi / size)) <= 2e-9
+        sector_checks += 1
+    for shape in shapes:
+        for speed in (.1, .5, 1.):
+            for rate in (1., 3.):
+                actual = speed * q
+                r = kernel(actual, shape, rate)
+                rebuilt = rate * (np.eye(size) - fractional_matrix_power(r, -1 / shape))
+                error = norm(rebuilt - actual) / max(1, norm(actual))
+                assert error <= 2e-8
+                assert max(abs(np.angle(1 - np.linalg.eigvals(actual) / rate))) * shape < np.pi
+                dimension_error = max(dimension_error, error)
+                dimension_checks += 1
+print(f"Dimension-aware principal inversions: {dimension_checks}; classical sector checks: {sector_checks}; max scaled error={dimension_error:.3e}")
+print("Inclusive shape limits: n=2 all alpha>0; n=3 alpha<=6; n=4 alpha<=4; n=5 alpha<=10/3; n=6 alpha<=3")
+
+# Exact three-state alias at shape twelve, rate one, jump rate 1/sqrt(3).
+cycle3 = Matrix(np.roll(np.eye(3, dtype=int), 1, axis=1))
+a3 = eye(3) - sqrt(3) / 3 * (cycle3 - eye(3))
+power3 = eye(3)
+for _ in range(12):
+    power3 = (power3 * a3).applyfunc(expand)
+assert power3 == power3.T
+print("Exact shape-twelve three-cycle alias: jump rate=1/sqrt(3), A**12 symmetric; radical identity PASS")
+aliases3, integrals3, alias3_error = 0, 0, 0.
+for shape in (6.1, 7., 8., 12.):
+    tangent = np.tan(np.pi / shape)
+    for rate in (.5, 1., 2.):
+        jump = rate * tangent / (np.sqrt(3) / 2 - 1.5 * tangent)
+        q = jump * (np.array(cycle3, dtype=float) - np.eye(3))
+        r = kernel(q, shape, rate)
+        gap = norm(r - kernel(q.T, shape, rate))
+        assert gap <= 2e-9 and norm(q - q.T) > .1
+        alias3_error = max(alias3_error, gap)
+        aliases3 += 1
+        if rate == 1 and shape in (8., 12.):
+            direct = integrate_kernel(q, shape, rate)
+            assert norm(direct - r) <= 2e-8 and norm(direct - direct.T) <= 2e-8
+            integrals3 += 1
+print(f"Three-cycle numerical aliases: {aliases3}; independent gamma integrals: {integrals3}; max kernel gap={alias3_error:.3e}")
+
 # Global identification is not a uniform stability theorem.
 pi = np.ones((4, 4)) / 4
 print("shape-two fast-chain inverse conditioning (rate=1): m, kernel gap, generator gap")

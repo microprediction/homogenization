@@ -3207,5 +3207,16 @@
   "doi": "10.1016/j.laa.2010.04.007",
   "url": "https://doi.org/10.1016/j.laa.2010.04.007",
   "annotation": "Classifies primary and nonprimary matrix roots and studies stochastic roots, including inverse M-matrices. The gamma-clock note uses principal functional calculus for an exact generator inverse and a Fourier calculation for a four-state alias."
+ },
+ {
+  "role": "survey_gamma-clock",
+  "key": "Davies2010",
+  "authors": "Davies, E. B.",
+  "year": 2010,
+  "title": "Embeddable Markov Matrices",
+  "venue": "Electronic Journal of Probability 15(47):1474-1486",
+  "doi": "10.1214/ejp.v15-733",
+  "url": "https://www.maths.tcd.ie/EMIS/journals/EJP-ECP/article/download/733/993.pdf",
+  "annotation": "The proof of Theorem 9 records the classical dimension-dependent generator spectral sector, equations (5)-(6), attributed to earlier Dmitriev-Dynkin and Karpelevich results. The gamma-clock note applies this sector to a shifted inverse-power logarithm; the sector itself is not new."
  }
 ]

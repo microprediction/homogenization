@@ -101,7 +101,7 @@
       <span><a href="./papers.html">papers</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gamma_clock.py">certificate</a></span></p>
     <h1>Which random clocks remove generator aliases?</h1>
-    <p class="subtitle">Known gamma intervals of shape at most two identify every finite generator; random timing alone is not enough.</p>
+    <p class="subtitle">Known gamma clocks have dimension-dependent alias-free ranges, with sharp thresholds for three and four labeled states.</p>
     <p>Let $Y$ be a fully labeled finite-state chain with irreducible row generator $Q$.
       Independently sample at $S_k=\tau_1+\cdots+\tau_k$, where the intervals are iid gamma with known shape $\alpha>0$ and known rate $\lambda>0$.
       Retain every label $Z_k=Y_{S_k}$, including repeats, but discard all timing information, including total elapsed time.</p>
@@ -124,6 +124,21 @@
       Exponentiating gives the displayed inverse, so two generators with the same kernel must agree.
       The argument does not assume reversibility or diagonalizability.</p>
 
+    <h2>A stronger dimension-dependent theorem</h2>
+    <p>For a known number $n\ge3$ of labeled states, the same principal inverse identifies every generator whenever</p>
+    $$\boxed{0<\alpha\le\alpha_n:=\frac{2n}{n-2}.}$$
+    <p>The classical generator-sector bound is $|\operatorname{Im}\mu|\le-\operatorname{Re}\mu\cot(\pi/n)$ for every $\mu\in\sigma(Q)$.
+      See <a href="./bibliography.html#Davies2010">Davies (2010), proof of Theorem 9, equations (5)&ndash;(6)</a>, which attributes the sector to earlier work of Dmitriev and Dynkin.
+      Writing $\mu=-u+iv$, every eigenvalue $z=1-\mu/\lambda$ of $A$ therefore satisfies</p>
+    $$|\arg z|\le\arctan\frac{u\cot(\pi/n)}{\lambda+u}
+      <\frac\pi2-\frac\pi n,\qquad
+      \alpha_n\left(\frac\pi2-\frac\pi n\right)=\pi.$$
+    <p>The strict inequality comes from $\lambda>0$, even if $\mu$ lies on the closed generator-sector boundary.
+      Thus $|\alpha\arg z|<\pi$ still holds at $\alpha=\alpha_n$, and the same holomorphic logarithm identity proves the inverse, including defective generators.
+      For two states all generator eigenvalues are real, so every $\alpha>0$ is alias-free.</p>
+    <p>The sufficient shape limits for $n=3,4,5,6$ are respectively $6,4,10/3,3$.
+      They tend to two as the number of labels grows; this does not classify every larger shape in dimensions at least five.</p>
+
     <h2>A four-state alias for every shape greater than four</h2>
     <p>Let $C$ be the cyclic permutation on four labeled states, and take</p>
     $$\alpha>4,\qquad t=\tan(\pi/\alpha),\qquad r=\frac{\lambda t}{1-t},
@@ -139,8 +154,16 @@
     <p>For the Erlang-five clock with $\lambda=1$, the cycle jump rate is $r=2.6568757573$, while $\|Q_+-Q_-\|_\infty=5.3137515147$.
       This clock has a continuous density strictly positive at every positive time, yet discarding the times loses the cycle direction.
       Retaining waiting times or using a calendar-time stopping rule is a different observation experiment.</p>
-    <p>The positive result is sufficient, not a sharp classification of all gamma shapes.
-      The range $2<\alpha\le4$ is not classified here, and a shape above four need not alias a particular generator.</p>
+    <h2>A sharp three-state threshold as well</h2>
+    <p>For a three-cycle $C$, put $t=\tan(\pi/\alpha)$ and</p>
+    $$\alpha>6,\qquad r=\frac{\lambda t}{\sqrt3/2-3t/2},\qquad
+      Q_+=r(C-I),\quad Q_-=r(C^\top-I).$$
+    <p>For $\alpha>2$, the denominator is positive exactly when $\alpha>6$, and the complex eigenvalues of $I-Q_+/\lambda$ are $1+3r/(2\lambda)\pm i\sqrt3r/(2\lambda)$.
+      Their arguments are $\pm\pi/\alpha$, so their $-\alpha$ powers coincide and the sampled kernel is symmetric.
+      Hence the opposite cycles have exactly the same label-path law for every fixed sample count and common initial law.</p>
+    <p>At $\alpha=12$, $\lambda=1$, $r=1/\sqrt3$, the certificate proves $A_+^{12}=(A_+^{12})^\top$ in exact radical arithmetic.
+      Consequently the maximal shape interval identifying every three-state generator is exactly $0<\alpha\le6$; for four states it is exactly $0<\alpha\le4$.
+      A shape outside these ranges need not alias a particular generator, and the all-dimensions question for $2<\alpha\le4$ remains separate.</p>
 
     <h2>Exact recovery is not uniform stability</h2>
     <p>For $\Pi=\mathbf1\pi$ and $Q_m=m(\Pi-I)$,</p>
@@ -155,6 +178,8 @@
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gamma_clock.py">certificate</a>
       checks 420 principal inversions on random, cyclic and defective generators, 20 independent gamma-density quadratures, and 15 numerical aliases.
       At shape six it also proves $A_+^6=(A_+^6)^\top$ in exact radical arithmetic, independent of floating-point matrix functions.</p>
+    <p>The dimension-aware extension adds 186 principal-inverse checks at the sector-bound endpoints and real defective spectra, 14 sector checks, and 12 three-cycle aliases.
+      Two additional gamma-density integrals check the new aliases independently of fractional matrix powers; the sector theorem itself is classical, not inferred from this mesh.</p>
     <p>Random-time identification is classical; <a href="./bibliography.html#DuffieGlynn2004">Duffie and Glynn (2004)</a> develop random-arrival estimation.
       Principal and nonprimary stochastic roots are treated by <a href="./bibliography.html#HighamLin2011">Higham and Lin (2011)</a>.
       The calculation here specializes those matrix-function ideas to discarded gamma waiting times, without a priority claim or a claim about arbitrary renewal clocks.</p>
