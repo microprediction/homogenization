@@ -160,10 +160,34 @@
     <p>For every positive speed and maturity the forward integrated-variance variance is strictly smaller.
       At $m=T=1$ the gap is $-8.7590343\times10^{-6}$, and the independent-return fourth-cumulant gap is $-2.6277103\times10^{-5}$.</p>
 
+    <h2>When first-order blindness is exact, and when it is not</h2>
+    <p>For an $n$-state chain with $n\ge2$, define $K_j=\tfrac12\{\langle f,H^jg\rangle_\pi-\langle g,H^jf\rangle_\pi\}$, so $K_1=K^{\rm anti}_{fa}$.
+      Then $A_\kappa(m)=0$ for every $m>0$ if and only if $K_j=0$ for $1\le j\le n-2$.
+      The empty condition for two states agrees with automatic reversibility.</p>
+    <p>To prove this, restrict $H$ to the $(n-1)$-dimensional centered space and expand
+      $R_\kappa(m)=m^{-1}H(I+\kappa H/m)^{-1}$ for sufficiently large $m$.
+      Necessity follows by uniqueness of its convergent power series, while Cayley&ndash;Hamilton reduces every higher power to $I,H,\ldots,H^{n-2}$, whose antisymmetric scalar pairings vanish under the stated condition.
+      The resulting zero rational function vanishes at every positive speed, since the resolvent has no pole there.</p>
+    <p>Thus for at most three states, $K_1=0$ implies exact blindness at every speed and maturity; four states are the smallest possible exception.
+      Under the same semigroup envelope as above, the next-order expansion has the explicit bound</p>
+    $$\left|A_\kappa(m)-\frac{K_1}{m}+\frac{\kappa K_2}{m^2}\right|
+      \le\frac{\kappa^2 C\|f\|_\infty\|g\|_\infty}{m^3\gamma^3},\qquad m>0.$$
+    <p>Indeed $H^2=\int_0^\infty t(e^{tQ}-\mathbf1\pi)dt$, and
+      $|e^{-x}-1+x|\le x^2/2$ for $x\ge0$ bounds the two resolvent pairings.
+      As before this bounds the normalized maturity profile, not an absolute error uniform in $T$.</p>
+    <p>A rational four-state example has uniform $\pi$, $\kappa=1$ and</p>
+    $$Q=\begin{pmatrix}-6&2&1&3\\1&-4&2&1\\2&1&-4&1\\3&1&1&-5\end{pmatrix},\qquad
+      \theta=\tfrac1{100}(11,9,10,10),\quad a=\tfrac1{200}(8,12,11,17).$$
+    <p>All off-diagonal rates are positive, the minimum Feller margin is $23/200$, and exact arithmetic gives</p>
+    $$K_1=0,\qquad K_2=\frac1{18880000},\qquad
+      A_1(m)=-\frac{m}{80000(236m^3+117m^2+19m+1)}.$$
+    <p>This gap is strictly negative at every positive speed and maturity despite the vanishing first-order signal, and $m^2A_1(m)\to-1/18880000$.
+      It is a limitation of a prescribed observable pair, not a claim that the full Green&ndash;Kubo operator misses irreversibility.</p>
+
     <h2>Certificate and scope</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_cir_reversal.py">certificate</a>
       independently evolves centered degree-two joint moments in 840 profile checks, with 168 affine Poisson comparisons, 168 finite-rate bounds and 168 affine-loading blindness controls on random, cyclic and defective chains.
-      It proves the three-state amplitude in symbolic rational arithmetic and independently checks the displayed finite-maturity witness.</p>
+      It proves both displayed amplitudes in symbolic rational arithmetic, checks the low-state power reduction, and adds 20 independent four-state moment comparisons and 173 next-order bounds.</p>
     <p>The polynomial moment framework is classical; see <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
       The result is an exact stationary second-cumulant specialization, not a new moment method, a finite-speed monotonicity theorem, or a statement with switching mean reversion.</p>
   </main>
