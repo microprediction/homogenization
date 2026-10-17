@@ -1,5 +1,15 @@
 [
  {
+  "key": "Vovk2012",
+  "authors": "Vovk, V.",
+  "year": 2012,
+  "title": "Conditional Validity of Inductive Conformal Predictors",
+  "venue": "Proceedings of the Asian Conference on Machine Learning, PMLR 25:475-490",
+  "doi": "",
+  "url": "https://proceedings.mlr.press/v25/vovk12.html",
+  "annotation": "Section 3 and Proposition 2b give iid calibration-conditional PAC guarantees through a binomial tail. The latent-coverage note distinguishes this iid law from posterior coverage under a shared latent signal."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
