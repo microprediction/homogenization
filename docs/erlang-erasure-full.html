@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A smooth clock can erase a generator · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_erlang_erasure.py">certificate</a></span></p>
+    <h1>A smooth clock can erase a generator</h1>
+    <p class="subtitle">One known phase-type clock makes a continuum of distinct three-state generators produce the same iid sampled labels, while their physical-time Green&ndash;Kubo strengths differ.</p>
+
+    <h2>Observation protocol and result</h2>
+    <p>Sample a finite continuous-time chain at iid positive intervals, independently of the chain, retaining all regime labels including repeats.
+      The interval law is known, but realized durations, clock-component tags and total elapsed time are discarded; the number of observations is fixed.
+      The sampled transition kernel is $R(Q)=\mathbb E e^{\tau Q}$.</p>
+    <p>Use the fixed clock</p>
+    $$\tau\sim\frac1{4097}\operatorname{Erlang}(1,1)
+       +\frac{4096}{4097}\operatorname{Erlang}(13,1),$$
+    <p>where the second argument is a rate.
+      Its density is strictly positive and analytic on $(0,\infty)$, with all moments finite:</p>
+    $$f_\tau(t)=\frac{e^{-t}}{4097}\left(1+\frac{4096t^{12}}{12!}\right),\qquad
+      \mathbb E\tau=\frac{53249}{4097},\quad
+      \mathbb E\tau^2=\frac{745474}{4097}.$$
+    <p>There is a continuum of strictly positive-rate generators $Q_\epsilon$, all with uniform stationary law, for which</p>
+    $$\boxed{R(Q_\epsilon)=P,\qquad P=\tfrac13\mathbf1\mathbf1^\top,
+      \qquad |\epsilon|\le1/100.}$$
+    <p>Thus stationary sampled labels are exactly iid uniform.
+      From any common initial distribution $\nu$, every fixed-count label-path probability is
+      $\nu_{i_0}\prod_{j=1}^m(1/3)$, regardless of $\epsilon$.
+      This is exact loss of generator information, not merely fast mixing or a small numerical difference.</p>
+
+    <h2>Explicit generator and cancellation</h2>
+    <p>Put $\theta=\pi/12$, $a=2\cos\theta-1$, $b=2\sin\theta$ and</p>
+    $$u=a/3+b/\sqrt3,\qquad v=a/3-b/\sqrt3,\qquad
+      Q=\begin{pmatrix}-u-v&amp;u&amp;v\\v&amp;-u-v&amp;u\\u&amp;v&amp;-u-v\end{pmatrix}.$$
+    <p>Both rates are positive: $u=0.609475708249$ and $v=0.011758726803$.
+      With $E=I-P$ and $J=(Q+aE)/b$, direct multiplication gives
+      $J^\top=-J$, $J^2=-E$, $JP=PJ=0$.</p>
+    <p>The rate-one exponential-clock kernel $C=(I-Q)^{-1}$ is</p>
+    $$C=P+\tfrac12(\cos\theta\,E+\sin\theta\,J),\qquad
+      C^{12}=P-\frac{E}{4096}.$$
+    <p>An Erlang clock is a sum of independent exponential stages, so its sampled kernel is the corresponding power of $C$.
+      Hence</p>
+    $$R(Q)=\frac{C+4096C^{13}}{4097}=P.$$
+    <p>Equivalently, the clock transform
+      $F(z)=[(1+z)^{-1}+4096(1+z)^{-13}]/4097$ vanishes at $z=a\pm ib$.
+      A smooth positive sampling density therefore need not prevent complete spectral cancellation.</p>
+
+    <h2>A continuum, not just reversal of a cycle</h2>
+    <p>Let $h=(1,0,-1)^\top$, $H=hh^\top/2$, $S_\epsilon=I+\epsilon H$ and</p>
+    $$Q_\epsilon=S_\epsilon Q S_\epsilon^{-1}.$$
+    <p>Since $S_\epsilon\mathbf1=\mathbf1$ and $\mathbf1^\top S_\epsilon=\mathbf1^\top$, row sums and the uniform stationary law are preserved.
+      Also $HJH=0$, giving</p>
+    $$Q_\epsilon-Q=b\left(\epsilon HJ-\frac{\epsilon}{1+\epsilon}JH\right).$$
+    <p>For $g=(1,-2,1)^\top$, one has $HJ=-hg^\top/(2\sqrt3)$ and $JH=gh^\top/(2\sqrt3)$.</p>
+    <p>Every entry changes in magnitude by at most
+      $b(|\epsilon|+|\epsilon|/|1+\epsilon|)/\sqrt3$.
+      For the entire displayed interval every off-diagonal rate is therefore at least</p>
+    $$v-\frac b{\sqrt3}\left(\frac1{100}+\frac1{99}\right)
+      =0.005751369263&gt;0.$$
+    <p>Similarity commutes with resolvents and powers, and $S_\epsilon P S_\epsilon^{-1}=P$.
+      Consequently $R(Q_\epsilon)=P$ throughout the interval.
+      The family is nonconstant and isospectral, hence its distinct members are not proportional generators.</p>
+
+    <h2>The same fixed feature has different physical-time strength</h2>
+    <p>For the fixed centered feature $f=(1,-1,0)^\top$, define the stationary Green&ndash;Kubo variance rate</p>
+    $$\Gamma_\epsilon
+      =2\int_0^\infty\operatorname{Cov}_\pi(f(Y_0),f(Y_t))dt
+      =\frac23 f^\top\{(P-Q_\epsilon)^{-1}-P\}f.$$
+    <p>Writing $s=1+\epsilon$, direct inversion on the centered plane gives</p>
+    $$\Gamma_\epsilon=
+      \frac{4a+\sqrt3b(s^{-1}-s)}{3(a^2+b^2)}.$$
+    <p>This is strictly decreasing in $\epsilon$ on the displayed interval.
+      At $\epsilon=-0.01,0,0.01$ the strengths are respectively
+      $1.098723804540$, $1.093437018467$ and $1.088202839848$.</p>
+    <p>These are fixed-feature strengths, not ranks after integrating different maturity loadings.
+      The fixed-feature Green&ndash;Kubo rank theorem remains valid: the same feature span and stationary law are used throughout, so no change of fixed-feature rank is claimed.</p>
+
+    <h2>A clock tag restores identification; small weight errors give near-erasure</h2>
+    <p>If the Erlang-component tag is retained, the conditional kernel for the positive-probability shape-one component is $C_\epsilon=(I-Q_\epsilon)^{-1}$.
+      It identifies $Q_\epsilon=I-C_\epsilon^{-1}$ without timestamps.
+      No sample-efficiency claim is made for this rare component.</p>
+    <p>For any valid perturbed shape-one weight $w$, put $w_*=1/4097$ and
+      $R_w=wC_\epsilon+(1-w)C_\epsilon^{13}$.
+      Since both powers are stochastic,</p>
+    $$\|R_w-P\|_\infty\le2|w-w_*|.$$
+    <p>Two members of the family under the same perturbed clock have row total-variation distance at most $2|w-w_*|$.
+      Sequential coupling therefore bounds their $m$-transition label-path total variation by $\min\{1,2m|w-w_*|\}$ from any common initial law.</p>
+
+    <h2>Certificate, literature and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_erlang_erasure.py">certificate</a>
+      checks the rotation/resolvent cancellation and clock moments exactly, plus 21 generators, an independent augmented phase-chain resolvent, three direct semigroup integrals and 63 clock-weight perturbations.
+      It checks the strength formula and prints every numerical headline with portable tolerances, ending in literal PASS.</p>
+    <p>The clock is a 13-phase Coxian absorption time: after the first rate-one exponential stage it stops with probability $1/4097$, otherwise completing twelve more stages.
+      <a href="./bibliography.html#Bladt2005">Bladt (2005), Definition 3.1 and Examples 3.2&ndash;3.4</a>, provides the classical phase-type framework, distinct from a positive mixture of exponential <em>rates</em>.
+      The cancellation and similarity family above are derived directly, not attributed to that review.</p>
+    <p>This counterexample concerns known iid clocks with discarded realized times and tags, not unknown-clock confounding or finite-sample estimation.
+      It does not contradict generator identification for known positive exponential-rate mixtures; the phase-type transform here has complex zeros.
+      Elapsed-time stopping, retained durations and state-dependent clocks are outside the observation protocol.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

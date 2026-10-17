@@ -1,4 +1,9 @@
 [
+ {"key": "Bladt2005", "authors": "Bladt, M.", "year": 2005,
+  "title": "A Review on Phase-type Distributions and their Use in Risk Theory",
+  "venue": "ASTIN Bulletin 35(1):145-161", "doi": "10.2143/AST.35.1.583170",
+  "url": "https://www.cambridge.org/core/journals/astin-bulletin-journal-of-the-iaa/article/review-on-phasetype-distributions-and-their-use-in-risk-theory/3AA72038185F8A978F6FC201A438D9D3",
+  "annotation": "Definition 3.1 and Examples 3.2-3.4 describe phase-type absorption times, exponential stages and Coxian clocks. The smooth-clock erasure note uses a thirteen-stage Coxian law, not a positive mixture of exponential rates."},
  {"key": "BurkeRosenblatt1958", "authors": "Burke, C. J. and Rosenblatt, M.", "year": 1958,
   "title": "A Markovian Function of a Markov Chain", "venue": "The Annals of Mathematical Statistics 29(4):1112-1122",
   "doi": "10.1214/aoms/1177706444",
