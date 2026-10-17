@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>One elapsed-time total restores identification · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_total_time.py">certificate</a></span></p>
+    <h1>One elapsed-time total restores identification</h1>
+    <p class="subtitle">Individual timestamps and the clock law can remain unknown: a block's exact elapsed time can remove generator aliasing.</p>
+
+    <h2>The observation protocol</h2>
+    <p>Let $Y$ have a finite, time-homogeneous row generator $Q$ on a complete known labeled state space.
+      Let $\tau_1,\ldots,\tau_m$ be iid, positive and finite almost surely, independent of the entire chain, for a fixed integer $m\ge1$.
+      Write $T=\sum_{k=1}^m\tau_k$ and retain only the two endpoint labels and the exact total $(Y_0,Y_T,T)$.</p>
+    <p>The initial law $\nu$ has full support and is independent of the clock.
+      The clock law $\mu$ need not be known or have finite mean; irreducibility, reversibility and diagonalizability are not assumed.
+      Identification here means uniqueness from the population law of this record, not recovery from one realized block.</p>
+    <p>Call the clock <em>grid-free</em> if there is no $h&gt;0$ with $\operatorname{supp}\mu\subset h\mathbb Z$.
+      This is a grid through zero, not a ban on all translated lattices: the two-point clock $\{1,1+\sqrt2\}$ is grid-free in this sense.
+      Any clock with a nonzero continuous component is grid-free.</p>
+
+    <h2>The exact criterion</h2>
+    <p>A grid-free clock makes $Q$ identifiable from the retained record for every finite generator.
+      Conversely, a clock supported on a common grid admits distinct, strictly positive three-state generators with exactly the same record law.
+      The converse also extends to every fixed dimension at least three; it is a global obstruction, not ambiguity at every generator.</p>
+    <p>Independence of $T$ and $Y$ gives the key conditional kernel, for $\mu^{*m}$-almost every $t$:</p>
+    $$\Pr(Y_T=j\mid Y_0=i,T=t)=(e^{tQ})_{ij}.$$
+    <p>Thus no individual interval needs to be reconstructed, and no deconvolution of the clock law is required.
+      Full support of $\nu$ exposes every row.
+      Continuity extends equality of two candidate kernels almost everywhere to the whole support of $\mu^{*m}$.</p>
+    <p>For two candidate matrices $Q,G$, the set
+      $H=\{t\in\mathbb R:e^{tQ}=e^{tG}\}$ is a closed additive subgroup of $\mathbb R$.
+      Indeed matrix exponentials are invertible, and equality at $s,t$ gives equality at $s-t$ by taking products with inverses.
+      If $Q\ne G$, then $H\ne\mathbb R$ by differentiation at zero, so $H$ is either $\{0\}$ or $h\mathbb Z$.</p>
+    <p>The support of a positive total is not contained in $\{0\}$.
+      If $\operatorname{supp}\mu^{*m}\subset h\mathbb Z$, then for every $u\in\operatorname{supp}\mu$ the repeated sum $mu$ lies in that support, forcing
+      $\operatorname{supp}\mu\subset(h/m)\mathbb Z$.
+      The reverse implication, that a grid-supported interval has a grid-supported total, is immediate.</p>
+    <p>Therefore a grid-free clock forces $H=\mathbb R$, hence $Q=G$.
+      This argument uses full labeled matrices, not just unordered spectra, and handles Jordan blocks without selecting a logarithm branch.</p>
+    <p>A pair of support times with irrational ratio is sufficient but not necessary.
+      For example, a clock assigning positive mass to every $1/k!$ is grid-free although all pairwise ratios are rational, since its positive support times approach zero.</p>
+
+    <h2>Why the grid exception is real</h2>
+    <p>For any $h&gt;0$, put $P=\mathbf1\mathbf1^\top/3$, $E=I-P$ and</p>
+    $$J=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      Q_0=-aE,\quad Q_1=-aE+bJ,\quad a=\frac{4\pi}h,\quad b=\frac{2\pi}h.$$
+    <p>Both generators have strictly positive off-diagonal entries and the same uniform stationary law.
+      Since $J^2=-E$ and $PJ=JP=0$,</p>
+    $$e^{tQ_1}=P+e^{-at}\{\cos(bt)E+\sin(bt)J\},\qquad
+      e^{khQ_0}=e^{khQ_1}=P+e^{-akh}E\quad(k\ge1).$$
+    <p>If every interval lies in $h\mathbb Z$, even the full label path together with every individual timestamp has the same law under these two generators.
+      Consequently retaining its elapsed-time total cannot distinguish them.</p>
+    <p>The same fixed centered feature $f=(1,-1,0)^\top$ has different physical-time Green&ndash;Kubo strengths:</p>
+    $$\Gamma_0=\frac h{3\pi},\qquad \Gamma_1=\frac{4h}{15\pi}=\frac45\Gamma_0.$$
+    <p>These are strength differences, not different fixed-feature ranks or claims about maturity-integrated rank.
+      In any larger dimension embed $J$ in its first three coordinates, set $E_n=I-\mathbf1\mathbf1^\top/n$, and choose $a&gt;n|b|/\sqrt3$.
+      The two generators $-aE_n$ and $-aE_n+bJ$ remain strictly positive and have identical kernels on the grid.</p>
+
+    <h2>Near-grid clocks: uniqueness is not stable estimation</h2>
+    <p>Keep the same three-state pair and independently choose each interval from $\{h,h+\epsilon\}$ with equal probabilities, where $\epsilon/h$ is irrational and positive.
+      This clock is grid-free, so the population law identifies the generator.
+      Nevertheless its $m$-transition label-path/total record laws $\mathcal L_0,\mathcal L_1$ satisfy</p>
+    $$\|\mathcal L_0-\mathcal L_1\|_{\rm TV}
+      \le\min\left\{1,\frac{m\epsilon e^{-ah}}4\|Q_1-Q_0\|_\infty\right\},\qquad
+      \|A\|_\infty=\max_i\sum_j|A_{ij}|.$$
+    <p>To prove this, couple the two clocks identically.
+      The kernels at $h$ coincide, while the semigroup property and Duhamel's identity give
+      $\|e^{\epsilon Q_1}-e^{\epsilon Q_0}\|_\infty\le\epsilon\|Q_1-Q_0\|_\infty$.
+      Multiplication by the common kernel $P+e^{-ah}E$ contributes exactly $e^{-ah}$ because $P(e^{\epsilon Q_1}-e^{\epsilon Q_0})=0$.</p>
+    <p>The jitter branch has probability one half, and a row's total variation is one half its $\ell^1$ distance.
+      Sequential coupling gives the displayed bound for the stronger record retaining every timestamp, hence also for its coarsening to the total.
+      For fixed $m$, its right side tends to zero while the generator and Green&ndash;Kubo gaps stay fixed.</p>
+    <p>No uniform inverse-continuity guarantee over grid-free clock designs follows from identification.
+      Timestamp rounding, state-dependent sampling and elapsed-time stopping are different experiments not covered by the theorem.
+      A single confined path need not expose all rows of a reducible chain.</p>
+
+    <h2>Relation to previous work and checks</h2>
+    <p>Non-uniform sampling and removal of aliasing are classical; <a href="./bibliography.html#DingQiuChen2009">Ding, Qiu and Chen (2009), Section 5</a>, treat multirate reconstruction, including a criterion based on intersections of eigenvalue sets.
+      <a href="./bibliography.html#DuffieGlynn2004">Duffie and Glynn (2004), Section 4</a>, distinguish observed and unobserved sampling times for Markov-process identification.
+      Here the point is the coarser block-total protocol, its exact common-grid criterion and its near-grid bound, not novelty of semigroup or multirate identification.</p>
+    <p>In particular, any smooth independently redrawn clock becomes identifying under this protocol, even when discarding all times would completely erase its generator.
+      No finite-sample accuracy or calendar-time efficiency is implied by conditioning on an exact continuous total.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_total_time.py">certificate</a>
+      checks the exact grid-alias and strength identities, endpoint/total laws by enumerating hidden interval assignments and intermediate labels, a defective chain and an absorbing chain.
+      It also checks total-time Laplace transforms of a smooth erasing clock by independent integration, and near-grid path-law bounds, with portable tolerances and final literal PASS.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

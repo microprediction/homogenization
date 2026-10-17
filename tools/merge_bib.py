@@ -13,6 +13,7 @@ SECTION_TITLES = {
     'portfolio': 'Portfolio choice with regimes',
     'correlation': 'Correlation regimes and correlation risk',
     'lumping': 'Lumped chains and phase-type durations',
+    'total-time': 'Elapsed-time sampling and identification',
     'spatial': 'Spatial and nonlinear homogenization',
     'conformal': 'Conformal prediction under dependence',
 }
