@@ -1,0 +1,12 @@
+[
+ {"key": "DingQiuChen2009", "authors": "Ding, F., Qiu, L. and Chen, T.", "year": 2009,
+  "title": "Reconstruction of continuous-time systems from their non-uniformly sampled discrete-time systems",
+  "venue": "Automatica 45(2):324-332", "doi": "10.1016/j.automatica.2008.08.007",
+  "url": "https://eeqiu.people.ust.hk/wp-content/uploads/2021/04/Reconstruction-of-Continuous-Time-Systems-from-Their-Non-Uniformly-Sampled-Discrete-Time-Systems.pdf",
+  "annotation": "Section 5 treats classical multirate reconstruction; Lemma 4 uses intersections of unordered eigenvalue sets. The block-total note instead uses full labeled semigroup matrices and a closed-subgroup argument, without matching eigenvalues."},
+ {"key": "DuffieGlynn2004", "authors": "Duffie, D. and Glynn, P.", "year": 2004,
+  "title": "Estimation of Continuous-Time Markov Processes Sampled at Random Time Intervals",
+  "venue": "Econometrica 72(6):1773-1808", "doi": "10.1111/j.1468-0262.2004.00553.x",
+  "url": "https://web.stanford.edu/~glynn/papers/2004/DuffieG04.pdf",
+  "annotation": "Section 4 distinguishes observed and unobserved sampling times and identifies generators using test functions under its sampling-intensity assumptions. Background for the different independent-clock, block-total protocol; its results are not asserted for arbitrary state-dependent block totals."}
+]
