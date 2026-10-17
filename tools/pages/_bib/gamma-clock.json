@@ -1,0 +1,20 @@
+[
+ {
+  "key": "DuffieGlynn2004",
+  "authors": "Duffie, D. and Glynn, P.",
+  "year": 2004,
+  "title": "Estimation of Continuous-Time Markov Processes Sampled at Random Time Intervals",
+  "venue": "Econometrica 72(6):1773-1808",
+  "doi": "10.1111/j.1468-0262.2004.00553.x",
+  "annotation": "Develops estimation of continuous-time Markov processes at random arrivals, including state-dependent intensities. The gamma-clock note instead fixes independent gamma intervals and discards their realized durations; random-time identification itself is classical."
+ },
+ {
+  "key": "HighamLin2011",
+  "authors": "Higham, N. J. and Lin, L.",
+  "year": 2011,
+  "title": "On pth roots of stochastic matrices",
+  "venue": "Linear Algebra and its Applications 435(3):448-463",
+  "doi": "10.1016/j.laa.2010.04.007",
+  "annotation": "Classifies primary and nonprimary matrix roots and studies stochastic roots, including inverse M-matrices. The gamma-clock note uses principal functional calculus for an exact generator inverse and a Fourier calculation for a four-state alias."
+ }
+]

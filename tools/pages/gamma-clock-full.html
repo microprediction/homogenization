@@ -1,0 +1,66 @@
+<!-- title: Which random clocks remove generator aliases? · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gamma_clock.py">certificate</a></span></p>
+    <h1>Which random clocks remove generator aliases?</h1>
+    <p class="subtitle">Known gamma intervals of shape at most two identify every finite generator; random timing alone is not enough.</p>
+    <p>Let $Y$ be a fully labeled finite-state chain with irreducible row generator $Q$.
+      Independently sample at $S_k=\tau_1+\cdots+\tau_k$, where the intervals are iid gamma with known shape $\alpha>0$ and known rate $\lambda>0$.
+      Retain every label $Z_k=Y_{S_k}$, including repeats, but discard all timing information, including total elapsed time.</p>
+    <p>For a fixed sample count, the observed labels form a Markov chain with kernel</p>
+    $$R_{\alpha,\lambda}(Q)=\mathbb E e^{\tau Q}
+      =\frac{\lambda^\alpha}{\Gamma(\alpha)}\int_0^\infty t^{\alpha-1}e^{-\lambda t}e^{tQ}dt
+      =(I-Q/\lambda)^{-\alpha}.$$
+    <p>The power on the right uses the principal matrix logarithm of $I-Q/\lambda$.
+      Independent sampling preserves the stationary law: $\pi R=\pi$; this is not a state-dependent Cox clock or a hidden-emission model.</p>
+
+    <h2>A global sufficient condition</h2>
+    <p>If $0<\alpha\le2$, the population kernel determines the entire generator, without a speed cap:</p>
+    $$\boxed{Q=\lambda\{I-\exp[-\alpha^{-1}\operatorname{Log}R]\}.}$$
+    <p>In particular, two exponential stages remain alias-free: for an Erlang-two interval, $Q=\lambda(I-R^{-1/2})$ with the principal inverse square root.
+      This is an exact finite-rate statement, not a homogenization approximation or a finite-sample confidence bound.</p>
+    <p>To prove it, set $A=I-Q/\lambda$.
+      Every eigenvalue $z$ of $A$ has $\operatorname{Re}z\ge1$, hence $|\arg z|<\pi/2$ and $|\alpha\arg z|<\pi$.
+      Thus $R=A^{-\alpha}$ has no spectrum on the closed negative real axis, and $\operatorname{Log}R=-\alpha\operatorname{Log}A$.</p>
+    <p>The scalar logarithm identity holds on neighborhoods of the spectrum and therefore passes to matrices by holomorphic functional calculus, including every Jordan block.
+      Exponentiating gives the displayed inverse, so two generators with the same kernel must agree.
+      The argument does not assume reversibility or diagonalizability.</p>
+
+    <h2>A four-state alias for every shape greater than four</h2>
+    <p>Let $C$ be the cyclic permutation on four labeled states, and take</p>
+    $$\alpha>4,\qquad t=\tan(\pi/\alpha),\qquad r=\frac{\lambda t}{1-t},
+      \qquad Q_+=r(C-I),\quad Q_-=r(C^\top-I).$$
+    <p>Both generators are irreducible and distinct, but their sampled kernels coincide exactly:</p>
+    $$R_{\alpha,\lambda}(Q_+)=R_{\alpha,\lambda}(Q_-).$$
+    <p>The four Fourier eigenvalues of $A_+=I-Q_+/\lambda$ are $1$, $1+2r/\lambda$ and $1+r/\lambda\pm ir/\lambda$.
+      The complex pair has arguments $\pm\pi/\alpha$, so after taking power $-\alpha$ both eigenvalues equal
+      $-\{(1+r/\lambda)^2+(r/\lambda)^2\}^{-\alpha/2}$.</p>
+    <p>The two other eigenvalues remain real, making the resulting real circulant kernel symmetric.
+      Transposition therefore leaves it unchanged, proving the alias.
+      Consequently the complete label-path law agrees for every fixed number of samples and every common initial law, not only its stationary covariance.</p>
+    <p>For the Erlang-five clock with $\lambda=1$, the cycle jump rate is $r=2.6568757573$, while $\|Q_+-Q_-\|_\infty=5.3137515147$.
+      This clock has a continuous density strictly positive at every positive time, yet discarding the times loses the cycle direction.
+      Retaining waiting times or using a calendar-time stopping rule is a different observation experiment.</p>
+    <p>The positive result is sufficient, not a sharp classification of all gamma shapes.
+      The range $2<\alpha\le4$ is not classified here, and a shape above four need not alias a particular generator.</p>
+
+    <h2>Exact recovery is not uniform stability</h2>
+    <p>For $\Pi=\mathbf1\pi$ and $Q_m=m(\Pi-I)$,</p>
+    $$R_{\alpha,\lambda}(Q_m)=\Pi+(1+m/\lambda)^{-\alpha}(I-\Pi).$$
+    <p>As $m\to\infty$, the kernels at $m$ and $2m$ approach one another while
+      $\|Q_{2m}-Q_m\|_\infty=m\|I-\Pi\|_\infty$ diverges.
+      Hence no uniformly continuous inverse exists over all speeds, even in the globally identified shape-two model.</p>
+    <p>With four uniform states, $\alpha=2$, $\lambda=1$ and $m=1000$, the kernel gap is $1.1223792129\times10^{-6}$ while the generator gap is $1500$.
+      Finite-sample uncertainty must therefore be propagated through the inverse, with possible abstention; exact identification alone supplies no uniform sample complexity.</p>
+
+    <h2>Certificate, literature and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gamma_clock.py">certificate</a>
+      checks 420 principal inversions on random, cyclic and defective generators, 20 independent gamma-density quadratures, and 15 numerical aliases.
+      At shape six it also proves $A_+^6=(A_+^6)^\top$ in exact radical arithmetic, independent of floating-point matrix functions.</p>
+    <p>Random-time identification is classical; <a href="./bibliography.html#DuffieGlynn2004">Duffie and Glynn (2004)</a> develop random-arrival estimation.
+      Principal and nonprimary stochastic roots are treated by <a href="./bibliography.html#HighamLin2011">Higham and Lin (2011)</a>.
+      The calculation here specializes those matrix-function ideas to discarded gamma waiting times, without a priority claim or a claim about arbitrary renewal clocks.</p>
+    <p>The clock law and physical time scale are known; scaling $Q$ and $\lambda$ together leaves $R$ unchanged if that scale is not supplied.
+      No regime inference from unlabeled financial returns, estimated-clock uncertainty, or anytime confidence theorem is asserted.</p>
+  </main>
