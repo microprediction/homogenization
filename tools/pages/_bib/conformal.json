@@ -128,5 +128,15 @@
   "doi": "",
   "url": "",
   "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
+ },
+ {
+  "key": "ClarksonXuCucuringuSwanReinert2025",
+  "authors": "Clarkson, J., Xu, W., Cucuringu, M., Swan, Y. and Reinert, G.",
+  "year": 2025,
+  "title": "Split Conformal Prediction under Data Contamination",
+  "venue": "Preprint, arXiv:2407.07700v3",
+  "doi": "10.48550/arXiv.2407.07700",
+  "url": "https://arxiv.org/abs/2407.07700v3",
+  "annotation": "Lemma 3.1 uses Kolmogorov distance to bound coverage with independent contaminated calibration scores and clean test scores. This is classical CDF-robustness background, distinct from the stationary latent exponential-age construction."
  }
 ]
