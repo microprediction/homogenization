@@ -58,6 +58,9 @@
     point at which initial-prior memory disappears at each order.</p>
 
     <h2>Averaging</h2>
+    <p>A <a href="./likelihood-memory-full.html">finite-memory theorem</a> supplies an explicit bound for every panel length under quantitative near-rank-one kernel control.
+      With relative kernel deviation $\delta&lt;1/3$ and $\rho=2\delta/(1-\delta)$, retaining $r$ previous intervals gives error at most $(N-r-1)_+\rho^{r+2}/2$.
+      One retained interval recovers the second-order coefficient through positive two-transition blocks.</p>
     <p>When the chain switches infinitely fast the rate is Vasicek with averaged parameters, observed as an AR(1):</p>
     $$x_{k+1} = \bar\theta + (x_k - \bar\theta)\,e^{-\kappa\Delta} + \sqrt v\,Z_k, \qquad
       v = \bar s\,\frac{1 - e^{-2\kappa\Delta}}{2\kappa}, \qquad Z_k \sim N(0, 1),$$

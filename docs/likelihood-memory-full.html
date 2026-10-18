@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finite-memory likelihood budgets · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./likelihood.html">&larr; Switching likelihood</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_finite_memory.py">certificate</a></span></p>
+    <h1>Finite-memory likelihood budgets</h1>
+    <p class="subtitle">A positive restarted-filter approximation with an explicit error bound for every panel length.</p>
+
+    <h2>Kernel assumption and approximation</h2>
+    <p>For a fixed observed path $x_0,\ldots,x_N$, let $K_k=K(x_k,x_{k+1})$ be its nonnegative regime-resolved density matrices.
+      Fix a strictly positive probability row $\pi$, put $P=\mathbf1\pi$, and suppose positive scalar reference densities $p_k$ satisfy the quantitative bound</p>
+    $$\max_{k&lt;N}\|K_k/p_k-P\|_\infty\le\delta&lt;\frac13,\qquad
+      \|A\|_\infty=\max_i\sum_j|A_{ij}|,\qquad \rho=\frac{2\delta}{1-\delta}&lt;1.$$
+    <p>This is a relative matrix-kernel condition, not merely a mixing-rate assumption for the latent chain.
+      Let $F_k(\nu)=\nu K_k/(\nu K_k\mathbf1)$ and start the exact filter from any specified probability row $\nu_0$.
+      Write $\ell_F=\sum_{k&lt;N}\log(\nu_kK_k\mathbf1)$, where $\nu_{k+1}=F_k(\nu_k)$.</p>
+    <p>For an integer memory length $r\ge0$, set $b_k=\max(0,k-r)$.
+      Form $\widehat\nu_k$ by applying $F_{b_k},\ldots,F_{k-1}$ to $\nu_0$ if $b_k=0$, and to $\pi$ otherwise.
+      The restarted log likelihood is</p>
+    $$\ell_r=\sum_{k&lt;N}\log(\widehat\nu_kK_k\mathbf1).$$
+    <p>All predictive factors are strictly positive.
+      When the $K_k$ belong to genuine observation-kernel families, each predictive factor integrates to one, so their product is also a normalized path law conditional on $x_0$.
+      The first $r+1$ predictive factors retain the specified initial prior exactly.</p>
+
+    <h2>An explicit panel-length bound</h2>
+    <div class="equation-card">
+    $$|\ell_F-\ell_r|\le\frac{(N-r-1)_+}{2}\,\rho^{r+2},\qquad (a)_+=\max(a,0).$$
+    </div>
+    <p>The constant does not depend on $N$, the number of regimes or the starting prior.
+      For a stationary start, $r=0$ is the stationary-start composite likelihood, with error at most $(N-1)\rho^2/2$.
+      One retained interval, $r=1$, reduces this to $(N-2)_+\rho^3/2$.</p>
+    <p>If $\delta\le C/m$ uniformly over a specified observation set, fixed memory $r$ gives
+      $|\ell_F-\ell_r|=O(Nm^{-r-2})$ there, with a constant independent of panel length.
+      Thus $N=o(m^{r+2})$ suffices for an absolute log-likelihood gap tending to zero, and $N=o(m^{r+1})$ for a gap $o(m^{-1})$.
+      These are deterministic approximation statements, not estimator-efficiency or statistical-coverage theorems.</p>
+
+    <h2>Proof from the filter update</h2>
+    <p>Write $E_k=K_k/p_k-P$ and $e_k=E_k\mathbf1$.
+      For every probability row $\nu$, the normalizer $1+\nu e_k$ lies in $[1-\delta,1+\delta]$ and</p>
+    $$F_k(\nu)=\frac{\pi+\nu E_k}{1+\nu e_k},\qquad
+      \|F_k(\nu)-\pi\|_1\le\rho.$$
+    <p>Subtracting two updates gives the exact identity</p>
+    $$F_k(\nu)-F_k(\mu)=
+      \frac{(\nu-\mu)E_k-[(\nu-\mu)e_k]F_k(\mu)}{1+\nu e_k}.$$
+    <p>Nonnegativity makes $\|F_k(\mu)\|_1=1$, hence the map is $\rho$-Lipschitz in row $\ell^1$ norm.
+      The corresponding predictive log densities obey</p>
+    $$|\log(\nu K_k\mathbf1)-\log(\mu K_k\mathbf1)|
+      \le\frac{\delta}{1-\delta}\|\nu-\mu\|_1=\frac\rho2\|\nu-\mu\|_1.$$
+    <p>For $k&gt;r$, the exact filter at the restart boundary $b_k\ge1$ is within $\rho$ of $\pi$.
+      Applying $r$ contractive updates gives $\|\nu_k-\widehat\nu_k\|_1\le\rho^{r+1}$.
+      The log bound then gives $\rho^{r+2}/2$ per remaining factor; summing proves the theorem.</p>
+
+    <h2>Two-transition blocks give the first correction</h2>
+    <p>With $\nu_0=\pi$, put $s_k=\pi K_k\mathbf1$.
+      The $r=1$ construction has the explicit block formula</p>
+    $$\ell_1=\ell_C+\sum_{k=1}^{N-1}
+      \log\frac{\pi K_{k-1}K_k\mathbf1}{s_{k-1}s_k}.$$
+    <p>Each block uses two transitions, hence three consecutive observations in the diffusion model; it is not an ordinary two-observation marginal.
+      If $K_k=p_kP+m^{-1}K_{1,k}+O(m^{-2})$ uniformly, its leading added coefficient is</p>
+    $$m^{-2}\sum_{k=1}^{N-1}
+      \frac{[\pi K_{1,k-1}-(\pi K_{1,k-1}\mathbf1)\pi]K_{1,k}\mathbf1}{p_{k-1}p_k}.$$
+    <p>This is the second-order coefficient on the <a href="./likelihood.html">likelihood page</a>, now represented by positive finite blocks with an explicit panel remainder.
+      The construction still uses model-specific regime-resolved kernels; it is not a way to recover them from unlabelled pair frequencies without assumptions.</p>
+
+    <h2>The memory orders are sharp for positive kernels</h2>
+    <p>Take two states, $\pi=(1/2,1/2)$, $P=\mathbf1\pi$,
+      $A=\tfrac12\left(\begin{smallmatrix}1&amp;1\\-1&amp;1\end{smallmatrix}\right)$ and binary observation matrices
+      $K_\pm=(P\pm\varepsilon A)/2$, $0&lt;\varepsilon&lt;1/3$.
+      They are positive, sum to the stochastic matrix $P$, and have relative kernel budget $\delta=\varepsilon$ with $p_\pm=1/2$.</p>
+    <p>For the all-plus path of length $N=r+2$, let $S_j=\pi(P+\varepsilon A)^j\mathbf1$.
+      Only the final predictive factor differs, so</p>
+    $$\ell_F-\ell_r=\log\frac{S_{r+2}S_r}{S_{r+1}^2}
+      =-\left(\frac\varepsilon2\right)^{r+2}+O(\varepsilon^{r+3}).$$
+    <p>Indeed, the first filter coordinate updates by
+      $a\mapsto[1/2+\varepsilon(a-1/2)]/(1+\varepsilon a)$; its derivative is
+      $\varepsilon(1+\varepsilon)/[2(1+\varepsilon a)^2]$, and the initial displacement is $-\varepsilon/4+O(\varepsilon^2)$.
+      Iteration gives the displayed nonzero coefficient for every fixed $r$.</p>
+    <p>For $r=1$ the ratio is exactly $1-\varepsilon^3/[8(1+\varepsilon)]$.
+      This is a valid edge-emitting hidden Markov model, whose binary observation depends on the incoming and outgoing hidden states.
+      Sharpness is for the stated kernel class, not a claim that every Vasicek parameter choice attains the cubic order.</p>
+
+    <h2>Context, verification and scope</h2>
+    <p>Conditional composite likelihoods are classical (<a href="./bibliography.html#Lindsay1988">Lindsay 1988</a>).
+      Filter forgetting is also classical (<a href="./bibliography.html#LeGlandMevel2000">Le Gland and Mevel 2000</a>); the latter reference&apos;s metadata were checked against its authors&apos; Inria team bibliography, but its full text was unavailable.
+      The elementary near-rank-one constants and sharp-order witness are proved here; no uninspected theorem or priority claim is imported.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_finite_memory.py">certificate</a> checks exact witness coefficients for $r=0,\ldots,4$, exhaustive binary normalization, nonhomogeneous finite-panel budgets, and the existing Vasicek Fourier kernels on a repeated closed observation path.
+      It ends with literal PASS and uses portable tolerances.
+      Floating Fourier evaluations are not certified density enclosures.</p>
+    <p>A numerical application must include kernel-evaluation error in its budget.
+      A compact-set bound does not cover arbitrary tail observations, and latent endpoint mixing alone does not establish the required relative density bound.
+      No claim concerns conformal conditional coverage, fixed-feature Green&ndash;Kubo rank, or maturity-integrated regime counts.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
