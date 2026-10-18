@@ -8,6 +8,8 @@ import mpmath as mp
 import numpy as np
 import sympy as sp
 from numpy.polynomial.legendre import leggauss
+from numpy.polynomial.legendre import legvander
+from scipy.special import gammainc
 from pulsars import TwoState
 
 mp.mp.dps = 70
@@ -111,7 +113,56 @@ def sampled():
     assert sp.integrate(2*s*sp.integrate(t, (t, 0, s))*sp.exp(-s), (s, 0, sp.oo)) == 6
 
 
+def crossover():
+    moments = [sp.integrate(sp.exp(-s)*(s**p*sp.integrate(t**q, (t, 0, s))
+               +s**q*sp.integrate(t**p, (t, 0, s))), (s, 0, sp.oo)) for p, q in ((1, 1), (1, 2), (2, 2))]
+    assert moments == [6, 20, 80]
+    print('Exact triangular moments for the grid remainder: 6, 20, 80')
+    nodes, weights = leggauss(16)
+    ratios, worst = [], 0.
+    for degree in (1, 2, 4):
+        for c in (.25, 1., 4.):
+            errors = []
+            for n in (64, 256, 1024, 4096):
+                z, w, x = np.arange(n+1)/n, 1/(n+1), n*c
+                basis = legvander(2*z-1, degree)*np.sqrt(2*np.arange(degree+1)+1)
+                G = w*basis.T @ basis
+                lam = np.linalg.eigvalsh(G)[0]
+                C, e, e2 = (degree+1)**2/lam, -math.expm1(-c), -math.expm1(-2*c)
+                # Exact unprojected sum minus the integrated projected modes.
+                B = 6*w*np.sum(np.exp(-x*z)*gammainc(4, x*(1-z)))/x**4
+                sums = [np.cumsum(w*basis*z[:, None]**j, axis=0)[:-1] for j in range(3)]
+                u = (np.arange(n)[:, None]+(nodes+1)/2)/n
+                q = u[:, :, None]*sums[0][:, None, :]-sums[1][:, None, :]
+                iq = (u[:, :, None]**2*sums[0][:, None, :]
+                      -2*u[:, :, None]*sums[1][:, None, :]+sums[2][:, None, :])/2
+                B -= np.sum(weights[None, :]*np.exp(-x*u)
+                            *np.einsum('ijk,ijk->ij', q @ np.linalg.inv(G), iq))/n
+                v = w*basis.T @ np.exp(-x*z)
+                N = w*np.sum(np.exp(-2*x*z))-v @ np.linalg.solve(G, v)
+                if n == 64 and degree == 2:
+                    model = TwoState(.8, -.2, .8*x, .2*x)
+                    raw = model.postfit_ms_sampled(z, initial_p1=1.)
+                    var = model.postfit_ms_sampled(z, initial_p1=1., centered=True)
+                    assert abs(raw-model.postfit_ms_sampled(z)-.48*B) < 2e-13
+                    assert abs(raw-var-.64*N/x**4) < 2e-13
+                a = 6*math.exp(-x-c)/e+6*(n+1)*math.exp(-x)*sum(x**j/math.factorial(j) for j in range(4))
+                a += C*w*(6+20/c+20/c**2)
+                b = math.exp(-2*(x+c))/e2+C*w/e**2
+                db, dn = 6/e-x**4*B/w, 1/e2-N/w
+                assert -2e-10 <= db <= a+2e-10 and -2e-10 <= dn <= b+2e-10
+                worst = max(worst, db/a, dn/b)
+                errors.append(abs(x**5*B-6*c/e))
+            ratios.append(errors[-2]/errors[-1])
+    assert min(ratios) > 3.5 and max(ratios) < 4.5
+    print(f'36 joint-grid bound checks: max deficit/bound={worst:.6f}; '
+          f'last refinement ratios={min(ratios):.6f}..{max(ratios):.6f}')
+    print(f'c=1 limiting coefficients: B={6/(-math.expm1(-1)):.9f}, '
+          f'mean={1/(-math.expm1(-2)):.9f}; dense-grid limits 6 and 1/2')
+
+
 if __name__ == '__main__':
     continuous()
     sampled()
+    crossover()
     print('PASS')
