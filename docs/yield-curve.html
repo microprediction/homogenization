@@ -291,9 +291,12 @@
     The eigenvalue has a series whose terms come from the group inverse, starting from $v_0 = \mathbf 1$:</p>
     $$\mu_k = \pi\cdot\big(D\,v_{k-1}\big), \qquad v_k = Q_0^{\#}\Big(\sum_{j=1}^{k-1}\mu_j\,v_{k-j} - D\,v_{k-1}\Big),$$
     $$\Lambda = \sum_{k\ge1} \varepsilon^{\,k-1}\,\mu_k .$$
-    <p>The first term is the average and the second is the Green&ndash;Kubo term, which equals the long-maturity limit
-    of the three-number formula:</p>
-    $$\mu_2 = \frac{c_2}{\kappa^2} + \frac{c_3}{\kappa^3} + \frac{c_4}{\kappa^4}.$$
+    <p>The first term is the average and the second, $\varepsilon\mu_2$, is the Green&ndash;Kubo correction.
+      Since the $c_j$ above use the actual generator $Q$, not $Q_0$, its long-maturity value is</p>
+    $$\varepsilon\mu_2 = \frac{c_2}{\kappa^2} + \frac{c_3}{\kappa^3} + \frac{c_4}{\kappa^4}.$$
+    <p>The <a href="./yield-speed-full.html">clock-normalization note</a> proves this scaling and the all-order identity
+      $\mu_k(cQ_0,D)=c^{1-k}\mu_k(Q_0,D)$.
+      Rescaling both $Q_0$ and $\varepsilon$ by $c&gt;0$ leaves every physical series term unchanged.</p>
     <p>The zero eigenvalue of $Q_0$ is simple, so $\Lambda$ is an analytic function of $\varepsilon$ near zero and the
     series converges. For chain A the terms shrink by a factor of about $0.01\,\varepsilon$ each. The errors of the
     partial sums, in basis points of long yield, are:</p>
@@ -374,7 +377,8 @@
     <p>The <a href="./uniform-long-end.html#limiting-perron-corollary">finite-chain corollary</a> now proves this
     simpler composite for every fixed irreducible generator, including defective ones, provided the forcing and
     its derivative approach their limits integrably. It follows by comparing the exact moving-Perron transport
-    formula with the first two instantaneous eigenvalue coefficients. The omitted difference is uniformly
+    formula with the first two instantaneous eigenvalue coefficients.</p>
+    <p>The omitted difference is uniformly
     $O(1/m^2)$, not a secular term, because the exact limiting Perron root retains every constant-forcing order.
     For a known initial prior $\nu$, the same theorem proves the displayed correction $\log\{\nu r_m(T)\}$ with
     the same uniform order.</p>

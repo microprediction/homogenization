@@ -1,0 +1,46 @@
+<!-- title: Clock normalization at the long end · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./yield-curve.html">&larr; Three numbers in a yield curve</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_speed_normalization.py">certificate</a></span></p>
+    <h1>Clock normalization at the long end</h1>
+    <p>The three-number coefficients $c_j$ use the actual fast generator $Q$.
+      The eigenvalue coefficients $\mu_k$ instead use a chosen base generator $Q_0$ in $Q=Q_0/\varepsilon$.
+      Keeping these two conventions distinct is necessary even when the matrix calculations are correct.</p>
+
+    <h2>The corrected identity</h2>
+    <p>For fixed loadings and $\kappa$, write $c_j(Q)$ to expose their generator dependence.
+      Positive clock scaling leaves the stationary law unchanged and gives
+      $Q^\#=\varepsilon Q_0^\#$, since this matrix satisfies the defining group-inverse identities on the centered subspace.
+      Therefore $c_j(Q)=\varepsilon c_j(Q_0)$ and</p>
+    $$\varepsilon\mu_2
+      =\frac{c_2(Q)}{\kappa^2}+\frac{c_3(Q)}{\kappa^3}+\frac{c_4(Q)}{\kappa^4},
+      \qquad
+      \mu_2=\frac{c_2(Q_0)}{\kappa^2}+\frac{c_3(Q_0)}{\kappa^3}+\frac{c_4(Q_0)}{\kappa^4}.$$
+    <p>Indeed, the centered limiting forcing is
+      $\widetilde D=-(\theta-\pi\theta)+(\sigma^2-\pi\sigma^2)/(2\kappa^2)$.
+      Its base-generator Green&ndash;Kubo quadratic form is $\mu_2=-\pi\cdot(\widetilde D\,Q_0^\#\widetilde D)$; expanding this quadratic form gives the identity.
+      The physical contribution to the growth rate is $\varepsilon\mu_2$, not the unscaled coefficient $\mu_2$.</p>
+
+    <h2>Every term is independent of clock normalization</h2>
+    <p>For fixed forcing $D$, the group-inverse eigenvalue recursion has the exact homogeneity law</p>
+    $$v_k(cQ_0,D)=c^{-k}v_k(Q_0,D),\qquad
+      \mu_k(cQ_0,D)=c^{1-k}\mu_k(Q_0,D),\qquad c&gt;0.$$
+    <p>Induct from $v_0=\mathbf1$: the formula for $\mu_k=\pi\cdot(Dv_{k-1})$ supplies $c^{1-k}$.
+      Every term in the recursion&apos;s centered right-hand side has the same factor $c^{1-k}$, and the group inverse supplies one more factor $c^{-1}$.
+      The proof requires no eigenbasis or reversibility.</p>
+    <p>Changing $(Q_0,\varepsilon)$ to $(cQ_0,c\varepsilon)$ leaves the physical generator and every physical series term unchanged:</p>
+    $$(c\varepsilon)^{k-1}\mu_k(cQ_0,D)=\varepsilon^{k-1}\mu_k(Q_0,D).$$
+    <p>This is a coefficient identity, not a claim that the series converges at every tested speed.
+      It changes neither the physical growth rate nor the maturity range of an approximation.</p>
+
+    <h2>A non-unit-speed witness and regression checks</h2>
+    <p>Take $Q_0=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$,
+      $\theta=(1,-1)$, $\sigma^2=0$, $\kappa=1$ and $\varepsilon=1/10$.
+      Then $\mu_2=1/2$, whereas $c_2(Q)=1/20$ and $c_3(Q)=c_4(Q)=0$.
+      The Perron growth rate is $\sqrt{\varepsilon^{-2}+1}-\varepsilon^{-1}$, whose first correction is $\varepsilon/2$.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_speed_normalization.py">certificate</a> verifies this witness, non-unit-speed Green&ndash;Kubo scaling, and normalization invariance through order six on two-, three- and five-state chains, including a defective generator.
+      It uses scaled portable tolerances and ends with literal PASS.</p>
+    <p>Group inverses in finite-chain analysis are classical (<a href="./bibliography.html#Meyer1975">Meyer 1975</a>).
+      The publisher&apos;s metadata and abstract were inspected; the scaling proof above is elementary and does not import a theorem from its restricted full text.</p>
+  </main>
