@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Higher-order critical path scores (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_higher_critical.py">certificate</a></span></p>
+    <h1>Higher-order critical path scores</h1>
+    <p class="subtitle">A flatter score delays initial-regime memory; it does not generally remove it.</p>
+    <p>Let $Q$ be a fixed irreducible finite-state row generator, $\pi Q=0$, and $f$ a real nonconstant feature
+    centered by $\pi f=0$. Write $I_c=\int_0^c f(Y_s)\,ds$, $A_c=I_c/c$, and use the group inverse
+    $QQ^\#=Q^\#Q=I-\mathbf1\pi$, $\pi Q^\#=0$, $Q^\#\mathbf1=0$.</p>
+    $$h=Q^\#f,\qquad B=2Q^\#(f\mathbin{\odot}h),\qquad
+      \Gamma=-2\pi(f\mathbin{\odot}h)>0,\qquad \kappa_3=3\pi(f\mathbin{\odot}B).$$
+    <p>The product $\odot$ is componentwise. $B$ is a raw second-moment boundary correction around the common
+    stationary mean, not a variance correction after separately recentering each initial state.</p>
+
+    <h2>Even-moment boundary law</h2>
+    <p>For each fixed integer $k\ge2$, uniformly over the finitely many initial states,</p>
+    <div class="equation-card">
+    $$\mathbb E_i A_c^{2k}-\mathbb E_\pi A_c^{2k}
+      ={D_{k,i}\over c^{k+1}}+O(c^{-(k+2)}),$$
+    $$D_{k,i}=k(2k-1)!!\left[B_i\Gamma^{k-1}
+      -{2(k-1)\over3}h_i\kappa_3\Gamma^{k-2}\right],\qquad \pi D_k=0.$$
+    </div>
+    <p>In particular $D_{2,i}=6\Gamma B_i-4\kappa_3h_i$. The initial-mean boundary layer couples to the
+    stationary third-cumulant rate at the same order as the second-moment boundary term.</p>
+    <p>Here is a finite-dimensional proof, requiring no occupation-time density expansion. For
+    $Q_z=Q+z\operatorname{diag}f$, let $\Lambda(z)$ be its eigenvalue near zero and $\Pi(z)$ its spectral
+    projector, both analytic for small $z$.</p>
+    $$\Lambda(z)={\Gamma z^2\over2}+{\kappa_3z^3\over6}+O(z^4),\qquad
+      (e_i^\top-\pi)\Pi(z)\mathbf1=-h_i z+{B_i z^2\over2}+O(z^3).$$
+    <p>Differentiating the eigenvalue equations and imposing $\pi v(z)=1$ gives
+    $v'(0)=-h$, $v''(0)=B$ and $\Lambda'''(0)=3\pi(f\odot B)$.
+    The scalar projector normalization has zero first derivative, so its common second-order term cancels
+    under $e_i^\top-\pi$.</p>
+    <p>The moment-generating function is $e^{cQ_z}\mathbf1$. Every fixed derivative of its nonprincipal
+    spectral part is exponentially small times a polynomial in $c$; extracting $z^{2k}$ from the principal part,
+    the only terms of degree $c^{k-1}$ are</p>
+    $$ {B_i z^2\over2}{(c\Gamma z^2/2)^{k-1}\over(k-1)!},\qquad
+      -h_i z\,{c\kappa_3z^3\over6}{(c\Gamma z^2/2)^{k-2}\over(k-2)!}.$$
+    <p>All other terms have degree at most $c^{k-2}$. Multiplication by $(2k)!/c^{2k}$ proves the law;
+    stationary cancellation follows from $\pi B=\pi h=0$.</p>
+    <p>The same extraction before subtracting starts gives $\mathbb E_i A_c^{2r}=O(c^{-r})$ for every
+    fixed integer $r\ge1$.</p>
+    <p>The local spectral method is classical; see
+    <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010)</a>.
+    Only fixed-order moments are used here, so no high-frequency spectral or nonlattice assumption is needed.</p>
+
+    <h2>Population coverage with fixed positive noise</h2>
+    <p>Fix $\mu,\sigma>0$ and $p\in(0,1)$, take an independent standard Gaussian $Z$, and let $q_c$ be the
+    exact stationary pooled $p$-quantile of $S_c=\mu A_c^{2k}+\sigma Z$. With $z_p=\Phi^{-1}(p)$,</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c\le q_c)-p
+      =-{\mu\phi(z_p)D_{k,i}\over\sigma c^{k+1}}+O(c^{-(k+2)}),\qquad k\ge2.$$
+    </div>
+    <p>Indeed, a first-order Taylor expansion of the Gaussian CDF leaves a remainder bounded by a constant
+    times $\mathbb E_i A_c^{4k}=O(c^{-2k})$. Also $q_c-\sigma z_p=O(c^{-k})$, so replacing its Gaussian
+    derivative by $\phi(z_p)$ changes the state-minus-stationary gap only at order $c^{-(2k+1)}$.</p>
+    <p>All constants are fixed-model and fixed-$k$; there is no uniformity as $\sigma$ or the spectral gap
+    vanishes. This is latent-start population coverage, not finite-calibration or distribution-free conditional
+    conformal validity; stationary-weighted gaps cancel exactly at every $c$.</p>
+    <p>At zero noise, every even power has exactly the same pooled-quantile event, since
+    $\{A_c^{2k}\le r^{2k}\}=\{|A_c|\le r\}$. Thus the quartic fixed-noise order cannot be extended to
+    vanishing noise without a separate crossover analysis.</p>
+
+    <h2>A finite-horizon Taylor and quantile budget</h2>
+    <p>Set $T=\mu A_c^{2k}\ge0$, $m_{i,j}=\mathbb E_i(T/\sigma)^j$, $m_{\pi,j}=\pi m_{\cdot,j}$, and
+    $\Delta m_{i,j}=m_{i,j}-m_{\pi,j}$. Write $H_j$ for the probabilists&apos; Hermite polynomial and set</p>
+    $$M_j={2^{(j-1)/2}\operatorname{Gamma}((j+1)/2)\over\pi}
+      \ge\sup_x|\phi^{(j)}(x)|,\qquad
+      R_i={M_Jm_{i,J+1}\over(J+1)!}.$$
+    <p>The bound on the Gaussian derivative follows by integrating $|u|^je^{-u^2/2}/(2\pi)$.
+    Taylor&apos;s theorem gives, uniformly in $q$,</p>
+    $$F_i^{[J]}(q)=\Phi(z)-\phi(z)\sum_{j=1}^J{H_{j-1}(z)m_{i,j}\over j!},\quad z=q/\sigma,
+      \qquad |F_i(q)-F_i^{[J]}(q)|\le R_i.$$
+    <p>Choose a verified bracket $[l,u]$ for the true pooled quantile, with
+    $F_\pi^{[J]}(l)+R_\pi&lt;p&lt;F_\pi^{[J]}(u)-R_\pi$. For $\delta&gt;\mathbb E_\pi T$, Markov&apos;s
+    inequality gives a true pooled-density lower bound throughout this bracket:</p>
+    $$d={1-\mathbb E_\pi T/\delta\over\sigma}
+      \min_{x\in[(l-\delta)/\sigma,u/\sigma]}\phi(x)>0.$$
+    <p>For any $\widehat q\in[l,u]$ put $\tau=|F_\pi^{[J]}(\widehat q)-p|$.
+    Then $|\widehat q-q_c|\le(\tau+R_\pi)/d$; expanding the density difference as well gives</p>
+    $$L_i={1\over\sigma}\sum_{j=1}^J{M_j|\Delta m_{i,j}|\over j!}
+      +{M_{J+1}(m_{i,J+1}+m_{\pi,J+1})\over\sigma(J+1)!},$$
+    $$\left|F_i(q_c)-p-\{F_i^{[J]}(\widehat q)-F_\pi^{[J]}(\widehat q)\}\right|
+      \le R_i+R_\pi+L_i{\tau+R_\pi\over d}.$$
+    <p>Here $L_i$ bounds $|F_i'-F_\pi'|$ globally, retaining stationary cancellation when transporting the
+    quantile error. These are analytic, exact-arithmetic bounds, not outward-rounded bounds on matrix-exponential
+    or quadrature evaluation.</p>
+
+    <h2>Numerical checks</h2>
+    <p>The certificate obtains $v_j(t)=\mathbb E[I_t^j]$ statewise from
+    $v_j'=Qv_j+j\operatorname{diag}(f)v_{j-1}$, $v_0=\mathbf1$, $v_j(0)=0$ for $j&gt;0$.
+    This finite matrix-exponential method is a polynomial-semigroup calculation, as in
+    <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.</p>
+    <p>For $Q=[[-1.7,1.7],[0.4,-0.4]]$, the feature $(1,-1)$ centered by $\pi$, $\mu=1$, $\sigma=.5$
+    and $p=.9$, the quartic $c^3$-scaled coefficient is $(-2.24921169,0.52922628)$.
+    Omitting skewness incorrectly halves it to $(-1.12460584,0.26461314)$.</p>
+    <p>With $J=3$, the computed positive-start scaled gap is $-2.33035202$ at $c=32$ and $-2.24604572$ at
+    $c=512$; the maximum scaled analytic Taylor/quantile budgets are $0.00944901843$ and
+    $1.09134867\times10^{-9}$ respectively. The budget controls the finite-moment CDF approximation, not its
+    discrepancy from the leading asymptotic coefficient.</p>
+    <p>A nonreversible three-state check reduces the quartic coefficient error from $0.003849657$ to
+    $0.000350222$ over the same horizons. Checks for $k=2,3,4$, independent two-state Bessel moments and
+    independently recomputed pooled-quantile coverage all pass.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
