@@ -1,5 +1,14 @@
 [
  {
+  "key": "LeGlandMevel2000",
+  "authors": "Le Gland, F. and Mevel, L.",
+  "year": 2000,
+  "title": "Exponential forgetting and geometric ergodicity in hidden Markov models",
+  "venue": "Mathematics of Control, Signals, and Systems 13(1):63-93",
+  "doi": "10.1007/PL00009861",
+  "annotation": "Classical filter-forgetting reference; metadata checked against the authors' Inria team bibliography. The finite-memory note proves its own near-rank-one bounds and does not import uninspected assumptions or constants."
+ },
+ {
   "key": "Lindsay1988",
   "authors": "Lindsay, B. G.",
   "year": 1988,
