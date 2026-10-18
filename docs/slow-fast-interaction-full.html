@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Endpoint interaction in slow-fast chains · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./likelihood.html">&larr; Switching likelihood</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_slow_fast_interaction.py">certificate</a></span></p>
+    <h1>Endpoint interaction in slow-fast chains</h1>
+    <p class="subtitle">Finite-rate bounds that distinguish endpoint weights from the interaction transmitting filter memory.</p>
+
+    <h2>A finite-state theorem</h2>
+    <p>Let $Q$ be an irreducible generator on finitely many hidden states, with stationary row $\pi$, and $P_0=\mathbf1\pi$.
+      Suppose known constants $A,g&gt;0$ satisfy $\|e^{tQ}-P_0\|_\infty\le Ae^{-gt}$ for every $t\ge0$.
+      Throughout, $\|\cdot\|_\infty$ is maximum absolute row sum.</p>
+    <p>The observed state $x$ also takes finitely many values.
+      In observed-state-major ordering, let $G_m=m(I\otimes Q)+L$ for $m&gt;0$, where $L$ is any fixed Markov generator on the joint state space and $\ell=\|L\|_\infty$.
+      This includes regime-specific observed jump generators and bounded simultaneous observed/hidden jumps.</p>
+    <p>Write $S(t)=e^{tG_m}$, $P=I\otimes P_0$, $C=I-P$, $\alpha=mg$ and $u=A\ell/\alpha$.
+      Let $\bar L_{xy}=\pi L_{xy}\mathbf1$ and $R(t)=e^{t\bar L}\otimes P_0$.
+      Both $S$ and $R$ are stochastic, so their infinity norms are one.</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+      \|CS(t)\|_\infty&\le Ae^{-\alpha t}+u(1-e^{-\alpha t}),\\
+      \|CS(t)P\|_\infty,\ \|PS(t)C\|_\infty&\le u,\\
+      \|CS(t)C\|_\infty&\le b(t)
+        :=Ae^{-\alpha t}+A^2\ell t e^{-\alpha t}
+          +u^2[1-e^{-\alpha t}-\alpha t e^{-\alpha t}],\\
+      \|S(t)-R(t)\|_\infty&\le\eta(t)
+        :=Ae^{-\alpha t}+u(2+\ell t).
+    \end{aligned}$$
+    </div>
+    <p>The doubly centered block is second order away from the initial layer, although each singly centered block is only first order.
+      No reversibility or diagonalizability of $Q$ is required; a spectral gap without a valid prefactor $A$ is not a substitute for the stated semigroup bound.</p>
+
+    <h2>Two Duhamel formulas prove the bounds</h2>
+    <p>Put $U(t)=e^{mt(I\otimes Q)}$.
+      The left and right variation-of-constants identities are</p>
+    $$S(t)=U(t)+\int_0^tU(t-s)LS(s)\,ds
+           =U(t)+\int_0^tS(s)LU(t-s)\,ds.$$
+    <p>Since $\|CU(t)\|_\infty=\|U(t)C\|_\infty\le Ae^{-\alpha t}$, the first identity and $\|S(s)\|_\infty=1$ give the displayed bound on $CS(t)$.
+      Multiplication by $P$ removes the unperturbed term for $CS(t)P$; the second identity does the same for $PS(t)C$.
+      The resulting convolution is at most $u$ in either case.</p>
+    <p>Centering the second identity on both sides gives</p>
+    $$\|CS(t)C\|_\infty\le Ae^{-\alpha t}
+       +A\ell\int_0^t[Ae^{-\alpha s}+u(1-e^{-\alpha s})]e^{-\alpha(t-s)}\,ds=b(t).$$
+    <p>Finally, $R(t)=e^{tPLP}P$ and</p>
+    $$PS(t)-R(t)=\int_0^tR(t-s)LCS(s)\,ds.$$
+    <p>Bounding this integral and adding $CS(t)$ proves $\eta(t)$.
+      The proof uses bounded finite matrices, not an unbounded diffusion generator or a formal eigenvalue expansion.</p>
+
+    <h2>From joint transitions to an observation kernel</h2>
+    <p>For an observed transition $x\to y$ over time $t$, the hidden-state observation matrix is the block $K=S(t)_{xy}$.
+      Choose the positive reference probability $p=(e^{t\bar L})_{xy}$, and set $M=K/p$, $a=M\mathbf1$, $b=\pi M$, $s=\pi a$.
+      The interaction remaining after removing endpoint weights is $D=M-ab/s$.</p>
+    <p>With $C_0=I-P_0$, the exact algebraic identity is</p>
+    $$K-\frac{(K\mathbf1)(\pi K)}{\pi K\mathbf1}
+      =C_0KC_0-\frac{(C_0K\mathbf1)(\pi KC_0)}{\pi K\mathbf1}.$$
+    <p>Extracting the relevant blocks of the semigroup bounds therefore gives</p>
+    $$\delta:=\|M-P_0\|_\infty\le\frac{\eta(t)}p,\qquad
+      \|D\|_\infty\le\frac1p\left[b(t)+\frac{u^2}{\pi K\mathbf1}\right].$$
+    <p>Thus the second-order interaction is a consequence of the model, not an extra tangent assumption.
+      In particular, if $M=P_0+A_1/m+O(m^{-2})$ exists, then $C_0A_1C_0=0$ automatically for fixed positive observation spacing and reference probability.</p>
+
+    <h2>A uniform panel budget</h2>
+    <p>Restrict all observation spacings to $[\tau,T]$ with $\tau&gt;0$, and all used reference probabilities to $p\ge p_*&gt;0$.
+      The following constants are computable before seeing the hidden filter:</p>
+    $$\delta_*=\frac{Ae^{-\alpha\tau}+u(2+\ell T)}{p_*},\qquad
+      \Gamma_*=\frac{A(1+A\ell T)e^{-\alpha\tau}
+        +u^2\left[1+\{p_*(1-\delta_*)\}^{-1}\right]}{p_*}.$$
+    <p>If $\delta_*&lt;1/3$, every used kernel satisfies $\delta\le\delta_*$ and $\|D\|_\infty\le\Gamma_*$, because $\pi K\mathbf1\ge p_*(1-\delta_*)$.
+      Put $\rho=2\delta_* /(1-\delta_*)$ and $\xi=\min\{\rho,\Gamma_* /(1-\delta_*)^2\}$.</p>
+    <p>For a panel of $N$ transitions and integer memory $r\ge0$, keep the first $r+1$ predictive factors exact.
+      Thereafter predict with the filter obtained from just the preceding $r$ kernel updates, restarted from $\pi$.
+      For any specified initial hidden prior, the exact and restarted log likelihoods obey</p>
+    $$|\ell_F-\ell_r|\le\frac{(N-r-1)_+}{2}\rho^2\xi^r.$$
+    <p>Indeed, $F(\nu)=\nu M/(\nu a)=b/s+\nu D/(\nu a)$ has row $\ell^1$ Lipschitz constant at most
+      $\Gamma_* /(1-\delta_*)+\delta_*\Gamma_* /(1-\delta_*)^2=\Gamma_* /(1-\delta_*)^2$, as well as the generic bound $\rho$.
+      The exact filter is within $\rho$ of $\pi$ after any update, and each predictive log factor is $\rho/2$-Lipschitz.
+      Restarting therefore costs at most $\rho\xi^r$ in the filter and $\rho^2\xi^r/2$ in each remaining log factor.</p>
+    <p>Every restarted predictive factor sums to one over the next observed state, so the construction defines a normalized observation law, positive on the paths under consideration.</p>
+    <p>For fixed $\tau,T,p_*,Q,L$ and fixed $r$, the budget is $O(Nm^{-2r-2})$, uniformly in panel length.
+      One retained interval gives a quartic rather than cubic inverse-speed bound; it uses two transitions and hence three consecutive observed states.
+      This is an approximation theorem, not an efficiency or conditional-coverage guarantee.</p>
+
+    <h2>Verification and limits</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_slow_fast_interaction.py">certificate</a> checks all semigroup and block inequalities, including a nonreversible cycle and simultaneous jumps, and compares matrix exponentials with independent uniformization.
+      A switched three-state observation model has measured interaction and one-interval log-gap orders near two and four.
+      Floating computations are regression checks, not outward-rounded enclosures.</p>
+    <p>The finite-dimensional averaging framework is classical; see <a href="./bibliography.html#YinZhang2013">Yin and Zhang (2013)</a>, whose title, authors, edition and contents were checked on the publisher&apos;s page.
+      The bounds above are proved directly, without importing a theorem from the inaccessible full book or asserting priority.</p>
+    <p>The constants are not uniform as a diffusion discretization is refined: $\ell$ may diverge and $p_*$ may vanish.
+      Nor is fixed-spacing forgetting uniform at spacings of order $m^{-1}$: even with $L=0$, $K=e^{t mQ}$ retains an order-one initial layer there.
+      Extending this result to a continuous-state diffusion requires separate density estimates.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
