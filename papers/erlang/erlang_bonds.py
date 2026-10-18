@@ -2,7 +2,7 @@
 
 dr = kappa (theta_X - r) dt + sigma dW, regime X in {1, 2}, each regime lasting an Erlang(k) time with means m1, m2
 (k exponential stages of mean m_i / k in a row). The stage chain has 2k states and constant hazards, so the
-regime-switching reduction applies unchanged: P_j(T, r) = exp(a_j(T) - B(T) r), with a vector ODE on the stages.
+regime-switching reduction applies unchanged: P_j(T, r) = a_j(T) exp(-B(T) r), with a linear ODE and a(0)=1.
 
 First order in the durations:
     log P = log P_Vasicek(theta_bar) + kappa^2 Dtheta^2 K1 I2(T) - kappa B(T) w,

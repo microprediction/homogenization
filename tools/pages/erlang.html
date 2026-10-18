@@ -22,16 +22,16 @@
     <p>Label the stages $1, \dots, k$ in regime 1 and $k+1, \dots, 2k$ in regime 2, arranged in a ring.
     Stage $j$ moves to stage $j+1$ at rate $k/m_1$ in regime 1 and $k/m_2$ in regime 2, and stage $2k$ returns
     to stage $1$.</p>
-    <p>All stages of a regime share its mean level $\theta_i$, so no price observed today can tell them apart. They
-    differ only in how soon the regime will change. Observing a function of a Markov chain that is constant on groups
-    of states is called lumping.</p>
+    <p>All stages of a regime share its current mean level $\theta_i$, but bond prices can distinguish them through
+    how soon the regime can change. Observing a function of a Markov chain that is constant on groups of states is
+    called lumping; this does not make the stages observationally equivalent for future-dependent prices.</p>
     <p>The stage chain has constant hazards, so everything on the <a href="./engine.html">engine</a> page applies to it
     without change.</p>
 
     <h2>Reduction to a linear system</h2>
     <p>Let $P_j(T, r)$ be the price of a zero-coupon bond maturing at $T$ when the chain is in stage $j$. As in the
     <a href="./regime-switching.html">regime-switching</a> example,</p>
-    $$P_j(T, r) = e^{a_j(T) - B(T)\,r}, \qquad B(T) = \frac{1 - e^{-\kappa T}}{\kappa},$$
+    $$P_j(T, r) = a_j(T)e^{-B(T)\,r}, \qquad B(T) = \frac{1 - e^{-\kappa T}}{\kappa},$$
     $$a' = (Q + \operatorname{diag} g)\,a, \qquad a(0) = \mathbf 1, \qquad g_j(t) = -\kappa\,\theta_j\,B(t) + \tfrac12\sigma^2 B(t)^2 ,$$
     <p>where $Q$ is the generator of the ring and $\theta_j$ is the level of the regime that stage $j$ belongs to.</p>
 
@@ -124,6 +124,9 @@
     At long maturities the variance term grows like $T$ and the start term fades like $1/T$.</p>
 
     <h2>What the yield curve identifies</h2>
+    <p>With the current regime and model parameters known, $k-1$ sufficiently short bond maturities identify any
+    mixture over its $k$ hidden stages. The <a href="./erlang-stages-full.html">full stage-observability note</a>
+    proves the exact response orders and their rapidly deteriorating conditioning; this is not stable recovery from noisy quotes.</p>
     <p>To first order the variance term sees $K_1$ alone, so regular durations cannot be told apart from Markov
     durations with shorter means. The start term separates them: under Markov switching the curve does not move with
     the age of the regime, and under regular switching it does. The age of a regime is observable, for example the
