@@ -1,5 +1,14 @@
 [
  {
+  "key": "LopezRatanov2014",
+  "authors": "López, O. and Ratanov, N.",
+  "year": 2014,
+  "title": "On the asymmetric telegraph processes",
+  "venue": "Journal of Applied Probability 51(2):569-589",
+  "doi": "10.1239/jap/1402578644",
+  "annotation": "Equation (2.14) gives the unequal-rate telegraph density, including endpoint atoms; primary publisher PDF inspected. The path-score noise note derives its CDF-gap identity and uniform convolution bound directly."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,

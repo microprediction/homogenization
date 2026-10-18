@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Path scores with vanishing smoothing noise · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_noise_crossover.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>When smoothing noise vanishes</h1>
+    <p class="subtitle">A noise-uniform telegraph calculation, including unequal switching rates and endpoint atoms.</p>
+
+    <h2>Setup and result</h2>
+    <p>Let $Y_s\in\{-1,+1\}$ jump from $+$ to $-$ at fixed rate $a&gt;0$ and back at fixed rate $b&gt;0$.
+      Put $r=a+b$, $\pi=(b/r,a/r)$, $\bar y=(b-a)/r$, and $v=8ab/r^3$.
+      Consider $A_c=c^{-1}\int_0^cY_sds$ and $S_c=\mu A_c+\sigma Z$, with fixed $\mu&gt;0$, independent $Z\sim N(0,1)$, and any $\sigma\ge0$.</p>
+    <p>Write $F_\pm$ for its fixed-start CDFs, $F_\pi=(bF_++aF_-)/r$, and $q_c(\sigma)$ for the pooled $p$-quantile at fixed $0&lt;p&lt;1$.
+      Define $z_p=\Phi^{-1}(p)$ and the Gaussian comparison scale $\tau_c(\sigma)=\sqrt{\sigma^2+\mu^2v/c}$.
+      The exact stationary variance is $\operatorname{Var}_\pi A_c=v/c-v(1-e^{-rc})/(rc^2)$, so $\tau_c$ is not the exact standard deviation.</p>
+    <div class="equation-card">
+    $$\begin{pmatrix}F_+(q_c(\sigma))-p\\F_-(q_c(\sigma))-p\end{pmatrix}
+      ={2\mu\phi(z_p)\over r^2c\tau_c(\sigma)}\begin{pmatrix}-a\\b\end{pmatrix}
+      +o\!\left({\mu\over c\tau_c(\sigma)}\right),
+      \qquad\text{uniformly over }\sigma\ge0.$$
+    </div>
+    <p>For $a=b=1$ this is the symmetric coefficient $\mp\mu\phi(z_p)/(2c\sqrt{\sigma^2+\mu^2/c})$.
+      For unequal rates the two errors have ratio $-a/b$, not $-1$; their stationary-weighted sum is exactly zero at every $c$ where the pooled quantile attains $p$.
+      This is marginal population coverage, not empirical-calibration or distribution-free conditional validity.</p>
+    <p>At zero noise there are endpoint atoms, but every fixed interior $p$ lies in the continuous part for sufficiently large $c$.
+      Rates $a,b$ are held fixed; no uniformity as either rate vanishes is claimed.</p>
+
+    <h2>An exact CDF-gap identity</h2>
+    <p>For $-1&lt;x&lt;1$, write $R=\sqrt{1-x^2}$, $E=c\{r+(a-b)x\}/2$, and $B=c\sqrt{ab}R$.
+      The classical telegraph densities are</p>
+    $$f_+(x)={ce^{-E}\over2}\left[aI_0(B)+{\sqrt{ab}(1+x)\over R}I_1(B)\right],\qquad
+      f_-(x)={ce^{-E}\over2}\left[bI_0(B)+{\sqrt{ab}(1-x)\over R}I_1(B)\right].$$
+    <p>The remaining masses are $e^{-ac}$ at $+1$ for a positive start and $e^{-bc}$ at $-1$ for a negative start.
+      Defining $g_c(x)=e^{-E}I_0(B)$ on $[-1,1)$ and zero outside, differentiation gives $f_+-f_-=-g_c'$ inside the support.
+      Including the endpoint atoms therefore gives the exact identity</p>
+    $$\Pr_+(A_c\le x)-\Pr_-(A_c\le x)=-g_c(x).$$
+    <p>Consequently $F_+-F_\pi$ is $-a/r$ times the Gaussian convolution of $g_c$, while $F_--F_\pi$ is $+b/r$ times the same convolution.
+      This proves the unequal error ratio exactly, not merely to leading order.</p>
+
+    <h2>A normalized kernel and its finite-horizon budgets</h2>
+    <p>Set $x(u)=\bar y+\sqrt{v/c}\,u$, $\ell=(-1-\bar y)\sqrt{c/v}$, $h=(1-\bar y)\sqrt{c/v}$, and $H=r\sqrt{vc}/2$.
+      Define $k_c(u)=H g_c(x(u))$, supported on $[\ell,h)$, and let $j_c(u)=\sqrt{v/c}\{bf_+(x(u))+af_-(x(u))\}/r$ be the continuous stationary density, extended by zero.
+      The stationary atom mass is $\omega_c=(be^{-ac}+ae^{-bc})/r$.</p>
+    <p>The exact conditional-mean difference gives $\int_{-1}^1g_c(x)dx=2(1-e^{-rc})/(rc)$, so $\int k_c=1-e^{-rc}$.
+      Put $\lambda=\sigma\sqrt{c/v}/\mu$, $t=(q-\mu\bar y)\sqrt{c/v}/\mu$, and let $\phi_\lambda$ be the $N(0,\lambda^2)$ density, with convolution by $\phi_0$ meaning the identity.
+      Then exactly</p>
+    $$F_+(q)-F_\pi(q)=-{a\over rH}(k_c*\phi_\lambda)(t),\qquad
+      F_-(q)-F_\pi(q)={b\over rH}(k_c*\phi_\lambda)(t).$$
+    <p>The following exact one-dimensional budgets retain both endpoint jumps:</p>
+    $$\begin{aligned}
+      \eta_c&=\tfrac12\{\|j_c-\phi\|_1+\omega_c\},\qquad L_c=\|k_c-\phi\|_1,\\
+      D_c&=\tfrac12\left\{\int_\ell^h|k_c'(u)+u\phi(u)|du
+          +H(e^{-ac}+e^{-bc})+\phi(\ell)+\phi(h)\right\},\\
+      \epsilon_c&=\sqrt2\max\{D_c,L_c/\sqrt{2\pi}\}.
+    \end{aligned}$$
+    <p>The derivative is taken only inside the support.
+      Since a function vanishing at both infinities has supremum at most half its total variation, $\|k_c-\phi\|_\infty\le D_c$.
+      Young's inequalities, using this bound for $\lambda\le1$ and the $L^1$ bound for $\lambda\ge1$, imply</p>
+    $$\sup_{t\in\mathbb R,\lambda\ge0}\sqrt{1+\lambda^2}\,
+      |(k_c*\phi_\lambda)(t)-\phi_{\sqrt{1+\lambda^2}}(t)|\le\epsilon_c.$$
+    <p>The exact total-variation distance $\eta_c$ contracts under Gaussian convolution and rescaling.
+      Hence the pooled standardized CDF is within $\eta_c$ of $\Phi$, independently of $\sigma$.
+      If $\eta_c&lt;\min(p,1-p)$, put $\Delta_c(p)=\max\{z_p-z_{p-\eta_c},z_{p+\eta_c}-z_p\}$ and $w_+=a,w_-=b$.</p>
+    <div class="equation-card">
+    $$\left|F_\pm(q_c(\sigma))-p\pm{2\mu w_\pm\phi(z_p)\over r^2c\tau_c(\sigma)}\right|
+      \le {2\mu w_\pm\over r^2c\tau_c(\sigma)}
+        \left[\epsilon_c+{\Delta_c(p)\over\sqrt{2\pi e}}\right].$$
+    </div>
+    <p>This follows by quantile bracketing and $\sup|\phi'|=1/\sqrt{2\pi e}$.
+      At zero noise the stated $\eta_c$ condition also excludes quantiles in the endpoint atoms.
+      The budgets use explicit Bessel functions and absolute integrals; certificate quadratures are regression checks, not outward-rounded enclosures.</p>
+
+    <h2>Why the budgets vanish for every fixed pair of rates</h2>
+    <p>The exponential part of $g_c$ is $e^{cS(x)}$, where</p>
+    $$S(x)=-\tfrac12\{r+(a-b)x\}+\sqrt{ab}\sqrt{1-x^2},\qquad
+      S(\bar y)=S'(\bar y)=0,\quad S''(\bar y)=-1/v.$$
+    <p>Moreover $S''(x)=-\sqrt{ab}(1-x^2)^{-3/2}\le-\sqrt{ab}$.
+      Fixed-order Bessel asymptotics therefore give $k_c\to\phi$, $k_c'\to\phi'$, and $j_c\to\phi$ locally uniformly in $u$.
+      The normalization $H$ is what makes the first limit have mass one.</p>
+    <p>On $|x-\bar y|\le(1-|\bar y|)/2$, concavity and the Bessel expansions bound $k_c$ and $|k_c'|$ by $C(1+|u|)e^{-du^2}$ for fixed-rate constants $C,d&gt;0$ and all sufficiently large $c$.
+      In the derivative, $I_1(B)/I_0(B)=1+O(c^{-1})$ cancels the apparent $\sqrt c$ term because $S'(\bar y)=0$.
+      Outside this interior interval, $I_0(B)\le2e^B/\sqrt{1+B}$ and $I_1(B)\le(B/2)I_0(B)$ bound the integrals by a polynomial in $c$ times an exponentially decaying factor.</p>
+    <p>Thus $L_c,D_c\to0$; the remaining Gaussian tails and endpoint terms vanish as well.
+      The continuous mass of $j_c$ tends to one, so Scheff&eacute;'s lemma gives $\eta_c\to0$.
+      Hence $\Delta_c(p)\to0$, proving the noise-uniform little-$o$ result without asserting an unproved polynomial remainder rate.</p>
+
+    <h2>The noise-scale crossover</h2>
+    <p>For $\sigma_c=s c^{-\beta}$ with fixed $s&gt;0$ and $\beta\ge0$, the positive-start leading gap is:</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>noise decay</th><th>conditional gap</th></tr></thead>
+      <tbody>
+        <tr><td>$0\le\beta&lt;1/2$</td><td>$-2\mu a\phi(z_p)c^{\beta-1}/(r^2s)$</td></tr>
+        <tr><td>$\beta=1/2$</td><td>$-2\mu a\phi(z_p)c^{-1/2}/(r^2\sqrt{s^2+\mu^2v})$</td></tr>
+        <tr><td>$\beta&gt;1/2$, or $\sigma_c=0$</td><td>$-2a\phi(z_p)c^{-1/2}/(r^2\sqrt v)$</td></tr>
+      </tbody>
+    </table></div>
+    <p>Each entry has relative error tending to zero; multiply by $-b/a$ for the negative-start gap.
+      The fixed-positive-noise $c^{-1}$ theorem remains correct but is not uniform as its smoothing parameter vanishes.</p>
+
+    <h2>Literature and scope</h2>
+    <p>The unequal-rate density, including its atoms, is classical: <a href="./bibliography.html#LopezRatanov2014">L&oacute;pez and Ratanov (2014)</a>, equation (2.14), inspected in the primary publisher PDF.
+      Bessel inputs are <a href="https://dlmf.nist.gov/10.32.E1">DLMF 10.32.1</a> and <a href="https://dlmf.nist.gov/10.40.E1">10.40.1</a>.
+      The CDF-gap identity and convolution error transfer are derived above; no novelty claim is made for the density or Gaussian limit.</p>
+    <p>The certificate retains the symmetric Poisson&ndash;Beta comparisons and adds unequal-rate matrix Feynman&ndash;Kac comparisons, finite-noise bounds and stationary-weighted cancellation.
+      The model has two states, fixed positive rates, a linear occupation score, independent Gaussian noise and population pooling only.
+      There is no distribution-free feature-conditional coverage claim.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
