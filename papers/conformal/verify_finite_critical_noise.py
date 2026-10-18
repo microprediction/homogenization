@@ -25,20 +25,22 @@ def profile(u, h, boundary, variance, skew):
     return norm.pdf(u)*(-boundary/variance*u+h*skew/(3*variance**2)*(u**3-3*u))
 
 
-def leading(t, lam, data):
+def leading(t, lam, data, power=1):
     _, _, h, boundary, variance, skew = data
     if not lam:
-        return profile(math.sqrt(t), h, boundary, variance, skew) if t > 0 else np.zeros_like(h)
-    return quad_vec(lambda u: 2*u*profile(u, h, boundary, variance, skew)
-                    *norm.pdf((t-u*u)/lam)*(1+lam)/lam, 0., 12., epsabs=2e-11,
-                    points=[math.sqrt(x) for x in (t-8*lam, t, t+8*lam) if 0 < x < 144])[0]/(1+lam)
+        return profile(t**(1/(2*power)), h, boundary, variance, skew) if t > 0 else np.zeros_like(h)
+    return quad_vec(lambda u: 2*power*u**(2*power-1)*profile(u, h, boundary, variance, skew)
+                    *norm.pdf((t-u**(2*power))/lam)*(1+lam)/lam, 0., 12., epsabs=2e-11,
+                    points=[x**(1/(2*power)) for x in (t-8*lam, t, t+8*lam)
+                            if 0 < x < 12**(2*power)])[0]/(1+lam)
 
 
-def reference(t, lam):
+def reference(t, lam, power=1):
     if not lam:
-        return max(0., 2*ndtr(math.sqrt(max(0., t)))-1)
-    return quad(lambda u: 2*norm.pdf(u)*ndtr((t-u*u)/lam), 0., 12., epsabs=2e-11,
-                points=[math.sqrt(x) for x in (t-8*lam, t, t+8*lam) if 0 < x < 144])[0]
+        return max(0., 2*ndtr(max(0., t)**(1/(2*power)))-1)
+    return quad(lambda u: 2*norm.pdf(u)*ndtr((t-u**(2*power))/lam), 0., 12., epsabs=2e-11,
+                points=[x**(1/(2*power)) for x in (t-8*lam, t, t+8*lam)
+                        if 0 < x < 12**(2*power)])[0]
 
 
 class FourierLaw:
@@ -59,46 +61,66 @@ class FourierLaw:
             self.atom[keep] = expm(c*q[np.ix_(keep, keep)])@np.ones(len(keep))
         self.atom_location = c/variance*f*f
         self.continuous = self.ch-np.cos(np.outer(self.u, math.sqrt(c/variance)*f))*self.atom
+        folded_grid = (2*self.w/self.u*np.sin(np.outer(self.x, self.u)))@self.continuous
+        folded_grid += self.atom*(self.atom_location <= self.x[:, None]**2)
+        self.gap_grid = folded_grid-(folded_grid@pi)[:, None]
+        self.xw = 4*xw
         self.c, self.upper = c, upper
 
-    def cdf(self, t, lam):
-        return self.weights@ndtr((t-self.x**2)/lam)
+    def cdf(self, t, lam, power=1):
+        return self.weights@ndtr((t-self.x**(2*power))/lam)
 
     def folded(self, t):
         if t < 0:
             return np.zeros(len(self.data[0]))
         return (2*self.w*np.sin(self.u*math.sqrt(t))/self.u)@self.continuous+self.atom*(self.atom_location <= t)
 
-    def across_noise(self, t, lam):
+    def across_noise(self, t, lam, power=1):
         if not lam:
-            return self.folded(t)
-        return quad_vec(lambda z: norm.pdf(z)*self.folded(t-lam*z), -12., min(12., t/lam),
+            return self.folded(t**(1/power)) if t > 0 else self.folded(t)
+        if t/lam <= -12:
+            return np.zeros(len(self.data[0]))
+        return quad_vec(lambda z: norm.pdf(z)*self.folded(max(0., t-lam*z)**(1/power)), -12., min(12., t/lam),
                         epsabs=2e-10)[0]
 
-    def convolved_gap(self, t, lam):
+    def convolved_gap(self, t, lam, power=1):
         pi = self.data[0]
+        if lam >= 100:
+            # Fixed Gaussian quadrature avoids adaptive pursuit of the
+            # Fourier roundoff floor in polynomially weighted far tails.
+            weight = self.xw*2*power*self.x**(2*power-1)*norm.pdf(
+                (t-self.x**(2*power))/lam)*(1+lam)/lam
+            return weight@self.gap_grid/(1+lam)
         def integrand(u):
             folded = self.folded(u*u)
-            return 2*u*(folded-pi@folded)*norm.pdf((t-u*u)/lam)*(1+lam)/lam
-        return quad_vec(integrand, 0., 8., epsabs=2e-12)[0]/(1+lam)
+            return 2*power*u**(2*power-1)*(folded-pi@folded)*norm.pdf(
+                (t-u**(2*power))/lam)*(1+lam)/lam
+        return quad_vec(integrand, 0., 8., epsabs=2e-12, points=[x**(1/(2*power))
+                        for x in (t-8*lam, t, t+8*lam) if 0 < x < 8**(2*power)])[0]/(1+lam)
 
     def quantile(self, p, lam):
         pi = self.data[0]
         return brentq(lambda t: pi@self.cdf(t, lam)-p, -10., 20.)
 
-    def budget(self, t, lam):
+    def budget(self, t, lam, power=1):
         pi, _, h, boundary, variance, skew = self.data
-        transform = self.transform@ndtr((t-self.x**2)/lam)
+        transform = self.transform@ndtr((t-self.x**(2*power))/lam)
         approximation = np.exp(-self.u**2/2)[:, None]/self.c*(
             -np.outer(self.u**2, boundary)/(2*variance)
             -np.outer(self.u**4, h)*skew/(6*variance**2))
         residual = self.ch-(self.ch@pi)[:, None]-approximation
         central = (self.w*abs(transform))@abs(residual)
         def fourth(x):
-            z = (t-x*x)/lam
-            return norm.pdf(z)*(-12*z/lam**2+48*x*x*(1-z*z)/lam**3
-                                +16*x**4*(3*z-z**3)/lam**4)
-        derivative_norm = 2*quad(lambda x: abs(fourth(x)), 0., np.inf, epsabs=2e-9)[0]
+            degree = 2*power
+            z = (t-x**degree)/lam
+            d = [0.] + [-math.factorial(degree)/math.factorial(degree-j)*x**(degree-j)/lam
+                        if j <= degree else 0. for j in range(1, 5)]
+            return norm.pdf(z)*(d[4]-4*z*d[1]*d[3]-3*z*d[2]**2
+                +6*(z*z-1)*d[1]**2*d[2]-(z**3-3*z)*d[1]**4)
+        cuts = [0.] + sorted({x**(1/(2*power)) for x in
+            (t-12*lam, t-3*lam, t, t+3*lam, t+12*lam) if x > 0}) + [np.inf]
+        derivative_norm = 2*sum(quad(lambda x: abs(fourth(x)), low, high,
+            epsabs=2e-9, limit=200)[0] for low, high in zip(cuts[:-1], cuts[1:]))
         tail = derivative_norm/math.pi*(2/(3*self.upper**3)+np.exp(-self.upper**2/2)
                /self.upper/self.c*(abs(boundary)/(2*variance*self.upper**2)
                                    +abs(h*skew)/(6*variance**2)))
@@ -179,6 +201,78 @@ def unsmoothed_bessel_check(q, values, a, b):
     print('12 zero-noise statewise Bessel-CDF checks: PASS')
 
 
+def even_power_check(q, values):
+    errors, refinement, cdf_refinement = [], 0., 0.
+    for c in (32., 128., 512., 2048.):
+        law, fine = FourierLaw(q, values, c), FourierLaw(q, values, c, 480, 96.)
+        pi, _, h, boundary, variance, skew = law.data
+        residuals, fixed_errors = [], []
+        for power in (2, 3):
+            n, order = len(q), 4*power
+            block = np.kron(np.eye(order+1), c*q)
+            for j in range(1, order+1):
+                block[j*n:(j+1)*n, (j-1)*n:j*n] = j*math.sqrt(c/variance)*np.diag(law.data[1])
+            moments = (expm(block)@np.r_[np.ones(n), np.zeros(n*order)]).reshape(order+1, n)
+            factor = power*math.prod(range(1, 2*power, 2))
+            moment = factor*(boundary/variance-2*(power-1)*h*skew/(3*variance**2))
+            integral = quad_vec(lambda u: 2*power*u**(2*power-1)*profile(u, *law.data[2:]),
+                                0., 12., epsabs=2e-10)[0]
+            assert np.max(abs(integral+moment)) < 2e-9
+            for lam in (0., .02, c**-.5, .5, 2., math.sqrt(c),
+                        .5*(c/variance)**power, c**(power+1)):
+                for p in (.5, .9):
+                    scale = 1+lam
+                    actual = lambda t, obj: obj.across_noise(t, lam, power) if lam < 3 else obj.cdf(t, lam, power)
+                    t = scale*brentq(lambda s: pi@actual(scale*s, law)-p, -5., 100.)
+                    cdf_refinement = max(cdf_refinement, np.max(abs(actual(t, fine)-actual(t, law))))
+                    target = scale*brentq(lambda s: reference(scale*s, lam, power)-p, -5., 100.)
+                    gap = law.convolved_gap(t, lam, power) if lam else actual(t, law)-p
+                    fine_gap = fine.convolved_gap(t, lam, power) if lam else actual(t, fine)-p
+                    refinement = max(refinement, c*scale*np.max(abs(gap-fine_gap)))
+                    prediction = leading(target, lam, law.data, power)
+                    residuals.append(c*scale*np.max(abs(gap-prediction/c)))
+                    assert abs(pi@prediction) < 2e-9
+                    if lam == 2.:
+                        assert np.all(abs(gap-leading(t, lam, law.data, power)/c)
+                                      <= law.budget(t, lam, power)+3e-8)
+                    if lam == .5*(c/variance)**power and p == .9:
+                        limit = -moment*variance**power/.5*norm.pdf(norm.ppf(p))
+                        fixed_errors.append(np.max(abs(c**(power+1)*gap-limit)))
+                        if c == 2048:
+                            print(f'power={power}: fixed-noise coefficient {limit}')
+                    if lam == c**(power+1):
+                        delta = moments[2*power]-pi@moments[2*power]
+                        taylor = -norm.pdf(t/lam)*delta/lam
+                        allowance = (moments[4*power]+pi@moments[4*power])/(2*lam**2*math.pi)
+                        assert np.all(c*lam*abs(gap-taylor) <= c*lam*allowance+3e-5)
+        errors.append(max(residuals))
+        print(f'c={c:.0f}: even-power weighted discrepancy={errors[-1]:.9f}; '
+              f'fixed-noise errors='+', '.join(f'{x:.9f}' for x in fixed_errors))
+    assert cdf_refinement < 3e-8 and refinement < 2e-5 and errors[-1] < errors[0]/8
+    print(f'128 quartic/sextic quantile cases, 16 Fourier and 16 independent moment budgets; '
+          f'weighted refinement={refinement:.3e}; CDF refinement={cdf_refinement:.3e}')
+
+
+def even_bessel_check(q, values, a, b):
+    data = coefficients(q, values)
+    mean = values[0]-data[1][0]
+    error = 0.
+    for c in (4., 16.):
+        # Steep score maps need more Fourier bandwidth at short horizons.
+        law = FourierLaw(q, values, c, 1280, 320.)
+        for power in (2, 3):
+            for lam in (.5, 2.):
+                for t in (.5, 5.):
+                    def kernel(raw):
+                        return ndtr((t-(math.sqrt(c/data[4])*(raw-mean))**(2*power))/lam)
+                    exact = np.array([quad(lambda u: kernel(2*u-1)*asymmetric_occupation_density(
+                        u, c, a, b, i), 0., 1., epsabs=2e-11)[0]
+                        + math.exp(-rate*c)*kernel(values[i]) for i, rate in enumerate((a, b))])
+                    error = max(error, np.max(abs(law.cdf(t, lam, power)-exact)))
+    assert error < 5e-8
+    print(f'16 independent quartic/sextic Bessel-CDF vectors: max error={error:.3e}')
+
+
 def main():
     a, b = 1.7, .4
     q2, f2 = np.array([[-a, a], [b, -b]]), np.array([1., -1.])
@@ -245,6 +339,8 @@ def main():
     unsmoothed_bessel_check(q2, f2, a, b)
     zero_noise_check(q, values)
     large_noise_check(q, values)
+    even_bessel_check(q2, f2, a, b)
+    even_power_check(q, values)
     print('PASS')
 
 

@@ -4,7 +4,7 @@
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_critical_noise.py">certificate</a></span></p>
     <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
     <h1>Critical noise in a finite regime chain</h1>
-    <p class="subtitle">The leading quadratic-score bias combines a second-moment boundary term with initial-mean memory times stationary skewness.</p>
+    <p class="subtitle">Even-power path scores combine boundary covariance with initial-mean memory times stationary skewness, uniformly over Gaussian noise levels.</p>
 
     <h2>Coefficient and scope</h2>
     <p>Fix an irreducible finite row generator $Q$, stationary row $\pi$, and real observable $f$ centered so $\pi f=0$.
@@ -106,10 +106,62 @@
       Uniform equicontinuity on compact $s$ sets completes the quantile transfer.
       At zero noise all atoms correspond to paths staying in one feature level, with locations $cf_j^2/\Gamma$ and exponentially decaying killed-block masses; these are eventually outside the interior quantile region or at zero.</p>
 
+    <h2>Every fixed even power</h2>
+    <p>Fix an integer $k\ge1$ and instead take $S_c^{(k)}=\mu A_c^{2k}+\sigma_c Z$, with
+      $\lambda=c^k\sigma_c/(\mu\Gamma^k)$; let $q_c^{(k)}$ be its stationary pooled $p$-quantile and
+      $t_p^{(k)}(\lambda)$ the reference quantile of $N^{2k}+\lambda Z$.
+      Set $P_i^{(k)}(x)=P_i(x^{1/k})$ for $x&gt;0$, zero otherwise, and
+      $K_{i,\lambda}^{(k)}(t)=\mathbb E P_i^{(k)}(t-\lambda Z)$.</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c^{(k)}\le q_c^{(k)})-p
+      ={K_{i,\lambda}^{(k)}(t_p^{(k)}(\lambda))\over c}+r_{i,c}^{(k)}(\lambda),\qquad
+      \sup_{i,\lambda\ge0}c(1+\lambda)|r_{i,c}^{(k)}(\lambda)|\longrightarrow0.$$
+    </div>
+    <p>The unsmoothed profile is exactly $J_{i,c}^{(k)}(x)=J_{i,c}(x^{1/k})$.
+      Its supremum error is the same $M_{i,c}$, but the needed integrable error has the weight</p>
+    $$L_{i,c}^{(k)}=\int_0^\infty|J_{i,c}^{(k)}(x)-P_i^{(k)}(x)|dx
+      =k\int_0^\infty y^{k-1}|J_{i,c}(y)-P_i(y)|dy\longrightarrow0.$$
+    <p>To prove this stronger estimate, truncate at $y=R_c^2$, where $R_c^2=K_0\log c$.
+      The central contribution is $O(c^{-1/2}(\log c)^k)$; the preceding Chernoff bounds give a tail at most
+      $Cc R_c^{2k}e^{-aR_c^2}+Cc^{k+1}e^{-bc}$, plus a vanishing normal-polynomial profile tail.</p>
+    <p>Choose fixed $K_0$ large enough; $k$ remains fixed.
+      Gaussian convolution now gives the same actual-threshold bound
+      $c^{-1}\min\{M_{i,c},L_{i,c}^{(k)}/(\lambda\sqrt{2\pi})\}$, omitting the second term at zero noise.</p>
+    <p>For a finite-$c$ bound, any $R&gt;0$ and integer $\ell\ge1$ give</p>
+    $$L_{i,c}^{(k)}\le R^{2k}M_{i,c}
+      +{c\over R^{2\ell}}\left\{\mathbb E_i|X_c|^{2(k+\ell)}
+                        +\mathbb E_\pi|X_c|^{2(k+\ell)}\right\}
+      +k\int_{R^2}^\infty y^{k-1}|P_i(y)|dy.$$
+    <p>This follows from $|J_{i,c}(y)|\le c\{\Pr_i(X_c^2&gt;y)+\Pr_\pi(X_c^2&gt;y)\}$ and a moment tail bound.
+      The integrated moments follow from $v_j'=Qv_j+jDv_{j-1}$, $v_0=\mathbf1$ and $v_j(0)=0$ for $j&gt;0$,
+      so this bound and the signed-Esseen bound on $M$ involve only finite matrices and one-dimensional integrals.</p>
+    $$\int_0^\infty P_i^{(k)}(x)dx=-{D_{k,i}\over\Gamma^k},\qquad
+      D_{k,i}=k(2k-1)!!\left[B_i\Gamma^{k-1}
+                  -{2(k-1)\over3}h_i\kappa_3\Gamma^{k-2}\right].$$
+    <p>Indeed substitution $y=u^2$ reduces the integral to Gaussian even moments and
+      $\mathbb E N^{2k+2}=(2k+1)\mathbb E N^{2k}$.
+      Compactify the reference laws to $(1-\rho)N^{2k}+\rho Z$ as before; they have unique interior quantiles,
+      and the normalized coefficient family extends continuously to $P_i^{(k)}(s)$ and
+      $-(D_{k,i}/\Gamma^k)\phi(s)$ at the two endpoints.</p>
+    <p>This proves the uniform quantile transfer; transformed atoms again lie at zero or diverge.
+      If $c^k\sigma_c\to\infty$, the theorem therefore gives</p>
+    $$c^{k+1}\sigma_c\{\Pr_i(S_c^{(k)}\le q_c^{(k)})-p\}
+       \longrightarrow-\mu D_{k,i}\phi(\Phi^{-1}(p)).$$
+    <p>In particular a quartic score with fixed positive noise has the $c^{-3}$ coefficient
+      $6\Gamma B_i-4\kappa_3h_i$, whereas at zero noise every even power has the same quantile event
+      $\{|A_c|\le r\}$ and the same $c^{-1}$ profile evaluated at the corresponding quantile.</p>
+    <p>All constants fix $Q,f,k,p$; this is not uniform over unbounded power or degenerating chains.
+      This supplies the higher-even-power extension requested in
+      <a href="https://github.com/microprediction/homogenization/issues/195">issue 195</a>, subject to review.</p>
+
     <h2>An actual-threshold Fourier error budget</h2>
-    <p>For $\lambda&gt;0$ there is also a finite-$c$ bound without substituting a limiting quantile.
-      Let $\widehat g(u)=\int_{\mathbb R}e^{-iux}g_{t,\lambda}(x)dx$, $a_i=B_i/(2\Gamma)$, $d_i=-h_i\kappa_3/(6\Gamma^2)$, and $R_i(u)=e^{-u^2/2}(-a_i u^2+d_i u^4)/c$.
-      For any $U&gt;0$ the error $|F_i(\mu\Gamma t/c)-F_\pi(\mu\Gamma t/c)-K_{i,\lambda}(t)/c|$ is at most</p>
+    <p>For $\lambda&gt;0$ there is also a finite-$c$ bound without substituting a limiting quantile;
+      write $F_i^{(k)}$ for the CDF of $S_c^{(k)}$.
+      For the chosen power $k$, put $g_{t,\lambda}(x)=\Phi((t-x^{2k})/\lambda)$ and
+      $\widehat g(u)=\int_{\mathbb R}e^{-iux}g_{t,\lambda}(x)dx$;
+      let $a_i=B_i/(2\Gamma)$, $d_i=-h_i\kappa_3/(6\Gamma^2)$, and $R_i(u)=e^{-u^2/2}(-a_i u^2+d_i u^4)/c$.
+      For any $U&gt;0$ the error
+      $|F_i^{(k)}(\mu\Gamma^k t/c^k)-F_\pi^{(k)}(\mu\Gamma^k t/c^k)-K_{i,\lambda}^{(k)}(t)/c|$ is at most</p>
     $$ {1\over\pi}\int_0^U|\widehat g(u)|\,
         |\operatorname{Re}\delta\chi_i(u)-R_i(u)|du
        +{\|g^{(4)}\|_1\over\pi}\left[
@@ -134,6 +186,14 @@
       At fixed physical noise $.5$, the $c^2$-coefficient error falls from $0.004144202$ to $0.000067222$.</p>
     <p>The numerical routine retains killed-block atoms when evaluating the unsmoothed folded CDF, with an independent repeated-feature jump check.
       Its high-frequency matrix-norm comparisons are grid regressions, not numerical proofs of a continuum spectral gap.</p>
+    <p>There are also 128 quartic/sextic quantile cases, covering zero, shrinking, bounded and growing normalized noise,
+      with 16 Fourier budgets and 16 independent finite-moment Taylor checks.
+      Their largest $c(1+\lambda)$-weighted discrepancy falls from $0.877089823$ at $c=32$ to $0.014101738$
+      at $c=2048$.</p>
+    <p>Sixteen independent two-state quartic/sextic Bessel-CDF vectors agree within $1.989\times10^{-11}$.
+      These short-horizon checks use a larger Fourier cutoff because steep maps with weak smoothing are not
+      resolved by the default cutoff; large-noise gap integrals use fixed Gaussian quadrature to avoid adapting
+      to the weighted Fourier roundoff floor.</p>
     <p>The identity $\int_0^\infty P_i(x)dx=-B_i/\Gamma$ gives
       $\lambda K_{i,\lambda}(t_p(\lambda))\to-(B_i/\Gamma)\phi(\Phi^{-1}(p))$ as $\lambda\to\infty$.
       The all-noise remainder now justifies joint limits too: if $c\sigma_c\to\infty$, then $c^2\sigma_c\{\Pr_i(S_c\le q_c)-p\}\to-\mu B_i\phi(\Phi^{-1}(p))$.
