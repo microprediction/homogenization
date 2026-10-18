@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bond curves distinguish hidden Erlang stages · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./erlang.html">&larr; regular regime durations</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_stage_observability.py">certificate</a></span></p>
+    <h1>Bond curves distinguish hidden Erlang stages</h1>
+    <p class="subtitle">An equal current mean level does not imply equal prices of future cash flows.</p>
+
+    <h2>The exact price and the observation problem</h2>
+    <p>Use the two-regime Vasicek model of the <a href="./erlang.html">summary</a>, with $k$ stages per regime,
+      rates $\mu_i=k/m_i&gt;0$, $\kappa&gt;0$, $\theta_1\ne\theta_2$ and common volatility $\sigma\ge0$.
+      The stage chain is independent of the Brownian motion, and all these parameters and today's short rate $r$ are known.
+      We ask about the hidden starting stage, not simultaneous identification of the parameters or generator.</p>
+    <p>The linear amplitude, not its logarithm, solves</p>
+    $$P_j(T,r)=a_j(T)e^{-B(T)r},\quad a'=(Q+\operatorname{diag}g(T))a,\quad a(0)=\mathbf1,
+      \qquad g_j(T)=-\kappa\theta_jB(T)+\tfrac12\sigma^2B(T)^2.$$
+    <p>Thus $P_j(0,r)=1$.
+      For an initial stage mixture $\nu$, average prices: $P_\nu=e^{-Br}\nu a$, rather than exponentiating a mixture of log amplitudes.</p>
+
+    <h2>How many stages remain sets the first visible order</h2>
+    <p>Fix the known current regime $i$, and write $\ell=1,\ldots,k$ for the number of exponential stages still needed to leave it, including the current one.
+      Let $P_{i,\ell}$ denote its exact bond price and $P_i^{\rm fr}$ the Vasicek price with the level frozen at $\theta_i$.
+      As $T\downarrow0$, at fixed model parameters,</p>
+    $$D_{i,\ell}(T):=\frac{P_{i,\ell}(T,r)}{P_i^{\rm fr}(T,r)}-1
+      =c_{i,\ell}T^{\ell+2}+O(T^{\ell+3}),\qquad
+      c_{i,\ell}=\frac{\kappa(\theta_i-\theta_{3-i})\mu_i^\ell}{(\ell+2)!}\ne0.$$
+    <p>The same leading coefficient holds for the log-price ratio.
+      Distinct remaining-stage counts give distinct small-maturity curves, despite identical current levels.
+      These are short-maturity statements for a fixed chain, not estimates uniform as its switching rates also diverge.</p>
+
+    <h2>Proof of the response order</h2>
+    <p>Write $Y_s$ for the coarse regime.
+      The common Gaussian short-rate noise cancels in the price ratio, leaving $1+D_{i,\ell}=\mathbb E e^{V_T}$, where</p>
+    $$V_T=\kappa\int_0^T(\theta_i-\theta_{Y_s})B(T-s)\,ds.$$
+    <p>The first exit time $U$ has Erlang density $\mu_i^\ell u^{\ell-1}e^{-\mu_i u}/(\ell-1)!$.
+      Before exiting, $V_T=0$; after the first exit its leading contribution is
+      $\kappa(\theta_i-\theta_{3-i})(T-U)^2/2$, since $B(t)=t+O(t^2)$.
+      A return to regime $i$ requires a further $k$ transitions and contributes only $O(T^{\ell+k+2})$ in expectation.</p>
+    $$\mathbb EV_T=
+      \frac{\kappa(\theta_i-\theta_{3-i})\mu_i^\ell}{2(\ell-1)!}
+      \int_0^T u^{\ell-1}(T-u)^2\,du+O(T^{\ell+3})
+      =c_{i,\ell}T^{\ell+2}+O(T^{\ell+3}).$$
+    <p>Also $|V_T|\le CT^2$ and $\Pr(U\le T)=O(T^\ell)$.
+      Hence $\mathbb E|e^{V_T}-1-V_T|=O(T^{\ell+4})$, proving the claim without substituting a stationary covariance for a specified stage.</p>
+
+    <h2>A stage mixture from finitely many short maturities</h2>
+    <p>Suppose $k\ge2$ and $\nu_\ell$ is any probability vector over the stages of the known current regime.
+      Eliminate $\nu_k$ using normalization and observe $k-1$ prices at $T_j=\varepsilon t_j$, with any fixed $0&lt;t_1&lt;\cdots&lt;t_{k-1}$.
+      The linear response matrix for $(\nu_1,\ldots,\nu_{k-1})$ is</p>
+    $$H_{j\ell}(\varepsilon)=D_{i,\ell}(\varepsilon t_j)-D_{i,k}(\varepsilon t_j),\qquad
+      \frac{P_\nu(T_j,r)}{P_i^{\rm fr}(T_j,r)}-1-D_{i,k}(T_j)
+      =\sum_{\ell=1}^{k-1}H_{j\ell}\nu_\ell.$$
+    <p>Factoring the leading power from each column gives the explicit determinant</p>
+    $$\det H(\varepsilon)=\varepsilon^{(k-1)(k+4)/2}
+      \left(\prod_{\ell=1}^{k-1}c_{i,\ell}\right)
+      \left(\prod_{j=1}^{k-1}t_j^3\right)
+      \left(\prod_{a&lt;b}(t_b-t_a)\right)\{1+O(\varepsilon)\}.$$
+    <p>Its coefficient is nonzero, so the mixture is identified at every sufficiently small positive $\varepsilon$ for this fixed node tuple.
+      This is a model-specific finite-output observability calculation, in the classical framework of
+      <a href="./bibliography.html#Kalman1960">Kalman (1960), Section 5</a>; no new general observability principle is claimed.</p>
+    <p>It is not a stability guarantee.
+      Indeed $H=(V+O(\varepsilon))\operatorname{diag}(c_{i,\ell}\varepsilon^{\ell+2})$, with
+      $V_{j\ell}=t_j^{\ell+2}$ invertible, so
+      $\sigma_{\min}(H)=\Theta(\varepsilon^{k+1})$ and $\|H^{-1}\|_2=\Theta(\varepsilon^{-(k+1)})$.
+      These constants depend on the fixed model and nodes; no uniform noise or sample-complexity guarantee is asserted.</p>
+
+    <h2>Two stages per regime: the current regime can be unknown</h2>
+    <p>When $k=2$, three sufficiently short prices identify any prior over all four stages, even when the current coarse regime is unknown.
+      All model parameters and the current short rate remain known.
+      Put $x=\mu_1$, $y=\mu_2$, $d=(\theta_1-\theta_2)/2\ne0$ and $D=\operatorname{diag}(1,1,-1,-1)$.</p>
+    <p>Remove the known common factor $f(T)=\exp\int_0^T\{-\kappa\theta_* B(t)+\sigma^2B(t)^2/2\}dt$, with midpoint $\theta_*=(\theta_1+\theta_2)/2$, not the stationary mean.
+      The reduced vector $z=a/f$ satisfies $z'=[Q-d(1-e^{-\kappa T})D]z$, $z(0)=\mathbf1$; a normalized quote is $e^{Br}P_\nu/f=\nu z$.
+      Its Taylor coefficients $z(T)=\sum_{n\ge0}u_nT^n$ obey</p>
+    $$(n+1)u_{n+1}=Qu_n+dD\sum_{h=1}^n\frac{(-\kappa)^h}{h!}u_{n-h},\qquad
+      u_0=\mathbf1,\quad u_1=0.$$
+    <p>Let $C_q$ have rows $u_0^\top,u_2^\top,u_3^\top,u_q^\top$ in stage order $1,2,3,4$.
+      Substitution through order five gives the exact identities</p>
+    $$\det C_4=\frac{d^3\kappa^3xy(x-y)}{18},\qquad
+      \det C_5\big|_{y=x}=\frac{2d^4\kappa^4x^2}{45}.$$
+    <p>Take any fixed $0&lt;t_1&lt;t_2&lt;t_3$, observe $T_j=\varepsilon t_j$, and eliminate $\nu_4$ using normalization.
+      The response matrix $H_{j\ell}=z_\ell(T_j)-z_4(T_j)$, $\ell=1,2,3$, has</p>
+    $$\det H=-\det C_q\det[t_j^p]_{j=1,2,3;\ p=2,3,q}\,
+      \varepsilon^{5+q}\{1+O(\varepsilon)\},\qquad
+      q=4\ (x\ne y),\quad q=5\ (x=y).$$
+    <p>The node determinant is $\prod_jt_j^2\prod_{a&lt;b}(t_b-t_a)$ for $q=4$, multiplied by $t_1+t_2+t_3$ for $q=5$, so it is nonzero.
+      At equal rates, $u_0,u_2,u_3$ are independent and $u_4$ is in their span, as the two jet determinants show; hence no lower-order determinant term was omitted.
+      The minus sign comes from expanding the normalized row after subtracting column four from the first three columns of $C_q$.</p>
+    <p>A fixed invertible column change separates the leading powers $2,3,q$, giving $\sigma_{\min}(H)=\Theta(\varepsilon^q)$.
+      Thus equal rates do not destroy identification, but change the weakest signal from order four to order five.
+      These are fixed-parameter limits, not uniform as $x-y\to0$ or the stage rates diverge.</p>
+    <p>For $\kappa=d=1$, nodes $(1,2,3)$ and $\varepsilon=1/4096$, independent ODE inversion gives normalized determinants $0.995614441$ at $(x,y)=(2,3)$ and $0.997282495$ at $(2,2)$.
+      The respective measured weakest-signal powers are $3.996451002$ and $4.998179467$; the certificate also verifies the displayed determinants symbolically.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>For $k=4$, the summary's parameters and nodes $(1,2,3)$ give determinant power $12$ and exact coefficient $512/135$.
+      Independent high-precision ODE evaluation gives normalized determinant $0.974062724$ at $\varepsilon=1/2048$ and measured least-singular-value power $4.980995230$.
+      The discrepancy from the limiting values is a finite-maturity remainder, not rounding certification.</p>
+    <p>At maturity one year, the pure high-regime stages with $4,3,2,1$ stages remaining give yields
+      $325.436882$, $314.999189$, $303.885424$, $292.126447$ basis points, respectively.
+      Thus equality of current mean levels does not imply equality of today's bond prices.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_stage_observability.py">certificate</a>
+      checks exact rational Taylor coefficients, unit terminal payoffs in the production routine, the determinant and singular-value orders, and stage-prior recovery.
+      Its last line is literal PASS and its floating tolerances are portable; high-precision evaluations are not outward-rounded interval bounds.</p>
+    <p>The arbitrary-$k$ theorem assumes the current regime is known; the four-stage result removes that assumption only for $k=2$.
+      Both require known stage count and model parameters, and neither establishes joint parameter identification, recovery from a noisy single quote or any regime-count inference from maturity-integrated Green&ndash;Kubo rank.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
