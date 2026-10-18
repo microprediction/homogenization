@@ -58,6 +58,9 @@
     point at which initial-prior memory disappears at each order.</p>
 
     <h2>Averaging</h2>
+    <p><a href="./vasicek-density-full.html">Quantitative density bounds</a> now supply explicit compact-set constants for the common-$\kappa$, positive-volatility model.
+      Gaussian-damped Fourier estimates make hidden endpoint interaction second order, giving a quartic one-interval likelihood error bound for every panel length.
+      The constants are not uniform in tail observations or vanishing sampling intervals.</p>
     <p>When the chain switches infinitely fast the rate is Vasicek with averaged parameters, observed as an AR(1):</p>
     $$x_{k+1} = \bar\theta + (x_k - \bar\theta)\,e^{-\kappa\Delta} + \sqrt v\,Z_k, \qquad
       v = \bar s\,\frac{1 - e^{-2\kappa\Delta}}{2\kappa}, \qquad Z_k \sim N(0, 1),$$
