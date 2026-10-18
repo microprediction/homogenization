@@ -1,0 +1,122 @@
+<!-- title: Initial-state memory after a timing fit · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./pulsars.html">&larr; Pulsar timing</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/pulsars/verify_initial_memory.py">certificate</a></span></p>
+    <h1>Initial-state memory after a timing fit</h1>
+    <p class="subtitle">Sharp continuous and fixed-grid boundary laws, joined by an explicit sampling/switching crossover.</p>
+
+    <h2>Setup and result</h2>
+    <p>Let a two-state chain have stationary probabilities $\pi_1,\pi_2&gt;0$, total jump rate $\gamma&gt;0$, and spin-down contrast $\Delta\ne0$.
+      Write $g=(\pi_2\Delta,-\pi_1\Delta)$, $q=\Pr(Y_0=1)$, $\eta=q-\pi_1$, $\delta=\pi_2-\pi_1$ and
+      $\Phi(t)=\int_0^t(t-s)g(Y_s)ds$.</p>
+    <p>Fix $T&gt;0$ and a polynomial degree $m\ge1$.
+      Let $R=I-P_m$ be continuous uniformly weighted orthogonal projection off polynomials through degree $m$ on $[0,T]$.
+      Distinguish total residual mean square from conditional stochastic variance:</p>
+    $$E_q=\frac1T\mathbb E_q\|R\Phi\|_2^2,\qquad
+      V_q=\frac1T\mathbb E_q\|R(\Phi-\mathbb E_q\Phi)\|_2^2.$$
+    <p>With $x=\gamma T$, there are nonnegative scalar functions $B_m,N_m$ such that, exactly at every rate,</p>
+    $$E_q-E_\pi=\frac{\Delta^2\eta\delta}{T}B_m,\qquad
+      E_q-V_q=\frac{\Delta^2\eta^2}{T\gamma^4}N_m.$$
+    <p>Define $p_4(x)=\sum_{j=0}^4x^j/j!$.
+      The following explicit bounds hold for every $x&gt;0$, without a stationary-start assumption:</p>
+    $$0\le6-\gamma^5B_m\le a_m(x):=6e^{-x}p_4(x)+\frac{20(m+1)^2}{x},$$
+    $$0\le\frac12-\gamma N_m\le b_m(x):=\frac{e^{-2x}}2+\frac{(m+1)^2}{x}.$$
+    <p>Thus, at fixed $m,T,\pi,\Delta$ as $\gamma\to\infty$, uniformly over all starting laws $q\in[0,1]$,</p>
+    $$\begin{aligned}
+      E_q-E_\pi&amp;=\frac{6\Delta^2\eta\delta}{T\gamma^5}+O(\gamma^{-6}),\\
+      V_q-E_\pi&amp;=\frac{\Delta^2(6\eta\delta-\eta^2/2)}{T\gamma^5}+O(\gamma^{-6}).
+    \end{aligned}$$
+    <p>More precisely, the error in the $V_q-E_\pi$ approximation after multiplication by $T\gamma^5/\Delta^2$ is at most
+      $|\eta\delta|a_m(x)+\eta^2b_m(x)$; the total-energy error uses only its first term.
+      The coefficients do not depend on the fitted degree once the fit contains a linear term.</p>
+    <p>The stationary leading energy is $E_\pi\sim2\pi_1\pi_2\Delta^2T^3c_m/\gamma$, with
+      $c_m=(m+1)/[8(2m-1)(2m+1)(2m+3)(2m+5)]$.
+      Hence the relative starting-law correction is $O(x^{-4})$, sharp for total energy if $\eta\delta\ne0$.
+      At equal occupation, $\delta=0$, total energy is exactly independent of $q$, but variance still differs by the projected squared mean.</p>
+
+    <h2>Proof and finite-rate remainder</h2>
+    <p>The two-state semigroup gives the raw rate moment and phase mean</p>
+    $$\mathbb E_q[g(Y_s)g(Y_u)]=\Delta^2\{\pi_1\pi_2e^{-\gamma|s-u|}+\eta\delta e^{-\gamma\max(s,u)}\},$$
+    $$\mathbb E_q\Phi(t)=\Delta\eta\{t/\gamma-(1-e^{-\gamma t})/\gamma^2\}.$$
+    <p>Put $k_s(t)=(t-s)_+$ and $h_s(t)=(s-t)_+$.
+      Since $k_s-h_s=t-s$ is removed by $R$, $Rk_s=Rh_s$.
+      Fubini therefore gives the exact nonnegative factors</p>
+    $$B_m=\int_0^T\!\int_0^T\langle Rh_s,Rh_u\rangle e^{-\gamma\max(s,u)}dsdu,
+      \qquad N_m=\|Re^{-\gamma t}\|_2^2.$$
+    <p>Nonnegativity of $B_m$ follows from
+      $e^{-\gamma\max(s,u)}=\int_{\max(s,u)}^\infty\gamma e^{-\gamma v}dv$:
+      it is an integral of squared norms of $\int_0^{\min(v,T)}Rh_sds$.
+      Removing the phase mean gives the stated distinction between $E_q$ and $V_q$.</p>
+    <p>For $0\le u\le s\le T$, $\langle h_s,h_u\rangle=su^2/2-u^3/6$.
+      Its unprojected double integral is exactly</p>
+    $$2\int_0^T e^{-\gamma s}\int_0^s(su^2/2-u^3/6)duds
+      =\frac6{\gamma^5}\{1-e^{-x}p_4(x)\}.$$
+    <p>In the orthonormal shifted Legendre basis $\phi_n(t)=\sqrt{(2n+1)/T}\,P_n(2t/T-1)$,
+      $|\langle h_s,\phi_n\rangle|\le\sqrt{(2n+1)/T}\,s^2/2$.
+      Each removed mode has nonnegative integrated energy by the same kernel identity.</p>
+    <p>Summing the absolute bounds on the removed modes gives at most
+      $(m+1)^2(4T)^{-1}\int_0^\infty\int_0^\infty s^2u^2e^{-\gamma\max(s,u)}dsdu
+      =20(m+1)^2/(T\gamma^6)$.
+      This proves the bound for $B_m$.</p>
+    <p>Similarly $\|e^{-\gamma t}\|_2^2=(1-e^{-2x})/(2\gamma)$ and
+      $|\langle e^{-\gamma t},\phi_n\rangle|\le\sqrt{(2n+1)/T}/\gamma$.
+      Summing squares proves the bound for $N_m$.
+      These are analytic bounds, not fitted rates from numerical data.</p>
+
+    <h2>A fixed observation grid has a different boundary order</h2>
+    <p>For fixed times $0=t_0&lt;t_1&lt;\cdots&lt;t_n\le T$ and positive normalized weights $W$, let $R$ instead be weighted polynomial OLS residualization with full-rank design and degree $m\ge1$.
+      Set $A_0=\|Re_0\|_W^2$, where $e_0$ is the time-zero coordinate vector.
+      For $0\le s&lt;t_1$, $Rk_s=sRe_0$.</p>
+    <p>Let $B_W$ be the same double integral with the weighted inner product, without a further division by $T$.
+      Consequently, at fixed design,</p>
+    $$\gamma^4 B_W\longrightarrow6A_0,\qquad
+      \|R(e^{-\gamma t_i})_i\|_W^2\longrightarrow A_0.$$
+    <p>The first limit follows by scaling $s,u$ by $\gamma$ and integrating
+      $2\int_0^\infty e^{-s}s\int_0^s u\,duds=6$; the part with $\max(s,u)\ge t_1$ is exponentially small times a polynomial in $\gamma$.
+      Thus sampled total-energy memory is $6\Delta^2\eta\delta A_0/\gamma^4$ to leading order, while projected mean energy is $\Delta^2\eta^2A_0/\gamma^4$.
+      The continuous $\gamma^{-5}$ law cannot be substituted into a fixed discrete trace.</p>
+    <p>For a quadratic fit on $(0,1/3,2/3,1)$ with equal weights, $A_0=1/80$ and $6A_0=3/40$.
+      If all fixed observation times are strictly positive, then $Rk_s=0$ before the first observation and both starting-law effects are exponentially small instead.
+      These are fixed-design limits, not uniform statements for grids whose first gap shrinks with $1/\gamma$.</p>
+
+    <h2>Refining the grid at the switching scale</h2>
+    <p>Use equal weights $w=1/(n+1)$ at $t_i=ih$, $i=0,\ldots,n$, with $h=T/n$, $n\ge m$ and fixed $m\ge1$.
+      Define $c=\gamma h$, $x=nc$, and let $B_n,N_n$ be the sampled factors above, so total-energy memory is $\Delta^2\eta\delta B_n$ and mean energy is $\Delta^2\eta^2N_n/\gamma^4$.
+      For each fixed $c&gt;0$, as $n\to\infty$ and $\gamma=nc/T$,</p>
+    $$T\gamma^5B_n\longrightarrow\frac{6c}{1-e^{-c}},\qquad
+      T\gamma N_n\longrightarrow\frac{c}{1-e^{-2c}}.$$
+    <p>These coefficients are independent of fixed degree $m$.
+      They approach $6$ and $1/2$ as $c\downarrow0$, recovering the continuous result; at $c=1$ they are $9.491860241$ and $1.156517643$.
+      A small mesh relative to $T$ alone is not enough: resolving the entry layer requires a small mesh relative to $1/\gamma$.</p>
+    <p>The following finite-grid bounds make the approximation explicit.
+      Put $v_i=(\sqrt{2r+1}P_r(2i/n-1))_{r=0}^m$, $G_n=w\sum_i v_iv_i^\top$,
+      $\lambda_n=\lambda_{\min}(G_n)&gt;0$, $C_n=(m+1)^2/\lambda_n$, and $p_3(x)=\sum_{j=0}^3x^j/j!$.</p>
+    $$0\le\frac6{1-e^{-c}}-\frac{\gamma^4B_n}{w}
+      \le\frac{6e^{-x-c}}{1-e^{-c}}+6(n+1)e^{-x}p_3(x)
+        +C_nw\left(6+\frac{20}c+\frac{20}{c^2}\right),$$
+    $$0\le\frac1{1-e^{-2c}}-\frac{N_n}{w}
+      \le\frac{e^{-2(x+c)}}{1-e^{-2c}}+\frac{C_nw}{(1-e^{-c})^2}.$$
+    <p>For a proof, the exact unprojected impulse integral at time $t_i$ is
+      $6\gamma^{-4}e^{-\gamma t_i}\{1-e^{-\gamma(T-t_i)}p_3(\gamma(T-t_i))\}$.
+      Sum it over the grid, extend the geometric series to infinity, and bound the finite-horizon subtraction by $6\gamma^{-4}e^{-x}p_3(x)$.</p>
+    <p>The removed projection is controlled by $q_s=w\sum_i v_i(s-t_i)_+$:
+      $\|q_s\|\le(m+1)ws(1+s/(2h))$, since $\sum_i(s-ih)_+\le s+s^2/(2h)$.
+      Thus its integrated energy is at most
+      $C_nw^2\gamma^{-4}(6+20/c+20/c^2)$; this follows by integrating $s^pu^q e^{-\gamma\max(s,u)}$ for $p,q\in\{1,2\}$.</p>
+    <p>For the mean, the removed energy is at most
+      $\lambda_n^{-1}\|w\sum_i v_i e^{-\gamma t_i}\|^2\le C_nw^2/(1-e^{-c})^2$.
+      The kernel is positive semidefinite, so removing modes only reduces either energy.
+      Finally $G_n\to I$ by Riemann sums, hence $\lambda_n\to1$ and the stated limits follow with $O(1/n)$ error at fixed $c,m,T$.</p>
+
+    <h2>Context, checks and scope</h2>
+    <p>The polynomial-projector framework is classical: <a href="./bibliography.html#Lee2012">Lee et al. (2012), Appendix A</a>, explicitly treats the nonstationarity induced by timing fits and uses a Legendre basis.
+      The present result specializes the exact two-state initial-law kernel, not a new general projection principle.
+      It needs neither Gaussian paths nor independent residual samples.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/pulsars/verify_initial_memory.py">certificate</a> checks exact rational kernel coefficients through degree six, 42 finite-rate bounds and independent triangular quadrature.
+      It also verifies the fixed-grid constants, 36 joint-grid bounds and the existing sampled raw-moment/variance/mean decomposition.
+      Its final line is literal PASS; numerical evaluations are not outward-rounded interval proofs.</p>
+    <p>The bounds assume a continuous uniformly weighted fit of fixed degree for their continuous conclusion; they do not cover a growing fitted degree, GLS, additional measurement noise or an estimated switching model.
+      Conditional here means a specified initial regime law, not a conformal coverage guarantee.
+      There is no regime-count or maturity-integrated Green&ndash;Kubo rank assertion.</p>
+  </main>
