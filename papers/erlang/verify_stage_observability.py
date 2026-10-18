@@ -4,6 +4,7 @@ from fractions import Fraction as F
 
 import mpmath as mp
 import numpy as np
+import sympy as sp
 from scipy.integrate import solve_ivp
 
 from erlang_bonds import B, log_price_numerical, stage_chain
@@ -38,6 +39,44 @@ def jets(k, order):
 
 def leading(k, regime, remaining):
     return KAP*(TH[regime]-TH[1-regime])*(k/MEANS[regime])**remaining/math.factorial(remaining+2)
+
+
+def unknown_regime():
+    kap, d, x, y = sp.symbols('kap d x y', nonzero=True)
+    u = [[sp.Integer(1)]*4]
+    for n in range(1, 6):
+        u.append([sp.expand(((x if j < 2 else y)*(u[n-1][(j+1) % 4]-u[n-1][j])
+                  +sum((d if j < 2 else -d)*(-kap)**h/sp.factorial(h)*u[n-1-h][j]
+                       for h in range(1, n)))/n) for j in range(4)])
+    c4 = d**3*kap**3*x*y*(x-y)/18
+    c5 = 2*d**4*kap**4*x**2/45
+    check(sp.factor(sp.Matrix([u[n] for n in (0, 2, 3, 4)]).det()-c4) == 0)
+    check(sp.factor(sp.Matrix([u[n] for n in (0, 2, 3, 5)]).subs(y, x).det()-c5) == 0)
+    print("Exact symbolic full-prior jet determinants: d^3*kappa^3*x*y*(x-y)/18; equal-rate 2*d^4*kappa^4*x^2/45")
+    for rate in (3, 2):
+        def rhs(t, a):
+            return [(2 if j < 2 else rate)*(a[(j+1) % 4]-a[j])
+                    +(1 if j < 2 else -1)*mp.expm1(-t)*a[j] for j in range(4)]
+        solution = mp.odefun(rhs, 0, [mp.mpf(1)]*4, tol=mp.mpf('1e-45'), degree=30)
+        prior, previous, recovery = [mp.mpf(j)/10 for j in (1, 2, 3, 4)], None, mp.mpf(0)
+        orders = (2, 3, 4) if rate == 3 else (2, 3, 5)
+        constant = -mp.mpf(2)*rate*(2-rate)/18 if rate == 3 else -mp.mpf(8)/45
+        vandermonde = mp.det(mp.matrix([[mp.mpf(t)**n for n in orders] for t in (1, 2, 3)]))
+        for denominator in (1024, 2048, 4096):
+            eps = mp.mpf(1)/denominator
+            values = [solution(eps*t) for t in (1, 2, 3)]
+            h = mp.matrix([[a[j]-a[3] for j in range(3)] for a in values])
+            observed = mp.matrix([sum(p*v for p, v in zip(prior, a))-a[3] for a in values])
+            fitted = list(mp.lu_solve(h, observed)); fitted.append(1-sum(fitted))
+            recovery = max(recovery, max(abs(a-b) for a, b in zip(prior, fitted)))
+            singular = mp.svd(h, compute_uv=False)[2]
+            if previous is not None:
+                power = mp.log(previous/singular)/mp.log(2)
+            previous = singular
+            normalized = mp.det(h)/(constant*vandermonde*eps**sum(orders))
+        check(abs(normalized-1) < mp.mpf('.1') and abs(power-orders[-1]) < mp.mpf('.1'))
+        check(recovery < mp.mpf('2e-8'))
+        print(f"Unknown regime, stage rates 2/{rate}: determinant power {sum(orders)}, normalized {float(normalized):.9f}; sigma_min power {float(power):.9f}; prior error {float(recovery):.3e}")
 
 
 def main():
@@ -119,6 +158,7 @@ def main():
     check(yields[0]-yields[-1] > 1)
     print("Pure high-regime stages, remaining 4,3,2,1; one-year yields (bp): "
           +", ".join(f"{value:.6f}" for value in yields))
+    unknown_regime()
     print("PASS")
 
 
