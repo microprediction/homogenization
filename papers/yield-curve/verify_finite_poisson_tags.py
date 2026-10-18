@@ -75,6 +75,47 @@ def fit(cap, moments, shift, length=8):
     return bound, moment_error, law_error
 
 
+def uncapped():
+    cases = [mp.matrix([[-2, 2, 0], [0, -2, 2], [2, 0, -2]]),
+             mp.matrix([[-1, 1, 0], [0, -1, 1], [0, 0, 0]]),
+             mp.matrix([[-3, 1, 2], [0, 0, 0], [0, 0, 0]])]
+    times, weights = (mp.mpf(1), mp.sqrt(2)), (mp.mpf(1)/3, mp.mpf(2)/3)
+    error = mp.mpf(0)
+    for q in cases:
+        kernels = [mp.expm(t*q) for t in times]
+        for tick in (mp.mpf('.7'), mp.mpf(2)):
+            rk = [sum((w*mp.exp(-tick*t)*(tick*t)**k/mp.factorial(k)*a
+                       for t, w, a in zip(times, weights, kernels)), mp.zeros(3))
+                  for k in range(71)]
+            tail = sum(w*mp.gammainc(71, 0, tick*t)/mp.factorial(70)
+                       for t, w in zip(times, weights))
+            for z in (mp.mpf('.1'), mp.mpf('.4'), mp.mpf('.8')):
+                observed = sum((z**k*a for k, a in enumerate(rk)), mp.zeros(3))
+                direct = sum((w*mp.exp(-tick*(1-z)*t)*a
+                              for t, w, a in zip(times, weights, kernels)), mp.zeros(3))
+                delta = mp.mnorm(observed-direct, mp.inf)
+                check(delta <= tail+mp.mpf('1e-12'))
+                error = max(error, delta)
+    print(f"18 uncapped matrix PGF checks (directed, Jordan, absorbing): error {float(error):.3e}")
+    # Infinite-mean clock f(t)=1/t^2, t>=1: no raw-moment assumption needed.
+    for z in (mp.mpf('.2'), mp.mpf('.5'), mp.mpf('.8')):
+        counts = [mp.gammainc(k-1, 1, mp.inf)/mp.factorial(k) for k in range(71)]
+        observed = sum(z**k*p for k, p in enumerate(counts))
+        direct = mp.exp(z-1)-(1-z)*mp.e1(1-z)
+        check(abs(observed-direct) <= z**71+mp.mpf('1e-12'))
+    print("3 infinite-mean Pareto clock PGFs: explicit omitted-count bound passed")
+    p, eye = mp.ones(3)/3, mp.eye(3)
+    e = eye-p
+    j = mp.matrix([[0, 1, -1], [-1, 0, 1], [1, -1, 0]])/mp.sqrt(3)
+    q0, q1 = -4*mp.pi*e, -4*mp.pi*e+2*mp.pi*j
+    check(min(q1[a, b] for a in range(3) for b in range(3) if a != b) > 0)
+    gap = max(mp.mnorm(mp.expm(t*q0)-mp.expm(t*q1), mp.inf) for t in (1, 2, 3))
+    check(gap < mp.mpf('1e-12'))
+    off_grid = mp.mnorm(mp.expm(mp.sqrt(2)*q0)-mp.expm(mp.sqrt(2)*q1), mp.inf)
+    check(off_grid > mp.mpf('1e-10'))
+    print(f"Grid alias kernel error {float(gap):.3e}; sqrt(2)-time gap {float(off_grid):.6e}")
+
+
 def main():
     mp.mp.dps = 85
     maximum = [mp.mpf(0)]*3
@@ -93,6 +134,7 @@ def main():
     # Collision c=s: strict decrease of L(c) forces c=s when L(c)=p(J=0).
     check(mp.mpf(1)/4 == 1/(1+mp.mpf(1))**2)
     print("At the exceptional speed c=s=1, L(c)=p(J=0)=1/4")
+    uncapped()
     print("PASS")
 
 

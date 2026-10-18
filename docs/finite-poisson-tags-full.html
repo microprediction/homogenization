@@ -161,13 +161,48 @@
       Strict decrease of $L$ forces $c=s$, whatever the positive clock law.</p>
     <p>This is one independently sampled duration per record, with a fresh auxiliary counter, not a record of every tick, intermediate states or shared durations across multiple transitions.
       It is an exact population ambiguity, not a claim about finite-sample error or an alias for every possible finite tag design.
-      The proof does not cover an uncapped count or an infinite collection of known clock moments.</p>
+      The finite-cap proof does not cover an infinite collection of known clock moments.</p>
     <p>For the fixed centered feature $h=(1,-1)^\top$, the one-sided symmetric Green&ndash;Kubo value is
       $\mathcal K_c(h,h)=\int_0^\infty e^{-ct}dt=1/c$, so the aliased speeds have different strengths but the same fixed-feature rank.
       No regime-count statement is inferred from integrating different maturity loadings.</p>
     <p>Finite generalized-moment constraints are classical; <a href="./bibliography.html#Winkler1988">Winkler (1988)</a> studies the extreme points of such moment sets.
       Only the publisher&apos;s abstract and bibliographic metadata were checked here; the local moving-speed construction is proved above rather than imported from that paper.</p>
+
+    <h2>An uncapped count recovers timestamp information in population</h2>
+    <p>Now retain $N_T$ itself, with no cap, for any finite generator $Q$ on a complete known labeled space and any independent clock law $\mu$ on $(0,\infty)$.
+      The initial law is independent of the clock and has full support; the known tick rate is $s&gt;0$.
+      No density, duration-moment assumption, irreducibility or diagonalizability is needed.</p>
+    <p>The population law of $(Y_0,Y_T,N_T)$ identifies exactly the same clock and semigroup information as $(Y_0,Y_T,T)$.
+      This means equality of the two count-record laws is equivalent to equality of the two timestamp-record laws, not that an individual count reveals its duration.
+      To prove it, divide by the observed initial probabilities and form the joint count matrices</p>
+    $$R_k=\int e^{-st}\frac{(st)^k}{k!}e^{tQ}\,\mu(dt),\qquad
+      H(z)=\sum_{k=0}^\infty z^kR_k
+      =\int e^{-s(1-z)t}e^{tQ}\,\mu(dt),\quad 0&lt;z&lt;1.$$
+    <p>Row sums of $H(z)$ give the clock&apos;s Laplace transform on $(0,s)$.
+      Uniqueness of that transform identifies $\mu$; entrywise uniqueness then identifies every finite measure $(e^{tQ})_{ij}\mu(dt)$.
+      These are precisely the timestamp joint measures, while the reverse implication follows by adding the known conditional Poisson counter.</p>
+    <p>For completeness, a finite signed measure with Laplace transform zero on an open positive interval has transform zero on the entire right half-plane by analyticity.
+      Its pushforward under $x=e^{-t}$ therefore has every nonnegative integer moment zero, including mass by dominated convergence as the Laplace argument decreases to zero.
+      Polynomial density in $C[0,1]$ forces that measure to vanish, proving the uniqueness used here without any raw duration moments.</p>
+    <p>If $\operatorname{supp}\mu$ is not contained in $h\mathbb Z$ for any $h&gt;0$, the uncapped law identifies $Q$ as well.
+      Indeed continuity extends equality of candidate semigroups to the support, and $\{t\in\mathbb R:e^{tQ}=e^{tG}\}$ is a closed additive subgroup: equality is preserved under differences by matrix inversion.
+      A proper such subgroup is a grid or $\{0\}$; the stated support excludes both, so differentiation at zero gives $Q=G$.</p>
+    <p>The grid exception is genuine, even for an uncapped counter.
+      On three states put $P_3=\mathbf1\mathbf1^\top/3$, $E_3=I-P_3$ and</p>
+    $$J_3=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      Q_0=-\frac{4\pi}hE_3,\quad Q_1=Q_0+\frac{2\pi}hJ_3.$$
+    <p>Both have strictly positive off-diagonal rates and $e^{khQ_0}=e^{khQ_1}$ for every integer $k$, since $J_3^2=-E_3$ and its rotation completes a full turn at $h$.
+      Every clock supported on $h\mathbb Z$ consequently gives identical timestamp and uncapped-count laws for this pair.
+      This is failure of universal identification over classes including three states, not ambiguity at every grid-sampled generator or a two-state converse.</p>
+    <p>Count-mixture identification is classical; <a href="./bibliography.html#Teicher1961">Teicher (1961)</a> gives an identification theorem for one-parameter additively closed families.
+      Its publisher abstract and metadata were checked, not the full text; the matrix-measure extension and grid argument above are self-contained.</p>
+    <p>Equivalence concerns the entire infinite count distribution, not finitely many observed count frequencies or stable analytic continuation.
+      Even for the reset family with one fixed known clock, the full uncapped record laws satisfy
+      $\|\mathcal L(Q_c)-\mathcal L(Q_{2c})\|_{\rm TV}=\{L(c)-L(2c)\}/2\to0$ while $\|Q_c-Q_{2c}\|_\infty=c$.</p>
+    <p>For each count the contrast coefficient decreases with $c$; summing its nonnegative differences gives the displayed identity.
+      Thus neither uncapping nor population identification supplies a uniform inverse-continuity or finite-sample guarantee.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a> constructs compact density tilts around a Gamma clock and checks both signs of speed change, moment preservation, positivity bounds and every endpoint/tag probability by independent quadrature.
+      It also checks uncapped matrix generating functions, an infinite-mean clock and the grid alias, with explicit omitted-count bounds.
       These are high-precision floating checks, not outward-rounded existence certificates; the Gram argument supplies existence for every finite cap.</p>
   </main>
 
