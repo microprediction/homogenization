@@ -1,4 +1,12 @@
 [
+ {"key": "Hilbe2007", "authors": "Hilbe, J. M.", "year": 2007,
+  "title": "Negative Binomial Regression", "venue": "Cambridge University Press",
+  "doi": "10.1017/CBO9780511811852",
+  "annotation": "The publisher's Introduction excerpt describes the classical Poisson-Gamma mixture underlying negative-binomial counts. Background for the zero/one/capped-count duration tag; the finite-state generator inverse and clock calibration are derived self-containedly in the note."},
+ {"key": "Higham2008", "authors": "Higham, N. J.", "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation", "venue": "SIAM, Philadelphia",
+  "doi": "10.1137/1.9780898717778",
+  "annotation": "Classical matrix-function theory, including Jordan, interpolation and Cauchy-integral definitions and the distinction between evaluation and conditioning. The Gamma-tag note uses a direct integration-by-parts and triangularization proof, not a numerical stability theorem imported from this book."},
  {"key": "BurkeRosenblatt1958", "authors": "Burke, C. J. and Rosenblatt, M.", "year": 1958,
   "title": "A Markovian Function of a Markov Chain", "venue": "The Annals of Mathematical Statistics 29(4):1112-1122",
   "doi": "10.1214/aoms/1177706444",

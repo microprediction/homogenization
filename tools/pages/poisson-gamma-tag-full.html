@@ -1,0 +1,77 @@
+<!-- title: A three-valued tag identifies Gamma-sampled generators · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_poisson_gamma_tag.py">certificate</a></span></p>
+    <h1>A three-valued tag identifies Gamma-sampled generators</h1>
+    <p class="subtitle">An independent Poisson counter, stopped after its second tick, replaces a stored timestamp by one of three symbols.</p>
+
+    <h2>Observation scheme and result</h2>
+    <p>Let $Q$ be any finite time-homogeneous row generator on a complete known labeled state space, with a full-support initial law.
+      Draw $T\sim\operatorname{Gamma}(\alpha,\lambda)$ independently of the entire chain, with unknown real shape $\alpha&gt;0$ and rate $\lambda&gt;0$.
+      Run an independent Poisson process $N$ of known rate $s&gt;0$, fixed in physical-time units, and retain only $(Y_0,Y_T,J)$ with $J=\min(N_T,2)$.</p>
+    <p>The population law identifies $(\alpha,\lambda,Q)$, with no shape bound or integer restriction.
+      Reducible, absorbing and defective generators are included, without a rate cap, reversibility or diagonalizability.
+      This is not recovery from one record, a minimal-category claim or a finite-sample guarantee.</p>
+    <p>No intermediate regime labels or Poisson tick times are retained.
+      Equivalently, given $T=t$, assign symbols zero, one and two with probabilities $e^{-st}$, $st e^{-st}$ and $1-(1+st)e^{-st}$, then discard $T$.
+      This is randomized duration tagging, not deterministic time binning or endogenous observation of regime jumps.</p>
+
+    <h2>Calibrate both clock parameters</h2>
+    <p>Let $M_j(i,k)=\Pr(Y_T=k,J=j\mid Y_0=i)$ for $j=0,1$.
+      These are joint subprobability matrices, not transition matrices normalized within a tag.
+      Their row sums, equivalently the marginal tag probabilities, are</p>
+    $$p_0=\left(\frac\lambda{\lambda+s}\right)^\alpha,\qquad
+      p_1=\frac{\alpha s}{\lambda+s}p_0.$$
+    <p>Set $x=p_1/p_0$, $z=-\log(p_0)/x$, and $y=s/(\lambda+s)$.
+      Then</p>
+    $$z=\phi(y):=\frac{-\log(1-y)}y,\quad 0&lt;y&lt;1,\qquad
+      \alpha=\frac xy,\quad \lambda=s\frac{1-y}y.$$
+    <p>The function $\phi$ increases strictly from one to infinity, so this is a unique scalar inverse.
+      Indeed $y^2\phi'(y)=y/(1-y)+\log(1-y)$ starts at zero and has derivative $y/(1-y)^2&gt;0$.
+      Every stipulated Gamma law has $p_0,p_1&gt;0$ and $z&gt;1$; these inequalities alone do not test the Gamma-family assumption.</p>
+
+    <h2>A direct generator inverse</h2>
+    <p>Put $C=(\lambda+s)I-Q$.
+      Gamma integration gives</p>
+    $$M_0=\frac{\lambda^\alpha}{\Gamma(\alpha)}\int_0^\infty t^{\alpha-1}e^{-tC}\,dt,
+      \qquad M_1=\frac{s\lambda^\alpha}{\Gamma(\alpha)}\int_0^\infty t^\alpha e^{-tC}\,dt.$$
+    <p>All eigenvalues of $C$ have positive real part.
+      Integration by parts therefore has vanishing boundary terms at zero and infinity for every $\alpha&gt;0$, and yields $CM_1=\alpha sM_0$.</p>
+    <p>To see invertibility without assuming a simple spectrum, put $C$ in complex triangular form.
+      The diagonal entries of the two matrix integrals are the nonzero scalar Gamma integrals $\Gamma(\alpha)c^{-\alpha}$ and $\Gamma(\alpha+1)c^{-\alpha-1}$ for $\Re c&gt;0$.
+      Thus both $M_0$ and $M_1$ are invertible, including for Jordan blocks.</p>
+    $$\boxed{Q=(\lambda+s)I-\alpha sM_0M_1^{-1}.}$$
+    <p>No matrix logarithm, fractional root, eigenvalue matching or block-Hankel inversion is needed in this reconstruction.
+      The Gamma&ndash;Poisson count mixture is classical; see <a href="./bibliography.html#Hilbe2007">Hilbe (2007), Introduction</a>, and <a href="./bibliography.html#Higham2008">Higham (2008)</a> for the matrix-function background.
+      The displayed specialization is proved directly, without a priority claim for those ingredients.</p>
+
+    <h2>An exact discarded-time alias is separated</h2>
+    <p>For $\alpha=7$, $\lambda=s=1$, let $P=\mathbf1\mathbf1^\top/3$, $E=I-P$ and</p>
+    $$J_0=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      \theta=\pi/7,\quad a=10\cos\theta-1,\quad b=10\sin\theta,\quad Q_\pm=-aE\pm bJ_0.$$
+    <p>Both generators have positive off-diagonal rates, since $a&gt;\sqrt3 b$.
+      The identities $J_0^2=-E$ and $PJ_0=J_0P=0$ give $(I-Q_\pm)^{-7}=P-10^{-7}E$, so discarding time and tags produces identical endpoint kernels.
+      The zero-tick matrices instead have infinity-norm gap $3.451335327169\times10^{-8}$.</p>
+    <p>The certificate recovers the generator from the tagged law.
+      In this example $\log_{10}\operatorname{cond}_\infty(M_1)=6.015$; this is an example-specific value, not a uniform conditioning bound.
+      The pair are time reversals, so no difference in their symmetric Green&ndash;Kubo strengths or fixed-feature ranks is claimed.</p>
+
+    <h2>Scope and an exact instability boundary</h2>
+    <p>Even with a fixed known Gamma clock and known $s$, the inverse is not uniformly continuous over unbounded generator speeds.
+      For $Q_c=c(P-I)$ on two states, $P=\mathbf1\mathbf1^\top/2$, and the same uniform initial law, the full endpoint/tag laws obey</p>
+    $$\|\mathcal L(Q_c)-\mathcal L(Q_{2c})\|_{\rm TV}
+      =\frac12\left\{\left(\frac\lambda{\lambda+c}\right)^\alpha-
+      \left(\frac\lambda{\lambda+2c}\right)^\alpha\right\}\longrightarrow0,
+      \qquad \|Q_c-Q_{2c}\|_\infty=c\longrightarrow\infty.$$
+    <p>For each tag $j$, its endpoint matrix is $p_jP+v_j(c)(I-P)$ with $v_j(c)=\mathbb E[e^{-cT}\Pr(J=j\mid T)]$ nonnegative and decreasing in $c$.
+      Summing the nonnegative differences across all three tags gives the displayed Laplace-transform difference.
+      Hence exact invertibility alone gives no uniform accuracy or sample-efficiency guarantee.</p>
+    <p>The Gamma-family, independence and complete-label assumptions are essential to the stated derivation, not fitted conclusions.
+      If the auxiliary rate $s$ is unknown too, simultaneously scaling $(Q,\lambda,s)$ by the same positive constant preserves the record law and loses physical-time scale.
+      State-dependent or adaptive clocks, elapsed-time stopping, noisy labels and arbitrary unknown duration families are outside scope.</p>
+    <p>The result concerns full labeled endpoint laws, not an identification of a chain from Green&ndash;Kubo contractions alone.
+      It changes neither fixed-feature Gram-rank bounds nor the distinction from rank after integrating maturity-dependent loadings.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_poisson_gamma_tag.py">certificate</a> checks an exact rational defective case, real-shape clock fits, independent tag integrals, joint recoveries and the alias and reset examples.
+      It ends with literal PASS and uses portable assertion tolerances; its high-precision floating checks are not outward-rounded interval certificates.</p>
+  </main>
