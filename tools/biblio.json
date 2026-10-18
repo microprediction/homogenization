@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "LopezRatanov2014",
+  "authors": "López, O. and Ratanov, N.",
+  "year": 2014,
+  "title": "On the asymmetric telegraph processes",
+  "venue": "Journal of Applied Probability 51(2):569-589",
+  "doi": "10.1239/jap/1402578644",
+  "url": "https://doi.org/10.1239/jap/1402578644",
+  "annotation": "Equation (2.14) gives the unequal-rate telegraph density, including endpoint atoms; primary publisher PDF inspected. The path-score noise note derives its CDF-gap identity and uniform convolution bound directly."
  }
 ]
