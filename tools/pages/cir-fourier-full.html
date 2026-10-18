@@ -1,0 +1,109 @@
+<!-- title: Switched-CIR Fourier envelopes (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; CIR cumulants</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_fourier_envelope.py">certificate</a></span></p>
+    <h1>Fourier envelopes for switched CIR returns</h1>
+    <p class="subtitle">Explicit density, CDF and damped-call truncation bounds, uniform in switching speed.</p>
+    <p>Let $B,W$ be independent Brownian motions and $Y$ an independent finite-state chain with any
+      conservative row generator $mQ$, $m\ge0$.
+      Take any initial regime prior and fixed $v_0\ge0$, $X_0=0$.</p>
+    $$dv_t=(a_{Y_t}-\kappa_{Y_t}v_t)dt+\xi_{Y_t}\sqrt{v_t}\,dB_t,$$
+    $$dX_t=-\tfrac12v_tdt+\sqrt{v_t}\left(\rho_{Y_t}dB_t+
+                   \sqrt{1-\rho_{Y_t}^2}\,dW_t\right).$$
+    <p>Assume $a_i,\kappa_i,\xi_i&gt;0$ and put $a_* =\min_i a_i$, $K=\max_i\kappa_i$,
+      $\Xi=\max_i\xi_i$ and $\eta=\min_i(1-\rho_i^2)&gt;0$.
+      These bounds do not require irreducibility, stationarity or the statewise Feller inequality.
+      If the variance mean level is parametrized by $\theta_i$, use $a_i=\kappa_i\theta_i$.</p>
+
+    <h2>A scalar Laplace supersolution</h2>
+    <p>For $s\ge0$, let $b'=s-Kb-\Xi^2b^2/2$, $b(0)=0$, and $A'=-a_*b$, $A(0)=0$.
+      Then, for $V_T=\int_0^T v_tdt$,</p>
+    <div class="equation-card">
+    $$\mathbb E e^{-sV_T}\le w_s(T,v_0):=e^{A(T)-b(T)v_0}\le1.$$
+    $$d=\sqrt{K^2+2\Xi^2s},\quad D=K+d+(d-K)e^{-dT},\quad
+      b(T)={2s(1-e^{-dT})\over D},$$
+    $$A(T)={2a_*\over\Xi^2}\left\{\log{2d\over D}+{(K-d)T\over2}\right\}.$$
+    </div>
+    <p>Indeed, for the variance generator $\mathcal L_i$,</p>
+    $$ { (\partial_T-\mathcal L_i+sv)w_s\over w_s}
+       =(a_i-a_*)b+(K-\kappa_i)bv+\tfrac12(\Xi^2-\xi_i^2)b^2v\ge0.$$
+    <p>The switching term vanishes because $w_s$ does not depend on the regime.
+      It&ocirc;&apos;s formula, localization and Fatou&apos;s lemma applied to
+      $e^{-s\int_0^t v_rdr}w_s(T-t,v_t)$ prove the bound.
+      This is a transform supersolution, not pathwise comparison of diffusions with different vol-of-vol.</p>
+
+    <h2>Real-axis decay and density truncation</h2>
+    <p>Condition on $B,Y$ and write $X_T=M+\int_0^T\sqrt{(1-\rho_{Y_t}^2)v_t}\,dW_t$.
+      The remaining Gaussian variance is $J\ge\eta V_T$, so for $\varphi_T(u)=\mathbb E e^{iuX_T}$,</p>
+    $$|\varphi_T(u)|\le w_{\eta u^2/2}(T,v_0)\le C_Te^{-b_T|u|},\qquad
+      C_T=2^{2a_*/\Xi^2}e^{a_*KT/\Xi^2},\quad b_T={a_*T\sqrt\eta\over\Xi}.$$
+    <p>The last inequality uses $D\ge K+d$, $2d/(K+d)\le2$, $d\ge\Xi\sqrt\eta|u|$,
+      and discards the nonpositive initial-variance exponent.
+      Thus at every fixed $T&gt;0$ the return density extends analytically to $|\operatorname{Im}x|&lt;b_T$.</p>
+    <p>Fourier inversion truncated to $|u|\le U$ gives density $f_U$ and CDF $F_U$ with</p>
+    $$\sup_x|f_T(x)-f_U(x)|\le {C_Te^{-b_TU}\over\pi b_T},\qquad
+      \sup_x|F_T(x)-F_U(x)|\le {C_Te^{-b_TU}\over\pi b_TU}.$$
+    <p>These are truncation bounds for exact integrals; quadrature and floating-point error are separate.
+      The CDF bound follows from the integrable $\varphi_T(u)/u$ tail in the inversion formula.</p>
+
+    <h2>Damped contours from a positive Riccati bound</h2>
+    <p>For $r&gt;1$ define $a^*=\max_i a_i$ and $\ell_r=\max_i(r\rho_i\xi_i-\kappa_i)$.
+      Let $\beta_r(0)=A_r(0)=0$ solve</p>
+    $$\beta_r'=\tfrac12\Xi^2\beta_r^2+\ell_r\beta_r+\tfrac12(r^2-r),\qquad
+      A_r'=a^*\beta_r.$$
+    <p>If this scalar solution is finite throughout $[0,T]$, it is nonnegative and the same generator argument
+      applied to $e^{rX_t+A_r(T-t)+\beta_r(T-t)v_t}$ gives
+      $\mathbb E e^{rX_T}\le M_r:=e^{A_r(T)+\beta_r(T)v_0}$.
+      Finiteness is sufficient, not a necessary description of the model&apos;s full moment strip.</p>
+    <p>One simple all-time certificate is $\ell_r&lt;0$ and
+      $\ell_r^2\ge\Xi^2(r^2-r)$: the solution stays below the smaller nonnegative Riccati root.
+      The benchmark below meets this condition at $r=4$.</p>
+    <p>Choose damping $\gamma&gt;1$ and $p&gt;1$ with this bound finite at $r=p\gamma$; set $q=p/(p-1)$.
+      Conditional Gaussian integration gives $H=\mathbb E[e^{\gamma X_T}\mid B,Y]=e^{\gamma M+\gamma^2J/2}$,
+      with $\mathbb E H^p\le M_{p\gamma}$.</p>
+    <p>H&ouml;lder&apos;s inequality therefore proves the speed-uniform vertical-contour envelope</p>
+    <div class="equation-card">
+    $$|\mathbb E e^{(\gamma+iu)X_T}|
+      \le M_{p\gamma}^{1/p}w_{q\eta u^2/2}(T,v_0)^{1/q}
+      \le C_{\gamma,p}e^{-b_{\gamma,p}|u|},$$
+    $$C_{\gamma,p}=M_{p\gamma}^{1/p}C_T^{1/q},\qquad
+      b_{\gamma,p}=b_T/\sqrt q.$$
+    </div>
+    <p>For $\alpha=\gamma-1$ and $C(k)=\mathbb E(e^{X_T}-e^k)_+$, elementary integration of
+      $e^{\alpha k}C(k)$ gives Fourier transform
+      $\mathbb E e^{(\gamma+iu)X_T}/\{(\alpha+iu)(\alpha+1+iu)\}$.
+      Since the denominator&apos;s modulus is at least $u^2$, the call inversion truncated at $U&gt;0$ has error</p>
+    $$|C(k)-C_U(k)|\le {e^{-\alpha k}C_{\gamma,p}e^{-b_{\gamma,p}U}
+                             \over\pi b_{\gamma,p}U^2}.$$
+    <p>The affine Riccati/transform framework is classical; see
+      <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a>, Proposition 1.
+      The inequalities above are proved for the switching model directly; they do not assume that simultaneous
+      coefficient switching preserves a single exponential-affine equality.</p>
+
+    <h2>Perfect leverage is a genuine boundary</h2>
+    <p>Take one regime, $a=\xi=\rho=1$, $\kappa=1/2$, and $v_0&gt;0$.
+      This strict-Feller variance stays positive, but $X_T=v_T-v_0-T$.</p>
+    $$h=1-e^{-T/2},\qquad
+      |\varphi_T(u)|={\exp\{-h u^2e^{-T/2}v_0/(1+h^2u^2)\}\over1+h^2u^2},$$
+    $$u^2|\varphi_T(u)|\longrightarrow h^{-2}e^{-e^{-T/2}v_0/h}&gt;0.$$
+    <p>Thus an exponential Fourier envelope need not hold at perfect correlation, even with strict positivity.
+      At $T=1$, $v_0=.04$, the scaled modulus is $6.072946479$ at $u=3200$, approaching $6.072950074$.</p>
+
+    <h2>Checks and scope</h2>
+    <p>The certificate checks 48 heterogeneous Laplace and 32 leveraged deterministic-path bounds,
+      independent scalar Riccati solves, and 240 statewise leveraged real/damped transform inequalities.
+      It also checks the perfect-leverage formula against an independent affine solve.</p>
+    <p>For $a=(.2,.5)$, $\kappa=1.4$, $\xi=.8$, $\rho=-.6$, $T=1$, $v_0=.04$, $p=2$ and $\gamma=2$,
+      the real and damped decay constants are $0.2$ and $0.141421356$.
+      At $|k|\le.2$, the density/CDF/call tail budgets at $U=40$ are
+      $(0.00127529853,0.0000318824633,0.0000137527801)$; at $U=80$ they are
+      $(4.27814997\times10^{-7},5.34768746\times10^{-9},1.20112974\times10^{-8})$.</p>
+    <p>All bounds fix the model parameters and maturity while allowing every switching speed and initial regime
+      prior; no uniformity as $T\downarrow0$, $a_*\downarrow0$, or $\eta\downarrow0$ is claimed.
+      Damped inversion additionally requires the stated finite positive-Riccati certificate.</p>
+    <p>This controls Fourier truncation of the exact transform, not the global error of an inverse-speed
+      expansion or the numerical integration error.
+      The floating checks are regression tests, not outward-rounded interval enclosures.
+      The separate global price-expansion target is recorded in
+      <a href="https://github.com/microprediction/homogenization/issues/197">issue 197</a>.</p>
+  </main>
