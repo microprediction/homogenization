@@ -29,6 +29,32 @@ def logs(kernels, pi, initial, memory):
     return np.array(full), np.array(short)
 
 
+def contraction(kernels, pi, refs):
+    M = np.asarray(kernels)/np.asarray(refs)[:, None, None]
+    a, b = M.sum(axis=2), np.einsum('i,kij->kj', pi, M)
+    D = M-a[:, :, None]*b[:, None, :]/b.sum(axis=1)[:, None, None]
+    delta = np.max(np.sum(abs(M-pi[None, None, :]), axis=2))
+    gamma = np.max(np.sum(abs(D), axis=2))
+    rho = 2*delta/(1-delta)
+    return rho, min(rho, gamma/(1-delta)**2), gamma
+
+
+def tangent_witness():
+    e = sp.symbols('e')
+    P, pi, one = sp.ones(2)/2, sp.ones(1, 2)/2, sp.ones(2, 1)
+    M = P+e*sp.diag(1, -1)
+    D = sp.simplify(M-(M*one)*(pi*M)/(pi*M*one)[0])
+    assert D == -e**2*sp.Matrix([[1, -1], [-1, 1]])/2
+    S = [(pi*M**j*one)[0] for j in range(7)]
+    for r in range(5):
+        ratio = sp.factor(S[r+2]*S[r]/S[r+1]**2)
+        assert sp.limit((ratio-1)/e**(2*r+2), e, 0) == (-1)**r
+        if r == 1:
+            assert sp.factor(ratio-(1-e**4/(1+e**2)**2)) == 0
+    print('Exact tangent orders r=0..4: log error = (-1)^r epsilon^(2r+2) + higher order')
+    print('Interaction norm = epsilon^2; r=1 ratio = 1-epsilon^4/(1+epsilon^2)^2')
+
+
 def sharpness():
     e = sp.symbols('e')
     pi, one = sp.ones(1, 2)/2, sp.ones(2, 1)
@@ -65,22 +91,22 @@ def budgets():
         pi = np.ones(size)/size
         P = np.outer(np.ones(size), pi)
         for delta in (1/64, 1/32, 1/8):
-            rho = 2*delta/(1-delta)
             E = rng.uniform(-1, 1, (128, size, size))
             E /= np.max(np.sum(abs(E), axis=2), axis=1)[:, None, None]
             kernels = (P+delta*E)/2
             assert kernels.min() > 0
+            rho, xi, _ = contraction(kernels, pi, np.full(len(kernels), .5))
             for N in (8, 32, 128):
                 for initial in (pi, np.eye(size)[0]):
                     for r in range(4):
                         f, a = logs(kernels[:N], pi, initial, r)
-                        bound = max(N-r-1, 0)*rho**(r+2)/2
+                        bound = max(N-r-1, 0)*rho**2*xi**r/2
                         error = abs(np.sum(f-a))
                         assert error <= bound+2e-12
                         assert np.max(abs(f[:r+1]-a[:r+1])) < 2e-12
                         worst = max(worst, error/bound)
                         count += 1
-    print(f'{count} nonhomogeneous panel budgets: max error/bound={worst:.6f}')
+    print(f'{count} interaction-sensitive panel budgets: max error/bound={worst:.6f}')
 
 
 def diffusion():
@@ -92,16 +118,16 @@ def diffusion():
         P = np.outer(np.ones(2), pi)
         delta = max(np.linalg.norm(K/p-P, np.inf) for K, p in zip(kernels, leading))
         assert delta < 1/3
-        rho = 2*delta/(1-delta)
+        rho, xi, interaction = contraction(kernels, pi, leading)
         row = []
         for r in (0, 1):
             f, a = logs(kernels*100, pi, pi, r)
             error = abs(np.sum(f-a))
-            bound = (600-r-1)*rho**(r+2)/2
+            bound = (600-r-1)*rho**2*xi**r/2
             assert error < bound+2e-10
             row.append(error)
         errors.append(row)
-        print(f'rate={rate:.0f}, 600 transitions: delta={delta:.6f}, '
+        print(f'rate={rate:.0f}, 600 transitions: delta={delta:.6f}, interaction={interaction:.3e}, '
               f'log errors r=0,1: '+', '.join(f'{v:.3e}' for v in row))
     orders = np.log2(np.array(errors[-2])/np.array(errors[-1]))
     assert np.all(orders > np.array([1.8, 2.7]))
@@ -115,6 +141,7 @@ def diffusion():
 
 if __name__ == '__main__':
     sharpness()
+    tangent_witness()
     budgets()
     diffusion()
     print('PASS')

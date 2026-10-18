@@ -111,8 +111,8 @@
     <p>This is a relative matrix-kernel condition, not merely a mixing-rate assumption for the latent chain.
       Let $F_k(\nu)=\nu K_k/(\nu K_k\mathbf1)$ and start the exact filter from any specified probability row $\nu_0$.
       Write $\ell_F=\sum_{k&lt;N}\log(\nu_kK_k\mathbf1)$, where $\nu_{k+1}=F_k(\nu_k)$.</p>
-    <p>For an integer memory length $r\ge0$, set $b_k=\max(0,k-r)$.
-      Form $\widehat\nu_k$ by applying $F_{b_k},\ldots,F_{k-1}$ to $\nu_0$ if $b_k=0$, and to $\pi$ otherwise.
+    <p>For an integer memory length $r\ge0$, set $j_k=\max(0,k-r)$.
+      Form $\widehat\nu_k$ by applying $F_{j_k},\ldots,F_{k-1}$ to $\nu_0$ if $j_k=0$, and to $\pi$ otherwise.
       The restarted log likelihood is</p>
     $$\ell_r=\sum_{k&lt;N}\log(\widehat\nu_kK_k\mathbf1).$$
     <p>All predictive factors are strictly positive.
@@ -143,9 +143,34 @@
       The corresponding predictive log densities obey</p>
     $$|\log(\nu K_k\mathbf1)-\log(\mu K_k\mathbf1)|
       \le\frac{\delta}{1-\delta}\|\nu-\mu\|_1=\frac\rho2\|\nu-\mu\|_1.$$
-    <p>For $k&gt;r$, the exact filter at the restart boundary $b_k\ge1$ is within $\rho$ of $\pi$.
+    <p>For $k&gt;r$, the exact filter at the restart boundary $j_k\ge1$ is within $\rho$ of $\pi$.
       Applying $r$ contractive updates gives $\|\nu_k-\widehat\nu_k\|_1\le\rho^{r+1}$.
       The log bound then gives $\rho^{r+2}/2$ per remaining factor; summing proves the theorem.</p>
+
+    <h2>Endpoint interaction gives a sharper bound</h2>
+    <p>The raw kernel deviation includes endpoint weights that need not transmit memory.
+      For $M_k=K_k/p_k$, set $a_k=M_k\mathbf1$, $b_k=\pi M_k$, $s_k=\pi a_k$ and
+      $D_k=M_k-a_kb_k/s_k$, so $D_k\mathbf1=0$ and $\pi D_k=0$.</p>
+    <p>Put $\gamma=\max_k\|D_k\|_\infty$ and $\xi=\min\{\rho,\gamma/(1-\delta)^2\}$.
+      The stronger panel budget is</p>
+    $$|\ell_F-\ell_r|\le\frac{(N-r-1)_+}{2}\rho^2\xi^r.$$
+    <p>Indeed, $F_k(\nu)=b_k/s_k+\nu D_k/(\nu a_k)$.
+      Subtracting two such expressions bounds its Lipschitz constant by
+      $\gamma/(1-\delta)+\delta\gamma/(1-\delta)^2=\gamma/(1-\delta)^2$.
+      The entry displacement remains at most $\rho$, but each retained update now costs only $\xi$.</p>
+    <p>If $M_k=P+m^{-1}A_k+O(m^{-2})$ uniformly, direct expansion gives
+      $D_k=m^{-1}(I-P)A_k(I-P)+O(m^{-2})$.
+      Thus the first-order rank-one tangent condition $(I-P)A_k(I-P)=0$ implies
+      $\gamma=O(m^{-2})$ and $|\ell_F-\ell_r|=O(Nm^{-2r-2})$ for fixed $r$.</p>
+    <p>In particular, one retained interval has a quartic rather than cubic bound under this additional condition.
+      If every $D_k=0$, one retained interval is exact, even when its endpoint weights differ from $\pi$.
+      The tangent condition is not inferred from fast mixing alone or assumed for every switching diffusion.</p>
+    <p>The improved exponent is sharp: replace $A$ in the binary witness below by $\operatorname{diag}(1,-1)$.
+      Then $D=-\varepsilon^2\left(\begin{smallmatrix}1&amp;-1\\-1&amp;1\end{smallmatrix}\right)/2$,
+      $\|D\|_\infty=\varepsilon^2$, and the all-plus path has</p>
+    $$\ell_F-\ell_r=(-1)^r\varepsilon^{2r+2}+O(\varepsilon^{2r+3}).$$
+    <p>Its scalar filter derivative is $-\varepsilon^2/[1+\varepsilon(2a-1)]^2$ and its initial displacement is $\varepsilon/2$, proving the coefficient by iteration.
+      For $r=1$, the full/restarted likelihood ratio is exactly $1-\varepsilon^4/(1+\varepsilon^2)^2$.</p>
 
     <h2>Two-transition blocks give the first correction</h2>
     <p>With $\nu_0=\pi$, put $s_k=\pi K_k\mathbf1$.
@@ -180,7 +205,7 @@
     <p>Conditional composite likelihoods are classical (<a href="./bibliography.html#Lindsay1988">Lindsay 1988</a>).
       Filter forgetting is also classical (<a href="./bibliography.html#LeGlandMevel2000">Le Gland and Mevel 2000</a>); the latter reference&apos;s metadata were checked against its authors&apos; Inria team bibliography, but its full text was unavailable.
       The elementary near-rank-one constants and sharp-order witness are proved here; no uninspected theorem or priority claim is imported.</p>
-    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_finite_memory.py">certificate</a> checks exact witness coefficients for $r=0,\ldots,4$, exhaustive binary normalization, nonhomogeneous finite-panel budgets, and the existing Vasicek Fourier kernels on a repeated closed observation path.
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/likelihood/verify_finite_memory.py">certificate</a> checks both exact witness families for $r=0,\ldots,4$, exhaustive binary normalization, interaction-sensitive finite-panel budgets, and the existing Vasicek Fourier kernels on a repeated closed observation path.
       It ends with literal PASS and uses portable tolerances.
       Floating Fourier evaluations are not certified density enclosures.</p>
     <p>A numerical application must include kernel-evaluation error in its budget.
