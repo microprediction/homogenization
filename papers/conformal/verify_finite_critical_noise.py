@@ -7,7 +7,7 @@ from scipy.linalg import expm
 from scipy.optimize import brentq
 from scipy.special import ndtr
 from scipy.stats import norm
-from verify_path_crossover import critical_quadratic_cdfs
+from verify_path_crossover import critical_quadratic_cdfs, asymmetric_occupation_density
 
 
 def coefficients(q, values):
@@ -27,12 +27,18 @@ def profile(u, h, boundary, variance, skew):
 
 def leading(t, lam, data):
     _, _, h, boundary, variance, skew = data
+    if not lam:
+        return profile(math.sqrt(t), h, boundary, variance, skew) if t > 0 else np.zeros_like(h)
     return quad_vec(lambda u: 2*u*profile(u, h, boundary, variance, skew)
-                    *norm.pdf((t-u*u)/lam)/lam, 0., 12., epsabs=2e-11)[0]
+                    *norm.pdf((t-u*u)/lam)*(1+lam)/lam, 0., 12., epsabs=2e-11,
+                    points=[math.sqrt(x) for x in (t-8*lam, t, t+8*lam) if 0 < x < 144])[0]/(1+lam)
 
 
 def reference(t, lam):
-    return quad(lambda u: 2*norm.pdf(u)*ndtr((t-u*u)/lam), 0., 12., epsabs=2e-11)[0]
+    if not lam:
+        return max(0., 2*ndtr(math.sqrt(max(0., t)))-1)
+    return quad(lambda u: 2*norm.pdf(u)*ndtr((t-u*u)/lam), 0., 12., epsabs=2e-11,
+                points=[math.sqrt(x) for x in (t-8*lam, t, t+8*lam) if 0 < x < 144])[0]
 
 
 class FourierLaw:
@@ -47,10 +53,34 @@ class FourierLaw:
         self.ch = np.array([(expm(c*q+1j*u*math.sqrt(c/variance)*np.diag(f))
                              @np.ones(len(q))).real for u in self.u])
         self.weights = (self.ch.T*self.w)@self.transform
+        self.atom = np.zeros(len(q))
+        for level in np.unique(f):
+            keep = np.flatnonzero(f == level)
+            self.atom[keep] = expm(c*q[np.ix_(keep, keep)])@np.ones(len(keep))
+        self.atom_location = c/variance*f*f
+        self.continuous = self.ch-np.cos(np.outer(self.u, math.sqrt(c/variance)*f))*self.atom
         self.c, self.upper = c, upper
 
     def cdf(self, t, lam):
         return self.weights@ndtr((t-self.x**2)/lam)
+
+    def folded(self, t):
+        if t < 0:
+            return np.zeros(len(self.data[0]))
+        return (2*self.w*np.sin(self.u*math.sqrt(t))/self.u)@self.continuous+self.atom*(self.atom_location <= t)
+
+    def across_noise(self, t, lam):
+        if not lam:
+            return self.folded(t)
+        return quad_vec(lambda z: norm.pdf(z)*self.folded(t-lam*z), -12., min(12., t/lam),
+                        epsabs=2e-10)[0]
+
+    def convolved_gap(self, t, lam):
+        pi = self.data[0]
+        def integrand(u):
+            folded = self.folded(u*u)
+            return 2*u*(folded-pi@folded)*norm.pdf((t-u*u)/lam)*(1+lam)/lam
+        return quad_vec(integrand, 0., 8., epsabs=2e-12)[0]/(1+lam)
 
     def quantile(self, p, lam):
         pi = self.data[0]
@@ -95,11 +125,80 @@ def spectral_check(q, values):
     assert np.max(abs(derivative(amplitudes, 2)-boundary)) < 2e-8
 
 
+def zero_noise_check(q, values):
+    errors, refinement_error = [], 0.
+    for c in (32., 128., 512., 2048.):
+        law, refined = FourierLaw(q, values, c), FourierLaw(q, values, c, 480, 96.)
+        pi = law.data[0]
+        residuals = []
+        for lam in (0., .02, c**-.5):
+            for p in (.5, .9):
+                t = brentq(lambda x: pi@law.across_noise(x, lam)-p, .05, 8.)
+                target = brentq(lambda x: reference(x, lam)-p, .05, 8.)
+                gap = law.across_noise(t, lam)-p
+                refinement_error = max(refinement_error, np.max(abs(refined.across_noise(t, lam)-gap-p)))
+                assert refinement_error < 3e-8
+                residuals.append(np.max(abs(c*gap-leading(target, lam, law.data))))
+        errors.append(max(residuals))
+        print(f'c={c:.0f}: zero/shrinking-noise maximum scaled discrepancy={errors[-1]:.9f}')
+    assert errors[-1] < errors[0]/8 and errors[-1] < .002
+    print(f'24 zero/shrinking-noise checks; maximum refinement discrepancy={refinement_error:.3e}')
+
+
+def large_noise_check(q, values):
+    errors = []
+    for c in (32., 128., 512., 2048.):
+        law = FourierLaw(q, values, c)
+        pi, _, _, boundary, variance, _ = law.data
+        residuals = []
+        for lam in (math.sqrt(c), .5*c/variance, c*c):
+            p = .9
+            t = (1+lam)*brentq(lambda s: pi@law.cdf((1+lam)*s, lam)-p, -5., 10.)
+            target = (1+lam)*brentq(lambda s: reference((1+lam)*s, lam)-p, -5., 10.)
+            gap = law.convolved_gap(t, lam)
+            residuals.append((1+lam)*np.max(abs(c*gap-leading(target, lam, law.data))))
+            if lam == .5*c/variance:
+                fixed_error = np.max(abs(c*c*gap+boundary/.5*norm.pdf(norm.ppf(p))))
+        errors.append(max(residuals))
+        print(f'c={c:.0f}: growing-noise weighted discrepancy={errors[-1]:.9f}; fixed-noise coefficient error={fixed_error:.9f}')
+    assert errors[-1] < errors[0]/8 and fixed_error < .002
+
+
+def unsmoothed_bessel_check(q, values, a, b):
+    for c in (64., 256.):
+        law = FourierLaw(q, values, c)
+        _, f, _, _, variance, _ = law.data
+        mean = values[0]-f[0]
+        for t in (.3, 1., 3.):
+            radius = math.sqrt(variance*t/c)
+            lo, hi = max(-1., mean-radius), min(1., mean+radius)
+            for start in (0, 1):
+                exact = quad(lambda x: asymmetric_occupation_density((x+1)/2, c, a, b, start)/2,
+                             lo, hi, epsabs=2e-11)[0]
+                assert abs(law.folded(t)[start]-exact) < 3e-8
+    print('12 zero-noise statewise Bessel-CDF checks: PASS')
+
+
 def main():
     a, b = 1.7, .4
     q2, f2 = np.array([[-a, a], [b, -b]]), np.array([1., -1.])
     q = np.array([[-1.8, 1.4, .4], [.3, -1.2, .9], [1.1, .2, -1.3]])
     values = np.array([1., -.7, .2])
+    repeated = FourierLaw(q, np.array([1., 1., -.7]), .5)
+    location = repeated.atom_location[0]
+    jump = repeated.folded(location)-repeated.folded(location-1e-9)
+    assert np.max(abs(jump-repeated.atom*(repeated.atom_location == location))) < 2e-7
+    pi, f = repeated.data[:2]
+    weighted = np.diag(np.sqrt(pi))@q@np.diag(1/np.sqrt(pi))
+    k = 2*len(q)*np.linalg.norm((weighted+weighted.T)/2, 2)
+    for theta in (.2, 1., 10., 1000.):
+        matrix = weighted+1j*theta*np.diag(f)
+        gamma = -np.max(np.linalg.eigvals(matrix).real)
+        assert gamma > 0
+        for horizon in (.1, 1., 4.):
+            bound = math.exp(-gamma*horizon)*sum((k*horizon)**j/math.factorial(j) for j in range(len(q)))
+            assert np.linalg.norm(expm(horizon*matrix), 2) <= bound+2e-9
+    print('Repeated-feature atoms and 12 high-frequency Schur-bound checks: PASS')
     for generator, feature in ((q2, f2), (q, values)):
         spectral_check(generator, feature)
     data2 = coefficients(q2, f2)
@@ -143,6 +242,9 @@ def main():
     pi, f, h, boundary, variance, skew = law.data
     print(f'Nonreversible three-state variance={variance:.9f}; third cumulant rate={skew:.9f}')
     print(f'{checked} three-state quantile/budget checks; maximum refinement discrepancy={maximum_refinement:.3e}')
+    unsmoothed_bessel_check(q2, f2, a, b)
+    zero_noise_check(q, values)
+    large_noise_check(q, values)
     print('PASS')
 
 
