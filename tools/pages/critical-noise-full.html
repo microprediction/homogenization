@@ -1,0 +1,124 @@
+<!-- title: Critical path scores at vanishing noise · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_critical_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Critical scores at the vanishing-noise scale</h1>
+    <p class="subtitle">One noise-uniform expansion connects inverse-horizon and inverse-square latent-start bias, with a sign reversal between them.</p>
+
+    <h2>Setup and result</h2>
+    <p>Let $Y$ jump from $+$ to $-$ at fixed rate $a&gt;0$ and back at fixed rate $b&gt;0$.
+      Put $r=a+b$, $\pi=(b/r,a/r)$, $\bar y=(b-a)/r$, $v=8ab/r^3$, and $A_c=c^{-1}\int_0^cY_sds$.
+      Consider the critical quadratic score</p>
+    $$S_c=\mu(A_c-\bar y)^2+\sigma_c Z,\qquad
+      \mu&gt;0,\quad Z\sim N(0,1)\text{ independent},\quad
+      \sigma_c={\lambda\mu v\over c},\quad\lambda\ge0.$$
+    <p>Write $F_+,F_-$ for its fixed-start CDFs, and let $q_c$ be its stationary pooled $p$-quantile for fixed $0&lt;p&lt;1$.
+      If $t_p(\lambda)$ is the $p$-quantile of $N^2+\lambda Z$, for independent standard normals $N,Z$, define</p>
+    $$h(x)=(\sqrt x-x^{3/2})\phi(\sqrt x)\mathbf1_{\{x&gt;0\}},\qquad
+      H_\lambda(t)=\mathbb E[h(t-\lambda Z)],\qquad C={a-b\over2br}.$$
+    <div class="equation-card">
+    $$F_+(q_c)-p={C\over c}H_\lambda(t_p(\lambda))+r_c(\lambda),\qquad
+      F_-(q_c)-p=-{b\over a}\{F_+(q_c)-p\}.$$
+    $$\sup_{\lambda\ge0}c(1+\lambda)|r_c(\lambda)|\longrightarrow0.$$
+    </div>
+    <p>In fact the remainder is $o(\{c(1+\lambda)\}^{-1})$ uniformly over all $\lambda\ge0$, so arbitrary joint noise scalings are allowed; the second equality is exact whenever the pooled quantile attains $p$.
+      At zero noise this holds for all sufficiently large $c$ because the endpoint atoms move outside the fixed-quantile region.
+      Bounded normalized noise has order $c^{-1}$ when its coefficient is nonzero; fixed positive noise recovers order $c^{-2}$ below.</p>
+    <p>If $a=b$, reflection makes $(A_c-\bar y)^2$ identically distributed under both starts, so the conditional gaps vanish exactly for every $c$ and noise level.
+      Stationary pooling remains marginal population coverage, not a finite-calibration or distribution-free conditional guarantee.</p>
+
+    <h2>An exact quadratic CDF profile</h2>
+    <p>For $-1&lt;x&lt;1$ put</p>
+    $$g_c(x)=e^{-c\{r+(a-b)x\}/2}I_0(c\sqrt{ab}\sqrt{1-x^2}),$$
+    <p>and set $g_c(x)=0$ at and outside both endpoints.
+      Differentiating the classical telegraph densities gives $f_+-f_-=-g_c'$ on the open interval.
+      For $u\ge0$, define the right-continuous profile</p>
+    $$J_c(u)={ac\over r}\left[g_c\!\left(\bar y-\sqrt{v/c}\,u\right)
+                         -g_c\!\left(\bar y+\sqrt{v/c}\,u\right)\right].$$
+    <p>The zero endpoint convention incorporates the jumps at $u_-=(1+\bar y)\sqrt{c/v}$ and $u_+=(1-\bar y)\sqrt{c/v}$.
+      Indeed, integrating over the quadratic score&apos;s acceptance interval and adding its two endpoint atoms gives, for every real $t$,</p>
+    $$F_+\!\left({\mu v\over c}t\right)-F_\pi\!\left({\mu v\over c}t\right)
+      ={1\over c}\mathbb E\!\left[J_c\!\left(\sqrt{t-\lambda Z}\right)
+        \mathbf1_{\{t-\lambda Z\ge0\}}\right].$$
+    <p>The integrand is defined to be zero for negative arguments before taking a square root.
+      This identity retains atoms even at zero noise; it does not replace their mass by a continuous approximation.</p>
+
+    <h2>A finite-horizon error budget</h2>
+    <p>Put $\psi(u)=(u-u^3)\phi(u)$ for $u\ge0$, so $h(x)=\psi(\sqrt x)$ on $x\ge0$ and
+      $\psi'(u)=(1-4u^2+u^4)\phi(u)$.
+      A computable exact-arithmetic budget is</p>
+    $$B_c={1\over2}\left\{\int_0^\infty|J_c'(u)-C\psi'(u)|du
+                  +{ac\over r}(e^{-ac}+e^{-bc})\right\}.$$
+    <p>The derivative excludes the two jump points; their absolute jump sizes are bounded by the displayed exponential terms.
+      Since $J_c-C\psi$ vanishes at zero and infinity, half its total variation bounds its supremum.
+      Also put $L_c=\int_0^\infty 2u|J_c(u)-C\psi(u)|du$.</p>
+    <p>Probability convolution contracts the supremum, while convolution with a Gaussian density is bounded by its maximum times the $L^1$ norm.
+      Hence, for every actual threshold $t$ and every $\lambda\ge0$,</p>
+    <div class="equation-card">
+    $$\left|F_+\!\left({\mu v\over c}t\right)-F_\pi\!\left({\mu v\over c}t\right)
+                   -{C\over c}H_\lambda(t)\right|
+      \le {1\over c}\min\left\{B_c,{L_c\over\lambda\sqrt{2\pi}}\right\}.$$
+    </div>
+    <p>This bound is centered at the actual threshold $t$, not the limiting quantile $t_p(\lambda)$.
+      At an exact pooled quantile that attains $p$, replace $F_\pi$ by $p$ and take $t=cq_c/(\mu v)$.
+      The second bound is omitted at $\lambda=0$; numerical quadratures of both budgets are regression checks, not outward-rounded enclosures.</p>
+
+    <h2>Proof of the asymptotic coefficient</h2>
+    <p>Normalize the telegraph kernel by $k_c(u)=r\sqrt{vc}\,g_c(\bar y+\sqrt{v/c}\,u)/2$.
+      Taylor expansion of its saddle exponent and the fixed-order Bessel expansion give, locally uniformly with one derivative,</p>
+    $$k_c(u)=\phi(u)\left[1+{d\over\sqrt c}(u-u^3)\right]+O(c^{-1}),\qquad
+      d={b-a\over2\sqrt{2abr}}.$$
+    <p>Its exponent is $S(x)=-\{r+(a-b)x\}/2+\sqrt{ab}\sqrt{1-x^2}$, with
+      $S(\bar y)=S'(\bar y)=0$, $S''(\bar y)=-1/v$, and $S''(x)\le-\sqrt{ab}$.
+      Subtracting $k_c(u)$ from $k_c(-u)$ therefore gives $J_c\to C\psi$ and $J_c'\to C\psi'$ locally uniformly.</p>
+    <p>These limits control both $B_c$ and the weighted integral $L_c$.
+      On $|u|\le\sqrt{K\log c}$, the differentiated Bessel and Taylor remainders after the subtraction are bounded by $c^{-1/2}$ times a polynomial in $\log c$.
+      On the remaining interior region, concavity bounds the kernels and derivatives by a polynomial in $c,u$ times $e^{-\delta u^2}$; choosing fixed $K$ large makes that integral vanish.</p>
+    <p>Near the endpoints, $I_0(z)\le2e^z/\sqrt{1+z}$ and $I_1(z)\le(z/2)I_0(z)$ remove the apparent denominator singularities and give exponentially small integrals.
+      The extra factor $2u$ costs only a polynomial on the central region and in the Gaussian tails, so $B_c,L_c\to0$, including the endpoint jumps.
+      No polynomial decay rate for these budgets is asserted.</p>
+    <p>The stationary density of $\sqrt{c/v}(A_c-\bar y)$ converges locally to $\phi$, and its continuous mass tends to one.
+      Scheff&eacute;&apos;s lemma, including the vanishing atoms, gives total-variation convergence; squaring and adding $\lambda Z$ cannot increase that distance.
+      Compactify the noise by $\rho=\lambda/(1+\lambda)\in[0,1]$: the normalized reference law is $(1-\rho)N^2+\rho Z$.</p>
+    <p>Its CDF is jointly continuous and strictly increasing at its $p$-quantile, including the chi-square and Gaussian endpoints.
+      Compactness therefore gives uniform quantile stability, so $\sup_{\lambda\ge0}|cq_c/(\mu v)-t_p(\lambda)|/(1+\lambda)\to0$.</p>
+    <p>For $\lambda&gt;0$, write $H_\lambda(t)=\lambda^{-1}\int_0^\infty h(x)\phi((t-x)/\lambda)dx$.
+      The functions $(1+\lambda)H_\lambda((1+\lambda)s)$ extend continuously in $(\rho,s)$ to $h(s)$ at $\rho=0$ and $-2\phi(s)$ at $\rho=1$, since $h$ is bounded, uniformly continuous and integrable with integral $-2$.
+      They are thus uniformly equicontinuous on compact $s$ intervals.</p>
+    <p>The finite-horizon bound, multiplied by $c(1+\lambda)$, is at most $2\max\{B_c,L_c/\sqrt{2\pi}\}\to0$.
+      Combining this with normalized quantile stability and equicontinuity proves the all-noise remainder.</p>
+
+    <h2>A sign change, not just a slower rate</h2>
+    <p>At zero noise, let $z=\Phi^{-1}((1+p)/2)$.
+      The coefficient becomes $C(z-z^3)\phi(z)$, so its sign changes at $p_*=2\Phi(1)-1=0.682689492\ldots$ when $a\ne b$.
+      At $p_*$ only the leading term vanishes; finite-$c$ exact cancellation is not asserted.</p>
+    <p>Moreover $\int_0^\infty h(x)dx=-2$ and $t_p(\lambda)/\lambda\to z_p$, so
+      $\lambda H_\lambda(t_p(\lambda))\to-2\phi(z_p)$ as $\lambda\to\infty$.
+      For $a&gt;b$ the median coefficient is therefore positive at zero noise and negative at sufficiently large finite $\lambda$, proving at least one sign change by continuity.
+      The uniform remainder now also permits unbounded $\lambda=\lambda_c$.</p>
+    <p>In particular, for any positive noise sequence with $c\sigma_c\to\infty$,</p>
+    $$c^2\sigma_c\{F_+(q_c)-p\}\longrightarrow
+      -2C\mu v\phi(\Phi^{-1}(p)).$$
+    <p>For fixed $\sigma&gt;0$ this is exactly the quadratic specialization of the fixed-noise Poisson boundary-covariance coefficient.
+      No parameter-uniform conclusion as $a$ or $b$ degenerates follows.</p>
+    <p>For $a=1.7,b=.4$, the exact certificate at $c=2048$ gives the following $c$-scaled positive-start gaps:</p>
+    <div class="table-wrap"><table class="impl">
+      <thead><tr><th>noise $\lambda$</th><th>target $p$</th><th>exact-law check</th><th>predicted limit</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>.5</td><td>0.090478211</td><td>0.090402088</td></tr>
+        <tr><td>.5</td><td>.5</td><td>0.033783363</td><td>0.033744851</td></tr>
+        <tr><td>2</td><td>.5</td><td>&minus;0.065994385</td><td>&minus;0.065927216</td></tr>
+        <tr><td>0</td><td>.9</td><td>&minus;0.224089929</td><td>&minus;0.223889067</td></tr>
+      </tbody>
+    </table></div>
+    <p>The budget there is $B_c=0.000614248$; at $p_*$ the scaled gap is $0.000061681$, not exactly zero.</p>
+    <p>Across six noise choices per horizon, including $\lambda=\sqrt c$, $\lambda=.5c/v$ and $\lambda=c^2$, the largest $c(1+\lambda)$-weighted quantile error falls from $0.025385568$ at $c=32$ to $0.000386761$ at $c=2048$.
+      The $L^1$ budget falls from $0.146011157$ to $0.002169442$; these are grid checks, not a numerical proof of the continuum supremum.
+      At fixed $\mu=1,\sigma=.5,p=.9$, the limit $-0.319086236$ independently agrees with the general finite-chain Poisson solve.</p>
+
+    <h2>Literature and scope</h2>
+    <p>The density and atoms are classical: <a href="./bibliography.html#LopezRatanov2014">L&oacute;pez and Ratanov (2014)</a>, equation (2.14), inspected in the publisher PDF.
+      The differentiated asymptotic inputs are <a href="https://dlmf.nist.gov/10.40">DLMF 10.40.1 and 10.40.3</a>; the critical-score profile and error transfer are derived above.
+      The result fixes positive rates and an interior target and treats a quadratic score with arbitrary nonnegative Gaussian noise scalings, not arbitrary nonlinear scores or general finite chains.</p>
+  </main>
