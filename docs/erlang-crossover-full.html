@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Three short bond quotes can alias an Erlang-stage prior · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./erlang.html">&larr; Erlang durations</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a></span></p>
+    <h1>Three short bond quotes can alias an Erlang-stage prior</h1>
+    <p class="subtitle">Three quotes can lose rank near equal stage rates; a fourth gives a uniform short-maturity bound.</p>
+
+    <h2>Result and quantifiers</h2>
+    <p>Consider two alternating regimes with two exponential stages each, stage rates $x,y&gt;0$, known Vasicek parameters $\kappa&gt;0$, $\theta_1\ne\theta_2$, common $\sigma\ge0$ and known current short rate $r$.
+      The unknown is a prior over all four stages, including uncertainty about the current regime.
+      Fix any three ordered nodes $0&lt;t_1&lt;t_2&lt;t_3$ and put $d=(\theta_1-\theta_2)/2\ne0$.</p>
+    <p>For every sufficiently small positive $\varepsilon$, there is a positive rate</p>
+    $$y_\varepsilon=x+\frac45d\kappa(t_1+t_2+t_3)\varepsilon+O(\varepsilon^2)$$
+    <p>such that two distinct, strictly positive stage priors give exactly the same three bond prices at maturities $\varepsilon t_1,\varepsilon t_2,\varepsilon t_3$, under the same known parameters $(x,y_\varepsilon)$.
+      Their full bond curves are nevertheless different.
+      The rate depends on the design scale: this does not contradict identification at all sufficiently small maturities for one fixed model.</p>
+
+    <h2>Normalized prices and exact jets</h2>
+    <p>Let the stage generator and level-sign matrix be</p>
+    $$Q=\begin{pmatrix}-x&amp;x&amp;0&amp;0\\0&amp;-x&amp;x&amp;0\\0&amp;0&amp;-y&amp;y\\y&amp;0&amp;0&amp;-y\end{pmatrix},\qquad
+      D=\operatorname{diag}(1,1,-1,-1).$$
+    <p>The short rate satisfies $dr_t=\kappa(\theta_{Y_t}-r_t)dt+\sigma dW_t$, with Brownian motion independent of the stage chain.
+      With $B(T)=(1-e^{-\kappa T})/\kappa$, the exact linear amplitude solves
+      $P_j=a_j e^{-Br}$, $a'=[Q+\operatorname{diag}(-\kappa\theta B+\sigma^2B^2/2)]a$, $a(0)=\mathbf1$.</p>
+    <p>Remove the known common factor $f(T)=\exp\int_0^T[-\kappa\theta_*B(s)+\sigma^2B(s)^2/2]ds$, with midpoint $\theta_*=(\theta_1+\theta_2)/2$, not the stationary mean.
+      Then $z=a/f$ satisfies $z'=[Q-d(1-e^{-\kappa T})D]z$, and the normalized mixture quote is $e^{Br}P_\nu/f=\nu z$.
+      Write $z(T)=\sum_{n\ge0}u_nT^n$; its exact recursion is</p>
+    $$(n+1)u_{n+1}=Qu_n+dD\sum_{h=1}^n\frac{(-\kappa)^h}{h!}u_{n-h},\qquad u_0=\mathbf1,\quad u_1=0.$$
+    <p>For $q=4,5$, let $C_q$ have rows $u_0^\top,u_2^\top,u_3^\top,u_q^\top$.
+      Substituting the recursion yields</p>
+    $$\det C_4=\frac{d^3\kappa^3xy(x-y)}{18},\qquad
+      \det C_5\big|_{y=x}=\frac{2d^4\kappa^4x^2}{45}.$$
+
+    <h2>The cancellation and an exact singular branch</h2>
+    <p>Eliminate the fourth weight using normalization, giving the three-by-three response
+      $H_{j\ell}(\varepsilon,y)=z_\ell(\varepsilon t_j)-z_4(\varepsilon t_j)$.
+      Let $V_q=\det[t_j^p]_{j=1,2,3;\ p=2,3,q}$; then</p>
+    $$\det H=-\det C_4\,V_4\varepsilon^9-\det C_5\,V_5\varepsilon^{10}+O(\varepsilon^{11}),\qquad
+      V_4=\prod_jt_j^2\prod_{a&lt;b}(t_b-t_a)&gt;0,\quad V_5=(t_1+t_2+t_3)V_4.$$
+    <p>The remainder is locally uniform for $y$ near $x$ because the ODE solution is analytic in maturity and rates.
+      Substitute $y=x+\varepsilon\eta$ and divide by $A\varepsilon^{10}$, where $A=d^3\kappa^3x^2V_4/18\ne0$.
+      The resulting function extends analytically through $\varepsilon=0$ and has</p>
+    $$F(\varepsilon,\eta):=\frac{\det H(\varepsilon,x+\varepsilon\eta)}{A\varepsilon^{10}},\qquad
+      F(0,\eta)=\eta-\frac45d\kappa(t_1+t_2+t_3).$$
+    <p>At $\eta_*=(4/5)d\kappa(t_1+t_2+t_3)$, $F(0,\eta_*)=0$ and $\partial_\eta F(0,\eta_*)=1$.
+      The analytic implicit-function theorem therefore supplies a unique local branch $\eta(\varepsilon)=\eta_*+O(\varepsilon)$ with $F(\varepsilon,\eta(\varepsilon))=0$.
+      Taking $y_\varepsilon=x+\varepsilon\eta(\varepsilon)$ proves the asserted rate expansion and positivity for small $\varepsilon$.</p>
+
+    <h2>Rank two gives genuine positive-prior aliases</h2>
+    <p>The minor in the first two quote rows and first two response columns has leading term</p>
+    $$-\frac{d^2\kappa^2x}{3}\,t_1^2t_2^2(t_2-t_1)\varepsilon^5,$$
+    <p>uniformly for bounded $\eta$.
+      It is nonzero for small positive $\varepsilon$, so the singular response on the branch has rank exactly two, not zero.
+      For any nonzero $v\in\ker H$, put $w=(v_1,v_2,v_3,-\sum v_\ell)$ and normalize $\|w\|_\infty=1$.</p>
+    <p>The priors $\nu^\pm=\mathbf1/4\pm w/8$ have every component at least $1/8$, sum to one and are distinct.
+      Their price differences at the three maturities vanish exactly, since $H(w_1,w_2,w_3)^\top=0$ after eliminating the fourth coordinate.</p>
+    <p>For every sufficiently small positive branch value, $y_\varepsilon\ne x$ because $\eta_*\ne0$.
+      Therefore $\det C_4\ne0$: the augmented jets distinguish all four weights, and the full curves cannot coincide for distinct priors.
+      Other sufficiently short quote designs for this fixed model do identify them.</p>
+
+    <h2>A fourth quote restores a uniform threshold</h2>
+    <p>Fix four nodes $0&lt;t_1&lt;t_2&lt;t_3&lt;t_4$ and a compact parameter set
+      $K\subset\{(\kappa,d,x,y):\kappa,x,y&gt;0,\ d\ne0\}$.
+      All parameters are still known for each inverse problem; uniformity concerns the common design and threshold, not joint parameter identification.</p>
+    <p>Let $H_4$ be the four-by-three response after eliminating the fourth prior weight, and let
+      $S_{p\ell}=(u_p)_\ell-(u_p)_4$ for $p=2,3,4,5$, $\ell=1,2,3$.
+      Its minors on rows $(2,3,4)$ and $(2,3,5)$ are $-\det C_4$ and $-\det C_5$.</p>
+    <p>At unequal rates the first minor is nonzero, and at equal rates the second is nonzero.
+      Hence $S$ has full column rank everywhere on $K$, and $\gamma=\min_K\sigma_{\min}(S)&gt;0$.
+      The matrix $W_{jp}=t_j^p$, $p=2,3,4,5$, is invertible, since its determinant is $\prod_jt_j^2\prod_{a&lt;b}(t_b-t_a)$.</p>
+    <p>Put $\alpha=\sigma_{\min}(W)\gamma&gt;0$ and fix any radius $R&gt;0$.
+      With $L=\max_K\max(x,y)$, $k_*=\max_K\kappa$ and $d_*=\max_K|d|$, define</p>
+    $$M_R=\exp\{R[2L+d_*(e^{k_*R}-1)]\},\qquad
+      \beta=8\sqrt3\,M_R(t_4/R)^6.$$
+    <p>The complex-time ODE and Gronwall&apos;s inequality give $\|z(T)\|_\infty\le M_R$ on $|T|\le R$.
+      Cauchy&apos;s coefficient estimate therefore bounds each component&apos;s Taylor remainder beyond degree five by $2M_R(T/R)^6$ for $0\le T\le R/2$.
+      Taking column differences and a Frobenius bound gives the uniform estimate</p>
+    $$H_4=W\operatorname{diag}(\varepsilon^2,\varepsilon^3,\varepsilon^4,\varepsilon^5)S+E,
+      \qquad\|E\|_2\le\beta\varepsilon^6.$$
+    <p>Consequently, for $0&lt;\varepsilon\le\min\{1,R/(2t_4)\}$,</p>
+    $$\sigma_{\min}(H_4)\ge\varepsilon^5(\alpha-\beta\varepsilon),\qquad
+      0&lt;\varepsilon\le\min\{1,R/(2t_4),\alpha/(2\beta)\}
+      \ \Longrightarrow\ \|H_4^\dagger\|_2\le\frac2{\alpha\varepsilon^5}.$$
+    <p>This supplies one threshold valid on the entire compact set, including coalescing rates.
+      A normalized quote-error vector $e$ gives full four-weight least-squares error at most $4\|e\|_2/(\alpha\varepsilon^5)$, since reconstructing the last weight has operator norm two.
+      The bound concerns an unconstrained linear inverse, not statistical coverage or reliable recovery at a fixed noise level as maturities shrink.</p>
+    <p>At $x=y$, the fourth jet is in the span of the second and third, whereas the fifth adds a third direction, so the worst-case exponent five is sharp.
+      Combined with the three-quote branch above, four quotes are minimal for uniform identification over a class containing a neighborhood of equal rates among fixed scaled-node designs.
+      Parameter-adaptive three-quote designs are not ruled out.</p>
+    <p>For the fixture $\kappa=d=1$, $x=2$, $1\le y\le3$, the exact minors are
+      $\det C_4=y(2-y)/9$ and $\det C_5=y(y+2)(2y-3)/45$.
+      Outside $|y-2|&lt;1/4$, the first has magnitude at least $1/36$; inside, the second is at least $7/96&gt;1/36$.</p>
+    <p>If $F_*^2$ bounds $\|S\|_F^2$ on this interval, Cauchy&ndash;Binet and the singular-value product give $\gamma\ge1/(18F_*^2)$.
+      The certificate computes such a bound with rational polynomial coefficients and obtains a positive sufficient maturity range without sampling the interval to infer uniformity.
+      Its conservative threshold is not a recommended practical quote scale.</p>
+
+    <h2>Scope, context and checks</h2>
+    <p>For three quotes there is no common positive maturity threshold valid for every model in any neighborhood of equal rates, even with all parameters known and the stage rates confined to a compact subset of $(0,\infty)$.
+      This is an exact finite-design alias, stronger than mere bad conditioning, but not nonidentification from the entire curve.
+      It concerns initial-prior observability, not identification of parameters or a regime count from maturity-integrated Green&ndash;Kubo rank.</p>
+    <p>The observability framework is classical; <a href="./bibliography.html#Kalman1960">Kalman (1960), Section 5</a>, defines observability and its Gramian.
+      The model-specific jet cancellation and implicit branch are proved here; no new general observability principle is claimed.</p>
+    <p>For $x=2$, $d=\kappa=1$ and nodes $(1,2,3)$, the limiting gap coefficient is $\eta_*=24/5$.
+      At $\varepsilon=1/1024$, the numerical branch estimate is $\eta=4.798382900402$, $y=2.004685920801$; independent ODE amplitudes agree with the Taylor evaluation within $3.43\times10^{-64}$.
+      Rounded rates do not themselves define an exact alias: the analytic root above does.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a> proves the limiting and rank-minor identities symbolically, checks four branch approximations and constructs positive numerical prior pairs.
+      It also checks four-quote recovery and the explicit remainder bound, including near-alias designs and points inside the rigorously sufficient uniform range.
+      Its final line is literal PASS and its assertions use portable tolerances; high-precision roots and ODE checks are not outward-rounded interval certificates.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
