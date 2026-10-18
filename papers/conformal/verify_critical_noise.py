@@ -1,11 +1,11 @@
-"""Critical quadratic score at noise O(1/c); floating checks, not enclosures."""
+"""Noise-uniform critical quadratic score; floating checks, not enclosures."""
 import math
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq
 from scipy.special import ive, ndtr
 from scipy.stats import norm
-from verify_path_crossover import asymmetric_occupation_density
+from verify_path_crossover import asymmetric_occupation_density, critical_score_coefficients
 
 
 def pars(c, a, b):
@@ -55,9 +55,20 @@ def budget(c, a, b):
     return (value+tail+a*c/r*(math.exp(-a*c)+math.exp(-b*c)))/2
 
 
+def l1_budget(c, a, b):
+    _, _, _, _, left, right, coefficient = pars(c, a, b)
+    top = max(left, right)
+    value = integrate(lambda u: 2*u*abs(profile(c, u, a, b)[0]-coefficient*psi(u)),
+                      0., top, (left, right, .5, 1., 2., 4.))
+    return value+quad(lambda u: 2*u*abs(coefficient*psi(u)), top, math.inf, epsabs=3e-10)[0]
+
+
 def convolve(fun, t, lam, edges=()):
     if not lam:
         return fun(t) if t >= 0 else 0.
+    if lam >= 1:
+        return integrate(lambda u: 2*u*fun(u*u)*norm.pdf((t-u*u)/lam)/lam,
+                         0., 12., (math.sqrt(x) for x in edges))
     return integrate(lambda z: fun(t-lam*z)*norm.pdf(z), -12., min(12., t/lam),
                       (0., *((t-x)/lam for x in edges)))
 
@@ -95,16 +106,17 @@ def main():
     count, worst = 0, 0.
     for a, b in ((1., 1.), (1.7, .4), (.4, 1.7)):
         for c in (2., 8., 32.):
-            bound, coefficient = budget(c, a, b), pars(c, a, b)[-1]
-            for lam in (0., .25, 1., 2.):
+            bound, mass, coefficient = budget(c, a, b), l1_budget(c, a, b), pars(c, a, b)[-1]
+            for lam in (0., .25, 1., 2., 32., 1e4):
                 for t in (.5, 2., 5.):
                     plus, minus = [cdf(c, t, lam, a, b, i) for i in (0, 1)]
                     actual = a/(a+b)*(plus-minus)
                     exact = exact_gap(c, t, lam, a, b)
                     leading = coefficient/c*convolve(lambda x: psi(math.sqrt(max(0., x))), t, lam)
-                    assert abs(actual-exact) < 2e-8
-                    assert abs(actual-leading) <= bound/c+2e-8
-                    worst = max(worst, abs(actual-leading)/(bound/c+2e-8))
+                    radius = min(bound, mass/(lam*math.sqrt(2*math.pi))) if lam else bound
+                    assert (1+lam)*abs(actual-exact) < 2e-7
+                    assert abs(exact-leading) <= radius/c+2e-8/(1+lam)
+                    worst = max(worst, abs(exact-leading)/(radius/c+2e-8/(1+lam)))
                     count += 1
     print(f'{count} independent CDF/profile and finite-budget checks: PASS; max ratio={worst:.6f}')
     a, b = 1.7, .4
@@ -133,6 +145,29 @@ def main():
         scaled = c*exact_gap(c, q, 0., a, b)
     assert abs(scaled) < .002
     print(f'At pstar: c*gap={scaled:.9f}; budget at c=2048={budget(2048., a, b):.9f}')
+    v = pars(1., a, b)[2]
+    fixed = -2*coefficient*v/.5*norm.pdf(norm.ppf(.9))
+    poisson = critical_score_coefficients(np.array([[-a, a], [b, -b]]),
+                                        np.array([1., -1.]), [[2.]], [[[0.]]])[0][0]
+    assert abs(fixed-poisson) < 2e-11
+    maxima, masses = [], []
+    for c in (32., 128., 512., 2048.):
+        residuals = []
+        for lam in (0., .5, 2., c**.5, .5*c/v, c*c):
+            pooled = lambda s: (b*cdf(c, (1+lam)*s, lam, a, b, 0)+a*cdf(c, (1+lam)*s, lam, a, b, 1))/(a+b)
+            q = (1+lam)*brentq(lambda s: pooled(s)-.9, -10., 20.)
+            target = (1+lam)*brentq(lambda s: reference((1+lam)*s, lam)-.9, -10., 20.)
+            gap = exact_gap(c, q, lam, a, b)
+            leading = coefficient*convolve(lambda x: psi(math.sqrt(max(0., x))), target, lam)
+            residuals.append((1+lam)*abs(c*gap-leading))
+            if lam == .5*c/v:
+                fixed_scaled = c*c*gap
+        maxima.append(max(residuals))
+        masses.append(l1_budget(c, a, b))
+        print(f'c={c:.0f}: weighted quantile error={maxima[-1]:.9f}; L1 budget={masses[-1]:.9f}; fixed-noise c^2 gap={fixed_scaled:.9f}')
+    assert maxima[-1] < maxima[0]/8 and masses[-1] < masses[0]/8
+    assert abs(fixed_scaled-fixed) < .002
+    print(f'Fixed-noise limit and independent Poisson coefficient: {fixed:.9f}; 24 joint-noise quantile checks: PASS')
     print('PASS')
 
 
