@@ -1,4 +1,8 @@
 [
+ {"key": "Winkler1988", "authors": "Winkler, G.", "year": 1988,
+  "title": "Extreme Points of Moment Sets", "venue": "Mathematics of Operations Research 13(4):581-587",
+  "doi": "10.1287/moor.13.4.581",
+  "annotation": "The publisher's abstract describes extreme points of probability-measure sets defined by finitely many generalized moments. Bibliographic and abstract-level context only: the finite-Poisson-tag note proves its local positive-density and moving-speed construction directly."},
  {"key": "BurkeRosenblatt1958", "authors": "Burke, C. J. and Rosenblatt, M.", "year": 1958,
   "title": "A Markovian Function of a Markov Chain", "venue": "The Annals of Mathematical Statistics 29(4):1112-1122",
   "doi": "10.1214/aoms/1177706444",
