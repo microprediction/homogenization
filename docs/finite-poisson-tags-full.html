@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finite Poisson tags cannot identify arbitrary clocks · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a></span></p>
+    <h1>Finite Poisson tags cannot identify arbitrary clocks</h1>
+    <p class="subtitle">A local population alias, even with known clock moments and complete endpoint labels.</p>
+
+    <h2>Setup and result</h2>
+    <p>Let $P=\mathbf1\mathbf1^\top/2$ and $Q_c=c(P-I)$, $c&gt;0$, on two known labeled states, with the same uniform starting law.
+      Draw $T&gt;0$ independently of the whole chain and an independent Poisson process $N$ of known physical-time rate $s&gt;0$.
+      Retain only $(Y_0,Y_T,J)$, where $J=\min(N_T,M)$ for a fixed finite integer $M\ge1$.</p>
+    <p>Fix an integer $r\ge0$, a baseline speed $c_0\ne s$, and any baseline density $f_0$ positive almost everywhere on an open interval inside $(0,\infty)$, with finite raw moments through $r$.
+      For every $c$ in a sufficiently small neighborhood of $c_0$, there is a positive density $f_c$ giving exactly the same full endpoint/tag law and the same raw moments through $r$ as $(c_0,f_0)$.
+      Moreover $f_c=f_0$ outside a fixed compact interval and $\|f_c/f_0-1\|_\infty=O(|c-c_0|)$ on its support.</p>
+    <p>Thus no finite cap universally identifies even the speed of a reversible two-state chain when the clock family is unrestricted.
+      The alias exists arbitrarily close to every Gamma density at $c_0\ne s$, not merely between exotic atomic clocks.
+      Positivity means that the density ratio stays positive wherever $f_0$ is positive; no new support is required.</p>
+    <p>For $r\ge1$ the mean duration is preserved too, so this is not just an unknown choice of physical time unit.</p>
+
+    <h2>What the record law fixes</h2>
+    <p>Write $w_j(t)=e^{-st}(st)^j/j!$ for $j&lt;M$, and $w_M(t)=1-\sum_{j&lt;M}w_j(t)$.
+      Since $e^{tQ_c}=P+e^{-ct}(I-P)$, the joint subprobability matrix for tag $j$ is</p>
+    $$R_j=p_jP+v_j(I-P),\qquad
+      p_j=\int w_j(t)f(t)\,dt,\quad v_j=\int e^{-ct}w_j(t)f(t)\,dt.$$
+    <p>Hence the entire law, including the capped tail, is fixed by integrals against the following vector $\Phi_c$:
+      normalization and the optional known moments are included explicitly.</p>
+    $$\Phi_c(t)=\big(1,t,\ldots,t^r;\ (t^je^{-st})_{j=0}^{M-1};\ e^{-ct};
+      (t^je^{-(s+c)t})_{j=0}^{M-1}\big)^\top.$$
+    <p>The vector has $d=r+2M+2$ components.
+      Matching it preserves the lower-tag values $p_j,v_j$ and also the two tail values, because $\sum p_j=1$ and $\sum v_j=\int e^{-ct}f(t)dt$.
+      No within-tag normalization or conditional independence of $T$ and $J$ is assumed.</p>
+
+    <h2>A constructive local proof</h2>
+    <p>The components of $\Phi_{c_0}$ are linearly independent on every open interval.
+      Indeed they are exponential polynomials with distinct decay rates $0,s,c_0,s+c_0$; an identity on an interval extends analytically, and letting $t\to\infty$ successively removes the polynomial at each ordered decay rate.
+      The exclusion $c_0=s$ is necessary for this argument and for the conclusion below.</p>
+    <p>Choose a bounded nonnegative smooth bump $b$ with compact support in the positive-density interval and $b&gt;0$ on a smaller interval.
+      Put $u=\Phi_{c_0}$ and define</p>
+    $$A(c)=\int \Phi_c(t)u(t)^\top b(t)f_0(t)\,dt,\quad
+      m(c)=\int\Phi_c(t)f_0(t)\,dt,\quad
+      \theta(c)=A(c)^{-1}\{m(c_0)-m(c)\}.$$
+    <p>The matrix $A(c_0)$ is a positive definite Gram matrix: a zero quadratic form would make a nonzero exponential polynomial vanish on an interval.
+      All integrals are finite and continuously differentiable near $c_0$; the polynomial moments are constant in $c$, while derivatives of the decaying terms are bounded on the positive axis.
+      Consequently $A(c)$ remains invertible locally and $\theta(c)=O(|c-c_0|)$.</p>
+    $$f_c(t)=f_0(t)\{1+b(t)u(t)^\top\theta(c)\},\qquad
+      \int\Phi_c(t)f_c(t)\,dt=m(c_0).$$
+    <p>The compactly supported factor $bu$ is bounded, so for sufficiently small $|c-c_0|$ its relative perturbation is less than one.
+      This proves positivity, unit mass, equality of the required integrals and the stated density-ratio bound.
+      If $f_0$ is smooth, the same construction gives smooth $f_c$.</p>
+    <p>A quantitative sufficient test uses $D=\sup_t\|b(t)u(t)\|_2$ and $\eta(c)=\|A(c_0)^{-1}\{A(c)-A(c_0)\}\|_2$.
+      If $\eta(c)&lt;1$, the Neumann bound gives</p>
+    $$\left\|\frac{f_c}{f_0}-1\right\|_\infty\le
+      \rho(c):=\frac{D\|A(c_0)^{-1}\|_2\|m(c_0)-m(c)\|_2}{1-\eta(c)}.$$
+    <p>Thus $\rho(c)&lt;1$ certifies positivity and $\|f_c-f_0\|_{\rm TV}\le\rho(c)/2$.
+      Here the density ratio is interpreted on $\{f_0&gt;0\}$; $\rho(c)=O(|c-c_0|)$ for fixed baseline, cap, moments and bump.</p>
+    <p>For $c\ne c_0$, the clock really changes: keeping $f_0$ would change $\int e^{-ct}f_0(t)dt$, which is strictly decreasing for $T&gt;0$.
+      Starting from a Gamma density, $f_c$ cannot be another Gamma density, since it agrees with $f_0$ on an entire tail but is not equal everywhere.
+      The construction therefore does not contradict inversion within a stipulated Gamma family.</p>
+
+    <h2>The rate collision and the scope</h2>
+    <p>At $c_0=s$ the conclusion fails for the speed.
+      The observed equality $\sum_jv_j=p_0$ says $L(c)=L(s)$ for the candidate clock&apos;s Laplace transform $L$.
+      Strict decrease of $L$ forces $c=s$, whatever the positive clock law.</p>
+    <p>This is one independently sampled duration per record, with a fresh auxiliary counter, not a record of every tick, intermediate states or shared durations across multiple transitions.
+      It is an exact population ambiguity, not a claim about finite-sample error or an alias for every possible finite tag design.
+      The proof does not cover an uncapped count or an infinite collection of known clock moments.</p>
+    <p>For the fixed centered feature $h=(1,-1)^\top$, the one-sided symmetric Green&ndash;Kubo value is
+      $\mathcal K_c(h,h)=\int_0^\infty e^{-ct}dt=1/c$, so the aliased speeds have different strengths but the same fixed-feature rank.
+      No regime-count statement is inferred from integrating different maturity loadings.</p>
+    <p>Finite generalized-moment constraints are classical; <a href="./bibliography.html#Winkler1988">Winkler (1988)</a> studies the extreme points of such moment sets.
+      Only the publisher&apos;s abstract and bibliographic metadata were checked here; the local moving-speed construction is proved above rather than imported from that paper.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a> constructs compact density tilts around a Gamma clock and checks both signs of speed change, moment preservation, positivity bounds and every endpoint/tag probability by independent quadrature.
+      These are high-precision floating checks, not outward-rounded existence certificates; the Gram argument supplies existence for every finite cap.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
