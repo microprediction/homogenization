@@ -34,9 +34,17 @@ def symbolic():
     check(sp.factor(minor+d**2*kap**2*x/3) == 0)
     print("Exact symbolic limit F(0,eta)=eta-(4/5)*d*kappa*(t1+t2+t3); derivative 1")
     print("Exact leading rank-two minor: -d^2*kappa^2*x/3 times the two-node determinant")
+    # Exact continuum bound for kappa=d=1, x=2, every y in [1,3].
+    check(sp.factor(c5.subs({kap: 1, d: 1, x: 2})-y*(y+2)*(2*y-3)/45) == 0)
+    s = sp.Matrix([[u[n][j]-u[n][3] for j in range(3)] for n in range(2, 6)])
+    s = s.subs({kap: 1, d: 1, x: 2})
+    frob_bound = sum(sum(abs(c)*3**p[0] for p, c in sp.Poly(a, y).terms())**2 for a in s)
+    # |C4|>=1/36 outside |y-2|<1/4; C5>=7/96>1/36 inside.
+    check(sp.Rational(7, 96) > sp.Rational(1, 36))
+    return 1/(18*frob_bound)
 
 
-def response(eps, eta, order=34):
+def response(eps, eta, order=34, nodes=(1, 2, 3)):
     x, y = mp.mpf(2), 2+eps*eta
     u = [[mp.mpf(1)]*4]
     for n in range(1, order+1):
@@ -44,12 +52,46 @@ def response(eps, eta, order=34):
                    +sum((1 if j < 2 else -1)*(-1)**h/mp.factorial(h)*u[n-1-h][j]
                         for h in range(1, n)))/n for j in range(4)])
     values = [[mp.polyval([row[j] for row in reversed(u)], eps*t) for j in range(4)]
-              for t in (1, 2, 3)]
+              for t in nodes]
     return mp.matrix([[a[j]-a[3] for j in range(3)] for a in values]), values
 
 
+def four_quotes(gamma, branch_eta):
+    nodes = (1, 2, 3, 4)
+    w = sp.Matrix([[t**n for n in range(2, 6)] for t in nodes])
+    check(w.det() == 6912)
+    # sigma_min(W)>=det(W)/||W||_F^3>=det(W)/(sum|W_ij|)^3.
+    alpha = gamma*w.det()/sum(abs(a) for a in w)**3
+    # Radius one: M<=exp(5+e)<3^8 and 8*sqrt(3)<16.
+    beta = sp.Integer(16)*3**8*4**6
+    to_mp = lambda a: mp.mpf(int(a.p))/int(a.q)
+    alpha, beta = to_mp(alpha), to_mp(beta)
+    recovery, minimum, residual = mp.mpf(0), mp.inf, mp.mpf(0)
+    prior = [mp.mpf(j)/10 for j in (1, 2, 3, 4)]
+    for denominator in (128, 256, 512, 1024):
+        eps = mp.mpf(1)/denominator
+        for eta in (-1/eps, -mp.mpf('.1')/eps, 0, mp.mpf('.1')/eps, 1/eps, branch_eta):
+            h, values = response(eps, eta, nodes=nodes)
+            short, _ = response(eps, eta, order=5, nodes=nodes)
+            residual = max(residual, mp.sqrt(sum(abs(a)**2 for a in h-short))/(beta*eps**6))
+            minimum = min(minimum, mp.svd(h, compute_uv=False)[2]/eps**5)
+            observed = mp.matrix([sum(p*v for p, v in zip(prior, a))-a[3] for a in values])
+            fitted = list(mp.qr_solve(h, observed)[0]); fitted.append(1-sum(fitted))
+            recovery = max(recovery, max(abs(a-b) for a, b in zip(prior, fitted)))
+    check(residual <= 1+mp.mpf('1e-12') and recovery < mp.mpf('1e-12'))
+    print(f"24 four-quote recoveries, including near-alias designs: prior error {float(recovery):.3e}; min sigma_min/epsilon^5 {float(minimum):.6e}")
+    print(f"Exact continuum-bound constants: alpha={float(alpha):.6e}, beta={float(beta):.0f}")
+    with mp.workdps(150):
+        eps = alpha/(4*beta)
+        check(eps < mp.mpf(1)/8)
+        for y in (1, 2, 3):
+            h, _ = response(eps, (y-2)/eps, nodes=nodes)
+            check(mp.svd(h, compute_uv=False)[2]/eps**5 >= alpha/2)
+        print(f"Three checks inside the proved uniform range: epsilon={float(eps):.6e}; remainder/bound max {float(residual):.3e}")
+
+
 def main():
-    symbolic()
+    gamma = symbolic()
     mp.mp.dps = 90
     errors, etas = [], []
     for denominator in (128, 256, 512, 1024):
@@ -84,6 +126,7 @@ def main():
     check(ode_error < mp.mpf('1e-12'))
     print(f"Independent ODE amplitude discrepancy {float(ode_error):.3e}; eta convergence order {float(mp.log(errors[-2]/errors[-1])/mp.log(2)):.6f}")
     check(errors[-1] < errors[0] and errors[-1] < mp.mpf('.1'))
+    four_quotes(gamma, etas[-1])
     print("PASS")
 
 

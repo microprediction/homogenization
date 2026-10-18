@@ -101,7 +101,7 @@
       <span><a href="./papers.html">papers</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a></span></p>
     <h1>Three short bond quotes can alias an Erlang-stage prior</h1>
-    <p class="subtitle">Near equal stage rates, a precise cancellation prevents a uniform short-maturity identification threshold.</p>
+    <p class="subtitle">Three quotes can lose rank near equal stage rates; a fourth gives a uniform short-maturity bound.</p>
 
     <h2>Result and quantifiers</h2>
     <p>Consider two alternating regimes with two exponential stages each, stage rates $x,y&gt;0$, known Vasicek parameters $\kappa&gt;0$, $\theta_1\ne\theta_2$, common $\sigma\ge0$ and known current short rate $r$.
@@ -156,8 +156,44 @@
       Therefore $\det C_4\ne0$: the augmented jets distinguish all four weights, and the full curves cannot coincide for distinct priors.
       Other sufficiently short quote designs for this fixed model do identify them.</p>
 
+    <h2>A fourth quote restores a uniform threshold</h2>
+    <p>Fix four nodes $0&lt;t_1&lt;t_2&lt;t_3&lt;t_4$ and a compact parameter set
+      $K\subset\{(\kappa,d,x,y):\kappa,x,y&gt;0,\ d\ne0\}$.
+      All parameters are still known for each inverse problem; uniformity concerns the common design and threshold, not joint parameter identification.</p>
+    <p>Let $H_4$ be the four-by-three response after eliminating the fourth prior weight, and let
+      $S_{p\ell}=(u_p)_\ell-(u_p)_4$ for $p=2,3,4,5$, $\ell=1,2,3$.
+      Its minors on rows $(2,3,4)$ and $(2,3,5)$ are $-\det C_4$ and $-\det C_5$.</p>
+    <p>At unequal rates the first minor is nonzero, and at equal rates the second is nonzero.
+      Hence $S$ has full column rank everywhere on $K$, and $\gamma=\min_K\sigma_{\min}(S)&gt;0$.
+      The matrix $W_{jp}=t_j^p$, $p=2,3,4,5$, is invertible, since its determinant is $\prod_jt_j^2\prod_{a&lt;b}(t_b-t_a)$.</p>
+    <p>Put $\alpha=\sigma_{\min}(W)\gamma&gt;0$ and fix any radius $R&gt;0$.
+      With $L=\max_K\max(x,y)$, $k_*=\max_K\kappa$ and $d_*=\max_K|d|$, define</p>
+    $$M_R=\exp\{R[2L+d_*(e^{k_*R}-1)]\},\qquad
+      \beta=8\sqrt3\,M_R(t_4/R)^6.$$
+    <p>The complex-time ODE and Gronwall&apos;s inequality give $\|z(T)\|_\infty\le M_R$ on $|T|\le R$.
+      Cauchy&apos;s coefficient estimate therefore bounds each component&apos;s Taylor remainder beyond degree five by $2M_R(T/R)^6$ for $0\le T\le R/2$.
+      Taking column differences and a Frobenius bound gives the uniform estimate</p>
+    $$H_4=W\operatorname{diag}(\varepsilon^2,\varepsilon^3,\varepsilon^4,\varepsilon^5)S+E,
+      \qquad\|E\|_2\le\beta\varepsilon^6.$$
+    <p>Consequently, for $0&lt;\varepsilon\le\min\{1,R/(2t_4)\}$,</p>
+    $$\sigma_{\min}(H_4)\ge\varepsilon^5(\alpha-\beta\varepsilon),\qquad
+      0&lt;\varepsilon\le\min\{1,R/(2t_4),\alpha/(2\beta)\}
+      \ \Longrightarrow\ \|H_4^\dagger\|_2\le\frac2{\alpha\varepsilon^5}.$$
+    <p>This supplies one threshold valid on the entire compact set, including coalescing rates.
+      A normalized quote-error vector $e$ gives full four-weight least-squares error at most $4\|e\|_2/(\alpha\varepsilon^5)$, since reconstructing the last weight has operator norm two.
+      The bound concerns an unconstrained linear inverse, not statistical coverage or reliable recovery at a fixed noise level as maturities shrink.</p>
+    <p>At $x=y$, the fourth jet is in the span of the second and third, whereas the fifth adds a third direction, so the worst-case exponent five is sharp.
+      Combined with the three-quote branch above, four quotes are minimal for uniform identification over a class containing a neighborhood of equal rates among fixed scaled-node designs.
+      Parameter-adaptive three-quote designs are not ruled out.</p>
+    <p>For the fixture $\kappa=d=1$, $x=2$, $1\le y\le3$, the exact minors are
+      $\det C_4=y(2-y)/9$ and $\det C_5=y(y+2)(2y-3)/45$.
+      Outside $|y-2|&lt;1/4$, the first has magnitude at least $1/36$; inside, the second is at least $7/96&gt;1/36$.</p>
+    <p>If $F_*^2$ bounds $\|S\|_F^2$ on this interval, Cauchy&ndash;Binet and the singular-value product give $\gamma\ge1/(18F_*^2)$.
+      The certificate computes such a bound with rational polynomial coefficients and obtains a positive sufficient maturity range without sampling the interval to infer uniformity.
+      Its conservative threshold is not a recommended practical quote scale.</p>
+
     <h2>Scope, context and checks</h2>
-    <p>There is no common positive maturity threshold valid for every model in any neighborhood of equal rates, even with all parameters known and the stage rates confined to a compact subset of $(0,\infty)$.
+    <p>For three quotes there is no common positive maturity threshold valid for every model in any neighborhood of equal rates, even with all parameters known and the stage rates confined to a compact subset of $(0,\infty)$.
       This is an exact finite-design alias, stronger than mere bad conditioning, but not nonidentification from the entire curve.
       It concerns initial-prior observability, not identification of parameters or a regime count from maturity-integrated Green&ndash;Kubo rank.</p>
     <p>The observability framework is classical; <a href="./bibliography.html#Kalman1960">Kalman (1960), Section 5</a>, defines observability and its Gramian.
@@ -166,6 +202,7 @@
       At $\varepsilon=1/1024$, the numerical branch estimate is $\eta=4.798382900402$, $y=2.004685920801$; independent ODE amplitudes agree with the Taylor evaluation within $3.43\times10^{-64}$.
       Rounded rates do not themselves define an exact alias: the analytic root above does.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a> proves the limiting and rank-minor identities symbolically, checks four branch approximations and constructs positive numerical prior pairs.
+      It also checks four-quote recovery and the explicit remainder bound, including near-alias designs and points inside the rigorously sufficient uniform range.
       Its final line is literal PASS and its assertions use portable tolerances; high-precision roots and ODE checks are not outward-rounded interval certificates.</p>
   </main>
 
