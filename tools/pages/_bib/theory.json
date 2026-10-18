@@ -1,5 +1,14 @@
 [
  {
+  "key": "IserlesMarthinsenNorsett1999",
+  "authors": "Iserles, A., Marthinsen, A. and Nørsett, S. P.",
+  "year": 1999,
+  "title": "On the Implementation of the Method of Magnus Series for Linear Differential Equations",
+  "venue": "BIT Numerical Mathematics 39:281-304",
+  "doi": "10.1023/A:1022393913721",
+  "annotation": "Classical context for exponential integration and commutator-based error estimates; publisher metadata and abstract checked. The density note proves its midpoint constants directly and imports no uninspected theorem."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

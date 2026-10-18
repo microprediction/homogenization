@@ -197,6 +197,26 @@
     <p>The first term is a contractive Duhamel bound using $\|H_u'\|\le\kappa a|u|+2\kappa bu^2$ and integrated midpoint distances $t^2/(4J)$.
       The second bounds the omitted Gaussian lattice tail.
       For the third, conditional Gaussianity and Poisson summation identify the full lattice sum as a periodized density; the nonzero images are bounded by a geometric series.</p>
+    <p>A sharper time budget uses the midpoint cancellation and the diagonal potential&apos;s commutator with $Q$.
+      Define $r_\theta=\max_i\sum_{j\ne i}q_{ij}|\theta_j-\theta_i|$ and
+      $r_s=\max_i\sum_{j\ne i}q_{ij}|\sigma_j^2-\sigma_i^2|$, so</p>
+    $$L_1(u)=\kappa a|u|+2\kappa bu^2,\quad
+      L_2(u)=\kappa^2a|u|+4\kappa^2bu^2,\quad
+      \|[Q,H_u'(s)]\|_\infty\le R(u):=\kappa^2r_\theta|u|+\kappa r_su^2.$$
+    <p>The time-error term above may be replaced by</p>
+    $$\frac{\omega}{2\pi}\sum_{j=-n}^n e^{-\beta_tu_j^2}
+      \left\{\frac{t^3}{J^2}\left[\frac{L_2(u_j)}{24}+\frac{mR(u_j)}{12}\right]
+        +\frac{t^4L_1(u_j)^2}{64J^3}\right\}.$$
+    <p>On a cell of width $d$ centered at $c$, expand $H_u(s)-H_u(c)$ as $(s-c)H_u'(c)$ plus a remainder bounded by $L_2(u)(s-c)^2/2$.
+      In the linear Duhamel term, let $F(s)$ be the exact left propagator times $H_u'(c)$ times the frozen right propagator.
+      Diagonality gives $\|F'(s)\|_\infty\le mR(u)+L_1(u)^2|s-c|$.</p>
+    <p>The constant $F(c)$ integrates to zero against $s-c$.
+      Integrating $F(s)-F(c)$ and the Taylor remainder bounds the cell error by
+      $d^3[L_2(u)/24+mR(u)/12]+d^4L_1(u)^2/64$.
+      A contractive telescoping sum over the cells proves the displayed global budget.</p>
+    <p>Take the smaller of the two proven time budgets.
+      The sharper bound is second order in time resolution at fixed switching speed; its constant grows with $m$, so this is not a stiffness-uniform estimate.
+      Exponential integration with commutator error analysis is classical (<a href="./bibliography.html#IserlesMarthinsenNorsett1999">Iserles, Marthinsen and Nørsett 1999</a>); these constants are proved here.</p>
     <p>This budget includes time discretization, Fourier truncation and aliasing, but not floating-point roundoff.
       The implementation uses portable numerical allowances, not outward-rounded exponentials, and is not a validated density enclosure.
       The theorem concerns exact densities and does not depend on the numerical checks.</p>

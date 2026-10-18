@@ -38,7 +38,7 @@ def frozen_density(xp, x, speed, t, steps=4096, n=300):
     smin, mean, dt = min(variance), np.mean(theta), t/steps
     vmin = smin*(-math.expm1(-2*kappa*t))/(2*kappa)
     vbar = np.mean(variance)*(-math.expm1(-2*kappa*t))/(2*kappa)
-    F, h = 13/math.sqrt(vbar), 13/math.sqrt(vbar)/n
+    F, h = 16/math.sqrt(vbar), 16/math.sqrt(vbar)/n
     w = np.arange(-n, n+1)*h
     Z = np.broadcast_to(np.eye(2), (len(w), 2, 2)).astype(complex).copy()
     for j in range(steps):
@@ -56,14 +56,17 @@ def frozen_density(xp, x, speed, t, steps=4096, n=300):
     phase = np.exp(1j*w*(math.exp(-kappa*t)*x+mean*(1-math.exp(-kappa*t))-xp))
     K = (h/(2*math.pi)*np.sum((gaussian*phase)[:, None, None]*Z, axis=0)).real
     a, b = kappa*max(abs(theta-mean)), (max(variance)-smin)/2
-    time = t*t/(4*steps)*h/(2*math.pi)*np.sum(gaussian*(kappa*a*abs(w)+2*kappa*b*w*w))
+    L1, L2 = kappa*a*abs(w)+2*kappa*b*w*w, kappa*kappa*a*abs(w)+4*kappa*kappa*b*w*w
+    comm = kappa*kappa*abs(theta[0]-theta[1])*abs(w)+kappa*abs(variance[0]-variance[1])*w*w
+    time1 = t*t/(4*steps)*h/(2*math.pi)*np.sum(gaussian*L1)
+    time2 = t**3/steps**2*h/(2*math.pi)*np.sum(gaussian*(L2/24+speed*comm/12+t*L1**2/(64*steps)))
     tail = erfc(F*math.sqrt(vmin/2))/math.sqrt(2*math.pi*vmin)
     B = max(abs(x-xp), abs(theta[0]-xp), abs(theta[1]-xp))
     period, vmax = 2*math.pi/h, max(variance)*vbar/np.mean(variance)
     assert period > B
     alias = 2/math.sqrt(2*math.pi*vmin)*math.exp(max(-700., -(period-B)**2/(2*vmax)))
     alias /= -math.expm1(-period*(period-B)/vmax)
-    return K, time+tail+alias
+    return K, min(time1, time2)+tail+alias, time1+tail+alias
 
 
 def main():
@@ -108,13 +111,14 @@ def main():
     print(f'Compact-set pstar={pstar:.6f}; sufficient speed m0={m0:.6f}')
     print(f'At m0: delta={delta:.6f}, interaction budget={Gamma:.6e}')
     x, xp = .05, .0555
-    frozen, budget = frozen_density(xp, x, 160., t)
-    refined, smaller = frozen_density(xp, x, 160., t, steps=8192, n=400)
+    frozen, budget, _ = frozen_density(xp, x, 160., t)
+    refined, smaller, first = frozen_density(xp, x, 160., t, steps=8192)
     rk = matrix_density(xp, x, 160*np.array([[-1., 1.], [1., -1.]]), .5, theta, variance, t, nfreq=901, steps=1200)
     assert norm(frozen-refined) <= budget+smaller+2e-9
     assert norm(refined-rk) <= smaller+2e-9
-    assert smaller < budget
+    assert budget/smaller > 3.8 and first/smaller > 100
     print(f'Independent frozen/RK density gap={norm(refined-rk):.6e}; analytic discretization budget={smaller:.6e}')
+    print(f'First-order budget={first:.6e}; budget order={math.log2(budget/smaller):.6f}')
     print('PASS')
 
 
