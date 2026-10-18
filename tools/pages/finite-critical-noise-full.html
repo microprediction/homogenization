@@ -1,0 +1,204 @@
+<!-- title: Finite-chain critical noise · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_critical_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Critical noise in a finite regime chain</h1>
+    <p class="subtitle">Even-power path scores combine boundary covariance with initial-mean memory times stationary skewness, uniformly over Gaussian noise levels.</p>
+
+    <h2>Coefficient and scope</h2>
+    <p>Fix an irreducible finite row generator $Q$, stationary row $\pi$, and real observable $f$ centered so $\pi f=0$.
+      With pointwise products, define</p>
+    $$h=Q^\#f,\qquad B=2Q^\#(fh),\qquad
+      \Gamma=-2\pi(fh)&gt;0,\qquad \kappa_3=3\pi(fB).$$
+    <p>Here $Q^\#$ satisfies $QQ^\#=I-\mathbf1\pi$, $\pi Q^\#=0$ and $Q^\#\mathbf1=0$.
+      The scalars $\Gamma,\kappa_3$ are the stationary second and third cumulant rates of the integrated observable.
+      The vector $B$ is the initial-state second raw-moment boundary term around the stationary mean, not a variance contrast after recentering each start.</p>
+    $$A_c={1\over c}\int_0^c f(Y_s)ds,\qquad
+      S_c=\mu A_c^2+\sigma_c Z,\qquad \sigma_c={\lambda\mu\Gamma\over c},\quad \mu&gt;0,$$
+    <p>Take independent standard Gaussian $Z$ and let $q_c$ be the exact stationary pooled $p$-quantile, for fixed $0&lt;p&lt;1$.
+      Let $t_p(\lambda)$ be the $p$-quantile of $N^2+\lambda Z$, with independent standard normals $N,Z$.
+      For $x&gt;0$, set $u=\sqrt x$ and define</p>
+    $$P_i(x)=\phi(u)\left[-{B_i\over\Gamma}u
+           +{h_i\kappa_3\over3\Gamma^2}(u^3-3u)\right],\qquad
+      K_{i,\lambda}(t)=\mathbb E[P_i(t-\lambda Z)],$$
+    <p>Set $P_i=0$ on $x\le0$.
+      The expansion is uniform over every nonnegative noise level, including zero:</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c\le q_c)-p={1\over c}K_{i,\lambda}(t_p(\lambda))+r_{i,c}(\lambda),
+       \qquad\sup_{i,\lambda\ge0}c(1+\lambda)|r_{i,c}(\lambda)|\longrightarrow0.$$
+    </div>
+    <p>The chain and nonconstant feature are fixed; no uniformity as their spectral or variance scales degenerate is claimed.
+      No extra nonlattice hypothesis or global density expansion is needed.
+      At zero noise, a fixed interior pooled quantile eventually avoids all atoms, so its CDF attains $p$.</p>
+    <p>Both coefficient vectors have stationary weighted sum zero because $\pi h=\pi B=0$.
+      Population pooling is exactly marginal; this remains latent-start model-conditional bias, not a finite-calibration or feature-conditional guarantee.</p>
+
+    <h2>Proof by the even part of the Fourier transform</h2>
+    <p>Put $D=\operatorname{diag}f$.
+      The simple eigenvalue $\Lambda(z)$ of $Q+zD$ near zero and its analytic spectral projector $\Pi(z)$ obey</p>
+    $$\Lambda(z)={\Gamma z^2\over2}+{\kappa_3z^3\over6}+O(z^4),\qquad
+      (e_i-\pi)\Pi(z)\mathbf1=-h_i z+{B_i z^2\over2}+O(z^3).$$
+    <p>For completeness, normalize the right eigenvector $r(z)$ by $\pi r(z)=1$.
+      Differentiating its eigen-equation gives $r'(0)=-h$, $r''(0)=B$ and the two displayed eigenvalue derivatives.
+      Normalize the left eigenvector by $\ell(z)r(z)=1$; then $(\ell(z)\mathbf1)'_{z=0}=0$, giving the projector expansion.</p>
+    <p>For $X_c=\sqrt{c/\Gamma}A_c$, write $\delta\chi_i(u)=(e_i-\pi)e^{c(Q+iuD/\sqrt{c\Gamma})}\mathbf1$.
+      Multiplying the eigenvalue and projector expansions and taking real parts cancels the odd $c^{-1/2}$ term:</p>
+    $$\operatorname{Re}\delta\chi_i(u)={e^{-u^2/2}\over c}
+      \left[-{B_i\over2\Gamma}u^2-{h_i\kappa_3\over6\Gamma^2}u^4\right]+o(c^{-1}).$$
+    <p>Inverting the two Gaussian polynomials gives the signed correction density
+      $\phi(x)\{B_iH_2(x)/(2\Gamma)-h_i\kappa_3H_4(x)/(6\Gamma^2)\}$, with $H_2=x^2-1$ and $H_4=x^4-6x^2+3$.
+      Its integral over $[-\sqrt x,\sqrt x]$ is $P_i(x)$.
+      The following global estimate justifies this calculation without smoothing.</p>
+
+    <h2>Why high frequencies do not obstruct the zero-noise limit</h2>
+    <p>In $L^2(\pi)$, $A(\theta)=Q+i\theta D$ has a Hermitian part $H=(Q+Q^*)/2$ independent of $\theta$.
+      The identity $\operatorname{Re}\langle v,Qv\rangle_\pi=-\tfrac12\sum_{j,k}\pi_jq_{jk}|v_k-v_j|^2$ shows that an eigenvalue on the imaginary axis at $\theta\ne0$ would force $v$ constant and then $f$ constant.
+      Thus every such eigenvalue has strictly negative real part.</p>
+    <p>As $|\theta|\to\infty$, the eigenvalues cluster at $i\theta a+\operatorname{spec}(Q_{C_aC_a})+o(1)$, where $C_a=\{j:f_j=a\}$.
+      This follows by the Schur complement between distinct diagonal blocks of $D$; the off-block inverses are $O(|\theta|^{-1})$.
+      Every level set is proper, and each killed generator $Q_{C_aC_a}$ is transient by irreducibility.</p>
+    <p>Continuity on the remaining compact frequency set gives, for each $\delta&gt;0$, a number $\gamma_\delta&gt;0$ with spectral abscissa at most $-\gamma_\delta$ for all $|\theta|\ge\delta$.
+      This includes repeated feature values and defective eigenvalues.
+      A unitary Schur form has strict upper entries bounded by $2\|H\|$, since its Hermitian part is a unitary conjugate of $H$.</p>
+    $$\sup_{|\theta|\ge\delta}\|e^{cA(\theta)}\|_{L^2(\pi)}
+       \le e^{-\gamma_\delta c}\sum_{k=0}^{n-1}{(Kc)^k\over k!},\qquad K=2n\|H\|.$$
+    <p>Indeed the triangular Duhamel series terminates after $n-1$ strict-upper factors; diagonal propagators contribute at most $e^{-\gamma_\delta c}$.
+      This polynomial-times-exponential bound is uniform even at arbitrarily large frequencies.</p>
+
+    <h2>Unsmoothed CDF and integrable profile error</h2>
+    <p>Let $b_i=[\Pi''(0)\mathbf1]_i$, $\kappa_4=\Lambda^{(4)}(0)$, and $\chi_i(u)=\mathbb E_i e^{iuX_c}$.
+      The even characteristic Edgeworth approximant is</p>
+    $$\mathcal E_{i,c}(u)=e^{-u^2/2}\left[1+{1\over c}\left\{
+       {b_i(iu)^2\over2\Gamma}+\left({\kappa_4\over24\Gamma^2}
+       -{h_i\kappa_3\over6\Gamma^2}\right)(iu)^4
+       +{\kappa_3^2(iu)^6\over72\Gamma^3}\right\}\right].$$
+    <p>Its inverse transform defines a smooth signed CDF $G_{i,c}$ with uniformly bounded derivative; also $b_i-\pi b=B_i$.
+      The signed-approximant smoothing inequality used by Herv&eacute;&ndash;P&egrave;ne, page 450, gives the finite bound</p>
+    $$\|\widetilde F_{i,c}-G_{i,c}\|_\infty\le\epsilon_{i,c}(T):=
+       {2\over\pi}\int_0^T {|\operatorname{Re}\chi_i(u)-\mathcal E_{i,c}(u)|\over u}du
+       +{24\|G'_{i,c}\|_\infty\over\pi T},$$
+    <p>where $\widetilde F$ is the CDF of the symmetrized law of $X_c$.
+      The remainder divided by $u$ is integrable at zero, as both characteristic functions have mass one and are even.
+      On $|u|\le c^{1/20}$ analytic expansion gives an integrable Gaussian-times-polynomial $O(c^{-3/2})$ remainder, with an exponentially small remainder vanishing at zero.</p>
+    <p>From $c^{1/20}$ to $\delta\sqrt{c\Gamma}$, $\operatorname{Re}\Lambda(iu/\sqrt{c\Gamma})\le-d u^2/c$ controls the principal part.
+      Beyond this range the high-frequency bound applies; take $T=e^{\gamma_\delta c/2}$, so its $du/u$ integral is exponentially small times a polynomial.
+      Therefore the unsmoothed CDF error is $O(c^{-3/2})$ uniformly on the line.</p>
+    <p>Define $J_{i,c}(x)=c\{\Pr_i(X_c^2\le x)-\Pr_\pi(X_c^2\le x)\}$, zero for $x&lt;0$, and</p>
+    $$M_{i,c}=\|J_{i,c}-P_i\|_\infty=O(c^{-1/2}),\qquad
+      L_{i,c}=\int_0^\infty|J_{i,c}(x)-P_i(x)|dx\longrightarrow0.$$
+    <p>Folding the two CDFs proves the supremum estimate, with the explicit bound
+      $M_{i,c}\le2c\{\epsilon_{i,c}(T)+\sum_j\pi_j\epsilon_{j,c}(T)\}$ for any $T&gt;0$.
+      For integrability, local real-parameter spectral bounds give $\mathbb E_i e^{z\int_0^c f(Y_s)ds}\le C e^{Cc z^2}$ for small real $z$.</p>
+    <p>Chernoff&apos;s inequality thus gives Gaussian tails for $|X_c|\le d\sqrt c$, and exponentially small tails beyond that range up to the bounded support of $X_c$.
+      Integrating on $x\le R_c^2$ costs $O(c^{-1/2}\log c)$ for $R_c=\sqrt{K_0\log c}$.
+      On the complement, $c\int_{R_c^2}^\infty\Pr_i(X_c^2&gt;x)dx$ and the normal-polynomial profile tail vanish when fixed $K_0$ is large enough, proving $L_{i,c}\to0$.</p>
+
+    <h2>All-noise transfer and quantiles</h2>
+    $$\left|F_i(\mu\Gamma t/c)-F_\pi(\mu\Gamma t/c)-{K_{i,\lambda}(t)\over c}\right|
+      \le {1\over c}\min\left\{M_{i,c},{L_{i,c}\over\lambda\sqrt{2\pi}}\right\}.$$
+    <p>The second bound is omitted at zero noise; the first is supremum contraction and the second uses the maximum of the Gaussian density.
+      Multiplication by $c(1+\lambda)$ bounds the error by $2\max\{M_{i,c},L_{i,c}/\sqrt{2\pi}\}\to0$ at every actual threshold.</p>
+    <p>Set $\rho=\lambda/(1+\lambda)$: the normalized reference law is $(1-\rho)N^2+\rho Z$, for $0\le\rho\le1$.
+      The pooled unsmoothed CDF converges to the chi-square CDF, and convolution contracts Kolmogorov distance.
+      Compactness and strict increase at the reference $p$-quantiles imply $\sup_\lambda|cq_c/(\mu\Gamma)-t_p(\lambda)|/(1+\lambda)\to0$.</p>
+    <p>The family $(1+\lambda)K_{i,\lambda}((1+\lambda)s)$ extends continuously to $P_i(s)$ at $\rho=0$ and $-(B_i/\Gamma)\phi(s)$ at $\rho=1$, since $P_i$ is uniformly continuous and integrable with integral $-B_i/\Gamma$.
+      Uniform equicontinuity on compact $s$ sets completes the quantile transfer.
+      At zero noise all atoms correspond to paths staying in one feature level, with locations $cf_j^2/\Gamma$ and exponentially decaying killed-block masses; these are eventually outside the interior quantile region or at zero.</p>
+
+    <h2>Every fixed even power</h2>
+    <p>Fix an integer $k\ge1$ and instead take $S_c^{(k)}=\mu A_c^{2k}+\sigma_c Z$, with
+      $\lambda=c^k\sigma_c/(\mu\Gamma^k)$; let $q_c^{(k)}$ be its stationary pooled $p$-quantile and
+      $t_p^{(k)}(\lambda)$ the reference quantile of $N^{2k}+\lambda Z$.
+      Set $P_i^{(k)}(x)=P_i(x^{1/k})$ for $x&gt;0$, zero otherwise, and
+      $K_{i,\lambda}^{(k)}(t)=\mathbb E P_i^{(k)}(t-\lambda Z)$.</p>
+    <div class="equation-card">
+    $$\Pr_i(S_c^{(k)}\le q_c^{(k)})-p
+      ={K_{i,\lambda}^{(k)}(t_p^{(k)}(\lambda))\over c}+r_{i,c}^{(k)}(\lambda),\qquad
+      \sup_{i,\lambda\ge0}c(1+\lambda)|r_{i,c}^{(k)}(\lambda)|\longrightarrow0.$$
+    </div>
+    <p>The unsmoothed profile is exactly $J_{i,c}^{(k)}(x)=J_{i,c}(x^{1/k})$.
+      Its supremum error is the same $M_{i,c}$, but the needed integrable error has the weight</p>
+    $$L_{i,c}^{(k)}=\int_0^\infty|J_{i,c}^{(k)}(x)-P_i^{(k)}(x)|dx
+      =k\int_0^\infty y^{k-1}|J_{i,c}(y)-P_i(y)|dy\longrightarrow0.$$
+    <p>To prove this stronger estimate, truncate at $y=R_c^2$, where $R_c^2=K_0\log c$.
+      The central contribution is $O(c^{-1/2}(\log c)^k)$; the preceding Chernoff bounds give a tail at most
+      $Cc R_c^{2k}e^{-aR_c^2}+Cc^{k+1}e^{-bc}$, plus a vanishing normal-polynomial profile tail.</p>
+    <p>Choose fixed $K_0$ large enough; $k$ remains fixed.
+      Gaussian convolution now gives the same actual-threshold bound
+      $c^{-1}\min\{M_{i,c},L_{i,c}^{(k)}/(\lambda\sqrt{2\pi})\}$, omitting the second term at zero noise.</p>
+    <p>For a finite-$c$ bound, any $R&gt;0$ and integer $\ell\ge1$ give</p>
+    $$L_{i,c}^{(k)}\le R^{2k}M_{i,c}
+      +{c\over R^{2\ell}}\left\{\mathbb E_i|X_c|^{2(k+\ell)}
+                        +\mathbb E_\pi|X_c|^{2(k+\ell)}\right\}
+      +k\int_{R^2}^\infty y^{k-1}|P_i(y)|dy.$$
+    <p>This follows from $|J_{i,c}(y)|\le c\{\Pr_i(X_c^2&gt;y)+\Pr_\pi(X_c^2&gt;y)\}$ and a moment tail bound.
+      The integrated moments follow from $v_j'=Qv_j+jDv_{j-1}$, $v_0=\mathbf1$ and $v_j(0)=0$ for $j&gt;0$,
+      so this bound and the signed-Esseen bound on $M$ involve only finite matrices and one-dimensional integrals.</p>
+    $$\int_0^\infty P_i^{(k)}(x)dx=-{D_{k,i}\over\Gamma^k},\qquad
+      D_{k,i}=k(2k-1)!!\left[B_i\Gamma^{k-1}
+                  -{2(k-1)\over3}h_i\kappa_3\Gamma^{k-2}\right].$$
+    <p>Indeed substitution $y=u^2$ reduces the integral to Gaussian even moments and
+      $\mathbb E N^{2k+2}=(2k+1)\mathbb E N^{2k}$.
+      Compactify the reference laws to $(1-\rho)N^{2k}+\rho Z$ as before; they have unique interior quantiles,
+      and the normalized coefficient family extends continuously to $P_i^{(k)}(s)$ and
+      $-(D_{k,i}/\Gamma^k)\phi(s)$ at the two endpoints.</p>
+    <p>This proves the uniform quantile transfer; transformed atoms again lie at zero or diverge.
+      If $c^k\sigma_c\to\infty$, the theorem therefore gives</p>
+    $$c^{k+1}\sigma_c\{\Pr_i(S_c^{(k)}\le q_c^{(k)})-p\}
+       \longrightarrow-\mu D_{k,i}\phi(\Phi^{-1}(p)).$$
+    <p>In particular a quartic score with fixed positive noise has the $c^{-3}$ coefficient
+      $6\Gamma B_i-4\kappa_3h_i$, whereas at zero noise every even power has the same quantile event
+      $\{|A_c|\le r\}$ and the same $c^{-1}$ profile evaluated at the corresponding quantile.</p>
+    <p>All constants fix $Q,f,k,p$; this is not uniform over unbounded power or degenerating chains.
+      This supplies the higher-even-power extension requested in
+      <a href="https://github.com/microprediction/homogenization/issues/195">issue 195</a>, subject to review.</p>
+
+    <h2>An actual-threshold Fourier error budget</h2>
+    <p>For $\lambda&gt;0$ there is also a finite-$c$ bound without substituting a limiting quantile;
+      write $F_i^{(k)}$ for the CDF of $S_c^{(k)}$.
+      For the chosen power $k$, put $g_{t,\lambda}(x)=\Phi((t-x^{2k})/\lambda)$ and
+      $\widehat g(u)=\int_{\mathbb R}e^{-iux}g_{t,\lambda}(x)dx$;
+      let $a_i=B_i/(2\Gamma)$, $d_i=-h_i\kappa_3/(6\Gamma^2)$, and $R_i(u)=e^{-u^2/2}(-a_i u^2+d_i u^4)/c$.
+      For any $U&gt;0$ the error
+      $|F_i^{(k)}(\mu\Gamma^k t/c^k)-F_\pi^{(k)}(\mu\Gamma^k t/c^k)-K_{i,\lambda}^{(k)}(t)/c|$ is at most</p>
+    $$ {1\over\pi}\int_0^U|\widehat g(u)|\,
+        |\operatorname{Re}\delta\chi_i(u)-R_i(u)|du
+       +{\|g^{(4)}\|_1\over\pi}\left[
+          {2\over3U^3}+{e^{-U^2/2}\over cU}
+          \left({|a_i|\over U^2}+|d_i|\right)\right].$$
+    <p>Indeed $|\widehat g(u)|\le\|g^{(4)}\|_1/u^4$; use $|\delta\chi_i|\le2$ and the Gaussian tail bound on the remaining integral.
+      All quantities are determined by a finite matrix exponential and one-dimensional integrals.
+      Floating quadratures in the certificate, including their refinement checks, are not outward-rounded enclosures.</p>
+
+    <h2>Benchmark and relation to fixed noise</h2>
+    <p>The certificate uses the nonreversible generator and feature</p>
+    $$Q=\begin{pmatrix}-1.8&amp;1.4&amp;.4\\ .3&amp;-1.2&amp;.9\\1.1&amp;.2&amp;-1.3\end{pmatrix},
+      \qquad f_{\rm raw}=(1,-.7,.2)^\top,$$
+    <p>centered under its computed stationary law.
+      It gives $\Gamma=0.385937945$ and $\kappa_3=-0.046285861$.
+      At $p=.9,\lambda=1,c=2048$, the $c$-scaled gaps are $(-.032473882,-.036965545,.066119823)$, against limits $(-.032472792,-.036942314,.066093592)$.</p>
+    <p>The largest scaled quantile discrepancy over six noise/target pairs falls from $0.002173971$ at $c=32$ to $0.000032646$ at $c=2048$.
+      Omitting stationary skewness leaves a nonvanishing coefficient error $0.001381965$ in that benchmark.
+      Independent Bessel-CDF comparisons check the two-state specialization; eigenprojector derivatives independently check the Poisson coefficients.</p>
+    <p>Across $\lambda=0,.02,c^{-1/2}$ and targets $.5,.9$, the largest scaled discrepancy falls from $0.002325935$ at $c=32$ to $0.000034840$ at $c=2048$.
+      Across $\lambda=\sqrt c,.5c/\Gamma,c^2$ at target $.9$, the largest $c(1+\lambda)$-weighted discrepancy falls from $0.000731350$ to $0.000004105$.
+      At fixed physical noise $.5$, the $c^2$-coefficient error falls from $0.004144202$ to $0.000067222$.</p>
+    <p>The numerical routine retains killed-block atoms when evaluating the unsmoothed folded CDF, with an independent repeated-feature jump check.
+      Its high-frequency matrix-norm comparisons are grid regressions, not numerical proofs of a continuum spectral gap.</p>
+    <p>There are also 128 quartic/sextic quantile cases, covering zero, shrinking, bounded and growing normalized noise,
+      with 16 Fourier budgets and 16 independent finite-moment Taylor checks.
+      Their largest $c(1+\lambda)$-weighted discrepancy falls from $0.877089823$ at $c=32$ to $0.014101738$
+      at $c=2048$.</p>
+    <p>Sixteen independent two-state quartic/sextic Bessel-CDF vectors agree within $1.989\times10^{-11}$.
+      These short-horizon checks use a larger Fourier cutoff because steep maps with weak smoothing are not
+      resolved by the default cutoff; large-noise gap integrals use fixed Gaussian quadrature to avoid adapting
+      to the weighted Fourier roundoff floor.</p>
+    <p>The identity $\int_0^\infty P_i(x)dx=-B_i/\Gamma$ gives
+      $\lambda K_{i,\lambda}(t_p(\lambda))\to-(B_i/\Gamma)\phi(\Phi^{-1}(p))$ as $\lambda\to\infty$.
+      The all-noise remainder now justifies joint limits too: if $c\sigma_c\to\infty$, then $c^2\sigma_c\{\Pr_i(S_c\le q_c)-p\}\to-\mu B_i\phi(\Phi^{-1}(p))$.
+      Fixed positive noise therefore recovers the existing $c^{-2}$ coefficient.</p>
+    <p>The spectral mechanism is classical; compare <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010)</a>, Theorem 8.1 and Lemma 8.3, for discrete-time initial bias and stationary skewness.
+      Their signed-approximant smoothing inequality on page 450 is used above; the continuous-time high-frequency estimate and weighted profile transfer are proved here.
+      This supplies the all-noise extension requested in <a href="https://github.com/microprediction/homogenization/issues/193">issue 193</a>, subject to review.</p>
+  </main>
