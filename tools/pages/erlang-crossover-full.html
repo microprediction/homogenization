@@ -1,0 +1,73 @@
+<!-- title: Three short bond quotes can alias an Erlang-stage prior · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./erlang.html">&larr; Erlang durations</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a></span></p>
+    <h1>Three short bond quotes can alias an Erlang-stage prior</h1>
+    <p class="subtitle">Near equal stage rates, a precise cancellation prevents a uniform short-maturity identification threshold.</p>
+
+    <h2>Result and quantifiers</h2>
+    <p>Consider two alternating regimes with two exponential stages each, stage rates $x,y&gt;0$, known Vasicek parameters $\kappa&gt;0$, $\theta_1\ne\theta_2$, common $\sigma\ge0$ and known current short rate $r$.
+      The unknown is a prior over all four stages, including uncertainty about the current regime.
+      Fix any three ordered nodes $0&lt;t_1&lt;t_2&lt;t_3$ and put $d=(\theta_1-\theta_2)/2\ne0$.</p>
+    <p>For every sufficiently small positive $\varepsilon$, there is a positive rate</p>
+    $$y_\varepsilon=x+\frac45d\kappa(t_1+t_2+t_3)\varepsilon+O(\varepsilon^2)$$
+    <p>such that two distinct, strictly positive stage priors give exactly the same three bond prices at maturities $\varepsilon t_1,\varepsilon t_2,\varepsilon t_3$, under the same known parameters $(x,y_\varepsilon)$.
+      Their full bond curves are nevertheless different.
+      The rate depends on the design scale: this does not contradict identification at all sufficiently small maturities for one fixed model.</p>
+
+    <h2>Normalized prices and exact jets</h2>
+    <p>Let the stage generator and level-sign matrix be</p>
+    $$Q=\begin{pmatrix}-x&amp;x&amp;0&amp;0\\0&amp;-x&amp;x&amp;0\\0&amp;0&amp;-y&amp;y\\y&amp;0&amp;0&amp;-y\end{pmatrix},\qquad
+      D=\operatorname{diag}(1,1,-1,-1).$$
+    <p>The short rate satisfies $dr_t=\kappa(\theta_{Y_t}-r_t)dt+\sigma dW_t$, with Brownian motion independent of the stage chain.
+      With $B(T)=(1-e^{-\kappa T})/\kappa$, the exact linear amplitude solves
+      $P_j=a_j e^{-Br}$, $a'=[Q+\operatorname{diag}(-\kappa\theta B+\sigma^2B^2/2)]a$, $a(0)=\mathbf1$.</p>
+    <p>Remove the known common factor $f(T)=\exp\int_0^T[-\kappa\theta_*B(s)+\sigma^2B(s)^2/2]ds$, with midpoint $\theta_*=(\theta_1+\theta_2)/2$, not the stationary mean.
+      Then $z=a/f$ satisfies $z'=[Q-d(1-e^{-\kappa T})D]z$, and the normalized mixture quote is $e^{Br}P_\nu/f=\nu z$.
+      Write $z(T)=\sum_{n\ge0}u_nT^n$; its exact recursion is</p>
+    $$(n+1)u_{n+1}=Qu_n+dD\sum_{h=1}^n\frac{(-\kappa)^h}{h!}u_{n-h},\qquad u_0=\mathbf1,\quad u_1=0.$$
+    <p>For $q=4,5$, let $C_q$ have rows $u_0^\top,u_2^\top,u_3^\top,u_q^\top$.
+      Substituting the recursion yields</p>
+    $$\det C_4=\frac{d^3\kappa^3xy(x-y)}{18},\qquad
+      \det C_5\big|_{y=x}=\frac{2d^4\kappa^4x^2}{45}.$$
+
+    <h2>The cancellation and an exact singular branch</h2>
+    <p>Eliminate the fourth weight using normalization, giving the three-by-three response
+      $H_{j\ell}(\varepsilon,y)=z_\ell(\varepsilon t_j)-z_4(\varepsilon t_j)$.
+      Let $V_q=\det[t_j^p]_{j=1,2,3;\ p=2,3,q}$; then</p>
+    $$\det H=-\det C_4\,V_4\varepsilon^9-\det C_5\,V_5\varepsilon^{10}+O(\varepsilon^{11}),\qquad
+      V_4=\prod_jt_j^2\prod_{a&lt;b}(t_b-t_a)&gt;0,\quad V_5=(t_1+t_2+t_3)V_4.$$
+    <p>The remainder is locally uniform for $y$ near $x$ because the ODE solution is analytic in maturity and rates.
+      Substitute $y=x+\varepsilon\eta$ and divide by $A\varepsilon^{10}$, where $A=d^3\kappa^3x^2V_4/18\ne0$.
+      The resulting function extends analytically through $\varepsilon=0$ and has</p>
+    $$F(\varepsilon,\eta):=\frac{\det H(\varepsilon,x+\varepsilon\eta)}{A\varepsilon^{10}},\qquad
+      F(0,\eta)=\eta-\frac45d\kappa(t_1+t_2+t_3).$$
+    <p>At $\eta_*=(4/5)d\kappa(t_1+t_2+t_3)$, $F(0,\eta_*)=0$ and $\partial_\eta F(0,\eta_*)=1$.
+      The analytic implicit-function theorem therefore supplies a unique local branch $\eta(\varepsilon)=\eta_*+O(\varepsilon)$ with $F(\varepsilon,\eta(\varepsilon))=0$.
+      Taking $y_\varepsilon=x+\varepsilon\eta(\varepsilon)$ proves the asserted rate expansion and positivity for small $\varepsilon$.</p>
+
+    <h2>Rank two gives genuine positive-prior aliases</h2>
+    <p>The minor in the first two quote rows and first two response columns has leading term</p>
+    $$-\frac{d^2\kappa^2x}{3}\,t_1^2t_2^2(t_2-t_1)\varepsilon^5,$$
+    <p>uniformly for bounded $\eta$.
+      It is nonzero for small positive $\varepsilon$, so the singular response on the branch has rank exactly two, not zero.
+      For any nonzero $v\in\ker H$, put $w=(v_1,v_2,v_3,-\sum v_\ell)$ and normalize $\|w\|_\infty=1$.</p>
+    <p>The priors $\nu^\pm=\mathbf1/4\pm w/8$ have every component at least $1/8$, sum to one and are distinct.
+      Their price differences at the three maturities vanish exactly, since $H(w_1,w_2,w_3)^\top=0$ after eliminating the fourth coordinate.</p>
+    <p>For every sufficiently small positive branch value, $y_\varepsilon\ne x$ because $\eta_*\ne0$.
+      Therefore $\det C_4\ne0$: the augmented jets distinguish all four weights, and the full curves cannot coincide for distinct priors.
+      Other sufficiently short quote designs for this fixed model do identify them.</p>
+
+    <h2>Scope, context and checks</h2>
+    <p>There is no common positive maturity threshold valid for every model in any neighborhood of equal rates, even with all parameters known and the stage rates confined to a compact subset of $(0,\infty)$.
+      This is an exact finite-design alias, stronger than mere bad conditioning, but not nonidentification from the entire curve.
+      It concerns initial-prior observability, not identification of parameters or a regime count from maturity-integrated Green&ndash;Kubo rank.</p>
+    <p>The observability framework is classical; <a href="./bibliography.html#Kalman1960">Kalman (1960), Section 5</a>, defines observability and its Gramian.
+      The model-specific jet cancellation and implicit branch are proved here; no new general observability principle is claimed.</p>
+    <p>For $x=2$, $d=\kappa=1$ and nodes $(1,2,3)$, the limiting gap coefficient is $\eta_*=24/5$.
+      At $\varepsilon=1/1024$, the numerical branch estimate is $\eta=4.798382900402$, $y=2.004685920801$; independent ODE amplitudes agree with the Taylor evaluation within $3.43\times10^{-64}$.
+      Rounded rates do not themselves define an exact alias: the analytic root above does.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a> proves the limiting and rank-minor identities symbolically, checks four branch approximations and constructs positive numerical prior pairs.
+      Its final line is literal PASS and its assertions use portable tolerances; high-precision roots and ODE checks are not outward-rounded interval certificates.</p>
+  </main>
