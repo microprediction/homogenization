@@ -1,0 +1,124 @@
+<!-- title: A cubic direction signal in full call prices · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; Cycle direction</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_single_feature_call.py">certificate</a></span></p>
+    <h1>One switched mean level: a global cubic call signal</h1>
+    <p class="subtitle">An infinite-frequency error bound, with stationary initial regimes and fixed maturity.</p>
+    <p>Let $Y$ be an independent irreducible finite chain with row generator $mQ$, initially stationary with law $\pi$.
+      For independent Brownian motions $B,W$, fix $T,\kappa,\xi,a_i&gt;0$, $v_0\ge0$, $X_0=0$, and $|\rho|&lt;1$:</p>
+    $$dv=(a_Y-\kappa v)dt+\xi\sqrt v\,dB,\qquad
+      dX=-v\,dt/2+\sqrt v(\rho\,dB+\sqrt{1-\rho^2}\,dW).$$
+    <p>Write $Q^\leftarrow=D_\pi^{-1}Q^TD_\pi$, $S=Q^\#$, $c=a-(\pi a)\mathbf1$,
+      $\langle x,y\rangle_\pi=x^TD_\pi y$, and define</p>
+    $$\Delta=\langle c,S^2D_cSc\rangle_\pi-\langle c,SD_cS^2c\rangle_\pi.$$
+    <p>Choose $\gamma,p&gt;1$, $r=p\gamma$, $q=p/(p-1)$ with
+      $a_r=\kappa-\rho\xi r&gt;0$ and $d_r=\sqrt{a_r^2-\xi^2r(r-1)}&gt;0$.
+      These sufficient contour conditions are nonempty; no reversibility or diagonalizability is assumed.</p>
+    $$B_s'=\xi^2B_s^2/2-(\kappa-\rho\xi s)B_s+s(s-1)/2,\quad B_s(0)=0,\qquad
+      \Phi_{\rm av}(s)=\exp\{v_0B_s(T)+(\pi a)\int_0^T B_s\},$$
+    $$d_3(k)={e^{-\alpha k}\over\pi}\int_0^\infty
+      \Re{e^{-iuk}\Phi_{\rm av}(s)\Delta B_s(T)^3\over3D_\alpha(u)}du,
+      \quad s=\gamma+iu,\quad\alpha=\gamma-1,\quad D_\alpha=(\alpha+iu)(\gamma+iu).$$
+    <div class="equation-card">
+    $$\sup_{k\in K}|C_{m,Q}(k)-C_{m,Q^\leftarrow}(k)-d_3(k)/m^3|
+        \le A_K/m^4\quad(m\ge m_0),\qquad C_m(k)=\mathbb E(e^{X_T}-e^k)_+.$$
+    </div>
+    <p>The integrals converge absolutely, and the explicit constants below prove the claim for every compact strike set $K$.
+      Maturity, correlation and the moment contour are fixed; no implied-volatility expansion or statistical identification rate is claimed.</p>
+
+    <h2>Riccati and exact-transform envelopes</h2>
+    <p>Put $\eta=1-\rho^2$, $a_\gamma=\kappa-\rho\xi\gamma$,
+      $d_0=\sqrt{a_\gamma^2-\xi^2\gamma(\gamma-1)}$, $c_0=\xi\sqrt\eta$ and
+      $\ell=-2\rho\xi a_\gamma-\xi^2(2\gamma-1)$.</p>
+    $$H_0=1+{|\ell|\over2d_0c_0},\quad R_0={a_\gamma\over d_0}+{|\rho|\over\sqrt\eta},\quad
+      z_0={2\over1+R_0},\quad \nu=\min\{z_0/2,1-e^{-z_0/(2\sqrt{H_0})}\},$$
+    $$g_0={2\max\{a_\gamma+\sqrt{H_0}d_0,\ |\rho|\xi+\sqrt{H_0}c_0\}\over\xi^2\nu},\quad
+      A=\max\{a_\gamma,|\rho|\xi\},\quad g_1=\xi^2g_0^2/2+Ag_0+\gamma^2/2,$$
+    $$g_2=(\xi^2g_0+A)g_1,\qquad g_3=\xi^2g_1^2+(\xi^2g_0+A)g_2.$$
+    <p>For $w=1+|u|$, $\sup_{t\le T}|B_s^{(j)}(t)|\le g_jw^{j+1}$ for $0\le j\le3$.
+      To check the closed-solution denominator, set $b=a_\gamma-i\rho\xi u$, $d=\sqrt{b^2-\xi^2s(s-1)}$, $\Re d&gt;0$, and $g=(b-d)/(b+d)$.</p>
+    <p>The identities $(\Re d)^2\ge d_0^2+c_0^2u^2$, $|d|^2\le H_0(d_0^2+c_0^2u^2)$, and
+      $\Re(b\bar d)\ge\{a_\gamma d_0^2+\xi^2(\kappa-\rho\xi/2)u^2\}/\Re d&gt;0$ imply $|g|&lt;1$ and $|1-g|\ge z_0$.
+      Split time at $z_0/(2|d|)$ to obtain $|1-ge^{-dt}|\ge\nu$; the closed Riccati formula gives $g_0$, and differentiating its ODE gives the other bounds.</p>
+    <p>Let $a_* =\min a_i$, $a^*=\max a_i$, $\beta_*=(a_r-d_r)/\xi^2$, and put</p>
+    $$C=e^{(a^*T+v_0)\beta_*/p}
+       \{2^{2a_*/\xi^2}e^{a_*\kappa T/\xi^2}\}^{1/q},\qquad
+      \beta={a_*T\sqrt\eta\over\xi\sqrt q}.$$
+    <p>Every switched direction and the averaged model satisfy $|\Phi(\gamma+iu)|\le Ce^{-\beta|u|}$, independently of speed.
+      Indeed the positive-moment supersolution gives $\mathbb E e^{rX_T}\le e^{(a^*T+v_0)\beta_*}$, while the CIR Laplace supersolution gives
+      $\mathbb E e^{-s\int v}\le2^{2a_*/\xi^2}e^{a_*\kappa T/\xi^2-a_*T\sqrt{2s}/\xi}$.</p>
+    <p>Condition on $(B,Y)$: the independent Gaussian component has variance $\eta\int v$.
+      Jensen and H&ouml;lder with exponents $p,q$ combine the preceding estimates into the stated envelope.
+      Localization and Fatou justify the supersolutions without assuming prior exponential integrability.</p>
+
+    <h2>A frequency-weighted centered expansion</h2>
+    <p>For each direction choose $M,\lambda&gt;0$ with $\|e^{tQ}-\mathbf1\pi\|_\infty\le Me^{-\lambda t}$, and set $N=M/\lambda$, $\Gamma=\|c\|_\infty$.
+      For at least two states, one explicit choice is $M=(\min\pi)^{-1/2}$ and the positive centered gap of the symmetric part of $D_\pi^{1/2}QD_\pi^{-1/2}$ for $\lambda$.
+      The same choices work for reversal.</p>
+    <p>For $f'=mQf+B_sD_af$, $f(0)=\mathbf1$, factor $f=A_m(\mathbf1+z)$, $\pi z=0$.
+      With $L=(I-\mathbf1\pi)D_c$, the centered equation and the common-factor log correction are</p>
+    $$z'=mQz+B_s(c+Lz-z\pi D_cz),\qquad
+      q_Q:=\log(\Phi_{m,Q}/\Phi_{\rm av})=\int_0^T B_s\pi D_cz.$$
+    <p>The ODE uses backward duration, so its path loading is $B_s(T-t)$ in calendar time.
+      For $m\ge6N\Gamma g_0w$ the convolution bootstrap gives $\sup\|z\|\le2N\Gamma g_0w/m\le1/3$ and $|q_Q|\le Hw^2/m$, where $H=2N\Gamma^2Tg_0^2$.
+      Reconstructing $A_m$ exponentially justifies the quotient and its continuous log.</p>
+    $$x_1=Sc,\quad x_2=S^2c,\quad x_3=SD_cSc,\quad x_4=S^3c,\quad
+      x_5=2S^2D_cSc+SD_cS^2c,\quad x_6=S^2c\langle c,Sc\rangle_\pi-SD_cSD_cSc,$$
+    $$z_1=-B_sx_1,\quad z_2=-B_s'x_2+B_s^2x_3,\quad
+      z_3=-B_s''x_4+B_sB_s'x_5+B_s^3x_6.$$
+    <p>Define sup-norm upper bounds $Z_j$ for $\|z_j\|/w^j$, and $D_3$ for $\|z_3'\|/w^4$, by</p>
+    $$Z_1=g_0\|x_1\|,\quad Z_2=g_1\|x_2\|+g_0^2\|x_3\|,\quad
+      Z_3=g_2\|x_4\|+g_0g_1\|x_5\|+g_0^3\|x_6\|,$$
+    $$D_3=g_3\|x_4\|+(g_1^2+g_0g_2)\|x_5\|+3g_0^2g_1\|x_6\|,\quad Z=Z_1+Z_2+Z_3,$$
+    $$I=g_1\|x_2\|+g_2\|x_4\|,\quad R=D_3+g_0\{\|L\|Z_3+\Gamma Z^2\},\quad
+      F_Q=\Gamma\{4MIg_1/\lambda^2+2MRTg_0/\lambda\},\quad
+      a_Q=\max\{1,6N\Gamma g_0,3Z\}.$$
+    <p>For $m\ge a_Qw$, $P=\sum_{j=1}^3z_j/m^j$ lies in the same ball and its residual is at most $Rw^4/m^3$.
+      In every quadratic cross term beyond $z_1\pi D_cz_1/m^2$, use $w/m\le1$; this is sharper than bounding all coefficients by $w^3$ first.
+      The Lipschitz constant is $8\Gamma g_0w/3$, absorbed by $a_Q$.</p>
+    $$\|z(t)-P(t)\|\le {MIw^2\over m^2}e^{-\lambda mt/2}+{2MRw^4\over\lambda m^4},\qquad
+      \left|q_Q-\sum_{j=1}^3{\int_0^T B_s\pi D_cz_j\over m^j}\right|\le {F_Qw^5\over m^4}.$$
+    <p>The first term includes $P(0)\ne0$; $|B_s(t)|\le g_1w^2t$ makes its integrated contribution fourth order.
+      Under reversal $S$ becomes its weighted adjoint: the first two integrated coefficients agree, while the third differs by $\Delta B_s(T)^3/3$.
+      In the third coefficient only $2\langle c,S^2D_cSc\rangle+\langle c,SD_cS^2c\rangle$ changes, and $\int B_s^2B_s'=B_s(T)^3/3$.</p>
+
+    <h2>Growing cutoff and full inversion</h2>
+    <p>Take the larger $H$ of the two directions, $a_0=\max(a_Q,a_{Q^\leftarrow})$, $F=F_Q+F_{Q^\leftarrow}$ and $D=|\Delta|g_0^3/3$.
+      Set</p>
+    $$\varepsilon=(1+H)^{-1/2},\quad
+      m_0=\left\lceil\max\{1,4/\varepsilon^2,(a_0\varepsilon)^2\}\right\rceil,\quad U_m=\varepsilon\sqrt m-1.$$
+    <p>On $0\le u\le U_m$, both $|q_Q|,|q_{Q^\leftarrow}|\le1$ and
+      $|q_Q-q_{Q^\leftarrow}-\Delta B_s(T)^3/(3m^3)|\le Fw^5/m^4$.
+      Integrating the exponential along the segment between these two logs therefore gives</p>
+    $$\left|\Phi_{m,Q}-\Phi_{m,Q^\leftarrow}-\Phi_{\rm av}{\Delta B_s(T)^3\over3m^3}\right|
+       \le {eCe^{-\beta u}(F+DH)w^5\over m^4}.$$
+    $$J_5=\sum_{j=0}^5{5\choose j}{j!\over\beta^{j+1}},\quad
+      A_{\rm in}={eC(F+DH)J_5\over\pi\alpha\gamma},$$
+    $$E={2\over\beta}+D\left\{{\varepsilon^3\over\beta}+{3\varepsilon^2\over\beta^2}
+          +{6\varepsilon\over\beta^3}+{6\over\beta^4}\right\},\quad
+      A_{\rm out}={Ce^\beta E\over\pi\alpha\gamma}
+                    \left({8\over e\beta\varepsilon}\right)^8,\qquad
+      A_K=e^{-\alpha\inf K}(A_{\rm in}+A_{\rm out}).$$
+    <p>For the inner integral use $|D_\alpha|\ge\alpha\gamma$.
+      For the outer integral use $Ce^{-\beta u}\{2+Dw^3/m^3\}$ and integrate its cubic polynomial exactly; $m\ge1$ leaves the constant $E$.
+      Finally $\sup_{x\ge0}x^8e^{-\beta\varepsilon x}=(8/(e\beta\varepsilon))^8$ absorbs $m^4$.</p>
+    <p>Thus no compact-contour remainder has been silently integrated over infinite frequencies.
+      If $\Delta\ne0$, $d_3$ cannot vanish at every strike: Fourier uniqueness would force $\Phi_{\rm av}(\gamma)\Delta B_\gamma(T)^3=0$, but the moment and $B_\gamma(T)$ are positive.
+      This does not say every strike detects direction.</p>
+
+    <h2>Checks and scope</h2>
+    <p>For the oriented unit three-cycle with $a=(1,2,3)$, $\kappa=2$, $\xi=0.3$, $\rho=-0.6$,
+      $T=1$, $v_0=0.04$ and $\gamma=p=2$, $\Delta=-2/27$ and $d_3(0)\approx-0.00108715$.
+      The explicit threshold is about $1.45\times10^9$ and $A_{[-0.2,0.2]}\approx1.31\times10^{40}$; these deliberately loose constants are separate from the small observed numerical errors.</p>
+    <p>The certificate compares original forward/reverse affine amplitudes with the cubic coefficient, doubles quadrature order, and prints an exact-envelope tail budget.
+      It checks higher Riccati derivatives, weighted residuals, and the boundary layer independently.
+      Floating quadrature refinement is a diagnostic, not an outward-rounded enclosure.</p>
+    <p>Arbitrary initial regime priors can reveal direction earlier and are excluded here.
+      Constant occupation totals remain exactly reversal-blind; the nonconstant Riccati loading is essential.
+      The finite constants establish the order, not a practical pricing tolerance.</p>
+    <p>The affine transform and damped inversion frameworks are classical:
+      <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a> and
+      <a href="https://wwwf.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/CarrMadan.pdf">Carr and Madan (1999)</a>, equations (5)&ndash;(6).
+      This completes the global-inversion step posed in <a href="https://github.com/microprediction/homogenization/issues/201">issue 201</a>, extending the
+      <a href="https://github.com/microprediction/homogenization/pull/200">compact-transform proof</a>.</p>
+  </main>
