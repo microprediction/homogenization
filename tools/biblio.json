@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "FanPall1957",
+  "authors": "Fan, K. and Pall, G.",
+  "year": 1957,
+  "title": "Imbedding Conditions for Hermitian and Normal Matrices",
+  "venue": "Canadian Journal of Mathematics 9:298-304",
+  "doi": "10.4153/cjm-1957-036-1",
+  "url": "https://doi.org/10.4153/cjm-1957-036-1",
+  "annotation": "Theorem 1 gives necessary and sufficient Hermitian compression interlacing inequalities. The Green-Kubo feasibility note separately proves that sign-symmetric spectra admit real skew-symmetric compressions, rather than inferring real features from a complex isometry."
+ },
+ {
+  "role": "survey_theory",
+  "key": "QiuWangMaoChen2022",
+  "authors": "Qiu, L., Wang, D., Mao, X. and Chen, W.",
+  "year": 2022,
+  "title": "On the Phases of a Semi-Sectorial Matrix",
+  "venue": "arXiv:2205.07607v1 [math.RA]",
+  "doi": "10.48550/arxiv.2205.07607",
+  "url": "https://doi.org/10.48550/arxiv.2205.07607",
+  "annotation": "Lemma 4.3 gives phase interlacing for complex compressions, while Lemmas 7.1 and 7.3 treat balanced Laplacians and invariant-law weighting. Cited here as the checked 2022 preprint, not with unverified later publication metadata."
  }
 ]

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Full-spectrum Green–Kubo feasibility · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>Which directed blocks fit a given chain?</h1>
+    <p>When the feature embedding is unknown, the complete energy-normalized skew spectrum of a candidate chain gives an exact feasibility test.
+      Its largest mode alone loses information; for one-way cycles the full test gives a closed minimum-state formula.</p>
+    <h2>Fixed-chain realization theorem</h2>
+    <p>Fix an irreducible finite row generator $Q$ on $N\ge2$ states and its stationary law $\pi$.
+      Let $C=-D_\pi Q$, $m=N-1$, and choose any real orthonormal basis $T$ of $\mathbf1^\perp$.</p>
+    $$M=T^\top C^\top T,\quad H=(M+M^\top)/2\succ0,\quad D=(M-M^\top)/2,
+      \quad B_Q=H^{-1/2}DH^{-1/2}.$$
+    <p>Indeed $u^\top Cu=\tfrac12\sum_{v\ne w}\pi_vq_{vw}(u_v-u_w)^2$; irreducibility makes this strictly positive on nonconstant potentials.
+      Thus the whitening is nonsingular on the quotient by constants.</p>
+    <p>Write $\lambda_1\ge\cdots\ge\lambda_m$ for the eigenvalues of the Hermitian matrix $iB_Q$.
+      They occur in opposite pairs, with zeros included; they do not depend on the choice of $T$.</p>
+    <p>For a real target $K=G+A\in\mathbb R^{d\times d}$ with $G=G^\top\succ0$ and $A^\top=-A$, let $\mu_1\ge\cdots\ge\mu_d$ be the eigenvalues of $iG^{-1/2}AG^{-1/2}$.
+      There are real centered features $F$ such that $K=F^\top D_\pi(-Q)^{-1}_0F$ if and only if</p>
+    <div class="equation-card">
+    $$d\le m,\qquad \lambda_j\ge\mu_j\ge\lambda_{j+m-d},\qquad 1\le j\le d.$$
+    </div>
+    <p>The inverse is on centered functions.
+      This is feasibility for the specified generator with freely chosen real features, not reconstruction of a generator or a test for a fixed known feature matrix.</p>
+    <h2>Reduction to a real skew compression</h2>
+    <p>Every centered feature matrix can be written as $F=-QU$, uniquely modulo constant potential columns.
+      Its directed block is $U^\top C^\top U$, so after subtracting constants write $U=TX$.</p>
+    $$G=X^\top HX,\quad A=X^\top DX,\quad W=H^{1/2}XG^{-1/2},
+      \qquad W^\top W=I_d,\quad W^\top B_QW=G^{-1/2}AG^{-1/2}.$$
+    <p>Hermitian interlacing proves necessity.
+      For sufficiency one needs a <em>real</em> isometry $W$: the complex Hermitian converse alone does not establish real features.</p>
+    <p>Here is a real converse.
+      For a codimension-one compression of a real skew matrix with distinct positive canonical frequencies $\sigma_j$, let $p(t)$ and $q(t)$ be the ambient and desired characteristic polynomials.</p>
+    $$\frac{q(t)}{p(t)}=\sum_j w_j\frac{t}{t^2+\sigma_j^2}+\frac{w_0}{t},
+      \qquad w_j\ge0,\quad \sum_jw_j+w_0=1.$$
+    <p>The $w_0/t$ term occurs only in odd ambient dimension.
+      Partial fractions and interlacing of the squared positive frequencies give the nonnegative weights; explicitly,</p>
+    $$w_j=\begin{cases}
+      \displaystyle\frac{\prod_k(\tau_k^2-\sigma_j^2)}{\prod_{\ell\ne j}(\sigma_\ell^2-\sigma_j^2)},&m\text{ even},\\[6pt]
+      \displaystyle\frac{\prod_k(\tau_k^2-\sigma_j^2)}{-\sigma_j^2\prod_{\ell\ne j}(\sigma_\ell^2-\sigma_j^2)},&m\text{ odd},
+      \end{cases}\qquad w_0=\frac{\prod_k\tau_k^2}{\prod_j\sigma_j^2}\quad(m\text{ odd}).$$
+    <p>Choose a real unit normal $x$ with squared projection $w_j$ on each canonical plane and $w_0$ on the kernel.
+      The cofactor identity $\det(tI-B|_{x^\perp})=p(t)x^\top(tI-B)^{-1}x=q(t)$ produces the desired real compression.</p>
+    <p>For arbitrary codimension, the interlacing inequalities admit consecutive one-step interlacing rows, as in the classical Hermitian embedding proof.
+      Average that array with its negative reversed array: linear interlacing inequalities are preserved, every row becomes sign-symmetric, and the two endpoint rows are unchanged.</p>
+    <p>Apply the real one-step construction successively, then use real orthogonal canonical forms to match the target skew matrix, not just its spectrum.
+      Repeated roots and boundary equalities follow by limits and compactness of real isometries; the equal-dimension case is ordinary real orthogonal equivalence.</p>
+    <p>Finally $U=TH^{-1/2}WG^{1/2}$ and $F=-QU$ realize $K$ exactly.
+      This proves both directions, including repeated skew modes and reversible targets.</p>
+    <h2>An exact count for one-way cycles</h2>
+    <p>Now restrict the architecture to a single directed cycle, with arbitrary positive holding rates.
+      Its balanced stationary flow is constant around the cycle; Fourier diagonalization of $C$ therefore gives, independently of holding times,</p>
+    $$\lambda_j=\cot(j\pi/N),\qquad j=1,\ldots,N-1.$$
+    <p>Define $\operatorname{arccot}x\in(0,\pi)$, including for negative $x$.
+      Opposite-pair symmetry makes the lower interlacing inequalities equivalent to the upper ones, so the exact minimum within this architecture is</p>
+    <div class="equation-card">
+    $$N_{\mathrm{cycle}}(K)=\max\left\{d+1,
+      \left\lceil\max_{1\le j\le d}\frac{j\pi}{\operatorname{arccot}\mu_j}\right\rceil\right\}.$$
+    </div>
+    <p>All signed modes are needed, not just the positive ones.
+      The ceiling is an exact mathematical operation; a floating value near an integer is not a certified boundary decision.</p>
+    <p>For $J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}$ and $K_*=I_4+\kappa\operatorname{diag}(J,J)$ with $\kappa=\cot(\pi/5)$, the minimum is exactly <strong>ten</strong>.
+      Rank excludes fewer than five states, and cycles with five through nine fail because their second mode $\cot(2\pi/N)$ is strictly below $\kappa$; ten passes every inequality.</p>
+    <p>An explicit witness uses the energy-orthonormal cosine/sine pairs of Fourier modes one and two on the ten-cycle.
+      Replace the first cosine by $a$ times that cosine plus $\sqrt{1-a^2}$ times the energy-normalized alternating mode, where $a=\kappa/\cot(\pi/10)$; keep the other three potentials and set $F=-QU$.</p>
+    <p>The two skew pairs then both equal $\kappa$, and the symmetric block is $I_4$, for any prescribed positive ten-state law.
+      A shared-hub realization in <a href="https://github.com/microprediction/homogenization/pull/223">the separate constructive note</a> uses nine states, so ten is <em>not</em> the unrestricted minimum; <a href="https://github.com/microprediction/homogenization/issues/222">the six-to-nine gap</a> remains open.</p>
+    <h2>How much irreversibility can features hide?</h2>
+    <p>If $\operatorname{rank}B_Q=2r$, the largest possible rank of a reversible-looking block $A=0$, $G\succ0$, is $m-r$.
+      Set every $\mu_j=0$ in the criterion; equivalently choose one real direction from each canonical plane and every kernel direction.</p>
+    <p>For a one-way cycle this maximum is $\lfloor N/2\rfloor$.
+      Thus a high-rank symmetric observed block need not certify reversibility of its driver; conversely, sufficiently many independent symmetric features rule out that candidate architecture.</p>
+    <h2>Scope, literature and checks</h2>
+    <p>Changing holding times at fixed stationary flows leaves $C$ unchanged up to an irrelevant scalar, hence preserves the entire embedding class; time reversal preserves it too because the signed spectrum is symmetric.
+      None of this preserves finite-time path laws or a fixed feature embedding, and no rank after integrating maturity-varying loadings enters the test.</p>
+    <p>Hermitian interlacing and its converse are classical: <a href="./bibliography.html#FanPall1957">Fan and Pall (1957)</a>, Theorem 1.
+      The phase-compression counterpart is <a href="./bibliography.html#QiuWangMaoChen2022">Qiu, Wang, Mao and Chen (2022)</a>, Lemma 4.3; the real residue argument above supplies the required real-feature sufficiency rather than attributing it to a complex-isometry theorem.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gk_compression.py">certificate</a> checks real residue reconstructions, independent Poisson and Green&ndash;Kubo calculations, holding-time invariance, cycle counts and an independent correlation quadrature.
+      Exact angle ordering proves the ten-state exclusion threshold; floating matrix checks are consistency tests, not outward-rounded enclosures or an infeasibility proof for other architectures.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
