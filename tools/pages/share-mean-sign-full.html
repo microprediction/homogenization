@@ -1,0 +1,91 @@
+<!-- title: A three-versus-four regime mean-sign boundary · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; Cycle direction</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_share_mean_sign.py">certificate</a></span></p>
+    <h1>Three regimes preserve the share-mean sign; four can reverse it</h1>
+    <p class="subtitle">A positive inverse-determinant kernel removes the possibility of accidental maturity cancellation in three states.</p>
+    <p>Let an irreducible finite chain $Y$, independent of Brownian motions $B,W$, have row generator $mQ$, $m&gt;0$, and stationary initial law $\pi$.
+      Use a common fixed $v_0\ge0$, $X_0=0$, positive switched coefficients $a_i,\kappa_i,\xi_i$, and $|\rho_i|\le1$:</p>
+    $$dv=(a_Y-\kappa_Yv)dt+\xi_Y\sqrt v\,dB,\qquad
+      dX=-v\,dt/2+\sqrt v(\rho_Y\,dB+\sqrt{1-\rho_Y^2}\,dW).$$
+    <p>Compare $Q$ with $Q^\leftarrow=D_\pi^{-1}Q^TD_\pi$ using the same initialization.
+      Assume $S=e^X$ is a true martingale and the two share-weighted means below are finite.
+      Put $k_i=\kappa_i-\rho_i\xi_i$, $A=mQ-D_k$, and define forward minus reverse values by</p>
+    $$D_m(T)=\mathbb E_Q[e^{X_T}X_T]-\mathbb E_{Q^\leftarrow}[e^{X_T}X_T],\qquad
+      \mathcal B=\langle k,Qa\rangle_\pi-\langle a,Qk\rangle_\pi.$$
+    <div class="equation-card">
+    <p>With three states, either $\mathcal B=0$ and $D_m(T)=0$ for every $m,T&gt;0$, or $D_m(T)$ has the strict sign of $\mathcal B$ for every $m,T&gt;0$.
+      A nonzero gap cannot reverse sign or vanish accidentally at an isolated maturity or speed.</p>
+    <p>Four states are the smallest possible exception: the positive CIR example below has a rigorously negative gap at $T=0.6$ and a positive one at $T=0.8$, at the same speed.</p>
+    </div>
+    <p>For a nonreversible three-state chain and nonconstant $k$, equality at even one positive speed and maturity is therefore equivalent to $a\in\operatorname{span}\{\mathbf1,k\}$.
+      This strengthens the all-maturity mean criterion, not a claim that all call prices or all return moments agree.</p>
+
+    <h2>The scalar mean and its resolvent</h2>
+    <p>Under the share measure with density $e^{X_T}$, variance drift is $a_Y-k_Yv$ and log-price drift is $+v/2$; regime jump intensities stay $mQ$.
+      The backward conditional variance mean has the form $b_i(t)v+d_i(t)$, with $b'=Ab$, $b(0)=\mathbf1$, $d'=mQd+D_ab$, $d(0)=0$.
+      Stationarity and weighted adjointness under reversal give the exact identity</p>
+    $$D_m(T)=\frac12\int_0^T(T-u)F(u)du,\qquad
+      F(u)=\langle a,e^{uA}\mathbf1\rangle_\pi-\langle\mathbf1,e^{uA}a\rangle_\pi.$$
+    <p>The fixed $v_0$ contribution is $v_0\langle\mathbf1,e^{tA}\mathbf1\rangle_\pi$ in each variance mean and cancels.
+      This uses only first moments and the usual <a href="./bibliography.html#GemanElKarouiRochet1995">change of num&eacute;raire</a>, not one common affine transform for switched vol-of-vol.</p>
+    <p>For the linear functional $L(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi$, stationarity gives $L(I)=L(A)=0$ and $L(A^2)=m\mathcal B$.
+      In dimension three, $\operatorname{adj}(zI-A)=A^2+(z-\operatorname{tr}A)A+\{z^2-z\operatorname{tr}A+c_2\}I$, where $c_2$ is the sum of principal order-two minors.
+      Thus, for real $z$ sufficiently large,</p>
+    $$\int_0^\infty e^{-zu}F(u)du=\frac{m\mathcal B}{\det(zI-A)}.$$
+
+    <h2>Why the inverse characteristic kernel is strictly positive</h2>
+    <p>Choose $c=\max\{0,\max_i(m(-q_{ii})+k_i)\}$, so $P=A+cI$ is entrywise nonnegative, and let $R=\|P\|_\infty=c-\min_i k_i$.
+      The ordinary determinant identity</p>
+    $$\frac1{\det(I-xP)}=\exp\left(\sum_{r\ge1}\frac{\operatorname{tr}(P^r)}r x^r\right)
+       =\sum_{j\ge0}h_jx^j$$
+    <p>has $h_0=1$ and $h_j\ge0$, since every trace is nonnegative.
+      Also $h_j\le\binom{j+2}{2}R^j$: factor the determinant over the three eigenvalues, each of modulus at most $R$, and bound its geometric-series coefficients.
+      Consequently the everywhere convergent series</p>
+    $$g_A(u)=e^{-cu}\sum_{j\ge0}\frac{h_j u^{j+2}}{(j+2)!}$$
+    <p>has Laplace transform $1/\det(zI-A)$ for $z&gt;R-c$, by termwise integration.
+      It is strictly positive for $u&gt;0$, and satisfies</p>
+    $$\frac{u^2}2e^{-cu}\le g_A(u)\le\frac{u^2}2e^{-(\min_i k_i)u}.$$
+    <p>Uniqueness of Laplace transforms now gives $F(u)=m\mathcal B g_A(u)$, proving the strict sign law.
+      No diagonalization, real-spectrum assumption or exclusion of defective matrices is needed; even negative share-measure reversion coefficients are allowed when the stated means exist.</p>
+    <p>The reciprocal-determinant generating function is classical, as in the commuting specialization of
+      <a href="./bibliography.html#GaroufalidisLeZeilberger2006">Garoufalidis, L&ecirc; and Zeilberger (2006), equations (1)&ndash;(2)</a>.
+      The trace-series proof is included here; no novelty is claimed for that identity or for positive-kernel Laplace inversion.</p>
+    <p>Writing $I_b(T)=\int_0^T(T-u)u^2e^{-bu}du$, the argument also supplies the explicit bounds</p>
+    $$\frac{m|\mathcal B|}4I_c(T)\le |D_m(T)|\le\frac{m|\mathcal B|}4I_{\min_i k_i}(T).$$
+    <p>These are finite-parameter inequalities, not a truncated maturity-uniform expansion.
+      Finally $\mathcal B=J\det\left(\begin{smallmatrix}1&amp;1&amp;1\\k_1&amp;k_2&amp;k_3\\a_1&amp;a_2&amp;a_3\end{smallmatrix}\right)$, where $J=\pi_1q_{12}-\pi_2q_{21}$.
+      Nonreversibility gives $J\ne0$, proving the stated affine equality criterion when $k$ is nonconstant.</p>
+
+    <h2>A four-state, strict-Feller sign reversal</h2>
+    <p>Use the directed unit four-cycle $q_{i,i+1}=1$, $q_{ii}=-1$ with indices modulo four, uniform $\pi$, $m=1$, and</p>
+    $$\kappa=2,\quad\rho=-3/5,\quad\xi=(1/5,2/5,1,3/2),\quad
+      a=(2,1,5,5),\quad v_0=1/25,\quad k=(53/25,56/25,13/5,29/10).$$
+    <p>Every regime has $2a_i&gt;\xi_i^2$, with minimum margin $46/25$.
+      Common positive variance loadings $b=1/2$ at return moment $r=2$, and $b=1/10$ at $r=-1/10$, satisfy
+      $\xi_i^2b^2/2+(\rho\xi_i r-\kappa)b+r(r-1)/2&lt;0$ in every state, ensuring true-stock-martingale and moment-strip conditions by localization.</p>
+    <p>Here $L(A^2)=-3/200$ and $L(A^3)-(\operatorname{tr}A)L(A^2)=3/40$.
+      The exact adjugate calculation gives</p>
+    $$\int_0^\infty e^{-zT}D_1(T)dT
+       =\frac{-3z/200+3/40}{2z^2\det(zI-A)}.$$
+    <p>The small-maturity coefficient is $L(A^2)/48&lt;0$ while the long-maturity slope is
+      $(3/40)/(2\det(-A))=9375/35231888&gt;0$.
+      All $k_i$ are positive, so $A$ is stable.
+      More directly, exact rational arithmetic certifies</p>
+    $$D_1(3/5)\in[-0.000001665616,-0.000001665615],\qquad
+      D_1(4/5)\in[0.000002658062,0.000002658063].$$
+    <p>Thus at least one zero lies in $(3/5,4/5)$; uniqueness is not claimed.
+      Two states are reversible and three obey the strict sign law, so four states are minimal for this maturity sign reversal under the stated initialization.</p>
+
+    <h2>What the sign boundary does and does not say about calls</h2>
+    <p>If the MGFs exist on an open interval containing $[0,1]$, moment-tail bounds and payoff integration give
+      $\int_{\mathbb R}(C_Q(x)-C_{Q^\leftarrow}(x))dx=D_m(T)$, with $x$ denoting log strike.
+      When the original $\kappa_i$ are common, as in the example, also $\int e^{-x}(C_Q(x)-C_{Q^\leftarrow}(x))dx=0$.</p>
+    <p>The four-state zero therefore restores the unweighted zero-area constraint at a maturity even though it fails at nearby maturities.
+      If the two full call curves differ there, both areas force at least two crossings.
+      Neither the area sign nor its maturity reversal counts pointwise call crossings or proves a strikewise sign law.</p>
+    <p>The certificate checks $90$ independent forward-moment/kernel comparisons, resolvent identities, nonnegative series and both kernel-derived bounds, at portable tolerance $3\times10^{-9}$.
+      The four-state sign intervals use rational degree-$160$ Taylor actions in dimension $9$ and induced-norm remainder bounds; their summed tails are below $10^{-100}$, not floating tolerances.</p>
+    <p>This complements the <a href="https://github.com/microprediction/homogenization/pull/205">finite mean-cancellation criterion</a> and leaves sharp full call-crossing counts in <a href="https://github.com/microprediction/homogenization/issues/204">issue #204</a> open.
+      Joint-invariant-start variance profiles concern a different observable and initialization; no conflict with their possible maturity sign changes is implied.</p>
+  </main>
