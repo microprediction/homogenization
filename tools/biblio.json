@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "GaroufalidisLeZeilberger2006",
+  "authors": "Garoufalidis, S., Lê, T. T. Q. and Zeilberger, D.",
+  "year": 2006,
+  "title": "The quantum MacMahon master theorem",
+  "venue": "Proceedings of the National Academy of Sciences 103(38):13928-13931",
+  "doi": "10.1073/pnas.0606003103",
+  "url": "https://doi.org/10.1073/pnas.0606003103",
+  "annotation": "Equations (1)-(2) recall the classical commuting reciprocal-determinant generating function. Its nonnegative coefficients give the positive inverse-characteristic-polynomial kernel used in the three-regime share-mean sign theorem; the quantum extension is not needed."
  }
 ]

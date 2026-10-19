@@ -1,5 +1,14 @@
 [
  {
+  "key": "GaroufalidisLeZeilberger2006",
+  "authors": "Garoufalidis, S., Lê, T. T. Q. and Zeilberger, D.",
+  "year": 2006,
+  "title": "The quantum MacMahon master theorem",
+  "venue": "Proceedings of the National Academy of Sciences 103(38):13928-13931",
+  "doi": "10.1073/pnas.0606003103",
+  "annotation": "Equations (1)-(2) recall the classical commuting reciprocal-determinant generating function. Its nonnegative coefficients give the positive inverse-characteristic-polynomial kernel used in the three-regime share-mean sign theorem; the quantum extension is not needed."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
