@@ -1,0 +1,11 @@
+[
+ {
+  "key": "OhgaItoKolchinsky2023",
+  "authors": "Ohga, N., Ito, S. and Kolchinsky, A.",
+  "year": 2023,
+  "title": "Thermodynamic Bound on the Asymmetry of Cross-Correlations",
+  "venue": "Physical Review Letters 131:077101",
+  "doi": "10.1103/PhysRevLett.131.077101",
+  "annotation": "Equation (3) bounds short-time cross-correlation asymmetry by cycle affinity and length. Dropping affinity information gives the cotangent sector bound, applicable to Poisson potentials in the Green-Kubo realization argument."
+ }
+]

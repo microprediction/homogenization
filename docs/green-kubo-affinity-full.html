@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Green–Kubo state count and cycle affinity · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gk_affinity.py">numerical certificate</a></span></p>
+    <h1>State count and cycle affinity</h1>
+    <p class="subtitle">The exact affinity budget for a two-feature Green&ndash;Kubo matrix.</p>
+    <p>This is an inverse-realization corollary of the cross-correlation inequality of
+      <a href="./bibliography.html#OhgaItoKolchinsky2023">Ohga, Ito and Kolchinsky (2023), equation (3)</a>,
+      not a new general thermodynamic inequality. Their unicyclic equality case supplies the sharp construction.</p>
+
+    <h2>Setup and sharp frontier</h2>
+    <p>Let $Q$ be an irreducible row generator, $\pi Q=0$, $D=\operatorname{diag}\pi$, and
+      $F$ a real, centered, two-column feature matrix. Write</p>
+    $$K=F^TD(-Q)^\#F=G+A,\qquad G=(K+K^T)/2\succ0,\quad A=(K-K^T)/2,
+      \qquad \chi=\frac{|A_{12}|}{\sqrt{\det G}}.$$
+    <p>Assume bidirected support: $q_{ij}>0$ if and only if $q_{ji}>0$.
+      For each simple directed cycle $c$ of length $\ell_c\ge3$, define
+      $\mathcal A_c=\log\prod_{(i,j)\in c}(q_{ij}/q_{ji})$, and put
+      $\Omega(Q)=\max_c|\mathcal A_c|$, with value zero when there is no such cycle.</p>
+    <div class="equation-card">
+    <p>For $N\ge3$ and $0\le\Omega&lt;\infty$, realization on at most $N$ states with $\Omega(Q)\le\Omega$ is possible exactly when</p>
+    $$\chi\le \cot(\pi/N)\tanh\!\left(\frac{\Omega}{2N}\right).$$
+    <p>Equivalently, if $0\le\chi&lt;\cot(\pi/N)$, the minimum maximal cycle affinity is</p>
+    $$\boxed{\Omega_{\min,N}(K)=2N\operatorname{artanh}\!\bigl(\chi\tan(\pi/N)\bigr).}$$
+    </div>
+    <p>The minimum is attained on exactly $N$ states with any prescribed positive stationary law of that length.
+      At $\chi=\cot(\pi/N)$ no finite-affinity realization exists; a one-way cycle is the limiting construction.
+      Above this value no bidirected realization exists even without an affinity budget.</p>
+    <p>The features and rates are free design variables: this is not a criterion for a fixed generator or fixed observables.
+      It concerns one fixed-parameter $K$, not a matrix obtained by integrating different maturity loadings.</p>
+
+    <h2>Proof of necessity</h2>
+    <p>Let $U=(-Q)^\#F$, so $F=-QU$ and $K=U^T(-Q)^TDU$.
+      The Poisson representation agrees with the integrated-correlation convention in
+      <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>.
+      Replace $U$ by $UG^{-1/2}$: its generator pairing has symmetric part $I$ and skew magnitude $\chi$.</p>
+    <p>Apply the cited short-time cross-correlation bound to these two <em>Poisson potentials</em>, not directly to $F$.</p>
+    $$\chi\le\max_c\cot(\pi/\ell_c)\tanh\!\left(\frac{|\mathcal A_c|}{2\ell_c}\right)
+      \le\cot(\pi/N)\tanh\!\left(\frac{\Omega(Q)}{2N}\right).$$
+    <p>For completeness the last expression increases strictly with cycle length when $\Omega(Q)>0$.
+      Set $x=\pi/\ell$ and $b=\Omega(Q)/(2\pi)$; the logarithmic derivative of
+      $\cot x\tanh(bx)$ is $2b/\sinh(2bx)-2/\sin(2x)&lt;0$ for $0&lt;x\le\pi/3$.
+      Indeed $2b/\sinh(2bx)\le1/x&lt;2/\sin(2x)$; zero affinity follows separately by reversibility.</p>
+
+    <h2>Attainment and the large-state limit</h2>
+    <p>Put $\theta=2\pi/N$, $J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}$ and
+      $\eta=(A_{12}/\sqrt{\det G})\tan(\pi/N)$.
+      On the cycle prescribe stationary forward and reverse edge flows</p>
+    $$a+b=\frac{2}{N(1-\cos\theta)},\qquad a-b=\eta(a+b),\qquad
+      q_{k,k+1}=a/\pi_k,\quad q_{k,k-1}=b/\pi_k.$$
+    <p>Indices are cyclic and the diagonal makes row sums zero; flow conservation gives stationary law $\pi$.
+      With $U_k=(\cos k\theta,\sin k\theta)$ one obtains
+      $U^T(-Q)^TDU=I+(A_{12}/\sqrt{\det G})J$.
+      Taking $F=-QUG^{1/2}$ therefore gives exactly the requested $K$, since $C^TJC=(\det C)J$.</p>
+    <p>Here $a,b>0$ and $\Omega(Q)=N|\log(a/b)|=2N\operatorname{artanh}|\eta|$.
+      For fixed $\chi>0$, every feasible finite $N$ has $\Omega_{\min,N}>2\pi\chi$, and</p>
+    $$\Omega_{\min,N}=2\pi\chi+
+      \frac{2\pi^3(\chi+\chi^3)}{3N^2}+O_\chi(N^{-4}),\qquad N\to\infty.$$
+    <p>Expand $\tan x=x+x^3/3+O(x^5)$ and $\operatorname{artanh}y=y+y^3/3+O(y^5)$ at zero to obtain this formula.
+      The remainder is a fixed-$\chi$ expansion, not uniform near $\chi\tan(\pi/N)=1$.
+      Thus the infimum over all finite state counts is $2\pi\chi$, not attained when $\chi>0$.</p>
+
+    <h2>Affinity is not an entropy-production rate</h2>
+    <p>Under the stationary logarithmic-flux convention, define</p>
+    $$\sigma(Q)=\sum_{i&lt;j:\,q_{ij}>0}(\pi_iq_{ij}-\pi_jq_{ji})
+      \log\frac{\pi_iq_{ij}}{\pi_jq_{ji}}.$$
+    <p>For $s>0$, the change $Q_s=sQ$, $F_s=\sqrt{s}F$ preserves $K$, $\pi$ and every cycle affinity,
+      but $\sigma(Q_s)=s\sigma(Q)$.
+      Hence $K$ alone gives no positive entropy-production-rate lower bound when both the clock and feature amplitudes are free.
+      This scaling does not preserve separately calibrated mixing rates or fixed observables.</p>
+    <p>A physical dissipation interpretation requires additional model assumptions such as local detailed balance.
+      The distinction between affinity and entropy-production-rate inference is already emphasized in the cited paper's discussion.</p>
+
+    <h2>Exact benchmark and checks</h2>
+    <p>A four-state cycle with uniform $\pi$, forward rate $3$ and reverse rate $1$, and potentials
+      $U_k=(\cos(\pi k/2),\sin(\pi k/2))$, gives
+      $K=\begin{pmatrix}2&amp;1\\-1&amp;2\end{pmatrix}$ for $F=-QU$.
+      Here $\chi=1/2$, $\Omega_{\min,4}=4\log3$ and $\sigma=2\log3$; three states cannot achieve this $K$ under that affinity budget.</p>
+    <p>The certificate checks the benchmark and clock scaling in rational arithmetic, cycle attainment under nonuniform laws,
+      all simple-cycle bounds for random small chains, and independent correlation quadrature.
+      Floating-point checks support the analytic proof; they are not interval enclosures.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
