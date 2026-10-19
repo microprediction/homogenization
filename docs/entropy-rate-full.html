@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rate-optimal finite entropy quotes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+<main>
+  <h1>Rate-optimal finite quotes for terminal entropy</h1>
+  <p class="subtitle">A second-moment bound removes the logarithmic quote-count factor; indistinguishable atomic laws prove the remaining power cannot improve.</p>
+  <p><a href="./cycle-smile.html">Back to cycle direction</a> · <a href="./papers.html">Papers</a> ·
+  <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_entropy_rate.py">certificate</a>.</p>
+
+  <h2>Setup and result</h2>
+  <p>Let $P,R$ be laws on $[0,\infty)$ with $\mathbb E_P S=\mathbb E_R S=1$ and
+  $\max(\mathbb E_P S^2,\mathbb E_R S^2)\le M&lt;\infty$.
+  Write $C_P(K)=\mathbb E_P(S-K)_+$ and $D=\mathbb E_P[S\log S]-\mathbb E_R[S\log S]$, with $0\log0=0$.</p>
+  <p>For an integer $n\ge2$, use the ordered knot set
+  $\{j^2/n^2:0\le j\le n\}\cup\{n^2/\ell^2:1\le\ell&lt;n\}$.
+  There are $2n-1$ positive strikes, from $n^{-2}$ to $n^2$, and no quote at zero is needed.</p>
+  <p>Let $f(s)=s\log s-s+1$, $f(0)=1$, and let $f_n$ be its chord interpolant through all knots, continued by the tangent to $f$ at $U=n^2$ above $U$.
+  At each positive knot $K$, let $w_K$ be the upward jump of the slope of $f_n$.</p>
+  $$A_n=\sum_Kw_K\{C_P(K)-C_R(K)\},\qquad
+  W_n=\sum_Kw_K=1+4\log n,\qquad
+  |A_n-D|\le E_n:=\frac{9/8+5M}{n^2}.$$
+  <p>All weights are positive, so
+  $\max_K|C_P(K)-C_R(K)|\ge (|D|-E_n)_+/W_n$.
+  Thus $n=\max(2,\lceil\sqrt{(9/8+5M)/\varepsilon}\rceil)$ gives error at most $\varepsilon$ with $O(\varepsilon^{-1/2})$ quotes per curve at fixed $M$.</p>
+  <p>This improves the geometric-grid construction in <a href="https://github.com/microprediction/homogenization/pull/207">the finite entropy-strip work</a> when a second moment is available.
+  It does not replace that result under only a positive moment of order strictly between one and two.</p>
+
+  <h2>Explicit replication and signed error</h2>
+  <p>If the knots are $0=K_0&lt;K_1&lt;\cdots&lt;K_J=U$, put
+  $b_i=(f(K_i)-f(K_{i-1}))/(K_i-K_{i-1})$.
+  Then $b_1=\log K_1-1$, $w_{K_i}=b_{i+1}-b_i$ for $i&lt;J$, and $w_U=\log U-b_J$.</p>
+  $$f_n(s)=1+b_1s+\sum_Kw_K(s-K)_+.$$
+  <p>Convexity gives the positivity of the weights and their telescoping sum $W_n$.
+  Equal means cancel the cash and forward terms, while $\mathbb E f(S)=\mathbb E[S\log S]$.</p>
+  <p>On the first interval $[0,n^{-2}]$, the interpolation error is
+  $s\log(n^{-2}/s)\le1/(en^2)$, including the zero endpoint by continuity.
+  On any other interval $[a,b]$, the chord error is at most $(b-a)^2/(8a)$, since $f''(s)=1/s\le1/a$.</p>
+  <p>For the lower knots $a=j^2/n^2$, $b=(j+1)^2/n^2$, $j\ge1$, this gives
+  $(b-a)^2/(8a)\le9/(8n^2)$.
+  For upper knots $a=n^2/\ell^2$, $b=n^2/(\ell-1)^2$, $\ell\ge2$, use</p>
+  $$\ell\left\{\left(\frac{\ell}{\ell-1}\right)^2-1\right\}
+  =\frac{\ell(2\ell-1)}{(\ell-1)^2}\le6$$
+  <p>to obtain $(b-a)^2/(8a)\le9s^2/(2n^2)$ throughout the cell.
+  Above $U$, the tangent error is negative and its magnitude is at most $s^2/(2U)$: integrate $1/x\le1$ twice for $x=s/U\ge1$.</p>
+  <p>Consequently, for either law $L$,
+  $-M/(2n^2)\le\mathbb E_L(f_n-f)\le(9/8+9M/2)/n^2$.
+  Subtract these signed intervals to get $E_n$, rather than adding two complete absolute-error budgets.</p>
+  <p>For a single law define $\widehat H_n=1+b_1+\sum_Kw_K C(K)$.
+  Subtracting $(9/16+2M)/n^2$ centers its error interval and gives worst-case entropy error at most $E_n/2$.</p>
+
+  <h2>A matching fixed-design information lower bound</h2>
+  <p>Fix $M&gt;1$, set $\lambda=\min(1/4,M-1)$, and prescribe any $N$ nonnegative strikes, before observing the law.
+  Among their gaps in $[1/2,3/2]$, including the two endpoints, choose one $[a,b]$ of width $h\ge1/(N+1)$ whose interior contains no strike.</p>
+  <p>Put $c=(a+b)/2$, $d=(1-\lambda c)/(1-\lambda)$, and construct
+  $R=\lambda\delta_c+(1-\lambda)\delta_d$ and
+  $P=(\lambda/2)(\delta_a+\delta_b)+(1-\lambda)\delta_d$.
+  Both are nonnegative mean-one laws, and their calls agree exactly at every prescribed strike, since a call payoff is affine on $[a,b]$ unless its strike lies in the interior.</p>
+  $$\mathbb E_R S^2=1+\frac{\lambda}{1-\lambda}(c-1)^2,\qquad
+  \mathbb E_P S^2=\mathbb E_R S^2+\frac{\lambda h^2}{4}
+  \le1+\frac{7\lambda}{12}\le M.$$
+  <p>On this interval $f''\ge2/3$, so strong convexity gives
+  $\mathbb E_P[S\log S]-\mathbb E_R[S\log S]\ge\lambda h^2/12$.
+  Every estimator of one law's entropy from these exact quotes therefore has worst-case absolute error at least</p>
+  $$\frac{\lambda}{24(N+1)^2}.$$
+  <p>The estimator receives identical input for $P$ and $R$, hence must err by at least half their entropy gap on one of them.
+  Together with the centered interpolant, this proves the optimal exponent $N^{-2}$ for noiseless, deterministic, fixed-strike designs on the stated moment class; constants and finite-$N$ designs are not asserted optimal.</p>
+  <p>This is a deterministic information bound, not a statistical sampling rate or a result about adaptive strike selection.
+  The atomic witnesses need not be realizable as two reversed switched-CIR models, so the theorem does not settle the CIR crossing count in <a href="https://github.com/microprediction/homogenization/issues/204">issue 204</a>.</p>
+
+  <h2>Quote errors and checks</h2>
+  <p>If every call in each curve has error at most $\eta$, the exact-weight strip has additional error at most $2\eta W_n$.
+  Thus reducing interpolation error indefinitely at fixed quote error is not guaranteed to improve this bound; errors in numerical weights, summation, moment bounds and forward normalization require separate budgets.</p>
+  <p>For illustration, $M=4.6$ and $\varepsilon=46\times10^{-6}$ give $n=725$, or $1449$ positive strikes,
+  with $E_n\approx45.897741\times10^{-6}$ and $W_n\approx27.344687$.
+  The strike range is approximately $[1.902497\times10^{-6},525625]$, a conservative theoretical design, not a market-feasibility claim.</p>
+  <p>The certificate checks exact rational moment bounds and quote aliasing for adversarial laws on arbitrary designs, numerical entropy separation, independent chord/vanilla replication and signed-error tests including default atoms, and worst-case quote perturbations.
+  The rate assertion follows from the proof, not a fitted numerical slope.</p>
+  <p>Finite vanilla replication is classical: <a href="./bibliography.html#BossuCarrPapanicolaou2020">Bossu, Carr and Papanicolaou (2020)</a>, section 2.1, review the continuum identity and the finite-strike limitation.
+  <a href="./bibliography.html#MaDengZheng2016">Ma, Deng and Zheng (2016)</a>, Theorem 3.1, already prove second-order spline replication on a fixed positive interval in a density-weighted norm.</p>
+  <p>Here the error is uniform over a moment class including atoms, the zero endpoint and an unbounded upper tail, and the lower bound concerns all estimators from fixed call quotes, not only splines.
+  These displayed bounds are proved directly; there is no priority claim for static hedging or the classical spline order.</p>
+</main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
