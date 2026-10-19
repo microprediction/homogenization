@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Uniform moving-generator initial layer · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+<main>
+  <h1>An explicit moving-generator initial-layer bound</h1>
+  <p class="subtitle">A centered residual gains a power of the fast scale by a Poisson integration by parts, including at time zero.</p>
+  <p><a href="./solvability.html">Back to solvability</a> · <a href="./papers.html">Papers</a> ·
+  <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_moving_layer.py">certificate</a>.</p>
+
+  <h2>Setup and composite</h2>
+  <p>On a fixed $[0,T]$, let $Q(t)$ be a $C^2$ family of irreducible finite row generators and let $g(t)$ be a real $C^2$ vector, both fixed independently of $\varepsilon$.
+  We approximate the column-vector ODE $u'=\{Q(t)/\varepsilon+D(t)\}u$, $u(0)=\mathbf1$, with $D=\operatorname{diag}g$, for every $\varepsilon&gt;0$.</p>
+  <p>All coefficients use this ODE's time variable; a calendar-time pricing protocol must first be converted to its appropriate backward-duration convention.
+  No periodicity, reversibility, diagonalizability or vanishing initial forcing is assumed.</p>
+  <p>Write $\pi Q=0$, $\pi\mathbf1=1$, $P=\mathbf1\pi$, $R=Q^\#$,
+  $\bar g=\pi g$ and $f=g-\bar g\mathbf1$.
+  Define the outer coefficients</p>
+  $$a(t)=\exp\!\int_0^t\bar g(s)\,ds,\quad
+  b(t)=\int_0^t\{-\pi D_fRf-\pi'Rf\}(s)\,ds,\quad
+  v_0=a\mathbf1,\quad v_1=a(b\mathbf1-Rf).$$
+  <p>The two terms in $b'$ are respectively the dynamic Green&ndash;Kubo contraction and the geometric term from the moving stationary row.
+  Set $w=R(0)f(0)$ and restore the frozen initial layer:</p>
+  $$u_{\rm app}(t)=v_0(t)+\varepsilon v_1(t)
+  +\varepsilon e^{tQ(0)/\varepsilon}w.$$
+  <p>This matches $u_{\rm app}(0)=\mathbf1$ exactly.
+  Without the layer the initial error is precisely $\varepsilon\|w\|_\infty$, so a uniform second-order claim would fail whenever $w\ne0$.</p>
+
+  <h2>A nonasymptotic constant</h2>
+  <p>Use the vector maximum norm and its induced matrix maximum absolute row-sum norm throughout.
+  Let $H=\sup_{[0,T]}\|g\|_\infty$, $L_Q=\sup_{[0,T]}\|Q'\|_\infty$, and supply any valid frozen-chain envelope</p>
+  $$\|e^{sQ(0)}-P(0)\|_\infty\le C_0e^{-\gamma_0s},\qquad s\ge0.$$
+  <p>A spectral gap alone is not the prefactor $C_0$; the supplied envelope must hold in the stated norm.
+  Define $r=v_1'-Dv_1$, $z=Rr$, and take rigorously valid bounds $Z\ge\sup\|z\|_\infty$, $Z_1\ge\sup\|z'\|_\infty$ on the whole interval.</p>
+  <p>These quantities use only the supplied protocol and outer coefficients, not the unknown exact solution $u_\varepsilon$.</p>
+  $$\boxed{\sup_{0\le t\le T}\|u(t)-u_{\rm app}(t)\|_\infty
+  \le\varepsilon^2e^{HT}\left[2Z+T(Z_1+HZ)
+  +C_0\|w\|_\infty\left(\frac{L_Q}{\gamma_0^2}+\frac{H}{\gamma_0}\right)\right].}$$
+  <p>The $C^2$ assumptions make $z$ continuously differentiable and these constants finite.
+  This is an absolute vector-error bound on a fixed interval, not a relative-price, log-price, infinite-maturity or growing-horizon statement.</p>
+
+  <h2>Why a centered residual is enough</h2>
+  <p>The outer identities are $v_0'-Dv_0=Qv_1$ and $\pi r=0$.
+  To check the second one, differentiate the moving gauge $\pi Rf=0$: the $\pi'$ contribution is exactly what the geometric term in $b'$ cancels.</p>
+  <p>Let $U_\varepsilon(t,s)$ be the exact evolution operator for $Q/\varepsilon+D$.
+  Cooperative comparison gives $\|U_\varepsilon(t,s)\|_\infty\le e^{H(t-s)}$, independently of the switching speed.</p>
+  <p>Since $Qz=r$, differentiating $U_\varepsilon(t,s)z(s)$ yields the exact identity</p>
+  $$\varepsilon\int_0^tU_\varepsilon(t,s)r(s)\,ds
+  =\varepsilon^2\left\{U_\varepsilon(t,0)z(0)-z(t)
+  +\int_0^tU_\varepsilon(t,s)(z'-Dz)(s)\,ds\right\}.$$
+  <p>Thus the outer residual contributes at most
+  $\varepsilon^2e^{HT}\{2Z+T(Z_1+HZ)\}$, despite its pointwise order being only $\varepsilon$.
+  This cancellation uses a Poisson equation, not a nonautonomous exponential-mixing assertion.</p>
+  <p>The initial-layer residual is
+  $\{Q(0)-Q(t)-\varepsilon D(t)\}e^{tQ(0)/\varepsilon}w$.
+  Because $\pi(0)w=0$, its norm is at most
+  $C_0\|w\|e^{-\gamma_0t/\varepsilon}(L_Qt+\varepsilon H)$.</p>
+  <p>Its Duhamel integral is bounded using
+  $\int_0^\infty t e^{-\gamma_0t/\varepsilon}dt=\varepsilon^2/\gamma_0^2$ and
+  $\int_0^\infty e^{-\gamma_0t/\varepsilon}dt=\varepsilon/\gamma_0$.
+  Adding the two contributions, with zero initial mismatch, proves the boxed bound for every positive $\varepsilon$.</p>
+
+  <h2>A rationally bounded moving protocol</h2>
+  <p>Take $T=1$, $p(t)=1/4+t/4$, $\pi=(p,1-p)$,
+  $Q(t)=2(\mathbf1\pi(t)-I)$ and $g=(1,0)^\top$.
+  Here $R=-(I-P)/2$, $f=(1-p,-p)^\top$, and</p>
+  $$a=e^{t/4+t^2/8},\qquad b=\frac{7t}{32}+\frac{t^2}{32}-\frac{t^3}{96},\qquad
+  b'=\frac{p(1-p)}2+\frac18.$$
+  <p>Put $h=b+1/2-p$; then $h'=-(1-t)^2/32$, $23/96\le h\le1/4$, and the centered residual is
+  $r=-ahf$, so $z=ahf/2$.
+  The following are analytic interval bounds, not maxima inferred from a sampled trajectory:</p>
+  $$H=L_Q=1,\quad C_0=3/2,\quad\gamma_0=2,\quad\|w\|_\infty=3/8,
+  \qquad Z=9/64,\quad Z_1=69/512.$$
+  <p>Indeed $a\le e^{3/8}&lt;3/2$, $p\le1/2$, $\|f\|\le3/4$, and
+  $\|z'\|\le(3/4)\{(1/8+1/32)(3/4)+(1/4)(1/4)\}=69/512$.
+  The bracket in the theorem is $501/512$; using $e&lt;3$ gives</p>
+  $$\sup_{0\le t\le1}\|u(t)-u_{\rm app}(t)\|_\infty
+  \le\frac{1503}{512}\varepsilon^2&lt;3\varepsilon^2.$$
+  <p>The certificate verifies the polynomial identities and exponential majorants with exact rational arithmetic, and compares independent high-accuracy ODE solves on ordinary and fast-time meshes.
+  Numerical trajectory checks illustrate the bound; they are not the proof of its continuum supremum.</p>
+  <p>At $\varepsilon=1/512$ the sampled error is approximately $6.18350\times10^{-7}$, with last-doubling order $2.001724$.
+  A nonreversible moving three-state control separately checks centering and gives order $1.999996$; its sampled rate is not a certified supremum constant.</p>
+
+  <h2>Relation to the existing results</h2>
+  <p>Matched expansions for nonstationary finite chains are classical; see
+  <a href="./bibliography.html#KhasminskiiYinZhang1996">Khasminskii, Yin and Zhang (1996)</a> and
+  <a href="./bibliography.html#YinZhang1998">Yin and Zhang (1998)</a>.
+  This note supplies a direct computable finite-time residual constant for the geometric corrector, not a new claim of priority for the second-order matched-expansion rate.</p>
+  <p>The <a href="./uniform-long-end.html">long-end note</a> instead retains exact Perron or Floquet growth and treats normalized/log-price behavior over long maturities.
+  The present formula requires neither a periodic protocol nor a perturbed spectral projector, but its constant can grow with $T$ and cannot replace those long-end results.</p>
+</main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
