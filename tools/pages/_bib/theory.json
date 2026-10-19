@@ -69,5 +69,7 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
- }
+ },
+ {"key": "FanPall1957", "authors": "Fan, K. and Pall, G.", "year": 1957, "title": "Imbedding Conditions for Hermitian and Normal Matrices", "venue": "Canadian Journal of Mathematics 9:298-304", "doi": "10.4153/CJM-1957-036-1", "annotation": "Theorem 1 gives necessary and sufficient Hermitian compression interlacing inequalities. The Green-Kubo feasibility note separately proves that sign-symmetric spectra admit real skew-symmetric compressions, rather than inferring real features from a complex isometry."},
+ {"key": "QiuWangMaoChen2022", "authors": "Qiu, L., Wang, D., Mao, X. and Chen, W.", "year": 2022, "title": "On the Phases of a Semi-Sectorial Matrix", "venue": "arXiv:2205.07607v1 [math.RA]", "doi": "10.48550/arXiv.2205.07607", "annotation": "Lemma 4.3 gives phase interlacing for complex compressions, while Lemmas 7.1 and 7.3 treat balanced Laplacians and invariant-law weighting. Cited here as the checked 2022 preprint, not with unverified later publication metadata."}
 ]
