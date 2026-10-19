@@ -1,5 +1,14 @@
 [
  {
+  "key": "BrownJohnstoneMacGibbon1981",
+  "authors": "Brown, L. D., Johnstone, I. M. and MacGibbon, K. B.",
+  "year": 1981,
+  "title": "Variation Diminishing Transformations: A Direct Approach to Total Positivity and its Statistical Applications",
+  "venue": "Journal of the American Statistical Association 76(376):824-832",
+  "doi": "10.1080/01621459.1981.10477730",
+  "annotation": "Surveys the classical variation-diminishing framework. The call-crossing note proves its needed bilateral-transform zero count directly by Rolle's theorem."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "BrownJohnstoneMacGibbon1981",
+  "authors": "Brown, L. D., Johnstone, I. M. and MacGibbon, K. B.",
+  "year": 1981,
+  "title": "Variation Diminishing Transformations: A Direct Approach to Total Positivity and its Statistical Applications",
+  "venue": "Journal of the American Statistical Association 76(376):824-832",
+  "doi": "10.1080/01621459.1981.10477730",
+  "url": "https://doi.org/10.1080/01621459.1981.10477730",
+  "annotation": "Surveys the classical variation-diminishing framework. The call-crossing note proves its needed bilateral-transform zero count directly by Rolle's theorem."
  }
 ]

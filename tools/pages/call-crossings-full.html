@@ -1,0 +1,93 @@
+<!-- title: Four blind strikes in a one-feature cycle · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; Cycle direction</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossings.py">certificate</a></span></p>
+    <h1>A nonzero direction signal must cross zero four times</h1>
+    <p class="subtitle">Exact finite-speed blindness at some strikes, not merely a vanishing asymptotic coefficient.</p>
+    <p>Let $Y$ be an independent stationary irreducible finite chain with row generator $mQ$, $m&gt;0$, and law $\pi$.
+      With independent Brownian motions $B,W$, fix $T,\kappa,\xi,a_i&gt;0$, $v_0\ge0$, $X_0=0$ and $|\rho|\le1$:</p>
+    $$dv=(a_Y-\kappa v)dt+\xi\sqrt v\,dB,\qquad
+      dX=-v\,dt/2+\sqrt v(\rho\,dB+\sqrt{1-\rho^2}\,dW).$$
+    <p>Only the immigration $a_i=\kappa\theta_i$ switches; $\kappa,\xi,\rho$ are common.
+      Compare $Q$ with $Q^\leftarrow=D_\pi^{-1}Q^TD_\pi$, using the same fixed $v_0$ and stationary regime start.</p>
+    <p>Assume the stock is a true martingale and both return MGFs are finite on an open interval containing $[0,1]$.
+      A sufficient condition is some $r&gt;1$ with $\kappa-\rho\xi r&gt;0$ and
+      $(\kappa-\rho\xi r)^2-\xi^2r(r-1)&gt;0$; a small negative moment exists by continuity at zero.</p>
+    $$G_m(k)=C_{m,Q}(k)-C_{m,Q^\leftarrow}(k),\qquad C_m(k)=\mathbb E(e^{X_T}-e^k)_+.$$
+    <div class="equation-card">
+    <p>For every fixed speed, either $G_m\equiv0$, or $G_m$ has at least four sign changes on the real log-strike axis.</p>
+    </div>
+    <p>In particular, a nonzero curve has at least four distinct strikes where the two exact call prices agree.
+      The crossing locations may depend on speed; no single strike is asserted blind at every speed.</p>
+
+    <h2>Six exact tilted-moment identities</h2>
+    <p>Write $\Phi_Q(s)=\mathbb E_Qe^{sX_T}$ and let $B_s(0)=0$ solve</p>
+    $$B_s'=\xi^2B_s^2/2+(\rho\xi s-\kappa)B_s+s(s-1)/2.$$
+    <p>For $c=a-(\pi a)\mathbf1$, affine substitution and Feynman&ndash;Kac give</p>
+    $$\Phi_Q(s)=\Psi(s)\mathbb E_{\pi,mQ}e^{Z_s},\quad
+      \Psi(s)=\exp\{v_0B_s(T)+(\pi a)\int_0^T B_s\},\quad
+      Z_s=\int_0^T B_s(T-t)c(Y_t)dt.$$
+    <p>The loading is backward duration, not $B_s(t)$ in calendar time.
+      Stationarity gives $\mathbb E_QZ_s=0$, and scalar semigroup adjointness gives, for every lag $h\ge0$,</p>
+    $$\langle c,e^{mhQ}c\rangle_\pi
+      =\langle c,e^{mhQ^\leftarrow}c\rangle_\pi.$$
+    <p>Consequently $\mathbb E_QZ_s^2=\mathbb E_{Q^\leftarrow}Z_s^2$ for every common complex loading, without a complex conjugate.
+      At $j=0,1$, $B_j\equiv0$ and analyticity gives $\sup_{t\le T}|B_s(t)|=O(|s-j|)$.
+      Since $c$ is bounded, expanding $e^{Z_s}$ through degree two proves</p>
+    $$\Phi_Q(s)-\Phi_{Q^\leftarrow}(s)=O((s-j)^3),\quad j=0,1,$$
+    $$\mathbb E_Q[e^{jX_T}X_T^\ell]=\mathbb E_{Q^\leftarrow}[e^{jX_T}X_T^\ell],
+          \qquad j=0,1,\quad\ell=0,1,2.$$
+    <p>Thus the first two raw log-return moments agree both under the original measure and under the probability measure with density $e^{X_T}$.
+      This is exact at finite speed and permits leverage; it does not use conditional normality of the return given the regime path.</p>
+
+    <h2>Four zero weighted strike areas</h2>
+    <p>Choose $s_-&lt;0&lt;1&lt;s_+$ inside the moment interval, and put $M_\pm=\Phi_Q(s_\pm)+\Phi_{Q^\leftarrow}(s_\pm)$.
+      The right tail of the call and the left tail of the put, using call&ndash;put parity, give</p>
+    $$|G_m(k)|\le M_+e^{-(s_+-1)k}\ (k\ge0),\qquad
+      |G_m(k)|\le M_-e^{(1-s_-)k}\ (k\le0).$$
+    <p>Hence the bilateral transform $H(s)=\int_{\mathbb R}e^{(s-1)k}G_m(k)dk$ is holomorphic on $s_-&lt;\Re s&lt;s_+$.
+      Integrating the call payoff first gives, for real $s&gt;1$ in this strip,</p>
+    $$H(s)={\Phi_Q(s)-\Phi_{Q^\leftarrow}(s)\over s(s-1)}.$$
+    <p>Analytic continuation removes the apparent poles at zero and one.
+      The cubic zeros of the numerator leave double zeros of $H$ at both points, so</p>
+    $$\int_{\mathbb R}G_m\,dk=\int_{\mathbb R}kG_m\,dk
+       =\int_{\mathbb R}e^{-k}G_m\,dk=\int_{\mathbb R}ke^{-k}G_m\,dk=0.$$
+    <p>All four integrals converge absolutely by the displayed tail estimates.
+      Equal undiscounted stock means alone would not supply these four constraints.</p>
+
+    <h2>Why four constraints force four crossings</h2>
+    <p>A nonzero continuous function with the preceding exponential tails cannot have fewer sign changes than the number of real zeros, counting multiplicity, of its bilateral transform.
+      Here is the elementary zero-counting proof, so no total-positivity theorem is being assumed.</p>
+    <p>If a function $g$ has one sign, its transform has no real zero.
+      Otherwise choose a sign-change location $x$; multiplying $g(k)$ by $k-x$ removes that sign change and creates none.
+      Its transform is $H'(s)-xH(s)$, the derivative of $e^{-xs}H(s)$ times a nonzero exponential.</p>
+    <p>Rolle&apos;s theorem, including repeated zeros, lowers the number of transform zeros by at most one.
+      Repeating the argument proves the claim whenever there are finitely many sign changes; infinitely many already suffice.
+      The double zeros at zero and one therefore require at least four sign changes of $G_m$.</p>
+    <p>This is a variation-diminishing argument in the classical framework surveyed by
+      <a href="./bibliography.html#BrownJohnstoneMacGibbon1981">Brown, Johnstone and MacGibbon (1981)</a>.
+      The application here is the exact tilted-moment cancellation, not a new claim for the classical zero-counting principle.</p>
+
+    <h2>Finite-speed example and limits</h2>
+    <p>The certificate uses the oriented unit three-cycle, $a=(1,2,3)$, $\kappa=2$, $\xi=0.3$, $\rho=-0.6$,
+      $T=1$ and $v_0=0.04$.
+      It supplies a rational Taylor-polynomial enclosure proving the third log-return moments differ at $m=1$, so the two call curves are genuinely different.</p>
+    <p>Identical call curves would determine the same stock law through their one-sided strike derivatives, contradicting that moment difference.
+      The moment matrix follows from the joint generator on $x^pv^q$ with $p+q\le3$, with regime block $mQ^T$ and the exact polynomial identity</p>
+    $$\mathcal L_i(x^pv^q)=-q\kappa x^pv^q-\tfrac p2x^{p-1}v^{q+1}
+       +\tfrac{p(p-1)}2x^{p-2}v^{q+1}
+       +\{qa_i+\tfrac{q(q-1)}2\xi^2\}x^pv^{q-1}+pq\rho\xi x^{p-1}v^q.$$
+    <p>For the degree-three moment matrix $A$, let $L=\lceil\|A\|_\infty\rceil$ and truncate $e^A$ after degree $160$.
+      The target moment&apos;s tail is at most $3^L L^{161}/161!$, since the target row has norm $3$, the initial vector has sup norm $1/3$, and $e^L&lt;3^L$.
+      Exact rational arithmetic gives a third-moment difference greater than $3\times10^{-5}$ in magnitude, with summed tail less than $1.3\times10^{-76}$.</p>
+    <p>At $m=8$, the four numerical log-strike crossings are approximately $-1.974,-0.621,0.499,1.615$.
+      These are crossings of the full finite-speed price difference, not just its cubic asymptotic coefficient.</p>
+    <p>Original affine ODEs and Fourier inversion locate sign-changing crossings at several finite speeds, with doubled quadrature order and an exact-transform tail bound.
+      The floating root locations are diagnostics, not interval-certified root enclosures; the theorem, not the root finder, establishes existence.</p>
+    <p>Stationarity of the regime start and a single switched immigration feature are essential to the cancellation proof.
+      Switching the reversion speed, vol-of-vol or correlation is not covered, and no rank or statistical identification-rate claim is made.
+      The crossing theorem itself needs no exponential Fourier decay and allows $|\rho|=1$ whenever its moment assumptions hold.</p>
+    <p>The affine framework is classical <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a>.
+      This exact finite-speed restriction complements the <a href="https://github.com/microprediction/homogenization/pull/202">global cubic call expansion</a>:
+      a nonzero full-curve signal does not make an arbitrary individual quote informative.</p>
+  </main>
