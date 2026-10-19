@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portfolio optimizer crossover · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>When the averaged portfolio fraction is accurate</h1>
+    <p>A unique optimum at every horizon need not approach the averaged Merton fraction uniformly over all horizons.
+      For any finite irreducible chain, an explicit optimizer bound separates the inverse-speed error from the initial-regime layer; a short-horizon profile shows why both scales matter.</p>
+    <h2>Setup and bound</h2>
+    <p>Let $Q$ be an irreducible finite row generator with stationary row law $\pi$, and let $Y$ have generator $mQ$.
+      Assume common constant $r$, excess returns $b_i$, variances $s_i\ge s_{\min}&gt;0$, $\gamma&gt;0$, $p=1-\gamma$, and Brownian stock noise independent of $Y$.</p>
+    <p>For one deterministic unrestricted fraction $w$ held throughout the horizon, put</p>
+    $$h_i(w)=r+b_iw-\gamma s_iw^2/2,\quad q_i(w)=b_i-\gamma ws_i,\quad
+      J_{m,T,\nu}(w)=\frac{\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}}{pT}.$$
+    <p>At $\gamma=1$, interpret $J$ as $\mathbb E_\nu\int_0^T h_{Y_t}(w)dt/T$, the expected log-wealth rate.
+      All statements below include that case.</p>
+    <p>Every global maximizer lies in $I=[L,U]$, where $L=\min_i b_i/(\gamma s_i)$ and $U=\max_i b_i/(\gamma s_i)$: $J'$ has the appropriate strict sign outside $I$, and $J(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2$ gives existence.
+      If $L=U$, this common fraction is optimal at every speed, so suppose $L&lt;U$.</p>
+    $$B=\max_I\operatorname{osc}q,\quad D=\max_I\operatorname{osc}h,\quad\delta=|p|D,\quad
+      \bar s=\pi s,\qquad w_0=\frac{\pi b}{\gamma\bar s}.$$
+    <p>For a stochastic matrix $P$, write $\beta(P)=\tfrac12\max_{i,j}\sum_k|P_{ik}-P_{jk}|$.
+      Supply a valid mixing-area bound</p>
+    $$\mathcal M\ge\int_0^\infty\beta(e^{tQ})dt.$$
+    <p>Such a finite bound always exists here: if $e^{\theta Q}(i,\cdot)\ge a\mu(\cdot)$ for every row and a probability law $\mu$, $a&gt;0$, then $\mathcal M=\theta/a$ suffices by block contraction.
+      Positive path terms in the uniformization series give a constructive minorization even when direct rates vanish; a sampled integral alone is not a certified bound.</p>
+    <p>Solve the centered finite Poisson equation $Q\psi(w)=q(w)-(\pi q(w))\mathbf1$, $\pi\psi(w)=0$, and define</p>
+    $$\Psi=\max_{w\in I}\operatorname{osc}\psi(w),\qquad
+      \Gamma=\max_{w\in I,i}\sum_{j\ne i}Q_{ij}|\psi_j(w)-\psi_i(w)|,\qquad
+      \Omega=\delta\mathcal M.$$
+    <p>Both maxima involving $\psi$ use only the endpoints of $I$, since $\psi$ is affine in $w$ and the norms are convex.
+      The maxima for $B,D$ check endpoints and, for $D$, the interior critical points of quadratic differences.</p>
+    <div class="equation-card">
+    $$|J'_{m,T,\nu}(w)-\pi q(w)|\le
+      \frac{\Psi}{mT}+\frac{\Omega\Gamma}{m-\Omega}
+      \qquad(w\in I,\ m&gt;\Omega).$$
+    $$|w_*-w_0|\le\frac1{\gamma\bar s}
+      \left(\frac{\Psi}{mT}+\frac{\Omega\Gamma}{m-\Omega}\right)
+      \quad\text{for every global maximizer }w_*.$$
+    </div>
+    <p>The bounds hold for every $T&gt;0$ and every initial prior $\nu$, without a uniqueness assumption.
+      Thus averaging holds uniformly over priors and maximizers along any sequence with $m\to\infty$ and $mT\to\infty$, including arbitrarily long horizons; this is not an if-and-only-if criterion for each individual model.</p>
+    <h2>Keep the tilted future close to constant</h2>
+    <p>Fix $w\in I$ and subtract the common potential $\min_i(ph_i(w))$, which changes neither the tilted law nor value ratios.
+      With $v_i=ph_i-\min_j(ph_j)$, $0\le v_i\le\delta$, set $z(t)=e^{t(mQ+D_v)}\mathbf1$.</p>
+    <p>Positivity gives $z'(t)=e^{t(mQ+D_v)}v\ge0$ componentwise.
+      Duhamel&apos;s formula and oscillation contraction give</p>
+    $$\operatorname{osc}z(t)\le\int_0^t\beta(e^{m(t-s)Q})\operatorname{osc}(D_vz(s))ds
+      \le\frac{\Omega}{m}\max_i z_i(t).$$
+    <p>Hence $\max z/\min z\le m/(m-\Omega)$ at every future duration when $m&gt;\Omega$.
+      The exact finite-horizon tilted chain therefore has off-diagonal rates $\widehat Q_{ij}(t)=mQ_{ij}z_j(T-t)/z_i(T-t)$ satisfying</p>
+    $$|[(\widehat Q(t)-mQ)\psi]_i|\le
+      m\frac{\Omega}{m-\Omega}\Gamma.$$
+    <p>Under the full path tilt, the initial law is reweighted to $\widehat\nu_i=\nu_i z_i(T)/(\nu z(T))$.
+      Dynkin&apos;s identity for this time-inhomogeneous chain yields the exact endpoint/perturbation decomposition</p>
+    $$J'(w)-\pi q(w)=\frac{\mathbb E_w\psi(Y_T)-\mathbb E_w\psi(Y_0)}{mT}
+       -\frac1{mT}\int_0^T\mathbb E_w[(\widehat Q(t)-mQ)\psi](Y_t)dt.$$
+    <p>The endpoint difference is bounded by $\Psi$, not by an assumption of a stationary start.
+      This proves the score bound; at a global optimum $J'=0$ and $\pi q(w)=\gamma\bar s(w_0-w)$, giving the optimizer bound.</p>
+    <h2>The profile inside the initial layer</h2>
+    <p>Write $c=mT$ and define the unweighted occupation prior and its optimal quadratic fraction</p>
+    $$\rho_c=\frac1c\nu\int_0^c e^{tQ}dt,\qquad
+      w_c=\frac{\rho_cb}{\gamma\rho_cs}.$$
+    <p>For every $m,c&gt;0$, every prior and every global maximizer at $T=c/m$,</p>
+    $$|w_*-w_c|\le\frac{B\delta c}{4m\gamma\rho_cs}.$$
+    <p>To see this, interpolate the path tilt by $e^{\lambda p\int h}$, $0\le\lambda\le1$.
+      The derivative of its mean score $\int q/T$ is a covariance whose absolute value is at most $B\delta T/4$, by the two range bounds.</p>
+    <p>At zero tilt the mean score is $\rho_cq(w)$; at full tilt it is $J'(w)$.
+      Integrating the covariance bound and using $J'(w_*)=0$ proves the claim, without an asymptotic expansion or a uniqueness assumption.</p>
+    <p>For log utility $\delta=0$, so $w_*=w_c$ exactly at every speed and horizon.</p>
+    <h2>A nonvanishing obstruction to uniform averaging</h2>
+    $$Q=\begin{pmatrix}-1&1\\1&-1\end{pmatrix},\quad b=(1,-1),\quad s=(1,1),\quad
+      \gamma=1/2,\quad\nu=(1,0).$$
+    $$I=[-2,2],\quad B=2,\quad D=4,\quad\mathcal M=1/2,\quad
+      \Psi=\Gamma=\Omega=1,\quad w_0=0.$$
+    <p>The mixing coefficient is exactly $e^{-2t}$, and $\psi=(-1/2,1/2)$.</p>
+    <p>The two tilted jump rates are $mz_2/z_1$ and $mz_1/z_2$, whose sum is at least $2m$, so oscillations contract at least as $e^{-2m(t-s)}$.
+      The range-covariance bound gives $\operatorname{Var}_w(\int q)/T\le1/m$, hence $J''=-1/2+\operatorname{Var}_w(\int q)/(2T)\le-1/2+1/(2m)$; every $m&gt;1$ therefore has one optimum at every horizon.</p>
+    $$|w_*-w_0|\le\frac2{mT}+\frac2{m-1}\quad(m&gt;1),\qquad
+      w_c=\frac{1-e^{-2c}}c,\qquad |w_*-w_c|\le\frac{2c}{m}.$$
+    <p>At $T=1/m$, every optimizer tends to $1-e^{-2}\approx0.864665$, not zero.
+      Indeed every $m\ge8$ already has $w_*&gt;1/2$, since $e^2&gt;4$ implies $w_1&gt;3/4$ and the profile error is at most $1/4$.</p>
+    <p>This is a controlled short-horizon counterexample, not a market calibration or a failure of fixed-horizon averaging.
+      The initial prior cannot be discarded merely because $m$ is large; the number of switching times inside the horizon matters.</p>
+    <h2>Validation and literature</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_optimizer_crossover.py">certificate</a> checks independent score formulas, Poisson identities, future-value ratios and a quadrature evaluation of the exact tilted Dynkin decomposition.
+      It also checks the two-scale optimizer budgets and the critical profile; floating roots are consistency checks, not interval enclosures or a proof of the uniform theorem.</p>
+    <p>Poisson-equation martingale and perturbation methods are classical; see <a href="./bibliography.html#GlynnMeyn1996">Glynn and Meyn (1996)</a>, &sect;&sect;1,3.
+      The finite-horizon, time-dependent Doob transform is given in <a href="./bibliography.html#ChetriteTouchette2015">Chetrite and Touchette (2015)</a>, Appendix D; the present constants are derived directly without a priority claim for those mechanisms.</p>
+    <p>The approximation concerns a constant fraction, not adaptive or filtered trading.
+      No claim of sharp constants, concavity outside $I$, price-error control or convergence uniform over all positive horizons is made.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
