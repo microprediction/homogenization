@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_portfolio",
+  "key": "ChetriteTouchette2015",
+  "authors": "Chetrite, R. and Touchette, H.",
+  "year": 2015,
+  "title": "Nonequilibrium Markov Processes Conditioned on Large Deviations",
+  "venue": "Annales Henri Poincaré 16, 2005-2057",
+  "doi": "10.1007/s00023-014-0375-8",
+  "url": "https://doi.org/10.1007/s00023-014-0375-8",
+  "annotation": "Equations (122)-(123) and Appendix D, especially (D4), give the time-dependent Doob transform of the finite-horizon canonical path measure, distinct from its stationary driven-process limit."
+ },
+ {
+  "role": "survey_portfolio",
+  "key": "DelMoralMiclo2002",
+  "authors": "Del Moral, P. and Miclo, L.",
+  "year": 2002,
+  "title": "On the stability of nonlinear Feynman-Kac semigroups",
+  "venue": "Annales de la Faculté des Sciences de Toulouse, série 6, 11(2), 135-175",
+  "doi": "10.5802/afst.1021",
+  "url": "https://doi.org/10.5802/afst.1021",
+  "annotation": "Develops stability estimates for normalized Feynman-Kac semigroups using Dobrushin coefficients; sections 2-3 provide the general semigroup framework behind time-uniform forgetting."
  }
 ]
