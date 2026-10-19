@@ -1,5 +1,14 @@
 [
  {
+  "key": "BossuCarrPapanicolaou2020",
+  "authors": "Bossu, S., Carr, P. and Papanicolaou, A.",
+  "year": 2020,
+  "title": "A functional analysis approach to the static replication of European options",
+  "venue": "Quantitative Finance (published online 4 November 2020)",
+  "doi": "10.1080/14697688.2020.1810857",
+  "annotation": "Section 2.1 and equation (3) review the classical Carr-Madan cash/forward/vanilla static replication identity and its finite-strike limitation. The entropy-strip note uses ordinary piecewise-linear vanilla replication with its own explicit truncation, grid and quote-error bounds, not the paper's spectral special options."
+ },
+ {
   "key": "CuchieroKellerResselTeichmann2012",
   "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
   "year": 2012,

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Certifying direction with finitely many option quotes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; Cycle direction</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_entropy_strip.py">certificate</a></span></p>
+    <h1>A finite vanilla strip can certify a nonzero entropy gap</h1>
+    <p class="subtitle">Explicit strike truncation, discretization and quote-error budgets; no density or negative moment required.</p>
+    <p>Compare two terminal laws $P,R$ of a nonnegative normalized stock $S$, with $\mathbb E_PS=\mathbb E_RS=1$ and
+      $M_r=\max\{\mathbb E_PS^r,\mathbb E_RS^r\}&lt;\infty$ for a supplied $r&gt;1$.
+      Interest and forward normalization are already removed, and $0\log0$ means zero.</p>
+    $$C_i(K)=\mathbb E_i(S-K)_+,\qquad
+      D=\mathbb E_P[S\log S]-\mathbb E_R[S\log S].$$
+    <p>Fix $0&lt;L&lt;1&lt;U$, an integer $N\ge1$, and log-spaced strikes $K_j=Le^{jh}$, where $h=\log(U/L)/N$.
+      Define</p>
+    $$d_h=\frac{h}{1-e^{-h}}-1,\quad \alpha(h)=d_h-\log(1+d_h),\quad
+      w_0=d_h,\quad w_j=h\ (0&lt;j&lt;N),\quad w_N=h-d_h,$$
+    $$A_N=\sum_{j=0}^Nw_j\{C_P(K_j)-C_R(K_j)\},\qquad
+      E_N=\alpha(h)+L+\frac{M_rU^{1-r}}{r(r-1)}.$$
+    <div class="equation-card">
+    $$|A_N-D|\le E_N,\qquad
+      \max_{0\le j\le N}|C_P(K_j)-C_R(K_j)|
+        \ge\frac{(|D|-E_N)_+}{\log(U/L)}.$$
+    <p>If each price in each curve is supplied with absolute error at most $\eta$, the strip using the displayed exact weights has total error at most
+      $E_N+2\eta\log(U/L)$ relative to $D$.
+      Its sign is therefore reliable whenever $|D|$ exceeds this budget.</p>
+    </div>
+    <p>All weights are positive and sum to $\log(U/L)$.
+      An atom at zero, perfect leverage or an irregular density does not invalidate this terminal-law theorem.
+      This is deterministic separation of two specified laws, not statistical identification of an unknown generator.</p>
+
+    <h2>Proof by a piecewise-linear entropy payoff</h2>
+    <p>Set $f(s)=s\log s-s+1$ and $f(0)=1$.
+      Let $f_N$ linearly interpolate $f$ between the strikes and continue by the tangent line at $L$ to the left and at $U$ to the right.</p>
+    <p>The secant slope over $[K_j,K_{j+1}]$ is $\log K_j+d_h$.
+      Hence its slope jumps are exactly the displayed weights, giving the finite replication identity</p>
+    $$f_N(s)=f(L)+\log L\,(s-L)+\sum_{j=0}^Nw_j(s-K_j)_+.$$
+    <p>Equal stock means cancel the affine terms, so $A_N=\mathbb E_Pf_N-\mathbb E_Rf_N$ and $D=\mathbb E_Pf-\mathbb E_Rf$.
+      Equal and correctly normalized forwards are essential to this cancellation.</p>
+    <p>On one grid interval write $s=K_jx$, $1\le x\le e^h$, and $b=1+d_h$.
+      Direct algebra gives the relative interpolation error</p>
+    $$\frac{f_N(s)-f(s)}s=b(1-1/x)-\log x\in[0,\alpha(h)].$$
+    <p>The maximum is attained at $x=b$, proving that $\alpha(h)$ is the sharp pointwise coefficient for this interpolant.
+      A simpler bound is $\alpha(h)\le(e^h-1)^2/8$, from $f''(s)=1/s$ and the chord-error estimate on each interval.</p>
+    <p>Outside the grid, convexity gives a negative interpolation error with magnitude
+      $f(s)-f_N(s)=s\log(s/H)-s+H$, where $H=L$ or $U$ is the adjacent endpoint.
+      For $s&lt;L$ this is at most $L$.</p>
+    <p>For $s&gt;U$, put $x=s/U\ge1$.
+      Comparing second derivatives at the common value and slope at one gives</p>
+    $$x\log x-x+1\le\frac{x^r-1-r(x-1)}{r(r-1)}\le\frac{x^r}{r(r-1)}.$$
+    <p>Thus for either law $i$, its signed expected interpolation error lies in
+      $[-\{L+\mathbb E_iS^r U^{1-r}/(r(r-1))\},\alpha(h)]$.
+      Subtract these intervals: the two-law budget is one $\alpha(h)$ plus the larger tail budget, not the sum of two absolute budgets.</p>
+    <p>This proves the first inequality.
+      Positive weights and their total mass prove the maximum-quote bound; summing the per-curve price errors gives the quoted-noise budget.
+      No Fourier inversion or differentiation of noisy prices is used.</p>
+
+    <h2>A general finite-quote design</h2>
+    <p>For an approximation target $0&lt;\varepsilon&lt;1$, the following explicit choices ensure $E_N\le\varepsilon$:</p>
+    $$L=\varepsilon/3,\quad
+      U=\max\left\{2,\left(\frac{3M_r}{r(r-1)\varepsilon}\right)^{1/(r-1)}\right\},\quad
+      h_0=\log(1+\sqrt{8\varepsilon/3}),\quad
+      N=\left\lceil\frac{\log(U/L)}{h_0}\right\rceil.$$
+    <p>For fixed $r,M_r$, this uses $N+1=O(\varepsilon^{-1/2}\log(1/\varepsilon))$ quotes per curve as $\varepsilon\downarrow0$.
+      This is a constructive quote-count bound, not an optimal design or a sampling-error rate.</p>
+    <p>The continuous identity behind the construction is classical static replication:</p>
+    $$\mathbb E_i[S\log S]=\int_0^1\frac{\mathbb E_i(K-S)_+}{K}dK+
+       \int_1^\infty\frac{C_i(K)}K dK,\qquad
+      D=\int_{\mathbb R}\{C_P(e^x)-C_R(e^x)\}dx.$$
+    <p>Put&ndash;call parity and the moment bound justify the difference integral even when a negative moment does not exist.
+      Static replication and its discretization are established methods; see
+      <a href="./bibliography.html#BossuCarrPapanicolaou2020">Bossu, Carr and Papanicolaou (2020), section 2.1 and equation (3)</a>.
+      The finite-grid error and separation certificate above are derived directly, without a priority claim for the method.</p>
+    <p>At strikes below one, the call difference can be replaced by the put difference by parity, avoiding subtraction of two prices near one.
+      The same error theorem applies to the resulting out-of-the-money quote differences.</p>
+
+    <h2>A rational CIR direction-separation certificate</h2>
+    <p>Use the stationary unit directed three-cycle and its reversal, with common fixed $v_0=0.04$, $T=m=1$ and</p>
+    $$dv=(a_Y-2v)dt+\xi_Y\sqrt v\,dB,\quad
+      dX=-v\,dt/2+\sqrt v(-0.6\,dB+0.8\,dW),\quad
+      a=(1,2,3),\quad\xi=(0.2,0.4,1),\quad S=e^X.$$
+    <p>The variance is strict-Feller in every regime.
+      The shared positive supersolution loading $b=1/2$ at return moment $r=2$ gives $M_2\le\exp(bv_0+b\max a_i T)=e^{1.52}&lt;4.6$, and also proves the stock is a true martingale by localization.</p>
+    <p>Under the share measure, reversion is $k_i=2+0.6\xi_i$ and $\mathbb E[S_TX_T]=\tfrac12\int_0^T\mathbb E^S v_tdt$.
+      The finite system $p'=Q^Tp$, $z'=D_ap+(Q^T-D_k)z$, $J'=\mathbf1^Tz$, started at $(\pi^T,v_0\pi^T,0)$, computes this mean as $J(T)/2$.</p>
+    <p>A rational degree-$160$ matrix Taylor enclosure proves the forward-minus-reverse entropy gap satisfies
+      $D&lt;-1/4000$, with numerical value $-0.000286821579737$ and total tail below $10^{-100}$.
+      This is a scalar-moment enclosure, not a numerical calculation of the whole CIR call curve.</p>
+    <p>Choose $L=10^{-5}$, $U=10^5$ and $N=2303$, giving $2304$ quotes per curve and $h&lt;0.01$.
+      Rational exponential bounds give $\alpha(h)&lt;13\times10^{-6}$ and $E_N&lt;46\times10^{-6}$.</p>
+    <p>At least one of these exact call-price differences therefore exceeds $8.5\times10^{-6}$ in magnitude.
+      If every price in each curve has absolute error at most $10^{-6}$, the computed strip is still less than $-156\times10^{-6}$.
+      The broad strike range and quote count are conservative sufficient choices, not a claim of market feasibility.</p>
+
+    <h2>Checks and a necessary blind-spot warning</h2>
+    <p>The certificate checks $40$ pairs of normalized atomic laws at moment powers $1.25,2,3.5$, including default atoms, the polygon identity, adversarial quote errors, four sharp chord-error controls and nine target-error designs.
+      The maximum observed error/budget ratio is $0.551347$.</p>
+    <p>A zero entropy gap does not imply equal call curves.
+      A half-and-half mixture of lognormal stock laws with log variances $0.01,0.49$ has the same entropy as log variance $0.25$, but its at-the-money call differs by approximately $-0.0406431943519$.</p>
+    <p>The CIR quote-separation conclusion follows a priori from the proved inequality and the rational mean gap; no CIR call inversion is claimed in this certificate.
+      The result does not identify an arbitrary generator, certify an individual preselected strike, or settle the global crossing counts in <a href="https://github.com/microprediction/homogenization/issues/204">issue #204</a>.
+      Model misspecification, uncertain forward normalization and numerical weight or summation errors require separate budgets.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
