@@ -1,0 +1,89 @@
+<!-- title: Abrupt protocol changes and interface layers · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./layers.html">&larr; initial layers</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>A generator jump leaves a first-order interface correction</h1>
+    <p>Adding the constant-protocol Green&ndash;Kubo corrections stage by stage misses an interface term when the stationary law changes.
+      Here a finite sequence of abrupt changes has an explicit composite approximation and a uniform absolute error bound, including both sides of every change.</p>
+    <h2>Fixed stages and the matching rule</h2>
+    <p>Fix a finite number $J$ of stages of durations $\tau_j&gt;0$, independent of $\varepsilon$, and put $t_j=\sum_{k\le j}\tau_k$, $T=t_J$.
+      On stage $j$, let $Q_j$ be an irreducible finite row generator on the same state space and $g_j$ a real vector, all fixed independently of $\varepsilon$.</p>
+    $$u'=(Q_j/\varepsilon+D_j)u,\qquad D_j=\operatorname{diag}g_j,\qquad u(0)=\mathbf1.$$
+    <p>This fixes the ODE-clock convention: the final value is $e^{(Q_J/\varepsilon+D_J)\tau_J}\cdots e^{(Q_1/\varepsilon+D_1)\tau_1}\mathbf1$.
+      A calendar-time backward pricing problem requires the corresponding reversed protocol; the product order must not be silently exchanged.</p>
+    <p>Write $\pi_jQ_j=0$, $\pi_j\mathbf1=1$, $P_j=\mathbf1\pi_j$, and $R_j=Q_j^\#$, with $Q_jR_j=R_jQ_j=I-P_j$ and $R_j\mathbf1=\pi_jR_j=0$.
+      Define</p>
+    $$\bar g_j=\pi_jg_j,\quad f_j=g_j-\bar g_j\mathbf1,\quad
+      w_j=R_jf_j,\quad K_j=-\pi_jD_{f_j}w_j.$$
+    <p>For $x=t-t_{j-1}\in[0,\tau_j]$, set</p>
+    $$a_j(x)=\exp\left(\sum_{k&lt;j}\tau_k\bar g_k+x\bar g_j\right),\qquad
+      b_j(x)=\sum_{k&lt;j}\tau_kK_k+xK_j+\sum_{k=2}^j I_k,\quad I_k=-\pi_kw_{k-1}.$$
+    <div class="equation-card">
+    $$U_j(x)=a_j(x)\{\mathbf1+\varepsilon[b_j(x)\mathbf1-w_j]\}
+       +\varepsilon a_j(0)e^{xQ_j/\varepsilon}v_j,$$
+    $$v_1=w_1,\qquad v_j=(I-P_j)(w_j-w_{j-1})\quad(j\ge2).$$
+    </div>
+    <p>The new scalar term $I_j$ is the interface correction, and $v_j$ launches a new centered layer.
+      Both are needed: $\pi_jv_j=0$, and matching the two outer vectors plus the new layer forces $b_j(0)-b_{j-1}(\tau_{j-1})=-\pi_jw_{j-1}$.</p>
+    <p>The approximation starts exactly at $\mathbf1$.
+      At a later interface its only discontinuity is the negative of the preceding stage's remaining layer, which is exponentially small for a fixed positive dwell time.</p>
+    <p>This jump rule is not a delta-function substitution into the smooth moving-projection term $-\pi'Rf$.
+      An instantaneous change has no specified interpolation path; matching uses the old shape and the new stationary projection instead.</p>
+    <h2>A completely data-based uniform bound</h2>
+    <p>Use vector and induced matrix infinity norms, put $H_j=\|g_j\|_\infty$, $H=\max_jH_j$, and supply valid mixing bounds</p>
+    $$\|e^{sQ_j}-P_j\|_\infty\le C_je^{-\gamma_js},\qquad s\ge0,\quad C_j,\gamma_j&gt;0.$$
+    <p>Such constants exist for every finite irreducible generator; no reversibility or diagonalization is assumed.
+      Define the affine vector and its exact finite supremum</p>
+    $$\zeta_j(x)=R_j\{-b_j(x)f_j+D_{f_j}w_j\},\qquad
+      Z_j=\max\{\|\zeta_j(0)\|_\infty,\|\zeta_j(\tau_j)\|_\infty\},$$
+    $$B_j=2Z_j+\tau_j\{|K_j|\|w_j\|_\infty+\|f_j\|_\infty Z_j\}
+           +\frac{H_jC_j\|v_j\|_\infty}{\gamma_j}.$$
+    <p>Then, for every $\varepsilon&gt;0$, at all stage times and either one-sided interface value,</p>
+    <div class="equation-card">
+    $$\|u-U\|_\infty\le e^{HT}\left\{\varepsilon^2\sum_{j=1}^J B_j
+       +\varepsilon\sum_{j&lt;J}C_j\|v_j\|_\infty e^{-\gamma_j\tau_j/\varepsilon}\right\}
+       \le\varepsilon^2e^{HT}\mathcal C,$$
+    $$\mathcal C=\sum_{j=1}^J B_j+
+       \sum_{j&lt;J}\frac{C_j\|v_j\|_\infty}{e\gamma_j\tau_j}.$$
+    </div>
+    <p>Every quantity is computed from the protocol, not the unknown solution or a time-grid maximum.
+      The last inequality uses $xe^{-x}\le1/e$; its dependence on the dwell times is explicit.</p>
+    <h3>Proof by centered residuals and jumps</h3>
+    <p>Let $V(t,s)$ be the exact evolution, including intervening switches.
+      Positivity and the row sums give $\|V(t,s)\|_\infty\le e^{H(t-s)}$.</p>
+    <p>The outer residual on stage $j$ is $\varepsilon a_jr_j$, where
+      $r_j=K_j\mathbf1-b_jf_j+D_{f_j}w_j$ and $\pi_jr_j=0$.
+      Hence $Q_j\zeta_j=r_j$ and $\zeta_j'=-K_jw_j$.</p>
+    <p>For a partial or full stage $[l,r]$, integration by parts gives the following identity, with each stage function evaluated at local time $x=s-t_{j-1}$.</p>
+    $$\varepsilon\int_l^rV(t,s)a_jr_j\,ds
+      =\varepsilon^2\left\{V(t,l)a_j(l)\zeta_j(l)-V(t,r)a_j(r)\zeta_j(r)
+        +\int_l^rV(t,s)a_j(\zeta_j'-D_{f_j}\zeta_j)\,ds\right\}.$$
+    <p>The product $\|V(t,s)\|_\infty a_j(s)$ is at most $e^{HT}$, so these terms contribute the first two parts of $\varepsilon^2e^{HT}B_j$.
+      The layer residual is $-\varepsilon a_j(0)D_je^{xQ_j/\varepsilon}v_j$, whose integral is bounded by the last part.</p>
+    <p>The jump at $t_j$ is exactly $-\varepsilon a_j(0)e^{\tau_jQ_j/\varepsilon}v_j$.
+      Propagating these jumps and summing the residual bounds proves the first inequality, and the exponential inequality proves the second.</p>
+    <h2>An order-one coefficient missed by bulk averaging</h2>
+    <p>For two states put $Q_j=s_j(P_j-I)$, $\pi_j=(p_j,1-p_j)$, and $g_j=(1,0)$.
+      Take $(p_A,s_A)=(1/4,2)$, $(p_B,s_B)=(3/4,4)$, and both durations $1/2$.</p>
+    $$K_j=\frac{p_j(1-p_j)}{s_j},\qquad
+      I_{A\to B}=\frac{p_B-p_A}{s_A}=\frac14,\qquad
+      I_{B\to A}=-\frac18.$$
+    <p>The common bulk coefficient is $9/128$.
+      With the final-stage stationary readout, the two ordered products instead satisfy</p>
+    $$e^{-1/2}\pi_Bu_{AB}(1)=1+\frac{41}{128}\varepsilon+O(\varepsilon^2),\qquad
+      e^{-1/2}\pi_Au_{BA}(1)=1-\frac7{128}\varepsilon+O(\varepsilon^2).$$
+    <p>These are different readouts of the explicitly ordered ODE products, not an assertion about one unchanged initial calendar-time law.
+      The interface reverses the sign of the first correction in the second experiment, despite positive bulk $K_j$.</p>
+    <p>For $AB$, $Z_A=57/512$, $Z_B=75/2048$, $C_A=C_B=3/2$, and $(\gamma_A,\gamma_B)=(2,4)$.
+      Replacing $1/e$ by one gives $\mathcal C\le21093/16384$; using $e&lt;3$ proves the simple rigorous bound $\sup\|u-U\|_\infty\le4\varepsilon^2$ for every $\varepsilon&gt;0$.</p>
+    <h2>Checks, literature and limits</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_protocol_quench.py">certificate</a>
+      checks the rational benchmark constants and compares composites with independently ordered matrix exponentials across reset, nonreversible and defective generators.
+      It samples ordinary and fast-clock meshes on each side of every interface, verifies the jump identity and prints literal <code>PASS</code>.</p>
+    <p>The rational bound is analytic; floating-point matrix tests are consistency checks, not interval enclosures or a proof from a sampled supremum.
+      The theorem itself is uniform on the entire fixed interval and needs no numerical solution of the ODE.</p>
+    <p>Matched expansions for rapidly fluctuating Markov systems are classical; the publisher abstract of
+      <a href="./bibliography.html#KhasminskiiYinZhang1996">Khasminskii, Yin and Zhang (1996)</a> describes that framework.
+      The matching rule and explicit piecewise-constant error budget above are proved here directly, without attributing this formula or a priority claim to that abstract.</p>
+    <p>This is an absolute vector error at fixed horizon with finitely many fixed stages, not a relative, logarithmic, long-horizon or frequency-uniform bound.
+      It does not cover an increasing number of switches or shrinking dwell times uniformly: the displayed exponential tails and $1/\tau_j$ terms show exactly where that extrapolation fails.</p>
+  </main>
