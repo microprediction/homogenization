@@ -1,0 +1,91 @@
+<!-- title: Fast-switching uniqueness below log utility · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>Fast mixing certifies one optimum below log utility</h1>
+    <p>For relative risk aversion below one, a constant-fraction objective need not be concave.
+      Nevertheless, every finite irreducible regime model has an explicit sufficient switching speed above which its global optimum is unique, for every initial prior.</p>
+    <h2>Localize before bounding curvature</h2>
+    <p>Fix $T&gt;0$, $0&lt;\gamma&lt;1$, $p=1-\gamma$, constant interest rate $r$, excess returns $b_i$, and variances $s_i\ge s_{\min}&gt;0$.
+      A finite chain $Y$ with generator $mQ$ and arbitrary prior $\nu$ is independent of the Brownian stock noise.</p>
+    <p>The investor chooses one deterministic fraction $w\in\mathbb R$ for the whole horizon, not a filtered or adaptive strategy.
+      Its exact certainty-equivalent rate is</p>
+    $$h_i(w)=r+b_iw-\tfrac12\gamma s_iw^2,\qquad
+      J_m(w)=\frac1{pT}\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}.$$
+    <p>Let $\mathbb E_w$ denote the path tilt proportional to the exponential in this formula and put
+      $q_i(w)=b_i-\gamma ws_i$, $R_w=\int_0^Tq_{Y_t}(w)dt$, and $V=\int_0^Ts_{Y_t}dt$.</p>
+    $$J_m'(w)=\frac{\mathbb E_wR_w}{T},\qquad
+      J_m''(w)=-\frac\gamma T\mathbb E_wV+\frac pT\operatorname{Var}_w(R_w).$$
+    <p>These identities follow by differentiating the finite path exponential; bounded coefficients justify differentiation locally in $w$.
+      The positive variance term is the obstruction below log utility.</p>
+    <div class="equation-card">
+    $$L=\min_i\frac{b_i}{\gamma s_i},\qquad U=\max_i\frac{b_i}{\gamma s_i},\qquad I=[L,U].$$
+    </div>
+    <p>For $w&lt;L$ every $q_i(w)&gt;0$, and for $w&gt;U$ every $q_i(w)&lt;0$.
+      Thus every maximizer lies in $I$, at every speed and prior; existence follows from
+      $J_m(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2\to-\infty$.</p>
+    <p>If $L=U$, that common regimewise fraction is uniquely optimal at every speed, without a mixing bound.
+      Otherwise only curvature on the compact interval $I$ is needed, not concavity over the entire real line.</p>
+    <h2>A computable sufficient speed</h2>
+    <p>Let $\pi$ be the stationary row law, $P=\mathbf1\pi$, and supply a valid infinity-norm mixing estimate</p>
+    $$\|e^{tQ}-P\|_\infty\le C_0e^{-\lambda t},\qquad t\ge0,\qquad C_0,\lambda&gt;0.$$
+    <p>For any finite irreducible $Q$ such constants exist, with no reversibility or diagonalization assumption.
+      Define</p>
+    $$F_* =\max_{w\in I}\|q(w)-(\pi q(w))\mathbf1\|_\infty,\qquad
+      D_* =\max_{w\in I}\{\max_i h_i(w)-\min_i h_i(w)\},$$
+    $$G(a,T)=\frac1T\int_0^T(T-t)e^{-at}dt
+      =\frac1a-\frac{1-e^{-aT}}{Ta^2},\qquad
+      A_*=2pC_0F_*^2e^{pTD_*}.$$
+    <p>The maximum defining $F_*$ is attained at an endpoint.
+      For $D_*$, maximize each quadratic difference $h_i-h_j$ over the endpoints and its interior critical point, if present.</p>
+    <div class="equation-card">
+    $$J_m''(w)\le-\kappa_m\quad(w\in I),\qquad
+      \kappa_m=\gamma s_{\min}-A_*G(m\lambda,T).$$
+    $$\kappa_m&gt;0\ \Longrightarrow\ \text{exactly one global maximizer};\qquad
+      m&gt;m_*:=\frac{A_*}{\lambda\gamma s_{\min}}\ \Longrightarrow\ \kappa_m&gt;0.$$
+    </div>
+    <p>The second implication uses $G(a,T)&lt;1/a$.
+      This is a sufficient speed, not a sharp phase boundary; the first test can succeed at smaller speeds.</p>
+    <h3>Why the bound holds for every prior</h3>
+    <p>Fix $w\in I$, write $f=q(w)-(\pi q(w))\mathbf1$, and $X=\int_0^Tf(Y_t)dt$.
+      Conditional transition probabilities give</p>
+    $$|\mathbb E_\nu f(Y_s)f(Y_t)|
+       \le C_0\|f\|_\infty^2e^{-m\lambda(t-s)}\quad(s\le t),\qquad
+      \mathbb E_\nu X^2\le2C_0TF_*^2G(m\lambda,T).$$
+    <p>This uses stationary centering, not a stationary start: $\mathbb E_\nu X$ need not vanish.
+      The bound follows by integrating the two-time product over the ordered triangle, and remains valid for pure starting states.</p>
+    <p>The path likelihood ratio of the tilted law to the original law is at most $e^{pTD_*}$.
+      Since variance is at most the mean squared distance from any fixed constant,</p>
+    $$\operatorname{Var}_w(R_w)\le\mathbb E_w(R_w-T\pi q(w))^2
+       \le e^{pTD_*}\mathbb E_\nu X^2.$$
+    <p>Insert this inequality and $V\ge Ts_{\min}$ into the exact curvature identity.
+      Strong concavity on $I$, together with the derivative signs outside $I$, proves global uniqueness.</p>
+    <h2>A posteriori optimizer certificates</h2>
+    <p>Whenever $\kappa_m&gt;0$, every proposed $w\in I$ and the unique optimum $w_*$ satisfy</p>
+    $$|w-w_*|\le\frac{|J_m'(w)|}{\kappa_m},\qquad
+      0\le J_m(w_*)-J_m(w)\le\frac{J_m'(w)^2}{2\kappa_m}.$$
+    <p>Integrating the curvature bound proves the distance inequality; maximizing its quadratic upper model proves the value inequality.
+      This is the standard strong-convexity residual argument with signs reversed, as in
+      <a href="./bibliography.html#BoydVandenberghe2004">Boyd and Vandenberghe (2004)</a>, &sect;9.1.2, equation (9.9).</p>
+    <p>First clip a proposed fraction to $I$ if necessary, which cannot decrease the objective.
+      A certified derivative error $\eta$ is accommodated by replacing $|J_m'|$ with $|\widehat J_m'|+\eta$; an ordinary matrix-exponential check is not such an error certificate.</p>
+    <h2>A rational nonreversible, switched-variance example</h2>
+    $$Q=\begin{pmatrix}-3&2&1\\1&-2&1\\1/2&3/2&-2\end{pmatrix},\quad
+      \pi=(5/24,11/24,1/3),\quad b=(3/25,-2/25,1/20),\quad s=(1/25,9/100,1/16),\quad\gamma=1/2,\quad T=1.$$
+    <p>Every off-diagonal rate is at least $1/2$, so a common refresh to the uniform law at rate $3/2$ gives $C_0=2$, $\lambda=3/2$ by coupling.
+      Subtracting that refresh generator leaves a valid generator; after the shared refresh, the two copies can evolve together.</p>
+    $$I=[-16/9,6],\qquad F_*=33/160,\qquad D_*=33/20,\qquad
+      m_*=(363/128)e^{33/40}&lt;8349/1280&lt;8.$$
+    <p>Exact rational Taylor bounds prove $e^{33/40}&lt;23/10$.
+      Consequently every $m\ge8$ and every prior have one global optimum, with the rigorous uniform curvature modulus $\kappa\ge1891/512000$.</p>
+    <p>The averaged fraction is $24/169$.
+      At $m=8$, the stationary-prior numerical optimum is $0.1428792777$, its distance from that fraction is $0.0008674433$, and the derivative-residual distance bound is $0.0082177770$.</p>
+    <h2>Checks and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_fast_uniqueness.py">certificate</a>
+      checks the rational constants, pure and stationary priors, unequal variances, nonreversible and defective generators, and independently differentiated versus tilted-moment matrix systems.
+      Numerical root and residual evaluations are not interval enclosures; the analytic theorem does not rely on a sampled curvature maximum.</p>
+    <p>The regime-market background is related to
+      <a href="./bibliography.html#BauerleRieder2004">B&auml;uerle and Rieder (2004)</a>, whose Theorem 3 optimizes regime-adapted fractions, a different control class.
+      Here the uniqueness threshold is a direct covariance/change-of-measure bound for one constant fraction, without a priority claim for its elementary ingredients.</p>
+    <p>The speed bound is conservative and depends on the fixed horizon through $e^{pTD_*}$.
+      It is not horizon-uniform, does not imply global concavity outside $I$, and does not optimize adaptive trading or establish an actual multi-optimum transition at $m_*$.</p>
+  </main>
