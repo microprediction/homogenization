@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A global switched-Heston call error (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./cumulants.html">&larr; CIR cumulants</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_global_call.py">certificate</a></span></p>
+    <h1>A global error bound for the call correction</h1>
+    <p class="subtitle">The infinite damped Fourier integral, not just a fixed frequency cutoff.</p>
+    <p>Let $B,W$ be independent Brownian motions and $Y$ an independent symmetric two-state chain
+      flipping at rate $m$, initially stationary.
+      Fix $T,\kappa,\xi,\theta_+,\theta_-&gt;0$, $v_0\ge0$, $X_0=0$, and $|\rho|&lt;1$.</p>
+    $$dv_t=\kappa(\theta_{Y_t}-v_t)dt+\xi\sqrt{v_t}\,dB_t,\qquad
+      dX_t=-\tfrac12v_tdt+\sqrt{v_t}(\rho\,dB_t+\sqrt{1-\rho^2}\,dW_t).$$
+    <p>Write $\bar\theta=(\theta_++\theta_-)/2$, $\delta=(\theta_+-\theta_-)/2$,
+      $\Phi_m(s)=\mathbb E e^{sX_T}$, and let $\Phi_{\rm av}$ replace $\theta_Y$ by $\bar\theta$.
+      Choose $\gamma&gt;1$, $p&gt;1$, $r=p\gamma$, $q=p/(p-1)$ satisfying the explicit sufficient conditions</p>
+    $$a_r:=\kappa-\rho\xi r&gt;0,\qquad d_r:=\sqrt{a_r^2-\xi^2r(r-1)}&gt;0.$$
+    <p>For $s=\gamma+iu$, let $B_s(0)=0$ solve
+      $B_s'=\xi^2B_s^2/2-(\kappa-\rho\xi s)B_s+(s^2-s)/2$ and define</p>
+    $$h_T(s)={\kappa^2\delta^2\over2}\int_0^T B_s(t)^2dt,\quad
+      D_\alpha(u)=(\alpha+iu)(\gamma+iu),\quad \alpha=\gamma-1,$$
+    $$c_1(k)={e^{-\alpha k}\over\pi}\int_0^\infty
+       \Re{e^{-iuk}\Phi_{\rm av}(\gamma+iu)h_T(\gamma+iu)\over D_\alpha(u)}du.$$
+    <div class="equation-card">
+    <p>All these integrals converge absolutely, and the constants below give, for $m\ge m_0$ and any compact $K$,</p>
+    $$\sup_{k\in K}|C_m(k)-C_{\rm av}(k)-c_1(k)/m|\le A_K/m^2,
+      \qquad C_m(k)=\mathbb E(e^{X_T}-e^k)_+.$$
+    </div>
+
+    <h2>Uniform polynomial Riccati bounds</h2>
+    <p>Put $\eta=1-\rho^2$, $a=\kappa-\rho\xi\gamma$, $d_0=\sqrt{a^2-\xi^2\gamma(\gamma-1)}$,
+      $c=\xi\sqrt\eta$, and $\ell=-2\rho\xi a-\xi^2(2\gamma-1)$.
+      The assumptions at $r$ imply $a,d_0&gt;0$: $a_s$ is linear and $d_s^2$ is concave on $[0,r]$.</p>
+    $$H_0=1+{|\ell|\over2d_0c},\quad R_0={a\over d_0}+{|\rho|\over\sqrt\eta},\quad
+      z={2\over1+R_0},\quad \nu=\min\{z/2,1-e^{-z/(2\sqrt{H_0})}\},$$
+    $$C_B={2\max\{a+\sqrt{H_0}d_0,\ |\rho|\xi+\sqrt{H_0}c\}\over\xi^2\nu},\qquad
+      C_D={\xi^2 C_B^2\over2}+\max\{a,|\rho|\xi\}C_B+{\gamma^2\over2}.$$
+    <p>Then, simultaneously for every $t\ge0$ and $u\ge0$,</p>
+    $$|B_{\gamma+iu}(t)|\le C_B(1+u),\qquad
+      |B_{\gamma+iu}'(t)|\le C_D(1+u)^2.$$
+    <p>To prove this, set $b=a-i\rho\xi u$, $d=\sqrt{b^2-\xi^2s(s-1)}$ with $\Re d&gt;0$, and
+      $g_*=(b-d)/(b+d)$.
+      The closed solution is $B_s=(b-d)(1-e^{-dt})/[\xi^2(1-g_*e^{-dt})]$.</p>
+    <p>Writing $d=x+iy$, we have $x^2\ge d_0^2+c^2u^2$ and
+      $|d|^2\le H_0(d_0^2+c^2u^2)$.
+      Moreover,</p>
+    $$\Re(b\bar d)={ax^2-\rho\xi\ell u^2/2\over x}
+      \ge {ad_0^2+\xi^2(\kappa-\rho\xi/2)u^2\over x}&gt;0.$$
+    <p>Thus $|g_*|&lt;1$, $|1-g_*|\ge z$ and $x/|d|\ge H_0^{-1/2}$.
+      For $t\le z/(2|d|)$ use $|1-e^{-dt}|\le |d|t$; for larger $t$ use
+      $|1-g_*e^{-dt}|\ge1-e^{-xt}$.
+      The denominator is at least $\nu$ in both cases, proving the $B_s$ bound; its ODE gives the derivative bound.</p>
+
+    <h2>A speed-independent exponential envelope</h2>
+    <p>Let $a_* =\kappa\min\theta_i$, $a^*=\kappa\max\theta_i$,
+      $\beta_*=(a_r-d_r)/\xi^2$ and define</p>
+    $$M=e^{(a^*T+v_0)\beta_*},\quad C_0=2^{2a_*/\xi^2}e^{a_*\kappa T/\xi^2},\qquad
+      C=M^{1/p}C_0^{1/q},\quad b_0={a_*T\sqrt\eta\over\xi\sqrt q}.$$
+    <p>Both the switched and averaged models satisfy
+      $|\Phi(\gamma+iu)|\le Ce^{-b_0|u|}$, for every switching speed.
+      The following supersolution proof is specialized to common $\kappa,\xi,\rho$.</p>
+    <p>The nonnegative Riccati solution $\beta'=\xi^2\beta^2/2-a_r\beta+r(r-1)/2$ stays below $\beta_*$.
+      The generator supersolution $e^{rX+A(T-t)+\beta(T-t)v}$, $A'=a^*\beta$, gives
+      $\mathbb E e^{rX_T}\le M$ by localization and Fatou&apos;s lemma.</p>
+    <p>For $V=\int_0^T v_tdt$, the scalar CIR Laplace supersolution with immigration $a_*$ gives
+      $\mathbb E e^{-sV}\le C_0e^{-a_*T\sqrt{2s}/\xi}$.
+      Indeed its negative Riccati solution has discriminant $d=\sqrt{\kappa^2+2\xi^2s}$ and log-amplitude
+      at most $(2a_*/\xi^2)\log2+a_*(\kappa-d)T/\xi^2$.</p>
+    <p>Conditional on $B,Y$, the independent Gaussian part of $X_T$ has variance $J=\eta V$.
+      With $H=\mathbb E(e^{\gamma X_T}\mid B,Y)$, Jensen gives $\mathbb E H^p\le M$;
+      H&ouml;lder applied to $H e^{-u^2J/2}$ proves the stated envelope.
+      The same supersolutions apply to $\bar\theta$.</p>
+
+    <h2>Growing the frequency interval</h2>
+    <p>Set $G=\kappa|\delta|C_B$, $L=\kappa|\delta|C_D$ and</p>
+    $$H=TG^2/2,\quad R_3=TGL/4,\quad R_4=TG^4/2,\quad
+      \varepsilon=(1+H)^{-1/2},$$
+    $$m_0=\left\lceil\max\{4/\varepsilon^2,(G\varepsilon)^2,
+             4R_3^2\varepsilon^6,2R_4\varepsilon^4\}\right\rceil,\qquad
+      U_m=\varepsilon\sqrt m-1.$$
+    <p>On $0\le u\le U_m$ the amplitude ratio $r_s$ solves
+      $r_s'=g-2mr_s-gr_s^2$, $r_s(0)=0$, where $g=\kappa\delta B_s$.
+      The bootstrap $|r_s|\le\sup|g|/m$ and $g(0)=0$ give</p>
+    $$\Phi_m=\Phi_{\rm av}\exp(h_T/m+R_m),\qquad
+      |h_T|\le H(1+u)^2,\quad
+      |R_m|\le {R_3(1+u)^3\over m^2}+{R_4(1+u)^4\over m^3}.$$
+    <p>For completeness, $e=r_s-g/(2m)$ obeys
+      $e'+2me=-gr_s^2-g'/(2m)$ and $e(0)=0$.
+      Integrate its decaying kernel and then $g e$ to obtain the remainder bound.
+      Reconstructing the mean amplitude as an exponential proves it stays nonzero on this interval, avoiding an assumed zero-free ratio.</p>
+    <p>Our choice gives $m\ge\sup|g|$, $|h_T|/m\le1$ and $|R_m|\le1$ there.
+      Taylor&apos;s inequality therefore bounds the transform error by</p>
+    $$ {Ce^{-b_0u}\over m^2}
+       \{e^2 R_3(1+u)^3+(e^2R_4+eH^2/2)(1+u)^4\}.$$
+    <p>Since $|D_\alpha|\ge\alpha\gamma$, integration over the inner interval is at most $A_{\rm in}/m^2$, where</p>
+    $$J_n=\sum_{j=0}^n{n\choose j}{j!\over b_0^{j+1}},\qquad
+      A_{\rm in}={C\over\pi\alpha\gamma}
+        \{e^2R_3J_3+(e^2R_4+eH^2/2)J_4\}.$$
+    <p>On the outer interval use the two exact envelopes and $|h_T|\le H(1+u)^2$ directly.
+      Integrating these polynomials, using $1+U_m=\varepsilon\sqrt m$ and $m\ge1$, gives an outer bound
+      $Ce^{b_0}E e^{-b_0\varepsilon\sqrt m}/(\pi\alpha\gamma)$, with</p>
+    $$E={2+H\varepsilon^2\over b_0}+{2H\varepsilon\over b_0^2}+{2H\over b_0^3},\qquad
+      A_{\rm out}={Ce^{b_0}E\over\pi\alpha\gamma}
+           \left({4\over e b_0\varepsilon}\right)^4,\qquad
+      A_K=e^{-\alpha\inf K}(A_{\rm in}+A_{\rm out}).$$
+    <p>The elementary bound $\sup_{x\ge0}x^4e^{-\lambda x}=(4/(e\lambda))^4$ finishes the proof.
+      The damped payoff transform is $\Phi(\gamma+iu)/D_\alpha(u)$, by integrating over $k&lt;X_T$;
+      absolute convergence justifies all inversions and subtractions.</p>
+
+    <h2>Checks and scope</h2>
+    <p>The certificate checks closed Riccati solutions against independent ODEs, the polynomial envelopes,
+      inner log remainders, and exact switched-amplitude call integrals with doubled quadrature order.
+      It prints the conservative threshold and global budget as well as the observed inverse-square residuals.</p>
+    <p>At $\kappa\theta=(.2,.5)$, $\kappa=1.4$, $\xi=.8$, $\rho=-.6$, $T=1$, $v_0=.04$,
+      $\gamma=p=2$, the explicit threshold is $m_0=123$ and $A_K=1.57337627\times10^{11}$ for $|k|\le.2$.
+      This proves the asymptotic order but is not a useful practical pricing tolerance.</p>
+    <p>Over $k=-.2,0,.2$, the maximum call residual drops from $3.45455317\times10^{-6}$ at $m=16$
+      to $5.06216752\times10^{-8}$ at $m=128$.
+      At cutoff $240$, the combined analytic tail budget for $m\ge16$ is $2.705\times10^{-14}$;
+      doubling quadrature order changes the prices and coefficient by at most $6.400\times10^{-13}$.
+      These floating checks are not outward-rounded enclosures.</p>
+    <p>This is a fixed-maturity theorem for symmetric mean-level switching and a stationary regime start.
+      It is not uniform in maturity, the correlation boundary, or the moment-strip boundary, and makes no
+      implied-volatility claim without a lower Vega bound.
+      The analytic constants are intentionally loose; numerical quadrature and roundoff are separate errors.</p>
+    <p>The affine transform framework is classical:
+      <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a>, Proposition 1.
+      The existing <a href="./cumulants-full.html">cumulant note</a> supplies the two-state amplitude reduction;
+      the polynomial contour estimates and growing-cutoff error proof above complete the global step in
+      <a href="https://github.com/microprediction/homogenization/issues/197">issue 197</a>.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
