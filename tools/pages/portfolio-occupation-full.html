@@ -1,0 +1,82 @@
+<!-- title: Uniform occupation-prior portfolio · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>An occupation-prior fraction accurate at every horizon</h1>
+    <p>The stationary averaged fraction can fail inside the initial switching layer.
+      Replacing its stationary weights by the expected occupation weights gives a constant fraction with an explicit $O(1/m)$ optimizer error and $O(1/m^2)$ certainty-equivalent-rate loss, uniformly over every positive horizon and every starting prior.</p>
+    <h2>Setup and result</h2>
+    <p>Let $Y$ have generator $mQ$, $m&gt;0$, with $Q$ an irreducible finite row generator.
+      Assume common constant $r$, excess returns $b_i$, variances $s_i\ge s_{\min}&gt;0$, positive risk aversion $\gamma$, $p=1-\gamma$, and Brownian stock noise independent of $Y$.</p>
+    <p>Hold one deterministic unrestricted fraction $w$ throughout the horizon and maximize</p>
+    $$h_i(w)=r+b_iw-\gamma s_iw^2/2,\quad q_i(w)=b_i-\gamma ws_i,\quad
+      J_{m,T,\nu}(w)=\frac{\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}}{pT}.$$
+    <p>At $\gamma=1$, use the expected log-wealth rate $J=\mathbb E_\nu\int_0^T h(Y_t)dt/T$.
+      Every global maximizer lies in $I=[\min_i b_i/(\gamma s_i),\max_i b_i/(\gamma s_i)]$: $J'$ has the strict inward signs outside $I$, and $J(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2$ gives existence.</p>
+    <p>If $I$ is a singleton, its fraction is exactly optimal; otherwise define</p>
+    $$B=\max_{w\in I}\operatorname{osc}q(w),\qquad
+      D=\max_{w\in I}\operatorname{osc}h(w),\qquad\delta=|p|D.$$
+    <p>These finite maxima use endpoints for $B$ and endpoints plus interior critical points of the quadratic differences for $D$.
+      Choose any fixed unscaled block duration $\theta&gt;0$ and any rigorously valid $a_0&gt;0$ satisfying</p>
+    $$P=e^{\theta Q},\qquad 0&lt;a_0\le\min_j\frac{\min_iP_{ij}}{\max_iP_{ij}}.$$
+    <p>Irreducibility makes $P$ strictly positive even if some direct rates vanish.
+      Nonnegative uniformization terms and a bounded factorial tail can certify $a_0$; a floating matrix exponential alone does not.</p>
+    <p>Write $c=mT$ and compute the unweighted expected occupation prior and its quadratic optimum</p>
+    $$\rho_c=\frac1c\nu\int_0^c e^{tQ}dt,\qquad
+      w_c=\frac{\rho_cb}{\gamma\rho_cs}\in I,\qquad
+      E_{m,T}=\min\left\{\frac{B\delta T}{4},\frac{B}{2a_0}(e^{\delta\theta/m}-1)\right\}.$$
+    <div class="equation-card">
+    $$|J'(w)-\rho_cq(w)|\le E_{m,T}\quad(w\in I),$$
+    $$|w_*-w_c|\le\frac{E_{m,T}}{\gamma\rho_cs},\qquad
+      0\le J(w_*)-J(w_c)\le\frac{E_{m,T}^2}{2\gamma\rho_cs}.$$
+    </div>
+    <p>These are exact finite-speed bounds for every $m,T&gt;0$, every prior and every global maximizer $w_*$; uniqueness is not assumed.
+      For $m&gt;d:=\delta\theta$, the horizon-independent score budget is at most $Bd/[2a_0(m-d)]$, proving the uniform orders using $\rho_cs\ge s_{\min}$.</p>
+    <p>For a stationary start, $\rho_c=\pi$ at every horizon, so the stationary averaged fraction itself has this uniform guarantee.
+      For an arbitrary prior, $\rho_c$ retains the initial layer; for log utility $\delta=0$, the occupation fraction is exactly optimal at every speed and horizon.</p>
+    <h2>Every interpolated tilted chain mixes in blocks</h2>
+    <p>Fix $w\in I$ and interpolate the full path tilt by $e^{\lambda p\int_0^T h(Y_t)dt}$, $0\le\lambda\le1$.
+      Put $A_\lambda=mQ+\lambda pD_h$, $z_\lambda(u)=e^{uA_\lambda}\mathbf1$ and $\tau=\theta/m$.</p>
+    <p>The exact finite-horizon kernel is
+      $K^{\lambda,T}_{s,t}=D_{z_\lambda(T-s)}^{-1}e^{(t-s)A_\lambda}D_{z_\lambda(T-t)}$.
+      Its initial law is $\nu_i z_{\lambda,i}(T)/(\nu z_\lambda(T))$, not generally $\nu$.</p>
+    <p>For a complete block, let $H=e^{\tau A_\lambda}$, $g=z_\lambda(T-s-\tau)$, $v_j=\max_iP_{ij}$ and $\mu_j=v_jg_j/\sum_kv_kg_k$.
+      Entrywise Feynman&ndash;Kac comparison gives the common row minorization</p>
+    $$\frac{H_{ij}g_j}{(Hg)_i}\ge a_0e^{-\lambda\delta\tau}\mu_j
+       =:\alpha_\lambda\mu_j.$$
+    <p>The reference law changes with the remaining horizon, but the mass does not.
+      Subtracting this row part and composing complete blocks yields</p>
+    $$\operatorname{osc}(K^{\lambda,T}_{s,t}f)\le
+      (1-\alpha_\lambda)^{\lfloor(t-s)/\tau\rfloor}\operatorname{osc}f.$$
+    <h2>Interpolate the score and integrate the covariance</h2>
+    <p>Write $R=\int_0^Tq(Y_t)dt$, $H_0=\int_0^Th(Y_t)dt$, and $\mathbb E_\lambda$ for the interpolated tilted law.
+      Direct differentiation gives $d\mathbb E_\lambda(R/T)/d\lambda=\operatorname{Cov}_\lambda(R,pH_0)/T$.</p>
+    <p>For either time ordering, conditioning on the earlier state and bounding variance by a quarter of the squared range gives
+      $|\operatorname{Cov}_\lambda(q(Y_s),h(Y_t))|\le BD(1-\alpha_\lambda)^{\lfloor|t-s|/\tau\rfloor}/4$.
+      Integrating both time triangles therefore gives</p>
+    $$\frac{|\operatorname{Cov}_\lambda(R,pH_0)|}{T}\le
+      \frac{B\delta}{2}\int_0^\infty(1-\alpha_\lambda)^{\lfloor u/\tau\rfloor}du
+      =\frac{B\delta\tau}{2a_0}e^{\lambda\delta\tau}.$$
+    <p>Integrate over $\lambda$ to get $B(e^{\delta\tau}-1)/(2a_0)$.
+      The direct whole-path range bound also gives $B\delta T/4$, while the two endpoints of the interpolation are $\rho_cq(w)$ and $J'(w)$; this proves the score budget, including its zero limit when $\delta=0$.</p>
+    <p>Since $\rho_cq(w)=\gamma\rho_cs(w_c-w)$, evaluating at an optimum proves its distance bound.
+      Integrating the score inequality from $w_c$ to $w_*$ gives $J(w_*)-J(w_c)\le-a\Delta^2/2+E_{m,T}|\Delta|\le E_{m,T}^2/(2a)$, with $a=\gamma\rho_cs$ and $\Delta=w_*-w_c$.</p>
+    <h2>A two-state example</h2>
+    $$Q=\begin{pmatrix}-1&1\\1&-1\end{pmatrix},\quad b=(1,-1),\quad s=(1,1),\quad
+      \gamma=1/2,\quad\theta=1,\quad a_0=3/4,\quad B=2,\quad D=4,\quad\delta=2.$$
+    <p>Here the transition-column ratio is $\tanh(1)&gt;3/4$, since the positive Taylor series gives $e^2&gt;7$.
+      For a pure first-state start, $w_c=(1-e^{-2mT})/(mT)$.</p>
+    $$E_{m,T}=\min\{T,\tfrac43(e^{2/m}-1)\},\qquad
+      |w_*-w_c|\le2E_{m,T},\qquad J(w_*)-J(w_c)\le E_{m,T}^2.$$
+    <p>In particular, for $m&gt;2$, uniformly in $T$ and in the starting prior,</p>
+    $$|w_*-w_c|\le\frac{16}{3(m-2)},\qquad
+      J(w_*)-J(w_c)\le\frac{64}{9(m-2)^2}.$$
+    <p>The pure-start fraction approaches a nonzero profile when $T=1/m$, whereas the stationary averaged fraction is zero.
+      The occupation approximation remains accurate there and at fixed or arbitrarily long horizons; these constants are conservative, not a market calibration.</p>
+    <h2>Validation, literature and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_uniform_occupation.py">certificate</a> uses exact rational uniformization lower bounds, independent score calculations and root/value-gap checks on sparse and defective generators.
+      Floating roots and matrix exponentials are consistency tests, not interval enclosures or a sampled proof of uniformity.</p>
+    <p>The time-dependent finite-horizon kernel is classical; see <a href="./bibliography.html#ChetriteTouchette2015">Chetrite and Touchette (2015)</a>, Appendix D.
+      Block contraction for Feynman&ndash;Kac kernels is developed in <a href="./bibliography.html#DelMoralMiclo2002">Del Moral and Miclo (2002)</a>, &sect;&sect;3&ndash;4; the portfolio constants and loss bound are derived directly, without a priority claim for the stability mechanism.</p>
+    <p>This is an approximation for a single constant fraction, not adaptive or filtered trading, and $\rho_c$ is an unconditional expected occupation law under the supplied prior.
+      The loss is a CE-rate loss, not a terminal-wealth or option-price error; no uniqueness or sharp-constant claim is made.</p>
+  </main>
