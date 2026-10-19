@@ -158,7 +158,7 @@
       C=M^{1/p}C_0^{1/q},\quad b_0={a_*T\sqrt\eta\over\xi\sqrt q}.$$
     <p>Both the switched and averaged models satisfy
       $|\Phi(\gamma+iu)|\le Ce^{-b_0|u|}$, for every switching speed.
-      The following supersolution proof is specialized to common $\kappa,\xi,\rho$.</p>
+      The supersolutions are independent of the initial regime, so this bound also holds for every initial prior.</p>
     <p>The nonnegative Riccati solution $\beta'=\xi^2\beta^2/2-a_r\beta+r(r-1)/2$ stays below $\beta_*$.
       The generator supersolution $e^{rX+A(T-t)+\beta(T-t)v}$, $A'=a^*\beta$, gives
       $\mathbb E e^{rX_T}\le M$ by localization and Fatou&apos;s lemma.</p>
@@ -228,6 +228,38 @@
       The damped payoff transform is $\Phi(\gamma+iu)/D_\alpha(u)$, by integrating over $k&lt;X_T$;
       absolute convergence justifies all inversions and subtractions.</p>
 
+    <h2>Known or filtered initial regimes</h2>
+    <p>Now let the initial regime have any probability row $\mu$, with the same fixed observed $v_0$.
+      The exact identity $\Phi_{m,\mu}=\Phi_{m,\pi}(1+\mu z(T))$ gives the corrected coefficient</p>
+    $$h_{T,\mu}(s)=h_T(s)-B_s(T)\mu\chi,\qquad
+      c_{1,\mu}(k)=c_1(k)-(\mu\chi)\partial_{v_0}C_{\rm av}(k).$$
+    <p>The variance derivative follows by differentiating $\Phi_{\rm av}=\exp\{v_0B_s(T)+(\pi a)\int B_s\}$
+      under the absolutely convergent Fourier integral; at $v_0=0$ take the right derivative.
+      This is variance sensitivity, not Black&ndash;Scholes Vega or an implied-volatility correction.</p>
+    <p>Explicit constants uniform over all $\mu$ follow without increasing $m_0$.
+      Put $V=C_B\|\chi\|_\infty$ and
+      $D=N\{(14/3)N\Gamma^2C_B^2+C_D\|\chi\|_\infty\}$, so $\|e(T)\|_\infty\le D(1+u)^2/m^2$.</p>
+    $$A_{\rm in}^*={C\over\pi\alpha\gamma}
+       \{D J_2+[(1+V)e^2R_3+HV]J_3+(1+V)eH^2J_4/2\},$$
+    $$E^*=E+V\varepsilon/b_0+V/b_0^2,\qquad
+      A_{\rm out}^*={Ce^{b_0}E^*\over\pi\alpha\gamma}
+              \left({4\over e b_0\varepsilon}\right)^4.$$
+    <div class="equation-card">
+    $$\sup_{\mu\in\Delta}\sup_{k\in K}
+      |C_{m,\mu}(k)-C_{\rm av}(k)-c_{1,\mu}(k)/m|
+        \le {e^{-\alpha\inf K}(A_{\rm in}^*+A_{\rm out}^*)\over m^2},\quad m\ge m_0.$$
+    </div>
+    <p>To verify the inner bound, put $E_\pi=\Phi_{m,\pi}-\Phi_{\rm av}(1+h_T/m)$ and use the exact decomposition</p>
+    $$\Phi_{m,\mu}-\Phi_{\rm av}(1+h_{T,\mu}/m)
+      =E_\pi(1-B_s(T)\mu\chi/m)+\Phi_{m,\pi}\mu e(T)
+          -\Phi_{\rm av}h_TB_s(T)\mu\chi/m^2.$$
+    <p>On the inner interval $(1+u)/m\le1$, so its three terms give exactly $A_{\rm in}^*$.
+      On the outer interval use the speed/prior-uniform exact envelope and
+      $|h_{T,\mu}|\le H(1+u)^2+V(1+u)$; integrating the added linear term gives $E^*-E$.</p>
+    <p>The error is affine in $\mu$, so its maximum over priors is already attained at a known starting regime.
+      A filtered prior can be supplied after conditioning on the observed variance and assuming the model&apos;s future
+      Markov dynamics; no correctness theorem for an estimated filter is asserted.</p>
+
     <h2>Checks and scope</h2>
     <p>The certificate checks closed Riccati solutions against independent ODEs, the polynomial envelopes,
       inner log remainders, and exact switched-amplitude call integrals with doubled quadrature order.
@@ -238,10 +270,14 @@
       The general analytic constants prove the order but are intentionally too loose for a practical pricing tolerance.</p>
     <p>For the directed cycle with rates $(3,2,1)$ and immigrations $(.2,.35,.5)$,
       $\mathcal K=0.003955672427$; the maximum call residual at $k=-.2,0,.2$ falls from
-      $4.26869521\times10^{-7}$ at $m=16$ to $6.37639223\times10^{-9}$ at $m=128$.
+      $4.26869521\times10^{-7}$ at $m=16$ to $6.37639226\times10^{-9}$ at $m=128$.
       This uses $\kappa=1.4$, $\xi=.8$, $\rho=-.6$, $T=1$, $v_0=.04$, $\gamma=p=2$.</p>
+    <p>Across all starting regimes and a mixed prior, the cycle&apos;s corrected residual falls from
+      $3.30200949\times10^{-6}$ at $m=16$ to $4.92264944\times10^{-8}$ at $m=128$.
+      Omitting the memory correction gives a last residual ratio $1.999680$, consistent with first rather than second order.
+      The certificate checks 84 prior/strike/speed cases and independent variance-sensitivity differences.</p>
     <p>These floating checks are not outward-rounded enclosures; quadrature and roundoff are separate errors.
-      This is a fixed-maturity theorem for finite-chain mean-level switching and a stationary regime start.
+      This is a fixed-maturity theorem for finite-chain mean-level switching; nonstationary regime starts use $c_{1,\mu}$.
       It is not uniform in maturity, correlation or moment-strip boundaries, and makes no implied-volatility claim
       without a lower Vega bound.</p>
     <p>The affine transform framework is classical:

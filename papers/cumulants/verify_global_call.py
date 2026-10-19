@@ -75,12 +75,36 @@ def transforms(u, speed, t, immigration, kappa, xi, rho, gamma, v0, generator):
     return exact, averaged, h, sol
 
 
-def call_values(speed, order, immigration, generator):
+def prior_budget(kappa, xi, rho, gamma, p, immigration, t, v0, generator):
+    cb, cd, _, h, r3, eps, _, ce, decay, _ = constants(kappa,xi,rho,gamma,p,immigration,t,v0,generator)
+    pi, chi, _, mixing, gap = chain_data(generator,immigration)
+    n, contrast = mixing/gap, max(abs(immigration-pi@immigration))
+    d = n*((14/3)*n*contrast**2*cb**2+cd*max(abs(chi)))
+    v = cb*max(abs(chi))
+    j = lambda k: sum(math.comb(k,i)*math.factorial(i)/decay**(i+1) for i in range(k+1))
+    factor = ce/(math.pi*(gamma-1)*gamma)
+    inner = factor*(d*j(2)+((1+v)*math.exp(2)*r3+h*v)*j(3)+(1+v)*math.e*h*h*j(4)/2)
+    e = (2+h*eps*eps)/decay+2*h*eps/decay**2+2*h/decay**3+v*eps/decay+v/decay**2
+    return d, v, inner+factor*math.exp(decay)*e*(4/(math.e*decay*eps))**4
+
+
+def call_values(speed, order, immigration, generator, all_priors=False):
     nodes, weights = leggauss(order)
     u, weights = (nodes+1)*120, weights*120/math.pi
-    exact, avg, h, _ = transforms(u,speed,1.,immigration,1.4,.8,-.6,2.,.04,generator)
+    exact, avg, h, sol = transforms(u,speed,1.,immigration,1.4,.8,-.6,2.,.04,generator)
     strikes = np.array([-.2,0.,.2])
     phase = np.exp(-1j*np.outer(strikes,u))/((1+1j*u)*(2+1j*u))
+    if all_priors:
+        pi, chi, _, _, _ = chain_data(generator,immigration)
+        priors = np.vstack((np.eye(len(pi)),np.arange(1,len(pi)+1)/sum(range(1,len(pi)+1))))
+        b = sol.y[:len(u),-1]
+        state_cf = np.exp(.04*b)*sol.y[3*len(u):,-1].reshape(len(pi),len(u))
+        price = lambda cf: np.exp(-strikes)*np.real(phase@(weights*cf).T).T
+        exacts, corrections = price(priors@state_cf), price(avg*(h-(priors@chi)[:,None]*b))
+        greek = price(avg*b)
+        assert np.max(abs(greek-price(avg*np.sinh(1e-4*b)/1e-4))) < 2e-6
+        assert np.max(abs(corrections-(price(avg*h)-(priors@chi)[:,None]*greek))) < 3e-9
+        return exacts, price(avg), corrections, price(avg*h)
     return np.exp(-strikes)[None,:]*np.real(
         np.array([phase@(weights*exact),phase@(weights*avg),phase@(weights*avg*h)]))
 
@@ -159,18 +183,45 @@ def main():
             assert np.linalg.norm(expm(time*generator)-np.ones((len(pi),1))*pi,np.inf) <= mixing*math.exp(-gap*time)+3e-12
         cb, cd, nu, cap, r3, eps, m0, ce, decay, total = constants(
             kappa,xi,rho,gamma,p,immigration,t,v0,generator)
+        d, v, uniform = prior_budget(kappa,xi,rho,gamma,p,immigration,t,v0,generator)
         for speed in (m0,2*m0):
             u = np.linspace(0.,eps*math.sqrt(speed)-1,7)
-            actual, avg, h, _ = transforms(u,speed,t,immigration,kappa,xi,rho,gamma,v0,generator)
+            actual, avg, h, sol = transforms(u,speed,t,immigration,kappa,xi,rho,gamma,v0,generator)
             assert np.max(abs(np.log(actual/avg)-h/speed)/(r3*(1+u)**3/speed**2+3e-9)) <= 1
-        errors = []
+            b = sol.y[:len(u),-1]
+            states = np.exp(v0*b)*sol.y[3*len(u):,-1].reshape(len(pi),len(u))
+            corrected = avg*(1+(h-chi[:,None]*b)/speed)
+            polynomial = d*(1+u)**2+((1+v)*math.exp(2)*r3+cap*v)*(1+u)**3+(1+v)*math.e*cap**2*(1+u)**4/2
+            assert np.max(abs(states-corrected)/(ce*np.exp(-decay*u)*polynomial/speed**2+3e-9)) <= 1
+        errors, prior_errors, omitted, mean_errors = [], [], [], []
         for speed in (16.,32.,64.,128.):
-            values = [call_values(speed,order,immigration,generator) for order in (192,384)]
-            refinement = max(refinement,np.max(abs(values[0]-values[1])))
-            errors.append(max(abs(values[-1][0]-values[-1][1]-values[-1][2]/speed)))
+            values = [call_values(speed,order,immigration,generator,True) for order in (192,384)]
+            refinement = max(refinement,max(np.max(abs(x-y)) for x,y in zip(*values)))
+            actual, avg, correction, stationary = values[-1]
+            errors.append(max(abs(pi@actual[:len(pi)]-avg-stationary/speed)))
+            prior_errors.append(np.max(abs(actual-avg-correction/speed)))
+            omitted.append(np.max(abs(actual-avg-stationary/speed)))
+            # Independent joint-state first-moment semigroup: no affine Riccati input.
+            nstates = len(pi)
+            matrix = np.zeros((2*nstates+1,2*nstates+1))
+            matrix[:nstates,:nstates] = speed*generator.T
+            matrix[nstates:2*nstates,:nstates] = np.diag(immigration)
+            matrix[nstates:2*nstates,nstates:2*nstates] = speed*generator.T-kappa*np.eye(nstates)
+            matrix[-1,nstates:2*nstates] = 1
+            initial = np.vstack((np.eye(nstates),v0*np.eye(nstates),np.zeros((1,nstates))))
+            exact_mean = (expm(t*matrix)@initial)[-1]
+            sensitivity = -math.expm1(-kappa*t)/kappa
+            averaged_mean = (pi@immigration)/kappa*t+(v0-(pi@immigration)/kappa)*sensitivity
+            mean_errors.append(np.max(abs(exact_mean-averaged_mean+chi*sensitivity/speed)))
+        assert 3 < prior_errors[-2]/prior_errors[-1] < 5 and 1.8 < omitted[-2]/omitted[-1] < 2.2
         assert 3 < errors[-2]/errors[-1] < 5 and refinement < 3e-9
+        assert 3 < mean_errors[-2]/mean_errors[-1] < 5
         print(f'{name}: Q={generator.tolist()}, immigration={immigration}, K={green:.10g}, m0={m0}, A_K={math.exp(.2)*total:.9g}; '
               f'call residuals at 16/128={errors[0]:.9g}/{errors[-1]:.9g}; refinement={refinement:.3e}')
+        print(f'{name}: uniform-prior A_K={math.exp(.2)*uniform:.9g}; prior residuals at 16/128='
+              f'{prior_errors[0]:.9g}/{prior_errors[-1]:.9g}; omitted-memory ratio={omitted[-2]/omitted[-1]:.6f}')
+        print(f'{name}: independent first-moment residual at m=128: {mean_errors[-1]:.9g}')
+    print('84 prior/strike/speed price cases (vertices plus mixed priors); variance-Greek finite differences: PASS')
     print('PASS')
 
 
