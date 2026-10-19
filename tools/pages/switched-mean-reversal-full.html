@@ -1,0 +1,104 @@
+<!-- title: Switched CIR means under reversal · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; Cycle direction</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_switched_mean_reversal.py">certificate</a></span></p>
+    <h1>When simultaneous CIR switching preserves two call-crossing constraints</h1>
+    <p class="subtitle">An exact finite-speed mean criterion, not a sharp count of all price crossings.</p>
+    <p>Let $Y$ start in the stationary law $\pi$ of an irreducible finite row generator $mQ$, $m&gt;0$.
+      For independent Brownian motions $B,W$, fixed $v_0\ge0$, $X_0=0$, common $\kappa&gt;0$ and $|\rho|\le1$, consider</p>
+    $$dv=(a_Y-\kappa v)dt+\xi_Y\sqrt v\,dB,\qquad
+      dX=-v\,dt/2+\sqrt v(\rho\,dB+\sqrt{1-\rho^2}\,dW),\qquad a_i,\xi_i&gt;0.$$
+    <p>The regime chain is independent of the Brownian motions; only immigration and vol-of-vol switch.
+      Compare $Q$ and $Q^\leftarrow=D_\pi^{-1}Q^TD_\pi$ with the same fixed initial variance.
+      Assume $S=e^X$ is a true martingale and both MGFs are finite on an open interval containing $[0,1]$ at the maturities considered.</p>
+    <div class="equation-card">
+    <p>The ordinary log-return means always agree under reversal.
+      If $k_i=\kappa-\rho\xi_i$ is constant, the share-weighted means also agree; for any number of states, $a=\alpha\mathbf1+\beta k$ is another sufficient condition.</p>
+    <p>For a nonreversible three-state chain and nonconstant $k$, this affine condition is necessary and sufficient for share-weighted mean equality at every maturity, at each fixed speed.</p>
+    </div>
+    <p>Whenever both means agree, a nonzero full call-price difference must have at least two sign changes and thus two distinct exact blind strikes.
+      Zero leverage is included without any affine restriction on $a$, since then $k$ is constant.
+      No assertion of exactly two crossings, or of four crossings under simultaneous switching, follows.</p>
+
+    <h2>A killed-semigroup formula for the missing mean</h2>
+    <p>Under the share measure $d\mathbb P^S/d\mathbb P|_{\mathcal F_T}=e^{X_T}$, the continuous change of measure leaves regime jump intensities unchanged and gives variance drift $a_Y-k_Yv$.
+      The log-price drift becomes $+v/2$, so $\mathbb E[e^{X_T}X_T]=\tfrac12\int_0^T\mathbb E^S v_tdt$.
+      This is the usual <a href="./bibliography.html#GemanElKarouiRochet1995">change of num&eacute;raire</a>, applied here before taking moments.</p>
+    <p>Put $A=mQ-D_k$, $\langle f,g\rangle_\pi=\sum_i\pi_i f_i g_i$ for real vectors, and let $\delta$ denote forward minus reversed expectation.
+      The exact formula is</p>
+    $$\delta\mathbb E[e^{X_T}X_T]=\frac12\int_0^T(T-u)F(u)du,\qquad
+      F(u)=\langle a,e^{uA}\mathbf1\rangle_\pi-\langle\mathbf1,e^{uA}a\rangle_\pi.$$
+    <p>To prove it, the conditional share-measure mean from variance $v$ and regime $i$ has the affine form $b_i(t)v+d_i(t)$.
+      The backward equations give $b'=Ab$, $b(0)=\mathbf1$, $d'=mQd+D_ab$, $d(0)=0$.
+      Stationarity therefore gives</p>
+    $$\mathbb E^S_Qv_t=v_0\langle\mathbf1,e^{tA}\mathbf1\rangle_\pi
+          +\int_0^t\langle a,e^{uA}\mathbf1\rangle_\pi du.$$
+    <p>Under reversal, $A$ becomes its $\pi$-adjoint; the first term is unchanged and the integrand becomes $\langle\mathbf1,e^{uA}a\rangle_\pi$.
+      Integrating in $t$ proves the formula and shows the mean difference is independent of $v_0$.</p>
+    <p>If $a=\alpha\mathbf1+\beta k$, the constant part cancels trivially.
+      For the $k$ part use $A\mathbf1=-k$ and $\pi A=-\pi D_k$:</p>
+    $$\langle k,e^{uA}\mathbf1\rangle_\pi
+        =-\langle\mathbf1,Ae^{uA}\mathbf1\rangle_\pi
+        =\langle\mathbf1,e^{uA}k\rangle_\pi.$$
+    <p>Hence $F\equiv0$ for every speed and maturity, in any finite dimension.
+      If instead $k=k_0\mathbf1$, then $e^{uA}\mathbf1=e^{-k_0u}\mathbf1$ and $\pi e^{uA}=e^{-k_0u}\pi$, so again every $a$ cancels.</p>
+
+    <h2>A finite cancellation test, and necessity for three states</h2>
+    <p>For $n$ states at any fixed speed, equality of the share means for every $T$ is equivalent to the finite set of scalar tests</p>
+    $$\langle a,A^j\mathbf1\rangle_\pi-\langle\mathbf1,A^ja\rangle_\pi=0,
+         \qquad j=2,\ldots,n-1.$$
+    <p>Indeed, the second maturity derivative of the mean difference is $F(T)/2$.
+      Cayley&ndash;Hamilton expresses all powers of $A$ in terms of powers through $n-1$, and $F(0)=F'(0)=0$ automatically, so these tests are equivalent to $F\equiv0$.
+      They concern this one scalar mean, not reversibility or equality of full price laws.</p>
+    <p>Stationarity gives $F(0)=F'(0)=0$ and</p>
+    $$F''(0)=m\{\langle k,Qa\rangle_\pi-\langle a,Qk\rangle_\pi\},\qquad
+      \delta\mathbb E[e^{X_T}X_T]
+       =\frac{mT^4}{48}\{\langle k,Qa\rangle_\pi-\langle a,Qk\rangle_\pi\}+O(T^5).$$
+    <p>This is a fixed-speed small-maturity expansion, not a fast-switching or long-maturity approximation.
+      With $\ell=\|A\|_\infty$, its remainder is at most $\|a\|_\infty e^{\ell T}\ell^3T^5/120$, by bounding the matrix exponential after degree two in $F$.</p>
+    <p>For three states, set $J=\pi_1q_{12}-\pi_2q_{21}$.
+      The skew matrix $D_\pi Q-Q^TD_\pi$ has zero row sums, and hence</p>
+    $$\langle k,Qa\rangle_\pi-\langle a,Qk\rangle_\pi
+      =J\det\begin{pmatrix}1&amp;1&amp;1\\k_1&amp;k_2&amp;k_3\\a_1&amp;a_2&amp;a_3\end{pmatrix}.$$
+    <p>Nonreversibility is exactly $J\ne0$.
+      When $k$ is nonconstant, the determinant vanishes exactly when $a\in\operatorname{span}\{\mathbf1,k\}$.
+      A nonzero determinant gives a nonzero $T^4$ coefficient, proving necessity for equality at all maturities.</p>
+    <p>Outside the affine family, equality at isolated maturities is not ruled out.
+      Four states already allow nonaffine cancellation: on the unit directed four-cycle, $k=(2.12,2.24,2.12,2.24)$ and $a=(1,2,3,4)$ pass the finite tests at $m=1$ although $a$ is not affine in $k$.
+      Thus the three-state necessity must not be extended to arbitrary finite chains.</p>
+
+    <h2>Surviving weighted strike areas</h2>
+    <p>Common original reversion gives $\mathbb E v_t=v_0e^{-\kappa t}+(\pi a)(1-e^{-\kappa t})/\kappa$, independently of cycle direction and vol-of-vol.
+      Consequently $\delta\mathbb E X_T=-\tfrac12\delta\int_0^T\mathbb E v_tdt=0$.</p>
+    <p>For $G(k)=\mathbb E_Q(e^{X_T}-e^k)_+-\mathbb E_{Q^\leftarrow}(e^{X_T}-e^k)_+$, let $\Phi$ be the return MGF.
+      The bilateral log-strike transform is</p>
+    $$H(s)=\int_{\mathbb R}e^{(s-1)k}G(k)dk
+          =\frac{\Phi_Q(s)-\Phi_{Q^\leftarrow}(s)}{s(s-1)},\qquad
+      H(0)=-\delta\mathbb E X_T=0,\quad H(1)=\delta\mathbb E[e^{X_T}X_T].$$
+    <p>For $s_-&lt;0&lt;1&lt;s_+$ inside the moment strip, call and put bounds give $|G(k)|\le M_+e^{-(s_+-1)k}$ on $k\ge0$ and $|G(k)|\le M_-e^{(1-s_-)k}$ on $k\le0$, where $M_\pm=\Phi_Q(s_\pm)+\Phi_{Q^\leftarrow}(s_\pm)$.
+      These bounds justify absolute convergence and analytic continuation of the payoff-integral identity from $s&gt;1$ to zero and one.</p>
+    <p>Thus $\int e^{-k}G(k)dk=0$ always; if the share means agree, also $\int G(k)dk=0$.
+      A nonzero continuous $G$ cannot then have one sign, and it cannot change sign only once at $x$: $(e^{-k}-e^{-x})G(k)$ would have one nonzero sign but zero integral.
+      This proves at least two sign changes, whereas the always-valid first constraint alone proves only at least one.</p>
+    <p>At $\rho=0$, conditional on integrated variance $V$, $X_T$ is $N(-V/2,V)$.
+      Its put&ndash;call symmetry gives $G(k)=e^kG(-k)$, so nonzero crossings occur in reflected pairs.
+      No such reflection symmetry is asserted for leveraged members of the affine family.</p>
+
+    <h2>Positive-volatility witnesses and checks</h2>
+    <p>Use the unit directed three-cycle, $\pi=(1,1,1)/3$, $m=T=1$, $\kappa=2$, $\rho=-0.6$, $\xi=(0.2,0.4,1)$ and $v_0=0.04$.
+      Then $k=(2.12,2.24,2.6)$; with $a=(1,2,3)$, the determinant is $-6/25$, the $T^4$ coefficient at $m=1$ is $-1/600$, and the exact share-mean gap is approximately $-0.000286821579737$.</p>
+    <p>Instead set $a=k$, retaining simultaneous immigration and vol-of-vol switching with leverage.
+      The share means now agree at every maturity, but a rational enclosure proves $\delta\mathbb E X_1^2&gt;10^{-5}$, with numerical value $1.10663863634\times10^{-5}$.
+      This proves the two call curves are different: equality at all strikes would determine the same stock law and hence the same log moments.</p>
+    <p>Both examples satisfy strict Feller inequalities $2a_i&gt;\xi_i^2$.
+      A common positive loading $b=1/2$ at return moment $r=2$ satisfies $\xi_i^2b^2/2-(\kappa-r\rho\xi_i)b+r(r-1)/2&lt;0$ in every state, giving the positive moment and true-stock-martingale conditions by localization.
+      The negative moment $r=-1/10$ has the same strict inequality with $b=1/10$, supplying the other side of the moment strip.</p>
+    <p>The certificate truncates exact rational matrix exponentials after degree $160$, with a separate induced-norm remainder for each direction.
+      For matrix $M$ and initial moment vector $y$, put $L=\lceil\|M\|_\infty\rceil$; a target row $r$ has tail at most $\|r\|_1\|y\|_\infty 3^L L^{161}/161!$.
+      The summed tails are below $10^{-137}$ for the share-mean obstruction and $10^{-100}$ for the second-moment witness, so neither sign relies on floating cancellation.</p>
+    <p>Independent polynomial moments and numerical integration of the killed-semigroup formula check $36$ random finite-horizon cases in three, four and six states, with errors below $10^{-12}$.
+      Polynomial moment closure follows the framework of <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>; the affine cancellation and three-state necessity are proved above, not attributed to that reference.</p>
+    <p>The second-moment witness shows the higher cancellations used for four crossings with a single switched immigration cannot be assumed here.
+      It does not exclude four or more actual crossings; sharpness and controlled global crossing counts remain open in <a href="https://github.com/microprediction/homogenization/issues/204">issue #204</a>.
+      No maturity-uniform approximation, fixed-strike identification guarantee or statistical rate is claimed.</p>
+  </main>
