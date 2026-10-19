@@ -1,0 +1,84 @@
+<!-- title: Shared-hub Green–Kubo realization · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>Realizing several directed Green&ndash;Kubo features</h1>
+    <p>Every real matrix with positive-definite symmetric part is the exact directed Green&ndash;Kubo block of a finite irreducible chain with suitable features.
+      Cycles sharing one hub give an additive state-count bound; for a uniform small-skew range they attain the rank-minimal count.</p>
+    <h2>Constructive theorem</h2>
+    <p>Fix $K=G+A\in\mathbb R^{d\times d}$, $G=G^\top\succ0$, $A^\top=-A$ and $d\ge1$.
+      Put $B=G^{-1/2}AG^{-1/2}$ and choose an orthogonal canonical form</p>
+    $$B=O\operatorname{diag}(\kappa_1J,\ldots,\kappa_rJ,0_z)O^\top,
+      \quad J=\begin{pmatrix}0&1\\-1&0\end{pmatrix},\quad \kappa_j&gt;0,\quad d=2r+z.$$
+    <p>For each nonzero block choose any integer $n_j\ge3$ with $\kappa_j\le\cot(\pi/n_j)$.
+      Then there is an irreducible row generator $Q$ on</p>
+    <div class="equation-card">
+    $$N=1+z+\sum_{j=1}^r(n_j-1)$$
+    </div>
+    <p>states, with any prescribed strictly positive stationary vector $\pi$ of that length, and a real centered feature matrix $F$ satisfying exactly</p>
+    $$K=F^\top D_\pi(-Q)^{-1}_{0}F,\qquad \pi F=0.$$
+    <p>The inverse acts on centered functions.
+      In particular, if</p>
+    <div class="equation-card">
+    $$\|G^{-1/2}AG^{-1/2}\|_2\le1/\sqrt3,\qquad\text{then }N=d+1\text{ is attainable and minimal}.$$
+    </div>
+    <p>Use triangles for all nonzero blocks and one extra leaf for each zero direction; no chain with fewer states can have fixed-feature symmetric rank $d$.
+      The norm condition is sufficient, not asserted necessary for a rank-minimal realization in dimension above two.</p>
+    <h2>Build stationary flows, then choose the features</h2>
+    <p>Take a hub $0$ and attach $r$ cycles of lengths $n_j$, sharing only that hub, plus $z$ distinct leaves.
+      For cycle $j$, set $\theta_j=2\pi/n_j$ and give each oriented edge forward flow $a_j$ and reverse flow $b_j$, where</p>
+    $$a_j+b_j=\frac{2}{n_j(1-\cos\theta_j)},\qquad
+      a_j-b_j=\frac{2\kappa_j}{n_j\sin\theta_j}.$$
+    <p>The cotangent condition is exactly $a_j,b_j\ge0$; at least one is positive, so every cycle communicates with the hub.
+      Give each leaf edge flow one in both directions, sum these flows as $c_{uv}$, and define $q_{uv}=c_{uv}/\pi_u$ for $u\ne v$, with zero row sums.</p>
+    <p>Each cycle and leaf balances its flow at every vertex, so $\pi Q=0$.
+      The connected shared-hub graph is strongly connected even when a cycle is one-way, proving irreducibility.</p>
+    <p>Let the two potential columns on cycle $j$ have values $(\cos(k\theta_j)-1,\sin(k\theta_j))$ at its $k$th vertex and zero outside that cycle.
+      Each leaf potential is its leaf indicator; all potential columns vanish at the hub.</p>
+    <p>Collect these columns into $U$ and put $L=-Q$, $F_0=LU$.
+      Then $\pi F_0=0$, $(-Q)^{-1}_0F_0=U-\mathbf1\pi U$, and</p>
+    $$K_0=F_0^\top D_\pi(-Q)^{-1}_0F_0
+      =U^\top L^\top D_\pi U
+      =\operatorname{diag}(I_2+\kappa_1J,\ldots,I_2+\kappa_rJ,I_z).$$
+    <p>For one cycle, its two Fourier potentials give $n_j[(a_j+b_j)(1-\cos\theta_j)I_2+(a_j-b_j)\sin\theta_j J]/2=I_2+\kappa_jJ$.
+      Off-block pairings vanish because potentials on different cycles or leaves overlap only at the hub, where they are zero.</p>
+    <p>Finally take $F=F_0O^\top G^{1/2}$.
+      Congruence gives $F^\top D_\pi(-Q)^{-1}_0F=G^{1/2}(I+B)G^{1/2}=G+A$; the feature rank is $d$, since the displayed symmetric part is positive definite.</p>
+    <p>Using Poisson potentials is essential: directly placing the desired feature values on the separate cycles would not in general cancel their shared-hub correlations.
+      The construction is exact and works for arbitrary positive $\pi$, not just a uniform law.</p>
+    <h2>A rational rank-minimal example</h2>
+    <p>Attach two triangles with forward/reverse stationary flows $3,1$, then a leaf with flow $2$ in each direction.
+      For the five potentials given by the indicators of the five nonhub vertices, and $F=-QU$, one gets</p>
+    $$K=\operatorname{diag}\left\{
+       \begin{pmatrix}4&-1\\-3&4\end{pmatrix},
+       \begin{pmatrix}4&-1\\-3&4\end{pmatrix},2\right\}.$$
+    <p>Its symmetric rank is five and its intrinsic skew norm is $1/\sqrt{12}$.
+      Six states are therefore both sufficient and necessary, including with the prescribed law $\pi=(1,2,3,4,5,6)/21$; the certificate checks every matrix entry in exact rational arithmetic.</p>
+    <h2>Why several strong skew modes need a separate count</h2>
+    <p>The lower bounds $N\ge d+1$ and $\|G^{-1/2}AG^{-1/2}\|_2\le\cot(\pi/N)$ need not jointly suffice.
+      A concrete four-feature target is</p>
+    $$K_*=I_4+\kappa\operatorname{diag}(J,J),\qquad
+      \kappa=\cot(\pi/5)=\sqrt{1+2/\sqrt5}.$$
+    <p>Both elementary bounds allow five states, but five are impossible; two five-cycles sharing a hub give nine states.
+      Thus the true minimum is between six and nine, not classified here.</p>
+    <p>Here is the obstruction.
+      For any five-state realization attaining the maximal sector $\cot(\pi/5)$, choose a complex Poisson potential $u+iv$ that saturates the numerical-range inequality.</p>
+    <p>For a directed flow cycle of length $\ell$, the quadratic form has Fourier multipliers $1-e^{2\pi i k/\ell}$, so its signed imaginary part is at most $\cot(\pi/\ell)$ times its real part.
+      Equality with nonzero energy uses only a constant plus one oriented first complex Fourier mode; summing this bound over stationary cycles gives the five-state inequality and its saturation conditions.</p>
+    <p>Decompose stationary flows into simple cycles.
+      Saturation forces any cycle with positive potential energy to be a five-cycle whose potential values lie in the first complex Fourier mode; hence those five values are distinct vertices of a regular pentagon.</p>
+    <p>A shorter cycle cannot then have zero energy, and would violate saturation because its cotangent bound is strictly smaller.
+      Every remaining five-cycle must traverse that same pentagon in the same direction to saturate the signed inequality, so the total stationary flow is a single directed five-cycle.</p>
+    <p>Arbitrary holding times do not change its energy-normalized skew singular values, which are $\cot(\pi/5)$ and $\cot(2\pi/5)$, each repeated twice.
+      A full four-dimensional feature basis preserves these generalized singular values under congruence, whereas $K_*$ has the larger value four times; this is a contradiction.</p>
+    <p>The certificate verifies the unequal cycle values $\sqrt{1\pm2/\sqrt5}$ under varying holding times and checks the nine-state construction.
+      Floating searches for six-, seven- or eight-state realizations are not used to assert impossibility.</p>
+    <h2>Scope and classical ingredients</h2>
+    <p>This is a population fixed-generator, fixed-feature realization, not recovery of a given hidden generator, a finite-sample guarantee, or equality of finite-time path laws.
+      Changing the feature embedding is allowed; it is different from the identified-set problem with a fixed known embedding.</p>
+    <p>The count uses fixed-feature rank, never rank created by integrating different maturity loadings.
+      A positive scalar speed change divides $K$ by that speed unless the feature amplitudes are also changed.</p>
+    <p>The Poisson representation of Green&ndash;Kubo is classical; see <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>, Proposition 2.1 and equations (2.3)&ndash;(2.4).
+      Stationary flow cycles are classical as well: <a href="./bibliography.html#LandimXu2016">Landim and Xu (2016)</a>, Lemma 4.1; the sharp sector context is <a href="./bibliography.html#OhgaItoKolchinsky2023">Ohga, Ito and Kolchinsky (2023)</a>, equation (3).</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bouquet_realization.py">certificate</a> combines exact rational identities with independent generator, Poisson, quadrature and realization consistency checks.
+      Numerical matrix calculations are not outward-rounded enclosures, and no priority claim is made for the classical flow or sector machinery.</p>
+  </main>
