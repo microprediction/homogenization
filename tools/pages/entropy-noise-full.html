@@ -1,0 +1,84 @@
+<!-- title: Sharp entropy recovery under quote noise · homogenization | math -->
+<main>
+  <h1>Sharp entropy recovery under quote noise</h1>
+  <p class="subtitle">Even the entire call curve, known within a uniform absolute error, leaves an unavoidable logarithmic loss.</p>
+  <p><a href="./cycle-smile.html">Back to cycle direction</a> · <a href="./papers.html">Papers</a> ·
+  <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_entropy_noise.py">certificate</a>.</p>
+
+  <h2>The sharp limit</h2>
+  <p>Fix $M&gt;1$ and let $\mathcal P_M$ contain all laws on $[0,\infty)$ with $\mathbb ES=1$ and $\mathbb ES^2\le M$.
+  The target is $H(P)=\mathbb E_P[S\log S]$, with $0\log0=0$, and the call curve is $C_P(K)=\mathbb E_P(S-K)_+$.</p>
+  <p>For a prescribed finite strike set $\mathcal K$, observe $y_K=C_P(K)+e_K$ with $|e_K|\le\eta$.
+  Define the deterministic minimax absolute error</p>
+  $$R_M^{\mathrm{fin}}(\eta)=\inf_{\substack{\mathcal K\ \mathrm{finite}\\\widehat H}}
+  \sup_{P\in\mathcal P_M}\ \sup_{|e_K|\le\eta}
+  |\widehat H((C_P(K)+e_K)_{K\in\mathcal K})-H(P)|.$$
+  <p>The design and estimator may depend on $M,\eta$, but not on the unknown law.
+  Define $R_M^{\mathrm{all}}$ by allowing observation of a function $y(K)$ for every $K\ge0$, with $\sup_K|y(K)-C_P(K)|\le\eta$.</p>
+  $$\boxed{\lim_{\eta\downarrow0}\frac{R_M^{\mathrm{all}}(\eta)}{\eta\log(1/\eta)}
+  =\lim_{\eta\downarrow0}\frac{R_M^{\mathrm{fin}}(\eta)}{\eta\log(1/\eta)}=2.}$$
+  <p>This is a bounded-adversarial-error result, not a Gaussian-noise, sampling or coverage theorem.
+  The limit holds for each fixed $M&gt;1$, not uniformly as $M\downarrow1$.</p>
+  <p>It sharpens the quote-error question left by the <a href="https://github.com/microprediction/homogenization/pull/207">finite strips</a> and <a href="https://github.com/microprediction/homogenization/pull/208">noiseless fixed-grid rate</a>: the logarithmic amplification is not merely an artifact of a chosen strip.</p>
+
+  <h2>A finite-strip upper bound</h2>
+  <p>For $0&lt;\eta&lt;1$, put $L=\eta$, $U=\eta^{-1}$ and
+  $N=\lceil\log(U/L)/\log(1+\sqrt{8\eta})\rceil$, and set $h=\log(U/L)/N$, $K_j=Le^{jh}$.
+  There are $N+1$ quotes; this simple construction is not claimed quote-count optimal.</p>
+  <p>Interpolate $f(s)=s\log s-s+1$ on these knots and extend by the endpoint tangent lines outside $[L,U]$.
+  The slope-jump weights are $w_0=d_h$, $w_j=h$ for $0&lt;j&lt;N$, $w_N=h-d_h$, where $d_h=h/(1-e^{-h})-1$.</p>
+  $$\widehat H(y)=1-L+\log L+\sum_{j=0}^Nw_j y_{K_j}+\frac{M\eta}{4},\qquad
+  |\widehat H(y)-H(P)|\le2\eta\log(1/\eta)+(1+M/4)\eta.$$
+  <p>Indeed the weights are positive and sum to $\log(U/L)$, so the noise contributes at most $2\eta\log(1/\eta)$.
+  On a cell $[a,b]$, $f''\le1/a$ bounds the chord error by $(b-a)^2/(8a)\le\eta s$.</p>
+  <p>Below $L$, the tangent deficit is at most $L$, including an atom at zero; above $U$ it is at most $s^2/(2U)$.
+  Thus each law's signed expected interpolation error lies in $[-\eta(1+M/2),\eta]$, and adding $M\eta/4$ centers that interval.</p>
+  <p>The affine term follows from the lower tangent $f(L)+\log L(s-L)$ and the known mean one.
+  This proves the finite-design upper bound, hence also the whole-curve bound, in exact arithmetic.</p>
+
+  <h2>An indistinguishable pair using both tails</h2>
+  <p>Set $\lambda=(M-1)/(4M)$, $c=(M-1)/8$, and
+  $\bar\delta=\min(1/4,\lambda/2,\sqrt{c\lambda/2})$.
+  For $0&lt;\delta\le\bar\delta$, define</p>
+  $$q=\frac{2\delta^2}{c},\quad U_*=\frac c\delta,\quad
+  \epsilon=\frac\delta\lambda,\quad d=\frac{1-2\delta}{1-\lambda-q},$$
+  $$R=\lambda\delta_0+q\delta_{U_*}+(1-\lambda-q)\delta_d,\qquad
+  P=\lambda\delta_\epsilon+q\delta_{U_*/2}+(1-\lambda-q)\delta_d.$$
+  <p>Here $\delta_x$ denotes a point mass at $x$.
+  Both laws have mean one and nonnegative masses, since $q\le\lambda&lt;1/4$.</p>
+  $$\mathbb E_R S^2=2c+\frac{(1-2\delta)^2}{1-\lambda-q}
+  \le1+\frac34(M-1)&lt;M,\qquad
+  \mathbb E_P S^2-\mathbb E_R S^2=\frac{\delta^2}{\lambda}-\frac{3c}{2}\le-c.$$
+  <p>For the first bound use $q\le\lambda$, $(1-2\delta)^2\le1$, and
+  $1/(1-2\lambda)=1+(M-1)/(M+1)\le1+(M-1)/2$.
+  Both laws therefore belong to $\mathcal P_M$.</p>
+  <p>Because $\epsilon\le U_*/2$, their call difference is the nonnegative trapezoid</p>
+  $$C_R(K)-C_P(K)=
+  \begin{cases}\lambda K,&amp;0\le K\le\epsilon,\\
+  \delta,&amp;\epsilon\le K\le U_*/2,\\
+  q(U_*-K),&amp;U_*/2\le K\le U_*,\\0,&amp;K\ge U_*.
+  \end{cases}$$
+  $$\|C_R-C_P\|_\infty=\delta,\qquad
+  H(R)-H(P)=\delta\log\!\frac{2\lambda c}{\delta^2}.$$
+  <p>The entropy identity follows directly from the atoms: the common $d$ term cancels, the lower transfer adds mean $\delta$, and the upper transfer removes the same mean.
+  The atom at zero and the remote upper tail each contribute one logarithmic term.</p>
+  <p>For $\delta=2\eta\le\bar\delta$, the entire midpoint curve $y=(C_R+C_P)/2$ is within $\eta$ of either law.
+  It is itself an arbitrage-free call curve of a law in $\mathcal P_M$, so projecting observations onto valid call curves cannot remove the obstruction.</p>
+  $$R_M^{\mathrm{all}}(\eta)\ge\frac{H(R)-H(P)}2
+  =2\eta\log(1/\eta)+\eta\log(\lambda c/2).$$
+  <p>Every estimator sees identical data and must err by at least half the target gap on one law.
+  Since $R_M^{\mathrm{all}}\le R_M^{\mathrm{fin}}$, this lower bound and the finite-strip upper bound prove both limits, with explicit additive $O_M(\eta)$ bounds.</p>
+
+  <h2>Interpretation and certificate</h2>
+  <p>The constant two is sharp for this moment class and uniform absolute quote-error norm, not necessarily for a restricted stochastic-volatility family, relative quote errors, or quotes confined to a fixed market range.
+  These atomic laws are not asserted to arise as a switched-CIR reversal pair; <a href="https://github.com/microprediction/homogenization/issues/204">sharp CIR crossing counts</a> remain separate.</p>
+  <p>For $M=1$, the only law is $S=1$ almost surely and the recovery error is zero, so the strict condition $M&gt;1$ matters.
+  Errors in weights, summation, the moment bound and forward normalization require separate budgets.</p>
+  <p>For $M=2$, $\eta=10^{-6}$, the lower and upper bound formulas evaluate to approximately
+  $2.2778990852\times10^{-5}$ and $2.91310211159\times10^{-5}$ respectively, in normalized payoff units.
+  These are evaluations of the proved formulas, not a fitted rate or an outward-rounded numerical enclosure.</p>
+  <p>The certificate checks rational masses, means, second moments and the complete piecewise-linear call gap exactly, and independently evaluates the entropy identity and noisy-strip bounds.
+  It also tests the common midpoint observation and reports the two asymptotic coefficients; the proof, not a fitted slope, supplies the continuum and minimax conclusions.</p>
+  <p>Classical vanilla replication is reviewed in <a href="./bibliography.html#BossuCarrPapanicolaou2020">Bossu, Carr and Papanicolaou (2020)</a>, section 2.1.
+  Our entropy target is a stock-weighted moment, not differential entropy or the maximum-entropy density fitting problem studied by <a href="./bibliography.html#OrozcoRodriguezSantosa2012">Orozco Rodriguez and Santosa (2012)</a>; no claim of priority for general inverse-problem instability is made.</p>
+</main>
