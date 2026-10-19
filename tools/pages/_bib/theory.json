@@ -69,5 +69,7 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
- }
+ },
+ {"key": "LandimXu2016", "authors": "Landim, C. and Xu, T.", "year": 2016, "title": "Metastability of finite state Markov chains: a recursive procedure to identify slow variables for model reduction", "venue": "ALEA, Latin American Journal of Probability and Mathematical Statistics 13:725-751", "doi": "10.30757/ALEA.v13-29", "annotation": "Section 4, especially Lemma 4.1 and Remark 4.2, gives stationary cycle decompositions and constructs nonreversible dynamics with a prescribed invariant law."},
+ {"key": "OhgaItoKolchinsky2023", "authors": "Ohga, N., Ito, S. and Kolchinsky, A.", "year": 2023, "title": "Thermodynamic Bound on the Asymmetry of Cross-Correlations", "venue": "Physical Review Letters 131:077101", "doi": "10.1103/PhysRevLett.131.077101", "annotation": "Equation (3) bounds short-time cross-correlation asymmetry by cycle affinity and length. Dropping affinity information gives the cotangent sector bound, applicable to Poisson potentials in the Green-Kubo realization argument."}
 ]

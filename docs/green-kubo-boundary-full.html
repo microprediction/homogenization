@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Singular Green–Kubo boundaries · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>Singular directed blocks and the cost of approximation</h1>
+    <p>A directed Green&ndash;Kubo block needs more than a nonnegative symmetric part: its skew part must annihilate every symmetric null direction.
+      The resulting cone is not closed, but a fixed state budget leaves a positive approximation floor; a two-feature example has a sharp inverse-square state-count law.</p>
+    <h2>The exact singular boundary</h2>
+    <p>Allow any finite irreducible row generator $Q$, its stationary law $\pi$, and arbitrary centered real features $F$ with $d$ columns.
+      Write $K=F^\top D_\pi(-Q)^{-1}_0F=G+A$, where $G=G^\top$ and $A^\top=-A$.</p>
+    <div class="equation-card">
+    $$K\text{ is realizable}\quad\Longleftrightarrow\quad
+      G\succeq0\quad\text{and}\quad\ker G\subseteq\ker A.$$
+    </div>
+    <p>The number of states is unrestricted here, but finite for each realization.
+      The zero block permits the trivial one-state chain; every nonzero block has at least $\operatorname{rank}G+1$ states.</p>
+    <p>For necessity put $L=-Q$, $F=LU$ and $C=D_\pi L$.
+      Then $K=U^\top C^\top U$, and the balanced-flow Dirichlet identity gives</p>
+    $$x^\top Gx=\tfrac12\sum_{v\ne w}\pi_vq_{vw}\big((Ux)_v-(Ux)_w\big)^2.$$
+    <p>If this vanishes, irreducibility makes $Ux$ constant, hence $Fx=0$ and both $Kx=0$ and $K^\top x=0$.
+      Thus $Ax=0$; equivalently the main fixed-feature kernel theorem supplies the necessity.</p>
+    <p>For sufficiency restrict to $\operatorname{range}G$, where $G$ is positive definite and $A$ is supported by the kernel condition.
+      Whitening and a real orthogonal canonical form reduce the problem to blocks $I_2+\kappa_jJ$ and scalar ones, where $J=\begin{pmatrix}0&1\\-1&0\end{pmatrix}$.</p>
+    <p>Here is a finite construction, included to make the reduction self-contained.
+      For each skew block choose $n\ge3$ with $|\kappa|\le\cot(\pi/n)$, put $\theta=2\pi/n$, and use a cycle with stationary forward/reverse flows $a,b$ satisfying</p>
+    $$a+b=\frac{2}{n(1-\cos\theta)},\qquad a-b=\frac{2\kappa}{n\sin\theta}.$$
+    <p>Attach these cycles at a common hub, adding one leaf with unit flow in both directions for each scalar block.
+      On each cycle use potential columns $(\cos(k\theta)-1,\sin(k\theta))$, zero elsewhere, and leaf indicators for scalar blocks.</p>
+    <p>The potentials vanish at the hub, so different blocks have zero pairings in $U^\top C^\top U$; the displayed flows make each cycle block exactly $I_2+\kappa J$.
+      Divide flows by any positive stationary law to obtain $Q$, undo the whitening/congruence, extend by zero on $\ker G$, and take $F=-QU$.</p>
+    <p>The realizable set $\mathcal R_d$ is a convex cone: the kernel of a sum of nonnegative symmetric parts is the intersection of their kernels.
+      Its closure is all real matrices with nonnegative symmetric part, since $K+\delta I$ is realizable for every $\delta&gt;0$ whenever $\operatorname{sym}K\succeq0$.</p>
+    <p>For $d\ge2$ the cone is not closed.
+      With $a\ne0$, the block</p>
+    $$K_a=\begin{pmatrix}1&a\\-a&0\end{pmatrix}$$
+    <p>is impossible for every finite irreducible chain: its symmetric null vector $e_2$ is not a null vector of its skew part.
+      Nevertheless $K_a+\delta I\to K_a$ through realizable blocks.</p>
+    <h2>A fixed state budget prevents arbitrary approximation</h2>
+    <p>Fix $N\ge3$, $c_N=\cot(\pi/N)$, and let $\mathcal R_{2,\le N}$ contain two-feature blocks realizable using at most $N$ states.
+      This set is exactly the closed convex cone</p>
+    $$\mathcal R_{2,\le N}=\{G+A:c_NG+iA\succeq0,\ c_NG-iA\succeq0\}.$$
+    <p>To see necessity, decompose stationary flows into directed simple cycles.
+      The cycle Fourier multipliers $1-e^{2\pi ik/n}$ bound the absolute imaginary quadratic form by $\cot(\pi/n)$ times its real part; sum the bounds and apply them to complex Poisson potentials.</p>
+    <p>For sufficiency, when $G\succ0$ the two inequalities say $|A_{12}|\le c_N\sqrt{\det G}$.
+      The first cosine/sine pair on a bidirectional $N$-cycle realizes every normalized skew ratio in $[-c_N,c_N]$ by varying forward/reverse flow bias, then a real congruence gives $K$.</p>
+    <p>At a singular boundary the inequalities force $A\ker G=0$; in two dimensions this means $A=0$, realized with at most two states.
+      The zero block is included.</p>
+    <p>Use the spectral operator norm in the displayed feature coordinates, and define $\rho_N(a)=\inf_{K\in\mathcal R_{2,\le N}}\|K-K_a\|_2$.
+      Put</p>
+    $$\delta_N(a)=\frac{\sqrt{1+4a^2/c_N^2}-1}{2}.$$
+    <div class="equation-card">
+    $$\frac{c_N}{c_N+1}\delta_N(a)\le\rho_N(a)\le\delta_N(a),
+      \qquad\lim_{N\to\infty}N^2\rho_N(a)=\pi^2a^2.$$
+    </div>
+    <p>For the upper bound use $K=K_a+\delta_N I$; its sector inequality is saturated, so an oriented $N$-cycle realizes it exactly.
+      For the lower bound, $c_N\operatorname{sym}K_a+i\operatorname{skew}K_a$ has smallest eigenvalue $-c_N\delta_N$.</p>
+    <p>A perturbation $E$ of operator norm $\eta$ changes this Hermitian matrix by at most $(c_N+1)\eta$, so positivity requires the stated lower bound.
+      Since $c_N\sim N/\pi$, the squeeze proves the sharp leading constant, not just the exponent.</p>
+    <p>The upper construction need not be the closest block at finite $N$.
+      The conclusion concerns arbitrary generators and freely changing embeddings, not just one-way-cycle approximation.</p>
+    <h2>An exact nearest four-state block</h2>
+    <p>For $a=14/15$ and $N=4$, an exact primal/dual certificate gives</p>
+    $$K_{\rm best}=\begin{pmatrix}4/3&2/3\\-2/3&1/3\end{pmatrix},
+      \qquad\rho_4(14/15)=\frac{\sqrt{41}}{15}=0.426874949162\ldots.$$
+    <p>Take the one-way four-cycle $Q=\tfrac23(P-I)$, with $P_{k,k+1}=1$ cyclically and uniform $\pi$.
+      Potentials $(2,0,-2,0)^\top$ and $(0,1,0,-1)^\top$, followed by $F=-QU$, produce $K_{\rm best}$ exactly in rational arithmetic.</p>
+    <p>For global optimality, put $z=(1,2i)^\top/\sqrt5$ and $M=\tfrac15\begin{pmatrix}1&-2\\2&4\end{pmatrix}$.
+      Every feasible four-state block obeys</p>
+    $$\ell(K)=z^*(G+iA)z=\operatorname{tr}(M^\top K)\ge0,
+      \quad\ell(K_a)=-41/75,\quad\|M\|_*=\sqrt{41}/5.$$
+    <p>Here $\|M\|_*$ is the sum of singular values.
+      Trace duality forces $\|K-K_a\|_2\ge\sqrt{41}/15$ for every feasible block, while $(K_{\rm best}-K_a)^\top(K_{\rm best}-K_a)=(41/225)I_2$ attains the bound.</p>
+    <h2>Scope, literature and checks</h2>
+    <p>These are exact population coefficient constraints in fixed feature units; operator-norm distances change under arbitrary feature rescaling.
+      A small fit residual alone cannot distinguish a realizable block from this singular impossible limit unless the state budget is controlled.</p>
+    <p>No inference about finite-time path laws, finite-sample confidence or maturity-integrated rank follows.
+      The four-feature minimum-state problem in <a href="https://github.com/microprediction/homogenization/issues/222">issue 222</a> is unchanged.</p>
+    <p>The classical Poisson representation is <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>, Proposition 2.1, equations (2.3)&ndash;(2.4).
+      Stationary cycle decomposition is <a href="./bibliography.html#LandimXu2016">Landim and Xu (2016)</a>, Lemma 4.1; the sharp sector context is <a href="./bibliography.html#OhgaItoKolchinsky2023">Ohga, Ito and Kolchinsky (2023)</a>, equation (3).</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_singular_gk_boundary.py">certificate</a> checks singular realizations, the state-budget bounds, the exact rational primal/dual benchmark and an independent correlation quadrature.
+      Floating consistency checks and restricted-family numerical projections are not interval enclosures or substitutes for the global analytic dual proof; no priority claim is made for the classical ingredients.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
