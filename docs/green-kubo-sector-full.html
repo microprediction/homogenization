@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Directional response counts hidden regimes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification</a><span><a href="./cycle-smile.html">cycle direction</a></span></p>
+    <h1>Directional response can count more regimes than rank</h1>
+    <p>Two fixed features have symmetric Green&ndash;Kubo rank at most two, however many regimes drive them.
+      Their antisymmetric response carries an additional sharp regime-count constraint: a sufficiently large response relative to the actual symmetric form rules out every small chain.</p>
+    <h2>Fixed-generator, fixed-feature theorem</h2>
+    <p>Let $Q$ be an irreducible row generator on $n\ge2$ states, with stationary law $\pi$, and let $f_1,\ldots,f_d$ be real centered features.
+      With $R=(-Q)^{-1}$ on the centered space, define</p>
+    $$K_{ab}=\langle f_a,Rf_b\rangle_\pi,\qquad G=\tfrac12(K+K^\top),\qquad A=\tfrac12(K-K^\top).$$
+    <p>The symmetric form has $\ker G=\ker[f_1\ \cdots\ f_d]$ and rank at most $n-1$.
+      The same kernel is annihilated by $A$, and the inverse square roots below act only on its orthogonal complement.</p>
+    <div class="equation-card">
+    $$\left\|G^{-1/2}AG^{-1/2}\right\|_2\le\cot\frac\pi n,$$
+    $$|A_{12}|\le\cot\frac\pi n\sqrt{G_{11}G_{22}-G_{12}^2}.$$
+    </div>
+    <p>The second inequality also holds for singular two-feature blocks, with both sides zero when the determinant is zero.
+      For $G\succ0$ of size two put $\chi=|A_{12}|/\sqrt{\det G}$; then the least possible number of states realizing the entire directed block $K$ is exactly</p>
+    $$n_{\min}(K)=\min\{n\in\mathbb N:n\ge3,\ \chi\le\cot(\pi/n)\}.$$
+    <p>This is an exact population realization statement with unrestricted real feature values and unrestricted finite irreducible generators.
+      It does not identify the actual generator or actual state count, impose a prescribed stationary law, or by itself give a finite-sample confidence statement.</p>
+    <h2>Proof of the sector bound</h2>
+    <p>Write $L=-Q$, $S=(L+L^*)/2$ and $T=(L-L^*)/2$, using the $L^2(\pi)$ adjoint.
+      The stationary off-diagonal flows $c_{ij}=\pi_iq_{ij}$ balance at every vertex and decompose into nonnegative flows around simple directed cycles.</p>
+    <p>To see this directly, follow positive edges until a vertex repeats and subtract the smallest flow on that cycle.
+      Balance is preserved and at least one edge disappears, so the procedure terminates; every cycle has length at most $n$.</p>
+    <p>For a cycle of length $\ell$ carrying flow $w$, its contribution to $\langle z,Lz\rangle_\pi$ is $w\sum_j\overline z_j(z_j-z_{j+1})$.
+      Discrete Fourier modes diagonalize this expression with eigenvalues $1-e^{2\pi i k/\ell}$, so each mode has imaginary-to-real ratio at most $\cot(\pi/\ell)\le\cot(\pi/n)$.</p>
+    <p>Summing the cycle inequalities proves $|\operatorname{Im}\langle z,Lz\rangle_\pi|\le\cot(\pi/n)\langle z,Sz\rangle_\pi$ for every complex vector $z$.
+      Substituting $z=u+itv$ and minimizing over $t&gt;0$ gives</p>
+    $$|\langle u,Tv\rangle_\pi|\le\cot(\pi/n)
+      \sqrt{\langle u,Su\rangle_\pi\langle v,Sv\rangle_\pi}.$$
+    <p>For $u=Rf$ and $v=Rg$, the symmetric Green&ndash;Kubo pairing is $G(f,g)=\langle u,Sv\rangle_\pi$, and the antisymmetric pairing is $A(f,g)=-\langle u,Tv\rangle_\pi$.
+      This proves the normalized operator bound; replacing $g$ by $g-G(f,g)f/G(f,f)$ gives the sharper two-feature determinant form.</p>
+    <p>If $G(f,f)=0$, the identity $\langle u,Su\rangle_\pi=\frac12\sum_{i,j}c_{ij}(u_j-u_i)^2$ and irreducibility force $f=0$, which handles the degenerate case.
+      This proof controls the numerical range, not only eigenvalues: an eigenvalue sector alone is insufficient to bound a nonnormal generator's feature response.</p>
+    <h2>Every admissible two-feature block is realized</h2>
+    <p>Fix $n\ge3$, a signed $\kappa$ with $|\kappa|\le\cot(\pi/n)$, and set $\vartheta=2\pi/n$.
+      On the cyclic states $j=0,\ldots,n-1$, use constant forward and backward rates</p>
+    $$a+b=\frac1{1-\cos\vartheta},\qquad a-b=\frac\kappa{\sin\vartheta}.$$
+    <p>The sector condition makes $a,b\ge0$ and at least one positive, so this chain is irreducible and has uniform stationary law.
+      For the orthonormal feature pair $e_j=\sqrt2(\cos j\vartheta,\sin j\vartheta)$, direct inversion on the first Fourier mode gives</p>
+    $$K(e,e)=\frac1{1+\kappa^2}\begin{pmatrix}1&\kappa\\-\kappa&1\end{pmatrix}.$$
+    <p>For a target $K=G+A$ with $G\succ0$, take $\kappa=A_{12}/\sqrt{\det G}$ and any real matrix $C$ with $C^\top C=G$ and $\det C&gt;0$.
+      The feature matrix $\sqrt{1+\kappa^2}\,eC$ realizes exactly $G+A$, because $C^\top\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)C=(\det C)\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$.</p>
+    <p>This proves sufficiency in the minimum-state formula, including equality, where one cyclic direction has zero rate.
+      Rank two itself excludes one or two states, and the sector inequality excludes every remaining smaller $n$.</p>
+    <h2>A rank-two block that requires seven regimes</h2>
+    $$K=\begin{pmatrix}1/10&1/5\\-1/5&1/10\end{pmatrix},\qquad G=I/10,\quad\chi=2.$$
+    <p>This is the circle-diffusion block already appearing in the <a href="./cycle-smile-full.html">cycle note</a> at $D=1,c=2$.
+      Its symmetric rank only forces three regimes, but $2&gt;\cot(\pi/6)=\sqrt3$ rules out every chain with six or fewer states.</p>
+    <p>Seven states suffice by the preceding cyclic construction: take $\kappa=2$, $n=7$ and features $(\cos j\vartheta,\sin j\vartheta)$.
+      The rates are nonnegative because $\tan^2(\pi/7)&lt;1/4$.</p>
+    <p>For an exact check, $x=\tan^2(\pi/7)\in(0,1/3)$ solves $p(x)=x^3-21x^2+35x-7=0$.
+      On that interval $p'\ge64/3&gt;0$, while $p(1/4)=29/64&gt;0$; hence $x&lt;1/4$ without a floating trigonometric comparison.</p>
+    <h2>Coefficient error and interpretation</h2>
+    <p>Suppose a supplied bound $\|\widehat K-K\|_2\le\epsilon$ holds, and the true two-feature $G$ is positive definite.
+      Put $\widehat G=\operatorname{Sym}\widehat K$, $\widehat A=\operatorname{Anti}\widehat K$; then $\widehat G+\epsilon I\succeq G\succ0$ and</p>
+    $$\chi\ge\chi_{\rm low}:=
+      \frac{(|\widehat A_{12}|-\epsilon)_+}{\sqrt{\det(\widehat G+\epsilon I)}}.$$
+    <p>Thus $\chi_{\rm low}&gt;\cot(\pi/N)$ excludes every chain with at most $N$ states.
+      If $\widehat G-\epsilon I\succ0$, the true positive-definiteness assumption is itself certified by the same error bound.</p>
+    <p>For the displayed block used as $\widehat K$, $\epsilon=1/1000$ gives $\chi_{\rm low}=199/101&gt;\sqrt3$, so the seven-state lower bound survives that error budget.
+      This is deterministic error propagation, not a claim that an estimated block has that accuracy.</p>
+    <p>Speeding up $Q$ by $m$ divides both $G$ and $A$ by $m$, leaving $\chi$ unchanged.
+      A scalar yield curve that observes only symmetric contractions cannot supply $A$.</p>
+    <h2>Unlike rank, the sector bound survives common loading aggregation</h2>
+    <p>For real measurable loadings $M(t)$ and a nonnegative measure $\mu$, suppose $\overline K=\int M(t)K M(t)^\top\mu(dt)$ exists.
+      With $c_n=\cot(\pi/n)$, the operator sector inequality is equivalently $-c_nG\preceq iA\preceq c_nG$ on the complexified feature space.</p>
+    <p>Congruence and positive integration preserve these inequalities, so $-c_n\overline G\preceq i\overline A\preceq c_n\overline G$ still holds.
+      Thus any two-feature block of this aggregate retains the sector-based lower bound, although $\operatorname{rank}\overline G$ can exceed $n-1$ and cannot count regimes.</p>
+    <p>For example, a three-state cycle's two-dimensional block can be placed in two disjoint coordinate pairs on two loading intervals.
+      The aggregate has symmetric rank four but still satisfies the three-state sector bound.</p>
+    <p>This requires the same congruence loadings and nonnegative weights for the symmetric and antisymmetric parts.
+      It does not cover arbitrary cross-maturity statistics, entrywise unrelated loading schemes or signed combinations; the minimum-state realization formula above remains a fixed two-feature theorem.</p>
+    <p>The minimum-state converse is only for two independent features.
+      Higher-dimensional simultaneous realization, constrained physical features and continuous-state models are not classified here.</p>
+    <h2>Literature and checks</h2>
+    <p>Cycle decomposition is classical; <a href="./bibliography.html#LandimXu2016">Landim and Xu (2016)</a>, Lemma 4.1, gives the stationary generator decomposition used above.
+      <a href="./bibliography.html#Davies2010">Davies (2010)</a>, proof of Theorem 9, equations (5)&ndash;(6), records the classical generator eigenvalue sector and its earlier origins; the numerical-range proof and Green&ndash;Kubo realization calculation are supplied explicitly here, without a priority claim for the cotangent constant.</p>
+    <p>The cotangent sector also follows by dropping the affinity information in <a href="./bibliography.html#OhgaItoKolchinsky2023">Ohga, Ito and Kolchinsky (2023)</a>, equation (3), and applying their short-time correlation bound to the Poisson solutions $Rf,Rg$.
+      Their thermodynamic inequality is stronger when cycle affinities are known; the focus here is the integrated-response minimum-state realization and its aggregation and coefficient-error consequences, not a new universal asymmetry inequality.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_regime_count.py">certificate</a> checks nonnormal and sparse generators, exact rational cycle-flow decompositions, cyclic sharpness, two-feature realizations, reversals, speed invariance and deterministic perturbation budgets.
+      Floating computations are consistency tests, not outward-rounded enclosures or a proof by random sampling.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
