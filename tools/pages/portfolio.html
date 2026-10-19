@@ -48,8 +48,8 @@
     $\bar s = \pi\cdot\sigma^2$. The investor&apos;s Merton fraction is</p>
     $$w_0 = \frac{\bar\mu - r}{\gamma\,\bar s} .$$
     <p>The gap between the two, $\langle\lambda^2\rangle \ge (\bar\mu - r)^2/\bar s$, is a Cauchy&ndash;Schwarz
-    inequality. In the example it is the difference between a certainty-equivalent rate of 15.7% and one of
-    5.3%. The corrections below are what finite regime lifetimes add to each.</p>
+    inequality. In the fast-switching limit, the example has certainty-equivalent rates of 15.8% and
+    5.5%. The corrections below are what finite regime lifetimes add to each.</p>
 
     <h2>Reduction to a linear system</h2>
     <p>Let $V_i(t, x)$ be the observed-regime investor&apos;s value in regime $i$ with wealth $x$ at time $t$. The
@@ -121,6 +121,8 @@
     of excess mean costs more variance.</p>
 
     <h2>The weights</h2>
+    <p>Below log utility, a <a href="./portfolio-fast-full.html">finite-speed uniqueness theorem</a> localizes every constant-fraction optimum and gives an explicit sufficient mixing speed and derivative-residual bounds.
+      It allows switched variances, nonreversible finite chains and any starting prior, without asserting concavity outside the optimizer interval.</p>
     <p>The observed-regime investor&apos;s fractions are Merton&apos;s, regime by regime, at every order:</p>
     $$w_i = \frac{\mu_i - r_i}{\gamma\,\sigma_i^2} .$$
     <p>The value factor $\Psi$ does not depend on wealth, and the chain is independent of $W$, so the stock cannot
