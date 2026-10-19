@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_finance",
+  "key": "BossuCarrPapanicolaou2020",
+  "authors": "Bossu, S., Carr, P. and Papanicolaou, A.",
+  "year": 2020,
+  "title": "A functional analysis approach to the static replication of European options",
+  "venue": "Quantitative Finance, published online 4 November 2020",
+  "doi": "10.1080/14697688.2020.1810857",
+  "url": "https://doi.org/10.1080/14697688.2020.1810857",
+  "annotation": "Section 2.1 and equation (3) review the classical Carr-Madan cash/forward/vanilla static replication identity and its finite-strike limitation. The entropy-strip note uses ordinary piecewise-linear vanilla replication with its own explicit truncation, grid and quote-error bounds, not the paper's spectral special options."
+ },
+ {
+  "role": "survey_finance",
+  "key": "MaDengZheng2016",
+  "authors": "Ma, J., Deng, D. and Zheng, H.",
+  "year": 2016,
+  "title": "Convergence analysis and optimal strike choice for static hedges of general path-independent pay-offs",
+  "venue": "Quantitative Finance 16(4):593-603",
+  "doi": "10.1080/14697688.2015.1046397",
+  "url": "https://doi.org/10.1080/14697688.2015.1046397",
+  "annotation": "The author manuscript's Theorem 3.1 proves second-order linear-spline replication error for equidistributed strikes on a fixed positive interval in a density-weighted norm. The entropy-rate note instead proves uniform expected-payoff bounds over a second-moment class including atoms and both tails, plus a fixed-design quote-information lower bound."
  }
 ]
