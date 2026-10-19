@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Horizon-uniform portfolio uniqueness · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>One sufficient speed for every investment horizon</h1>
+    <p>A direct change-of-measure bound can grow exponentially with the horizon.
+      Bounding the mixing of the tilted path law instead gives a horizon-independent sufficient speed for a unique constant-fraction optimum below log utility, under a strictly positive transition-rate assumption.</p>
+    <h2>The result</h2>
+    <p>Let $Q$ be an $n$-state row generator, $n\ge2$, with $q_{ij}\ge q_*&gt;0$ for every $i\ne j$.
+      The stock's finite regime coefficients have excess returns $b_i$, variances $s_i\ge s_{\min}&gt;0$, and common constant interest rate $r$.</p>
+    <p>Fix $0&lt;\gamma&lt;1$ and $p=1-\gamma$.
+      For a chain $Y$ with generator $mQ$, any initial prior $\nu$, and Brownian stock noise independent of $Y$, the investor holds one deterministic fraction $w$ throughout the horizon:</p>
+    $$h_i(w)=r+b_iw-\tfrac12\gamma s_iw^2,\qquad
+      J_{m,T,\nu}(w)=\frac1{pT}\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}.$$
+    <p>Write $q_i(w)=b_i-\gamma ws_i$ and $I=[L,U]$, where $L=\min_i b_i/(\gamma s_i)$ and $U=\max_i b_i/(\gamma s_i)$.
+      Every global maximizer lies in $I$: the derivative has the sign of the tilted mean of $\int q(Y_t)dt$, so is positive below $L$ and negative above $U$.</p>
+    <p>The quadratic upper bound $J(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2$ gives existence.
+      If $L=U$, that common regimewise fraction is uniquely optimal at every speed; otherwise define</p>
+    $$B_* =\max_{w\in I}\operatorname{osc}q(w),\qquad
+      D_* =\max_{w\in I}\operatorname{osc}h(w),\qquad \delta=pD_*.$$
+    <p>Here $\operatorname{osc}v=\max_i v_i-\min_i v_i$.
+      The first maximum uses only the endpoints of $I$; the second uses endpoints and the interior critical points of the quadratic differences $h_i-h_j$.</p>
+    <div class="equation-card">
+    $$a=mq_*,\qquad R_m=\frac{\delta+\sqrt{\delta^2+4a^2}}{2a},\qquad
+      \eta_m=\frac{na}{R_m},\qquad
+      \kappa_m=\gamma s_{\min}-\frac{pB_*^2}{2\eta_m}.$$
+    $$J_{m,T,\nu}''(w)\le-\kappa_m\quad(w\in I),\qquad\text{for every }T&gt;0\text{ and every }\nu.$$
+    </div>
+    <p>In particular, let $c=pB_*^2/(2n\gamma s_{\min})$.</p>
+    $$m&gt;m_H:=\frac{\sqrt{c(c+\delta)}}{q_*}
+      \quad\Longrightarrow\quad \kappa_m&gt;0
+      \quad\Longrightarrow\quad \text{one global maximizer for every }T&gt;0,\ \nu.$$
+    <p>This is a sufficient speed, not a sharp transition.
+      The optimizer itself may still depend on the horizon and prior, and no concavity outside $I$ is claimed.</p>
+    <h2>A uniform value-ratio bound</h2>
+    <p>Fix $w\in I$, put $A=mQ+pD_{h(w)}$, and $z(\tau)=e^{\tau A}\mathbf1$.
+      Positivity gives $z_i(\tau)&gt;0$ for every $\tau\ge0$.</p>
+    <p>Let $M=\max_i z_i$ and $\ell=\min_i z_i$.
+      At a maximizing state, the transition to a minimizing state contributes at most $a(\ell-M)$, while all other generator terms are nonpositive; the reverse argument holds at a minimizing state.</p>
+    <p>Consequently the locally Lipschitz ratio $\rho=M/\ell$ satisfies, almost everywhere,</p>
+    $$\rho'\le\delta\rho-a(\rho^2-1),\qquad \rho(0)=1.$$
+    <p>The positive equilibrium of the scalar right-hand side is $R_m\ge1$.
+      Scalar comparison therefore proves $\max_i z_i(\tau)/\min_i z_i(\tau)\le R_m$ at every $\tau\ge0$, without an eigenvector approximation.</p>
+    <h2>The finite-horizon tilt is a mixing Markov chain</h2>
+    <p>Under the path tilt proportional to $e^{p\int_0^T h(Y_t)dt}$, the exact transition matrix between $s$ and $t$ is</p>
+    $$K^T_{s,t}=D_{z(T-s)}^{-1}e^{(t-s)A}D_{z(T-t)},\qquad 0\le s\le t\le T.$$
+    <p>Its rows sum to one, and its off-diagonal time-dependent rates are
+      $\widehat q_{ij}(t)=mq_{ij}z_j(T-t)/z_i(T-t)\ge a/R_m$.
+      Its initial law is $\widehat\nu_i=\nu_i z_i(T)/(\nu z(T))$, not generally $\nu$.</p>
+    <p>Subtract from this generator a common refresh to the uniform law at rate $\eta_m=na/R_m$.
+      The remaining off-diagonal rates are nonnegative, so a shared refresh couples any two starts and gives</p>
+    $$\operatorname{osc}(K^T_{s,t}f)\le e^{-\eta_m(t-s)}\operatorname{osc}f.$$
+    <p>This is the exact finite-horizon Doob transform, not the stationary driven process obtained by substituting a Perron eigenvector.
+      The kernel is the specialization of <a href="./bibliography.html#ChetriteTouchette2015">Chetrite and Touchette (2015)</a>, Appendix D, equation (D4).</p>
+    <h2>Mixing bounds the positive curvature term</h2>
+    <p>Write $\mathbb E_w$ for that tilted path law, $R_w=\int_0^Tq_{Y_t}(w)dt$, and $V=\int_0^Ts_{Y_t}dt$.
+      Direct differentiation gives</p>
+    $$J'(w)=\mathbb E_wR_w/T,\qquad
+      J''(w)=-\gamma\mathbb E_wV/T+p\operatorname{Var}_w(R_w)/T.$$
+    <p>For any initial law, conditioning at $s\le t$, Cauchy&ndash;Schwarz, and the variance bound by one quarter of the squared range imply</p>
+    $$|\operatorname{Cov}_w(q(Y_s),q(Y_t))|
+       \le\tfrac14\operatorname{osc}q\operatorname{osc}(K^T_{s,t}q)
+       \le\tfrac14B_*^2e^{-\eta_m(t-s)}.$$
+    <p>Integrating this bound over the ordered time triangle yields</p>
+    $$\frac{\operatorname{Var}_w(R_w)}T\le\frac{B_*^2}{2}
+      \left\{\frac1{\eta_m}-\frac{1-e^{-\eta_mT}}{T\eta_m^2}\right\}
+      \le\frac{B_*^2}{2\eta_m}.$$
+    <p>Combining this with $V\ge Ts_{\min}$ proves the curvature theorem and uniqueness on the exact optimizer interval.
+      The threshold formula follows by solving $a/R_m&gt;c$, equivalently $a^2&gt;c(c+\delta)$.</p>
+    <p>When $\kappa_m&gt;0$, every proposed $w\in I$ also satisfies the usual derivative-residual bounds</p>
+    $$|w-w_*|\le |J'(w)|/\kappa_m,\qquad
+      0\le J(w_*)-J(w)\le J'(w)^2/(2\kappa_m).$$
+    <p>These follow by integrating the curvature inequality and maximizing its quadratic upper model.
+      With a certified derivative error $\epsilon$, replace $|J'|$ by $|\widehat J'|+\epsilon$; unvalidated numerical derivatives do not themselves give a rigorous numerical certificate.</p>
+    <h2>An explicit long-end certainty-equivalent bound</h2>
+    <p>Let $\Lambda_m(w)$ be the exact Perron eigenvalue of $mQ+pD_{h(w)}$.
+      For all $w\in I$, every prior and every $T&gt;0$,</p>
+    $$\left|J_{m,T,\nu}(w)-\frac{\Lambda_m(w)}p\right|\le\frac{\log R_m}{pT}.$$
+    <p>Indeed, the eigenvalue equations at the largest and smallest entries of a positive Perron eigenvector $v$ give
+      $a(\rho-1/\rho)\le\delta$, hence $\max v/\min v\le R_m$.
+      Normalize $\min v=1$, apply the positive semigroup to $v/R_m\le\mathbf1\le v$, and then average under $\nu$ to bound $e^{-\Lambda_mT}\nu z(T)$ between $1/R_m$ and $R_m$.</p>
+    <p>This is an explicit $1/T$ CE-rate error using the exact eigenvalue, not an inverse-speed truncation or a price-error bound.
+      Positive left and right Perron eigenvectors express $(\Lambda_m/p)'$ as a positive weighted average of $q_i(w)$, localizing its maximizer to $I$ too.
+      When $\kappa_m&gt;0$, the long-run objective $\Lambda_m/p$ inherits strong concavity on $I$ and has one optimizer $w_\infty$; the finite-horizon optimizers obey</p>
+    $$\sup_\nu|w_{T,\nu}-w_\infty|\le
+       2\sqrt{\frac{\log R_m}{p\kappa_mT}}.$$
+    <p>Uniform convergence of the values on $I$ transfers strong concavity to the limit.
+      The two value errors bound the long-run objective loss by $2\log R_m/(pT)$, and its quadratic curvature bound gives the displayed optimizer-distance estimate.</p>
+    <h2>A rational all-horizon example</h2>
+    $$Q=\begin{pmatrix}-3&2&1\\1&-2&1\\1/2&3/2&-2\end{pmatrix},\quad
+      b=(3/25,-2/25,1/20),\quad s=(1/25,9/100,1/16),\quad\gamma=1/2.$$
+    $$q_*=1/2,\quad I=[-16/9,6],\quad B_*=7/20,\quad D_*=33/20,\quad
+      \delta=33/40,\quad c=49/96,\quad m_H^2=31409/11520&lt;4.$$
+    <p>Thus $m\ge2$ suffices at every positive horizon and every prior.
+      At $m=2$, the scalar comparison polynomial at $R=3/2$ is $R^2-1-(33/40)R=1/80&gt;0$, so $R_m&lt;3/2$, $\eta_m&gt;2$ and $\kappa_m\ge3/640$; larger speeds retain these bounds.</p>
+    <h2>Certificate, literature and limits</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_uniform_uniqueness.py">certificate</a>
+      checks exact rational constants and independent derivative, tilted-moment, canonical-transition and covariance-quadrature formulas.
+      It includes nonreversible and defective generators, pure and stationary priors, and horizons spanning $10^{-4}$ to $10^4$, ending with literal <code>PASS</code>.</p>
+    <p>Those are floating-point consistency tests, not interval enclosures or a proof obtained by sampling horizons.
+      The analytic comparison and coupling argument prove the uniform statement for all horizons.</p>
+    <p>Doob transforms and time-uniform Feynman&ndash;Kac stability are classical; see also
+      <a href="./bibliography.html#DelMoralMiclo2002">Del Moral and Miclo (2002)</a>, &sect;&sect;2&ndash;3, for the broader Dobrushin-semigroup framework.
+      The explicit finite-state value-ratio, reset-rate and portfolio-curvature bounds above are derived directly, without a priority claim for these ingredients.</p>
+    <p>The strictly positive off-diagonal assumption is essential to this particular bound: an irreducible sparse generator can have $q_*=0$.
+      This note does not extend the formula to that case or optimize adaptive trading; its long-end CE-rate bound is not a price approximation.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
