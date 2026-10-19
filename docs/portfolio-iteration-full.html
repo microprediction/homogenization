@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Certified occupation-ratio iteration · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>A certified occupation-ratio solver at every maturity</h1>
+    <p>A tilted occupation ratio maps the interval of regimewise Merton fractions into itself.
+      An explicit contraction bound gives a globally convergent constant-fraction solver, stopping certificates and robustness to numerical error, uniformly over all positive maturities and starting priors at sufficiently fast switching.</p>
+    <h2>Setup and theorem</h2>
+    <p>Let $Y$ have generator $mQ$, where $Q$ is any irreducible finite row generator and $m&gt;0$.
+      Assume common constant $r$, excess returns $b_i$, variances $s_i\ge s_{\min}&gt;0$, risk aversion $\gamma&gt;0$, $p=1-\gamma$, and Brownian stock noise independent of $Y$.</p>
+    <p>Hold one deterministic unrestricted fraction throughout $[0,T]$ and maximize the certainty-equivalent rate</p>
+    $$h_i(w)=r+b_iw-\gamma s_iw^2/2,\quad q_i(w)=b_i-\gamma ws_i,\quad
+      J(w)=\frac1{pT}\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}.$$
+    <p>At $p=0$ use $J=\mathbb E_\nu\int_0^T h(Y_t)dt/T$.
+      A global maximizer exists and every one lies in $I=[\min_i b_i/(\gamma s_i),\max_i b_i/(\gamma s_i)]$: the score has strict inward signs outside $I$, and $J(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2$.</p>
+    <p>A singleton $I$ is exactly solved; otherwise put $B=\max_I\operatorname{osc}q$, $D=\max_I\operatorname{osc}h$, $\delta=|p|D$.
+      Choose $\theta&gt;0$ and a certified column-ratio bound</p>
+    $$P=e^{\theta Q},\qquad 0&lt;a_0\le\min_j\frac{\min_iP_{ij}}{\max_iP_{ij}},\quad \tau=\theta/m.$$
+    <p>Such a positive bound exists even for sparse generators, and nonnegative uniformization terms with a bounded factorial tail can certify it.
+      Define the full-path tilted expectation $\mathbb E_wF=\mathbb E_\nu[Fe^{p\int h(w)}]/\mathbb E_\nu e^{p\int h(w)}$ and</p>
+    $$\mathcal B=\int_0^T b(Y_t)dt,\quad \mathcal S=\int_0^T s(Y_t)dt,\qquad
+      F(w)=\frac{\mathbb E_w\mathcal B}{\gamma\mathbb E_w\mathcal S}\in I.$$
+    <p>This ratio uses the exact finite-horizon tilt, not stationary Perron weights or a filtered regime posterior.
+      Write $s_{\max}=\max_i s_i$ and set</p>
+    $$L=\frac{|p|B^2}{\gamma s_{\min}}\min\left\{\frac T4,\frac{\tau e^{\delta\tau}}{2a_0}\right\},\qquad
+      H=\gamma s_{\max}+\gamma s_{\min}L.$$
+    <p>Start the iteration from any $w_0\in I$.</p>
+    <div class="equation-card">
+    $$L&lt;1\ \Longrightarrow\ \text{one global maximizer }w_*,\quad w_{k+1}=F(w_k)\in I,$$
+    $$|w_k-w_*|\le L^k|w_0-w_*|,\quad
+      |w_k-w_*|\le\frac{|F(w_k)-w_k|}{1-L},\quad
+      0\le J(w_*)-J(w_k)\le\frac H2\left(\frac{|F(w_k)-w_k|}{1-L}\right)^2.$$
+    </div>
+    <p>These bounds hold for every $T&gt;0$ and every initial prior for which the displayed $L&lt;1$.
+      A single speed condition sufficient for all horizons and priors is</p>
+    $$d=\delta\theta,\qquad C=\frac{|p|B^2\theta}{2a_0\gamma s_{\min}},\qquad
+      m&gt;d+C,\qquad L\le\frac{Ce^{d/m}}m\le\frac C{m-d}&lt;1.$$
+    <p>The constants need not be sharp; the short-horizon part of $L$ can certify convergence below this speed threshold.
+      Convergence is not asserted to be monotone in value, nor is $J$ asserted concave on the whole real line.</p>
+    <h2>One step improves the occupation approximation</h2>
+    $$\rho_c=\frac1c\nu\int_0^c e^{tQ}dt,\quad c=mT,\quad
+      w_0=w_c=\frac{\rho_cb}{\gamma\rho_cs},\quad
+      E=\min\left\{\frac{B\delta T}{4},\frac{B}{2a_0}(e^{\delta\tau}-1)\right\}.$$
+    <p>The score comparison proved below gives $|w_*-w_c|\le E/(\gamma\rho_cs)$.
+      Consequently the exact ratio iterations satisfy</p>
+    $$|w_k-w_*|\le\frac{L^kE}{\gamma\rho_cs},\qquad
+      J(w_*)-J(w_k)\le\frac H2\left(\frac{L^kE}{\gamma\rho_cs}\right)^2.$$
+    <p>At fixed model parameters and for each fixed $k$, $k$ exact ratio evaluations give policy error $O(m^{-k-1})$ and CE-rate loss $O(m^{-2k-2})$, uniformly in all $T&gt;0$ and all priors as $m\to\infty$.
+      In particular one tilted ratio evaluation improves the occupation fraction to $O(m^{-2})$ policy error and $O(m^{-4})$ rate loss; it is a semigroup-based correction, not a closed-form inverse-speed coefficient.</p>
+    <p>If an oracle has $|\widehat F(w)-F(w)|\le\epsilon$ on $I$, use $\widehat w_{k+1}=\Pi_I\widehat F(\widehat w_k)$.
+      Projection is nonexpansive, so</p>
+    $$|\widehat w_k-w_*|\le L^k|\widehat w_0-w_*|+\frac{\epsilon(1-L^k)}{1-L},\qquad
+      |w-w_*|\le\frac{|\widehat F(w)-w|+\epsilon}{1-L}\quad(w\in I).$$
+    <p>The CE-rate bound $H|w-w_*|^2/2$ still applies.
+      Thus a fixed numerical error leaves an error floor; the asymptotic orders require oracle errors of the matching order or smaller.</p>
+    <h2>Proof: covariance, ratio differentiation and contraction</h2>
+    <p>For $0\le\lambda\le1$, let $A_\lambda=mQ+\lambda pD_h$ and $z_\lambda(u)=e^{uA_\lambda}\mathbf1$.
+      The finite-horizon tilted chain has kernel $D_{z_\lambda(T-s)}^{-1}e^{(t-s)A_\lambda}D_{z_\lambda(T-t)}$ and initial law $\nu_i z_{\lambda,i}(T)/(\nu z_\lambda(T))$.</p>
+    <p>On a complete block of length $\tau$, put $g=z_\lambda(T-s-\tau)$, $v_j=\max_iP_{ij}$ and $\mu_j=v_jg_j/\sum_kv_kg_k$.
+      Entrywise Feynman&ndash;Kac comparison bounds every transition row below by $\alpha_\lambda\mu$, where $\alpha_\lambda=a_0e^{-\lambda\delta\tau}$, so oscillations contract by $(1-\alpha_\lambda)^{\lfloor(t-s)/\tau\rfloor}$.</p>
+    <p>For any two state functions $f,g$, conditioning on the earlier state and using the range covariance bound yields, for either time ordering, $|\operatorname{Cov}_\lambda(f(Y_s),g(Y_t))|\le\operatorname{osc}f\operatorname{osc}g(1-\alpha_\lambda)^{\lfloor|t-s|/\tau\rfloor}/4$.
+      Integration over both time triangles, together with the whole-path range bound, gives</p>
+    $$\frac{|\operatorname{Cov}_\lambda(\int f,\int g)|}{T}\le
+      \operatorname{osc}f\operatorname{osc}g\min\{T/4,\tau/(2\alpha_\lambda)\}.$$
+    <p>Differentiate the ratio at a fixed $w$; the quotient rule cancels its mean terms, giving</p>
+    $$F'(w)=\frac{p\operatorname{Cov}_w(\mathcal B-\gamma F(w)\mathcal S,\int_0^Tq_w(Y_t)dt)}{\gamma\mathbb E_w\mathcal S}.$$
+    <p>Because $F(w)\in I$, the two covariance observables are integrals of $q_{F(w)}$ and $q_w$, each of oscillation at most $B$.
+      Since $\mathbb E_w\mathcal S\ge Ts_{\min}$, the covariance estimate proves $|F'|\le L$.</p>
+    <p>The map takes $I$ into itself since its ratio is a positive weighted average of $b_i/(\gamma s_i)$.
+      When $L&lt;1$, the geometric bound on successive differences proves convergence to a unique fixed point, and $J'(w)=\gamma\mathbb E_w\mathcal S(F(w)-w)/T$ identifies every global maximizer with that point.</p>
+    <p>The derivative identity $J''=-\gamma\mathbb E_w\mathcal S/T+p\operatorname{Var}_w(\int q_w)/T$ gives $|J''|\le H$ on $I$.
+      Integration from $J'(w_*)=0$ gives the quadratic rate-loss bound, and the residual and inexact-oracle bounds follow from the contraction inequality and a geometric sum.</p>
+    <p>Finally $d\mathbb E_\lambda(\int q_w/T)/d\lambda=p\operatorname{Cov}_\lambda(\int q_w,\int h_w)/T$.
+      Integrating the block estimate over $\lambda$ gives $B(e^{\delta\tau}-1)/(2a_0)$, while the range estimate gives $B\delta T/4$; hence $|J'(w)-\rho_cq_w|\le E$ and the occupation-start bound follows at $w_*$.</p>
+    <h2>A speed condition is genuinely needed</h2>
+    <p>For $Q=\left(\begin{smallmatrix}-1&amp;1\\1&amp;-1\end{smallmatrix}\right)$, $b=(1,-1)$, $s=(1,1)$, $\gamma=1/2$, $\theta=1$, a valid $a_0=3/4$ gives $B=2$, $D=4$, $d=2$, $C=8/3$.
+      Thus $m&gt;14/3$ suffices for every horizon and prior, with $L\le8/[3(m-2)]$ and $E\le8/[3(m-2)]$.</p>
+    $$|F(w_c)-w_*|\le\frac{128}{9(m-2)^2},\qquad
+      J(w_*)-J(F(w_c))\le\frac14\left(1+\frac8{3(m-2)}\right)\left(\frac{128}{9(m-2)^2}\right)^2.$$
+    <p>In contrast, on the same chain with $\gamma=2$, stationary start, $m=1/10$ and $T=100$, strict concavity makes $w_*=0$ unique, but</p>
+    $$F'(0)=\frac{1-\gamma}{\gamma m}\left[1-\frac{1-e^{-2mT}}{2mT}\right]
+      =-\frac{19}{4}-\frac{e^{-20}}4&lt;-1.$$
+    <p>The fixed point is locally repelling, so uniqueness alone cannot justify this iteration at arbitrary speed.
+      For log utility, on the other hand, $F(w)=w_c$ for every input and one evaluation is exact.</p>
+    <h2>Literature and verification</h2>
+    <p>The finite-horizon Doob kernel is classical: <a href="./bibliography.html#ChetriteTouchette2015">Chetrite and Touchette (2015)</a>, Appendix D.
+      Block contraction of Feynman&ndash;Kac kernels is developed by <a href="./bibliography.html#DelMoralMiclo2002">Del Moral and Miclo (2002)</a>, &sect;&sect;3&ndash;4; the ratio derivative and portfolio stopping budgets here are direct consequences, not a novelty claim for contraction mapping.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_occupation_iteration.py">certificate</a> checks rational block bounds, independent semigroup ratios and derivatives, global roots, iteration errors, CE-rate losses, adversarial oracle perturbations and the slow-speed negative control.
+      Floating consistency tests are not outward-rounded enclosures; the analytic proof, not a horizon grid, establishes uniformity.</p>
+    <p>This concerns one constant fraction, not adaptive or filtered trading, and the approximation error is a policy or CE-rate error, not a terminal-wealth guarantee.
+      The sufficient speed threshold and constants are not sharp.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
