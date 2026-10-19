@@ -1,0 +1,90 @@
+<!-- title: Sparse-chain portfolio uniqueness · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./portfolio.html">&larr; portfolio choice</a><span><a href="./papers.html">papers</a></span></p>
+    <h1>One sufficient speed, even with missing transitions</h1>
+    <p>For every finite irreducible regime chain, sufficiently fast switching gives a unique constant-fraction optimum below log utility, simultaneously at every positive horizon and every initial prior.
+      A block minorization of the exact tilted chain supplies an explicit sufficient speed without requiring all direct transition rates to be positive.</p>
+    <h2>The theorem</h2>
+    <p>Let $Q$ be any irreducible finite row generator on at least two states and let $Y$ have generator $mQ$, $m&gt;0$.
+      Fix $0&lt;\gamma&lt;1$, $p=1-\gamma$, common constant interest rate $r$, excess returns $b_i$, and variances $s_i\ge s_{\min}&gt;0$.</p>
+    <p>With Brownian stock noise independent of $Y$, hold one deterministic unrestricted fraction $w$ throughout the horizon and maximize its exact certainty-equivalent rate</p>
+    $$h_i(w)=r+b_iw-\gamma s_iw^2/2,\qquad
+      J_{m,T,\nu}(w)=\frac{\log\mathbb E_\nu e^{p\int_0^T h_{Y_t}(w)dt}}{pT}.$$
+    <p>Put $q_i(w)=b_i-\gamma ws_i$ and $I=[L,U]$, with $L=\min_i b_i/(\gamma s_i)$ and $U=\max_i b_i/(\gamma s_i)$.
+      Every maximizer lies in $I$: the derivative is positive below $L$ and negative above $U$, while the quadratic upper bound $J(w)\le r+\max_i|b_i||w|-\gamma s_{\min}w^2/2$ gives existence.</p>
+    <p>If $L=U$, the common fraction is already uniquely optimal at every speed.
+      Otherwise compute the finite maxima</p>
+    $$B=\max_{w\in I}\operatorname{osc}q(w),\qquad
+      D=\max_{w\in I}\operatorname{osc}h(w),\qquad \delta=pD.$$
+    <p>The maximum for $B$ uses interval endpoints; the maximum for $D$ also checks interior critical points of each quadratic difference $h_i-h_j$.
+      Fix any block duration $\theta&gt;0$ in the unscaled chain and any certified $a_0&gt;0$ such that</p>
+    $$P=e^{\theta Q},\qquad
+      0&lt;a_0\le\min_j\frac{\min_i P_{ij}}{\max_i P_{ij}}\le1.$$
+    <p>Irreducibility makes $P$ strictly positive, even for a sparse generator.
+      The constant $a_0$ must be bounded rigorously, for example by nonnegative uniformization sums; a floating matrix exponential alone does not certify it.</p>
+    <p>For a constructive bound, choose $\lambda\ge\max_i(-Q_{ii})$, $\lambda&gt;0$, and $F=I+Q/\lambda$.
+      Any positive $i$-to-$j$ path of length $k$ in $F$ gives</p>
+    $$P_{ij}\ge e^{-\lambda\theta}\frac{(\lambda\theta)^k}{k!}
+      \prod_{\text{path edges }(u,v)}F_{uv}&gt;0.$$
+    <p>Use the length-zero path for $i=j$ and a positive path for every other pair.
+      The minimum of these finitely many bounds is a valid $a_0$, since every $P_{ij}\le1$; columnwise upper bounds can sharpen it.</p>
+    <div class="equation-card">
+    $$\tau=\theta/m,\qquad d=\delta\theta,\qquad
+      \alpha_m=a_0e^{-d/m},\qquad
+      \kappa_m=\gamma s_{\min}-\frac{pB^2\theta e^{d/m}}{2ma_0}.$$
+    $$J_{m,T,\nu}''(w)\le-\kappa_m\quad(w\in I),\qquad
+      \text{for all }T&gt;0\text{ and every prior }\nu.$$
+    </div>
+    <p>In particular define $C=pB^2\theta/(2a_0\gamma s_{\min})$.
+      Since $e^x\le(1-x)^{-1}$ for $0\le x&lt;1$,</p>
+    $$m&gt;d+C\quad\Longrightarrow\quad
+      \kappa_m\ge\gamma s_{\min}\left(1-\frac{C}{m-d}\right)&gt;0.$$
+    <p>Thus $m&gt;d+C$ guarantees one global optimum for every horizon and prior.
+      This is a conservative sufficient threshold, not a sharp transition; the optimizer may still depend on the horizon and prior, and concavity outside $I$ is not asserted.</p>
+    <h2>Minorize the exact tilted block</h2>
+    <p>Fix $w\in I$, set $A=mQ+pD_{h(w)}$, $z(u)=e^{uA}\mathbf1$, and $H=e^{\tau A}$.
+      The Feynman&ndash;Kac formula entry by entry gives</p>
+    $$e^{p\min h\,\tau}P_{ij}\le H_{ij}\le e^{p\max h\,\tau}P_{ij}.$$
+    <p>Under the full path tilt proportional to $e^{p\int_0^T h(Y_t)dt}$, the exact kernel is
+      $K^T_{s,t}=D_{z(T-s)}^{-1}e^{(t-s)A}D_{z(T-t)}$.
+      Its initial law is $\widehat\nu_i=\nu_i z_i(T)/(\nu z(T))$, not generally $\nu$.</p>
+    <p>For a complete block ending at $t=s+\tau\le T$, let $v_j=\max_iP_{ij}$, $g=z(T-t)&gt;0$, and $\mu_j=v_jg_j/\sum_kv_kg_k$.
+      Its rows satisfy the common minorization</p>
+    $$K^T_{s,t}(i,j)=\frac{H_{ij}g_j}{(Hg)_i}
+       \ge e^{-\delta\tau}a_0\frac{v_jg_j}{\sum_kv_kg_k}=\alpha_m\mu_j.$$
+    <p>The reference law $\mu$ depends on the block and the remaining horizon, but the mass $\alpha_m$ does not.
+      Subtracting this common row part contracts oscillations by $1-\alpha_m$; incomplete blocks cannot increase oscillations, so</p>
+    $$\operatorname{osc}(K^T_{s,t}f)\le
+      (1-\alpha_m)^{\lfloor(t-s)/\tau\rfloor}\operatorname{osc}f.$$
+    <p>When $\alpha_m=1$, use the convention $0^0=1$.
+      This argument uses the exact finite-horizon kernel, not a stationary Perron approximation or an assumption that the tilted start remains stationary.</p>
+    <h2>Integrate covariance, not a whole-path likelihood ratio</h2>
+    <p>Write $R_w=\int_0^Tq_{Y_t}(w)dt$, $V=\int_0^Ts_{Y_t}dt$ and $\mathbb E_w$ for the tilted law.
+      Direct differentiation gives $J''=-\gamma\mathbb E_w V/T+p\operatorname{Var}_w(R_w)/T$.</p>
+    <p>Conditioning at $s\le t$, Cauchy&ndash;Schwarz and the variance bound by one quarter of the squared range give</p>
+    $$|\operatorname{Cov}_w(q(Y_s),q(Y_t))|\le
+      \frac{B^2}{4}(1-\alpha_m)^{\lfloor(t-s)/\tau\rfloor}.$$
+    <p>This holds for any initial law, including the reweighted prior above.
+      Integrating over the ordered time triangle and then enlarging the lag interval gives</p>
+    $$\frac{\operatorname{Var}_w(R_w)}{T}\le\frac{B^2}{2}
+      \int_0^\infty(1-\alpha_m)^{\lfloor u/\tau\rfloor}du
+      =\frac{B^2\tau}{2\alpha_m}.$$
+    <p>Combining this with $V\ge Ts_{\min}$ proves the theorem.
+      Strong concavity on $I$ and localization give uniqueness of the global optimum without any reversibility or diagonalization assumption.</p>
+    <h2>A sparse rational example</h2>
+    $$Q=\begin{pmatrix}-1&1&0\\0&-1&1\\1&0&-1\end{pmatrix},\qquad
+      b=(3/25,-2/25,1/20),\quad s=(1/25,9/100,1/16),\quad\gamma=1/2.$$
+    <p>Take $\theta=1$ and write $F=Q+I$, a cyclic permutation matrix.
+      The first three terms of $e^Q=e^{-1}\sum_{k\ge0}F^k/k!$ put every entry between $e^{-1}/2$ and $e^{-1}(1+2/9)$: the remaining series is at most $(1/6)\sum_{j\ge0}4^{-j}=2/9$.</p>
+    $$a_0=9/22,\quad I=[-16/9,6],\quad B=7/20,\quad D=33/20,\quad
+      d=33/40,\quad C=539/144,\quad d+C=3289/720&lt;5.$$
+    <p>Every $m\ge5$ therefore gives a unique optimum for every positive horizon and prior, with curvature modulus at least $311/150300$.
+      Every $m\ge9$ has modulus at least $1/100$, since $d+2C=374/45&lt;9$.</p>
+    <h2>Certificate, literature and scope</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/portfolio/verify_sparse_uniform.py">certificate</a> checks the rational bounds and compares differentiated Feynman&ndash;Kac, tilted-moment and canonical-block calculations on sparse and defective generators.
+      Floating consistency checks do not prove an all-horizon theorem or certify a numerically estimated transition lower bound; the comparison and geometric-series proof above do.</p>
+    <p>Block contraction for tilted Feynman&ndash;Kac kernels is classical; see <a href="./bibliography.html#DelMoralMiclo2002">Del Moral and Miclo (2002)</a>, Theorem 3.2 and Propositions 4.3&ndash;4.4.
+      This note spells out a finite-state column-envelope specialization and its portfolio curvature constant, without a priority claim for the stability mechanism.</p>
+    <p>The result concerns one constant fraction and common constant $r$, not adaptive trading or filtered information.
+      It is an exact finite-speed uniqueness bound, not a price approximation, an optimal sufficient speed, or a claim that the optimum is independent of maturity.</p>
+  </main>
