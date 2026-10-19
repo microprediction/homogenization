@@ -101,18 +101,23 @@
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_global_call.py">certificate</a></span></p>
     <h1>A global error bound for the call correction</h1>
     <p class="subtitle">The infinite damped Fourier integral, not just a fixed frequency cutoff.</p>
-    <p>Let $B,W$ be independent Brownian motions and $Y$ an independent symmetric two-state chain
-      flipping at rate $m$, initially stationary.
-      Fix $T,\kappa,\xi,\theta_+,\theta_-&gt;0$, $v_0\ge0$, $X_0=0$, and $|\rho|&lt;1$.</p>
+    <p>Let $B,W$ be independent Brownian motions and $Y$ an independent irreducible finite-state chain
+      with row generator $mQ$, initially stationary with law $\pi$.
+      Fix $T,\kappa,\xi,\theta_i&gt;0$, $v_0\ge0$, $X_0=0$, and $|\rho|&lt;1$.</p>
     $$dv_t=\kappa(\theta_{Y_t}-v_t)dt+\xi\sqrt{v_t}\,dB_t,\qquad
       dX_t=-\tfrac12v_tdt+\sqrt{v_t}(\rho\,dB_t+\sqrt{1-\rho^2}\,dW_t).$$
-    <p>Write $\bar\theta=(\theta_++\theta_-)/2$, $\delta=(\theta_+-\theta_-)/2$,
+    <p>Write $\bar\theta=\pi\theta$, $a_i=\kappa\theta_i$, $\widetilde a=a-(\pi a)\mathbf1$,
       $\Phi_m(s)=\mathbb E e^{sX_T}$, and let $\Phi_{\rm av}$ replace $\theta_Y$ by $\bar\theta$.
+      For the group inverse $S=Q^\#$ put $\chi=S\widetilde a$ and $\mathcal K=-\pi(\widetilde a\chi)$.</p>
+    <p>Here $\mathcal K=\int_0^\infty\operatorname{Cov}_\pi(a_{Y_0},a_{Y_t})dt$ for the base generator $Q$;
+      switching speed appears separately as $1/m$.
+      The product $B_s^2$ below has no complex conjugate.</p>
+    <p>No reversibility is assumed.
       Choose $\gamma&gt;1$, $p&gt;1$, $r=p\gamma$, $q=p/(p-1)$ satisfying the explicit sufficient conditions</p>
     $$a_r:=\kappa-\rho\xi r&gt;0,\qquad d_r:=\sqrt{a_r^2-\xi^2r(r-1)}&gt;0.$$
     <p>For $s=\gamma+iu$, let $B_s(0)=0$ solve
       $B_s'=\xi^2B_s^2/2-(\kappa-\rho\xi s)B_s+(s^2-s)/2$ and define</p>
-    $$h_T(s)={\kappa^2\delta^2\over2}\int_0^T B_s(t)^2dt,\quad
+    $$h_T(s)=\mathcal K\int_0^T B_s(t)^2dt,\quad
       D_\alpha(u)=(\alpha+iu)(\gamma+iu),\quad \alpha=\gamma-1,$$
     $$c_1(k)={e^{-\alpha k}\over\pi}\int_0^\infty
        \Re{e^{-iuk}\Phi_{\rm av}(\gamma+iu)h_T(\gamma+iu)\over D_\alpha(u)}du.$$
@@ -123,24 +128,24 @@
     </div>
 
     <h2>Uniform polynomial Riccati bounds</h2>
-    <p>Put $\eta=1-\rho^2$, $a=\kappa-\rho\xi\gamma$, $d_0=\sqrt{a^2-\xi^2\gamma(\gamma-1)}$,
-      $c=\xi\sqrt\eta$, and $\ell=-2\rho\xi a-\xi^2(2\gamma-1)$.
-      The assumptions at $r$ imply $a,d_0&gt;0$: $a_s$ is linear and $d_s^2$ is concave on $[0,r]$.</p>
-    $$H_0=1+{|\ell|\over2d_0c},\quad R_0={a\over d_0}+{|\rho|\over\sqrt\eta},\quad
+    <p>Put $\eta=1-\rho^2$, $a_\gamma=\kappa-\rho\xi\gamma$, $d_0=\sqrt{a_\gamma^2-\xi^2\gamma(\gamma-1)}$,
+      $c=\xi\sqrt\eta$, and $\ell=-2\rho\xi a_\gamma-\xi^2(2\gamma-1)$.
+      The assumptions at $r$ imply $a_\gamma,d_0&gt;0$: $a_s$ is linear and $d_s^2$ is concave on $[0,r]$.</p>
+    $$H_0=1+{|\ell|\over2d_0c},\quad R_0={a_\gamma\over d_0}+{|\rho|\over\sqrt\eta},\quad
       z={2\over1+R_0},\quad \nu=\min\{z/2,1-e^{-z/(2\sqrt{H_0})}\},$$
-    $$C_B={2\max\{a+\sqrt{H_0}d_0,\ |\rho|\xi+\sqrt{H_0}c\}\over\xi^2\nu},\qquad
-      C_D={\xi^2 C_B^2\over2}+\max\{a,|\rho|\xi\}C_B+{\gamma^2\over2}.$$
+    $$C_B={2\max\{a_\gamma+\sqrt{H_0}d_0,\ |\rho|\xi+\sqrt{H_0}c\}\over\xi^2\nu},\qquad
+      C_D={\xi^2 C_B^2\over2}+\max\{a_\gamma,|\rho|\xi\}C_B+{\gamma^2\over2}.$$
     <p>Then, simultaneously for every $t\ge0$ and $u\ge0$,</p>
     $$|B_{\gamma+iu}(t)|\le C_B(1+u),\qquad
       |B_{\gamma+iu}'(t)|\le C_D(1+u)^2.$$
-    <p>To prove this, set $b=a-i\rho\xi u$, $d=\sqrt{b^2-\xi^2s(s-1)}$ with $\Re d&gt;0$, and
+    <p>To prove this, set $b=a_\gamma-i\rho\xi u$, $d=\sqrt{b^2-\xi^2s(s-1)}$ with $\Re d&gt;0$, and
       $g_*=(b-d)/(b+d)$.
       The closed solution is $B_s=(b-d)(1-e^{-dt})/[\xi^2(1-g_*e^{-dt})]$.</p>
     <p>Writing $d=x+iy$, we have $x^2\ge d_0^2+c^2u^2$ and
       $|d|^2\le H_0(d_0^2+c^2u^2)$.
       Moreover,</p>
-    $$\Re(b\bar d)={ax^2-\rho\xi\ell u^2/2\over x}
-      \ge {ad_0^2+\xi^2(\kappa-\rho\xi/2)u^2\over x}&gt;0.$$
+    $$\Re(b\bar d)={a_\gamma x^2-\rho\xi\ell u^2/2\over x}
+      \ge {a_\gamma d_0^2+\xi^2(\kappa-\rho\xi/2)u^2\over x}&gt;0.$$
     <p>Thus $|g_*|&lt;1$, $|1-g_*|\ge z$ and $x/|d|\ge H_0^{-1/2}$.
       For $t\le z/(2|d|)$ use $|1-e^{-dt}|\le |d|t$; for larger $t$ use
       $|1-g_*e^{-dt}|\ge1-e^{-xt}$.
@@ -166,31 +171,52 @@
       H&ouml;lder applied to $H e^{-u^2J/2}$ proves the stated envelope.
       The same supersolutions apply to $\bar\theta$.</p>
 
+    <h2>Centered amplitudes for a finite chain</h2>
+    <p>Let $\Pi=\mathbf1\pi$ and choose $M_Q,\lambda&gt;0$ with
+      $\|e^{tQ}-\Pi\|_\infty\le M_Qe^{-\lambda t}$ for $t\ge0$.
+      These are fixed-chain mixing constants, not a reversible spectral-gap assumption.</p>
+    <p>For an explicit choice with at least two states, let $\lambda$ be the smallest positive eigenvalue of
+      $-\{D_\pi^{1/2}QD_\pi^{-1/2}+D_\pi^{-1/2}Q^TD_\pi^{1/2}\}/2$ and take
+      $M_Q=(\min_i\pi_i)^{-1/2}$.
+      The centered $L^2(\pi)$ energy contracts at rate $\lambda$; its initial norm is at most the initial sup norm,
+      and its final sup norm is at most $M_Q$ times its energy norm.</p>
+    <p>The affine amplitudes obey $f'=mQf+B_sD_a f$, $f(0)=\mathbf1$.
+      Set $f=A(\mathbf1+z)$, $\pi z=0$, and $\mathcal L=(I-\Pi)D_{\widetilde a}$.
+      Their exact equations are</p>
+    $$A'/A=(\pi a)B_s+B_s\pi D_{\widetilde a}z,\qquad
+      z'=mQz+B_s\{\widetilde a+\mathcal Lz-z\pi D_{\widetilde a}z\},\quad z(0)=0.$$
+    <p>Put $N=M_Q/\lambda$ and $\Gamma=\|\widetilde a\|_\infty$.
+      If $G_s=\sup_{t\le T}|B_s(t)|$, $L_s=\sup_{t\le T}|B_s'(t)|$ and $m\ge6N\Gamma G_s$,
+      the convolution bootstrap gives $Z:=\sup\|z\|_\infty\le2N\Gamma G_s/m\le1/3$.
+      Constant mean levels give $z=0$ exactly.</p>
+    <p>Indeed, $\|\mathcal L\|_\infty\le2\Gamma$, and the nonlinear forcing is bounded by
+      $G_s\Gamma(1+2Z+Z^2)$.
+      At the proposed radius, $1+2Z+Z^2\le16/9&lt;2$, so the convolution map points strictly inward.</p>
+    <p>For $e=z+B_s\chi/m$, use $Q\chi=\widetilde a$, $B_s(0)=0$ and the same decaying kernel to obtain</p>
+    $$\sup\|e\|_\infty\le{N\over m^2}
+       \left\{{14\over3}N\Gamma^2G_s^2+L_s\|\chi\|_\infty\right\}.$$
+    <p>Here $e'=mQe+B_s(\mathcal Lz-z\pi D_{\widetilde a}z)+B_s'\chi/m$ and $e(0)=0$;
+      use $2Z+Z^2\le7Z/3$.
+      Reconstruct $A$ exponentially from its equation, proving it is nonzero and that the constructed solution equals the original linear amplitudes.</p>
+
     <h2>Growing the frequency interval</h2>
-    <p>Set $G=\kappa|\delta|C_B$, $L=\kappa|\delta|C_D$ and</p>
-    $$H=TG^2/2,\quad R_3=TGL/4,\quad R_4=TG^4/2,\quad
+    $$H=T|\mathcal K|C_B^2,\qquad
+      R_3=TC_B\Gamma N\{(14/3)N\Gamma^2C_B^2+C_D\|\chi\|_\infty\},\qquad
       \varepsilon=(1+H)^{-1/2},$$
-    $$m_0=\left\lceil\max\{4/\varepsilon^2,(G\varepsilon)^2,
-             4R_3^2\varepsilon^6,2R_4\varepsilon^4\}\right\rceil,\qquad
-      U_m=\varepsilon\sqrt m-1.$$
-    <p>On $0\le u\le U_m$ the amplitude ratio $r_s$ solves
-      $r_s'=g-2mr_s-gr_s^2$, $r_s(0)=0$, where $g=\kappa\delta B_s$.
-      The bootstrap $|r_s|\le\sup|g|/m$ and $g(0)=0$ give</p>
+    $$m_0=\left\lceil\max\{4/\varepsilon^2,(6N\Gamma C_B\varepsilon)^2,
+                  R_3^2\varepsilon^6\}\right\rceil,\qquad U_m=\varepsilon\sqrt m-1.$$
+    <p>Integrating $B_s\pi D_{\widetilde a}z$ gives, on $0\le u\le U_m$,</p>
     $$\Phi_m=\Phi_{\rm av}\exp(h_T/m+R_m),\qquad
       |h_T|\le H(1+u)^2,\quad
-      |R_m|\le {R_3(1+u)^3\over m^2}+{R_4(1+u)^4\over m^3}.$$
-    <p>For completeness, $e=r_s-g/(2m)$ obeys
-      $e'+2me=-gr_s^2-g'/(2m)$ and $e(0)=0$.
-      Integrate its decaying kernel and then $g e$ to obtain the remainder bound.
-      Reconstructing the mean amplitude as an exponential proves it stays nonzero on this interval, avoiding an assumed zero-free ratio.</p>
-    <p>Our choice gives $m\ge\sup|g|$, $|h_T|/m\le1$ and $|R_m|\le1$ there.
+      |R_m|\le R_3(1+u)^3/m^2.$$
+    <p>Our choice ensures the bootstrap condition, $|h_T|/m\le1$ and $|R_m|\le1$ there.
       Taylor&apos;s inequality therefore bounds the transform error by</p>
     $$ {Ce^{-b_0u}\over m^2}
-       \{e^2 R_3(1+u)^3+(e^2R_4+eH^2/2)(1+u)^4\}.$$
+       \{e^2 R_3(1+u)^3+(eH^2/2)(1+u)^4\}.$$
     <p>Since $|D_\alpha|\ge\alpha\gamma$, integration over the inner interval is at most $A_{\rm in}/m^2$, where</p>
     $$J_n=\sum_{j=0}^n{n\choose j}{j!\over b_0^{j+1}},\qquad
       A_{\rm in}={C\over\pi\alpha\gamma}
-        \{e^2R_3J_3+(e^2R_4+eH^2/2)J_4\}.$$
+        \{e^2R_3J_3+(eH^2/2)J_4\}.$$
     <p>On the outer interval use the two exact envelopes and $|h_T|\le H(1+u)^2$ directly.
       Integrating these polynomials, using $1+U_m=\varepsilon\sqrt m$ and $m\ge1$, gives an outer bound
       $Ce^{b_0}E e^{-b_0\varepsilon\sqrt m}/(\pi\alpha\gamma)$, with</p>
@@ -206,22 +232,23 @@
     <p>The certificate checks closed Riccati solutions against independent ODEs, the polynomial envelopes,
       inner log remainders, and exact switched-amplitude call integrals with doubled quadrature order.
       It prints the conservative threshold and global budget as well as the observed inverse-square residuals.</p>
-    <p>At $\kappa\theta=(.2,.5)$, $\kappa=1.4$, $\xi=.8$, $\rho=-.6$, $T=1$, $v_0=.04$,
-      $\gamma=p=2$, the explicit threshold is $m_0=123$ and $A_K=1.57337627\times10^{11}$ for $|k|\le.2$.
-      This proves the asymptotic order but is not a useful practical pricing tolerance.</p>
-    <p>Over $k=-.2,0,.2$, the maximum call residual drops from $3.45455317\times10^{-6}$ at $m=16$
-      to $5.06216752\times10^{-8}$ at $m=128$.
-      At cutoff $240$, the combined analytic tail budget for $m\ge16$ is $2.705\times10^{-14}$;
-      doubling quadrature order changes the prices and coefficient by at most $6.400\times10^{-13}$.
-      These floating checks are not outward-rounded enclosures.</p>
-    <p>This is a fixed-maturity theorem for symmetric mean-level switching and a stationary regime start.
-      It is not uniform in maturity, the correlation boundary, or the moment-strip boundary, and makes no
-      implied-volatility claim without a lower Vega bound.
-      The analytic constants are intentionally loose; numerical quadrature and roundoff are separate errors.</p>
+    <p>For a symmetric chain $Q_{+-}=Q_{-+}=1$ this gives $\mathcal K=\kappa^2\delta^2/2$,
+      $\delta=(\theta_+-\theta_-)/2$, recovering the two-state coefficient.
+      The certificate also checks an unequal-rate two-state chain and a nonreversible three-state cycle.
+      The general analytic constants prove the order but are intentionally too loose for a practical pricing tolerance.</p>
+    <p>For the directed cycle with rates $(3,2,1)$ and immigrations $(.2,.35,.5)$,
+      $\mathcal K=0.003955672427$; the maximum call residual at $k=-.2,0,.2$ falls from
+      $4.26869521\times10^{-7}$ at $m=16$ to $6.37639223\times10^{-9}$ at $m=128$.
+      This uses $\kappa=1.4$, $\xi=.8$, $\rho=-.6$, $T=1$, $v_0=.04$, $\gamma=p=2$.</p>
+    <p>These floating checks are not outward-rounded enclosures; quadrature and roundoff are separate errors.
+      This is a fixed-maturity theorem for finite-chain mean-level switching and a stationary regime start.
+      It is not uniform in maturity, correlation or moment-strip boundaries, and makes no implied-volatility claim
+      without a lower Vega bound.</p>
     <p>The affine transform framework is classical:
-      <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a>, Proposition 1.
-      The existing <a href="./cumulants-full.html">cumulant note</a> supplies the two-state amplitude reduction;
-      the polynomial contour estimates and growing-cutoff error proof above complete the global step in
+      <a href="./bibliography.html#DPS2000">Duffie, Pan and Singleton (2000)</a>, Proposition 1;
+      the group-inverse algebra follows <a href="./bibliography.html#Meyer1975">Meyer (1975)</a>.
+      The existing <a href="./cumulants-full.html">cumulant note</a> supplies the two-state specialization;
+      the centered finite-chain amplitudes and growing-cutoff error proof above extend the global step in
       <a href="https://github.com/microprediction/homogenization/issues/197">issue 197</a>.</p>
   </main>
 
