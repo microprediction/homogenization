@@ -69,5 +69,7 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
- }
+ },
+ {"key": "LandimXu2016", "authors": "Landim, C. and Xu, T.", "year": 2016, "title": "Metastability of finite state Markov chains: a recursive procedure to identify slow variables for model reduction", "venue": "ALEA, Latin American Journal of Probability and Mathematical Statistics 13:725-751", "doi": "10.30757/ALEA.v13-29", "annotation": "Section 4, especially Lemma 4.1, decomposes a finite stationary generator into stationary cycle generators and develops sector-condition bounds."},
+ {"key": "FanPall1957", "authors": "Fan, K. and Pall, G.", "year": 1957, "title": "Imbedding Conditions for Hermitian and Normal Matrices", "venue": "Canadian Journal of Mathematics 9:298-304", "doi": "10.4153/CJM-1957-036-1", "annotation": "Theorem 1 gives necessary and sufficient Hermitian compression interlacing inequalities. The Green-Kubo feasibility note separately proves that sign-symmetric spectra admit real skew-symmetric compressions, rather than inferring real features from a complex isometry."}
 ]

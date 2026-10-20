@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "LandimXu2016",
+  "authors": "Landim, C. and Xu, T.",
+  "year": 2016,
+  "title": "Metastability of finite state Markov chains: a recursive procedure to identify slow variables for model reduction",
+  "venue": "ALEA, Latin American Journal of Probability and Mathematical Statistics 13:725-751",
+  "doi": "10.30757/alea.v13-29",
+  "url": "https://doi.org/10.30757/alea.v13-29",
+  "annotation": "Section 4, especially Lemma 4.1, decomposes a finite stationary generator into stationary cycle generators and develops sector-condition bounds."
+ },
+ {
+  "role": "survey_theory",
+  "key": "FanPall1957",
+  "authors": "Fan, K. and Pall, G.",
+  "year": 1957,
+  "title": "Imbedding Conditions for Hermitian and Normal Matrices",
+  "venue": "Canadian Journal of Mathematics 9:298-304",
+  "doi": "10.4153/cjm-1957-036-1",
+  "url": "https://doi.org/10.4153/cjm-1957-036-1",
+  "annotation": "Theorem 1 gives necessary and sufficient Hermitian compression interlacing inequalities. The Green-Kubo feasibility note separately proves that sign-symmetric spectra admit real skew-symmetric compressions, rather than inferring real features from a complex isometry."
  }
 ]
