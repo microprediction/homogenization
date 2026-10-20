@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finite-window Green–Kubo geometry · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gk_window.py">certificate</a></span></p>
+    <h1>A hard cutoff is not a Green&ndash;Kubo Gram</h1>
+    <p class="subtitle">A sharp twelve-state threshold within stationary-normal chains, and what the Bartlett window preserves.</p>
+    <p>Let $Q$ be an irreducible finite row generator, $\pi$ its stationary law, and $F$ fixed real centered features.
+      For the stationary population correlation $C(t)=F^TD_\pi e^{tQ}F$, distinguish</p>
+    $$K=\int_0^\infty C(t)dt,\qquad R_T=\int_0^T C(t)dt,\qquad
+      B_T=\int_0^T(1-t/T)C(t)dt.$$
+    <p>The symmetric part of $R_T$ can be negative, even without sampling error.
+      In contrast $2T\operatorname{sym}B_T$ is exactly the covariance of $\int_0^T F(Y_s)ds$; its positivity and fixed-feature kernel are the existing
+      <a href="./identifiability-full.html">finite-horizon covariance result</a>.
+      The triangular Bartlett window is the finite-time Einstein&ndash;Helfand identity, not a new positivity principle.</p>
+
+    <h2>Sharp hard-cutoff threshold for normal chains</h2>
+    <p>Assume now that $Q$ is <em>normal in $L^2(\pi)$</em>: $QQ^*=Q^*Q$, where $Q^*=D_\pi^{-1}Q^TD_\pi$.
+      Normality is stronger than diagonalizability but does not require reversibility.
+      If the chain has at most eleven states, then $\operatorname{sym}R_T\succeq0$ for every $T>0$ and every real $F$.</p>
+    <p>Twelve is sharp in this class: a uniform one-way twelve-cycle already has a negative scalar $R_T$.
+      This is not a minimum-state assertion for nonnormal chains.</p>
+    <p>Indeed, the scalar spectral contributions are positive multiples of $e^{-at}\cos(bt)$, $a>0$.
+      For $b>0$,</p>
+    $$r_T(a,b)=\int_0^T e^{-at}\cos(bt)dt
+      =\frac{a+e^{-aT}[-a\cos(bT)+b\sin(bT)]}{a^2+b^2}.$$
+    <p>The first local minimum is at $T=3\pi/(2b)$ and all later local minima are larger.
+      Thus $r_T(a,b)\ge0$ for every $T\ge0$ exactly when</p>
+    $$\kappa e^{-3\pi/(2\kappa)}\le1,\qquad\kappa=b/a.$$
+    <p>Real eigenvalues contribute a positive integral.
+      The classical generator eigenvalue sector gives $|b|/a\le\cot(\pi/n)$; see
+      <a href="./bibliography.html#Davies2010">Davies (2010), proof of Theorem 9, equations (5)&ndash;(6)</a>.
+      Normality makes the scalar spectral weights nonnegative, so this eigenvalue statement suffices here.</p>
+    <p>Here are elementary strict bounds certifying the integer threshold, without a floating root decision.
+      For $0&lt;x&lt;\pi/2$, $\tan x>x+x^3/3$, and $\pi>31/10$ gives $\cot(\pi/11)&lt;7/2$.
+      A finite exponential series with a geometric tail proves $7/2&lt;e^{13/10}&lt;37/10$.</p>
+    $$\cot(\pi/11)\log\cot(\pi/11)&lt;91/20&lt;3\pi/2,
+      \qquad (2+\sqrt3)\log(2+\sqrt3)&gt;481/100&gt;3\pi/2.$$
+    <p>The last comparison uses $2+\sqrt3&gt;37/10$ and $\pi&lt;22/7$.
+      Since $\cot(\pi/12)=2+\sqrt3$, the twelve-cycle crosses the threshold; every longer one-way cycle does too.</p>
+
+    <h2>Exact twelve-cycle benchmark</h2>
+    <p>Let $Q=P-I$, where $P$ advances once around twelve states, take uniform $\pi$, and set
+      $f_j=\cos(\pi j/6)$.
+      Then $C_f(t)=\tfrac12e^{-at}\cos(bt)$, with $a=1-\sqrt3/2$, $b=1/2$.</p>
+    $$T=3\pi,\qquad K_f=1/4,\qquad
+      R_{T,f}=\frac{a-\tfrac12e^{-3\pi a}}{2(a^2+1/4)}\approx-0.01394427,
+      \qquad B_{T,f}\approx0.44947098.$$
+    <p>The Bartlett excess is strict analytically: for $z=a-ib$,
+      $\operatorname{Re}[(1-e^{-Tz})/z^2]=(a^2-b^2-2ab e^{-aT})/(a^2+b^2)^2&lt;0$.
+      Adding reverse cycle rate $1/1000$ and uniform refresh rate $1/1000$ makes every off-diagonal rate positive and retains the negative hard cutoff at its first minimum.
+      Its mode ratio exceeds $369/100&gt;e^{13/10}$, so the same rational sign argument applies.</p>
+    <p>Thus a population hard cutoff can violate positivity, while the positive Bartlett form can exceed the long-run form.
+      The reversible upper bound $\operatorname{Cov}_\pi(Z_T)\preceq2T\operatorname{sym}K$ therefore does not extend even to normal irreversible chains.
+      Main already restricts that upper bound to reversible chains; this is a sharp counterexample to the stronger extension, not an error in main.</p>
+
+    <h2>The Bartlett sector survives for normal chains</h2>
+    <p>For the same normal-chain assumption, write $G_T=\operatorname{sym}B_T$, $A_T=\operatorname{skew}B_T$ and
+      $\kappa_Q=\max_{-a+ib\in\operatorname{spec}Q,\,a>0}|b|/a$.
+      Then for every $T>0$ and every real feature embedding,</p>
+    $$-\kappa_QG_T\preceq iA_T\preceq\kappa_QG_T,
+      \qquad\kappa_Q\le\cot(\pi/n).$$
+    <p>The inequalities are Hermitian and hold also when the feature Gram is singular.
+      In particular, two independent features retain
+      $|(A_T)_{12}|\le\cot(\pi/n)\sqrt{\det G_T}$.
+      No such finite-window sector theorem is asserted here for nonnormal generators.</p>
+    <p>To prove it set $z=a-ib$ and</p>
+    $$b_T(z)=\frac1z-\frac{1-e^{-Tz}}{Tz^2},\qquad
+      s(T)=\int_0^T e^{-at}\sin(bt)dt\ge0\quad(b>0).$$
+    <p>The nonnegativity follows by checking local minima at $2k\pi/b$.
+      Fubini gives $\operatorname{Im}b_T=T^{-1}\int_0^T s(u)du\ge0$, and direct algebra gives
+      $b\operatorname{Re}b_T-a\operatorname{Im}b_T=s(T)/T\ge0$.
+      Hence $|\operatorname{Im}b_T|\le(|b|/a)\operatorname{Re}b_T$; normal spectral calculus and feature congruence prove the matrix inequalities.</p>
+
+    <h2>Scope and checks</h2>
+    <p>These are population, stationary, fixed-feature statements, not positivity guarantees for arbitrary empirical lag estimates.
+      They do not count regimes from rank after integrating different maturity loadings.
+      Normal spectral calculus is essential to the stated threshold and sector proofs.</p>
+    <p>The certificate checks the rational threshold bounds, the exact cycle formula against independent matrix quadrature,
+      circulant and nonuniform-stationary normal chains, and a strictly positive-rate perturbation of the negative example.
+      Floating consistency checks are not interval enclosures; the threshold proof is analytic.</p>
+    <p>The classical covariance/correlation conversion is discussed in
+      <a href="./bibliography.html#ViscardyGaspard2003">Viscardy and Gaspard (2003), Appendix B</a>.
+      Neither that conversion nor the generator eigenvalue sector is claimed new.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
