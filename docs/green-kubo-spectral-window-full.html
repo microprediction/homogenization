@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spectral windows preserve the Green–Kubo sector · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_spectral_window.py">certificate</a></span></p>
+    <h1>Bartlett sector contraction without normality</h1>
+    <p class="subtitle">A positive spectral average of paired resolvents preserves the full-chain sector, but not necessarily a restricted block's own sector.</p>
+    <p>Let $Q$ be a finite irreducible row generator, $\pi$ its stationary law, and $F$ fixed real centered features.
+      Set $C_F(t)=F^TD_\pi e^{tQ}F$, $K_F=\int_0^\infty C_F(t)dt$ and
+      $B_{T,F}=\int_0^T(1-t/T)C_F(t)dt$ for $T>0$.
+      If the columns of $F$ form a basis of the centered state space, then</p>
+    $$s(B_{T,F})\le s(K_F),\qquad
+      s(M)=\|\operatorname{sym}(M)^{-1/2}\operatorname{skew}(M)\operatorname{sym}(M)^{-1/2}\|_2.$$
+    <p>There is no normality or diagonalizability assumption.
+      The proof below applies to every strictly accretive real matrix and every nonzero finite positive even spectral measure.
+      It resolves the full-space candidate in <a href="https://github.com/microprediction/homogenization/issues/229">issue #229</a>.</p>
+
+    <h2>A finite-dimensional sector lemma</h2>
+    <p>Write $L=S+A$, where $S=S^T\succ0$ and $A=-A^T$, and put $\kappa=s(L)$.
+      Equivalently $-\kappa S\preceq iA\preceq\kappa S$, with Hermitian inequalities.
+      Inversion preserves this bound, because</p>
+    $$\operatorname{sym}(L^{-1})=L^{-T}SL^{-1},\qquad
+      \operatorname{skew}(L^{-1})=-L^{-T}AL^{-1}.$$
+    <p>In fact $s(L^{-1})=s(L)$ by applying inversion twice.
+      Positive sums and real congruences also preserve any common sector bound.
+      These are numerical-range sectors, not merely bounds on eigenvalue arguments; see
+      <a href="./bibliography.html#ArlinskiiZagrebnov2010">Arlinskiĭ and Zagrebnov (preprint Definitions 1.1 and 1.6)</a> for the classical framework.</p>
+    <p>Let $\mu$ be a nonzero finite positive even measure on $\mathbb R$, and define
+      $w(t)=\int_{\mathbb R}\cos(\omega t)\mu(d\omega)$ and $B_w(L)=\int_0^\infty w(t)e^{-tL}dt$.
+      The window need not be pointwise nonnegative.</p>
+    $$B_w(L)=\int_{\mathbb R}R_\omega(L)\mu(d\omega),\qquad
+      R_\omega(L)=\tfrac12[(L-i\omega I)^{-1}+(L+i\omega I)^{-1}]
+      =(L+\omega^2L^{-1})^{-1}.$$
+    <p>For $\gamma=\lambda_{\min}(S)>0$, the energy inequality gives $\|e^{-tL}\|_2\le e^{-\gamma t}$.
+      Hence Fubini is justified by $\mu(\mathbb R)/\gamma$, and pairing opposite frequencies gives the displayed identity.
+      The sum $L+\omega^2L^{-1}$ and its inverse each have positive definite symmetric part and sector at most $\kappa$.</p>
+    <p>Positive integration therefore proves $\operatorname{sym}B_w(L)\succ0$ and $s(B_w(L))\le s(L)$.
+      Strict positivity follows by testing each nonzero real vector against the positive definite integrands.
+      This elementary proof does not use a spectral decomposition.</p>
+
+    <h2>Back to chains and the Bartlett window</h2>
+    <p>Choose a $\pi$-orthonormal basis $U$ of $H_0=\{f:\pi^Tf=0\}$ and set $L=-U^TD_\pi QU$.
+      Irreducibility gives $\operatorname{sym}L\succ0$, since its quadratic form is
+      $\tfrac12\sum_{ij}\pi_iq_{ij}(f_j-f_i)^2$ for $f=Ux$.
+      Writing $F=UV$ yields $K_F=V^TL^{-1}V$ and the windowed form $B_{w,F}=V^TB_w(L)V$.</p>
+    $$\kappa_Q=s(L)=s(L^{-1}),\qquad
+      -\kappa_QG_{w,F}\preceq iA_{w,F}\preceq\kappa_QG_{w,F},\qquad
+      \ker G_{w,F}=\ker F.$$
+    <p>Here $G_{w,F}=\operatorname{sym}B_{w,F}$ and $A_{w,F}=\operatorname{skew}B_{w,F}$.
+      A square invertible $V$ preserves the optimal sector constant, proving the opening full-space comparison.
+      A restricted or redundant embedding inherits $\kappa_Q$, not necessarily $s(K_F)$.</p>
+    $$w_T(t)=(1-|t|/T)_+,\qquad
+      \mu_T(d\omega)=\frac{1-\cos(T\omega)}{\pi T\omega^2}\,d\omega,\qquad
+      B_T(L)=L^{-1}-T^{-1}L^{-2}(I-e^{-TL}).$$
+    <p>The density has removable value $T/(2\pi)$ at zero and total mass one; direct Fourier integration gives $w_T$.
+      Thus Bartlett is covered for every finite irreducible chain, including defective ones.
+      The classical finite-time covariance identity $2TG_{T,F}=\operatorname{Cov}_\pi(\int_0^T F(Y_t)dt)$ is already on
+      <a href="./identifiability-full.html">the identification page</a>; the triangular conversion also appears in
+      <a href="./bibliography.html#ViscardyGaspard2003">Viscardy and Gaspard, Appendix B</a>.</p>
+    <p>The same sector proof covers finite positive cosine mixtures, Gaussian windows and $e^{-\delta|t|}$ with $\delta>0$.
+      Bartlett tends to $L^{-1}$ as $T\to\infty$, so its full-space sector bound is asymptotically sharp.
+      None of this asserts a Loewner upper bound by the long-run symmetric form or a sector theorem for rectangular hard cutoffs.</p>
+
+    <h2>Why the restricted-block comparison is false</h2>
+    <p>On a uniform one-way five-cycle take $Q=P-I$, with $P$ advancing one state, and
+      $f=(1,-1,0,0,0)^T$, $g=(-1,1,-1,1,0)^T$, $F=(f,g)$.
+      Exact rational Poisson identities give</p>
+    $$K_F=\tfrac15\begin{pmatrix}1&-1\\-1&2\end{pmatrix},\qquad
+      s(K_F)=0,\qquad [\operatorname{skew}(F^TD_\pi QF)]_{12}=1/10.$$
+    <p>The Taylor expansion $B_{T,F}=\tfrac T2F^TD_\pi F+\tfrac{T^2}{6}F^TD_\pi QF+E_T$ has
+      $\|E_T\|_2\le\|F\|_\pi^2\|Q\|_2^2T^3e^{T\|Q\|_2}/24$.
+      Use $\|F\|_\pi^2\le6/5$, $\|Q\|_2\le2$, and $e^{1/50}\le50/49$ to obtain, at $T=1/100$,</p>
+    $$[\operatorname{skew}B_{T,F}]_{12}\ge\frac1{600000}-\frac1{4900000}
+      =\frac{43}{29400000}>0.$$
+    <p>Therefore $s(B_{T,F})>s(K_F)$ even for a normal chain and independent observed features.
+      The full-chain bound remains valid.</p>
+
+    <h2>Checks and scope</h2>
+    <p>The certificate checks the rational counterexample, a defective three-cycle, random nonnormal chains with nonuniform stationary laws,
+      and strictly accretive matrices that need not be generators.
+      It compares time integration, block exponentials and paired-resolvent frequency integration.</p>
+    <p>For the Bartlett frequency integral truncated at $|\omega|\le\Omega$, where $\Omega\ge\sqrt2\|L\|_2$,
+      the omitted operator norm is at most $8\|L\|_2/(3\pi T\Omega^3)$.
+      This follows from $\|R_\omega(L)\|_2\le2\|L\|_2/\omega^2$ and $1-\cos(T\omega)\le2$.
+      Floating consistency checks are not interval enclosures; the sector proof and the restricted-block sign are analytic.</p>
+    <p>These are stationary population statements for fixed features, not arbitrary-prior or empirical guarantees.
+      A rank obtained after integrating different maturity loadings does not count hidden regimes.
+      The general matrix lemma is finite-dimensional; no unbounded-operator extension is asserted.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
