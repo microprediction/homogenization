@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>How weak the extra Bartlett skew modes are · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_bartlett_skew_spectrum.py">certificate</a></span></p>
+    <h1>How weak the extra Bartlett skew modes are</h1>
+    <p class="subtitle">A complete small-horizon spectrum, not just an exact-rank statement.</p>
+    <p class="muted">Research note, 20 October 2026. The limit is $T\downarrow0$ at fixed integer $r$; no error constant is claimed uniform in dimension.</p>
+
+    <h2>One cycle with two paths</h2>
+    <p>Take states $a_0,\ldots,a_{r-1},b_0,\ldots,b_{r-1},c$, where $r\ge1$.
+      Give the triangle $a_0\to b_0\to c\to a_0$ unit rates, and attach unit-rate reversible paths $a_i\leftrightarrow a_{i+1}$ and $b_i\leftrightarrow b_{i+1}$.
+      The irreducible generator $Q_r$ is balanced, so its stationary law is uniform on $n=2r+1$ states.</p>
+    $$M_T=\int_0^T(1-t/T)e^{tQ_r}\,dt,\qquad A_T=\operatorname{skew}M_T.$$
+    <p>Let $\omega_1(T)\ge\cdots\ge\omega_r(T)\ge0$ be the singular values of $A_T$, counting each skew pair once and omitting its stationary zero mode.
+      These are also the skew singular values of the directed Bartlett form for a complete stationary-orthonormal feature basis: if $V^TV=I$, $V^T\mathbf1=0$ and $F=\sqrt nV$, that form is $B_T=V^TM_TV$.</p>
+    <div class="equation-card">
+    $$\omega_j(T)=a_jT^{2j}\{1+O_r(T)\},\qquad
+      a_j=\sqrt{\frac{2j+1}{2j-1}}\frac{(j-1)!(j+1)!}{2(2j)!(2j+1)!},\quad1\le j\le r.$$
+    </div>
+    <p>In particular $a_1=\sqrt3/12$.
+      Thus arbitrarily large exact skew rank comes with a hierarchy $T^2,T^4,\ldots,T^{2r}$, not comparably strong modes.
+      This quantifies the <a href="https://github.com/microprediction/homogenization/pull/236">one-cycle rank construction</a>; the proof below is self-contained.</p>
+
+    <h2>From shortest walks to exterior invariants</h2>
+    <p>Let $X(T)=(A_T)_{\{a_i\},\{b_j\}}$ and $u_i=e_{a_i}-e_c$, $v_i=e_{b_i}-e_c$.
+      The within-path diagonal blocks of $M_T$ are symmetric: their resolvent Schur complements are symmetric path matrices minus a scalar root projector.
+      Expanding the resolvent at infinity transfers symmetry to every power of $Q_r$, hence to $M_T$.</p>
+    <p>Balance gives $A_T\mathbf1=0$, so its two-form is exactly $\alpha_T=\sum_{i,j}X_{ij}(T)u_i\wedge v_j$.
+      The shortest $a_i\to b_j$ walk is unique with length $i+j+1$, while the reverse requires an extra step through $c$.
+      Therefore</p>
+    $$X_{ij}(T)=T^{i+j+2}W_{ij}(T),\qquad
+      W_{ij}(T)=\frac1{2(i+j+3)!}+O(T).$$
+    <p>Put $C_j=(1/[2(i+k+3)!])_{i,k=0}^{j-1}$, $\Delta_0=1$ and</p>
+    $$\Delta_j=\det C_j=(-1)^{j(j-1)/2}2^{-j}
+      \prod_{k=0}^{j-1}\frac{k!}{(j+k+2)!}.$$
+    <p>Multiplying row $i$ by $(i+j+2)!$ gives monic polynomials of decreasing degrees, so column reversal reduces the determinant to Vandermonde.
+      This is a classical polynomial-alternant specialization; see <a href="./bibliography.html#Krattenthaler1999">Krattenthaler, Proposition 1</a>.</p>
+    <p>In $\alpha_T^j/j!$, the coefficient for subsets $I,J$ of size $j$ is, up to sign, $\det X_{I,J}$.
+      Its power is at least $j(j+1)$, with equality only for $I=J=\{0,\ldots,j-1\}$.
+      The Gram matrix of the corresponding $2j$ vectors $u_i,v_i$ is $I+\mathbf1\mathbf1^T$, with determinant $2j+1$.</p>
+    $$b_j(T):=\|\alpha_T^j/j!\|
+      =\sqrt{e_j(\omega_1^2,\ldots,\omega_r^2)}
+      =\sqrt{2j+1}\,|\Delta_j|T^{j(j+1)}\{1+O_r(T)\}.$$
+    <p>Here $e_j$ is the elementary symmetric polynomial, as follows directly from orthogonal skew-block form.
+      The product of the largest $j$ squared modes lies between $e_j/\binom{r}{j}$ and $e_j$, yielding $\omega_j=\Theta_r(T^{2j})$ by successive division.
+      The resulting strict separation makes the largest product dominate $e_j$ with relative error $O_r(T^4)$.</p>
+    <p>Dividing successive leading product constants therefore gives $a_j=\sqrt{(2j+1)/(2j-1)}|\Delta_j/\Delta_{j-1}|$, which simplifies to the displayed factorial formula.
+      This argument applies to every fixed $r$, not just the dimensions checked numerically.</p>
+
+    <h2>A computable finite-horizon remainder</h2>
+    <p>For $0<T\le1$, $\|Q_r\|_\infty\le4$ and the factorial Taylor tail give
+      $|W_{ik}-(C_r)_{ik}|\le(2/3)Te^{4T}<54T$, hence $|W_{ik}|\le55$.
+      Define</p>
+    $$E_{r,j}=\sqrt{2j+1}\,j!\left\{54j55^{j-1}
+      +\left[\binom{r}{j}^2-1\right]55^j\right\}.$$
+    $$\left|\frac{b_j(T)}{T^{j(j+1)}}-\sqrt{2j+1}|\Delta_j|\right|\le E_{r,j}T.$$
+    <p>Leibniz expansion bounds the leading minor's normalized error by $j!j54\,55^{j-1}T$.
+      Each other minor has an extra factor at most $T$, determinant bounded by $j!55^j$, and wedge-vector norm $\sqrt{2j+1}$.
+      Summing these bounds proves the inequality; its conservative constants are explicit and dimension-dependent.</p>
+
+    <h2>Normalization and deterministic rank loss</h2>
+    <p>On the centered orthonormal coordinates put $S_T=\operatorname{sym}B_T$ and let $\nu_j$ be the positive skew-pair singular values of $S_T^{-1/2}(\operatorname{skew}B_T)S_T^{-1/2}$.
+      Since $S_T=(T/2)\{I+O_r(T)\}$, multiplicative singular-value bounds for congruence, rather than additive perturbation bounds that could swamp weak modes, give</p>
+    $$\nu_j(T)=2a_jT^{2j-1}\{1+O_r(T)\}.$$
+    <p>For any real skew matrix $H$ with ordered pair strengths $\eta_1,\ldots,\eta_r$,</p>
+    $$\inf_{Z^T=-Z,\ \operatorname{rank}Z\le2s}\|H-Z\|_2=\eta_{s+1},\qquad0\le s<r.$$
+    <p>Keeping the largest $s$ canonical skew blocks attains the bound.
+      Conversely, the kernel of any rank-$2s$ approximation intersects the largest $2s+1$ singular subspace, giving the lower bound.
+      This is the usual low-rank approximation principle associated with <a href="./bibliography.html#EckartYoung1936">Eckart and Young</a>, with the skew-constrained operator-norm case proved here directly.</p>
+    <p>Consequently the directed skew form is within $a_{s+1}T^{2s+2}\{1+O_r(T)\}$ of rank $2s$, or within $2a_{s+1}T^{2s+1}\{1+O_r(T)\}$ after symmetric normalization.
+      These are matrix-level distances, not distances to another realizable Markov model or statistical sample-complexity bounds.</p>
+
+    <h2>Checks and scope</h2>
+    <p>The certificate checks the factorial and Gram determinants exactly for $r=1,\ldots,6$, then checks the mode hierarchy at 120 decimal digits and repeats the weakest case at 170 digits.
+      It tests the explicit exterior-invariant bound, normalized modes and an independent block exponential.
+      Finite-grid convergence is a control on the all-dimensions proof, not an interval enclosure for individual numerical modes.</p>
+    <p>For $r=6$, $a_6\approx1.10214780467\times10^{-13}$.
+      At $T=1/64$ the largest mode is about $3.46489829681\times10^{-5}$ and the weakest about $2.29095275904\times10^{-35}$.
+      The weakest normalized mode is about $2.94924254598\times10^{-33}$, despite exact full centered skew rank.</p>
+    <p>Inverse congruence preserves the generator's rank-two skew part in the infinite-time form, while both symmetric Gram ranks stay full.
+      This note concerns fixed complete stationary features and directed correlations, not ranks created by different maturity loadings or the symmetric occupation covariance itself.
+      No dimension-uniform remainder, all-horizon spectral formula, or noise-robust identification guarantee is claimed.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

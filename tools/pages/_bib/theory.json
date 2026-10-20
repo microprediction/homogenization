@@ -1,5 +1,23 @@
 [
  {
+  "key": "Krattenthaler1999",
+  "authors": "Krattenthaler, C.",
+  "year": 1999,
+  "title": "Advanced Determinant Calculus",
+  "venue": "Séminaire Lotharingien de Combinatoire 42, Article B42q, 67 pp",
+  "url": "https://www.mat.univie.ac.at/~slc/wpapers/s42kratt.pdf",
+  "annotation": "Proposition 1 gives the classical polynomial alternant/Vandermonde identity. The Bartlett skew-mode note uses its factorial specialization; the determinant identity itself is not a new claim."
+ },
+ {
+  "key": "EckartYoung1936",
+  "authors": "Eckart, C. and Young, G.",
+  "year": 1936,
+  "title": "The Approximation of One Matrix by Another of Lower Rank",
+  "venue": "Psychometrika 1(3):211-218",
+  "doi": "10.1007/BF02288367",
+  "annotation": "Classical background on low-rank matrix approximation. The Bartlett skew-mode note proves its skew-constrained operator-norm formula directly by a kernel argument and removal of canonical skew blocks."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

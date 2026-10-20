@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Krattenthaler1999",
+  "authors": "Krattenthaler, C.",
+  "year": 1999,
+  "title": "Advanced Determinant Calculus",
+  "venue": "Séminaire Lotharingien de Combinatoire 42, Article B42q, 67 pp",
+  "doi": "",
+  "url": "https://www.mat.univie.ac.at/~slc/wpapers/s42kratt.pdf",
+  "annotation": "Proposition 1 gives the classical polynomial alternant/Vandermonde identity. The Bartlett skew-mode note uses its factorial specialization; the determinant identity itself is not a new claim."
+ },
+ {
+  "role": "survey_theory",
+  "key": "EckartYoung1936",
+  "authors": "Eckart, C. and Young, G.",
+  "year": 1936,
+  "title": "The Approximation of One Matrix by Another of Lower Rank",
+  "venue": "Psychometrika 1(3):211-218",
+  "doi": "10.1007/bf02288367",
+  "url": "https://doi.org/10.1007/bf02288367",
+  "annotation": "Classical background on low-rank matrix approximation. The Bartlett skew-mode note proves its skew-constrained operator-norm formula directly by a kernel argument and removal of canonical skew blocks."
  }
 ]
