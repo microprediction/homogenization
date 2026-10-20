@@ -27,6 +27,15 @@
   "annotation": "Establishes the general change-of-numeraire theorem and forward measures used here to fix the sign and normalization of the futures recursion."
  },
  {
+  "key": "EmbreeTrefethen2001",
+  "authors": "Embree, M. and Trefethen, L. N.",
+  "year": 2001,
+  "title": "Generalizing eigenvalue theorems to pseudospectra theorems",
+  "venue": "SIAM Journal on Scientific Computing 23(2):583-590",
+  "doi": "10.1137/S1064827500373012",
+  "annotation": "Normal resolvent bounds and pseudospectral component counts provide the spectral enclosure used in the maturity-reversal examples."
+ },
+ {
   "key": "Birkhoff1957",
   "authors": "Birkhoff, G.",
   "year": 1957,
