@@ -1,0 +1,109 @@
+<!-- title: Odd critical noise in a finite chain (full note) · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_odd_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Odd critical noise in any finite regime chain</h1>
+    <p class="subtitle">Initial-mean memory survives every increasing odd power, uniformly over noise; a deterministic median can remain in an atom.</p>
+    <h2>The coefficient and its scope</h2>
+    <p>Fix a finite irreducible row generator $Q$, stationary row $\pi$, and real nonconstant feature $f$ with $\pi f=0$.
+    Put $h=Q^\#f$, $\Gamma=-2\pi(fh)&gt;0$, $a_i=h_i/\sqrt\Gamma$, and
+    $A_c=c^{-1}\int_0^c f(Y_s)ds$, $X_c=\sqrt{c/\Gamma}A_c$.</p>
+    <p>Here $QQ^\#=I-\mathbf1\pi$, $\pi Q^\#=0$ and $Q^\#\mathbf1=0$.
+    Fix odd $d\ge1$, $\mu&gt;0$ and $p\in(0,1)$; take $S_c=\mu A_c^d+\sigma Z$ with independent standard Gaussian $Z$ and $\sigma\ge0$.
+    Let $q_c$ be the lower stationary pooled $p$-quantile.</p>
+    $$\lambda={c^{d/2}\sigma\over\mu\Gamma^{d/2}},\quad r_d(t)=\operatorname{sgn}(t)|t|^{1/d},\quad
+      P_{i,d}(t)=a_i\phi(r_d(t)),\quad K_{i,d,\lambda}(t)=\mathbb E P_{i,d}(t-\lambda Z).$$
+    <p>Write $t_{p,d}(\lambda)$ for the $p$-quantile of $G^d+\lambda Z$, for independent standard Gaussians $G,Z$.
+    Then, for this fixed model, degree and target,</p>
+    $$\Pr_i(S_c\le q_c)-p={K_{i,d,\lambda}(t_{p,d}(\lambda))\over\sqrt c}+R_{i,c}(\lambda),\qquad
+      \sup_{i,\lambda\ge0}\sqrt c(1+\lambda)|R_{i,c}(\lambda)|\longrightarrow0.$$
+    <p>There is no uniformity over degenerating chains, vanishing $\Gamma$ or unbounded degree.
+    These are population thresholds and latent-start errors, not finite-calibration, training-history or feature-conditional conformal guarantees.</p>
+    <p>For positive noise, stationary pooling has exact marginal coverage and its statewise gaps cancel under $\pi$.
+    At zero noise a deterministic quantile is conservative if it lands in an atom; the exponentially small overshoot below belongs to the remainder.
+    Common independent randomization at a quantile tie restores exact marginal coverage and gives the same theorem.</p>
+    $$\sqrt c\{\Pr_i(S_c\le q_c)-p\}\longrightarrow a_i\phi(z_p)\quad(\sigma=0),$$
+    $$c^{(d+1)/2}\sigma_c\{\Pr_i(S_c\le q_c)-p\}
+      \longrightarrow\mu d!!h_i\Gamma^{(d-1)/2}\phi(z_p)\quad(\lambda_c\longrightarrow\infty),\qquad z_p=\Phi^{-1}(p).$$
+    <p>The first limit is the same for every odd degree, since the noiseless quantile event is preserved exactly.
+    The second includes fixed positive noise, giving orders $c^{-2}$ for cubic and $c^{-3}$ for quintic scores when the coefficient is nonzero.
+    Unlike the even-power profile, this leading contrast contains no stationary skewness term.</p>
+    <h2>The signed CDF estimate</h2>
+    <p>Let $F_{i,c}$ be the CDF of $X_c$, and define</p>
+    $$J_{i,c}(x)=\sqrt c(F_{i,c}(x)-F_{\pi,c}(x)),\qquad
+      U_{i,c}=\|J_{i,c}-a_i\phi\|_\infty=O(c^{-1/2}),$$
+    $$L_{i,d,c}=d\int_{\mathbb R}|x|^{d-1}|J_{i,c}(x)-a_i\phi(x)|dx\longrightarrow0.$$
+    <p>These are stronger than a scalar central limit theorem.
+    The second norm is essential: substituting an odd root in a supremum bound alone does not control the large-noise endpoint.</p>
+    <p>To prove the first estimate, put $D=\operatorname{diag}f$ and $\kappa_3=6\pi[fQ^\#(fh)]$.
+    The eigenvalue and projector near zero satisfy $\Lambda(z)=\Gamma z^2/2+\kappa_3z^3/6+O(z^4)$ and
+    $\Pi(z)\mathbf1=\mathbf1-hz+O(z^2)$, by differentiating the eigen-equation with stationary normalization.</p>
+    $$\chi_{i,c}(u)=e_i e^{c(Q+iuD/\sqrt{c\Gamma})}\mathbf1,\qquad
+      E_{i,c}(u)=e^{-u^2/2}\left[1+{ -a_i iu+\kappa_3(iu)^3/(6\Gamma^{3/2})\over\sqrt c}\right].$$
+    <p>The inverse transform of $E_{i,c}$ has signed CDF
+    $G_{i,c}(x)=\Phi(x)+c^{-1/2}\phi(x)[a_i-\kappa_3(x^2-1)/(6\Gamma^{3/2})]$.
+    Its derivative is bounded; the signed-approximant smoothing inequality gives, for any $T&gt;0$,</p>
+    $$\|F_{i,c}-G_{i,c}\|_\infty\le\epsilon_{i,c}(T):=
+      {2\over\pi}\int_0^T{|\chi_{i,c}(u)-E_{i,c}(u)|\over u}du
+      +{24\|G'_{i,c}\|_\infty\over\pi T}.$$
+    <p>In particular $U_{i,c}\le\sqrt c[\epsilon_{i,c}(T)+\sum_j\pi_j\epsilon_{j,c}(T)]$, a finite-matrix/integral budget.
+    The common stationary skewness term cancels; $\pi h=0$.</p>
+    <h2>Why zero noise causes no spectral obstruction</h2>
+    <p>In $L^2(\pi)$ set $H=(Q+Q^*)/2$.
+    The Dirichlet identity $\operatorname{Re}\langle v,Qv\rangle_\pi=-\tfrac12\sum_{j,k}\pi_jq_{jk}|v_j-v_k|^2$ implies that an imaginary-axis eigenvalue of $Q+i\theta D$, $\theta\ne0$, would force $v$ constant and then $f$ constant.</p>
+    <p>At large $|\theta|$, a Schur complement between distinct feature levels gives eigenvalues
+    $i\theta b+\operatorname{spec}(Q_{C_bC_b})+o(1)$, where $C_b=\{j:f_j=b\}$.
+    Each proper killed block is transient, so compactness supplies $\gamma_\delta&gt;0$ bounding the spectral abscissa away from zero for all $|\theta|\ge\delta$.</p>
+    <p>A unitary Schur form has strict upper entries bounded by $2\|H\|$, because its Hermitian part is unitarily conjugate to $H$.
+    Its triangular Duhamel expansion terminates after $n-1$ strict-upper factors, yielding</p>
+    $$\sup_{|\theta|\ge\delta}\|e^{c(Q+i\theta D)}\|_{L^2(\pi)}
+      \le e^{-\gamma_\delta c}\sum_{j=0}^{n-1}{(2n\|H\|c)^j\over j!}.$$
+    <p>This covers repeated feature values and defective generators without assuming a global density or a separate nonlattice condition.
+    On $|u|\le c^{1/20}$ analytic expansion bounds the smoothing integral by $O(c^{-1})$, using Gaussian-polynomial remainders and an exponentially small term vanishing at zero.</p>
+    <p>From there to $\delta\sqrt{c\Gamma}$, the principal eigenvalue has Gaussian decay and the complementary modes decay exponentially.
+    Beyond that point apply the uniform Schur bound and take $T=e^{\gamma_\delta c/2}$.
+    Thus $\epsilon_{i,c}(T)=O(c^{-1})$, proving the claimed $U$ rate.</p>
+    <h2>Polynomially weighted tails and finite bounds</h2>
+    <p>For small real $z$, spectral bounds give $\mathbb E_i e^{z\int_0^c f(Y_s)ds}\le C e^{Cc z^2}$.
+    Chernoff bounds give Gaussian tails up to a fixed multiple of $\sqrt c$ and exponentially small tails thereafter, up to the bounded support.</p>
+    <p>Truncate the weighted integral at $R_c=\sqrt{K\log c}$.
+    Its central cost is $2R_c^dU_{i,c}=O(c^{-1/2}(\log c)^{d/2})$; its tail is bounded by
+    $C\sqrt c R_c^d e^{-aR_c^2}+Cc^{(d+1)/2}e^{-bc}$ plus the Gaussian profile tail.</p>
+    <p>Taking fixed $K$ sufficiently large proves $L_{i,d,c}\to0$.
+    For a computable finite bound, any $R&gt;0$ and even integer $2m&gt;d$ give</p>
+    $$L_{i,d,c}\le2R^dU_{i,c}+\sqrt c R^{d-2m}
+      [\mathbb E_i|X_c|^{2m}+\mathbb E_\pi|X_c|^{2m}]
+      +d|a_i|\int_{|x|&gt;R}|x|^{d-1}\phi(x)dx.$$
+    <p>For the tail term use the two one-sided survival probabilities, whose sum is $\Pr(|X_c|&gt;x)$.
+    The moments follow from $v_j'=Qv_j+jDv_{j-1}$, $v_0=\mathbf1$, $v_j(0)=0$ for $j&gt;0$, followed by rescaling.</p>
+    <h2>Noise convolution, quantiles and atoms</h2>
+    <p>At every actual scaled threshold $t=c^{d/2}q/(\mu\Gamma^{d/2})$, Gaussian convolution gives</p>
+    $$\left|\Pr_i(S_c\le q)-\Pr_\pi(S_c\le q)-{K_{i,d,\lambda}(t)\over\sqrt c}\right|
+      \le c^{-1/2}\min\left\{U_{i,c},{L_{i,d,c}\over\lambda\sqrt{2\pi}}\right\},$$
+    <p>omitting the second bound at zero noise.
+    At a deterministic pooled quantile add $a_c\mathbf1_{\{\lambda=0\}}$ when replacing $\Pr_\pi(S_c\le q_c)$ by $p$, where
+    $a_c=\max_i[e^{cQ_{C_{f_i}C_{f_i}}}\mathbf1]_i$ bounds the pooled atom size and is polynomial-times-exponentially small.</p>
+    <p>Conditioning on a jump path shows that an atom requires all visited feature values to agree, proving this killed-block formula.
+    If a pooled quantile is randomized within its jump with a common independent uniform variable, its statewise contrast is a convex combination of the left and right limits; the same bound holds without the extra $a_c$.</p>
+    <p>Compactify noise by $\rho=\lambda/(1+\lambda)$: the reference laws are $(1-\rho)G^d+\rho Z$.
+    They have continuous strictly increasing CDFs and unique interior quantiles, so the CLT and subsequence compactness give uniform normalized quantile convergence, even when finite-$c$ deterministic quantiles lie in atoms.</p>
+    <p>Since $P_{i,d}$ is uniformly continuous and integrable, $(1+\lambda)K_{i,d,\lambda}((1+\lambda)u)$ extends jointly continuously to $P_{i,d}(u)$ at $\rho=0$ and $a_i d!!\phi(u)$ at $\rho=1$.
+    Indeed $\int P_{i,d}=a_i d!!$ by the change of variables $t=x^d$.</p>
+    <p>This and the convolution bounds prove the uniform little-$o$ theorem and its endpoint limits.
+    The finite budgets concern the actual threshold; substituting a reference quantile is not asserted to give an explicit finite-rate quantile bound.</p>
+    <h2>An atom that never leaves the median</h2>
+    $$Q=\begin{pmatrix}-1&amp;1&amp;0\\1&amp;-2&amp;1\\0&amp;1&amp;-1\end{pmatrix},\quad
+      f=(-1,0,1)^\top,\quad\pi=(1,1,1)/3.$$
+    <p>Reflection symmetry makes $A_c$ symmetric, with atom $e^{-2c}/3$ at zero from the middle start staying there.
+    Thus every odd score at zero noise has pooled median $q_c=0$ but coverage $1/2+e^{-2c}/6$, not exactly $1/2$, for every finite $c$.
+    At $c=1$ the overshoot is $0.02255588054$; accepting half the ties restores $1/2$.</p>
+    <h2>Certificate and classical context</h2>
+    <p>The certificate tests 192 linear/cubic/quintic quantile cases on a nonreversible three-state chain, polynomially weighted CDF errors, finite budgets and independent block-matrix odd moments.
+    It also checks linear Gaussian inversion, six independent unequal-rate Bessel CDFs and the exact median atom.</p>
+    <p>For the three-state benchmark $\Gamma=0.385937945$; the worst weighted quantile discrepancy falls from $0.182934941$ at $c=32$ to $0.0141433834$ at $c=2048$.
+    Fourier refinement and Gaussian-tail truncation are numerical checks, not outward-rounded enclosures or proofs of continuum uniformity.</p>
+    <p>For classical initial-bias and skewness expansions see
+    <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1, Lemma 8.3 and the signed smoothing inequality on page 450</a>.
+    The finite-chain high-frequency, polynomial-weighted and all-noise steps are proved above, not imported from their discrete-time nonarithmetic theorem.</p>
+  </main>
