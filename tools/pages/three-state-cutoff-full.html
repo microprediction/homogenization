@@ -1,0 +1,82 @@
+<!-- title: Three-state hard-cutoff positivity · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_three_state_cutoff.py">certificate</a></span></p>
+    <h1>No negative hard cutoff with three regimes</h1>
+    <p class="subtitle">A stationary population theorem that allows nonnormal and defective generators.</p>
+    <p>Let $Q$ be an irreducible row generator on two or three states, $\pi$ its stationary law, and $F$ fixed real features with $\pi^TF=0$.
+      For every $T>0$,</p>
+    $$R_{T,F}=\int_0^T F^TD_\pi e^{tQ}F\,dt,\qquad
+      \operatorname{sym}R_{T,F}\succeq0,\qquad
+      \ker\operatorname{sym}R_{T,F}=\ker F.$$
+    <p>No reversibility, normality or diagonalizability is required.
+      This is a hard correlation cutoff, not the triangularly weighted covariance of an integrated feature.
+      The result does not assert positivity for arbitrary empirical lag estimates or nonstationary starts.</p>
+
+    <h2>The stationary three-state sector</h2>
+    <p>Choose a $\pi$-orthonormal basis $U$ of the centered state space and put $L=-U^TD_\pi QU$.
+      Its symmetric part is positive definite by irreducibility.
+      For three states its strong sector satisfies</p>
+    $$\kappa(L)=\|\operatorname{sym}(L)^{-1/2}\operatorname{skew}(L)\operatorname{sym}(L)^{-1/2}\|_2
+      \le1/\sqrt3.$$
+    <p>Here is a direct proof, distinct from an eigenvalue-sector argument.
+      Write $p_{ij}=\pi_iq_{ij}$, $u_{ij}=(p_{ij}+p_{ji})/2$, and
+      $j=p_{12}-p_{21}=p_{23}-p_{32}=p_{31}-p_{13}$.
+      Balance gives the equalities, while nonnegative flows give $u_{ij}\ge|j|/2$.</p>
+    <p>Pinning the third coordinate in $-D_\pi Q$ gives symmetric and skew parts</p>
+    $$S_0=\begin{pmatrix}u_{12}+u_{13}&-u_{12}\\-u_{12}&u_{12}+u_{23}\end{pmatrix},\qquad
+      A_0=\begin{pmatrix}0&-j/2\\j/2&0\end{pmatrix},\qquad
+      \kappa^2=\frac{j^2}{4(u_{12}u_{13}+u_{12}u_{23}+u_{13}u_{23})}\le\frac13.$$
+    <p>Subtracting constants turns the pinned basis into a centered basis without changing this bilinear form.
+      The optimal sector constant is invariant under invertible real congruence, so it is also the constant for $L$.
+      Balanced cycle decomposition is classical; see <a href="./bibliography.html#LandimXu2016">Landim and Xu, Section 4 and Lemma 4.1</a>, not for a claimed sharp constant but for that framework.</p>
+
+    <h2>A two-dimensional matrix lemma</h2>
+    <p>For any real $2\times2$ matrix $L$ with positive definite symmetric part, $\operatorname{sym}\int_0^T e^{-tL}dt\succ0$
+      for every $T>0$ if either its spectrum is real or $\kappa(L)\le1/\sqrt3$.
+      Orthogonally diagonalize its symmetric part to write</p>
+    $$L=aI+N,\qquad N=\begin{pmatrix}-d&c\\-c&d\end{pmatrix},\qquad
+      a>d\ge0,\quad N^2=(d^2-c^2)I,\quad \kappa^2=c^2/(a^2-d^2).$$
+    <p>If $d^2-c^2=h^2\ge0$, then $h\le d<a$ and the symmetric integrated semigroup has diagonal entries</p>
+    $$H_\pm(T)=\int_0^T e^{-at}\left(\cosh(ht)\pm\frac d h\sinh(ht)\right)dt.$$
+    <p>The plus integrand is positive.
+      The minus integrand is initially positive and can change sign at most once, from positive to negative, since $\tanh(ht)$ increases.
+      Its running integral is therefore positive: it either keeps increasing or decreases after its maximum to the positive limit $(a-d)/(a^2-h^2)$.</p>
+    <p>At $h=0$ use $\sinh(ht)/h=t$; the same proof applies to $e^{-at}(1-dt)$ and its positive limiting integral $(a-d)/a^2$.
+      This includes defective matrices and the scalar case.</p>
+    <p>If $c^2-d^2=b^2>0$, put $r=|c|=\sqrt{b^2+d^2}$ and $\phi=\arctan(d/b)$.
+      The sector condition implies $3c^2+d^2\le a^2$, hence $r+d\le a$ because $d<r$.
+      Now replace $\cosh(ht),\sinh(ht)/h$ by $\cos(bt),\sin(bt)/b$ in $H_\pm$.</p>
+    <p>The first local minima of $H_-$ and $H_+$ occur at $bT_-=3\pi/2-\phi$ and $bT_+=3\pi/2+\phi$, respectively.
+      Direct integration gives</p>
+    $$H_-(T_-)=\frac{a-d-r e^{-aT_-}}{a^2+b^2}>0,\qquad
+      H_+(T_+)=\frac{a+d-r e^{-aT_+}}{a^2+b^2}>0.$$
+    <p>Indeed $r\le a-d$ and the exponential factors are strictly less than one.
+      Later local minima are larger; each function starts at zero with positive derivative and has positive limit.
+      Thus both are positive at every positive time.</p>
+    <p>The three-state sector puts every complex-spectrum chain in this lemma; the real-spectrum case needs no sector bound.
+      For two states $L$ is a positive scalar.
+      Finally write $F=UV$ and apply congruence by $V$ to obtain the opening positivity and kernel statements.</p>
+
+    <h2>A defective chain with negative correlations</h2>
+    $$Q=\begin{pmatrix}-1&1&0\\0&-1&1\\4&0&-4\end{pmatrix},\qquad
+      \pi=(4/9,4/9,1/9)^T,\qquad f=(1,1,-8)^T.$$
+    <p>The centered eigenvalue is $-3$ with a nontrivial Jordan block.
+      Exact rational identities give $\pi^Tf=0$ and $(Q+3I)^2=9\mathbf1\pi^T$, hence</p>
+    $$C_f(t)=e^{-3t}(8-12t),\quad
+      R_{T,f}=\tfrac43[1+(3T-1)e^{-3T}],\quad
+      K_f=\tfrac43,\quad B_{T,f}=\tfrac43(1-e^{-3T}).$$
+    <p>Here $B_{T,f}=\int_0^T(1-t/T)C_f(t)dt$.
+      Correlation is negative for $t>2/3$, but its hard-cutoff integral stays positive and exceeds $K_f$ for $T>1/3$.
+      At $T=1$, $C_f\approx-0.19914827$ and $R_{T,f}\approx1.46609885$.</p>
+
+    <h2>What remains open</h2>
+    <p>A negative stationary hard cutoff needs at least four states.
+      The exact twelve-cycle counterexample in <a href="https://github.com/microprediction/homogenization/pull/230">the normal-chain note</a> gives an upper bound of twelve; within normal chains twelve is sharp.
+      This note does not determine the unrestricted minimum between four and twelve.</p>
+    <p>The certificate checks the stationary-flow sector formula, both spectral cases of the matrix lemma, the defective identities,
+      and independent time integration.
+      Floating finite-grid checks supplement the all-horizon proof; they are not interval enclosures or evidence of a sharp unrestricted threshold.</p>
+    <p>These statements concern fixed features and stationary population correlations, not conditional conformal coverage or covariance rank after integrating different maturity loadings.
+      Positivity alone does not turn $R_{T,F}$ into a covariance or identify a hidden generator.</p>
+  </main>

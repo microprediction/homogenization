@@ -1,5 +1,14 @@
 [
  {
+  "key": "LandimXu2016",
+  "authors": "Landim, C. and Xu, T.",
+  "year": 2016,
+  "title": "Metastability of finite state Markov chains: a recursive procedure to identify slow variables for model reduction",
+  "venue": "ALEA, Latin American Journal of Probability and Mathematical Statistics 13:725-751",
+  "doi": "10.30757/ALEA.v13-29",
+  "annotation": "Section 4, especially Lemma 4.1, decomposes a stationary finite generator into stationary cycle generators. The three-state hard-cutoff note derives its precise skew-sector constant directly from balanced flows, rather than attributing that sharp constant to the paper's general bound."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
