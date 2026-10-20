@@ -1,0 +1,85 @@
+<!-- title: Exact Green–Kubo state counts on cactus graphs · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_gk_cactus.py">certificate</a></span></p>
+    <h1>Repeated skew modes on a cactus</h1>
+    <p class="subtitle">An exact state count for cycle networks joined at articulation vertices.</p>
+    <p>A cactus is a connected undirected simple graph whose distinct simple cycles share at most one vertex.
+      Here it is the support graph of an irreducible row generator: an edge exists when either transition rate is positive.
+      Rates may be one-way, and holding times and real feature values are unrestricted.</p>
+
+    <h2>The exact count</h2>
+    <p>For centered features $F$ and stationary law $\pi$, let
+      $K=F^TD_\pi(-Q)^\#F=G+A$, with $G\succ0$ and $A^T=-A$.
+      Suppose the target has $2r$ features and all $r$ positive frequencies of
+      $iG^{-1/2}AG^{-1/2}$ equal the same $\kappa>0$.</p>
+    <div class="equation-card">
+    $$q=\min\{n\ge3:\ \kappa\le\cot(\pi/n)\},\qquad
+      \boxed{N_{\rm cactus}(K)=1+r(q-1).}$$
+    </div>
+    <p>The minimum is over all cactus-supported generators and all real centered feature embeddings.
+      It is attained by $r$ biased $q$-cycles sharing one hub, with any prescribed positive stationary law on these states.
+      No claim is made that this is the minimum among all graphs.</p>
+    <p>For $K_*=I_4+\cot(\pi/5)\operatorname{diag}(J,J)$,
+      $J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}$, the cactus minimum is exactly <strong>nine</strong>.
+      Thus any six-, seven- or eight-state realization sought in
+      <a href="https://github.com/microprediction/homogenization/issues/222">issue #222</a> must have noncactus support; the unrestricted gap remains open.</p>
+
+    <h2>Why the articulation decomposition is exact</h2>
+    <p>Write $w_{ij}=\pi_iq_{ij}$ and $C=\operatorname{diag}(w\mathbf1)-w$.
+      Every graph block is a bridge or a simple cycle; stationary flow restricts to a balanced flow on each block.
+      To see this, peel off leaf blocks: balance at their nonarticulation vertices forces zero net flow at the articulation too, and induction removes the block.</p>
+    <p>Choose a root and represent a potential modulo constants by its values within each block relative to that block's parent articulation.
+      These $N-1=\sum_b(|V_b|-1)$ coordinates are independent; reconstruct the full potential by adding the offsets along the block tree.
+      Each block's balanced bilinear form is unchanged by offsets, so $U^TC^TU$ is a direct sum of its grounded block forms.</p>
+    <p>Consequently the energy-normalized Hermitian skew spectrum is the union of the block spectra, including zeros from bridges.
+      This is a congruence decomposition, not a claim that $Q$ has block-diagonal dynamics or that its ordinary eigenvalues combine this way.</p>
+
+    <h2>Higher-mode bound for a cycle with arbitrary edge traffic</h2>
+    <p>On a cycle of length $\ell$, balance makes the net current $j=w_{k,k+1}-w_{k+1,k}$ constant.
+      If $j=0$, the skew form vanishes.
+      Otherwise orient the cycle so $j>0$ and subtract the reverse flow on every edge: the remaining flow is exactly the constant one-way current $j$.</p>
+    <p>In grounded coordinates write the symmetric and skew parts of $C^T$ as $H,D$.
+      If $H_0,D_0$ are those of the unit-current one-way cycle, then
+      $H=jH_0+R$, $D=jD_0$, where $R\succeq0$ is the symmetric edge-conductance form.
+      Fourier diagonalization on the quotient by constants gives the one-way signed frequencies $\cot(k\pi/\ell)$, $1\le k\le\ell-1$.</p>
+    <p>For every $t>0$,
+      $iD-tH=j(iD_0-tH_0)-tR\preceq j(iD_0-tH_0)$.
+      Hermitian eigenvalue monotonicity therefore bounds its number of nonnegative eigenvalues by that of the one-way expression.
+      Sylvester inertia under whitening identifies these counts with the numbers of intrinsic frequencies at least $t$.</p>
+    <p>In particular, if this block supplies $k\ge1$ frequencies at least $\kappa$, then
+      $\kappa\le\cot(k\pi/\ell)$, including equality.
+      Arbitrary reversible traffic cannot increase this capacity; bridges supply none.</p>
+
+    <h2>Packing the required modes</h2>
+    <p>Any observed normalized skew form is a real isometric compression of the full intrinsic skew form.
+      Indeed, for $F=-QU$, write $M=U^TC^TU$, $G=\operatorname{sym}M$ and whiten the ambient symmetric energy and $G$.
+      Classical Hermitian interlacing, as in <a href="./bibliography.html#FanPall1957">Fan and Pall (1957), Theorem 1</a>, therefore requires at least $r$ intrinsic frequencies at least $\kappa$.</p>
+    <p>Let $k_b$ be the number supplied by cycle block $b$, and set
+      $\alpha=\pi/\operatorname{arccot}\kappa$, using $\operatorname{arccot}\kappa\in(0,\pi/2)$.
+      By definition $q-1&lt;\alpha\le q$; the cycle bound implies $\ell_b\ge k_b\alpha&gt;k_b(q-1)$ whenever $k_b>0$.
+      Since lengths are integers,</p>
+    $$N-1=\sum_b(|V_b|-1)\ge\sum_{b:k_b>0}(\ell_b-1)
+      \ge(q-1)\sum_b k_b\ge r(q-1).$$
+    <p>The reasoning uses all large intrinsic modes, not merely the largest sector ratio.
+      It excludes every cactus of insufficient size, not just the tested examples.</p>
+
+    <h2>Matching construction</h2>
+    <p>On each of $r$ cycles put $\theta=2\pi/q$ and choose constant forward/reverse stationary flows</p>
+    $$a+b=\frac{2}{q(1-\cos\theta)},\qquad a-b=\frac{2\kappa}{q\sin\theta}.$$
+    <p>These are nonnegative precisely when $\kappa\le\cot(\pi/q)$; at the endpoint the cycle is one-way but still irreducible.
+      Divide every flow leaving state $i$ by the prescribed $\pi_i$ to obtain rates, and choose the diagonal to make row sums zero.</p>
+    <p>Use potentials $(\cos(k\theta)-1,\sin(k\theta))$ on each cycle, zero off that cycle and at the common hub.
+      For $F_0=-QU$ the block form is exactly $\operatorname{diag}(I_2+\kappa J,\ldots,I_2+\kappa J)$.
+      A real congruence maps this to every target with the stated intrinsic frequencies and positive-definite symmetric part.</p>
+    <p>The stationary cycle-flow construction is classical; see
+      <a href="./bibliography.html#LandimXu2016">Landim and Xu (2016), Lemma 4.1 and Remark 4.2</a>.
+      The point here is the matching cactus lower bound, which permits nonuniform edge traffic and arbitrary arrangements of articulation vertices.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The certificate checks arbitrary cycle-tree attachments, both current orientations, edge-dependent reverse flows,
+      block-spectral unions, higher-mode bounds, exact rational grounded identities and matching repeated-mode realizations.
+      An integer capacity calculation independently checks the small state-budget exclusions; a correlation quadrature checks the Green&ndash;Kubo convention.</p>
+    <p>Floating checks are numerical consistency tests, not rigorous interval enclosures.
+      This is one fixed-parameter population block, not a regime count from maturity-integrated rank, a finite-sample identification guarantee, or equality of path laws.</p>
+  </main>
