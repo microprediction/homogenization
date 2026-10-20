@@ -1,5 +1,14 @@
 [
  {
+  "key": "Higham2008",
+  "authors": "Higham, N. J.",
+  "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation",
+  "venue": "Society for Industrial and Applied Mathematics, Philadelphia",
+  "doi": "10.1137/1.9780898717778",
+  "annotation": "Chapter 1 develops analytic matrix functions through Jordan blocks, polynomial interpolation and contour integrals. The Bartlett reversibility criterion uses the classical commutation and Jordan-function rules, with its scalar strict-sign and monotonicity conditions proved directly."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
