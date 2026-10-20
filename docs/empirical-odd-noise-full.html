@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Empirical odd-score calibration at every noise scale · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_empirical_odd_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Empirical odd-score calibration at every noise scale</h1>
+    <p class="subtitle">Couple the complete calibration sample, rather than inserting random extreme quantiles into an interior-target theorem.</p>
+    <h2>Model, rank and conditioning</h2>
+    <p>Fix a finite irreducible row generator $Q$, stationary row $\pi$, and nonconstant real feature $f$ with $\pi f=0$.
+      Put $h=Q^\#f$, $\Gamma=-2\pi(fh)&gt;0$, $b_i=h_i/\sqrt\Gamma$, and</p>
+    $$A_c=c^{-1}\int_0^c f(Y_t)dt,\quad X_c=\sqrt{c/\Gamma}A_c,\quad
+      S_c=\mu A_c^d+\sigma Z,\quad
+      \lambda={c^{d/2}\sigma\over\mu\Gamma^{d/2}}.$$
+    <p>Here $d\ge1$ is a fixed odd integer, $\mu&gt;0$, $\sigma\ge0$, and $Z$ is standard Gaussian.
+      Take $N$ independent stationary calibration paths, independent noises, and an independent test path starting in regime $i$.
+      For $1\le k\le N$, let $C_i(c,N,k,\lambda)$ be the probability that the test score is below the $k$th calibration score, averaged over the panel.</p>
+    <p>At zero noise order score pairs $(S,V)$ lexicographically, with an independent uniform $V$ for every calibration and test score.
+      This is a specified randomized prediction rule, not an assertion about deterministic ties.
+      Then $p_N=k/(N+1)$ is the exact marginal rank baseline:</p>
+    $$\sum_i\pi_i C_i=p_N.$$
+    <h2>The empirical all-noise profile</h2>
+    $$r_d(t)=\operatorname{sgn}(t)|t|^{1/d},\quad
+      P_i(t)=b_i\phi(r_d(t)),\quad K_{i,\lambda}(t)=\mathbb E P_i(t-\lambda Z).$$
+    <p>Let $T_{N,k}(\lambda)$ be the $k$th order statistic of $N$ iid copies of $G^d+\lambda Z$, with independent standard Gaussians.
+      Equivalently, for $U\sim\operatorname{Beta}(k,N+1-k)$ and reference quantile $t_u(\lambda)$, define</p>
+    $$\mathcal K_i^{N,k}(\lambda)=\mathbb E K_{i,\lambda}(T_{N,k}(\lambda))
+      =\mathbb E_U K_{i,\lambda}(t_U(\lambda)).$$
+    <p>For every fixed model, degree and finite $N$, uniformly over states, ranks and all noise levels,</p>
+    $$\boxed{C_i-p_N={\mathcal K_i^{N,k}(\lambda)\over\sqrt c}+R_{i,c,N,k}(\lambda),\qquad
+      \sup_{i,k,\lambda\ge0}\sqrt c(1+\lambda)|R_{i,c,N,k}(\lambda)|\longrightarrow0}.$$
+    <p>The statement is latent-start model-conditional and averages over calibration samples.
+      It is not coverage conditional on a realized panel, features or observed history.
+      The finite bound below also gives an explicit sufficient condition for growing $N$.</p>
+    <h2>A finite bound without conditional quantile errors</h2>
+    <p>Let $F_{i,c}$ be the CDF of $X_c$ and $F_{\pi,c}=\sum_i\pi_i F_{i,c}$.
+      The signed CDF and transport errors are</p>
+    $$U_{i,c}=\|\sqrt c(F_{i,c}-F_{\pi,c})-b_i\phi\|_\infty,\qquad
+      L_{i,d,c}=d\int |x|^{d-1}|\sqrt c(F_{i,c}-F_{\pi,c})-b_i\phi(x)|dx,$$
+    $$\Delta_{d,c}=d\int |x|^{d-1}|F_{\pi,c}(x)-\Phi(x)|dx
+       =W_1(\mathcal L_\pi(X_c^d),\mathcal L(G^d)),\qquad \alpha_d=\min(1,2/d).$$
+    <p>For every finite $c,N$ and every noise level,</p>
+    $$\boxed{\begin{aligned}
+      \sqrt c(1+\lambda)\left|C_i-p_N-{\mathcal K_i^{N,k}(\lambda)\over\sqrt c}\right|
+      &\le(1+\lambda)\min\left(U_{i,c},{L_{i,d,c}\over\lambda\sqrt{2\pi}}\right)\\
+      &\quad+4|b_i|d!!\left({N\Delta_{d,c}\over1+\lambda}\right)^{\alpha_d}.
+    \end{aligned}}$$
+    <p>At $\lambda=0$ omit the second entry of the minimum.
+      Here $d!!=1\cdot3\cdots d$.
+      The first line is an actual-threshold signed-CDF convolution bound; the second transfers the complete empirical threshold to its reference law.</p>
+    <h2>Proof: couple samples, not beta tail quantiles</h2>
+    <p>Use common uniforms to couple $X_{c,j}=F_{\pi,c}^{-1}(V_j)$ and $G_j=\Phi^{-1}(V_j)$, and use the same independent $Z_j$ in both score samples.
+      Monotonicity of the odd power makes this a one-dimensional optimal coupling, so
+      $\mathbb E|X_{c,j}^d-G_j^d|=\Delta_{d,c}$.</p>
+    <p>The $k$th order-statistic value is 1-Lipschitz in the maximum coordinate difference, including when values tie.
+      If $\widehat T$ is the actual scaled calibration threshold,</p>
+    $$\mathbb E\left|{\widehat T\over1+\lambda}-{T_{N,k}(\lambda)\over1+\lambda}\right|
+       \le{N\Delta_{d,c}\over1+\lambda}.$$
+    <p>Put $H_{i,\lambda}(u)=(1+\lambda)K_{i,\lambda}((1+\lambda)u)$.
+      This family has a global noise-uniform H&ouml;lder bound:</p>
+    $$|H_{i,\lambda}(u)-H_{i,\lambda}(v)|\le4|b_i|d!!|u-v|^{\alpha_d}.$$
+    <p>For $\lambda\le1$, use the Lipschitz bound on $\phi$ when $d=1$, or
+      $P_i(t)=b_i\phi(0)e^{-|t|^{2/d}/2}$ and the $2/d$-H&ouml;lder power inequality when $d\ge3$.
+      Scaling and convolution cost at most $2^{1+\alpha_d}\le4$.</p>
+    <p>For $\lambda\ge1$, write the convolution with a Gaussian density and use
+      $\|P_i\|_1=|b_i|d!!$, $\|\phi'\|_\infty\le1$.
+      This gives Lipschitz constant at most $4|b_i|d!!$ for distances below one; for larger distances use $2\|H_{i,\lambda}\|_\infty\le4|b_i|d!!$.</p>
+    <p>Jensen&apos;s inequality and the order-statistic coupling prove the second line of the finite bound.
+      The first follows by convolving the signed CDF error: its supremum is $U_{i,c}$, and its weighted $L^1$ norm after the odd-root substitution is $L_{i,d,c}$.
+      Taking expectations over actual calibration thresholds proves the inequality, without any interior-quantile truncation.</p>
+    <h2>The finite-chain input and computable tails</h2>
+    <p>For this fixed finite irreducible model, $U_{i,c}=O(c^{-1/2})$, $L_{i,d,c}\to0$, and $\Delta_{d,c}\to0$.
+      Here is the spectral argument, also detailed in <a href="https://github.com/microprediction/homogenization/pull/241">the population odd-score note</a>.</p>
+    <p>For $D=\operatorname{diag}f$, the dominant eigenvalue of $Q+zD$ is
+      $\Gamma z^2/2+\kappa_3z^3/6+O(z^4)$ and its projector applied to $\mathbf1$ is $\mathbf1-zh+O(z^2)$.
+      Signed Fourier smoothing gives an order-$c^{-1}$ CDF remainder; the stationary skewness cancels in the state-minus-stationary contrast, yielding the asserted $U$ rate.</p>
+    <p>No discrete-time nonlattice assumption is imported.
+      The Dirichlet form excludes imaginary-axis eigenvalues of $Q+i\theta D$ for $\theta\ne0$; at high frequencies, distinct feature levels separate into proper transient killed blocks.
+      A unitary Schur expansion bounds the semigroup uniformly by an exponentially decaying term times a fixed-degree polynomial in $c$, including defective generators.</p>
+    <p>The real tilted semigroup gives $\mathbb E_i e^{z\int_0^cf(Y_s)ds}\le C e^{Cc z^2}$ for small real $z$.
+      Chernoff tails and truncation at a sufficiently large multiple of $\sqrt{\log c}$ turn the CDF estimates into the weighted $L^1$ limits above.
+      The finite inequality therefore proves the all-noise theorem, since its first line is at most $2\max(U_{i,c},L_{i,d,c}/\sqrt{2\pi})$.</p>
+    <p>For explicit moment-tail budgets, let $D_c=\|F_{\pi,c}-\Phi\|_\infty$ and take $R&gt;0$, even $2m&gt;d$.</p>
+    $$\Delta_{d,c}\le2R^dD_c+R^{d-2m}[\mathbb E_\pi|X_c|^{2m}+\mathbb E|G|^{2m}],$$
+    $$L_{i,d,c}\le2R^dU_{i,c}+\sqrt c R^{d-2m}[\mathbb E_i|X_c|^{2m}+\mathbb E_\pi|X_c|^{2m}]
+      +d|b_i|\int_{|x|&gt;R}|x|^{d-1}\phi(x)dx.$$
+    <p>Moments follow from the finite hierarchy $v_j'=Qv_j+jDv_{j-1}$.
+      For a signed-smoothing budget, use the characteristic function $\chi_i(u)=e_i e^{c(Q+iuD/\sqrt{c\Gamma})}\mathbf1$ and signed approximant</p>
+    $$\widehat B_i(u)=e^{-u^2/2}\left[1+{ -iub_i+\kappa_3(iu)^3/(6\Gamma^{3/2})\over\sqrt c}\right],\quad
+      \kappa_3=6\pi[fQ^\#(fh)],\quad
+      B_i(x)=\Phi(x)+{\phi(x)\over\sqrt c}\left[b_i-{\kappa_3(x^2-1)\over6\Gamma^{3/2}}\right].$$
+    $$\epsilon_i(T)={2\over\pi}\int_0^T{|\chi_i(u)-\widehat B_i(u)|\over u}du
+       +{24\|B_i'\|_\infty\over\pi T},\quad
+      U_{i,c}\le\sqrt c\left(\epsilon_i+\sum_j\pi_j\epsilon_j\right),\quad
+      D_c\le\sum_j\pi_j\epsilon_j+{|\kappa_3|\|(x^2-1)\phi(x)\|_\infty\over6\Gamma^{3/2}\sqrt c}.$$
+    <p>These inequalities and the moment tails provide finite budgets, not asserted sharp.
+      The theorem also applies to varying $N_c$ whenever $N_c\Delta_{d,c}\to0$, uniformly in ranks; no unrestricted calibration-size/noise uniformity is claimed.</p>
+    <h2>Atoms and the two endpoints</h2>
+    <p>At a tied value $x$ with tie uniform $v$, the augmented CDF contrast is the convex combination of the left and right ordinary CDF contrasts.
+      The profile is continuous, so both limits and their combination satisfy the same $U_{i,c}$ bound.
+      Randomized ranks therefore need no additional marginal atom-overshoot term.</p>
+    $$J_{N,k}=\mathbb E\phi(\Phi^{-1}(U)),\qquad
+      \mathcal K_i^{N,k}(0)=b_iJ_{N,k},\qquad
+      \lambda\mathcal K_i^{N,k}(\lambda)\longrightarrow b_i d!!J_{N,k}\quad(\lambda\to\infty).$$
+    <p>For the last limit, use $\int P_i=b_i d!!$, the Gaussian convolution formula and the same sample coupling as noise dominates.
+      Bounded convergence applies to the globally bounded profile family, including the beta tails.
+      Hence zero noise gives a $c^{-1/2}$ gap for every odd degree; fixed positive $\sigma$ gives</p>
+    $$c^{(d+1)/2}\sigma(C_i-p_N)\longrightarrow
+       \mu d!!h_i\Gamma^{(d-1)/2}J_{N,k}.$$
+    <p>Noiseless augmented rank events are in fact identical sample by sample for every increasing odd power, not only asymptotically.</p>
+    <h2>Certificate, literature and limits</h2>
+    <p>For $N=k=9$, the certificate checks 36 nonreversible three-state cases with $c=32,128,512$, degrees $1,3,5$ and $\lambda=0,.5,2,10^5$.
+      The worst weighted error falls from $.070864855$ to $.00453871677$; $\Gamma=.385937945$ and $J_{9,9}=.1538752731$.
+      Joint Fourier/spatial/beta-order refinement changes weighted values by at most $1.75\times10^{-5}$, within a portable $3\times10^{-5}$ allowance.</p>
+    <p>There are also 300 exact odd-rank patterns, 120 H&ouml;lder and 27,000 order-statistic comparisons, and nine independent transport identities.
+      An auxiliary iid binary-score rank check has randomized conditional coverages $3/4,1/4$ and marginal $1/2$; it tests the tie rule, not the irreducible CTMC limit.
+      Fourier, interpolation, spatial and beta-order refinement are numerical consistency checks, not rigorous interval enclosures or proofs of continuum uniformity.</p>
+    <p>The one-dimensional transport identity is classical <a href="./bibliography.html#Vallender1974">Vallender (1974)</a>.
+      For spectral initial-bias and Edgeworth background see <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1 and Lemma 8.3</a>; the continuous-time high-frequency and calibration-transfer steps are supplied here.</p>
+    <p>Independent calibration paths, fixed $Q,f,d$ and the stated tie rule are essential.
+      This does not cover overlapping panels, same-panel predictor fitting, feature-conditional coverage or degenerating mixing gaps.
+      The result addresses <a href="https://github.com/microprediction/homogenization/issues/248">issue 248</a> without changing its status.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
