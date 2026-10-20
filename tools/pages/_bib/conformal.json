@@ -1,5 +1,14 @@
 [
  {
+  "key": "NISTDLMF2026",
+  "authors": "Olver, F. W. J., Olde Daalhuis, A. B., Lozier, D. W., Schneider, B. I., Boisvert, R. F., Clark, C. W., Miller, B. R., Saunders, B. V., Cohl, H. S. and McClain, M. A. (eds.)",
+  "year": 2026,
+  "title": "NIST Digital Library of Mathematical Functions",
+  "venue": "Release 1.2.8 of 2026-09-15",
+  "url": "https://dlmf.nist.gov/",
+  "annotation": "Equation 18.9.28 gives the classical Gaussian-weighted probabilists' Hermite derivative identity. The even-score empirical calibration proof derives its probability-coordinate bounds from this identity."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
