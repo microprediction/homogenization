@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Odd critical scores at every noise scale (full note) · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_odd_critical_crossover.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Odd critical scores at every noise scale</h1>
+    <p class="subtitle">An exact telegraph contrast, a uniform crossover, and finite-threshold error budgets.</p>
+    <p class="lead">Flattening an increasing score does not change its noiseless quantile event.
+    For odd powers of a two-state occupation average, start-dependent population coverage remains of order
+    $c^{-1/2}$ without noise, although fixed positive Gaussian noise reduces it to order $c^{-(d+1)/2}$.</p>
+    <h2>Setup and result</h2>
+    <p>Let $Y_t\in\{-1,+1\}$ flip at rate one, $A_c=c^{-1}\int_0^cY_s\,ds$, and $W_c=\sqrt c A_c$.
+    Fix an odd integer $d\ge3$, $\mu&gt;0$ and $p\in(0,1)$, and use the score
+    $S_c=\mu A_c^d+\sigma Z$, where $Z$ is independent standard Gaussian and $\sigma\ge0$.</p>
+    <p>Write $q_c$ for its exact stationary pooled $p$-quantile and $g_+(c,\sigma)=\Pr_+(S_c\le q_c)-p$.
+    At zero noise take $c$ sufficiently large that $p$ lies between the endpoint atom levels.
+    These are population thresholds, not thresholds estimated from a calibration sample.</p>
+    $$\lambda=c^{d/2}\sigma/\mu,\quad r_d(t)=\operatorname{sgn}(t)|t|^{1/d},\quad
+      P_d(t)=-\tfrac12\phi(r_d(t)),\quad K_{d,\lambda}(t)=\mathbb E P_d(t-\lambda Z).$$
+    <p>Let $t_{p,d}(\lambda)$ be the $p$-quantile of $G^d+\lambda Z$ for independent standard Gaussians $G,Z$.
+    For each fixed $d,p$, the following is uniform over every noise level:</p>
+    $$g_+(c,\sigma)=c^{-1/2}K_{d,\lambda}(t_{p,d}(\lambda))+R_{c,d,p}(\lambda),\qquad
+      \sup_{\lambda\ge0}\sqrt c(1+\lambda)|R_{c,d,p}(\lambda)|\longrightarrow0.$$
+    <p>The negative-start gap is exactly $-g_+$, and $g_+&lt;0$ at every finite threshold with positive noise.
+    Thus marginal population coverage is exact, but coverage conditional on the latent start need not be.
+    This supplies neither finite-calibration nor distribution-free or training-conditional coverage.</p>
+    $$\sqrt c\,g_+(c,0)\longrightarrow-\tfrac12\phi(z_p),\qquad
+      c^{(d+1)/2}\sigma_c g_+(c,\sigma_c)\longrightarrow-\tfrac12\mu d!!\phi(z_p)
+      \quad\text{if }\lambda_c\longrightarrow\infty,$$
+    <p>Here $z_p=\Phi^{-1}(p)$ and $d!!=d(d-2)\cdots1$.
+    The second limit includes fixed positive noise; it does not describe noise below the crossover scale $c^{-d/2}$.
+    The first limit is independent of the odd degree because the noiseless quantile event is exactly preserved.</p>
+    <h2>Exact signed CDF and finite bounds</h2>
+    <p>For $-1\le a&lt;1$, the right-continuous occupation CDFs satisfy</p>
+    $$F_+(a)-F_\pi(a)=-\tfrac12e^{-c}I_0(c\sqrt{1-a^2}).$$
+    <p>The difference is zero outside that half-open interval, including at $a=1$.
+    To prove the identity, condition on the Poisson number of flips, as in the
+    <a href="./path-conformal-full.html">path-dependent note</a>.</p>
+    <p>Odd flip counts have identical start-conditional laws.
+    At $2j\ge2$ flips, the plus-start minus pooled CDF of $U=(1+A_c)/2$ is
+    $-[u(1-u)]^j/[j B(j,j)]$.</p>
+    <p>Multiplying by $e^{-c}c^{2j}/(2j)!$ and adding the no-flip term gives
+    $-e^{-c}\sum_{j\ge0}[c^2u(1-u)]^j/(2(j!)^2)$, the displayed Bessel expression.
+    Its negativity persists under every increasing odd-power transformation and convolution with independent Gaussian noise.</p>
+    <p>Set $D_c(x)=\sqrt c[F_+(x/\sqrt c)-F_\pi(x/\sqrt c)]$.
+    For $c\ge2$, put $m_j=\mathbb E|G|^j$ and define</p>
+    $$U_c=\frac3c+(\sqrt c+1)e^{-c/4},$$
+    $$L_{d,c}=\frac d{2c}(6m_{d-1}+m_{d+1}+m_{d+3})+
+      \frac d2(\sqrt{2\pi c}+1)\mathbb E[|G|^{d-1}\mathbf1_{\{|G|&gt;\sqrt{c/2}\}}].$$
+    <p>Then $\|D_c+\phi/2\|_\infty\le U_c$ and
+    $\|D_c\circ r_d-P_d\|_1\le L_{d,c}$, and both budgets are $O_d(c^{-1})$.
+    Consequently, at <em>any actual scaled threshold</em> $t=c^{d/2}q/\mu$,</p>
+    $$\left|\Pr_+(S_c\le q)-\Pr_\pi(S_c\le q)-c^{-1/2}K_{d,\lambda}(t)\right|
+      \le c^{-1/2}\min\left\{U_c,\frac{L_{d,c}}{\lambda\sqrt{2\pi}}\right\}.$$
+    <p>Omit the second budget at $\lambda=0$.
+    This explicit finite-$c$ bound uses the actual threshold, not $t_{p,d}(\lambda)$.
+    Replacing it by the reference quantile gives the uniform little-$o$ theorem above, not an additional explicit finite-quantile bound.</p>
+    <h2>Proof of the budgets</h2>
+    <p>The classical <a href="https://dlmf.nist.gov/10.32.E1">NIST integral representation</a> gives
+    $|\sqrt{2\pi z}e^{-z}I_0(z)-1|\le2/z$ for $z\ge1$, as follows directly.</p>
+    <p>After $s=\sqrt z\theta$, compare $e^{-z(1-\cos(s/\sqrt z))}$ with $e^{-s^2/2}$ on $[0,\pi\sqrt z]$.
+    The inequalities $z(1-\cos(s/\sqrt z))\ge2s^2/\pi^2$ and
+    $0\le s^2/2-z(1-\cos(s/\sqrt z))\le s^4/(24z)$ bound their normalized integral difference by $\pi^5/(256z)$.</p>
+    <p>The missing normalized Gaussian tail is at most $\sqrt{2/\pi}/(\pi z)$.
+    The sum of these constants is less than two, proving the stated bound without an asymptotic remainder assumption.</p>
+    <p>For $x^2\le c/2$, put $v=x^2/c$ and $z=c\sqrt{1-v}$.
+    The factors $(1-v)^{-1/4}\le2$, $|(1-v)^{-1/4}-1|\le v$, and
+    $0\le c-z-x^2/2\le x^4/(2c)$ give</p>
+    $$|D_c(x)+\phi(x)/2|\le\frac{\phi(x)}{2c}(6+x^2+x^4).$$
+    <p>Indeed, write the factor relative to $-\phi(x)/2$ as $FB e^{-\delta}$ and use
+    $(FB-1)e^{-\delta}+(e^{-\delta}-1)$, with $F=(1-v)^{-1/4}$ and $|B-1|\le3/c$.
+    Outside this central region, $I_0(z)\le e^z$ and $c-z\ge x^2/2$ yield
+    $|D_c(x)+\phi(x)/2|\le(\sqrt c/2+1/(2\sqrt{2\pi}))e^{-x^2/2}$, also beyond the support.</p>
+    <p>Taking suprema proves $U_c$; integrating with $dt=d|x|^{d-1}dx$ proves $L_{d,c}$.
+    Gaussian convolution is an $L^\infty$ contraction and has density bounded by $1/(\lambda\sqrt{2\pi})$, proving the finite-threshold inequality.</p>
+    <h2>Uniform quantile transfer</h2>
+    <p>The stationary characteristic function is
+    $e^{-c}[\cosh(c\omega)+\sinh(c\omega)/\omega]$, $\omega=\sqrt{1-t^2/c}$, so $W_c\Rightarrow G$.
+    Compactify noise by $\rho=\lambda/(1+\lambda)$: the laws of $(1-\rho)W_c^d+\rho Z$ converge along every convergent sequence of $\rho$.</p>
+    <p>Every limiting CDF is continuous and strictly increasing, including the endpoints $\rho=0,1$.
+    Hence its fixed interior $p$-quantile is continuous in $\rho$, and the exact normalized quantiles converge uniformly on $[0,1]$.</p>
+    <p>The weighted profile $H_\rho(u)=(1+\lambda)K_{d,\lambda}((1+\lambda)u)$ is jointly continuous on compact sets.
+    At $\rho=0$ this follows from uniform continuity of $P_d$; for $\rho&gt;0$ use</p>
+    $$H_\rho(u)=\rho^{-1}\int_{\mathbb R}P_d(v)
+      \phi((u-(1-\rho)v)/\rho)\,dv.$$
+    <p>Since $P_d\in L^1$ and $\int P_d=-d!!/2$, this extends at $\rho=1$ to $-d!!\phi(u)/2$.
+    Uniform quantile transfer and the finite-threshold budget, multiplied by $\sqrt c(1+\lambda)$, now prove the theorem and both endpoint limits.</p>
+    <h2>Certificate and scope</h2>
+    <p>The certificate checks the independent Poisson&ndash;Beta CDF series against the Bessel contrast, verifies the budgets,
+    and tests degrees $3,5,7$ at $c=16,64,256,1024$ across vanishing, crossover, fixed and increasing noise.
+    For $p=0.9$, degree three and $c=1024$, its large-noise weighted contrast is $-0.2629904281$ against the limit $-0.2632474979$.</p>
+    <p>These deterministic quadrature checks support the analytic proof; the finite grid is not a proof of uniformity.
+    The telegraph distribution and Gaussian limit are classical: see
+    <a href="./bibliography.html#BogachevRatanov2011">Bogachev and Ratanov (2011), equation (1.9) and Theorem 1.1</a>.</p>
+    <p>The present result concerns the velocity occupation average, not occupation of the positive half-line by the integrated telegraph position.
+    Arbitrary finite-state drivers and general scores with an odd leading critical term require separate error control.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
