@@ -128,5 +128,15 @@
   "doi": "",
   "url": "",
   "annotation": "Introduces the transport metric and its Lipschitz dual representation used to control the complete random law of calibration-conditional coverage."
+ },
+ {
+  "key": "BogachevRatanov2011",
+  "authors": "Bogachev, L. V. and Ratanov, N. E.",
+  "year": 2011,
+  "title": "Occupation time distributions for the telegraph process",
+  "venue": "Stochastic Processes and their Applications 121(8):1816-1844",
+  "doi": "10.1016/j.spa.2011.03.016",
+  "url": "https://arxiv.org/abs/1007.3139",
+  "annotation": "Equation (1.9) records the classical telegraph position law and Theorem 1.1 its Gaussian scaling limit. The odd-critical-score note uses this background for a velocity occupation average, distinct from the article's main positive-half-line occupation functional."
  }
 ]
