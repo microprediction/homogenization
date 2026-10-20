@@ -1,0 +1,74 @@
+<!-- title: One cycle, arbitrarily many finite-window skew modes · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_bartlett_unbounded_rank.py">certificate</a></span></p>
+    <h1>One cycle, arbitrarily many finite-window skew modes</h1>
+    <p class="subtitle">A sharp state-count construction for directed Bartlett forms, with an explicit small-horizon bound.</p>
+    <p class="muted">Research note, 20 October 2026. These are population forms for fixed features of a stationary finite chain, not ranks obtained by integrating different maturity loadings.</p>
+
+    <h2>Construction and result</h2>
+    <p>For each integer $r\ge1$, take states $a_0,\ldots,a_{r-1},b_0,\ldots,b_{r-1},c$.
+      Give the directed triangle $a_0\to b_0\to c\to a_0$ unit rates and attach unit-rate reversible paths
+      $a_i\leftrightarrow a_{i+1}$ and $b_i\leftrightarrow b_{i+1}$, for $0\le i<r-1$.</p>
+    <p>The generator $Q_r$ is irreducible and balanced, with uniform stationary distribution on $n=2r+1$ states and $\|Q_r\|_\infty\le4$.
+      Its underlying undirected graph has just one cycle, and $\operatorname{rank}(\operatorname{skew}Q_r)=2$.
+      Write $\operatorname{skew}D=(D-D^\top)/2$ and define</p>
+    $$M_T=\int_0^T(1-t/T)e^{tQ_r}\,dt,\qquad
+      B_{T,F}=n^{-1}F^\top M_TF,\qquad K_F=n^{-1}F^\top(-Q_r|_{{\bf1}^\perp})^{-1}F.$$
+    <p>Here $F$ is any full-column-rank centered basis, with $2r$ columns; the inverse in $K_F$ acts on the centered space.
+      Put $C_r=(1/[2(i+j+3)!])_{i,j=0}^{r-1}$ and $\mu_r=\|C_r^{-1}\|_\infty$.</p>
+    <div class="equation-card">
+    $$0<T\le\tau_r:=\min\{1,(108r\mu_r)^{-1}\}\quad\Longrightarrow\quad
+      \operatorname{rank}(\operatorname{skew}B_{T,F})=2r,
+      \qquad \operatorname{rank}(\operatorname{skew}K_F)=2.$$
+    </div>
+    <p>Thus one cycle supports arbitrarily many finite-window skew-mode pairs, while only one pair survives in the infinite-time form.
+      The state count is sharp: a centered form of skew rank $2r$ needs at least $2r+1$ states.
+      For any prescribed horizon $T_0>0$, using generator $(\tau_r/T_0)Q_r$ gives the same rank conclusion at $T_0$.</p>
+
+    <h2>Proof: isolate a cross block</h2>
+    <p>Let $A=\{a_i\}$ and $D=\{b_i\}$, and let $X(T)=(\operatorname{skew}M_T)_{A,D}$.
+      The $A,A$ and $D,D$ blocks of $M_T$ are symmetric for every $T$.
+      Indeed, all connections of either path to its complement pass through its root, so its block of $(zI-Q_r)^{-1}$ is the inverse of a symmetric path matrix minus $h(z)e_0e_0^\top$ for a scalar $h(z)$.</p>
+    <p>This Schur-complement argument is valid for sufficiently large real $z$.
+      Expanding the resolvent at infinity shows that every corresponding diagonal block of $Q_r^k$, hence of $M_T$, is symmetric.
+      Consequently the principal skew block on $A\cup D$ is</p>
+    $$\begin{pmatrix}0&X(T)\\-X(T)^\top&0\end{pmatrix}.$$
+    <p>The shortest directed walk from $a_i$ to $b_j$ has length $d=i+j+1$ and is unique.
+      The reverse walk needs one extra step through $c$, so $(Q_r^k)_{a_i b_j}-(Q_r^k)_{b_j a_i}=0$ for $k<d$ and equals one for $k=d$.</p>
+    $$M_T=\sum_{k\ge0}\frac{T^{k+1}Q_r^k}{(k+2)!},\qquad
+      X_{ij}(T)=T^{i+j+2}\left\{\frac1{2(i+j+3)!}+O(T)\right\}.$$
+    <p>Set $E_T=\operatorname{diag}(T,T^2,\ldots,T^r)$ and $W(T)=E_T^{-1}X(T)E_T^{-1}$.
+      It extends analytically to $W(0)=C_r$, whose determinant is</p>
+    $$\det C_r=(-1)^{r(r-1)/2}2^{-r}\prod_{j=0}^{r-1}\frac{j!}{(r+j+2)!}\ne0.$$
+    <p>To verify the identity, multiply row $i$ of $(1/(i+j+3)!)_{ij}$ by $(i+r+2)!$.
+      Its columns are monic polynomials in $i$ of degrees $r-1,r-2,\ldots,0$; reverse them and apply the polynomial Vandermonde identity.
+      This is a direct specialization of <a href="./bibliography.html#Krattenthaler1999">Krattenthaler (1999), Proposition 1</a>, not a new determinant identity.</p>
+
+    <h2>Proof: a horizon, not just an asymptotic claim</h2>
+    <p>The entrywise skew coefficient of $Q_r^k$ is bounded by $4^k$.
+      For $0<T\le1$ and $d=i+j+1\ge1$, the normalized remainder therefore satisfies</p>
+    $$|W_{ij}(T)-(C_r)_{ij}|\le
+      T\frac{4^{d+1}}{(d+3)!}e^{4T}\le\frac23Te^{4T}<54T.$$
+    <p>The first inequality follows by bounding the later factorial ratios by $1/\ell!$.
+      The second uses the decreasing sequence $4^{d+1}/(d+3)!$, and the last uses $e<3$.
+      Thus $\|C_r^{-1}(W(T)-C_r)\|_\infty\le54r\mu_r T\le1/2$ for $T\le\tau_r$, so the Neumann series proves invertibility throughout that interval.</p>
+    <p>The principal skew block is invertible, while balance implies $(\operatorname{skew}M_T){\bf1}=0$.
+      Its rank is therefore exactly $2r$, with kernel $\operatorname{span}\{{\bf1}\}$, and restriction to any complete centered basis preserves this rank.</p>
+    <p>On an orthonormal centered basis put $L=-Q_r$.
+      The identity $\operatorname{skew}(L^{-1})=-L^{-\top}(\operatorname{skew}L)L^{-1}$ preserves the triangle's rank two, proving the long-run assertion.
+      Finally $M_{T_0}(sQ_r)=s^{-1}M_{sT_0}(Q_r)$ proves the clock-rescaled assertion.</p>
+
+    <h2>Certificates and scope</h2>
+    <p>The rational certificate checks the determinant and the interval bound for $r=1,\ldots,6$, giving respectively
+      $\mu_r=12,1200,206640,58181760,24685214400,14799656551680$.
+      It also certifies full skew rank at $T=1$ for these six unit-rate chains by a degree-40 Taylor polynomial and an exact inverse-tail bound, independently checked against block exponentials and, in the first three cases, quadrature.</p>
+    <p>For example, $\tau_1=1/1296$ and $\tau_6=1/9590177445488640$.
+      The additional $T=1$ certificates do not assert full rank at all horizons for the unit-rate family.
+      The all-dimensions result comes from the proof, not extrapolation from these finite tests.</p>
+    <p>No lower bound on skew-mode strength or statistical detectability is claimed; the guaranteed interval becomes very small.
+      Both symmetric forms retain full centered rank, and the occupation covariance is $2T\operatorname{sym}B_{T,F}$, not the directed form itself.
+      This result neither counts additional graph cycles nor resolves infinite-time repeated maximal sector modes.</p>
+    <p>Finite-window symmetric positivity follows because a nonzero centered feature has a nonzero time integral on a positive-probability no-jump event.
+      Long-run symmetric positivity follows from $\operatorname{sym}(L^{-1})=L^{-\top}(\operatorname{sym}L)L^{-1}$ and the connected graph's positive centered Dirichlet form.</p>
+  </main>
