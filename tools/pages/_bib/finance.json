@@ -1,5 +1,15 @@
 [
  {
+  "key": "EmbreeTrefethen2001",
+  "authors": "Embree, M. and Trefethen, L. N.",
+  "year": 2001,
+  "title": "Generalizing eigenvalue theorems to pseudospectra theorems",
+  "venue": "SIAM Journal on Scientific Computing 23(2):583-590",
+  "doi": "10.1137/S1064827500373012",
+  "url": "https://people.maths.ox.ac.uk/~trefethen/publication/PDF/2001_94.pdf",
+  "annotation": "The perturbation definition of pseudospectra and Theorems 4 and 7 give the standard normal-resolvent eigenvalue enclosure; used here to separate a dominant complex pair after exact cancellation of a CIR share-moment system's Perron mode."
+ },
+ {
   "key": "CuchieroKellerResselTeichmann2012",
   "authors": "Cuchiero, C., Keller-Ressel, M. and Teichmann, J.",
   "year": 2012,

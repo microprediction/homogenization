@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Infinitely many maturity reversals, with six regimes · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_oscillating_share_mean.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle direction and the smile</a></p>
+    <h1>Infinitely many maturity reversals, with six regimes</h1>
+    <p class="subtitle">Stable complex spectrum defeats a global maturity-zero bound; six states are necessary and sufficient in the stated class.</p>
+    <p class="lead">A nonzero share-weighted log-return mean gap can change sign infinitely often in maturity, even with strictly positive CIR variance and a stable share-moment matrix.
+    Six regimes suffice; a nonzero gap with five or fewer cannot have infinitely many positive zeros when the share-moment matrix is stable.</p>
+    <p>This shows why the <a href="https://github.com/microprediction/homogenization/pull/242">real-spectrum maturity bound</a> needs its spectral assumption.
+    These are zeros of one exact scalar observable as maturity varies, not call-price crossings across strikes.</p>
+    <h2>Stationary-start model and exact rational transform</h2>
+    <p>Let $G$ be a finite irreducible row generator, started at its invariant law $\pi$, independent of the original Brownian motions.
+    Compare $G$ with $G^*=D_\pi^{-1}G^\top D_\pi$, using identical fixed $v_0&gt;0$, $X_0=0$, and coefficients in</p>
+    $$dv=(a_Y-\kappa_Yv)dt+\xi_Y\sqrt v\,dB,\qquad
+      dX=-vdt/2+\sqrt v(\rho_YdB+\sqrt{1-\rho_Y^2}\,dW).$$
+    <p>Assume nonnegative variance, a true stock martingale, and finite share-weighted log-return means at every finite maturity.
+    Set $A=G-\operatorname{diag}(\kappa-\rho\xi)$ and $\langle x,y\rangle_\pi=x^\top D_\pi y$.</p>
+    $$D(T)=\mathbb E_G[e^{X_T}X_T]-\mathbb E_{G^*}[e^{X_T}X_T]
+      =\tfrac12\int_0^T(T-u)\mathcal L_a(e^{uA})du,\quad
+      \mathcal L_a(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi.$$
+    <p>Indeed the stock num&eacute;raire leaves regime intensities unchanged, changes variance reversion to $\kappa-\rho\xi$, and changes the log-return drift to $v/2$.
+    The first-moment masses solve $z'=(G^\top-\operatorname{diag}(\kappa-\rho\xi))z+\operatorname{diag}(a)\pi^\top$.
+    The common initial-variance term cancels by weighted adjointness, giving the formula.</p>
+    $$p(z)=\det(zI-A),\qquad
+      \widehat D(z)={N(z)\over2z^2p(z)},\quad
+      N(z)=\mathcal L_a(\operatorname{adj}(zI-A)),\quad \deg N\le n-3.$$
+    <p>The degree reduction follows from $\mathcal L_a(I)=\mathcal L_a(A)=0$, both consequences of stationarity.
+    From now on assume $A$ is stable: every eigenvalue has strictly negative real part; positive $k_i=\kappa_i-\rho_i\xi_i$ is sufficient.</p>
+    <h2>Why five or fewer states cannot oscillate forever</h2>
+    <p>Partial fractions give $D(T)=b_1T+b_0+R(T)$, where $R$ is a finite sum of decaying exponential polynomials, including possible Jordan terms.
+    Infinitely many positive zeros of a nonzero $D$ require $b_1=b_0=0$, equivalently $N(0)=N'(0)=0$.</p>
+    <p>For $n\le4$ these two conditions force $N\equiv0$.
+    For $n=5$ they give $N(z)=cz^2$, so $D(T)=ch(T)/2$, where $h$ is the inverse Laplace transform of $1/p$.
+    The following positivity argument shows that this nonzero signal has no positive zeros, even with complex spectrum.</p>
+    <p>For any real Metzler matrix $A$, choose $\theta$ such that $B=A+\theta I$ is entrywise nonnegative, and write</p>
+    $$\det(I-wB)^{-1}=\exp\left(\sum_{j\ge1}{\operatorname{tr}(B^j)\over j}w^j\right)
+      =\sum_{\ell\ge0}c_\ell w^\ell,\qquad c_0=1,\quad c_\ell\ge0.$$
+    <p>If $M=\|B\|_\infty$, coefficientwise comparison with $(1-Mw)^{-n}$ gives
+    $c_\ell\le\binom{n+\ell-1}{\ell}M^\ell$.
+    Consequently the following series converges for every finite $T$ and has Laplace transform $1/p$ for sufficiently large real $z$:</p>
+    $$h(T)=e^{-\theta T}\sum_{\ell\ge0}c_\ell{T^{n+\ell-1}\over(n+\ell-1)!}
+      \ge e^{-\theta T}{T^{n-1}\over(n-1)!}&gt;0\quad(T&gt;0).$$
+    <p>Thus every nonzero signal with $n\le5$ has a fixed sign eventually, or has the displayed strictly positive-kernel form.
+    Analyticity excludes infinitely many zeros on a bounded interval, including accumulation at the origin.
+    Identically zero signals are excluded from this minimum-state assertion.</p>
+    <h2>A rational six-state positive-CIR example</h2>
+    <p>Take $G=P-I$, where $P_{i,i+1}=1$ cyclically on $i=0,\ldots,5$, and use uniform $\pi$ and $v_0=.04$.</p>
+    $$r=(99/100,100/99,1,1,1,1),\quad \kappa_i=2,\quad \rho_i=-1/2,\quad
+      \xi_i=2r_i,\quad k_i=2+r_i,$$
+    $$a=10\mathbf1+(0,338101/494010,3383/4990,-1577/4990,1,0).$$
+    <p>The strict Feller margin is $\min_i(2a_i-\xi_i^2)=38343/2495&gt;0$.
+    The exponential moment supersolution coefficient
+    $\xi_i^2b^2/2+(\rho_i\xi_i s-2)b+(s^2-s)/2$ has maxima $-4900/9801$ and $-224429/1960200$ at $(s,b)=(2,1/2)$ and $(-1/10,1/10)$.</p>
+    <p>With $C_s=\max_i a_i b$, localization bounds $\mathbb E e^{sX_t+bv_t}$ by $e^{bv_0+C_st}$ at every finite horizon.
+    The moment above one makes the localized stocks uniformly integrable; the negative moment supplies the other side of the strip.
+    The variance is strictly positive, and both orientations satisfy the required true-martingale and moment conditions.</p>
+    $$p(z)=\prod_{i=0}^5(z+3+r_i)-1=(z+3)q_5(z),\qquad
+      N(z)=\alpha z^2(z+3),\quad \alpha={199\over296406000}&gt;0,$$
+    $$\widehat D(z)={\alpha\over2q_5(z)}.$$
+    <p>All cancellations are exact rational identities, checked using matrix powers and the characteristic polynomial.
+    The $z^2$ factor removes the affine maturity terms; the $z+3$ factor removes the leading real eigenmode.</p>
+    <h2>A rigorous spectral enclosure and an explicit oscillation bound</h2>
+    <p>Write $A=A_0+E$, with $A_0=P-4I$ normal and $E=-\operatorname{diag}(r-\mathbf1)$.
+    Then $\|E\|_2=1/99&lt;1/50$.
+    Around the six eigenvalues $-4+e^{2\pi i j/6}$ of $A_0$, take disjoint disks of radius $1/50$.</p>
+    <p>On each disk boundary the normal resolvent has norm $50$, so $(zI-A_0)^{-1}tE$ has norm below one for every $0\le t\le1$.
+    No eigenvalue crosses a boundary along this homotopy; hence each disk contains exactly one simple eigenvalue of $A$.
+    Since $\prod r_i=1$, the eigenvalue in the rightmost disk is exactly $-3$.</p>
+    <p>The dominant pair among the five remaining roots is $\lambda=\sigma+i\omega$ and its conjugate, near $-7/2\pm i\sqrt3/2$.
+    Its real part satisfies $-88/25&lt;\sigma&lt;-87/25$, while the other three roots have real parts below $-112/25$.
+    All distinct roots are separated by more than $24/25$ and lie less than $51/25$ apart.</p>
+    $$c={\alpha\over2q_5'(\lambda)}\ne0,\qquad
+      \left|D(T)-2\operatorname{Re}(ce^{\lambda T})\right|
+       \le{3\alpha\over2}\left({25\over24}\right)^4e^{-112T/25},\qquad
+      2|c|\ge\alpha\left({25\over51}\right)^4.$$
+    <p>These bounds follow directly by summing the three remaining simple-pole residues and bounding the four factors in each $q_5'$.
+    At the phase extrema $T_j=(j\pi-\arg c)/\omega$, the leading cosine is $(-1)^j$, with envelope $2|c|e^{\sigma T_j}$.
+    At such a time $T$, the ratio of the error bound to the envelope is at most</p>
+    $${250563\over8192}e^{-24T/25}&lt;1\qquad(T\ge5),$$
+    <p>since $e^4&gt;\sum_{j=0}^4 4^j/j!=103/3&gt;250563/8192$.
+    The leading cosine has infinitely many alternating extrema beyond this horizon, with $\omega\ne0$.
+    Therefore $D$ changes sign infinitely often and has infinitely many positive maturity zeros.</p>
+    <h2>Rational sign certificates without underflow</h2>
+    <p>The cofactor identity $(zI-A)^{-1}_{0,5}=1/p(z)$ gives
+    $D(T)=\alpha[(e^{TA})_{1,5}-r_0(e^{TA})_{0,5}]/2$.
+    The certificate removes the positive exponential scale and encloses $H(T)=2e^{5T}D(T)/\alpha$ using $A+5I$.</p>
+    $$H(4)\in[126,127],\quad H(6)\in[-1267,-1266],\quad H(10)\in[786335,786336],$$
+    $$H(14)\in[-397276026,-397276025],\quad
+      H(18)\in[176052884169,176052884170].$$
+    <p>These five signs alone certify at least four distinct positive zeros; the spectral argument proves infinitely many.
+    Degree-300 rational Taylor actions have a uniform error below $1.05\times10^{-127}$ over these five calculations.
+    With $L=\lceil\|T(A+5I)\|_\infty\rceil$, each error is bounded by $2\cdot3^L L^{301}/301!$.</p>
+    <p>Independent semigroup and physical polynomial-moment comparisons use tolerances scaled to the quantities being subtracted, not to their small difference.
+    The rational sign intervals, rather than floating tail subtraction, certify the late reversals.</p>
+    <h2>Literature and limits</h2>
+    <p>Finite polynomial moment closure is classical; see <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+    The normal-resolvent enclosure is a standard perturbation argument; see <a href="./bibliography.html#EmbreeTrefethen2001">Embree and Trefethen (2001), the pseudospectral definition and Theorems 4 and 7</a>.</p>
+    <p>The minimum of six applies to nonzero stationary-start signals with a stable share-moment matrix, not to arbitrary initial laws or unstable tilted systems.
+    Infinite oscillation requires the exact cancellations exhibited here; arbitrary coefficient perturbations need not preserve it.</p>
+    <p>This is an exact fixed-parameter existence result, not an asymptotic approximation or a count of call crossings.
+    The global strike-crossing problem in <a href="https://github.com/microprediction/homogenization/issues/204">issue 204</a> remains separate.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
