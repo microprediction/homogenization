@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Higham2005",
+  "authors": "Higham, N. J.",
+  "year": 2005,
+  "title": "The Scaling and Squaring Method for the Matrix Exponential Revisited",
+  "venue": "SIAM Journal on Matrix Analysis and Applications 26(4):1179-1193",
+  "doi": "10.1137/04061101x",
+  "url": "https://eprints.maths.manchester.ac.uk/634/1/high05e.pdf",
+  "annotation": "Section 2 treats approximation and rounding errors for scaling and squaring. The real-spectrum hard-cutoff example instead certifies its sign with an elementary exact rational Taylor enclosure; floating matrix exponentials are independent value controls only."
  }
 ]

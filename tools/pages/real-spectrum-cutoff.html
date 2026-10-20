@@ -1,0 +1,70 @@
+<!-- title: Real spectrum does not ensure a positive hard cutoff · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_real_spectrum_cutoff.py">certificate</a></span></p>
+    <h1>Real spectrum does not ensure a positive hard cutoff</h1>
+    <p class="subtitle">An irreducible stationary chain with distinct real eigenvalues and a negative running correlation integral.</p>
+    <p class="muted">Research note, 20 October 2026. The example has 23 states and is diagonalizable over the reals, but is not normal in the stationary inner product.</p>
+    <p>Real nonpositive generator eigenvalues do not imply positivity of every stationary hard correlation cutoff.
+      The explicit row generator below has simple entirely real spectrum and a real centered feature $f$ with</p>
+    $$R_{T,f}=\int_0^T f^TD_\pi e^{tQ}f\,dt<0.$$
+    <p>This is not a negative occupation covariance: that covariance has a triangular Bartlett weight and stays nonnegative.
+      The example rules out a real-spectrum shortcut, not the separate normal-chain theorem or the all-horizon three-state result.</p>
+
+    <h2>The chain and the feature</h2>
+    <p>On states $0,1,\ldots,22$, take a single one-way cycle $0\to1\to\cdots\to22\to0$.
+      Its exit rates are $q_0=\epsilon=10^{-100}$ and $q_i=1+i/1000$, $1\le i\le22$, with $Q_{ii}=-q_i$.</p>
+    $$c=\left(\epsilon^{-1}+\sum_{i=1}^{22}q_i^{-1}\right)^{-1},\qquad
+      \pi_0=c/\epsilon,\quad\pi_i=c/q_i,\quad T=33/2.$$
+    <p>Let $g$ be the following vector, indexed from one, and set $S=\sum_i g_i/q_i$ and $f=(-\epsilon S,g)^T$.</p>
+    $$g=(29,29,25,19,11,2,-7,-15,-21,-26,-28,
+      -28,-26,-21,-15,-7,2,11,19,25,29,29)^T.$$
+    <p>The chain is irreducible, $\pi^TQ=0$ and $\pi^Tf=0$, all exactly.
+      The rational certificate proves the scaled enclosure</p>
+    <div class="equation-card">$$-104<R_{T,f}/c<-103.$$</div>
+    <p>The small stationary mass of the moving states is intentional.
+      Scaling by the positive exact constant $c$ makes the sign enclosure readable without rounding a nearly zero probability.</p>
+
+    <h2>All eigenvalues are real and simple</h2>
+    <p>The cycle's characteristic polynomial is</p>
+    $$p(z)=(z+\epsilon)\prod_{i=1}^{22}(z+q_i)-\epsilon\prod_{i=1}^{22}q_i.$$
+    <p>Put $h=1/3000$ and consider the 22 disjoint negative intervals $I_i=(-q_i-h,-q_i+h)$.
+      At either endpoint, $|z+\epsilon|>1/2$ and every $|z+q_j|\ge h$, while $\prod_jq_j<2^{22}$.</p>
+    $$\epsilon 2^{22}<\tfrac12 h^{22}.$$
+    <p>The first term of $p$ changes sign between the endpoints of each $I_i$, and the displayed bound makes it dominate the constant perturbation.
+      Hence each interval contains a real root; $p(0)=0$ supplies the remaining root.
+      These are 23 distinct roots of a degree-23 polynomial, so every root is real and simple, and all nonzero roots are negative.</p>
+    <p>No floating eigensolver is used to establish this claim.
+      The nearly repeated decay rates make numerical eigenvalues particularly unhelpful here.</p>
+
+    <h2>A rational sign certificate</h2>
+    <p>First suppress the exit from state zero and set $f_0=0$.
+      The moving states then have a killed-path generator $J$, with $J_{ii}=-q_i$ and $J_{i,i+1}=q_i$.
+      Their unnormalized integrated correlation is</p>
+    $$H_T=\int_0^T g^T\operatorname{diag}(q_i^{-1})e^{tJ}g\,dt,
+      \qquad A=\sum_i|g_i|/q_i,\quad M=\|g\|_\infty.$$
+    <p>For $P_N=\sum_{k=0}^N T^{k+1}J^k/(k+1)!$ and $x=2(\max_iq_i)T$, the ordinary matrix power series gives</p>
+    $$\left|H_T-g^T\operatorname{diag}(q_i^{-1})P_Ng\right|
+      \le AMT\frac{x^{N+1}}{(N+2)!}\frac1{1-x/(N+3)},\qquad x<N+3.$$
+    <p>This uses $\|J\|_\infty\le2\max_iq_i$ and a geometric bound on the omitted factorial ratios.
+      With $N=160$, exact rational arithmetic gives a polynomial value about $-103.866682489$ and a tail below $2.07\times10^{-38}$.</p>
+
+    <p>Restore the exit rate $\epsilon$ and the centering correction $f_0=-\epsilon S$.
+      Both full generators, with and without that exit, have infinity-norm contractive Markov semigroups; Duhamel's formula bounds their difference by $2\epsilon t$.
+      Summing the weighted starting-state errors and integrating gives</p>
+    $$|R_{T,f}/c-H_T|\le
+      \epsilon(|S|+A)\{T|S|+T^2M\}<3.86\times10^{-94}.$$
+    <p>For the state-zero term, its weight times $f_0$ is $-S$, while the semigroup difference and the feature correction bound its evolved feature by $\epsilon(|S|+2tM)$.
+      For the moving states the same error is multiplied by a total absolute weight $A$.
+      Combining the rational Taylor and perturbation bounds proves the enclosure for the actual irreducible chain, not only its absorbing limit.</p>
+
+    <h2>Interpretation and checks</h2>
+    <p>The certificate checks the stationary identities, every polynomial sign change, and both error budgets using fractions.
+      Block exponentials and time quadrature are independent value controls, not the sign or spectral proof.
+      Matrix-exponential approximation and roundoff analysis are classical; see <a href="./bibliography.html#Higham2005">Higham (2005), Section 2</a>, not as a source for this counterexample.</p>
+    <p>This construction does not improve the unrestricted minimum-state bracket $4\le n_*\le12$ tracked in <a href="https://github.com/microprediction/homogenization/issues/233">issue 233</a>.
+      It shows why even real diagonalizability cannot replace stationary normality in a spectral argument.
+      No minimum-state claim within the real-spectrum class is made.</p>
+    <p>The quantities here are stationary population correlations of one fixed feature, not empirical estimates, conditional conformal coverage, or ranks after integrating different maturity loadings.
+      The extreme rate separation is explicit, and no noise-robust detection guarantee is asserted.</p>
+  </main>
