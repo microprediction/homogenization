@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Davis2012",
+  "authors": "Davis, P. J.",
+  "year": 2012,
+  "title": "Circulant Matrices",
+  "venue": "Second edition, AMS Chelsea Publishing",
+  "url": "https://bookstore.ams.org/chel-338",
+  "annotation": "Develops the discrete-Fourier diagonalization and spectral structure of circulant matrices used to obtain the full intrinsic skew frequencies of a translation-invariant cyclic generator."
  }
 ]
