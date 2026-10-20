@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The sharp planar hard-cutoff sector · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_planar_cutoff_sector.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; fixed-feature geometry</a></p>
+    <h1>The sharp planar hard-cutoff sector</h1>
+    <p class="subtitle">An exact two-dimensional threshold, a spherical-Bessel root, and a stationary Gaussian counterexample.</p>
+    <p class="lead">For a real two-dimensional matrix with positive definite symmetric part, the optimal strong-sector bound guaranteeing a positive semidefinite integrated semigroup at every horizon is $\kappa_*=3.1314582802\ldots$.
+      Above it a stationary two-coordinate Ornstein&ndash;Uhlenbeck process can have a negative hard correlation cutoff, although its Bartlett covariance remains positive.</p>
+    <h2>The sharp uniform statement</h2>
+    $$S=\operatorname{sym}L\succ0,\qquad
+      \kappa(L)=\|S^{-1/2}\operatorname{skew}(L)S^{-1/2}\|_2,\qquad
+      R_T(L)=\int_0^T e^{-tL}dt.$$
+    <p>Let $\theta_*$ be the unique root of $\tan\theta=\theta$ in $(\pi,3\pi/2)$, and put</p>
+    $$C=\sqrt{1+\theta_*^2},\qquad w=W_0(C/e),\qquad
+      \boxed{\kappa_*={C\over\sqrt{w(w+2)}}}.$$
+    <p>For every such real $2\times2$ matrix, $\kappa(L)\le\kappa_*$ implies $\operatorname{sym}R_T(L)\succeq0$ for every $T&gt;0$.
+      If $\kappa(L)&lt;\kappa_*$ the symmetric part is positive definite.
+      For every $k&gt;\kappa_*$ there exists an $L$ with $\kappa(L)=k$ and a horizon with a negative eigenvalue of $\operatorname{sym}R_T(L)$.</p>
+    <p>This is a sharp guarantee over the whole class, not an iff test based only on the sector of an individual matrix.
+      In particular every real-spectrum matrix in this class has positive definite hard cutoffs, even when its sector exceeds $\kappa_*$.</p>
+    $$4.493409457909&lt;\theta_*&lt;4.493409457910,\qquad
+      .777917140533&lt;w&lt;.777917140535,$$
+    $$3.1314582802&lt;\kappa_*&lt;3.1314582803.$$
+    <h2>Reduction to the first local minimum</h2>
+    <p>An orthogonal change of basis, reflection and positive time rescaling reduce the matrix to</p>
+    $$L=I+\begin{pmatrix}-d&amp;c\\-c&amp;d\end{pmatrix},\qquad
+      0\le d&lt;1,\quad c\ge0,\quad \kappa={c\over\sqrt{1-d^2}}.$$
+    <p>The square of the displayed traceless matrix is $(d^2-c^2)I$.
+      Consequently the symmetric integrated semigroup is diagonal, with entries</p>
+    $$H_\pm(T)=\int_0^T e^{-t}\left(\cos(bt)\pm{d\over b}\sin(bt)\right)dt,
+      \qquad b=\sqrt{c^2-d^2},$$
+    <p>in the complex-spectrum case $c&gt;d$.
+      In the real-spectrum case $h=\sqrt{d^2-c^2}&lt;1$, the entries are instead
+      $H_\pm(T)=\int_0^T e^{-t}[\cosh(ht)\pm d\sinh(ht)/h]dt$.</p>
+    <p>The real-spectrum plus integrand is positive; the minus integrand can change sign only once, from positive to negative.
+      Its integral either increases throughout or decreases after its maximum to the positive limit $(1-d)/(1-h^2)$.
+      At $h=0$ the integrands are $e^{-t}(1\pm dt)$, so the same argument covers Jordan blocks.</p>
+    <p>For complex spectrum set $\phi=\arctan(d/b)\in[0,\pi/2)$.
+      The first local minima occur at $T_\pm=(3\pi/2\pm\phi)/b$, and direct integration gives</p>
+    $$H_-(T_-)={1-d-ce^{-T_-}\over1+b^2},\qquad
+      H_+(T_+)={1+d-ce^{-T_+}\over1+b^2}.$$
+    <p>Later minima are larger, since their negative exponential terms are smaller.
+      The first minus numerator is no larger than the first plus numerator, and both functions start at zero with positive derivative.
+      Thus all cutoffs are positive semidefinite exactly when $ce^{-T_-}\le1-d$.</p>
+    <h2>The optimizing angle is independent of the sector</h2>
+    <p>At fixed $\kappa&gt;0$ write
+      $c=\kappa/\sqrt{1+\kappa^2\sin^2\phi}$, $d=c\sin\phi$, $b=c\cos\phi$.
+      The logarithm of the preceding sign ratio is</p>
+    $$F_\kappa(\phi)=\log\kappa+\operatorname{arsinh}(\kappa\sin\phi)
+       -{(3\pi/2-\phi)\sqrt{1+\kappa^2\sin^2\phi}\over\kappa\cos\phi}.$$
+    $$F_\kappa'(\phi)=
+      {(1+\kappa^2)[\cos\phi-(3\pi/2-\phi)\sin\phi]
+       \over\kappa\cos^2\phi\sqrt{1+\kappa^2\sin^2\phi}}.$$
+    <p>The numerator&apos;s bracket decreases strictly from positive to negative: its derivative is $-(3\pi/2-\phi)\cos\phi&lt;0$.
+      Its unique zero satisfies $\cot\phi_*=3\pi/2-\phi_*=\theta_*$, giving $\tan\theta_*=\theta_*$.
+      This maximizes $F_\kappa$ for every sector, not merely near the critical one.</p>
+    <p>Since $\sin\phi_*=1/C$, put $u=\sqrt{1+C^2/\kappa^2}&gt;1$.
+      At the optimum the sign test simplifies to</p>
+    $$F_\kappa(\phi_*)=\log{C\over u-1}-u\le0
+      \quad\Longleftrightarrow\quad (u-1)e^u\ge C
+      \quad\Longleftrightarrow\quad \kappa\le{C\over\sqrt{w(w+2)}}.$$
+    <p>The middle expression is strictly increasing in $u$, which decreases as $\kappa$ increases.
+      This proves sufficiency and sharpness, including the nonnegative boundary case.</p>
+    <h2>Exact equality and an above-threshold witness</h2>
+    $$d_*={1\over1+w},\qquad c_*={C\over1+w},\qquad
+      L_*=\begin{pmatrix}1-d_*&amp;c_*\\-c_*&amp;1+d_*\end{pmatrix},\qquad T_*=1+w.$$
+    <p>Here $b_*T_*=\theta_*$ and $C=we^{1+w}$, so $1-d_*-c_*e^{-T_*}=0$ exactly.
+      The symmetric cutoff is positive semidefinite and singular; numerically $d_*=.5624559082$, $c_*=2.5891751330$, $T_*=1.7779171405$.</p>
+    <p>A simpler rational example lies strictly above the threshold:</p>
+    $$L=\begin{pmatrix}1/2&amp;3\\-3&amp;3/2\end{pmatrix},\quad
+      S=\operatorname{diag}(1/2,3/2),\quad \kappa(L)^2=12,\quad T=3/2.$$
+    <p>For the second coordinate, $b=\sqrt{35}/2$ and
+      $C_f(t)=e^{-t}[\cos(bt)-\sin(bt)/\sqrt{35}]$.
+      Exact rational matrix actions certify</p>
+    $$R_{3/2,f}\in[-.014475211893,-.014475211892],\qquad
+      K_f=\int_0^\infty C_f(t)dt=2/39.$$
+    <h2>A genuine stationary Gaussian driver, not a finite chain</h2>
+    <p>For any $L$ with $S\succ0$, the diffusion
+      $dZ_t=-LZ_tdt+(2S)^{1/2}dW_t$, $Z_0\sim N(0,I)$ independent of $W$, is stationary.
+      Indeed the covariance equation is $\dot\Sigma=-L\Sigma-\Sigma L^\top+2S$, solved by $\Sigma=I$, and stability follows from $S\succ0$.</p>
+    <p>For a linear coordinate $f(Z)=v^\top Z$, its stationary scalar correlation is $C_f(t)=v^\top e^{-tL}v$.
+      The rational witness therefore has noise covariance $\operatorname{diag}(1,3)$ and is an actual population counterexample, not an empirical estimate or just a matrix with no stochastic realization.</p>
+    $$B_{T,f}=\int_0^T(1-t/T)C_f(t)dt,\qquad
+      \operatorname{Var}\left(\int_0^T f(Z_t)dt\right)=2T B_{T,f}.$$
+    $$B_{3/2,f}\in[.123303663116,.123303663117],\qquad
+      \operatorname{Var}\left(\int_0^{3/2} Z_{t,2}dt\right)
+       \in[.369910989348,.369910989349].$$
+    <p>Thus the negative rectangular cutoff coexists with positive integrated variance.
+      In one Gaussian coordinate a stable OU correlation is a positive exponential, so two coordinates are minimal within this linear Gaussian class.</p>
+    <h2>Certificates, literature and scope</h2>
+    <p>Rational Taylor bounds for sine, cosine and exponential enclose $\theta_*$ and $w$; squared inequalities then enclose $\kappa_*$ without numerical square-root rounding.
+      A degree-160 rational action encloses the witness&apos;s single and double integrals, with cutoff error below $3.4\times10^{-148}$ and all three reported output errors below $6.8\times10^{-148}$.</p>
+    <p>There are also 280 rotated/scaled complex-spectrum semigroup comparisons, 36 real-spectrum/Jordan checks, an equality-case check and independent time quadrature.
+      These floating consistency checks use tolerance $3\times10^{-9}$; the analytic minimization and exact rational inequalities prove the theorem and signs.</p>
+    <p>The root $\theta_*$ is the first positive zero of the spherical Bessel function
+      $j_1(\theta)=\sin\theta/\theta^2-\cos\theta/\theta$.
+      The special-function identities are classical: <a href="./bibliography.html#NISTDLMF2026">NIST DLMF</a>, <a href="https://dlmf.nist.gov/10.49.E3">10.49.3</a> and <a href="https://dlmf.nist.gov/4.13.E1">4.13.1</a>.
+      For the Markovian Poisson/Green&ndash;Kubo background see <a href="./bibliography.html#Pavliotis2010">Pavliotis (2010)</a>.</p>
+    <p>This sharpens the sufficient planar matrix lemma in <a href="https://github.com/microprediction/homogenization/pull/232">the three-state note</a>, not its finite-chain state count.
+      A two-coordinate diffusion has infinitely many possible states; the witness is not a four-to-eleven-state CTMC.
+      The unrestricted finite-chain bracket in <a href="https://github.com/microprediction/homogenization/issues/233">issue 233</a> remains $4\le n_*\le12$.</p>
+    <p>The theorem requires a closed two-dimensional semigroup.
+      It cannot be applied to two arbitrary features of a larger chain without proving closure, nor used to count regimes from maturity-integrated rank or to infer conditional conformal coverage.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

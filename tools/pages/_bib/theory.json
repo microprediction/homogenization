@@ -1,5 +1,14 @@
 [
  {
+  "key": "NISTDLMF2026",
+  "authors": "Olver, F. W. J., Olde Daalhuis, A. B., Lozier, D. W., Schneider, B. I., Boisvert, R. F., Clark, C. W., Miller, B. R., Saunders, B. V., Cohl, H. S. and McClain, M. A. (eds.)",
+  "year": 2026,
+  "title": "NIST Digital Library of Mathematical Functions",
+  "venue": "Release 1.2.8 of 2026-09-15",
+  "url": "https://dlmf.nist.gov/",
+  "annotation": "Equations 4.13.1 and 10.49.3 give the classical Lambert W definition and the spherical Bessel j1 formula; these identify the two special functions in the sharp planar hard-cutoff sector constant."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
