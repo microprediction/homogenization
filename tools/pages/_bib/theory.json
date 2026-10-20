@@ -1,5 +1,14 @@
 [
  {
+  "key": "Krattenthaler1999",
+  "authors": "Krattenthaler, C.",
+  "year": 1999,
+  "title": "Advanced Determinant Calculus",
+  "venue": "Séminaire Lotharingien de Combinatoire 42, Article B42q, 67 pp",
+  "url": "https://www.mat.univie.ac.at/~slc/wpapers/s42kratt.pdf",
+  "annotation": "Proposition 1 gives the polynomial alternant/Vandermonde identity. The one-cycle finite-window skew-rank note derives its factorial determinant as a direct specialization; the determinant identity itself is classical."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
