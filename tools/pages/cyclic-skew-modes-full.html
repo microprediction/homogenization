@@ -1,11 +1,11 @@
-<!-- title: Two large skew modes cannot fit in a small cyclic chain · homogenization | math -->
+<!-- title: The target's two skew modes cannot fit in a small cyclic chain · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./identifiability.html">&larr; fixed-feature geometry</a>
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_cyclic_skew_modes.py">certificate</a></span></p>
-    <h1>Two large skew modes cannot fit in a small cyclic chain</h1>
-    <p class="subtitle">A Fourier and compression exclusion for every translation-invariant chain on five through eight cyclic states.</p>
+    <h1>The target&apos;s two skew modes cannot fit in a small cyclic chain</h1>
+    <p class="subtitle">A Fourier and compression exclusion for every translation-invariant chain on five through nine cyclic states.</p>
     <p class="lead">A cyclically translation-invariant chain with $5\le n\le8$ has at most one intrinsic Green&ndash;Kubo skew frequency larger than one.
-      Consequently no four-feature compression can have two frequencies equal to $\cot(\pi/5)$.</p>
+      At nine states at most one frequency can even reach $\cot(\pi/5)$, so no four-feature compression through nine states has two copies of that target frequency.</p>
 
     <h2>The chain and its full intrinsic frequencies</h2>
     <p>Write the state space as $\mathbb Z/n\mathbb Z$ and let</p>
@@ -51,7 +51,17 @@
     </table>
     <p>For $n=8$, mode two separately satisfies $|b_2|\le a_2$ because its angles are multiples of $\pi/2$.
       The remaining table uses only $0,\pm1,$ and $\pm1/\sqrt2$; for $n=5,6,7$ direct trigonometric substitution gives the displayed strict inequalities.</p>
-    <p>The certificate verifies all 150 jumpwise inequalities by outward rational bounds.
+    <h2>The exact nine-state target boundary</h2>
+    <div class="equation-card">
+    $$n=9,\quad \kappa_*=\cot(\pi/5)
+      \quad\Longrightarrow\quad \#\{k:\kappa_k\ge\kappa_*\}\le1.$$
+    </div>
+    <p>The same separating argument now replaces $h_{k,\epsilon}$ by
+      $h^{*}_{k,\epsilon}(j)=\epsilon\sin(2\pi kj/9)-\kappa_*\{1-\cos(2\pi kj/9)\}$.
+      For the six mode pairs $(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)$, positive multipliers can be chosen from $\{1/20,1/8,1/5,1/3,3\}$ for each orientation pair.</p>
+    <p>Every resulting jumpwise inequality is strict.
+      Therefore two full frequencies cannot both reach the target, including at equality.</p>
+    <p>The certificate verifies all 342 jumpwise inequalities by outward rational bounds.
       It derives a rational enclosure of $\pi$ from Machin&apos;s formula and then uses alternating rational Taylor enclosures for sine and cosine, so the exclusions do not rest on floating rounding.</p>
 
     <h2>Why features cannot evade the full spectrum</h2>
@@ -68,12 +78,12 @@
     $$K_*=I_4+\cot(\pi/5)\operatorname{diag}(J,J),\qquad
       J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}.$$
     <p>Its two positive intrinsic skew frequencies are both $\cot(\pi/5)&gt;1$, since $\pi/5&lt;\pi/4$.
-      Therefore no translation-invariant chain on $5,6,7,$ or $8$ cyclic states realizes $K_*$, regardless of its nonnegative jump rates or the four centered features.</p>
+      Therefore no translation-invariant chain on $5,6,7,8,$ or $9$ cyclic states realizes $K_*$, regardless of its nonnegative jump rates or the four centered features.</p>
     <p>This does not settle the unrestricted minimum-state problem.
-      It excludes an algebraically broad family that includes dense noncactus supports, while a non-translation-invariant overlapping-cycle generator could have different intrinsic geometry.</p>
+      In particular, the known nine-state shared-hub realization is necessarily non-translation-invariant; a general overlapping-cycle generator could have different intrinsic geometry.</p>
 
     <h2>Certificate and scope</h2>
-    <p>The certificate also checks 160 dense random circulant generators by constructing the full normalized skew matrix independently.
+    <p>The certificate also checks 200 dense random circulant generators by constructing the full normalized skew matrix independently.
       Its Fourier frequencies agree with the matrix singular values to $5.2\times10^{-15}$, using a portable assertion tolerance of $2\times10^{-11}$.</p>
     <p>The theorem concerns one fixed generator and one fixed feature block.
       It does not identify a hidden generator, convert rank after integrating maturity-dependent loadings into a regime count, or make a statement about marginal versus conditional conformal coverage.</p>

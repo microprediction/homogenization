@@ -20,6 +20,11 @@ def mul(x, y):
     return min(values), max(values)
 
 
+def divide_positive(x, y):
+    assert 0 < y[0] <= y[1]
+    return x[0] / y[1], x[1] / y[0]
+
+
 def arctan_reciprocal(q, terms):
     total = F(0)
     for k in range(terms):
@@ -67,9 +72,10 @@ def trig_pi_multiple(numerator, denominator, pi):
     return scale(sin_sign, sine), scale(cos_sign, cosine)
 
 
-def margin(n, mode, orientation, jump, pi):
+def margin(n, mode, orientation, jump, pi, threshold=(F(1), F(1))):
     sine, cosine = trig_pi_multiple(2 * mode * jump, n, pi)
-    return add(scale(orientation, sine), add(cosine, (F(-1), F(-1))))
+    dissipation = add((F(1), F(1)), scale(-1, cosine))
+    return add(scale(orientation, sine), scale(-1, mul(threshold, dissipation)))
 
 
 def exact_fourier_table():
@@ -122,7 +128,32 @@ def exact_fourier_table():
                 value = add(eighth_margin(1, e, jump), eighth_margin(3, d, jump))
                 assert value[1] <= 0
                 checked += 1
-    print(f"Exact rational Fourier inequalities: {checked}; strict worst for n=5,6,7 < {float(worst):.6g}")
+
+    # At n=9, exclude two modes at the exact target cot(pi/5), not merely
+    # two modes above one. Every jumpwise combination is strictly negative.
+    sin_fifth, cos_fifth = trig_pi_multiple(1, 5, pi)
+    target = divide_positive(cos_fifth, sin_fifth)
+    ninth = {
+        (1, 2): lambda e, d: F(1, 8) if e == d else F(1, 5),
+        (1, 3): lambda e, d: F(1, 20),
+        (1, 4): lambda e, d: F(1, 5) if e == d else F(3),
+        (2, 3): lambda e, d: F(1, 20),
+        (2, 4): lambda e, d: F(1, 8) if e == d else F(1, 5),
+        (3, 4): lambda e, d: F(1, 3) if e == d else F(1, 8),
+    }
+    ninth_worst = F(-100)
+    for (k, ell), alpha_rule in ninth.items():
+        for e in (-1, 1):
+            for d in (-1, 1):
+                alpha = alpha_rule(e, d)
+                for jump in range(1, 9):
+                    value = add(scale(alpha, margin(9, k, e, jump, pi, target)),
+                                margin(9, ell, d, jump, pi, target))
+                    assert value[1] < 0
+                    ninth_worst = max(ninth_worst, value[1])
+                    checked += 1
+    assert target[0] > 1
+    print(f"Exact rational Fourier inequalities: {checked}; n<=7 worst < {float(worst):.6g}; n=9 target worst < {float(ninth_worst):.6g}")
 
 
 def frequencies(rates):
@@ -138,7 +169,7 @@ def frequencies(rates):
 
 def matrix_checks():
     rng, comparisons, maximum = np.random.default_rng(253), 0, 0.0
-    for n in range(5, 9):
+    for n in range(5, 10):
         basis = null_space(np.ones((1, n)))
         for _ in range(40):
             rates = 10 ** rng.uniform(-2, 2, n - 1)
@@ -153,7 +184,11 @@ def matrix_checks():
             observed = np.linalg.svd(root @ a @ root, compute_uv=False)[::2]
             expected = frequencies(rates)
             maximum = max(maximum, np.max(abs(observed[:len(expected)] - expected)))
-            assert sum(observed > 1 + 2e-12) <= 1
+            if n <= 8:
+                assert sum(observed > 1 + 2e-12) <= 1
+            else:
+                target = 1 / np.tan(np.pi / 5)
+                assert sum(observed >= target - 2e-12) <= 1
             comparisons += 1
     assert maximum < 2e-11
     print(f"{comparisons} dense circulant generators: Fourier/matrix max error {maximum:.3g}")
@@ -163,7 +198,7 @@ def main():
     exact_fourier_table()
     matrix_checks()
     print("Compression interlacing: a four-feature block has second frequency at most the full second frequency")
-    print("cot(pi/5)>1 because pi/5<pi/4")
+    print("cot(pi/5)>1; through nine cyclic states at most one full frequency reaches this target")
     print("PASS")
 
 
