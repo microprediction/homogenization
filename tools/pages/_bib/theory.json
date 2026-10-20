@@ -1,5 +1,24 @@
 [
  {
+  "key": "ArlinskiiZagrebnov2010",
+  "authors": "Arlinskiĭ, Y. and Zagrebnov, V.",
+  "year": 2010,
+  "title": "Numerical range and quasi-sectorial contractions",
+  "venue": "Journal of Mathematical Analysis and Applications 366(1):33-43",
+  "doi": "10.1016/j.jmaa.2010.01.036",
+  "url": "https://arxiv.org/abs/0810.3072",
+  "annotation": "Preprint Definitions 1.1 and 1.6 give the classical numerical-range sector framework. The finite-dimensional spectral-window note supplies its own paired-resolvent proof rather than inferring a numerical-range bound from eigenvalues."
+ },
+ {
+  "key": "ViscardyGaspard2003",
+  "authors": "Viscardy, S. and Gaspard, P.",
+  "year": 2003,
+  "title": "Viscosity in molecular dynamics with periodic boundary conditions",
+  "venue": "Physical Review E 68:041204",
+  "doi": "10.1103/PhysRevE.68.041204",
+  "annotation": "Appendix B derives the triangularly weighted finite-time correlation integral behind the Einstein-Helfand and Green-Kubo covariance conversion; this classical positivity identity is distinct from the directed-sector window theorem."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,
