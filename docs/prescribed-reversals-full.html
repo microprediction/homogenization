@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prescribing every maturity reversal · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_prescribed_reversals.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle direction and the smile</a></p>
+    <h1>Prescribing every maturity reversal</h1>
+    <p class="subtitle">The real-spectrum bound is sharp for every state count, inside positive switched-CIR models.</p>
+    <p class="lead">For every $n\ge3$ and every ordered set of $n-3$ positive maturities, there is an $n$-regime positive switched-CIR model whose share-weighted log-return mean gap vanishes exactly at those maturities.
+    Every positive zero is simple; the switching speed and all model parameters remain fixed as maturity varies.</p>
+    <p>This strengthens the <a href="https://github.com/microprediction/homogenization/pull/242">real-spectrum upper bound</a> by attaining it at arbitrary nodes.
+    It concerns zeros of one scalar observable in maturity, not call-price crossings in strike or identification of full return laws.</p>
+    <h2>Exact observable and finite rank criterion</h2>
+    <p>Let $G$ be an irreducible row generator with stationary initial law $\pi$, independent of the original Brownian motions, and let $G^*=D_\pi^{-1}G^\top D_\pi$.
+    Compare both orientations with the same fixed $v_0&gt;0$, $X_0=0$, and coefficients in</p>
+    $$dv=(a_Y-\kappa_Yv)dt+\xi_Y\sqrt v\,dB,\qquad
+      dX=-vdt/2+\sqrt v(\rho_YdB+\sqrt{1-\rho_Y^2}\,dW).$$
+    <p>Assume well-defined nonnegative variance, a true stock martingale, and finite share-weighted log-return means at every finite horizon.
+    Write $k=\kappa-\rho\xi$, $A=G-\operatorname{diag}k$, and use the stationary inner product.</p>
+    $$\mathcal L_a(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi,\qquad
+      D_a(T)=\mathbb E_G[e^{X_T}X_T]-\mathbb E_{G^*}[e^{X_T}X_T]
+      =\tfrac12\int_0^T(T-u)\mathcal L_a(e^{uA})du.$$
+    <p>Under the continuous stock num&eacute;raire, regime intensities remain $G$, variance reversion becomes $k$, and the log-return drift becomes $v/2$.
+    The variance-weighted masses satisfy $z'=(G^\top-\operatorname{diag}k)z+\operatorname{diag}(a)\pi^\top$, $z(0)=v_0\pi^\top$.
+    Weighted adjointness cancels the common initial-variance term; two integrations give the displayed identity.</p>
+    $$B_{j,i}=\mathcal L_{e_i}(A^j),\qquad j=2,\ldots,n-1,\quad i=0,\ldots,n-1.$$
+    <p>If $A$ has entirely real spectrum and $\operatorname{rank}B=n-2$, then for any distinct positive nodes $\tau_1&lt;\cdots&lt;\tau_{n-3}$ there is a nonzero signal $D_a$ whose only positive zeros are those nodes, all simple.
+    The resulting real vector $a$ may be shifted by a sufficiently large constant without changing the signal.
+    The spectral requirement is on the share-moment matrix $A$, not on the regime generator $G$.</p>
+    <h2>Why the rank criterion prescribes the zeros</h2>
+    <p>Stationarity gives $\mathcal L_a(I)=\mathcal L_a(A)=0$ for every $a$.
+    Cayley&ndash;Hamilton and $D_a''=\mathcal L_a(e^{TA})/2$ show that the signal space $\mathcal V=\{D_a:a\in\mathbb R^n\}$ has dimension exactly $\operatorname{rank}B$.</p>
+    <p>Each signal solves $\partial_T^2\det(\partial_T I-A)D=0$, an equation of order $n+2$ with real characteristic roots.
+    It has a zero of multiplicity at least four at the origin.
+    The real-exponential Rolle argument bounds every nonzero solution by $n+1$ zeros on any finite closed interval, counted with multiplicity, hence bounds its positive zeros by $n-3$.</p>
+    <p>For completeness, divide a solution by one positive exponential and differentiate; the differential equation loses one characteristic root while Rolle&apos;s theorem loses at most one zero.
+    Induction proves the bound, including repeated roots; an identically zero derivative leaves a nonzero exponential with no zeros.</p>
+    <p>The $n-3$ homogeneous conditions $D(\tau_j)=0$ on the $(n-2)$-dimensional space $\mathcal V$ admit a nonzero solution.
+    The zero bound excludes every additional positive zero and every multiple prescribed zero.</p>
+    <p>Finally $\mathcal L_{\mathbf1}(M)=0$ for every matrix $M$, so $D_{a+c\mathbf1}=D_a$.
+    Also $D_k\equiv0$: $A\mathbf1=A^*\mathbf1=-k$ and commutation of $A$ with $e^{uA}$ give $\mathcal L_k(e^{uA})=0$.
+    Thus, under the rank condition, the entire cancellation kernel is $\operatorname{span}\{\mathbf1,k\}$.</p>
+    <h2>A full-rank real-spectrum family in every dimension</h2>
+    <p>Index the states by $i=0,\ldots,n-1$, let $C_{i,i+1}=1$ cyclically and $C_{ii}=-1$, and set</p>
+    $$G_\varepsilon=\varepsilon C,\quad \pi_i=1/n,\quad k_i=3+i,\quad
+      A_\varepsilon=-\operatorname{diag}k+\varepsilon C,\qquad 0&lt;\varepsilon&lt;1/2.$$
+    <p>The characteristic polynomial is $\prod_i(z+k_i+\varepsilon)-\varepsilon^n$.
+    At $z=-k_i-\varepsilon\pm\varepsilon$, the product has opposite signs and magnitude greater than $\varepsilon^n$, since every other factor has magnitude at least $1-\varepsilon&gt;\varepsilon$.
+    There is exactly one simple negative root in each disjoint interval, so the spectrum is entirely real.</p>
+    <p>Consider the square minor of $B_\varepsilon$ using the interior columns $i=1,\ldots,n-2$.
+    It is a polynomial in $\varepsilon$ whose first nonzero coefficient is explicit:</p>
+    $$\det B_\varepsilon[:,1:n-1]=c_n\varepsilon^{n-2}+O(\varepsilon^{n-1}),\qquad
+      c_n={(-1)^{(n-2)(n-1)/2}(n-2)!(n-1)!\over n^{n-2}}
+          \prod_{j=1}^{n-3}j!\ne0.$$
+    <p>To check this, put $h_m(x,y)=\sum_{\ell=0}^m x^\ell y^{m-\ell}$.
+    The coefficient of $\varepsilon$ in row $j=m+1$ and interior column $i$ is
+    $(-1)^m[h_m(k_i,k_i+1)-h_m(k_i-1,k_i)]/n$.</p>
+    <p>As a polynomial in $k_i$ it has degree $m-1$ and leading coefficient $(-1)^m m(m+1)/n$.
+    The determinant of these rows is the product of their leading coefficients times the Vandermonde determinant at the consecutive interior nodes, giving $c_n$.</p>
+    <p>Consequently the rank is $n-2$ for every sufficiently small positive $\varepsilon$, and indeed for all $\varepsilon\in(0,1/2)$ except possibly finitely many roots of this minor.
+    Choose one such speed before choosing the prescribed maturity nodes; no explicit dimension-uniform speed threshold is asserted.</p>
+    <h2>Realization with positive CIR variance and a true stock martingale</h2>
+    <p>For this family fix $\kappa_i=2$, $\rho_i=-1/2$ and $\xi_i=2(i+1)$, giving $k_i=3+i$ exactly.
+    After solving the node constraints, add a common constant to $a$ until $2a_i&gt;\xi_i^2$ in every regime.
+    This ensures strictly positive variance from $v_0&gt;0$ and does not alter $A$, its rank, or $D_a$.</p>
+    <p>The martingale and integrability conditions hold for every such finite $a$.
+    Set $b=\delta=1/(4n^2)$ and take return moments $s=-\delta$ and $s=1+\delta$; their exponential supersolutions have variance coefficient bounded by</p>
+    $$\tfrac12\xi_i^2b^2+(\rho_i\xi_i s-2)b+\tfrac12(s^2-s)
+      \le{-8n^2+2n+1\over32n^4}&lt;0.$$
+    <p>Indeed $\xi_i\le2n$ and $\rho_i\xi_i s\le n\delta$, which give the displayed bound directly.
+    With $C_s=\max_i a_i b$, localization bounds $\mathbb E e^{sX_t+bv_t}$ by $e^{bv_0+C_st}$.
+    The positive moment above one makes the localized stocks uniformly integrable on every finite horizon; the negative moment supplies the other side of the moment strip.</p>
+    <h2>Five regimes with exactly two reversals: an exact fixture</h2>
+    <p>Take $n=5$, $\varepsilon=1/10$, $v_0=.04$ and</p>
+    $$a=(60,59.665,61,59.241,60),\quad k=(3,4,5,6,7),\quad \xi=(2,4,6,8,10).$$
+    <p>The interior minor is $361/156250$, and $c_5=288/125$.
+    The strict Feller margin is $\min_i(2a_i-\xi_i^2)=20$; the five spectral intervals have centers $-3.1,-4.1,-5.1,-6.1,-7.1$ and radius $.1$.</p>
+    $$D(.5)\in[0.000000077818,0.000000077819],\qquad
+      D(1)\in[-0.000000556804,-0.000000556803],$$
+    $$D(2)\in[0.000001800425,0.000001800426].$$
+    <p>The two positive zeros are therefore unique in $(.5,1)$ and $(1,2)$, and there are no others.
+    Their numerical estimates are $0.59042656$ and $1.54165209$; only the brackets and global zero count are certified claims.</p>
+    <p>Degree-160 rational Taylor actions of the two seven-dimensional forward systems enclose each mean after removing the common constant $60$ and the common initial-variance contribution, both of which cancel exactly.
+    If $M$ is the centered system matrix and $L=\lceil\|TM\|_\infty\rceil$, each directional output error is at most $3^L L^{161}/(2\cdot161!)$.
+    The summed errors are below $9.2\times10^{-189}$, $2.2\times10^{-138}$ and $4.3\times10^{-91}$ at the three horizons.</p>
+    <p>The certificate also checks the exact leading minor and a nonzero minor at speed $.1$ for $n=3,\ldots,10$, together with spectral intervals and CIR supersolutions.
+    Independent doubled-integral semigroups and the polynomial-moment implementation on main agree with the rational fixture within $3\times10^{-9}$.</p>
+    <h2>Literature and scope</h2>
+    <p>The real-exponential zero bound and the underlying Chebyshev-space terminology are classical; see
+    <a href="./bibliography.html#AldazKounchevRender2009">Aldaz, Kounchev and Render (2009), Theorem 9 and its real-root proof in the authors&apos; preprint</a>.
+    The contribution here is the full-rank cyclic construction and its realization with strictly positive CIR variance, not a new general Chebyshev theorem.</p>
+    <p>This is an exact fixed-parameter result, not a fast-switching asymptotic or a complex-spectrum global zero bound.
+    It does not settle the sharp call-crossing problem in <a href="https://github.com/microprediction/homogenization/issues/204">issue 204</a>.
+    Equal share-weighted means at a node do not imply equal option-price curves there.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
