@@ -58,18 +58,19 @@ class Law:
         a, e = self.coefficients(d, beta)
         return phi(r)*(a*r+e*(r**3-3*r))
 
-    def score_cdf(self, t, d, beta):
+    def score_cdf(self, t, d, beta, zeta):
         if t <= 0:
             return np.zeros(3)
-        if not beta:
+        if not beta and not zeta:
             return self.fold(min(t**(1/d), 8.))
-        key = (d, beta)
+        key = (d, beta, zeta)
         if key not in self.inverses:
             eps = beta*math.sqrt(self.gamma/self.c)
+            higher = zeta*self.gamma/self.c
             points = 19201 if len(self.x) > 5000 else 9601
             left_x, right_x = np.linspace(0., -8., points), np.linspace(0., 8., points)
-            left_q = left_x**d+eps*left_x**(d+1)
-            right_q = right_x**d+eps*right_x**(d+1)
+            left_q = left_x**d+eps*left_x**(d+1)+higher*left_x**(d+2)
+            right_q = right_x**d+eps*right_x**(d+1)+higher*right_x**(d+2)
             self.inverses[key] = (PchipInterpolator(left_q, left_x), left_q[-1],
                                   PchipInterpolator(right_q, right_x), right_q[-1])
         left_inverse, left_max, right_inverse, right_max = self.inverses[key]
@@ -93,36 +94,36 @@ class Law:
         return d/rho*integral(lambda g: phi(g)*phi((t-(1-rho)*g**d)/rho)
             *((a-3*e)*g**d+e*g**(d+2)), 0., 12., cuts(t, rho, d))
 
-    def actual(self, t, rho, d, beta, weighted=False):
+    def actual(self, t, rho, d, beta, zeta, weighted=False):
         if not rho:
-            f = self.score_cdf(t, d, beta)
+            f = self.score_cdf(t, d, beta, zeta)
             return self.c*(f-self.pi@f) if weighted else f
         if rho < .5:
-            f = integral(lambda z: phi(z)*self.score_cdf((t-rho*z)/(1-rho), d, beta),
+            f = integral(lambda z: phi(z)*self.score_cdf((t-rho*z)/(1-rho), d, beta, zeta),
                          hi=min(12., t/rho)) if t/rho > -12 else np.zeros(3)
             return self.c/(1-rho)*(f-self.pi@f) if weighted else f
         def integrand(r):
-            f = self.score_cdf(r**d, d, beta)
+            f = self.score_cdf(r**d, d, beta, zeta)
             return d/rho*r**(d-1)*phi((t-(1-rho)*r**d)/rho)*(f-self.pi@f if weighted else f-1)
         value = integral(integrand, 0., 8., cuts(t, rho, d))
         return self.c*value if weighted else ndtr(t/rho)+(1-rho)*value
 
 
-def rank_average(law, d, rho, beta, n=9, k=9, order=24):
+def rank_average(law, d, rho, beta, zeta, n=9, k=9, order=24):
     nodes, weights = roots_jacobi(order, n-k, k-1)
     levels, weights = (nodes+1)/2, weights/weights.sum()
     observed, predicted = np.zeros(3), np.zeros(3)
     for u, w in zip(levels, weights):
         target = brentq(lambda t: law.reference(t, rho, d)-u, -50., 8**d, xtol=2e-8)
-        actual = brentq(lambda t: law.pi@law.actual(t, rho, d, beta)-u, -50., 8**d, xtol=2e-8)
-        observed += w*law.actual(actual, rho, d, beta, True)
+        actual = brentq(lambda t: law.pi@law.actual(t, rho, d, beta, zeta)-u, -50., 8**d, xtol=2e-8)
+        observed += w*law.actual(actual, rho, d, beta, zeta, True)
         predicted += w*law.profile(target, rho, d, beta)
     return observed, predicted
 
 
 def main():
     errors, refinement, identity_error, inversion_error = [], 0., 0., 0.
-    beta = .35
+    beta, zeta, branch_margin = .35, .25, math.inf
     for c in (32, 128, 512):
         law, worst, worst_delta = Law(c), 0., 0.
         fine = Law(c, True) if c == 128 else None
@@ -130,9 +131,12 @@ def main():
         inversion_error = max(inversion_error, np.max(abs(
             law.full(x)-law.full(-x)-law.grid)))
         for d in (2, 4, 6):
-            assert d > (d+1)*beta*law.radius
+            physical = np.linspace(-law.radius, law.radius, 2001)
+            margin = min(d+(d+1)*beta*physical+(d+2)*zeta*physical**2)
+            branch_margin = min(branch_margin, margin)
+            assert margin > 0
             a, e = law.coefficients(d, beta)
-            score = np.array([law.score_cdf(r**d, d, beta) for r in x])
+            score = np.array([law.score_cdf(r**d, d, beta, zeta) for r in x])
             signed = c*(score-(score@law.pi)[:, None])
             delta = max(abs(score@law.pi-(2*ndtr(x)-1)))
             worst_delta = max(worst_delta, delta)
@@ -146,13 +150,13 @@ def main():
             sup = np.max(abs(residual), axis=0)
             transport = trapezoid((d*x**(d-1))[:, None]*abs(residual), x, axis=0)
             for rho in (0., 1/3, 2/3, 1-1e-5):
-                observed, predicted = rank_average(law, d, rho, beta)
+                observed, predicted = rank_average(law, d, rho, beta, zeta)
                 worst = max(worst, max(abs(observed-predicted)))
                 bound = sup if not rho else np.minimum(sup/(1-rho), transport/(rho*math.sqrt(2*math.pi)))
                 assert max(abs(observed-predicted)-bound-constant*math.sqrt(delta)) < 3e-5
                 assert abs(law.pi@observed) < 3e-7
                 if fine is not None:
-                    exact, target = rank_average(fine, d, rho, beta, order=36)
+                    exact, target = rank_average(fine, d, rho, beta, zeta, order=36)
                     refinement = max(refinement, max(abs(exact-observed)), max(abs(target-predicted)))
                 if c == 512 and d == 4:
                     print(f'c=512,d=4,rho={rho:g}: weighted gaps={observed}; prediction={predicted}')
@@ -176,10 +180,10 @@ def main():
         ties = rng.permutation(10)
         assert all(sorted(range(10), key=lambda j: (values[j]**d, ties[j]))
                    == sorted(range(10), key=lambda j: (abs(values[j]), ties[j])) for d in (2, 4, 6))
-    print(f'36 asymmetric-rank cases; 300 pure-power rank patterns; 18 independent Hermite identities; 6 modulus checks')
+    print(f'36 smooth-score rank cases; 300 pure-power rank patterns; 18 independent Hermite identities; 6 modulus checks')
     print(f'Maximum joint Fourier/spatial/beta refinement={refinement:.3g}; allowance=3e-5; identity error={identity_error:.3g}')
-    print(f'Full-CDF/fold inversion error={inversion_error:.3g}; branch margin={2-3*beta*law.radius:.9f}')
-    print(f'nu/mu={beta:.6f}; Gamma={law.gamma:.9f}; kappa3={law.skew:.9f}; a={law.a}; e={law.e}')
+    print(f'Full-CDF/fold inversion error={inversion_error:.3g}; branch margin={branch_margin:.9f}')
+    print(f'nu/mu={beta:.6f}; omega/mu={zeta:.6f}; Gamma={law.gamma:.9f}; kappa3={law.skew:.9f}; a={law.a}; e={law.e}')
     print('PASS')
 
 

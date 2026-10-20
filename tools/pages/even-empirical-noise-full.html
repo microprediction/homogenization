@@ -1,19 +1,23 @@
-<!-- title: Empirical asymmetric even-score calibration at every noise scale · homogenization | math -->
+<!-- title: Smooth even-critical empirical calibration at every noise scale · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_even_empirical_noise.py">certificate</a></span></p>
     <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
-    <h1>Empirical asymmetric even-score calibration at every noise scale</h1>
-    <p class="subtitle">The first odd Taylor term is not negligible: it couples to latent-start memory at the same order as the folded boundary correction.</p>
+    <h1>Smooth even-critical empirical calibration at every noise scale</h1>
+    <p class="subtitle">Only two Taylor coefficients survive: the first odd term couples to latent-start memory, while all higher score terms enter the remainder.</p>
     <h2>Model and coefficient</h2>
     <p>Fix a finite irreducible row generator $Q$, stationary row $\pi$, nonconstant real $f$ with $\pi f=0$, and a fixed even degree $d=2k\ge2$.
       Define, using pointwise products,</p>
     $$h=Q^\#f,\quad B=2Q^\#(fh),\quad\Gamma=-2\pi(fh)&gt;0,\quad\kappa_3=3\pi(fB),\qquad
       a_i=-B_i/\Gamma,\quad e_i=h_i\kappa_3/(3\Gamma^2).$$
     <p>Here $B$ is a raw second-moment boundary correction around the common stationary mean, not a variance contrast after recentering each state.
-      Put $M=\max_i|f_i|$ and assume $d\mu&gt;(d+1)|\nu|M$, which makes the two score branches monotone away from their unique minimum at zero.</p>
+      Let $\psi$ be $C^{d+2}$ on the range of $f$, with</p>
+    $$\psi(0)=0,\qquad\psi(a)=\mu a^d+\nu a^{d+1}+O(a^{d+2}),\qquad
+      \mu&gt;0,\qquad a\psi'(a)&gt;0\quad(a\ne0).$$
+    <p>The last condition gives exactly two monotone score branches around the unique minimum.
+      For the two-term polynomial it follows, for example, from $d\mu&gt;(d+1)|\nu|\max_i|f_i|$.</p>
     $$A_c={1\over c}\int_0^c f(Y_t)dt,\quad X_c=\sqrt{c/\Gamma}A_c,\quad
-      S_c=\mu A_c^d+\nu A_c^{d+1}+\sigma Z,\quad\lambda={c^k\sigma\over\mu\Gamma^k},\qquad\mu&gt;0,\quad\sigma\ge0.$$
+      S_c=\psi(A_c)+\sigma Z,\quad\lambda={c^k\sigma\over\mu\Gamma^k},\qquad\sigma\ge0.$$
     <p>Use $N$ independent stationary calibration paths and an independent test path starting in state $i$, with independent standard Gaussian noises.
       For $1\le j\le N$, let $C_i(c,N,j,\lambda)$ be test coverage below the $j$th calibration score, averaged over panels.
       At zero noise, order pairs $(S,V)$ lexicographically using an independent uniform tie variable for every calibration and test observation.</p>
@@ -29,9 +33,9 @@
       \sup_{N\ge1,\,1\le j\le N,\,i,\,\lambda\ge0}c(1+\lambda)|R_{i,c,N,j}^{(d)}(\lambda)|\longrightarrow0.}$$
     <p>This is an absolute remainder theorem for fixed $Q,f,d$, allowing arbitrarily fast $N=N_c$ growth and extreme ranks.
       It is not relative accuracy when the coefficient vanishes, nor coverage conditional on a realized panel or on test features.
-      It extends the <a href="https://github.com/microprediction/homogenization/pull/194">population even-power theorem</a> to empirical calibration and to the first asymmetric Taylor term.</p>
+      It extends the <a href="https://github.com/microprediction/homogenization/pull/194">population even-power theorem</a> to empirical calibration and smooth even-critical score maps.</p>
     <h2>Finite error bound</h2>
-    <p>Set $q_c(x)=x^d+\nu\sqrt{\Gamma}\,x^{d+1}/(\mu\sqrt c)$ and write $F_{i,c}^{(d)}(x)=\Pr_i(q_c(X_c)\le x)$ and $F_{\pi,c}^{(d)}=\sum_i\pi_i F_{i,c}^{(d)}$.
+    <p>Set $q_c(x)=c^k\psi(\sqrt{\Gamma/c}\,x)/(\mu\Gamma^k)$ and write $F_{i,c}^{(d)}(x)=\Pr_i(q_c(X_c)\le x)$ and $F_{\pi,c}^{(d)}=\sum_i\pi_i F_{i,c}^{(d)}$.
       The pooled reference error and signed errors are</p>
     $$E_c=\|F_{\pi,c}^{(d)}-F_{G^d}\|_\infty,\quad
       J_{i,c}^{(d)}=c(F_{i,c}^{(d)}-F_{\pi,c}^{(d)}),\quad
@@ -83,11 +87,16 @@
     <p>where $\delta_i$ is the point-mass row at state $i$.</p>
     <p>For the pure even power, the real part of the Fourier transform cancels the order-$c^{-1/2}$ odd term.
       Its next signed density folds to the profile with coefficients $(a_i,e_i)$.</p>
-    <p>For the asymmetric score, the two roots of $q_c(x)=r^d$ satisfy</p>
+    <p>Taylor expansion gives</p>
+    $$q_c(x)=x^d+{\nu\sqrt\Gamma\over\mu\sqrt c}x^{d+1}+{x^{d+2}\over c}R_c(x),$$
+    <p>where $R_c$ is uniformly bounded on the normalized support of $X_c$.
+      On the central window $|x|\le\sqrt{K\log c}$, the two roots of $q_c(x)=r^d$ therefore satisfy</p>
     $$x_+(r)=r-{\nu\sqrt\Gamma\over d\mu\sqrt c}r^2+O(c^{-1}r^3),\qquad
       x_-(r)=-r-{\nu\sqrt\Gamma\over d\mu\sqrt c}r^2+O(c^{-1}r^3).$$
     <p>The one-sided signed CDF has first term $(h_i/\sqrt\Gamma)\phi(x)/\sqrt c$.
       Evaluating it at these displaced roots adds $\tau_i r^3\phi(r)/c$, exactly the change $(a_i,e_i)\mapsto(\widetilde a_i,\widetilde e_i)$.</p>
+    <p>The bounded $R_c$ term moves each root only by $O(c^{-1}r^3)$, so its interaction with the one-sided contrast is $o(c^{-1})$ after central truncation.
+      Chernoff tails make the complement negligible, proving that no Taylor coefficient beyond $\nu$ enters the displayed profile.</p>
     <p>Signed Fourier smoothing gives a uniform $O(c^{-3/2})$ symmetrized CDF remainder.
       For nonzero frequencies the Dirichlet form excludes imaginary-axis eigenvalues; at large frequencies proper transient feature-level killed blocks and unitary Schur bounds give uniform polynomial-times-exponential decay, including defective generators.</p>
     <p>Real tilted-semigroup Chernoff bounds and truncation at $R_c=\sqrt{K\log c}$ prove the weighted $L^1$ limit for each fixed $d$.
@@ -108,14 +117,15 @@
     <p>For the large-noise endpoint, normalized reference quantiles converge to $\Phi^{-1}(u)$ for every $0&lt;u&lt;1$.
       The integration-by-parts representation bounds $H_{i,\rho}$ uniformly, so dominated convergence justifies beta averaging without discarding its tails.</p>
     <h2>Checks, literature and limits</h2>
-    <p>The certificate checks 36 nonreversible three-state empirical-rank cases with $\nu/\mu=.35$ at $c=32,128,512$, degrees $2,4,6$, four noise levels and $N=j=9$.
+    <p>The certificate checks 36 nonreversible three-state empirical-rank cases for
+      $\psi(a)=a^d+.35a^{d+1}+.25a^{d+2}$ at $c=32,128,512$, degrees $2,4,6$, four noise levels and $N=j=9$.
       It independently checks 18 Hermite representations, six probability-modulus inequalities, the two-branch Fourier inversion and 300 exact pure-power rank patterns.</p>
-    <p>The worst weighted error falls from $.202433358$ to $.0132066391$; joint Fourier/spatial/beta-order refinement is about $1.39\times10^{-5}$, within a portable $3\times10^{-5}$ allowance.
+    <p>The worst weighted error falls from $.103657479$ to $.00593634712$; joint Fourier/spatial/beta-order refinement is about $1.39\times10^{-5}$, within a portable $3\times10^{-5}$ allowance.
       It prints $\Gamma=.385937945$, $\kappa_3=-.046285861$, the modified profile constants and large-noise factors.</p>
     <p>These Fourier and quadrature calculations are numerical consistency checks, not interval enclosures or a proof of continuum uniformity.</p>
     <p>The Hermite derivative identity is classical <a href="./bibliography.html#NISTDLMF2026">DLMF 18.9.28</a>, and the randomized probability transform is classical <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>.
       For initial-bias spectral background see <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1 and Lemma 8.3</a>; the continuous-time folding and empirical transfer are derived here.</p>
-    <p>This requires independent calibration paths, the stated globally monotone two-branch score and the specified tie rule.
+    <p>This requires independent calibration paths, the stated smooth globally monotone two-branch score and the specified tie rule.
       It covers neither overlapping panels nor same-panel fitting, feature-/history-/realized-panel conditional validity, unbounded degree or degenerating mixing gaps.
       It continues <a href="https://github.com/microprediction/homogenization/issues/195">issue 195</a> beyond its population-quantile result, without closing it.</p>
   </main>
