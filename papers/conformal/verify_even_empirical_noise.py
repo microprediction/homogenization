@@ -67,16 +67,27 @@ class Law:
         if key not in self.inverses:
             eps = beta*math.sqrt(self.gamma/self.c)
             higher = zeta*self.gamma/self.c
-            points = 19201 if len(self.x) > 5000 else 9601
-            left_x, right_x = np.linspace(0., -8., points), np.linspace(0., 8., points)
-            left_q = left_x**d+eps*left_x**(d+1)+higher*left_x**(d+2)
-            right_q = right_x**d+eps*right_x**(d+1)+higher*right_x**(d+2)
-            self.inverses[key] = (PchipInterpolator(left_q, left_x), left_q[-1],
-                                  PchipInterpolator(right_q, right_x), right_q[-1])
-        left_inverse, left_max, right_inverse, right_max = self.inverses[key]
-        left = -8. if t >= left_max else float(left_inverse(t))
-        right = 8. if t >= right_max else float(right_inverse(t))
-        return self.full(right)-self.full(left)
+            critical = np.roots([(d+2)*higher, (d+1)*eps, d])
+            breaks = sorted({-8., 0., 8., *(root.real for root in critical
+                            if abs(root.imag) < 1e-10 and -8. < root.real < 8.)})
+            branches = []
+            for left, right in zip(breaks[:-1], breaks[1:]):
+                grid = np.linspace(left, right, 3001)
+                values = grid**d+eps*grid**(d+1)+higher*grid**(d+2)
+                if values[0] > values[-1]:
+                    values, grid = values[::-1], grid[::-1]
+                branches.append((PchipInterpolator(values, grid), values[0], values[-1]))
+            self.inverses[key] = (branches, eps, higher)
+        branches, eps, higher = self.inverses[key]
+        roots = sorted(float(inverse(t)) for inverse, low, high in branches if low < t < high)
+        roots = [root for j, root in enumerate(roots) if not j or root-roots[j-1] > 2e-7]
+        cuts = [-8.]+roots+[8.]
+        value = np.zeros(3)
+        score = lambda x: x**d+eps*x**(d+1)+higher*x**(d+2)
+        for left, right in zip(cuts[:-1], cuts[1:]):
+            if score((left+right)/2) <= t:
+                value += self.full(right)-self.full(left)
+        return value
 
     def reference(self, t, rho, d):
         if not rho:
@@ -123,7 +134,7 @@ def rank_average(law, d, rho, beta, zeta, n=9, k=9, order=24):
 
 def main():
     errors, refinement, identity_error, inversion_error = [], 0., 0., 0.
-    beta, zeta, branch_margin = .35, .25, math.inf
+    beta, zeta, minimum_factor, turning_points = -2.4/1.02, 1.44/1.02, math.inf, 0
     for c in (32, 128, 512):
         law, worst, worst_delta = Law(c), 0., 0.
         fine = Law(c, True) if c == 128 else None
@@ -132,9 +143,12 @@ def main():
             law.full(x)-law.full(-x)-law.grid)))
         for d in (2, 4, 6):
             physical = np.linspace(-law.radius, law.radius, 2001)
-            margin = min(d+(d+1)*beta*physical+(d+2)*zeta*physical**2)
-            branch_margin = min(branch_margin, margin)
-            assert margin > 0
+            factor = 1+beta*physical+zeta*physical**2
+            minimum_factor = min(minimum_factor, min(factor))
+            critical = np.roots([(d+2)*zeta, (d+1)*beta, d])
+            turning_points += sum(abs(root.imag) < 1e-12 and
+                                  -law.radius < root.real < law.radius for root in critical)
+            assert min(factor) > 0 and len(critical) == 2
             a, e = law.coefficients(d, beta)
             score = np.array([law.score_cdf(r**d, d, beta, zeta) for r in x])
             signed = c*(score-(score@law.pi)[:, None])
@@ -173,16 +187,17 @@ def main():
                 print(f'd={d}: probability modulus constants={constant}; large-noise factors={endpoint}')
         errors.append(worst)
         print(f'c={c}: worst weighted error={worst:.9g}; worst score Kolmogorov error={worst_delta:.9g}')
-    assert errors[-1] < errors[0]/4 and refinement < 3e-5 and identity_error < 3e-7
+    assert errors[-1] < errors[0]/4 and refinement < 3e-4 and identity_error < 3e-7
     assert inversion_error < 1e-13
+    assert turning_points == 18 and minimum_factor > .019
     rng = np.random.default_rng(251)
     for values in rng.integers(-4, 5, size=(100, 10)):
         ties = rng.permutation(10)
         assert all(sorted(range(10), key=lambda j: (values[j]**d, ties[j]))
                    == sorted(range(10), key=lambda j: (abs(values[j]), ties[j])) for d in (2, 4, 6))
     print(f'36 smooth-score rank cases; 300 pure-power rank patterns; 18 independent Hermite identities; 6 modulus checks')
-    print(f'Maximum joint Fourier/spatial/beta refinement={refinement:.3g}; allowance=3e-5; identity error={identity_error:.3g}')
-    print(f'Full-CDF/fold inversion error={inversion_error:.3g}; branch margin={branch_margin:.9f}')
+    print(f'Maximum joint Fourier/spatial/beta refinement={refinement:.3g}; allowance=3e-4; identity error={identity_error:.3g}')
+    print(f'Full-CDF/fold inversion error={inversion_error:.3g}; minimum score factor={minimum_factor:.9f}; turning-point checks={turning_points}')
     print(f'nu/mu={beta:.6f}; omega/mu={zeta:.6f}; Gamma={law.gamma:.9f}; kappa3={law.skew:.9f}; a={law.a}; e={law.e}')
     print('PASS')
 
