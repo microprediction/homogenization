@@ -1,0 +1,97 @@
+<!-- title: How often can the share-mean reversal vanish? · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_share_mean_zeros.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle direction and the smile</a></p>
+    <h1>How often can the share-mean reversal vanish?</h1>
+    <p class="subtitle">An exact maturity-zero bound from a finite moment system; four regimes can have exactly one positive zero.</p>
+    <p class="lead">For a fixed switching speed, if the share-measure first-moment matrix has real spectrum, a nonzero share-weighted log-return mean gap has at most $n-3$ positive maturity zeros, counted with multiplicity.
+    This is a bound on one scalar observable as maturity varies, not on call-price crossings as strike varies.</p>
+    <h2>Model and exact scalar reduction</h2>
+    <p>Let a finite irreducible chain have row generator $mQ$, fixed $m&gt;0$, stationary initial law $\pi$, and be independent of the original Brownian motions.
+    Compare it with $mQ^*$, where $Q^*=D_\pi^{-1}Q^\top D_\pi$, at the same fixed variance $v_0$ and with</p>
+    $$dv_t=(a_{Y_t}-\kappa_{Y_t}v_t)dt+\xi_{Y_t}\sqrt{v_t}\,dB_t,\qquad
+      dX_t=-\tfrac12v_tdt+\sqrt{v_t}(\rho_{Y_t}dB_t+\sqrt{1-\rho_{Y_t}^2}\,dW_t).$$
+    <p>Assume positive $a_i,\kappa_i,\xi_i$, $|\rho_i|\le1$, a well-defined nonnegative variance process, a true stock martingale $e^{X_t}$, and finite share-weighted log-return means at the maturities considered.
+    For an all-maturity conclusion require these integrability and martingale conditions at every finite maturity.</p>
+    $$k_i=\kappa_i-\rho_i\xi_i,\quad A=mQ-\operatorname{diag}k,\quad
+      \mathcal L(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi,$$
+    $$D(T)=\mathbb E_Q[e^{X_T}X_T]-\mathbb E_{Q^*}[e^{X_T}X_T]
+      =\tfrac12\int_0^T(T-u)\mathcal L(e^{uA})du.$$
+    <p>Here $\langle x,y\rangle_\pi=x^\top D_\pi y$.
+    Under the stock num&eacute;raire, the regime intensities stay $mQ$, variance reversion becomes $k_i$, and the log-return drift becomes $v/2$.</p>
+    <p>Indeed the share-measure variance-weighted regime masses satisfy
+    $z'=(mQ^\top-\operatorname{diag}k)z+\operatorname{diag}(a)\pi^\top$, $z(0)=v_0\pi^\top$.
+    Weighted adjointness cancels the $v_0$ contribution between orientations; integrating the forcing twice proves the formula.</p>
+    <h2>A bound including repeated eigenvalues and Jordan blocks</h2>
+    <p>Let $p_A$ be the minimal polynomial of $A$ and $r=\deg p_A\le n$.
+    If all roots of $p_A$ are real, then either $D\equiv0$, or $r\ge3$ and</p>
+    $$\#\{T&gt;0:D(T)=0\}\ \text{counted with multiplicity}\ \le r-3\le n-3.$$
+    <p>No normality or diagonalizability is assumed.
+    The spectral hypothesis is on $A$, not merely on the un-tilted generator $Q$, and the speed remains fixed.</p>
+    <p>For the proof put $F(T)=\mathcal L(e^{TA})$.
+    The identity $p_A(A)=0$ gives $p_A(\partial_T)F=0$; since $D''=F/2$,</p>
+    $$\partial_T^2p_A(\partial_T)D=0.$$
+    <p>Stationarity gives $\mathcal L(I)=\mathcal L(A)=0$, so
+    $D(0)=D'(0)=D''(0)=D'''(0)=0$.
+    Hence every nonzero $D$ has a zero of order at least four at the origin.</p>
+    <p>A real constant-coefficient differential equation of order $N$ with real characteristic roots has at most $N-1$ zeros of a nonzero solution on any finite interval, counting multiplicities.
+    To see this, divide by one positive exponential and differentiate: the order falls by one, while Rolle&apos;s theorem loses at most one zero.
+    Induction proves the claim, including repeated roots; if the derivative is identically zero, the original solution is a nonzero exponential and has no zeros.</p>
+    <p>Apply this with $N=r+2$ on $[0,H]$ and subtract the four origin zeros.
+    Since $H$ is arbitrary, the bound holds on the whole positive half-line.
+    In particular $r\le2$ forces $D\equiv0$.</p>
+    <p>There is a sharper finite test: if $\ell=\min\{j:\mathcal L(A^j)\ne0\}$, then $2\le\ell\le r-1$ and the origin order is $\ell+2$.
+    The positive-zero bound improves to $r-\ell-1$; if all $j=0,\ldots,r-1$ vanish, then $D\equiv0$.</p>
+    <p>With complex spectrum put $\Omega=\max_{\lambda\in\operatorname{spec}A}|\operatorname{Im}\lambda|$.
+    The same bound holds on $(0,H]$ whenever $H\Omega&lt;\pi$, by the extended-Chebyshev theorem of
+    <a href="./bibliography.html#AldazKounchevRender2009">Aldaz, Kounchev and Render (2009), Theorem 9 in the authors&apos; preprint</a>.
+    This is a bounded-window conclusion, not a global complex-spectrum zero count.</p>
+    <p>For the unit one-way four-cycle at speed one, the skew part of $A$ has norm one, independent of the real killing vector $k$.
+    Writing $K=(Q-Q^\top)/2$, the matrix $K^\top K$ is a nonzero orthogonal projection, so $\Omega\le1$ by the eigenvector Rayleigh identity.
+    Hence a nonzero signal has at most one zero on $(0,\pi)$ without a real-spectrum assumption; the certificate checks the opposite signs at $.6$ and $.8$ for the <a href="https://github.com/microprediction/homogenization/pull/206">earlier four-cycle fixture</a>.</p>
+    <h2>Complete four-regime criterion under stable real spectrum</h2>
+    <p>For four states assume additionally that $A$ has strictly negative real eigenvalues; $k_i&gt;0$ is sufficient for stability.
+    Set $\alpha=\mathcal L(A^2)$ and $\beta=\mathcal L(A^3)-\operatorname{tr}(A)\alpha$.</p>
+    $$\int_0^\infty e^{-zT}D(T)dT
+      ={\alpha z+\beta\over2z^2\det(zI-A)},\qquad z&gt;0.$$
+    <p>The numerator has degree at most one because $\mathcal L(I)=\mathcal L(A)=0$; its two coefficients follow by expanding the resolvent at infinity.
+    The zero-count theorem implies that a nonzero $D$ has at most one positive zero, and any such zero is simple.</p>
+    <p>If $\alpha\ne0$, its initial sign is the sign of $\alpha$, since $D(T)=\alpha T^4/48+O(T^5)$.
+    If $\beta\ne0$, its eventual sign is the sign of $\beta$, since $D(T)=\beta T/[2\det(-A)]+O(1)$.</p>
+    <p>Consequently there is exactly one positive zero if and only if $\alpha\beta&lt;0$.
+    If one coefficient is zero and the other is nonzero there is no positive zero: the initial sign is $\beta$ when $\alpha=0$, while the limiting constant is $\alpha/[2\det(-A)]$ when $\beta=0$.
+    Both coefficients zero is precisely $D\equiv0$.</p>
+    <h2>A strict-Feller example attaining the four-state bound</h2>
+    <p>Take the one-way cycle with exit rates $(1/100,1,2,3)$, so
+    $\pi=(600,6,3,2)/611$, and fix $m=1$, $v_0=.04$,</p>
+    $$\kappa_i=2,\quad\rho_i=-3/5,\quad\xi=(1/5,2/5,1,3/2),\quad a=(5,2,8,2),\quad
+      k=(53/25,56/25,13/5,29/10).$$
+    <p>The Feller margin is $\min_i(2a_i-\xi_i^2)=7/4&gt;0$.
+    For return moment $s$ and constant variance loading $b$, the supersolution coefficient is
+    $\xi_i^2b^2/2+(\rho_i\xi_i s-\kappa_i)b+(s^2-s)/2$.</p>
+    <p>At $(s,b)=(2,1/2)$ and $(-1/10,1/10)$ its maxima are $-23/200$ and $-499/4000$.
+    Thus $e^{bv+C_sT}$, with $C_s=\max_i a_i b$, bounds the localized moment process at every finite horizon.
+    These give a two-sided moment strip and uniform integrability of the localized stock, verifying the assumed martingale and moment scope.</p>
+    $$\det(zI-A)=\prod_{r\in\{213/100,81/25,23/5,59/10\}}(z+r)-3/50.$$
+    <p>At each pair $z=-r\pm1/10$ this polynomial has opposite signs.
+    The four disjoint negative intervals therefore contain all four roots, proving simple entirely real spectrum by exact rational inequalities, not an eigensolver.</p>
+    $$\alpha=-297/15275&lt;0,\qquad\beta=1323/58750&gt;0,$$
+    $$D(1)\in[-0.000014866529,-0.000014866528],\qquad
+      D(2)\in[0.000006419034,0.000006419035].$$
+    <p>There is therefore exactly one positive maturity zero, in $(1,2)$.
+    Its numerical estimate is $1.8471791789$; uniqueness comes from the theorem, not a sampled sign plot.</p>
+    <p>The certificate encloses the two means using independent six-dimensional forward systems and degree-160 rational Taylor actions.
+    Each directional output error is at most $3^L L^{161}/(2\cdot161!)$, $L=\lceil\|TM\|_\infty\rceil$, using initial norm at most one and output norm $1/2$.
+    The summed bounds are below $5.4\times10^{-115}$ and $5.2\times10^{-65}$ at the two horizons.</p>
+    <h2>Checks, literature and limits of the result</h2>
+    <p>Thirty-six additional cases compare a doubled-integral semigroup, the forward first-moment system, and the independent polynomial-moment implementation on main.
+    A repeated-eigenvalue defective chain checks cancellation; exact arithmetic checks the fixture&apos;s characteristic identity, spectral intervals, numerator, Feller condition and moment supersolutions.</p>
+    <p>Finite-dimensional moment closure is classical; see
+    <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+    The real-exponent Rolle argument is also classical and appears in the proof of the cited extended-Chebyshev theorem; the application here reserves four zeros at the origin of this reversal observable.</p>
+    <p>This is an exact fixed-speed theorem, not a truncated homogenization expansion.
+    It does not prove a sharp global call-crossing count in
+    <a href="https://github.com/microprediction/homogenization/issues/204">issue 204</a>, nor identify full call curves from their share-weighted means.
+    Complex-spectrum signals may have additional zeros outside the stated short window.</p>
+  </main>
