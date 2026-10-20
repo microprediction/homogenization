@@ -69,5 +69,7 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
- }
+ },
+ {"key": "Davies2010", "authors": "Davies, E. B.", "year": 2010, "title": "Embeddable Markov Matrices", "venue": "Electronic Journal of Probability 15(47):1474-1486", "doi": "10.1214/EJP.v15-733", "annotation": "Theorem 9's proof, equations (5)-(6), recalls the classical cotangent bound for generator eigenvalues. For stationary-normal chains, orthogonal spectral calculus transfers that eigenvalue bound to finite-window correlation forms."},
+ {"key": "ViscardyGaspard2003", "authors": "Viscardy, S. and Gaspard, P.", "year": 2003, "title": "Viscosity in molecular dynamics with periodic boundary conditions", "venue": "Physical Review E 68:041204", "doi": "10.1103/PhysRevE.68.041204", "annotation": "Appendix B derives the classical Einstein-Helfand/Green-Kubo conversion by integrating the stationary current correlation over a square time window. The triangular finite-window weight is a covariance identity, not an automatic property of a rectangular lag cutoff."}
 ]
