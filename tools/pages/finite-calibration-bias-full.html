@@ -1,0 +1,105 @@
+<!-- title: Finite calibration and latent path bias · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_finite_calibration_bias.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a></p>
+    <h1>Finite calibration and latent path bias</h1>
+    <p class="subtitle">An exact rank baseline, a beta-averaged first correction, and a computable finite-horizon remainder.</p>
+    <p class="lead">For independent stationary calibration paths, the empirical order statistic preserves exact marginal rank coverage but changes the leading starting-regime bias.
+      A beta average replaces the population Gaussian density factor; it strictly attenuates the leading bias at the same marginal level without eliminating it.</p>
+    <h2>Independent paths, not overlapping calibration windows</h2>
+    <p>Fix a finite irreducible row generator $Q$, its invariant row law $\pi$, and a real state feature $f$.
+      For each independent path define</p>
+    $$A_c={1\over c}\int_0^c f(Y_t)dt,\qquad S_c=\mu A_c+\sigma Z,
+      \quad Z\sim N(0,1),\quad\sigma&gt;0,\quad a=\mu/\sigma.$$
+    <p>The Gaussian noises are mutually independent and independent of the chains.
+      Take $N$ iid calibration scores with initial law $\pi$, and an independent test path whose initial state is $i$.
+      Let $\widehat q_k$ be the $k$th calibration order statistic, $1\le k\le N$, and put</p>
+    $$C_i(c;N,k)=\Pr_i(S_c\le\widehat q_k),\qquad p_N={k\over N+1}.$$
+    <p>This probability averages over the calibration sample and the test path while conditioning on the test&apos;s starting regime.
+      It is not coverage conditional on the realized calibration panel, test features or an entire observed history.
+      The score map is fixed; fitting on calibration labels and dependent or overlapping calibration paths are excluded.</p>
+    <h2>The exact rank-to-bias transfer</h2>
+    <p>Let $F_i$ be the test CDF, $F_\pi=\sum_i\pi_iF_i$, and $q_\pi(u)=F_\pi^{-1}(u)$.
+      Positive Gaussian smoothing makes $F_\pi$ continuous and strictly increasing.
+      Uniform order statistics give</p>
+    $$U=F_\pi(\widehat q_k)\sim\operatorname{Beta}(k,N+1-k),$$
+    $$\boxed{C_i-p_N=\mathbb E\big[F_i(q_\pi(U))-U\big]},\qquad
+      \sum_i\pi_iC_i=p_N\quad\text{exactly}.$$
+    <p>The beta identity and marginal rank validity are classical, not new coverage guarantees.
+      If a nominal level $p$ is implemented with $k=\lceil(N+1)p\rceil\le N$, the exact marginal baseline is $p_N$, not $p$.
+      The usual $k=N+1$ convention uses $+\infty$, giving coverage one and zero latent gap instead of a beta law.</p>
+    <h2>The first latent correction</h2>
+    $$\widetilde f=f-(\pi f)\mathbf1,\qquad h=Q^\#\widetilde f,\qquad
+      QQ^\#=Q^\#Q=I-\mathbf1\pi,\quad\pi Q^\#=0.$$
+    <p>For fixed $Q,f,a,N$ as $c\to\infty$, uniformly over states and the finite set of ranks,</p>
+    $$\boxed{C_i(c;N,k)-p_N={a h_i\over c}J_{N,k}+O(c^{-2})},\qquad
+      J_{N,k}=\mathbb E\,\phi(\Phi^{-1}(U)).$$
+    <p>The population threshold at level $p_N$ has factor $\phi(z_{p_N})$ instead.
+      Put $j(u)=\phi(\Phi^{-1}(u))$ with $j(0)=j(1)=0$; then
+      $j'(u)=-\Phi^{-1}(u)$ and $j''(u)=-1/\phi(\Phi^{-1}(u))&lt;0$.</p>
+    $$0&lt;J_{N,k}&lt;\phi(z_{p_N}),\qquad J_{N,N+1-k}=J_{N,k},\qquad
+      J_{1,1}={1\over2\sqrt\pi}.$$
+    <p>Strict Jensen proves attenuation because the beta law is nondegenerate.
+      If $k/(N+1)\to p\in(0,1)$, beta concentration and bounded continuity give $J_{N,k}\to\phi(z_p)$.
+      Smaller calibration samples also have greater calibration-conditional variability; this attenuation is not a recommendation to reduce sample size.</p>
+    <h2>An explicit bound at any finite horizon and calibration size</h2>
+    <p>Write $W_c=A_c-\pi f$, $m_{r,i}=\mathbb E_iW_c^r$, $m_{r,\pi}=\sum_i\pi_i m_{r,i}$ and $\delta_{r,i}=m_{r,i}-m_{r,\pi}$.
+      Define</p>
+    $$E_i(c)={|a|\over c}|(e^{cQ}h)_i|
+       +{a^2\over2}|\delta_{2,i}|+{|a|^3\over6}|\delta_{3,i}|
+       +{a^4\over24}(m_{4,i}+m_{4,\pi}),$$
+    $$\eta={a^2m_{2,\pi}\over2},\qquad
+      B_N(\eta)=\min\{\phi(0)\min(1,N\eta),\ j(\min(\eta,1/2))\},$$
+    $$\boxed{\left|C_i-p_N-{a h_i\over c}J_{N,k}\right|
+       \le E_i(c)+{|a h_i|\over c}B_N(\eta)}.$$
+    <p>This bound holds for every $c&gt;0$, finite $N$ and admissible rank, not just asymptotically.
+      It requires no unknown conditional quantile or empirical coverage estimate.
+      The displayed moments follow from finite-dimensional linear ODEs.</p>
+    <p>To prove it, expand $\Phi(z-aW_c)$ through degree three, with $z=(x-\mu\pi f)/\sigma$.
+      The Gaussian Fourier integral gives $\|\phi^{(j)}\|_\infty\le1$ for $j=0,1,2,3$; moreover
+      $m_{1,i}=[(e^{cQ}-I)h]_i/c$ and $m_{1,\pi}=0$.</p>
+    $$\sup_x\left|F_i(x)-F_\pi(x)-{a h_i\over c}\phi(z)\right|\le E_i(c).$$
+    <p>Next compare a stationary standardized score $Z+aW_c$ with $Z$.
+      Its mean shift is zero, and Taylor expansion of the Gaussian density in $L^1$, using
+      $\|\phi''\|_1\le2$, bounds their total variation by $a^2m_{2,\pi}/2$.</p>
+    <p>Tensorization costs at most $N$ times this distance for the calibration panel; applying the order-statistic map cannot increase it.
+      The expectation of $\phi$ at the standardized order statistic therefore differs from its iid Gaussian value $J_{N,k}$ by at most $\phi(0)\min\{1,Na^2m_{2,\pi}/2\}$.
+      This gives the first term in $B_N$.</p>
+    <p>There is also an $N$-independent bound.
+      Taylor expansion gives $\sup_z|F_\pi(\mu\pi f+\sigma z)-\Phi(z)|\le\eta$; concavity and symmetry imply
+      $|j(u)-j(v)|\le j(\min(\eta,1/2))$ whenever $|u-v|\le\eta$.</p>
+    <p>At the actual threshold, $U=F_\pi(\widehat q_k)$ and $\Phi((\widehat q_k-\mu\pi f)/\sigma)$ therefore differ by at most $\eta$ pointwise.
+      This proves the second term in $B_N$.
+      Integrating the uniform CDF-contrast bound against the threshold law proves the boxed inequality.</p>
+    <h2>Why the remainder is second order</h2>
+    <p>The Feynman&ndash;Kac moment hierarchy for $V_r(t)=\mathbb E_i(\int_0^t\widetilde f(Y_s)ds)^r$ is
+      $V_r'=QV_r+r\operatorname{diag}(\widetilde f)V_{r-1}$, with $V_0=\mathbf1$, $V_r(0)=0$ for $r&gt;0$.
+      Then $m_{r,i}=V_r(c)_i/c^r$.</p>
+    <p>Equivalently, the analytic dominant eigenvalue of $Q+s\operatorname{diag}(\widetilde f)$ is
+      $\lambda(s)=\Gamma s^2/2+O(s^3)$, $\Gamma=-2\langle\widetilde f,h\rangle_\pi$, with projector $P(s)\mathbf1=\mathbf1+O(s)$.
+      The remaining spectral component and its fixed-order derivatives decay exponentially, allowing defective generators.</p>
+    <p>Differentiating through order four gives $m_{2,i}=\Gamma/c+O(c^{-2})$, $m_{3,i}=O(c^{-2})$, $m_{4,i}=O(c^{-2})$.
+      Thus $\delta_{2,i}=O(c^{-2})$, $E_i=O(c^{-2})$, and $m_{2,\pi}=O(c^{-1})$.
+      For fixed $N$ the explicit bound is $O(c^{-2})$.</p>
+    <p>The modulus term also gives an absolute $O(c^{-2}\sqrt{\log c})$ remainder uniformly over every finite $N\ge1$ and $1\le k\le N$.
+      Indeed $j(\eta)=O(\eta\sqrt{\log(1/\eta)})$: integration by parts bounds $\Phi(-z)\ge\phi(z)z/(z^2+1)$, while the Gaussian Chernoff bound gives $z\le\sqrt{2\log(1/\eta)}$ for $z=-\Phi^{-1}(\eta)$.
+      Thus arbitrary calibration-size sequences are allowed, but the assertion is not relative to a vanishing leading coefficient at extreme ranks, nor uniform as $\sigma\downarrow0$ or the chain&apos;s mixing gap degenerates.</p>
+    <h2>Numerical checks and interpretation</h2>
+    <p>At common marginal level $p_N=.9$, the factors for $(N,k)=(9,9),(19,18),(99,90)$ are
+      $.1538752731,.1637539578,.1729791136$, versus the population factor $.1754983319$.
+      For $(N,k)=(1,1),(3,2)$ they are $.2820947918,.3315966888$.</p>
+    <p>The nonreversible fixture is
+      $Q=\left(\begin{smallmatrix}-1.1&amp;.8&amp;.3\\.4&amp;-1.4&amp;1\\.7&amp;.5&amp;-1.2\end{smallmatrix}\right)$,
+      $f=(-1,.35,1.4)$, $\mu=1$, $\sigma=.5$.
+      With $c=256,N=k=9$, the three coverages are $(.90097071,.89971826,.89931746)$: their stationary weighted average is exactly $.9$.</p>
+    <p>The certificate checks 30 three-state cases from $c=32$ to $1024$, the finite moment budgets, beta symmetry and strict attenuation.
+      Fourier/spatial refinement changes coverages by at most $7.8\times10^{-12}$; final residual orders lie between $1.993$ and $1.995$, using a portable $5\times10^{-8}$ allowance.
+      Independent Poisson&ndash;Beta occupation mixtures for the unit-rate symmetric binary chain, with the same $\mu,\sigma$, give one-calibration coverages $.4481267575$ and $.4841628650$ at $c=4,16$.</p>
+    <p>The theorem and finite bound are analytic; these Fourier and mixture values are numerical consistency checks, not rigorous interval enclosures.
+      Exact rank coverage and its marginal scope are covered by <a href="./bibliography.html#LeiGsellRinaldoTibshiraniWasserman2018">Lei et al. (2018), Theorem 2.2</a>; the beta order-statistic identity follows directly from iid uniform transforms.
+      The new calculation quantifies the model-specific latent-state correction, not distribution-free conditional validity.</p>
+    <p>The result fixes positive Gaussian smoothing and independent calibration paths.
+      It does not cover vanishing noise, critical nonlinear scores, temporal calibration dependence, same-panel training or a chain whose mixing gap degenerates with $c$.
+      Marginal rank validity, latent-start bias and calibration-conditional random coverage are three distinct quantities.</p>
+  </main>
