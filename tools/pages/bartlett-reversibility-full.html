@@ -1,0 +1,89 @@
+<!-- title: What a Bartlett window identifies · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bartlett_reversibility.py">certificate</a></span></p>
+    <h1>Bartlett windows detect reversibility, not skew rank</h1>
+    <p class="subtitle">Every positive horizon retains the full-feature distinction between reversible and irreversible dynamics, but can create extra skew modes.</p>
+    <p>Let $Q$ be a finite irreducible row generator with stationary law $\pi$, and let the columns of $F$ form a real basis of
+      $H_0=\{f:\pi^Tf=0\}$.
+      For any fixed $T>0$, define</p>
+    $$B_{T,F}=\int_0^T(1-t/T)F^TD_\pi e^{tQ}F\,dt,\qquad
+      K_F=\int_0^\infty F^TD_\pi e^{tQ}F\,dt.$$
+    $$B_{T,F}=B_{T,F}^T\quad\Longleftrightarrow\quad D_\pi Q=Q^TD_\pi.$$
+    <p>This is an exact stationary population criterion, not a finite-sample test or a claim that incomplete observed features identify reversibility.
+      It needs neither normality nor diagonalizability.
+      It does <em>not</em> imply that $\operatorname{rank}\operatorname{skew}B_{T,F}=\operatorname{rank}\operatorname{skew}K_F$.</p>
+    <p>The criterion needs the <em>unsymmetrized, one-sided correlation integral</em> $B_{T,F}$.
+      The covariance of $\int_0^T F(Y_t)dt$ is $2T\operatorname{sym}B_{T,F}$, which discards precisely the directed skew used here.
+      This is not generator reconstruction from one within-window occupation covariance; the different two-matrix inversion uses <a href="https://github.com/microprediction/homogenization/pull/142">ordered inter-window covariances</a>.</p>
+
+    <h2>The scalar fact that prevents complete cancellation</h2>
+    $$b_T(z)=\int_0^T(1-t/T)e^{-tz}dt
+      =z^{-1}-\frac{1-e^{-Tz}}{Tz^2}.$$
+    <p>For $a,b>0$, put $s(u)=\int_0^u e^{-at}\sin(bt)dt$.
+      Its local minima occur at $u=2k\pi/b$, with values $b(1-e^{-au})/(a^2+b^2)>0$ for $k\ge1$.
+      Since it starts at zero and initially increases, $s(u)>0$ for every $u>0$.</p>
+    $$\operatorname{Im}b_T(a+ib)=-\frac1T\int_0^T s(u)du<0.$$
+    <p>Conjugation gives the opposite strict sign below the real axis.
+      Thus, on $\operatorname{Re}z>0$, $b_T(z)$ is real exactly when $z$ is real.
+      On the positive real axis it is strictly decreasing, since</p>
+    $$b_T'(x)=-\int_0^T t(1-t/T)e^{-tx}dt<0\qquad(x>0).$$
+
+    <h2>A matrix lemma, including Jordan blocks</h2>
+    <p>Let $L$ be any finite real matrix whose eigenvalues have positive real part.
+      Then $b_T(L)$ is symmetric if and only if $L$ is symmetric.
+      Symmetric $L$ gives symmetric $b_T(L)$ by orthogonal diagonalization.</p>
+    <p>For the converse assume $b_T(L)$ is symmetric and diagonalize it orthogonally.
+      Since $L$ commutes with $b_T(L)$, it splits into real blocks $L_c$ on the eigenspaces where $b_T(L)=cI$.
+      Every eigenvalue $\lambda$ of $L_c$ satisfies $b_T(\lambda)=c$, so the scalar facts force all of them to equal the same positive real number $\lambda_c$.</p>
+    <p>No nontrivial Jordan block can remain: if $N$ is its nilpotent part, then</p>
+    $$b_T(\lambda_cI+N)-cI=N\left[b_T'(\lambda_c)I+\tfrac12b_T''(\lambda_c)N+\cdots\right].$$
+    <p>The bracket is invertible because its constant term is nonzero and the remaining part is nilpotent.
+      Hence $N=0$, so every $L_c=\lambda_cI$ and $L$ is symmetric.
+      These Jordan-function and commutation rules are classical; see <a href="./bibliography.html#Higham2008">Higham, Chapter 1</a>, and his <a href="https://eprints.maths.manchester.ac.uk/2109/1/covered/MIMS_ep2013_27.pdf">author chapter, Section 17.1</a>.</p>
+    <p>For the chain choose a $\pi$-orthonormal basis $U$ of $H_0$ and put $L=-U^TD_\pi QU$.
+      Irreducibility puts its spectrum in the open right half-plane, and symmetry of $L$ is equivalent to reversibility of $Q$.
+      Write $F=UV$ with invertible $V$; then $B_{T,F}=V^Tb_T(L)V$, so symmetry is preserved in both directions by congruence.</p>
+
+    <h2>A five-state skew-rank counterexample</h2>
+    $$Q=\begin{pmatrix}-2&1&0&1&0\\0&-2&1&0&1\\1&0&-1&0&0\\1&0&0&-1&0\\0&1&0&0&-1\end{pmatrix},\qquad
+      \pi=\tfrac15\mathbf1,\qquad F=(e_1-e_5,e_2-e_5,e_3-e_5,e_4-e_5).$$
+    <p>This is one directed triangle with two reversible pendant edges.
+      Exact centered Poisson solutions give</p>
+    $$K_F=\tfrac15\begin{pmatrix}2&1&1&2\\1&1&1&1\\2&1&2&2\\2&1&1&3\end{pmatrix},\qquad
+      \operatorname{rank}\operatorname{skew}K_F=2.$$
+    <p>At $T=1$, set $A=\operatorname{skew}B_{1,F}$ and
+      $\operatorname{Pf}(A)=A_{12}A_{34}-A_{13}A_{24}+A_{14}A_{23}$.
+      A rational enclosure proves</p>
+    $$-\frac1{500000}<\operatorname{Pf}(A)<-\frac1{600000},\qquad
+      \det A=\operatorname{Pf}(A)^2>0,\qquad \operatorname{rank}A=4.$$
+    <p>The approximate Pfaffian is $-1.916164034\times10^{-6}$, but the rank decision does not rely on floating singular values.
+      Both symmetric parts have rank four, as required by the existing fixed-feature Gram and finite-horizon covariance results.
+      Only the skew rank changes; this does not create additional hidden states or a second independent graph cycle.</p>
+
+    <h2>The rational error budget</h2>
+    <p>Use $P_N=\sum_{k=0}^NQ^k/(k+2)!$, with $N=24$.
+      Since $\|Q\|_\infty=4$, the omitted matrix norm is at most</p>
+    $$E_N=\frac{4^{N+1}}{(N+3)!}\left(1-\frac4{N+4}\right)^{-1}.$$
+    <p>Every feature has $\pi$-weighted absolute sum $2/5$ and maximum absolute value one.
+      Therefore each entry of $B_{1,F}-F^TD_\pi P_NF$, and of its skew part, has error at most $\delta=2E_N/5$.
+      If $M$ is the largest absolute entry of the rational skew approximation, the Pfaffian error is at most $6M\delta+3\delta^2$.</p>
+    <p>The certificate computes these quantities with exact fractions and proves the displayed rational interval.
+      An augmented matrix exponential and independent time quadrature supply separate consistency controls.
+      Those floating checks are not interval enclosures.</p>
+
+    <h2>Exact detection is not a uniform detection margin</h2>
+    <p>Return to a chain's $\pi$-orthonormal matrix $L$, keep $T,L$ fixed, and slow the clock by replacing $L$ with $cL$, $c>0$.
+      The explicit Taylor bound is</p>
+    $$\left\|b_T(cL)-\tfrac T2I+\tfrac{cT^2}{6}L\right\|_2
+      \le\frac{c^2T^3\|L\|_2^2e^{cT\|L\|_2}}{24}.$$
+    <p>For a matrix with positive definite symmetric part, write
+      $s(M)=\|\operatorname{sym}(M)^{-1/2}\operatorname{skew}(M)\operatorname{sym}(M)^{-1/2}\|_2$.
+      Then $s(b_T(cL))\to0$ as $c\downarrow0$, while $s((cL)^{-1})=s(L^{-1})$.</p>
+    <p>The normalized finite-window sector can therefore become arbitrarily small without reducing the full long-run sector.
+      The exact symmetry criterion supplies no clock-uniform statistical separation or noise robustness.
+      The theorem requires complete features, stationary population correlations, and a strictly positive horizon.</p>
+    <p>These are fixed-feature statements.
+      They do not count regimes from rank after integrating different maturity loadings, and they make no claim about conditional conformal coverage.
+      A rank-two long-run skew block need not remain rank two under a common Bartlett time window.</p>
+  </main>
