@@ -1,0 +1,104 @@
+<!-- title: Robust finite maturity reversals · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_robust_reversals.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle direction and the smile</a></p>
+    <h1>Robust finite maturity reversals</h1>
+    <p class="subtitle">Arbitrarily many reversals survive on open parameter sets with every regime transition rate positive.</p>
+    <p class="lead">There is no finite uniform bound on the number of share-mean sign reversals for six-regime positive-CIR models, even if every off-diagonal transition rate is positive and each model has only finitely many reversals.
+      An exact rational example has at least five, followed by a strictly negative signal at every maturity $T\ge40$.</p>
+    <h2>Observable and model</h2>
+    <p>Start an irreducible row generator $G$ at its invariant law $\pi$, independently of Brownian motions, and compare it with $G^*=D_\pi^{-1}G^\top D_\pi$.
+      Use identical $v_0=.04$, $X_0=0$ and coefficients in</p>
+    $$dv=(a_Y-\kappa_Yv)dt+\xi_Y\sqrt v\,dB,\qquad
+      dX=-vdt/2+\sqrt v(\rho_YdB+\sqrt{1-\rho_Y^2}\,dW).$$
+    $$A=G-\operatorname{diag}(\kappa-\rho\xi),\quad
+      \mathcal L_a(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi,$$
+    $$D(T)=\mathbb E_G[e^{X_T}X_T]-\mathbb E_{G^*}[e^{X_T}X_T]
+       ={1\over2}\int_0^T(T-t)\mathcal L_a(e^{tA})dt.$$
+    <p>The identity follows from the stock-measure variance first moments: the regime generator is unchanged, reversion becomes $\kappa-\rho\xi$, and log-return drift becomes $v/2$.
+      The common initial-variance contribution cancels by adjointness.
+      The strict moment and martingale conditions are verified below.</p>
+    <h2>A fully connected perturbation</h2>
+    <p>Let $P$ be the cyclic permutation on six states, $\Pi=\mathbf1\mathbf1^\top/6$, and $G_0=P-I$.
+      Put</p>
+    $$r=(99/100,100/99,1,1,1,1),\quad \kappa=2\mathbf1,\quad\rho=-\mathbf1/2,
+      \quad\xi=2r,\quad k=\kappa-\rho\xi=2\mathbf1+r,$$
+    $$a_0=10\mathbf1+(0,338101/494010,3383/4990,-1577/4990,1,0),$$
+    $$G_\varepsilon=G_0+\varepsilon^2(\Pi-I),\qquad
+      a_\varepsilon=a_0+\varepsilon e_0,\qquad 0&lt;\varepsilon\le1.$$
+    <p>Both orientations have uniform stationary law, and every off-diagonal rate is at least $\varepsilon^2/6&gt;0$.
+      Each $A_\varepsilon=G_\varepsilon-\operatorname{diag}k$ is stable, since its row sums are $-k_i&lt;-2$.
+      Its column sums satisfy the same bound.</p>
+    <h2>A bound valid at every maturity</h2>
+    <p>Positivity and the row/column bounds give $\|e^{tA_\varepsilon}\|_1,\|e^{tA_\varepsilon}\|_\infty\le e^{-2t}$.
+      Duhamel&apos;s identity and $\|\Pi-I\|_1=\|\Pi-I\|_\infty=5/3&lt;2$ give
+      $\|e^{tA_\varepsilon}-e^{tA_0}\|_{1,\infty}\le2\varepsilon^2t e^{-2t}$.</p>
+    <p>For uniform $\pi$, $|\mathcal L_c(M)|\le\|c\|_\infty(\|M\|_1+\|M\|_\infty)$.
+      Constants in $c$ disappear; $\|a_0-10\mathbf1\|_\infty=1$.
+      Thus, with $g_\varepsilon(t)=\mathcal L_{a_\varepsilon}(e^{tA_\varepsilon})$,</p>
+    $$|g_\varepsilon(t)-g_0(t)|\le(2\varepsilon+4\varepsilon^2t)e^{-2t},\qquad
+      \boxed{|D_\varepsilon(T)-D_0(T)|\le\varepsilon T}.$$
+    <p>This is a finite-parameter all-maturity error bound, not a homogenization expansion.
+      Write $D_\varepsilon(T)=\beta_\varepsilon T+\gamma_\varepsilon+R_\varepsilon(T)$ by integrating $g_\varepsilon$ to infinity.</p>
+    $$\beta_\varepsilon={1\over2}\mathcal L_{a_\varepsilon}((-A_\varepsilon)^{-1}),\qquad
+      \gamma_\varepsilon=-{1\over2}\mathcal L_{a_\varepsilon}(A_\varepsilon^{-2}).$$
+    <p>The unperturbed coefficients vanish exactly.
+      Subtracting also the first immigration variation leaves a kernel bounded by $4\varepsilon^2t e^{-2t}$, since $\|a_\varepsilon-10\mathbf1\|_\infty=1$.
+      Integration with weights $1$ and $t$ proves</p>
+    $$|\beta_\varepsilon-b\varepsilon|\le\varepsilon^2,\quad
+      |\gamma_\varepsilon-c\varepsilon|\le\varepsilon^2,\quad
+      b=-{2125\over121623804}&lt;0,\quad c={17871317275\over1232695808285868}.$$
+    <p>Here $b=\mathcal L_{e_0}((-A_0)^{-1})/2$ and $c=-\mathcal L_{e_0}(A_0^{-2})/2$ are exact rational solves.
+      Hence every sufficiently small positive $\varepsilon$ has $\beta_\varepsilon&lt;0$ and an eventually negative signal.
+      Analyticity at all finite $T$, including zero, then ensures only finitely many positive zeros.</p>
+    <h2>Why the finite counts are unbounded</h2>
+    <p>For completeness, the exact unperturbed cancellation behind <a href="https://github.com/microprediction/homogenization/pull/244">the infinite-reversal construction</a> is</p>
+    $$p(z)=\prod_i(z+3+r_i)-1=(z+3)q_5(z),\quad
+      \mathcal L_{a_0}(\operatorname{adj}(zI-A_0))=\alpha z^2(z+3),\quad
+      \widehat D_0(z)={\alpha\over2q_5(z)},\quad\alpha={199\over296406000}.$$
+    <p>The normal matrix $P-4I$ differs from $A_0$ by norm $1/99&lt;1/50$.
+      A normal-resolvent homotopy puts one simple eigenvalue in each radius-$1/50$ disk about $-4+e^{2\pi ij/6}$; the eigenvalue $-3$ cancels.
+      The dominant remaining pair $\lambda=\sigma+i\omega,\bar\lambda$ satisfies $-88/25&lt;\sigma&lt;-87/25$, $\omega&gt;21/25$; the other three real parts are below $-112/25$.</p>
+    <p>Root separations exceed $24/25$ and diameters are below $51/25$.
+      Bounding the simple-pole residues $\alpha/(2q_5'(\lambda))$ shows that at each leading-cosine phase extremum $T_j\ge5$, the sign alternates and</p>
+    $$|D_0(T_j)|\ge m_0 e^{-aT_j},\qquad
+      a=88/25,\quad m_0={\alpha\over10}(25/51)^4.$$
+    <p>Indeed the other-pole error divided by the leading envelope is at most
+      $(250563/8192)e^{-24T_j/25}&lt;9/10$, using $e^4&gt;103/3$.
+      The extremum spacing is $\pi/\omega$.</p>
+    <p>Set $\ell=\log(1/\varepsilon)$ and $L_\varepsilon=(\ell-2\log\ell)/a$.
+      For sufficiently large $\ell$, $m_0e^{-aL_\varepsilon}=m_0\varepsilon\ell^2&gt;\varepsilon L_\varepsilon$.
+      Thus all phase-extremum signs between $5$ and $L_\varepsilon$ survive, and the number $N_\varepsilon$ of sign-changing positive zeros obeys</p>
+    $$\liminf_{\varepsilon\downarrow0}{N_\varepsilon\over\log(1/\varepsilon)}
+       \ge{\omega\over a\pi}&gt;{21\over88\pi}&gt;0.$$
+    <p>This is a lower bound, not an asymptotic equality or an upper count.
+      Each selected finite collection of strict signs, negative long-run slope, stability and moment margins persists on an open neighborhood of its parameter vector.
+      The neighborhood may shrink with the requested number of reversals; no fixed positive transition-rate floor is claimed.</p>
+    <h2>A rational five-reversal certificate</h2>
+    <p>Take $\varepsilon=10^{-50}$.
+      The identity $D_0(T)=\alpha[(e^{TA_0})_{1,5}-(99/100)(e^{TA_0})_{0,5}]/2$ permits exact rational actions after multiplication by $e^{5T}$.</p>
+    $$H(T)=2e^{5T}D_0(T)/\alpha,\quad
+      H(4)\in[126,127],\quad H(6)\in[-1267,-1266],\quad H(10)\in[786335,786336],$$
+    $$H(14)\in[-397276026,-397276025],\qquad H(18)\in[176052884169,176052884170].$$
+    <p>Degree-300 rational Taylor actions have error below $1.05\times10^{-127}$.
+      The lower bound $|D_0(t)|\ge\alpha\min(|h|,|h+1|)/(2\cdot3^{5t})$ at each displayed interval $[h,h+1]$ exceeds $\varepsilon t$, so all five signs survive.</p>
+    <p>Put $C_0=(5\alpha/2)(25/24)^4$.
+      The spectral residue bound gives $|D_0(T)|\le C_0e^{-87T/25}$, while the kernel perturbation bounds the remainder difference by
+      $[\varepsilon/4+\varepsilon^2(T+1)/2]e^{-2T}$.</p>
+    $$D_\varepsilon(T)\le\varepsilon(bT+c)+\varepsilon^2(T+1)
+      +C_0\,20^{-T}+[\varepsilon/4+\varepsilon^2(T+1)/2]7^{-T}.$$
+    <p>Use $e^3&gt;20$, $e^2&gt;7$ and $87/25&gt;3$.
+      At $T=40$ the two-sided version encloses $D_\varepsilon(40)/\varepsilon$ in $[-.000685,-.000684]$; the displayed upper bound decreases for every $T\ge40$.
+      Consequently there is a sign change in each of $(4,6),(6,10),(10,14),(14,18),(18,40)$ and no zero at or beyond $40$.</p>
+    <h2>Positivity, literature and limits</h2>
+    <p>The Feller margin is at least $38343/2495&gt;0$.
+      The coefficient $\xi_i^2v_*^2/2+(\rho_i\xi_i s-2)v_*+(s^2-s)/2$ has maxima $-4900/9801$ and $-224429/1960200$ at $(s,v_*)=(2,1/2),(-1/10,1/10)$.
+      These strict exponential supersolutions hold for both generators: the common regime-independent test function bounds all finite-horizon moments; the moment above one gives true stock martingales.</p>
+    <p>Finite polynomial moment closure is classical: <a href="./bibliography.html#CuchieroKellerResselTeichmann2012">Cuchiero, Keller-Ressel and Teichmann (2012)</a>.
+      The spectral enclosure uses the standard normal-resolvent argument in <a href="./bibliography.html#EmbreeTrefethen2001">Embree and Trefethen (2001), Theorems 4 and 7</a>.
+      Nine independent polynomial-moment comparisons supplement, but do not replace, the rational sign proof.</p>
+    <p>The construction proves existence on open sets, not prevalence, a practical-size perturbation radius, or exactly five zeros in the rational fixture.
+      It counts maturity reversals of a scalar share-mean gap, not strike crossings of call-price curves or conditional conformal coverage.
+      <a href="https://github.com/microprediction/homogenization/issues/204">The sharp strike-crossing question</a> remains open.</p>
+  </main>
