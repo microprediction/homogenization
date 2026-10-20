@@ -1,0 +1,137 @@
+<!-- title: Smooth even-critical empirical calibration at every noise scale · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_even_empirical_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Smooth even-critical empirical calibration at every noise scale</h1>
+    <p class="subtitle">Only two Taylor coefficients survive: remote score branches are exponentially invisible, while the first odd term couples to latent-start memory.</p>
+    <h2>Model and coefficient</h2>
+    <p>Fix a finite irreducible row generator $Q$, stationary row $\pi$, nonconstant real $f$ with $\pi f=0$, and a fixed even degree $d=2k\ge2$.
+      Define, using pointwise products,</p>
+    $$h=Q^\#f,\quad B=2Q^\#(fh),\quad\Gamma=-2\pi(fh)&gt;0,\quad\kappa_3=3\pi(fB),\qquad
+      a_i=-B_i/\Gamma,\quad e_i=h_i\kappa_3/(3\Gamma^2).$$
+    <p>Here $B$ is a raw second-moment boundary correction around the common stationary mean, not a variance contrast after recentering each state.
+      Let $\psi$ be $C^{d+2}$ on the range of $f$, with</p>
+    $$\psi(0)=0,\qquad\psi(a)=\mu a^d+\nu a^{d+1}+O(a^{d+2}),\qquad
+      \mu&gt;0,\qquad \psi(a)&gt;0\quad(a\ne0).$$
+    <p>The last condition only isolates zero as the unique minimum on the compact occupation range.
+      The score may have additional turning points away from zero; the Taylor expansion already makes its two local branches monotone near zero.</p>
+    $$A_c={1\over c}\int_0^c f(Y_t)dt,\quad X_c=\sqrt{c/\Gamma}A_c,\quad
+      S_c=\psi(A_c)+\sigma Z,\quad\lambda={c^k\sigma\over\mu\Gamma^k},\qquad\sigma\ge0.$$
+    <p>Use $N$ independent stationary calibration paths and an independent test path starting in state $i$, with independent standard Gaussian noises.
+      For $1\le j\le N$, let $C_i(c,N,j,\lambda)$ be test coverage below the $j$th calibration score, averaged over panels.
+      At zero noise, order pairs $(S,V)$ lexicographically using an independent uniform tie variable for every calibration and test observation.</p>
+    <p>Then $p_N=j/(N+1)$ is the exact marginal baseline: $\sum_i\pi_i C_i=p_N$.
+      Define $\tau_i=2\nu h_i/(d\mu)$, $\widetilde a_i=a_i+3\tau_i$ and $\widetilde e_i=e_i+\tau_i$.</p>
+    <p>For $x&gt;0$, set $r=x^{1/d}$ and define</p>
+    $$P_i^{(d)}(x)=\phi(r)[\widetilde a_i r+\widetilde e_i(r^3-3r)],\quad P_i^{(d)}(x)=0\ (x\le0),\qquad
+      K_{i,\lambda}^{(d)}(t)=\mathbb E P_i^{(d)}(t-\lambda Z).$$
+    <p>With $U\sim\operatorname{Beta}(j,N+1-j)$ and $t_u^{(d)}(\lambda)$ the reference quantile of $G^d+\lambda Z$, put
+      $\mathcal K_i^{N,j,d}(\lambda)=\mathbb E_U K_{i,\lambda}^{(d)}(t_U^{(d)}(\lambda))$.
+      Here $G,Z$ are independent standard Gaussians.</p>
+    $$\boxed{C_i-p_N={\mathcal K_i^{N,j,d}(\lambda)\over c}+R_{i,c,N,j}^{(d)}(\lambda),\qquad
+      \sup_{N\ge1,\,1\le j\le N,\,i,\,\lambda\ge0}c(1+\lambda)|R_{i,c,N,j}^{(d)}(\lambda)|\longrightarrow0.}$$
+    <p>This is an absolute remainder theorem for fixed $Q,f,d$, allowing arbitrarily fast $N=N_c$ growth and extreme ranks.
+      It is not relative accuracy when the coefficient vanishes, nor coverage conditional on a realized panel or on test features.
+      It extends the <a href="https://github.com/microprediction/homogenization/pull/194">population even-power theorem</a> to empirical calibration and smooth even-critical score maps.</p>
+    <h2>Finite error bound</h2>
+    <p>Set $q_c(x)=c^k\psi(\sqrt{\Gamma/c}\,x)/(\mu\Gamma^k)$ and write $F_{i,c}^{(d)}(x)=\Pr_i(q_c(X_c)\le x)$ and $F_{\pi,c}^{(d)}=\sum_i\pi_i F_{i,c}^{(d)}$.
+      The pooled reference error and signed errors are</p>
+    $$E_c=\|F_{\pi,c}^{(d)}-F_{G^d}\|_\infty,\quad
+      J_{i,c}^{(d)}=c(F_{i,c}^{(d)}-F_{\pi,c}^{(d)}),\quad
+      U_{i,c}=\|J_{i,c}^{(d)}-P_i^{(d)}\|_\infty,\quad
+      L_{i,d,c}=\int_0^\infty|J_{i,c}^{(d)}-P_i^{(d)}|dx.$$
+    <p>Let $m_{2r}=\mathbb E G^{2r}=(2r-1)!!$, including $m_0=1$, and set</p>
+    $$V_{i,d}(g)=(\widetilde a_i-3\widetilde e_i)g^d+\widetilde e_i g^{d+2},\quad
+      M_{i,d}=\max\{\sqrt{2\widetilde a_i^2+24\widetilde e_i^2},\ d\sqrt{\mathbb E V_{i,d}(G)^2}\},$$
+    $$\mathbb E V_{i,d}(G)^2=(\widetilde a_i-3\widetilde e_i)^2m_{2d}+2\widetilde e_i(\widetilde a_i-3\widetilde e_i)m_{2d+2}+\widetilde e_i^2m_{2d+4}.$$
+    <p>At every finite $c,N$ and every noise level,</p>
+    $$\boxed{c(1+\lambda)|R_{i,c,N,j}^{(d)}(\lambda)|\le
+      (1+\lambda)\min\left(U_{i,c},{L_{i,d,c}\over\lambda\sqrt{2\pi}}\right)+M_{i,d}\sqrt{E_c}.}$$
+    <p>Omit the second minimum entry at $\lambda=0$.
+      The first term controls the signed error at the actual threshold; the second transfers the reference coefficient without any $N$ or $j$ factor.</p>
+    <h2>Hermite probability-coordinate lemma</h2>
+    <p>Put $\rho=\lambda/(1+\lambda)$, $s=1-\rho$, and let $F_\rho$ be the CDF of $Y_\rho=sG^d+\rho Z$.
+      Define $H_{i,\rho}(t)=s^{-1}K_{i,\lambda}^{(d)}(t/s)$ for $\rho&lt;1$, and let
+      $W_i(g)=\widetilde a_i(g^2-1)+\widetilde e_i(g^4-6g^2+3)$.</p>
+    <p>The elementary identity $(\phi H_n)'=-\phi H_{n+1}$, for probabilists&apos; Hermite polynomials, gives</p>
+    $$H_{i,\rho}(t)=-{1\over2s}\mathbb E[W_i(G)\mathbf1_{\{Y_\rho\le t\}}].$$
+    <p>For $\rho\le1/2$ and $D=\{x&lt;Y_\rho\le y\}$, Cauchy&ndash;Schwarz bounds the increment by
+      $\|W_i(G)\|_2\sqrt{\Pr(D)}$.
+      Hermite orthogonality gives $\|W_i(G)\|_2^2=2\widetilde a_i^2+24\widetilde e_i^2$.</p>
+    <p>For $\rho\ge1/2$, integration by parts in $G$ instead gives</p>
+    $$H_{i,\rho}(t)={d\over2\rho}\mathbb E[V_{i,d}(G)\phi((t-sG^d)/\rho)],\quad
+      H_{i,\rho}(y)-H_{i,\rho}(x)=-{d\over2\rho}\mathbb E[V_{i,d}(G)Z\mathbf1_D].$$
+    <p>These formulas extend to $\rho=1$, with $H_{i,1}(t)=(d/2)\mathbb E V_{i,d}(G)\phi(t)$.
+      Independence and Cauchy&ndash;Schwarz therefore prove the global bound</p>
+    $$|H_{i,\rho}(y)-H_{i,\rho}(x)|\le M_{i,d}\sqrt{|F_\rho(y)-F_\rho(x)|},\qquad0\le\rho\le1.$$
+    <p>At $\rho=0$, the reference CDF is flat on the negative half-line, but the profile is identically zero there too.
+      Thus no inverse-density assumption is needed at the folded endpoint or in the tails.</p>
+    <h2>Empirical threshold transfer, including atoms</h2>
+    <p>Let $\widehat F_c$ be the pooled CDF of $s q_c(X_c)+\rho Z$.
+      Conditioning on $Z$ proves $\|\widehat F_c-F_\rho\|_\infty\le E_c$.
+      At the actual augmented $j$th calibration pair $(q,V)$,</p>
+    $$U=\widehat F_c(q-)+V[\widehat F_c(q)-\widehat F_c(q-)]\sim\operatorname{Beta}(j,N+1-j),\qquad
+      |F_\rho(q)-U|\le E_c.$$
+    <p>Apply the profile lemma pointwise to $q$ and $F_\rho^{-1}(U)$ and then average over $U$.
+      This costs at most $M_{i,d}\sqrt{E_c}$ regardless of the beta parameters.
+      Zero-noise atoms at zero or in the tails therefore require no separate rank-overshoot allowance for the specified randomized rule.</p>
+    <p>Convolving the signed CDF error gives the first term of the finite bound by supremum contraction and the Gaussian density maximum.
+      At a tied threshold, the augmented contrast is a convex combination of left and right CDF contrasts; continuity of $P_i^{(d)}$ preserves the same bound.
+      Independence of the test path lets us subtract the exact pooled rank baseline before averaging.</p>
+    <h2>Finite-chain input and endpoints</h2>
+    <p>For this fixed model and score, $E_c=O(c^{-1/2})$, $U_{i,c}=o(1)$ and $L_{i,d,c}\to0$.
+      Here is the spectral mechanism, with full Fourier and moment budgets in <a href="https://github.com/microprediction/homogenization/pull/194">the population note</a>.</p>
+    $$\Lambda(z)=\Gamma z^2/2+\kappa_3z^3/6+O(z^4),\qquad
+      (\delta_i-\pi)\Pi(z)\mathbf1=-h_i z+B_i z^2/2+O(z^3),$$
+    <p>where $\delta_i$ is the point-mass row at state $i$.</p>
+    <p>For the pure even power, the real part of the Fourier transform cancels the order-$c^{-1/2}$ odd term.
+      Its next signed density folds to the profile with coefficients $(a_i,e_i)$.</p>
+    <p>Taylor expansion gives</p>
+    $$q_c(x)=x^d+{\nu\sqrt\Gamma\over\mu\sqrt c}x^{d+1}+{x^{d+2}\over c}R_c(x),$$
+    <p>where $R_c$ is uniformly bounded on the normalized support of $X_c$.
+      On the central window $|x|\le\sqrt{K\log c}$, the two roots of $q_c(x)=r^d$ therefore satisfy</p>
+    $$x_+(r)=r-{\nu\sqrt\Gamma\over d\mu\sqrt c}r^2+O(c^{-1}r^3),\qquad
+      x_-(r)=-r-{\nu\sqrt\Gamma\over d\mu\sqrt c}r^2+O(c^{-1}r^3).$$
+    <p>The one-sided signed CDF has first term $(h_i/\sqrt\Gamma)\phi(x)/\sqrt c$.
+      Evaluating it at these displaced roots adds $\tau_i r^3\phi(r)/c$, exactly the change $(a_i,e_i)\mapsto(\widetilde a_i,\widetilde e_i)$.</p>
+    <p>The bounded $R_c$ term moves each local root only by $O(c^{-1}r^3)$, so its interaction with the one-sided contrast is $o(c^{-1})$ after central truncation.
+      This proves that no Taylor coefficient beyond $\nu$ enters the displayed profile near the minimum.</p>
+    <p>Choose $\delta&gt;0$ so that these are the only score branches on $|a|&lt;\delta$.
+      Compactness and the unique-minimum condition give $\inf_{|a|\ge\delta}\psi(a)&gt;0$, while a tilted-generator Chernoff bound gives $\max_i\Pr_i(|A_c|\ge\delta)\le C e^{-\eta c}$.</p>
+    <p>Discarding every extra branch therefore changes $E_c$ and $U_{i,c}$ exponentially, and changes the weighted norm $L_{i,d,c}$ by at most $O(c^{k+1}e^{-\eta c})$ because $0\le q_c\le O(c^k)$.
+      This localization is uniform in the empirical threshold, so even arbitrarily large panels and extreme ranks cannot revive the remote branches.</p>
+    <p>Signed Fourier smoothing gives a uniform $O(c^{-3/2})$ symmetrized CDF remainder.
+      For nonzero frequencies the Dirichlet form excludes imaginary-axis eigenvalues; at large frequencies proper transient feature-level killed blocks and unitary Schur bounds give uniform polynomial-times-exponential decay, including defective generators.</p>
+    <p>Real tilted-semigroup Chernoff bounds and truncation at $R_c=\sqrt{K\log c}$ prove the weighted $L^1$ limit for each fixed $d$.
+      No discrete-time nonlattice assumption is imposed.
+      Since the first term of the finite bound is at most $2\max(U_{i,c},L_{i,d,c}/\sqrt{2\pi})$, the uniform theorem follows.</p>
+    <p>In the pure-power case $\nu=0$, a finite moment-tail budget for any $R&gt;0$ and integer $\ell\ge1$ is</p>
+    $$L_{i,d,c}\le R^dU_{i,c}+{c\over R^{2\ell}}[\mathbb E_i|X_c|^{d+2\ell}+\mathbb E_\pi|X_c|^{d+2\ell}]
+      +\int_R^\infty d r^{d-1}|P_i^{(d)}(r^d)|dr.$$
+    <p>Moments come from $v_m'=Qv_m+m\operatorname{diag}(f)v_{m-1}$ with $v_0=\mathbf1$, $v_m(0)=0$ for $m&gt;0$.</p>
+    $$J_{N,j}=\mathbb E\phi(\Phi^{-1}(U)),\quad
+      \widetilde\Theta_{i,d}={d\over2}m_d[\widetilde a_i+(d-2)\widetilde e_i]
+      =\Theta_{i,d}+(d+1)m_d{\nu h_i\over\mu},\quad
+      \lambda\mathcal K_i^{N,j,d}(\lambda)\longrightarrow\widetilde\Theta_{i,d}J_{N,j}\quad(\lambda\to\infty).$$
+    <p>This endpoint statement fixes $N,j$.
+      In particular, for fixed positive $\sigma$, $c^{k+1}\sigma(C_i-p_N)\to\mu\Gamma^k\widetilde\Theta_{i,d}J_{N,j}$.</p>
+    <p>The asymmetric increment is $(d+1)!!\nu h_i\Gamma^k$, which independently equals minus the leading start contrast in $\nu\mathbb E A_c^{d+1}$ and fixes the sign.
+      When $\nu=0$, zero-noise ranks reduce exactly to ranks of $|A_c|$ and are independent of the even degree; that finite-sample identity is not claimed when $\nu\ne0$.</p>
+    <p>For the large-noise endpoint, normalized reference quantiles converge to $\Phi^{-1}(u)$ for every $0&lt;u&lt;1$.
+      The integration-by-parts representation bounds $H_{i,\rho}$ uniformly, so dominated convergence justifies beta averaging without discarding its tails.</p>
+    <h2>Checks, literature and limits</h2>
+    <p>The certificate checks 36 nonreversible three-state empirical-rank cases for
+      $\psi(a)=a^d[(1-1.2a)^2+.02]$ at $c=32,128,512$, degrees $2,4,6$, four noise levels and $N=j=9$.
+      This score stays positive away from zero but has two additional turning points for every tested degree; the inversion sums all monotonicity intervals rather than assuming two global branches.</p>
+    <p>The worst weighted error falls from $1.09848274$ to $.0615449815$; the worst score Kolmogorov error falls from $.0184408825$ to $.00119445801$.
+      Joint Fourier/spatial/beta-order refinement is $1.49\times10^{-4}$, within a portable $3\times10^{-4}$ allowance; 18 Hermite representations, six probability-modulus inequalities and 300 exact pure-power rank patterns also pass.</p>
+    <p>These Fourier and quadrature calculations are numerical consistency checks, not interval enclosures or a proof of continuum uniformity.</p>
+    <p>The Hermite derivative identity is classical <a href="./bibliography.html#NISTDLMF2026">DLMF 18.9.28</a>, and the randomized probability transform is classical <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>.
+      The occupation-tail localization uses the additive-functional Feynman&ndash;Kac formula of <a href="./bibliography.html#FitzsimmonsPitman1999">Fitzsimmons and Pitman (1999)</a>.</p>
+    <p>For initial-bias spectral background see <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1 and Lemma 8.3</a>.
+      The continuous-time folding, remote-branch localization and empirical transfer are derived here.</p>
+    <p>This requires independent calibration paths, the stated smooth score with an isolated unique minimum and the specified tie rule.
+      It covers neither overlapping panels nor same-panel fitting, feature-/history-/realized-panel conditional validity, unbounded degree or degenerating mixing gaps.
+      It continues <a href="https://github.com/microprediction/homogenization/issues/195">issue 195</a> beyond its population-quantile result, without closing it.</p>
+  </main>
