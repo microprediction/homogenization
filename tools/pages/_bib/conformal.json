@@ -1,5 +1,14 @@
 [
  {
+  "key": "Vallender1974",
+  "authors": "Vallender, S. S.",
+  "year": 1974,
+  "title": "Calculation of the Wasserstein Distance Between Probability Distributions on the Line",
+  "venue": "Theory of Probability and Its Applications 18(4):784-786",
+  "doi": "10.1137/1118101",
+  "annotation": "Classical one-dimensional Wasserstein/CDF identity. Monotone coupling of odd-powered occupation variables controls the complete empirical calibration threshold without truncating beta quantile tails."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,
