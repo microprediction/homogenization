@@ -104,7 +104,7 @@
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary nonnegative, nonzero mixture of three simple directed cycles containing at least one Hamilton cycle; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary nonnegative, nonzero mixture of three simple directed cycles containing at least one Hamilton cycle; a positive mixture of three distinct directed triangles; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -118,6 +118,7 @@
     <p>Every support in this orbit permits arbitrary positive weights. Equality within each such weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
     <p>The two-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, every arbitrary-weight three-cycle mixture containing a two-cycle is covered. The final, one-cycle attachment class obeys the stronger bound
       $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
+    <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
@@ -261,6 +262,18 @@
     <p>Of these patches, 66 close nonstrictly with top Bernstein control zero; all controls of the selected barrier are nonpositive. The remaining patches are strict, with largest selected control $-1/32768$.</p>
     <p>Complementary degree-four quotient covers use at most 313 triangles at depth nine and 46,788 terminal triangles, including 906 corner-local cells. Therefore every connected nonnegative mixture of three simple directed cycles containing a Hamilton cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
 
+    <h2>Three directed triangles</h2>
+    <p>There are 40 labeled directed triangles and $\binom{40}{3}=9{,}880$ unordered triples. Exactly 3,840 triples have connected six-state support.</p>
+    <p>Give a connected triple positive weights $a,b,c$. Every two-triangle boundary has zero five-dimensional pencil, so each coefficient of $\det(tH-D)$ contains the factor $abc$.</p>
+    <p>Exact interpolation leaves only four ordered quadratic types. In every case there is an
+      $M\in\{ab+ac,ab+bc,ac+bc,ab+ac+bc\}$, hence $M&gt;0$, such that the three pencil coefficients are proportional to</p>
+    $$a_5:a_3:a_1=18M:12M:2M.$$
+    <p>Since $M&gt;0$, normalization by $a_5=\det H$ gives the identity</p>
+    <div class="equation-card">
+    $$\frac{\det(tH-D)}{\det H}=t\left(t^2+\frac13\right)^2.$$
+    </div>
+    <p>Thus both intrinsic frequencies equal $1/\sqrt3$ for every positive weight ratio. The result is exact and stronger than the general $\sqrt{3/5}$ obstruction.</p>
+
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
     <ol>
@@ -318,9 +331,10 @@
     <p>For the mixed three-/five-cycle theorem it classifies all 5,760 pairs by active support size and proves that none of the nonsingular boundary pairs is extremal. It closes the 2,880 six-state supports with cubic corner patches and 409,194 terminal triangles, then factors the Hamilton weight on the 2,880 common-face supports and closes their degree-four quotients with quadratic corner patches and 159,012 terminal triangles.</p>
     <p>For the mixed three-/four-cycle theorem it classifies all 3,600 pairs by active support size. It closes the 720 six-state supports with cubic corner patches and 175,914 terminal triangles, then factors the Hamilton weight on the other 2,880 supports and closes their degree-four quotients with quadratic corner patches and 130,356 terminal triangles.</p>
     <p>For one Hamilton cycle and two distinct three-cycles it classifies all 780 unordered pairs and verifies that every pure pair has a zero five-dimensional pencil. It factors the Hamilton weight, certifies both vertices through 126 oriented corner types, and closes the degree-four quotients with 46,788 terminal triangles.</p>
+    <p>For three directed triangles it enumerates all 9,880 unordered triples, identifies the 3,840 connected supports, factors $abc$ from the pencil and verifies the four quadratic quotient types. All four give the normalized pencil $t(t^2+1/3)^2$.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive three-cycle architectures without a Hamilton cycle, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive three-cycle architectures without a Hamilton cycle and with at least one four- or five-cycle, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>

@@ -1,5 +1,6 @@
 """Certificate for sparse six-state cycle mixtures and their sharp skew bound."""
 
+from collections import Counter
 from fractions import Fraction
 from itertools import combinations, permutations, product
 import math
@@ -1732,6 +1733,112 @@ three_cycle_indices = np.array([
     index for index, cycle in enumerate(all_cycles) if len(cycle) == 3
 ], dtype=np.int64)
 assert len(three_cycle_indices) == 40
+
+# Three distinct directed triangles have an unexpectedly rigid spectrum.  For
+# all C(40,3) supports, recover the homogeneous degree-five pencil exactly.
+# Every coefficient vanishes on every boundary edge, so it contains abc.  On
+# each connected support the remaining quadratic is one of four positive
+# cross-term sums, and the three pencil coefficients have the fixed ratio
+# 18:12:2.  Thus both intrinsic frequencies equal 1/sqrt(3), independently of
+# the three positive weights.
+three_cycle_triples = np.array(
+    list(combinations(three_cycle_indices, 3)), dtype=np.int64
+)
+assert len(three_cycle_triples) == 9880
+triangle_coefficient_values = {"a5": [], "a3": [], "a1": []}
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[three_cycle_triples[:, 0]]
+        + second_weight * integer_symmetric[three_cycle_triples[:, 1]]
+        + third_weight * integer_symmetric[three_cycle_triples[:, 2]]
+    )
+    skew = (
+        first_weight * integer_skew[three_cycle_triples[:, 0]]
+        + second_weight * integer_skew[three_cycle_triples[:, 1]]
+        + third_weight * integer_skew[three_cycle_triples[:, 2]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    triangle_coefficient_values["a5"].append(node_a5)
+    triangle_coefficient_values["a3"].append(node_a3)
+    triangle_coefficient_values["a1"].append(node_a1)
+
+triangle_coefficients = {}
+for name, values in triangle_coefficient_values.items():
+    stacked_values = np.stack(values)
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+    numerators = interpolation_matrix @ stacked_values
+    assert np.all(numerators % interpolation_denominator == 0)
+    triangle_coefficients[name] = numerators // interpolation_denominator
+
+triangle_factor_positions = np.array([
+    all(power >= 1 for power in exponent)
+    for exponent in homogeneous_exponents
+])
+assert np.all(
+    triangle_coefficients["a5"][~triangle_factor_positions] == 0
+)
+assert np.all(
+    triangle_coefficients["a3"][~triangle_factor_positions] == 0
+)
+assert np.all(
+    triangle_coefficients["a1"][~triangle_factor_positions] == 0
+)
+triangle_quotient_exponents = [
+    tuple(power - 1 for power in exponent)
+    for exponent in np.array(homogeneous_exponents)[triangle_factor_positions]
+]
+assert triangle_quotient_exponents == [
+    (0, 0, 2), (0, 1, 1), (0, 2, 0),
+    (1, 0, 1), (1, 1, 0), (2, 0, 0),
+]
+triangle_a5_quotients = triangle_coefficients["a5"][
+    triangle_factor_positions
+]
+triangle_a3_quotients = triangle_coefficients["a3"][
+    triangle_factor_positions
+]
+triangle_a1_quotients = triangle_coefficients["a1"][
+    triangle_factor_positions
+]
+connected_triangle_triples = np.any(triangle_a5_quotients != 0, axis=0)
+assert int(np.sum(connected_triangle_triples)) == 3840
+assert not np.any(
+    triangle_a3_quotients[:, ~connected_triangle_triples]
+)
+assert not np.any(
+    triangle_a1_quotients[:, ~connected_triangle_triples]
+)
+assert np.all(
+    3 * triangle_a3_quotients[:, connected_triangle_triples]
+    == 2 * triangle_a5_quotients[:, connected_triangle_triples]
+)
+assert np.all(
+    9 * triangle_a1_quotients[:, connected_triangle_triples]
+    == triangle_a5_quotients[:, connected_triangle_triples]
+)
+triangle_a5_types = Counter(
+    tuple(int(value) for value in triangle_a5_quotients[:, support_index])
+    for support_index in np.flatnonzero(connected_triangle_triples)
+)
+assert triangle_a5_types == Counter({
+    (0, 0, 0, 18, 18, 0): 1170,
+    (0, 18, 0, 0, 18, 0): 540,
+    (0, 18, 0, 18, 0, 0): 1170,
+    (0, 18, 0, 18, 18, 0): 960,
+})
+assert np.all(triangle_a5_quotients[:, connected_triangle_triples] >= 0)
+assert np.all(
+    np.sum(triangle_a5_quotients[:, connected_triangle_triples], axis=0)
+    > 0
+)
+
 hamilton_three_pairs = np.array([
     (hamilton_index, three_cycle_index)
     for hamilton_index in hamilton_indices
@@ -3520,6 +3627,11 @@ print(f"sharp equal-weight triple representatives: {len(equality_triples)}")
 print("sharp equal-weight triple support orbits: 1")
 print(f"one sharp equal-weight triple: {equality_triples[0]}")
 print("equal-weight triple normalized pencil: t (t^2 + 3/5)^2")
+print(f"unordered triples of directed three-cycles: {len(three_cycle_triples)}")
+print("connected directed-three-cycle triples: "
+      f"{int(np.sum(connected_triangle_triples))}")
+print(f"directed-three-cycle quotient types: {len(triangle_a5_types)}")
+print("directed-three-cycle normalized pencil: t (t^2 + 1/3)^2")
 print("normalized Hamilton triples: 7021")
 print("Hamilton triples without an extremal boundary pair: 6670")
 print("largest Hamilton simplex cover: "
