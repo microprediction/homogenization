@@ -480,6 +480,58 @@ def exact_simplex_cover(
     )
 
 
+def inside_short_cycle_corner(vertices, corner, height):
+    """Whether a triangle lies in a proved short-cycle corner box."""
+    other = [index for index in range(3) if index != corner]
+    return all(
+        vertex[other[0]] + vertex[other[1]] <= height * vertex[corner]
+        for vertex in vertices
+    )
+
+
+def exact_simplex_cover_with_corner(
+    sum_test,
+    root_test,
+    transforms,
+    corner,
+    corner_height,
+    local_pairs=(),
+    vertices=((Fraction(1), Fraction(0), Fraction(0)),
+              (Fraction(0), Fraction(1), Fraction(0)),
+              (Fraction(0), Fraction(0), Fraction(1))),
+    depth=0,
+):
+    """Cover a simplex, recording corner and equality-edge local cells."""
+    if max(sum_test) <= 0 or max(root_test) <= 0:
+        return 1, depth, 0, 0
+    if inside_short_cycle_corner(vertices, corner, corner_height):
+        return 1, depth, 1, 0
+    if any(inside_extremal_box(vertices, pair) for pair in local_pairs):
+        return 1, depth, 0, 1
+    assert depth < 12
+    covers = [
+        exact_simplex_cover_with_corner(
+            transform @ sum_test,
+            transform @ root_test,
+            transforms,
+            corner,
+            corner_height,
+            local_pairs,
+            child,
+            depth + 1,
+        )
+        for transform, child in zip(
+            transforms, simplex_child_vertices(vertices)
+        )
+    ]
+    return (
+        sum(cover[0] for cover in covers),
+        max(cover[1] for cover in covers),
+        sum(cover[2] for cover in covers),
+        sum(cover[3] for cover in covers),
+    )
+
+
 def canonical_cycle(cycle):
     start = min(range(len(cycle)), key=lambda index: cycle[index])
     return cycle[start:] + cycle[:start]
@@ -1628,6 +1680,287 @@ assert four_boundary_largest_cover == 103
 assert four_boundary_deepest_cover == 9
 assert four_boundary_local_cells == 414
 
+# The remaining simple-cycle length is three.  A pure three-cycle has rank
+# only two on the centered space, so both degree-five barriers vanish to
+# cubic order at that weight-simplex corner.  A second rational blow-up is
+# therefore needed in addition to the equality-edge blow-up.  Write the two
+# Hamilton weights as s*x and s*(1-x), normalize the three-cycle weight to
+# one, and split x into 16 rational intervals.  On each patch at least one
+# cubic-factored barrier has strictly negative Bernstein controls.
+three_cycle_indices = np.array([
+    index for index, cycle in enumerate(all_cycles) if len(cycle) == 3
+], dtype=np.int64)
+assert len(three_cycle_indices) == 40
+hamilton_three_pairs = np.array([
+    (hamilton_index, three_cycle_index)
+    for hamilton_index in hamilton_indices
+    for three_cycle_index in three_cycle_indices
+], dtype=np.int64)
+hamilton_three_symmetric = (
+    integer_symmetric[hamilton_three_pairs[:, 0]]
+    + integer_symmetric[hamilton_three_pairs[:, 1]]
+)
+hamilton_three_skew = (
+    integer_skew[hamilton_three_pairs[:, 0]]
+    + integer_skew[hamilton_three_pairs[:, 1]]
+)
+h3_a5, h3_a3, h3_a1 = batch_integer_pencil_coefficients(
+    hamilton_three_symmetric, hamilton_three_skew
+)
+extremal_hamilton_three_mask = (
+    (5 * h3_a3 == 6 * h3_a5)
+    & (25 * h3_a1 == 9 * h3_a5)
+)
+assert not np.any(extremal_hamilton_three_mask)
+
+normalized_hamilton_three_triples = np.array([
+    (hamilton_index, three_cycle_index)
+    for hamilton_index in other_hamilton_indices
+    for three_cycle_index in three_cycle_indices
+], dtype=np.int64)
+three_nonextremal_boundary = np.array([
+    tuple(sorted((standard_hamilton_index, int(hamilton_index))))
+    not in extremal_hamilton_pairs
+    for hamilton_index, _ in normalized_hamilton_three_triples
+], dtype=bool)
+assert len(normalized_hamilton_three_triples) == 4760
+assert int(np.sum(three_nonextremal_boundary)) == 4680
+
+three_sum_values = []
+three_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[
+            normalized_hamilton_three_triples[:, 0]
+        ]
+        + third_weight * integer_symmetric[
+            normalized_hamilton_three_triples[:, 1]
+        ]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[
+            normalized_hamilton_three_triples[:, 0]
+        ]
+        + third_weight * integer_skew[
+            normalized_hamilton_three_triples[:, 1]
+        ]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    three_sum_values.append(5 * node_a3 - 6 * node_a5)
+    three_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+three_stacked_sum_values = np.stack(three_sum_values)
+three_stacked_root_values = np.stack(three_root_values)
+three_product_bound = max(
+    len(homogeneous_exponents)
+    * interpolation_entry_bound
+    * int(np.max(np.abs(stacked_values)))
+    for stacked_values in (
+        three_stacked_sum_values, three_stacked_root_values
+    )
+)
+assert three_product_bound == 99603000000
+three_sum_numerators = interpolation_matrix @ three_stacked_sum_values
+three_root_numerators = interpolation_matrix @ three_stacked_root_values
+assert np.all(three_sum_numerators % interpolation_denominator == 0)
+assert np.all(three_root_numerators % interpolation_denominator == 0)
+three_sum_coefficients = three_sum_numerators // interpolation_denominator
+three_root_coefficients = three_root_numerators // interpolation_denominator
+
+three_edge_types = {}
+for triple_index in np.flatnonzero(~three_nonextremal_boundary):
+    sum_poly = extremal_pair_polynomial(
+        three_sum_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    root_poly = extremal_pair_polynomial(
+        three_root_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    direct = (tuple(sorted(sum_poly.items())),
+              tuple(sorted(root_poly.items())))
+    reversed_pair = (
+        tuple(sorted(reverse_first_variable(sum_poly).items())),
+        tuple(sorted(reverse_first_variable(root_poly).items())),
+    )
+    key = min(direct, reversed_pair)
+    three_edge_types[key] = three_edge_types.get(key, 0) + 1
+assert len(three_edge_types) == 4
+assert sorted(three_edge_types.values()) == [8, 24, 24, 24]
+
+three_edge_largest_control = None
+for sum_items, root_items in three_edge_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+    central_sum = multivariate_compose(sum_poly, (
+        {(0, 1): -blowup_slope * blowup_height,
+         (1, 1): 2 * blowup_slope * blowup_height},
+        {(0, 1): blowup_height},
+    ))
+    assert all(exponent[1] >= 1 for exponent in central_sum)
+    central_sum = {
+        (exponent[0], exponent[1] - 1): coefficient
+        for exponent, coefficient in central_sum.items()
+    }
+    controls = tensor_bernstein_controls(central_sum)
+    for direction in (-1, 1):
+        outer_root = multivariate_compose(root_poly, (
+            {(1, 0): direction * blowup_width},
+            {(1, 1): blowup_height},
+        ))
+        assert all(exponent[0] >= 2 for exponent in outer_root)
+        outer_root = {
+            (exponent[0] - 2, exponent[1]): coefficient
+            for exponent, coefficient in outer_root.items()
+        }
+        controls.extend(tensor_bernstein_controls(outer_root))
+    assert max(controls) < 0
+    type_largest_control = max(controls)
+    if three_edge_largest_control is None:
+        three_edge_largest_control = type_largest_control
+    else:
+        three_edge_largest_control = max(
+            three_edge_largest_control, type_largest_control
+        )
+assert three_edge_largest_control == Fraction(
+    -79125745, 33554432
+)
+
+
+def short_cycle_corner_polynomial(coefficients):
+    """Set the third weight to one in a homogeneous barrier."""
+    out = {}
+    for coefficient, exponent in zip(coefficients, homogeneous_exponents):
+        key = exponent[:2]
+        out[key] = out.get(key, Fraction(0)) + Fraction(int(coefficient))
+    return {key: value for key, value in out.items() if value}
+
+
+three_corner_types = {}
+three_corner_leading_types = set()
+for triple_index in range(len(normalized_hamilton_three_triples)):
+    sum_poly = short_cycle_corner_polynomial(
+        three_sum_coefficients[:, triple_index]
+    )
+    root_poly = short_cycle_corner_polynomial(
+        three_root_coefficients[:, triple_index]
+    )
+    leading_key = (
+        tuple(sorted(
+            (exponent, coefficient)
+            for exponent, coefficient in sum_poly.items()
+            if sum(exponent) == 3
+        )),
+        tuple(sorted(
+            (exponent, coefficient)
+            for exponent, coefficient in root_poly.items()
+            if sum(exponent) == 3
+        )),
+    )
+    three_corner_leading_types.add(leading_key)
+    direct = (tuple(sorted(sum_poly.items())),
+              tuple(sorted(root_poly.items())))
+    swapped = (
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in sum_poly.items()
+        )),
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in root_poly.items()
+        )),
+    )
+    key = min(direct, swapped)
+    three_corner_types[key] = three_corner_types.get(key, 0) + 1
+assert len(three_corner_types) == 230
+assert len(three_corner_leading_types) == 19
+assert sum(three_corner_types.values()) == 4760
+assert min(three_corner_types.values()) == 4
+assert max(three_corner_types.values()) == 48
+
+three_corner_height = Fraction(1, 64)
+three_corner_ratio_patches = 16
+three_corner_barrier_uses = {"sum": 0, "root": 0}
+three_corner_largest_control = None
+for sum_items, root_items in three_corner_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+    for patch in range(three_corner_ratio_patches):
+        substitutions = (
+            {(0, 1): three_corner_height
+             * Fraction(patch, three_corner_ratio_patches),
+             (1, 1): three_corner_height
+             * Fraction(1, three_corner_ratio_patches)},
+            {(0, 1): three_corner_height
+             * Fraction(three_corner_ratio_patches - patch,
+                        three_corner_ratio_patches),
+             (1, 1): -three_corner_height
+             * Fraction(1, three_corner_ratio_patches)},
+        )
+        candidate_controls = {}
+        for name, poly in (("sum", sum_poly), ("root", root_poly)):
+            transformed = multivariate_compose(poly, substitutions)
+            assert all(exponent[1] >= 3 for exponent in transformed)
+            transformed = {
+                (exponent[0], exponent[1] - 3): coefficient
+                for exponent, coefficient in transformed.items()
+            }
+            candidate_controls[name] = max(
+                tensor_bernstein_controls(transformed)
+            )
+        barrier, control = min(
+            candidate_controls.items(), key=lambda item: item[1]
+        )
+        assert control < 0
+        three_corner_barrier_uses[barrier] += 1
+        if three_corner_largest_control is None:
+            three_corner_largest_control = control
+        else:
+            three_corner_largest_control = max(
+                three_corner_largest_control, control
+            )
+assert three_corner_barrier_uses == {"sum": 3392, "root": 288}
+assert three_corner_largest_control == Fraction(
+    -82072901, 4398046511104
+)
+
+three_largest_cover = 0
+three_deepest_cover = 0
+three_corner_local_cells = 0
+three_edge_local_cells = 0
+for triple_index in range(len(normalized_hamilton_three_triples)):
+    local_pairs = (
+        () if three_nonextremal_boundary[triple_index]
+        else ((0, 1),)
+    )
+    cover_size, cover_depth, corner_cells, edge_cells = (
+        exact_simplex_cover_with_corner(
+            three_sum_coefficients[:, triple_index].astype(object),
+            three_root_coefficients[:, triple_index].astype(object),
+            simplex_transforms,
+            2,
+            three_corner_height,
+            local_pairs,
+        )
+    )
+    three_largest_cover = max(three_largest_cover, cover_size)
+    three_deepest_cover = max(three_deepest_cover, cover_depth)
+    three_corner_local_cells += corner_cells
+    three_edge_local_cells += edge_cells
+assert three_largest_cover == 481
+assert three_deepest_cover == 10
+assert three_corner_local_cells == 10440
+assert three_edge_local_cells == 112
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -1874,6 +2207,22 @@ print("largest four-cycle extremal-boundary simplex cover: "
       f"{four_boundary_largest_cover} triangles at depth "
       f"{four_boundary_deepest_cover}")
 print(f"four-cycle extremal local cells used: {four_boundary_local_cells}")
+print("normalized two-Hamilton/one-three-cycle supports: 4760")
+print("three-cycle supports without an extremal Hamilton pair: 4680")
+print("three-cycle short-corner polynomial types: 230")
+print("three-cycle short-corner leading cubic types: 19")
+print("three-cycle short-corner barrier patches: "
+      f"{three_corner_barrier_uses}")
+print("largest three-cycle corner Bernstein control: "
+      f"{three_corner_largest_control}")
+print("three-cycle extremal Hamilton-edge polynomial types: 4")
+print("largest three-cycle Hamilton-edge Bernstein control: "
+      f"{three_edge_largest_control}")
+print("largest three-cycle simplex cover: "
+      f"{three_largest_cover} triangles at depth "
+      f"{three_deepest_cover}")
+print(f"three-cycle corner local cells used: {three_corner_local_cells}")
+print(f"three-cycle edge local cells used: {three_edge_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
