@@ -628,6 +628,53 @@ for cycle_length in range(3, N + 1):
 assert cycle_spectrum_error < 2e-12
 assert attachment_excess < 2e-12
 
+# The same contraction theorem combines with the exact two-cycle classification:
+# a connected base formed from two arbitrarily weighted directed cycles stays
+# below sqrt(3/5) after any number of reversible attachments.  Check this
+# corollary independently of the one-cycle Fourier cases above.
+two_cycle_attachment_cases = 0
+two_cycle_attachment_excess = 0.0
+two_cycle_bound_excess = 0.0
+two_cycle_attachment_rng = np.random.default_rng(20261023)
+for _ in range(240):
+    first_cycle, second_cycle = cycle_pairs[
+        int(two_cycle_attachment_rng.integers(len(cycle_pairs)))
+    ]
+    cycle_weights = np.exp(two_cycle_attachment_rng.uniform(-4.0, 4.0, 2))
+    base_flow = np.zeros((N, N), dtype=float)
+    for cycle_weight, cycle in zip(
+        cycle_weights, (first_cycle, second_cycle)
+    ):
+        for source, target_state in zip(cycle, cycle[1:] + cycle[:1]):
+            base_flow[source, target_state] += cycle_weight
+    base_symmetric, base_skew = grounded_forms_from_flow(base_flow)
+    base_frequencies = intrinsic_frequencies(base_symmetric, base_skew)
+
+    stationary_flow = base_flow.copy()
+    for source in range(N):
+        for target_state in range(source + 1, N):
+            if two_cycle_attachment_rng.random() < 0.65:
+                reversible_weight = math.exp(
+                    two_cycle_attachment_rng.uniform(-5.0, 2.0)
+                )
+                stationary_flow[source, target_state] += reversible_weight
+                stationary_flow[target_state, source] += reversible_weight
+    symmetric, skew = grounded_forms_from_flow(stationary_flow)
+    observed = intrinsic_frequencies(symmetric, skew)
+    two_cycle_attachment_excess = max(
+        two_cycle_attachment_excess,
+        *(value - ceiling
+          for value, ceiling in zip(observed, base_frequencies)),
+    )
+    two_cycle_bound_excess = max(
+        two_cycle_bound_excess,
+        observed[1] - math.sqrt(Fraction(3, 5)),
+    )
+    two_cycle_attachment_cases += 1
+
+assert two_cycle_attachment_excess < 2e-12
+assert two_cycle_bound_excess < 2e-11
+
 rng = np.random.default_rng(20261021)
 max_spectrum_error = 0.0
 max_stationarity_error = 0.0
@@ -686,6 +733,11 @@ print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
 print(f"maximum attachment excess over cycle spectrum: {attachment_excess:.3e}")
+print(f"random two-cycle attachment cases: {two_cycle_attachment_cases}")
+print("maximum two-cycle attachment excess over base spectrum: "
+      f"{two_cycle_attachment_excess:.3e}")
+print("maximum attached two-cycle excess over sqrt(3/5): "
+      f"{two_cycle_bound_excess:.3e}")
 print("random stationary-law cases: 300")
 print(f"maximum spectrum/formula discrepancy: {max_spectrum_error:.3e}")
 print(f"maximum stationarity residual: {max_stationarity_error:.3e}")
