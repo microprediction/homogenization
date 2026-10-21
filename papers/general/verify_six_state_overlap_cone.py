@@ -1385,6 +1385,249 @@ assert mixed_boundary_largest_cover == 103
 assert mixed_boundary_deepest_cover == 8
 assert mixed_boundary_local_cells == 816
 
+# The next shorter architecture, two Hamilton cycles plus one four-cycle,
+# also obeys the bound for every weight.  There are 90 labeled four-cycles,
+# no extremal Hamilton--four-cycle pair and 10,710 normalized supports.  The
+# 180 equality-boundary supports again arise only from the Hamilton pair.
+four_cycle_indices = np.array([
+    index for index, cycle in enumerate(all_cycles) if len(cycle) == 4
+], dtype=np.int64)
+assert len(four_cycle_indices) == 90
+hamilton_four_pairs = np.array([
+    (hamilton_index, four_cycle_index)
+    for hamilton_index in hamilton_indices
+    for four_cycle_index in four_cycle_indices
+], dtype=np.int64)
+hamilton_four_symmetric = (
+    integer_symmetric[hamilton_four_pairs[:, 0]]
+    + integer_symmetric[hamilton_four_pairs[:, 1]]
+)
+hamilton_four_skew = (
+    integer_skew[hamilton_four_pairs[:, 0]]
+    + integer_skew[hamilton_four_pairs[:, 1]]
+)
+h4_a5, h4_a3, h4_a1 = batch_integer_pencil_coefficients(
+    hamilton_four_symmetric, hamilton_four_skew
+)
+extremal_hamilton_four_mask = (
+    (5 * h4_a3 == 6 * h4_a5)
+    & (25 * h4_a1 == 9 * h4_a5)
+)
+assert not np.any(extremal_hamilton_four_mask)
+
+normalized_hamilton_four_triples = np.array([
+    (hamilton_index, four_cycle_index)
+    for hamilton_index in other_hamilton_indices
+    for four_cycle_index in four_cycle_indices
+], dtype=np.int64)
+four_nonextremal_boundary = np.array([
+    tuple(sorted((standard_hamilton_index, int(hamilton_index))))
+    not in extremal_hamilton_pairs
+    for hamilton_index, _ in normalized_hamilton_four_triples
+], dtype=bool)
+assert len(normalized_hamilton_four_triples) == 10710
+assert int(np.sum(four_nonextremal_boundary)) == 10530
+
+four_sum_values = []
+four_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[
+            normalized_hamilton_four_triples[:, 0]
+        ]
+        + third_weight * integer_symmetric[
+            normalized_hamilton_four_triples[:, 1]
+        ]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[
+            normalized_hamilton_four_triples[:, 0]
+        ]
+        + third_weight * integer_skew[
+            normalized_hamilton_four_triples[:, 1]
+        ]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    four_sum_values.append(5 * node_a3 - 6 * node_a5)
+    four_root_values.append(9 * node_a5 - 15 * node_a3 + 25 * node_a1)
+four_stacked_sum_values = np.stack(four_sum_values)
+four_stacked_root_values = np.stack(four_root_values)
+four_product_bound = 0
+for stacked_values in (
+    four_stacked_sum_values, four_stacked_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    four_product_bound = max(four_product_bound, product_bound)
+    assert product_bound < np.iinfo(np.int64).max
+assert four_product_bound == 99603000000
+four_sum_numerators = interpolation_matrix @ four_stacked_sum_values
+four_root_numerators = interpolation_matrix @ four_stacked_root_values
+assert np.all(four_sum_numerators % interpolation_denominator == 0)
+assert np.all(four_root_numerators % interpolation_denominator == 0)
+four_sum_coefficients = four_sum_numerators // interpolation_denominator
+four_root_coefficients = four_root_numerators // interpolation_denominator
+
+four_extremal_incidence_types = {}
+for triple_index in np.flatnonzero(~four_nonextremal_boundary):
+    sum_poly = extremal_pair_polynomial(
+        four_sum_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    root_poly = extremal_pair_polynomial(
+        four_root_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    direct = (tuple(sorted(sum_poly.items())),
+              tuple(sorted(root_poly.items())))
+    reversed_pair = (
+        tuple(sorted(reverse_first_variable(sum_poly).items())),
+        tuple(sorted(reverse_first_variable(root_poly).items())),
+    )
+    key = min(direct, reversed_pair)
+    four_extremal_incidence_types[key] = (
+        four_extremal_incidence_types.get(key, 0) + 1
+    )
+assert len(four_extremal_incidence_types) == 12
+assert sorted(four_extremal_incidence_types.values()) == (
+    [6] * 2 + [12] * 6 + [24] * 4
+)
+
+# Eleven local types retain a negative term linear in the four-cycle weight.
+# They use the same central sum-barrier and outer root-barrier certificates as
+# above.  The exceptional type has positive quadratic sum barrier but
+# negative-definite leading root barrier -3840*u^2 - 192*v^2.  Split the
+# central ratio coordinate at u=0; after removing v^2, both exact Bernstein
+# patches are strictly negative.  Its outer wedges still factor by u^2.
+four_regular_largest_control = None
+four_exceptional_largest_control = None
+four_exceptional_types = 0
+four_exceptional_incidences = 0
+for type_key, incidence_count in four_extremal_incidence_types.items():
+    sum_poly = dict(type_key[0])
+    root_poly = dict(type_key[1])
+    minimum_sum_degree = min(sum(exponent) for exponent in sum_poly)
+    local_controls = []
+    if minimum_sum_degree == 1:
+        central_sum = multivariate_compose(sum_poly, (
+            {(0, 1): -blowup_slope * blowup_height,
+             (1, 1): 2 * blowup_slope * blowup_height},
+            {(0, 1): blowup_height},
+        ))
+        assert all(exponent[1] >= 1 for exponent in central_sum)
+        central_sum = {
+            (exponent[0], exponent[1] - 1): coefficient
+            for exponent, coefficient in central_sum.items()
+        }
+        local_controls.extend(tensor_bernstein_controls(central_sum))
+    else:
+        assert minimum_sum_degree == 2
+        four_exceptional_types += 1
+        four_exceptional_incidences += incidence_count
+        leading_root = {
+            exponent: coefficient
+            for exponent, coefficient in root_poly.items()
+            if sum(exponent) == 2
+        }
+        assert leading_root == {
+            (0, 2): Fraction(-192),
+            (2, 0): Fraction(-3840),
+        }
+        central_root = multivariate_compose(root_poly, (
+            {(0, 1): -blowup_slope * blowup_height,
+             (1, 1): 2 * blowup_slope * blowup_height},
+            {(0, 1): blowup_height},
+        ))
+        assert all(exponent[1] >= 2 for exponent in central_root)
+        central_root = {
+            (exponent[0], exponent[1] - 2): coefficient
+            for exponent, coefficient in central_root.items()
+        }
+        for side in (0, 1):
+            central_half = multivariate_compose(central_root, (
+                {(0, 0): Fraction(side, 2),
+                 (1, 0): Fraction(1, 2)},
+                {(0, 1): Fraction(1)},
+            ))
+            local_controls.extend(
+                tensor_bernstein_controls(central_half)
+            )
+
+    for direction in (-1, 1):
+        outer_root = multivariate_compose(root_poly, (
+            {(1, 0): direction * blowup_width},
+            {(1, 1): blowup_height},
+        ))
+        assert all(exponent[0] >= 2 for exponent in outer_root)
+        outer_root = {
+            (exponent[0] - 2, exponent[1]): coefficient
+            for exponent, coefficient in outer_root.items()
+        }
+        local_controls.extend(tensor_bernstein_controls(outer_root))
+    assert max(local_controls) < 0
+    type_largest_control = max(local_controls)
+    if minimum_sum_degree == 1:
+        if four_regular_largest_control is None:
+            four_regular_largest_control = type_largest_control
+        else:
+            four_regular_largest_control = max(
+                four_regular_largest_control, type_largest_control
+            )
+    else:
+        four_exceptional_largest_control = type_largest_control
+assert four_exceptional_types == 1
+assert four_exceptional_incidences == 6
+assert four_regular_largest_control == Fraction(
+    -180285485, 33554432
+)
+assert four_exceptional_largest_control == Fraction(-3, 64)
+
+four_largest_cover = 0
+four_deepest_cover = 0
+for triple_index in np.flatnonzero(four_nonextremal_boundary):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        four_sum_coefficients[:, triple_index].astype(object),
+        four_root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    four_largest_cover = max(four_largest_cover, cover_size)
+    four_deepest_cover = max(four_deepest_cover, cover_depth)
+assert four_largest_cover == 97
+assert four_deepest_cover == 5
+
+four_boundary_largest_cover = 0
+four_boundary_deepest_cover = 0
+four_boundary_local_cells = 0
+for triple_index in np.flatnonzero(~four_nonextremal_boundary):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        four_sum_coefficients[:, triple_index].astype(object),
+        four_root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+        ((0, 1),),
+    )
+    four_boundary_largest_cover = max(
+        four_boundary_largest_cover, cover_size
+    )
+    four_boundary_deepest_cover = max(
+        four_boundary_deepest_cover, cover_depth
+    )
+    four_boundary_local_cells += local_cells
+assert four_boundary_largest_cover == 103
+assert four_boundary_deepest_cover == 9
+assert four_boundary_local_cells == 414
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -1616,6 +1859,21 @@ print("largest mixed extremal-boundary simplex cover: "
       f"{mixed_boundary_largest_cover} triangles at depth "
       f"{mixed_boundary_deepest_cover}")
 print(f"mixed extremal local cells used: {mixed_boundary_local_cells}")
+print("normalized two-Hamilton/one-four-cycle supports: 10710")
+print("four-cycle supports without an extremal boundary pair: 10530")
+print("largest four-cycle simplex cover: "
+      f"{four_largest_cover} triangles at depth "
+      f"{four_deepest_cover}")
+print("four-cycle supports with an extremal Hamilton boundary pair: 180")
+print("four-cycle extremal boundary polynomial types: 12")
+print("largest regular four-cycle local Bernstein control: "
+      f"{four_regular_largest_control}")
+print("largest exceptional four-cycle local Bernstein control: "
+      f"{four_exceptional_largest_control}")
+print("largest four-cycle extremal-boundary simplex cover: "
+      f"{four_boundary_largest_cover} triangles at depth "
+      f"{four_boundary_deepest_cover}")
+print(f"four-cycle extremal local cells used: {four_boundary_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
