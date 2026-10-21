@@ -120,41 +120,52 @@ def sparse_determinant(matrix):
     return out
 
 
-def symbolic_pencil_coefficients(first_cycle, other_cycle):
-    """Return det(H), and the t^3 and t coefficients, as polynomials in r."""
-    weights = [[{} for _ in range(N)] for _ in range(N)]
+def symbolic_pencil_coefficients_n(first_cycle, other_cycle, state_count):
+    """Return the top three pencil coefficients as polynomials in r."""
+    grounded_size = state_count - 1
+    weights = [[{} for _ in range(state_count)] for _ in range(state_count)]
     for cycle, r_degree in ((first_cycle, 0), (other_cycle, 1)):
         for source, target in zip(cycle, cycle[1:] + cycle[:1]):
             weights[source][target] = sparse_add(
                 weights[source][target], {(0, r_degree): Fraction(1)}
             )
-    laplacian = [[{} for _ in range(N)] for _ in range(N)]
-    for i in range(N):
-        for j in range(N):
+    laplacian = [[{} for _ in range(state_count)] for _ in range(state_count)]
+    for i in range(state_count):
+        for j in range(state_count):
             if i == j:
                 for entry in weights[i]:
                     laplacian[i][j] = sparse_add(laplacian[i][j], entry)
             else:
                 laplacian[i][j] = sparse_scale(weights[i][j], -1)
-    grounded = [row[:5] for row in laplacian[:5]]
+    grounded = [row[:grounded_size] for row in laplacian[:grounded_size]]
     half = Fraction(1, 2)
     symmetric = [[sparse_scale(sparse_add(grounded[i][j], grounded[j][i]), half)
-                  for j in range(5)] for i in range(5)]
+                  for j in range(grounded_size)] for i in range(grounded_size)]
     skew = [[sparse_scale(sparse_add(grounded[i][j],
                                      sparse_scale(grounded[j][i], -1)), half)
-             for j in range(5)] for i in range(5)]
+             for j in range(grounded_size)] for i in range(grounded_size)]
     pencil = [[sparse_add({(t_degree + 1, r_degree): value
                            for (t_degree, r_degree), value in symmetric[i][j].items()},
                           sparse_scale(skew[i][j], -1))
-               for j in range(5)] for i in range(5)]
+               for j in range(grounded_size)] for i in range(grounded_size)]
     numerator = sparse_determinant(pencil)
     det_h = sparse_determinant(symmetric)
     coefficient = lambda poly, t_degree: tuple(
-        poly.get((t_degree, r_degree), Fraction(0)) for r_degree in range(6)
+        poly.get((t_degree, r_degree), Fraction(0))
+        for r_degree in range(state_count)
     )
     denominator = coefficient(det_h, 0)
-    assert coefficient(numerator, 5) == denominator
-    return denominator, coefficient(numerator, 3), coefficient(numerator, 1)
+    assert coefficient(numerator, grounded_size) == denominator
+    return (
+        denominator,
+        coefficient(numerator, grounded_size - 2),
+        coefficient(numerator, grounded_size - 4),
+    )
+
+
+def symbolic_pencil_coefficients(first_cycle, other_cycle):
+    """Six-state wrapper: det(H), t^3 and t coefficients in r."""
+    return symbolic_pencil_coefficients_n(first_cycle, other_cycle, N)
 
 
 def symbolic_three_cycle_coefficients():
@@ -213,26 +224,33 @@ def symbolic_three_cycle_coefficients():
 
 
 def compactify(poly):
-    """Power coefficients of (1-s)^5 poly(s/(1-s)) on 0 <= s <= 1."""
-    out = [Fraction(0) for _ in range(6)]
+    """Power coefficients of (1-s)^d poly(s/(1-s)) on 0 <= s <= 1."""
+    degree_bound = len(poly) - 1
+    out = [Fraction(0) for _ in range(degree_bound + 1)]
     for degree, value in enumerate(poly):
-        for extra in range(6 - degree):
-            out[degree + extra] += value * comb(5 - degree, extra) * (-1) ** extra
+        for extra in range(degree_bound + 1 - degree):
+            out[degree + extra] += (
+                value
+                * comb(degree_bound - degree, extra)
+                * (-1) ** extra
+            )
     return out
 
 
 def bernstein_max(poly, left, right):
-    """Exact upper bound from degree-five Bernstein coefficients on an interval."""
-    shifted = [Fraction(0) for _ in range(6)]
+    """Exact upper bound from Bernstein coefficients on an interval."""
+    degree_bound = len(poly) - 1
+    shifted = [Fraction(0) for _ in range(degree_bound + 1)]
     width = right - left
     for degree, value in enumerate(poly):
         for power in range(degree + 1):
             shifted[power] += (value * comb(degree, power)
                                * left ** (degree - power) * width ** power)
     coefficients = [
-        sum(shifted[power] * Fraction(comb(index, power), comb(5, power))
+        sum(shifted[power]
+            * Fraction(comb(index, power), comb(degree_bound, power))
             for power in range(index + 1))
-        for index in range(6)
+        for index in range(degree_bound + 1)
     ]
     return max(coefficients)
 
@@ -243,7 +261,7 @@ def exact_cover(sum_test, root_test, left=Fraction(0), right=Fraction(1), depth=
         return 1, depth
     if bernstein_max(root_test, left, right) <= 0:
         return 1, depth
-    assert depth < 8
+    assert depth < 12
     midpoint = (left + right) / 2
     left_count, left_depth = exact_cover(sum_test, root_test, left, midpoint, depth + 1)
     right_count, right_depth = exact_cover(sum_test, root_test, midpoint, right, depth + 1)
@@ -255,8 +273,8 @@ def canonical_cycle(cycle):
     return cycle[start:] + cycle[:start]
 
 
-def connected_union(first_cycle, second_cycle):
-    neighbors = [set() for _ in range(N)]
+def connected_union(first_cycle, second_cycle, state_count=N):
+    neighbors = [set() for _ in range(state_count)]
     for cycle in (first_cycle, second_cycle):
         for source, target in zip(cycle, cycle[1:] + cycle[:1]):
             neighbors[source].add(target)
@@ -268,7 +286,7 @@ def connected_union(first_cycle, second_cycle):
         for target in neighbors[state] - reached:
             reached.add(target)
             frontier.append(target)
-    return len(reached) == N
+    return len(reached) == state_count
 
 
 def integer_grounded_forms(cycle):
@@ -479,6 +497,60 @@ assert len(pencil_types) == 133
 assert largest_cover == 6
 assert deepest_cover == 4
 
+# A two-cycle directed base need not itself use all six states before reversible
+# edges connect the final flow.  On a connected active support of at most four
+# states there is at most one positive skew frequency.  The only new case is
+# therefore a connected five-state active support, which the same exact pencil
+# argument classifies here.  Disconnected two-cycle supports are two disjoint
+# cycle components; with at most six active states their second frequency is at
+# most the 3+3 value cot(pi/3)=1/sqrt(3).
+five_state_count = N - 1
+five_state_cycles = []
+for cycle_length in range(2, five_state_count + 1):
+    five_state_cycles.extend(sorted({
+        canonical_cycle(cycle)
+        for cycle in permutations(range(five_state_count), cycle_length)
+    }))
+five_state_pairs = [
+    (tuple(range(cycle_length)), other_cycle)
+    for cycle_length in range(2, five_state_count + 1)
+    for other_cycle in five_state_cycles
+    if connected_union(
+        tuple(range(cycle_length)), other_cycle, five_state_count
+    )
+]
+five_state_pencil_types = set()
+five_state_largest_cover = 0
+five_state_deepest_cover = 0
+for first_cycle, other_cycle in five_state_pairs:
+    denominator, sum_numerator, product_numerator = (
+        symbolic_pencil_coefficients_n(
+            first_cycle, other_cycle, five_state_count
+        )
+    )
+    five_state_pencil_types.add(
+        (denominator, sum_numerator, product_numerator)
+    )
+    sum_test = compactify([
+        sum_numerator[index] - Fraction(6, 5) * denominator[index]
+        for index in range(five_state_count)
+    ])
+    root_test = compactify([
+        product_numerator[index]
+        - Fraction(3, 5) * sum_numerator[index]
+        + Fraction(9, 25) * denominator[index]
+        for index in range(five_state_count)
+    ])
+    cover_size, cover_depth = exact_cover(sum_test, root_test)
+    five_state_largest_cover = max(five_state_largest_cover, cover_size)
+    five_state_deepest_cover = max(five_state_deepest_cover, cover_depth)
+
+assert len(five_state_cycles) == 84
+assert len(five_state_pairs) == 232
+assert len(five_state_pencil_types) == 41
+assert five_state_largest_cover == 6
+assert five_state_deepest_cover == 3
+
 # For three distinct cycles at equal weight, det(t(2H)-2D) has the form
 # a5*t^5 + a3*t^3 + a1*t.  Evaluate it at t=1,2,3 and recover the integer
 # coefficients.  Repeated cycles merge to an already covered two-cycle flow.
@@ -675,6 +747,50 @@ for _ in range(240):
 assert two_cycle_attachment_excess < 2e-12
 assert two_cycle_bound_excess < 2e-11
 
+# Check the remaining base-support geometry explicitly.  If two cycle supports
+# are disconnected on six states, their lengths can only be 3+3 or 2+4 (up to
+# shorter unused supports).  The 3+3 case has second frequency 1/sqrt(3); the
+# 2+4 case has only one positive frequency.  Complete reversible attachments
+# connect the final flow and must contract these semidefinite-base spectra.
+disconnected_attachment_cases = 0
+disconnected_attachment_excess = 0.0
+disconnected_attachment_rng = np.random.default_rng(20261024)
+for case_index in range(120):
+    if case_index % 2 == 0:
+        base_cycles = ((0, 1, 2), (3, 4, 5))
+    else:
+        base_cycles = ((0, 1), (2, 3, 4, 5))
+    base_flow = np.zeros((N, N), dtype=float)
+    for cycle in base_cycles:
+        if disconnected_attachment_rng.random() < 0.5:
+            cycle = (cycle[0],) + tuple(reversed(cycle[1:]))
+        cycle_weight = math.exp(
+            disconnected_attachment_rng.uniform(-4.0, 4.0)
+        )
+        for source, target_state in zip(cycle, cycle[1:] + cycle[:1]):
+            base_flow[source, target_state] += cycle_weight
+    base_symmetric, base_skew = grounded_forms_from_flow(base_flow)
+    base_frequencies = intrinsic_frequencies(base_symmetric, base_skew)
+
+    stationary_flow = base_flow.copy()
+    for source in range(N):
+        for target_state in range(source + 1, N):
+            reversible_weight = math.exp(
+                disconnected_attachment_rng.uniform(-5.0, 2.0)
+            )
+            stationary_flow[source, target_state] += reversible_weight
+            stationary_flow[target_state, source] += reversible_weight
+    symmetric, skew = grounded_forms_from_flow(stationary_flow)
+    observed = intrinsic_frequencies(symmetric, skew)
+    disconnected_attachment_excess = max(
+        disconnected_attachment_excess,
+        *(value - ceiling
+          for value, ceiling in zip(observed, base_frequencies)),
+    )
+    disconnected_attachment_cases += 1
+
+assert disconnected_attachment_excess < 2e-12
+
 rng = np.random.default_rng(20261021)
 max_spectrum_error = 0.0
 max_stationarity_error = 0.0
@@ -724,6 +840,12 @@ print(f"simple directed cycles enumerated: {len(all_cycles)}")
 print(f"canonical connected cycle pairs classified exactly: {len(cycle_pairs)}")
 print(f"distinct exact pencils: {len(pencil_types)}")
 print(f"largest Bernstein cover: {largest_cover} intervals at depth {deepest_cover}")
+print(f"five-state simple directed cycles: {len(five_state_cycles)}")
+print(f"connected five-state cycle pairs: {len(five_state_pairs)}")
+print(f"distinct five-state pencils: {len(five_state_pencil_types)}")
+print("largest five-state Bernstein cover: "
+      f"{five_state_largest_cover} intervals at depth "
+      f"{five_state_deepest_cover}")
 print(f"connected distinct equal-weight triples: {connected_triples}")
 print(f"distinct normalized triple coefficient pairs: {len(triple_coefficient_pairs)}")
 print(f"sharp equal-weight triple representatives: {len(equality_triples)}")
@@ -738,6 +860,10 @@ print("maximum two-cycle attachment excess over base spectrum: "
       f"{two_cycle_attachment_excess:.3e}")
 print("maximum attached two-cycle excess over sqrt(3/5): "
       f"{two_cycle_bound_excess:.3e}")
+print("random disconnected-base attachment cases: "
+      f"{disconnected_attachment_cases}")
+print("maximum disconnected-base attachment excess: "
+      f"{disconnected_attachment_excess:.3e}")
 print("random stationary-law cases: 300")
 print(f"maximum spectrum/formula discrepancy: {max_spectrum_error:.3e}")
 print(f"maximum stationarity residual: {max_stationarity_error:.3e}")

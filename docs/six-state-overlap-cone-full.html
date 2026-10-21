@@ -104,7 +104,8 @@
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture of the three four-cycles displayed below; the sum of a connected positive two-cycle mixture and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Assume its support is connected, and let
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture of the three four-cycles displayed below; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
     $$\sigma_2\le\sqrt{\frac35}.$$
@@ -115,7 +116,7 @@
     <p>The following genuinely three-cycle architecture permits arbitrary positive weights:</p>
     $$c_A=(0,1,2,3),\qquad c_B=(0,1,4,5),\qquad c_C=(2,3,4,5).$$
     <p>Equality within this weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
-    <p>The two-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. The final, one-cycle attachment class obeys the stronger bound
+    <p>The two-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, every arbitrary-weight three-cycle mixture containing a two-cycle is covered. The final, one-cycle attachment class obeys the stronger bound
       $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
@@ -189,7 +190,10 @@
     <p>Thus every intrinsic skew frequency contracts under reversible attachments. A directed cycle of length $\ell$ has positive Fourier frequencies</p>
     $$\cot\frac{\pi}{\ell},\ \cot\frac{2\pi}{\ell},\ldots,
       \cot\frac{\lfloor(\ell-1)/2\rfloor\pi}{\ell}.$$
-    <p>If the directed component is a connected positive mixture of at most two simple cycles, the exact classification above gives $s_2(K_0)\le\sqrt{3/5}$. The contraction therefore proves the same bound after adding an arbitrary reversible stationary flow. In particular, the number and arrangement of reversible two-cycles are unrestricted; they do not consume the two directed-cycle slots.</p>
+    <p>No connectivity assumption on the directed component is needed. If its active support is connected and has six states, the exact classification above gives $s_2(K_0)\le\sqrt{3/5}$.</p>
+    <p>On five active states the certificate repeats the exact pencil argument over 84 simple cycles, 232 connected pairs and 41 distinct pencils. On at most four active states the centered space has dimension at most three, so there is at most one positive skew frequency.</p>
+    <p>If the two directed-cycle supports are disconnected, they are disjoint. The six-state budget leaves only the potentially two-mode split $3+3$, whose second frequency is $\cot(\pi/3)=1/\sqrt3$; a $2+4$ split has only one positive frequency.</p>
+    <p>Thus every two-cycle base has $s_2(K_0)\le\sqrt{3/5}$, and contraction proves the bound after adding an arbitrary reversible stationary flow. Reversible two-cycles do not consume the two genuinely directed-cycle slots.</p>
     <p>There is a stronger specialization when the directed component is just one cycle. For $\ell\le6$, its second frequency is zero for $\ell\le4$, equals $\cot(2\pi/5)$ for $\ell=5$, and equals $\cot(\pi/3)=1/\sqrt3$ for $\ell=6$. Hence any connected six-state flow with only one genuinely directed cycle, plus any number and arrangement of reversible edges, satisfies the claimed stronger bound, even when those edges are needed to connect a shorter cycle to the remaining states.</p>
 
     <h2>Why feature choice cannot evade the bound</h2>
@@ -201,7 +205,7 @@
 
     <h2>Certificate and scope</h2>
     <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
-    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments and 240 independently sampled connected two-cycle attachments check the contraction theorem's implementation.</p>
+    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
     <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on other architectures with three genuinely directed cycles, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
   </main>
