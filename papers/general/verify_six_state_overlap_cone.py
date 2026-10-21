@@ -1188,6 +1188,203 @@ assert boundary_largest_cover == 166
 assert boundary_deepest_cover == 8
 assert boundary_local_cells == 1122
 
+# Extend the arbitrary-weight theorem from three Hamilton cycles to every
+# support containing two Hamilton cycles and one five-cycle.  Fix one
+# Hamilton cycle canonically; the second Hamilton cycle and the five-cycle
+# then give 119 * 144 = 17,136 normalized supports.  No Hamilton--five-cycle
+# pair is extremal.  The only equality-boundary supports are therefore the
+# 288 choices in which the two Hamilton cycles form one of the two extremal
+# pairs through the fixed cycle.
+five_cycle_indices = np.array([
+    index for index, cycle in enumerate(all_cycles) if len(cycle) == 5
+], dtype=np.int64)
+assert len(five_cycle_indices) == 144
+hamilton_five_pairs = np.array([
+    (hamilton_index, five_cycle_index)
+    for hamilton_index in hamilton_indices
+    for five_cycle_index in five_cycle_indices
+], dtype=np.int64)
+hamilton_five_symmetric = (
+    integer_symmetric[hamilton_five_pairs[:, 0]]
+    + integer_symmetric[hamilton_five_pairs[:, 1]]
+)
+hamilton_five_skew = (
+    integer_skew[hamilton_five_pairs[:, 0]]
+    + integer_skew[hamilton_five_pairs[:, 1]]
+)
+hf_a5, hf_a3, hf_a1 = batch_integer_pencil_coefficients(
+    hamilton_five_symmetric, hamilton_five_skew
+)
+extremal_hamilton_five_mask = (
+    (5 * hf_a3 == 6 * hf_a5)
+    & (25 * hf_a1 == 9 * hf_a5)
+)
+assert not np.any(extremal_hamilton_five_mask)
+
+normalized_hamilton_five_triples = np.array([
+    (hamilton_index, five_cycle_index)
+    for hamilton_index in other_hamilton_indices
+    for five_cycle_index in five_cycle_indices
+], dtype=np.int64)
+mixed_nonextremal_boundary = np.array([
+    tuple(sorted((standard_hamilton_index, int(hamilton_index))))
+    not in extremal_hamilton_pairs
+    for hamilton_index, _ in normalized_hamilton_five_triples
+], dtype=bool)
+assert len(normalized_hamilton_five_triples) == 17136
+assert int(np.sum(mixed_nonextremal_boundary)) == 16848
+
+mixed_sum_values = []
+mixed_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[
+            normalized_hamilton_five_triples[:, 0]
+        ]
+        + third_weight * integer_symmetric[
+            normalized_hamilton_five_triples[:, 1]
+        ]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[
+            normalized_hamilton_five_triples[:, 0]
+        ]
+        + third_weight * integer_skew[
+            normalized_hamilton_five_triples[:, 1]
+        ]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    mixed_sum_values.append(5 * node_a3 - 6 * node_a5)
+    mixed_root_values.append(9 * node_a5 - 15 * node_a3 + 25 * node_a1)
+mixed_stacked_sum_values = np.stack(mixed_sum_values)
+mixed_stacked_root_values = np.stack(mixed_root_values)
+mixed_product_bound = 0
+for stacked_values in (
+    mixed_stacked_sum_values, mixed_stacked_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    mixed_product_bound = max(mixed_product_bound, product_bound)
+    assert product_bound < np.iinfo(np.int64).max
+assert mixed_product_bound == 99603000000
+mixed_sum_numerators = interpolation_matrix @ mixed_stacked_sum_values
+mixed_root_numerators = interpolation_matrix @ mixed_stacked_root_values
+assert np.all(mixed_sum_numerators % interpolation_denominator == 0)
+assert np.all(mixed_root_numerators % interpolation_denominator == 0)
+mixed_sum_coefficients = mixed_sum_numerators // interpolation_denominator
+mixed_root_coefficients = mixed_root_numerators // interpolation_denominator
+
+# At the 288 equality-boundary supports, the same rational blow-up box used
+# above applies.  The five-cycle third component produces 12 polynomial types
+# up to u -> -u, each occurring 24 times.  The exact tensor-product controls
+# are again strictly negative on the central and outer wedges.
+mixed_extremal_incidence_types = {}
+for triple_index in np.flatnonzero(~mixed_nonextremal_boundary):
+    sum_poly = extremal_pair_polynomial(
+        mixed_sum_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    root_poly = extremal_pair_polynomial(
+        mixed_root_coefficients[:, triple_index],
+        homogeneous_exponents,
+        0,
+        1,
+    )
+    direct = (tuple(sorted(sum_poly.items())),
+              tuple(sorted(root_poly.items())))
+    reversed_pair = (
+        tuple(sorted(reverse_first_variable(sum_poly).items())),
+        tuple(sorted(reverse_first_variable(root_poly).items())),
+    )
+    key = min(direct, reversed_pair)
+    mixed_extremal_incidence_types[key] = (
+        mixed_extremal_incidence_types.get(key, 0) + 1
+    )
+assert len(mixed_extremal_incidence_types) == 12
+assert set(mixed_extremal_incidence_types.values()) == {24}
+
+mixed_local_largest_control = None
+for sum_items, root_items in mixed_extremal_incidence_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+    central_sum = multivariate_compose(sum_poly, (
+        {(0, 1): -blowup_slope * blowup_height,
+         (1, 1): 2 * blowup_slope * blowup_height},
+        {(0, 1): blowup_height},
+    ))
+    assert all(exponent[1] >= 1 for exponent in central_sum)
+    central_sum = {
+        (exponent[0], exponent[1] - 1): coefficient
+        for exponent, coefficient in central_sum.items()
+    }
+    local_controls = tensor_bernstein_controls(central_sum)
+    for direction in (-1, 1):
+        outer_root = multivariate_compose(root_poly, (
+            {(1, 0): direction * blowup_width},
+            {(1, 1): blowup_height},
+        ))
+        assert all(exponent[0] >= 2 for exponent in outer_root)
+        outer_root = {
+            (exponent[0] - 2, exponent[1]): coefficient
+            for exponent, coefficient in outer_root.items()
+        }
+        local_controls.extend(tensor_bernstein_controls(outer_root))
+    assert max(local_controls) < 0
+    type_largest_control = max(local_controls)
+    if mixed_local_largest_control is None:
+        mixed_local_largest_control = type_largest_control
+    else:
+        mixed_local_largest_control = max(
+            mixed_local_largest_control, type_largest_control
+        )
+assert mixed_local_largest_control == Fraction(
+    -148074017, 134217728
+)
+
+mixed_largest_cover = 0
+mixed_deepest_cover = 0
+for triple_index in np.flatnonzero(mixed_nonextremal_boundary):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        mixed_sum_coefficients[:, triple_index].astype(object),
+        mixed_root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    mixed_largest_cover = max(mixed_largest_cover, cover_size)
+    mixed_deepest_cover = max(mixed_deepest_cover, cover_depth)
+assert mixed_largest_cover == 76
+assert mixed_deepest_cover == 5
+
+mixed_boundary_largest_cover = 0
+mixed_boundary_deepest_cover = 0
+mixed_boundary_local_cells = 0
+for triple_index in np.flatnonzero(~mixed_nonextremal_boundary):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        mixed_sum_coefficients[:, triple_index].astype(object),
+        mixed_root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+        ((0, 1),),
+    )
+    mixed_boundary_largest_cover = max(
+        mixed_boundary_largest_cover, cover_size
+    )
+    mixed_boundary_deepest_cover = max(
+        mixed_boundary_deepest_cover, cover_depth
+    )
+    mixed_boundary_local_cells += local_cells
+assert mixed_boundary_largest_cover == 103
+assert mixed_boundary_deepest_cover == 8
+assert mixed_boundary_local_cells == 816
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -1406,6 +1603,19 @@ print("largest extremal-boundary simplex cover: "
       f"{boundary_largest_cover} triangles at depth "
       f"{boundary_deepest_cover}")
 print(f"extremal local cells used: {boundary_local_cells}")
+print("normalized two-Hamilton/one-five-cycle supports: 17136")
+print("mixed supports without an extremal boundary pair: 16848")
+print("largest mixed simplex cover: "
+      f"{mixed_largest_cover} triangles at depth "
+      f"{mixed_deepest_cover}")
+print("mixed supports with an extremal Hamilton boundary pair: 288")
+print("mixed extremal boundary polynomial types: 12")
+print("largest mixed extremal local Bernstein control: "
+      f"{mixed_local_largest_control}")
+print("largest mixed extremal-boundary simplex cover: "
+      f"{mixed_boundary_largest_cover} triangles at depth "
+      f"{mixed_boundary_deepest_cover}")
+print(f"mixed extremal local cells used: {mixed_boundary_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
