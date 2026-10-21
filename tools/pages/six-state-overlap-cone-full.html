@@ -3,11 +3,11 @@
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">numerical certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
-    <p class="subtitle">A sharp repeated-mode bound for two-cycle mixtures and a full three-cycle weight cone.</p>
+    <p class="subtitle">Sharp repeated-mode bounds for sparse mixtures and reversible attachments.</p>
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; or an arbitrary positive mixture of the three four-cycles displayed below. Assume its support is connected, and let
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture of the three four-cycles displayed below; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Assume its support is connected, and let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
     $$\sigma_2\le\sqrt{\frac35}.$$
@@ -18,6 +18,8 @@
     <p>The following genuinely three-cycle architecture permits arbitrary positive weights:</p>
     $$c_A=(0,1,2,3),\qquad c_B=(0,1,4,5),\qquad c_C=(2,3,4,5).$$
     <p>Equality within this weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
+    <p>The final, reversible-attachment class obeys the stronger bound
+      $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
@@ -78,6 +80,20 @@
     </div>
     <p>Indeed $e_1\ge3e_3^{1/3}$ and $e_2\ge3e_3^{2/3}$ by AM&ndash;GM, so $e_1e_2\ge9e_3$. Equality holds only when $a=b=c$. Thus $3/5$ lies between the two nonnegative squared frequencies, proving the bound throughout this two-dimensional positive weight cone and identifying its unique weight ratio for equality.</p>
 
+    <h2>Reversible attachments cannot amplify skew</h2>
+    <p>This extension is not limited by the number of reversible two-cycles. Let $H_0,D$ be the grounded symmetric and skew forms of any balanced directed component, and add an arbitrary reversible stationary flow with grounded form $R\succeq0$. Then $D$ is unchanged and $H=H_0+R$.</p>
+    <p>Assume $H$ is positive definite and $\ker H_0\subseteq\ker D$, as holds for a directed cycle on any subset of the states.</p>
+    <p>Using the Moore&ndash;Penrose inverse on the range of $H_0$, put</p>
+    $$K_0=H_0^{\dagger/2}DH_0^{\dagger/2},\qquad
+      C=H^{-1/2}H_0^{1/2}.$$
+    <p>The kernel condition gives $D=H_0^{1/2}K_0H_0^{1/2}$, while $H_0\preceq H$ gives $CC^\top\preceq I$. Therefore</p>
+    $$H^{-1/2}DH^{-1/2}=CK_0C^\top,\qquad
+      s_j(CK_0C^\top)\le\lVert C\rVert^2s_j(K_0)\le s_j(K_0).$$
+    <p>Thus every intrinsic skew frequency contracts under reversible attachments. A directed cycle of length $\ell$ has positive Fourier frequencies</p>
+    $$\cot\frac{\pi}{\ell},\ \cot\frac{2\pi}{\ell},\ldots,
+      \cot\frac{\lfloor(\ell-1)/2\rfloor\pi}{\ell}.$$
+    <p>For $\ell\le6$, its second frequency is zero for $\ell\le4$, equals $\cot(2\pi/5)$ for $\ell=5$, and equals $\cot(\pi/3)=1/\sqrt3$ for $\ell=6$. Hence any connected six-state flow with only one genuinely directed cycle, plus any number and arrangement of reversible edges, satisfies the claimed stronger bound.</p>
+
     <h2>Why feature choice cannot evade the bound</h2>
     <p>Let $U$ collect any four independent Poisson potentials and normalize their symmetric energy. The resulting feature skew matrix is the compression</p>
     $$X^\top(iH^{-1/2}DH^{-1/2})X,\qquad X^\top X=I_4.$$
@@ -87,7 +103,7 @@
 
     <h2>Certificate and scope</h2>
     <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
-    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum.</p>
+    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra and 240 random reversible-attachment cases independently check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on other three-cycle architectures, flows requiring four or more cycles, and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on other architectures with at least two genuinely directed cycles, general flows with four or more directed cycles, and unrestricted state counts six through nine remain open.</p>
   </main>

@@ -281,6 +281,23 @@ def integer_grounded_forms(cycle):
     return grounded + grounded.T, grounded - grounded.T
 
 
+def grounded_forms_from_flow(stationary_flow):
+    laplacian = np.diag(np.sum(stationary_flow, axis=1)) - stationary_flow
+    grounded = laplacian[:GROUND, :GROUND]
+    return (grounded + grounded.T) / 2, (grounded - grounded.T) / 2
+
+
+def intrinsic_frequencies(symmetric, skew, positive_tolerance=1e-12):
+    """Two positive skew frequencies, allowing semidefinite symmetric forms."""
+    eigenvalues, vectors = np.linalg.eigh(symmetric)
+    positive = eigenvalues > positive_tolerance
+    whitening = (
+        vectors[:, positive] / np.sqrt(eigenvalues[positive])
+    ) @ vectors[:, positive].T
+    singular = np.linalg.svd(whitening @ skew @ whitening, compute_uv=False)
+    return singular[0], singular[2]
+
+
 def batch_integer_determinants(matrices):
     """Exact 5-by-5 determinants for an int64 matrix batch."""
     terms = np.ones(
@@ -560,6 +577,57 @@ assert connected_triples == 382466
 assert len(triple_coefficient_pairs) == 3207
 assert equality_triples == expected_equality_triples
 
+# A directed simple cycle supplies all of D.  Adding any reversible stationary
+# flow adds a positive-semidefinite form to H and therefore contracts every
+# singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
+# independent random reversible attachments.  The contraction itself is the
+# analytic factorization given in the accompanying note.
+cycle_spectrum_error = 0.0
+attachment_excess = 0.0
+attachment_cases = 0
+attachment_rng = np.random.default_rng(20261022)
+for cycle_length in range(3, N + 1):
+    directed_cycle = tuple(range(cycle_length))
+    base_flow = np.zeros((N, N), dtype=float)
+    for source, target_state in zip(
+        directed_cycle,
+        directed_cycle[1:] + directed_cycle[:1],
+    ):
+        base_flow[source, target_state] += 1.0
+    base_symmetric, base_skew = grounded_forms_from_flow(base_flow)
+    observed_base = intrinsic_frequencies(base_symmetric, base_skew)
+    cycle_frequencies = [
+        1 / math.tan(math.pi * mode / cycle_length)
+        for mode in range(1, (cycle_length - 1) // 2 + 1)
+    ]
+    expected_base = tuple((cycle_frequencies + [0.0, 0.0])[:2])
+    cycle_spectrum_error = max(
+        cycle_spectrum_error,
+        *(abs(observed - expected)
+          for observed, expected in zip(observed_base, expected_base)),
+    )
+
+    for _ in range(60):
+        stationary_flow = attachment_rng.lognormal(0.0, 1.0) * base_flow
+        for source in range(N):
+            for target_state in range(source + 1, N):
+                reversible_weight = math.exp(
+                    attachment_rng.uniform(-5.0, 2.0)
+                )
+                stationary_flow[source, target_state] += reversible_weight
+                stationary_flow[target_state, source] += reversible_weight
+        symmetric, skew = grounded_forms_from_flow(stationary_flow)
+        observed = intrinsic_frequencies(symmetric, skew)
+        attachment_excess = max(
+            attachment_excess,
+            *(value - ceiling
+              for value, ceiling in zip(observed, expected_base)),
+        )
+        attachment_cases += 1
+
+assert cycle_spectrum_error < 2e-12
+assert attachment_excess < 2e-12
+
 rng = np.random.default_rng(20261021)
 max_spectrum_error = 0.0
 max_stationarity_error = 0.0
@@ -614,6 +682,10 @@ print(f"distinct normalized triple coefficient pairs: {len(triple_coefficient_pa
 print(f"sharp equal-weight triple representatives: {len(equality_triples)}")
 print(f"one sharp equal-weight triple: {equality_triples[0]}")
 print("equal-weight triple normalized pencil: t (t^2 + 3/5)^2")
+print(f"directed-cycle Fourier cases: {N - 2}")
+print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
+print(f"random reversible-attachment cases: {attachment_cases}")
+print(f"maximum attachment excess over cycle spectrum: {attachment_excess:.3e}")
 print("random stationary-law cases: 300")
 print(f"maximum spectrum/formula discrepancy: {max_spectrum_error:.3e}")
 print(f"maximum stationarity residual: {max_stationarity_error:.3e}")
