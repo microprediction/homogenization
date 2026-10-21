@@ -532,6 +532,47 @@ def exact_simplex_cover_with_corner(
     )
 
 
+def exact_simplex_cover_with_two_corners(
+    sum_test,
+    root_test,
+    transforms,
+    corners,
+    corner_height,
+    vertices=((Fraction(1), Fraction(0), Fraction(0)),
+              (Fraction(0), Fraction(1), Fraction(0)),
+              (Fraction(0), Fraction(0), Fraction(1))),
+    depth=0,
+):
+    """Cover a simplex, recording cells in either proved corner box."""
+    if max(sum_test) <= 0 or max(root_test) <= 0:
+        return 1, depth, 0
+    if any(
+        inside_short_cycle_corner(vertices, corner, corner_height)
+        for corner in corners
+    ):
+        return 1, depth, 1
+    assert depth < 12
+    covers = [
+        exact_simplex_cover_with_two_corners(
+            transform @ sum_test,
+            transform @ root_test,
+            transforms,
+            corners,
+            corner_height,
+            child,
+            depth + 1,
+        )
+        for transform, child in zip(
+            transforms, simplex_child_vertices(vertices)
+        )
+    ]
+    return (
+        sum(cover[0] for cover in covers),
+        max(cover[1] for cover in covers),
+        sum(cover[2] for cover in covers),
+    )
+
+
 def canonical_cycle(cycle):
     start = min(range(len(cycle)), key=lambda index: cycle[index])
     return cycle[start:] + cycle[:start]
@@ -3101,6 +3142,179 @@ assert singular_three_four_deepest_cover == 9
 assert singular_three_four_total_cells == 130356
 assert singular_three_four_corner_local_cells == 2028
 
+# One Hamilton cycle and two distinct three-cycles are the final
+# one-Hamilton architecture.  Every pure three-cycle pair has an identically
+# zero five-dimensional pencil: even a six-state union is two disconnected
+# triangles.  Factor the Hamilton weight and certify both short-cycle corners.
+three_cycle_pairs = np.array(
+    list(combinations(three_cycle_indices, 2)), dtype=np.int64
+)
+three_pair_symmetric = (
+    integer_symmetric[three_cycle_pairs[:, 0]]
+    + integer_symmetric[three_cycle_pairs[:, 1]]
+)
+three_pair_skew = (
+    integer_skew[three_cycle_pairs[:, 0]]
+    + integer_skew[three_cycle_pairs[:, 1]]
+)
+three_pair_a5, three_pair_a3, three_pair_a1 = (
+    batch_integer_pencil_coefficients(three_pair_symmetric, three_pair_skew)
+)
+three_pair_union_size = np.array([
+    len(set(all_cycles[int(first)]) | set(all_cycles[int(second)]))
+    for first, second in three_cycle_pairs
+])
+assert len(three_cycle_pairs) == 780
+assert int(np.sum(three_pair_union_size == 3)) == 20
+assert int(np.sum(three_pair_union_size == 4)) == 360
+assert int(np.sum(three_pair_union_size == 5)) == 360
+assert int(np.sum(three_pair_union_size == 6)) == 40
+assert np.all(three_pair_a5 == 0)
+assert np.all(three_pair_a3 == 0)
+assert np.all(three_pair_a1 == 0)
+
+hamilton_three_pair_sum_values = []
+hamilton_three_pair_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[three_cycle_pairs[:, 0]]
+        + third_weight * integer_symmetric[three_cycle_pairs[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[three_cycle_pairs[:, 0]]
+        + third_weight * integer_skew[three_cycle_pairs[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    hamilton_three_pair_sum_values.append(5 * node_a3 - 6 * node_a5)
+    hamilton_three_pair_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_hamilton_three_pair_sum_values = np.stack(
+    hamilton_three_pair_sum_values
+)
+stacked_hamilton_three_pair_root_values = np.stack(
+    hamilton_three_pair_root_values
+)
+for stacked_values in (
+    stacked_hamilton_three_pair_sum_values,
+    stacked_hamilton_three_pair_root_values,
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+hamilton_three_pair_sum_numerators = (
+    interpolation_matrix @ stacked_hamilton_three_pair_sum_values
+)
+hamilton_three_pair_root_numerators = (
+    interpolation_matrix @ stacked_hamilton_three_pair_root_values
+)
+assert np.all(
+    hamilton_three_pair_sum_numerators % interpolation_denominator == 0
+)
+assert np.all(
+    hamilton_three_pair_root_numerators % interpolation_denominator == 0
+)
+hamilton_three_pair_sum_coefficients = (
+    hamilton_three_pair_sum_numerators // interpolation_denominator
+)
+hamilton_three_pair_root_coefficients = (
+    hamilton_three_pair_root_numerators // interpolation_denominator
+)
+assert np.all(
+    hamilton_three_pair_sum_coefficients[zero_hamilton_positions] == 0
+)
+assert np.all(
+    hamilton_three_pair_root_coefficients[zero_hamilton_positions] == 0
+)
+hamilton_three_pair_sum_quotient = (
+    hamilton_three_pair_sum_coefficients[quotient_positions]
+)
+hamilton_three_pair_root_quotient = (
+    hamilton_three_pair_root_coefficients[quotient_positions]
+)
+
+# Orient every unordered support both ways so the corner proof explicitly
+# covers both pure-three-cycle vertices.
+swap_degree_four_positions = np.array([
+    degree_four_exponents.index((exponent[0], exponent[2], exponent[1]))
+    for exponent in degree_four_exponents
+])
+oriented_three_pair_sum_quotient = np.concatenate((
+    hamilton_three_pair_sum_quotient,
+    hamilton_three_pair_sum_quotient[swap_degree_four_positions],
+), axis=1)
+oriented_three_pair_root_quotient = np.concatenate((
+    hamilton_three_pair_root_quotient,
+    hamilton_three_pair_root_quotient[swap_degree_four_positions],
+), axis=1)
+hamilton_three_pair_corner_types, _ = short_corner_types(
+    oriented_three_pair_sum_quotient,
+    oriented_three_pair_root_quotient,
+    degree_four_exponents,
+    np.ones(2 * len(three_cycle_pairs), dtype=bool),
+)
+assert len(hamilton_three_pair_corner_types) == 126
+assert sum(hamilton_three_pair_corner_types.values()) == 1560
+hamilton_three_pair_corner_height = Fraction(1, 64)
+(
+    hamilton_three_pair_corner_barrier_uses,
+    hamilton_three_pair_corner_largest_strict_control,
+    hamilton_three_pair_corner_zero_patches,
+    hamilton_three_pair_corner_factor_orders,
+) = certify_corner_types(
+    hamilton_three_pair_corner_types,
+    hamilton_three_pair_corner_height,
+    16,
+    strict=False,
+)
+assert hamilton_three_pair_corner_barrier_uses == {
+    "sum": 1844,
+    "root": 172,
+}
+assert hamilton_three_pair_corner_largest_strict_control == Fraction(
+    -1, 32768
+)
+assert hamilton_three_pair_corner_zero_patches == 66
+assert hamilton_three_pair_corner_factor_orders == {2}
+
+hamilton_three_pair_largest_cover = 0
+hamilton_three_pair_deepest_cover = 0
+hamilton_three_pair_total_cells = 0
+hamilton_three_pair_corner_local_cells = 0
+for support_index in range(len(three_cycle_pairs)):
+    cover_size, cover_depth, corner_cells = (
+        exact_simplex_cover_with_two_corners(
+            hamilton_three_pair_sum_quotient[
+                :, support_index
+            ].astype(object),
+            hamilton_three_pair_root_quotient[
+                :, support_index
+            ].astype(object),
+            degree_four_simplex_transforms,
+            (1, 2),
+            hamilton_three_pair_corner_height,
+        )
+    )
+    hamilton_three_pair_largest_cover = max(
+        hamilton_three_pair_largest_cover, cover_size
+    )
+    hamilton_three_pair_deepest_cover = max(
+        hamilton_three_pair_deepest_cover, cover_depth
+    )
+    hamilton_three_pair_total_cells += cover_size
+    hamilton_three_pair_corner_local_cells += corner_cells
+assert hamilton_three_pair_largest_cover == 313
+assert hamilton_three_pair_deepest_cover == 9
+assert hamilton_three_pair_total_cells == 46788
+assert hamilton_three_pair_corner_local_cells == 906
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -3469,6 +3683,27 @@ print("singular mixed three-/four-cycle quotient terminal cells: "
       f"{singular_three_four_total_cells}")
 print("singular mixed three-/four-cycle quotient corner local cells: "
       f"{singular_three_four_corner_local_cells}")
+print("distinct three-cycle pair union sizes: 20 on three states, "
+      "360 on four, 360 on five, 40 on six")
+print("pure three-cycle pair pencils identically zero: "
+      f"{len(three_cycle_pairs)}")
+print("oriented one-Hamilton/two-three-cycle corner types: "
+      f"{len(hamilton_three_pair_corner_types)}")
+print("one-Hamilton/two-three-cycle corner barrier patches: "
+      f"{hamilton_three_pair_corner_barrier_uses}")
+print("one-Hamilton/two-three-cycle zero-control corner patches: "
+      f"{hamilton_three_pair_corner_zero_patches}")
+print("largest strict one-Hamilton/two-three-cycle corner control: "
+      f"{hamilton_three_pair_corner_largest_strict_control}")
+print("one-Hamilton/two-three-cycle corner factor orders: "
+      f"{sorted(hamilton_three_pair_corner_factor_orders)}")
+print("largest one-Hamilton/two-three-cycle quotient simplex cover: "
+      f"{hamilton_three_pair_largest_cover} triangles at depth "
+      f"{hamilton_three_pair_deepest_cover}")
+print("one-Hamilton/two-three-cycle quotient terminal cells: "
+      f"{hamilton_three_pair_total_cells}")
+print("one-Hamilton/two-three-cycle corner local cells: "
+      f"{hamilton_three_pair_corner_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
