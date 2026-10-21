@@ -2161,6 +2161,136 @@ assert same_face_largest_cover == 55
 assert same_face_deepest_cover == 5
 assert same_face_total_cells == 41490
 
+# The same factor-and-cover argument closes one Hamilton cycle plus two
+# four-cycles.  A pure pair is nonsingular exactly when its union spans all
+# six states.  Otherwise both barriers contain the Hamilton weight; their
+# degree-four quotients admit smaller ordinary simplex covers.
+four_cycle_pairs = np.array(
+    list(combinations(four_cycle_indices, 2)), dtype=np.int64
+)
+four_pair_symmetric = (
+    integer_symmetric[four_cycle_pairs[:, 0]]
+    + integer_symmetric[four_cycle_pairs[:, 1]]
+)
+four_pair_skew = (
+    integer_skew[four_cycle_pairs[:, 0]]
+    + integer_skew[four_cycle_pairs[:, 1]]
+)
+four_pair_a5, four_pair_a3, four_pair_a1 = (
+    batch_integer_pencil_coefficients(four_pair_symmetric, four_pair_skew)
+)
+nonsingular_four_pair = four_pair_a5 > 0
+four_pair_union_size = np.array([
+    len(
+        set(all_cycles[int(first)])
+        | set(all_cycles[int(second)])
+    )
+    for first, second in four_cycle_pairs
+])
+assert len(four_cycle_pairs) == 4005
+assert int(np.sum(four_pair_union_size == 4)) == 225
+assert int(np.sum(four_pair_union_size == 5)) == 2160
+assert int(np.sum(four_pair_union_size == 6)) == 1620
+assert np.array_equal(nonsingular_four_pair, four_pair_union_size == 6)
+assert np.all(four_pair_a3[~nonsingular_four_pair] == 0)
+assert np.all(four_pair_a1[~nonsingular_four_pair] == 0)
+
+two_four_sum_values = []
+two_four_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[four_cycle_pairs[:, 0]]
+        + third_weight * integer_symmetric[four_cycle_pairs[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[four_cycle_pairs[:, 0]]
+        + third_weight * integer_skew[four_cycle_pairs[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    two_four_sum_values.append(5 * node_a3 - 6 * node_a5)
+    two_four_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_two_four_sum_values = np.stack(two_four_sum_values)
+stacked_two_four_root_values = np.stack(two_four_root_values)
+for stacked_values in (
+    stacked_two_four_sum_values, stacked_two_four_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+two_four_sum_numerators = (
+    interpolation_matrix @ stacked_two_four_sum_values
+)
+two_four_root_numerators = (
+    interpolation_matrix @ stacked_two_four_root_values
+)
+assert np.all(two_four_sum_numerators % interpolation_denominator == 0)
+assert np.all(two_four_root_numerators % interpolation_denominator == 0)
+two_four_sum_coefficients = (
+    two_four_sum_numerators // interpolation_denominator
+)
+two_four_root_coefficients = (
+    two_four_root_numerators // interpolation_denominator
+)
+
+two_four_largest_cover = 0
+two_four_deepest_cover = 0
+two_four_total_cells = 0
+for support_index in np.flatnonzero(nonsingular_four_pair):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        two_four_sum_coefficients[:, support_index].astype(object),
+        two_four_root_coefficients[:, support_index].astype(object),
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    two_four_largest_cover = max(two_four_largest_cover, cover_size)
+    two_four_deepest_cover = max(two_four_deepest_cover, cover_depth)
+    two_four_total_cells += cover_size
+assert two_four_largest_cover == 133
+assert two_four_deepest_cover == 5
+assert two_four_total_cells == 58455
+
+assert np.all(
+    two_four_sum_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_four_pair
+    ] == 0
+)
+assert np.all(
+    two_four_root_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_four_pair
+    ] == 0
+)
+two_four_sum_quotient = two_four_sum_coefficients[quotient_positions]
+two_four_root_quotient = two_four_root_coefficients[quotient_positions]
+singular_four_largest_cover = 0
+singular_four_deepest_cover = 0
+singular_four_total_cells = 0
+for support_index in np.flatnonzero(~nonsingular_four_pair):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        two_four_sum_quotient[:, support_index].astype(object),
+        two_four_root_quotient[:, support_index].astype(object),
+        degree_four_simplex_transforms,
+    )
+    assert local_cells == 0
+    singular_four_largest_cover = max(
+        singular_four_largest_cover, cover_size
+    )
+    singular_four_deepest_cover = max(
+        singular_four_deepest_cover, cover_depth
+    )
+    singular_four_total_cells += cover_size
+assert singular_four_largest_cover == 49
+assert singular_four_deepest_cover == 4
+assert singular_four_total_cells == 43425
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -2435,6 +2565,18 @@ print("largest same-face quotient simplex cover: "
       f"{same_face_largest_cover} triangles at depth "
       f"{same_face_deepest_cover}")
 print(f"same-face quotient terminal cells: {same_face_total_cells}")
+print("four-cycle pair union sizes: 225 on four states, 2160 on five, "
+      "1620 on six")
+print("largest one-Hamilton/two-four-cycle simplex cover: "
+      f"{two_four_largest_cover} triangles at depth "
+      f"{two_four_deepest_cover}")
+print(f"one-Hamilton/two-four-cycle terminal cells: "
+      f"{two_four_total_cells}")
+print("largest singular four-cycle quotient simplex cover: "
+      f"{singular_four_largest_cover} triangles at depth "
+      f"{singular_four_deepest_cover}")
+print(f"singular four-cycle quotient terminal cells: "
+      f"{singular_four_total_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
