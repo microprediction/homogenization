@@ -104,7 +104,7 @@
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary nonnegative, nonzero mixture of two Hamilton cycles and any third simple directed cycle; an arbitrary nonnegative, nonzero mixture of one Hamilton cycle and any two cycles whose lengths belong to $\{4,5\}$; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary nonnegative, nonzero mixture of two Hamilton cycles and any third simple directed cycle; an arbitrary nonnegative, nonzero mixture of one Hamilton cycle and two cycles whose lengths both belong to $\{4,5\}$ or are three and five; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -234,6 +234,15 @@
     <p>Every five-state pair lies on a common face, so both barriers have the Hamilton weight as an exact factor. Dividing it out gives degree-four quotients; their exact covers use at most 58 triangles per support at depth four and 94,536 terminal triangles in total.</p>
     <p>Therefore every connected, nonnegative, nonzero mixture of one Hamilton cycle, one four-cycle and one five-cycle satisfies $\sigma_2\le\sqrt{3/5}$. Together with the two common-length cases, this covers any two short-cycle lengths in $\{4,5\}$.</p>
 
+    <h2>One Hamilton cycle, one three-cycle and one five-cycle</h2>
+    <p>There are $40\cdot144=5{,}760$ labeled three-/five-cycle pairs, split evenly between 2,880 common-face unions on five states and 2,880 unions visiting all six states. No nonsingular pair is an equality case of the sharp two-cycle theorem.</p>
+    <p>For the six-state pairs, both degree-five barriers vanish to cubic order at the pure-three-cycle corner. Normalizing the three-cycle weight to one and splitting the Hamilton/five-cycle ratio into 16 rational patches reduces the corners to 256 exact polynomial types and 16 leading cubic types.</p>
+    <p>The sum barrier certifies 3,636 patches and the root barrier certifies 460. The largest selected Bernstein control is</p>
+    $$-\frac{173013241}{8796093022208}<0.$$
+    <p>Complementary covers use at most 475 triangles at depth ten and 409,194 terminal triangles in total, including 7,992 corner-local cells.</p>
+    <p>For every common-face pair, both degree-five barriers contain the Hamilton weight. After division, the degree-four quotients have 236 corner types; their selected barriers all contain the squared corner scale and have largest Bernstein control $-13/8192$.</p>
+    <p>The quotient covers use at most 202 triangles at depth nine and 159,012 terminal triangles in total, including 2,316 corner-local cells. Hence every connected nonnegative mixture of one Hamilton cycle, one three-cycle and one five-cycle also satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
     <ol>
@@ -288,9 +297,10 @@
     <p>For the one-Hamilton/two-five-cycle theorem it reconstructs both barriers for all 8,640 different-missing-state supports and verifies 228,339 terminal triangles, with at most 64 per support and depth five. For all 1,656 same-face supports it verifies the Hamilton-weight factor, divides it out, and closes the degree-four quotients with 41,490 terminal triangles, at most 55 per support and depth five.</p>
     <p>For the one-Hamilton/two-four-cycle theorem it classifies all 4,005 pairs by active support size. It closes 1,620 six-state supports with degree-five covers and the remaining 2,385 supports after factoring the Hamilton weight, using respectively 58,455 and 43,425 terminal triangles.</p>
     <p>For the mixed four-/five-cycle theorem it classifies all 12,960 pairs by active support size. It closes 8,640 six-state supports with degree-five covers and all 4,320 common-face supports after factoring the Hamilton weight, using respectively 262,998 and 94,536 terminal triangles.</p>
+    <p>For the mixed three-/five-cycle theorem it classifies all 5,760 pairs by active support size and proves that none of the nonsingular boundary pairs is extremal. It closes the 2,880 six-state supports with cubic corner patches and 409,194 terminal triangles, then factors the Hamilton weight on the 2,880 common-face supports and closes their degree-four quotients with quadratic corner patches and 159,012 terminal triangles.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on three-cycle architectures with neither a reversible two-cycle nor two Hamilton cycles, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. The one-Hamilton mixed three-/four-cycle class, triples with two distinct three-cycles, other unequal positive three-cycle architectures, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>

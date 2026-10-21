@@ -2433,6 +2433,361 @@ assert singular_four_five_largest_cover == 58
 assert singular_four_five_deepest_cover == 4
 assert singular_four_five_total_cells == 94536
 
+# One Hamilton cycle, one three-cycle and one five-cycle have the same exact
+# support dichotomy.  A pure short-cycle pair is nonsingular when it visits all
+# six states.  If both cycles lie on a common five-state face, factor the
+# Hamilton weight from both barriers and certify the degree-four quotients.
+three_five_pairs = np.array(
+    list(product(three_cycle_indices, five_cycle_indices)), dtype=np.int64
+)
+three_five_pair_symmetric = (
+    integer_symmetric[three_five_pairs[:, 0]]
+    + integer_symmetric[three_five_pairs[:, 1]]
+)
+three_five_pair_skew = (
+    integer_skew[three_five_pairs[:, 0]]
+    + integer_skew[three_five_pairs[:, 1]]
+)
+three_five_pair_a5, three_five_pair_a3, three_five_pair_a1 = (
+    batch_integer_pencil_coefficients(
+        three_five_pair_symmetric, three_five_pair_skew
+    )
+)
+nonsingular_three_five_pair = three_five_pair_a5 > 0
+extremal_three_five_pair = (
+    nonsingular_three_five_pair
+    & (5 * three_five_pair_a3 == 6 * three_five_pair_a5)
+    & (25 * three_five_pair_a1 == 9 * three_five_pair_a5)
+)
+assert not np.any(extremal_three_five_pair)
+three_five_pair_union_size = np.array([
+    len(
+        set(all_cycles[int(three_cycle)])
+        | set(all_cycles[int(five_cycle)])
+    )
+    for three_cycle, five_cycle in three_five_pairs
+])
+assert len(three_five_pairs) == 5760
+assert int(np.sum(three_five_pair_union_size == 5)) == 2880
+assert int(np.sum(three_five_pair_union_size == 6)) == 2880
+assert np.array_equal(
+    nonsingular_three_five_pair, three_five_pair_union_size == 6
+)
+assert np.all(three_five_pair_a3[~nonsingular_three_five_pair] == 0)
+assert np.all(three_five_pair_a1[~nonsingular_three_five_pair] == 0)
+
+three_five_sum_values = []
+three_five_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[three_five_pairs[:, 0]]
+        + third_weight * integer_symmetric[three_five_pairs[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[three_five_pairs[:, 0]]
+        + third_weight * integer_skew[three_five_pairs[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    three_five_sum_values.append(5 * node_a3 - 6 * node_a5)
+    three_five_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_three_five_sum_values = np.stack(three_five_sum_values)
+stacked_three_five_root_values = np.stack(three_five_root_values)
+for stacked_values in (
+    stacked_three_five_sum_values, stacked_three_five_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+three_five_sum_numerators = (
+    interpolation_matrix @ stacked_three_five_sum_values
+)
+three_five_root_numerators = (
+    interpolation_matrix @ stacked_three_five_root_values
+)
+assert np.all(
+    three_five_sum_numerators % interpolation_denominator == 0
+)
+assert np.all(
+    three_five_root_numerators % interpolation_denominator == 0
+)
+three_five_sum_coefficients = (
+    three_five_sum_numerators // interpolation_denominator
+)
+three_five_root_coefficients = (
+    three_five_root_numerators // interpolation_denominator
+)
+
+three_five_corner_types = {}
+three_five_corner_leading_types = set()
+for support_index in np.flatnonzero(nonsingular_three_five_pair):
+    corner_polynomials = []
+    for coefficients in (
+        three_five_sum_coefficients[:, support_index],
+        three_five_root_coefficients[:, support_index],
+    ):
+        poly = {}
+        for coefficient, exponent in zip(
+            coefficients, homogeneous_exponents
+        ):
+            key = (exponent[0], exponent[2])
+            poly[key] = poly.get(key, Fraction(0)) + Fraction(
+                int(coefficient)
+            )
+        corner_polynomials.append({
+            key: value for key, value in poly.items() if value
+        })
+    sum_poly, root_poly = corner_polynomials
+    leading_key = (
+        tuple(sorted(
+            (exponent, coefficient)
+            for exponent, coefficient in sum_poly.items()
+            if sum(exponent) == 3
+        )),
+        tuple(sorted(
+            (exponent, coefficient)
+            for exponent, coefficient in root_poly.items()
+            if sum(exponent) == 3
+        )),
+    )
+    three_five_corner_leading_types.add(leading_key)
+    direct = (
+        tuple(sorted(sum_poly.items())),
+        tuple(sorted(root_poly.items())),
+    )
+    swapped = (
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in sum_poly.items()
+        )),
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in root_poly.items()
+        )),
+    )
+    key = min(direct, swapped)
+    three_five_corner_types[key] = (
+        three_five_corner_types.get(key, 0) + 1
+    )
+assert len(three_five_corner_types) == 256
+assert len(three_five_corner_leading_types) == 16
+assert sum(three_five_corner_types.values()) == 2880
+
+three_five_corner_height = Fraction(1, 64)
+three_five_corner_ratio_patches = 16
+three_five_corner_barrier_uses = {"sum": 0, "root": 0}
+three_five_corner_largest_control = None
+for sum_items, root_items in three_five_corner_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+    for patch in range(three_five_corner_ratio_patches):
+        substitutions = (
+            {(0, 1): three_five_corner_height
+             * Fraction(patch, three_five_corner_ratio_patches),
+             (1, 1): three_five_corner_height
+             * Fraction(1, three_five_corner_ratio_patches)},
+            {(0, 1): three_five_corner_height
+             * Fraction(three_five_corner_ratio_patches - patch,
+                        three_five_corner_ratio_patches),
+             (1, 1): -three_five_corner_height
+             * Fraction(1, three_five_corner_ratio_patches)},
+        )
+        candidate_controls = {}
+        for name, poly in (("sum", sum_poly), ("root", root_poly)):
+            transformed = multivariate_compose(poly, substitutions)
+            assert all(exponent[1] >= 3 for exponent in transformed)
+            transformed = {
+                (exponent[0], exponent[1] - 3): coefficient
+                for exponent, coefficient in transformed.items()
+            }
+            candidate_controls[name] = max(
+                tensor_bernstein_controls(transformed)
+            )
+        barrier, control = min(
+            candidate_controls.items(), key=lambda item: item[1]
+        )
+        assert control < 0
+        three_five_corner_barrier_uses[barrier] += 1
+        if three_five_corner_largest_control is None:
+            three_five_corner_largest_control = control
+        else:
+            three_five_corner_largest_control = max(
+                three_five_corner_largest_control, control
+            )
+assert three_five_corner_barrier_uses == {"sum": 3636, "root": 460}
+assert three_five_corner_largest_control == Fraction(
+    -173013241, 8796093022208
+)
+
+three_five_largest_cover = 0
+three_five_deepest_cover = 0
+three_five_total_cells = 0
+three_five_corner_local_cells = 0
+for support_index in np.flatnonzero(nonsingular_three_five_pair):
+    cover_size, cover_depth, corner_cells, local_cells = (
+        exact_simplex_cover_with_corner(
+            three_five_sum_coefficients[:, support_index].astype(object),
+            three_five_root_coefficients[:, support_index].astype(object),
+            simplex_transforms,
+            1,
+            three_five_corner_height,
+        )
+    )
+    assert local_cells == 0
+    three_five_largest_cover = max(
+        three_five_largest_cover, cover_size
+    )
+    three_five_deepest_cover = max(
+        three_five_deepest_cover, cover_depth
+    )
+    three_five_total_cells += cover_size
+    three_five_corner_local_cells += corner_cells
+assert three_five_largest_cover == 475
+assert three_five_deepest_cover == 10
+assert three_five_total_cells == 409194
+assert three_five_corner_local_cells == 7992
+
+assert np.all(
+    three_five_sum_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_three_five_pair
+    ] == 0
+)
+assert np.all(
+    three_five_root_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_three_five_pair
+    ] == 0
+)
+three_five_sum_quotient = three_five_sum_coefficients[quotient_positions]
+three_five_root_quotient = three_five_root_coefficients[quotient_positions]
+three_five_quotient_corner_types = {}
+for support_index in np.flatnonzero(~nonsingular_three_five_pair):
+    corner_polynomials = []
+    for coefficients in (
+        three_five_sum_quotient[:, support_index],
+        three_five_root_quotient[:, support_index],
+    ):
+        poly = {}
+        for coefficient, exponent in zip(
+            coefficients, degree_four_exponents
+        ):
+            key = (exponent[0], exponent[2])
+            poly[key] = poly.get(key, Fraction(0)) + Fraction(
+                int(coefficient)
+            )
+        corner_polynomials.append({
+            key: value for key, value in poly.items() if value
+        })
+    sum_poly, root_poly = corner_polynomials
+    direct = (
+        tuple(sorted(sum_poly.items())),
+        tuple(sorted(root_poly.items())),
+    )
+    swapped = (
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in sum_poly.items()
+        )),
+        tuple(sorted(
+            ((second, first), coefficient)
+            for (first, second), coefficient in root_poly.items()
+        )),
+    )
+    key = min(direct, swapped)
+    three_five_quotient_corner_types[key] = (
+        three_five_quotient_corner_types.get(key, 0) + 1
+    )
+assert len(three_five_quotient_corner_types) == 236
+assert sum(three_five_quotient_corner_types.values()) == 2880
+
+three_five_quotient_corner_height = Fraction(1, 64)
+three_five_quotient_corner_barrier_uses = {"sum": 0, "root": 0}
+three_five_quotient_corner_factor_orders = set()
+three_five_quotient_corner_largest_control = None
+for sum_items, root_items in three_five_quotient_corner_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+    for patch in range(three_five_corner_ratio_patches):
+        substitutions = (
+            {(0, 1): three_five_quotient_corner_height
+             * Fraction(patch, three_five_corner_ratio_patches),
+             (1, 1): three_five_quotient_corner_height
+             * Fraction(1, three_five_corner_ratio_patches)},
+            {(0, 1): three_five_quotient_corner_height
+             * Fraction(three_five_corner_ratio_patches - patch,
+                        three_five_corner_ratio_patches),
+             (1, 1): -three_five_quotient_corner_height
+             * Fraction(1, three_five_corner_ratio_patches)},
+        )
+        candidate_controls = {}
+        candidate_orders = {}
+        for name, poly in (("sum", sum_poly), ("root", root_poly)):
+            transformed = multivariate_compose(poly, substitutions)
+            factor_order = min(exponent[1] for exponent in transformed)
+            transformed = {
+                (exponent[0], exponent[1] - factor_order): coefficient
+                for exponent, coefficient in transformed.items()
+            }
+            candidate_controls[name] = max(
+                tensor_bernstein_controls(transformed)
+            )
+            candidate_orders[name] = factor_order
+        barrier, control = min(
+            candidate_controls.items(), key=lambda item: item[1]
+        )
+        assert control < 0
+        three_five_quotient_corner_barrier_uses[barrier] += 1
+        three_five_quotient_corner_factor_orders.add(
+            candidate_orders[barrier]
+        )
+        if three_five_quotient_corner_largest_control is None:
+            three_five_quotient_corner_largest_control = control
+        else:
+            three_five_quotient_corner_largest_control = max(
+                three_five_quotient_corner_largest_control, control
+            )
+assert three_five_quotient_corner_barrier_uses == {
+    "sum": 3568,
+    "root": 208,
+}
+assert three_five_quotient_corner_factor_orders == {2}
+assert three_five_quotient_corner_largest_control == Fraction(-13, 8192)
+
+singular_three_five_largest_cover = 0
+singular_three_five_deepest_cover = 0
+singular_three_five_total_cells = 0
+singular_three_five_corner_local_cells = 0
+for support_index in np.flatnonzero(~nonsingular_three_five_pair):
+    cover_size, cover_depth, corner_cells, local_cells = (
+        exact_simplex_cover_with_corner(
+            three_five_sum_quotient[:, support_index].astype(object),
+            three_five_root_quotient[:, support_index].astype(object),
+            degree_four_simplex_transforms,
+            1,
+            three_five_quotient_corner_height,
+        )
+    )
+    assert local_cells == 0
+    singular_three_five_largest_cover = max(
+        singular_three_five_largest_cover, cover_size
+    )
+    singular_three_five_deepest_cover = max(
+        singular_three_five_deepest_cover, cover_depth
+    )
+    singular_three_five_total_cells += cover_size
+    singular_three_five_corner_local_cells += corner_cells
+assert singular_three_five_largest_cover == 202
+assert singular_three_five_deepest_cover == 9
+assert singular_three_five_total_cells == 159012
+assert singular_three_five_corner_local_cells == 2316
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -2731,6 +3086,40 @@ print("largest singular mixed four-/five-cycle quotient simplex cover: "
       f"{singular_four_five_deepest_cover}")
 print("singular mixed four-/five-cycle quotient terminal cells: "
       f"{singular_four_five_total_cells}")
+print("mixed three-/five-cycle pair union sizes: 2880 on five states, "
+      "2880 on six")
+print("extremal three-/five-cycle boundary pairs: "
+      f"{int(np.sum(extremal_three_five_pair))}")
+print("mixed three-/five-cycle corner polynomial types: "
+      f"{len(three_five_corner_types)}")
+print("mixed three-/five-cycle corner leading cubic types: "
+      f"{len(three_five_corner_leading_types)}")
+print("mixed three-/five-cycle corner barrier patches: "
+      f"{three_five_corner_barrier_uses}")
+print("largest mixed three-/five-cycle corner Bernstein control: "
+      f"{three_five_corner_largest_control}")
+print("largest mixed three-/five-cycle simplex cover: "
+      f"{three_five_largest_cover} triangles at depth "
+      f"{three_five_deepest_cover}")
+print("mixed three-/five-cycle terminal cells: "
+      f"{three_five_total_cells}")
+print("mixed three-/five-cycle corner local cells used: "
+      f"{three_five_corner_local_cells}")
+print("largest singular mixed three-/five-cycle quotient simplex cover: "
+      f"{singular_three_five_largest_cover} triangles at depth "
+      f"{singular_three_five_deepest_cover}")
+print("singular mixed three-/five-cycle quotient terminal cells: "
+      f"{singular_three_five_total_cells}")
+print("singular mixed three-/five-cycle quotient corner types: "
+      f"{len(three_five_quotient_corner_types)}")
+print("singular mixed three-/five-cycle quotient corner barrier patches: "
+      f"{three_five_quotient_corner_barrier_uses}")
+print("singular mixed three-/five-cycle quotient corner factor orders: "
+      f"{sorted(three_five_quotient_corner_factor_orders)}")
+print("largest singular mixed three-/five-cycle quotient corner control: "
+      f"{three_five_quotient_corner_largest_control}")
+print("singular mixed three-/five-cycle quotient corner local cells: "
+      f"{singular_three_five_corner_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
