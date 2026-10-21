@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sharp two-mode bounds for small cyclic chains · homogenization</title>
+  <title>Exact cyclic state count for two skew modes · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -99,10 +99,10 @@
   <main>
     <p class="demo-nav"><a href="./identifiability.html">&larr; fixed-feature geometry</a>
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_cyclic_skew_modes.py">certificate</a></span></p>
-    <h1>Sharp two-mode bounds for small cyclic chains</h1>
-    <p class="subtitle">A Fourier and compression theorem for every translation-invariant chain on five through nine cyclic states.</p>
+    <h1>Exact cyclic state count for two skew modes</h1>
+    <p class="subtitle">A Fourier and compression theorem for translation-invariant chains, with a sharp nine-state bound and an exact ten-state witness.</p>
     <p class="lead">A cyclically translation-invariant chain with $5\le n\le8$ has at most one intrinsic Green&ndash;Kubo skew frequency larger than one.
-      At nine states the exact largest possible second frequency is $\rho_9=1.245891659322\ldots&lt;\cot(\pi/5)$, so no four-feature compression through nine states has two copies of that target frequency.</p>
+      At nine states the exact largest possible second frequency is $\rho_9=1.245891659322\ldots&lt;\cot(\pi/5)$, while a directed ten-cycle realizes two copies of the target exactly; ten is therefore the exact minimum in this architecture.</p>
 
     <h2>The chain and its full intrinsic frequencies</h2>
     <p>Write the state space as $\mathbb Z/n\mathbb Z$ and let</p>
@@ -186,17 +186,32 @@
     <p>Thus a full cyclic chain through eight states cannot produce a four-feature block with two frequencies above one; at nine states its second feature frequency is at most the sharp constant $\rho_9$.
       This is a compression statement, not an inference from the largest frequency alone.</p>
 
-    <h2>Application to the two-mode target</h2>
+    <h2>The exact cyclic state count for the two-mode target</h2>
     <p>Consider the fixed-parameter population block</p>
     $$K_*=I_4+\cot(\pi/5)\operatorname{diag}(J,J),\qquad
       J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}.$$
     <p>Its two positive intrinsic skew frequencies are both $\cot(\pi/5)=1.376381920471\ldots&gt;\rho_9$.
       Therefore no translation-invariant chain on $5,6,7,8,$ or $9$ cyclic states realizes $K_*$, regardless of its nonnegative jump rates or the four centered features.</p>
+    <p>Fewer than five states are already impossible by rank.
+      At ten states take the unit-rate directed cycle and its energy-normalized real Fourier potentials $\widehat c_k,\widehat s_k$ for modes $k=1,2$, together with the energy-normalized alternating mode $\widehat z$.</p>
+    <p>Put $\alpha=1/\sqrt5$ and choose the four potential columns</p>
+    $$U=\left(\alpha\widehat c_1+\sqrt{1-\alpha^2}\widehat z,
+      \widehat s_1,\widehat c_2,\widehat s_2\right).$$
+    <p>Distinct Fourier modes are orthogonal in the symmetric energy form, and the alternating mode has zero skew energy.
+      Consequently $U^*HU=I_4$ and the first skew block has frequency $\alpha\cot(\pi/10)$, while the second has frequency $\cot(\pi/5)$.</p>
+    <p>The exact identity</p>
+    $$\alpha\cot(\pi/10)=\cot(\pi/5)$$
+    <p>follows from $\cot^2(\pi/10)=5+2\sqrt5$ and the double-angle formula.
+      With $L=-Q$ and $F=LU$, the Green&ndash;Kubo convention gives</p>
+    $$F^*L^{-1}_0F=U^*L^*U
+      =I_4+\cot(\pi/5)\operatorname{diag}(J,J),$$
+    <p>after choosing the sine orientations displayed by the certificate.
+      Thus the minimum number of states among all cyclically translation-invariant realizations of $K_*$ is exactly ten.</p>
     <p>This does not settle the unrestricted minimum-state problem.
       In particular, the known nine-state shared-hub realization is necessarily non-translation-invariant; a general overlapping-cycle generator could have different intrinsic geometry.</p>
 
     <h2>Certificate and scope</h2>
-    <p>The certificate also checks the sharp two-jump realization and 200 dense random circulant generators by constructing the full normalized skew matrix independently.
+    <p>The certificate also checks the sharp nine-state two-jump realization, the exact ten-cycle feature block, and 200 dense random circulant generators by constructing the full normalized skew matrix independently.
       Its Fourier frequencies agree with the matrix singular values to $5.2\times10^{-15}$, using a portable assertion tolerance of $2\times10^{-11}$.</p>
     <p>The theorem concerns one fixed generator and one fixed feature block.
       It does not identify a hidden generator, convert rank after integrating maturity-dependent loadings into a regime count, or make a statement about marginal versus conditional conformal coverage.</p>

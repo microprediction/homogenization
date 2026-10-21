@@ -244,6 +244,47 @@ def sharp_ninth_data():
     return float(rho), float(weight_one)
 
 
+def ten_state_witness():
+    n = 10
+    states = np.arange(n)
+    q = np.zeros((n, n))
+    q[states, (states + 1) % n] = 1
+    np.fill_diagonal(q, -1)
+    l = -q
+    h, a = (l + l.T) / 2, (l - l.T) / 2
+
+    def energy_normalize(vector):
+        return vector / np.sqrt(vector @ h @ vector / n)
+
+    cosine_one = energy_normalize(np.sqrt(2) * np.cos(2 * np.pi * states / n))
+    sine_one = energy_normalize(np.sqrt(2) * np.sin(2 * np.pi * states / n))
+    cosine_two = energy_normalize(np.sqrt(2) * np.cos(4 * np.pi * states / n))
+    sine_two = energy_normalize(np.sqrt(2) * np.sin(4 * np.pi * states / n))
+    alternating = energy_normalize((-1.0) ** states)
+    alpha = 1 / np.sqrt(5)
+    potentials = np.column_stack((
+        alpha * cosine_one + np.sqrt(1 - alpha ** 2) * alternating,
+        sine_one,
+        cosine_two,
+        sine_two,
+    ))
+    target_frequency = 1 / np.tan(np.pi / 5)
+    j = np.array([[0.0, 1.0], [-1.0, 0.0]])
+    target = np.eye(4) + target_frequency * np.kron(np.eye(2), j)
+    projector = np.ones((n, n)) / n
+    group_inverse = np.linalg.inv(l + projector) - projector
+    features = l @ potentials
+    block = features.T @ group_inverse @ features / n
+    symmetric = potentials.T @ h @ potentials / n
+    skew = potentials.T @ a @ potentials / n
+    identity_error = abs(alpha / np.tan(np.pi / 10) - target_frequency)
+    maximum = max(np.max(abs(block - target)), np.max(abs(symmetric - np.eye(4))),
+                  np.max(abs(skew + target_frequency * np.kron(np.eye(2), j))),
+                  identity_error, np.max(abs(features.mean(axis=0))))
+    assert maximum < 2e-11
+    print(f"Directed ten-cycle witness: alpha=1/sqrt(5), maximum block/identity error {maximum:.3g}")
+
+
 def matrix_checks():
     rng, comparisons, maximum = np.random.default_rng(253), 0, 0.0
     rho_nine, weight_one = sharp_ninth_data()
@@ -280,8 +321,9 @@ def matrix_checks():
 def main():
     exact_fourier_table()
     matrix_checks()
+    ten_state_witness()
     print("Compression interlacing: a four-feature block has second frequency at most the full second frequency")
-    print("At nine states the second full frequency is at most rho_9 < cot(pi/5), with equality attained")
+    print("The cyclic translation-invariant minimum for two cot(pi/5) feature modes is exactly ten states")
     print("PASS")
 
 
