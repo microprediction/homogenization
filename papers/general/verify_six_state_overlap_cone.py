@@ -2788,6 +2788,319 @@ assert singular_three_five_deepest_cover == 9
 assert singular_three_five_total_cells == 159012
 assert singular_three_five_corner_local_cells == 2316
 
+# The last one-Hamilton length pair is one three-cycle and one four-cycle.
+# The pure short-cycle edge has rank five exactly when its union visits all
+# six states.  The other cases again factor by the Hamilton weight, but 60
+# quotient corner patches close only nonstrictly; record them separately.
+three_four_pairs = np.array(
+    list(product(three_cycle_indices, four_cycle_indices)), dtype=np.int64
+)
+three_four_pair_symmetric = (
+    integer_symmetric[three_four_pairs[:, 0]]
+    + integer_symmetric[three_four_pairs[:, 1]]
+)
+three_four_pair_skew = (
+    integer_skew[three_four_pairs[:, 0]]
+    + integer_skew[three_four_pairs[:, 1]]
+)
+three_four_pair_a5, three_four_pair_a3, three_four_pair_a1 = (
+    batch_integer_pencil_coefficients(
+        three_four_pair_symmetric, three_four_pair_skew
+    )
+)
+nonsingular_three_four_pair = three_four_pair_a5 > 0
+extremal_three_four_pair = (
+    nonsingular_three_four_pair
+    & (5 * three_four_pair_a3 == 6 * three_four_pair_a5)
+    & (25 * three_four_pair_a1 == 9 * three_four_pair_a5)
+)
+three_four_pair_union_size = np.array([
+    len(set(all_cycles[int(three_cycle)])
+        | set(all_cycles[int(four_cycle)]))
+    for three_cycle, four_cycle in three_four_pairs
+])
+assert len(three_four_pairs) == 3600
+assert int(np.sum(three_four_pair_union_size == 4)) == 720
+assert int(np.sum(three_four_pair_union_size == 5)) == 2160
+assert int(np.sum(three_four_pair_union_size == 6)) == 720
+assert np.array_equal(
+    nonsingular_three_four_pair, three_four_pair_union_size == 6
+)
+assert not np.any(extremal_three_four_pair)
+assert np.all(three_four_pair_a3[~nonsingular_three_four_pair] == 0)
+assert np.all(three_four_pair_a1[~nonsingular_three_four_pair] == 0)
+
+three_four_sum_values = []
+three_four_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[three_four_pairs[:, 0]]
+        + third_weight * integer_symmetric[three_four_pairs[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[three_four_pairs[:, 0]]
+        + third_weight * integer_skew[three_four_pairs[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    three_four_sum_values.append(5 * node_a3 - 6 * node_a5)
+    three_four_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_three_four_sum_values = np.stack(three_four_sum_values)
+stacked_three_four_root_values = np.stack(three_four_root_values)
+for stacked_values in (
+    stacked_three_four_sum_values, stacked_three_four_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+three_four_sum_numerators = (
+    interpolation_matrix @ stacked_three_four_sum_values
+)
+three_four_root_numerators = (
+    interpolation_matrix @ stacked_three_four_root_values
+)
+assert np.all(
+    three_four_sum_numerators % interpolation_denominator == 0
+)
+assert np.all(
+    three_four_root_numerators % interpolation_denominator == 0
+)
+three_four_sum_coefficients = (
+    three_four_sum_numerators // interpolation_denominator
+)
+three_four_root_coefficients = (
+    three_four_root_numerators // interpolation_denominator
+)
+
+
+def short_corner_types(sum_coefficients, root_coefficients, exponents, mask):
+    """Return corner-polynomial types, modulo exchanging small weights."""
+    types = {}
+    leading_types = set()
+    for support_index in np.flatnonzero(mask):
+        polynomials = []
+        for coefficients in (
+            sum_coefficients[:, support_index],
+            root_coefficients[:, support_index],
+        ):
+            poly = {}
+            for coefficient, exponent in zip(coefficients, exponents):
+                key = (exponent[0], exponent[2])
+                poly[key] = poly.get(key, Fraction(0)) + Fraction(
+                    int(coefficient)
+                )
+            polynomials.append({
+                key: value for key, value in poly.items() if value
+            })
+        sum_poly, root_poly = polynomials
+        leading_types.add((
+            tuple(sorted(
+                (exponent, coefficient)
+                for exponent, coefficient in sum_poly.items()
+                if sum(exponent) == 3
+            )),
+            tuple(sorted(
+                (exponent, coefficient)
+                for exponent, coefficient in root_poly.items()
+                if sum(exponent) == 3
+            )),
+        ))
+        direct = (
+            tuple(sorted(sum_poly.items())), tuple(sorted(root_poly.items()))
+        )
+        swapped = (
+            tuple(sorted(
+                ((second, first), coefficient)
+                for (first, second), coefficient in sum_poly.items()
+            )),
+            tuple(sorted(
+                ((second, first), coefficient)
+                for (first, second), coefficient in root_poly.items()
+            )),
+        )
+        key = min(direct, swapped)
+        types[key] = types.get(key, 0) + 1
+    return types, leading_types
+
+
+def certify_corner_types(types, height, patches, strict=True):
+    """Certify rational corner patches and report the selected controls."""
+    uses = {"sum": 0, "root": 0}
+    largest_strict_control = None
+    zero_patches = 0
+    factor_orders = set()
+    for sum_items, root_items in types:
+        for patch in range(patches):
+            substitutions = (
+                {(0, 1): height * Fraction(patch, patches),
+                 (1, 1): height * Fraction(1, patches)},
+                {(0, 1): height * Fraction(patches - patch, patches),
+                 (1, 1): -height * Fraction(1, patches)},
+            )
+            candidates = {}
+            orders = {}
+            for name, poly in (
+                ("sum", dict(sum_items)), ("root", dict(root_items))
+            ):
+                transformed = multivariate_compose(poly, substitutions)
+                order = min(exponent[1] for exponent in transformed)
+                transformed = {
+                    (exponent[0], exponent[1] - order): coefficient
+                    for exponent, coefficient in transformed.items()
+                }
+                candidates[name] = max(
+                    tensor_bernstein_controls(transformed)
+                )
+                orders[name] = order
+            barrier, control = min(
+                candidates.items(), key=lambda item: item[1]
+            )
+            assert control < 0 if strict else control <= 0
+            uses[barrier] += 1
+            factor_orders.add(orders[barrier])
+            if control == 0:
+                zero_patches += 1
+            elif largest_strict_control is None:
+                largest_strict_control = control
+            else:
+                largest_strict_control = max(
+                    largest_strict_control, control
+                )
+    return uses, largest_strict_control, zero_patches, factor_orders
+
+
+three_four_corner_types, three_four_corner_leading_types = (
+    short_corner_types(
+        three_four_sum_coefficients,
+        three_four_root_coefficients,
+        homogeneous_exponents,
+        nonsingular_three_four_pair,
+    )
+)
+assert len(three_four_corner_types) == 62
+assert len(three_four_corner_leading_types) == 8
+assert sum(three_four_corner_types.values()) == 720
+three_four_corner_height = Fraction(1, 64)
+three_four_corner_patches = 16
+(
+    three_four_corner_barrier_uses,
+    three_four_corner_largest_control,
+    three_four_corner_zero_patches,
+    three_four_corner_factor_orders,
+) = certify_corner_types(
+    three_four_corner_types,
+    three_four_corner_height,
+    three_four_corner_patches,
+)
+assert three_four_corner_barrier_uses == {"sum": 806, "root": 186}
+assert three_four_corner_largest_control == Fraction(
+    -2914375259, 140737488355328
+)
+assert three_four_corner_zero_patches == 0
+assert three_four_corner_factor_orders == {3}
+
+three_four_largest_cover = 0
+three_four_deepest_cover = 0
+three_four_total_cells = 0
+three_four_corner_local_cells = 0
+for support_index in np.flatnonzero(nonsingular_three_four_pair):
+    cover_size, cover_depth, corner_cells, local_cells = (
+        exact_simplex_cover_with_corner(
+            three_four_sum_coefficients[:, support_index].astype(object),
+            three_four_root_coefficients[:, support_index].astype(object),
+            simplex_transforms,
+            1,
+            three_four_corner_height,
+        )
+    )
+    assert local_cells == 0
+    three_four_largest_cover = max(three_four_largest_cover, cover_size)
+    three_four_deepest_cover = max(three_four_deepest_cover, cover_depth)
+    three_four_total_cells += cover_size
+    three_four_corner_local_cells += corner_cells
+assert three_four_largest_cover == 520
+assert three_four_deepest_cover == 10
+assert three_four_total_cells == 175914
+assert three_four_corner_local_cells == 3132
+
+singular_three_four_pair = ~nonsingular_three_four_pair
+assert np.all(
+    three_four_sum_coefficients[zero_hamilton_positions][
+        :, singular_three_four_pair
+    ] == 0
+)
+assert np.all(
+    three_four_root_coefficients[zero_hamilton_positions][
+        :, singular_three_four_pair
+    ] == 0
+)
+three_four_sum_quotient = three_four_sum_coefficients[quotient_positions]
+three_four_root_quotient = three_four_root_coefficients[quotient_positions]
+three_four_quotient_corner_types, _ = short_corner_types(
+    three_four_sum_quotient,
+    three_four_root_quotient,
+    degree_four_exponents,
+    singular_three_four_pair,
+)
+assert len(three_four_quotient_corner_types) == 232
+assert sum(three_four_quotient_corner_types.values()) == 2880
+(
+    three_four_quotient_corner_barrier_uses,
+    three_four_quotient_corner_largest_strict_control,
+    three_four_quotient_corner_zero_patches,
+    three_four_quotient_corner_factor_orders,
+) = certify_corner_types(
+    three_four_quotient_corner_types,
+    three_four_corner_height,
+    three_four_corner_patches,
+    strict=False,
+)
+assert three_four_quotient_corner_barrier_uses == {
+    "sum": 3476,
+    "root": 236,
+}
+assert three_four_quotient_corner_largest_strict_control == Fraction(
+    -89, 131072
+)
+assert three_four_quotient_corner_zero_patches == 60
+assert three_four_quotient_corner_factor_orders == {2}
+
+singular_three_four_largest_cover = 0
+singular_three_four_deepest_cover = 0
+singular_three_four_total_cells = 0
+singular_three_four_corner_local_cells = 0
+for support_index in np.flatnonzero(singular_three_four_pair):
+    cover_size, cover_depth, corner_cells, local_cells = (
+        exact_simplex_cover_with_corner(
+            three_four_sum_quotient[:, support_index].astype(object),
+            three_four_root_quotient[:, support_index].astype(object),
+            degree_four_simplex_transforms,
+            1,
+            three_four_corner_height,
+        )
+    )
+    assert local_cells == 0
+    singular_three_four_largest_cover = max(
+        singular_three_four_largest_cover, cover_size
+    )
+    singular_three_four_deepest_cover = max(
+        singular_three_four_deepest_cover, cover_depth
+    )
+    singular_three_four_total_cells += cover_size
+    singular_three_four_corner_local_cells += corner_cells
+assert singular_three_four_largest_cover == 193
+assert singular_three_four_deepest_cover == 9
+assert singular_three_four_total_cells == 130356
+assert singular_three_four_corner_local_cells == 2028
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -3120,6 +3433,42 @@ print("largest singular mixed three-/five-cycle quotient corner control: "
       f"{three_five_quotient_corner_largest_control}")
 print("singular mixed three-/five-cycle quotient corner local cells: "
       f"{singular_three_five_corner_local_cells}")
+print("mixed three-/four-cycle pair union sizes: 720 on four states, "
+      "2160 on five, 720 on six")
+print("extremal three-/four-cycle boundary pairs: "
+      f"{int(np.sum(extremal_three_four_pair))}")
+print("mixed three-/four-cycle corner polynomial types: "
+      f"{len(three_four_corner_types)}")
+print("mixed three-/four-cycle corner leading cubic types: "
+      f"{len(three_four_corner_leading_types)}")
+print("mixed three-/four-cycle corner barrier patches: "
+      f"{three_four_corner_barrier_uses}")
+print("largest mixed three-/four-cycle corner Bernstein control: "
+      f"{three_four_corner_largest_control}")
+print("largest mixed three-/four-cycle simplex cover: "
+      f"{three_four_largest_cover} triangles at depth "
+      f"{three_four_deepest_cover}")
+print("mixed three-/four-cycle terminal cells: "
+      f"{three_four_total_cells}")
+print("mixed three-/four-cycle corner local cells used: "
+      f"{three_four_corner_local_cells}")
+print("singular mixed three-/four-cycle quotient corner types: "
+      f"{len(three_four_quotient_corner_types)}")
+print("singular mixed three-/four-cycle quotient corner barrier patches: "
+      f"{three_four_quotient_corner_barrier_uses}")
+print("singular mixed three-/four-cycle quotient zero-control patches: "
+      f"{three_four_quotient_corner_zero_patches}")
+print("largest strict singular mixed three-/four-cycle quotient control: "
+      f"{three_four_quotient_corner_largest_strict_control}")
+print("singular mixed three-/four-cycle quotient factor orders: "
+      f"{sorted(three_four_quotient_corner_factor_orders)}")
+print("largest singular mixed three-/four-cycle quotient simplex cover: "
+      f"{singular_three_four_largest_cover} triangles at depth "
+      f"{singular_three_four_deepest_cover}")
+print("singular mixed three-/four-cycle quotient terminal cells: "
+      f"{singular_three_four_total_cells}")
+print("singular mixed three-/four-cycle quotient corner local cells: "
+      f"{singular_three_four_corner_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
