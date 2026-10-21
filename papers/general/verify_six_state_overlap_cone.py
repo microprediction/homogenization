@@ -12,6 +12,11 @@ N = 6
 GROUND = N - 1
 CYCLE_A = (0, 5, 2, 3, 4, 1)
 CYCLE_B = (0, 3, 4, 5, 2, 1)
+THREE_CYCLES = (
+    (0, 1, 2, 3),
+    (0, 1, 4, 5),
+    (2, 3, 4, 5),
+)
 
 
 def sign(perm):
@@ -81,6 +86,30 @@ def sparse_mul(left, right):
     return {degree: value for degree, value in out.items() if value}
 
 
+def multivariate_mul(left, right):
+    """Multiply sparse polynomials with arbitrary exponent tuples."""
+    out = {}
+    for degree_left, value_left in left.items():
+        for degree_right, value_right in right.items():
+            degree = tuple(
+                left_power + right_power
+                for left_power, right_power in zip(degree_left, degree_right)
+            )
+            out[degree] = out.get(degree, Fraction(0)) + value_left * value_right
+    return {degree: value for degree, value in out.items() if value}
+
+
+def multivariate_determinant(matrix):
+    out = {}
+    variables = len(next(iter(matrix[0][0])))
+    for perm in permutations(range(len(matrix))):
+        term = {(0,) * variables: Fraction(sign(perm))}
+        for row, column in enumerate(perm):
+            term = multivariate_mul(term, matrix[row][column])
+        out = sparse_add(out, term)
+    return out
+
+
 def sparse_determinant(matrix):
     out = {}
     for perm in permutations(range(len(matrix))):
@@ -123,6 +152,61 @@ def symbolic_pencil_coefficients(first_cycle, other_cycle):
     coefficient = lambda poly, t_degree: tuple(
         poly.get((t_degree, r_degree), Fraction(0)) for r_degree in range(6)
     )
+    denominator = coefficient(det_h, 0)
+    assert coefficient(numerator, 5) == denominator
+    return denominator, coefficient(numerator, 3), coefficient(numerator, 1)
+
+
+def symbolic_three_cycle_coefficients():
+    """Exact coefficient polynomials for weights 1, r, s on THREE_CYCLES."""
+    weights = [[{} for _ in range(N)] for _ in range(N)]
+    weight_polynomials = (
+        {(0, 0, 0): Fraction(1)},
+        {(0, 1, 0): Fraction(1)},
+        {(0, 0, 1): Fraction(1)},
+    )
+    for cycle, weight in zip(THREE_CYCLES, weight_polynomials):
+        for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+            weights[source][target] = sparse_add(weights[source][target], weight)
+    laplacian = [[{} for _ in range(N)] for _ in range(N)]
+    for i in range(N):
+        for j in range(N):
+            if i == j:
+                for entry in weights[i]:
+                    laplacian[i][j] = sparse_add(laplacian[i][j], entry)
+            else:
+                laplacian[i][j] = sparse_scale(weights[i][j], -1)
+    grounded = [row[:GROUND] for row in laplacian[:GROUND]]
+    half = Fraction(1, 2)
+    symmetric = [[
+        sparse_scale(sparse_add(grounded[i][j], grounded[j][i]), half)
+        for j in range(GROUND)
+    ] for i in range(GROUND)]
+    skew = [[
+        sparse_scale(
+            sparse_add(grounded[i][j], sparse_scale(grounded[j][i], -1)),
+            half,
+        )
+        for j in range(GROUND)
+    ] for i in range(GROUND)]
+    pencil = [[
+        sparse_add(
+            {(t_degree + 1, r_degree, s_degree): value
+             for (t_degree, r_degree, s_degree), value in symmetric[i][j].items()},
+            sparse_scale(skew[i][j], -1),
+        )
+        for j in range(GROUND)
+    ] for i in range(GROUND)]
+    numerator = multivariate_determinant(pencil)
+    det_h = multivariate_determinant(symmetric)
+
+    def coefficient(poly, t_degree):
+        return {
+            (r_degree, s_degree): value
+            for (degree, r_degree, s_degree), value in poly.items()
+            if degree == t_degree
+        }
+
     denominator = coefficient(det_h, 0)
     assert coefficient(numerator, 5) == denominator
     return denominator, coefficient(numerator, 3), coefficient(numerator, 1)
@@ -284,6 +368,54 @@ assert [value / det_equal for value in equal] == [
     Fraction(0), Fraction(9, 25), Fraction(0), Fraction(6, 5),
     Fraction(0), Fraction(1)
 ]
+
+# On the displayed three-cycle architecture, homogeneity lets us normalize the
+# first weight to one and write the other two as r and s.  Verify the complete
+# coefficient identities as exact bivariate polynomials.  In symmetric
+# notation e1=1+r+s, e2=r+s+rs, e3=rs they imply
+#   9*a5 - 15*a3 + 25*a1 = -e2*(e1*e2 - 9*e3).
+# The final factor is nonnegative by AM-GM, with equality only at r=s=1.
+one = {(0, 0): Fraction(1)}
+r_variable = {(1, 0): Fraction(1)}
+s_variable = {(0, 1): Fraction(1)}
+e1 = sparse_add(sparse_add(one, r_variable), s_variable)
+e2 = sparse_add(
+    sparse_add(r_variable, s_variable),
+    multivariate_mul(r_variable, s_variable),
+)
+e3 = multivariate_mul(r_variable, s_variable)
+e1_e2 = multivariate_mul(e1, e2)
+
+three_a5, three_a3, three_a1 = symbolic_three_cycle_coefficients()
+expected_a5 = sparse_scale(
+    multivariate_mul(
+        e2,
+        sparse_add(sparse_scale(e1_e2, 3), sparse_scale(e3, -2)),
+    ),
+    Fraction(1, 8),
+)
+expected_a3 = sparse_scale(
+    multivariate_mul(
+        e2,
+        sparse_add(sparse_scale(e1_e2, 2), sparse_scale(e3, -3)),
+    ),
+    Fraction(1, 4),
+)
+expected_a1 = sparse_scale(
+    multivariate_mul(multivariate_mul(e1, e2), e2),
+    Fraction(1, 8),
+)
+assert (three_a5, three_a3, three_a1) == (
+    expected_a5,
+    expected_a3,
+    expected_a1,
+)
+root_barrier = sparse_add(
+    sparse_add(sparse_scale(three_a5, 9), sparse_scale(three_a3, -15)),
+    sparse_scale(three_a1, 25),
+)
+am_gm_gap = sparse_add(e1_e2, sparse_scale(e3, -9))
+assert root_barrier == sparse_scale(multivariate_mul(e2, am_gm_gap), -1)
 
 # Relabel the first simple cycle canonically by its length; enumerate every
 # possible second simple cycle.  Connected union is equivalent to irreducibility
@@ -471,6 +603,8 @@ assert largest_second <= sharp_second + 2e-11
 
 print(f"exact pencil identities: {len(exact_cases)} rational rate pairs")
 print("equal-weight normalized pencil: t (t^2 + 3/5)^2")
+print("unequal three-cycle symbolic identities: 3 exact coefficients")
+print("three-cycle root barrier: -e2 (e1 e2 - 9 e3) <= 0")
 print(f"simple directed cycles enumerated: {len(all_cycles)}")
 print(f"canonical connected cycle pairs classified exactly: {len(cycle_pairs)}")
 print(f"distinct exact pencils: {len(pencil_types)}")

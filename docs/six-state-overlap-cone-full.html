@@ -100,11 +100,11 @@
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">numerical certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
-    <p class="subtitle">A sharp repeated-mode bound for arbitrary two-cycle weights and equal three-cycle weights.</p>
+    <p class="subtitle">A sharp repeated-mode bound for two-cycle mixtures and a full three-cycle weight cone.</p>
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles, or an equal-weight mixture of three simple directed cycles. Assume its support is connected, and let
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; or an arbitrary positive mixture of the three four-cycles displayed below. Assume its support is connected, and let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
     $$\sigma_2\le\sqrt{\frac35}.$$
@@ -112,10 +112,10 @@
     <p>For two cycles the bound is attained at equal weights by, for example,</p>
     $$c_A=(0,5,2,3,4,1),\qquad c_B=(0,3,4,5,2,1),$$
     <p>whose union is neither a cactus nor translation invariant. Within this cone equality holds exactly when $a=b&gt;0$, and then both frequencies equal $\sqrt{3/5}$.</p>
-    <p>A genuinely three-cycle equality case is the equal-weight mixture</p>
+    <p>The following genuinely three-cycle architecture permits arbitrary positive weights:</p>
     $$c_A=(0,1,2,3),\qquad c_B=(0,1,4,5),\qquad c_C=(2,3,4,5).$$
-    <p>Its normalized pencil is again $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
-    <p>Consequently no four-feature compression from either stated class realizes
+    <p>Equality within this weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
+    <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
       The target needs two frequencies $\cot(\pi/5)=\sqrt{1+2/\sqrt5}&gt;\sqrt{3/5}$.</p>
@@ -161,18 +161,32 @@
     <p>Every pair satisfies at least one of $S\le6/5$ or
       $P-(3/5)S+9/25\le0$. The same root argument proves the bound; four first-cycle-normalized representatives attain equality, including the displayed triple.</p>
 
+    <h2>One full three-cycle weight cone</h2>
+    <p>Give the displayed cycles weights $a,b,c&gt;0$, and put</p>
+    $$e_1=a+b+c,\qquad e_2=ab+ac+bc,\qquad e_3=abc.$$
+    <p>Writing the exact pencil as
+      $\det(tH-D)=a_5t^5+a_3t^3+a_1t$, direct polynomial expansion gives</p>
+    $$8a_5=e_2(3e_1e_2-2e_3),\qquad
+      4a_3=e_2(2e_1e_2-3e_3),\qquad
+      8a_1=e_1e_2^2.$$
+    <p>For $f(z)=z^2-(a_3/a_5)z+a_1/a_5$, the root barrier at $3/5$ therefore factors as</p>
+    <div class="equation-card">
+    $$f(3/5)=-\frac{e_2(e_1e_2-9e_3)}{25a_5}\le0.$$
+    </div>
+    <p>Indeed $e_1\ge3e_3^{1/3}$ and $e_2\ge3e_3^{2/3}$ by AM&ndash;GM, so $e_1e_2\ge9e_3$. Equality holds only when $a=b=c$. Thus $3/5$ lies between the two nonnegative squared frequencies, proving the bound throughout this two-dimensional positive weight cone and identifying its unique weight ratio for equality.</p>
+
     <h2>Why feature choice cannot evade the bound</h2>
     <p>Let $U$ collect any four independent Poisson potentials and normalize their symmetric energy. The resulting feature skew matrix is the compression</p>
     $$X^\top(iH^{-1/2}DH^{-1/2})X,\qquad X^\top X=I_4.$$
     <p>Hermitian compression interlacing, in the form proved by
       <a href="./bibliography.html#FanPall1957">Fan and Pall (1957)</a>, bounds its second positive eigenvalue by $\sigma_2$. This is a necessary condition for a fixed-parameter Green&ndash;Kubo block; it is not a rank claim after integrating different maturity loadings.</p>
-    <p>The target has symmetric part $I_4$ and two positive skew frequencies equal to $\cot(\pi/5)$. The strict comparison above therefore excludes every generator in either stated sparse-cycle class, for every positive stationary law and every four-feature embedding.</p>
+    <p>The target has symmetric part $I_4$ and two positive skew frequencies equal to $\cot(\pi/5)$. The strict comparison above therefore excludes every generator in any stated sparse-cycle class, for every positive stationary law and every four-feature embedding.</p>
 
     <h2>Certificate and scope</h2>
-    <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants.</p>
+    <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on three cycles, flows requiring four or more cycles, and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on other three-cycle architectures, flows requiring four or more cycles, and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>
