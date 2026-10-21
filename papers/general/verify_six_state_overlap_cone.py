@@ -2291,6 +2291,148 @@ assert singular_four_largest_cover == 49
 assert singular_four_deepest_cover == 4
 assert singular_four_total_cells == 43425
 
+# The remaining mixed architecture has one Hamilton cycle, one four-cycle and
+# one five-cycle.  Their pure short-cycle edge is nonsingular exactly when the
+# two short cycles together visit all six states.  On a common five-state face
+# both barriers again contain the Hamilton weight, so the degree-four quotient
+# certificate applies without a special corner argument.
+four_five_pairs = np.array(
+    list(product(four_cycle_indices, five_cycle_indices)), dtype=np.int64
+)
+four_five_pair_symmetric = (
+    integer_symmetric[four_five_pairs[:, 0]]
+    + integer_symmetric[four_five_pairs[:, 1]]
+)
+four_five_pair_skew = (
+    integer_skew[four_five_pairs[:, 0]]
+    + integer_skew[four_five_pairs[:, 1]]
+)
+four_five_pair_a5, four_five_pair_a3, four_five_pair_a1 = (
+    batch_integer_pencil_coefficients(
+        four_five_pair_symmetric, four_five_pair_skew
+    )
+)
+nonsingular_four_five_pair = four_five_pair_a5 > 0
+four_five_pair_union_size = np.array([
+    len(
+        set(all_cycles[int(four_cycle)])
+        | set(all_cycles[int(five_cycle)])
+    )
+    for four_cycle, five_cycle in four_five_pairs
+])
+assert len(four_five_pairs) == 12960
+assert int(np.sum(four_five_pair_union_size == 5)) == 4320
+assert int(np.sum(four_five_pair_union_size == 6)) == 8640
+assert np.array_equal(
+    nonsingular_four_five_pair, four_five_pair_union_size == 6
+)
+assert np.all(four_five_pair_a3[~nonsingular_four_five_pair] == 0)
+assert np.all(four_five_pair_a1[~nonsingular_four_five_pair] == 0)
+
+four_five_sum_values = []
+four_five_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[four_five_pairs[:, 0]]
+        + third_weight * integer_symmetric[four_five_pairs[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[four_five_pairs[:, 0]]
+        + third_weight * integer_skew[four_five_pairs[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    four_five_sum_values.append(5 * node_a3 - 6 * node_a5)
+    four_five_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_four_five_sum_values = np.stack(four_five_sum_values)
+stacked_four_five_root_values = np.stack(four_five_root_values)
+for stacked_values in (
+    stacked_four_five_sum_values, stacked_four_five_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+four_five_sum_numerators = (
+    interpolation_matrix @ stacked_four_five_sum_values
+)
+four_five_root_numerators = (
+    interpolation_matrix @ stacked_four_five_root_values
+)
+assert np.all(
+    four_five_sum_numerators % interpolation_denominator == 0
+)
+assert np.all(
+    four_five_root_numerators % interpolation_denominator == 0
+)
+four_five_sum_coefficients = (
+    four_five_sum_numerators // interpolation_denominator
+)
+four_five_root_coefficients = (
+    four_five_root_numerators // interpolation_denominator
+)
+
+four_five_largest_cover = 0
+four_five_deepest_cover = 0
+four_five_total_cells = 0
+for support_index in np.flatnonzero(nonsingular_four_five_pair):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        four_five_sum_coefficients[:, support_index].astype(object),
+        four_five_root_coefficients[:, support_index].astype(object),
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    four_five_largest_cover = max(
+        four_five_largest_cover, cover_size
+    )
+    four_five_deepest_cover = max(
+        four_five_deepest_cover, cover_depth
+    )
+    four_five_total_cells += cover_size
+assert four_five_largest_cover == 85
+assert four_five_deepest_cover == 5
+assert four_five_total_cells == 262998
+
+assert np.all(
+    four_five_sum_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_four_five_pair
+    ] == 0
+)
+assert np.all(
+    four_five_root_coefficients[zero_hamilton_positions][
+        :, ~nonsingular_four_five_pair
+    ] == 0
+)
+four_five_sum_quotient = four_five_sum_coefficients[quotient_positions]
+four_five_root_quotient = four_five_root_coefficients[quotient_positions]
+singular_four_five_largest_cover = 0
+singular_four_five_deepest_cover = 0
+singular_four_five_total_cells = 0
+for support_index in np.flatnonzero(~nonsingular_four_five_pair):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        four_five_sum_quotient[:, support_index].astype(object),
+        four_five_root_quotient[:, support_index].astype(object),
+        degree_four_simplex_transforms,
+    )
+    assert local_cells == 0
+    singular_four_five_largest_cover = max(
+        singular_four_five_largest_cover, cover_size
+    )
+    singular_four_five_deepest_cover = max(
+        singular_four_five_deepest_cover, cover_depth
+    )
+    singular_four_five_total_cells += cover_size
+assert singular_four_five_largest_cover == 58
+assert singular_four_five_deepest_cover == 4
+assert singular_four_five_total_cells == 94536
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -2577,6 +2719,18 @@ print("largest singular four-cycle quotient simplex cover: "
       f"{singular_four_deepest_cover}")
 print(f"singular four-cycle quotient terminal cells: "
       f"{singular_four_total_cells}")
+print("mixed four-/five-cycle pair union sizes: 4320 on five states, "
+      "8640 on six")
+print("largest mixed four-/five-cycle simplex cover: "
+      f"{four_five_largest_cover} triangles at depth "
+      f"{four_five_deepest_cover}")
+print("mixed four-/five-cycle terminal cells: "
+      f"{four_five_total_cells}")
+print("largest singular mixed four-/five-cycle quotient simplex cover: "
+      f"{singular_four_five_largest_cover} triangles at depth "
+      f"{singular_four_five_deepest_cover}")
+print("singular mixed four-/five-cycle quotient terminal cells: "
+      f"{singular_four_five_total_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
