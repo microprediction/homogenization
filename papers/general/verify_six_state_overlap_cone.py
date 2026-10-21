@@ -1962,10 +1962,10 @@ assert three_corner_local_cells == 10440
 assert three_edge_local_cells == 112
 
 # A complementary three-cycle architecture has one Hamilton cycle and two
-# five-cycles.  When the five-cycles omit different states, their two-cycle
-# edge is connected and is strictly below the sharp bound.  If they omit the
-# same state, the six-state determinant pencil vanishes identically on that
-# singular five-state face; that separate boundary class is not claimed.
+# five-cycles.  When the five-cycles omit different states, ordinary exact
+# simplex covers apply.  If they omit the same state, the six-state pencil
+# vanishes when the Hamilton weight is zero, so both barriers have that weight
+# as a factor.  Divide it out and certify the resulting degree-four barriers.
 five_cycle_pairs = np.array(
     list(combinations(five_cycle_indices, 2)), dtype=np.int64
 )
@@ -2055,6 +2055,111 @@ for support_index in range(len(hamilton_two_five_supports)):
 assert five_largest_cover == 64
 assert five_deepest_cover == 5
 assert five_total_cells == 228339
+
+same_face_hamilton_two_five_supports = five_cycle_pairs[
+    ~different_missing_state
+]
+assert len(same_face_hamilton_two_five_supports) == 1656
+same_face_sum_values = []
+same_face_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight
+        * integer_symmetric[same_face_hamilton_two_five_supports[:, 0]]
+        + third_weight
+        * integer_symmetric[same_face_hamilton_two_five_supports[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight
+        * integer_skew[same_face_hamilton_two_five_supports[:, 0]]
+        + third_weight
+        * integer_skew[same_face_hamilton_two_five_supports[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    same_face_sum_values.append(5 * node_a3 - 6 * node_a5)
+    same_face_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+stacked_same_face_sum_values = np.stack(same_face_sum_values)
+stacked_same_face_root_values = np.stack(same_face_root_values)
+for stacked_values in (
+    stacked_same_face_sum_values, stacked_same_face_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+same_face_sum_numerators = (
+    interpolation_matrix @ stacked_same_face_sum_values
+)
+same_face_root_numerators = (
+    interpolation_matrix @ stacked_same_face_root_values
+)
+assert np.all(
+    same_face_sum_numerators % interpolation_denominator == 0
+)
+assert np.all(
+    same_face_root_numerators % interpolation_denominator == 0
+)
+same_face_sum_coefficients = (
+    same_face_sum_numerators // interpolation_denominator
+)
+same_face_root_coefficients = (
+    same_face_root_numerators // interpolation_denominator
+)
+
+degree_four_exponents = [
+    exponent
+    for exponent in product(range(5), repeat=3)
+    if sum(exponent) == 4
+]
+degree_five_position = {
+    exponent: index
+    for index, exponent in enumerate(homogeneous_exponents)
+}
+zero_hamilton_positions = [
+    index
+    for index, (hamilton_power, _, _) in enumerate(homogeneous_exponents)
+    if hamilton_power == 0
+]
+assert np.all(same_face_sum_coefficients[zero_hamilton_positions] == 0)
+assert np.all(same_face_root_coefficients[zero_hamilton_positions] == 0)
+quotient_positions = [
+    degree_five_position[(hamilton_power + 1, second_power, third_power)]
+    for hamilton_power, second_power, third_power in degree_four_exponents
+]
+same_face_sum_quotient = same_face_sum_coefficients[quotient_positions]
+same_face_root_quotient = same_face_root_coefficients[quotient_positions]
+degree_four_simplex_transforms = homogeneous_midpoint_transforms(
+    degree_four_exponents
+)
+
+same_face_largest_cover = 0
+same_face_deepest_cover = 0
+same_face_total_cells = 0
+for support_index in range(len(same_face_hamilton_two_five_supports)):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        same_face_sum_quotient[:, support_index].astype(object),
+        same_face_root_quotient[:, support_index].astype(object),
+        degree_four_simplex_transforms,
+    )
+    assert local_cells == 0
+    same_face_largest_cover = max(
+        same_face_largest_cover, cover_size
+    )
+    same_face_deepest_cover = max(
+        same_face_deepest_cover, cover_depth
+    )
+    same_face_total_cells += cover_size
+assert same_face_largest_cover == 55
+assert same_face_deepest_cover == 5
+assert same_face_total_cells == 41490
 
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
@@ -2325,6 +2430,11 @@ print("normalized one-Hamilton/two-five-cycle supports with different "
 print("largest one-Hamilton/two-five-cycle simplex cover: "
       f"{five_largest_cover} triangles at depth {five_deepest_cover}")
 print(f"one-Hamilton/two-five-cycle terminal cells: {five_total_cells}")
+print("same-face barrier factor: Hamilton weight")
+print("largest same-face quotient simplex cover: "
+      f"{same_face_largest_cover} triangles at depth "
+      f"{same_face_deepest_cover}")
+print(f"same-face quotient terminal cells: {same_face_total_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
