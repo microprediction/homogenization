@@ -1961,6 +1961,101 @@ assert three_deepest_cover == 10
 assert three_corner_local_cells == 10440
 assert three_edge_local_cells == 112
 
+# A complementary three-cycle architecture has one Hamilton cycle and two
+# five-cycles.  When the five-cycles omit different states, their two-cycle
+# edge is connected and is strictly below the sharp bound.  If they omit the
+# same state, the six-state determinant pencil vanishes identically on that
+# singular five-state face; that separate boundary class is not claimed.
+five_cycle_pairs = np.array(
+    list(combinations(five_cycle_indices, 2)), dtype=np.int64
+)
+five_pair_symmetric = (
+    integer_symmetric[five_cycle_pairs[:, 0]]
+    + integer_symmetric[five_cycle_pairs[:, 1]]
+)
+five_pair_skew = (
+    integer_skew[five_cycle_pairs[:, 0]]
+    + integer_skew[five_cycle_pairs[:, 1]]
+)
+five_pair_a5, five_pair_a3, five_pair_a1 = (
+    batch_integer_pencil_coefficients(five_pair_symmetric, five_pair_skew)
+)
+equal_barrier_five_pair = (
+    (5 * five_pair_a3 == 6 * five_pair_a5)
+    & (25 * five_pair_a1 == 9 * five_pair_a5)
+)
+missing_state = {
+    int(index): next(iter(set(range(N)) - set(all_cycles[int(index)])))
+    for index in five_cycle_indices
+}
+different_missing_state = np.array([
+    missing_state[int(first)] != missing_state[int(second)]
+    for first, second in five_cycle_pairs
+], dtype=bool)
+assert len(five_cycle_pairs) == 10296
+assert int(np.sum(equal_barrier_five_pair)) == 1656
+assert np.array_equal(equal_barrier_five_pair, ~different_missing_state)
+assert np.array_equal(five_pair_a5 == 0, ~different_missing_state)
+assert np.all(five_pair_a3[~different_missing_state] == 0)
+assert np.all(five_pair_a1[~different_missing_state] == 0)
+
+hamilton_two_five_supports = five_cycle_pairs[different_missing_state]
+assert len(hamilton_two_five_supports) == 8640
+five_sum_values = []
+five_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight
+        * integer_symmetric[hamilton_two_five_supports[:, 0]]
+        + third_weight
+        * integer_symmetric[hamilton_two_five_supports[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[hamilton_two_five_supports[:, 0]]
+        + third_weight * integer_skew[hamilton_two_five_supports[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    five_sum_values.append(5 * node_a3 - 6 * node_a5)
+    five_root_values.append(9 * node_a5 - 15 * node_a3 + 25 * node_a1)
+stacked_five_sum_values = np.stack(five_sum_values)
+stacked_five_root_values = np.stack(five_root_values)
+for stacked_values in (
+    stacked_five_sum_values, stacked_five_root_values
+):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound <= 80325000000
+five_sum_numerators = interpolation_matrix @ stacked_five_sum_values
+five_root_numerators = interpolation_matrix @ stacked_five_root_values
+assert np.all(five_sum_numerators % interpolation_denominator == 0)
+assert np.all(five_root_numerators % interpolation_denominator == 0)
+five_sum_coefficients = five_sum_numerators // interpolation_denominator
+five_root_coefficients = five_root_numerators // interpolation_denominator
+
+five_largest_cover = 0
+five_deepest_cover = 0
+five_total_cells = 0
+for support_index in range(len(hamilton_two_five_supports)):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        five_sum_coefficients[:, support_index].astype(object),
+        five_root_coefficients[:, support_index].astype(object),
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    five_largest_cover = max(five_largest_cover, cover_size)
+    five_deepest_cover = max(five_deepest_cover, cover_depth)
+    five_total_cells += cover_size
+assert five_largest_cover == 64
+assert five_deepest_cover == 5
+assert five_total_cells == 228339
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -2223,6 +2318,13 @@ print("largest three-cycle simplex cover: "
       f"{three_deepest_cover}")
 print(f"three-cycle corner local cells used: {three_corner_local_cells}")
 print(f"three-cycle edge local cells used: {three_edge_local_cells}")
+print("five-cycle pairs classified exactly: 10296")
+print("determinant-degenerate same-missing-state five-cycle pairs: 1656")
+print("normalized one-Hamilton/two-five-cycle supports with different "
+      "missing states: 8640")
+print("largest one-Hamilton/two-five-cycle simplex cover: "
+      f"{five_largest_cover} triangles at depth {five_deepest_cover}")
+print(f"one-Hamilton/two-five-cycle terminal cells: {five_total_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
