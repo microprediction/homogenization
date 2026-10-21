@@ -62,6 +62,16 @@
   "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
  },
  {
+  "key": "FanPall1957",
+  "authors": "Fan, K. and Pall, G.",
+  "year": 1957,
+  "title": "Imbedding Conditions for Hermitian and Normal Matrices",
+  "venue": "Canadian Journal of Mathematics 9:298-304",
+  "doi": "10.4153/CJM-1957-036-1",
+  "url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/AA7ACF7F360A1D44FE4B83007198F57C/S0008414X00044655a.pdf/imbedding_conditions_for_hermitian_and_normal_matrices.pdf",
+  "annotation": "Characterizes eigenvalues of Hermitian compressions. The overlapping-cycle note uses only the necessary interlacing direction to bound the second feature-level skew frequency by the second full intrinsic frequency."
+ },
+ {
   "key": "Rebolledo1980",
   "authors": "Rebolledo, R.",
   "year": 1980,
