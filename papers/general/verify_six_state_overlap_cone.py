@@ -115,6 +115,69 @@ def multivariate_power(poly, power):
     return out
 
 
+def multivariate_compose(poly, substitutions):
+    """Compose a sparse polynomial with sparse polynomial substitutions."""
+    variables = len(next(iter(substitutions[0])))
+    out = {}
+    for exponent, coefficient in poly.items():
+        term = {(0,) * variables: coefficient}
+        for substitution, power in zip(substitutions, exponent):
+            term = multivariate_mul(
+                term, multivariate_power(substitution, power)
+            )
+        out = sparse_add(out, term)
+    return out
+
+
+def tensor_bernstein_controls(poly):
+    """Exact tensor-product Bernstein controls on the unit box."""
+    variables = len(next(iter(poly)))
+    degrees = tuple(
+        max(exponent[variable] for exponent in poly)
+        for variable in range(variables)
+    )
+    controls = []
+    for index in product(*(range(degree + 1) for degree in degrees)):
+        control = Fraction(0)
+        for exponent, coefficient in poly.items():
+            if all(power <= bound for power, bound in zip(exponent, index)):
+                factor = Fraction(1)
+                for bound, power, degree in zip(index, exponent, degrees):
+                    factor *= Fraction(comb(bound, power), comb(degree, power))
+                control += coefficient * factor
+        controls.append(control)
+    return controls
+
+
+def extremal_pair_polynomial(coefficients, exponents, first, second):
+    """Substitute pair weights 1+u, 1-u and third weight v."""
+    third = 3 - first - second
+    out = {}
+    for coefficient, exponent in zip(coefficients, exponents):
+        first_power = exponent[first]
+        second_power = exponent[second]
+        third_power = exponent[third]
+        for left_power in range(first_power + 1):
+            for right_power in range(second_power + 1):
+                power = (left_power + right_power, third_power)
+                value = (
+                    Fraction(int(coefficient))
+                    * comb(first_power, left_power)
+                    * comb(second_power, right_power)
+                    * (-1) ** right_power
+                )
+                out[power] = out.get(power, Fraction(0)) + value
+    return {power: value for power, value in out.items() if value}
+
+
+def reverse_first_variable(poly):
+    """Apply u -> -u to a bivariate sparse polynomial."""
+    return {
+        exponent: (-1) ** exponent[0] * coefficient
+        for exponent, coefficient in poly.items()
+    }
+
+
 def multivariate_determinant(matrix):
     out = {}
     variables = len(next(iter(matrix[0][0])))
@@ -355,21 +418,66 @@ def homogeneous_midpoint_transforms(exponents):
     return transforms
 
 
-def exact_simplex_cover(sum_test, root_test, transforms, depth=0):
-    """Cover a weight simplex by exact Bernstein-sign certificates."""
+def simplex_child_vertices(vertices):
+    """The four midpoint children of a barycentric triangle."""
+    first, second, third = vertices
+    midpoint_12 = tuple((a + b) / 2 for a, b in zip(first, second))
+    midpoint_13 = tuple((a + b) / 2 for a, b in zip(first, third))
+    midpoint_23 = tuple((a + b) / 2 for a, b in zip(second, third))
+    return (
+        (first, midpoint_12, midpoint_13),
+        (midpoint_12, second, midpoint_23),
+        (midpoint_13, midpoint_23, third),
+        (midpoint_12, midpoint_23, midpoint_13),
+    )
+
+
+def inside_extremal_box(vertices, pair):
+    """Whether a triangle lies in the certified extremal-pair box."""
+    first, second = pair
+    third = 3 - first - second
+    for vertex in vertices:
+        pair_sum = vertex[first] + vertex[second]
+        if 64 * abs(vertex[first] - vertex[second]) > 3 * pair_sum:
+            return False
+        if 128 * vertex[third] > pair_sum:
+            return False
+    return True
+
+
+def exact_simplex_cover(
+    sum_test,
+    root_test,
+    transforms,
+    local_pairs=(),
+    vertices=((Fraction(1), Fraction(0), Fraction(0)),
+              (Fraction(0), Fraction(1), Fraction(0)),
+              (Fraction(0), Fraction(0), Fraction(1))),
+    depth=0,
+):
+    """Cover a weight simplex by global or local exact certificates."""
     if max(sum_test) <= 0 or max(root_test) <= 0:
-        return 1, depth
-    assert depth < 10
+        return 1, depth, 0
+    if any(inside_extremal_box(vertices, pair) for pair in local_pairs):
+        return 1, depth, 1
+    assert depth < 12
+    child_vertices = simplex_child_vertices(vertices)
     covers = [
         exact_simplex_cover(
             transform @ sum_test,
             transform @ root_test,
             transforms,
+            local_pairs,
+            child,
             depth + 1,
         )
-        for transform in transforms
+        for transform, child in zip(transforms, child_vertices)
     ]
-    return sum(cover[0] for cover in covers), max(cover[1] for cover in covers)
+    return (
+        sum(cover[0] for cover in covers),
+        max(cover[1] for cover in covers),
+        sum(cover[2] for cover in covers),
+    )
 
 
 def canonical_cycle(cycle):
@@ -954,18 +1062,131 @@ sum_coefficients = sum_numerators // interpolation_denominator
 root_coefficients = root_numerators // interpolation_denominator
 
 simplex_transforms = homogeneous_midpoint_transforms(homogeneous_exponents)
+
+# The remaining Hamilton triples have an extremal pair on the boundary of the
+# weight simplex.  At its equality point write the pair weights as 1+u, 1-u
+# and the third weight as v.  The 354 pair incidences reduce to 18 polynomial
+# types, up to u -> -u.  A rational blow-up covers a full neighborhood:
+# use the sum barrier for |u| <= 3v and the root barrier for v <= |u|/3.
+extremal_incidence_types = {}
+boundary_local_pairs = {}
+for triple_index in np.flatnonzero(~nonextremal_boundary):
+    support_indices = (
+        standard_hamilton_index,
+        int(normalized_hamilton_triples[triple_index, 0]),
+        int(normalized_hamilton_triples[triple_index, 1]),
+    )
+    local_pairs = []
+    for first, second in ((0, 1), (0, 2), (1, 2)):
+        support_pair = tuple(sorted((
+            support_indices[first], support_indices[second]
+        )))
+        if support_pair not in extremal_hamilton_pairs:
+            continue
+        local_pairs.append((first, second))
+        sum_poly = extremal_pair_polynomial(
+            sum_coefficients[:, triple_index],
+            homogeneous_exponents,
+            first,
+            second,
+        )
+        root_poly = extremal_pair_polynomial(
+            root_coefficients[:, triple_index],
+            homogeneous_exponents,
+            first,
+            second,
+        )
+        direct = (tuple(sorted(sum_poly.items())),
+                  tuple(sorted(root_poly.items())))
+        reversed_pair = (
+            tuple(sorted(reverse_first_variable(sum_poly).items())),
+            tuple(sorted(reverse_first_variable(root_poly).items())),
+        )
+        key = min(direct, reversed_pair)
+        extremal_incidence_types[key] = extremal_incidence_types.get(key, 0) + 1
+    boundary_local_pairs[int(triple_index)] = tuple(local_pairs)
+assert len(boundary_local_pairs) == 351
+assert sum(map(len, boundary_local_pairs.values())) == 354
+assert len(extremal_incidence_types) == 18
+assert sorted(extremal_incidence_types.values()) == (
+    [6] * 2 + [18] * 13 + [36] * 3
+)
+
+blowup_slope = Fraction(3)
+blowup_height = Fraction(1, 64)
+blowup_width = blowup_slope * blowup_height
+local_largest_control = None
+for sum_items, root_items in extremal_incidence_types:
+    sum_poly = dict(sum_items)
+    root_poly = dict(root_items)
+
+    # Central wedge: u=v(-3+6x), v=y/64.  The sum barrier has
+    # a positive factor v, removed before checking the unit square.
+    central_sum = multivariate_compose(sum_poly, (
+        {(0, 1): -blowup_slope * blowup_height,
+         (1, 1): 2 * blowup_slope * blowup_height},
+        {(0, 1): blowup_height},
+    ))
+    assert all(exponent[1] >= 1 for exponent in central_sum)
+    central_sum = {
+        (exponent[0], exponent[1] - 1): coefficient
+        for exponent, coefficient in central_sum.items()
+    }
+    local_controls = tensor_bernstein_controls(central_sum)
+
+    # Outer wedges: u=+/-3x/64 and v=xy/64.  The root barrier has
+    # a positive factor u^2, removed before the same exact check.
+    for direction in (-1, 1):
+        outer_root = multivariate_compose(root_poly, (
+            {(1, 0): direction * blowup_width},
+            {(1, 1): blowup_height},
+        ))
+        assert all(exponent[0] >= 2 for exponent in outer_root)
+        outer_root = {
+            (exponent[0] - 2, exponent[1]): coefficient
+            for exponent, coefficient in outer_root.items()
+        }
+        local_controls.extend(tensor_bernstein_controls(outer_root))
+    assert max(local_controls) < 0
+    type_largest_control = max(local_controls)
+    if local_largest_control is None:
+        local_largest_control = type_largest_control
+    else:
+        local_largest_control = max(
+            local_largest_control, type_largest_control
+        )
+assert local_largest_control == Fraction(-45, 16)
+
 hamilton_largest_cover = 0
 hamilton_deepest_cover = 0
 for triple_index in np.flatnonzero(nonextremal_boundary):
-    cover_size, cover_depth = exact_simplex_cover(
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
         sum_coefficients[:, triple_index].astype(object),
         root_coefficients[:, triple_index].astype(object),
         simplex_transforms,
     )
+    assert local_cells == 0
     hamilton_largest_cover = max(hamilton_largest_cover, cover_size)
     hamilton_deepest_cover = max(hamilton_deepest_cover, cover_depth)
 assert hamilton_largest_cover == 76
 assert hamilton_deepest_cover == 5
+
+boundary_largest_cover = 0
+boundary_deepest_cover = 0
+boundary_local_cells = 0
+for triple_index, local_pairs in boundary_local_pairs.items():
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        sum_coefficients[:, triple_index].astype(object),
+        root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+        local_pairs,
+    )
+    boundary_largest_cover = max(boundary_largest_cover, cover_size)
+    boundary_deepest_cover = max(boundary_deepest_cover, cover_depth)
+    boundary_local_cells += local_cells
+assert boundary_largest_cover == 166
+assert boundary_deepest_cover == 8
+assert boundary_local_cells == 1122
 
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
@@ -1177,6 +1398,14 @@ print("Hamilton triples without an extremal boundary pair: 6670")
 print("largest Hamilton simplex cover: "
       f"{hamilton_largest_cover} triangles at depth "
       f"{hamilton_deepest_cover}")
+print("Hamilton triples with an extremal boundary pair: 351")
+print("extremal boundary polynomial types: 18")
+print("largest extremal local Bernstein control: "
+      f"{local_largest_control}")
+print("largest extremal-boundary simplex cover: "
+      f"{boundary_largest_cover} triangles at depth "
+      f"{boundary_deepest_cover}")
+print(f"extremal local cells used: {boundary_local_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")

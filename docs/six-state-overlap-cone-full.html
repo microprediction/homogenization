@@ -104,7 +104,7 @@
     <p class="muted">Research note, 21 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary positive mixture of three Hamilton cycles no pair of which is extremal in the two-cycle theorem; an arbitrary positive mixture on any of seven Hamilton-triple support orbits listed below; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let a balanced stationary flow on six states be either a positive mixture of at most two simple directed cycles; an equal-weight mixture of three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; an arbitrary nonnegative, nonzero mixture of any three Hamilton cycles; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -180,16 +180,19 @@
     <p>Indeed $e_1\ge3e_3^{1/3}$ and $e_2\ge3e_3^{2/3}$ by AM&ndash;GM, so $e_1e_2\ge9e_3$. Equality holds only when $a=b=c$. Thus $3/5$ lies between the two nonnegative squared frequencies, proving the bound throughout this two-dimensional positive weight cone and identifying its unique weight ratio for equality.</p>
     <p>A state relabeling conjugates both $H$ and $D$, while simultaneous reversal leaves $H$ unchanged and sends $D$ to $-D$. Either operation preserves the singular frequencies and merely permutes the three weights. The calculation therefore covers every support in the unique extremal orbit, with equality exactly at equal weights.</p>
 
-    <h2>Hamilton triples without an extremal pair</h2>
+    <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
-    <p>Fixing the first Hamilton cycle canonically leaves 7,021 unordered triple supports. Of these, 6,670 contain no extremal pair. Every nonnegative weighting of each such support, not identically zero, satisfies</p>
+    <p>Fixing the first Hamilton cycle canonically leaves 7,021 unordered triple supports. Every nonnegative weighting of every such support, not identically zero, satisfies</p>
     $$\sigma_2\le\sqrt{3/5}.$$
-    <p>To prove this, write $\det(tH-D)=a_5t^5+a_3t^3+a_1t$ and regard each coefficient as a homogeneous degree-five polynomial in the three cycle weights. Values at the 21 integer barycentric nodes recover those polynomials exactly. Midpoint subdivision of the weight simplex then gives, on every subtriangle, one of the exact Bernstein-coefficient inequalities</p>
+    <p>Write $\det(tH-D)=a_5t^5+a_3t^3+a_1t$ and regard each coefficient as a homogeneous degree-five polynomial in the three cycle weights. Values at the 21 integer barycentric nodes recover those polynomials exactly. For the 6,670 supports containing no extremal pair, midpoint subdivision of the weight simplex gives, on every subtriangle, one of the exact Bernstein-coefficient inequalities</p>
     $$5a_3-6a_5\le0$$
     <p>or</p>
     $$9a_5-15a_3+25a_1\le0.$$
     <p>The first says that the sum of the squared frequencies is at most $6/5$; the second places $3/5$ between them. Either proves the bound. Across all 6,670 supports, the largest certificate uses 76 triangles and subdivision depth five.</p>
-    <p>This is a complete exact theorem for Hamilton triples without an extremal boundary pair, covering about 95 percent of the normalized Hamilton-triple supports. It leaves 351 supports containing an extremal pair for further analysis; the next subsection proves some supports separately by a coefficientwise argument.</p>
+    <p>The remaining 351 supports meet an equality point on a two-cycle boundary, where ordinary subdivision alone does not terminate. Normalize an extremal pair's weights as $1+u,1-u$ and call the third weight $v$. The 354 extremal-pair incidences reduce, up to $u\mapsto-u$, to 18 exact polynomial types.</p>
+    <p>On the local box $|u|\le3/64$, $0\le v\le1/64$, split into the central wedge $|u|\le3v$ and the two outer wedges $v\le|u|/3$. In the central wedge substitute $u=v(-3+6x)$, $v=y/64$: the sum barrier has a positive factor $v$, and every tensor-product Bernstein control of its quotient is negative on $0\le x,y\le1$.</p>
+    <p>In each outer wedge substitute $u=\pm3x/64$, $v=xy/64$. The root barrier has a positive factor $u^2$, and again every exact Bernstein control of the quotient is negative. The largest control over all 18 types is $-45/16$, so these local certificates are strict.</p>
+    <p>Outside those boxes, ordinary midpoint subdivision terminates. Among the 351 boundary supports the largest cover has 166 triangles at depth eight; 1,122 terminal cells invoke the local blow-up certificate. Together with the nonextremal covers, this proves the theorem for all 7,021 normalized Hamilton-triple supports, including zero-weight boundaries.</p>
 
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
@@ -238,10 +241,10 @@
     <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants.</p>
     <p>It verifies that the four normalized equality representatives form one orbit by explicit relabeling and simultaneous-reversal maps. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
     <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
-    <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, interpolates both homogeneous barrier polynomials from 21 integer nodes, and verifies exact simplex covers for all 6,670 eligible supports. The largest cover has 76 triangles at depth five.</p>
+    <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. The 351 Hamilton-triple supports containing an extremal pair are not all covered, nor are unequal positive weights on other three-cycle architectures, general flows with four or more genuinely directed cycles, or unrestricted state counts six through nine.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Unequal positive weights on non-Hamilton three-cycle architectures, general flows with four or more genuinely directed cycles, and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>
