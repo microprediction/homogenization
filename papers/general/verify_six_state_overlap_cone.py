@@ -1,7 +1,7 @@
 """Certificate for sparse six-state cycle mixtures and their sharp skew bound."""
 
 from fractions import Fraction
-from itertools import combinations, permutations
+from itertools import combinations, permutations, product
 import math
 from math import comb
 
@@ -106,6 +106,13 @@ def multivariate_mul(left, right):
             )
             out[degree] = out.get(degree, Fraction(0)) + value_left * value_right
     return {degree: value for degree, value in out.items() if value}
+
+
+def multivariate_power(poly, power):
+    out = {(0,) * len(next(iter(poly))): Fraction(1)}
+    for _ in range(power):
+        out = multivariate_mul(out, poly)
+    return out
 
 
 def multivariate_determinant(matrix):
@@ -277,6 +284,94 @@ def exact_cover(sum_test, root_test, left=Fraction(0), right=Fraction(1), depth=
     return left_count + right_count, max(left_depth, right_depth)
 
 
+def fraction_matrix_inverse(matrix):
+    """Exact Gauss-Jordan inverse of a small rational matrix."""
+    size = len(matrix)
+    augmented = [
+        [Fraction(value) for value in row]
+        + [Fraction(index == column) for column in range(size)]
+        for index, row in enumerate(matrix)
+    ]
+    for column in range(size):
+        pivot = next(
+            row for row in range(column, size) if augmented[row][column]
+        )
+        augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
+        pivot_value = augmented[column][column]
+        augmented[column] = [value / pivot_value for value in augmented[column]]
+        for row in range(size):
+            if row == column or not augmented[row][column]:
+                continue
+            multiple = augmented[row][column]
+            augmented[row] = [
+                value - multiple * pivot_entry
+                for value, pivot_entry in zip(
+                    augmented[row], augmented[column]
+                )
+            ]
+    return [row[size:] for row in augmented]
+
+
+def homogeneous_midpoint_transforms(exponents):
+    """Integer coefficient maps for the four midpoint subtriangles."""
+    half = Fraction(1, 2)
+    vertices = (
+        ((1, 0, 0), (half, half, 0), (half, 0, half)),
+        ((half, half, 0), (0, 1, 0), (0, half, half)),
+        ((half, 0, half), (0, half, half), (0, 0, 1)),
+        ((half, half, 0), (0, half, half), (half, 0, half)),
+    )
+    exponent_index = {exponent: index for index, exponent in enumerate(exponents)}
+    transforms = []
+    for child_vertices in vertices:
+        linear_forms = [
+            {
+                tuple(int(coordinate == child) for coordinate in range(3)):
+                    Fraction(child_vertices[child][parent])
+                for child in range(3)
+                if child_vertices[child][parent]
+            }
+            for parent in range(3)
+        ]
+        transform = [
+            [Fraction(0) for _ in exponents] for _ in exponents
+        ]
+        for column, exponent in enumerate(exponents):
+            term = {(0, 0, 0): Fraction(1)}
+            for variable, power in enumerate(exponent):
+                term = multivariate_mul(
+                    term,
+                    multivariate_power(linear_forms[variable], power),
+                )
+            for child_exponent, value in term.items():
+                transform[exponent_index[child_exponent]][column] = value
+        assert all(
+            (32 * value).denominator == 1
+            for row in transform for value in row
+        )
+        transforms.append(np.array([
+            [int(32 * value) for value in row] for row in transform
+        ], dtype=object))
+    return transforms
+
+
+def exact_simplex_cover(sum_test, root_test, transforms, depth=0):
+    """Cover a weight simplex by exact Bernstein-sign certificates."""
+    if max(sum_test) <= 0 or max(root_test) <= 0:
+        return 1, depth
+    assert depth < 10
+    covers = [
+        exact_simplex_cover(
+            transform @ sum_test,
+            transform @ root_test,
+            transforms,
+            depth + 1,
+        )
+        for transform in transforms
+    ]
+    return sum(cover[0] for cover in covers), max(cover[1] for cover in covers)
+
+
 def canonical_cycle(cycle):
     start = min(range(len(cycle)), key=lambda index: cycle[index])
     return cycle[start:] + cycle[:start]
@@ -338,6 +433,29 @@ def batch_integer_determinants(matrices):
     for row in range(GROUND):
         terms *= matrices[:, row, GROUND_PERMUTATIONS[:, row]]
     return terms @ GROUND_SIGNS
+
+
+def batch_integer_pencil_coefficients(symmetric, skew):
+    """Exact t^5, t^3 and t coefficients for batches of 5D pencils."""
+    value_one = batch_integer_determinants(symmetric - skew)
+    value_two = batch_integer_determinants(2 * symmetric - skew)
+    value_three = batch_integer_determinants(3 * symmetric - skew)
+    coefficient_five = (
+        value_three - 4 * value_two + 5 * value_one
+    ) // 120
+    coefficient_three = (
+        (value_two - 2 * value_one) // 6 - 5 * coefficient_five
+    )
+    coefficient_one = value_one - coefficient_five - coefficient_three
+    assert np.array_equal(
+        120 * coefficient_five,
+        value_three - 4 * value_two + 5 * value_one,
+    )
+    assert np.array_equal(
+        6 * (coefficient_three + 5 * coefficient_five),
+        value_two - 2 * value_one,
+    )
+    return coefficient_five, coefficient_three, coefficient_one
 
 
 def flow(a, b, dtype=object):
@@ -642,23 +760,8 @@ for cycle_length in range(2, N + 1):
         # The largest evaluated entry is 21, so the 120-term Leibniz sums
         # are far below the int64 ceiling and remain exact.
         assert np.max(np.abs(3 * symmetric - skew)) <= 21
-        value_one = batch_integer_determinants(symmetric - skew)
-        value_two = batch_integer_determinants(2 * symmetric - skew)
-        value_three = batch_integer_determinants(3 * symmetric - skew)
-        coefficient_five = (
-            value_three - 4 * value_two + 5 * value_one
-        ) // 120
-        coefficient_three = (
-            (value_two - 2 * value_one) // 6 - 5 * coefficient_five
-        )
-        coefficient_one = value_one - coefficient_five - coefficient_three
-        assert np.array_equal(
-            120 * coefficient_five,
-            value_three - 4 * value_two + 5 * value_one,
-        )
-        assert np.array_equal(
-            6 * (coefficient_three + 5 * coefficient_five),
-            value_two - 2 * value_one,
+        coefficient_five, coefficient_three, coefficient_one = (
+            batch_integer_pencil_coefficients(symmetric, skew)
         )
 
         connected = coefficient_five > 0
@@ -728,6 +831,141 @@ for target, (relabeling, reverse_all) in zip(
     if reverse_all:
         transformed = [reverse_cycle(cycle) for cycle in transformed]
     assert tuple(sorted(transformed)) == tuple(sorted(target))
+
+# Prove the arbitrary-weight bound for every triple of Hamilton cycles whose
+# three boundary pairs are nonextremal.  There are 7,021 normalized Hamilton
+# triples.  Exactly 120 labeled Hamilton pairs attain the two-cycle bound at
+# equal weights, with degree two at every cycle; excluding triples containing
+# one of those pairs leaves 6,670 supports.
+hamilton_indices = np.array([
+    index for index, cycle in enumerate(all_cycles) if len(cycle) == N
+], dtype=np.int64)
+hamilton_pairs = np.array(
+    list(combinations(hamilton_indices, 2)), dtype=np.int64
+)
+pair_symmetric = (
+    integer_symmetric[hamilton_pairs[:, 0]]
+    + integer_symmetric[hamilton_pairs[:, 1]]
+)
+pair_skew = (
+    integer_skew[hamilton_pairs[:, 0]]
+    + integer_skew[hamilton_pairs[:, 1]]
+)
+pair_a5, pair_a3, pair_a1 = batch_integer_pencil_coefficients(
+    pair_symmetric, pair_skew
+)
+extremal_pair_mask = (
+    (5 * pair_a3 == 6 * pair_a5)
+    & (25 * pair_a1 == 9 * pair_a5)
+)
+extremal_hamilton_pairs = {
+    tuple(pair) for pair in hamilton_pairs[extremal_pair_mask]
+}
+assert len(extremal_hamilton_pairs) == 120
+assert {
+    sum(
+        tuple(sorted((index, other))) in extremal_hamilton_pairs
+        for other in hamilton_indices if other != index
+    )
+    for index in hamilton_indices
+} == {2}
+
+standard_hamilton_index = cycle_index[standard_hamilton_cycle]
+other_hamilton_indices = [
+    index for index in hamilton_indices if index != standard_hamilton_index
+]
+normalized_hamilton_triples = np.array(
+    list(combinations(other_hamilton_indices, 2)), dtype=np.int64
+)
+nonextremal_boundary = np.array([
+    all(
+        tuple(sorted(pair)) not in extremal_hamilton_pairs
+        for pair in (
+            (standard_hamilton_index, second),
+            (standard_hamilton_index, third),
+            (second, third),
+        )
+    )
+    for second, third in normalized_hamilton_triples
+], dtype=bool)
+assert len(normalized_hamilton_triples) == 7021
+assert int(np.sum(nonextremal_boundary)) == 6670
+
+# Recover each homogeneous degree-five barrier polynomial exactly from its
+# values at the 21 integer barycentric nodes.  The interpolation and all
+# determinants use integer arithmetic.
+homogeneous_exponents = [
+    exponent
+    for exponent in product(range(6), repeat=3)
+    if sum(exponent) == 5
+]
+vandermonde = [
+    [
+        a ** i * b ** j * c ** k
+        for i, j, k in homogeneous_exponents
+    ]
+    for a, b, c in homogeneous_exponents
+]
+inverse_vandermonde = fraction_matrix_inverse(vandermonde)
+interpolation_denominator = 1
+for row in inverse_vandermonde:
+    for value in row:
+        interpolation_denominator = math.lcm(
+            interpolation_denominator, value.denominator
+        )
+interpolation_matrix = np.array([
+    [int(interpolation_denominator * value) for value in row]
+    for row in inverse_vandermonde
+], dtype=np.int64)
+
+sum_values = []
+root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[standard_hamilton_index]
+        + second_weight * integer_symmetric[normalized_hamilton_triples[:, 0]]
+        + third_weight * integer_symmetric[normalized_hamilton_triples[:, 1]]
+    )
+    skew = (
+        first_weight * integer_skew[standard_hamilton_index]
+        + second_weight * integer_skew[normalized_hamilton_triples[:, 0]]
+        + third_weight * integer_skew[normalized_hamilton_triples[:, 1]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    sum_values.append(5 * node_a3 - 6 * node_a5)
+    root_values.append(9 * node_a5 - 15 * node_a3 + 25 * node_a1)
+stacked_sum_values = np.stack(sum_values)
+stacked_root_values = np.stack(root_values)
+interpolation_entry_bound = int(np.max(np.abs(interpolation_matrix)))
+for stacked_values in (stacked_sum_values, stacked_root_values):
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+sum_numerators = interpolation_matrix @ stacked_sum_values
+root_numerators = interpolation_matrix @ stacked_root_values
+assert np.all(sum_numerators % interpolation_denominator == 0)
+assert np.all(root_numerators % interpolation_denominator == 0)
+sum_coefficients = sum_numerators // interpolation_denominator
+root_coefficients = root_numerators // interpolation_denominator
+
+simplex_transforms = homogeneous_midpoint_transforms(homogeneous_exponents)
+hamilton_largest_cover = 0
+hamilton_deepest_cover = 0
+for triple_index in np.flatnonzero(nonextremal_boundary):
+    cover_size, cover_depth = exact_simplex_cover(
+        sum_coefficients[:, triple_index].astype(object),
+        root_coefficients[:, triple_index].astype(object),
+        simplex_transforms,
+    )
+    hamilton_largest_cover = max(hamilton_largest_cover, cover_size)
+    hamilton_deepest_cover = max(hamilton_deepest_cover, cover_depth)
+assert hamilton_largest_cover == 76
+assert hamilton_deepest_cover == 5
 
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
@@ -934,6 +1172,11 @@ print(f"sharp equal-weight triple representatives: {len(equality_triples)}")
 print("sharp equal-weight triple support orbits: 1")
 print(f"one sharp equal-weight triple: {equality_triples[0]}")
 print("equal-weight triple normalized pencil: t (t^2 + 3/5)^2")
+print("normalized Hamilton triples: 7021")
+print("Hamilton triples without an extremal boundary pair: 6670")
+print("largest Hamilton simplex cover: "
+      f"{hamilton_largest_cover} triangles at depth "
+      f"{hamilton_deepest_cover}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
