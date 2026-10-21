@@ -273,6 +273,11 @@ def canonical_cycle(cycle):
     return cycle[start:] + cycle[:start]
 
 
+def reverse_cycle(cycle):
+    """Reverse orientation and retain the canonical cyclic representative."""
+    return canonical_cycle((cycle[0],) + tuple(reversed(cycle[1:])))
+
+
 def connected_union(first_cycle, second_cycle, state_count=N):
     neighbors = [set() for _ in range(state_count)]
     for cycle in (first_cycle, second_cycle):
@@ -649,6 +654,27 @@ assert connected_triples == 382466
 assert len(triple_coefficient_pairs) == 3207
 assert equality_triples == expected_equality_triples
 
+# The four representatives above are one support orbit under state relabeling
+# and simultaneous reversal of all cycles.  The latter changes D to -D and
+# therefore leaves the intrinsic singular frequencies unchanged.
+equality_orbit_maps = [
+    ((0, 1, 2, 3, 4, 5), False),
+    ((0, 1, 2, 3, 5, 4), False),
+    ((0, 3, 2, 1, 5, 4), True),
+    ((0, 3, 2, 1, 4, 5), True),
+]
+orbit_representative = expected_equality_triples[0]
+for target, (relabeling, reverse_all) in zip(
+    expected_equality_triples, equality_orbit_maps
+):
+    transformed = [
+        canonical_cycle(tuple(relabeling[state] for state in cycle))
+        for cycle in orbit_representative
+    ]
+    if reverse_all:
+        transformed = [reverse_cycle(cycle) for cycle in transformed]
+    assert tuple(sorted(transformed)) == tuple(sorted(target))
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -849,6 +875,7 @@ print("largest five-state Bernstein cover: "
 print(f"connected distinct equal-weight triples: {connected_triples}")
 print(f"distinct normalized triple coefficient pairs: {len(triple_coefficient_pairs)}")
 print(f"sharp equal-weight triple representatives: {len(equality_triples)}")
+print("sharp equal-weight triple support orbits: 1")
 print(f"one sharp equal-weight triple: {equality_triples[0]}")
 print("equal-weight triple normalized pencil: t (t^2 + 3/5)^2")
 print(f"directed-cycle Fourier cases: {N - 2}")
