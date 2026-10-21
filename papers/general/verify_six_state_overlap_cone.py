@@ -17,6 +17,15 @@ THREE_CYCLES = (
     (0, 1, 4, 5),
     (2, 3, 4, 5),
 )
+HAMILTON_TRIPLE_ORBIT_REPRESENTATIVES = (
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 5, 4), (0, 1, 2, 4, 5, 3)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 5, 4), (0, 1, 2, 4, 3, 5)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 5, 4), (0, 1, 3, 2, 4, 5)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 5, 4), (0, 1, 4, 2, 3, 5)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 4, 5, 3), (0, 1, 4, 2, 3, 5)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 3, 5, 4), (0, 2, 1, 3, 4, 5)),
+    ((0, 1, 2, 3, 4, 5), (0, 1, 2, 4, 5, 3), (0, 1, 2, 5, 3, 4)),
+)
 
 
 def sign(perm):
@@ -168,15 +177,15 @@ def symbolic_pencil_coefficients(first_cycle, other_cycle):
     return symbolic_pencil_coefficients_n(first_cycle, other_cycle, N)
 
 
-def symbolic_three_cycle_coefficients():
-    """Exact coefficient polynomials for weights 1, r, s on THREE_CYCLES."""
+def symbolic_three_cycle_coefficients(cycles=THREE_CYCLES):
+    """Exact coefficient polynomials for weights 1, r, s on three cycles."""
     weights = [[{} for _ in range(N)] for _ in range(N)]
     weight_polynomials = (
         {(0, 0, 0): Fraction(1)},
         {(0, 1, 0): Fraction(1)},
         {(0, 0, 1): Fraction(1)},
     )
-    for cycle, weight in zip(THREE_CYCLES, weight_polynomials):
+    for cycle, weight in zip(cycles, weight_polynomials):
         for source, target in zip(cycle, cycle[1:] + cycle[:1]):
             weights[source][target] = sparse_add(weights[source][target], weight)
     laplacian = [[{} for _ in range(N)] for _ in range(N)]
@@ -456,6 +465,51 @@ root_barrier = sparse_add(
 )
 am_gm_gap = sparse_add(e1_e2, sparse_scale(e3, -9))
 assert root_barrier == sparse_scale(multivariate_mul(e2, am_gm_gap), -1)
+
+# Seven symmetry orbits of genuine Hamilton triples admit an even simpler
+# arbitrary-weight proof.  For every representative, every coefficient of
+# 9*a5 - 15*a3 + 25*a1 is nonpositive as a polynomial in r,s, and at least
+# one is negative.  Hence the root barrier is strictly negative for r,s>0.
+hamilton_barriers = []
+for representative in HAMILTON_TRIPLE_ORBIT_REPRESENTATIVES:
+    hamilton_a5, hamilton_a3, hamilton_a1 = (
+        symbolic_three_cycle_coefficients(representative)
+    )
+    barrier = sparse_add(
+        sparse_add(
+            sparse_scale(hamilton_a5, 9),
+            sparse_scale(hamilton_a3, -15),
+        ),
+        sparse_scale(hamilton_a1, 25),
+    )
+    assert barrier and all(value <= 0 for value in barrier.values())
+    assert any(value < 0 for value in barrier.values())
+    hamilton_barriers.append(barrier)
+
+# Count the supports represented by those seven orbits after fixing one
+# Hamilton cycle to (0,1,2,3,4,5).  Relabeling and global reversal preserve
+# the singular frequencies; the orbit sets are disjoint.
+standard_hamilton_cycle = tuple(range(N))
+hamilton_orbit_supports = []
+for representative in HAMILTON_TRIPLE_ORBIT_REPRESENTATIVES:
+    supports = set()
+    for relabeling in permutations(range(N)):
+        relabeled = [
+            canonical_cycle(tuple(relabeling[state] for state in cycle))
+            for cycle in representative
+        ]
+        for reverse_all in (False, True):
+            transformed = (
+                [reverse_cycle(cycle) for cycle in relabeled]
+                if reverse_all else relabeled
+            )
+            support = tuple(sorted(transformed))
+            if standard_hamilton_cycle in support:
+                supports.add(support)
+    hamilton_orbit_supports.append(supports)
+assert sorted(map(len, hamilton_orbit_supports)) == [6, 9, 18, 18, 18, 18, 36]
+assert len(set().union(*hamilton_orbit_supports)) == 123
+assert sum(map(len, hamilton_orbit_supports)) == 123
 
 # Relabel the first simple cycle canonically by its length; enumerate every
 # possible second simple cycle.  Connected union is equivalent to irreducibility
@@ -862,6 +916,8 @@ print(f"exact pencil identities: {len(exact_cases)} rational rate pairs")
 print("equal-weight normalized pencil: t (t^2 + 3/5)^2")
 print("unequal three-cycle symbolic identities: 3 exact coefficients")
 print("three-cycle root barrier: -e2 (e1 e2 - 9 e3) <= 0")
+print("coefficientwise Hamilton triple support orbits: 7")
+print("first-cycle-normalized Hamilton triple supports: 123")
 print(f"simple directed cycles enumerated: {len(all_cycles)}")
 print(f"canonical connected cycle pairs classified exactly: {len(cycle_pairs)}")
 print(f"distinct exact pencils: {len(pencil_types)}")
