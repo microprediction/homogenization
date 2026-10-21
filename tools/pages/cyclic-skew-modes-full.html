@@ -1,11 +1,11 @@
-<!-- title: The target's two skew modes cannot fit in a small cyclic chain · homogenization | math -->
+<!-- title: Sharp two-mode bounds for small cyclic chains · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./identifiability.html">&larr; fixed-feature geometry</a>
       <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_cyclic_skew_modes.py">certificate</a></span></p>
-    <h1>The target&apos;s two skew modes cannot fit in a small cyclic chain</h1>
-    <p class="subtitle">A Fourier and compression exclusion for every translation-invariant chain on five through nine cyclic states.</p>
+    <h1>Sharp two-mode bounds for small cyclic chains</h1>
+    <p class="subtitle">A Fourier and compression theorem for every translation-invariant chain on five through nine cyclic states.</p>
     <p class="lead">A cyclically translation-invariant chain with $5\le n\le8$ has at most one intrinsic Green&ndash;Kubo skew frequency larger than one.
-      At nine states at most one frequency can even reach $\cot(\pi/5)$, so no four-feature compression through nine states has two copies of that target frequency.</p>
+      At nine states the exact largest possible second frequency is $\rho_9=1.245891659322\ldots&lt;\cot(\pi/5)$, so no four-feature compression through nine states has two copies of that target frequency.</p>
 
     <h2>The chain and its full intrinsic frequencies</h2>
     <p>Write the state space as $\mathbb Z/n\mathbb Z$ and let</p>
@@ -51,18 +51,34 @@
     </table>
     <p>For $n=8$, mode two separately satisfies $|b_2|\le a_2$ because its angles are multiples of $\pi/2$.
       The remaining table uses only $0,\pm1,$ and $\pm1/\sqrt2$; for $n=5,6,7$ direct trigonometric substitution gives the displayed strict inequalities.</p>
-    <h2>The exact nine-state target boundary</h2>
+    <h2>The sharp nine-state boundary</h2>
     <div class="equation-card">
-    $$n=9,\quad \kappa_*=\cot(\pi/5)
-      \quad\Longrightarrow\quad \#\{k:\kappa_k\ge\kappa_*\}\le1.$$
+    $$n=9\quad\Longrightarrow\quad \kappa_{(2)}\le\rho_9,
+      \qquad 1.245891659322&lt;\rho_9&lt;1.245891659323,$$
     </div>
-    <p>The same separating argument now replaces $h_{k,\epsilon}$ by
-      $h^{*}_{k,\epsilon}(j)=\epsilon\sin(2\pi kj/9)-\kappa_*\{1-\cos(2\pi kj/9)\}$.
-      For the six mode pairs $(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)$, positive multipliers can be chosen from $\{1/20,1/8,1/5,1/3,3\}$ for each orientation pair.</p>
-    <p>Every resulting jumpwise inequality is strict.
-      Therefore two full frequencies cannot both reach the target, including at equality.</p>
-    <p>The certificate verifies all 342 jumpwise inequalities by outward rational bounds.
-      It derives a rational enclosure of $\pi$ from Machin&apos;s formula and then uses alternating rational Taylor enclosures for sine and cosine, so the exclusions do not rest on floating rounding.</p>
+    <p>Here $\kappa_{(2)}$ is the second largest of the four full frequencies and $\rho_9$ is exact, not a fitted decimal.
+      Put</p>
+    $$h^{\rho}_{k,\epsilon}(j)=\epsilon\sin(2\pi kj/9)-\rho\{1-\cos(2\pi kj/9)\}$$
+    <p>and define $\rho_9$ as the unique positive root of the quadratic</p>
+    $$D(\rho)=h^{\rho}_{1,+}(1)h^{\rho}_{4,-}(2)
+      -h^{\rho}_{1,+}(2)h^{\rho}_{4,-}(1).$$
+    <p>The leading coefficient of $D$ is negative and its constant coefficient is positive, so its two roots have opposite signs; outward rational trigonometric bounds give the displayed isolating interval for the positive one.</p>
+    <p>For every pair of modes and orientations outside one six-element symmetry orbit, the jumpwise separator is simply</p>
+    $$h^{\rho_9}_{k,\epsilon}(j)+h^{\rho_9}_{\ell,\delta}(j)&lt;0.$$
+    <p>The orbit is generated from $(k,\ell,\epsilon,\delta)=(1,4,+,-)$ by multiplying jumps by units modulo nine and by reversal.
+      For that representative choose</p>
+    $$c=-{h^{\rho_9}_{4,-}(1)\over h^{\rho_9}_{1,+}(1)}&gt;0.$$
+    <p>Then $c h^{\rho_9}_{1,+}(j)+h^{\rho_9}_{4,-}(j)$ vanishes at $j=1,2$ and is strictly negative at the other six jumps.
+      The first equality defines $c$ and the second is exactly $D(\rho_9)=0$.
+      Summing against nonnegative rates proves that two signed mode ratios cannot both exceed $\rho_9$, hence $\kappa_{(2)}\le\rho_9$.</p>
+    <p>The bound is attained.
+      Take only jumps one and two, with</p>
+    $$r_1={-h^{\rho_9}_{1,+}(2)\over h^{\rho_9}_{1,+}(1)-h^{\rho_9}_{1,+}(2)}
+      =0.112960633715\ldots,\qquad r_2=1-r_1.$$
+    <p>Both weights are positive, while the two weighted signed margins vanish by the determinant identity.
+      Thus modes one and four both have frequency exactly $\rho_9$, proving sharpness.</p>
+    <p>The certificate checks 300 rationally enclosed Fourier inequalities, including every non-equality case in the sharp proof.
+      It derives a rational enclosure of $\pi$ from Machin&apos;s formula and then uses alternating rational Taylor enclosures for sine and cosine, so neither the root isolation nor the exclusions rest on floating rounding.</p>
 
     <h2>Why features cannot evade the full spectrum</h2>
     <p>Let $F$ be any centered $n\times4$ feature matrix of rank four and let $U=L^{-1}_0F$ be its centered Poisson potentials.
@@ -70,20 +86,20 @@
     $$K=U^*LU,\qquad S=\operatorname{sym}K=U^*HU,\qquad D=\operatorname{skew}K=U^*AU.$$
     <p>After $H$-orthonormalizing the columns of $U$, the normalized feature skew matrix $S^{-1/2}DS^{-1/2}$ is a four-dimensional compression of $\mathcal A$.
       Apply Cauchy interlacing to the Hermitian matrix $i\mathcal A$: the second positive eigenvalue of the compression is at most the second positive eigenvalue of the full matrix.</p>
-    <p>Thus a full cyclic chain with at most one frequency above one cannot produce a four-feature block with two frequencies above one.
+    <p>Thus a full cyclic chain through eight states cannot produce a four-feature block with two frequencies above one; at nine states its second feature frequency is at most the sharp constant $\rho_9$.
       This is a compression statement, not an inference from the largest frequency alone.</p>
 
     <h2>Application to the two-mode target</h2>
     <p>Consider the fixed-parameter population block</p>
     $$K_*=I_4+\cot(\pi/5)\operatorname{diag}(J,J),\qquad
       J=\begin{pmatrix}0&amp;1\\-1&amp;0\end{pmatrix}.$$
-    <p>Its two positive intrinsic skew frequencies are both $\cot(\pi/5)&gt;1$, since $\pi/5&lt;\pi/4$.
+    <p>Its two positive intrinsic skew frequencies are both $\cot(\pi/5)=1.376381920471\ldots&gt;\rho_9$.
       Therefore no translation-invariant chain on $5,6,7,8,$ or $9$ cyclic states realizes $K_*$, regardless of its nonnegative jump rates or the four centered features.</p>
     <p>This does not settle the unrestricted minimum-state problem.
       In particular, the known nine-state shared-hub realization is necessarily non-translation-invariant; a general overlapping-cycle generator could have different intrinsic geometry.</p>
 
     <h2>Certificate and scope</h2>
-    <p>The certificate also checks 200 dense random circulant generators by constructing the full normalized skew matrix independently.
+    <p>The certificate also checks the sharp two-jump realization and 200 dense random circulant generators by constructing the full normalized skew matrix independently.
       Its Fourier frequencies agree with the matrix singular values to $5.2\times10^{-15}$, using a portable assertion tolerance of $2\times10^{-11}$.</p>
     <p>The theorem concerns one fixed generator and one fixed feature block.
       It does not identify a hidden generator, convert rank after integrating maturity-dependent loadings into a regime count, or make a statement about marginal versus conditional conformal coverage.</p>

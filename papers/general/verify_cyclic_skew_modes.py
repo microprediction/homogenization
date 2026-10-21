@@ -129,31 +129,88 @@ def exact_fourier_table():
                 assert value[1] <= 0
                 checked += 1
 
-    # At n=9, exclude two modes at the exact target cot(pi/5), not merely
-    # two modes above one. Every jumpwise combination is strictly negative.
+    # At n=9 the sharp second-frequency bound is the positive root rho_9 of
+    # the determinant for modes (1,+) and (4,-), supported on jumps 1 and 2.
+    # A one-trillionth-wide rational bracket isolates that root.
+    root_lo, root_hi = F(1245891659322, 10**12), F(1245891659323, 10**12)
+
+    def determinant(threshold):
+        h11 = margin(9, 1, 1, 1, pi, threshold)
+        h12 = margin(9, 1, 1, 2, pi, threshold)
+        h41 = margin(9, 4, -1, 1, pi, threshold)
+        h42 = margin(9, 4, -1, 2, pi, threshold)
+        return add(mul(h11, h42), scale(-1, mul(h12, h41)))
+
+    assert determinant((root_lo, root_lo))[0] > 0
+    assert determinant((root_hi, root_hi))[1] < 0
+
+    def sine_and_dissipation(mode, orientation, jump):
+        sine, cosine = trig_pi_multiple(2 * mode * jump, 9, pi)
+        return scale(orientation, sine), add((F(1), F(1)), scale(-1, cosine))
+
+    s11, d11 = sine_and_dissipation(1, 1, 1)
+    s12, d12 = sine_and_dissipation(1, 1, 2)
+    s41, d41 = sine_and_dissipation(4, -1, 1)
+    s42, d42 = sine_and_dissipation(4, -1, 2)
+    quadratic = (
+        add(mul(d11, d42), scale(-1, mul(d12, d41))),
+        add(add(scale(-1, mul(s11, d42)), scale(-1, mul(d11, s42))),
+            add(mul(s12, d41), mul(d12, s41))),
+        add(mul(s11, s42), scale(-1, mul(s12, s41))),
+    )
+    assert quadratic[0][1] < 0 and quadratic[2][0] > 0
+    rho = (root_lo, root_hi)
+
+    # Six sharp configurations form one orbit under multiplication of jumps
+    # by units modulo nine and reversal.  In the canonical representative,
+    # alpha makes jumps 1 and 2 equalities; the determinant defines the
+    # second equality, and all remaining jumps are strictly separated.
+    h11 = margin(9, 1, 1, 1, pi, rho)
+    h12 = margin(9, 1, 1, 2, pi, rho)
+    h41 = margin(9, 4, -1, 1, pi, rho)
+    h42 = margin(9, 4, -1, 2, pi, rho)
+    assert h11[0] > 0 and h12[1] < 0 and h41[1] < 0 and h42[0] > 0
+    alpha = divide_positive(scale(-1, h41), h11)
+    ninth_worst = F(-100)
+    for jump in range(3, 9):
+        value = add(mul(alpha, margin(9, 1, 1, jump, pi, rho)),
+                    margin(9, 4, -1, jump, pi, rho))
+        assert value[1] < 0
+        ninth_worst = max(ninth_worst, value[1])
+        checked += 1
+
+    # Every nonsharp pair/orientation is separated by the common multiplier
+    # alpha=1, with a wide strict margin.  The omitted six cases are exactly
+    # the symmetry orbit of the canonical sharp representative above.
+    sharp = {
+        (1, 2, -1, -1), (1, 2, 1, 1),
+        (1, 4, -1, 1), (1, 4, 1, -1),
+        (2, 4, -1, -1), (2, 4, 1, 1),
+    }
+    for k in range(1, 5):
+        for ell in range(k + 1, 5):
+            for e in (-1, 1):
+                for d in (-1, 1):
+                    if (k, ell, e, d) in sharp:
+                        continue
+                    for jump in range(1, 9):
+                        value = add(margin(9, k, e, jump, pi, rho),
+                                    margin(9, ell, d, jump, pi, rho))
+                        assert value[1] < 0
+                        ninth_worst = max(ninth_worst, value[1])
+                        checked += 1
+
+    # The canonical two-jump generator has positive weights.  At the exact
+    # determinant root its two signed sums vanish simultaneously.
+    weight_one = divide_positive(scale(-1, h12), add(h11, scale(-1, h12)))
+    assert F(0) < weight_one[0] <= weight_one[1] < F(1)
+
+    # The sharp root lies strictly below the paper's two-mode target.
     sin_fifth, cos_fifth = trig_pi_multiple(1, 5, pi)
     target = divide_positive(cos_fifth, sin_fifth)
-    ninth = {
-        (1, 2): lambda e, d: F(1, 8) if e == d else F(1, 5),
-        (1, 3): lambda e, d: F(1, 20),
-        (1, 4): lambda e, d: F(1, 5) if e == d else F(3),
-        (2, 3): lambda e, d: F(1, 20),
-        (2, 4): lambda e, d: F(1, 8) if e == d else F(1, 5),
-        (3, 4): lambda e, d: F(1, 3) if e == d else F(1, 8),
-    }
-    ninth_worst = F(-100)
-    for (k, ell), alpha_rule in ninth.items():
-        for e in (-1, 1):
-            for d in (-1, 1):
-                alpha = alpha_rule(e, d)
-                for jump in range(1, 9):
-                    value = add(scale(alpha, margin(9, k, e, jump, pi, target)),
-                                margin(9, ell, d, jump, pi, target))
-                    assert value[1] < 0
-                    ninth_worst = max(ninth_worst, value[1])
-                    checked += 1
-    assert target[0] > 1
-    print(f"Exact rational Fourier inequalities: {checked}; n<=7 worst < {float(worst):.6g}; n=9 target worst < {float(ninth_worst):.6g}")
+    assert target[0] > root_hi > 1
+    print(f"Exact rational Fourier inequalities: {checked}; n<=7 worst < {float(worst):.6g}; n=9 non-equality worst < {float(ninth_worst):.6g}")
+    print(f"Sharp nine-state root: {float(root_lo):.12f} < rho_9 < {float(root_hi):.12f}; positive jump-1 weight in [{float(weight_one[0]):.12f}, {float(weight_one[1]):.12f}]")
 
 
 def frequencies(rates):
@@ -167,8 +224,29 @@ def frequencies(rates):
     return np.sort(result)[::-1]
 
 
+def sharp_ninth_data():
+    def parts(mode, orientation, jump):
+        angle = 2 * np.pi * mode * jump / 9
+        return orientation * np.sin(angle), 1 - np.cos(angle)
+
+    s11, d11 = parts(1, 1, 1)
+    s12, d12 = parts(1, 1, 2)
+    s41, d41 = parts(4, -1, 1)
+    s42, d42 = parts(4, -1, 2)
+    coefficients = (
+        d11 * d42 - d12 * d41,
+        -s11 * d42 - d11 * s42 + s12 * d41 + d12 * s41,
+        s11 * s42 - s12 * s41,
+    )
+    rho = max(np.roots(coefficients))
+    h11, h12 = s11 - rho * d11, s12 - rho * d12
+    weight_one = -h12 / (h11 - h12)
+    return float(rho), float(weight_one)
+
+
 def matrix_checks():
     rng, comparisons, maximum = np.random.default_rng(253), 0, 0.0
+    rho_nine, weight_one = sharp_ninth_data()
     for n in range(5, 10):
         basis = null_space(np.ones((1, n)))
         for _ in range(40):
@@ -187,18 +265,23 @@ def matrix_checks():
             if n <= 8:
                 assert sum(observed > 1 + 2e-12) <= 1
             else:
-                target = 1 / np.tan(np.pi / 5)
-                assert sum(observed >= target - 2e-12) <= 1
+                assert observed[1] <= rho_nine + 2e-12
             comparisons += 1
+    sharp_rates = np.zeros(8)
+    sharp_rates[:2] = weight_one, 1 - weight_one
+    sharp = frequencies(sharp_rates)
+    assert abs(sharp[0] - rho_nine) < 2e-12
+    assert abs(sharp[1] - rho_nine) < 2e-12
     assert maximum < 2e-11
     print(f"{comparisons} dense circulant generators: Fourier/matrix max error {maximum:.3g}")
+    print(f"Sharp two-jump realization: rho_9={rho_nine:.12f}, weights=({weight_one:.12f}, {1-weight_one:.12f})")
 
 
 def main():
     exact_fourier_table()
     matrix_checks()
     print("Compression interlacing: a four-feature block has second frequency at most the full second frequency")
-    print("cot(pi/5)>1; through nine cyclic states at most one full frequency reaches this target")
+    print("At nine states the second full frequency is at most rho_9 < cot(pi/5), with equality attained")
     print("PASS")
 
 
