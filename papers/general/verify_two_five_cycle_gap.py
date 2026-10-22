@@ -2,6 +2,7 @@
 
 from fractions import Fraction
 from itertools import combinations, permutations
+from math import comb
 
 
 def gaussian_poly_trim(poly):
@@ -67,25 +68,31 @@ def determinant_poly(matrix):
     return out
 
 
-def normalized_pencil(cycles, state_count):
-    """Return det(tH-iD)/det(H), in ascending powers of t."""
+def pencil_determinant(cycles, weights, state_count):
+    """Return det(2(tH-iD)) in ascending powers of t."""
     size = state_count - 1
     matrix = [[[(0, 0)] for _ in range(size)] for _ in range(size)]
-    for cycle in cycles:
+    for cycle, weight in zip(cycles, weights):
         for source, target in zip(cycle, cycle[1:] + cycle[:1]):
             if source < size:
                 matrix[source][source] = gaussian_poly_add(
-                    matrix[source][source], [(0, 0), (2, 0)]
+                    matrix[source][source], [(0, 0), (2 * weight, 0)]
                 )
             if source < size and target < size:
                 matrix[source][target] = gaussian_poly_add(
-                    matrix[source][target], [(0, 1), (-1, 0)]
+                    matrix[source][target], [(0, weight), (-weight, 0)]
                 )
                 matrix[target][source] = gaussian_poly_add(
-                    matrix[target][source], [(0, -1), (-1, 0)]
+                    matrix[target][source], [(0, -weight), (-weight, 0)]
                 )
     determinant = determinant_poly(matrix)
     assert all(imaginary == 0 for _, imaginary in determinant)
+    return determinant + [(0, 0)] * (size + 1 - len(determinant))
+
+
+def normalized_pencil(cycles, state_count):
+    """Return det(tH-iD)/det(H), in ascending powers of t."""
+    determinant = pencil_determinant(cycles, (1, 1), state_count)
     leading = determinant[-1][0]
     return tuple(Fraction(real, leading) for real, _ in determinant)
 
@@ -147,6 +154,63 @@ def poly_mul(left, right):
         for j, b in enumerate(right):
             out[i + j] += a * b
     return trim(out)
+
+
+def poly_add(left, right):
+    out = [Fraction(0)] * max(len(left), len(right))
+    for index in range(len(out)):
+        out[index] = (
+            (left[index] if index < len(left) else 0)
+            + (right[index] if index < len(right) else 0)
+        )
+    return trim(out)
+
+
+def interpolate(values):
+    """Interpolate values at consecutive nonnegative integer arguments."""
+    out = [Fraction(0)]
+    for node, value in enumerate(values):
+        basis, denominator = [Fraction(1)], 1
+        for other in range(len(values)):
+            if other != node:
+                basis = poly_mul(basis, [-other, 1])
+                denominator *= node - other
+        out = poly_add(
+            out, [coefficient * Fraction(value, denominator)
+                  for coefficient in basis]
+        )
+    return out
+
+
+def squared_frequency_coefficients(cycles, state_count):
+    """Coefficients in y with roots equal to squared positive frequencies."""
+    # A five-cycle form has rank four, so the determinant has ratio degree at most four.
+    size = state_count - 1
+    evaluations = []
+    for ratio in range(5):
+        determinant = pencil_determinant(cycles, (1, ratio), state_count)
+        evaluations.append(
+            [determinant[degree][0]
+             for degree in range(size % 2, size + 1, 2)]
+        )
+    return [
+        interpolate([values[index] for values in evaluations])
+        for index in range(len(evaluations[0]))
+    ]
+
+
+def shift_coefficients(coefficients, threshold):
+    """Return coefficients after substituting y=z+threshold."""
+    out = []
+    for degree in range(len(coefficients)):
+        shifted = [Fraction(0)]
+        for source in range(degree, len(coefficients)):
+            scale = comb(source, degree) * threshold ** (source - degree)
+            shifted = poly_add(
+                shifted, [scale * value for value in coefficients[source]]
+            )
+        out.append(shifted)
+    return out
 
 
 def poly_divmod(dividend, divisor):
@@ -247,6 +311,35 @@ def positive_root_intervals(poly):
     return sorted(intervals), upper
 
 
+def certify_one_positive_root(coefficients):
+    """Certify at most one positive root for every positive weight ratio."""
+    breakpoints = [Fraction(1)]
+    for coefficient in coefficients:
+        if any(coefficient):
+            reduced = list(coefficient)
+            while len(reduced) > 1 and reduced[0] == 0:
+                reduced = reduced[1:]
+            if len(reduced) > 1:
+                breakpoints = square_free_lcm(breakpoints, reduced)
+    intervals, upper = positive_root_intervals(breakpoints)
+    if intervals:
+        samples = [intervals[0][0] / 2]
+        samples.extend(
+            (left[1] + right[0]) / 2
+            for left, right in zip(intervals, intervals[1:])
+        )
+        samples.append(upper + 1)
+    else:
+        samples = [Fraction(1)]
+    for ratio in samples:
+        values = [evaluate(coefficient, ratio)
+                  for coefficient in coefficients]
+        assert all(value != 0 for coefficient, value
+                   in zip(coefficients, values) if any(coefficient))
+        assert sign_variations(values) <= 1
+    return len(intervals), len(samples)
+
+
 first_cycle = tuple(range(5))
 pair_counts = {}
 patterns = {}
@@ -272,32 +365,39 @@ assert len(patterns) == 70
 maximum_roots = 0
 maximum_cells = 0
 for coefficients in patterns:
-    breakpoints = [Fraction(1)]
-    for coefficient in coefficients:
-        if any(coefficient):
-            reduced = list(coefficient)
-            while len(reduced) > 1 and reduced[0] == 0:
-                reduced = reduced[1:]
-            if len(reduced) > 1:
-                breakpoints = square_free_lcm(breakpoints, reduced)
-    intervals, upper = positive_root_intervals(breakpoints)
-    maximum_roots = max(maximum_roots, len(intervals))
-    if intervals:
-        samples = [intervals[0][0] / 2]
-        samples.extend(
-            (left[1] + right[0]) / 2
-            for left, right in zip(intervals, intervals[1:])
+    roots, cells = certify_one_positive_root(coefficients)
+    maximum_roots = max(maximum_roots, roots)
+    maximum_cells = max(maximum_cells, cells)
+
+# Stronger sharp ceilings hold when three or four states are shared.
+overlap_thresholds = {3: Fraction(1, 2), 4: Fraction(1, 3)}
+overlap_type_counts = {}
+overlap_maximum_roots = {}
+for overlap, squared_threshold in overlap_thresholds.items():
+    state_count = 10 - overlap
+    shifted_types = {}
+    for shared in combinations(range(5), overlap):
+        support = shared + tuple(range(5, state_count))
+        start = min(support)
+        remaining = tuple(vertex for vertex in support if vertex != start)
+        for tail in permutations(remaining):
+            squared = squared_frequency_coefficients(
+                (first_cycle, (start,) + tail), state_count
+            )
+            shifted = shift_coefficients(squared, squared_threshold)
+            key = tuple(tuple(coefficient) for coefficient in shifted)
+            shifted_types[key] = shifted_types.get(key, 0) + 1
+    assert sum(shifted_types.values()) == pair_counts[overlap]
+    overlap_type_counts[overlap] = len(shifted_types)
+    overlap_maximum_roots[overlap] = 0
+    for shifted in shifted_types:
+        roots, _ = certify_one_positive_root(shifted)
+        overlap_maximum_roots[overlap] = max(
+            overlap_maximum_roots[overlap], roots
         )
-        samples.append(upper + 1)
-    else:
-        samples = [Fraction(1)]
-    maximum_cells = max(maximum_cells, len(samples))
-    for ratio in samples:
-        values = [evaluate(coefficient, ratio)
-                  for coefficient in coefficients]
-        assert all(value != 0 for coefficient, value
-                   in zip(coefficients, values) if any(coefficient))
-        assert sign_variations(values) <= 1
+
+assert overlap_type_counts == {3: 16, 4: 13}
+assert overlap_maximum_roots == {3: 2, 4: 3}
 
 # Equal weights on two cycles sharing the directed edge 4 -> 0 attain sigma_2=1.
 sharp_pencil = normalized_pencil(
@@ -309,6 +409,21 @@ expected = poly_mul(
 )
 assert list(sharp_pencil) == expected
 
+three_overlap_pencil = normalized_pencil(
+    (first_cycle, (1, 3, 2, 5, 6)), 7
+)
+assert list(three_overlap_pencil) == poly_mul(
+    poly_mul([0, 0, 1], [-1, 0, 1]),
+    [Fraction(-1, 2), 0, 1],
+)
+four_overlap_pencil = normalized_pencil(
+    (first_cycle, (0, 1, 4, 5, 2)), 6
+)
+assert list(four_overlap_pencil) == poly_mul(
+    poly_mul([0, 1], [Fraction(-1, 2), 0, 1]),
+    [Fraction(-1, 3), 0, 1],
+)
+
 print("five-cycle pairs by overlap 2 through 5: "
       + ", ".join(str(pair_counts[index]) for index in range(2, 6)))
 print(f"total overlapping relative pairs: {sum(pair_counts.values())}")
@@ -317,4 +432,11 @@ print(f"maximum positive coefficient breakpoints per type: {maximum_roots}")
 print(f"maximum open weight-ratio cells per type: {maximum_cells}")
 print("sharp normalized pencil: t(t^2-1)(t^4-2t^2+1/5)")
 print("certified second-frequency ceiling: 1")
+print("overlap-three types / breakpoint maximum: "
+      f"{overlap_type_counts[3]} / {overlap_maximum_roots[3]}")
+print("overlap-four types / breakpoint maximum: "
+      f"{overlap_type_counts[4]} / {overlap_maximum_roots[4]}")
+print("sharp overlap-three pencil: t^2(t^2-1)(t^2-1/2)")
+print("sharp overlap-four pencil: t(t^2-1/2)(t^2-1/3)")
+print("overlap-three / overlap-four ceilings: 1/sqrt(2), 1/sqrt(3)")
 print("PASS")
