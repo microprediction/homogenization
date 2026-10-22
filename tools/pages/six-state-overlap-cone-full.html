@@ -3,7 +3,8 @@
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a></span></p>
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
     <p class="subtitle">Sharp repeated-mode bounds for sparse mixtures and reversible attachments.</p>
     <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
@@ -25,6 +26,7 @@
       $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
     <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
     <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
+    <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
@@ -194,6 +196,27 @@
     <p>In particular, any number of directed cycles of lengths at most four, with arbitrary reversible attachments, has every intrinsic frequency at most one and cannot realize the target $\cot(\pi/5)&gt;1$. At $L=5$ the bound equals the target frequency, so this norm argument alone does not exclude two repeated maximal modes.</p>
     <p>After separating the reversible remainder, all remaining stationary flow must be represented by the bounded-length cycles. The hypothesis cannot be inferred from the final undirected support alone.</p>
 
+    <h2>Multiplicity at the sharp sector</h2>
+    <p>The equality case supplies a stronger state-count obstruction. Fix an integer $q\ge3$, put $c_q=\cot(\pi/q)$, and suppose the directed remainder is decomposed into cycles of lengths at most $q$.</p>
+    <p>On the full complexified state space, let</p>
+    $$E=\ker(c_qH-iD).$$
+    <p>Connectivity leaves constants in $E$, while every additional complex dimension is a positive intrinsic mode equal to $c_q$. Thus if that maximal frequency has multiplicity $r$, then $\dim_{\mathbb C}E=r+1$.</p>
+    <p>For each cycle component, $c_qH_\ell-iD_\ell$ is positive semidefinite, as is $c_qR$ for the reversible remainder. Their sum is $c_qH-iD$, so a vector lies in $E$ only if it lies in every component kernel.</p>
+    <p>When $\ell&lt;q$, the component inequality is strict off constants, and every vector in $E$ is constant on that cycle. On a directed $q$-cycle, the kernel consists exactly of</p>
+    $$f_j=a+b\zeta^j,\qquad j=0,\ldots,q-1,$$
+    <p>where $\zeta$ is the oriented first $q$th root of unity. Two distinct vertex values determine $a$ and $b$ because the powers of $\zeta$ are distinct.</p>
+    <p>Identify vertices on which every vector in $E$ agrees. Reversible edges and shorter cycles collapse under this identification. A surviving $q$-cycle either also collapses or becomes a $q$-vertex hyperedge carrying the displayed affine Fourier form; the surviving hypergraph is connected.</p>
+    <p>Order its hyperedges so that every new one meets the preceding union. The first has at most two complex degrees of freedom. A new hyperedge meeting the old union in one vertex introduces at most one more degree of freedom and costs $q-1$ new vertices; if it meets in at least two vertices, its two affine parameters are already fixed and it introduces none.</p>
+    <p>If $k$ hyperedges meet the preceding union in exactly one vertex, then</p>
+    $$\dim_{\mathbb C}E\le2+k,
+      \qquad N\ge q+k(q-1).$$
+    <p>Eliminating $k$ proves the sharp multiplicity bound</p>
+    <div class="equation-card">
+    $$N\ge1+r(q-1).$$
+    </div>
+    <p>A bouquet of $r$ directed $q$-cycles sharing one hub attains equality. For $q=5$ and $r=2$, this gives the exact minimum $N=9$ within the entire bounded-five-cycle decomposition class, including overlapping noncactus supports.</p>
+    <p>This does not settle the unrestricted six-, seven- or eight-state cases, because their stationary-flow decompositions may require cycles longer than five. It is a fixed-parameter spectral multiplicity statement, not a rank inference after integrating maturity-dependent loadings.</p>
+
     <h2>Three directed triangles: rigidity</h2>
     <p>There are 40 labeled directed triangles and $\binom{40}{3}=9{,}880$ unordered triples. Exactly 3,840 triples have connected six-state support.</p>
     <p>Give a connected triple positive weights $a,b,c$. Every two-triangle boundary has zero five-dimensional pencil, so each coefficient of $\det(tH-D)$ contains the factor $abc$.</p>
@@ -342,7 +365,8 @@
     <p>For connected five-state three-cycle bases it enumerates all 95,284 distinct-cycle supports and identifies 89,584 connected cases. Their quartic barriers have no equal-weight equality support and reduce to 461 types with 5,093 type-level terminal triangles.</p>
     <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity for $L=3$, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
     <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
+    <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, as are arbitrary mixtures admitting a decomposition with cycle lengths at most four. Flows requiring longer cycles in every nonnegative cycle decomposition, including the unresolved five-cycle sector-saturation case, and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, and the exact minimum is nine among flows decomposable into cycles of lengths at most five. Flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
   </main>
