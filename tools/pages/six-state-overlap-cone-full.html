@@ -7,7 +7,7 @@
     <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either an arbitrary nonnegative, nonzero mixture of at most three simple directed cycles whose positive components include a two-cycle, triangle or Hamilton cycle, or whose length multiset is $(4,4,4)$, $(4,4,5)$ or $(4,5,5)$; an equal-weight mixture of any three simple directed cycles; an arbitrary positive mixture on the unique equality-support orbit displayed below; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let a balanced stationary flow on six states be either an arbitrary nonnegative, nonzero mixture of at most three simple directed cycles; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -235,6 +235,12 @@
     <p>Ordinary midpoint-simplex covers close every type with at most 79 triangles at depth four. The covers contain 13,439 terminal triangles at type level and 18,350,280 after expanding multiplicities; no boundary-local certificate is needed.</p>
     <p>Hence every connected nonnegative mixture of one four-cycle and two five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Repeated cycles and connected zero-weight boundaries reduce to the two-cycle theorem.</p>
 
+    <h2>Three directed five-cycles</h2>
+    <p>There are $\binom{144}{3}=487{,}344$ supports with three distinct five-cycles. Exactly 475,200 have connected six-state support, and none is an equal-weight equality case.</p>
+    <p>All six weight permutations preserve the architecture. Quotienting by them leaves 368 exact barrier-polynomial types.</p>
+    <p>Ordinary midpoint-simplex covers close every type with at most 46 triangles at depth four. The covers contain 6,905 terminal triangles at type level and 8,945,280 after expanding multiplicities; no boundary-local certificate is needed.</p>
+    <p>Hence every connected nonnegative mixture of three five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Together with the preceding cases, repeated-cycle merging and connected zero-weight boundaries, this completes every mixture of at most three simple directed cycles.</p>
+
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
     <ol>
@@ -301,7 +307,8 @@
     <p>For three distinct four-cycles it enumerates all 117,480 supports and identifies 93,420 connected cases. The 120 equality-orbit supports retain their symbolic proof; the other 93,300 supports reduce to 85 types and 1,813 type-level terminal triangles.</p>
     <p>For two distinct four-cycles and one five-cycle it streams all 576,720 supports and identifies 514,080 connected cases. The exact barriers have no equal-weight equality support and reduce to 372 types with 7,710 type-level terminal triangles.</p>
     <p>For one four-cycle and two distinct five-cycles it streams all 926,640 supports and identifies 876,960 connected cases. The exact barriers have no equal-weight equality support and reduce to 647 types with 13,439 type-level terminal triangles.</p>
+    <p>For three distinct five-cycles it enumerates all 487,344 supports and identifies 475,200 connected cases. The exact barriers have no equal-weight equality support and reduce to 368 types with 6,905 type-level terminal triangles.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. The remaining simple-cycle triple length multiset is $(5,5,5)$; general flows with four or more genuinely directed cycles and unrestricted state counts six through nine also remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Every mixture of at most three simple directed cycles is now covered, but flows with four or more genuinely directed cycles and unrestricted state counts six through nine remain open.</p>
   </main>

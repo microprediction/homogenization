@@ -4998,6 +4998,110 @@ assert one_four_two_five_deepest_cover == 4
 assert one_four_two_five_type_cells == 13439
 assert one_four_two_five_expanded_cells == 18350280
 
+# Three distinct five-cycles are the final simple-cycle triple architecture.
+# All three weights are interchangeable, so classify every connected support
+# under the full six-element weight permutation group.  Ordinary midpoint
+# covers close every non-equality type; exact equal-weight evaluation finds no
+# equality support in this architecture.
+all_five_supports = np.array(
+    list(combinations(five_cycle_indices, 3)), dtype=np.int64
+)
+all_five_values = {name: [] for name in ("a5", "sum", "root")}
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[all_five_supports[:, 0]]
+        + second_weight * integer_symmetric[all_five_supports[:, 1]]
+        + third_weight * integer_symmetric[all_five_supports[:, 2]]
+    )
+    skew = (
+        first_weight * integer_skew[all_five_supports[:, 0]]
+        + second_weight * integer_skew[all_five_supports[:, 1]]
+        + third_weight * integer_skew[all_five_supports[:, 2]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    all_five_values["a5"].append(node_a5)
+    all_five_values["sum"].append(5 * node_a3 - 6 * node_a5)
+    all_five_values["root"].append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+
+all_five_coefficients = {}
+for name, values in all_five_values.items():
+    stacked_values = np.stack(values)
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+    numerators = interpolation_matrix @ stacked_values
+    assert np.all(numerators % interpolation_denominator == 0)
+    all_five_coefficients[name] = (
+        numerators // interpolation_denominator
+    )
+
+connected_all_five = np.any(
+    all_five_coefficients["a5"] != 0, axis=0
+)
+equality_all_five = (
+    connected_all_five
+    & (np.sum(all_five_coefficients["sum"], axis=0) == 0)
+    & (np.sum(all_five_coefficients["root"], axis=0) == 0)
+)
+assert len(all_five_supports) == 487344
+assert int(np.sum(connected_all_five)) == 475200
+assert int(np.sum(equality_all_five)) == 0
+
+all_five_types = {}
+for support_index in np.flatnonzero(connected_all_five):
+    orbit = []
+    for positions in all_four_permutation_positions:
+        orbit.append((
+            tuple(all_five_coefficients["sum"][:, support_index][
+                positions
+            ]),
+            tuple(all_five_coefficients["root"][:, support_index][
+                positions
+            ]),
+        ))
+    key = min(orbit)
+    all_five_types[key] = all_five_types.get(key, 0) + 1
+
+assert len(all_five_types) == 368
+assert sum(all_five_types.values()) == 475200
+assert min(all_five_types.values()) == 240
+assert max(all_five_types.values()) == 2880
+
+all_five_keys = list(all_five_types)
+all_five_sum = np.array([
+    key[0] for key in all_five_keys
+], dtype=object).T
+all_five_root = np.array([
+    key[1] for key in all_five_keys
+], dtype=object).T
+all_five_largest_cover = 0
+all_five_deepest_cover = 0
+all_five_type_cells = 0
+all_five_expanded_cells = 0
+for type_index, key in enumerate(all_five_keys):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        all_five_sum[:, type_index],
+        all_five_root[:, type_index],
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    multiplicity = all_five_types[key]
+    all_five_largest_cover = max(all_five_largest_cover, cover_size)
+    all_five_deepest_cover = max(all_five_deepest_cover, cover_depth)
+    all_five_type_cells += cover_size
+    all_five_expanded_cells += multiplicity * cover_size
+assert all_five_largest_cover == 46
+assert all_five_deepest_cover == 4
+assert all_five_type_cells == 6905
+assert all_five_expanded_cells == 8945280
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -5609,6 +5713,19 @@ print("one-four-cycle/two-five-cycle type cells: "
       f"{one_four_two_five_type_cells}")
 print("one-four-cycle/two-five-cycle expanded cells: "
       f"{one_four_two_five_expanded_cells}")
+print("three-five-cycle supports: 487344 total, "
+      f"{int(np.sum(connected_all_five))} connected")
+print("three-five-cycle equal-weight equality supports: "
+      f"{int(np.sum(equality_all_five))}")
+print("three-five-cycle polynomial types: "
+      f"{len(all_five_types)}")
+print("largest three-five-cycle cover: "
+      f"{all_five_largest_cover} triangles at depth "
+      f"{all_five_deepest_cover}")
+print("three-five-cycle type cells: "
+      f"{all_five_type_cells}")
+print("three-five-cycle expanded cells: "
+      f"{all_five_expanded_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
