@@ -930,6 +930,226 @@ assert len(five_state_pencil_types) == 41
 assert five_state_largest_cover == 6
 assert five_state_deepest_cover == 3
 
+# Reversible attachments to a base with three genuinely directed cycles also
+# require the case in which the directed base is connected on only five active
+# states.  Its centered pencil has even degree four.  Enumerate every unordered
+# triple, recover both homogeneous quartic barriers from 15 integer nodes, and
+# quotient the exact polynomials by all six weight permutations.
+five_state_ground = five_state_count - 1
+five_state_ground_permutations = np.array(
+    list(permutations(range(five_state_ground))), dtype=np.int64
+)
+five_state_ground_signs = np.array([
+    (-1) ** sum(
+        permutation[first] > permutation[second]
+        for first in range(five_state_ground)
+        for second in range(first + 1, five_state_ground)
+    )
+    for permutation in five_state_ground_permutations
+], dtype=np.int64)
+
+
+def five_state_integer_grounded_forms(cycle):
+    weights = np.zeros(
+        (five_state_count, five_state_count), dtype=np.int64
+    )
+    for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+        weights[source, target] += 1
+    laplacian = np.diag(np.sum(weights, axis=1)) - weights
+    grounded = laplacian[:five_state_ground, :five_state_ground]
+    return grounded + grounded.T, grounded - grounded.T
+
+
+def batch_five_state_determinants(matrices):
+    terms = np.ones(
+        (len(matrices), len(five_state_ground_permutations)),
+        dtype=np.int64,
+    )
+    for row in range(five_state_ground):
+        terms *= matrices[
+            :, row, five_state_ground_permutations[:, row]
+        ]
+    return terms @ five_state_ground_signs
+
+
+def batch_five_state_pencil_coefficients(symmetric, skew):
+    value_zero = batch_five_state_determinants(-skew)
+    value_one = batch_five_state_determinants(symmetric - skew)
+    value_two = batch_five_state_determinants(2 * symmetric - skew)
+    coefficient_zero = value_zero
+    coefficient_two = (
+        16 * value_one - value_two - 15 * value_zero
+    ) // 12
+    coefficient_four = value_one - coefficient_two - coefficient_zero
+    assert np.array_equal(
+        value_two,
+        16 * coefficient_four + 4 * coefficient_two + coefficient_zero,
+    )
+    return coefficient_four, coefficient_two, coefficient_zero
+
+
+five_state_integer_forms = [
+    five_state_integer_grounded_forms(cycle)
+    for cycle in five_state_cycles
+]
+five_state_integer_symmetric = np.stack([
+    form[0] for form in five_state_integer_forms
+])
+five_state_integer_skew = np.stack([
+    form[1] for form in five_state_integer_forms
+])
+five_state_triple_supports = np.array(
+    list(combinations(range(len(five_state_cycles)), 3)),
+    dtype=np.int64,
+)
+five_state_triple_exponents = [
+    exponent
+    for exponent in product(range(5), repeat=3)
+    if sum(exponent) == 4
+]
+five_state_triple_vandermonde = [
+    [
+        first ** i * second ** j * third ** k
+        for i, j, k in five_state_triple_exponents
+    ]
+    for first, second, third in five_state_triple_exponents
+]
+five_state_triple_inverse = fraction_matrix_inverse(
+    five_state_triple_vandermonde
+)
+five_state_triple_denominator = 1
+for row in five_state_triple_inverse:
+    for value in row:
+        five_state_triple_denominator = math.lcm(
+            five_state_triple_denominator, value.denominator
+        )
+five_state_triple_interpolation = np.array([
+    [int(five_state_triple_denominator * value) for value in row]
+    for row in five_state_triple_inverse
+], dtype=np.int64)
+
+five_state_triple_values = {
+    name: [] for name in ("a4", "sum", "root")
+}
+for first_weight, second_weight, third_weight in (
+    five_state_triple_exponents
+):
+    symmetric = (
+        first_weight
+        * five_state_integer_symmetric[five_state_triple_supports[:, 0]]
+        + second_weight
+        * five_state_integer_symmetric[five_state_triple_supports[:, 1]]
+        + third_weight
+        * five_state_integer_symmetric[five_state_triple_supports[:, 2]]
+    )
+    skew = (
+        first_weight
+        * five_state_integer_skew[five_state_triple_supports[:, 0]]
+        + second_weight
+        * five_state_integer_skew[five_state_triple_supports[:, 1]]
+        + third_weight
+        * five_state_integer_skew[five_state_triple_supports[:, 2]]
+    )
+    node_a4, node_a2, node_a0 = (
+        batch_five_state_pencil_coefficients(symmetric, skew)
+    )
+    five_state_triple_values["a4"].append(node_a4)
+    five_state_triple_values["sum"].append(
+        5 * node_a2 - 6 * node_a4
+    )
+    five_state_triple_values["root"].append(
+        9 * node_a4 - 15 * node_a2 + 25 * node_a0
+    )
+
+five_state_triple_coefficients = {}
+for name, node_values in five_state_triple_values.items():
+    stacked_values = np.stack(node_values)
+    product_bound = (
+        len(five_state_triple_exponents)
+        * int(np.max(np.abs(five_state_triple_interpolation)))
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+    numerators = five_state_triple_interpolation @ stacked_values
+    assert np.all(numerators % five_state_triple_denominator == 0)
+    five_state_triple_coefficients[name] = (
+        numerators // five_state_triple_denominator
+    )
+
+connected_five_state_triples = np.any(
+    five_state_triple_coefficients["a4"] != 0, axis=0
+)
+equality_five_state_triples = (
+    connected_five_state_triples
+    & (np.sum(five_state_triple_coefficients["sum"], axis=0) == 0)
+    & (np.sum(five_state_triple_coefficients["root"], axis=0) == 0)
+)
+assert len(five_state_triple_supports) == 95284
+assert int(np.sum(connected_five_state_triples)) == 89584
+assert int(np.sum(equality_five_state_triples)) == 0
+
+five_state_triple_exponent_index = {
+    exponent: index
+    for index, exponent in enumerate(five_state_triple_exponents)
+}
+five_state_triple_permutation_positions = [
+    np.array([
+        five_state_triple_exponent_index[
+            tuple(exponent[position] for position in permutation)
+        ]
+        for exponent in five_state_triple_exponents
+    ], dtype=np.int64)
+    for permutation in permutations(range(3))
+]
+five_state_triple_types = {}
+for support_index in np.flatnonzero(connected_five_state_triples):
+    orbit = []
+    for positions in five_state_triple_permutation_positions:
+        orbit.append((
+            tuple(five_state_triple_coefficients["sum"][
+                :, support_index
+            ][positions]),
+            tuple(five_state_triple_coefficients["root"][
+                :, support_index
+            ][positions]),
+        ))
+    key = min(orbit)
+    five_state_triple_types[key] = (
+        five_state_triple_types.get(key, 0) + 1
+    )
+
+assert len(five_state_triple_types) == 461
+assert sum(five_state_triple_types.values()) == 89584
+assert min(five_state_triple_types.values()) == 20
+assert max(five_state_triple_types.values()) == 720
+
+five_state_triple_transforms = homogeneous_midpoint_transforms(
+    five_state_triple_exponents
+)
+five_state_triple_largest_cover = 0
+five_state_triple_deepest_cover = 0
+five_state_triple_type_cells = 0
+five_state_triple_expanded_cells = 0
+for key, multiplicity in five_state_triple_types.items():
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        np.array(key[0], dtype=object),
+        np.array(key[1], dtype=object),
+        five_state_triple_transforms,
+    )
+    assert local_cells == 0
+    five_state_triple_largest_cover = max(
+        five_state_triple_largest_cover, cover_size
+    )
+    five_state_triple_deepest_cover = max(
+        five_state_triple_deepest_cover, cover_depth
+    )
+    five_state_triple_type_cells += cover_size
+    five_state_triple_expanded_cells += multiplicity * cover_size
+assert five_state_triple_largest_cover == 106
+assert five_state_triple_deepest_cover == 5
+assert five_state_triple_type_cells == 5093
+assert five_state_triple_expanded_cells == 911452
+
 # For three distinct cycles at equal weight, det(t(2H)-2D) has the form
 # a5*t^5 + a3*t^3 + a1*t.  Evaluate it at t=1,2,3 and recover the integer
 # coefficients.  Repeated cycles merge to an already covered two-cycle flow.
@@ -5301,6 +5521,19 @@ print(f"distinct five-state pencils: {len(five_state_pencil_types)}")
 print("largest five-state Bernstein cover: "
       f"{five_state_largest_cover} intervals at depth "
       f"{five_state_deepest_cover}")
+print("five-state three-cycle supports: 95284 total, "
+      f"{int(np.sum(connected_five_state_triples))} connected")
+print("five-state three-cycle equal-weight equality supports: "
+      f"{int(np.sum(equality_five_state_triples))}")
+print("five-state three-cycle polynomial types: "
+      f"{len(five_state_triple_types)}")
+print("largest five-state three-cycle cover: "
+      f"{five_state_triple_largest_cover} triangles at depth "
+      f"{five_state_triple_deepest_cover}")
+print("five-state three-cycle type cells: "
+      f"{five_state_triple_type_cells}")
+print("five-state three-cycle expanded cells: "
+      f"{five_state_triple_expanded_cells}")
 print(f"connected distinct equal-weight triples: {connected_triples}")
 print(f"distinct normalized triple coefficient pairs: {len(triple_coefficient_pairs)}")
 print(f"sharp equal-weight triple representatives: {len(equality_triples)}")

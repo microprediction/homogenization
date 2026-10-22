@@ -7,7 +7,7 @@
     <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be either an arbitrary nonnegative, nonzero mixture of at most three simple directed cycles; the sum of at most two genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow; or the sum of one directed simple cycle and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let a balanced stationary flow on six states be the sum of at most three genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -19,7 +19,7 @@
     <p>Up to state relabeling and simultaneous reversal of all directed cycles, the equal-weight theorem has a unique equality-support orbit, represented by</p>
     $$c_A=(0,1,2,3),\qquad c_B=(0,1,4,5),\qquad c_C=(2,3,4,5).$$
     <p>Every support in this orbit permits arbitrary positive weights. Equality within each such weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
-    <p>The two-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, every arbitrary-weight three-cycle mixture containing a two-cycle is covered. The final, one-cycle attachment class obeys the stronger bound
+    <p>The three-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, reversible two-cycles do not consume the three genuinely directed-cycle slots. The one-directed-cycle subclass obeys the stronger bound
       $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
     <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
     <p>Consequently no four-feature compression from any stated class realizes
@@ -272,9 +272,11 @@
     $$\cot\frac{\pi}{\ell},\ \cot\frac{2\pi}{\ell},\ldots,
       \cot\frac{\lfloor(\ell-1)/2\rfloor\pi}{\ell}.$$
     <p>No connectivity assumption on the directed component is needed. If its active support is connected and has six states, the exact classification above gives $s_2(K_0)\le\sqrt{3/5}$.</p>
-    <p>On five active states the certificate repeats the exact pencil argument over 84 simple cycles, 232 connected pairs and 41 distinct pencils. On at most four active states the centered space has dimension at most three, so there is at most one positive skew frequency.</p>
-    <p>If the two directed-cycle supports are disconnected, they are disjoint. The six-state budget leaves only the potentially two-mode split $3+3$, whose second frequency is $\cot(\pi/3)=1/\sqrt3$; a $2+4$ split has only one positive frequency.</p>
-    <p>Thus every two-cycle base has $s_2(K_0)\le\sqrt{3/5}$, and contraction proves the bound after adding an arbitrary reversible stationary flow. Reversible two-cycles do not consume the two genuinely directed-cycle slots.</p>
+    <p>On five active states the certificate enumerates all $\binom{84}{3}=95{,}284$ distinct-cycle triples, identifies 89,584 connected supports and reduces their quartic barriers to 461 exact types. Ordinary rational simplex covers close every type, using at most 106 triangles at depth five; no connected support is an equal-weight equality case.</p>
+    <p>Writing the four-dimensional pencil as $a_4t^4+a_2t^2+a_0$, every terminal cell certifies either $5a_2-6a_4\le0$ or $9a_4-15a_2+25a_0\le0$. The same sum-or-root argument therefore gives $s_2^2\le3/5$ over the entire nonnegative weight simplex.</p>
+    <p>On at most four active states the centered space has dimension at most three, so there is at most one positive skew frequency. If a base with at most three genuinely directed cycles is disconnected, each nontrivial directed component uses at least three states; the only two-mode split is therefore $3+3$.</p>
+    <p>On three states, opposite triangle orientations decompose into one net directed triangle plus a reversible attachment. Each component frequency is consequently at most $\cot(\pi/3)=1/\sqrt3$, so the disconnected base also lies below $\sqrt{3/5}$.</p>
+    <p>Thus every base with at most three genuinely directed cycles has $s_2(K_0)\le\sqrt{3/5}$, and contraction proves the bound after adding an arbitrary reversible stationary flow. Reversible two-cycles do not consume the directed-cycle slots.</p>
     <p>There is a stronger specialization when the directed component is just one cycle. For $\ell\le6$, its second frequency is zero for $\ell\le4$, equals $\cot(2\pi/5)$ for $\ell=5$, and equals $\cot(\pi/3)=1/\sqrt3$ for $\ell=6$. Hence any connected six-state flow with only one genuinely directed cycle, plus any number and arrangement of reversible edges, satisfies the claimed stronger bound, even when those edges are needed to connect a shorter cycle to the remaining states.</p>
 
     <h2>Why feature choice cannot evade the bound</h2>
@@ -308,7 +310,8 @@
     <p>For two distinct four-cycles and one five-cycle it streams all 576,720 supports and identifies 514,080 connected cases. The exact barriers have no equal-weight equality support and reduce to 372 types with 7,710 type-level terminal triangles.</p>
     <p>For one four-cycle and two distinct five-cycles it streams all 926,640 supports and identifies 876,960 connected cases. The exact barriers have no equal-weight equality support and reduce to 647 types with 13,439 type-level terminal triangles.</p>
     <p>For three distinct five-cycles it enumerates all 487,344 supports and identifies 475,200 connected cases. The exact barriers have no equal-weight equality support and reduce to 368 types with 6,905 type-level terminal triangles.</p>
-    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
+    <p>For connected five-state three-cycle bases it enumerates all 95,284 distinct-cycle supports and identifies 89,584 connected cases. Their quartic barriers have no equal-weight equality support and reduce to 461 types with 5,093 type-level terminal triangles.</p>
+    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Every mixture of at most three simple directed cycles is now covered, but flows with four or more genuinely directed cycles and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, with arbitrary reversible attachments, are covered; four-or-more-directed-cycle flows and unrestricted state counts six through nine remain open.</p>
   </main>
