@@ -220,18 +220,22 @@
     <p>Exact Bernstein alternatives then close all 223 types with 1,005 local cells, at most 22 per patch.</p>
     <p>This remains a slice theorem: it imposes one linear relation on the three base weights. It does not establish the bound throughout any unrestricted four-weight cone.</p>
 
-    <h3>Thirty-two unrestricted four-weight cones</h3>
+    <h3>Thirty-eight unrestricted four-weight cones</h3>
     <p>Keep the displayed base cycles $C_1=(0,1,2,3)$, $C_2=(0,1,4,5)$ and $C_3=(2,3,4,5)$. The state relabelings, optionally followed by simultaneous reversal, that preserve this unordered triple form 12 exact symmetry operations.</p>
-    <p>Under those operations the four representatives</p>
+    <p>Under those operations the five representatives</p>
     $$(0,1,2,4),\quad(0,1,5,2),\quad
-      (0,1,2,3,4),\quad(0,1,2,3,4,5)$$
-    <p>have disjoint orbit sizes $12,6,12,2$. For any of these 32 genuinely new choices of $C_4$, every connected weighting</p>
+      (0,1,2,3,4),\quad(0,1,2,3,4,5),\quad(0,1,3,2)$$
+    <p>have disjoint orbit sizes $12,6,12,2,6$. For any of these 38 genuinely new choices of $C_4$, every connected weighting</p>
     $$W=aC_1+bC_2+cC_3+dC_4,\qquad a,b,c,d\ge0,$$
     <p>satisfies $\sigma_2(W)^2\le3/5$. The four weights are independent; this is a full three-dimensional projective cone, not one of the preceding arithmetic-mean slices.</p>
-    <p>For each representative the global certificate normalizes $a+b+c=3$, writes $a=3x$, $b=3(1-x)y$, $c=3(1-x)(1-y)$ and compactifies $d=z/(1-z)$. Exact tensor Bernstein subdivision proves $A\le0$ or $B\le0$ on 306 boxes outside the equality neighborhoods, reaching depth 36.</p>
-    <p>Near equality put $(a,b,c,d)=(1+p,1+q,1-p-q,v)$. For every representative, the negative matrix of the root barrier's quadratic part minus $64I$ is positive definite; the componentwise smallest leading principal minors are $512$, $179{,}200$ and $7{,}077{,}888$.</p>
-    <p>The largest absolute sum of higher-order coefficients is $16{,}064$, so on $|p|,|q|,v\le1/1024$ their contribution is bounded by $(16{,}064/1024)(p^2+q^2+v^2)$, strictly below the quadratic margin. Nine terminal boxes lie wholly in these local regions.</p>
-    <p>This proves 32 labeled cones in four symmetry classes and all their connected boundaries. The other 359 genuinely new fourth-cycle choices remain open at unrestricted weights.</p>
+    <p>For each representative the global certificate normalizes $a+b+c=3$, writes $a=3x$, $b=3(1-x)y$, $c=3(1-x)(1-y)$ and compactifies $d=z/(1-z)$. Exact tensor Bernstein subdivision proves $A\le0$ or $B\le0$ on 914 boxes outside the equality neighborhoods, reaching depth 39.</p>
+    <p>Near equality put $(a,b,c,d)=(1+p,1+q,1-p-q,v)$. For the first four representatives, the negative matrix of the root barrier's quadratic part minus $64I$ is positive definite; the componentwise smallest leading principal minors are $512$, $179{,}200$ and $7{,}077{,}888$.</p>
+    <p>The largest absolute sum of higher-order coefficients in those four cases is $16{,}064$, so on $|p|,|q|,v\le1/1024$ their contribution stays strictly below the quadratic margin. The fifth representative needs a different local split.</p>
+    <p>For $(0,1,3,2)$ set $R=p^2+q^2$ and $S=p^2+pq+q^2$. Its local barriers begin</p>
+    $$A=-1440v+144S+\cdots,\qquad
+      B=-576S+960(p-q)v+128v^2+\cdots.$$
+    <p>On $v\ge R$, the sum barrier has margin $77{,}783/64$ after bounding a coefficient sum of $8{,}848$. On $v\le R$, the root barrier has margin $1{,}124{,}351/4{,}096$ after bounding its higher-order coefficient sum by $11{,}904$; these two parabolic regions exhaust the local cube.</p>
+    <p>Fifteen terminal boxes lie wholly in the proved local regions. This proves 38 labeled cones in five symmetry classes and all their connected boundaries; the other 353 genuinely new fourth-cycle choices remain open at unrestricted weights.</p>
 
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
@@ -524,7 +528,7 @@
     <p>It verifies that the four normalized equality representatives form one orbit by explicit relabeling and simultaneous-reversal maps. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
     <p>The fourth-cycle certificate evaluates all 409 simple-cycle perturbations of the sharp triple, including 394 genuinely directed cycles and 15 reversible two-cycles. Globally along each nonnegative ray it reduces the barriers to 50 exact types, with at most two positive sign breakpoints and three open cells per type, and proves $z_-\le3/5$. At the origin it reduces them to 48 exact tangent types and proves the universal $-4/25$ derivative bound; only the three repeated base cycles attain equality, so the other 406 simple-cycle directions, including all 391 genuinely new directed ones, are strict.</p>
     <p>The two-parameter fourth-cycle certificate checks all 1,227 choices of an imbalance pair and a fourth cycle. It reduces them to 223 exact bivariate barrier types, closes the three rational blow-up patches around equality with 1,005 cells, and closes the compactified global domains with 12,922 cells at maximum depth eight.</p>
-    <p>The unrestricted four-weight certificate enumerates the 12 exact sharp-triple symmetries and four representative cones with orbit sizes $12,6,12,2$. It closes their compactified complements with 306 boxes through depth 36; nine local boxes use uniformly negative-definite quadratic root barriers, with componentwise smallest principal minors $512$, $179{,}200$, $7{,}077{,}888$ and largest higher-order coefficient bound $16{,}064$.</p>
+    <p>The unrestricted four-weight certificate enumerates the 12 exact sharp-triple symmetries and five representative cones with orbit sizes $12,6,12,2,6$. It closes their compactified complements with 914 boxes through depth 39; 15 local boxes use either a uniformly negative-definite quadratic root barrier or the exact parabolic split at $v=p^2+q^2$.</p>
     <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
     <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
     <p>For the mixed theorem it enumerates all 17,136 normalized two-Hamilton/one-five-cycle supports and proves exactly that no Hamilton&ndash;five-cycle pair is extremal. It closes 16,848 supports by global simplex covers and the remaining 288 by 12 strict local blow-up types plus complementary covers.</p>
@@ -553,7 +557,7 @@
     <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every one-cycle ray from the equal-weight sharp triple, three two-parameter imbalance slices and 32 unrestricted four-weight cones are covered; other arbitrary four-weight cones are not. The exact minimum is nine among flows decomposable into cycles of lengths at most five, while general four-or-more-cycle flows, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every one-cycle ray from the equal-weight sharp triple, three two-parameter imbalance slices and 38 unrestricted four-weight cones are covered; other arbitrary four-weight cones are not. The exact minimum is nine among flows decomposable into cycles of lengths at most five, while general four-or-more-cycle flows, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>

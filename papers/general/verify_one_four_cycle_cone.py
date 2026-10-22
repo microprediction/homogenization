@@ -1,4 +1,4 @@
-"""Exact full-cone certificates for four cycle-symmetry classes."""
+"""Exact full-cone certificates for five cycle-symmetry classes."""
 
 from fractions import Fraction
 from itertools import permutations
@@ -20,6 +20,7 @@ REPRESENTATIVES = (
     (0, 1, 5, 2),
     (0, 1, 2, 3, 4),
     (0, 1, 2, 3, 4, 5),
+    (0, 1, 3, 2),
 )
 DEGREE = 5
 LOCAL_RADIUS = Fraction(1, 1024)
@@ -258,6 +259,57 @@ def principal_minors(local_root):
     )
 
 
+def parabolic_bounds(local_sum, local_root):
+    """Certify the exceptional local cone by splitting at v=p^2+q^2."""
+    radius = LOCAL_RADIUS
+    assert local_sum.get((0, 0, 1)) == -1440
+    assert {
+        exponent: coefficient for exponent, coefficient in local_sum.items()
+        if sum(exponent) == 2 and exponent[2] == 0
+    } == {(2, 0, 0): 144, (1, 1, 0): 144, (0, 2, 0): 144}
+    assert {
+        exponent: coefficient for exponent, coefficient in local_root.items()
+        if sum(exponent) == 2
+    } == {
+        (2, 0, 0): -576, (1, 1, 0): -576, (0, 2, 0): -576,
+        (1, 0, 1): 960, (0, 1, 1): -960, (0, 0, 2): 128,
+    }
+    central_remainder = {
+        exponent: coefficient for exponent, coefficient in local_sum.items()
+        if exponent != (0, 0, 1)
+        and not (sum(exponent) == 2 and exponent[2] == 0)
+    }
+    outer_higher = {
+        exponent: coefficient for exponent, coefficient in local_root.items()
+        if sum(exponent) >= 3
+    }
+    assert all(
+        (exponent[2] and sum(exponent) >= 2)
+        or (not exponent[2] and sum(exponent) >= 3)
+        for exponent in central_remainder
+    )
+    assert all(sum(exponent) >= 3 for exponent in outer_higher)
+    central_coefficient_sum = sum(map(abs, central_remainder.values()))
+    outer_coefficient_sum = sum(map(abs, outer_higher.values()))
+
+    # Put R=p^2+q^2 and S=p^2+pq+q^2, so R/2 <= S <= 3R/2.
+    # If v>=R, the sum barrier is at most
+    #   (-1440+216+central_coefficient_sum*radius)*v.
+    central_margin = 1224 - central_coefficient_sum * radius
+    # If v<=R, its quadratic root barrier is at most
+    #   (-288+1920*radius+256*radius^2)*R;
+    # every term of degree at least three costs at most radius*R.
+    outer_margin = (
+        288 - 1920 * radius - 256 * radius ** 2
+        - outer_coefficient_sum * radius
+    )
+    assert central_margin > 0 and outer_margin > 0
+    return (
+        central_coefficient_sum, outer_coefficient_sum,
+        central_margin, outer_margin,
+    )
+
+
 base_set = frozenset(map(canonical, BASE_CYCLES))
 symmetries = []
 for relabeling in permutations(range(6)):
@@ -273,37 +325,45 @@ orbits = [
     frozenset(transform(cycle, *symmetry) for symmetry in symmetries)
     for cycle in REPRESENTATIVES
 ]
-assert tuple(map(len, orbits)) == (12, 6, 12, 2)
 covered_cycles = frozenset().union(*orbits)
-assert sum(map(len, orbits)) == len(covered_cycles) == 32
+assert tuple(map(len, orbits)) == (12, 6, 12, 2, 6)
+assert sum(map(len, orbits)) == len(covered_cycles) == 38
 genuinely_new = {
     canonical(cycle) for cycle in all_cycles if len(cycle) >= 3
 } - base_set
 assert len(genuinely_new) == 391 and covered_cycles <= genuinely_new
 
 records = []
+quadratic_records = []
+parabolic_record = None
 for cycle, orbit in zip(REPRESENTATIVES, orbits):
     sum_barrier, root_barrier = barrier_pair(cycle)
     local_root = localize(root_barrier)
     assert all(sum(key) >= 2 for key in local_root)
-    minors = principal_minors(local_root)
-    assert all(value > 0 for value in minors)
-    higher_sum = sum(
-        abs(value) for key, value in local_root.items() if sum(key) >= 3
-    )
-    # Every degree-m monomial is at most
-    # radius^(m-2) (p^2+q^2+v^2) in absolute value.
-    assert higher_sum * LOCAL_RADIUS < QUADRATIC_MARGIN
+    if cycle == (0, 1, 3, 2):
+        parabolic_record = parabolic_bounds(localize(sum_barrier), local_root)
+        local_data = parabolic_record
+    else:
+        minors = principal_minors(local_root)
+        assert all(value > 0 for value in minors)
+        higher_sum = sum(
+            abs(value) for key, value in local_root.items() if sum(key) >= 3
+        )
+        # Every degree-m monomial is at most
+        # radius^(m-2) (p^2+q^2+v^2) in absolute value.
+        assert higher_sum * LOCAL_RADIUS < QUADRATIC_MARGIN
+        local_data = (higher_sum, minors)
+        quadratic_records.append((higher_sum, minors))
     global_cells, local_cells, depth = cover(
         bernstein_controls(compactify(sum_barrier)),
         bernstein_controls(compactify(root_barrier)),
     )
     records.append((
-        cycle, len(orbit), higher_sum, minors,
+        cycle, len(orbit), local_data,
         global_cells, local_cells, depth,
     ))
 
-smallest_minors = tuple(min(record[3][index] for record in records)
+smallest_minors = tuple(min(record[1][index] for record in quadratic_records)
                          for index in range(3))
 assert smallest_minors == (512, 179200, 7077888)
 print(f"sharp-triple symmetry operations: {len(symmetries)}")
@@ -314,10 +374,14 @@ print(f"orbit sizes: {tuple(record[1] for record in records)}")
 print(f"uncovered genuinely new cycles: {len(genuinely_new - covered_cycles)}")
 print(f"local radius: {LOCAL_RADIUS}")
 print(f"largest higher-order coefficient bound: "
-      f"{max(record[2] for record in records)}")
+      f"{max(record[0] for record in quadratic_records)}")
 print(f"smallest positive-definiteness minors: {smallest_minors}")
-print(f"global terminal boxes: {sum(record[4] for record in records)}")
-print(f"local terminal boxes: {sum(record[5] for record in records)}")
-print(f"maximum subdivision depth: {max(record[6] for record in records)}")
+print(f"parabolic central coefficient sum: {parabolic_record[0]}")
+print(f"parabolic outer coefficient sum: {parabolic_record[1]}")
+print(f"parabolic central margin: {parabolic_record[2]}")
+print(f"parabolic outer margin: {parabolic_record[3]}")
+print(f"global terminal boxes: {sum(record[3] for record in records)}")
+print(f"local terminal boxes: {sum(record[4] for record in records)}")
+print(f"maximum subdivision depth: {max(record[5] for record in records)}")
 print("covered full four-weight cones: lower squared frequency <= 3/5")
 print("PASS")
