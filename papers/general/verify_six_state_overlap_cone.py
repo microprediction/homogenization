@@ -4098,6 +4098,285 @@ assert triangle_two_four_quotient_type_cells == 3196
 assert triangle_two_four_quotient_expanded_cells == 5583240
 assert triangle_two_four_quotient_expanded_corner_cells == 100440
 
+# Stream the larger (three, four, five) class one triangle at a time.  A
+# four/five boundary is either nonsingular on six states or lies on a common
+# five-state face.  In the latter case the triangle weight factors from both
+# barriers.  The streamed interpolation keeps the exact enumeration modest in
+# memory while accumulating canonical full and quotient polynomial types.
+triangle_four_five_regular_types = {}
+triangle_four_five_quotient_types = {}
+triangle_four_five_connected = 0
+triangle_four_five_regular = 0
+triangle_four_five_singular = 0
+for triangle_index in three_cycle_indices:
+    triangle_four_five_supports = np.column_stack((
+        four_five_pairs[:, 0],
+        np.full(len(four_five_pairs), triangle_index, dtype=np.int64),
+        four_five_pairs[:, 1],
+    ))
+    triangle_four_five_values = {
+        name: [] for name in ("a5", "sum", "root")
+    }
+    for first_weight, second_weight, third_weight in homogeneous_exponents:
+        symmetric = (
+            first_weight
+            * integer_symmetric[triangle_four_five_supports[:, 0]]
+            + second_weight
+            * integer_symmetric[triangle_four_five_supports[:, 1]]
+            + third_weight
+            * integer_symmetric[triangle_four_five_supports[:, 2]]
+        )
+        skew = (
+            first_weight
+            * integer_skew[triangle_four_five_supports[:, 0]]
+            + second_weight
+            * integer_skew[triangle_four_five_supports[:, 1]]
+            + third_weight
+            * integer_skew[triangle_four_five_supports[:, 2]]
+        )
+        node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+            symmetric, skew
+        )
+        triangle_four_five_values["a5"].append(node_a5)
+        triangle_four_five_values["sum"].append(
+            5 * node_a3 - 6 * node_a5
+        )
+        triangle_four_five_values["root"].append(
+            9 * node_a5 - 15 * node_a3 + 25 * node_a1
+        )
+
+    triangle_four_five_coefficients = {}
+    for name, values in triangle_four_five_values.items():
+        stacked_values = np.stack(values)
+        product_bound = (
+            len(homogeneous_exponents)
+            * interpolation_entry_bound
+            * int(np.max(np.abs(stacked_values)))
+        )
+        assert product_bound < np.iinfo(np.int64).max
+        numerators = interpolation_matrix @ stacked_values
+        assert np.all(numerators % interpolation_denominator == 0)
+        triangle_four_five_coefficients[name] = (
+            numerators // interpolation_denominator
+        )
+
+    connected = np.any(
+        triangle_four_five_coefficients["a5"] != 0, axis=0
+    )
+    regular = connected & nonsingular_four_five_pair
+    singular = connected & ~nonsingular_four_five_pair
+    triangle_four_five_connected += int(np.sum(connected))
+    triangle_four_five_regular += int(np.sum(regular))
+    triangle_four_five_singular += int(np.sum(singular))
+    for name in ("a5", "sum", "root"):
+        assert not np.any(
+            triangle_four_five_coefficients[name][zero_triangle_positions][
+                :, singular
+            ]
+        )
+
+    for support_index in np.flatnonzero(regular):
+        direct = (
+            tuple(triangle_four_five_coefficients["sum"][
+                :, support_index
+            ]),
+            tuple(triangle_four_five_coefficients["root"][
+                :, support_index
+            ]),
+        )
+        swapped = (
+            tuple(triangle_four_five_coefficients["sum"][
+                swap_outer_degree_five, support_index
+            ]),
+            tuple(triangle_four_five_coefficients["root"][
+                swap_outer_degree_five, support_index
+            ]),
+        )
+        key = min(direct, swapped)
+        triangle_four_five_regular_types[key] = (
+            triangle_four_five_regular_types.get(key, 0) + 1
+        )
+
+    quotient_sum = triangle_four_five_coefficients["sum"][
+        triangle_quotient_positions
+    ][:, singular]
+    quotient_root = triangle_four_five_coefficients["root"][
+        triangle_quotient_positions
+    ][:, singular]
+    for support_index in range(quotient_sum.shape[1]):
+        direct = (
+            tuple(quotient_sum[:, support_index]),
+            tuple(quotient_root[:, support_index]),
+        )
+        swapped = (
+            tuple(quotient_sum[swap_outer_degree_four, support_index]),
+            tuple(quotient_root[swap_outer_degree_four, support_index]),
+        )
+        key = min(direct, swapped)
+        triangle_four_five_quotient_types[key] = (
+            triangle_four_five_quotient_types.get(key, 0) + 1
+        )
+
+assert triangle_four_five_connected == 432000
+assert triangle_four_five_regular == 345600
+assert triangle_four_five_singular == 86400
+assert len(triangle_four_five_regular_types) == 240
+assert sum(triangle_four_five_regular_types.values()) == 345600
+assert min(triangle_four_five_regular_types.values()) == 720
+assert max(triangle_four_five_regular_types.values()) == 5760
+assert len(triangle_four_five_quotient_types) == 30
+assert sum(triangle_four_five_quotient_types.values()) == 86400
+assert min(triangle_four_five_quotient_types.values()) == 1440
+assert max(triangle_four_five_quotient_types.values()) == 5760
+
+triangle_four_five_regular_keys = list(triangle_four_five_regular_types)
+triangle_four_five_regular_sum = np.array([
+    key[0] for key in triangle_four_five_regular_keys
+], dtype=object).T
+triangle_four_five_regular_root = np.array([
+    key[1] for key in triangle_four_five_regular_keys
+], dtype=object).T
+triangle_four_five_regular_corner_types, _ = short_corner_types(
+    triangle_four_five_regular_sum,
+    triangle_four_five_regular_root,
+    homogeneous_exponents,
+    np.ones(len(triangle_four_five_regular_keys), dtype=bool),
+)
+assert len(triangle_four_five_regular_corner_types) == 240
+(
+    triangle_four_five_regular_corner_uses,
+    triangle_four_five_regular_corner_largest_strict_control,
+    triangle_four_five_regular_corner_zero_patches,
+    triangle_four_five_regular_corner_factor_orders,
+) = certify_corner_types(
+    triangle_four_five_regular_corner_types,
+    triangle_two_four_corner_height,
+    16,
+    strict=False,
+)
+assert triangle_four_five_regular_corner_uses == {
+    "sum": 3496, "root": 344,
+}
+assert triangle_four_five_regular_corner_largest_strict_control == Fraction(
+    -89, 134217728
+)
+assert triangle_four_five_regular_corner_zero_patches == 309
+assert triangle_four_five_regular_corner_factor_orders == {3}
+
+triangle_four_five_regular_largest_cover = 0
+triangle_four_five_regular_deepest_cover = 0
+triangle_four_five_regular_type_cells = 0
+triangle_four_five_regular_expanded_cells = 0
+triangle_four_five_regular_expanded_corner_cells = 0
+for type_index, key in enumerate(triangle_four_five_regular_keys):
+    cover_size, cover_depth, corner_cells, edge_cells = (
+        exact_simplex_cover_with_corner(
+            triangle_four_five_regular_sum[:, type_index],
+            triangle_four_five_regular_root[:, type_index],
+            simplex_transforms,
+            1,
+            triangle_two_four_corner_height,
+        )
+    )
+    assert edge_cells == 0
+    multiplicity = triangle_four_five_regular_types[key]
+    triangle_four_five_regular_largest_cover = max(
+        triangle_four_five_regular_largest_cover, cover_size
+    )
+    triangle_four_five_regular_deepest_cover = max(
+        triangle_four_five_regular_deepest_cover, cover_depth
+    )
+    triangle_four_five_regular_type_cells += cover_size
+    triangle_four_five_regular_expanded_cells += multiplicity * cover_size
+    triangle_four_five_regular_expanded_corner_cells += (
+        multiplicity * corner_cells
+    )
+assert triangle_four_five_regular_largest_cover == 517
+assert triangle_four_five_regular_deepest_cover == 10
+assert triangle_four_five_regular_type_cells == 15177
+assert triangle_four_five_regular_expanded_cells == 20960640
+assert triangle_four_five_regular_expanded_corner_cells == 396000
+
+triangle_four_five_quotient_keys = list(
+    triangle_four_five_quotient_types
+)
+triangle_four_five_quotient_type_sum = np.array([
+    key[0] for key in triangle_four_five_quotient_keys
+], dtype=object).T
+triangle_four_five_quotient_type_root = np.array([
+    key[1] for key in triangle_four_five_quotient_keys
+], dtype=object).T
+oriented_triangle_four_five_quotient_sum = np.concatenate((
+    triangle_four_five_quotient_type_sum[four_first_corner_positions],
+    triangle_four_five_quotient_type_sum,
+    triangle_four_five_quotient_type_sum[four_second_corner_positions],
+), axis=1)
+oriented_triangle_four_five_quotient_root = np.concatenate((
+    triangle_four_five_quotient_type_root[four_first_corner_positions],
+    triangle_four_five_quotient_type_root,
+    triangle_four_five_quotient_type_root[four_second_corner_positions],
+), axis=1)
+triangle_four_five_quotient_corner_types, _ = short_corner_types(
+    oriented_triangle_four_five_quotient_sum,
+    oriented_triangle_four_five_quotient_root,
+    degree_four_exponents,
+    np.ones(3 * len(triangle_four_five_quotient_keys), dtype=bool),
+)
+assert len(triangle_four_five_quotient_corner_types) == 90
+assert sum(triangle_four_five_quotient_corner_types.values()) == 90
+(
+    triangle_four_five_quotient_corner_uses,
+    triangle_four_five_quotient_corner_largest_strict_control,
+    triangle_four_five_quotient_corner_zero_patches,
+    triangle_four_five_quotient_corner_factor_orders,
+) = certify_corner_types(
+    triangle_four_five_quotient_corner_types,
+    triangle_two_four_corner_height,
+    16,
+    strict=False,
+)
+assert triangle_four_five_quotient_corner_uses == {
+    "sum": 430, "root": 1010,
+}
+assert triangle_four_five_quotient_corner_largest_strict_control == Fraction(
+    -89, 8388608
+)
+assert triangle_four_five_quotient_corner_zero_patches == 38
+assert triangle_four_five_quotient_corner_factor_orders == {0, 1, 3}
+
+triangle_four_five_quotient_largest_cover = 0
+triangle_four_five_quotient_deepest_cover = 0
+triangle_four_five_quotient_type_cells = 0
+triangle_four_five_quotient_expanded_cells = 0
+triangle_four_five_quotient_expanded_corner_cells = 0
+for type_index, key in enumerate(triangle_four_five_quotient_keys):
+    cover_size, cover_depth, corner_cells = (
+        exact_simplex_cover_with_two_corners(
+            triangle_four_five_quotient_type_sum[:, type_index],
+            triangle_four_five_quotient_type_root[:, type_index],
+            degree_four_simplex_transforms,
+            (0, 1, 2),
+            triangle_two_four_corner_height,
+        )
+    )
+    multiplicity = triangle_four_five_quotient_types[key]
+    triangle_four_five_quotient_largest_cover = max(
+        triangle_four_five_quotient_largest_cover, cover_size
+    )
+    triangle_four_five_quotient_deepest_cover = max(
+        triangle_four_five_quotient_deepest_cover, cover_depth
+    )
+    triangle_four_five_quotient_type_cells += cover_size
+    triangle_four_five_quotient_expanded_cells += multiplicity * cover_size
+    triangle_four_five_quotient_expanded_corner_cells += (
+        multiplicity * corner_cells
+    )
+assert triangle_four_five_quotient_largest_cover == 508
+assert triangle_four_five_quotient_deepest_cover == 10
+assert triangle_four_five_quotient_type_cells == 3858
+assert triangle_four_five_quotient_expanded_cells == 11914560
+assert triangle_four_five_quotient_expanded_corner_cells == 218880
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -4583,6 +4862,49 @@ print("one-three-cycle/two-four-cycle quotient expanded cells: "
       f"{triangle_two_four_quotient_expanded_cells}")
 print("one-three-cycle/two-four-cycle expanded corner local cells: "
       f"{triangle_two_four_quotient_expanded_corner_cells}")
+print("one-three-cycle/one-four-cycle/one-five-cycle supports: "
+      "518400 total, 432000 connected")
+print("mixed three/four/five nonsingular-boundary supports: 345600")
+print("mixed three/four/five degree-five types: "
+      f"{len(triangle_four_five_regular_types)}")
+print("mixed three/four/five degree-five corner patches: "
+      f"{triangle_four_five_regular_corner_uses}")
+print("mixed three/four/five degree-five corner patches total: 3840")
+print("mixed three/four/five degree-five zero-control patches: "
+      f"{triangle_four_five_regular_corner_zero_patches}")
+print("largest strict mixed three/four/five degree-five corner control: "
+      f"{triangle_four_five_regular_corner_largest_strict_control}")
+print("largest mixed three/four/five degree-five cover: "
+      f"{triangle_four_five_regular_largest_cover} triangles at depth "
+      f"{triangle_four_five_regular_deepest_cover}")
+print("mixed three/four/five degree-five type cells: "
+      f"{triangle_four_five_regular_type_cells}")
+print("mixed three/four/five degree-five expanded cells: "
+      f"{triangle_four_five_regular_expanded_cells}")
+print("mixed three/four/five singular-boundary supports: 86400")
+print("mixed three/four/five quotient types: "
+      f"{len(triangle_four_five_quotient_types)}")
+print("mixed three/four/five quotient corner types: "
+      f"{len(triangle_four_five_quotient_corner_types)}")
+print("mixed three/four/five quotient corner incidences: 90")
+print("mixed three/four/five quotient corner patches: "
+      f"{triangle_four_five_quotient_corner_uses}")
+print("mixed three/four/five quotient corner patches total: 1440")
+print("mixed three/four/five quotient zero-control patches: "
+      f"{triangle_four_five_quotient_corner_zero_patches}")
+print("mixed three/four/five quotient corner orders: "
+      f"{sorted(triangle_four_five_quotient_corner_factor_orders)}")
+print("largest strict mixed three/four/five quotient corner control: "
+      f"{triangle_four_five_quotient_corner_largest_strict_control}")
+print("largest mixed three/four/five quotient cover: "
+      f"{triangle_four_five_quotient_largest_cover} triangles at depth "
+      f"{triangle_four_five_quotient_deepest_cover}")
+print("mixed three/four/five quotient type cells: "
+      f"{triangle_four_five_quotient_type_cells}")
+print("mixed three/four/five quotient expanded cells: "
+      f"{triangle_four_five_quotient_expanded_cells}")
+print("mixed three/four/five expanded corner local cells: "
+      f"{triangle_four_five_quotient_expanded_corner_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")

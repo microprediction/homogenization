@@ -298,6 +298,14 @@
     <p>The quotient has three singular vertices. Their 66 oriented incidences reduce to 54 corner types and 864 rational patches: 314 use the sum barrier and 550 use the root barrier, while 44 selected patches close nonstrictly at zero and the largest strict control is $-89/8388608$.</p>
     <p>Complementary quotient covers use at most 577 triangles at depth ten and 3,196 terminal triangles across the 22 types. Hence every connected nonnegative mixture of one directed triangle and two directed four-cycles satisfies $\sigma_2\le\sqrt{3/5}$.</p>
 
+    <h2>One triangle, one four-cycle and one five-cycle</h2>
+    <p>There are 518,400 labeled supports in the mixed $(3,4,5)$ class. Exactly 432,000 have connected six-state support.</p>
+    <p>In 345,600 connected cases the four/five-cycle boundary already spans all six states. These reduce to 240 exact degree-five types and 3,840 cubic corner patches: 3,496 use the sum barrier and 344 use the root barrier.</p>
+    <p>Of the selected patches, 309 close nonstrictly at zero. Every other selected control is negative, with largest value $-89/134217728$; complementary covers use at most 517 triangles at depth ten and 15,177 terminal triangles across the 240 types.</p>
+    <p>For the other 86,400 connected supports the four/five-cycle boundary lies on a common five-state face. Both barriers then contain the triangle weight, and division leaves 30 exact degree-four quotient types.</p>
+    <p>Orienting all three quotient vertices gives 90 corner types and 1,440 rational patches: 430 use the sum barrier and 1,010 use the root barrier. Thirty-eight selected patches close nonstrictly at zero, and the largest strict control is $-89/8388608$.</p>
+    <p>Complementary quotient covers use at most 508 triangles at depth ten and 3,858 terminal triangles across the 30 types. Hence every connected nonnegative mixture of one triangle, one four-cycle and one five-cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
     <ol>
@@ -359,9 +367,10 @@
     <p>For one four-cycle and two distinct triangles it enumerates all 70,200 supports and identifies the 38,520 connected cases. Factoring the four-cycle weight reduces them to 18 degree-four quotient types; 27 oriented corner types and 1,479 type-level terminal triangles complete the exact certificate.</p>
     <p>For one five-cycle and two distinct triangles it enumerates all 112,320 supports and identifies the 84,960 connected cases. Factoring the five-cycle weight leaves 41 quotient types; 71 oriented corner types and 2,399 type-level terminal triangles complete the certificate.</p>
     <p>For one triangle and two distinct four-cycles it enumerates all 160,200 supports and identifies the 109,800 connected cases. The nonsingular-boundary stratum reduces to 42 degree-five types and 2,298 type-level cells; factoring the triangle weight on the remaining stratum leaves 22 degree-four types and 3,196 type-level cells.</p>
+    <p>For one triangle, one four-cycle and one five-cycle it streams all 518,400 supports and identifies the 432,000 connected cases. The nonsingular-boundary stratum reduces to 240 degree-five types and 15,177 type-level cells; factoring the triangle weight on the common-face stratum leaves 30 degree-four types and 3,858 type-level cells.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Remaining simple-cycle triples have length multisets $(3,4,5)$, $(3,5,5)$ or use only lengths four and five; general flows with four or more genuinely directed cycles and unrestricted state counts six through nine also remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Remaining simple-cycle triples have length multiset $(3,5,5)$ or use only lengths four and five; general flows with four or more genuinely directed cycles and unrestricted state counts six through nine also remain open.</p>
   </main>
 
   <footer>
