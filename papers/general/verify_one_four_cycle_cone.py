@@ -1,5 +1,6 @@
 """Exact full-cone certificates for every fourth cycle at the sharp triple."""
 
+from collections import Counter
 from fractions import Fraction
 from itertools import permutations
 from math import comb
@@ -18,6 +19,7 @@ from verify_four_cycle_tangent import (
 DEGREE = 5
 LOCAL_RADIUS = Fraction(1, 1024)
 QUADRATIC_MARGIN = 64
+DEFERRED_FACE_TYPES = Counter()
 
 
 def poly_add(*terms):
@@ -152,6 +154,65 @@ def split_curve(values):
     )
 
 
+def univariate_controls(poly):
+    """Convert a degree-at-most-five power polynomial to Bernstein form."""
+    return [
+        sum(
+            coefficient * Fraction(comb(index, power), comb(DEGREE, power))
+            for (power,), coefficient in poly.items() if power <= index
+        )
+        for index in range(DEGREE + 1)
+    ]
+
+
+def pair_controls(poly, base_index):
+    """Restrict to the edge joining one base cycle to the new cycle."""
+    substitutions = [({(0,): 0}) for _ in range(4)]
+    substitutions[base_index] = {(0,): 1, (1,): -1}
+    substitutions[3] = {(1,): 1}
+    return univariate_controls(substitute(poly, substitutions))
+
+
+def strict_interval_cover(first, second, maximum_depth=24):
+    """Prove that one barrier is negative on every open edge point."""
+    stack = [(first, second, 0)]
+    terminals = deepest = 0
+    while stack:
+        first_values, second_values, depth = stack.pop()
+        if (
+            (max(first_values) <= 0 and min(first_values) < 0)
+            or (max(second_values) <= 0 and min(second_values) < 0)
+        ):
+            terminals += 1
+            deepest = max(deepest, depth)
+            continue
+        assert depth < maximum_depth, (first_values, second_values)
+        first_halves = split_curve(first_values)
+        second_halves = split_curve(second_values)
+        stack.extend([
+            (first_halves[0], second_halves[0], depth + 1),
+            (first_halves[1], second_halves[1], depth + 1),
+        ])
+    return terminals, deepest
+
+
+def connected_pair(first, second):
+    state_count = GROUND + 1
+    adjacency = [set() for _ in range(state_count)]
+    for cycle in (first, second):
+        for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+            adjacency[source].add(target)
+            adjacency[target].add(source)
+    seen = {0}
+    stack = [0]
+    while stack:
+        state = stack.pop()
+        for neighbor in adjacency[state] - seen:
+            seen.add(neighbor)
+            stack.append(neighbor)
+    return len(seen) == state_count
+
+
 def split_axis(controls, axis):
     left, right = {}, {}
     other = [index for index in range(3) if index != axis]
@@ -218,7 +279,15 @@ def strict_face_check(first, second, box, fixed=None):
         (max(first_values) <= 0 and min(first_values) < 0)
         or (max(second_values) <= 0 and min(second_values) < 0)
     ):
-        return (1, 0) if on_global_boundary(box, fixed) else (0, 1)
+        if on_global_boundary(box, fixed):
+            global_fixed = tuple(sorted(
+                (axis, box[axis][0 if endpoint == 0 else 1])
+                for axis, endpoint in fixed.items()
+                if box[axis][0 if endpoint == 0 else 1] in (0, 1)
+            ))
+            DEFERRED_FACE_TYPES[(global_fixed, 3 - len(fixed))] += 1
+            return 1, 0
+        return 0, 1
     deferred = unresolved = 0
     for axis in range(3):
         if axis in fixed:
@@ -404,8 +473,19 @@ assert len(covered_cycles) == len(genuinely_new) == 391
 records = []
 quadratic_records = []
 parabolic_records = []
+pair_edge_records = []
 for cycle, orbit in zip(REPRESENTATIVES, orbits):
     sum_barrier, root_barrier = barrier_pair(cycle)
+    for base_index, base_cycle in enumerate(BASE_CYCLES):
+        if connected_pair(base_cycle, cycle):
+            pair_edge_records.append((
+                cycle,
+                base_index,
+                *strict_interval_cover(
+                    pair_controls(sum_barrier, base_index),
+                    pair_controls(root_barrier, base_index),
+                ),
+            ))
     local_root = localize(root_barrier)
     assert all(sum(key) >= 2 for key in local_root)
     local_sum = localize(sum_barrier)
@@ -453,6 +533,21 @@ assert (global_cells, strict_global_cells, weak_global_cells) == (
 assert local_cells == 354
 assert deferred_faces == 25946
 assert unresolved_faces == 0
+codimension_one_deferred = {
+    key: value for key, value in DEFERRED_FACE_TYPES.items() if key[1] == 2
+}
+assert codimension_one_deferred == {
+    (((0, Fraction(1)),), 2): 473,
+    (((2, Fraction(1)),), 2): 1507,
+}
+labeled_connected_pair_edges = sum(
+    connected_pair(base_cycle, cycle)
+    for cycle in genuinely_new for base_cycle in BASE_CYCLES
+)
+assert len(pair_edge_records) == 97
+assert labeled_connected_pair_edges == 774
+assert max(record[2] for record in pair_edge_records) == 5
+assert max(record[3] for record in pair_edge_records) == 4
 print(f"sharp-triple symmetry operations: {len(symmetries)}")
 print(f"representative four-weight cones: {len(records)}")
 print(f"covered fourth cycles: {len(covered_cycles)}")
@@ -478,7 +573,17 @@ print(f"weak global terminal boxes: {weak_global_cells}")
 print(f"local terminal boxes: {local_cells}")
 print(f"maximum subdivision depth: {max(record[7] for record in records)}")
 print(f"deferred outer-cube face incidences: {deferred_faces}")
+print(f"deferred codimension-one coordinate incidences: "
+      f"{tuple(sorted(codimension_one_deferred.items()))}")
 print(f"unresolved interior faces: {unresolved_faces}")
+print(f"connected representative new-cycle pair edges: {len(pair_edge_records)}")
+print(f"connected labeled new-cycle pair edges: {labeled_connected_pair_edges}")
+print(f"largest strict pair-edge cover: "
+      f"{max(record[2] for record in pair_edge_records)}")
+print(f"deepest strict pair-edge cover: "
+      f"{max(record[3] for record in pair_edge_records)}")
+print("positive replacement three-cycle faces: lower squared frequency < 3/5")
+print("connected new-cycle pair edges: lower squared frequency < 3/5")
 print("positive four-weight cones: lower squared frequency < 3/5")
 print("covered full four-weight cones: lower squared frequency <= 3/5")
 print("PASS")
