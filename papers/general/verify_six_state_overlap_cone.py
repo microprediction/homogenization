@@ -4774,6 +4774,118 @@ assert all_four_deepest_cover == 5
 assert all_four_type_cells == 1813
 assert all_four_expanded_cells == 1890060
 
+# The adjacent (4,4,5) architecture has only the symmetry exchanging its two
+# four-cycle weights.  Stream over the five-cycle choice so the exact
+# interpolation never materializes all 576,720 supports at once.  Unlike the
+# all-four case, no connected support is an equal-weight equality case.
+two_four_one_five_swap = np.array([
+    degree_five_index[(third, second, first)]
+    for first, second, third in homogeneous_exponents
+])
+two_four_one_five_types = {}
+two_four_one_five_connected = 0
+two_four_one_five_equality = 0
+for five_cycle_index in five_cycle_indices:
+    values = {name: [] for name in ("a5", "sum", "root")}
+    for first_weight, second_weight, third_weight in homogeneous_exponents:
+        symmetric = (
+            first_weight * integer_symmetric[four_cycle_pairs[:, 0]]
+            + second_weight * integer_symmetric[five_cycle_index]
+            + third_weight * integer_symmetric[four_cycle_pairs[:, 1]]
+        )
+        skew = (
+            first_weight * integer_skew[four_cycle_pairs[:, 0]]
+            + second_weight * integer_skew[five_cycle_index]
+            + third_weight * integer_skew[four_cycle_pairs[:, 1]]
+        )
+        node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+            symmetric, skew
+        )
+        values["a5"].append(node_a5)
+        values["sum"].append(5 * node_a3 - 6 * node_a5)
+        values["root"].append(
+            9 * node_a5 - 15 * node_a3 + 25 * node_a1
+        )
+
+    coefficients = {}
+    for name, node_values in values.items():
+        stacked_values = np.stack(node_values)
+        product_bound = (
+            len(homogeneous_exponents)
+            * interpolation_entry_bound
+            * int(np.max(np.abs(stacked_values)))
+        )
+        assert product_bound < np.iinfo(np.int64).max
+        numerators = interpolation_matrix @ stacked_values
+        assert np.all(numerators % interpolation_denominator == 0)
+        coefficients[name] = numerators // interpolation_denominator
+
+    connected = np.any(coefficients["a5"] != 0, axis=0)
+    equality = (
+        connected
+        & (np.sum(coefficients["sum"], axis=0) == 0)
+        & (np.sum(coefficients["root"], axis=0) == 0)
+    )
+    two_four_one_five_connected += int(np.sum(connected))
+    two_four_one_five_equality += int(np.sum(equality))
+    for support_index in np.flatnonzero(connected):
+        key = (
+            tuple(coefficients["sum"][:, support_index]),
+            tuple(coefficients["root"][:, support_index]),
+        )
+        swapped_key = (
+            tuple(coefficients["sum"][:, support_index][
+                two_four_one_five_swap
+            ]),
+            tuple(coefficients["root"][:, support_index][
+                two_four_one_five_swap
+            ]),
+        )
+        key = min(key, swapped_key)
+        two_four_one_five_types[key] = (
+            two_four_one_five_types.get(key, 0) + 1
+        )
+
+assert len(four_cycle_pairs) * len(five_cycle_indices) == 576720
+assert two_four_one_five_connected == 514080
+assert two_four_one_five_equality == 0
+assert len(two_four_one_five_types) == 372
+assert sum(two_four_one_five_types.values()) == 514080
+assert min(two_four_one_five_types.values()) == 720
+assert max(two_four_one_five_types.values()) == 2880
+
+two_four_one_five_keys = list(two_four_one_five_types)
+two_four_one_five_sum = np.array([
+    key[0] for key in two_four_one_five_keys
+], dtype=object).T
+two_four_one_five_root = np.array([
+    key[1] for key in two_four_one_five_keys
+], dtype=object).T
+two_four_one_five_largest_cover = 0
+two_four_one_five_deepest_cover = 0
+two_four_one_five_type_cells = 0
+two_four_one_five_expanded_cells = 0
+for type_index, key in enumerate(two_four_one_five_keys):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        two_four_one_five_sum[:, type_index],
+        two_four_one_five_root[:, type_index],
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    multiplicity = two_four_one_five_types[key]
+    two_four_one_five_largest_cover = max(
+        two_four_one_five_largest_cover, cover_size
+    )
+    two_four_one_five_deepest_cover = max(
+        two_four_one_five_deepest_cover, cover_depth
+    )
+    two_four_one_five_type_cells += cover_size
+    two_four_one_five_expanded_cells += multiplicity * cover_size
+assert two_four_one_five_largest_cover == 115
+assert two_four_one_five_deepest_cover == 5
+assert two_four_one_five_type_cells == 7710
+assert two_four_one_five_expanded_cells == 10525680
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -5359,6 +5471,19 @@ print("ordinary three-four-cycle type cells: "
       f"{all_four_type_cells}")
 print("ordinary three-four-cycle expanded cells: "
       f"{all_four_expanded_cells}")
+print("two-four-cycle/one-five-cycle supports: 576720 total, "
+      f"{two_four_one_five_connected} connected")
+print("two-four-cycle/one-five-cycle equal-weight equality supports: "
+      f"{two_four_one_five_equality}")
+print("two-four-cycle/one-five-cycle polynomial types: "
+      f"{len(two_four_one_five_types)}")
+print("largest two-four-cycle/one-five-cycle cover: "
+      f"{two_four_one_five_largest_cover} triangles at depth "
+      f"{two_four_one_five_deepest_cover}")
+print("two-four-cycle/one-five-cycle type cells: "
+      f"{two_four_one_five_type_cells}")
+print("two-four-cycle/one-five-cycle expanded cells: "
+      f"{two_four_one_five_expanded_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
