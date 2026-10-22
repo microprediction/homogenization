@@ -217,6 +217,12 @@
     <p>All 832 quotient corner patches are strict: 302 use the sum barrier and 530 use the root barrier, with largest control $-5657/268435456$. Complementary quotient covers use at most 451 triangles at depth ten and 3,673 terminal triangles across the 22 types.</p>
     <p>Hence every connected nonnegative mixture of one triangle and two five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Together with the preceding cases, this covers every simple-cycle triple containing a directed triangle.</p>
 
+    <h2>Three directed four-cycles</h2>
+    <p>There are $\binom{90}{3}=117{,}480$ labeled supports with three distinct four-cycles. Exactly 93,420 have connected six-state support.</p>
+    <p>Of these, 120 form the unique equality-support orbit already covered by the symbolic AM&ndash;GM proof. Under all six permutations of the weights, their barrier pair has one exact polynomial type.</p>
+    <p>The other 93,300 supports reduce to 85 exact polynomial types. Ordinary midpoint-simplex covers use at most 223 triangles at depth five, with 1,813 terminal triangles across the types and 1,890,060 after expanding their multiplicities.</p>
+    <p>Thus every connected nonnegative mixture of three four-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Repeated cycles and connected zero-weight boundaries reduce to the two-cycle theorem.</p>
+
     <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
     <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
     <ol>
@@ -280,7 +286,8 @@
     <p>For one triangle and two distinct four-cycles it enumerates all 160,200 supports and identifies the 109,800 connected cases. The nonsingular-boundary stratum reduces to 42 degree-five types and 2,298 type-level cells; factoring the triangle weight on the remaining stratum leaves 22 degree-four types and 3,196 type-level cells.</p>
     <p>For one triangle, one four-cycle and one five-cycle it streams all 518,400 supports and identifies the 432,000 connected cases. The nonsingular-boundary stratum reduces to 240 degree-five types and 15,177 type-level cells; factoring the triangle weight on the common-face stratum leaves 30 degree-four types and 3,858 type-level cells.</p>
     <p>For one triangle and two distinct five-cycles it streams all 411,840 supports and identifies the 378,720 connected cases. The nonsingular-boundary stratum reduces to 251 degree-five types and 18,617 type-level cells; factoring the triangle weight on the common-face stratum leaves 22 degree-four types and 3,673 type-level cells.</p>
+    <p>For three distinct four-cycles it enumerates all 117,480 supports and identifies 93,420 connected cases. The 120 equality-orbit supports retain their symbolic proof; the other 93,300 supports reduce to 85 types and 1,813 type-level terminal triangles.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 connected two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Remaining simple-cycle triples use only lengths four and five; general flows with four or more genuinely directed cycles and unrestricted state counts six through nine also remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Remaining simple-cycle triples have length multisets $(4,4,5)$, $(4,5,5)$ or $(5,5,5)$; general flows with four or more genuinely directed cycles and unrestricted state counts six through nine also remain open.</p>
   </main>

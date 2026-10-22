@@ -4649,6 +4649,131 @@ assert triangle_two_five_quotient_type_cells == 3673
 assert triangle_two_five_quotient_expanded_cells == 5530320
 assert triangle_two_five_quotient_expanded_corner_cells == 110880
 
+# Three distinct four-cycles give the smallest remaining length multiset.
+# Enumerate every labeled support at once and identify polynomial types up to
+# all six permutations of the weights.  The known equality-support orbit is
+# separated because its arbitrary-weight AM--GM proof was established above.
+all_four_supports = np.array(
+    list(combinations(four_cycle_indices, 3)), dtype=np.int64
+)
+all_four_values = {name: [] for name in ("a5", "sum", "root")}
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight * integer_symmetric[all_four_supports[:, 0]]
+        + second_weight * integer_symmetric[all_four_supports[:, 1]]
+        + third_weight * integer_symmetric[all_four_supports[:, 2]]
+    )
+    skew = (
+        first_weight * integer_skew[all_four_supports[:, 0]]
+        + second_weight * integer_skew[all_four_supports[:, 1]]
+        + third_weight * integer_skew[all_four_supports[:, 2]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    all_four_values["a5"].append(node_a5)
+    all_four_values["sum"].append(5 * node_a3 - 6 * node_a5)
+    all_four_values["root"].append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+
+all_four_coefficients = {}
+for name, values in all_four_values.items():
+    stacked_values = np.stack(values)
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+    numerators = interpolation_matrix @ stacked_values
+    assert np.all(numerators % interpolation_denominator == 0)
+    all_four_coefficients[name] = (
+        numerators // interpolation_denominator
+    )
+
+connected_all_four = np.any(
+    all_four_coefficients["a5"] != 0, axis=0
+)
+equality_all_four = (
+    connected_all_four
+    & (np.sum(all_four_coefficients["sum"], axis=0) == 0)
+    & (np.sum(all_four_coefficients["root"], axis=0) == 0)
+)
+assert len(all_four_supports) == 117480
+assert int(np.sum(connected_all_four)) == 93420
+assert int(np.sum(equality_all_four)) == 120
+
+degree_five_index = {
+    exponent: index for index, exponent in enumerate(homogeneous_exponents)
+}
+all_four_permutation_positions = []
+for permutation in permutations(range(3)):
+    all_four_permutation_positions.append(np.array([
+        degree_five_index[tuple(exponent[index] for index in permutation)]
+        for exponent in homogeneous_exponents
+    ]))
+
+all_four_types = {}
+all_four_equality_types = {}
+for support_index in np.flatnonzero(connected_all_four):
+    orbit = []
+    for positions in all_four_permutation_positions:
+        orbit.append((
+            tuple(all_four_coefficients["sum"][:, support_index][
+                positions
+            ]),
+            tuple(all_four_coefficients["root"][:, support_index][
+                positions
+            ]),
+        ))
+    key = min(orbit)
+    types = (
+        all_four_equality_types
+        if equality_all_four[support_index]
+        else all_four_types
+    )
+    types[key] = types.get(key, 0) + 1
+
+assert len(all_four_types) == 85
+assert sum(all_four_types.values()) == 93300
+assert min(all_four_types.values()) == 120
+assert max(all_four_types.values()) == 2880
+assert len(all_four_equality_types) == 1
+assert set(all_four_equality_types.values()) == {120}
+
+all_four_type_keys = list(all_four_types)
+all_four_type_sum = np.array([
+    key[0] for key in all_four_type_keys
+], dtype=object).T
+all_four_type_root = np.array([
+    key[1] for key in all_four_type_keys
+], dtype=object).T
+all_four_largest_cover = 0
+all_four_deepest_cover = 0
+all_four_type_cells = 0
+all_four_expanded_cells = 0
+for type_index, key in enumerate(all_four_type_keys):
+    cover_size, cover_depth, local_cells = exact_simplex_cover(
+        all_four_type_sum[:, type_index],
+        all_four_type_root[:, type_index],
+        simplex_transforms,
+    )
+    assert local_cells == 0
+    multiplicity = all_four_types[key]
+    all_four_largest_cover = max(
+        all_four_largest_cover, cover_size
+    )
+    all_four_deepest_cover = max(
+        all_four_deepest_cover, cover_depth
+    )
+    all_four_type_cells += cover_size
+    all_four_expanded_cells += multiplicity * cover_size
+assert all_four_largest_cover == 223
+assert all_four_deepest_cover == 5
+assert all_four_type_cells == 1813
+assert all_four_expanded_cells == 1890060
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -5221,6 +5346,19 @@ print("one-three-cycle/two-five-cycle quotient expanded cells: "
       f"{triangle_two_five_quotient_expanded_cells}")
 print("one-three-cycle/two-five-cycle expanded corner local cells: "
       f"{triangle_two_five_quotient_expanded_corner_cells}")
+print("three-four-cycle supports: 117480 total, 93420 connected")
+print("three-four-cycle equality-orbit supports: 120")
+print("ordinary three-four-cycle polynomial types: "
+      f"{len(all_four_types)}")
+print("three-four-cycle equality polynomial types: "
+      f"{len(all_four_equality_types)}")
+print("largest ordinary three-four-cycle cover: "
+      f"{all_four_largest_cover} triangles at depth "
+      f"{all_four_deepest_cover}")
+print("ordinary three-four-cycle type cells: "
+      f"{all_four_type_cells}")
+print("ordinary three-four-cycle expanded cells: "
+      f"{all_four_expanded_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
