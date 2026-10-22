@@ -91,6 +91,18 @@
     <p>Indeed $e_1\ge3e_3^{1/3}$ and $e_2\ge3e_3^{2/3}$ by AM&ndash;GM, so $e_1e_2\ge9e_3$. Equality holds only when $a=b=c$. Thus $3/5$ lies between the two nonnegative squared frequencies, proving the bound throughout this two-dimensional positive weight cone and identifying its unique weight ratio for equality.</p>
     <p>A state relabeling conjugates both $H$ and $D$, while simultaneous reversal leaves $H$ unchanged and sends $D$ to $-D$. Either operation preserves the singular frequencies and merely permutes the three weights. The calculation therefore covers every support in the unique extremal orbit, with equality exactly at equal weights.</p>
 
+    <h2>Adding a fourth cycle at the sharp triple</h2>
+    <p>Let $W_0$ be the equal-weight flow on the displayed extremal triple, let $C$ be any simple directed cycle on the six states, and put $W_\varepsilon=W_0+\varepsilon C$. Write $z_-(\varepsilon)=\sigma_2(\varepsilon)^2$ for the smaller squared intrinsic frequency, so $z_-(0)=3/5$.</p>
+    <p>Exact enumeration of all 409 cycle directions gives the one-sided tangent bound</p>
+    <div class="equation-card">
+    $$\lim_{\varepsilon\downarrow0}
+      \frac{z_-(\varepsilon)-3/5}{\varepsilon}\le-\frac4{25}.$$
+    </div>
+    <p>Equality holds only when $C$ repeats one of the three base cycles. Thus every genuinely new fourth cycle leaves the sharp point strictly downward at first order.</p>
+    <p>For the proof, expand $S=a_3/a_5$ and $P=a_1/a_5$ through second order in $\varepsilon$. At the double root, the linear term of $\Delta=S^2-4P$ vanishes exactly, and</p>
+    $$z_-'(0+)=\frac{S'(0)-\sqrt{[\varepsilon^2]\Delta}}2.$$
+    <p>The certificate reduces the 409 directions to 48 exact rational pairs $(S'(0),[\varepsilon^2]\Delta)$ and checks the displayed bound by a sign test followed, only when necessary, by squaring nonnegative rational quantities. This is a local result at the unique three-cycle extremizer; it neither proves a global four-cycle bound nor excludes growth farther inside a four-weight cone.</p>
+
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
     <p>Fixing the first Hamilton cycle canonically leaves 7,021 unordered triple supports. Every nonnegative weighting of every such support, not identically zero, satisfies</p>
@@ -380,6 +392,7 @@
     <h2>Certificate and scope</h2>
     <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants.</p>
     <p>It verifies that the four normalized equality representatives form one orbit by explicit relabeling and simultaneous-reversal maps. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
+    <p>The fourth-cycle tangent certificate evaluates all 409 simple-cycle perturbations of the sharp triple, including 394 genuinely directed cycles and 15 reversible two-cycles. It reduces them to 48 exact tangent types and proves the universal $-4/25$ upper bound; only the three repeated base cycles attain equality, so the other 406 simple-cycle directions, including all 391 genuinely new directed ones, are strict.</p>
     <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
     <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
     <p>For the mixed theorem it enumerates all 17,136 normalized two-Hamilton/one-five-cycle supports and proves exactly that no Hamilton&ndash;five-cycle pair is extremal. It closes 16,848 supports by global simplex covers and the remaining 288 by 12 strict local blow-up types plus complementary covers.</p>
@@ -408,5 +421,5 @@
     <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, and the exact minimum is nine among flows decomposable into cycles of lengths at most five. Flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, while the fourth-cycle result is only tangent-local at the sharp triple; the exact minimum is nine among flows decomposable into cycles of lengths at most five. General four-or-more-cycle flows, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
   </main>
