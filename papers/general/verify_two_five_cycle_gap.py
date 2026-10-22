@@ -156,6 +156,13 @@ def poly_mul(left, right):
     return trim(out)
 
 
+def poly_power(poly, exponent):
+    out = [Fraction(1)]
+    for _ in range(exponent):
+        out = poly_mul(out, poly)
+    return out
+
+
 def poly_add(left, right):
     out = [Fraction(0)] * max(len(left), len(right))
     for index in range(len(out)):
@@ -399,6 +406,112 @@ for overlap, squared_threshold in overlap_thresholds.items():
 assert overlap_type_counts == {3: 16, 4: 13}
 assert overlap_maximum_roots == {3: 2, 4: 3}
 
+# The common-five-state stratum has one algebraic sharp pair of inverse types.
+five_types = {}
+for tail in permutations(range(1, 5)):
+    squared = squared_frequency_coefficients(
+        (first_cycle, (0,) + tail), 5
+    )
+    key = tuple(tuple(coefficient) for coefficient in squared)
+    five_types[key] = five_types.get(key, 0) + 1
+assert len(five_types) == 8
+assert sorted(five_types.values()) == [1, 1, 1, 1, 5, 5, 5, 5]
+
+sharp_five = tuple(tuple(coefficient) for coefficient in
+                   squared_frequency_coefficients(
+                       (first_cycle, (0, 2, 4, 1, 3)), 5
+                   ))
+inverse_sharp_five = tuple(tuple(reversed(coefficient))
+                           for coefficient in sharp_five)
+assert five_types[sharp_five] == five_types[inverse_sharp_five] == 1
+
+five_nonalgebraic_maximum_roots = 0
+five_nonalgebraic_maximum_cells = 0
+for squared in five_types:
+    if squared not in (sharp_five, inverse_sharp_five):
+        roots, cells = certify_one_positive_root(
+            shift_coefficients(squared, Fraction(1, 7))
+        )
+        five_nonalgebraic_maximum_roots = max(
+            five_nonalgebraic_maximum_roots, roots
+        )
+        five_nonalgebraic_maximum_cells = max(
+            five_nonalgebraic_maximum_cells, cells
+        )
+
+# For a sharp type, the squared frequencies have midpoint A/D and
+# separation 2|F|/(sqrt(5)D).  The unique positive zero rho of F is where
+# they collide.  The derivative signs follow from the rationalized identity.
+c0, c1, c2 = [list(coefficient) for coefficient in sharp_five]
+a_poly = [1, 2, 1, 0, 1]
+f_poly = [-1, -2, -2, -1, 1]
+d_poly = [1, 3, 1]
+denominator = poly_mul(d_poly, d_poly)
+assert c1 == [-10 * value for value in a_poly]
+assert c2 == [5 * value for value in denominator]
+discriminant = poly_add(
+    poly_mul(c1, c1), [-4 * value for value in poly_mul(c0, c2)]
+)
+assert discriminant == [80 * value for value in poly_mul(f_poly, f_poly)]
+
+u_poly = poly_add(
+    poly_mul(derivative(a_poly), denominator),
+    [-value for value in poly_mul(a_poly, derivative(denominator))],
+)
+w_poly = poly_add(
+    poly_mul(derivative(f_poly), denominator),
+    [-value for value in poly_mul(f_poly, derivative(denominator))],
+)
+assert u_poly == [2 * value for value in poly_mul(
+    d_poly, [-2, -4, -3, 1, 3]
+)]
+assert w_poly == poly_mul(d_poly, [4, 6, 3, 5, 7])
+rationalized = poly_add(
+    [5 * value for value in poly_mul(u_poly, u_poly)],
+    [-4 * value for value in poly_mul(w_poly, w_poly)],
+)
+assert rationalized == [-16 * value for value in poly_mul(
+    [-1, 1, 1], poly_power(d_poly, 5)
+)]
+
+rho_intervals, _ = positive_root_intervals(f_poly)
+assert len(rho_intervals) == 1
+assert evaluate(f_poly, Fraction(2)) < 0 < evaluate(f_poly, Fraction(3))
+gamma_poly = [5, -20, 6, -100, 125]
+gamma_relation = [Fraction(0)]
+for coefficient, a_power, d_power in (
+    (125, 4, 0), (-100, 3, 1), (6, 2, 2), (-20, 1, 3), (5, 0, 4)
+):
+    term = poly_mul(poly_power(a_poly, a_power),
+                    poly_power(denominator, d_power))
+    gamma_relation = poly_add(
+        gamma_relation, [coefficient * value for value in term]
+    )
+_, remainder = poly_divmod(gamma_relation, f_poly)
+assert remainder == [0]
+gamma_intervals, _ = positive_root_intervals(gamma_poly)
+assert len(gamma_intervals) == 2 and gamma_intervals[1][0] > Fraction(1, 4)
+_, lower_remainder = poly_divmod(
+    poly_add([7 * value for value in a_poly],
+             [-value for value in denominator]), f_poly
+)
+_, upper_remainder = poly_divmod(
+    poly_add(denominator, [-4 * value for value in a_poly]), f_poly
+)
+assert lower_remainder == [12, 20, 8]
+assert upper_remainder == [-6, -8, 1, 3]
+
+rho_left, rho_right = Fraction(2), Fraction(3)
+for _ in range(80):
+    rho_middle = (rho_left + rho_right) / 2
+    if evaluate(f_poly, rho_middle) < 0:
+        rho_left = rho_middle
+    else:
+        rho_right = rho_middle
+rho = float((rho_left + rho_right) / 2)
+gamma = ((rho ** 4 + rho ** 2 + 2 * rho + 1)
+         / (rho ** 2 + 3 * rho + 1) ** 2)
+
 # Equal weights on two cycles sharing the directed edge 4 -> 0 attain sigma_2=1.
 sharp_pencil = normalized_pencil(
     ((0, 1, 2, 3, 4), (0, 5, 7, 6, 4)), 8
@@ -439,4 +552,12 @@ print("overlap-four types / breakpoint maximum: "
 print("sharp overlap-three pencil: t^2(t^2-1)(t^2-1/2)")
 print("sharp overlap-four pencil: t(t^2-1/2)(t^2-1/3)")
 print("overlap-three / overlap-four ceilings: 1/sqrt(2), 1/sqrt(3)")
+print("overlap-five placements / exact types: 24 / 8")
+print("overlap-five rational types / squared ceiling: 6 / 1/7")
+print("overlap-five maximum breakpoints / cells: "
+      f"{five_nonalgebraic_maximum_roots} / "
+      f"{five_nonalgebraic_maximum_cells}")
+print("sharp ratio equation: rho^4-rho^3-2rho^2-2rho-1=0")
+print("sharp squared-ceiling equation: 125g^4-100g^3+6g^2-20g+5=0")
+print(f"sharp overlap-five ratio / ceiling: {rho:.6f} / {gamma ** 0.5:.6f}")
 print("PASS")
