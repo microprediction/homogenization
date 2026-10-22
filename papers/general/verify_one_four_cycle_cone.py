@@ -1,20 +1,29 @@
-"""Exact full-cone certificate for one fourth cycle at the sharp triple."""
+"""Exact full-cone certificates for four cycle-symmetry classes."""
 
 from fractions import Fraction
+from itertools import permutations
 from math import comb
 
 from verify_four_cycle_tangent import (
+    BASE_CYCLES,
     GROUND,
     PERMUTATIONS,
     SIGNS,
+    all_cycles,
     base_forms,
     integer_forms,
 )
 
 
-FOURTH_CYCLE = (0, 1, 2, 4)
+REPRESENTATIVES = (
+    (0, 1, 2, 4),
+    (0, 1, 5, 2),
+    (0, 1, 2, 3, 4),
+    (0, 1, 2, 3, 4, 5),
+)
 DEGREE = 5
 LOCAL_RADIUS = Fraction(1, 1024)
+QUADRATIC_MARGIN = 64
 
 
 def poly_add(*terms):
@@ -51,8 +60,8 @@ def determinant_poly(forms, t):
     return out
 
 
-def barrier_pair():
-    forms = base_forms + (integer_forms(FOURTH_CYCLE),)
+def barrier_pair(cycle):
+    forms = base_forms + (integer_forms(cycle),)
     values = [determinant_poly(forms, t) for t in (1, 2, 3)]
     keys = set().union(*values)
     a5 = {
@@ -211,54 +220,104 @@ def cover(sum_controls, root_controls, maximum_depth=48):
     return terminals, local_cells, deepest
 
 
-sum_barrier, root_barrier = barrier_pair()
-local_root = localize(root_barrier)
-assert all(sum(key) >= 2 for key in local_root)
-quadratic = {key: value for key, value in local_root.items() if sum(key) == 2}
-assert quadratic == {
-    (2, 0, 0): -576, (1, 1, 0): -576, (0, 2, 0): -576,
-    (1, 0, 1): -960, (0, 1, 1): -192, (0, 0, 2): -640,
-}
+def canonical(cycle):
+    cycle = tuple(cycle)
+    return min(cycle[index:] + cycle[:index] for index in range(len(cycle)))
 
-# The matrix of -quadratic minus 64 I is positive definite by Sylvester.
-positive_matrix = (
-    (512, 288, 480),
-    (288, 512, 96),
-    (480, 96, 576),
-)
-principal_minors = (
-    positive_matrix[0][0],
-    positive_matrix[0][0] * positive_matrix[1][1]
-    - positive_matrix[0][1] ** 2,
-    positive_matrix[0][0]
-    * (positive_matrix[1][1] * positive_matrix[2][2]
-       - positive_matrix[1][2] * positive_matrix[2][1])
-    - positive_matrix[0][1]
-    * (positive_matrix[1][0] * positive_matrix[2][2]
-       - positive_matrix[1][2] * positive_matrix[2][0])
-    + positive_matrix[0][2]
-    * (positive_matrix[1][0] * positive_matrix[2][1]
-       - positive_matrix[1][1] * positive_matrix[2][0]),
-)
-assert principal_minors == (512, 179200, 7077888)
-higher_absolute_sum = sum(
-    abs(value) for key, value in local_root.items() if sum(key) >= 3
-)
-# On the local cube, every monomial of degree m >= 3 is at most
-# radius^(m-2) (p^2+q^2+v^2) in absolute value.
-assert higher_absolute_sum * LOCAL_RADIUS <= 64
 
-terminal_cells, local_cells, maximum_depth = cover(
-    bernstein_controls(compactify(sum_barrier)),
-    bernstein_controls(compactify(root_barrier)),
-)
+def transform(cycle, relabeling, reverse):
+    cycle = tuple(reversed(cycle)) if reverse else cycle
+    return canonical(tuple(relabeling[state] for state in cycle))
 
-print(f"fourth cycle: {FOURTH_CYCLE}")
+
+def principal_minors(local_root):
+    quadratic = {key: value for key, value in local_root.items() if sum(key) == 2}
+    matrix = [[Fraction(0) for _ in range(3)] for _ in range(3)]
+    for row in range(3):
+        square = tuple(2 if index == row else 0 for index in range(3))
+        matrix[row][row] = -quadratic.get(square, 0) - QUADRATIC_MARGIN
+        for column in range(row):
+            cross = tuple(
+                int(index in (row, column)) for index in range(3)
+            )
+            matrix[row][column] = matrix[column][row] = (
+                -quadratic.get(cross, 0) / 2
+            )
+    determinant = (
+        matrix[0][0] * (matrix[1][1] * matrix[2][2]
+                        - matrix[1][2] * matrix[2][1])
+        - matrix[0][1] * (matrix[1][0] * matrix[2][2]
+                          - matrix[1][2] * matrix[2][0])
+        + matrix[0][2] * (matrix[1][0] * matrix[2][1]
+                          - matrix[1][1] * matrix[2][0])
+    )
+    return (
+        matrix[0][0],
+        matrix[0][0] * matrix[1][1] - matrix[0][1] ** 2,
+        determinant,
+    )
+
+
+base_set = frozenset(map(canonical, BASE_CYCLES))
+symmetries = []
+for relabeling in permutations(range(6)):
+    for reverse in (False, True):
+        image = frozenset(
+            transform(cycle, relabeling, reverse) for cycle in BASE_CYCLES
+        )
+        if image == base_set:
+            symmetries.append((relabeling, reverse))
+assert len(symmetries) == 12
+
+orbits = [
+    frozenset(transform(cycle, *symmetry) for symmetry in symmetries)
+    for cycle in REPRESENTATIVES
+]
+assert tuple(map(len, orbits)) == (12, 6, 12, 2)
+covered_cycles = frozenset().union(*orbits)
+assert sum(map(len, orbits)) == len(covered_cycles) == 32
+genuinely_new = {
+    canonical(cycle) for cycle in all_cycles if len(cycle) >= 3
+} - base_set
+assert len(genuinely_new) == 391 and covered_cycles <= genuinely_new
+
+records = []
+for cycle, orbit in zip(REPRESENTATIVES, orbits):
+    sum_barrier, root_barrier = barrier_pair(cycle)
+    local_root = localize(root_barrier)
+    assert all(sum(key) >= 2 for key in local_root)
+    minors = principal_minors(local_root)
+    assert all(value > 0 for value in minors)
+    higher_sum = sum(
+        abs(value) for key, value in local_root.items() if sum(key) >= 3
+    )
+    # Every degree-m monomial is at most
+    # radius^(m-2) (p^2+q^2+v^2) in absolute value.
+    assert higher_sum * LOCAL_RADIUS < QUADRATIC_MARGIN
+    global_cells, local_cells, depth = cover(
+        bernstein_controls(compactify(sum_barrier)),
+        bernstein_controls(compactify(root_barrier)),
+    )
+    records.append((
+        cycle, len(orbit), higher_sum, minors,
+        global_cells, local_cells, depth,
+    ))
+
+smallest_minors = tuple(min(record[3][index] for record in records)
+                         for index in range(3))
+assert smallest_minors == (512, 179200, 7077888)
+print(f"sharp-triple symmetry operations: {len(symmetries)}")
+print(f"representative four-weight cones: {len(records)}")
+print(f"representatives: {REPRESENTATIVES}")
+print(f"covered fourth cycles: {len(covered_cycles)}")
+print(f"orbit sizes: {tuple(record[1] for record in records)}")
+print(f"uncovered genuinely new cycles: {len(genuinely_new - covered_cycles)}")
 print(f"local radius: {LOCAL_RADIUS}")
-print(f"higher-order coefficient bound: {higher_absolute_sum}")
-print(f"positive-definiteness minors: {principal_minors}")
-print(f"global terminal boxes: {terminal_cells}")
-print(f"local terminal boxes: {local_cells}")
-print(f"maximum subdivision depth: {maximum_depth}")
-print("full nonnegative four-weight cone: lower squared frequency <= 3/5")
+print(f"largest higher-order coefficient bound: "
+      f"{max(record[2] for record in records)}")
+print(f"smallest positive-definiteness minors: {smallest_minors}")
+print(f"global terminal boxes: {sum(record[4] for record in records)}")
+print(f"local terminal boxes: {sum(record[5] for record in records)}")
+print(f"maximum subdivision depth: {max(record[6] for record in records)}")
+print("covered full four-weight cones: lower squared frequency <= 3/5")
 print("PASS")
