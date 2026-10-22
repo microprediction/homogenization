@@ -3196,5 +3196,16 @@
   "doi": "10.4153/cjm-1957-036-1",
   "url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/AA7ACF7F360A1D44FE4B83007198F57C/S0008414X00044655a.pdf/imbedding_conditions_for_hermitian_and_normal_matrices.pdf",
   "annotation": "Characterizes eigenvalues of Hermitian compressions. The overlapping-cycle note uses only the necessary interlacing direction to bound the second feature-level skew frequency by the second full intrinsic frequency."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Varadhan1995",
+  "authors": "Varadhan, S. R. S.",
+  "year": 1995,
+  "title": "Self Diffusion of a Tagged Particle in Equilibrium for Asymmetric Mean Zero Random Walk with Simple Exclusion",
+  "venue": "Annales de l'Institut Henri Poincaré, Probabilités et Statistiques 31(1):273-285",
+  "doi": "",
+  "url": "https://www.numdam.org/item/AIHPB_1995__31_1_273_0/",
+  "annotation": "Introduces the strong sector condition for controlling the antisymmetric part of a Markov generator by its symmetric Dirichlet form. The triangle-mixture theorem computes its sharp finite-state constant and proves closure under flow addition."
  }
 ]

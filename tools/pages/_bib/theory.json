@@ -79,5 +79,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Varadhan1995",
+  "authors": "Varadhan, S. R. S.",
+  "year": 1995,
+  "title": "Self Diffusion of a Tagged Particle in Equilibrium for Asymmetric Mean Zero Random Walk with Simple Exclusion",
+  "venue": "Annales de l'Institut Henri Poincaré, Probabilités et Statistiques 31(1):273-285",
+  "url": "https://www.numdam.org/item/AIHPB_1995__31_1_273_0/",
+  "annotation": "Introduces the strong sector condition for controlling the antisymmetric part of a Markov generator by its symmetric Dirichlet form. The triangle-mixture theorem computes its sharp finite-state constant and proves closure under flow addition."
  }
 ]
