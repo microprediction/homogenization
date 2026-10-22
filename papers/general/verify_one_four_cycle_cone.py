@@ -188,13 +188,67 @@ def wholly_local(box):
     )
 
 
+def face_values(controls, fixed):
+    """Return the Bernstein controls on a coordinate face of a box."""
+    return [
+        value for index, value in controls.items()
+        if all(index[axis] == endpoint for axis, endpoint in fixed.items())
+    ]
+
+
+def on_global_boundary(box, fixed):
+    return any(
+        box[axis][0 if endpoint == 0 else 1] in (0, 1)
+        for axis, endpoint in fixed.items()
+    )
+
+
+def strict_face_check(first, second, box, fixed=None):
+    """Prove strictness on a box, deferring only outer-cube faces.
+
+    A nonpositive Bernstein expansion with a negative control is negative on
+    the relative interior.  Its coordinate boundary is checked recursively.
+    """
+    fixed = {} if fixed is None else fixed
+    first_values = face_values(first, fixed)
+    second_values = face_values(second, fixed)
+    if max(first_values) < 0 or max(second_values) < 0:
+        return 0, 0
+    if not (
+        (max(first_values) <= 0 and min(first_values) < 0)
+        or (max(second_values) <= 0 and min(second_values) < 0)
+    ):
+        return (1, 0) if on_global_boundary(box, fixed) else (0, 1)
+    deferred = unresolved = 0
+    for axis in range(3):
+        if axis in fixed:
+            continue
+        for endpoint in (0, DEGREE):
+            child_fixed = dict(fixed)
+            child_fixed[axis] = endpoint
+            child_deferred, child_unresolved = strict_face_check(
+                first, second, box, child_fixed
+            )
+            deferred += child_deferred
+            unresolved += child_unresolved
+    return deferred, unresolved
+
+
 def cover(sum_controls, root_controls, maximum_depth=48):
     stack = [(sum_controls, root_controls, ((Fraction(0), Fraction(1)),) * 3, 0)]
-    terminals = local_cells = deepest = 0
+    terminals = strict_cells = weak_cells = local_cells = deepest = 0
+    deferred_faces = unresolved_faces = 0
     while stack:
         first, second, box, depth = stack.pop()
         if nonpositive(first) or nonpositive(second):
             terminals += 1
+            if max(first.values()) < 0 or max(second.values()) < 0:
+                strict_cells += 1
+            else:
+                weak_cells += 1
+                deferred, unresolved = strict_face_check(first, second, box)
+                deferred_faces += deferred
+                unresolved_faces += unresolved
             deepest = max(deepest, depth)
             continue
         if wholly_local(box):
@@ -211,7 +265,10 @@ def cover(sum_controls, root_controls, maximum_depth=48):
             child_box = list(box)
             child_box[axis] = (lo, middle) if side == 0 else (middle, hi)
             stack.append((first_halves[side], second_halves[side], tuple(child_box), depth + 1))
-    return terminals, local_cells, deepest
+    return (
+        terminals, strict_cells, weak_cells, local_cells, deepest,
+        deferred_faces, unresolved_faces,
+    )
 
 
 def canonical(cycle):
@@ -367,13 +424,13 @@ for cycle, orbit in zip(REPRESENTATIVES, orbits):
     else:
         local_data = parabolic_bounds(local_sum, local_root)
         parabolic_records.append((cycle, len(orbit), local_data))
-    global_cells, local_cells, depth = cover(
+    cover_data = cover(
         bernstein_controls(compactify(sum_barrier)),
         bernstein_controls(compactify(root_barrier)),
     )
     records.append((
         cycle, len(orbit), local_data,
-        global_cells, local_cells, depth,
+        *cover_data,
     ))
 
 assert len(quadratic_records) == 1 and len(parabolic_records) == 45
@@ -384,6 +441,18 @@ smallest_central_margin = min(record[2][3] for record in parabolic_records)
 smallest_outer_margin = min(record[2][4] for record in parabolic_records)
 assert smallest_central_margin == Fraction(16521, 64)
 assert smallest_outer_margin == Fraction(1973697, 8192)
+global_cells = sum(record[3] for record in records)
+strict_global_cells = sum(record[4] for record in records)
+weak_global_cells = sum(record[5] for record in records)
+local_cells = sum(record[6] for record in records)
+deferred_faces = sum(record[8] for record in records)
+unresolved_faces = sum(record[9] for record in records)
+assert (global_cells, strict_global_cells, weak_global_cells) == (
+    27586, 25564, 2022,
+)
+assert local_cells == 354
+assert deferred_faces == 25946
+assert unresolved_faces == 0
 print(f"sharp-triple symmetry operations: {len(symmetries)}")
 print(f"representative four-weight cones: {len(records)}")
 print(f"covered fourth cycles: {len(covered_cycles)}")
@@ -403,8 +472,13 @@ print(f"smallest parabolic central margin: {smallest_central_margin}")
 print(f"smallest parabolic outer margin: {smallest_outer_margin}")
 print(f"Hamilton positive-definiteness minors: {smallest_minors}")
 print(f"Hamilton higher-order coefficient bound: {quadratic_records[0][0]}")
-print(f"global terminal boxes: {sum(record[3] for record in records)}")
-print(f"local terminal boxes: {sum(record[4] for record in records)}")
-print(f"maximum subdivision depth: {max(record[5] for record in records)}")
+print(f"global terminal boxes: {global_cells}")
+print(f"strict global terminal boxes: {strict_global_cells}")
+print(f"weak global terminal boxes: {weak_global_cells}")
+print(f"local terminal boxes: {local_cells}")
+print(f"maximum subdivision depth: {max(record[7] for record in records)}")
+print(f"deferred outer-cube face incidences: {deferred_faces}")
+print(f"unresolved interior faces: {unresolved_faces}")
+print("positive four-weight cones: lower squared frequency < 3/5")
 print("covered full four-weight cones: lower squared frequency <= 3/5")
 print("PASS")
