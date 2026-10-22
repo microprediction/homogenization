@@ -99,7 +99,8 @@
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a></span></p>
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
     <p class="subtitle">Sharp repeated-mode bounds for sparse mixtures and reversible attachments.</p>
     <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
@@ -120,7 +121,7 @@
     <p>The three-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, reversible two-cycles do not consume the three genuinely directed-cycle slots. The one-directed-cycle subclass obeys the stronger bound
       $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
     <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
-    <p>More generally, on any finite state space, every nonnegative mixture of any number of directed triangles and arbitrary reversible stationary flow has every intrinsic skew frequency at most $1/\sqrt3$.</p>
+    <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
@@ -264,23 +265,31 @@
     <p>Of these patches, 66 close nonstrictly with top Bernstein control zero; all controls of the selected barrier are nonpositive. The remaining patches are strict, with largest selected control $-1/32768$.</p>
     <p>Complementary degree-four quotient covers use at most 313 triangles at depth nine and 46,788 terminal triangles, including 906 corner-local cells. Therefore every connected nonnegative mixture of three simple directed cycles containing a Hamilton cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
 
-    <h2>Any number of directed triangles</h2>
-    <p>The triangle result is not limited to three components or six states. For one directed triangle of weight $w$, subtract constants from two test vectors on its support and relabel the vertices. In the resulting two coordinates the doubled forms are</p>
-    $$2H_\triangle=w\begin{pmatrix}2&amp;-1\\-1&amp;2\end{pmatrix},\qquad
-      2D_\triangle=w\begin{pmatrix}0&amp;-1\\1&amp;0\end{pmatrix}.$$
-    <p>Direct multiplication gives the exact identity</p>
-    $$(2D_\triangle)^\top(2H_\triangle)^{-1}(2D_\triangle)
-      =\frac13(2H_\triangle).$$
-    <p>Equivalently, for arbitrary full-space vectors $x,y$,</p>
-    $$|x^\top D_\triangle y|
-      \le\frac1{\sqrt3}
-      \sqrt{x^\top H_\triangle x}
-      \sqrt{y^\top H_\triangle y}.$$
-    <p>Now sum over any collection of weighted directed triangles. The scalar triangle inequality followed by Cauchy&ndash;Schwarz gives the same inequality with $H_0=\sum H_\triangle$ and $D=\sum D_\triangle$.</p>
-    <p>Adding arbitrary reversible stationary flow replaces $H_0$ by $H=H_0+R\succeq H_0$ and leaves $D$ unchanged. If the final support is connected, $H$ is positive definite on grounded coordinates, and substituting $x=H^{-1/2}u$, $y=H^{-1/2}v$ proves</p>
-    $$\left\lVert H^{-1/2}DH^{-1/2}\right\rVert_2\le\frac1{\sqrt3}.$$
-    <p>Thus every intrinsic skew frequency is at most $1/\sqrt3$, for any number of triangles on any finite state set. This is a finite-dimensional strong sector condition in the terminology introduced by <a href="./bibliography.html#Varadhan1995">Varadhan (1995)</a>; the addition closure above is elementary and strictly stronger than the six-state second-frequency bound.</p>
-    <p>In particular, the theorem covers a nontrivial part of the four-or-more-directed-cycle class.</p>
+    <h2>Bounded cycle lengths</h2>
+    <p>The triangle result extends sharply to cycles of any bounded length. For one directed cycle of length $\ell$ and weight $w$, the nonconstant Fourier mode with angle $\theta_k=2\pi k/\ell$ has symmetric and skew eigenvalues $w(1-\cos\theta_k)$ and $-iw\sin\theta_k$.</p>
+    <p>Its intrinsic skew frequencies are therefore</p>
+    $$\left|\frac{\sin\theta_k}{1-\cos\theta_k}\right|
+      =\left|\cot\frac{\pi k}{\ell}\right|,
+      \qquad k=1,\ldots,\ell-1.$$
+    <p>The largest is $c_\ell=\cot(\pi/\ell)$. Equivalently, after embedding the cycle in any finite state space, its two forms obey</p>
+    $$|x^\top D_\ell y|
+      \le c_\ell
+      \sqrt{x^\top H_\ell x}
+      \sqrt{y^\top H_\ell y}.$$
+    <p>Suppose a balanced flow admits a nonnegative decomposition into directed cycles with lengths $\ell_\alpha\le L$. Summing the component inequalities, then applying Cauchy&ndash;Schwarz, gives</p>
+    $$|x^\top Dy|
+      \le\cot(\pi/L)
+      \sqrt{x^\top H_0x}
+      \sqrt{y^\top H_0y},
+      \qquad H_0=\sum_\alpha H_{\ell_\alpha}.$$
+    <p>Adding arbitrary reversible stationary flow replaces $H_0$ by $H=H_0+R\succeq H_0$ and leaves $D$ unchanged. If the final support is connected, substitution of $x=H^{-1/2}u$ and $y=H^{-1/2}v$ proves the sharp strong-sector bound</p>
+    <div class="equation-card">
+    $$\left\lVert H^{-1/2}DH^{-1/2}\right\rVert_2
+      \le\cot\frac{\pi}{L}.$$
+    </div>
+    <p>A single directed $L$-cycle attains the constant. This is a finite-dimensional strong sector condition in the terminology introduced by <a href="./bibliography.html#Varadhan1995">Varadhan (1995)</a>; for $L=3$ it recovers the exact $1/\sqrt3$ triangle bound above.</p>
+    <p>In particular, any number of directed cycles of lengths at most four, with arbitrary reversible attachments, has every intrinsic frequency at most one and cannot realize the target $\cot(\pi/5)&gt;1$. At $L=5$ the bound equals the target frequency, so this norm argument alone does not exclude two repeated maximal modes.</p>
+    <p>After separating the reversible remainder, all remaining stationary flow must be represented by the bounded-length cycles. The hypothesis cannot be inferred from the final undirected support alone.</p>
 
     <h2>Three directed triangles: rigidity</h2>
     <p>There are 40 labeled directed triangles and $\binom{40}{3}=9{,}880$ unordered triples. Exactly 3,840 triples have connected six-state support.</p>
@@ -428,10 +437,11 @@
     <p>For one four-cycle and two distinct five-cycles it streams all 926,640 supports and identifies 876,960 connected cases. The exact barriers have no equal-weight equality support and reduce to 647 types with 13,439 type-level terminal triangles.</p>
     <p>For three distinct five-cycles it enumerates all 487,344 supports and identifies 475,200 connected cases. The exact barriers have no equal-weight equality support and reduce to 368 types with 6,905 type-level terminal triangles.</p>
     <p>For connected five-state three-cycle bases it enumerates all 95,284 distinct-cycle supports and identifies 89,584 connected cases. Their quartic barriers have no equal-weight equality support and reduce to 461 types with 5,093 type-level terminal triangles.</p>
-    <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity above, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
+    <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity for $L=3$, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
+    <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, with arbitrary reversible attachments, are covered; any number of directed triangles plus reversible flow is also covered by the stronger $1/\sqrt3$ bound. Other four-or-more-directed-cycle flows and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, as are arbitrary mixtures admitting a decomposition with cycle lengths at most four. Flows requiring longer cycles in every nonnegative cycle decomposition, including the unresolved five-cycle sector-saturation case, and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>
