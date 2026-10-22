@@ -3615,6 +3615,193 @@ assert two_triangle_four_expanded_terminal_cells == 2656440
 assert two_triangle_four_type_corner_cells == 35
 assert two_triangle_four_expanded_corner_cells == 57600
 
+# The same quotient mechanism closes the adjacent five-cycle class.  There
+# are C(40,2)*144 supports.  Again the pure two-triangle boundary is a zero
+# pencil, and the five-cycle factor leaves finitely many degree-four types.
+two_triangle_five_supports = np.array([
+    (five_index, first_triangle, second_triangle)
+    for first_triangle, second_triangle in three_cycle_pairs
+    for five_index in five_cycle_indices
+], dtype=np.int64)
+assert len(two_triangle_five_supports) == 112320
+
+two_triangle_five_a5_values = []
+two_triangle_five_sum_values = []
+two_triangle_five_root_values = []
+for first_weight, second_weight, third_weight in homogeneous_exponents:
+    symmetric = (
+        first_weight
+        * integer_symmetric[two_triangle_five_supports[:, 0]]
+        + second_weight
+        * integer_symmetric[two_triangle_five_supports[:, 1]]
+        + third_weight
+        * integer_symmetric[two_triangle_five_supports[:, 2]]
+    )
+    skew = (
+        first_weight * integer_skew[two_triangle_five_supports[:, 0]]
+        + second_weight * integer_skew[two_triangle_five_supports[:, 1]]
+        + third_weight * integer_skew[two_triangle_five_supports[:, 2]]
+    )
+    node_a5, node_a3, node_a1 = batch_integer_pencil_coefficients(
+        symmetric, skew
+    )
+    two_triangle_five_a5_values.append(node_a5)
+    two_triangle_five_sum_values.append(5 * node_a3 - 6 * node_a5)
+    two_triangle_five_root_values.append(
+        9 * node_a5 - 15 * node_a3 + 25 * node_a1
+    )
+
+two_triangle_five_coefficients = {}
+for name, values in (
+    ("a5", two_triangle_five_a5_values),
+    ("sum", two_triangle_five_sum_values),
+    ("root", two_triangle_five_root_values),
+):
+    stacked_values = np.stack(values)
+    product_bound = (
+        len(homogeneous_exponents)
+        * interpolation_entry_bound
+        * int(np.max(np.abs(stacked_values)))
+    )
+    assert product_bound < np.iinfo(np.int64).max
+    numerators = interpolation_matrix @ stacked_values
+    assert np.all(numerators % interpolation_denominator == 0)
+    two_triangle_five_coefficients[name] = (
+        numerators // interpolation_denominator
+    )
+
+assert np.all(
+    two_triangle_five_coefficients["a5"][zero_hamilton_positions] == 0
+)
+assert np.all(
+    two_triangle_five_coefficients["sum"][zero_hamilton_positions] == 0
+)
+assert np.all(
+    two_triangle_five_coefficients["root"][zero_hamilton_positions] == 0
+)
+two_triangle_five_a5_quotient = two_triangle_five_coefficients["a5"][
+    quotient_positions
+]
+two_triangle_five_sum_quotient = two_triangle_five_coefficients["sum"][
+    quotient_positions
+]
+two_triangle_five_root_quotient = two_triangle_five_coefficients["root"][
+    quotient_positions
+]
+connected_two_triangle_five = np.any(
+    two_triangle_five_a5_quotient != 0, axis=0
+)
+assert int(np.sum(connected_two_triangle_five)) == 84960
+assert not np.any(
+    two_triangle_five_sum_quotient[:, ~connected_two_triangle_five]
+)
+assert not np.any(
+    two_triangle_five_root_quotient[:, ~connected_two_triangle_five]
+)
+
+two_triangle_five_types = {}
+for support_index in np.flatnonzero(connected_two_triangle_five):
+    direct = (
+        tuple(two_triangle_five_sum_quotient[:, support_index]),
+        tuple(two_triangle_five_root_quotient[:, support_index]),
+    )
+    swapped = (
+        tuple(two_triangle_five_sum_quotient[
+            swap_degree_four_positions, support_index
+        ]),
+        tuple(two_triangle_five_root_quotient[
+            swap_degree_four_positions, support_index
+        ]),
+    )
+    key = min(direct, swapped)
+    two_triangle_five_types[key] = (
+        two_triangle_five_types.get(key, 0) + 1
+    )
+assert len(two_triangle_five_types) == 41
+assert sum(two_triangle_five_types.values()) == 84960
+assert min(two_triangle_five_types.values()) == 720
+assert max(two_triangle_five_types.values()) == 5760
+
+two_triangle_five_type_keys = list(two_triangle_five_types)
+two_triangle_five_type_sum = np.array([
+    key[0] for key in two_triangle_five_type_keys
+], dtype=object).T
+two_triangle_five_type_root = np.array([
+    key[1] for key in two_triangle_five_type_keys
+], dtype=object).T
+oriented_two_triangle_five_sum = np.concatenate((
+    two_triangle_five_type_sum,
+    two_triangle_five_type_sum[swap_degree_four_positions],
+), axis=1)
+oriented_two_triangle_five_root = np.concatenate((
+    two_triangle_five_type_root,
+    two_triangle_five_type_root[swap_degree_four_positions],
+), axis=1)
+two_triangle_five_corner_types, _ = short_corner_types(
+    oriented_two_triangle_five_sum,
+    oriented_two_triangle_five_root,
+    degree_four_exponents,
+    np.ones(2 * len(two_triangle_five_types), dtype=bool),
+)
+assert len(two_triangle_five_corner_types) == 71
+assert sum(two_triangle_five_corner_types.values()) == 82
+
+two_triangle_five_corner_height = Fraction(1, 64)
+(
+    two_triangle_five_corner_barrier_uses,
+    two_triangle_five_corner_largest_strict_control,
+    two_triangle_five_corner_zero_patches,
+    two_triangle_five_corner_factor_orders,
+) = certify_corner_types(
+    two_triangle_five_corner_types,
+    two_triangle_five_corner_height,
+    16,
+    strict=False,
+)
+assert two_triangle_five_corner_barrier_uses == {
+    "sum": 1028,
+    "root": 108,
+}
+assert two_triangle_five_corner_largest_strict_control == Fraction(
+    -1, 32768
+)
+assert two_triangle_five_corner_zero_patches == 53
+assert two_triangle_five_corner_factor_orders == {2}
+
+two_triangle_five_largest_cover = 0
+two_triangle_five_deepest_cover = 0
+two_triangle_five_type_terminal_cells = 0
+two_triangle_five_expanded_terminal_cells = 0
+two_triangle_five_type_corner_cells = 0
+two_triangle_five_expanded_corner_cells = 0
+for type_index, key in enumerate(two_triangle_five_type_keys):
+    cover_size, cover_depth, corner_cells = (
+        exact_simplex_cover_with_two_corners(
+            two_triangle_five_type_sum[:, type_index],
+            two_triangle_five_type_root[:, type_index],
+            degree_four_simplex_transforms,
+            (1, 2),
+            two_triangle_five_corner_height,
+        )
+    )
+    multiplicity = two_triangle_five_types[key]
+    two_triangle_five_largest_cover = max(
+        two_triangle_five_largest_cover, cover_size
+    )
+    two_triangle_five_deepest_cover = max(
+        two_triangle_five_deepest_cover, cover_depth
+    )
+    two_triangle_five_type_terminal_cells += cover_size
+    two_triangle_five_expanded_terminal_cells += multiplicity * cover_size
+    two_triangle_five_type_corner_cells += corner_cells
+    two_triangle_five_expanded_corner_cells += multiplicity * corner_cells
+assert two_triangle_five_largest_cover == 316
+assert two_triangle_five_deepest_cover == 9
+assert two_triangle_five_type_terminal_cells == 2399
+assert two_triangle_five_expanded_terminal_cells == 4679280
+assert two_triangle_five_type_corner_cells == 57
+assert two_triangle_five_expanded_corner_cells == 108720
+
 # A directed simple cycle supplies all of D.  Adding any reversible stationary
 # flow adds a positive-semidefinite form to H and therefore contracts every
 # singular value of H^{-1/2} D H^{-1/2}.  Check the cycle Fourier spectrum and
@@ -4032,6 +4219,29 @@ print("one-four-cycle/two-three-cycle expanded terminal cells: "
       f"{two_triangle_four_expanded_terminal_cells}")
 print("one-four-cycle/two-three-cycle expanded corner local cells: "
       f"{two_triangle_four_expanded_corner_cells}")
+print("one-five-cycle/two-three-cycle supports: 112320 total, "
+      "84960 connected")
+print("one-five-cycle/two-three-cycle quotient types: "
+      f"{len(two_triangle_five_types)}")
+print("oriented one-five-cycle/two-three-cycle corner types: "
+      f"{len(two_triangle_five_corner_types)}")
+print("one-five-cycle/two-three-cycle corner barrier patches: "
+      f"{two_triangle_five_corner_barrier_uses}")
+print("one-five-cycle/two-three-cycle zero-control corner patches: "
+      f"{two_triangle_five_corner_zero_patches}")
+print("largest strict one-five-cycle/two-three-cycle corner control: "
+      f"{two_triangle_five_corner_largest_strict_control}")
+print("one-five-cycle/two-three-cycle corner factor orders: "
+      f"{sorted(two_triangle_five_corner_factor_orders)}")
+print("largest one-five-cycle/two-three-cycle quotient cover: "
+      f"{two_triangle_five_largest_cover} triangles at depth "
+      f"{two_triangle_five_deepest_cover}")
+print("one-five-cycle/two-three-cycle quotient-type terminal cells: "
+      f"{two_triangle_five_type_terminal_cells}")
+print("one-five-cycle/two-three-cycle expanded terminal cells: "
+      f"{two_triangle_five_expanded_terminal_cells}")
+print("one-five-cycle/two-three-cycle expanded corner local cells: "
+      f"{two_triangle_five_expanded_corner_cells}")
 print(f"directed-cycle Fourier cases: {N - 2}")
 print(f"maximum directed-cycle spectrum discrepancy: {cycle_spectrum_error:.3e}")
 print(f"random reversible-attachment cases: {attachment_cases}")
