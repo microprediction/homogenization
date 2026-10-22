@@ -4,7 +4,8 @@
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a></span></p>
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
     <p class="subtitle">Sharp repeated-mode bounds for sparse mixtures and reversible attachments.</p>
     <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
@@ -27,6 +28,7 @@
     <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
     <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
     <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
+    <p>More quantitatively, two five-cycles sharing at least two states, with arbitrary positive weights and reversible attachments, satisfy the sharp gap $\sigma_2\le1$.</p>
     <p>Consequently no four-feature compression from any stated class realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
       $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
@@ -217,6 +219,22 @@
     <p>A bouquet of $r$ directed $q$-cycles sharing one hub attains equality. For $q=5$ and $r=2$, this gives the exact minimum $N=9$ within the entire bounded-five-cycle decomposition class, including overlapping noncactus supports.</p>
     <p>This does not settle the unrestricted six-, seven- or eight-state cases, because their stationary-flow decompositions may require cycles longer than five. It is a fixed-parameter spectral multiplicity statement, not a rank inference after integrating maturity-dependent loadings.</p>
 
+    <h2>A sharp two-five-cycle gap below nine states</h2>
+    <p>The qualitative state obstruction has a quantitative two-cycle refinement. Let the genuinely directed remainder be a positive mixture of two directed five-cycles that share at least two vertices, so their union has at most eight states. Then, even after adding arbitrary nonnegative reversible stationary flow,</p>
+    <div class="equation-card">
+    $$\sigma_2\le1<\cot\frac\pi5.$$
+    </div>
+    <p>To prove the bound, scale the cycle weights to $1$ and $r&gt;0$ and put $B(r)=iD-H$ on a grounded space. The positive inertia of $B(r)$ counts the signed generalized eigenvalues of $(iD,H)$ above one. Thus $\sigma_2&gt1$ would require at least two positive eigenvalues of $B(r)$.</p>
+    <p>Fix the first cycle as $(0,1,2,3,4)$. There are 624 relative placements of the second cycle with overlap two through five, partitioned as $240,240,120,24$. Exact Faddeev&ndash;LeVerrier expansion reduces their characteristic polynomials $\det(xI-2B(r))$ to 70 types.</p>
+    <p>For each type, the square-free product of its nonzero coefficient polynomials has at most six positive roots. Exact Sturm isolation therefore leaves at most seven open weight-ratio cells.</p>
+    <p>On one rational point in every cell, the coefficient sequence has at most one sign variation. Descartes&apos; rule gives at most one positive eigenvalue throughout that cell; continuity covers the isolated boundaries. Adding reversible flow replaces $B$ by $B-R\preceq B$, so its positive inertia cannot increase.</p>
+    <p>The ceiling is attained. At equal weights the two cycles</p>
+    $$ (0,1,2,3,4),\qquad(0,5,7,6,4) $$
+    <p>share the directed edge $4\to0$ and have normalized pencil</p>
+    $$\frac{\det(tH-iD)}{\det H}
+      =t(t^2-1)\left(t^4-2t^2+\frac15\right).$$
+    <p>The positive frequencies are therefore $\cot(\pi/5)$, $1$, and $\cot(2\pi/5)$, proving sharpness. This is again a fixed-parameter statement: it controls the intrinsic rank at one generator and does not turn rank accumulated from different maturity loadings into a regime count.</p>
+
     <h2>Three directed triangles: rigidity</h2>
     <p>There are 40 labeled directed triangles and $\binom{40}{3}=9{,}880$ unordered triples. Exactly 3,840 triples have connected six-state support.</p>
     <p>Give a connected triple positive weights $a,b,c$. Every two-triangle boundary has zero five-dimensional pencil, so each coefficient of $\det(tH-D)$ contains the factor $abc$.</p>
@@ -366,6 +384,7 @@
     <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity for $L=3$, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
     <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
     <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
+    <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
     <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles are covered, and the exact minimum is nine among flows decomposable into cycles of lengths at most five. Flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
