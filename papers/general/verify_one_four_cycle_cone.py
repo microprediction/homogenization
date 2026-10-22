@@ -1,4 +1,4 @@
-"""Exact full-cone certificates for five cycle-symmetry classes."""
+"""Exact full-cone certificates for every fourth cycle at the sharp triple."""
 
 from fractions import Fraction
 from itertools import permutations
@@ -15,13 +15,6 @@ from verify_four_cycle_tangent import (
 )
 
 
-REPRESENTATIVES = (
-    (0, 1, 2, 4),
-    (0, 1, 5, 2),
-    (0, 1, 2, 3, 4),
-    (0, 1, 2, 3, 4, 5),
-    (0, 1, 3, 2),
-)
 DEGREE = 5
 LOCAL_RADIUS = Fraction(1, 1024)
 QUADRATIC_MARGIN = 64
@@ -242,7 +235,7 @@ def principal_minors(local_root):
                 int(index in (row, column)) for index in range(3)
             )
             matrix[row][column] = matrix[column][row] = (
-                -quadratic.get(cross, 0) / 2
+                -quadratic.get(cross, Fraction(0)) / 2
             )
     determinant = (
         matrix[0][0] * (matrix[1][1] * matrix[2][2]
@@ -260,19 +253,24 @@ def principal_minors(local_root):
 
 
 def parabolic_bounds(local_sum, local_root):
-    """Certify the exceptional local cone by splitting at v=p^2+q^2."""
+    """Certify a local cone by splitting at v=p^2+q^2."""
     radius = LOCAL_RADIUS
-    assert local_sum.get((0, 0, 1)) == -1440
+    linear_margin = -local_sum.get((0, 0, 1), 0)
+    assert linear_margin > 0
     assert {
         exponent: coefficient for exponent, coefficient in local_sum.items()
         if sum(exponent) == 2 and exponent[2] == 0
     } == {(2, 0, 0): 144, (1, 1, 0): 144, (0, 2, 0): 144}
-    assert {
+    root_quadratic = {
         exponent: coefficient for exponent, coefficient in local_root.items()
         if sum(exponent) == 2
-    } == {
-        (2, 0, 0): -576, (1, 1, 0): -576, (0, 2, 0): -576,
-        (1, 0, 1): 960, (0, 1, 1): -960, (0, 0, 2): 128,
+    }
+    assert root_quadratic.get((2, 0, 0)) == -576
+    assert root_quadratic.get((1, 1, 0)) == -576
+    assert root_quadratic.get((0, 2, 0)) == -576
+    assert set(root_quadratic) <= {
+        (2, 0, 0), (1, 1, 0), (0, 2, 0),
+        (1, 0, 1), (0, 1, 1), (0, 0, 2),
     }
     central_remainder = {
         exponent: coefficient for exponent, coefficient in local_sum.items()
@@ -294,18 +292,22 @@ def parabolic_bounds(local_sum, local_root):
 
     # Put R=p^2+q^2 and S=p^2+pq+q^2, so R/2 <= S <= 3R/2.
     # If v>=R, the sum barrier is at most
-    #   (-1440+216+central_coefficient_sum*radius)*v.
-    central_margin = 1224 - central_coefficient_sum * radius
+    #   (-linear_margin+216+central_coefficient_sum*radius)*v.
+    central_margin = linear_margin - 216 - central_coefficient_sum * radius
     # If v<=R, its quadratic root barrier is at most
-    #   (-288+1920*radius+256*radius^2)*R;
+    #   (-288+(|cp|+|cq|)*radius+2|cv|*radius^2)*R;
     # every term of degree at least three costs at most radius*R.
+    p_v = root_quadratic.get((1, 0, 1), 0)
+    q_v = root_quadratic.get((0, 1, 1), 0)
+    v_squared = root_quadratic.get((0, 0, 2), 0)
     outer_margin = (
-        288 - 1920 * radius - 256 * radius ** 2
+        288 - (abs(p_v) + abs(q_v)) * radius
+        - 2 * abs(v_squared) * radius ** 2
         - outer_coefficient_sum * radius
     )
     assert central_margin > 0 and outer_margin > 0
     return (
-        central_coefficient_sum, outer_coefficient_sum,
+        linear_margin, central_coefficient_sum, outer_coefficient_sum,
         central_margin, outer_margin,
     )
 
@@ -321,29 +323,37 @@ for relabeling in permutations(range(6)):
             symmetries.append((relabeling, reverse))
 assert len(symmetries) == 12
 
-orbits = [
-    frozenset(transform(cycle, *symmetry) for symmetry in symmetries)
-    for cycle in REPRESENTATIVES
-]
-covered_cycles = frozenset().union(*orbits)
-assert tuple(map(len, orbits)) == (12, 6, 12, 2, 6)
-assert sum(map(len, orbits)) == len(covered_cycles) == 38
 genuinely_new = {
     canonical(cycle) for cycle in all_cycles if len(cycle) >= 3
 } - base_set
-assert len(genuinely_new) == 391 and covered_cycles <= genuinely_new
+assert len(genuinely_new) == 391
+
+remaining = set(genuinely_new)
+representatives = []
+orbits = []
+while remaining:
+    representative = min(remaining, key=lambda cycle: (len(cycle), cycle))
+    orbit = frozenset(
+        transform(representative, *symmetry) for symmetry in symmetries
+    ) & genuinely_new
+    representatives.append(representative)
+    orbits.append(orbit)
+    remaining -= orbit
+REPRESENTATIVES = tuple(representatives)
+covered_cycles = frozenset().union(*orbits)
+assert len(REPRESENTATIVES) == 46
+assert len(covered_cycles) == len(genuinely_new) == 391
 
 records = []
 quadratic_records = []
-parabolic_record = None
+parabolic_records = []
 for cycle, orbit in zip(REPRESENTATIVES, orbits):
     sum_barrier, root_barrier = barrier_pair(cycle)
     local_root = localize(root_barrier)
     assert all(sum(key) >= 2 for key in local_root)
-    if cycle == (0, 1, 3, 2):
-        parabolic_record = parabolic_bounds(localize(sum_barrier), local_root)
-        local_data = parabolic_record
-    else:
+    local_sum = localize(sum_barrier)
+    if local_sum.get((0, 0, 1), 0) == 0:
+        assert cycle == (0, 1, 2, 3, 4, 5)
         minors = principal_minors(local_root)
         assert all(value > 0 for value in minors)
         higher_sum = sum(
@@ -354,6 +364,9 @@ for cycle, orbit in zip(REPRESENTATIVES, orbits):
         assert higher_sum * LOCAL_RADIUS < QUADRATIC_MARGIN
         local_data = (higher_sum, minors)
         quadratic_records.append((higher_sum, minors))
+    else:
+        local_data = parabolic_bounds(local_sum, local_root)
+        parabolic_records.append((cycle, len(orbit), local_data))
     global_cells, local_cells, depth = cover(
         bernstein_controls(compactify(sum_barrier)),
         bernstein_controls(compactify(root_barrier)),
@@ -363,23 +376,33 @@ for cycle, orbit in zip(REPRESENTATIVES, orbits):
         global_cells, local_cells, depth,
     ))
 
-smallest_minors = tuple(min(record[1][index] for record in quadratic_records)
-                         for index in range(3))
-assert smallest_minors == (512, 179200, 7077888)
+assert len(quadratic_records) == 1 and len(parabolic_records) == 45
+assert sum(record[1] for record in parabolic_records) == 389
+smallest_minors = quadratic_records[0][1]
+assert smallest_minors == (512, 179200, 160563200)
+smallest_central_margin = min(record[2][3] for record in parabolic_records)
+smallest_outer_margin = min(record[2][4] for record in parabolic_records)
+assert smallest_central_margin == Fraction(16521, 64)
+assert smallest_outer_margin == Fraction(1973697, 8192)
 print(f"sharp-triple symmetry operations: {len(symmetries)}")
 print(f"representative four-weight cones: {len(records)}")
-print(f"representatives: {REPRESENTATIVES}")
 print(f"covered fourth cycles: {len(covered_cycles)}")
-print(f"orbit sizes: {tuple(record[1] for record in records)}")
+print(f"orbit-size histogram: "
+      f"{tuple((size, tuple(record[1] for record in records).count(size)) for size in (2, 3, 4, 6, 12))}")
 print(f"uncovered genuinely new cycles: {len(genuinely_new - covered_cycles)}")
 print(f"local radius: {LOCAL_RADIUS}")
-print(f"largest higher-order coefficient bound: "
-      f"{max(record[0] for record in quadratic_records)}")
-print(f"smallest positive-definiteness minors: {smallest_minors}")
-print(f"parabolic central coefficient sum: {parabolic_record[0]}")
-print(f"parabolic outer coefficient sum: {parabolic_record[1]}")
-print(f"parabolic central margin: {parabolic_record[2]}")
-print(f"parabolic outer margin: {parabolic_record[3]}")
+print(f"parabolic representatives: {len(parabolic_records)}")
+print(f"parabolic covered cycles: {sum(record[1] for record in parabolic_records)}")
+print(f"smallest parabolic linear coefficient: "
+      f"{min(record[2][0] for record in parabolic_records)}")
+print(f"largest parabolic central coefficient sum: "
+      f"{max(record[2][1] for record in parabolic_records)}")
+print(f"largest parabolic outer coefficient sum: "
+      f"{max(record[2][2] for record in parabolic_records)}")
+print(f"smallest parabolic central margin: {smallest_central_margin}")
+print(f"smallest parabolic outer margin: {smallest_outer_margin}")
+print(f"Hamilton positive-definiteness minors: {smallest_minors}")
+print(f"Hamilton higher-order coefficient bound: {quadratic_records[0][0]}")
 print(f"global terminal boxes: {sum(record[3] for record in records)}")
 print(f"local terminal boxes: {sum(record[4] for record in records)}")
 print(f"maximum subdivision depth: {max(record[5] for record in records)}")
