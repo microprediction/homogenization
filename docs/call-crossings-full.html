@@ -236,6 +236,24 @@
     The polynomial $P$ above has degree $r+2$ and every coefficient is nonzero, so its two coefficient-part laws
     have exactly $r+3$ union-support values. The construction is therefore support-minimal as well as
     crossing-sharp.</p>
+    <p>The equality case also determines how those atoms must be divided between the laws. Write the ordered union
+    support as $x_1&lt;\cdots&lt;x_N$, put $g_i=\Gamma(x_i)$, and let $d_i$ be the first law's mass minus the
+    second law's mass at $x_i$. If all $N-3$ possible crossings occur, then
+    $g_2,\ldots,g_{N-1}$ are nonzero and alternate in sign.</p>
+    <p>Set $g_1=g_N=0$ and let
+    $s_i=(g_{i+1}-g_i)/(x_{i+1}-x_i)$, with exterior slopes $s_0=s_N=0$. Distributional differentiation of the
+    piecewise-affine call gap gives $d_i=s_i-s_{i-1}$. The alternating $g_i$ make consecutive interior secant
+    slopes have opposite signs; the two endpoint jumps continue the same pattern.</p>
+    <p>Hence the $d_i$ alternate strictly.</p>
+    <div class="equation-card">
+    $$N=r+3\quad\Longrightarrow\quad
+      \{\#\operatorname{supp}P_+,\#\operatorname{supp}P_-\}
+      =\{\lfloor N/2\rfloor,\lceil N/2\rceil\}.$$
+    </div>
+    <p>Thus every support-minimal $r$-crossing witness gives each law at least
+    $\lfloor(r+3)/2\rfloor$ atoms and one law exactly $\lceil(r+3)/2\rceil$. The coefficients of the polynomial
+    construction alternate strictly, so it attains this balanced allocation. This is an equality-case statement:
+    nonminimal witnesses may split their additional atoms differently.</p>
 
     <h2>Small exact examples</h2>
     <p>For three crossings, let
@@ -257,7 +275,7 @@
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
     <p>It also checks the
     all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
-    $r+3$ support count.</p>
+    $r+3$ support count and the sharp floor/ceiling atom allocation.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.

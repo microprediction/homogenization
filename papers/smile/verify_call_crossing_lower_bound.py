@@ -163,6 +163,10 @@ def check_all_r_sharpness(max_r=10):
         points = [b ** j / raw_mean for j in range(len(p))]
         assert len(points) == r + 3
         assert all(weight != 0 for weight in coefficients)
+        positive_atoms = sum(c > 0 for c in coefficients)
+        negative_atoms = sum(c < 0 for c in coefficients)
+        assert sorted((positive_atoms, negative_atoms)) == \
+            [len(points) // 2, (len(points) + 1) // 2]
         assert sum(p, F(0)) == sum(q, F(0)) == 1
         assert rowdot(p, points) == rowdot(q, points) == 1
 
@@ -228,7 +232,7 @@ def main():
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
-    print(f"all-r support-minimal sharpness family: r=2,...,{max_r}")
+    print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)
