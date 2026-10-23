@@ -259,6 +259,22 @@
     <p>Their orbit sizes are respectively $720,360,180,720$, and their coefficient triples $(a_5,a_3,a_1)$ are $(1104,800,144)$, $(1152,1152,256)$, $(864,576,96)$ and $(1008,696,120)$. In every case one squared frequency is $1/3$; the other is respectively $9/23$, $2/3$, $1/3$ and $5/14$.</p>
     <p>This is an equal-weight theorem, not an arbitrary-weight four-support theorem. Indeed an unequal fourth weight can tend to zero on the sharp three-cycle face, where the lower squared frequency tends to $3/5$ rather than $1/3$.</p>
 
+    <h3>An exact alternating-weight instability</h3>
+    <p>The first equality orbit already loses the $1/3$ ceiling under an arbitrarily small imbalance that keeps all four weights positive. On the representative</p>
+    $$\{(0123),(0124),(0351),(0354)\},$$
+    <p>give the cycles alternating weights $(x,y,x,y)$ with $x,y&gt;0$. Exact determinant factorization makes the two squared frequencies</p>
+    $$z_1=\frac{y}{2x+y},\qquad
+      z_2=\frac{(2x+y)^2}{8x^2+12xy+3y^2}.$$
+    <p>Thus $y&gt;x$ implies both $z_1,z_2&gt;1/3$. For example, weights $(5,6,5,6)$ give the exact frequencies $3/8$ and $64/167$, so the lower one is $3/8&gt;1/3$.</p>
+    <p>This slice also has a closed-form optimum. With $r=y/x$, $z_1$ is strictly increasing, $z_2$ is strictly decreasing, and</p>
+    $$\operatorname{sign}(z_1-z_2)
+      =\operatorname{sign}(r^2+2r-4).$$
+    <p>They cross at $r=\sqrt5-1$, where both equal $(3-\sqrt5)/2$. Consequently</p>
+    <div class="equation-card">
+    $$\max_{x,y&gt;0}\min(z_1,z_2)=\frac{3-\sqrt5}{2}.$$
+    </div>
+    <p>The conclusion is confined to this one-dimensional projective slice of one equality orbit. It disproves persistence of the equal-weight $1/3$ ceiling, but it neither finds a violation of the general $3/5$ ceiling nor proves that ceiling for arbitrary four-four-cycle supports.</p>
+
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
     <p>Fixing the first Hamilton cycle canonically leaves 7,021 unordered triple supports. Every nonnegative weighting of every such support, not identically zero, satisfies</p>
