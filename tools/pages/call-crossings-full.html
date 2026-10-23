@@ -121,6 +121,25 @@
     <p>This proves sharpness for every $r$ and every prescribed node set, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 
+    <h2>The sharp witnesses use the fewest possible atoms</h2>
+    <p>There is also a matching support lower bound. Let two nonidentical finite unit-mean laws have $N$ distinct stock values
+    in the union of their supports, after cancelling any common atom with equal mass. Their ordinary-strike call
+    gap $\Gamma$ is continuous and affine between consecutive support values.</p>
+    <p>The two mass and mean constraints
+    already imply $N\geq3$.</p>
+    <p>Below the smallest support value, both calls equal $1-K$, so $\Gamma=0$; above the largest value, both calls
+    vanish. The first interior affine interval starts at zero and cannot contain a strict sign-changing zero, and
+    the last ends at zero and cannot contain one. Each of the remaining $N-3$ intervals contains at most one.
+    </p>
+    <p>Therefore</p>
+    <div class="equation-card">
+    $$\#\{\text{strict call crossings}\}\leq N-3.$$
+    </div>
+    <p>Consequently any finite-law witness with $r$ strict crossings needs at least $r+3$ distinct support values.
+    The polynomial $P$ above has degree $r+2$ and every coefficient is nonzero, so its two coefficient-part laws
+    have exactly $r+3$ union-support values. The construction is therefore support-minimal as well as
+    crossing-sharp.</p>
+
     <h2>Small exact examples</h2>
     <p>For three crossings, let
     $P_+$ put masses $(16/25,53/150,1/150)$ at stock values $(1/8,2,32)$, and let $P_-$ put masses
@@ -140,7 +159,8 @@
     the simple root at $z=2$ in the three-crossing fixture encodes the square-root moment. The dependency-free
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
     <p>It also checks the
-    all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$.</p>
+    all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
+    $r+3$ support count.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.
