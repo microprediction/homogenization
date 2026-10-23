@@ -1,7 +1,7 @@
 """Exact rank-collapse theorem for a full four-directed-cycle cone."""
 
-from collections import defaultdict
-from itertools import permutations
+from collections import Counter, defaultdict
+from itertools import combinations, permutations
 from math import gcd
 
 
@@ -187,6 +187,225 @@ orbit = {
 }
 assert len(orbit) == 360
 
+# Classify every four-component cone with the same rank-collapse property.
+# A 5-by-5 skew matrix has rank at most two exactly when its five principal
+# 4-by-4 Pfaffians vanish.  Those Pfaffians are quadratic in the cycle
+# weights.  Their diagonal terms vanish for each individual cycle, so an
+# entire cone has rank at most two exactly when every pair has zero polarized
+# Pfaffian.  Rank-collapse supports are therefore cliques in one exact graph.
+four_cycles = tuple(sorted({
+    canonical(ordering)
+    for support in combinations(range(N), 4)
+    for ordering in permutations(support)
+}))
+assert len(four_cycles) == 90
+cycle_index = {cycle: index for index, cycle in enumerate(four_cycles)}
+skew_edges = tuple(combinations(range(GROUND), 2))
+skew_index = {edge: index for index, edge in enumerate(skew_edges)}
+skew_vectors = tuple(
+    tuple(integer_forms(cycle)[1][row][column]
+          for row, column in skew_edges)
+    for cycle in four_cycles
+)
+
+
+def skew_entry(vector, row, column):
+    if row < column:
+        return vector[skew_index[(row, column)]]
+    return -vector[skew_index[(column, row)]]
+
+
+def polarized_pfaffian(left, right, quadruple):
+    """Cross coefficient of a 4-by-4 Pfaffian."""
+    a, b, c, d = quadruple
+    return (
+        skew_entry(left, a, b) * skew_entry(right, c, d)
+        + skew_entry(right, a, b) * skew_entry(left, c, d)
+        - skew_entry(left, a, c) * skew_entry(right, b, d)
+        - skew_entry(right, a, c) * skew_entry(left, b, d)
+        + skew_entry(left, a, d) * skew_entry(right, b, c)
+        + skew_entry(right, a, d) * skew_entry(left, b, c)
+    )
+
+
+quadruples = tuple(combinations(range(GROUND), 4))
+assert all(
+    polarized_pfaffian(vector, vector, quadruple) == 0
+    for vector in skew_vectors
+    for quadruple in quadruples
+)
+adjacency = [0] * len(four_cycles)
+for first, second in combinations(range(len(four_cycles)), 2):
+    if all(polarized_pfaffian(
+            skew_vectors[first], skew_vectors[second], quadruple) == 0
+           for quadruple in quadruples):
+        adjacency[first] |= 1 << second
+        adjacency[second] |= 1 << first
+
+degrees = tuple(mask.bit_count() for mask in adjacency)
+compatible_pair_count = sum(degrees) // 2
+assert compatible_pair_count == 1125
+assert set(degrees) == {25}
+
+
+def indices(mask):
+    while mask:
+        bit = mask & -mask
+        yield bit.bit_length() - 1
+        mask ^= bit
+
+
+# Enumerate each 4-clique once in increasing vertex order.
+rank_collapse_supports = []
+all_vertices = (1 << len(four_cycles)) - 1
+for first in range(len(four_cycles)):
+    after_first = all_vertices ^ ((1 << (first + 1)) - 1)
+    for second in indices(adjacency[first] & after_first):
+        after_second = all_vertices ^ ((1 << (second + 1)) - 1)
+        common = adjacency[first] & adjacency[second] & after_second
+        for third in indices(common):
+            after_third = all_vertices ^ ((1 << (third + 1)) - 1)
+            for fourth in indices(common & adjacency[third] & after_third):
+                rank_collapse_supports.append(
+                    frozenset((first, second, third, fourth)))
+assert len(rank_collapse_supports) == 7830
+
+
+def connected(support):
+    neighbors = [set() for _ in range(N)]
+    for cycle_id in support:
+        cycle = four_cycles[cycle_id]
+        for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+            neighbors[source].add(target)
+            neighbors[target].add(source)
+    seen = {next(state for state in range(N) if neighbors[state])}
+    frontier = list(seen)
+    while frontier:
+        for state in neighbors[frontier.pop()]:
+            if state not in seen:
+                seen.add(state)
+                frontier.append(state)
+    return len(seen) == N
+
+
+connected_supports = tuple(filter(connected, rank_collapse_supports))
+assert len(connected_supports) == 6705
+
+
+# Exact Bron--Kerbosch enumeration of the maximal compatible families.
+maximal_families = []
+
+
+def maximal_cliques(clique, candidates, excluded):
+    if not candidates and not excluded:
+        maximal_families.append(frozenset(indices(clique)))
+        return
+    pivot_pool = candidates | excluded
+    pivot = max(indices(pivot_pool),
+                key=lambda vertex: (candidates & adjacency[vertex]).bit_count())
+    extension = candidates & ~adjacency[pivot]
+    for vertex in tuple(indices(extension)):
+        vertex_bit = 1 << vertex
+        maximal_cliques(
+            clique | vertex_bit,
+            candidates & adjacency[vertex],
+            excluded & adjacency[vertex],
+        )
+        candidates &= ~vertex_bit
+        excluded |= vertex_bit
+
+
+maximal_cliques(0, all_vertices, 0)
+maximal_family_set = set(maximal_families)
+assert len(maximal_family_set) == 45
+assert Counter(map(len, maximal_family_set)) == {6: 30, 12: 15}
+
+
+def cycle_id(cycle):
+    return cycle_index[canonical(cycle)]
+
+
+face_families = {
+    frozenset(cycle_index[cycle] for cycle in four_cycles
+              if set(cycle) == set(support))
+    for support in combinations(range(N), 4)
+}
+star_families = {
+    frozenset(cycle_id((first, left, second, right))
+              for left in range(N) if left not in (first, second)
+              for right in range(N) if right not in (first, second, left))
+    for first, second in combinations(range(N), 2)
+}
+
+
+def perfect_matchings(vertices):
+    if not vertices:
+        yield ()
+        return
+    first = vertices[0]
+    for position in range(1, len(vertices)):
+        second = vertices[position]
+        remaining = vertices[1:position] + vertices[position + 1:]
+        for matching in perfect_matchings(remaining):
+            yield ((first, second),) + matching
+
+
+matching_families = set()
+for matching in perfect_matchings(tuple(range(N))):
+    family = set()
+    for (a, b), (c, d) in combinations(matching, 2):
+        family.add(cycle_id((a, c, b, d)))
+        family.add(cycle_id((a, d, b, c)))
+    matching_families.add(frozenset(family))
+
+assert tuple(map(len, (face_families, star_families,
+                       matching_families))) == (15, 15, 15)
+assert maximal_family_set == (
+    face_families | star_families | matching_families)
+assert all(any(support <= family for family in maximal_family_set)
+           for support in rank_collapse_supports)
+
+
+def transformed_support(support, relabeling, reverse):
+    return frozenset(
+        cycle_id(tuple(
+            relabeling[state]
+            for state in (tuple(reversed(four_cycles[index]))
+                          if reverse else four_cycles[index])
+        ))
+        for index in support
+    )
+
+
+def support_orbit(support):
+    return {
+        transformed_support(support, relabeling, reverse)
+        for relabeling in permutations(range(N))
+        for reverse in (False, True)
+    }
+
+
+rank_collapse_support_set = set(rank_collapse_supports)
+unclassified = set(rank_collapse_supports)
+support_orbits = []
+while unclassified:
+    representative = next(iter(unclassified))
+    support_orbits.append(support_orbit(representative))
+    unclassified -= support_orbits[-1]
+assert all(orbit_class <= rank_collapse_support_set
+           for orbit_class in support_orbits)
+assert len(support_orbits) == 21
+assert sum(all(connected(support) for support in orbit_class)
+           for orbit_class in support_orbits) == 16
+
+for family_type in (face_families, star_families, matching_families):
+    assert support_orbit(next(iter(family_type))) == family_type
+
+witness_support = frozenset(cycle_index[canonical(cycle)]
+                            for cycle in CYCLES)
+assert witness_support in connected_supports
+assert len(support_orbit(witness_support)) == 360
+
 witness = (1, 2, 3, 4)
 witness_coefficients = tuple(
     evaluate(polynomial, witness) for polynomial in (a5, a3, a1)
@@ -197,6 +416,15 @@ assert witness_coefficients[2] == 0
 
 print("orbit representative: {(0123),(0124),(0325),(0524)}")
 print(f"labeled support orbit size: {len(orbit)}")
+print(f"directed four-cycles: {len(four_cycles)}")
+print(f"compatible pairs: {compatible_pair_count}")
+print(f"compatibility degree: {degrees[0]}")
+print(f"four-component rank-collapse supports: {len(rank_collapse_supports)}")
+print(f"connected rank-collapse supports: {len(connected_supports)}")
+print(f"support orbits: {len(support_orbits)} total, 16 connected")
+print(f"maximal compatible families: {len(maximal_family_set)}")
+print("maximal family types: 15 faces, 15 opposite-pair stars, "
+      "15 perfect-matchings")
 print(f"strictly negative sum-barrier monomials: {len(sum_barrier)}")
 print(f"sum-barrier coefficient gcd: {coefficient_gcd}")
 print(f"three-cycle face root barriers at equal weights: {face_root_values}")

@@ -243,8 +243,17 @@
     <p>The 46 cycle representatives have 138 base&ndash;new pair incidences, of which 97 represent connected edges. Exact univariate Bernstein subdivision closes every such edge strictly, using at most five intervals and depth four; symmetry covers all 774 connected labeled base&ndash;new edges among the 1,173 labeled incidences.</p>
     <p>The three original base&ndash;base edges are strict by the displayed AM&ndash;GM factorization, while a connected one-cycle boundary is Hamiltonian and has $\sigma_2^2=1/3$. Consequently all 391 genuinely new choices and every connected nonnegative weighting are strict except for $d=0$, $a=b=c&gt;0$.</p>
 
-    <h3>A four-cycle cone with exact rank collapse</h3>
-    <p>The first full four-cycle cone outside the sharp-triple architecture has a stronger conclusion. Consider the representative</p>
+    <h3>All four-cycle cones with exact rank collapse</h3>
+    <p>There is an exact finite classification behind the first rank-collapse example. For a grounded $5\times5$ skew form, rank at most two is equivalent to the vanishing of its five principal $4\times4$ Pfaffians.</p>
+    <p>Each Pfaffian is quadratic in the cycle weights, and its pure terms vanish for an individual four-cycle. Thus a family has rank at most two for every weighting if and only if every pair of generators has zero polarized Pfaffians.</p>
+    <p>On the 90 labeled directed four-cycles, this compatibility relation has 1,125 edges and is 25-regular. Its four-cliques are exactly the four-component rank-collapse supports: there are 7,830 in total, of which 6,705 are connected on all six states. State relabeling and simultaneous reversal reduce them to 21 support orbits, 16 connected.</p>
+    <p>The 45 maximal compatible families have three explicit architectures, each with 15 labeled instances:</p>
+    <ul>
+      <li>choose an opposite pair $\{p,q\}$ and take all 12 cycles $(p,r,q,s)$ with ordered distinct $r,s$ among the other four states;</li>
+      <li>choose a perfect matching of the six states and, for each two matched pairs, take both alternating orientations, giving six cycles;</li>
+      <li>choose four states and take all six directed four-cycles on that face, a family disconnected on six states before any reversible attachments.</li>
+    </ul>
+    <p>Every rank-collapse support is contained in one of these maximal families. Their full cones, not merely their four-generator subcones, therefore have skew rank at most two for arbitrary nonnegative weights. For continuity, the previously isolated representative is</p>
     $$\{(0123),(0124),(0325),(0524)\}$$
     <p>with positive weights $(a,b,c,d)$. In the grounded coordinates $0,\ldots,4$, its integer skew form factors exactly as</p>
     $$2D=uv^\top-vu^\top,\qquad
@@ -254,8 +263,7 @@
     <div class="equation-card">
     $$\sigma_2=0.$$
     </div>
-    <p>State relabeling and simultaneous reversal produce 360 labeled supports with the same property. None of the four three-cycle faces belongs to the sharp equality orbit, so this is not a disguised instance of the preceding fourth-cycle attachment theorem.</p>
-    <p>Arbitrary reversible attachments preserve $D$ and therefore preserve the rank conclusion whenever the final flow is connected. This is a fixed-flow Green&ndash;Kubo rank statement; it does not constrain rank obtained after integrating different maturity-dependent loadings.</p>
+    <p>This representative has an orbit of 360 labeled supports and is one of the 16 connected classes. Arbitrary reversible attachments preserve $D$ and therefore preserve the rank conclusion whenever the final flow is connected; they can also connect a four-state face family without changing its skew rank. This is a fixed-flow Green&ndash;Kubo rank statement; it does not constrain rank obtained after integrating different maturity-dependent loadings.</p>
 
     <h3>Equal weights on four distinct four-cycles</h3>
     <p>A separate exact theorem covers arbitrary supports when all four components are distinct directed four-cycles and have equal weight. Every connected such mixture obeys the stronger bound</p>
@@ -649,7 +657,7 @@
     <p>The two-parameter fourth-cycle certificate checks all 1,227 choices of an imbalance pair and a fourth cycle. It reduces them to 223 exact bivariate barrier types, closes the three rational blow-up patches around equality with 1,005 cells, and closes the compactified global domains with 12,922 cells at maximum depth eight.</p>
     <p>The unrestricted four-weight certificate enumerates the 12 exact sharp-triple symmetries and all 46 representative cones covering the 391 genuinely new fourth cycles. It closes their compactified complements with 27,586 boxes through depth 39; 25,564 boxes are uniformly strict, while a recursive exact check resolves every internal face of the other 2,022 and defers only outer-cube faces.</p>
     <p>The 354 local boxes use either the Hamilton negative-definite quadratic root barrier or an exact parabolic split at $v=p^2+q^2$. Together these checks prove strictness whenever all four weights are positive.</p>
-    <p>The four-cycle rank certificate verifies the displayed wedge factorization coefficient by coefficient, the positivity of the grounded symmetric determinant, and the absence of the $t$ term in the five-dimensional pencil. It also checks that the orbit has 360 labeled supports and that none of its four faces is a sharp triple.</p>
+    <p>The four-cycle rank certificate verifies the displayed wedge factorization coefficient by coefficient, then classifies rank collapse through exact polarized Pfaffians. It constructs the 25-regular compatibility graph, enumerates all 7,830 four-cliques and their 6,705 connected members, reduces them to 21 total and 16 connected symmetry orbits, and proves that its 45 maximal cliques are precisely the three displayed 15-family architectures.</p>
     <p>The equal-four-cycle certificate enumerates all 2,555,190 supports of four distinct directed four-cycles. It uses exact batched integer determinants, verifies the $1/3$ barrier alternatives on all 2,390,985 connected supports, and reduces the 1,980 equality supports to four explicit symmetry orbits.</p>
     <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
     <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
@@ -679,7 +687,7 @@
     <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and the displayed 360-support rank-collapse orbit are covered. Other mixtures of four or more cycles, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other mixtures of four or more cycles, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
   </main>
 
   <footer>
