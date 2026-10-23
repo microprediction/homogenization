@@ -200,6 +200,15 @@
     antisymmetric parts of the correction largely cancel, so either one alone misses by more than the average
     does.</p>
 
+    <h2>Exact strike-crossing constraint</h2>
+    <p>For simultaneous switching of the CIR immigration and vol-of-vol, common mean reversion and zero leverage
+    preserve both the ordinary and stock-numeraire log-return means under stationary cycle reversal. Unless the two
+    call curves coincide, they must therefore cross at least twice in strike at every admissible fixed maturity.</p>
+    <p>With leverage the ordinary mean still forces one crossing, while vanishing of an explicit share-mean matrix
+    functional restores the two-moment guarantee. The
+    <a href="./call-crossings-full.html">full crossing note</a> proves the transform argument, gives the all-maturity
+    cancellation criterion, and keeps these strike crossings separate from maturity zeros of a scalar mean signal.</p>
+
     <h2>Beyond finite chains</h2>
     <p>The reversal property of the Green&ndash;Kubo matrix does not need a finite chain. Let $P_t$ be a stationary
     Markov semigroup on the real space $L^2(\pi)$, and let $P_t^{\leftarrow}=P_t^\dagger$ be its stationary time
@@ -243,9 +252,11 @@
     <p>The full note also covers exact occupation-law blindness at every switching rate, random-probe detection of
     finite-state irreversibility with finite-probe certificates, deterministic stability under generator estimation,
     a generator radius from a fully observed path, and a sharp quantitative irreversibility bound.</p>
-    <p class="muted">Full note: <a href="./cycle-smile-full.html">cycle-smile-full.html</a>. Certificates:
+    <p class="muted">Full note: <a href="./cycle-smile-full.html">cycle-smile-full.html</a> &middot;
+      <a href="./call-crossings-full.html">call-crossings-full.html</a>. Certificates:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_cycle_smile.py">verify_cycle_smile.py</a>,
-      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">verify_circle_factor.py</a>.</p>
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_circle_factor.py">verify_circle_factor.py</a>,
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.</p>
   </main>
 
   <footer>
