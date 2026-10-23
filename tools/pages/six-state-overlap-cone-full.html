@@ -7,6 +7,8 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_slices.py">four-cycle slice certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_one_four_cycle_cone.py">four-weight cone certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_equal_four_cycles.py">equal four-cycle certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_alternating_slice.py">alternating-weight certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_second_orbit.py">second-orbit certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
@@ -177,6 +179,28 @@
     $$\max_{x,y&gt;0}\min(z_1,z_2)=\frac{3-\sqrt5}{2}.$$
     </div>
     <p>The conclusion is confined to this one-dimensional projective slice of one equality orbit. It disproves persistence of the equal-weight $1/3$ ceiling, but it neither finds a violation of the general $3/5$ ceiling nor proves that ceiling for arbitrary four-four-cycle supports.</p>
+
+    <h3>A full-cone crossing test on the second orbit</h3>
+    <p>The next equality orbit admits an exact classification for every positive weighting, not just a slice. Order its representative as</p>
+    $$C_0=(0123),\quad C_1=(0124),\quad
+      C_2=(0354),\quad C_3=(2354),$$
+    <p>and give these cycles weights $w_0,w_1,w_2,w_3&gt;0$. Put</p>
+    $$s=w_0+w_1,\quad t=w_2+w_3,\qquad
+      p=w_0w_1,\quad q=w_2w_3.$$
+    <p>For the pencil $a_5z^2-a_3z+a_1$, exact expansion gives</p>
+    $$3a_3-2a_5=8stE&gt;0,\qquad
+      a_5-3a_3+9a_1=-32st(p-q)(s-t),$$
+    <p>where $E=2ps+2qt+3s^2t+3st^2-5pt-5sq$ expands with only strictly positive monomial coefficients. The first identity says that the squared-frequency sum is strictly greater than $2/3$.</p>
+    <p>The second barrier equals $9a_5(1/3-z_1)(1/3-z_2)$. Since the two roots cannot both lie below $1/3$, the smaller squared frequency satisfies the complete trichotomy</p>
+    $$\begin{aligned}
+      z_-&gt;1/3&\iff (p-q)(s-t)&lt;0,\\
+      z_-=1/3&\iff (p-q)(s-t)&=0,\\
+      z_-&lt;1/3&\iff (p-q)(s-t)&gt;0.
+    \end{aligned}$$
+    <p>Thus the $1/3$ equality set is the union of the equal-sum surface $s=t$ and the equal-product surface $p=q$. As an exact interior witness, weights $(9,1,4,4)$ have squared frequencies</p>
+    $$\frac{771-3\sqrt{9489}}{1414},\qquad
+      \frac{771+3\sqrt{9489}}{1414},$$
+    <p>and the lower value is strictly above $1/3$. This classifies the $1/3$ crossing on one full equality-support cone; it still does not establish the separate $3/5$ ceiling for arbitrary four-cycle supports.</p>
 
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
