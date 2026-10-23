@@ -7,6 +7,7 @@ finite martingale laws, so every calculation is exact Fraction arithmetic.
 """
 
 from fractions import Fraction as F
+from itertools import product
 
 
 def moments(points, weights):
@@ -52,6 +53,35 @@ def polynomial_from_roots(roots):
     for root in roots:
         result = polymul(result, [-root, F(1)])
     return result
+
+
+def sign_changes(values):
+    """Count strict sign changes after deleting zeros."""
+    signs = [(value > 0) - (value < 0) for value in values if value]
+    return sum(left != right for left, right in zip(signs, signs[1:]))
+
+
+def check_atom_variation_bound(max_atoms=8):
+    """Exhaust small exact signed measures satisfying mass and mean balance."""
+    checked = 0
+    for atom_count in range(3, max_atoms + 1):
+        points = list(range(1, atom_count + 1))
+        for signed in product((-2, -1, 1, 2), repeat=atom_count):
+            if sum(signed) or rowdot(signed, points):
+                continue
+            gaps = [sum(signed[j] * (points[j] - points[i])
+                        for j in range(i + 1, atom_count))
+                    for i in range(atom_count)]
+            crossings = sign_changes(gaps[1:-1])
+            variations = sign_changes(signed)
+            assert crossings <= variations - 2
+            positive_atoms = sum(weight > 0 for weight in signed)
+            negative_atoms = atom_count - positive_atoms
+            assert min(positive_atoms, negative_atoms) >= (crossings + 3) // 2
+            assert max(positive_atoms, negative_atoms) >= (crossings + 4) // 2
+            checked += 1
+    assert checked == 288
+    return checked
 
 
 def check_reversal_moment_identity():
@@ -228,11 +258,13 @@ def check_one_crossing():
 
 def main():
     check_reversal_moment_identity()
+    variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
+    print(f"exact finite atom-variation cases: {variation_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)

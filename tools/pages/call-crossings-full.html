@@ -139,6 +139,27 @@
     The polynomial $P$ above has degree $r+2$ and every coefficient is nonzero, so its two coefficient-part laws
     have exactly $r+3$ union-support values. The construction is therefore support-minimal as well as
     crossing-sharp.</p>
+    <p>There is a stronger individual-atom bound. Let $V(d)$ count sign changes in the ordered nonzero signed
+    masses $d_i=P_+\{x_i\}-P_-\{x_i\}$. If the compactly supported call gap has $r$ strict sign changes, its
+    piecewise-constant derivative has at least $r+1$: each of the $r+1$ alternating nonzero lobes must first move
+    away from zero and then return.</p>
+    <p>The derivative starts and ends at zero and jumps by $d_i$ at $x_i$. Selecting its entry jump, one jump at
+    each sign transition, and its exit jump gives an alternating subsequence of signed masses with $r+2$ sign
+    changes. Therefore</p>
+    <div class="equation-card">
+    $$r\leq V(d)-2.$$
+    </div>
+    <p>This is the elementary two-integration variation-diminishing inequality for the call kernel, not a new
+    general variation-diminishing principle.</p>
+    <p>If the two laws have $n_+$ and $n_-$ atoms after cancellation, an ordered sign string with those counts has
+    at most $2\min(n_+,n_-)$ changes, or $2n_+-1$ when $n_+=n_-$. Combining this with the preceding inequality
+    and $n_++n_-\geq r+3$ gives the sharp bounds</p>
+    <div class="equation-card">
+    $$\min(n_+,n_-)\geq\left\lfloor\frac{r+3}{2}\right\rfloor,
+      \qquad
+      \max(n_+,n_-)\geq\left\lceil\frac{r+3}{2}\right\rceil.$$
+    </div>
+    <p>These inequalities apply to every finite witness, including nonminimal ones.</p>
     <p>The equality case also determines how those atoms must be divided between the laws. Write the ordered union
     support as $x_1&lt;\cdots&lt;x_N$, put $g_i=\Gamma(x_i)$, and let $d_i$ be the first law's mass minus the
     second law's mass at $x_i$. If all $N-3$ possible crossings occur, then
@@ -153,10 +174,9 @@
       \{\#\operatorname{supp}P_+,\#\operatorname{supp}P_-\}
       =\{\lfloor N/2\rfloor,\lceil N/2\rceil\}.$$
     </div>
-    <p>Thus every support-minimal $r$-crossing witness gives each law at least
-    $\lfloor(r+3)/2\rfloor$ atoms and one law exactly $\lceil(r+3)/2\rceil$. The coefficients of the polynomial
-    construction alternate strictly, so it attains this balanced allocation. This is an equality-case statement:
-    nonminimal witnesses may split their additional atoms differently.</p>
+    <p>Thus every support-minimal $r$-crossing witness has exactly the displayed floor/ceiling split. The
+    coefficients of the polynomial construction alternate strictly, so it attains both individual lower bounds;
+    nonminimal witnesses may add atoms but cannot evade them.</p>
 
     <h2>Small exact examples</h2>
     <p>For three crossings, let
@@ -178,7 +198,8 @@
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
     <p>It also checks the
     all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
-    $r+3$ support count and the sharp floor/ceiling atom allocation.</p>
+    $r+3$ support count and the sharp individual atom minima. It also exhausts 288 small integer signed measures,
+    checking the two-step variation inequality and atom bounds exactly.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.
