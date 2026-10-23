@@ -214,16 +214,17 @@
     <p>A theorem of <a href="./bibliography.html#GaoYuan2026">Gao and Yuan (2026)</a> applies exactly to this weighted spanning-tree polynomial. Its coefficients are positive, palindromic and log-concave, and at each internal index</p>
     $$Q_i^{(\beta)}=\beta B_i^2-B_i(B_{i-1}+B_{i+1})-(\beta-2)B_{i-1}B_{i+1}\ge0.$$
     <p>Since $\beta\le49$ and log-concavity gives $B_i^2\ge B_{i-1}B_{i+1}$, it follows that $Q_i^{(49)}\ge0$. This upper-rank replacement is deliberately weaker than the cited theorem and therefore applies uniformly to every eight-state support.</p>
-    <p>Now write $(x,y,z)=(s_1,s_2,s_3)$. If $y\ge15/8$, palindromic log-concavity first gives $B_1\ge B_0$, hence</p>
+    <p>Now write $(x,y,z)=(s_1,s_2,s_3)$. If $y\ge7/4$, palindromic log-concavity first gives $B_1\ge B_0$, hence</p>
     $$3+x+y-xy-z(x+y+3xy-1)\ge0.$$
-    <p>Because $x\ge y\ge15/8$, this forces the compact rational bounds</p>
-    $$\frac{15}{8}\le y\le3,\qquad y\le x\le\frac{39}{7},\qquad0\le z\le\frac14.$$
-    <p>The last bound uses $7xy-3x-3y-13\ge23/64$, while the first two follow from $xy\le3+x+y$. On this box, exact rational interval arithmetic proves that every point with $x\ge y$ and $B_1\ge B_0$ has either $Q_1^{(49)}&lt;0$ or $Q_2^{(49)}&lt;0$.</p>
-    <p>The certificate uses 1,613 terminal boxes, reaches depth 20, and verifies the Bernstein identities before the cover. Thus every connected balanced eight-state flow obeys the strict bound</p>
+    <p>Because $x\ge y\ge7/4$, this forces the compact rational bounds</p>
+    $$\frac74\le y\le3,\qquad y\le x\le\frac{19}{3},\qquad0\le z\le\frac3{10}.$$
+    <p>The first two bounds follow from $xy\le3+x+y$. For the last, $z\le R(x,y)=(3+x+y-xy)/(x+y+3xy-1)$, and the two derivative numerators of $R$ are $-4(y+1)^2$ and $-4(x+1)^2$; hence $R(x,y)\le R(7/4,7/4)=55/187&lt;3/10$.</p>
+    <p>On this box, exact rational interval arithmetic proves that every point with $x\ge y$ and $B_1\ge B_0$ has either $Q_1^{(49)}&lt;0$ or $Q_2^{(49)}&lt;0$. The certificate uses 5,576 terminal boxes, reaches depth 42, and verifies the Bernstein identities before the cover.</p>
+    <p>Thus every connected balanced eight-state flow obeys the strict bound</p>
     <div class="equation-card">
-    $$\sigma_2^2&lt;\frac{15}{8}.$$
+    $$\sigma_2^2&lt;\frac74.$$
     </div>
-    <p>For the target, $\kappa^2=1+2/\sqrt5&gt;15/8$ because $16^2&gt;5\cdot7^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
+    <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$
     </div>

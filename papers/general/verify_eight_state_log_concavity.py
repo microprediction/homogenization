@@ -40,6 +40,17 @@ def poly_scale(poly, scale):
     return {exponent: scale * coefficient for exponent, coefficient in poly.items()}
 
 
+def poly_derivative(poly, coordinate):
+    result = {}
+    for exponent, coefficient in poly.items():
+        power = exponent[coordinate]
+        if power:
+            reduced = list(exponent)
+            reduced[coordinate] -= 1
+            result[tuple(reduced)] = coefficient * power
+    return result
+
+
 def poly_constant(value):
     value = Fraction(value)
     return {(0, 0, 0): value} if value else {}
@@ -164,16 +175,37 @@ def interval_polynomial(poly, box):
     return lower, upper
 
 
-# If y=sigma_2^2 >= 15/8, x>=y and B1>=B0 imply
-#   y<=3, x<=39/7, z<=1/4.
+# If y=sigma_2^2 >= 7/4, x>=y and B1>=B0 imply
+#   y<=3, x<=19/3, z<=55/187<3/10.
 # The first two bounds follow from xy<=3+x+y.  For the third,
-# 13+3x+3y-7xy <= -23/64 on x,y>=15/8, so the B1-B0 bound
-# gives z <= (3+x+y-xy)/(x+y+3xy-1) <= 1/4.
-assert Fraction(13) + 6 * Fraction(15, 8) - 7 * Fraction(15, 8) ** 2 == Fraction(-23, 64)
+# R=(3+x+y-xy)/(x+y+3xy-1) decreases in each of x,y because
+# its derivative numerators are -4(y+1)^2 and -4(x+1)^2.
+# Therefore z<=R(x,y)<=R(7/4,7/4)=55/187<3/10.
+assert (Fraction(7, 4) + 3) / (Fraction(7, 4) - 1) == Fraction(19, 3)
+X_PLUS_Y = poly_add(X, Y)
+R_NUMERATOR = poly_add(
+    poly_add(poly_constant(3), X_PLUS_Y), poly_multiply(X, Y), Fraction(-1)
+)
+R_DENOMINATOR = poly_add(
+    poly_add(X_PLUS_Y, poly_multiply(X, Y), Fraction(3)), poly_constant(-1)
+)
+for coordinate, other in ((0, Y), (1, X)):
+    derivative_numerator = poly_add(
+        poly_multiply(poly_derivative(R_NUMERATOR, coordinate), R_DENOMINATOR),
+        poly_multiply(R_NUMERATOR, poly_derivative(R_DENOMINATOR, coordinate)),
+        Fraction(-1),
+    )
+    one_plus_other = poly_add(other, poly_constant(1))
+    expected = poly_scale(poly_multiply(one_plus_other, one_plus_other), Fraction(-4))
+    assert derivative_numerator == expected
+assert (Fraction(3) + 2 * Fraction(7, 4) - Fraction(7, 4) ** 2) / (
+    2 * Fraction(7, 4) + 3 * Fraction(7, 4) ** 2 - 1
+) == Fraction(55, 187)
+assert Fraction(55, 187) < Fraction(3, 10)
 initial_box = (
-    (Fraction(15, 8), Fraction(39, 7)),
-    (Fraction(15, 8), Fraction(3)),
-    (ZERO, Fraction(1, 4)),
+    (Fraction(7, 4), Fraction(19, 3)),
+    (Fraction(7, 4), Fraction(3)),
+    (ZERO, Fraction(3, 10)),
 )
 
 queue = []
@@ -205,7 +237,7 @@ while queue:
         leaves["Q2"] += 1
         continue
 
-    assert depth < 40
+    assert depth < 64
     normalized_widths = [
         float(right - left) / float(initial_box[index][1] - initial_box[index][0])
         for index, (left, right) in enumerate(box)
@@ -227,11 +259,11 @@ while queue:
         )
         heappush(queue, (priority, counter, child, depth + 1))
 
-# kappa^2=1+2/sqrt(5)>15/8 because 16>7*sqrt(5), checked by squaring.
-assert 16**2 > 7**2 * 5
+# kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
+assert 8**2 > 3**2 * 5
 
 print("exact degree-seven Bernstein conversion: verified")
 print("rational cover leaves:", leaves)
 print("maximum subdivision depth:", maximum_depth)
-print("proved sigma_2^2 < 15/8 < cot(pi/5)^2")
+print("proved sigma_2^2 < 7/4 < cot(pi/5)^2")
 print("PASS")
