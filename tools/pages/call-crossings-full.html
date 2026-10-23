@@ -151,6 +151,27 @@
     </div>
     <p>This is the elementary two-integration variation-diminishing inequality for the call kernel, not a new
     general variation-diminishing principle.</p>
+    <p>The same two-step loss is not restricted to atoms. Suppose instead that the signed stock-price density
+    $q=p_+-p_-$ is compactly supported and has $v$ strict sign changes, with zero intervals deleted.</p>
+    <p>Put
+    $F(K)=\int_K^\infty q(s)\,ds$. Since the laws have equal mass and mean,</p>
+    $$\Gamma'(K)=-F(K),\qquad \Gamma(-\infty)=\Gamma(+\infty)=0,
+      \qquad F(-\infty)=F(+\infty)=0.$$
+    <p>If $\Gamma$ has $r$ strict crossings, its $r+1$ alternating lobes force at least $r+1$ sign changes of
+    $F$. Integrating a function with $v+1$ alternating sign blocks and zero total integral gives at most $v-1$
+    sign changes: on each block the cumulative tail is monotone, and its two zero endpoints remove the first
+    and last possible changes. Hence</p>
+    <div class="equation-card">
+    $$r\leq v-2.$$
+    </div>
+    <p>This density statement is sharp for every transform-node set.</p>
+    <p>In the polynomial construction above, replace each grid atom $x_j$ by $x_jW$, where $W$ is independent and uniform on
+    $[1-\epsilon,1+\epsilon]$, has mean one, and $\epsilon$ is small enough that the $r+3$ product intervals
+    are disjoint. The signed density then has exactly $r+2$ alternating sign changes. Moreover</p>
+    $$\Delta\mathbb E[(SW)^s]=\mathbb E[W^s]\,\Delta\mathbb E[S^s],$$
+    <p>so all prescribed transform zeros and the martingale mean survive. The transform-zero theorem gives at
+    least $r$ call crossings, while the density variation bound gives at most $r$; these absolutely continuous,
+    compactly supported laws therefore have exactly $r$ crossings.</p>
     <p>If the two laws have $n_+$ and $n_-$ atoms after cancellation, an ordered sign string with those counts has
     at most $2\min(n_+,n_-)$ changes, or $2n_+-1$ when $n_+=n_-$. Combining this with the preceding inequality
     and $n_++n_-\geq r+3$ gives the sharp bounds</p>
@@ -198,8 +219,9 @@
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
     <p>It also checks the
     all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
-    $r+3$ support count and the sharp individual atom minima. It also exhausts 288 small integer signed measures,
-    checking the two-step variation inequality and atom bounds exactly.</p>
+    $r+3$ support count, the sharp individual atom minima and disjoint continuous multiplicative blurs. It also
+    exhausts 288 small integer signed measures, checking the two-step variation inequality and atom bounds
+    exactly.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.

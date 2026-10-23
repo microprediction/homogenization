@@ -2,8 +2,8 @@
 
 The theorem in call-crossings-full.html uses two positive-weight call
 integrals.  This certificate checks that neither resulting crossing lower
-bound can be improved from those moment identities alone.  Both fixtures are
-finite martingale laws, so every calculation is exact Fraction arithmetic.
+bound can be improved from those moment identities alone.  The finite fixtures
+and disjoint-interval continuous blurs use exact Fraction arithmetic.
 """
 
 from fractions import Fraction as F
@@ -233,6 +233,42 @@ def check_all_r_sharpness(max_r=10):
     return max_r
 
 
+def check_continuous_blur(max_r=10):
+    """Check the exact disjoint-density smoothing construction.
+
+    Multiplication by W uniform on [3/4,5/4] replaces each atom x by a
+    constant density on [3x/4,5x/4].  The geometric grids below have adjacent
+    ratio at least two, so these intervals are disjoint.  Mellin moments
+    factor by the common positive moment E[W**s], preserving every node.
+    """
+    epsilon = F(1, 4)
+    checked = 0
+    for r in range(2, max_r + 1):
+        b = F(2 ** (r - 1))
+        transform_roots = [F(2 ** ell) for ell in range(r)]
+        coefficients = polynomial_from_roots([F(1), b] + transform_roots)
+        normalizer = sum((max(c, F(0)) for c in coefficients), F(0))
+        p = [max(c, F(0)) / normalizer for c in coefficients]
+        raw_mean = sum((p[j] * b ** j for j in range(len(p))), F(0))
+        points = [b ** j / raw_mean for j in range(len(p))]
+
+        intervals = [(x * (1 - epsilon), x * (1 + epsilon)) for x in points]
+        assert all(intervals[j][1] < intervals[j + 1][0]
+                   for j in range(len(intervals) - 1))
+        assert sign_changes(coefficients) == r + 2
+
+        # Unit mass and mean survive because E[W]=1.  Each fractional
+        # moment difference is multiplied by the same E[W**s].
+        assert sum((max(c, F(0)) for c in coefficients), F(0)) == \
+            sum((max(-c, F(0)) for c in coefficients), F(0))
+        assert sum((c * b ** j for j, c in enumerate(coefficients)), F(0)) == 0
+        for root in [F(1), b] + transform_roots:
+            assert sum((c * root ** j for j, c in enumerate(coefficients)), F(0)) == 0
+        checked += 1
+    assert checked == max_r - 1
+    return checked
+
+
 def check_one_crossing():
     # Signed coefficients of (z-1)^2(z-2), again normalized and rescaled.
     signed = [F(-2), F(5), F(-4), F(1)]
@@ -260,11 +296,13 @@ def main():
     check_reversal_moment_identity()
     variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
+    blur_cases = check_continuous_blur()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print(f"exact finite atom-variation cases: {variation_cases}")
+    print(f"exact continuous-blur sharpness cases: {blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)
