@@ -1,0 +1,242 @@
+<!-- title: Moment identities and CIR call crossings · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle-smile summary</a></p>
+    <h1>Moment identities and call crossings under cycle reversal</h1>
+    <p class="subtitle">Every distinct zero of the log-strike call transform forces a strict strike crossing, and the bound is sharp for every finite node set. The two endpoints give the exact moment-only bound for zero-leverage switched CIR models.</p>
+
+    <h2>The call transform</h2>
+    <p>Normalize the initial stock and discount factor to one. Let $X$ have either of two risk-neutral laws
+    $P_+$ and $P_-$, assume $\mathbb E_\pm e^X=1$, and suppose their moment generating functions are finite on an
+    open interval containing $[0,1]$.</p>
+    <p>Write</p>
+    $$G(k)=\mathbb E_+(e^X-e^k)_+-\mathbb E_-(e^X-e^k)_+,\qquad
+      \Delta M(s)=\mathbb E_+e^{sX}-\mathbb E_-e^{sX}.$$
+    <p>Two integrations by parts in log strike give the bilateral transform identity</p>
+    <div class="equation-card">
+    $$H(s):=\int_{\mathbb R}e^{(s-1)k}G(k)\,dk
+      =\frac{\Delta M(s)}{s(s-1)},\qquad 0&lt;s&lt;1.$$
+    </div>
+    <p>Indeed, in the distributional sense $G''-G'=e^k(P_+-P_-)$, and the moment strip makes the boundary
+    terms vanish. Since both laws have unit mass and unit stock mean, continuation to the endpoints yields</p>
+    <div class="equation-card">
+    $$H(0)=-\Delta\mathbb E[X],\qquad
+      H(1)=\Delta\mathbb E[e^XX]=\Delta\mathbb E^{S}[X].$$
+    </div>
+    <p>The last equality is the stock-numeraire change of measure. Its measure-theoretic foundation is the
+    change-of-numeraire theorem of <a href="./bibliography.html#GemanElKarouiRochet1995">Geman, El Karoui and
+    Rochet (1995)</a>.</p>
+
+    <h2>Every transform zero forces a crossing</h2>
+    <p>More generally, let $s_1,\ldots,s_r$ be distinct points of $[0,1]$. If $H(s_i)=0$ for every $i$ and
+    $G$ is not identically zero, then $G$ has at least $r$ strict sign changes. This statement includes endpoint
+    values by continuous extension; an interior condition is simply the fractional-moment identity
+    $\Delta\mathbb E[e^{s_iX}]=0$.</p>
+    <p>To prove it, suppose that $G$ has only $q&lt;r$ sign-change locations $x_1&lt;\cdots&lt;x_q$, with zero
+    intervals removed. The $q+1$ functions $e^{(s_i-1)k}$ form a strict Chebyshev system: their Wronskian is a
+    nonzero exponential times the Vandermonde determinant of the distinct exponents $s_i-1$. Therefore a
+    nonzero linear combination $p(k)$ can be chosen to vanish at the $x_j$.</p>
+    <p>This exponential total-positivity mechanism is classical; see
+    <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
+    <p>The Chebyshev zero bound says that
+    these are all its zeros and that they are simple. After changing its overall sign, $pG\geq0$ everywhere and
+    $pG&gt;0$ somewhere. But</p>
+    $$\int_{\mathbb R}p(k)G(k)\,dk=\sum_{i=1}^{q+1}c_iH(s_i)=0,$$
+    <p>a contradiction. The argument is fixed-maturity and uses distinct transform nodes; it does not turn zeros
+    across maturities into strike crossings.</p>
+
+    <h2>One endpoint moment forces one crossing; two force two</h2>
+    <p>A crossing means a strict sign change of the continuous function $G$, after zero intervals are removed.
+    If $\Delta\mathbb E[X]=0$ and $G$ is not identically zero, then</p>
+    $$\int_{\mathbb R}e^{-k}G(k)\,dk=0,$$
+    <p>so $G$ must have both signs and therefore at least one crossing.</p>
+    <p>If also $\Delta\mathbb E^S[X]=0$, then $\int G(k)\,dk=0$ as well. One crossing is impossible: if its
+    location is $a$ and $G$ is nonnegative to the left and nonpositive to the right, then</p>
+    $$\int_{\mathbb R}(e^{-k}-e^{-a})G(k)\,dk&gt;0,$$
+    <p>contradicting the two zero integrals. Reversing the signs gives the opposite strict inequality, so every
+    nonzero call gap has at least two crossings.</p>
+    <p>This is a two-function Chebyshev argument for the positive weights $1$ and $e^{-k}$. It counts strike
+    crossings at one fixed maturity, not zeros of a scalar observable as maturity varies.</p>
+
+    <h2>Application to simultaneous CIR switching</h2>
+    <p>Let a stationary finite-state chain $Z$ have row generator $mQ$ and invariant law $\pi$, and compare it with
+    its stationary reversal. Consider</p>
+    $$dX_t=-\tfrac12V_t\,dt+\sqrt{V_t}\,dW_t^S,\qquad
+      dV_t=(a_{Z_t}-\kappa V_t)\,dt+\xi_{Z_t}\sqrt{V_t}\,dW_t^V,$$
+    <p>with $d\langle W^S,W^V\rangle_t=\rho\,dt$, common $\kappa$, the same deterministic $V_0$ in both
+    orientations, and true stock martingales. The ordinary variance mean solves</p>
+    $$\overline v'(t)=\langle a,\mathbf1\rangle_\pi-\kappa\overline v(t),$$
+    <p>so reversal preserves $\mathbb E[X_T]=-\tfrac12\int_0^T\overline v(t)\,dt$ for every $\rho$.</p>
+    <p>At zero leverage, the stock-numeraire change flips the drift of $X$ but leaves the variance dynamics
+    unchanged. Hence reversal also preserves
+    $\mathbb E^S[X_T]=\tfrac12\int_0^T\overline v(t)\,dt$.</p>
+    <div class="equation-card">
+    $$\boxed{\rho=0:\quad G_T\not\equiv0\ \Longrightarrow\
+      \text{at least two strict call-price crossings in strike}.}$$
+    </div>
+    <p>Thus simultaneous switching of immigration $a$ and vol-of-vol $\xi$ destroys some stronger identities but
+    not this two-crossing lower bound. The statement is marginal over the stationary regime start and applies at
+    each fixed maturity for which the displayed moment strip holds.</p>
+
+    <h2>What leverage changes</h2>
+    <p>Under the stock measure the variance killing vector becomes
+    $c=\kappa\mathbf1-\rho\xi$. Put $A=mQ-D_c$ and</p>
+    $$L(M)=\langle a,M\mathbf1\rangle_\pi-\langle\mathbf1,Ma\rangle_\pi.$$
+    <p>A direct first-moment calculation gives the forward-minus-reverse stock-log mean</p>
+    <div class="equation-card">
+    $$D_S(T):=\Delta\mathbb E^S[X_T]
+      =\frac12\int_0^T(T-u)L(e^{uA})\,du.$$
+    </div>
+    <p>The contribution of $V_0$ cancels because $mQ^{\leftarrow}-D_c$ is similar to $A^\top$ through
+    $D_\pi$. Immigration supplies the displayed antisymmetric functional.</p>
+    <p>Consequently the same two-moment theorem applies at a leveraged maturity $T$ whenever $D_S(T)=0$; this is
+    exactly the additional endpoint identity used by its proof. If $r$ is the degree of the minimal polynomial of
+    $A$, cancellation at every maturity is equivalent to the finite conditions</p>
+    $$L(A^j)=0,\qquad j=0,\ldots,r-1.$$
+    <p>Without that identity only the ordinary-log moment is universally matched, so the moment argument guarantees
+    one crossing. This does not say that a particular leveraged CIR pair has only one crossing; it identifies the
+    precise point where a second universal sign change can no longer be deduced.</p>
+
+    <h2>Sharpness for every finite transform-node set</h2>
+    <p>The lower bound cannot be improved from transform zeros alone. Fix any distinct
+    $s_1,\ldots,s_r\in[0,1]$, choose $b&gt;1$, put $a_i=b^{s_i}$, and define</p>
+    $$P(z)=(z-1)(z-b)\prod_{i=1}^r(z-a_i)=\sum_{j=0}^{r+2}c_jz^j.$$
+    <p>All roots are positive, so the nonzero coefficients $c_j$ alternate in sign. Normalize their positive and
+    negative parts into two laws on the geometric stock grid $b^j$, then divide both grids by their common mean.</p>
+    <p>The identities $P(1)=P(b)=0$ give unit mass and the common mean. Moreover,</p>
+    $$\Delta M(s)=\frac{\mu^{-s}}{Z}P(b^s).$$
+    <p>An interior $s_i$ is therefore a zero of $H$. If $s_i$ is an endpoint, its factor duplicates the baseline
+    factor $z-1$ or $z-b$, so division by $s(s-1)$ still leaves a zero. Thus the prescribed nodes are exactly the
+    zeros of $H$ on $[0,1]$.</p>
+    <p>It remains to count the crossings rather than merely invoke the lower bound. Write</p>
+    $$S(z)=\frac{P(z)}{(z-1)(z-b)}=\sum_{j=0}^rd_jz^j,$$
+    <p>and let $\Gamma(K)=G(\log K)$ be the call gap in ordinary strike. At the interior grid points
+    $K_i=b^i/\mu$, a coefficient-tail telescoping gives the exact identity</p>
+    <div class="equation-card">
+    $$Z\mu\,\Gamma(K_i)=b^i(b-1)d_{i-1},\qquad i=1,\ldots,r+1.$$
+    </div>
+    <p>The $d_j$ alternate because $S$ also has only positive roots. Hence the call gap alternates sign at these
+    $r+1$ grid points and, being affine between adjacent support points, has exactly one strict zero in each of the
+    $r$ intervening intervals. It has no further strict crossing in the two edge intervals, where one endpoint is
+    the identically zero outer call gap.</p>
+    <p>This proves sharpness for every $r$ and every prescribed node set, but the
+    constructed laws are finite martingale laws, not switched-CIR models.</p>
+
+    <h2>The sharp witnesses use the fewest possible atoms</h2>
+    <p>There is also a matching support lower bound. Let two nonidentical finite unit-mean laws have $N$ distinct stock values
+    in the union of their supports, after cancelling any common atom with equal mass. Their ordinary-strike call
+    gap $\Gamma$ is continuous and affine between consecutive support values.</p>
+    <p>The two mass and mean constraints
+    already imply $N\geq3$.</p>
+    <p>Below the smallest support value, both calls equal $1-K$, so $\Gamma=0$; above the largest value, both calls
+    vanish. The first interior affine interval starts at zero and cannot contain a strict sign-changing zero, and
+    the last ends at zero and cannot contain one. Each of the remaining $N-3$ intervals contains at most one.
+    </p>
+    <p>Therefore</p>
+    <div class="equation-card">
+    $$\#\{\text{strict call crossings}\}\leq N-3.$$
+    </div>
+    <p>Consequently any finite-law witness with $r$ strict crossings needs at least $r+3$ distinct support values.
+    The polynomial $P$ above has degree $r+2$ and every coefficient is nonzero, so its two coefficient-part laws
+    have exactly $r+3$ union-support values. The construction is therefore support-minimal as well as
+    crossing-sharp.</p>
+    <p>There is a stronger individual-atom bound. Let $V(d)$ count sign changes in the ordered nonzero signed
+    masses $d_i=P_+\{x_i\}-P_-\{x_i\}$. If the compactly supported call gap has $r$ strict sign changes, its
+    piecewise-constant derivative has at least $r+1$: each of the $r+1$ alternating nonzero lobes must first move
+    away from zero and then return.</p>
+    <p>The derivative starts and ends at zero and jumps by $d_i$ at $x_i$. Selecting its entry jump, one jump at
+    each sign transition, and its exit jump gives an alternating subsequence of signed masses with $r+2$ sign
+    changes. Therefore</p>
+    <div class="equation-card">
+    $$r\leq V(d)-2.$$
+    </div>
+    <p>This is the elementary two-integration variation-diminishing inequality for the call kernel. It is a direct
+    special case of the classical variation-diminishing framework surveyed by
+    <a href="./bibliography.html#Schoenberg1953">Schoenberg (1953)</a>, not a new general principle.</p>
+    <p>The same two-step loss holds for arbitrary compactly supported signed measures, not only atoms or densities.
+    Let $\nu=P_+-P_-$ have finite ordered sign variation.</p>
+    <p>Say that $V(\nu)=v$ when its support has a minimal
+    decomposition into $v+1$ successive nonzero half-open intervals such that the restricted measures are
+    alternately nonnegative and nonpositive. Null gaps are deleted; this convention assigns a boundary atom to
+    the interval on its right.</p>
+    <p>Assume $\int d\nu=\int s\,d\nu(s)=0$ and put
+    $F(K)=\nu((K,\infty))$. Then the call gap
+    $\Gamma(K)=\int(s-K)_+\,d\nu(s)$ is absolutely continuous and</p>
+    $$\Gamma'(K)=-F(K)\quad\hbox{a.e.},\qquad
+      \Gamma(-\infty)=\Gamma(+\infty)=F(-\infty)=F(+\infty)=0.$$
+    <p>If $\Gamma$ has $r$ strict crossings, its $r+1$ alternating lobes force at least $r+1$ sign changes of
+    $F$: on each lobe an absolutely continuous function must first move away from zero and then return. On each
+    sign block of $\nu$, the tail $F$ is monotone and can cross zero at most once.</p>
+    <p>Its first block only leaves
+    zero and its last only returns to zero, so only the $v-1$ interior blocks can contribute crossings. Hence</p>
+    <div class="equation-card">
+    $$r\leq V(\nu)-2.$$
+    </div>
+    <p>For atoms this recovers $V(d)$; for a signed density it recovers the number of strict density sign changes.
+    Thus the bound also covers mixed discrete and absolutely continuous laws without an approximation argument.</p>
+    <p>The measure statement is sharp for every transform-node set and for discrete, continuous and mixed laws.
+    In the polynomial construction above, replace each grid atom $x_j$ by $x_jW$, where, for
+    $0\leq\alpha\leq1$,</p>
+    $$\mathcal L(W)=(1-\alpha)\delta_1+\alpha\,\mathrm{Unif}[1-\epsilon,1+\epsilon].$$
+    <p>Here $W$ is common and independent, has mean one, and $\epsilon$ is small enough that the $r+3$ product
+    intervals are disjoint. The signed measure then has exactly $r+2$ alternating sign changes. Moreover</p>
+    $$\Delta\mathbb E[(SW)^s]=\mathbb E[W^s]\,\Delta\mathbb E[S^s],$$
+    <p>so all prescribed transform zeros and the martingale mean survive. The transform-zero theorem gives at
+    least $r$ call crossings, while the measure variation bound gives at most $r$. The cases $\alpha=0$, $1$
+    and $0&lt;\alpha&lt;1$ therefore give exactly $r$ crossings for compactly supported discrete, absolutely
+    continuous and mixed laws, respectively.</p>
+    <p>If the two laws have $n_+$ and $n_-$ atoms after cancellation, an ordered sign string with those counts has
+    at most $2\min(n_+,n_-)$ changes, or $2n_+-1$ when $n_+=n_-$. Combining this with the preceding inequality
+    and $n_++n_-\geq r+3$ gives the sharp bounds</p>
+    <div class="equation-card">
+    $$\min(n_+,n_-)\geq\left\lfloor\frac{r+3}{2}\right\rfloor,
+      \qquad
+      \max(n_+,n_-)\geq\left\lceil\frac{r+3}{2}\right\rceil.$$
+    </div>
+    <p>These inequalities apply to every finite witness, including nonminimal ones.</p>
+    <p>The equality case also determines how those atoms must be divided between the laws. Write the ordered union
+    support as $x_1&lt;\cdots&lt;x_N$, put $g_i=\Gamma(x_i)$, and let $d_i$ be the first law's mass minus the
+    second law's mass at $x_i$. If all $N-3$ possible crossings occur, then
+    $g_2,\ldots,g_{N-1}$ are nonzero and alternate in sign.</p>
+    <p>Set $g_1=g_N=0$ and let
+    $s_i=(g_{i+1}-g_i)/(x_{i+1}-x_i)$, with exterior slopes $s_0=s_N=0$. Distributional differentiation of the
+    piecewise-affine call gap gives $d_i=s_i-s_{i-1}$. The alternating $g_i$ make consecutive interior secant
+    slopes have opposite signs; the two endpoint jumps continue the same pattern.</p>
+    <p>Hence the $d_i$ alternate strictly.</p>
+    <div class="equation-card">
+    $$N=r+3\quad\Longrightarrow\quad
+      \{\#\operatorname{supp}P_+,\#\operatorname{supp}P_-\}
+      =\{\lfloor N/2\rfloor,\lceil N/2\rceil\}.$$
+    </div>
+    <p>Thus every support-minimal $r$-crossing witness has exactly the displayed floor/ceiling split. The
+    coefficients of the polynomial construction alternate strictly, so it attains both individual lower bounds;
+    nonminimal witnesses may add atoms but cannot evade them.</p>
+
+    <h2>Small exact examples</h2>
+    <p>For three crossings, let
+    $P_+$ put masses $(16/25,53/150,1/150)$ at stock values $(1/8,2,32)$, and let $P_-$ put masses
+    $(16/75,53/75,2/25)$ at $(1/32,1/2,8)$.</p>
+    <p>The laws have unit means, equal ordinary and stock-weighted log
+    means, and equal square-root moments, so $H$ vanishes at $s=0,1/2,1$. Their call difference changes sign
+    exactly at strikes $11/64$, $1$ and $64/11$.</p>
+    <p>For two crossings, let $P_+$ put masses
+    $(2/9,13/18,1/18)$ at stock values $(1/4,1,4)$, and let $P_-$ put masses $(2/3,1/3)$ at $(1/2,2)$.</p>
+    <p>Both laws have mean one, equal log means, and equal stock-weighted log means. Their call difference changes
+    sign exactly at strikes $5/8$ and $8/5$.</p>
+    <p>For one crossing, let $P_+$ put masses $(5/6,1/6)$ at $(2/3,8/3)$, and let $P_-$ put masses
+    $(1/3,2/3)$ at $(1/3,4/3)$. These laws have mean one and equal log means but unequal stock-weighted log means;
+    their call difference changes sign exactly at $8/9$.</p>
+    <p>The coefficient vectors are the positive and negative parts of
+    $(z-1)^2(z-2)(z-4)^2$, $(z-1)^2(z-2)^2$ and $(z-1)^2(z-2)$. Double roots encode the endpoint log moments;
+    the simple root at $z=2$ in the three-crossing fixture encodes the square-root moment. The dependency-free
+    certificate verifies every probability, moment, call equality and sign interval exactly.</p>
+    <p>It also checks the
+    all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
+    $r+3$ support count, the sharp individual atom minima and disjoint continuous and mixed multiplicative blurs. It also
+    exhausts 288 small integer signed measures, checking the two-step variation inequality and atom bounds
+    exactly.</p>
+
+    <p class="muted">Certificate:
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.
+      This note proves lower bounds and an all-maturity cancellation criterion; it does not construct a sharp CIR
+      one-crossing example or turn maturity zeros of a mean observable into strike crossings.</p>
+  </main>
