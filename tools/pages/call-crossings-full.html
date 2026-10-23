@@ -2,7 +2,7 @@
   <main>
     <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle-smile summary</a></p>
     <h1>Moment identities and call crossings under cycle reversal</h1>
-    <p class="subtitle">Two endpoint values of the log-strike call transform give the exact moment-only crossing bounds. Zero-leverage switched CIR models with common reversion retain both values even when immigration and vol-of-vol switch together.</p>
+    <p class="subtitle">Every distinct zero of the log-strike call transform forces a strict strike crossing. The two endpoint values give the exact moment-only bound for zero-leverage switched CIR models, even when immigration and vol-of-vol switch together.</p>
 
     <h2>The call transform</h2>
     <p>Normalize the initial stock and discount factor to one. Let $X$ have either of two risk-neutral laws
@@ -26,7 +26,25 @@
     change-of-numeraire theorem of <a href="./bibliography.html#GemanElKarouiRochet1995">Geman, El Karoui and
     Rochet (1995)</a>.</p>
 
-    <h2>One moment forces one crossing; two force two</h2>
+    <h2>Every transform zero forces a crossing</h2>
+    <p>More generally, let $s_1,\ldots,s_r$ be distinct points of $[0,1]$. If $H(s_i)=0$ for every $i$ and
+    $G$ is not identically zero, then $G$ has at least $r$ strict sign changes. This statement includes endpoint
+    values by continuous extension; an interior condition is simply the fractional-moment identity
+    $\Delta\mathbb E[e^{s_iX}]=0$.</p>
+    <p>To prove it, suppose that $G$ has only $q&lt;r$ sign-change locations $x_1&lt;\cdots&lt;x_q$, with zero
+    intervals removed. The $q+1$ functions $e^{(s_i-1)k}$ form a strict Chebyshev system: their Wronskian is a
+    nonzero exponential times the Vandermonde determinant of the distinct exponents $s_i-1$. Therefore a
+    nonzero linear combination $p(k)$ can be chosen to vanish at the $x_j$.</p>
+    <p>This exponential total-positivity mechanism is classical; see
+    <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
+    <p>The Chebyshev zero bound says that
+    these are all its zeros and that they are simple. After changing its overall sign, $pG\geq0$ everywhere and
+    $pG&gt;0$ somewhere. But</p>
+    $$\int_{\mathbb R}p(k)G(k)\,dk=\sum_{i=1}^{q+1}c_iH(s_i)=0,$$
+    <p>a contradiction. The argument is fixed-maturity and uses distinct transform nodes; it does not turn zeros
+    across maturities into strike crossings.</p>
+
+    <h2>One endpoint moment forces one crossing; two force two</h2>
     <p>A crossing means a strict sign change of the continuous function $G$, after zero intervals are removed.
     If $\Delta\mathbb E[X]=0$ and $G$ is not identically zero, then</p>
     $$\int_{\mathbb R}e^{-k}G(k)\,dk=0,$$
@@ -78,8 +96,14 @@
     one crossing. This does not say that a particular leveraged CIR pair has only one crossing; it identifies the
     precise point where a second universal sign change can no longer be deduced.</p>
 
-    <h2>The moment bounds are sharp outside the CIR class</h2>
-    <p>The lower bounds cannot be improved from these identities alone. For two crossings, let $P_+$ put masses
+    <h2>The transform-zero bounds are sharp outside the CIR class</h2>
+    <p>The first three lower bounds cannot be improved from these identities alone. For three crossings, let
+    $P_+$ put masses $(16/25,53/150,1/150)$ at stock values $(1/8,2,32)$, and let $P_-$ put masses
+    $(16/75,53/75,2/25)$ at $(1/32,1/2,8)$.</p>
+    <p>The laws have unit means, equal ordinary and stock-weighted log
+    means, and equal square-root moments, so $H$ vanishes at $s=0,1/2,1$. Their call difference changes sign
+    exactly at strikes $11/64$, $1$ and $64/11$.</p>
+    <p>For two crossings, let $P_+$ put masses
     $(2/9,13/18,1/18)$ at stock values $(1/4,1,4)$, and let $P_-$ put masses $(2/3,1/3)$ at $(1/2,2)$.</p>
     <p>Both laws have mean one, equal log means, and equal stock-weighted log means. Their call difference changes
     sign exactly at strikes $5/8$ and $8/5$.</p>
@@ -87,7 +111,8 @@
     $(1/3,2/3)$ at $(1/3,4/3)$. These laws have mean one and equal log means but unequal stock-weighted log means;
     their call difference changes sign exactly at $8/9$.</p>
     <p>The coefficient vectors are the positive and negative parts of
-    $(z-1)^2(z-2)^2$ and $(z-1)^2(z-2)$. The double roots encode the matched moments, and the dependency-free
+    $(z-1)^2(z-2)(z-4)^2$, $(z-1)^2(z-2)^2$ and $(z-1)^2(z-2)$. Double roots encode the endpoint log moments;
+    the simple root at $z=2$ in the three-crossing fixture encodes the square-root moment. The dependency-free
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
 
     <p class="muted">Certificate:

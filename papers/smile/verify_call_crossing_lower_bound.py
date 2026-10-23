@@ -1,4 +1,4 @@
-"""Exact certificate for the one- and two-crossing moment bounds.
+"""Exact certificate for the one-, two-, and three-crossing moment bounds.
 
 The theorem in call-crossings-full.html uses two positive-weight call
 integrals.  This certificate checks that neither resulting crossing lower
@@ -94,6 +94,41 @@ def check_two_crossings():
     return roots
 
 
+def check_three_crossings():
+    # Signed coefficients of (z-1)^2(z-2)(z-4)^2.  With stock points
+    # 4**j / 32, the roots at 1 and 4 match the endpoint log moments,
+    # while the root at 2 matches the square-root moment.
+    signed = [F(-32), F(96), F(-106), F(53), F(-12), F(1)]
+    points = [F(1, 32), F(1, 8), F(1, 2), F(2), F(8), F(32)]
+    p = [max(w, F(0)) / 150 for w in signed]
+    q = [max(-w, F(0)) / 150 for w in signed]
+
+    assert sum(p, F(0)) == sum(q, F(0)) == 1
+    assert sum((w * s for s, w in zip(points, p)), F(0)) == 1
+    assert sum((w * s for s, w in zip(points, q)), F(0)) == 1
+
+    # Since log_2(S_j)=2j-5, these are the ordinary and share-log
+    # coefficients.  The square-root equality reduces to P(2)=0 after
+    # cancelling the common factor 1/sqrt(32).
+    exponents = [2 * j - 5 for j in range(6)]
+    assert rowdot(p, exponents) == rowdot(q, exponents)
+    assert rowdot([p[j] * points[j] for j in range(6)], exponents) == \
+        rowdot([q[j] * points[j] for j in range(6)], exponents)
+    sqrt_coefficients = [F(2 ** j) for j in range(6)]
+    assert rowdot(p, sqrt_coefficients) == rowdot(q, sqrt_coefficients)
+
+    roots = [F(11, 64), F(1), F(64, 11)]
+    for root in roots:
+        assert call(points, p, root) == call(points, q, root)
+    tests = [F(1, 16), F(1, 4), F(3, 4), F(3, 2), F(4), F(6), F(16)]
+    signs = []
+    for strike in tests:
+        gap = call(points, p, strike) - call(points, q, strike)
+        signs.append((gap > 0) - (gap < 0))
+    assert signs == [-1, 1, 1, -1, -1, 1, 1]
+    return roots
+
+
 def check_one_crossing():
     # Signed coefficients of (z-1)^2(z-2), again normalized and rescaled.
     signed = [F(-2), F(5), F(-4), F(1)]
@@ -119,8 +154,10 @@ def check_one_crossing():
 
 def main():
     check_reversal_moment_identity()
+    roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
+    print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)
     print("PASS")
