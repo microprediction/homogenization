@@ -1,7 +1,8 @@
-<!-- title: Six-state Green–Kubo obstruction and sparse cycle mixtures · homogenization | math -->
+<!-- title: Six- and seven-state Green–Kubo obstructions · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_phase_product.py">six-state product certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_seven_state_phase_barrier.py">seven-state barrier certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
@@ -15,9 +16,9 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_fourth_orbit_slice.py">fourth-orbit certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
-    <h1>Six-state Green&ndash;Kubo obstruction and sparse cycle mixtures</h1>
-    <p class="subtitle">An unrestricted phase-product obstruction, with sharper bounds for sparse mixtures and reversible attachments.</p>
-    <p class="muted">Research note, 23 October 2026. The unrestricted six-state case is closed; the seven- and eight-state cases remain open.</p>
+    <h1>Six- and seven-state Green&ndash;Kubo obstructions</h1>
+    <p class="subtitle">Unrestricted tree-coefficient barriers, with sharper bounds for sparse six-state mixtures and reversible attachments.</p>
+    <p class="muted">Research note, 23 October 2026. The unrestricted six- and seven-state cases are closed; the eight-state case remains open.</p>
 
     <h2>Result</h2>
     <p>Every connected balanced stationary flow on six states obeys the unrestricted product bound</p>
@@ -45,9 +46,9 @@
     <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
     <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
     <p>More quantitatively, two five-cycles sharing at least two states, with arbitrary positive weights and reversible attachments, satisfy the sharp gap $\sigma_2\le1$.</p>
-    <p>Consequently no six-state four-feature compression realizes
+    <p>Consequently no six- or seven-state four-feature compression realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
-      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The bounded-cycle multiplicity theorem still rules out the target through eight states whenever all directed components have length at most five; unrestricted seven- and eight-state flows remain open.</p>
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The unrestricted minimum therefore lies in $\{8,9\}$; the bounded-cycle multiplicity theorem rules out eight whenever all directed components have length at most five.</p>
 
     <h2>Stationary-flow coordinates</h2>
     <p>Any prescribed positive stationary law $\pi$ gives a generator through
@@ -79,6 +80,29 @@
     <p>The cofactor expansion is the weighted directed matrix-tree theorem of
       <a href="./bibliography.html#DeLeenheer2020">De Leenheer (2020)</a>. The phase terminology follows the semi-sectorial framework of
       <a href="./bibliography.html#WangMaoChenQiu2023">Wang, Mao, Chen and Qiu (2023)</a>; the coefficient injection and resulting product obstruction are proved directly above.</p>
+
+    <h2>Unrestricted seven-state tree barrier</h2>
+    <p>On seven states the grounded skew operator has three positive frequencies $\sigma_1\ge\sigma_2\ge\sigma_3\ge0$. Put $s_j=\sigma_j^2$ and</p>
+    $$e_1=s_1+s_2+s_3,\qquad e_2=s_1s_2+s_1s_3+s_2s_3,\qquad e_3=s_1s_2s_3.$$
+    <p>The same balanced interpolation and rerooting injection now give a symmetric degree-six tree expansion</p>
+    $$P(x)=\sum_{k=0}^6B_kx^k(1-x)^{6-k},\qquad B_k=B_{6-k},\qquad B_1\ge B_0.$$
+    <p>With $z=2x-1$, its spectral form is</p>
+    $$P(x)=\det H\{1+e_1z^2+e_2z^4+e_3z^6\}.$$
+    <p>Exact conversion from the symmetric Bernstein basis gives the new unrestricted barrier</p>
+    <div class="equation-card">
+    $$\det H\,(5+e_1-3e_2-7e_3)=B_1-B_0\ge0.$$
+    </div>
+    <p>A directed seven-cycle has normalized polynomial $1+5z^2+3z^4+z^6/7$ and attains equality, so the coefficient inequality itself is sharp.</p>
+    <p>Now suppose a four-dimensional feature compression had both target frequencies $\kappa=\cot(\pi/5)$. Hermitian compression interlacing forces the two largest full frequencies to obey $\sigma_1,\sigma_2\ge\kappa$.</p>
+    <p>Write $r=\kappa^2=1+2/\sqrt5$ and $(x,y,z)=(s_1,s_2,s_3)$. The barrier polynomial</p>
+    $$\Phi(x,y,z)=5+x+y+z-3xy-3xz-3yz-7xyz$$
+    <p>is strictly decreasing in each variable when $x,y\ge r&gt;1$ and $z\ge0$. Its largest possible value on that region is therefore</p>
+    $$\Phi(r,r,0)=5+2r-3r^2=\frac85-\frac8{\sqrt5}&lt;0,$$
+    <p>contradicting the tree barrier. Hence seven states are impossible without any support, cycle-count or translation-invariance assumption, and the unrestricted bracket improves to</p>
+    <div class="equation-card">
+    $$8\le N_{\min}\le9.$$
+    </div>
+    <p>The dependency-free certificate checks the rerooting injection on all $7^5=16{,}807$ labeled trees and all $117{,}649$ rootings, verifies the exact basis identity, and recovers the seven-cycle equality polynomial. Interlacing is applied only to this fixed-flow, fixed-feature compression; it makes no claim about rank after integrating maturity-dependent loadings.</p>
 
     <h2>Exact pencil calculation</h2>
     <p>Direct expansion of the five-dimensional determinant gives</p>
@@ -624,5 +648,5 @@
     <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other mixtures of four or more cycles, flows requiring longer cycles in every nonnegative cycle decomposition and unrestricted state counts six through nine remain open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, while the unrestricted eight-state minimum problem remains open.</p>
   </main>
