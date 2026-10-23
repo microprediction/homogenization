@@ -103,6 +103,7 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_slices.py">four-cycle slice certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_one_four_cycle_cone.py">four-weight cone certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_equal_four_cycles.py">equal four-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
@@ -236,6 +237,27 @@
     <p>To classify equality on the boundary, the certificate recursively checks every coordinate face of each weak global box. No genuine single-zero face is deferred: the only codimension-one coordinate deferrals are $x=1$, which redundantly parameterizes the edge $b=c=0$, and $z=1$, which redundantly parameterizes the pure-$C_4$ limit.</p>
     <p>The 46 cycle representatives have 138 base&ndash;new pair incidences, of which 97 represent connected edges. Exact univariate Bernstein subdivision closes every such edge strictly, using at most five intervals and depth four; symmetry covers all 774 connected labeled base&ndash;new edges among the 1,173 labeled incidences.</p>
     <p>The three original base&ndash;base edges are strict by the displayed AM&ndash;GM factorization, while a connected one-cycle boundary is Hamiltonian and has $\sigma_2^2=1/3$. Consequently all 391 genuinely new choices and every connected nonnegative weighting are strict except for $d=0$, $a=b=c&gt;0$.</p>
+
+    <h3>Equal weights on four distinct four-cycles</h3>
+    <p>A separate exact theorem covers arbitrary supports when all four components are distinct directed four-cycles and have equal weight. Every connected such mixture obeys the stronger bound</p>
+    <div class="equation-card">
+    $$\sigma_2^2\le\frac13.$$
+    </div>
+    <p>There are 90 labeled directed four-cycles and $\binom{90}{4}=2{,}555{,}190$ unordered supports. Exactly 2,390,985 are connected; the other 164,205 have zero leading grounded determinant, do not define an irreducible six-state flow and are excluded from this theorem.</p>
+    <p>For the equal-weight pencil $a_5t^5+a_3t^3+a_1t$, put</p>
+    $$A_{1/3}=3a_3-2a_5,\qquad
+      B_{1/3}=a_5-3a_3+9a_1.$$
+    <p>If $A_{1/3}\le0$, the sum of the squared frequencies is at most $2/3$. If $B_{1/3}\le0$, their monic quadratic is nonpositive at $1/3$, so $1/3$ lies between its roots.</p>
+    <p>Exact integer determinants certify the first alternative on 2,144,115 connected supports and the second, with the first unavailable, on the remaining 246,870. Thus no floating spectral comparison enters the proof.</p>
+    <p>Equality occurs for 1,980 labeled supports in four orbits under state relabeling and simultaneous reversal. Below, $(0123)$ abbreviates the directed cycle $(0,1,2,3)$; orbit representatives are</p>
+    $$\begin{aligned}
+    &\{(0123),(0124),(0351),(0354)\},\\
+    &\{(0123),(0124),(0354),(2354)\},\\
+    &\{(0123),(0132),(2345),(2453)\},\\
+    &\{(0123),(0134),(0142),(2345)\}.
+    \end{aligned}$$
+    <p>Their orbit sizes are respectively $720,360,180,720$, and their coefficient triples $(a_5,a_3,a_1)$ are $(1104,800,144)$, $(1152,1152,256)$, $(864,576,96)$ and $(1008,696,120)$. In every case one squared frequency is $1/3$; the other is respectively $9/23$, $2/3$, $1/3$ and $5/14$.</p>
+    <p>This is an equal-weight theorem, not an arbitrary-weight four-support theorem. Indeed an unequal fourth weight can tend to zero on the sharp three-cycle face, where the lower squared frequency tends to $3/5$ rather than $1/3$.</p>
 
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
@@ -530,6 +552,7 @@
     <p>The two-parameter fourth-cycle certificate checks all 1,227 choices of an imbalance pair and a fourth cycle. It reduces them to 223 exact bivariate barrier types, closes the three rational blow-up patches around equality with 1,005 cells, and closes the compactified global domains with 12,922 cells at maximum depth eight.</p>
     <p>The unrestricted four-weight certificate enumerates the 12 exact sharp-triple symmetries and all 46 representative cones covering the 391 genuinely new fourth cycles. It closes their compactified complements with 27,586 boxes through depth 39; 25,564 boxes are uniformly strict, while a recursive exact check resolves every internal face of the other 2,022 and defers only outer-cube faces.</p>
     <p>The 354 local boxes use either the Hamilton negative-definite quadratic root barrier or an exact parabolic split at $v=p^2+q^2$. Together these checks prove strictness whenever all four weights are positive.</p>
+    <p>The equal-four-cycle certificate enumerates all 2,555,190 supports of four distinct directed four-cycles. It uses exact batched integer determinants, verifies the $1/3$ barrier alternatives on all 2,390,985 connected supports, and reduces the 1,980 equality supports to four explicit symmetry orbits.</p>
     <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
     <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
     <p>For the mixed theorem it enumerates all 17,136 normalized two-Hamilton/one-five-cycle supports and proves exactly that no Hamilton&ndash;five-cycle pair is extremal. It closes 16,848 supports by global simplex covers and the remaining 288 by 12 strict local blow-up types plus complementary covers.</p>
