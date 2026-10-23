@@ -1,4 +1,4 @@
-"""Exact equal-triple slice on the fourth four-cycle equality orbit."""
+"""Exact crossing theorem on the fourth four-cycle equality orbit."""
 
 from collections import defaultdict
 from fractions import Fraction
@@ -75,6 +75,26 @@ def multiply_polynomials(first, second):
             if coefficient}
 
 
+def power_polynomial(polynomial, exponent, dimension):
+    result = {(0,) * dimension: 1}
+    for _ in range(exponent):
+        result = multiply_polynomials(result, polynomial)
+    return result
+
+
+def substitute_polynomial(polynomial, mappings):
+    """Substitute polynomial-valued variables exactly."""
+    dimension = len(next(iter(mappings[0])))
+    result = {}
+    for monomial, coefficient in polynomial.items():
+        term = {(0,) * dimension: coefficient}
+        for exponent, mapping in zip(monomial, mappings):
+            term = multiply_polynomials(
+                term, power_polynomial(mapping, exponent, dimension))
+        result = add_polynomials(result, term)
+    return result
+
+
 def determinant_polynomial():
     """Expand det(t(2H)-2D) in four weights and t over the integers."""
     forms = [integer_forms(cycle) for cycle in CYCLES]
@@ -143,6 +163,113 @@ assert {monomial[4] for monomial in determinant} == {1, 3, 5}
 full_a5, full_a3, full_a1 = (
     coefficient_in_t(determinant, exponent) for exponent in (5, 3, 1)
 )
+
+# On the full cone, the root barrier has a linear threshold after its positive
+# factor.  The symmetric quartic U is an explicit sum of squares.
+W4 = tuple({tuple(1 if index == variable else 0 for index in range(4)): 1}
+           for variable in range(4))
+a, b, c, d = W4
+S = add_polynomials(a, b, c)
+e2 = add_polynomials(
+    multiply_polynomials(a, b), multiply_polynomials(a, c),
+    multiply_polynomials(b, c))
+e3 = multiply_polynomials(multiply_polynomials(a, b), c)
+U = add_polynomials(
+    multiply_polynomials(multiply_polynomials(S, S), e2),
+    scale_polynomial(multiply_polynomials(e2, e2), -1),
+    scale_polynomial(multiply_polynomials(S, e3), -6),
+)
+V = multiply_polynomials(
+    S,
+    multiply_polynomials(
+        add_polynomials(a, scale_polynomial(c, -1)),
+        add_polynomials(b, scale_polynomial(c, -1)),
+    ),
+)
+full_root_barrier = add_polynomials(
+    full_a5, scale_polynomial(full_a3, -3),
+    scale_polynomial(full_a1, 9))
+expected_root_barrier = scale_polynomial(
+    multiply_polynomials(
+        d, add_polynomials(U, multiply_polynomials(d, V))), -32)
+assert full_root_barrier == expected_root_barrier
+
+twice_u_sos = {}
+for left, right, other in ((a, b, c), (b, c, a), (c, a, b)):
+    difference = add_polynomials(left, scale_polynomial(right, -1))
+    positive_factor = add_polynomials(
+        scale_polynomial(
+            multiply_polynomials(other, add_polynomials(left, right)), 2),
+        multiply_polynomials(other, other),
+    )
+    twice_u_sos = add_polynomials(
+        twice_u_sos,
+        multiply_polynomials(
+            multiply_polynomials(difference, difference), positive_factor),
+    )
+assert scale_polynomial(U, 2) == twice_u_sos
+
+# Write the sum barrier as 8*d*(G0+d*G1+d^2*G2).  G1 is S times a
+# positive-definite quadratic (Sylvester minors 3,8,12), and G2=3*S^2.
+full_sum_barrier = add_polynomials(
+    scale_polynomial(full_a3, 3), scale_polynomial(full_a5, -2))
+G = {}
+for monomial, coefficient in full_sum_barrier.items():
+    assert monomial[3] >= 1 and coefficient % 8 == 0
+    reduced = monomial[:3] + (monomial[3] - 1,)
+    G[reduced] = coefficient // 8
+G_parts = tuple(
+    {monomial[:3]: coefficient for monomial, coefficient in G.items()
+     if monomial[3] == exponent}
+    for exponent in range(3)
+)
+assert all(monomial[3] <= 2 for monomial in G)
+
+W3 = tuple({tuple(1 if index == variable else 0 for index in range(3)): 1}
+           for variable in range(3))
+a3v, b3v, c3v = W3
+S3 = add_polynomials(a3v, b3v, c3v)
+quadratic = add_polynomials(
+    scale_polynomial(multiply_polynomials(a3v, a3v), 3),
+    scale_polynomial(multiply_polynomials(a3v, b3v), 2),
+    scale_polynomial(multiply_polynomials(a3v, c3v), -2),
+    scale_polynomial(multiply_polynomials(b3v, b3v), 3),
+    scale_polynomial(multiply_polynomials(b3v, c3v), -2),
+    scale_polynomial(multiply_polynomials(c3v, c3v), 2),
+)
+assert G_parts[1] == multiply_polynomials(S3, quadratic)
+assert G_parts[2] == scale_polynomial(multiply_polynomials(S3, S3), 3)
+quadratic_sylvester_minors = (3, 8, 12)
+assert all(value > 0 for value in quadratic_sylvester_minors)
+
+# If c lies strictly between a and b, write a=z+y+x, c=z+y, b=z.
+# At d*=U/(S*x*y), the numerator of G(d*) has 53 strictly positive
+# coefficients.  Since G'(d)>0, the sum barrier stays positive for d>=d*.
+x3, y3, z3 = W3
+ordered_mappings = (add_polynomials(x3, y3, z3), z3,
+                    add_polynomials(y3, z3))
+ordered_u = substitute_polynomial(
+    {monomial[:3]: coefficient for monomial, coefficient in U.items()},
+    ordered_mappings)
+ordered_s = substitute_polynomial(S3, ordered_mappings)
+ordered_g = tuple(substitute_polynomial(part, ordered_mappings)
+                  for part in G_parts)
+ordered_xy = multiply_polynomials(x3, y3)
+threshold_denominator = multiply_polynomials(ordered_s, ordered_xy)
+threshold_sum_numerator = add_polynomials(
+    multiply_polynomials(
+        ordered_g[0], multiply_polynomials(
+            threshold_denominator, threshold_denominator)),
+    multiply_polynomials(
+        multiply_polynomials(ordered_g[1], ordered_u),
+        threshold_denominator),
+    multiply_polynomials(
+        ordered_g[2], multiply_polynomials(ordered_u, ordered_u)),
+)
+assert len(threshold_sum_numerator) == 53
+assert all(coefficient > 0
+           for coefficient in threshold_sum_numerator.values())
+
 a5, a3, a1 = (
     equal_triple_slice(polynomial)
     for polynomial in (full_a5, full_a3, full_a1)
@@ -210,6 +337,13 @@ assert off_slice_sum_barrier == 973_280
 assert off_slice_root_barrier == 320
 
 print("orbit representative: {(0123),(0134),(0142),(2345)}")
+print("full-cone root barrier: -32*d*(U+d*S*(a-c)*(b-c))")
+print("U=S^2*e2-e2^2-6*S*e3 is nonnegative, equality iff a=b=c")
+print("sum-barrier quadratic Sylvester minors: 3, 8, 12")
+print("positive threshold sum-barrier coefficients: 53")
+print("if c lies strictly between a and b: d*=U/(S*(a-c)*(c-b))")
+print("then lower squared frequency is <, =, > 1/3 as d is <, =, > d*")
+print("otherwise, except a=b=c, lower squared frequency is < 1/3")
 print("slice weights: (x,x,x,y), x>0, y>0")
 print("squared frequencies: 1/3 and (x+3y)(3x+2y)/((5x+2y)(5x+3y))")
 print("nonconstant root derivative numerator: 4*(21r^2+66r+50), r=y/x")
