@@ -233,15 +233,19 @@ def check_all_r_sharpness(max_r=10):
     return max_r
 
 
-def check_continuous_blur(max_r=10):
-    """Check the exact disjoint-density smoothing construction.
+def check_measure_blurs(max_r=10):
+    """Check the exact disjoint continuous and mixed smoothing construction.
 
     Multiplication by W uniform on [3/4,5/4] replaces each atom x by a
-    constant density on [3x/4,5x/4].  The geometric grids below have adjacent
-    ratio at least two, so these intervals are disjoint.  Mellin moments
-    factor by the common positive moment E[W**s], preserving every node.
+    constant density on [3x/4,5x/4].  A half atom, half uniform W gives a
+    genuinely mixed law.  The geometric grids below have adjacent ratio at
+    least two, so the sign blocks are disjoint.  Mellin moments factor by the
+    common positive moment E[W**s], preserving every node.
     """
     epsilon = F(1, 4)
+    alpha = F(1, 2)
+    assert (1 - alpha) + alpha == 1
+    assert (1 - alpha) + alpha * ((1 - epsilon) + (1 + epsilon)) / 2 == 1
     checked = 0
     for r in range(2, max_r + 1):
         b = F(2 ** (r - 1))
@@ -296,13 +300,13 @@ def main():
     check_reversal_moment_identity()
     variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
-    blur_cases = check_continuous_blur()
+    blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print(f"exact finite atom-variation cases: {variation_cases}")
-    print(f"exact continuous-blur sharpness cases: {blur_cases}")
+    print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)
