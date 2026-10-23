@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sparse six-state Green–Kubo cycle mixtures · homogenization</title>
+  <title>Six-state Green–Kubo obstruction and sparse cycle mixtures · homogenization</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
@@ -98,7 +98,8 @@
 
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
-    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_phase_product.py">six-state product certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_slices.py">four-cycle slice certificate</a> &middot;
@@ -111,12 +112,19 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_fourth_orbit_slice.py">fourth-orbit certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
-    <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
-    <p class="subtitle">Sharp repeated-mode bounds for sparse mixtures and reversible attachments.</p>
-    <p class="muted">Research note, 22 October 2026. This is a restricted architecture theorem, not a solution of the unrestricted minimum-state problem.</p>
+    <h1>Six-state Green&ndash;Kubo obstruction and sparse cycle mixtures</h1>
+    <p class="subtitle">An unrestricted phase-product obstruction, with sharper bounds for sparse mixtures and reversible attachments.</p>
+    <p class="muted">Research note, 23 October 2026. The unrestricted six-state case is closed; the seven- and eight-state cases remain open.</p>
 
     <h2>Result</h2>
-    <p>Let a balanced stationary flow on six states be the sum of at most three genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Every connected balanced stationary flow on six states obeys the unrestricted product bound</p>
+    <div class="equation-card">
+    $$\sigma_1\sigma_2\le1.$$
+    </div>
+    <p>Equivalently, its two positive matrix phases satisfy
+      $\arctan\sigma_1+\arctan\sigma_2\le\pi/2$. The target has both frequencies
+      $\kappa=\cot(\pi/5)$, hence product $\kappa^2=1+2/\sqrt5&gt;1$, so no six-state flow realizes it.</p>
+    <p>A sharper theorem holds when the flow is the sum of at most three genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
     <p>Let
       $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
     <div class="equation-card">
@@ -134,10 +142,9 @@
     <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
     <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
     <p>More quantitatively, two five-cycles sharing at least two states, with arbitrary positive weights and reversible attachments, satisfy the sharp gap $\sigma_2\le1$.</p>
-    <p>Consequently no four-feature compression from any stated class realizes
+    <p>Consequently no six-state four-feature compression realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
-      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$.
-      The target needs two frequencies $\cot(\pi/5)=\sqrt{1+2/\sqrt5}&gt;\sqrt{3/5}$.</p>
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The bounded-cycle multiplicity theorem still rules out the target through eight states whenever all directed components have length at most five; unrestricted seven- and eight-state flows remain open.</p>
 
     <h2>Stationary-flow coordinates</h2>
     <p>Any prescribed positive stationary law $\pi$ gives a generator through
@@ -149,6 +156,26 @@
     <p>The eigenvalues of $H^{-1/2}DH^{-1/2}$ are
       $\{\pm i\sigma_1,\pm i\sigma_2,0\}$. Hence</p>
     $$\frac{\det(tH-D)}{\det H}=t(t^2+\sigma_1^2)(t^2+\sigma_2^2).$$
+
+    <h2>Unrestricted six-state phase-product obstruction</h2>
+    <p>For $0\le x\le1$, set
+      $C_x=xC+(1-x)C^\top$. Balance makes $C_x$ another Laplacian, and transposition gives the same grounded cofactor at $x$ and $1-x$.</p>
+    <p>The directed matrix-tree theorem expands that cofactor uniquely as</p>
+    $$P(x)=\sum_{k=0}^5 B_kx^k(1-x)^{5-k},\qquad B_k\ge0,\qquad B_k=B_{5-k}.$$
+    <p>Here $B_k$ sums rooted tree terms in which exactly $k$ edges use their forward flow and the other $5-k$ use their reverse flow. All root cofactors, and therefore all $B_k$, agree because every $C_x$ is balanced.</p>
+    <p>After summing over all roots, there is a weight-preserving injection from the objects counted by $B_0$ to those counted by $B_1$. Start with an out-arborescence rooted at $r$, choose one child $s$ of $r$, and reroot the same tree at $s$.</p>
+    <p>The edge $r\to s$ is then the unique edge pointing toward the new root, while every other edge points away from it. Choosing the least-labeled child makes the map injective, since the image tree, new root and exceptional edge recover $r$.</p>
+    <p>Thus $B_1\ge B_0$. On writing $z=2x-1$, the same determinant is</p>
+    $$P(x)=\det(H+zD)=\det H\{1+(\sigma_1^2+\sigma_2^2)z^2+\sigma_1^2\sigma_2^2z^4\}.$$
+    <p>Exact conversion of the symmetric Bernstein basis gives</p>
+    <div class="equation-card">
+    $$\det H\,(1-\sigma_1^2\sigma_2^2)=\frac{B_1-B_0}{4}\ge0.$$
+    </div>
+    <p>This proves the product bound for every connected balanced six-state flow, with no cycle-count or support restriction. A directed six-cycle has normalized polynomial $1+(10/3)z^2+z^4$ and attains equality in the product bound.</p>
+    <p>The dependency-free certificate checks the injection on all $6^4=1{,}296$ labeled trees and all $7{,}776$ rootings, verifies the exact basis identity, and recovers the directed-cycle equality polynomial.</p>
+    <p>The cofactor expansion is the weighted directed matrix-tree theorem of
+      <a href="./bibliography.html#DeLeenheer2020">De Leenheer (2020)</a>. The phase terminology follows the semi-sectorial framework of
+      <a href="./bibliography.html#WangMaoChenQiu2023">Wang, Mao, Chen and Qiu (2023)</a>; the coefficient injection and resulting product obstruction are proved directly above.</p>
 
     <h2>Exact pencil calculation</h2>
     <p>Direct expansion of the five-dimensional determinant gives</p>

@@ -3207,5 +3207,27 @@
   "doi": "",
   "url": "https://www.numdam.org/item/AIHPB_1995__31_1_273_0/",
   "annotation": "Introduces the strong sector condition for controlling the antisymmetric part of a Markov generator by its symmetric Dirichlet form. The triangle-mixture theorem computes its sharp finite-state constant and proves closure under flow addition."
+ },
+ {
+  "role": "survey_theory",
+  "key": "DeLeenheer2020",
+  "authors": "De Leenheer, P.",
+  "year": 2020,
+  "title": "An Elementary Proof of a Matrix Tree Theorem for Directed Graphs",
+  "venue": "SIAM Review 62(3):716-726",
+  "doi": "10.1137/19m1265193",
+  "url": "https://doi.org/10.1137/19m1265193",
+  "annotation": "Proves the weighted directed matrix-tree theorem through incidence-matrix factorization. The six-state obstruction applies that cofactor expansion to a balanced interpolation between a flow Laplacian and its transpose, then adds a new coefficient injection."
+ },
+ {
+  "role": "survey_theory",
+  "key": "WangMaoChenQiu2023",
+  "authors": "Wang, D., Mao, X., Chen, W. and Qiu, L.",
+  "year": 2023,
+  "title": "On the Phases of a Semi-Sectorial Matrix and the Essential Phase of a Laplacian",
+  "venue": "Linear Algebra and its Applications 676:441-458",
+  "doi": "10.1016/j.laa.2023.07.014",
+  "url": "https://doi.org/10.1016/j.laa.2023.07.014",
+  "annotation": "Develops phases for singular semi-sectorial matrices and characterizes balanced graph Laplacians as quasi-sectorial. The two-phase product inequality used here is a separate consequence of the directed-tree coefficient injection."
  }
 ]
