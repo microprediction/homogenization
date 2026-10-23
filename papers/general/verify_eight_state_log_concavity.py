@@ -259,6 +259,24 @@ while queue:
         )
         heappush(queue, (priority, counter, child, depth + 1))
 
+# The coefficient relaxation is nearly sharp.  At this exact rational point,
+# all four independent coefficients are positive and strictly increasing,
+# while every internal beta=49 inequality is strict.  Palindromicity supplies
+# the reflected half.  This does not assert that a graph realizes the point.
+relaxation_point = (
+    Fraction(1749, 1000),
+    Fraction(1749, 1000),
+    Fraction(33241, 250000),
+)
+point_box = tuple((value, value) for value in relaxation_point)
+point_B = [interval_polynomial(poly, point_box)[0] for poly in B]
+point_Q1 = interval_polynomial(Q1, point_box)[0]
+point_Q2 = interval_polynomial(Q2, point_box)[0]
+point_Q3 = Fraction(48) * point_B[3] * (point_B[3] - point_B[2])
+assert ZERO < point_B[0] < point_B[1] < point_B[2] < point_B[3]
+assert point_Q1 > 0 and point_Q2 > 0 and point_Q3 > 0
+assert Fraction(7, 4) - relaxation_point[1] == Fraction(1, 1000)
+
 # kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
 assert 8**2 > 3**2 * 5
 
@@ -266,4 +284,5 @@ print("exact degree-seven Bernstein conversion: verified")
 print("rational cover leaves:", leaves)
 print("maximum subdivision depth:", maximum_depth)
 print("proved sigma_2^2 < 7/4 < cot(pi/5)^2")
+print("coefficient relaxation admits sigma_2^2 = 1749/1000")
 print("PASS")
