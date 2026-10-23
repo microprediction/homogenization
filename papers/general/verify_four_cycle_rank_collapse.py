@@ -209,6 +209,53 @@ skew_vectors = tuple(
 )
 
 
+def root_vector(source, target):
+    """Grounded coordinates of e_source-e_target."""
+    vector = [0] * GROUND
+    if source < GROUND:
+        vector[source] += 1
+    if target < GROUND:
+        vector[target] -= 1
+    return tuple(vector)
+
+
+def wedge(left, right):
+    return tuple(left[row] * right[column] - right[row] * left[column]
+                 for row, column in skew_edges)
+
+
+def opposite_matching(cycle):
+    first, second, third, fourth = cycle
+    return frozenset((tuple(sorted((first, third))),
+                      tuple(sorted((second, fourth)))))
+
+
+# Every oriented four-cycle is a signed Pluecker vector for its two opposite
+# vertex pairs: 2D_(i,j,k,l)=(e_i-e_k) wedge (e_l-e_j).
+assert all(
+    skew_vectors[index] == wedge(
+        root_vector(cycle[0], cycle[2]),
+        root_vector(cycle[3], cycle[1]),
+    )
+    for index, cycle in enumerate(four_cycles)
+)
+opposite_matchings = tuple(map(opposite_matching, four_cycles))
+assert Counter(opposite_matchings) == {
+    matching: 2 for matching in set(opposite_matchings)
+}
+assert len(set(opposite_matchings)) == 45
+
+
+def combinatorially_compatible(first, second):
+    """Whether two two-edge matchings span intersecting root planes."""
+    if first & second:
+        return True
+    union = first | second
+    degrees = Counter(vertex for edge in union for vertex in edge)
+    return (len(union) == 4 and len(degrees) == 4
+            and set(degrees.values()) == {2})
+
+
 def skew_entry(vector, row, column):
     if row < column:
         return vector[skew_index[(row, column)]]
@@ -236,9 +283,12 @@ assert all(
 )
 adjacency = [0] * len(four_cycles)
 for first, second in combinations(range(len(four_cycles)), 2):
-    if all(polarized_pfaffian(
+    pfaffian_compatible = all(polarized_pfaffian(
             skew_vectors[first], skew_vectors[second], quadruple) == 0
-           for quadruple in quadruples):
+           for quadruple in quadruples)
+    assert pfaffian_compatible == combinatorially_compatible(
+        opposite_matchings[first], opposite_matchings[second])
+    if pfaffian_compatible:
         adjacency[first] |= 1 << second
         adjacency[second] |= 1 << first
 
@@ -417,6 +467,9 @@ assert witness_coefficients[2] == 0
 print("orbit representative: {(0123),(0124),(0325),(0524)}")
 print(f"labeled support orbit size: {len(orbit)}")
 print(f"directed four-cycles: {len(four_cycles)}")
+print(f"opposite-pair matchings: {len(set(opposite_matchings))}, "
+      "two orientations each")
+print("compatibility: shared opposite pair or alternating four-cycle")
 print(f"compatible pairs: {compatible_pair_count}")
 print(f"compatibility degree: {degrees[0]}")
 print(f"four-component rank-collapse supports: {len(rank_collapse_supports)}")
