@@ -107,6 +107,7 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_alternating_slice.py">alternating-weight certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_second_orbit.py">second-orbit certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_third_orbit.py">third-orbit certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_fourth_orbit_slice.py">fourth-orbit slice certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
     <h1>Sparse six-state Green&ndash;Kubo cycle mixtures</h1>
@@ -315,6 +316,18 @@
     </div>
     <p>The two roots coincide exactly when $w_0=w_1$ and $w_2=w_3$, so the double-root locus is a full projective line rather than only the equal-weight point. As a nonsymmetric exact witness, weights $(2,1,3,1)$ give pencil coefficients $(a_5,a_3,a_1)=(13320,10416,1992)$ and squared frequencies $1/3$ and $83/185$.</p>
     <p>This pins one mode on a second full equality-support cone. It does not extend the $1/3$ bound to the other equality orbits or to arbitrary four-cycle supports.</p>
+
+    <h3>An exact threshold slice on the fourth orbit</h3>
+    <p>The last equality orbit also has a closed form on a natural one-dimensional slice. Order its representative as</p>
+    $$C_0=(0123),\quad C_1=(0134),\quad
+      C_2=(0142),\quad C_3=(2345),$$
+    <p>and give the cycles weights $(x,x,x,y)$ with $x,y&gt;0$. Exact determinant factorization gives the squared frequencies</p>
+    $$\frac13,\qquad
+      R(x,y)=\frac{(x+3y)(3x+2y)}{(5x+2y)(5x+3y)}.$$
+    <p>Writing $r=y/x$, the derivative of $R$ has the strictly positive numerator $4(21r^2+66r+50)$. Moreover, $R=1/3$ exactly at</p>
+    $$\frac yx=\frac{\sqrt{13}-1}{3}.$$
+    <p>Below this ratio the lower squared frequency is $R$; at and above it the lower squared frequency is pinned at $1/3$. Thus $(10,10,10,1)$ gives $8/53$ and $1/3$, whereas equal weights give $1/3$ and $5/14$.</p>
+    <p>This is a slice theorem, not a full-cone ceiling. Off the slice, weights $(3,1,2,10)$ give sum and root barriers $973280$ and $320$, both positive, which forces both squared frequencies strictly above $1/3$.</p>
 
     <h2>Arbitrary weights on every Hamilton triple</h2>
     <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
