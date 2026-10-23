@@ -2,7 +2,7 @@
   <main>
     <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle-smile summary</a></p>
     <h1>Moment identities and call crossings under cycle reversal</h1>
-    <p class="subtitle">Every distinct zero of the log-strike call transform forces a strict strike crossing. The two endpoint values give the exact moment-only bound for zero-leverage switched CIR models, even when immigration and vol-of-vol switch together.</p>
+    <p class="subtitle">Every distinct zero of the log-strike call transform forces a strict strike crossing, and the bound is sharp for every finite node set. The two endpoints give the exact moment-only bound for zero-leverage switched CIR models.</p>
 
     <h2>The call transform</h2>
     <p>Normalize the initial stock and discount factor to one. Let $X$ have either of two risk-neutral laws
@@ -96,8 +96,33 @@
     one crossing. This does not say that a particular leveraged CIR pair has only one crossing; it identifies the
     precise point where a second universal sign change can no longer be deduced.</p>
 
-    <h2>The transform-zero bounds are sharp outside the CIR class</h2>
-    <p>The first three lower bounds cannot be improved from these identities alone. For three crossings, let
+    <h2>Sharpness for every finite transform-node set</h2>
+    <p>The lower bound cannot be improved from transform zeros alone. Fix any distinct
+    $s_1,\ldots,s_r\in[0,1]$, choose $b&gt;1$, put $a_i=b^{s_i}$, and define</p>
+    $$P(z)=(z-1)(z-b)\prod_{i=1}^r(z-a_i)=\sum_{j=0}^{r+2}c_jz^j.$$
+    <p>All roots are positive, so the nonzero coefficients $c_j$ alternate in sign. Normalize their positive and
+    negative parts into two laws on the geometric stock grid $b^j$, then divide both grids by their common mean.</p>
+    <p>The identities $P(1)=P(b)=0$ give unit mass and the common mean. Moreover,</p>
+    $$\Delta M(s)=\frac{\mu^{-s}}{Z}P(b^s).$$
+    <p>An interior $s_i$ is therefore a zero of $H$. If $s_i$ is an endpoint, its factor duplicates the baseline
+    factor $z-1$ or $z-b$, so division by $s(s-1)$ still leaves a zero. Thus the prescribed nodes are exactly the
+    zeros of $H$ on $[0,1]$.</p>
+    <p>It remains to count the crossings rather than merely invoke the lower bound. Write</p>
+    $$S(z)=\frac{P(z)}{(z-1)(z-b)}=\sum_{j=0}^rd_jz^j,$$
+    <p>and let $\Gamma(K)=G(\log K)$ be the call gap in ordinary strike. At the interior grid points
+    $K_i=b^i/\mu$, a coefficient-tail telescoping gives the exact identity</p>
+    <div class="equation-card">
+    $$Z\mu\,\Gamma(K_i)=b^i(b-1)d_{i-1},\qquad i=1,\ldots,r+1.$$
+    </div>
+    <p>The $d_j$ alternate because $S$ also has only positive roots. Hence the call gap alternates sign at these
+    $r+1$ grid points and, being affine between adjacent support points, has exactly one strict zero in each of the
+    $r$ intervening intervals. It has no further strict crossing in the two edge intervals, where one endpoint is
+    the identically zero outer call gap.</p>
+    <p>This proves sharpness for every $r$ and every prescribed node set, but the
+    constructed laws are finite martingale laws, not switched-CIR models.</p>
+
+    <h2>Small exact examples</h2>
+    <p>For three crossings, let
     $P_+$ put masses $(16/25,53/150,1/150)$ at stock values $(1/8,2,32)$, and let $P_-$ put masses
     $(16/75,53/75,2/25)$ at $(1/32,1/2,8)$.</p>
     <p>The laws have unit means, equal ordinary and stock-weighted log
@@ -114,6 +139,8 @@
     $(z-1)^2(z-2)(z-4)^2$, $(z-1)^2(z-2)^2$ and $(z-1)^2(z-2)$. Double roots encode the endpoint log moments;
     the simple root at $z=2$ in the three-crossing fixture encodes the square-root moment. The dependency-free
     certificate verifies every probability, moment, call equality and sign interval exactly.</p>
+    <p>It also checks the
+    all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.

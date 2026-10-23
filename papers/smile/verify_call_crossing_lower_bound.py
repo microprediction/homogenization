@@ -1,4 +1,4 @@
-"""Exact certificate for the one-, two-, and three-crossing moment bounds.
+"""Exact certificate for the all-r transform-zero crossing bound.
 
 The theorem in call-crossings-full.html uses two positive-weight call
 integrals.  This certificate checks that neither resulting crossing lower
@@ -37,6 +37,21 @@ def matvec(a, x):
 
 def rowdot(x, y):
     return sum((u * v for u, v in zip(x, y)), F(0))
+
+
+def polymul(a, b):
+    result = [F(0)] * (len(a) + len(b) - 1)
+    for i, x in enumerate(a):
+        for j, y in enumerate(b):
+            result[i + j] += x * y
+    return result
+
+
+def polynomial_from_roots(roots):
+    result = [F(1)]
+    for root in roots:
+        result = polymul(result, [-root, F(1)])
+    return result
 
 
 def check_reversal_moment_identity():
@@ -129,6 +144,59 @@ def check_three_crossings():
     return roots
 
 
+def check_all_r_sharpness(max_r=10):
+    """Check the geometric-grid construction and tail identity exactly."""
+    for r in range(2, max_r + 1):
+        # Nodes s=l/(r-1) give a_l=2**l when b=2**(r-1).
+        b = F(2 ** (r - 1))
+        transform_roots = [F(2 ** ell) for ell in range(r)]
+        s_poly = polynomial_from_roots(transform_roots)
+        coefficients = polynomial_from_roots([F(1), b] + transform_roots)
+        assert coefficients == polymul(polymul(s_poly, [-F(1), F(1)]), [-b, F(1)])
+        assert all(coefficients[j] * coefficients[j + 1] < 0
+                   for j in range(len(coefficients) - 1))
+
+        normalizer = sum((max(c, F(0)) for c in coefficients), F(0))
+        p = [max(c, F(0)) / normalizer for c in coefficients]
+        q = [max(-c, F(0)) / normalizer for c in coefficients]
+        raw_mean = sum((p[j] * b ** j for j in range(len(p))), F(0))
+        points = [b ** j / raw_mean for j in range(len(p))]
+        assert sum(p, F(0)) == sum(q, F(0)) == 1
+        assert rowdot(p, points) == rowdot(q, points) == 1
+
+        # Endpoint derivatives give the log and share-log identities.
+        powers = [F(j) for j in range(len(p))]
+        assert rowdot(p, powers) == rowdot(q, powers)
+        assert rowdot([p[j] * points[j] for j in range(len(p))], powers) == \
+            rowdot([q[j] * points[j] for j in range(len(p))], powers)
+
+        # Every interior transform node is an exact fractional-moment root.
+        for ell in range(1, r - 1):
+            moment_weights = [F(2 ** (ell * j)) for j in range(len(p))]
+            assert rowdot(p, moment_weights) == rowdot(q, moment_weights)
+
+        gaps = [call(points, p, strike) - call(points, q, strike)
+                for strike in points]
+        assert gaps[0] == gaps[-1] == 0
+        for i in range(1, r + 2):
+            expected = b ** i * (b - 1) * s_poly[i - 1] / (normalizer * raw_mean)
+            assert gaps[i] == expected != 0
+        assert all(gaps[i] * gaps[i + 1] < 0 for i in range(1, r + 1))
+
+        # The gap is affine between atoms, so each alternating pair has
+        # exactly one root.  Check its rational location is strictly inside.
+        roots = []
+        for i in range(1, r + 1):
+            tail_mass = sum((p[j] - q[j] for j in range(i + 1, len(p))), F(0))
+            tail_mean = sum(((p[j] - q[j]) * points[j]
+                             for j in range(i + 1, len(p))), F(0))
+            root = tail_mean / tail_mass
+            assert points[i] < root < points[i + 1]
+            roots.append(root)
+        assert len(roots) == r
+    return max_r
+
+
 def check_one_crossing():
     # Signed coefficients of (z-1)^2(z-2), again normalized and rescaled.
     signed = [F(-2), F(5), F(-4), F(1)]
@@ -154,9 +222,11 @@ def check_one_crossing():
 
 def main():
     check_reversal_moment_identity()
+    max_r = check_all_r_sharpness()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
+    print(f"all-r sharpness family: r=2,...,{max_r}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
     print("two-moment sharp roots:", ", ".join(str(x) for x in roots))
     print("one-moment sharp root:", root)
