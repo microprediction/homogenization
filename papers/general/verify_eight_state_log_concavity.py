@@ -1,0 +1,237 @@
+"""Exact certificate for the unrestricted eight-state phase obstruction.
+
+The only external mathematical input is Gao--Yuan's weighted-circulation
+coefficient inequality.  Everything after that theorem is checked here with
+``fractions.Fraction`` arithmetic, including the Bernstein conversion and a
+rational interval cover of the remaining three-variable implication.
+"""
+
+from fractions import Fraction
+from heapq import heappop, heappush
+from math import comb
+
+
+ZERO = Fraction(0)
+ONE = Fraction(1)
+
+
+def poly_add(left, right, scale=ONE):
+    result = dict(left)
+    for exponent, coefficient in right.items():
+        result[exponent] = result.get(exponent, ZERO) + scale * coefficient
+        if not result[exponent]:
+            del result[exponent]
+    return result
+
+
+def poly_multiply(left, right):
+    result = {}
+    for left_exponent, left_coefficient in left.items():
+        for right_exponent, right_coefficient in right.items():
+            exponent = tuple(a + b for a, b in zip(left_exponent, right_exponent))
+            result[exponent] = (
+                result.get(exponent, ZERO)
+                + left_coefficient * right_coefficient
+            )
+    return {exponent: coefficient for exponent, coefficient in result.items() if coefficient}
+
+
+def poly_scale(poly, scale):
+    return {exponent: scale * coefficient for exponent, coefficient in poly.items()}
+
+
+def poly_constant(value):
+    value = Fraction(value)
+    return {(0, 0, 0): value} if value else {}
+
+
+X = {(1, 0, 0): ONE}
+Y = {(0, 1, 0): ONE}
+Z = {(0, 0, 1): ONE}
+E1 = poly_add(poly_add(X, Y), Z)
+E2 = poly_add(poly_add(poly_multiply(X, Y), poly_multiply(X, Z)), poly_multiply(Y, Z))
+E3 = poly_multiply(poly_multiply(X, Y), Z)
+
+
+def linear_symmetric(constant, e1, e2, e3):
+    result = poly_constant(constant)
+    result = poly_add(result, E1, Fraction(e1))
+    result = poly_add(result, E2, Fraction(e2))
+    return poly_add(result, E3, Fraction(e3))
+
+
+# B_k / det(H), for k=0,1,2,3; palindromicity gives B_{7-k}=B_k.
+B = [
+    linear_symmetric(1, 1, 1, 1),
+    linear_symmetric(7, 3, -1, -5),
+    linear_symmetric(21, 1, -3, 9),
+    linear_symmetric(35, -5, 3, -5),
+]
+
+
+def univariate_add(left, right):
+    size = max(len(left), len(right))
+    result = [ZERO] * size
+    for index in range(size):
+        result[index] = (
+            (left[index] if index < len(left) else ZERO)
+            + (right[index] if index < len(right) else ZERO)
+        )
+    while result and not result[-1]:
+        result.pop()
+    return result
+
+
+def univariate_multiply(left, right):
+    result = [ZERO] * (len(left) + len(right) - 1)
+    for i, a in enumerate(left):
+        for j, b in enumerate(right):
+            result[i + j] += a * b
+    return result
+
+
+def univariate_power(poly, power):
+    result = [ONE]
+    for _ in range(power):
+        result = univariate_multiply(result, poly)
+    return result
+
+
+# Verify the symmetric Bernstein-basis conversion coefficient by coefficient
+# in 1,e1,e2,e3.  No symbolic package is used.
+bernstein = [[ZERO] for _ in range(4)]
+for k in range(8):
+    basis = univariate_multiply(
+        univariate_power([ZERO, ONE], k),
+        univariate_power([ONE, -ONE], 7 - k),
+    )
+    row = [
+        [Fraction(1), Fraction(1), Fraction(1), Fraction(1)],
+        [Fraction(7), Fraction(3), Fraction(-1), Fraction(-5)],
+        [Fraction(21), Fraction(1), Fraction(-3), Fraction(9)],
+        [Fraction(35), Fraction(-5), Fraction(3), Fraction(-5)],
+    ][min(k, 7 - k)]
+    for coordinate, coefficient in enumerate(row):
+        bernstein[coordinate] = univariate_add(
+            bernstein[coordinate],
+            [coefficient * value for value in basis],
+        )
+
+spectral = [
+    [ONE],
+    univariate_power([-ONE, Fraction(2)], 2),
+    univariate_power([-ONE, Fraction(2)], 4),
+    univariate_power([-ONE, Fraction(2)], 6),
+]
+assert bernstein == spectral
+
+
+def circulation_inequality(index, beta=49):
+    center = B[index]
+    left = B[index - 1]
+    right = B[index + 1]
+    result = poly_scale(poly_multiply(center, center), Fraction(beta))
+    result = poly_add(result, poly_multiply(center, poly_add(left, right)), Fraction(-1))
+    return poly_add(
+        result,
+        poly_multiply(left, right),
+        Fraction(-(beta - 2)),
+    )
+
+
+Q1 = circulation_inequality(1)
+Q2 = circulation_inequality(2)
+MONOTONE = poly_add(B[1], B[0], Fraction(-1))
+
+
+def interval_polynomial(poly, box):
+    """Natural interval extension, exact because all box endpoints are rational."""
+
+    lower = ZERO
+    upper = ZERO
+    for powers, coefficient in poly.items():
+        monomial_lower = ONE
+        monomial_upper = ONE
+        for (left, right), power in zip(box, powers):
+            monomial_lower *= left**power
+            monomial_upper *= right**power
+        if coefficient >= 0:
+            lower += coefficient * monomial_lower
+            upper += coefficient * monomial_upper
+        else:
+            lower += coefficient * monomial_upper
+            upper += coefficient * monomial_lower
+    return lower, upper
+
+
+# If y=sigma_2^2 >= 15/8, x>=y and B1>=B0 imply
+#   y<=3, x<=39/7, z<=1/4.
+# The first two bounds follow from xy<=3+x+y.  For the third,
+# 13+3x+3y-7xy <= -23/64 on x,y>=15/8, so the B1-B0 bound
+# gives z <= (3+x+y-xy)/(x+y+3xy-1) <= 1/4.
+assert Fraction(13) + 6 * Fraction(15, 8) - 7 * Fraction(15, 8) ** 2 == Fraction(-23, 64)
+initial_box = (
+    (Fraction(15, 8), Fraction(39, 7)),
+    (Fraction(15, 8), Fraction(3)),
+    (ZERO, Fraction(1, 4)),
+)
+
+queue = []
+counter = 0
+heappush(queue, (-1.0, counter, initial_box, 0))
+leaves = {"domain": 0, "Q1": 0, "Q2": 0}
+maximum_depth = 0
+
+while queue:
+    _, _, box, depth = heappop(queue)
+    maximum_depth = max(maximum_depth, depth)
+    (x_lower, x_upper), (y_lower, _), _ = box
+
+    # This box contains no ordered point x>=y.
+    if x_upper < y_lower:
+        leaves["domain"] += 1
+        continue
+
+    # This box contains no point satisfying B1>=B0.
+    if interval_polynomial(MONOTONE, box)[1] < 0:
+        leaves["domain"] += 1
+        continue
+
+    # At every remaining point at least one Gao--Yuan inequality fails.
+    if interval_polynomial(Q1, box)[1] < 0:
+        leaves["Q1"] += 1
+        continue
+    if interval_polynomial(Q2, box)[1] < 0:
+        leaves["Q2"] += 1
+        continue
+
+    assert depth < 40
+    normalized_widths = [
+        float(right - left) / float(initial_box[index][1] - initial_box[index][0])
+        for index, (left, right) in enumerate(box)
+    ]
+    split_coordinate = max(range(3), key=normalized_widths.__getitem__)
+    midpoint = sum(box[split_coordinate], ZERO) / 2
+    for side in range(2):
+        child = list(box)
+        child[split_coordinate] = (
+            (box[split_coordinate][0], midpoint)
+            if side == 0
+            else (midpoint, box[split_coordinate][1])
+        )
+        child = tuple(child)
+        counter += 1
+        priority = -max(
+            float(right - left) / float(initial_box[index][1] - initial_box[index][0])
+            for index, (left, right) in enumerate(child)
+        )
+        heappush(queue, (priority, counter, child, depth + 1))
+
+# kappa^2=1+2/sqrt(5)>15/8 because 16>7*sqrt(5), checked by squaring.
+assert 16**2 > 7**2 * 5
+
+print("exact degree-seven Bernstein conversion: verified")
+print("rational cover leaves:", leaves)
+print("maximum subdivision depth:", maximum_depth)
+print("proved sigma_2^2 < 15/8 < cot(pi/5)^2")
+print("PASS")

@@ -99,6 +99,15 @@
   "annotation": "Proves the weighted directed matrix-tree theorem through incidence-matrix factorization. The six-state obstruction applies that cofactor expansion to a balanced interpolation between a flow Laplacian and its transpose, then adds a new coefficient injection."
  },
  {
+  "key": "GaoYuan2026",
+  "authors": "Gao, Y. and Yuan, T.",
+  "year": 2026,
+  "title": "Log-concavity of flat arrangement polynomials",
+  "venue": "Preprint, arXiv:2609.33651v1",
+  "url": "https://arxiv.org/abs/2609.33651",
+  "annotation": "Proves coefficient inequalities for weighted spanning-tree polynomials of connected digraphs carrying positive circulation weights. The eight-state obstruction applies its log-concavity and rank-dependent quadratic inequality to the balanced stationary-flow tree polynomial."
+ },
+ {
   "key": "WangMaoChenQiu2023",
   "authors": "Wang, D., Mao, X., Chen, W. and Qiu, L.",
   "year": 2023,

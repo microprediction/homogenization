@@ -1,8 +1,9 @@
-<!-- title: Six- and seven-state Green–Kubo obstructions · homogenization | math -->
+<!-- title: Six- through eight-state Green–Kubo obstructions · homogenization | math -->
   <main>
     <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
     <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_phase_product.py">six-state product certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_seven_state_phase_barrier.py">seven-state barrier certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_eight_state_log_concavity.py">eight-state log-concavity certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
@@ -16,9 +17,9 @@
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_fourth_orbit_slice.py">fourth-orbit certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
-    <h1>Six- and seven-state Green&ndash;Kubo obstructions</h1>
+    <h1>Six- through eight-state Green&ndash;Kubo obstructions</h1>
     <p class="subtitle">Unrestricted tree-coefficient barriers, with sharper bounds for sparse six-state mixtures and reversible attachments.</p>
-    <p class="muted">Research note, 23 October 2026. The unrestricted six- and seven-state cases are closed; the eight-state case remains open.</p>
+    <p class="muted">Research note, 23 October 2026. Weighted-circulation log-concavity closes the unrestricted eight-state case and makes the nine-state construction minimal.</p>
 
     <h2>Result</h2>
     <p>Every connected balanced stationary flow on six states obeys the unrestricted product bound</p>
@@ -46,9 +47,9 @@
     <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
     <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
     <p>More quantitatively, two five-cycles sharing at least two states, with arbitrary positive weights and reversible attachments, satisfy the sharp gap $\sigma_2\le1$.</p>
-    <p>Consequently no six- or seven-state four-feature compression realizes
+    <p>Consequently no six-, seven- or eight-state four-feature compression realizes
       $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
-      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The unrestricted minimum therefore lies in $\{8,9\}$; the bounded-cycle multiplicity theorem rules out eight whenever all directed components have length at most five.</p>
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The unrestricted minimum is exactly nine, attained by two directed five-cycles sharing one state.</p>
 
     <h2>Stationary-flow coordinates</h2>
     <p>Any prescribed positive stationary law $\pi$ gives a generator through
@@ -103,6 +104,33 @@
     $$8\le N_{\min}\le9.$$
     </div>
     <p>The dependency-free certificate checks the rerooting injection on all $7^5=16{,}807$ labeled trees and all $117{,}649$ rootings, verifies the exact basis identity, and recovers the seven-cycle equality polynomial. Interlacing is applied only to this fixed-flow, fixed-feature compression; it makes no claim about rank after integrating maturity-dependent loadings.</p>
+
+    <h2>Unrestricted eight-state log-concavity obstruction</h2>
+    <p>On eight states the grounded skew operator has three positive frequencies $\sigma_1\ge\sigma_2\ge\sigma_3\ge0$. With $s_j=\sigma_j^2$ and $e_1,e_2,e_3$ the elementary symmetric functions of the $s_j$, the balanced tree polynomial has degree seven:</p>
+    $$P(u)=\sum_{k=0}^7B_ku^k(1-u)^{7-k}=\det H\{1+e_1(2u-1)^2+e_2(2u-1)^4+e_3(2u-1)^6\}.$$
+    <p>Palindromicity gives $B_k=B_{7-k}$. Exact Bernstein conversion gives</p>
+    <div class="equation-card">
+    $$\frac1{\det H}\begin{pmatrix}B_0\\B_1\\B_2\\B_3\end{pmatrix}=
+      \begin{pmatrix}1+e_1+e_2+e_3\\7+3e_1-e_2-5e_3\\21+e_1-3e_2+9e_3\\35-5e_1+3e_2-5e_3\end{pmatrix}.$$
+    </div>
+    <p>The positive arcs of the stationary flow form a connected directed support carrying positive circulation weights. After parallel arcs with the same orientation are merged, let $\beta=m_{\mathrm{red}}-7$; then $1\le\beta\le49$.</p>
+    <p>A theorem of <a href="./bibliography.html#GaoYuan2026">Gao and Yuan (2026)</a> applies exactly to this weighted spanning-tree polynomial. Its coefficients are positive, palindromic and log-concave, and at each internal index</p>
+    $$Q_i^{(\beta)}=\beta B_i^2-B_i(B_{i-1}+B_{i+1})-(\beta-2)B_{i-1}B_{i+1}\ge0.$$
+    <p>Since $\beta\le49$ and log-concavity gives $B_i^2\ge B_{i-1}B_{i+1}$, it follows that $Q_i^{(49)}\ge0$. This upper-rank replacement is deliberately weaker than the cited theorem and therefore applies uniformly to every eight-state support.</p>
+    <p>Now write $(x,y,z)=(s_1,s_2,s_3)$. If $y\ge15/8$, palindromic log-concavity first gives $B_1\ge B_0$, hence</p>
+    $$3+x+y-xy-z(x+y+3xy-1)\ge0.$$
+    <p>Because $x\ge y\ge15/8$, this forces the compact rational bounds</p>
+    $$\frac{15}{8}\le y\le3,\qquad y\le x\le\frac{39}{7},\qquad0\le z\le\frac14.$$
+    <p>The last bound uses $7xy-3x-3y-13\ge23/64$, while the first two follow from $xy\le3+x+y$. On this box, exact rational interval arithmetic proves that every point with $x\ge y$ and $B_1\ge B_0$ has either $Q_1^{(49)}&lt;0$ or $Q_2^{(49)}&lt;0$.</p>
+    <p>The certificate uses 1,613 terminal boxes, reaches depth 20, and verifies the Bernstein identities before the cover. Thus every connected balanced eight-state flow obeys the strict bound</p>
+    <div class="equation-card">
+    $$\sigma_2^2&lt;\frac{15}{8}.$$
+    </div>
+    <p>For the target, $\kappa^2=1+2/\sqrt5&gt;15/8$ because $16^2&gt;5\cdot7^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
+    <div class="equation-card">
+    $$N_{\min}=9.$$
+    </div>
+    <p>This use of interlacing concerns one fixed flow and one fixed four-feature compression. It does not turn ranks obtained after integrating different maturity loadings into state-count bounds.</p>
 
     <h2>Exact pencil calculation</h2>
     <p>Direct expansion of the five-dimensional determinant gives</p>
@@ -648,5 +676,5 @@
     <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
-    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, while the unrestricted eight-state minimum problem remains open.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, even though the weaker unrestricted obstruction now fixes the state minimum at nine.</p>
   </main>
