@@ -3,8 +3,9 @@
 For unit flow on the standard directed eight-cycle, let s(t) be the middle
 squared intrinsic frequency after adding weight t on another simple directed
 cycle.  The base value s(0)=1 is simple.  This certificate recovers the local
-derivatives, classifies exact finite-level crossings, and globally optimizes
-the unique runner-up support ray.
+derivatives, classifies exact finite-level crossings, globally optimizes the
+unique runner-up support ray, and proves that exactly nine rotation orbits
+strictly improve on the base middle frequency.
 """
 
 from fractions import Fraction
@@ -627,6 +628,56 @@ def classify_threshold(threshold):
     return representative_classes, labeled_classes, negative_representatives
 
 
+def classify_base_threshold():
+    """Classify positive-weight contacts with the base level ``s=1``.
+
+    Every threshold polynomial vanishes at ``t=0`` because the unperturbed
+    middle squared frequency is one.  Remove that boundary factor before
+    applying the positive-root classifier.  Some rays keep a root pinned at
+    one for every weight; these are recorded separately.
+    """
+
+    representative_classes = {}
+    labeled_classes = {}
+    negative_representatives = []
+    identically_pinned_representatives = []
+    for cycle in representatives:
+        ray = ray_coefficients(cycle)
+        threshold_poly = [
+            ray[0][degree] - ray[1][degree]
+            + ray[2][degree] - ray[3][degree]
+            for degree in range(GROUND_SIZE + 1)
+        ]
+        while threshold_poly and threshold_poly[0] == 0:
+            threshold_poly.pop(0)
+        derivative_poly = [
+            3 * ray[0][degree] - 2 * ray[1][degree] + ray[2][degree]
+            for degree in range(GROUND_SIZE + 1)
+        ]
+        if threshold_poly:
+            crossing_class = signs_at_positive_roots(
+                threshold_poly, derivative_poly
+            )
+        else:
+            crossing_class = ("pinned",)
+            identically_pinned_representatives.append(cycle)
+        representative_classes[crossing_class] = (
+            representative_classes.get(crossing_class, 0) + 1
+        )
+        multiplicity = len(rotation_orbit(cycle))
+        labeled_classes[crossing_class] = (
+            labeled_classes.get(crossing_class, 0) + multiplicity
+        )
+        if -1 in crossing_class:
+            negative_representatives.append(cycle)
+    return (
+        representative_classes,
+        labeled_classes,
+        negative_representatives,
+        identically_pinned_representatives,
+    )
+
+
 # At a simple root of Q(t,R), Q_s<0 holds exactly for the middle frequency;
 # Q_s>0 identifies an extreme frequency, and Q_s=0 a collision.
 (
@@ -1097,6 +1148,117 @@ assert ninth_upper_labeled_classes == {
 assert sorted(ninth_upper_negative_representatives) == sorted(
     top_eight_representatives
 )
+
+# Close the ranking at the base value itself.  A ray can rise strictly above
+# one only if it either starts above one or has a positive-weight contact with
+# Q_s<0 (the middle-root sign); a zero sign would flag a collision at level
+# one.  Exact classification leaves the preceding nine improving orbits and
+# one additional tangency, with no collisions.
+near_base_positive_representatives = []
+near_base_negative_representatives = []
+near_base_pinned_representatives = []
+for cycle in representatives:
+    ray = ray_coefficients(cycle)
+    threshold_poly = [
+        ray[0][degree] - ray[1][degree]
+        + ray[2][degree] - ray[3][degree]
+        for degree in range(GROUND_SIZE + 1)
+    ]
+    first_nonzero = next((entry for entry in threshold_poly if entry), None)
+    if first_nonzero is None:
+        near_base_pinned_representatives.append(cycle)
+    elif first_nonzero > 0:
+        near_base_positive_representatives.append(cycle)
+    else:
+        near_base_negative_representatives.append(cycle)
+assert (
+    len(near_base_positive_representatives),
+    len(near_base_negative_representatives),
+    len(near_base_pinned_representatives),
+) == (7, 2009, 9)
+
+(
+    base_representative_crossing_classes,
+    base_labeled_crossing_classes,
+    base_negative_crossing_representatives,
+    base_pinned_representatives,
+) = classify_base_threshold()
+assert base_representative_crossing_classes == {
+    (): 933,
+    (1,): 62,
+    (1, 1): 1011,
+    (-1,): 9,
+    (-1, -1): 1,
+    ("pinned",): 9,
+}
+assert base_labeled_crossing_classes == {
+    (): 7430,
+    (1,): 472,
+    (1, 1): 8038,
+    (-1,): 72,
+    (-1, -1): 8,
+    ("pinned",): 44,
+}
+assert all(0 not in crossing_class
+           for crossing_class in base_representative_crossing_classes)
+
+top_nine_representatives = top_eight_representatives + [ninth_representative]
+tangent_representative = (0, 1, 2, 5, 6, 7, 3, 4)
+assert sorted(base_negative_crossing_representatives) == sorted(
+    top_nine_representatives + [tangent_representative]
+)
+assert set(near_base_positive_representatives) <= set(top_nine_representatives)
+assert (
+    set(near_base_positive_representatives)
+    | set(base_negative_crossing_representatives)
+) == set(top_nine_representatives + [tangent_representative])
+
+# The extra contact is a genuine tangency from below.  Its level polynomial
+# is -t(t-1)^2(t+1)^3/8, and Q_s(t,1) has strictly negative coefficients, so
+# the root at t=1 is the simple middle root and the middle branch never rises
+# above one.
+tangent_ray = ray_coefficients(tangent_representative)
+tangent_threshold_poly = [
+    tangent_ray[0][degree] - tangent_ray[1][degree]
+    + tangent_ray[2][degree] - tangent_ray[3][degree]
+    for degree in range(GROUND_SIZE + 1)
+]
+assert tangent_threshold_poly == polynomial_scale(
+    polynomial_multiply(
+        [ZERO, ONE],
+        polynomial_multiply(
+            polynomial_power([-ONE, ONE], 2),
+            polynomial_power([ONE, ONE], 3),
+        ),
+    ),
+    Fraction(-1, 8),
+) + [ZERO]
+tangent_q_s = [
+    3 * tangent_ray[0][degree]
+    - 2 * tangent_ray[1][degree]
+    + tangent_ray[2][degree]
+    for degree in range(GROUND_SIZE + 1)
+]
+assert all(entry < 0 for entry in tangent_q_s)
+
+# On a pinned ray, one squared frequency is identically one.  The product of
+# the other two is a3/a0.  Coefficientwise a0-a3>=0, so they cannot both
+# exceed one; hence the ordered middle frequency is at most one even when the
+# pinned root exchanges labels at a collision.
+assert sorted(base_pinned_representatives) == sorted(
+    near_base_pinned_representatives
+)
+for cycle in base_pinned_representatives:
+    ray = ray_coefficients(cycle)
+    assert all(
+        ray[0][degree] - ray[3][degree] >= 0
+        for degree in range(GROUND_SIZE + 1)
+    )
+
+assert len(top_nine_representatives) == 9
+assert sum(len(rotation_orbit(cycle))
+           for cycle in top_nine_representatives) == 72
+assert len(representatives) - len(top_nine_representatives) == 2016
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -1140,4 +1302,10 @@ print("1.00478 crossing classes:", ninth_lower_representative_classes)
 print("unique ninth-place representative:", ninth_representative)
 print("1.00480 crossing classes:", ninth_upper_representative_classes)
 print("ninth-place maximum: 1.00478 < sigma_2^2 < 1.00480")
+print("level-one crossing classes:", base_representative_crossing_classes)
+print("rays initially above one:", len(near_base_positive_representatives))
+print("strictly improving rotation orbits:", len(top_nine_representatives))
+print("strictly improving labeled cycles:", 72)
+print("non-improving rotation orbits:", 2016)
+print("exceptional level-one tangency:", tangent_representative)
 print("PASS")
