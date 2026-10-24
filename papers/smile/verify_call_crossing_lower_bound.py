@@ -40,6 +40,31 @@ def rowdot(x, y):
     return sum((u * v for u, v in zip(x, y)), F(0))
 
 
+def matrix_rank(rows):
+    """Return the exact rank of a Fraction matrix."""
+    work = [row[:] for row in rows]
+    rank = 0
+    column_count = len(work[0]) if work else 0
+    for column in range(column_count):
+        pivot = next((i for i in range(rank, len(work))
+                      if work[i][column]), None)
+        if pivot is None:
+            continue
+        work[rank], work[pivot] = work[pivot], work[rank]
+        pivot_value = work[rank][column]
+        work[rank] = [value / pivot_value for value in work[rank]]
+        for i in range(len(work)):
+            if i == rank or not work[i][column]:
+                continue
+            factor = work[i][column]
+            work[i] = [left - factor * right
+                       for left, right in zip(work[i], work[rank])]
+        rank += 1
+        if rank == len(work):
+            break
+    return rank
+
+
 def polymul(a, b):
     result = [F(0)] * (len(a) + len(b) - 1)
     for i, x in enumerate(a):
@@ -336,6 +361,42 @@ def check_confluent_sharpness():
     return totals
 
 
+def check_minimal_grid_rigidity(max_r=10):
+    """Check uniqueness of the signed weights on the minimal grid.
+
+    A root a of multiplicity q imposes the q Euler-derivative equations
+    sum_j c_j a**j j**h = 0, h=0,...,q-1.  On r+3 grid points the
+    baseline mass/mean roots and r prescribed transform roots give an
+    (r+2)-by-(r+3) matrix.  Full row rank and the polynomial coefficient
+    null vector certify a one-dimensional solution space exactly.
+    """
+    cases = []
+    for r in range(2, max_r + 1):
+        b = F(2 ** (r - 1))
+        cases.append((b, [F(2 ** ell) for ell in range(r)]))
+    b = F(16)
+    for left, middle, right in ((2, 1, 2), (1, 3, 1), (3, 2, 2)):
+        cases.append((b, [F(1)] * left + [F(4)] * middle + [b] * right))
+
+    for b, transform_roots in cases:
+        roots = [F(1), b] + transform_roots
+        multiplicities = {}
+        for root in roots:
+            multiplicities[root] = multiplicities.get(root, 0) + 1
+        degree = len(roots)
+        rows = []
+        for root in sorted(multiplicities):
+            for power in range(multiplicities[root]):
+                rows.append([root ** j * F(j) ** power
+                             for j in range(degree + 1)])
+        coefficients = polynomial_from_roots(roots)
+        assert len(rows) == degree
+        assert len(coefficients) == degree + 1
+        assert all(rowdot(row, coefficients) == 0 for row in rows)
+        assert matrix_rank(rows) == degree
+    return len(cases)
+
+
 def check_measure_blurs(max_r=10):
     """Check the exact disjoint continuous and mixed smoothing construction.
 
@@ -404,12 +465,14 @@ def main():
     variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
     confluent_totals = check_confluent_sharpness()
+    rigidity_cases = check_minimal_grid_rigidity()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print("confluent sharpness total multiplicities:", ", ".join(map(str, confluent_totals)))
+    print(f"minimal-grid rigidity cases: {rigidity_cases}")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

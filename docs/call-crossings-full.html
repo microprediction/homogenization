@@ -236,6 +236,27 @@
     <p>This proves sharpness for every total multiplicity $r$ and every prescribed node multiset, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 
+    <h2>The minimal geometric-grid witness is rigid</h2>
+    <p>The coefficient construction is the only nonzero signed solution on its chosen $r+3$ point grid, up to
+    scale. Indeed, let $u_0,\ldots,u_{r+2}$ be signed masses on $b^j$ and put</p>
+    $$U(z)=\sum_{j=0}^{r+2}u_jz^j.$$
+    <p>Mass and first-moment balance give $U(1)=U(b)=0$. Put $q_i=m_i$ for an interior node and
+    $q_i=m_i+1$ for an endpoint node. The transform-zero condition, together with the baseline balance at an
+    endpoint, gives</p>
+    $$\left.\left(z\frac{d}{dz}\right)^hU(z)\right|_{z=b^{s_i}}=0,
+      \qquad h=0,\ldots,q_i-1.$$
+    <p>Euler derivatives through order
+    $q-1$ vanish exactly when the ordinary derivatives through that order vanish, because the two derivative
+    lists are related by a triangular matrix with nonzero diagonal.</p>
+    <p>Thus $U$ is divisible by</p>
+    $$P(z)=(z-1)(z-b)\prod_i(z-b^{s_i})^{m_i}.$$
+    <p>Both polynomials have degree at most $r+2$, so $U=\lambda P$. After cancelling common mass and normalizing
+    the positive and negative parts to probabilities, the two laws are therefore unique up to interchange on
+    this fixed geometric grid.</p>
+    <p>This is a fixed-grid classification, not uniqueness across arbitrary support locations or continuous laws.
+    The exact certificate verifies full rank of the corresponding confluent moment matrix for the all-$r$ family
+    through $r=10$ and for the three repeated-node fixtures.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
