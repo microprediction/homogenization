@@ -941,6 +941,60 @@ standard_labels = {vertex: index for index, vertex in enumerate(optimized_base)}
 relabeled_six_cycle = tuple(standard_labels[vertex]
                             for vertex in optimized_six_cycle)
 assert min(rotation_orbit(relabeled_six_cycle)) == third_representatives[1]
+
+# The following pair is exchanged by swapping the two Hamilton cycles.  Since
+# a common scale does not change normalized skew frequencies, their response
+# curves obey s_2(t)=s_1(1/t) and have exactly the same maximum.
+(
+    fifth_lower_representative_classes,
+    fifth_lower_labeled_classes,
+    fifth_lower_negative_representatives,
+) = classify_threshold(Fraction(101697, 100000))
+assert fifth_lower_representative_classes == {
+    (): 887, (1,): 58, (1, 1): 1074, (-1, -1): 6,
+}
+assert fifth_lower_labeled_classes == {
+    (): 7065, (1,): 440, (1, 1): 8511, (-1, -1): 48,
+}
+fifth_representatives = [
+    (0, 1, 3, 6, 7, 2, 4, 5),
+    (0, 1, 5, 2, 6, 7, 3, 4),
+]
+top_four_representatives = [
+    strong_representative, runner_representative, *third_representatives,
+]
+assert sorted(fifth_lower_negative_representatives) == sorted(
+    top_four_representatives + fifth_representatives
+)
+(
+    fifth_upper_representative_classes,
+    fifth_upper_labeled_classes,
+    fifth_upper_negative_representatives,
+) = classify_threshold(Fraction(101699, 100000))
+assert fifth_upper_representative_classes == {
+    (): 889, (1,): 58, (1, 1): 1074, (-1, -1): 4,
+}
+assert fifth_upper_labeled_classes == {
+    (): 7081, (1,): 440, (1, 1): 8511, (-1, -1): 32,
+}
+assert sorted(fifth_upper_negative_representatives) == sorted(
+    top_four_representatives
+)
+
+standard_cycle = tuple(range(STATE_COUNT))
+swapped_labels = {
+    vertex: index for index, vertex in enumerate(fifth_representatives[1])
+}
+swapped_standard_cycle = tuple(swapped_labels[vertex]
+                               for vertex in standard_cycle)
+assert min(rotation_orbit(swapped_standard_cycle)) == fifth_representatives[0]
+assert all(
+    left == tuple(reversed(right))
+    for left, right in zip(
+        ray_coefficients(fifth_representatives[0]),
+        ray_coefficients(fifth_representatives[1]),
+    )
+)
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -968,4 +1022,8 @@ print("runner-up sharp maximum bracket:", runner_max_s_bracket)
 print("1023/1000 crossing classes:", third_representative_crossing_classes)
 print("tied third-place representatives:", third_representatives)
 print("128/125 crossing classes:", fourth_representative_crossing_classes)
+print("1.01697 crossing classes:", fifth_lower_representative_classes)
+print("tied fifth-place representatives:", fifth_representatives)
+print("1.01699 crossing classes:", fifth_upper_representative_classes)
+print("fifth-place maximum: 1.01697 < sigma_2^2 < 1.01699")
 print("PASS")
