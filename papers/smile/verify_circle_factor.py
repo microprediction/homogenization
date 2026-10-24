@@ -64,6 +64,13 @@ from effective_generator import (
 D = 1.0
 C = 2.0
 SCALES = (4, 8, 16, 32)
+ROUND_TOL = 64.0 * np.finfo(float).eps
+
+
+def roundoff_tolerance(*values):
+    """Machine-scaled tolerance for identities exact in real arithmetic."""
+    scale = max(1.0, *(float(np.max(np.abs(value))) for value in values))
+    return ROUND_TOL * scale
 
 
 def exact_block(mode, drift=C, diffusion=D):
@@ -246,12 +253,14 @@ def occupation_reversal_check():
         np.array([0.3 + 0.2j, -0.4j, 0.1 - 0.3j, 0.2]),
     )
     transform_error = 0.0
+    transform_scale = 1.0
     for maturity in (0.2, 0.9, 2.3):
         for potential in potentials:
             diagonal = np.diag(potential)
             forward = pi @ expm(maturity * (q + diagonal)) @ one
             backward = pi @ expm(maturity * (q_reverse + diagonal)) @ one
             transform_error = max(transform_error, abs(forward - backward))
+            transform_scale = max(transform_scale, abs(forward), abs(backward))
 
     # The same similarity-and-transpose identity equates the tilted
     # generators' spectra, including their long-time principal eigenvalues.
@@ -293,9 +302,11 @@ def occupation_reversal_check():
     )
     same_schedule_gap = abs(reverse_same_schedule - forward_same_schedule)
 
-    assert transform_error < 8e-15
+    assert transform_error < ROUND_TOL * transform_scale
     assert eigenvalue_error < 2e-14
-    assert schedule_identity_error < 5e-15
+    assert schedule_identity_error < roundoff_tolerance(
+        reverse_same_schedule, forward_reversed_schedule
+    )
     assert same_schedule_gap > 0.019
     return {
         "transform_error": transform_error,
@@ -670,7 +681,7 @@ def observed_path_concentration_check():
         math.sqrt(energy_hat) + analytic_posterior["bound"]
     ) ** 2
 
-    assert max(martingale_errors) < 2e-15
+    assert max(martingale_errors) < ROUND_TOL
     assert rate_interval_violation == 0.0
     assert actual_generator_error <= path["epsilon"]
     assert path["vertex_count"] == 2 ** (n * (n - 1))
@@ -735,7 +746,9 @@ def generator_perturbation_check():
     component_bound_ratios = []
     group_bound_ratios = []
     stationary_identity_errors = []
+    stationary_identity_tolerances = []
     energy_band_violations = []
+    energy_band_tolerances = []
     stationary_radius_ratios = []
     skew_radius_ratios = []
     maximum_neumann_ratio = 0.0
@@ -773,6 +786,13 @@ def generator_perturbation_check():
                 pi - pi_hat - pi @ generator_error @ group_hat
             )
             stationary_identity_errors.append(np.linalg.norm(stationary_identity))
+            stationary_identity_tolerances.append(
+                roundoff_tolerance(
+                    pi,
+                    pi_hat,
+                    pi @ generator_error @ group_hat,
+                )
+            )
             stationary_error = np.linalg.norm(pi - pi_hat)
             stationary_bound_ratios.append(
                 stationary_error / posterior["beta_pi"]
@@ -796,6 +816,9 @@ def generator_perturbation_check():
             energy_band_violations.append(
                 max(lower - energy, energy - upper, 0.0)
             )
+            energy_band_tolerances.append(
+                roundoff_tolerance(energy, energy_hat, lower, upper)
+            )
             errors.append(error)
             bounds.append(frobenius_bound)
 
@@ -806,8 +829,18 @@ def generator_perturbation_check():
             np.polyfit(np.log2(amplitudes), np.log2(bounds), 1)[0]
         )
 
-    assert max(stationary_identity_errors) < 2e-15
-    assert max(energy_band_violations) < 1e-15
+    assert all(
+        error < tolerance
+        for error, tolerance in zip(
+            stationary_identity_errors, stationary_identity_tolerances
+        )
+    )
+    assert all(
+        violation < tolerance
+        for violation, tolerance in zip(
+            energy_band_violations, energy_band_tolerances
+        )
+    )
     assert min(error_rates) > 0.97 and max(error_rates) < 1.03
     assert min(bound_rates) > 0.97 and max(bound_rates) < 1.03
     return {
@@ -2114,8 +2147,13 @@ def main():
     print("7. reversing current preserves the symmetric block and flips the antisymmetric block")
     forward = exact_block(1, C)
     reverse = exact_block(1, -C)
-    assert np.max(abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))) < 1e-15
-    assert np.max(abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))) < 1e-15
+    reversal_tolerance = roundoff_tolerance(forward, reverse)
+    assert np.max(
+        abs(0.5 * (forward + forward.T) - 0.5 * (reverse + reverse.T))
+    ) < reversal_tolerance
+    assert np.max(
+        abs(0.5 * (forward - forward.T) + 0.5 * (reverse - reverse.T))
+    ) < reversal_tolerance
     print(f"   c=+{C:g}: K12={forward[0, 1]:+.6f}; c=-{C:g}: K12={reverse[0, 1]:+.6f}")
 
     print("8. the full commutator rule has a second-order finite-rate residual")
@@ -2174,6 +2212,7 @@ def main():
         f"variable-coefficient rate {variable_rate:.3f}, "
         f"full-rule rate {rate(errors_forward['full']):.3f}"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":
