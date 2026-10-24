@@ -243,6 +243,23 @@
     the second mode. Thus the single-cycle bounds $\sigma_j\leq\cot(j\pi/8)$ do not extend mode by mode to
     arbitrary balanced flows, even to a mixture of two cycles. The example is a graph-realizable lower bound,
     not a claim that the unrestricted $7/4$ upper cutoff is sharp.</p>
+    <p>The whole two-cycle ray is exactly optimizable. If the six-cycle has weight $t&gt;0$, its squared
+    frequencies are the roots in $s$ of</p>
+    $$\begin{aligned}
+    Q(t,s)={}&amp;(9s^3-33s^2+19s-3)t^4+(43s^3-95s^2+49s-5)t^3\\
+      &amp;+(63s^3-119s^2+69s-5)t^2+(30s^3-90s^2+66s-6)t\\
+      &amp;+4s^3-28s^2+28s-4.
+    \end{aligned}$$
+    <p>The cubic discriminant is positive for every $t&gt;0$, while signs at $0$, $1/3$ and $4/3$ isolate the
+    middle root in $(1/3,4/3)$. Exact elimination of $Q=\partial_tQ=0$ and Sturm isolation leave one stationary
+    pair, so the endpoint limits $1$ and $1/3$ make it the unique global maximum:</p>
+    <div class="equation-card">
+    $$1.02374&lt;\max_{t&gt;0}\sigma_2^2(t)&lt;1.02375,
+      \qquad \frac25&lt;t_*&lt;\frac{41}{100}.$$
+    </div>
+    <p>The simple rational choice $t=2/5$ already lies within $1/20000$ of this optimum. Thus this
+    support family gives a sharp graph-realizable lower frontier, while remaining far below the universal
+    coefficient cutoff.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$

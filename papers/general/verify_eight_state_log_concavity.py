@@ -109,6 +109,75 @@ def univariate_power(poly, power):
     return result
 
 
+def univariate_scale(poly, scale):
+    return [scale * coefficient for coefficient in poly]
+
+
+def univariate_value(poly, value):
+    result = ZERO
+    for coefficient in reversed(poly):
+        result = result * value + coefficient
+    return result
+
+
+def univariate_divmod(dividend, divisor):
+    dividend = list(dividend)
+    quotient = [ZERO] * max(1, len(dividend) - len(divisor) + 1)
+    while dividend and len(dividend) >= len(divisor):
+        degree = len(dividend) - len(divisor)
+        factor = dividend[-1] / divisor[-1]
+        quotient[degree] = factor
+        for index, coefficient in enumerate(divisor):
+            dividend[degree + index] -= factor * coefficient
+        while dividend and not dividend[-1]:
+            dividend.pop()
+    while quotient and not quotient[-1]:
+        quotient.pop()
+    return quotient, dividend
+
+
+def sturm_root_count(poly, left, right):
+    derivative = [index * coefficient for index, coefficient in enumerate(poly)][1:]
+    sequence = [poly, derivative]
+    while sequence[-1]:
+        _, remainder = univariate_divmod(sequence[-2], sequence[-1])
+        if not remainder:
+            break
+        sequence.append(univariate_scale(remainder, -ONE))
+
+    def variations(value):
+        signs = []
+        for member in sequence:
+            evaluated = univariate_value(member, value)
+            assert evaluated
+            signs.append(1 if evaluated > 0 else -1)
+        return sum(a != b for a, b in zip(signs, signs[1:]))
+
+    return variations(left) - variations(right)
+
+
+def affine_substitute(poly, offset, scale):
+    result = []
+    affine = [offset, scale]
+    for power, coefficient in enumerate(poly):
+        result = univariate_add(
+            result,
+            univariate_scale(univariate_power(affine, power), coefficient),
+        )
+    return result
+
+
+def power_to_bernstein(poly):
+    degree = len(poly) - 1
+    return [
+        sum(
+            poly[index] * Fraction(comb(k, index), comb(degree, index))
+            for index in range(k + 1)
+        )
+        for k in range(degree + 1)
+    ]
+
+
 # Verify the symmetric Bernstein-basis conversion coefficient by coefficient
 # in 1,e1,e2,e3.  No symbolic package is used.
 bernstein = [[ZERO] for _ in range(4)]
@@ -334,6 +403,35 @@ def polynomial_determinant(matrix):
     return result
 
 
+def dictionary_determinant(matrix):
+    """Leibniz determinant for small matrices of sparse polynomials."""
+
+    result = {}
+    for permutation in permutations(range(len(matrix))):
+        term = {(0, 0): Fraction(permutation_sign(permutation))}
+        for row, column in enumerate(permutation):
+            term = poly_multiply(term, matrix[row][column])
+        result = poly_add(result, term)
+    return result
+
+
+def sylvester_resultant(left, right):
+    """Resultant in the outer variable; coefficients are univariate lists."""
+
+    left_degree = len(left) - 1
+    right_degree = len(right) - 1
+    size = left_degree + right_degree
+    matrix = [[[ZERO] for _ in range(size)] for _ in range(size)]
+    left_descending = list(reversed(left))
+    right_descending = list(reversed(right))
+    for row in range(right_degree):
+        matrix[row][row : row + left_degree + 1] = left_descending
+    for row in range(left_degree):
+        target = right_degree + row
+        matrix[target][row : row + right_degree + 1] = right_descending
+    return polynomial_determinant(matrix)
+
+
 # Ground state zero.  The quotient determinant is
 # det(H+uD)/det(H)=product_j(1+s_j u^2), where s_j=sigma_j^2.
 pencil = [
@@ -375,6 +473,227 @@ for left, right in frequency_intervals:
 assert squared_frequency_polynomial(Fraction(51, 50)) > 0
 assert squared_frequency_polynomial(Fraction(103, 100)) < 0
 
+# Optimize the same graph-realizable family exactly.  Give the six-cycle
+# weight t>0 and retain unit weight on the eight-cycle.  Sparse bivariate
+# arithmetic below uses exponents (power of t, power of u).
+family_flow = [[{} for _ in range(state_count)] for _ in range(state_count)]
+for cycle, weight in (
+    ((0, 5, 6, 1, 2, 3, 7, 4), {(0, 0): ONE}),
+    ((0, 5, 7, 6, 1, 4), {(1, 0): ONE}),
+):
+    for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+        family_flow[source][target] = poly_add(family_flow[source][target], weight)
+
+family_laplacian = []
+for i in range(state_count):
+    row_sum = {}
+    for entry in family_flow[i]:
+        row_sum = poly_add(row_sum, entry)
+    family_laplacian.append(
+        [
+            poly_add(row_sum if i == j else {}, family_flow[i][j], -ONE)
+            for j in range(state_count)
+        ]
+    )
+family_sym = [
+    [
+        poly_scale(poly_add(family_laplacian[i][j], family_laplacian[j][i]), half)
+        for j in range(state_count)
+    ]
+    for i in range(state_count)
+]
+family_skew = [
+    [
+        poly_scale(poly_add(family_laplacian[i][j], family_laplacian[j][i], -ONE), half)
+        for j in range(state_count)
+    ]
+    for i in range(state_count)
+]
+family_pencil = [
+    [
+        poly_add(
+            family_sym[i][j],
+            {(t_power, u_power + 1): coefficient for (t_power, u_power), coefficient in family_skew[i][j].items()},
+        )
+        for j in range(1, state_count)
+    ]
+    for i in range(1, state_count)
+]
+
+# Apart from the common factor (1+t)/64, these are respectively det(H)
+# and the three even-u coefficients of det(H+uD).
+family_coefficients = [
+    [Fraction(value) for value in values]
+    for values in (
+        (4, 30, 63, 43, 9),
+        (28, 90, 119, 95, 33),
+        (28, 66, 69, 49, 19),
+        (4, 6, 5, 5, 3),
+    )
+]
+expected_family_determinant = {}
+for u_power, coefficient in enumerate(family_coefficients):
+    for t_power, value in enumerate(univariate_multiply([ONE, ONE], coefficient)):
+        if value:
+            expected_family_determinant[(t_power, 2 * u_power)] = value / 64
+assert dictionary_determinant(family_pencil) == expected_family_determinant
+
+# Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t) has the three squared
+# frequencies as roots.  Store it as t coefficients whose entries are
+# polynomials in s.
+frequency_polynomial_by_t = [
+    [
+        -family_coefficients[3][t_power],
+        family_coefficients[2][t_power],
+        -family_coefficients[1][t_power],
+        family_coefficients[0][t_power],
+    ]
+    for t_power in range(5)
+]
+
+# The cubic has three simple positive roots for every t>0.  Its discriminant
+# factors as 4096(t+1)^2 D(t); Bernstein coefficients prove D>0 on [0,1],
+# and translating t=1+y gives positive power coefficients for t>=1.
+a, b, c, d = (
+    family_coefficients[0],
+    univariate_scale(family_coefficients[1], -ONE),
+    family_coefficients[2],
+    univariate_scale(family_coefficients[3], -ONE),
+)
+discriminant_terms = (
+    (ONE, univariate_multiply(univariate_power(b, 2), univariate_power(c, 2))),
+    (-4, univariate_multiply(a, univariate_power(c, 3))),
+    (-4, univariate_multiply(univariate_power(b, 3), d)),
+    (-27, univariate_multiply(univariate_power(a, 2), univariate_power(d, 2))),
+    (18, univariate_multiply(univariate_multiply(a, b), univariate_multiply(c, d))),
+)
+cubic_discriminant = []
+for scale, term in discriminant_terms:
+    cubic_discriminant = univariate_add(cubic_discriminant, univariate_scale(term, scale))
+positive_discriminant_factor = [
+    Fraction(value)
+    for value in (32, 176, 380, 372, 76, -88, 356, 1428, 2432, 2536, 1757, 818, 237, 32)
+]
+assert cubic_discriminant == univariate_scale(
+    univariate_multiply([ONE, 2 * ONE, ONE], positive_discriminant_factor), 4096
+)
+assert all(value > 0 for value in power_to_bernstein(positive_discriminant_factor))
+assert all(value > 0 for value in affine_substitute(positive_discriminant_factor, ONE, ONE))
+
+def evaluate_in_s(poly_by_t, value):
+    result = [univariate_value(coefficient, value) for coefficient in poly_by_t]
+    while result and not result[-1]:
+        result.pop()
+    return result
+
+
+assert all(value < 0 for value in evaluate_in_s(frequency_polynomial_by_t, ZERO))
+assert evaluate_in_s(frequency_polynomial_by_t, Fraction(1, 3)) == univariate_scale(
+    univariate_power([ONE, ONE], 3), Fraction(64, 27)
+)
+four_thirds_barrier = [Fraction(value) for value in (188, 186, -669, 179, 405)]
+assert evaluate_in_s(frequency_polynomial_by_t, Fraction(4, 3)) == univariate_scale(
+    four_thirds_barrier, Fraction(-1, 27)
+)
+assert all(value > 0 for value in power_to_bernstein(four_thirds_barrier))
+assert all(value > 0 for value in affine_substitute(four_thirds_barrier, ONE, ONE))
+
+# Eliminate t from Q=partial_t Q=0.  The only resultant root in the middle
+# root's interval (1/3,4/3), other than the boundary artifact s=1 at t=0,
+# is the unique root s_* of R below.
+frequency_derivative_by_t = [
+    univariate_scale(frequency_polynomial_by_t[index], index)
+    for index in range(1, 5)
+]
+critical_value_polynomial = [
+    Fraction(value)
+    for value in (
+        -17905, 419101, -4098198, 22555350, -76117347, 158042511,
+        -183760580, 71460388, 70163097, -61548501, -8663238,
+        10444326, 1249499, 35337,
+    )
+]
+resultant_factorization = univariate_scale(
+    univariate_multiply(
+        univariate_multiply(
+            univariate_multiply([-3, ONE], [-1, ONE]),
+            univariate_power([ONE, ONE], 2),
+        ),
+        univariate_multiply(univariate_power([-ONE, 3 * ONE], 4), critical_value_polynomial),
+    ),
+    4,
+)
+assert sylvester_resultant(frequency_polynomial_by_t, frequency_derivative_by_t) == resultant_factorization
+assert sturm_root_count(critical_value_polynomial, Fraction(1, 3), Fraction(4, 3)) == 1
+critical_left = Fraction(102374, 100000)
+critical_right = Fraction(102375, 100000)
+assert sturm_root_count(critical_value_polynomial, critical_left, critical_right) == 1
+# The s=1 resultant factor comes only from t=0.  For t>0 the two displayed
+# factors would force t=2, which does not solve t^2+t-1=0.
+assert evaluate_in_s(frequency_polynomial_by_t, ONE) == [ZERO, ZERO, 8 * ONE, -8 * ONE, -8 * ONE]
+assert evaluate_in_s(frequency_derivative_by_t, ONE) == [ZERO, 16 * ONE, -24 * ONE, -32 * ONE]
+assert Fraction(2) ** 2 + Fraction(2) - 1 != 0
+
+# A(s)t+B(s) is the last linear subresultant.  Direct substitution proves
+# that t_*=-B(s_*)/A(s_*) solves both equations; Bernstein enclosures on the
+# isolating interval give 2/5<t_*<41/100.
+subresultant_a = [
+    Fraction(value)
+    for value in (1577, -35461, 320639, -1504443, 3990298, -5841170,
+                  3674142, 934090, -1943891, 148519, 253811, 12129)
+]
+subresultant_b = [
+    Fraction(value)
+    for value in (2349, -49451, 402423, -1716193, 4150290, -5483358,
+                  2972670, 878926, -1380591, 71129, 144315, 7491)
+]
+minus_b = univariate_scale(subresultant_b, -ONE)
+substituted_q = []
+for power, coefficient in enumerate(frequency_polynomial_by_t):
+    term = univariate_multiply(
+        coefficient,
+        univariate_multiply(
+            univariate_power(minus_b, power),
+            univariate_power(subresultant_a, 4 - power),
+        ),
+    )
+    substituted_q = univariate_add(substituted_q, term)
+substituted_dt_q = []
+for power in range(1, 5):
+    term = univariate_multiply(
+        univariate_scale(frequency_polynomial_by_t[power], power),
+        univariate_multiply(
+            univariate_power(minus_b, power - 1),
+            univariate_power(subresultant_a, 4 - power),
+        ),
+    )
+    substituted_dt_q = univariate_add(substituted_dt_q, term)
+assert not univariate_divmod(substituted_q, critical_value_polynomial)[1]
+assert not univariate_divmod(substituted_dt_q, critical_value_polynomial)[1]
+
+def bernstein_on_interval(poly, left, right):
+    return power_to_bernstein(affine_substitute(poly, left, right - left))
+
+
+assert all(
+    value > 0
+    for value in bernstein_on_interval(subresultant_a, critical_left, critical_right)
+)
+lower_t_test = univariate_add(minus_b, univariate_scale(subresultant_a, Fraction(-2, 5)))
+upper_t_test = univariate_add(minus_b, univariate_scale(subresultant_a, Fraction(-41, 100)))
+assert all(value > 0 for value in bernstein_on_interval(lower_t_test, critical_left, critical_right))
+assert all(value < 0 for value in bernstein_on_interval(upper_t_test, critical_left, critical_right))
+
+# At t=0 the middle root is one; as t tends to infinity the leading
+# polynomial is (s-3)(3s-1)^2.  The simple middle root has exactly the one
+# stationary point isolated above, hence that point is its global maximum.
+assert univariate_value(frequency_polynomial_by_t[0], ONE) == 0
+assert frequency_polynomial_by_t[4] == univariate_multiply(
+    [-3, ONE], univariate_power([-ONE, 3 * ONE], 2)
+)
+assert squared_frequency_polynomial(Fraction(10237, 10000)) > 0
+assert squared_frequency_polynomial(Fraction(10238, 10000)) < 0
+
 # kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
 assert 8**2 > 3**2 * 5
 
@@ -384,4 +703,6 @@ print("maximum subdivision depth:", maximum_depth)
 print("proved sigma_2^2 < 7/4 < cot(pi/5)^2")
 print("coefficient relaxation admits sigma_2^2 = 1749/1000")
 print("exact eight-state two-cycle witness: 51/50 < sigma_2^2 < 103/100")
+print("sharp two-cycle family maximum: 1.02374 < sigma_2^2 < 1.02375")
+print("maximizing six-cycle weight: 2/5 < t < 41/100")
 print("PASS")
