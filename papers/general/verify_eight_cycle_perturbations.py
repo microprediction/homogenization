@@ -3,8 +3,8 @@
 For unit flow on the standard directed eight-cycle, let s(t) be the middle
 squared intrinsic frequency after adding weight t on another simple directed
 cycle.  The base value s(0)=1 is simple.  This certificate recovers the first
-three Taylor derivatives from exact determinant expansions, then exhausts every
-simple directed cycle on the same eight labeled states.
+three derivatives for every cycle, then uses exact polynomial interpolation to
+break the remaining local ties through fifth order.
 """
 
 from fractions import Fraction
@@ -90,6 +90,8 @@ def matrix_product(left, right):
 # Interpolate a cubic in x=u^2 from u=0,1,2,3.
 vandermonde = [[Fraction(x) ** power for power in range(4)] for x in (0, 1, 4, 9)]
 inverse_vandermonde, _ = inverse_and_determinant(vandermonde)
+t_vandermonde = [[Fraction(t) ** power for power in range(8)] for t in range(8)]
+inverse_t_vandermonde, _ = inverse_and_determinant(t_vandermonde)
 
 
 def interpolate_even(values):
@@ -121,10 +123,11 @@ base_coefficients = interpolate_even(
 assert base_coefficients == [
     Fraction(1, 16), Fraction(7, 16), Fraction(7, 16), Fraction(1, 16)
 ]
+base_q_s = 3 * base_coefficients[0] - 2 * base_coefficients[1] + base_coefficients[2]
 
 
 def frequency_derivatives(cycle):
-    """Return exact s'(0), s''(0), s'''(0) for the middle frequency."""
+    """Return exact s'(0), s''(0), s'''(0) for the middle squared frequency."""
 
     symmetric, skew = cycle_forms(cycle)
     first_determinant_coefficients = []
@@ -173,7 +176,7 @@ def frequency_derivatives(cycle):
     # Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t).  The determinant trace
     # identity gives coefficients through t^3; implicit differentiation at
     # (t,s)=(0,1) gives the three derivatives below.
-    q_s = 3 * base_coefficients[0] - 2 * base_coefficients[1] + base_coefficients[2]
+    q_s = base_q_s
     q_ss = 6 * base_coefficients[0] - 2 * base_coefficients[1]
     q_t = first[0] - first[1] + first[2] - first[3]
     q_ts = 3 * first[0] - 2 * first[1] + first[2]
@@ -194,6 +197,61 @@ def frequency_derivatives(cycle):
         + 3 * (q_ts + q_ss * first_derivative) * second_derivative
     ) / q_s
     return first_derivative, second_derivative, third_derivative
+
+
+def truncated_product(left, right, degree):
+    """Multiply two power series through the requested degree."""
+
+    return [
+        sum(
+            (left[j] * right[power - j]
+             for j in range(power + 1)
+             if j < len(left) and power - j < len(right)),
+            ZERO,
+        )
+        for power in range(degree + 1)
+    ]
+
+
+def ray_taylor_coefficients(cycle, degree=5):
+    """Return the exact middle-root Taylor coefficients through ``degree``."""
+
+    symmetric, skew = cycle_forms(cycle)
+    determinant_values = []
+    for weight in range(8):
+        values = []
+        for u in range(4):
+            matrix = [
+                [base_symmetric[i][j] + u * base_skew[i][j]
+                 + weight * (symmetric[i][j] + u * skew[i][j])
+                 for j in range(GROUND_SIZE)]
+                for i in range(GROUND_SIZE)
+            ]
+            _, determinant = inverse_and_determinant(matrix)
+            values.append(determinant)
+        determinant_values.append(interpolate_even(values))
+    ray = [
+        [sum((inverse_t_vandermonde[k][w] * determinant_values[w][j]
+              for w in range(8)), ZERO) for k in range(8)]
+        for j in range(4)
+    ]
+
+    root = [ONE]
+    for order in range(1, degree + 1):
+        trial = root + [ZERO]
+        square = truncated_product(trial, trial, order)
+        cube = truncated_product(square, trial, order)
+        terms = [
+            truncated_product(ray[0], cube, order),
+            truncated_product(ray[1], square, order),
+            truncated_product(ray[2], trial, order),
+            ray[3],
+        ]
+        residual = terms[0][order] - terms[1][order] + terms[2][order]
+        if order < len(terms[3]):
+            residual -= terms[3][order]
+        root.append(-residual / base_q_s)
+    return tuple(root)
 
 
 def normalize_cycle(cycle):
@@ -224,6 +282,7 @@ neutral_curvature_distribution = {}
 neutral_curvature_lengths = {}
 maximal_curvature_thirds = {}
 maximal_curvature_length_thirds = {}
+maximal_representatives = []
 for cycle in representatives:
     orbit = rotation_orbit(cycle)
     assert orbit <= cycles
@@ -247,6 +306,7 @@ for cycle in representatives:
             maximal_curvature_length_thirds[key] = (
                 maximal_curvature_length_thirds.get(key, 0) + multiplicity
             )
+            maximal_representatives.append((cycle, multiplicity))
 
 assert len(cycles) == 16064
 assert len(representatives) == 2025
@@ -279,8 +339,34 @@ assert maximal_curvature_length_thirds == {
 assert frequency_derivatives((1, 2, 6, 7, 3, 4, 5)) == (
     ZERO, Fraction(2), Fraction(-12)
 )
+fifth_order_classes = {}
+representative_series = {}
+assert len(maximal_representatives) == 3
+assert all(multiplicity == 8 for _, multiplicity in maximal_representatives)
+for cycle, multiplicity in maximal_representatives:
+    series = ray_taylor_coefficients(cycle)
+    assert series[1:4] == (
+        frequency_derivatives(cycle)[0],
+        frequency_derivatives(cycle)[1] / 2,
+        frequency_derivatives(cycle)[2] / 6,
+    )
+    representative_series[cycle] = series
+    key = (len(cycle), series[5])
+    fifth_order_classes[key] = fifth_order_classes.get(key, 0) + multiplicity
+assert fifth_order_classes == {
+    (7, Fraction(-7)): 8,
+    (7, Fraction(-8)): 8,
+    (8, Fraction(-29, 2)): 8,
+}
+strong_cycle = (1, 2, 6, 7, 3, 4, 5)
+strong_representative = min(rotation_orbit(strong_cycle))
+assert representative_series[strong_representative] == (
+    ONE, ZERO, ONE, Fraction(-2), Fraction(7, 2), Fraction(-7)
+)
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
+print("maximal-curvature fifth-order classes:", fifth_order_classes)
+print("strong seven-cycle Taylor coefficients:", representative_series[strong_representative])
 
 print("simple directed cycles checked:", len(cycles))
 print("rotation-orbit representatives:", len(representatives))
