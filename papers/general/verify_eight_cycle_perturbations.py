@@ -482,40 +482,49 @@ assert representative_series[strong_representative] == (
     ONE, ZERO, ONE, Fraction(-2), Fraction(7, 2), Fraction(-7)
 )
 
-# At a simple root of Q(t,21/20), Q_s<0 holds exactly for the middle
-# frequency; Q_s>0 identifies one of the two extreme frequencies.  Isolate
-# every positive t-root of Q and classify it by the exact sign of Q_s.
-threshold = Fraction(21, 20)
-representative_crossing_classes = {}
-labeled_crossing_classes = {}
-negative_crossing_representatives = []
-for cycle in representatives:
-    ray = ray_coefficients(cycle)
-    threshold_poly = [
-        ray[0][degree] * threshold ** 3
-        - ray[1][degree] * threshold ** 2
-        + ray[2][degree] * threshold
-        - ray[3][degree]
-        for degree in range(GROUND_SIZE + 1)
-    ]
-    derivative_poly = [
-        3 * ray[0][degree] * threshold ** 2
-        - 2 * ray[1][degree] * threshold
-        + ray[2][degree]
-        for degree in range(GROUND_SIZE + 1)
-    ]
-    crossing_class = signs_at_positive_roots(
-        threshold_poly, derivative_poly
-    )
-    representative_crossing_classes[crossing_class] = (
-        representative_crossing_classes.get(crossing_class, 0) + 1
-    )
-    multiplicity = len(rotation_orbit(cycle))
-    labeled_crossing_classes[crossing_class] = (
-        labeled_crossing_classes.get(crossing_class, 0) + multiplicity
-    )
-    if -1 in crossing_class:
-        negative_crossing_representatives.append(cycle)
+def classify_threshold(threshold):
+    """Classify all positive level crossings by the exact sign of Q_s."""
+
+    representative_classes = {}
+    labeled_classes = {}
+    negative_representatives = []
+    for cycle in representatives:
+        ray = ray_coefficients(cycle)
+        threshold_poly = [
+            ray[0][degree] * threshold ** 3
+            - ray[1][degree] * threshold ** 2
+            + ray[2][degree] * threshold
+            - ray[3][degree]
+            for degree in range(GROUND_SIZE + 1)
+        ]
+        derivative_poly = [
+            3 * ray[0][degree] * threshold ** 2
+            - 2 * ray[1][degree] * threshold
+            + ray[2][degree]
+            for degree in range(GROUND_SIZE + 1)
+        ]
+        crossing_class = signs_at_positive_roots(
+            threshold_poly, derivative_poly
+        )
+        representative_classes[crossing_class] = (
+            representative_classes.get(crossing_class, 0) + 1
+        )
+        multiplicity = len(rotation_orbit(cycle))
+        labeled_classes[crossing_class] = (
+            labeled_classes.get(crossing_class, 0) + multiplicity
+        )
+        if -1 in crossing_class:
+            negative_representatives.append(cycle)
+    return representative_classes, labeled_classes, negative_representatives
+
+
+# At a simple root of Q(t,R), Q_s<0 holds exactly for the middle frequency;
+# Q_s>0 identifies an extreme frequency, and Q_s=0 a collision.
+(
+    representative_crossing_classes,
+    labeled_crossing_classes,
+    negative_crossing_representatives,
+) = classify_threshold(Fraction(21, 20))
 
 assert representative_crossing_classes == {
     (): 828,
@@ -530,6 +539,60 @@ assert labeled_crossing_classes == {
     (-1, -1): 8,
 }
 assert negative_crossing_representatives == [strong_representative]
+
+(
+    runner_representative_crossing_classes,
+    runner_labeled_crossing_classes,
+    runner_negative_crossing_representatives,
+) = classify_threshold(Fraction(26, 25))
+runner_representative = (0, 1, 5, 2, 7, 3, 4)
+assert runner_representative_crossing_classes == {
+    (): 844,
+    (1,): 58,
+    (1, 1): 1121,
+    (-1, -1): 2,
+}
+assert runner_labeled_crossing_classes == {
+    (): 6721,
+    (1,): 440,
+    (1, 1): 8887,
+    (-1, -1): 16,
+}
+assert sorted(runner_negative_crossing_representatives) == [
+    strong_representative, runner_representative
+]
+
+# A rational runner-up witness: at t=3/10 all three squared frequencies
+# are isolated, with the middle root strictly between 1.0445 and 1.0446.
+runner_weight = Fraction(3, 10)
+runner_ray = ray_coefficients(runner_representative)
+runner_coefficients = [
+    sum((row[degree] * runner_weight ** degree
+         for degree in range(GROUND_SIZE + 1)), ZERO)
+    for row in runner_ray
+]
+
+
+def runner_polynomial(squared_frequency):
+    return (
+        runner_coefficients[0] * squared_frequency ** 3
+        - runner_coefficients[1] * squared_frequency ** 2
+        + runner_coefficients[2] * squared_frequency
+        - runner_coefficients[3]
+    )
+
+
+runner_brackets = (
+    (Fraction(11, 100), Fraction(3, 25)),
+    (Fraction(10445, 10000), Fraction(10446, 10000)),
+    (Fraction(5, 4), Fraction(63, 50)),
+)
+assert [(
+    runner_polynomial(left) < 0,
+    runner_polynomial(right) > 0,
+) for left, right in runner_brackets] == [
+    (True, True), (False, False), (True, True)
+]
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -546,4 +609,10 @@ print("21/20 crossing classes (rotation representatives):",
 print("21/20 crossing classes (labeled cycles):", labeled_crossing_classes)
 print("supports with middle-frequency crossings:",
       negative_crossing_representatives)
+print("26/25 crossing classes (rotation representatives):",
+      runner_representative_crossing_classes)
+print("26/25 crossing classes (labeled cycles):",
+      runner_labeled_crossing_classes)
+print("supports above 26/25:", sorted(runner_negative_crossing_representatives))
+print("runner-up root brackets at t=3/10:", runner_brackets)
 print("PASS")
