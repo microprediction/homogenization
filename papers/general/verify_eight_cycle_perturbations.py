@@ -2,13 +2,14 @@
 
 For unit flow on the standard directed eight-cycle, let s(t) be the middle
 squared intrinsic frequency after adding weight t on another simple directed
-cycle.  The base value s(0)=1 is simple.  This certificate recovers the first
-three derivatives for every cycle, breaks the remaining local ties through
-fifth order, and classifies every crossing of the exact level s=21/20.
+cycle.  The base value s(0)=1 is simple.  This certificate recovers the local
+derivatives, classifies exact finite-level crossings, and globally optimizes
+the unique runner-up support ray.
 """
 
 from fractions import Fraction
 from itertools import combinations, permutations
+from math import comb, gcd
 
 
 ZERO = Fraction(0)
@@ -255,6 +256,96 @@ def polynomial_value(poly, point):
                 for degree, coefficient in enumerate(poly)), ZERO)
 
 
+def polynomial_add(left, right):
+    result = [ZERO] * max(len(left), len(right))
+    for degree in range(len(result)):
+        result[degree] = (
+            (left[degree] if degree < len(left) else ZERO)
+            + (right[degree] if degree < len(right) else ZERO)
+        )
+    return polynomial_trim(result)
+
+
+def polynomial_multiply(left, right):
+    result = [ZERO] * (len(left) + len(right) - 1)
+    for i, a in enumerate(left):
+        for j, b in enumerate(right):
+            result[i + j] += a * b
+    return polynomial_trim(result)
+
+
+def polynomial_scale(poly, scale):
+    return polynomial_trim([scale * entry for entry in poly])
+
+
+def polynomial_power(poly, power):
+    result = [ONE]
+    for _ in range(power):
+        result = polynomial_multiply(result, poly)
+    return result
+
+
+def affine_substitute(poly, offset, scale):
+    result = []
+    affine = [offset, scale]
+    for power, coefficient in enumerate(poly):
+        result = polynomial_add(
+            result,
+            polynomial_scale(polynomial_power(affine, power), coefficient),
+        )
+    return result
+
+
+def power_to_bernstein(poly):
+    degree = len(poly) - 1
+    return [
+        sum(
+            (poly[index] * Fraction(comb(k, index), comb(degree, index))
+             for index in range(k + 1)),
+            ZERO,
+        )
+        for k in range(degree + 1)
+    ]
+
+
+def bernstein_on_interval(poly, left, right):
+    return power_to_bernstein(affine_substitute(poly, left, right - left))
+
+
+def permutation_sign(permutation):
+    inversions = sum(
+        permutation[i] > permutation[j]
+        for i in range(len(permutation))
+        for j in range(i + 1, len(permutation))
+    )
+    return -1 if inversions % 2 else 1
+
+
+def polynomial_determinant(matrix):
+    result = []
+    for permutation in permutations(range(len(matrix))):
+        term = [Fraction(permutation_sign(permutation))]
+        for row, column in enumerate(permutation):
+            term = polynomial_multiply(term, matrix[row][column])
+        result = polynomial_add(result, term)
+    return result
+
+
+def sylvester_resultant(left, right):
+    """Resultant in s when entries are polynomials in t."""
+
+    left_degree = len(left) - 1
+    right_degree = len(right) - 1
+    size = left_degree + right_degree
+    matrix = [[[ZERO] for _ in range(size)] for _ in range(size)]
+    for row in range(right_degree):
+        matrix[row][row : row + left_degree + 1] = reversed(left)
+    for row in range(left_degree):
+        target = right_degree + row
+        matrix[target][row : row + right_degree + 1] = reversed(right)
+    return polynomial_determinant(matrix)
+
+
 def polynomial_divmod(dividend, divisor):
     dividend = polynomial_trim(dividend)
     divisor = polynomial_trim(divisor)
@@ -278,14 +369,32 @@ def polynomial_gcd(left, right):
     return [entry / left[-1] for entry in left]
 
 
+def primitive_polynomial(poly):
+    """Clear rational content by a positive scale, preserving all signs."""
+
+    denominator_lcm = 1
+    for entry in poly:
+        denominator_lcm = (
+            denominator_lcm * entry.denominator
+            // gcd(denominator_lcm, entry.denominator)
+        )
+    integers = [entry.numerator * (denominator_lcm // entry.denominator)
+                for entry in poly]
+    content = 0
+    for entry in integers:
+        content = gcd(content, abs(entry))
+    return polynomial_trim([Fraction(entry // content) for entry in integers])
+
+
 def sturm_sequence(poly):
     derivative = [degree * poly[degree] for degree in range(1, len(poly))]
-    sequence = [polynomial_trim(poly), polynomial_trim(derivative)]
+    sequence = [primitive_polynomial(polynomial_trim(poly)),
+                primitive_polynomial(polynomial_trim(derivative))]
     while sequence[-1]:
         _, remainder = polynomial_divmod(sequence[-2], sequence[-1])
         if not remainder:
             break
-        sequence.append([-entry for entry in remainder])
+        sequence.append(primitive_polynomial([-entry for entry in remainder]))
     return sequence
 
 
@@ -593,6 +702,196 @@ assert [(
 ) for left, right in runner_brackets] == [
     (True, True), (False, False), (True, True)
 ]
+
+# Optimize the runner-up ray itself.  Multiplication by 64 clears the common
+# denominator without changing its roots.  Coefficients below are ascending
+# in t, while the four rows are a0,a1,a2,a3 in
+# Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t).
+runner_integer_rows = [
+    polynomial_trim([64 * entry for entry in row])
+    for row in runner_ray
+]
+assert runner_integer_rows == [
+    [4, 46, 178, 277, 194, 61, 7],
+    [28, 122, 274, 413, 386, 185, 35],
+    [28, 82, 118, 135, 118, 71, 21],
+    [4, 6, 6, 7, 6, 3, 1],
+]
+runner_q_by_s = [
+    polynomial_scale(runner_integer_rows[3], -ONE),
+    runner_integer_rows[2],
+    polynomial_scale(runner_integer_rows[1], -ONE),
+    runner_integer_rows[0],
+]
+runner_qt_by_s = [
+    [degree * coefficient for degree, coefficient in enumerate(row)][1:]
+    for row in runner_q_by_s
+]
+runner_resultant = sylvester_resultant(runner_q_by_s, runner_qt_by_s)
+runner_stationary_polynomial = [
+    200, 2560, 11738, 13346, -93988, -504901, -1169222,
+    -1081723, 2111574, 11288181, 27715398, 48696144,
+    67093286, 74607693, 67472864, 49474353, 28937338,
+    12756080, 3179004, -1071209, -2199774, -1897559,
+    -1176030, -554559, -195908, -49138, -7744, -492, 48, 8,
+]
+assert runner_resultant == [ZERO] + [
+    262144 * Fraction(entry) for entry in runner_stationary_polynomial
+]
+
+# The discriminant is positive for every t>=0.  On [0,1] this follows from
+# four exact Bernstein patches, and after t=1+y all power coefficients are
+# positive.  Hence the three positive branches never collide.
+a, b, c, d = (
+    runner_q_by_s[3], runner_q_by_s[2],
+    runner_q_by_s[1], runner_q_by_s[0],
+)
+runner_discriminant = polynomial_add(
+    polynomial_add(
+        polynomial_multiply(polynomial_multiply(b, b), polynomial_multiply(c, c)),
+        polynomial_scale(polynomial_multiply(a, polynomial_power(c, 3)), -4),
+    ),
+    polynomial_add(
+        polynomial_scale(polynomial_multiply(polynomial_power(b, 3), d), -4),
+        polynomial_add(
+            polynomial_scale(polynomial_multiply(polynomial_multiply(a, a),
+                                                  polynomial_multiply(d, d)), -27),
+            polynomial_scale(polynomial_multiply(
+                polynomial_multiply(a, b), polynomial_multiply(c, d)), 18),
+        ),
+    ),
+)
+assert runner_discriminant == [Fraction(entry) for entry in [
+    131072, 1114112, 2867200, -3309568, -38432768, -102662144,
+    -110059520, 133521408, 874393600, 2321432576, 4512198656,
+    7132463104, 9483366400, 10772684800, 10557763584, 8979218432,
+    6633365504, 4233895936, 2305417216, 1048928256, 386940928,
+    110837760, 23068672, 3096576, 200704,
+]]
+for left, right in (
+    (ZERO, Fraction(1, 4)),
+    (Fraction(1, 4), Fraction(1, 2)),
+    (Fraction(1, 2), ONE),
+):
+    assert min(bernstein_on_interval(runner_discriminant, left, right)) > 0
+assert min(affine_substitute(runner_discriminant, ONE, ONE)) > 0
+
+# Sturm isolation gives exactly four positive roots of R, one in each narrow
+# rational interval.  The brackets are ordered by increasing t.
+stationary_sequence = sturm_sequence(runner_stationary_polynomial)
+stationary_bound = ONE + max(
+    abs(Fraction(entry, runner_stationary_polynomial[-1]))
+    for entry in runner_stationary_polynomial[:-1]
+)
+assert roots_between(stationary_sequence, ZERO, stationary_bound) == 4
+stationary_t_brackets = (
+    (Fraction(2983948320, 10**10), Fraction(2983948321, 10**10)),
+    (Fraction(3885282266, 10**10), Fraction(3885282267, 10**10)),
+    (Fraction(17327821484, 10**10), Fraction(17327821486, 10**10)),
+    (Fraction(11735811033, 10**9), Fraction(11735811034, 10**9)),
+)
+assert [roots_between(stationary_sequence, left, right)
+        for left, right in stationary_t_brackets] == [1, 1, 1, 1]
+
+stationary_s_brackets = (
+    (
+        (Fraction(11684860, 10**8), Fraction(11684861, 10**8)),
+        (Fraction(104456313, 10**8), Fraction(104456314, 10**8)),
+        (Fraction(12621340, 10**7), Fraction(12621341, 10**7)),
+    ),
+    (
+        (Fraction(10602873, 10**8), Fraction(10602874, 10**8)),
+        (Fraction(94445507, 10**8), Fraction(94445508, 10**8)),
+        (Fraction(11151855, 10**7), Fraction(11151856, 10**7)),
+    ),
+    (
+        (Fraction(5841360, 10**8), Fraction(5841370, 10**8)),
+        (Fraction(41069459, 10**8), Fraction(41069460, 10**8)),
+        (Fraction(16574903, 10**7), Fraction(16574904, 10**7)),
+    ),
+    (
+        (Fraction(5163038, 10**8), Fraction(5163040, 10**8)),
+        (Fraction(55543185, 10**8), Fraction(55543186, 10**8)),
+        (Fraction(32977536, 10**7), Fraction(32977538, 10**7)),
+    ),
+)
+
+
+def runner_polynomial_in_t(squared_frequency):
+    result = []
+    for s_power, row in enumerate(runner_q_by_s):
+        result = polynomial_add(
+            result, polynomial_scale(row, squared_frequency ** s_power)
+        )
+    return result
+
+
+# At every stationary t-bracket the three sign-changing s-brackets isolate
+# all three roots.  Bernstein coefficients make each sign uniform throughout
+# the whole t-bracket, not merely at a floating-point midpoint.
+root_endpoint_signs = ((-1, 1), (1, -1), (-1, 1))
+for t_bracket, root_brackets in zip(stationary_t_brackets,
+                                    stationary_s_brackets):
+    for (s_left, s_right), (left_sign, right_sign) in zip(
+            root_brackets, root_endpoint_signs):
+        left_values = bernstein_on_interval(
+            runner_polynomial_in_t(s_left), *t_bracket
+        )
+        right_values = bernstein_on_interval(
+            runner_polynomial_in_t(s_right), *t_bracket
+        )
+        assert min(left_sign * value for value in left_values) > 0
+        assert min(right_sign * value for value in right_values) > 0
+
+
+def positive_box_interval(rows, t_bracket, s_bracket):
+    """Natural interval extension on a positive (t,s) box."""
+
+    lower = ZERO
+    upper = ZERO
+    for s_power, row in enumerate(rows):
+        for t_power, coefficient in enumerate(row):
+            low_monomial = t_bracket[0] ** t_power * s_bracket[0] ** s_power
+            high_monomial = t_bracket[1] ** t_power * s_bracket[1] ** s_power
+            if coefficient >= 0:
+                lower += coefficient * low_monomial
+                upper += coefficient * high_monomial
+            else:
+                lower += coefficient * high_monomial
+                upper += coefficient * low_monomial
+    return lower, upper
+
+
+# The resultant root must lie on the only branch whose Q_t interval can
+# contain zero.  Thus roots 1 and 3 of R are middle-branch stationary points;
+# roots 2 and 4 belong respectively to the high and low branches.
+stationary_branch_indices = (1, 2, 1, 0)
+for case, (t_bracket, root_brackets) in enumerate(zip(
+        stationary_t_brackets, stationary_s_brackets)):
+    relevant = stationary_branch_indices[case]
+    for branch, s_bracket in enumerate(root_brackets):
+        if branch == relevant:
+            continue
+        lower, upper = positive_box_interval(
+            runner_qt_by_s, t_bracket, s_bracket
+        )
+        assert lower > 0 or upper < 0
+
+# At t=0 the middle root is 1.  As t tends to infinity it approaches the
+# middle root of 7s^3-35s^2+21s-1, which lies in (1/2,1).  The two isolated
+# middle stationary values lie respectively above 1.04456313 and below
+# 0.41069460.  Since there are no other middle stationary points, the first
+# is the unique global maximum on t>=0.
+runner_limit_polynomial = [-1, 21, -35, 7]
+assert polynomial_value(runner_limit_polynomial, ZERO) < 0
+assert polynomial_value(runner_limit_polynomial, Fraction(1, 10)) > 0
+assert polynomial_value(runner_limit_polynomial, Fraction(1, 2)) > 0
+assert polynomial_value(runner_limit_polynomial, ONE) < 0
+assert polynomial_value(runner_limit_polynomial, 5) > 0
+runner_max_t_bracket = stationary_t_brackets[0]
+runner_max_s_bracket = stationary_s_brackets[0][1]
+assert runner_max_s_bracket[0] > ONE
+assert stationary_s_brackets[2][1][1] < ONE
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -615,4 +914,6 @@ print("26/25 crossing classes (labeled cycles):",
       runner_labeled_crossing_classes)
 print("supports above 26/25:", sorted(runner_negative_crossing_representatives))
 print("runner-up root brackets at t=3/10:", runner_brackets)
+print("runner-up maximizing weight bracket:", runner_max_t_bracket)
+print("runner-up sharp maximum bracket:", runner_max_s_bracket)
 print("PASS")
