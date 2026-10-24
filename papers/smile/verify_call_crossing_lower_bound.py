@@ -65,6 +65,29 @@ def matrix_rank(rows):
     return rank
 
 
+def determinant(rows):
+    """Return an exact determinant by Fraction elimination."""
+    assert all(len(row) == len(rows) for row in rows)
+    work = [row[:] for row in rows]
+    result = F(1)
+    for column in range(len(work)):
+        pivot = next((i for i in range(column, len(work))
+                      if work[i][column]), None)
+        if pivot is None:
+            return F(0)
+        if pivot != column:
+            work[column], work[pivot] = work[pivot], work[column]
+            result = -result
+        pivot_value = work[column][column]
+        result *= pivot_value
+        for i in range(column + 1, len(work)):
+            factor = work[i][column] / pivot_value
+            for j in range(column + 1, len(work)):
+                work[i][j] -= factor * work[column][j]
+            work[i][column] = F(0)
+    return result
+
+
 def polymul(a, b):
     result = [F(0)] * (len(a) + len(b) - 1)
     for i, x in enumerate(a):
@@ -361,39 +384,60 @@ def check_confluent_sharpness():
     return totals
 
 
-def check_minimal_grid_rigidity(max_r=10):
-    """Check uniqueness of the signed weights on the minimal grid.
+def check_minimal_support_rigidity(max_r=10):
+    """Check uniqueness on irregular support grids by exact cofactors.
 
-    A root a of multiplicity q imposes the q Euler-derivative equations
-    sum_j c_j a**j j**h = 0, h=0,...,q-1.  On r+3 grid points the
-    baseline mass/mean roots and r prescribed transform roots give an
-    (r+2)-by-(r+3) matrix.  Full row rank and the polynomial coefficient
-    null vector certify a one-dimensional solution space exactly.
+    Put the support at x_j=2**(denominator*q_j), where the integer q_j
+    are triangular numbers rather than an arithmetic progression.  A
+    scaled transform exponent k and derivative order h give the rational
+    row q_j**h * 2**(k*q_j).  Exact rank and cofactor signs certify the
+    one-dimensional alternating nullspace predicted by the ECT theorem.
     """
     cases = []
     for r in range(2, max_r + 1):
-        b = F(2 ** (r - 1))
-        cases.append((b, [F(2 ** ell) for ell in range(r)]))
-    b = F(16)
+        denominator = r - 1
+        scaled_exponents = [0, denominator] + list(range(r))
+        cases.append((r, denominator, scaled_exponents))
     for left, middle, right in ((2, 1, 2), (1, 3, 1), (3, 2, 2)):
-        cases.append((b, [F(1)] * left + [F(4)] * middle + [b] * right))
+        total = left + middle + right
+        scaled_exponents = [0, 2] + [0] * left + [1] * middle + [2] * right
+        cases.append((total, 2, scaled_exponents))
 
-    for b, transform_roots in cases:
-        roots = [F(1), b] + transform_roots
+    for crossing_count, denominator, scaled_exponents in cases:
         multiplicities = {}
-        for root in roots:
-            multiplicities[root] = multiplicities.get(root, 0) + 1
-        degree = len(roots)
+        for exponent in scaled_exponents:
+            multiplicities[exponent] = multiplicities.get(exponent, 0) + 1
+        row_count = len(scaled_exponents)
+        q_values = [j * (j + 1) // 2 for j in range(row_count + 1)]
         rows = []
-        for root in sorted(multiplicities):
-            for power in range(multiplicities[root]):
-                rows.append([root ** j * F(j) ** power
-                             for j in range(degree + 1)])
-        coefficients = polynomial_from_roots(roots)
-        assert len(rows) == degree
-        assert len(coefficients) == degree + 1
-        assert all(rowdot(row, coefficients) == 0 for row in rows)
-        assert matrix_rank(rows) == degree
+        for exponent in sorted(multiplicities):
+            for power in range(multiplicities[exponent]):
+                rows.append([F(q) ** power * F(2 ** (exponent * q))
+                             for q in q_values])
+        signed = []
+        for column in range(row_count + 1):
+            minor = [row[:column] + row[column + 1:] for row in rows]
+            signed.append(F((-1) ** column) * determinant(minor))
+
+        assert len(rows) == row_count
+        assert matrix_rank(rows) == row_count
+        assert all(value != 0 for value in signed)
+        assert all(signed[j] * signed[j + 1] < 0
+                   for j in range(len(signed) - 1))
+        assert all(rowdot(row, signed) == 0 for row in rows)
+
+        normalizer = sum((max(value, F(0)) for value in signed), F(0))
+        p = [max(value, F(0)) / normalizer for value in signed]
+        q = [max(-value, F(0)) / normalizer for value in signed]
+        raw_points = [F(2 ** (denominator * value)) for value in q_values]
+        raw_mean = rowdot(p, raw_points)
+        points = [point / raw_mean for point in raw_points]
+        assert sum(p, F(0)) == sum(q, F(0)) == 1
+        assert rowdot(p, points) == rowdot(q, points) == 1
+        gaps = [call(points, p, strike) - call(points, q, strike)
+                for strike in points]
+        assert gaps[0] == gaps[-1] == 0
+        assert sign_changes(gaps[1:-1]) == crossing_count
     return len(cases)
 
 
@@ -465,14 +509,14 @@ def main():
     variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
     confluent_totals = check_confluent_sharpness()
-    rigidity_cases = check_minimal_grid_rigidity()
+    rigidity_cases = check_minimal_support_rigidity()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print("confluent sharpness total multiplicities:", ", ".join(map(str, confluent_totals)))
-    print(f"minimal-grid rigidity cases: {rigidity_cases}")
+    print(f"irregular minimal-support rigidity cases: {rigidity_cases}")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

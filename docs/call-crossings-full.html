@@ -236,26 +236,26 @@
     <p>This proves sharpness for every total multiplicity $r$ and every prescribed node multiset, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 
-    <h2>The minimal geometric-grid witness is rigid</h2>
-    <p>The coefficient construction is the only nonzero signed solution on its chosen $r+3$ point grid, up to
-    scale. Indeed, let $u_0,\ldots,u_{r+2}$ be signed masses on $b^j$ and put</p>
-    $$U(z)=\sum_{j=0}^{r+2}u_jz^j.$$
-    <p>Mass and first-moment balance give $U(1)=U(b)=0$. Put $q_i=m_i$ for an interior node and
-    $q_i=m_i+1$ for an endpoint node. The transform-zero condition, together with the baseline balance at an
-    endpoint, gives</p>
-    $$\left.\left(z\frac{d}{dz}\right)^hU(z)\right|_{z=b^{s_i}}=0,
-      \qquad h=0,\ldots,q_i-1.$$
-    <p>Euler derivatives through order
-    $q-1$ vanish exactly when the ordinary derivatives through that order vanish, because the two derivative
-    lists are related by a triangular matrix with nonzero diagonal.</p>
-    <p>Thus $U$ is divisible by</p>
-    $$P(z)=(z-1)(z-b)\prod_i(z-b^{s_i})^{m_i}.$$
-    <p>Both polynomials have degree at most $r+2$, so $U=\lambda P$. After cancelling common mass and normalizing
-    the positive and negative parts to probabilities, the two laws are therefore unique up to interchange on
-    this fixed geometric grid.</p>
-    <p>This is a fixed-grid classification, not uniqueness across arbitrary support locations or continuous laws.
-    The exact certificate verifies full rank of the corresponding confluent moment matrix for the all-$r$ family
-    through $r=10$ and for the three repeated-node fixtures.</p>
+    <h2>Every minimal support shape has one sharp witness</h2>
+    <p>The geometric grid is not essential. Fix any $r+3$ distinct positive stock values
+    $x_0&lt;\cdots&lt;x_{r+2}$ and put $y_j=\log x_j$.</p>
+    <p>Form an exponent multiset containing one baseline copy of $0$ and $1$, together with $m_i$ copies of every
+    prescribed transform node $s_i$. If an exponent $s$ has total multiplicity $q$, use the $q$ rows</p>
+    $$y^h e^{sy},\qquad h=0,\ldots,q-1.$$
+    <p>These $r+2$ functions form an extended complete Chebyshev system, as in the lower-bound proof. Hence every
+    $(r+2)\times(r+2)$ minor of their evaluation matrix on the ordered $y_j$ is nonzero with the same oriented
+    sign.</p>
+    <p>The matrix therefore has rank $r+2$ and a one-dimensional nullspace. Its cofactor vector has no zero entries
+    and strictly alternating signs, so it is the unique signed mass vector, up to scale, matching mass, mean and
+    the prescribed confluent transform zeros on this support.</p>
+    <p>Splitting the vector into its positive and negative parts, normalizing, and rescaling their common mean to
+    one gives two martingale laws. The transform theorem forces at least $r$ crossings, while the $r+3$-point
+    support bound permits at most $r$; the pair therefore has exactly $r$.</p>
+    <p>Thus every fixed minimal support grid, up to a common scale, carries exactly one martingale sharp pair up to
+    interchange, not only the geometric grid. This still does not assert uniqueness after the support locations
+    themselves are allowed to vary, or among continuous laws.</p>
+    <p>The exact certificate verifies rank, alternating cofactors and the exact crossing count on 12 irregular
+    power-of-two grids: the all-$r$ family through $r=10$ and all three repeated-node fixtures.</p>
 
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
