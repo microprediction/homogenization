@@ -432,6 +432,35 @@ def sylvester_resultant(left, right):
     return polynomial_determinant(matrix)
 
 
+def cycle_pencil_determinant(weighted_cycles, size=8):
+    """Exact grounded det(H+uD) for a weighted sum of directed cycles."""
+
+    cycle_flow = [[ZERO for _ in range(size)] for _ in range(size)]
+    for cycle, weight in weighted_cycles:
+        for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+            cycle_flow[source][target] += weight
+    cycle_laplacian = [
+        [
+            (sum(cycle_flow[i], ZERO) if i == j else ZERO) - cycle_flow[i][j]
+            for j in range(size)
+        ]
+        for i in range(size)
+    ]
+    cycle_sym = [
+        [half * (cycle_laplacian[i][j] + cycle_laplacian[j][i]) for j in range(size)]
+        for i in range(size)
+    ]
+    cycle_skew = [
+        [half * (cycle_laplacian[i][j] - cycle_laplacian[j][i]) for j in range(size)]
+        for i in range(size)
+    ]
+    cycle_pencil = [
+        [[cycle_sym[i][j], cycle_skew[i][j]] for j in range(1, size)]
+        for i in range(1, size)
+    ]
+    return polynomial_determinant(cycle_pencil)
+
+
 # Ground state zero.  The quotient determinant is
 # det(H+uD)/det(H)=product_j(1+s_j u^2), where s_j=sigma_j^2.
 pencil = [
@@ -694,6 +723,46 @@ assert frequency_polynomial_by_t[4] == univariate_multiply(
 assert squared_frequency_polynomial(Fraction(10237, 10000)) > 0
 assert squared_frequency_polynomial(Fraction(10238, 10000)) < 0
 
+# A stronger graph-realizable lower witness uses a different support.  Add
+# weight 4/7 on the seven-cycle (1,2,6,7,3,4,5) to unit weight on the standard
+# directed eight-cycle.  The exact determinant gives the cubic below.
+strong_eight_cycle = (0, 1, 2, 3, 4, 5, 6, 7)
+strong_seven_cycle = (1, 2, 6, 7, 3, 4, 5)
+assert set(strong_eight_cycle) | set(strong_seven_cycle) == set(range(8))
+assert set(strong_eight_cycle) & set(strong_seven_cycle)
+strong_determinant = cycle_pencil_determinant(
+    ((strong_eight_cycle, ONE), (strong_seven_cycle, Fraction(4, 7)))
+)
+assert strong_determinant == [
+    Fraction(529397, 268912),
+    ZERO,
+    Fraction(1438987, 268912),
+    ZERO,
+    Fraction(1038851, 268912),
+    ZERO,
+    Fraction(735163, 1882384),
+]
+strong_frequency_coefficients = [
+    Fraction(336889), Fraction(-915719), Fraction(661087), Fraction(-66833)
+]
+strong_scale = strong_determinant[0] / strong_frequency_coefficients[0]
+assert [strong_determinant[0], -strong_determinant[2], strong_determinant[4], -strong_determinant[6]] == [
+    strong_scale * coefficient for coefficient in strong_frequency_coefficients
+]
+
+
+def strong_squared_frequency_polynomial(value):
+    return sum(coefficient * value ** (3 - index) for index, coefficient in enumerate(strong_frequency_coefficients))
+
+
+strong_frequency_intervals = (
+    (Fraction(3, 25), Fraction(13, 100)),
+    (Fraction(11057, 10000), Fraction(11058, 10000)),
+    (Fraction(149, 100), Fraction(3, 2)),
+)
+for left, right in strong_frequency_intervals:
+    assert strong_squared_frequency_polynomial(left) * strong_squared_frequency_polynomial(right) < 0
+
 # kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
 assert 8**2 > 3**2 * 5
 
@@ -705,4 +774,5 @@ print("coefficient relaxation admits sigma_2^2 = 1749/1000")
 print("exact eight-state two-cycle witness: 51/50 < sigma_2^2 < 103/100")
 print("sharp two-cycle family maximum: 1.02374 < sigma_2^2 < 1.02375")
 print("maximizing six-cycle weight: 2/5 < t < 41/100")
+print("stronger eight/seven-cycle witness: 1.1057 < sigma_2^2 < 1.1058")
 print("PASS")

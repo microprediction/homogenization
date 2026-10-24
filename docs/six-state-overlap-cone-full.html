@@ -260,6 +260,18 @@
     <p>The simple rational choice $t=2/5$ already lies within $1/20000$ of this optimum. Thus this
     support family gives a sharp graph-realizable lower frontier, while remaining far below the universal
     coefficient cutoff.</p>
+    <p>A different support shows that this first ray is not globally extremal among two-cycle mixtures. Give the
+    standard directed eight-cycle unit weight and the directed seven-cycle $(1\,2\,6\,7\,3\,4\,5)$ weight $4/7$;
+    exact grounding makes the squared frequencies the roots of</p>
+    $$336889s^3-915719s^2+661087s-66833=0.$$
+    <p>Rational sign evaluations isolate those roots in $(3/25,13/100)$,
+    $(11057/10000,11058/10000)$ and $(149/100,3/2)$. Therefore this connected balanced flow proves the stronger
+    graph-realizable lower bound</p>
+    <div class="equation-card">
+    $$1.1057&lt;\sigma_2^2&lt;1.1058.$$
+    </div>
+    <p>This is an exact witness, not a claim of optimality over every eight-state two-cycle support. It improves
+    the constructive lower frontier while remaining well below the unrestricted $7/4$ upper cutoff.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$
@@ -808,7 +820,7 @@
     <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
     <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
     <p>The exact two-cycle gap certificate enumerates the 624 six-state pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
-    <p>The eight-state certificate also constructs the displayed eight-/six-cycle mixture, verifies balance and its grounded determinant exactly, and isolates all three squared frequencies by rational sign changes. This shows why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
+    <p>The eight-state certificate constructs both displayed two-cycle mixtures, verifies their grounded determinants exactly and isolates every squared frequency by rational sign changes. It also optimizes the first support ray by exact resultants and Sturm counts, showing why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
     <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, even though the weaker unrestricted obstruction now fixes the state minimum at nine.</p>
