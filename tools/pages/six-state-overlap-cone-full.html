@@ -184,9 +184,9 @@
     $$1.105738&lt;\max_{t&gt;0}\sigma_2^2(t)&lt;1.105739,
       \qquad 0.56915550&lt;t_*&lt;0.56915552.$$
     </div>
-    <p>The rational $t=4/7$ witness is within $10^{-5}$ of this maximum. This is a sharp result for one support
-    ray, not a claim of optimality over every eight-state two-cycle support; it remains below the unrestricted
-    $7/4$ upper cutoff.</p>
+    <p>The rational $t=4/7$ witness is within $10^{-5}$ of this maximum. The comparison below makes this ray
+    optimal among additions of one simple cycle to the fixed unit eight-cycle, not among all balanced
+    eight-state flows; it remains below the unrestricted $7/4$ upper cutoff.</p>
     <h3>Why this support improves only at second order</h3>
     <p>Start instead from the unit directed eight-cycle and add weight $t$ on any one simple directed cycle $C$
     on the same eight labeled states. The middle squared frequency $s_C(t)$ is analytic near zero because
@@ -218,8 +218,24 @@
     <p>The sixteen seven-cycles still tie through fourth order. At fifth order they split into two rotation
     classes of eight: the displayed class has coefficient $-7$, while the other has coefficient $-8$; thus
     the displayed class is locally best among all 16,064 simple-cycle additions.</p>
-    <p>This perturbative classification explains how the stronger support was found. It does not prove that its
-    finite-weight maximum is global across all two-cycle supports.</p>
+    <h3>An exact finite-weight comparison</h3>
+    <p>Set $R=21/20$. For each cycle $C$, the exact polynomial $q_C(t)=Q_C(t,R)$ has degree at most seven.
+    Sturm isolation finds every positive root, and the sign of $Q_s(t,R)$ distinguishes an extreme-frequency
+    crossing (positive) from a middle-frequency crossing (negative); a zero would be a collision.</p>
+    <table class="data-table">
+      <thead><tr><th>signs at positive roots</th><th>rotation orbits</th><th>labeled cycles</th></tr></thead>
+      <tbody>
+        <tr><td>none</td><td>828</td><td>6,593</td></tr>
+        <tr><td>$+$</td><td>58</td><td>440</td></tr>
+        <tr><td>$+,+$</td><td>1,138</td><td>9,023</td></tr>
+        <tr><td>$-,-$</td><td>1</td><td>8</td></tr>
+      </tbody>
+    </table>
+    <p>There are no positive collision roots, and the sole negative-sign orbit is the displayed seven-cycle.
+    Every other middle branch starts at $1&lt;R$ and never meets $R$, so it stays below $21/20$ for all $t&gt;0$.</p>
+    <p>Because the displayed ray reaches more than $1.105738&gt;21/20$, it is the unique maximizing rotation
+    orbit among all 16,064 additions of one simple directed cycle to the unit standard eight-cycle. This is a
+    finite-weight support theorem, but it does not optimize over arbitrary balanced eight-state flows.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$

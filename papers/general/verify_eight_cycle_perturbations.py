@@ -3,8 +3,8 @@
 For unit flow on the standard directed eight-cycle, let s(t) be the middle
 squared intrinsic frequency after adding weight t on another simple directed
 cycle.  The base value s(0)=1 is simple.  This certificate recovers the first
-three derivatives for every cycle, then uses exact polynomial interpolation to
-break the remaining local ties through fifth order.
+three derivatives for every cycle, breaks the remaining local ties through
+fifth order, and classifies every crossing of the exact level s=21/20.
 """
 
 from fractions import Fraction
@@ -90,8 +90,6 @@ def matrix_product(left, right):
 # Interpolate a cubic in x=u^2 from u=0,1,2,3.
 vandermonde = [[Fraction(x) ** power for power in range(4)] for x in (0, 1, 4, 9)]
 inverse_vandermonde, _ = inverse_and_determinant(vandermonde)
-t_vandermonde = [[Fraction(t) ** power for power in range(8)] for t in range(8)]
-inverse_t_vandermonde, _ = inverse_and_determinant(t_vandermonde)
 
 
 def interpolate_even(values):
@@ -124,54 +122,63 @@ assert base_coefficients == [
     Fraction(1, 16), Fraction(7, 16), Fraction(7, 16), Fraction(1, 16)
 ]
 base_q_s = 3 * base_coefficients[0] - 2 * base_coefficients[1] + base_coefficients[2]
+ray_cache = {}
+
+
+def ray_coefficients(cycle):
+    """Return a_j(t) in Q(t,s)=a0*s^3-a1*s^2+a2*s-a3."""
+
+    if cycle in ray_cache:
+        return ray_cache[cycle]
+    symmetric, skew = cycle_forms(cycle)
+    coefficients_by_u = []
+    for u, inverse, base_determinant in base_data:
+        perturbation = [
+            [symmetric[i][j] + u * skew[i][j] for j in range(GROUND_SIZE)]
+            for i in range(GROUND_SIZE)
+        ]
+        product = matrix_product(inverse, perturbation)
+        power = [row[:] for row in product]
+        traces = []
+        for degree in range(1, GROUND_SIZE + 1):
+            traces.append(sum((power[i][i] for i in range(GROUND_SIZE)), ZERO))
+            if degree < GROUND_SIZE:
+                power = matrix_product(power, product)
+
+        # Newton identities give det(I+tA)=sum e_k(A)t^k.
+        elementary = [ONE]
+        for degree in range(1, GROUND_SIZE + 1):
+            elementary.append(
+                sum(
+                    ((-1) ** (j - 1) * elementary[degree - j] * traces[j - 1]
+                     for j in range(1, degree + 1)),
+                    ZERO,
+                ) / degree
+            )
+        coefficients_by_u.append(
+            [base_determinant * entry for entry in elementary]
+        )
+
+    ray = tuple(
+        tuple(
+            interpolate_even(
+                [coefficients_by_u[u][degree] for u in range(4)]
+            )[coefficient]
+            for degree in range(GROUND_SIZE + 1)
+        )
+        for coefficient in range(4)
+    )
+    ray_cache[cycle] = ray
+    return ray
 
 
 def frequency_derivatives(cycle):
     """Return exact s'(0), s''(0), s'''(0) for the middle squared frequency."""
 
-    symmetric, skew = cycle_forms(cycle)
-    first_determinant_coefficients = []
-    second_determinant_coefficients = []
-    third_determinant_coefficients = []
-    for u, inverse, base_determinant in base_data:
-        perturbation = [
-            [
-                symmetric[i][j] + u * skew[i][j]
-                for j in range(GROUND_SIZE)
-            ]
-            for i in range(GROUND_SIZE)
-        ]
-        product = matrix_product(inverse, perturbation)
-        trace = sum((product[i][i] for i in range(GROUND_SIZE)), ZERO)
-        trace_square = sum(
-            (
-                product[i][j] * product[j][i]
-                for i in range(GROUND_SIZE)
-                for j in range(GROUND_SIZE)
-            ),
-            ZERO,
-        )
-        product_square = matrix_product(product, product)
-        trace_cube = sum(
-            (
-                product_square[i][j] * product[j][i]
-                for i in range(GROUND_SIZE)
-                for j in range(GROUND_SIZE)
-            ),
-            ZERO,
-        )
-        first_determinant_coefficients.append(base_determinant * trace)
-        second_determinant_coefficients.append(
-            base_determinant * (trace * trace - trace_square) / 2
-        )
-        third_determinant_coefficients.append(
-            base_determinant
-            * (trace ** 3 - 3 * trace * trace_square + 2 * trace_cube) / 6
-        )
-
-    first = interpolate_even(first_determinant_coefficients)
-    second = interpolate_even(second_determinant_coefficients)
-    third = interpolate_even(third_determinant_coefficients)
+    ray = ray_coefficients(cycle)
+    first = [row[1] for row in ray]
+    second = [row[2] for row in ray]
+    third = [row[3] for row in ray]
 
     # Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t).  The determinant trace
     # identity gives coefficients through t^3; implicit differentiation at
@@ -216,25 +223,7 @@ def truncated_product(left, right, degree):
 def ray_taylor_coefficients(cycle, degree=5):
     """Return the exact middle-root Taylor coefficients through ``degree``."""
 
-    symmetric, skew = cycle_forms(cycle)
-    determinant_values = []
-    for weight in range(8):
-        values = []
-        for u in range(4):
-            matrix = [
-                [base_symmetric[i][j] + u * base_skew[i][j]
-                 + weight * (symmetric[i][j] + u * skew[i][j])
-                 for j in range(GROUND_SIZE)]
-                for i in range(GROUND_SIZE)
-            ]
-            _, determinant = inverse_and_determinant(matrix)
-            values.append(determinant)
-        determinant_values.append(interpolate_even(values))
-    ray = [
-        [sum((inverse_t_vandermonde[k][w] * determinant_values[w][j]
-              for w in range(8)), ZERO) for k in range(8)]
-        for j in range(4)
-    ]
+    ray = ray_coefficients(cycle)
 
     root = [ONE]
     for order in range(1, degree + 1):
@@ -252,6 +241,135 @@ def ray_taylor_coefficients(cycle, degree=5):
             residual -= terms[3][order]
         root.append(-residual / base_q_s)
     return tuple(root)
+
+
+def polynomial_trim(poly):
+    poly = list(poly)
+    while poly and poly[-1] == 0:
+        poly.pop()
+    return poly
+
+
+def polynomial_value(poly, point):
+    return sum((coefficient * point ** degree
+                for degree, coefficient in enumerate(poly)), ZERO)
+
+
+def polynomial_divmod(dividend, divisor):
+    dividend = polynomial_trim(dividend)
+    divisor = polynomial_trim(divisor)
+    quotient = [ZERO] * max(1, len(dividend) - len(divisor) + 1)
+    while dividend and len(dividend) >= len(divisor):
+        degree = len(dividend) - len(divisor)
+        coefficient = dividend[-1] / divisor[-1]
+        quotient[degree] = coefficient
+        for j, entry in enumerate(divisor):
+            dividend[degree + j] -= coefficient * entry
+        dividend = polynomial_trim(dividend)
+    return polynomial_trim(quotient), dividend
+
+
+def polynomial_gcd(left, right):
+    left = polynomial_trim(left)
+    right = polynomial_trim(right)
+    while right:
+        _, remainder = polynomial_divmod(left, right)
+        left, right = right, remainder
+    return [entry / left[-1] for entry in left]
+
+
+def sturm_sequence(poly):
+    derivative = [degree * poly[degree] for degree in range(1, len(poly))]
+    sequence = [polynomial_trim(poly), polynomial_trim(derivative)]
+    while sequence[-1]:
+        _, remainder = polynomial_divmod(sequence[-2], sequence[-1])
+        if not remainder:
+            break
+        sequence.append([-entry for entry in remainder])
+    return sequence
+
+
+def sign_variations(values):
+    signs = [1 if value > 0 else -1 for value in values if value]
+    return sum(left != right for left, right in zip(signs, signs[1:]))
+
+
+def roots_between(sequence, left, right):
+    assert polynomial_value(sequence[0], left)
+    assert polynomial_value(sequence[0], right)
+    return sign_variations(
+        [polynomial_value(poly, left) for poly in sequence]
+    ) - sign_variations([polynomial_value(poly, right) for poly in sequence])
+
+
+def nonroot_split(poly, left, right):
+    for denominator in range(2, 12):
+        point = left + (right - left) / denominator
+        if polynomial_value(poly, point):
+            return point
+    raise AssertionError("failed to find a rational non-root split")
+
+
+def isolate_roots(sequence, left, right, count):
+    intervals = []
+    pending = [(left, right, count)]
+    while pending:
+        lower, upper, number = pending.pop()
+        if number == 1:
+            intervals.append((lower, upper))
+            continue
+        split = nonroot_split(sequence[0], lower, upper)
+        left_count = roots_between(sequence, lower, split)
+        if left_count:
+            pending.append((lower, split, left_count))
+        if number - left_count:
+            pending.append((split, upper, number - left_count))
+    return intervals
+
+
+def signs_at_positive_roots(poly, classifier):
+    """Return exact classifier signs at every distinct positive root of poly."""
+
+    poly = polynomial_trim(poly)
+    classifier = polynomial_trim(classifier)
+    common = polynomial_gcd(poly, classifier)
+    common_signs = []
+    if len(common) > 1:
+        common_sequence = sturm_sequence(common)
+        common_bound = ONE + max(
+            abs(entry / common[-1]) for entry in common[:-1]
+        )
+        while not polynomial_value(common, common_bound):
+            common_bound += ONE
+        common_count = roots_between(common_sequence, ZERO, common_bound)
+        common_signs = [0] * common_count
+        poly, remainder = polynomial_divmod(poly, common)
+        assert not remainder
+    if len(poly) == 1:
+        return tuple(common_signs)
+    sequence = sturm_sequence(poly)
+    bound = ONE + max(abs(entry / poly[-1]) for entry in poly[:-1])
+    while not polynomial_value(poly, bound):
+        bound += ONE
+    count = roots_between(sequence, ZERO, bound)
+    classifier_sequence = sturm_sequence(classifier)
+    signs = []
+    for left, right in isolate_roots(sequence, ZERO, bound, count):
+        for _ in range(100):
+            left_value = polynomial_value(classifier, left)
+            right_value = polynomial_value(classifier, right)
+            if (left_value * right_value > 0
+                    and roots_between(classifier_sequence, left, right) == 0):
+                signs.append(1 if left_value > 0 else -1)
+                break
+            split = nonroot_split(poly, left, right)
+            if roots_between(sequence, left, split) == 1:
+                right = split
+            else:
+                left = split
+        else:
+            raise AssertionError("failed to separate a threshold crossing")
+    return tuple(sorted(signs + common_signs))
 
 
 def normalize_cycle(cycle):
@@ -363,6 +481,55 @@ strong_representative = min(rotation_orbit(strong_cycle))
 assert representative_series[strong_representative] == (
     ONE, ZERO, ONE, Fraction(-2), Fraction(7, 2), Fraction(-7)
 )
+
+# At a simple root of Q(t,21/20), Q_s<0 holds exactly for the middle
+# frequency; Q_s>0 identifies one of the two extreme frequencies.  Isolate
+# every positive t-root of Q and classify it by the exact sign of Q_s.
+threshold = Fraction(21, 20)
+representative_crossing_classes = {}
+labeled_crossing_classes = {}
+negative_crossing_representatives = []
+for cycle in representatives:
+    ray = ray_coefficients(cycle)
+    threshold_poly = [
+        ray[0][degree] * threshold ** 3
+        - ray[1][degree] * threshold ** 2
+        + ray[2][degree] * threshold
+        - ray[3][degree]
+        for degree in range(GROUND_SIZE + 1)
+    ]
+    derivative_poly = [
+        3 * ray[0][degree] * threshold ** 2
+        - 2 * ray[1][degree] * threshold
+        + ray[2][degree]
+        for degree in range(GROUND_SIZE + 1)
+    ]
+    crossing_class = signs_at_positive_roots(
+        threshold_poly, derivative_poly
+    )
+    representative_crossing_classes[crossing_class] = (
+        representative_crossing_classes.get(crossing_class, 0) + 1
+    )
+    multiplicity = len(rotation_orbit(cycle))
+    labeled_crossing_classes[crossing_class] = (
+        labeled_crossing_classes.get(crossing_class, 0) + multiplicity
+    )
+    if -1 in crossing_class:
+        negative_crossing_representatives.append(cycle)
+
+assert representative_crossing_classes == {
+    (): 828,
+    (1,): 58,
+    (1, 1): 1138,
+    (-1, -1): 1,
+}
+assert labeled_crossing_classes == {
+    (): 6593,
+    (1,): 440,
+    (1, 1): 9023,
+    (-1, -1): 8,
+}
+assert negative_crossing_representatives == [strong_representative]
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -374,4 +541,9 @@ print("first-derivative distribution:", first_distribution)
 print("first-order-neutral cycles:", first_distribution[ZERO])
 print("neutral second-derivative distribution:", neutral_curvature_distribution)
 print("curvature-two cycles by length:", neutral_curvature_lengths)
+print("21/20 crossing classes (rotation representatives):",
+      representative_crossing_classes)
+print("21/20 crossing classes (labeled cycles):", labeled_crossing_classes)
+print("supports with middle-frequency crossings:",
+      negative_crossing_representatives)
 print("PASS")
