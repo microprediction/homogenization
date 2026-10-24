@@ -1,9 +1,9 @@
 """Exact certificate for the all-r transform-zero crossing bound.
 
-The theorem in call-crossings-full.html uses two positive-weight call
-integrals.  This certificate checks that neither resulting crossing lower
-bound can be improved from those moment identities alone.  The finite fixtures
-and disjoint-interval continuous blurs use exact Fraction arithmetic.
+The theorem in call-crossings-full.html counts transform zeros with their
+full multiplicities.  This certificate checks that the crossing lower bound
+cannot be improved from those identities alone.  The finite fixtures and
+disjoint-interval continuous blurs use exact Fraction arithmetic.
 """
 
 from fractions import Fraction as F
@@ -53,6 +53,27 @@ def polynomial_from_roots(roots):
     for root in roots:
         result = polymul(result, [-root, F(1)])
     return result
+
+
+def polyval(coefficients, point):
+    """Evaluate an ascending-order polynomial exactly."""
+    result = F(0)
+    for coefficient in reversed(coefficients):
+        result = result * point + coefficient
+    return result
+
+
+def derivative(coefficients):
+    return [j * coefficients[j] for j in range(1, len(coefficients))]
+
+
+def root_order(coefficients, point):
+    order = 0
+    current = coefficients
+    while len(current) > 1 and polyval(current, point) == 0:
+        order += 1
+        current = derivative(current)
+    return order
 
 
 def sign_changes(values):
@@ -233,6 +254,53 @@ def check_all_r_sharpness(max_r=10):
     return max_r
 
 
+def check_confluent_sharpness():
+    """Check repeated transform nodes and their exact crossing counts."""
+    # b=16 makes the nodes s=0, 1/2, 1 correspond to rational roots
+    # 1, 4, 16.  The endpoint denominator removes one baseline root.
+    b = F(16)
+    cases = [(2, 1, 2), (1, 3, 1), (3, 2, 2)]
+    totals = []
+    for left, middle, right in cases:
+        multiplicities = (left, middle, right)
+        transform_roots = [F(1)] * left + [F(4)] * middle + [b] * right
+        total = sum(multiplicities)
+        s_poly = polynomial_from_roots(transform_roots)
+        coefficients = polynomial_from_roots([F(1), b] + transform_roots)
+        assert root_order(coefficients, F(1)) == left + 1
+        assert root_order(coefficients, F(4)) == middle
+        assert root_order(coefficients, b) == right + 1
+
+        # Derivatives of Delta M at a node a are triangular combinations
+        # of sum_j c_j a**j j**h.  These exact identities certify the
+        # asserted endpoint and interior multiplicities.
+        for root, order in ((F(1), left + 1), (F(4), middle), (b, right + 1)):
+            for power in range(order):
+                assert sum((c * root ** j * F(j) ** power
+                            for j, c in enumerate(coefficients)), F(0)) == 0
+
+        assert len(coefficients) == total + 3
+        assert all(coefficients[j] * coefficients[j + 1] < 0
+                   for j in range(len(coefficients) - 1))
+        normalizer = sum((max(c, F(0)) for c in coefficients), F(0))
+        p = [max(c, F(0)) / normalizer for c in coefficients]
+        q = [max(-c, F(0)) / normalizer for c in coefficients]
+        raw_mean = sum((p[j] * b ** j for j in range(len(p))), F(0))
+        points = [b ** j / raw_mean for j in range(len(p))]
+        assert sum(p, F(0)) == sum(q, F(0)) == 1
+        assert rowdot(p, points) == rowdot(q, points) == 1
+
+        gaps = [call(points, p, strike) - call(points, q, strike)
+                for strike in points]
+        assert gaps[0] == gaps[-1] == 0
+        for i in range(1, total + 2):
+            expected = b ** i * (b - 1) * s_poly[i - 1] / (normalizer * raw_mean)
+            assert gaps[i] == expected != 0
+        assert sign_changes(gaps[1:-1]) == total
+        totals.append(total)
+    return totals
+
+
 def check_measure_blurs(max_r=10):
     """Check the exact disjoint continuous and mixed smoothing construction.
 
@@ -300,11 +368,13 @@ def main():
     check_reversal_moment_identity()
     variation_cases = check_atom_variation_bound()
     max_r = check_all_r_sharpness()
+    confluent_totals = check_confluent_sharpness()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
     root = check_one_crossing()
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
+    print("confluent sharpness total multiplicities:", ", ".join(map(str, confluent_totals)))
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

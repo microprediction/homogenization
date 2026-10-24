@@ -99,7 +99,7 @@
   <main>
     <p class="demo-nav"><a href="./cycle-smile.html">&larr; cycle-smile summary</a></p>
     <h1>Moment identities and call crossings under cycle reversal</h1>
-    <p class="subtitle">Every distinct zero of the log-strike call transform forces a strict strike crossing, and the bound is sharp for every finite node set. The two endpoints give the exact moment-only bound for zero-leverage switched CIR models.</p>
+    <p class="subtitle">Zeros of the log-strike call transform force strict strike crossings with their full multiplicities, and the bound is sharp for every finite node multiset. The two endpoints give the exact moment-only bound for zero-leverage switched CIR models.</p>
 
     <h2>The call transform</h2>
     <p>Normalize the initial stock and discount factor to one. Let $X$ have either of two risk-neutral laws
@@ -123,23 +123,29 @@
     change-of-numeraire theorem of <a href="./bibliography.html#GemanElKarouiRochet1995">Geman, El Karoui and
     Rochet (1995)</a>.</p>
 
-    <h2>Every transform zero forces a crossing</h2>
-    <p>More generally, let $s_1,\ldots,s_r$ be distinct points of $[0,1]$. If $H(s_i)=0$ for every $i$ and
-    $G$ is not identically zero, then $G$ has at least $r$ strict sign changes. This statement includes endpoint
-    values by continuous extension; an interior condition is simply the fractional-moment identity
-    $\Delta\mathbb E[e^{s_iX}]=0$.</p>
-    <p>To prove it, suppose that $G$ has only $q&lt;r$ sign-change locations $x_1&lt;\cdots&lt;x_q$, with zero
-    intervals removed. The $q+1$ functions $e^{(s_i-1)k}$ form a strict Chebyshev system: their Wronskian is a
-    nonzero exponential times the Vandermonde determinant of the distinct exponents $s_i-1$. Therefore a
-    nonzero linear combination $p(k)$ can be chosen to vanish at the $x_j$.</p>
-    <p>This exponential total-positivity mechanism is classical; see
-    <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>.</p>
-    <p>The Chebyshev zero bound says that
-    these are all its zeros and that they are simple. After changing its overall sign, $pG\geq0$ everywhere and
-    $pG&gt;0$ somewhere. But</p>
-    $$\int_{\mathbb R}p(k)G(k)\,dk=\sum_{i=1}^{q+1}c_iH(s_i)=0,$$
-    <p>a contradiction. The argument is fixed-maturity and uses distinct transform nodes; it does not turn zeros
-    across maturities into strike crossings.</p>
+    <h2>Transform zeros force crossings, including multiplicity</h2>
+    <p>Let $s_1,\ldots,s_d$ be distinct points of $[0,1]$, assign positive multiplicities
+    $m_1,\ldots,m_d$, and put $r=\sum_i m_i$. If
+    $H^{(j)}(s_i)=0$ for $0\leq j&lt;m_i$ and $G$ is not identically zero, then $G$ has at least $r$ strict sign
+    changes.</p>
+    <p>Endpoint derivatives are understood by analytic continuation. At an interior node the conditions are the
+    corresponding fractional log-moment identities; at zero they match ordinary log moments through order $m_i$,
+    and at one they match stock-numeraire log moments through that order.</p>
+    <p>For the proof, suppose that $G$ has only $q&lt;r$ sign-change locations
+    $x_1&lt;\cdots&lt;x_q$, with zero intervals removed. Choose integers $0\leq n_i\leq m_i$ with
+    $\sum_i n_i=q+1$.</p>
+    <p>The $q+1$ functions</p>
+    $$k^j e^{(s_i-1)k},\qquad 1\leq i\leq d,\qquad 0\leq j&lt;n_i,$$
+    <p>form an extended complete Chebyshev system. Their Wronskian is a nonzero exponential times a confluent
+    Vandermonde determinant, so a nonzero linear combination $p(k)$ that vanishes at the $x_j$ has no other zeros;
+    all those zeros are simple.</p>
+    <p>After changing its overall sign, $pG\geq0$ everywhere and $pG&gt;0$ somewhere. On the other hand, every
+    basis integral is a derivative of $H$, so</p>
+    $$\int_{\mathbb R}p(k)G(k)\,dk
+      =\sum_{i=1}^d\sum_{j=0}^{n_i-1}c_{ij}H^{(j)}(s_i)=0,$$
+    <p>a contradiction. The confluent exponential total-positivity mechanism is classical; see
+    <a href="./bibliography.html#Schoenberg1947">Schoenberg (1947)</a>. The result is fixed-maturity and does not
+    turn zeros across maturities into strike crossings.</p>
 
     <h2>One endpoint moment forces one crossing; two force two</h2>
     <p>A crossing means a strict sign change of the continuous function $G$, after zero intervals are removed.
@@ -193,17 +199,18 @@
     one crossing. This does not say that a particular leveraged CIR pair has only one crossing; it identifies the
     precise point where a second universal sign change can no longer be deduced.</p>
 
-    <h2>Sharpness for every finite transform-node set</h2>
-    <p>The lower bound cannot be improved from transform zeros alone. Fix any distinct
-    $s_1,\ldots,s_r\in[0,1]$, choose $b&gt;1$, put $a_i=b^{s_i}$, and define</p>
-    $$P(z)=(z-1)(z-b)\prod_{i=1}^r(z-a_i)=\sum_{j=0}^{r+2}c_jz^j.$$
+    <h2>Sharpness for every finite transform-node multiset</h2>
+    <p>The lower bound cannot be improved from transform zeros alone. Fix distinct
+    $s_1,\ldots,s_d\in[0,1]$ with positive multiplicities $m_i$, put $r=\sum_i m_i$, choose $b&gt;1$, and define</p>
+    $$P(z)=(z-1)(z-b)\prod_{i=1}^d(z-b^{s_i})^{m_i}
+      =\sum_{j=0}^{r+2}c_jz^j.$$
     <p>All roots are positive, so the nonzero coefficients $c_j$ alternate in sign. Normalize their positive and
     negative parts into two laws on the geometric stock grid $b^j$, then divide both grids by their common mean.</p>
     <p>The identities $P(1)=P(b)=0$ give unit mass and the common mean. Moreover,</p>
     $$\Delta M(s)=\frac{\mu^{-s}}{Z}P(b^s).$$
-    <p>An interior $s_i$ is therefore a zero of $H$. If $s_i$ is an endpoint, its factor duplicates the baseline
-    factor $z-1$ or $z-b$, so division by $s(s-1)$ still leaves a zero. Thus the prescribed nodes are exactly the
-    zeros of $H$ on $[0,1]$.</p>
+    <p>An interior $s_i$ is therefore a zero of $H$ of order $m_i$. At an endpoint the prescribed factors combine
+    with the baseline factor $z-1$ or $z-b$; division by $s(s-1)$ removes exactly the baseline order, leaving
+    multiplicity $m_i$. Thus $H$ has precisely the prescribed node multiset on $[0,1]$.</p>
     <p>It remains to count the crossings rather than merely invoke the lower bound. Write</p>
     $$S(z)=\frac{P(z)}{(z-1)(z-b)}=\sum_{j=0}^rd_jz^j,$$
     <p>and let $\Gamma(K)=G(\log K)$ be the call gap in ordinary strike. At the interior grid points
@@ -215,7 +222,7 @@
     $r+1$ grid points and, being affine between adjacent support points, has exactly one strict zero in each of the
     $r$ intervening intervals. It has no further strict crossing in the two edge intervals, where one endpoint is
     the identically zero outer call gap.</p>
-    <p>This proves sharpness for every $r$ and every prescribed node set, but the
+    <p>This proves sharpness for every total multiplicity $r$ and every prescribed node multiset, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 
     <h2>The sharp witnesses use the fewest possible atoms</h2>
@@ -329,8 +336,8 @@
     <p>It also checks the
     all-$r$ telescoping construction with rational arithmetic for $2\leq r\leq10$, including the exact
     $r+3$ support count, the sharp individual atom minima and disjoint continuous and mixed multiplicative blurs. It also
-    exhausts 288 small integer signed measures, checking the two-step variation inequality and atom bounds
-    exactly.</p>
+    checks confluent fixtures of total multiplicities $5$, $5$ and $7$, and exhausts 288 small integer signed
+    measures, checking the two-step variation inequality and atom bounds exactly.</p>
 
     <p class="muted">Certificate:
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/smile/verify_call_crossing_lower_bound.py">verify_call_crossing_lower_bound.py</a>.
