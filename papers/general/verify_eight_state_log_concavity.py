@@ -415,6 +415,58 @@ def dictionary_determinant(matrix):
     return result
 
 
+def cycle_family_pencil_determinant(cycles, size=8):
+    """Grounded det(H+uD) when cycle weights are monomials in t."""
+
+    cycle_flow = [[{} for _ in range(size)] for _ in range(size)]
+    for cycle, t_power in cycles:
+        weight = {(t_power, 0): ONE}
+        for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+            cycle_flow[source][target] = poly_add(cycle_flow[source][target], weight)
+    cycle_laplacian = []
+    for i in range(size):
+        row_sum = {}
+        for entry in cycle_flow[i]:
+            row_sum = poly_add(row_sum, entry)
+        cycle_laplacian.append(
+            [
+                poly_add(row_sum if i == j else {}, cycle_flow[i][j], -ONE)
+                for j in range(size)
+            ]
+        )
+    cycle_sym = [
+        [
+            poly_scale(poly_add(cycle_laplacian[i][j], cycle_laplacian[j][i]), half)
+            for j in range(size)
+        ]
+        for i in range(size)
+    ]
+    cycle_skew = [
+        [
+            poly_scale(
+                poly_add(cycle_laplacian[i][j], cycle_laplacian[j][i], -ONE),
+                half,
+            )
+            for j in range(size)
+        ]
+        for i in range(size)
+    ]
+    cycle_pencil = [
+        [
+            poly_add(
+                cycle_sym[i][j],
+                {
+                    (t_power, u_power + 1): coefficient
+                    for (t_power, u_power), coefficient in cycle_skew[i][j].items()
+                },
+            )
+            for j in range(1, size)
+        ]
+        for i in range(1, size)
+    ]
+    return dictionary_determinant(cycle_pencil)
+
+
 def sylvester_resultant(left, right):
     """Resultant in the outer variable; coefficients are univariate lists."""
 
@@ -505,49 +557,12 @@ assert squared_frequency_polynomial(Fraction(103, 100)) < 0
 # Optimize the same graph-realizable family exactly.  Give the six-cycle
 # weight t>0 and retain unit weight on the eight-cycle.  Sparse bivariate
 # arithmetic below uses exponents (power of t, power of u).
-family_flow = [[{} for _ in range(state_count)] for _ in range(state_count)]
-for cycle, weight in (
-    ((0, 5, 6, 1, 2, 3, 7, 4), {(0, 0): ONE}),
-    ((0, 5, 7, 6, 1, 4), {(1, 0): ONE}),
-):
-    for source, target in zip(cycle, cycle[1:] + cycle[:1]):
-        family_flow[source][target] = poly_add(family_flow[source][target], weight)
-
-family_laplacian = []
-for i in range(state_count):
-    row_sum = {}
-    for entry in family_flow[i]:
-        row_sum = poly_add(row_sum, entry)
-    family_laplacian.append(
-        [
-            poly_add(row_sum if i == j else {}, family_flow[i][j], -ONE)
-            for j in range(state_count)
-        ]
+family_pencil_determinant = cycle_family_pencil_determinant(
+    (
+        ((0, 5, 6, 1, 2, 3, 7, 4), 0),
+        ((0, 5, 7, 6, 1, 4), 1),
     )
-family_sym = [
-    [
-        poly_scale(poly_add(family_laplacian[i][j], family_laplacian[j][i]), half)
-        for j in range(state_count)
-    ]
-    for i in range(state_count)
-]
-family_skew = [
-    [
-        poly_scale(poly_add(family_laplacian[i][j], family_laplacian[j][i], -ONE), half)
-        for j in range(state_count)
-    ]
-    for i in range(state_count)
-]
-family_pencil = [
-    [
-        poly_add(
-            family_sym[i][j],
-            {(t_power, u_power + 1): coefficient for (t_power, u_power), coefficient in family_skew[i][j].items()},
-        )
-        for j in range(1, state_count)
-    ]
-    for i in range(1, state_count)
-]
+)
 
 # Apart from the common factor (1+t)/64, these are respectively det(H)
 # and the three even-u coefficients of det(H+uD).
@@ -565,7 +580,7 @@ for u_power, coefficient in enumerate(family_coefficients):
     for t_power, value in enumerate(univariate_multiply([ONE, ONE], coefficient)):
         if value:
             expected_family_determinant[(t_power, 2 * u_power)] = value / 64
-assert dictionary_determinant(family_pencil) == expected_family_determinant
+assert family_pencil_determinant == expected_family_determinant
 
 # Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t) has the three squared
 # frequencies as roots.  Store it as t coefficients whose entries are
@@ -757,11 +772,197 @@ def strong_squared_frequency_polynomial(value):
 
 strong_frequency_intervals = (
     (Fraction(3, 25), Fraction(13, 100)),
-    (Fraction(11057, 10000), Fraction(11058, 10000)),
+    (Fraction(2211463, 2000000), Fraction(2764329, 2500000)),
     (Fraction(149, 100), Fraction(3, 2)),
 )
 for left, right in strong_frequency_intervals:
     assert strong_squared_frequency_polynomial(left) * strong_squared_frequency_polynomial(right) < 0
+
+# Optimize this stronger support ray.  Give the seven-cycle weight t>0 and
+# keep unit weight on the standard eight-cycle.  Apart from the common
+# factor (1+t)/64, the rows below are the even-u determinant coefficients.
+strong_family_determinant = cycle_family_pencil_determinant(
+    ((strong_eight_cycle, 0), (strong_seven_cycle, 1))
+)
+strong_family_coefficients = [
+    [Fraction(value) for value in values]
+    for values in (
+        (4, 34, 96, 107, 47, 7),
+        (28, 118, 204, 211, 135, 35),
+        (28, 94, 136, 121, 69, 21),
+        (4, 10, 12, 9, 5, 1),
+    )
+]
+expected_strong_family_determinant = {}
+for u_power, coefficient in enumerate(strong_family_coefficients):
+    for t_power, value in enumerate(univariate_multiply([ONE, ONE], coefficient)):
+        if value:
+            expected_strong_family_determinant[(t_power, 2 * u_power)] = value / 64
+assert strong_family_determinant == expected_strong_family_determinant
+assert [
+    univariate_value(univariate_multiply([ONE, ONE], coefficient), Fraction(4, 7)) / 64
+    for coefficient in strong_family_coefficients
+] == [strong_determinant[index] for index in (0, 2, 4, 6)]
+
+# Q(t,s)=a0(t)s^3-a1(t)s^2+a2(t)s-a3(t).  Here it is stored as
+# coefficients in s, each an ordinary polynomial in t.
+strong_frequency_by_s = [
+    univariate_scale(strong_family_coefficients[3], -ONE),
+    strong_family_coefficients[2],
+    univariate_scale(strong_family_coefficients[1], -ONE),
+    strong_family_coefficients[0],
+]
+strong_a, strong_b, strong_c, strong_d = (
+    strong_family_coefficients[0],
+    univariate_scale(strong_family_coefficients[1], -ONE),
+    strong_family_coefficients[2],
+    univariate_scale(strong_family_coefficients[3], -ONE),
+)
+strong_discriminant = []
+for scale, term in (
+    (ONE, univariate_multiply(univariate_power(strong_b, 2), univariate_power(strong_c, 2))),
+    (-4, univariate_multiply(strong_a, univariate_power(strong_c, 3))),
+    (-4, univariate_multiply(univariate_power(strong_b, 3), strong_d)),
+    (-27, univariate_multiply(univariate_power(strong_a, 2), univariate_power(strong_d, 2))),
+    (18, univariate_multiply(univariate_multiply(strong_a, strong_b), univariate_multiply(strong_c, strong_d))),
+):
+    strong_discriminant = univariate_add(strong_discriminant, univariate_scale(term, scale))
+strong_discriminant_factor = [
+    Fraction(value)
+    for value in (
+        32, 176, 332, 120, -551, -1066, -723, 574, 2096, 2892,
+        2587, 1714, 795, 266, 49,
+    )
+]
+assert strong_discriminant == univariate_scale(
+    univariate_multiply(univariate_power([ONE, ONE], 6), strong_discriminant_factor),
+    4096,
+)
+assert all(value > 0 for value in power_to_bernstein(strong_discriminant_factor))
+assert all(value > 0 for value in affine_substitute(strong_discriminant_factor, ONE, ONE))
+
+
+def evaluate_s_coefficients(coefficients, value):
+    result = []
+    for power, coefficient in enumerate(coefficients):
+        result = univariate_add(result, univariate_scale(coefficient, value**power))
+    return result
+
+
+# On 0<=t<=1 the middle root lies in (2/3,6/5).  The first sign is one
+# Bernstein check; the second needs the two half-intervals.  For t>=1,
+# signs at 1/2 and 1 put the middle root below one.
+strong_two_thirds = evaluate_s_coefficients(strong_frequency_by_s, Fraction(2, 3))
+strong_six_fifths = evaluate_s_coefficients(strong_frequency_by_s, Fraction(6, 5))
+assert all(value > 0 for value in power_to_bernstein(strong_two_thirds))
+for left, right in ((ZERO, Fraction(1, 2)), (Fraction(1, 2), ONE)):
+    assert all(
+        value > 0
+        for value in bernstein_on_interval(univariate_scale(strong_six_fifths, -ONE), left, right)
+    )
+assert all(
+    value > 0
+    for value in evaluate_s_coefficients(strong_frequency_by_s, Fraction(1, 2))
+)
+strong_at_one = evaluate_s_coefficients(strong_frequency_by_s, ONE)
+assert strong_at_one == [ZERO, ZERO, 16 * ONE, 8 * ONE, -24 * ONE, -8 * ONE]
+assert all(
+    value > 0
+    for value in affine_substitute([Fraction(-2), -ONE, 3 * ONE, ONE], ONE, ONE)
+)
+assert strong_frequency_by_s[0][0:4] == [-4 * ONE, -10 * ONE, -12 * ONE, -9 * ONE]
+assert [coefficient[0] for coefficient in strong_frequency_by_s] == univariate_scale(
+    univariate_multiply([-ONE, ONE], [ONE, -6 * ONE, ONE]), 4
+)
+
+# Eliminate s from Q=partial_t Q=0.  A 6-by-6 Sylvester determinant gives
+# exactly two stationary parameters in (0,1).  Rational isolation and the
+# final linear subresultant identify one as the middle-root maximum and the
+# other as a stationary point of the upper root.
+strong_frequency_t_derivative_by_s = [
+    [index * coefficient for index, coefficient in enumerate(poly)][1:]
+    for poly in strong_frequency_by_s
+]
+strong_stationary_polynomial = [
+    Fraction(value)
+    for value in (
+        -72, -576, -1706, -1830, 2320, 10597, 15934, 10494, -4646,
+        -19682, -25606, -21777, -13680, -6562, -2296, -504, -16, 13,
+    )
+]
+expected_strong_resultant = univariate_scale(
+    univariate_multiply(
+        univariate_multiply([ZERO, ONE], univariate_power([ONE, ONE], 6)),
+        strong_stationary_polynomial,
+    ),
+    -262144,
+)
+assert sylvester_resultant(
+    strong_frequency_by_s, strong_frequency_t_derivative_by_s
+) == expected_strong_resultant
+assert sturm_root_count(strong_stationary_polynomial, ZERO, ONE) == 2
+strong_max_t_interval = (Fraction(56915550, 100000000), Fraction(56915552, 100000000))
+strong_other_t_interval = (Fraction(76570425, 100000000), Fraction(76570428, 100000000))
+for left, right in (strong_max_t_interval, strong_other_t_interval):
+    assert sturm_root_count(strong_stationary_polynomial, left, right) == 1
+
+strong_subresultant_a = [
+    Fraction(value)
+    for value in (
+        144, 48, -4432, -10988, 16284, 105092, 169618, 78162,
+        -128111, -256398, -218666, -106078, -27618, -2436, 189,
+    )
+]
+strong_subresultant_b = [
+    Fraction(value)
+    for value in (
+        -144, -1200, -4512, -11748, -24020, -34452, -25686, 7882,
+        42981, 52930, 38510, 18754, 6226, 1316, 133,
+    )
+]
+strong_minus_b = univariate_scale(strong_subresultant_b, -ONE)
+strong_substituted_q = []
+strong_substituted_dt_q = []
+for power, coefficient in enumerate(strong_frequency_by_s):
+    factor = univariate_multiply(
+        univariate_power(strong_minus_b, power),
+        univariate_power(strong_subresultant_a, 3 - power),
+    )
+    strong_substituted_q = univariate_add(
+        strong_substituted_q, univariate_multiply(coefficient, factor)
+    )
+    strong_substituted_dt_q = univariate_add(
+        strong_substituted_dt_q,
+        univariate_multiply(strong_frequency_t_derivative_by_s[power], factor),
+    )
+assert not univariate_divmod(strong_substituted_q, strong_stationary_polynomial)[1]
+assert not univariate_divmod(strong_substituted_dt_q, strong_stationary_polynomial)[1]
+
+strong_max_s_interval = (Fraction(1105738, 1000000), Fraction(1105739, 1000000))
+strong_other_s_interval = (Fraction(138744, 100000), Fraction(138745, 100000))
+for t_interval, s_interval in (
+    (strong_max_t_interval, strong_max_s_interval),
+    (strong_other_t_interval, strong_other_s_interval),
+):
+    assert all(
+        value > 0
+        for value in bernstein_on_interval(strong_subresultant_a, *t_interval)
+    )
+    lower_test = univariate_add(
+        strong_minus_b, univariate_scale(strong_subresultant_a, -s_interval[0])
+    )
+    upper_test = univariate_add(
+        strong_minus_b, univariate_scale(strong_subresultant_a, -s_interval[1])
+    )
+    assert all(value > 0 for value in bernstein_on_interval(lower_test, *t_interval))
+    assert all(value < 0 for value in bernstein_on_interval(upper_test, *t_interval))
+
+# The middle root has one stationary point on (0,1), its value exceeds the
+# endpoint value one, and it is below one for t>=1.  Hence this is the unique
+# global maximum.  The simple rational t=4/7 witness is within 1e-5 of it.
+assert strong_max_s_interval[0] > ONE
+assert strong_other_s_interval[0] > Fraction(6, 5)
+assert strong_max_s_interval[1] - strong_frequency_intervals[1][0] < Fraction(1, 100000)
 
 # kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
 assert 8**2 > 3**2 * 5
@@ -775,4 +976,6 @@ print("exact eight-state two-cycle witness: 51/50 < sigma_2^2 < 103/100")
 print("sharp two-cycle family maximum: 1.02374 < sigma_2^2 < 1.02375")
 print("maximizing six-cycle weight: 2/5 < t < 41/100")
 print("stronger eight/seven-cycle witness: 1.1057 < sigma_2^2 < 1.1058")
+print("sharp stronger-support maximum: 1.105738 < sigma_2^2 < 1.105739")
+print("maximizing seven-cycle weight: 0.56915550 < t < 0.56915552")
 print("PASS")
