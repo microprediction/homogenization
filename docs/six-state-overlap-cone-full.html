@@ -284,6 +284,32 @@
     <p>The rational $t=4/7$ witness is within $10^{-5}$ of this maximum. This is a sharp result for one support
     ray, not a claim of optimality over every eight-state two-cycle support; it remains below the unrestricted
     $7/4$ upper cutoff.</p>
+    <h3>Why this support improves only at second order</h3>
+    <p>Start instead from the unit directed eight-cycle and add weight $t$ on any one simple directed cycle $C$
+    on the same eight labeled states. The middle squared frequency $s_C(t)$ is analytic near zero because
+    $s_C(0)=1$ is a simple root, by classical analytic perturbation theory
+    (<a href="./bibliography.html#Kato1949">Kato, 1949</a>).</p>
+    <p>Write
+      $\det\{H(t)+uD(t)\}=\sum_{k=0}^3a_k(t)u^{2k}$ and
+      $Q(t,s)=a_0(t)s^3-a_1(t)s^2+a_2(t)s-a_3(t)$.
+      For $M(t)=M_0+tM_1$, the exact identity</p>
+    $$\det M(t)=\det M_0\left[1+t\,\operatorname{tr}A+
+      \frac{t^2}{2}\{(\operatorname{tr}A)^2-\operatorname{tr}(A^2)\}\right]+O(t^3),
+      \qquad A=M_0^{-1}M_1,$$
+    <p>evaluated at $u=0,1,2,3$, recovers the first two derivatives of every $a_k$ by rational interpolation.
+    Implicit differentiation of $Q\{t,s_C(t)\}=0$ then gives $s_C'(0)$ and $s_C''(0)$ exactly.</p>
+    <p>Exhausting all 16,064 simple directed cycles, reduced to 2,025 rotation orbits, gives</p>
+    <table class="data-table">
+      <thead><tr><th>$s_C'(0)$</th><th>$0$</th><th>$-1/2$</th><th>$-1$</th><th>$-3/2$</th><th>$-2$</th><th>$-5/2$</th><th>$-3$</th><th>$-7/2$</th><th>$-4$</th></tr></thead>
+      <tbody><tr><td>cycle count</td><td>268</td><td>704</td><td>1,880</td><td>3,200</td><td>4,724</td><td>2,752</td><td>1,936</td><td>512</td><td>88</td></tr></tbody>
+    </table>
+    <p>Thus no added simple cycle improves the middle mode at first order. Among the 268 neutral cycles,
+      $s_C''(0)$ equals $-2,-1,0,1,2$ with respective counts $24,32,156,32,24$.</p>
+    <p>The maximum curvature two is attained by sixteen seven-cycles and eight eight-cycles. The displayed
+    seven-cycle is one of them, so its local response is
+      $\sigma_2^2(t)=1+t^2+O(t^3)$.</p>
+    <p>This perturbative classification explains how the stronger support was found. It does not prove that its
+    finite-weight maximum is global across all two-cycle supports.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$
@@ -832,7 +858,7 @@
     <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
     <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
     <p>The exact two-cycle gap certificate enumerates the 624 six-state pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
-    <p>The eight-state certificate constructs both displayed two-cycle mixtures, verifies their grounded determinants exactly and isolates every squared frequency by rational sign changes. It optimizes both support rays by exact resultants, Bernstein signs and Sturm counts, showing why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
+    <p>The eight-state certificates construct both displayed two-cycle mixtures, verify their grounded determinants exactly and isolate every squared frequency by rational sign changes. They optimize both support rays by exact resultants, classify all 16,064 one-cycle perturbations, and show why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
     <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, even though the weaker unrestricted obstruction now fixes the state minimum at nine.</p>
