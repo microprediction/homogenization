@@ -1063,6 +1063,40 @@ assert eighth_upper_labeled_classes == {
 assert sorted(eighth_upper_negative_representatives) == sorted(
     top_seven_representatives
 )
+
+# A final nearby rational gap isolates the ninth-place orbit.  The number of
+# middle-crossing representatives drops from nine to eight, with exactly the
+# displayed six-cycle removed.
+(
+    ninth_lower_representative_classes,
+    ninth_lower_labeled_classes,
+    ninth_lower_negative_representatives,
+) = classify_threshold(Fraction(100478, 100000))
+assert ninth_lower_representative_classes == {
+    (): 892, (1,): 58, (1, 1): 1066, (-1, -1): 9,
+}
+assert ninth_lower_labeled_classes == {
+    (): 7105, (1,): 440, (1, 1): 8447, (-1, -1): 72,
+}
+ninth_representative = (0, 1, 5, 6, 2, 4)
+top_eight_representatives = top_seven_representatives + [eighth_representative]
+assert sorted(ninth_lower_negative_representatives) == sorted(
+    top_eight_representatives + [ninth_representative]
+)
+(
+    ninth_upper_representative_classes,
+    ninth_upper_labeled_classes,
+    ninth_upper_negative_representatives,
+) = classify_threshold(Fraction(100480, 100000))
+assert ninth_upper_representative_classes == {
+    (): 893, (1,): 58, (1, 1): 1066, (-1, -1): 8,
+}
+assert ninth_upper_labeled_classes == {
+    (): 7113, (1,): 440, (1, 1): 8447, (-1, -1): 64,
+}
+assert sorted(ninth_upper_negative_representatives) == sorted(
+    top_eight_representatives
+)
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -1102,4 +1136,8 @@ print("1.00514 crossing classes:", eighth_lower_representative_classes)
 print("unique eighth-place representative:", eighth_representative)
 print("1.00516 crossing classes:", eighth_upper_representative_classes)
 print("eighth-place maximum: 1.00514 < sigma_2^2 < 1.00516")
+print("1.00478 crossing classes:", ninth_lower_representative_classes)
+print("unique ninth-place representative:", ninth_representative)
+print("1.00480 crossing classes:", ninth_upper_representative_classes)
+print("ninth-place maximum: 1.00478 < sigma_2^2 < 1.00480")
 print("PASS")
