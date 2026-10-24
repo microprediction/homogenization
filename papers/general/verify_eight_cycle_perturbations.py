@@ -892,6 +892,55 @@ runner_max_t_bracket = stationary_t_brackets[0]
 runner_max_s_bracket = stationary_s_brackets[0][1]
 assert runner_max_s_bracket[0] > ONE
 assert stationary_s_brackets[2][1][1] < ONE
+
+# The next exact threshold gap identifies a tied third-place pair.  At 1.023
+# precisely four orbits cross on the middle branch; at 1.024 only the winner
+# and runner-up remain.  The two extra six-cycles have identical ray cubics,
+# as also follows from reflection followed by reversing every directed edge.
+(
+    third_representative_crossing_classes,
+    third_labeled_crossing_classes,
+    third_negative_crossing_representatives,
+) = classify_threshold(Fraction(1023, 1000))
+assert third_representative_crossing_classes == {
+    (): 874, (1,): 58, (1, 1): 1089, (-1, -1): 4,
+}
+assert third_labeled_crossing_classes == {
+    (): 6961, (1,): 440, (1, 1): 8631, (-1, -1): 32,
+}
+third_representatives = [
+    (0, 1, 2, 6, 7, 3),
+    (0, 1, 2, 7, 3, 4),
+]
+assert sorted(third_negative_crossing_representatives) == sorted(
+    [strong_representative, runner_representative] + third_representatives
+)
+assert ray_coefficients(third_representatives[0]) == ray_coefficients(
+    third_representatives[1]
+)
+(
+    fourth_representative_crossing_classes,
+    fourth_labeled_crossing_classes,
+    fourth_negative_crossing_representatives,
+) = classify_threshold(Fraction(128, 125))
+assert fourth_representative_crossing_classes == {
+    (): 876, (1,): 58, (1, 1): 1089, (-1, -1): 2,
+}
+assert fourth_labeled_crossing_classes == {
+    (): 6977, (1,): 440, (1, 1): 8631, (-1, -1): 16,
+}
+assert sorted(fourth_negative_crossing_representatives) == [
+    strong_representative, runner_representative
+]
+
+# Relabel the previously optimized eight-/six-cycle family so its Hamilton
+# cycle is standard; the added cycle lands in the third-place pair.
+optimized_base = (0, 5, 6, 1, 2, 3, 7, 4)
+optimized_six_cycle = (0, 5, 7, 6, 1, 4)
+standard_labels = {vertex: index for index, vertex in enumerate(optimized_base)}
+relabeled_six_cycle = tuple(standard_labels[vertex]
+                            for vertex in optimized_six_cycle)
+assert min(rotation_orbit(relabeled_six_cycle)) == third_representatives[1]
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -916,4 +965,7 @@ print("supports above 26/25:", sorted(runner_negative_crossing_representatives))
 print("runner-up root brackets at t=3/10:", runner_brackets)
 print("runner-up maximizing weight bracket:", runner_max_t_bracket)
 print("runner-up sharp maximum bracket:", runner_max_s_bracket)
+print("1023/1000 crossing classes:", third_representative_crossing_classes)
+print("tied third-place representatives:", third_representatives)
+print("128/125 crossing classes:", fourth_representative_crossing_classes)
 print("PASS")
