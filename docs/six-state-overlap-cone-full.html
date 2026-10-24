@@ -294,10 +294,12 @@
       $Q(t,s)=a_0(t)s^3-a_1(t)s^2+a_2(t)s-a_3(t)$.
       For $M(t)=M_0+tM_1$, the exact identity</p>
     $$\det M(t)=\det M_0\left[1+t\,\operatorname{tr}A+
-      \frac{t^2}{2}\{(\operatorname{tr}A)^2-\operatorname{tr}(A^2)\}\right]+O(t^3),
+      \frac{t^2}{2}\{(\operatorname{tr}A)^2-\operatorname{tr}(A^2)\}+
+      \frac{t^3}{6}\{(\operatorname{tr}A)^3-3\operatorname{tr}A\operatorname{tr}(A^2)
+      +2\operatorname{tr}(A^3)\}\right]+O(t^4),
       \qquad A=M_0^{-1}M_1,$$
-    <p>evaluated at $u=0,1,2,3$, recovers the first two derivatives of every $a_k$ by rational interpolation.
-    Implicit differentiation of $Q\{t,s_C(t)\}=0$ then gives $s_C'(0)$ and $s_C''(0)$ exactly.</p>
+    <p>evaluated at $u=0,1,2,3$, recovers the first three derivatives of every $a_k$ by rational interpolation.
+    Implicit differentiation of $Q\{t,s_C(t)\}=0$ then gives the first three derivatives of $s_C$ exactly.</p>
     <p>Exhausting all 16,064 simple directed cycles, reduced to 2,025 rotation orbits, gives</p>
     <table class="data-table">
       <thead><tr><th>$s_C'(0)$</th><th>$0$</th><th>$-1/2$</th><th>$-1$</th><th>$-3/2$</th><th>$-2$</th><th>$-5/2$</th><th>$-3$</th><th>$-7/2$</th><th>$-4$</th></tr></thead>
@@ -305,9 +307,11 @@
     </table>
     <p>Thus no added simple cycle improves the middle mode at first order. Among the 268 neutral cycles,
       $s_C''(0)$ equals $-2,-1,0,1,2$ with respective counts $24,32,156,32,24$.</p>
-    <p>The maximum curvature two is attained by sixteen seven-cycles and eight eight-cycles. The displayed
-    seven-cycle is one of them, so its local response is
-      $\sigma_2^2(t)=1+t^2+O(t^3)$.</p>
+    <p>The maximum curvature two is attained by sixteen seven-cycles and eight eight-cycles. At third order the
+    seven-cycles have $s_C'''(0)=-12$, whereas the eight-cycles have $s_C'''(0)=-18$; hence every seven-cycle
+    maximizer is strictly better than every eight-cycle maximizer for all sufficiently small positive $t$.</p>
+    <p>The displayed seven-cycle is one of the locally selected directions, with
+      $\sigma_2^2(t)=1+t^2-2t^3+O(t^4)$.</p>
     <p>This perturbative classification explains how the stronger support was found. It does not prove that its
     finite-weight maximum is global across all two-cycle supports.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
