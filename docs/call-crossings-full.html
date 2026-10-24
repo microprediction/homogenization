@@ -222,6 +222,17 @@
     $r+1$ grid points and, being affine between adjacent support points, has exactly one strict zero in each of the
     $r$ intervening intervals. It has no further strict crossing in the two edge intervals, where one endpoint is
     the identically zero outer call gap.</p>
+    <p>Those zeros are explicit. For $i=1,\ldots,r$, define the signed coefficient tails</p>
+    $$A_i=\sum_{j=i+1}^{r+2}c_j,\qquad B_i=\sum_{j=i+1}^{r+2}c_jb^j.$$
+    <p>On $(K_i,K_{i+1})$ the call gap is</p>
+    $$\Gamma(K)=\frac{B_i-\mu K A_i}{Z\mu},$$
+    <p>so $A_i\neq0$ and its unique crossing is</p>
+    <div class="equation-card">
+    $$K_i^\star=\frac{B_i}{\mu A_i},\qquad
+      \frac{b^i}{\mu}&lt;K_i^\star&lt;\frac{b^{i+1}}{\mu}.$$
+    </div>
+    <p>Thus every crossing in the sharp family is simple and interlaces the support grid. Repeating a transform node
+    raises its zero multiplicity in $H$ but does not merge strike crossings: the $r$ strike roots remain distinct.</p>
     <p>This proves sharpness for every total multiplicity $r$ and every prescribed node multiset, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 

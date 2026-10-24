@@ -196,7 +196,7 @@ def check_three_crossings():
 
 
 def check_all_r_sharpness(max_r=10):
-    """Check the geometric-grid construction and tail identity exactly."""
+    """Check the geometric-grid construction, tail identity and roots exactly."""
     for r in range(2, max_r + 1):
         # Nodes s=l/(r-1) give a_l=2**l when b=2**(r-1).
         b = F(2 ** (r - 1))
@@ -297,6 +297,19 @@ def check_confluent_sharpness():
             expected = b ** i * (b - 1) * s_poly[i - 1] / (normalizer * raw_mean)
             assert gaps[i] == expected != 0
         assert sign_changes(gaps[1:-1]) == total
+
+        # Confluence is in transform space only.  The ordinary-strike
+        # crossings remain distinct, simple roots that interlace the grid.
+        roots = []
+        for i in range(1, total + 1):
+            tail_mass = sum((p[j] - q[j] for j in range(i + 1, len(p))), F(0))
+            tail_mean = sum(((p[j] - q[j]) * points[j]
+                             for j in range(i + 1, len(p))), F(0))
+            root = tail_mean / tail_mass
+            assert points[i] < root < points[i + 1]
+            assert call(points, p, root) == call(points, q, root)
+            roots.append(root)
+        assert len(roots) == len(set(roots)) == total
         totals.append(total)
     return totals
 
