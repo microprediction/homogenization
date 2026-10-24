@@ -139,6 +139,26 @@
     <p>This proves sharpness for every total multiplicity $r$ and every prescribed node multiset, but the
     constructed laws are finite martingale laws, not switched-CIR models.</p>
 
+    <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
+    <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
+    $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
+    $$z^nP(b/z)=(-1)^n b^{n/2}P(z).$$
+    <p>The coefficient identity implies that the common raw mean is $\mu=b^{n/2}$. Hence the normalized support
+    points $b^{j-n/2}$ occur in reciprocal pairs.</p>
+    <p>For a unit-mean law $R$, let $\mathcal D R$ be the law of $1/S$ under the stock-numeraire measure
+    $dR^S=S\,dR$. Its call curve satisfies the model-free identity</p>
+    $$C_{\mathcal D R}(K)=1-K+K C_R(1/K).$$
+    <p>If $r$ is even, each coefficient-part law is self-dual; if $r$ is odd, numeraire duality exchanges the two
+    laws. Consequently their call gap obeys</p>
+    <div class="equation-card">
+    $$\Gamma(K)=(-1)^r K\Gamma(1/K).$$
+    </div>
+    <p>All crossing strikes therefore occur in reciprocal pairs. When $r$ is odd, the unpaired central crossing is
+    exactly at the forward, $K=1$; when $r$ is even there is no forced at-the-money crossing.</p>
+    <p>This is the finite-support stock-numeraire version of put&ndash;call symmetry; see
+    <a href="./bibliography.html#CarrLee2009">Carr and Lee (2009)</a>. The reciprocal conclusion uses symmetry of
+    the whole transform-node multiset, not merely one node at $s=1/2$.</p>
+
     <h2>The sharp witnesses use the fewest possible atoms</h2>
     <p>There is also a matching support lower bound. Let two nonidentical finite unit-mean laws have $N$ distinct stock values
     in the union of their supports, after cancelling any common atom with equal mass. Their ordinary-strike call

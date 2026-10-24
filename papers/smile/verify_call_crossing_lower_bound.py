@@ -212,6 +212,12 @@ def check_all_r_sharpness(max_r=10):
         q = [max(-c, F(0)) / normalizer for c in coefficients]
         raw_mean = sum((p[j] * b ** j for j in range(len(p))), F(0))
         points = [b ** j / raw_mean for j in range(len(p))]
+        degree = len(coefficients) - 1
+        reciprocal_scale = F(2 ** (((r - 1) * degree) // 2))
+        assert raw_mean == reciprocal_scale
+        for j, coefficient in enumerate(coefficients):
+            assert coefficients[degree - j] * b ** (degree - j) == \
+                F((-1) ** degree) * reciprocal_scale * coefficient
         assert len(points) == r + 3
         assert all(weight != 0 for weight in coefficients)
         positive_atoms = sum(c > 0 for c in coefficients)
@@ -251,6 +257,22 @@ def check_all_r_sharpness(max_r=10):
             assert points[i] < root < points[i + 1]
             roots.append(root)
         assert len(roots) == r
+        assert all(roots[i] * roots[-1 - i] == 1 for i in range(r))
+        if r % 2:
+            assert roots[r // 2] == 1
+
+        # The symmetric node grid is stock-numeraire self-dual when r is
+        # even and exchanges the two laws when r is odd.
+        for j in range(len(points)):
+            if r % 2:
+                assert q[degree - j] == points[j] * p[j]
+                assert p[degree - j] == points[j] * q[j]
+            else:
+                assert p[degree - j] == points[j] * p[j]
+                assert q[degree - j] == points[j] * q[j]
+            gap = call(points, p, points[j]) - call(points, q, points[j])
+            dual_gap = call(points, p, 1 / points[j]) - call(points, q, 1 / points[j])
+            assert gap == F((-1) ** r) * points[j] * dual_gap
     return max_r
 
 

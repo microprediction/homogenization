@@ -3196,5 +3196,16 @@
   "doi": "10.1090/s0002-9904-1953-09695-1",
   "url": "https://doi.org/10.1090/s0002-9904-1953-09695-1",
   "annotation": "Surveys smoothing transformations through total positivity and variation diminution. The call-crossing note proves its specialized two-integration signed-measure bound directly."
+ },
+ {
+  "role": "survey_finance",
+  "key": "CarrLee2009",
+  "authors": "Carr, P. and Lee, R.",
+  "year": 2009,
+  "title": "Put-call symmetry: Extensions and applications",
+  "venue": "Mathematical Finance 19(4):523-560",
+  "doi": "10.1111/j.1467-9965.2009.00379.x",
+  "url": "https://doi.org/10.1111/j.1467-9965.2009.00379.x",
+  "annotation": "Develops stock-numeraire put-call symmetry and its extensions. The call-crossing note uses the elementary one-period dual-law identity to show that symmetric transform nodes produce reciprocal crossing strikes."
  }
 ]
