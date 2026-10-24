@@ -1029,6 +1029,40 @@ assert seventh_upper_labeled_classes == {
 assert sorted(seventh_upper_negative_representatives) == sorted(
     top_six_representatives
 )
+
+# The same argument one layer lower identifies a unique eighth-place
+# six-cycle.  No numerical maximizer is used: the exact threshold crossing
+# sets differ by exactly this one rotation orbit.
+(
+    eighth_lower_representative_classes,
+    eighth_lower_labeled_classes,
+    eighth_lower_negative_representatives,
+) = classify_threshold(Fraction(100514, 100000))
+assert eighth_lower_representative_classes == {
+    (): 893, (1,): 58, (1, 1): 1066, (-1, -1): 8,
+}
+assert eighth_lower_labeled_classes == {
+    (): 7113, (1,): 440, (1, 1): 8447, (-1, -1): 64,
+}
+eighth_representative = (0, 1, 5, 2, 7, 4)
+top_seven_representatives = top_six_representatives + [seventh_representative]
+assert sorted(eighth_lower_negative_representatives) == sorted(
+    top_seven_representatives + [eighth_representative]
+)
+(
+    eighth_upper_representative_classes,
+    eighth_upper_labeled_classes,
+    eighth_upper_negative_representatives,
+) = classify_threshold(Fraction(100516, 100000))
+assert eighth_upper_representative_classes == {
+    (): 894, (1,): 58, (1, 1): 1066, (-1, -1): 7,
+}
+assert eighth_upper_labeled_classes == {
+    (): 7121, (1,): 440, (1, 1): 8447, (-1, -1): 56,
+}
+assert sorted(eighth_upper_negative_representatives) == sorted(
+    top_seven_representatives
+)
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -1064,4 +1098,8 @@ print("1.01605 crossing classes:", seventh_lower_representative_classes)
 print("unique seventh-place representative:", seventh_representative)
 print("1.01607 crossing classes:", seventh_upper_representative_classes)
 print("seventh-place maximum: 1.01605 < sigma_2^2 < 1.01607")
+print("1.00514 crossing classes:", eighth_lower_representative_classes)
+print("unique eighth-place representative:", eighth_representative)
+print("1.00516 crossing classes:", eighth_upper_representative_classes)
+print("eighth-place maximum: 1.00514 < sigma_2^2 < 1.00516")
 print("PASS")
