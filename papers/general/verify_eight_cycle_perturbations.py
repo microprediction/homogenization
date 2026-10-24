@@ -995,6 +995,40 @@ assert all(
         ray_coefficients(fifth_representatives[1]),
     )
 )
+
+# One more threshold gap isolates the next orbit.  The lower threshold leaves
+# the preceding six orbits plus one six-cycle; the upper threshold removes
+# only that cycle.  Thus it is the unique seventh-place rotation orbit.
+(
+    seventh_lower_representative_classes,
+    seventh_lower_labeled_classes,
+    seventh_lower_negative_representatives,
+) = classify_threshold(Fraction(101605, 100000))
+assert seventh_lower_representative_classes == {
+    (): 888, (1,): 58, (1, 1): 1072, (-1, -1): 7,
+}
+assert seventh_lower_labeled_classes == {
+    (): 7073, (1,): 440, (1, 1): 8495, (-1, -1): 56,
+}
+seventh_representative = (0, 1, 5, 6, 2, 3)
+top_six_representatives = top_four_representatives + fifth_representatives
+assert sorted(seventh_lower_negative_representatives) == sorted(
+    top_six_representatives + [seventh_representative]
+)
+(
+    seventh_upper_representative_classes,
+    seventh_upper_labeled_classes,
+    seventh_upper_negative_representatives,
+) = classify_threshold(Fraction(101607, 100000))
+assert seventh_upper_representative_classes == {
+    (): 889, (1,): 58, (1, 1): 1072, (-1, -1): 6,
+}
+assert seventh_upper_labeled_classes == {
+    (): 7081, (1,): 440, (1, 1): 8495, (-1, -1): 48,
+}
+assert sorted(seventh_upper_negative_representatives) == sorted(
+    top_six_representatives
+)
 print("maximal-curvature third-derivative distribution:", maximal_curvature_thirds)
 print("strong seven-cycle derivatives:", frequency_derivatives((1, 2, 6, 7, 3, 4, 5)))
 print("maximal-curvature fifth-order classes:", fifth_order_classes)
@@ -1026,4 +1060,8 @@ print("1.01697 crossing classes:", fifth_lower_representative_classes)
 print("tied fifth-place representatives:", fifth_representatives)
 print("1.01699 crossing classes:", fifth_upper_representative_classes)
 print("fifth-place maximum: 1.01697 < sigma_2^2 < 1.01699")
+print("1.01605 crossing classes:", seventh_lower_representative_classes)
+print("unique seventh-place representative:", seventh_representative)
+print("1.01607 crossing classes:", seventh_upper_representative_classes)
+print("seventh-place maximum: 1.01605 < sigma_2^2 < 1.01607")
 print("PASS")
