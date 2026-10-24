@@ -129,6 +129,23 @@
     </div>
     <p>This rational cutoff is nearly sharp for the coefficient relaxation, rather than an arbitrary loose box. At the exact point $x=y=1749/1000$, $z=33241/250000$, the four independent $B_i$ are positive and strictly increasing and every internal $Q_i^{(49)}$ inequality is strict; thus these universal coefficient inequalities alone permit $\sigma_2^2=1.749$, only $1/1000$ below $7/4$.</p>
     <p>The relaxation witness is not claimed to come from a balanced graph. Improving the universal graph bound below $1.749$ would therefore require additional realizability information, not just the Gao&ndash;Yuan coefficient inequalities used here.</p>
+    <p>Graph realizability nevertheless does not preserve the complete Fourier ladder of one directed cycle. Give
+    the directed eight-cycle $(0\,5\,6\,1\,2\,3\,7\,4)$ weight one and the directed six-cycle
+    $(0\,5\,7\,6\,1\,4)$ weight $2/5$. Their sum is a connected balanced eight-state flow, and exact grounding
+    gives</p>
+    $$\frac{\det(H+uD)}{\det H}
+      =1+\frac{14057}{4541}u^2+\frac{10791}{4541}u^4+\frac{1187}{4541}u^6.$$
+    <p>Its squared intrinsic frequencies are the three roots of</p>
+    $$q(s)=4541s^3-14057s^2+10791s-1187.$$
+    <p>Exact sign evaluations put one root in each of
+    $(13/100,14/100)$, $(51/50,103/100)$ and $(19/10,2)$. Therefore the middle root obeys</p>
+    <div class="equation-card">
+    $$\frac{51}{50}<\sigma_2^2<\frac{103}{100}.$$
+    </div>
+    <p>A single directed eight-cycle has $\sigma_2^2=\cot^2(\pi/4)=1$, so the overlapping shorter cycle raises
+    the second mode. Thus the single-cycle bounds $\sigma_j\leq\cot(j\pi/8)$ do not extend mode by mode to
+    arbitrary balanced flows, even to a mixture of two cycles. The example is a graph-realizable lower bound,
+    not a claim that the unrestricted $7/4$ upper cutoff is sharp.</p>
     <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
     <div class="equation-card">
     $$N_{\min}=9.$$
@@ -676,7 +693,8 @@
     <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity for $L=3$, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
     <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
     <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
-    <p>The exact two-cycle gap certificate enumerates the 624 pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
+    <p>The exact two-cycle gap certificate enumerates the 624 six-state pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
+    <p>The eight-state certificate also constructs the displayed eight-/six-cycle mixture, verifies balance and its grounded determinant exactly, and isolates all three squared frequencies by rational sign changes. This shows why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
     <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
     <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
     <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, even though the weaker unrestricted obstruction now fixes the state minimum at nine.</p>

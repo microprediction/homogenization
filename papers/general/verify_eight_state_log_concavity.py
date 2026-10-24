@@ -8,6 +8,7 @@ rational interval cover of the remaining three-variable implication.
 
 from fractions import Fraction
 from heapq import heappop, heappush
+from itertools import permutations
 from math import comb
 
 
@@ -277,6 +278,103 @@ assert ZERO < point_B[0] < point_B[1] < point_B[2] < point_B[3]
 assert point_Q1 > 0 and point_Q2 > 0 and point_Q3 > 0
 assert Fraction(7, 4) - relaxation_point[1] == Fraction(1, 1000)
 
+# A graph-realizable lower witness.  Add weight 2/5 on the six-cycle
+# (0,5,7,6,1,4) to weight one on the eight-cycle
+# (0,5,6,1,2,3,7,4).  Both cycle flows are balanced.
+state_count = 8
+flow = [[ZERO for _ in range(state_count)] for _ in range(state_count)]
+for cycle, weight in (
+    ((0, 5, 6, 1, 2, 3, 7, 4), ONE),
+    ((0, 5, 7, 6, 1, 4), Fraction(2, 5)),
+):
+    for source, target in zip(cycle, cycle[1:] + cycle[:1]):
+        flow[source][target] += weight
+assert all(
+    sum(flow[i], ZERO)
+    == sum((flow[j][i] for j in range(state_count)), ZERO)
+    for i in range(state_count)
+)
+
+laplacian = [
+    [
+        (sum(flow[i], ZERO) if i == j else ZERO) - flow[i][j]
+        for j in range(state_count)
+    ]
+    for i in range(state_count)
+]
+half = Fraction(1, 2)
+sym = [
+    [half * (laplacian[i][j] + laplacian[j][i]) for j in range(state_count)]
+    for i in range(state_count)
+]
+skew = [
+    [half * (laplacian[i][j] - laplacian[j][i]) for j in range(state_count)]
+    for i in range(state_count)
+]
+
+
+def permutation_sign(permutation):
+    inversions = sum(
+        permutation[i] > permutation[j]
+        for i in range(len(permutation))
+        for j in range(i + 1, len(permutation))
+    )
+    return -1 if inversions % 2 else 1
+
+
+def polynomial_determinant(matrix):
+    """Leibniz determinant for a small matrix of univariate polynomials."""
+
+    result = []
+    for permutation in permutations(range(len(matrix))):
+        term = [Fraction(permutation_sign(permutation))]
+        for row, column in enumerate(permutation):
+            term = univariate_multiply(term, matrix[row][column])
+        result = univariate_add(result, term)
+    return result
+
+
+# Ground state zero.  The quotient determinant is
+# det(H+uD)/det(H)=product_j(1+s_j u^2), where s_j=sigma_j^2.
+pencil = [
+    [[sym[i][j], skew[i][j]] for j in range(1, state_count)]
+    for i in range(1, state_count)
+]
+pencil_determinant = polynomial_determinant(pencil)
+assert pencil_determinant == [
+    Fraction(31787, 50000),
+    ZERO,
+    Fraction(98399, 50000),
+    ZERO,
+    Fraction(75537, 50000),
+    ZERO,
+    Fraction(8309, 50000),
+]
+det_h = pencil_determinant[0]
+e1, e2, e3 = (pencil_determinant[index] / det_h for index in (2, 4, 6))
+assert (e1, e2, e3) == (
+    Fraction(14057, 4541),
+    Fraction(10791, 4541),
+    Fraction(1187, 4541),
+)
+
+
+def squared_frequency_polynomial(value):
+    return 4541 * value**3 - 14057 * value**2 + 10791 * value - 1187
+
+
+# The cubic has one root in each disjoint interval below.  Since its degree is
+# three, these are all its roots, ordered as s_3<s_2<s_1.
+frequency_intervals = (
+    (Fraction(13, 100), Fraction(14, 100)),
+    (Fraction(51, 50), Fraction(103, 100)),
+    (Fraction(19, 10), Fraction(2)),
+)
+for left, right in frequency_intervals:
+    assert squared_frequency_polynomial(left) * squared_frequency_polynomial(right) < 0
+assert squared_frequency_polynomial(Fraction(51, 50)) > 0
+assert squared_frequency_polynomial(Fraction(103, 100)) < 0
+
 # kappa^2=1+2/sqrt(5)>7/4 because 8>3*sqrt(5), checked by squaring.
 assert 8**2 > 3**2 * 5
 
@@ -285,4 +383,5 @@ print("rational cover leaves:", leaves)
 print("maximum subdivision depth:", maximum_depth)
 print("proved sigma_2^2 < 7/4 < cot(pi/5)^2")
 print("coefficient relaxation admits sigma_2^2 = 1749/1000")
+print("exact eight-state two-cycle witness: 51/50 < sigma_2^2 < 103/100")
 print("PASS")
