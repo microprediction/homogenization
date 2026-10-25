@@ -30,6 +30,13 @@ R, MU, SIG = 0.03, [0.15, -0.05], [0.12, 0.30]   # bull, bear
 Q1, Q2 = 3.0, 9.0                                # exit rates at speed 1: bull lasts 4 months, bear about 6 weeks
 SPEEDS = [0.25, 0.5, 1, 2, 4]
 GAMMA, T_CRRA, T_MV = 3.0, 5.0, 1.0
+ROUND_TOL = 64.0 * np.finfo(float).eps
+
+
+def roundoff_tolerance(*values):
+    """Machine-scaled tolerance for identities exact in real arithmetic."""
+    scale = max(1.0, *(float(np.max(np.abs(value))) for value in values))
+    return ROUND_TOL * scale
 
 
 def main():
@@ -46,7 +53,8 @@ def main():
         p = psi(rr, MU, SIG, GAMMA)
         pb = float(stationary(Q) @ p)
         k2 = K2(m * Q1, m * Q2, p, p)
-        assert abs(k2 - K(Q, p, p)) < 1e-15
+        k_group = K(Q, p, p)
+        assert abs(k2 - k_group) < roundoff_tolerance(k2, k_group)
         ex = ce_observed_exact(Q, rr, MU, SIG, GAMMA, T_CRRA)
         f1 = ce_observed_first(Q, rr, MU, SIG, GAMMA, T_CRRA)
         eng = ce_observed_engine(Q, rr, MU, SIG, GAMMA, T_CRRA, [1, 2, 4])
@@ -220,7 +228,9 @@ def main():
           f"one-sided prediction {(1.0-gc)*k_one_sided:.12e}")
     print("      first-order convergence ratios per speed doubling:", ", ".join(f"{x:.3f}" for x in ratios))
     ok &= abs(k_mu_s - k_s_mu) > 0.07
-    ok &= abs(k_direct - k_symmetric_expansion) < 2e-16
+    ok &= abs(k_direct - k_symmetric_expansion) < roundoff_tolerance(
+        k_direct, k_symmetric_expansion
+    )
     ok &= abs(k_one_sided / k_direct - 1.0) > 0.8
     ok &= abs(scaled[-1] / limit - 1.0) < 3e-4
     ok &= all(1.95 < x < 2.05 for x in ratios[1:])
@@ -283,11 +293,13 @@ def main():
     print(f"      two-state K(z,z) {contrast_k:.12f}; pointwise ranks {pointwise_ranks}, "
           f"integrated rank {integrated_rank}, determinant {integrated_det:.12f}")
     print(f"      Gauss-Legendre versus exact integrated Gram error {quadrature_error:.3e}")
-    ok &= abs(contrast_k - 0.5) < 1e-15
+    ok &= abs(contrast_k - 0.5) < roundoff_tolerance(contrast_k, 0.5)
     ok &= pointwise_ranks == [1, 1, 1, 1, 1]
     ok &= integrated_rank == 2
-    ok &= abs(integrated_det - 1.0 / 48.0) < 2e-15
-    ok &= quadrature_error < 2e-15
+    ok &= abs(integrated_det - 1.0 / 48.0) < roundoff_tolerance(
+        integrated_det, 1.0 / 48.0
+    )
+    ok &= quadrature_error < roundoff_tolerance(integrated, integrated_exact)
 
     # Quantitative version of the rank theorem.  On centered L2(pi), let
     # R_sym be the self-adjoint part of (-Q)^(-1).  If its positive spectrum
@@ -433,8 +445,12 @@ def main():
         f"      max sensitivity {max_sensitivity:.12f}; support values "
         f"{support_sensitivity[0]:.12f}, {support_sensitivity[1]:.12f}"
     )
-    ok &= abs(endpoint_det - 1.0 / 16.0) < 2e-15
-    ok &= abs(uniform_det - 1.0 / 48.0) < 2e-15
+    ok &= abs(endpoint_det - 1.0 / 16.0) < roundoff_tolerance(
+        endpoint_det, 1.0 / 16.0
+    )
+    ok &= abs(uniform_det - 1.0 / 48.0) < roundoff_tolerance(
+        uniform_det, 1.0 / 48.0
+    )
     ok &= abs(determinant_gain - 3.0) < 2e-14
     ok &= max_sensitivity <= 2.0 + 2e-14
     ok &= max(abs(value - 2.0) for value in support_sensitivity) < 2e-14
