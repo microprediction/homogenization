@@ -197,6 +197,17 @@ def sign_changes(values):
     return sum(left != right for left, right in zip(signs, signs[1:]))
 
 
+def run_lengths(signs):
+    """Return the lengths of consecutive constant-sign blocks."""
+    lengths = [1]
+    for left, right in zip(signs, signs[1:]):
+        if left == right:
+            lengths[-1] += 1
+        else:
+            lengths.append(1)
+    return lengths
+
+
 def check_atom_variation_bound(max_atoms=8):
     """Exhaust small exact signed measures satisfying mass and mean balance."""
     checked = 0
@@ -585,6 +596,63 @@ def check_larger_support_circuit_cones(max_r=7):
     return decomposition_count, circuit_count
 
 
+def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
+    """Enumerate exact orthant feasibility and extreme-ray counts."""
+    orthant_count = 0
+    feasible_count = 0
+    ray_count = 0
+    simplicial_count = 0
+    for row_count in range(4, max_row_count + 1):
+        for excess in range(max_excess + 1):
+            column_count = row_count + 1 + excess
+            subsets = list(combinations(range(column_count), row_count + 1))
+
+            # A rational Vandermonde representative independently checks
+            # that every circuit has the predicted alternating orientation.
+            points = [F(j + 1) for j in range(column_count)]
+            rows = [[point ** degree for point in points]
+                    for degree in range(row_count)]
+            assert matrix_rank(rows) == row_count
+            for columns in subsets:
+                circuit = circuit_vector(rows, columns)
+                values = [circuit[j] for j in columns]
+                assert all(left * right < 0
+                           for left, right in zip(values, values[1:]))
+
+            # Global sign reversal gives the same orthant cone, so fix the
+            # first sign positive and exhaust the remaining patterns.
+            for tail in product((-1, 1), repeat=column_count - 1):
+                signs = (1,) + tail
+                compatible = [
+                    columns for columns in subsets
+                    if all(signs[left] * signs[right] < 0
+                           for left, right in zip(columns, columns[1:]))
+                ]
+                variation = sign_changes(signs)
+                assert bool(compatible) == (variation >= row_count)
+                orthant_count += 1
+                if not compatible:
+                    continue
+
+                feasible_count += 1
+                ray_count += len(compatible)
+                covered = {column for columns in compatible for column in columns}
+                assert len(covered) == column_count
+                assert len(compatible) >= column_count - row_count
+
+                if variation == row_count:
+                    lengths = run_lengths(signs)
+                    product_count = 1
+                    for length in lengths:
+                        product_count *= length
+                    assert len(lengths) == row_count + 1
+                    assert len(compatible) == product_count
+                    is_simplicial = sum(length > 1 for length in lengths) <= 1
+                    assert (len(compatible) == column_count - row_count) == is_simplicial
+                    simplicial_count += is_simplicial
+    return orthant_count, feasible_count, ray_count, simplicial_count
+
+
 def check_measure_blurs(max_r=10):
     """Check the exact disjoint continuous and mixed smoothing construction.
 
@@ -655,6 +723,8 @@ def main():
     confluent_totals = check_confluent_sharpness()
     rigidity_cases = check_minimal_support_rigidity()
     cone_cases, cone_circuits = check_larger_support_circuit_cones()
+    orthants, feasible_orthants, extreme_rays, simplicial = \
+        check_orthant_circuit_combinatorics()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
@@ -664,6 +734,9 @@ def main():
     print(f"irregular minimal-support rigidity cases: {rigidity_cases}")
     print(f"larger-support conformal circuit cones: {cone_cases} decompositions, "
           f"{cone_circuits} minimal circuits")
+    print(f"orthant circuit enumeration: {orthants} patterns, "
+          f"{feasible_orthants} feasible, {extreme_rays} extreme rays, "
+          f"{simplicial} critical simplicial cones")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

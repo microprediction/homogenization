@@ -283,6 +283,30 @@
     their full-support kernel vectors into 81 alternating minimal circuits. Every component independently matches
     mass, mean and the confluent transform constraints and has exactly $r$ strict call crossings.</p>
 
+    <h2>The sign pattern determines feasibility and counts the rays</h2>
+    <p>Put $p=r+2$ and let $V(\sigma)$ be the number of sign changes in
+    $\sigma\in\{-1,1\}^N$. Since every circuit alternates on its $p+1$ selected coordinates,</p>
+    <div class="equation-card">
+    $$\mathcal C_\sigma\neq\{0\}\quad\Longleftrightarrow\quad V(\sigma)\geq p.$$
+    </div>
+    <p>Indeed, a compatible circuit gives sufficiency, while every extreme ray gives necessity. More precisely,
+    the extreme rays are in one-to-one correspondence with the $(p+1)$-subsets of coordinates on which
+    $\sigma$ alternates.</p>
+    <p>Whenever the cone is nonzero, every coordinate belongs to some compatible circuit: choose $p+1$
+    consecutive sign runs containing it. Summing these rays gives a strictly signed kernel vector, so the cone is
+    full-dimensional in $\ker A$ and has dimension $N-p=N-r-2$.</p>
+    <p>The boundary case $V(\sigma)=p$ is especially explicit. If its $p+1$ sign runs have lengths
+    $n_0,\ldots,n_p$, every compatible circuit chooses exactly one coordinate from every run, and therefore</p>
+    <div class="equation-card">
+    $$\#\{\text{extreme rays of }\mathcal C_\sigma\}=\prod_{j=0}^{p}n_j.$$
+    </div>
+    <p>Since $\dim\mathcal C_\sigma=1+\sum_j(n_j-1)$, this critical cone is simplicial exactly when at most one
+    run has length greater than one. The feasibility threshold $V(\sigma)\geq r+2$ is the exact transform-cone
+    counterpart of the earlier two-integration bound $r\leq V(d)-2$.</p>
+    <p>The exact certificate exhausts 15,120 sign patterns for $4\leq p\leq9$ and up to three support points above
+    the minimum. It finds 1,308 feasible orthants, 8,560 extreme rays and 141 critical simplicial cones, while
+    rational Vandermonde cofactors independently verify every circuit orientation.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
