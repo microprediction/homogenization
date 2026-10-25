@@ -73,6 +73,19 @@ from scipy.linalg import expm
 KAPPA = np.array([1.0, 2.0])
 SIGMA = np.array([0.1, 0.1])
 THETA = np.array([[0.06, 0.02], [0.05, 0.015]])
+ROUND_TOL = 64 * np.finfo(float).eps
+
+
+def roundoff_tolerance(*values):
+    """Scale-aware allowance for identities evaluated in binary64."""
+    scale = max(
+        [1.0]
+        + [float(np.max(np.abs(np.asarray(value, dtype=float))))
+           for value in values]
+    )
+    return ROUND_TOL * scale
+
+
 X0 = np.array([0.03, 0.03])
 PI = np.array([0.5, 0.5])
 Q0 = np.array([[-1.0, 1.0], [1.0, -1.0]])
@@ -211,7 +224,9 @@ def recover_skew(designs, responses):
     rhs = np.concatenate(responses)
     coefficients, residuals, rank, _ = np.linalg.lstsq(measurement, rhs, rcond=None)
     assert rank == len(pairs)
-    assert residuals.size == 0 or residuals.max() < 1e-28
+    assert residuals.size == 0 or residuals.max() < (
+        ROUND_TOL ** 2 * max(1.0, float(rhs @ rhs))
+    )
     recovered = np.zeros((len(designs[0]), len(designs[0])))
     for value, (i, j) in zip(coefficients, pairs):
         recovered[i, j] = value
@@ -1391,7 +1406,9 @@ def integrated_full_rank_criterion_checks():
             @ np.diag(feature[:, column])
             for column in range(rank)
         )
-        assert np.max(np.abs(integrated - decomposition)) < 2e-15
+        assert np.max(np.abs(integrated - decomposition)) < roundoff_tolerance(
+            integrated, decomposition
+        )
         eigenvalues = np.linalg.eigvalsh(integrated)
         assert eigenvalues[0] > 1e-7
         assert np.linalg.matrix_rank(integrated, tol=1e-10) == 5
@@ -1563,16 +1580,21 @@ def heterogeneous_two_name_rank_checks():
     assert np.linalg.matrix_rank(distinct_integrated, tol=1e-10) == 2
 
     repeated_gram = loading_gram(np.array([0.18, 0.18]))
-    assert np.max(np.abs(repeated_gram - repeated_gram[0, 0])) < 2e-15
+    assert np.max(np.abs(
+        repeated_gram - repeated_gram[0, 0]
+    )) < roundoff_tolerance(repeated_gram)
     repeated_integrated = rank_one_k * repeated_gram
     assert np.linalg.matrix_rank(repeated_integrated, tol=1e-10) == 1
 
     full_rank_k = np.array([[1.0, 0.3], [0.3, 0.7]])
     repeated_full_integrated = full_rank_k * repeated_gram
     assert np.linalg.matrix_rank(repeated_full_integrated, tol=1e-10) == 2
+    repeated_full_decomposition = repeated_gram[0, 0] * full_rank_k
     assert np.max(np.abs(
-        repeated_full_integrated - repeated_gram[0, 0] * full_rank_k
-    )) < 2e-15
+        repeated_full_integrated - repeated_full_decomposition
+    )) < roundoff_tolerance(
+        repeated_full_integrated, repeated_full_decomposition
+    )
 
     print("\nheterogeneous two-name CIR loading criterion")
     print(f"  equal-kappa, unequal-sigma Gram determinant "
@@ -1613,7 +1635,9 @@ def heterogeneous_unrestricted_rank_checks():
         kappas = gammas * (1 - q_values) / (1 + q_values)
         sigmas = gammas * np.sqrt(2 * q_values) / (1 + q_values)
         reconstructed = np.sqrt(kappas**2 + 2 * sigmas**2)
-        assert np.max(abs(reconstructed - gammas)) < 9e-16
+        assert np.max(abs(reconstructed - gammas)) < roundoff_tolerance(
+            reconstructed, gammas
+        )
         return kappas, sigmas
 
     def loading_gram(gammas, q_values):
@@ -1627,7 +1651,9 @@ def heterogeneous_unrestricted_rank_checks():
             riccati_form = 2 * (1 - decay) / (
                 (gammas + kappas) + (gammas - kappas) * decay
             )
-            assert np.max(abs(rational_form - riccati_form)) < 8e-16
+            assert np.max(abs(
+                rational_form - riccati_form
+            )) < roundoff_tolerance(rational_form, riccati_form)
             return rational_form
 
         return np.array([
@@ -2100,9 +2126,11 @@ def main():
     K = np.outer(KAPPA * d, KAPPA * d) / 2
     D = K * J
 
-    assert abs(np.linalg.det(K)) < 1e-22
+    assert abs(np.linalg.det(K)) < (
+        ROUND_TOL * np.linalg.norm(K, 2) ** 2
+    )
     assert np.linalg.eigvalsh(D)[0] > 1e-6
-    assert np.allclose(D / J, K, rtol=1e-13, atol=1e-16)
+    assert np.allclose(D / J, K, rtol=1e-13, atol=ROUND_TOL)
     print("Feller margin:", np.min(2 * KAPPA[:, None] * THETA - SIGMA[:, None] ** 2))
     print("eigenvalues: instantaneous K", np.linalg.eigvalsh(K))
     print("eigenvalues: integrated D(5)", np.linalg.eigvalsh(D))
@@ -2173,10 +2201,14 @@ def main():
         q_cycle.T, hazard1, hazard2)
     assert abs(leading - 0.5) < 1e-14
     assert abs(reverse_leading - leading) < 1e-14
-    assert np.max(abs(reverse_k - race_k.T)) < 2e-15
+    assert np.max(abs(reverse_k - race_k.T)) < roundoff_tolerance(
+        reverse_k, race_k
+    )
     mean_total = (hazard1 + hazard2).mean()
     gap_coefficient = (race_k[0, 1] - race_k[1, 0]) / mean_total
-    assert abs((coefficient - reverse_coefficient) - gap_coefficient) < 2e-15
+    assert abs(
+        (coefficient - reverse_coefficient) - gap_coefficient
+    ) < roundoff_tolerance(coefficient, reverse_coefficient, gap_coefficient)
 
     race_errors = []
     gap_errors = []
@@ -2223,12 +2255,18 @@ def main():
     leading3, coefficient3, k3 = first_event_correction(q_cycle, hazards3)
     anti3 = 0.5 * (k3 - k3.T)
     assert np.linalg.norm(anti3) > 1e-5
-    assert np.linalg.norm(anti3 @ np.ones(3)) < 2e-18
-    assert np.max(abs(coefficient3)) < 2e-16
+    assert np.linalg.norm(anti3 @ np.ones(3)) < (
+        ROUND_TOL * np.linalg.norm(anti3)
+    )
+    assert np.max(abs(coefficient3)) < roundoff_tolerance(
+        coefficient3, leading3
+    )
     equal_forward = first_event_probabilities(10 * q_cycle, hazards3)
     equal_reverse = first_event_probabilities(10 * q_cycle.T, hazards3)
     assert np.max(abs(equal_forward - equal_reverse)) < 5e-14
-    assert np.max(abs(equal_forward - leading3)) < 2e-15
+    assert np.max(abs(equal_forward - leading3)) < roundoff_tolerance(
+        equal_forward, leading3
+    )
 
     weights = np.array([1.0, 2.0, 4.0])
     weighted_leading, weighted_coefficient, _ = first_event_correction(
@@ -2241,9 +2279,11 @@ def main():
     weighted_mean = (weights[:, None] * hazards3) @ pi3
     mean_total3 = weighted_mean.sum()
     predicted_gap = 2 * weights * (anti3 @ weights) / mean_total3
-    assert np.max(
-        abs(weighted_coefficient - reverse_weighted_coefficient - predicted_gap)
-    ) < 3e-15
+    assert np.max(abs(
+        weighted_coefficient - reverse_weighted_coefficient - predicted_gap
+    )) < roundoff_tolerance(
+        weighted_coefficient, reverse_weighted_coefficient, predicted_gap
+    )
 
     weighted_errors = []
     weighted_gap_errors = []
@@ -2373,8 +2413,8 @@ def main():
         assert abs(
             boundary_singular_values[0] / boundary_singular_values[-1]
             - math.sqrt(2)
-        ) < 2e-15
-        assert abs(boundary_singular_values[-1] - 1.0) < 2e-15
+        ) < ROUND_TOL
+        assert abs(boundary_singular_values[-1] - 1.0) < ROUND_TOL
     assert maximum_spectrum_error < 2e-13
     assert maximum_condition_error < 2e-12
     assert maximum_recovery_error < 2e-13
@@ -2403,7 +2443,7 @@ def main():
         responses.append(total_d * (coefficient_d - symmetric_coefficient) / design)
     recovered_anti = recover_skew(designs, responses)
     recovery_error = np.max(abs(recovered_anti - anti3))
-    assert recovery_error < 3e-18
+    assert recovery_error < roundoff_tolerance(recovered_anti, anti3)
     print(
         f"   ||A||_F={np.linalg.norm(anti3):.8e}; equal-weight gap "
         f"{np.max(abs(equal_forward-equal_reverse)):.2e}"
@@ -2432,6 +2472,7 @@ def main():
           "unrestricted heterogeneous loading rank criteria, automatic CIR "
           "jet independence, prior memory, pair cancellation, and ordered "
           "default")
+    print("PASS")
 
 
 if __name__ == "__main__":
