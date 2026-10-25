@@ -307,6 +307,31 @@
     the minimum. It finds 1,308 feasible orthants, 8,560 extreme rays and 141 critical simplicial cones, while
     rational Vandermonde cofactors independently verify every circuit orientation.</p>
 
+    <h2>The entire face lattice is a restricted-variation test</h2>
+    <p>The same circuit description determines every face, not only the extreme rays. For a subset
+    $S\subseteq\{1,\ldots,N\}$, read the restricted sign word $\sigma|_S$ in support order and let
+    $V(\sigma|_S)$ count its sign changes.</p>
+    <p>Nonzero faces of $\mathcal C_\sigma$ are in one-to-one correspondence with the subsets satisfying
+    $V(\sigma|_S)\geq p$. The associated face consists of the vectors supported in $S$, and</p>
+    <div class="equation-card">
+    $$\dim F_S=|S|-p.$$
+    </div>
+    <p>To prove this, every face of the orthant section is obtained by setting some coordinate inequalities to
+    equality. A surviving support is feasible exactly when it contains an alternating $(p+1)$-subset.</p>
+    <p>If the restricted word has at least $p$ changes, each coordinate of $S$ belongs to such an alternating
+    subset: choose $p+1$ consecutive sign runs containing that coordinate. Summing the corresponding circuit rays
+    gives a kernel vector strictly inside every surviving coordinate, so $S$ is the exact relative-interior support.</p>
+    <p>Full spark then gives $\operatorname{rank}A_S=p$ and the dimension formula. Conversely, the relative
+    interior of any nonzero face has an exact support $S$ and its conformal circuit decomposition supplies an
+    alternating $(p+1)$-subset, forcing $V(\sigma|_S)\geq p$.</p>
+    <p>Thus, with the zero face included as $f_0=1$, a cone of dimension $N-p$ has exact face numbers</p>
+    <div class="equation-card">
+    $$f_k=\#\{S:|S|=p+k,\ V(\sigma|_S)\geq p\},
+      \qquad 1\leq k\leq N-p.$$
+    </div>
+    <p>The certificate exhausts all such subsets in the same 1,308 feasible orthants. It checks 29,058 faces,
+    19 distinct $f$-vectors, the Euler relation, and the binomial $f$-vector for every certified simplicial cone.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>

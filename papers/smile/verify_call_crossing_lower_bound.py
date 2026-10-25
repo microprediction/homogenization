@@ -10,6 +10,7 @@ exact Fraction arithmetic.
 
 from fractions import Fraction as F
 from itertools import combinations, product
+from math import comb
 
 
 def moments(points, weights):
@@ -597,11 +598,13 @@ def check_larger_support_circuit_cones(max_r=7):
 
 
 def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
-    """Enumerate exact orthant feasibility and extreme-ray counts."""
+    """Enumerate exact orthant feasibility, rays and face lattices."""
     orthant_count = 0
     feasible_count = 0
     ray_count = 0
     simplicial_count = 0
+    face_count = 0
+    face_vectors = set()
     for row_count in range(4, max_row_count + 1):
         for excess in range(max_excess + 1):
             column_count = row_count + 1 + excess
@@ -640,6 +643,27 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                 assert len(covered) == column_count
                 assert len(compatible) >= column_count - row_count
 
+                # Every face is obtained by forcing a set of coordinates
+                # to zero.  A surviving support S is the exact relative-
+                # interior support of a nonzero face precisely when its
+                # restricted sign word has at least row_count changes.
+                # Its dimension is |S|-row_count.  This exhausts the face
+                # lattice, including the zero face in position zero.
+                dimension = column_count - row_count
+                f_vector = [1] + [0] * dimension
+                for size in range(row_count + 1, column_count + 1):
+                    face_dimension = size - row_count
+                    for support in combinations(range(column_count), size):
+                        restricted = [signs[column] for column in support]
+                        if sign_changes(restricted) >= row_count:
+                            f_vector[face_dimension] += 1
+                assert f_vector[1] == len(compatible)
+                assert f_vector[dimension] == 1
+                assert sum((-1) ** k * count
+                           for k, count in enumerate(f_vector)) == 0
+                face_count += sum(f_vector)
+                face_vectors.add(tuple(f_vector))
+
                 if variation == row_count:
                     lengths = run_lengths(signs)
                     product_count = 1
@@ -649,8 +673,12 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                     assert len(compatible) == product_count
                     is_simplicial = sum(length > 1 for length in lengths) <= 1
                     assert (len(compatible) == column_count - row_count) == is_simplicial
+                    if is_simplicial:
+                        assert f_vector == [comb(dimension, k)
+                                            for k in range(dimension + 1)]
                     simplicial_count += is_simplicial
-    return orthant_count, feasible_count, ray_count, simplicial_count
+    return (orthant_count, feasible_count, ray_count, simplicial_count,
+            face_count, len(face_vectors))
 
 
 def check_measure_blurs(max_r=10):
@@ -723,7 +751,8 @@ def main():
     confluent_totals = check_confluent_sharpness()
     rigidity_cases = check_minimal_support_rigidity()
     cone_cases, cone_circuits = check_larger_support_circuit_cones()
-    orthants, feasible_orthants, extreme_rays, simplicial = \
+    (orthants, feasible_orthants, extreme_rays, simplicial,
+     faces, face_vectors) = \
         check_orthant_circuit_combinatorics()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
@@ -737,6 +766,8 @@ def main():
     print(f"orthant circuit enumeration: {orthants} patterns, "
           f"{feasible_orthants} feasible, {extreme_rays} extreme rays, "
           f"{simplicial} critical simplicial cones")
+    print(f"complete orthant face lattices: {faces} faces, "
+          f"{face_vectors} distinct f-vectors")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))
