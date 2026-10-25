@@ -1,8 +1,9 @@
-"""Is the large stage count an artefact of the Gaussian-process smoothing?
+"""Short-lag sensitivity of stage fits to the reconstructed spin-down series.
 
-Smoothing changes the autocovariance only at lags shorter than the kernel length. Refit the ring model
-(06_stage_fit.ring_acov) using only lags >= L, for L = 0, 60, 150, 300 days, with the lag-0 region free, and report
-the selected k (dwell cv = 1/sqrt k) and the weighted cost for k = 1 against the best k."""
+Refit the ring model (06_stage_fit.ring_acov) using only lags >= L, for L = 0, 60, 150, 300 days, with the lag-0
+region free, and report the selected k (dwell cv = 1/sqrt k) and the weighted cost for k = 1 against the best k.
+Because the published series come from a global finite Fourier-basis GP fit, this is not a test that escapes the
+reconstruction: every retained lag still depends on the same global coefficients and prior."""
 import json, os
 import numpy as np
 from scipy.optimize import least_squares
