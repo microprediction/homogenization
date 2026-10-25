@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Schoenberg1953",
+  "authors": "Schoenberg, I. J.",
+  "year": 1953,
+  "title": "On smoothing operations and their generating functions",
+  "venue": "Bulletin of the American Mathematical Society 59(3):199-230",
+  "doi": "10.1090/S0002-9904-1953-09695-1",
+  "annotation": "Surveys smoothing transformations through total positivity and variation diminution. The call-crossing note proves its specialized two-integration signed-measure bound directly."
  }
 ]
