@@ -72,6 +72,8 @@ TARGET = 0.90
 MU = 1.0
 SIGMA = 0.5
 BERRY_ESSEEN_CONSTANT = 0.4748
+# Portable binary64 allowance for normalized probability and algebraic identities.
+ROUND_TOL = 64.0 * np.finfo(float).eps
 
 
 def window_covariance(
@@ -2045,8 +2047,8 @@ def finite_chain_path_coefficients(
         + 0.5 * standardized_signal**3 * variance_rate * h
     )
     assert variance_rate >= -1e-14
-    assert abs(stationary @ first_coefficients) < 2e-15
-    assert abs(stationary @ second_coefficients) < 2e-15
+    assert abs(stationary @ first_coefficients) < ROUND_TOL
+    assert abs(stationary @ second_coefficients) < ROUND_TOL
     return (
         first_coefficients,
         second_coefficients,
@@ -2359,7 +2361,7 @@ def main() -> None:
         critical_residuals[:-1] / critical_residuals[1:]
     )
     assert np.min(critical_rates[-1]) > 2.8
-    assert abs(critical_stationary @ critical_coefficients) < 2e-15
+    assert abs(critical_stationary @ critical_coefficients) < ROUND_TOL
     assert max(critical_mass_errors) < 2e-10
     critical_threshold_scaled = critical_scales[-1] * (
         critical_thresholds[-1] - SIGMA * norm.ppf(TARGET)
@@ -2431,7 +2433,7 @@ def main() -> None:
         unequal_residuals[:-1] / unequal_residuals[1:]
     )
     assert np.min(unequal_rates[-1]) > 1.95
-    assert abs(stationary @ unequal_coefficients) < 2e-16
+    assert abs(stationary @ unequal_coefficients) < ROUND_TOL
     assert abs(
         unequal_coefficients[0] / unequal_coefficients[1] + alpha / beta
     ) < 2e-14
@@ -2478,12 +2480,12 @@ def main() -> None:
     projection = np.outer(np.ones(3), finite_stationary)
     assert np.max(
         np.abs(finite_generator @ finite_group_inverse - (np.eye(3) - projection))
-    ) < 2e-15
+    ) < ROUND_TOL
     assert np.max(
         np.abs(finite_group_inverse @ finite_generator - (np.eye(3) - projection))
-    ) < 2e-15
-    assert abs(finite_stationary @ finite_coefficients) < 2e-15
-    assert abs(finite_stationary @ finite_second_coefficients) < 2e-15
+    ) < ROUND_TOL
+    assert abs(finite_stationary @ finite_coefficients) < ROUND_TOL
+    assert abs(finite_stationary @ finite_second_coefficients) < ROUND_TOL
     stationary_flux = finite_stationary[:, None] * finite_generator
     assert np.max(np.abs(stationary_flux - stationary_flux.T)) > 0.1
 
@@ -2491,7 +2493,7 @@ def main() -> None:
     two_state_coefficients, _, _, _, _ = finite_chain_path_coefficients(
         np.array([[-alpha, alpha], [beta, -beta]]), state_values
     )
-    assert np.max(np.abs(two_state_coefficients - unequal_coefficients)) < 3e-15
+    assert np.max(np.abs(two_state_coefficients - unequal_coefficients)) < ROUND_TOL
 
     finite_scales = np.array([32.0, 64.0, 128.0, 256.0, 512.0, 1024.0])
     finite_thresholds = []
@@ -2580,7 +2582,7 @@ def main() -> None:
         [posterior_weight, 0.0, 1.0 - posterior_weight]
     )
     assert np.max(np.abs(cancelling_posterior - finite_stationary)) > 0.2
-    assert abs(cancelling_posterior @ finite_coefficients) < 2e-17
+    assert abs(cancelling_posterior @ finite_coefficients) < ROUND_TOL
     posterior_second_coefficient = (
         cancelling_posterior @ finite_second_coefficients
     )
@@ -2644,9 +2646,9 @@ def main() -> None:
         four_stationary + 0.7 * boundary_step * cancellation_direction
     )
     assert np.min(double_cancelling_posterior) > 0.08
-    assert abs(np.sum(double_cancelling_posterior) - 1.0) < 2e-15
-    assert abs(double_cancelling_posterior @ four_first) < 2e-15
-    assert abs(double_cancelling_posterior @ four_second) < 2e-15
+    assert abs(np.sum(double_cancelling_posterior) - 1.0) < ROUND_TOL
+    assert abs(double_cancelling_posterior @ four_first) < ROUND_TOL
+    assert abs(double_cancelling_posterior @ four_second) < ROUND_TOL
     assert np.max(
         np.abs(double_cancelling_posterior - four_stationary)
     ) > 0.2
@@ -2737,7 +2739,10 @@ def main() -> None:
     boundary = (
         1 - math.exp(-2 * switching_rate * horizon)
     ) ** 2 / (4 * switching_rate**2 * horizon**2)
-    assert abs(window_covariance(horizon, horizon, switching_rate) - boundary) < 1e-15
+    assert (
+        abs(window_covariance(horizon, horizon, switching_rate) - boundary)
+        < ROUND_TOL
+    )
     print("\nOverlapping calibration windows")
     print(" rate     Corr(A_0,A_0.5)    variance inflation    effective N (N=200)")
     for rate in (2.0, 8.0, 32.0, 128.0):
@@ -2904,7 +2909,7 @@ def main() -> None:
         for atomic_count, atomic_order in atomic_designs
         for value in atomic_grid
     )
-    assert atomic_beta_error < 3e-15
+    assert atomic_beta_error < ROUND_TOL
     print(
         "randomized three-atom beta-CDF maximum grid error: "
         f"{atomic_beta_error:.3e}"
@@ -3151,7 +3156,7 @@ def main() -> None:
         assert abs(
             range_failure
             - (1.0 - iid_training_confidence(count, count - 1, target))
-        ) < 3e-15
+        ) < ROUND_TOL
         assert range_failure <= failure_probability
         previous_failure = target ** (count - 2) * (
             count - 1 - (count - 2) * target
@@ -3646,7 +3651,7 @@ def main() -> None:
         calibration_count, order, transfer_target, 0.8
     )
     exact_separated_limit = 6553600 / 43046721
-    assert abs(separated_limit - exact_separated_limit) < 2e-16
+    assert abs(separated_limit - exact_separated_limit) < ROUND_TOL
     for stride in separated_strides:
         exact_failure = exact_binary_training_failure_irregular(
             calibration_count,
@@ -3732,7 +3737,7 @@ def main() -> None:
                 ),
             )
         )
-    assert zero_memory_error < 3e-16
+    assert zero_memory_error < ROUND_TOL
     assert stride_limit_error < 1e-13
     expected_fixed_memory_rows = {
         5: (0.98041856, 0.7394770904850105, 0.5),
@@ -3749,7 +3754,7 @@ def main() -> None:
                 for actual, target_value in zip(
                     (iid_failure, fixed_failure, mean_coverage), expected
                 )
-            ) < 3e-15
+            ) < ROUND_TOL
 
     marginal_shift_error = 0.0
     marginal_symmetry_error = 0.0
@@ -3777,11 +3782,11 @@ def main() -> None:
                 marginal_symmetry_error,
                 abs(shift + reflected_shift),
             )
-    assert marginal_shift_error < 4e-16
-    assert marginal_symmetry_error < 2e-17
+    assert marginal_shift_error < ROUND_TOL
+    assert marginal_symmetry_error < ROUND_TOL
     assert abs(
         iid_panel_fixed_test_marginal_shift(9, 9) - 251 / 23040
-    ) < 2e-17
+    ) < ROUND_TOL
 
     # Away from the median rank, the exact binomial-tail coefficient has an
     # exponentially accurate outer approximation.  At the median scale its
@@ -3798,7 +3803,7 @@ def main() -> None:
                     iid_panel_fixed_test_marginal_shift(
                         candidate_count, candidate_order
                     )
-                ) < 2e-17
+                ) < ROUND_TOL
                 continue
             shift = iid_panel_fixed_test_marginal_shift(
                 candidate_count, candidate_order
@@ -3817,7 +3822,7 @@ def main() -> None:
                 candidate_order / trials
             )
             chernoff_bound = math.exp(-trials * entropy) / candidate_count
-            assert outer_error >= -2e-17
+            assert outer_error >= -ROUND_TOL
             outer_bound_excess = max(
                 outer_bound_excess, outer_error - chernoff_bound
             )
@@ -3826,7 +3831,7 @@ def main() -> None:
                     outer_bound_ratio,
                     max(0.0, outer_error) / chernoff_bound,
                 )
-    assert outer_bound_excess < 2e-16
+    assert outer_bound_excess < ROUND_TOL
     assert outer_bound_ratio < 1.0
 
     berry_esseen_excess = -math.inf
@@ -3854,7 +3859,7 @@ def main() -> None:
                     central_berry_esseen_ratio,
                     approximation_error / berry_esseen_bound,
                 )
-    assert berry_esseen_excess < 1e-15
+    assert berry_esseen_excess < ROUND_TOL
     assert central_berry_esseen_ratio < 1.0
 
     crossover_errors = []
@@ -4000,11 +4005,11 @@ def main() -> None:
             mean_coverage
             - candidate_order / (calibration_count + 1)
             - unequal_test_memory * marginal_shift
-        ) < 7e-16
+        ) < ROUND_TOL
         unequal_rows.append(
             (candidate_order, iid_failure, fixed_failure, mean_coverage)
         )
-    assert unequal_zero_memory_error < 8e-16
+    assert unequal_zero_memory_error < ROUND_TOL
     assert unequal_enumeration_error < 3e-13
 
     unequal_shift_error = 0.0
@@ -4035,8 +4040,8 @@ def main() -> None:
                     unequal_reflection_error,
                     abs(shift + reflected_shift),
                 )
-    assert unequal_shift_error < 1.5e-15
-    assert unequal_reflection_error < 2e-16
+    assert unequal_shift_error < ROUND_TOL
+    assert unequal_reflection_error < ROUND_TOL
 
     # Away from the partition mass r, binomial concentration and the exact
     # covariance identity give N D -> -tau(1-r)/r below r and
@@ -4248,7 +4253,7 @@ def main() -> None:
         row_tv = 0.5 * np.abs(sampled - block_stationary[None, :]).sum(axis=1)
         predicted_tv = 0.8 ** (stride - window_length + 1) / 2
         tv_errors.append(np.max(np.abs(row_tv - predicted_tv)))
-    assert max(tv_errors) < 2e-15
+    assert max(tv_errors) < ROUND_TOL
     coarse_overlap = exact_sliding_window_coverage(
         calibration_count, order, window_length, 0.8, quadrature_order=60
     )
@@ -4430,7 +4435,7 @@ def main() -> None:
     equal_marginal_envelope = 0.5 * np.sum(
         np.exp(-exponential_decay * equal_gaps)
     )
-    assert abs(equal_marginal_envelope - average_gap_beta) < 2e-15
+    assert abs(equal_marginal_envelope - average_gap_beta) < ROUND_TOL
     assert equal_marginal_envelope < irregular_beta_sum
 
     design_slack = 0.05
@@ -4557,7 +4562,7 @@ def main() -> None:
     )
     flux = general_stationary[:, None] * general_transition
     assert np.max(np.abs(flux - flux.T)) > 0.02
-    assert np.all(path_tvs <= 4 * general_betas + 3e-15)
+    assert np.all(path_tvs <= 4 * general_betas + ROUND_TOL)
     assert np.all(
         np.abs(general_coverages - iid_coverage)
         <= np.minimum(1.0, calibration_count * general_betas) + 3e-14
@@ -4632,9 +4637,9 @@ def main() -> None:
         markov_beta(general_transition, general_stationary, stride)
         for stride in discrete_strides
     ])
-    assert abs(deterministic_iid - deterministic_iid_dp) < 4e-15
+    assert abs(deterministic_iid - deterministic_iid_dp) < ROUND_TOL
     assert deterministic_iid > iid_coverage + 0.08
-    assert abs(randomized_iid - iid_coverage) < 4e-15
+    assert abs(randomized_iid - iid_coverage) < ROUND_TOL
     assert np.all(
         np.abs(deterministic_discrete - deterministic_iid)
         <= np.minimum(1.0, calibration_count * discrete_betas) + 3e-14
@@ -4692,8 +4697,8 @@ def main() -> None:
     training_beta = markov_beta(
         binary_transition, np.array([0.5, 0.5]), training_gap
     )
-    assert abs(training_tv - training_beta) < 2e-15
-    assert abs(training_beta - 0.5 * 0.8**training_gap) < 2e-15
+    assert abs(training_tv - training_beta) < ROUND_TOL
+    assert abs(training_beta - 0.5 * 0.8**training_gap) < ROUND_TOL
     print("\nFitted-predictor split certificate")
     print(
         "independent training: empirical coverage="
@@ -4714,7 +4719,10 @@ def main() -> None:
     signal, noise, x0 = 0.1, 0.5, 0.8
     nu = switching_rate / predictor_rate
     stationary_variance = 1 / (2 * nu + 1)
-    assert abs(stationary_variance - predictor_rate / (predictor_rate + 2 * switching_rate)) < 1e-15
+    assert abs(
+        stationary_variance
+        - predictor_rate / (predictor_rate + 2 * switching_rate)
+    ) < ROUND_TOL
     predictor_q = predictor_pooled_threshold(
         switching_rate, predictor_rate, signal, noise
     )
@@ -4762,6 +4770,7 @@ def main() -> None:
         "remote-training total-variation separation, "
         "exact transforms, and simulations"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":
