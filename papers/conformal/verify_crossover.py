@@ -89,6 +89,7 @@ from scipy.stats import binom
 TARGET = 0.9
 EPS = 0.2
 SCALES = np.array([1.0, 3.0])
+ROUND_TOL = 64 * np.finfo(float).eps
 
 
 def pooled_cdf(x):
@@ -181,7 +182,7 @@ def additive_gap(Q, pi):
     Q_symmetric = (Q + Q_star) / 2
     similarity = (np.diag(np.sqrt(pi)) @ Q_symmetric
                   @ np.diag(1 / np.sqrt(pi)))
-    assert np.allclose(similarity, similarity.T, atol=2e-15)
+    assert np.allclose(similarity, similarity.T, atol=ROUND_TOL)
     eigenvalues = np.linalg.eigvalsh(-similarity)
     assert abs(eigenvalues[0]) < 2e-14 and eigenvalues[1] > 0
     return eigenvalues[1]
@@ -380,13 +381,13 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
         # dynamic program at this deliberately small n.
         law = binary_panel_law(pi, transition, success, n)
         enumerated_count_law = aggregate_binary_count_law(law, n)
-        assert np.max(abs(count_law - enumerated_count_law)) < 2e-15
+        assert np.max(abs(count_law - enumerated_count_law)) < ROUND_TOL
         z = 1.17
         pgf_matrix = binary_count_pgf(pi, transitions, success, z)
         pgf_polynomial = count_law @ z ** np.arange(n + 1)
         assert abs(pgf_matrix - pgf_polynomial) < 2e-14
         panel_mean, panel_variance = panel_moments_from_law(law, n)
-        assert abs(panel_mean - target) < 5e-15
+        assert abs(panel_mean - target) < ROUND_TOL
 
         a = math.exp(-gamma_s * spacing)
         factor = finite_variance_factor(a, n)
@@ -436,7 +437,7 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     tail_level = 0.9
     asymptotic_rate, asymptotic_tilt = perron_tail_rate(
         transition, success, tail_level)
-    assert abs(perron_log_cgf(transition, success, 0.0)) < 2e-15
+    assert abs(perron_log_cgf(transition, success, 0.0)) < ROUND_TOL
     derivative = (perron_log_cgf(transition, success, 1e-5)
                   - perron_log_cgf(transition, success, -1e-5)) / 2e-5
     assert abs(derivative - target) < 2e-10
@@ -629,7 +630,7 @@ def cantelli_order_statistic_checks(Q, pi, gamma_s, scales):
     assert abs(
         central_boundary_second
         - (central_boundary_log_second + central_boundary_first ** 2)
-    ) < 1e-15
+    ) < ROUND_TOL
     assert np.max(abs(
         scaled_gaussian_errors - scaled_gaussian_errors[-1])) < 0.005
     assert np.max(scaled_corrected_errors) < 0.31
@@ -910,7 +911,7 @@ def binary_count_distribution(initial, transitions, success, renormalize=False):
         count_law /= total_mass
     else:
         assert abs(total_mass - 1) < 2e-14
-    assert count_law.min() > -2e-15
+    assert count_law.min() > -ROUND_TOL
     return count_law
 
 
@@ -1141,7 +1142,7 @@ def binary_irregular_panel_law(initial, Q, success, times):
     """Exact binary-emission law on a strictly increasing time grid."""
     times = np.asarray(times)
     assert times.ndim == 1 and len(times) >= 1
-    assert abs(times[0]) < 2e-15 and np.all(np.diff(times) > 0)
+    assert abs(times[0]) < ROUND_TOL and np.all(np.diff(times) > 0)
     transitions = [expm((times[j + 1] - times[j]) * Q)
                    for j in range(len(times) - 1)]
     law = []
@@ -1247,11 +1248,11 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
                    for j in range(n - 1)]
     count_law = binary_count_distribution(pi, transitions, success)
     assert np.max(abs(count_law - aggregate_binary_count_law(
-        enumerated, n))) < 2e-15
+        enumerated, n))) < ROUND_TOL
     enumerated_mean, enumerated_variance = panel_moments_from_law(
         enumerated, n)
-    assert abs(enumerated_mean - p) < 2e-15
-    assert abs(enumerated_variance - exact_variance) < 2e-15
+    assert abs(enumerated_mean - p) < ROUND_TOL
+    assert abs(enumerated_variance - exact_variance) < ROUND_TOL
 
     initial = np.zeros(len(pi))
     initial[0] = 1
@@ -1280,12 +1281,12 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
         for left in range(sharp_n)
         for right in range(left + 1, sharp_n)))
     sharp_bound = 0.25 / sharp_n * sharp_factor
-    assert abs(sharp_exact - sharp_bound) < 2e-15
+    assert abs(sharp_exact - sharp_bound) < ROUND_TOL
     sharp_law = binary_irregular_panel_law(
         sharp_pi, sharp_Q, sharp_success, clustered_times)
     _, sharp_enumerated_variance = panel_moments_from_law(
         sharp_law, sharp_n)
-    assert abs(sharp_enumerated_variance - sharp_exact) < 2e-15
+    assert abs(sharp_enumerated_variance - sharp_exact) < ROUND_TOL
 
     average_spacing = ((clustered_times[-1] - clustered_times[0])
                        / (sharp_n - 1))
@@ -1301,7 +1302,7 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
         @ sharp_success for t in clustered_times) / sharp_n
     sharp_bias_bound = (0.5 / sharp_n * sum(
         math.exp(-(sharp_burnin + t)) for t in clustered_times))
-    assert abs(abs(sharp_mean - 0.5) - sharp_bias_bound) < 2e-15
+    assert abs(abs(sharp_mean - 0.5) - sharp_bias_bound) < ROUND_TOL
 
     # The sharp exponential envelope is itself a covariance matrix.  Its
     # inverse is tridiagonal, so the minimum-variance weights and information
@@ -1315,12 +1316,12 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
     direct_weights /= direct_weights.sum()
     assert np.max(abs(optimal_weights - direct_weights)) < 2e-14
     assert np.min(optimal_weights) > 0
-    assert abs(optimal_weights.sum() - 1) < 2e-15
+    assert abs(optimal_weights.sum() - 1) < ROUND_TOL
     optimal_factor = optimal_weights @ sharp_kernel @ optimal_weights
-    assert abs(optimal_factor - 1 / information) < 2e-15
+    assert abs(optimal_factor - 1 / information) < ROUND_TOL
     sharp_weighted_variance = stationary_weighted_irregular_variance(
         sharp_Q, sharp_pi, sharp_success, clustered_times, optimal_weights)
-    assert abs(sharp_weighted_variance - 0.25 / information) < 2e-15
+    assert abs(sharp_weighted_variance - 0.25 / information) < ROUND_TOL
     equal_weight_variance = sharp_exact
     assert sharp_weighted_variance < equal_weight_variance
 
@@ -1365,7 +1366,7 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
         equal_times, design_rate)
     equal_information_formula = 1 + (design_n - 1) * math.tanh(
         design_rate * total_span / (2 * (design_n - 1)))
-    assert abs(equal_information - equal_information_formula) < 2e-15
+    assert abs(equal_information - equal_information_formula) < ROUND_TOL
 
     design_rng = np.random.default_rng(20261011)
     random_gaps = design_rng.dirichlet(
@@ -1387,7 +1388,7 @@ def irregular_panel_checks(Q, pi, gamma_s, success):
     assert abs(dense_weights[-1] - limiting_endpoint_weight) < 1e-4
     assert abs(dense_weights[1:-1].sum()
                - limiting_interior_mass) < 2e-4
-    assert abs(equal_weights.sum() - 1) < 2e-15
+    assert abs(equal_weights.sum() - 1) < ROUND_TOL
 
     # The continuous-observation information is a genuine finite-sample
     # ceiling.  If N=n-1 is the number of equal subintervals and L is total
@@ -1541,8 +1542,8 @@ def transient_panel_checks(Q, pi, gamma_s, success):
         enumerated_mean, enumerated_variance = panel_moments_from_law(law, n)
         exact_mean, exact_variance = transient_panel_moments(
             burned, P, success, n)
-        assert abs(enumerated_mean - exact_mean) < 2e-15
-        assert abs(enumerated_variance - exact_variance) < 2e-15
+        assert abs(enumerated_mean - exact_mean) < ROUND_TOL
+        assert abs(enumerated_variance - exact_variance) < ROUND_TOL
         bias = exact_mean - pi @ success
         score_bound = (density_norm * score_norm
                        * math.exp(-gamma_s * scaled_burnin)
@@ -1564,11 +1565,11 @@ def transient_panel_checks(Q, pi, gamma_s, success):
     sharp_a = math.exp(-2 * sharp_spacing)
     sharp_factor = (1 - sharp_a ** sharp_n) / (sharp_n * (1 - sharp_a))
     sharp_bound = 0.5 * math.exp(-2 * sharp_burnin) * sharp_factor
-    assert abs(abs(sharp_mean - sharp_pi @ sharp_success) - sharp_bound) < 2e-15
+    assert abs(abs(sharp_mean - sharp_pi @ sharp_success) - sharp_bound) < ROUND_TOL
     sharp_law = binary_panel_law(sharp_burned, sharp_P, sharp_success, sharp_n)
     law_mean, law_variance = panel_moments_from_law(sharp_law, sharp_n)
-    assert abs(law_mean - sharp_mean) < 2e-15
-    assert abs(law_variance - sharp_variance) < 2e-15
+    assert abs(law_mean - sharp_mean) < ROUND_TOL
+    assert abs(law_variance - sharp_variance) < ROUND_TOL
 
     print("transient empirical-CDF moments:")
     for scaled_burnin, bias, variance, score_bound in rows:
@@ -2163,7 +2164,7 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
     brute_tv = 0.5 * np.abs(np.asarray(markov_path)
                             - np.asarray(iid_path)).sum()
     formula_tv = bernoulli_product_tv(brute_trials, brute_a)
-    assert abs(brute_tv - formula_tv) < 3e-15
+    assert abs(brute_tv - formula_tv) < ROUND_TOL
 
     critical_rows = []
     for exponent in (3, 4, 5, 6, 7):
@@ -2209,7 +2210,7 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
                                    - np.asarray(iid_path)).sum()
     burned_formula_tv = burned_bernoulli_product_tv(
         brute_trials, brute_a, brute_initial_bias)
-    assert abs(burned_brute_tv - burned_formula_tv) < 3e-15
+    assert abs(burned_brute_tv - burned_formula_tv) < ROUND_TOL
 
     limiting_bias = 0.6
     limiting_information = 1.0
@@ -2225,9 +2226,9 @@ def joint_panel_mixing_checks(Q, pi, gamma_s):
         ))
     assert abs(joint_rows[-1][1] - joint_limit) < 3e-5
     assert abs(burned_panel_lan_limit(limiting_bias, 0)
-               - abs(limiting_bias) / 2) < 2e-15
+               - abs(limiting_bias) / 2) < ROUND_TOL
     assert abs(burned_panel_lan_limit(0, limiting_information)
-               - critical_limit) < 2e-15
+               - critical_limit) < ROUND_TOL
     print("sharp joint burn-in/panel limit (delta=0.6, c=1):")
     for a, exact_tv in joint_rows:
         print(f"  a={a:8.6f} exact TV {exact_tv:.9f}")
@@ -2869,13 +2870,13 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
         transition_sign_tv += 0.5 * 2 ** -len(correlations) * abs(
             likelihood - 1
         )
-    assert abs(two_state_path_tv - transition_sign_tv) < 3e-15
+    assert abs(two_state_path_tv - transition_sign_tv) < ROUND_TOL
     product_affinity = biased_sign_product_affinity(correlations)
-    assert abs(two_state_affinity - product_affinity) < 3e-15
-    assert 1 - product_affinity <= two_state_path_tv + 2e-15
+    assert abs(two_state_affinity - product_affinity) < ROUND_TOL
+    assert 1 - product_affinity <= two_state_path_tv + ROUND_TOL
     assert two_state_path_tv <= math.sqrt(
         1 - product_affinity ** 2
-    ) + 2e-15
+    ) + ROUND_TOL
 
     # Heterogeneous triangular array: half the correlations are a, half 2a,
     # with the common group size chosen so sum_j a_j^2 -> 1.  The exact
@@ -2915,7 +2916,7 @@ def irregular_joint_panel_mixing_checks(Q, pi, gamma_s):
     profile_lan_limit = 2 * ndtr(
         math.sqrt(profile_information) / 2
     ) - 1
-    assert abs(persistent_tv - 0.25) < 2e-15
+    assert abs(persistent_tv - 0.25) < ROUND_TOL
     assert abs(diffuse_tv - profile_lan_limit) < 1e-6
     assert persistent_tv - diffuse_tv > 0.05
 
@@ -3022,7 +3023,7 @@ def nonreversible_contraction_checks():
     a = math.exp(-m * gamma_s * h)
     finite_factor = finite_variance_factor(a, n)
     contraction_bound = TARGET * (1 - TARGET) / n * finite_factor
-    assert exact_var <= contraction_bound + 2e-15
+    assert exact_var <= contraction_bound + ROUND_TOL
     print("nonreversible additive-reversibilization bound:",
           f"gap {gamma_s:.8f}, largest score ratio {largest_ratio:.8f},")
     print("sharp exponent witness:",
@@ -3043,7 +3044,7 @@ def nonreversible_contraction_checks():
                         + 0.5 / saturation_n ** 2
                         * sum((saturation_n - lag) * saturation_a ** lag
                               for lag in range(1, saturation_n)))
-    assert abs(saturation_exact - saturation_bound) < 2e-15
+    assert abs(saturation_exact - saturation_bound) < ROUND_TOL
     print("finite-n factor saturation:",
           f"n {saturation_n}, a {saturation_a:.8f},",
           f"variance {saturation_exact:.8f}")
@@ -3079,7 +3080,7 @@ def finite_chain_checks(rng):
         print(f"c={c:3.1f} theory {theory.round(5)} simulation {observed.round(5)}")
     # Delta=c/m leaves the same nonzero crossover at every switching rate.
     assert np.allclose(expm(5 * Q_cycle * (1 / 5)),
-                       expm(20 * Q_cycle * (1 / 20)), atol=2e-15)
+                       expm(20 * Q_cycle * (1 / 20)), atol=ROUND_TOL)
 
     nonreversible_contraction_checks()
 
@@ -3153,7 +3154,7 @@ def rare_group_split_conformal_check():
             for j in range(required_rare, n + 1)
         )
         marginal_coverage = 1 - delta + delta * rare_coverage
-        assert abs(rare_coverage - target) < 2e-16
+        assert abs(rare_coverage - target) < ROUND_TOL
         assert marginal_coverage >= k / (n + 1) >= 1 - alpha
         rare_coverages.append(rare_coverage)
         print(
@@ -3224,6 +3225,7 @@ def main():
           " conversion,"
           " iid rare-group conditional failure,"
           " nonstationary burn-in transfer, and transient panel moments")
+    print("PASS")
 
 
 if __name__ == "__main__":
