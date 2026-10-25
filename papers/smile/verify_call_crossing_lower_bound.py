@@ -2,12 +2,14 @@
 
 The theorem in call-crossings-full.html counts transform zeros with their
 full multiplicities.  This certificate checks that the crossing lower bound
-cannot be improved from those identities alone.  The finite fixtures and
-disjoint-interval continuous blurs use exact Fraction arithmetic.
+cannot be improved from those identities alone, and that every larger fixed-
+support feasibility cone is generated conformally by its minimal-support
+circuits.  The finite fixtures and disjoint-interval continuous blurs use
+exact Fraction arithmetic.
 """
 
 from fractions import Fraction as F
-from itertools import product
+from itertools import combinations, product
 
 
 def moments(points, weights):
@@ -86,6 +88,71 @@ def determinant(rows):
                 work[i][j] -= factor * work[column][j]
             work[i][column] = F(0)
     return result
+
+
+def confluent_evaluation_rows(scaled_exponents, q_values):
+    """Return the exact generalized exponential evaluation matrix."""
+    multiplicities = {}
+    for exponent in scaled_exponents:
+        multiplicities[exponent] = multiplicities.get(exponent, 0) + 1
+    return [
+        [F(q) ** power * F(2 ** (exponent * q)) for q in q_values]
+        for exponent in sorted(multiplicities)
+        for power in range(multiplicities[exponent])
+    ]
+
+
+def circuit_vector(rows, columns):
+    """Return the signed cofactor circuit on p+1 selected columns."""
+    row_count = len(rows)
+    assert len(columns) == row_count + 1
+    selected = [[row[column] for column in columns] for row in rows]
+    values = []
+    for omitted in range(row_count + 1):
+        minor = [row[:omitted] + row[omitted + 1:] for row in selected]
+        values.append(F((-1) ** omitted) * determinant(minor))
+    result = [F(0)] * len(rows[0])
+    for column, value in zip(columns, values):
+        result[column] = value
+    assert all(rowdot(row, result) == 0 for row in rows)
+    return result
+
+
+def conformal_circuit(rows, vector):
+    """Find an exact full-spark circuit in the vector's closed orthant."""
+    support = [j for j, value in enumerate(vector) if value]
+    for columns in combinations(support, len(rows) + 1):
+        circuit = circuit_vector(rows, columns)
+        products = [vector[j] * circuit[j] for j in columns]
+        if all(value > 0 for value in products):
+            return circuit
+        if all(value < 0 for value in products):
+            return [-value for value in circuit]
+    raise AssertionError("the kernel orthant has no circuit")
+
+
+def conformal_circuit_decomposition(rows, vector):
+    """Decompose a kernel vector without cancelling any signed mass."""
+    original = vector[:]
+    residual = vector[:]
+    components = []
+    while any(residual):
+        circuit = conformal_circuit(rows, residual)
+        active = [j for j, value in enumerate(circuit) if value]
+        scale = min(abs(residual[j] / circuit[j]) for j in active)
+        component = [scale * value for value in circuit]
+        updated = [left - right for left, right in zip(residual, component)]
+        assert all(not left or not right or left * right > 0
+                   for left, right in zip(residual, updated))
+        assert sum(value != 0 for value in updated) < \
+            sum(value != 0 for value in residual)
+        assert all(rowdot(row, component) == 0 for row in rows)
+        components.append(component)
+        residual = updated
+    assert [sum((component[j] for component in components), F(0))
+            for j in range(len(original))] == original
+    assert len(components) <= len(rows[0]) - len(rows)
+    return components
 
 
 def polymul(a, b):
@@ -404,16 +471,9 @@ def check_minimal_support_rigidity(max_r=10):
         cases.append((total, 2, scaled_exponents))
 
     for crossing_count, denominator, scaled_exponents in cases:
-        multiplicities = {}
-        for exponent in scaled_exponents:
-            multiplicities[exponent] = multiplicities.get(exponent, 0) + 1
         row_count = len(scaled_exponents)
         q_values = [j * (j + 1) // 2 for j in range(row_count + 1)]
-        rows = []
-        for exponent in sorted(multiplicities):
-            for power in range(multiplicities[exponent]):
-                rows.append([F(q) ** power * F(2 ** (exponent * q))
-                             for q in q_values])
+        rows = confluent_evaluation_rows(scaled_exponents, q_values)
         signed = []
         for column in range(row_count + 1):
             minor = [row[:column] + row[column + 1:] for row in rows]
@@ -439,6 +499,90 @@ def check_minimal_support_rigidity(max_r=10):
         assert gaps[0] == gaps[-1] == 0
         assert sign_changes(gaps[1:-1]) == crossing_count
     return len(cases)
+
+
+def check_larger_support_circuit_cones(max_r=7):
+    """Check conformal extreme-ray decompositions on larger fixed grids.
+
+    The kernel in any fixed coordinate orthant is a pointed polyhedral
+    cone.  Full-spark evaluation makes every extreme ray a circuit on
+    exactly row_count+1 columns.  The elimination routine above finds a
+    sign-compatible circuit, subtracts the largest possible multiple, and
+    therefore removes at least one support point at every step.
+    """
+    cases = []
+    for r in range(2, max_r + 1):
+        denominator = r - 1
+        cases.append((r, denominator, [0, denominator] + list(range(r))))
+    for left, middle, right in ((2, 1, 2), (1, 3, 1), (3, 2, 2)):
+        total = left + middle + right
+        cases.append((total, 2,
+                      [0, 2] + [0] * left + [1] * middle + [2] * right))
+
+    decomposition_count = 0
+    circuit_count = 0
+    for crossing_count, denominator, scaled_exponents in cases:
+        row_count = len(scaled_exponents)
+        for excess in (1, 2, 3):
+            column_count = row_count + 1 + excess
+            q_values = [j * (j + 1) // 2 for j in range(column_count)]
+            rows = confluent_evaluation_rows(scaled_exponents, q_values)
+            assert matrix_rank(rows) == row_count
+
+            base = tuple(range(row_count))
+            fundamental = []
+            for column in range(row_count, column_count):
+                circuit = circuit_vector(rows, base + (column,))
+                if circuit[column] < 0:
+                    circuit = [-value for value in circuit]
+                assert all(circuit[j] != 0 for j in base + (column,))
+                fundamental.append(circuit)
+
+            # Choose a generic exact kernel vector.  Mixed coefficient
+            # signs make this independent of the displayed fundamental
+            # decomposition; exhaustive small choices avoid cancellations.
+            vector = None
+            coefficient_choices = tuple(range(-10, 0)) + tuple(range(1, 11))
+            for coefficients in product(coefficient_choices, repeat=len(fundamental)):
+                candidate = [
+                    sum((coefficient * circuit[j]
+                         for coefficient, circuit in zip(coefficients, fundamental)), F(0))
+                    for j in range(column_count)
+                ]
+                if all(candidate):
+                    vector = candidate
+                    break
+            assert vector is not None
+            assert all(rowdot(row, vector) == 0 for row in rows)
+
+            components = conformal_circuit_decomposition(rows, vector)
+            assert len(components) <= excess + 1
+            for component in components:
+                support = [j for j, value in enumerate(component) if value]
+                assert len(support) == row_count + 1
+                assert all(component[j] * vector[j] > 0 for j in support)
+                assert all(component[left] * component[right] < 0
+                           for left, right in zip(support, support[1:]))
+
+                positive_mass = sum((max(value, F(0)) for value in component), F(0))
+                negative_mass = sum((max(-value, F(0)) for value in component), F(0))
+                assert positive_mass == negative_mass > 0
+                raw_points = [F(2 ** (denominator * value)) for value in q_values]
+                positive_mean = sum((max(component[j], F(0)) * raw_points[j]
+                                     for j in support), F(0))
+                negative_mean = sum((max(-component[j], F(0)) * raw_points[j]
+                                     for j in support), F(0))
+                assert positive_mean == negative_mean > 0
+
+                p = [max(value, F(0)) / positive_mass for value in component]
+                q = [max(-value, F(0)) / negative_mass for value in component]
+                points = [point * positive_mass / positive_mean for point in raw_points]
+                gaps = [call(points, p, strike) - call(points, q, strike)
+                        for strike in points]
+                assert sign_changes(gaps[1:-1]) == crossing_count
+                circuit_count += 1
+            decomposition_count += 1
+    return decomposition_count, circuit_count
 
 
 def check_measure_blurs(max_r=10):
@@ -510,6 +654,7 @@ def main():
     max_r = check_all_r_sharpness()
     confluent_totals = check_confluent_sharpness()
     rigidity_cases = check_minimal_support_rigidity()
+    cone_cases, cone_circuits = check_larger_support_circuit_cones()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
@@ -517,6 +662,8 @@ def main():
     print(f"all-r support- and atom-minimal sharpness family: r=2,...,{max_r}")
     print("confluent sharpness total multiplicities:", ", ".join(map(str, confluent_totals)))
     print(f"irregular minimal-support rigidity cases: {rigidity_cases}")
+    print(f"larger-support conformal circuit cones: {cone_cases} decompositions, "
+          f"{cone_circuits} minimal circuits")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

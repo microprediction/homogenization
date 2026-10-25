@@ -257,6 +257,32 @@
     <p>The exact certificate verifies rank, alternating cofactors and the exact crossing count on 12 irregular
     power-of-two grids: the all-$r$ family through $r=10$ and all three repeated-node fixtures.</p>
 
+    <h2>Larger finite supports are conformal sums of minimal witnesses</h2>
+    <p>Keep the prescribed nodes and fix any ordered positive support $x_1&lt;\cdots&lt;x_N$, now with
+    $N&gt;r+3$. Let $A$ be the $(r+2)\times N$ evaluation matrix above and, for a sign vector $\sigma$, consider
+    the closed orthant cone</p>
+    <div class="equation-card">
+    $$\mathcal C_\sigma=\{d:Ad=0,\ \sigma_jd_j\geq0\}.$$
+    </div>
+    <p>Every nonzero extreme ray of $\mathcal C_\sigma$ has exactly $r+3$ nonzero entries. Indeed, every
+    $r+2$ columns of $A$ are independent, while a vector supported on more than $r+3$ columns admits two
+    nonproportional small kernel perturbations that remain in the same orthant and therefore cannot be extreme.</p>
+    <p>Conversely, the cofactor vector on any $r+3$ selected columns is an extreme ray whenever its alternating
+    signs agree with $\sigma$. Its restricted nullspace is one-dimensional, so a same-orthant decomposition
+    cannot split it into nonproportional vectors.</p>
+    <p>It follows constructively that every $d\in\mathcal C_\sigma$ is a conformal sum of at most $N-r-2$
+    such circuits. Choose a compatible extreme ray in the face containing $d$, subtract the largest nonnegative
+    multiple that stays in the orthant, and iterate; at least one support coordinate disappears at each step.</p>
+    <p>Thus the unique minimal-grid pairs are exactly the extreme rays of every fixed larger-support feasibility
+    cone. Splitting a circuit into positive and negative parts gives equal-mass, equal-mean transform-matched
+    submeasures; after normalizing and rescaling their common mean, each is an $r$-crossing martingale pair.</p>
+    <p>The decomposition is sign-compatible, so the positive and negative submeasures sum without cancellation
+    to the original Jordan parts. It does not say that the separately rescaled component pairs share their strike
+    roots, or that a nonminimal witness cannot have more than $r$ crossings.</p>
+    <p>The exact certificate checks 27 larger-support cones, including repeated transform nodes, and decomposes
+    their full-support kernel vectors into 81 alternating minimal circuits. Every component independently matches
+    mass, mean and the confluent transform constraints and has exactly $r$ strict call crossings.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
