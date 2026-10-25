@@ -616,6 +616,7 @@ def main():
         "PASS: cumulants, leverage, and the explicit option-price and "
         "implied-volatility corrections"
     )
+    print("PASS")
 
 
 if __name__ == "__main__":
