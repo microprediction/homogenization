@@ -143,7 +143,8 @@
     $0\leq t\leq T$. Otherwise the uniform composite formula replaces $\tilde g(t)$ in the bracket by</p>
     $$\tilde g(t)-\tilde g(0)e^{-2t/\varepsilon}$$
     <p>and includes $-\varepsilon\tilde g(0)\int_0^t\tilde g(s)e^{-2s/\varepsilon}ds/2$ in the exponent. Its remainder is
-    $O(\varepsilon^2)$ uniformly on every fixed bounded maturity interval. The proof and the exact crossover scale
+    $O(\varepsilon^2)$ uniformly on every fixed bounded maturity interval.</p>
+    <p>The proof and the exact crossover scale
     are on the <a href="./layers.html">initial-layers</a> page. The three outer factors have separate meanings,
     explained on the <a href="./idea.html">idea</a> page.</p>
     <ul>
@@ -877,10 +878,28 @@
     overdispersion above, which is $2TK$ with $K$ the Green&ndash;Kubo integral of the rate up to a remainder bounded
     uniformly in $T$, as on the <a href="./cumulants.html">cumulants page</a>; for two regimes the remainder is at
     most $\varepsilon^2\tilde\ell^{\,2}/2$, the size of the memory term.</p>
-    <p>The third and fourth are new: they measure the skewness and kurtosis of the integrated rate, which a test for
-    switching in count data would examine, as the <a href="./likelihood.html">likelihood page</a> examines the
-    residuals of a rate. For a stationary start with two symmetric regimes the third vanishes, and the fourth is
-    negative because the rate is bounded. At $T = 1$, computing the factorial cumulants from the count law at the
+    <p>The third and fourth measure the skewness and kurtosis of the integrated rate, which a test for switching in
+    count data would examine, as the <a href="./likelihood.html">likelihood page</a> examines the residuals of a
+    rate. For a stationary start with two symmetric regimes the third vanishes, and the fourth has an exact sign.</p>
+    <p>Write $\ell_{Y_t}=\bar\ell+\tilde\ell Z_t$, where $Z_t\in\{-1,1\}$ flips at rate $\lambda$, and put
+      $x=\lambda T$. Two-state occupation-time laws are classical; see
+      <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.
+      The two-state matrix exponential directly gives</p>
+    <div class="equation-card">
+    $$\mathbb E\exp\!\left(u\tilde\ell\int_0^T Z_s\,ds\right)
+      =e^{-\lambda T}\left[\cosh(Td)+\frac{\lambda}{d}\sinh(Td)\right],
+      \qquad d=\sqrt{\lambda^2+\tilde\ell^2u^2},$$
+    $$\kappa_4(\Lambda_T)=-\frac{\tilde\ell^4}{\lambda^4}F(x),$$
+    $$F(x)=3x-\frac{15}{4}+(6x+3)e^{-2x}+\frac34e^{-4x}.$$
+    </div>
+    <p>Here $F(0)=0$ and</p>
+    $$F'(x)=6e^{-2x}\{\sinh(2x)-2x\}>0\qquad(x>0).$$
+    <p>Thus the fourth factorial cumulant is strictly negative whenever $T>0$ and the two rates differ. Boundedness
+      alone would not determine the sign; it is the symmetric telegraph structure that does.</p>
+    <p>For unequal switching rates, the <a href="./counts-kurtosis-full.html">complete sign diagram</a>
+      has a regime with exactly one negative-to-positive maturity crossing.
+      The full note gives the exact formula and the stationary-weight thresholds.</p>
+    <p>At $T = 1$, computing the factorial cumulants from the count law at the
     roots of unity and the cumulants of $\Lambda_T$ from its polynomial moment system, the two agree to the rounding
     of the count law:</p>
     <div class="table-wrap"><table class="impl"><thead><tr><th>$\lambda$</th><th>start</th><th>$\kappa_1(\Lambda)$</th><th>$\kappa_2(\Lambda)$</th><th>$\kappa_3(\Lambda)$</th><th>$\kappa_4(\Lambda)$</th><th>gap to the count</th></tr></thead><tbody><tr><td>5</td><td>stationary</td><td>4.5000</td><td>2.2050</td><td>&minus;0.0000</td><td>&minus;2.7015</td><td>7e-8</td></tr><tr><td>5</td><td>busy start</td><td>4.8500</td><td>2.0825</td><td>&minus;0.1713</td><td>&minus;2.4317</td><td>4e-7</td></tr><tr><td>10</td><td>stationary</td><td>4.5000</td><td>1.1638</td><td>&minus;0.0000</td><td>&minus;0.3939</td><td>8e-7</td></tr><tr><td>10</td><td>busy start</td><td>4.6750</td><td>1.1331</td><td>&minus;0.0214</td><td>&minus;0.3770</td><td>9e-7</td></tr><tr><td>20</td><td>stationary</td><td>4.5000</td><td>0.5972</td><td>&minus;0.0000</td><td>&minus;0.0528</td><td>4e-6</td></tr><tr><td>20</td><td>busy start</td><td>4.5875</td><td>0.5895</td><td>&minus;0.0027</td><td>&minus;0.0517</td><td>4e-6</td></tr><tr><td>40</td><td>stationary</td><td>4.5000</td><td>0.3024</td><td>&minus;0.0000</td><td>&minus;0.0068</td><td>2e-7</td></tr><tr><td>40</td><td>busy start</td><td>4.5437</td><td>0.3005</td><td>&minus;0.0003</td><td>&minus;0.0067</td><td>4e-9</td></tr></tbody></table></div>
