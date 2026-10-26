@@ -99,6 +99,73 @@ def main():
     assert many_error < ROUND_TOL
     assert abs(many_gaps.sum()) < ROUND_TOL
 
+    # For fixed Q and d, all attainable gap vectors form the zero-sum
+    # l1 ball of radius 2A, where A is the positive mass of pi*d*w_d.
+    signed_budget = pi * total * w_d
+    budget = np.maximum(signed_budget, 0.0).sum()
+    assert abs(signed_budget.sum()) < ROUND_TOL
+    assert np.sum(abs(many_gaps)) / 2 <= budget + ROUND_TOL
+
+    # Construct strictly positive hazard splits for arbitrary interior
+    # points of the ball and recover their prescribed gaps directly.
+    target_error = 0.0
+    minimum_hazard = np.inf
+    cause_count = len(many_hazards)
+    for _ in range(25):
+        target = rng.normal(size=cause_count)
+        target -= target.mean()
+        target *= (
+            rng.uniform(0.05, 0.95) * 2 * budget / np.sum(abs(target))
+        )
+        positive_mass = np.maximum(target, 0.0).sum()
+        common = (1.0 - positive_mass / budget) / cause_count
+        positive_split = np.maximum(target, 0.0) / budget + common
+        negative_split = np.maximum(-target, 0.0) / budget + common
+        shares = np.empty((cause_count, len(total)))
+        for state, coefficient in enumerate(signed_budget):
+            if coefficient > 0:
+                shares[:, state] = positive_split
+            elif coefficient < 0:
+                shares[:, state] = negative_split
+            else:
+                shares[:, state] = 1.0 / cause_count
+        target_hazards = shares * total
+        target_gaps = np.array([
+            first_arrival_probability(Q, target_hazards, winner=index)
+            - first_arrival_probability(
+                reversed_Q, target_hazards, winner=index
+            )
+            for index in range(cause_count)
+        ])
+        target_error = max(target_error, np.max(abs(target_gaps - target)))
+        minimum_hazard = min(minimum_hazard, np.min(target_hazards))
+    assert target_error < ROUND_TOL
+    assert minimum_hazard > 0
+
+    # The boundary is sharp: send every positive witness state to cause 0
+    # and every negative witness state to cause 1.
+    sharp_shares = np.zeros((cause_count, len(total)))
+    for state, coefficient in enumerate(signed_budget):
+        if coefficient > 0:
+            sharp_shares[0, state] = 1.0
+        elif coefficient < 0:
+            sharp_shares[1, state] = 1.0
+        else:
+            sharp_shares[2, state] = 1.0
+    sharp_hazards = sharp_shares * total
+    sharp_gaps = np.array([
+        first_arrival_probability(Q, sharp_hazards, winner=index)
+        - first_arrival_probability(
+            reversed_Q, sharp_hazards, winner=index
+        )
+        for index in range(cause_count)
+    ])
+    sharp_target = np.zeros(cause_count)
+    sharp_target[0], sharp_target[1] = budget, -budget
+    sharp_error = np.max(abs(sharp_gaps - sharp_target))
+    assert sharp_error < ROUND_TOL
+    assert abs(np.sum(abs(sharp_gaps)) / 2 - budget) < ROUND_TOL
+
     # Constant total killing makes R 1 = R* 1 = 1/c, so every split and
     # every number of channels is exactly blind even for a nonreversible Q.
     constant_total = np.full(len(total), 0.11)
@@ -184,6 +251,12 @@ def main():
     print(
         "constant total hazard:",
         f"five-channel max scaled error {constant_error:.3e}",
+    )
+    print(
+        "attainable gap polytope:",
+        f"TV budget {budget:.9f};",
+        f"25 interior targets max error {target_error:.3e};",
+        f"sharp-boundary error {sharp_error:.3e}",
     )
     print("PASS")
 

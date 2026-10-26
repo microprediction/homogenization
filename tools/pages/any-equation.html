@@ -206,6 +206,14 @@
     $R\mathbf1=R^\leftarrow\mathbf1=c^{-1}\mathbf1$, so $w_d=0$: every allocation and every number of
     competing names is direction-blind. A varying total hazard is therefore necessary, though not sufficient,
     for the first-arrival label to reveal time direction.</p>
+    <p>For fixed $Q,d$ and $m$ causes, the size of every possible direction signal is also exact. Put
+    $a_i=\pi_i d_iw_{d,i}$ and $A=\sum_i(a_i)_+=\tfrac12\sum_i|a_i|$. As the nonnegative hazards
+    range over all splits $\sum_rh_r=d$, their reversal-gap vectors fill precisely</p>
+    $$\left\{g\in\mathbb R^m:\ \mathbf1^\top g=0,\ \|g\|_1\leq2A\right\}.$$
+    <p>Indeed, writing $h_{r,i}=d_ix_{i,r}$ with $x_i$ in the probability simplex gives
+    $g=A(p_+-p_-)$ for two simplex points $p_+,p_-$. Conversely every vector in the displayed difference body
+    has such a representation, so the total-variation distance between the forward and reversed label laws is
+    at most $A$, sharply; strictly positive splits fill its relative interior.</p>
     <p>For three regimes, nonconstant $d$ and $w_d\ne0$, these affine allocations exhaust the blind hyperplane.
     From four regimes onward the hyperplane is larger, and positive non-affine blind allocations exist. The
     <a href="https://kinetics.microprediction.org/">kinetics site</a> studies related races.</p>
