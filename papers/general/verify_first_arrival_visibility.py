@@ -166,6 +166,40 @@ def main():
     assert sharp_error < ROUND_TOL
     assert abs(np.sum(abs(sharp_gaps)) / 2 - budget) < ROUND_TOL
 
+    # The vertices are A(e_r-e_s).  They give the exact support function
+    # A(max c-min c), so no extra cause improves a scalar contrast.
+    vertex_gaps = {}
+    vertex_error = 0.0
+    for upper in range(cause_count):
+        for lower in range(cause_count):
+            if upper == lower:
+                continue
+            shares = np.zeros((cause_count, len(total)))
+            for state, coefficient in enumerate(signed_budget):
+                shares[upper if coefficient >= 0 else lower, state] = 1.0
+            hazards = shares * total
+            gaps = np.array([
+                first_arrival_probability(Q, hazards, winner=index)
+                - first_arrival_probability(
+                    reversed_Q, hazards, winner=index
+                )
+                for index in range(cause_count)
+            ])
+            target = np.zeros(cause_count)
+            target[upper], target[lower] = budget, -budget
+            vertex_error = max(vertex_error, np.max(abs(gaps - target)))
+            vertex_gaps[upper, lower] = gaps
+    assert vertex_error < ROUND_TOL
+
+    support_error = 0.0
+    for _ in range(25):
+        contrast = rng.normal(size=cause_count)
+        upper, lower = np.argmax(contrast), np.argmin(contrast)
+        attained = contrast @ vertex_gaps[upper, lower]
+        predicted = budget * (contrast[upper] - contrast[lower])
+        support_error = max(support_error, abs(attained - predicted))
+    assert support_error < ROUND_TOL
+
     # Constant total killing makes R 1 = R* 1 = 1/c, so every split and
     # every number of channels is exactly blind even for a nonreversible Q.
     constant_total = np.full(len(total), 0.11)
@@ -257,6 +291,12 @@ def main():
         f"TV budget {budget:.9f};",
         f"25 interior targets max error {target_error:.3e};",
         f"sharp-boundary error {sharp_error:.3e}",
+    )
+    print(
+        "support function:",
+        f"{cause_count * (cause_count - 1)} vertices max error "
+        f"{vertex_error:.3e};",
+        f"25 contrasts max error {support_error:.3e}",
     )
     print("PASS")
 
