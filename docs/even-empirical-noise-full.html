@@ -218,9 +218,10 @@
     <p>For the large-noise endpoint, normalized reference quantiles converge to $\Phi^{-1}(u)$ for every $0&lt;u&lt;1$.
       The integration-by-parts representation bounds $H_{i,\rho}$ uniformly, so dominated convergence justifies beta averaging without discarding its tails.</p>
     <h2>Checks, literature and limits</h2>
-    <p>The certificate checks 36 nonreversible three-state empirical-rank cases for
-      $\psi(a)=a^d[(1-1.2a)^2+.02]$ at $c=32,128,512$, degrees $2,4,6$, four noise levels and $N=j=9$.
-      This score stays positive away from zero but has two additional turning points for every tested degree; the inversion sums all monotonicity intervals rather than assuming two global branches.</p>
+    <p>The certificate checks 48 nonreversible three-state empirical-rank cases for
+      $\psi(a)=a^d[(1-1.2a)^2+.02]$: 36 cases at $c=32,128,512$, degrees $2,4,6$, four noise levels and $N=j=9$,
+      plus 12 singleton, lower-tail, median and upper-tail cases through $N=25$.</p>
+    <p>This score stays positive away from zero but has two additional turning points for every tested degree; the inversion sums all monotonicity intervals rather than assuming two global branches.</p>
     <p>The worst weighted error falls from $1.09848274$ to $.0615449815$; the worst score Kolmogorov error falls from $.0184408825$ to $.00119445801$.
       Joint Fourier/spatial/beta-order refinement is $1.49\times10^{-4}$, within a portable $3\times10^{-4}$ allowance; 18 Hermite representations, six probability-modulus inequalities and 300 exact pure-power rank patterns also pass.</p>
     <p>These Fourier and quadrature calculations are numerical consistency checks, not interval enclosures or a proof of continuum uniformity.</p>

@@ -134,6 +134,7 @@ def rank_average(law, d, rho, beta, zeta, n=9, k=9, order=24):
 
 def main():
     errors, refinement, identity_error, inversion_error = [], 0., 0., 0.
+    rank_spread_cases, rank_spread_error = 0, 0.
     beta, zeta, minimum_factor, turning_points = -2.4/1.02, 1.44/1.02, math.inf, 0
     for c in (32, 128, 512):
         law, worst, worst_delta = Law(c), 0., 0.
@@ -174,6 +175,18 @@ def main():
                     refinement = max(refinement, max(abs(exact-observed)), max(abs(target-predicted)))
                 if c == 512 and d == 4:
                     print(f'c=512,d=4,rho={rho:g}: weighted gaps={observed}; prediction={predicted}')
+            if c == 128 and d == 4:
+                for rho in (0., 2/3):
+                    for n, k in ((1, 1), (9, 1), (9, 5), (25, 1), (25, 13), (25, 25)):
+                        observed, predicted = rank_average(
+                            law, d, rho, beta, zeta, n=n, k=k, order=16)
+                        error = max(abs(observed-predicted))
+                        rank_spread_cases += 1
+                        rank_spread_error = max(rank_spread_error, error)
+                        bound = sup if not rho else np.minimum(
+                            sup/(1-rho), transport/(rho*math.sqrt(2*math.pi)))
+                        assert max(abs(observed-predicted)-bound-constant*math.sqrt(delta)) < 3e-5
+                        assert abs(law.pi@observed) < 3e-7
             if c == 128:
                 for rho in (.2, .8):
                     for t in (-.5, .5, 3.):
@@ -195,7 +208,9 @@ def main():
         ties = rng.permutation(10)
         assert all(sorted(range(10), key=lambda j: (values[j]**d, ties[j]))
                    == sorted(range(10), key=lambda j: (abs(values[j]), ties[j])) for d in (2, 4, 6))
-    print(f'36 smooth-score rank cases; 300 pure-power rank patterns; 18 independent Hermite identities; 6 modulus checks')
+    assert rank_spread_cases == 12
+    print(f'48 smooth-score rank cases, including 12 rank-spread cases; maximum rank-spread error={rank_spread_error:.9g}')
+    print(f'300 pure-power rank patterns; 18 independent Hermite identities; 6 modulus checks')
     print(f'Maximum joint Fourier/spatial/beta refinement={refinement:.3g}; allowance=3e-4; identity error={identity_error:.3g}')
     print(f'Full-CDF/fold inversion error={inversion_error:.3g}; minimum score factor={minimum_factor:.9f}; turning-point checks={turning_points}')
     print(f'nu/mu={beta:.6f}; omega/mu={zeta:.6f}; Gamma={law.gamma:.9f}; kappa3={law.skew:.9f}; a={law.a}; e={law.e}')
