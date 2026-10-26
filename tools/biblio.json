@@ -2447,7 +2447,7 @@
   "venue": "Monthly Notices of the Royal Astronomical Society (2023)",
   "doi": "10.1093/mnras/stad1713",
   "url": "https://doi.org/10.1093/mnras/stad1713",
-  "annotation": "Models the timing noise of 17 Jodrell Bank pulsars with quasi-periodic and steep-spectrum components, and publishes smoothed spin-down rate series for them (Zenodo, doi:10.5281/zenodo.7664166)."
+  "annotation": "Models the timing noise of 17 Jodrell Bank pulsars with quasi-periodic and steep-spectrum components. The published spin-down series (Zenodo, doi:10.5281/zenodo.7664166) are derivatives of finite global Fourier-basis Gaussian-process reconstructions, not outputs of a compactly supported local smoother."
  },
  {
   "role": "survey_epidemics",
