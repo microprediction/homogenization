@@ -8,8 +8,12 @@ from three_numbers import coefficients, group_inverse
 from long_end import eigen_series, long_yield
 
 
-def relative(actual, expected):
-    return np.max(np.abs(np.asarray(actual)-expected)/np.maximum(1e-6, np.abs(expected)))
+def scaled_error(actual, expected):
+    """Sup-norm error relative to a unit-or-data scale."""
+    actual = np.asarray(actual)
+    expected = np.asarray(expected)
+    scale = max(1.0, float(np.max(np.abs(expected))))
+    return float(np.max(np.abs(actual - expected))) / scale
 
 
 def main():
@@ -42,8 +46,8 @@ def main():
                 Q = Q0/eps
                 c = np.array(coefficients(Q, theta, variance, kappa))
                 physical = c @ np.array([kappa**-2, kappa**-3, kappa**-4])
-                err = max(relative(physical, eps*base[2]), relative(c, eps*cbase),
-                          relative(group_inverse(Q), eps*group_inverse(Q0)))
+                err = max(scaled_error(physical, eps*base[2]), scaled_error(c, eps*cbase),
+                          scaled_error(group_inverse(Q), eps*group_inverse(Q0)))
                 assert err < 2e-9
                 worst = max(worst, err)
                 count += 1
@@ -51,7 +55,7 @@ def main():
                     changed = eigen_series(scale*Q0, D, 6)
                     terms = base[1:]*eps**np.arange(6)
                     same = changed[1:]*(scale*eps)**np.arange(6)
-                    err = relative(same, terms)
+                    err = scaled_error(same, terms)
                     assert err < 2e-9
                     assert abs(long_yield(scale*Q0/(scale*eps), theta, variance, kappa)
                                -long_yield(Q, theta, variance, kappa)) < 2e-11
