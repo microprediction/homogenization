@@ -5,14 +5,16 @@ With g_inf,i = -theta_i + s_i / (2 kappa^2) (the forcing once B has reached 1/ka
 For a fast chain Q = Q0 / eps, Lambda = mu(eps) / eps with mu the principal eigenvalue of Q0 + eps D.
 Rayleigh-Schroedinger with the group inverse gives mu = sum_k eps^k mu_k:
     mu_k = pi . (D v_{k-1}),   v_k = Q0# ( sum_{j=1}^{k-1} mu_j v_{k-j} - D v_{k-1} ),   v_0 = 1.
-mu_1 = pi.D is the average and mu_2 = K(D~, D~) is the Green-Kubo term, so the first two terms are the T -> inf
-limit of the three-number formula. Unlike the expansion in time, this series converges for small eps.
+mu_1 = pi.D is the average; mu_2 uses the BASE-generator Green-Kubo form.
+The physical correction eps*mu_2 equals c2/kappa^2+c3/kappa^3+c4/kappa^4
+when the c's use the ACTUAL generator Q. Unlike the expansion in time, this series converges for small eps.
 """
 import numpy as np
 from three_numbers import stationary, group_inverse
 
 
 def eigen_series(Q0, D, order):
+    """Base-generator coefficients; the physical kth term is eps**(k-1)*mu[k]."""
     pi, Qs = stationary(Q0), group_inverse(Q0)
     n = len(D)
     v, mu = [np.ones(n)], [0.0]
