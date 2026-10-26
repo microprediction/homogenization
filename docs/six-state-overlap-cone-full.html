@@ -210,8 +210,11 @@
     $$\frac1{\det H}\begin{pmatrix}B_0\\B_1\\B_2\\B_3\end{pmatrix}=
       \begin{pmatrix}1+e_1+e_2+e_3\\7+3e_1-e_2-5e_3\\21+e_1-3e_2+9e_3\\35-5e_1+3e_2-5e_3\end{pmatrix}.$$
     </div>
-    <p>The positive arcs of the stationary flow form a connected directed support carrying positive circulation weights. After parallel arcs with the same orientation are merged, let $\beta=m_{\mathrm{red}}-7$; then $1\le\beta\le49$.</p>
-    <p>A theorem of <a href="./bibliography.html#GaoYuan2026">Gao and Yuan (2026)</a> applies exactly to this weighted spanning-tree polynomial. Its coefficients are positive, palindromic and log-concave, and at each internal index</p>
+    <p>Regard every positive arc $e$ of the stationary flow as a labeled edge of a weighted digraph $D$, with weight $w_e$. If $\kappa_r(T)$ is the number of arcs of a labeled spanning tree $T$ that must be reversed to point toward root $r$, the directed matrix-tree theorem gives the exact bridge</p>
+    $$P(u)=\sum_T\left(\prod_{e\in T}w_e\right)u^{7-\kappa_r(T)}(1-u)^{\kappa_r(T)}.$$
+    <p>Thus $B_{7-i}$ is the coefficient $c_i(D,w)$ of the weighted Murasugi&ndash;Stoimenow tree polynomial. Merging arcs with the same ordered endpoints preserves this polynomial, because a tree uses at most one member of any parallel class and their weights add; anti-parallel arcs remain distinct.</p>
+    <p>The support is connected and the positive weights form a circulation. After the permitted same-orientation merges, $\beta=m_{\mathrm{red}}-7$ satisfies $1\le\beta\le49$, since a nontrivial positive circulation has at least eight arcs and a loopless simple directed graph on eight vertices has at most 56.</p>
+    <p>Theorem 7.7 of <a href="./bibliography.html#GaoYuan2026">Gao and Yuan (2026)</a> now applies with no change of normalization. It makes the coefficients positive, palindromic and log-concave, and gives at each internal index</p>
     $$Q_i^{(\beta)}=\beta B_i^2-B_i(B_{i-1}+B_{i+1})-(\beta-2)B_{i-1}B_{i+1}\ge0.$$
     <p>Since $\beta\le49$ and log-concavity gives $B_i^2\ge B_{i-1}B_{i+1}$, it follows that $Q_i^{(49)}\ge0$. This upper-rank replacement is deliberately weaker than the cited theorem and therefore applies uniformly to every eight-state support.</p>
     <p>Now write $(x,y,z)=(s_1,s_2,s_3)$. If $y\ge7/4$, palindromic log-concavity first gives $B_1\ge B_0$, hence</p>
