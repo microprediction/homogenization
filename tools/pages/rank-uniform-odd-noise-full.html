@@ -86,14 +86,14 @@
     <p>Indeed $\mathbb E U=p_N$ and $\operatorname{Var}(U)=p_N(1-p_N)/(N+2)$; H&ouml;lder followed by Jensen proves the inequality.
       This bound is conservative, especially at extreme ranks, but requires no truncation.</p>
     <h2>Checks, literature and scope</h2>
-    <p>The certificate checks degrees $1,3,5$, five normalized noise levels, 90 probability-modulus inequalities, 150 pointwise transfers and 27 beta averages, including $N=999,k=999$.
+    <p>The certificate checks degrees $1,3,5$, five normalized noise levels, 90 probability-modulus inequalities, 150 pointwise transfers and 36 beta averages, including both extreme tails $N=999,k=1,999$.
       It prints $M_{d,2}=2,10.3923048454,102.4695076596$ and $J_{9,9}=.1538752731$.
       The linear benchmark is exact: $\mathcal K_i^{N,k}(\lambda)=b_i\mathbb E\phi(\Phi^{-1}(U))/\sqrt{1+\lambda^2}$.</p>
     <p>Independent integration-by-parts identities, beta-order refinement with a $3\times10^{-5}$ allowance and 63 atomic-PIT endpoint comparisons check the implementation.
       These are numerical consistency checks, not rigorous interval enclosures or a proof of uniformity over the continuum.</p>
     <p>The randomized probability transform is classical <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>.
       <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1 and Lemma 8.3</a> provide spectral initial-bias background, not this continuous-time calibration theorem.
-      <a href="./bibliography.html#LeiGsellRinaldoTibshiraniWasserman2018">Lei et al. (2018), Theorem 2.2 and Remark 2.3</a> distinguish marginal split-conformal validity from conditional coverage.</p>
+      In <a href="./bibliography.html#LeiGsellRinaldoTibshiraniWasserman2018">Lei et al. (2018)</a>, Theorem 2.2 gives marginal split-conformal validity, while Remark 2.3 distinguishes marginal from conditional coverage.</p>
     <p>The result keeps $Q,f,d$ fixed and requires independent calibration paths and the stated tie rule.
       It does not cover overlapping panels, same-panel fitting, feature-conditional validity, or degenerating mixing gaps.
       It develops <a href="https://github.com/microprediction/homogenization/issues/248">issue 248</a> without closing it.</p>

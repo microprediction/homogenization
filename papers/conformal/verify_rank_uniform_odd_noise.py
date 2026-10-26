@@ -71,7 +71,7 @@ def rank_average(n, k, rho, d, order=24, fine=False):
 
 def main():
     identity_error = refinement = 0.
-    comparisons = transfers = 0
+    comparisons = transfers = averages = 0
     for d in (1, 3, 5):
         print(f'd={d}: C_d,2={constant(d):.10f}')
         for rho in (0., .1, .5, .8, 1.):
@@ -97,8 +97,9 @@ def main():
                     assert abs(right-left) < constant(d)*math.sqrt(delta)+3e-7
                     transfers += 1
         for rho in (0., .5, 1.):
-            for n, k in ((9, 9), (99, 50), (999, 999)):
+            for n, k in ((9, 9), (99, 50), (999, 1), (999, 999)):
                 average = rank_average(n, k, rho, d)
+                averages += 1
                 probability = k/(n+1)
                 center = profile(quantile(probability, rho, d), rho, d)
                 variance = probability*(1-probability)/(n+2)
@@ -121,7 +122,7 @@ def main():
     distance = max(np.max(abs(left-reference)), np.max(abs(right-reference)))
     for v in np.linspace(0, 1, 21):
         assert max(abs(left+v*mass-reference)) <= distance+3e-9
-    print(f'{comparisons} probability-modulus checks; {transfers} pointwise PIT transfers; 27 beta averages')
+    print(f'{comparisons} probability-modulus checks; {transfers} pointwise PIT transfers; {averages} beta averages')
     print(f'Maximum Stein-identity error {identity_error:.3g}; beta refinement {refinement:.3g}; allowance 3e-5')
     print('Atomic PIT endpoint checks: 63; all rank/noise uniformity is proved analytically, not by this grid')
     print('PASS')
