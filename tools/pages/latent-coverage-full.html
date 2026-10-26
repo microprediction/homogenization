@@ -34,6 +34,25 @@
     <p>The variance cannot exceed the iid beta variance, yet $C$ need not itself be beta.
       No analogous variance assertion is made for $\delta&gt;0$.</p>
 
+    <h2>Repeated use: exact marginal law, dependent conditional errors</h2>
+    <p>Now set $\delta=0$ and suppose that, given $U$ and the panel, $L$ future scores are iid from $G_U$.
+      Put $I_\ell=\mathbf1_{\{S_{N+\ell}\le Q_k\}}$, $K_L=\sum_{\ell=1}^L I_\ell$, and
+      $V_{\mathcal D}=\operatorname{Var}(Z\mid\mathcal D)$.</p>
+    <p>Conditionally on the realized score panel, posterior uncertainty about $U$ creates the exact decomposition</p>
+    $$\mathbb E[K_L\mid\mathcal D]=LM,\qquad
+      \operatorname{Var}(K_L\mid\mathcal D)
+      =LM(1-M)+L(L-1)V_{\mathcal D},$$
+    $$\operatorname{Cov}(I_\ell,I_r\mid\mathcal D)=V_{\mathcal D},
+      \qquad \ell\ne r.$$
+    <p>Marginally, $Z$ is beta and $K_L$ is beta-binomial, so</p>
+    $$\operatorname{Var}(K_L)=Lp(1-p)\frac{N+1+L}{N+2},\qquad
+      \operatorname{Var}(M)+\mathbb E V_{\mathcal D}
+      =\frac{p(1-p)}{N+2}.$$
+    <p>The second identity splits the universal beta variability into between-panel coverage variability and within-panel posterior latent uncertainty.
+      It does not make the realized-panel coverage beta or future errors conditionally independent.</p>
+    <p>In the $N=k=9$ stationary witness below, $\mathbb E V_{\mathcal D}=0.000921316035$.
+      For $L=20$, the mean conditional variance is $2.004890050279$, the between-panel component is $2.904200858812$, and their sum is the beta-binomial variance $4.909090909091$.</p>
+
     <h2>A valid finite-sample lower-tail budget</h2>
     <p>For $Z\sim\operatorname{Beta}(a,b)$, with $a=k$, $b=N+1-k$ and $p=a/(a+b)$, define the stop-loss function</p>
     $$L_{a,b}(t)=\mathbb E(t-Z)_+
@@ -93,7 +112,9 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      Independent quadrature checks 162 nested-CDF integrals and 105 general beta stop-loss integrals; the certificate adds 1,566 finite-boundary comparisons and 35 independent minimizer checks, and prints all numerical headlines.</p>
+      It also checks 105 exact beta-binomial laws and 162 exact latent variance decompositions; independent quadrature checks 162 nested-CDF integrals and 105 general beta stop-loss integrals.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
-      Conditional Jensen and the beta order-statistic law are classical; the argument here supplies their latent-model and finite-boundary specialization, without claiming a new general convex-order principle.</p>
+      <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
+    <p>Conditional Jensen and the beta order-statistic law are classical.
+      The argument here supplies their latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
   </main>
