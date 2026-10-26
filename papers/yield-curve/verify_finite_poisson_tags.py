@@ -80,7 +80,7 @@ def uncapped():
              mp.matrix([[-1, 1, 0], [0, -1, 1], [0, 0, 0]]),
              mp.matrix([[-3, 1, 2], [0, 0, 0], [0, 0, 0]])]
     times, weights = (mp.mpf(1), mp.sqrt(2)), (mp.mpf(1)/3, mp.mpf(2)/3)
-    error = mp.mpf(0)
+    error, scale_error = mp.mpf(0), mp.mpf(0)
     for q in cases:
         kernels = [mp.expm(t*q) for t in times]
         for tick in (mp.mpf('.7'), mp.mpf(2)):
@@ -96,7 +96,15 @@ def uncapped():
                 delta = mp.mnorm(observed-direct, mp.inf)
                 check(delta <= tail+mp.mpf('1e-12'))
                 error = max(error, delta)
+            for scale in (mp.mpf('.4'), mp.mpf('3.7')):
+                scaled_tick, scaled_q = scale*tick, scale*q
+                scaled = [sum((w*mp.exp(-scaled_tick*(t/scale))*(scaled_tick*(t/scale))**k
+                               /mp.factorial(k)*mp.expm((t/scale)*scaled_q)
+                               for t, w in zip(times, weights)), mp.zeros(3)) for k in range(13)]
+                scale_error = max(scale_error, max(mp.mnorm(rk[k]-scaled[k], mp.inf) for k in range(13)))
+    check(scale_error < mp.mpf('1e-70'))
     print(f"18 uncapped matrix PGF checks (directed, Jordan, absorbing): error {float(error):.3e}")
+    print(f"12 unknown-rate physical-time rescalings: error {float(scale_error):.3e}")
     # Infinite-mean clock f(t)=1/t^2, t>=1: no raw-moment assumption needed.
     for z in (mp.mpf('.2'), mp.mpf('.5'), mp.mpf('.8')):
         counts = [mp.gammainc(k-1, 1, mp.inf)/mp.factorial(k) for k in range(71)]

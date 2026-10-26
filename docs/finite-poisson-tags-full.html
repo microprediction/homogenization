@@ -178,6 +178,12 @@
     $$R_k=\int e^{-st}\frac{(st)^k}{k!}e^{tQ}\,\mu(dt),\qquad
       H(z)=\sum_{k=0}^\infty z^kR_k
       =\int e^{-s(1-z)t}e^{tQ}\,\mu(dt),\quad 0&lt;z&lt;1.$$
+    <p>Knowing $s$ is essential for recovery in physical time.
+      If $s$ is unknown, put $U=sT$, $G=Q/s$ and let $\nu$ be the law of $U$; then</p>
+    $$H(z)=\int e^{-(1-z)u}e^{uG}\,\nu(du).$$
+    <p>The record identifies $\nu$ and its matrix measures $(e^{uG})_{ij}\nu(du)$; under the same grid-free support condition below it identifies $G$.
+      It cannot separate the physical scale: for every $a&gt;0$, replacing $(s,Q,T)$ by $(as,aQ,T/a)$ leaves the entire labeled count law unchanged.
+      Thus an unknown tick rate identifies exactly the dimensionless pair $(Q/s,\operatorname{Law}(sT))$, not $s$, $Q$ and the duration law separately.</p>
     <p>Row sums of $H(z)$ give the clock&apos;s Laplace transform on $(0,s)$.
       Uniqueness of that transform identifies $\mu$; entrywise uniqueness then identifies every finite measure $(e^{tQ})_{ij}\mu(dt)$.
       These are precisely the timestamp joint measures, while the reverse implication follows by adding the known conditional Poisson counter.</p>
@@ -202,7 +208,7 @@
     <p>For each count the contrast coefficient decreases with $c$; summing its nonnegative differences gives the displayed identity.
       Thus neither uncapping nor population identification supplies a uniform inverse-continuity or finite-sample guarantee.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a> constructs compact density tilts around a Gamma clock and checks both signs of speed change, moment preservation, positivity bounds and every endpoint/tag probability by independent quadrature.
-      It also checks uncapped matrix generating functions, an infinite-mean clock and the grid alias, with explicit omitted-count bounds.
+      It also checks uncapped matrix generating functions, exact physical-time rescaling, an infinite-mean clock and the grid alias, with explicit omitted-count bounds.
       These are high-precision floating checks, not outward-rounded existence certificates; the Gram argument supplies existence for every finite cap.</p>
   </main>
 
