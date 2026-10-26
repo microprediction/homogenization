@@ -216,11 +216,11 @@
       The fitted correlation-time decay exponents are $0.2000000$ and $0.1000015$, against the predicted
       $2(H-\gamma)$ values $0.2$ and $0.1$.</p>
     <h3>The critical Gaussian boundary is not fractional Brownian motion</h3>
-    <p>The restriction $\alpha&lt;2$ in the functional theorem is sharp. At the divergent critical endpoint, suppose</p>
-    $$F(x)\sim b x^2L(1/x),\qquad
-      H(x)=\int_1^xL(u)\frac{du}{u}\longrightarrow\infty.$$
-    <p>The endpoint spectral theorem below gives $V(R)\sim4bH(R)$. The divergent integral $H$ is slowly varying,
-      so $V(cR)/V(R)\to1$ for every fixed $c&gt;0$. Hence for a centered stationary Gaussian driver the same exact
+    <p>The restriction $\alpha&lt;2$ in the functional theorem is sharp. At the critical endpoint, assume directly
+      that $V(R)\to\infty$ is slowly varying, so $V(cR)/V(R)\to1$ for every fixed $c&gt;0$.</p>
+    <p>The local-density theorem below is one sufficient condition; cumulative spectral regular variation alone
+      is not, as the <a href="./critical-spectrum-full.html">resonant counterexample</a> shows.
+      For a centered stationary Gaussian driver the same exact
       stationary-increment identity used above yields, for $s,t&gt;0$,</p>
     <div class="equation-card">
     $$\operatorname{Cov}\{S_R(s),S_R(t)\}\longrightarrow
@@ -252,10 +252,11 @@
       violates the necessary modulus-of-continuity condition for tightness. The endpoint therefore has a valid and
       explicit finite-dimensional limit but no c&agrave;dl&agrave;g functional limit under this normalization.</p>
     <h4>A power-scale modulus profile</h4>
-    <p>The failure of tightness has a sharper multiscale form. Suppose more specifically that the critical spectral
-      law has</p>
-    $$F(x)\sim b x^2\{\log(1/x)\}^{p}\ell(1/x),\qquad p&gt;-1,$$
-    <p>where $\ell(R^\theta)/\ell(R)\to1$ for each fixed $\theta&gt;0$. Then the endpoint theorem and ordinary
+    <p>The failure of tightness has a sharper multiscale form. Suppose more specifically that the spectrum has a
+      density near zero satisfying</p>
+    $$f(\omega)\sim2b\omega\{\log(1/\omega)\}^{p}\ell(1/\omega),\qquad p&gt;-1,$$
+    <p>where $\ell$ is positive and slowly varying, with $\ell(R^\theta)/\ell(R)\to1$ for each fixed
+      $\theta&gt;0$. Then the endpoint theorem and ordinary
       integration on the logarithmic scale give</p>
     $$V(R)\sim\frac{4b}{p+1}\{\log R\}^{p+1}\ell(R).$$
     <p>For the shrinking lag $h_R=R^{-\beta}$, stationarity of the integrated process gives the exact reduction</p>
@@ -375,28 +376,29 @@
       covers singular and pure-point spectra.</p>
     <p>This single formula includes long memory for $0&lt;\alpha&lt;1$, ordinary Green&ndash;Kubo scaling at
       $\alpha=1$ when $L$ tends to a positive constant, and zero-Green&ndash;Kubo antipersistence for
-      $1&lt;\alpha&lt;2$. The cumulative formulation also survives at the critical endpoint. If</p>
-    $$F(x)\sim b x^2L(1/x),\qquad
+      $1&lt;\alpha&lt;2$. At the critical endpoint, impose the stronger local-density hypothesis</p>
+    $$\mu(d\omega)=f(\omega)d\omega\quad\hbox{near zero},\qquad
+      f(\omega)\sim2b\omega L(1/\omega),\qquad
       H(x)=\int_1^xL(s)\frac{ds}{s}\longrightarrow\infty,$$
-    <p>then, still without assuming a density and for every joint path
-      $T_\varepsilon/\varepsilon\to\infty$,</p>
+    <p>with $b&gt;0$, slowly varying $L$, and still $\mu(\{0\})=0$.
+      Then for every joint path $T_\varepsilon/\varepsilon\to\infty$,</p>
     <div class="equation-card">
     $$\operatorname{Var}A_\varepsilon(T_\varepsilon)
       \sim4b\varepsilon^2H(T_\varepsilon/\varepsilon).$$
     </div>
-    <p>For the proof, put $R=T_\varepsilon/\varepsilon$ and
-      $I(R)=\int_{(0,\infty)}(1-\cos(R\omega))\omega^{-2}\mu(d\omega)$.
-      On $(0,R^{-1}]$, the inequality $1-\cos x\leq x^2/2$ gives an $O(L(R))$ contribution, while every
-      interval bounded away from zero contributes $O(1)$. On $[R^{-1},\eta]$, Stieltjes integration by parts,
-      followed by Dirichlet summation over the cosine half-periods, gives</p>
-    $$I(R)=2b\int_{R^{-1}}^\eta L(1/\omega)\frac{d\omega}{\omega}
-      +o(H(R))+O(L(R))+O(1).$$
-    <p>Potter bounds make the remainder uniform as $R\to\infty$ and then $\eta\downarrow0$.
-      Since the divergent borderline integral satisfies $L(R)=o(H(R))$, the last display is
-      $2bH(R)\{1+o(1)\}$; substitution in the exact Fej&eacute;r identity proves the factor $4b$.
-      If a density exists with
-      $f(\omega)\sim a\omega L(1/\omega)$, then $b=a/2$ and this reduces to the earlier
-      $2a\varepsilon^2H(T/\varepsilon)$ law.</p>
+    <p>The <a href="./critical-spectrum-full.html">proof and atomic obstruction</a> give the needed oscillatory
+      estimate explicitly. Frequencies below $R^{-1}$ contribute $O(L(R))$, while arbitrary finite spectral
+      mass bounded away from zero contributes $O(1)$.</p>
+    <p>On $[R^{-1},\eta]$, the local density permits freezing $L$ on dyadic bands and integrating the cosine
+      there; its contribution is $o(H(R))$. Thus the nonoscillatory integral gives $V(R)\sim4bH(R)$,
+      using $L(R)=o(H(R))$.</p>
+    <p>The weaker condition $F(x)\sim b x^2L(1/x)$ does <em>not</em> suffice: a purely atomic spectrum with
+      $F(x)\sim x^2$ can have $V(R)/(4\log R)\to0$ along resonant horizons.
+      This corrects the former density-free endpoint claim; the $0&lt;\alpha&lt;2$ theorem is unchanged.</p>
+    <p><a href="./critical-spectrum-full.html">Randomizing maturity with any compactly supported
+      bounded-variation density</a> restores the critical law without a spectral density, with an explicit
+      finite-$R$ bound and a sufficient concentration condition.
+      This is an average of variances, not a fixed-horizon or functional-limit claim.</p>
     <p>The divergence of $H$ is essential: when it stays bounded, the
       local equivalent of $F$ no longer determines a limiting coefficient. A finite global inverse spectral
       moment gives an order-$\varepsilon^2$ bound, but the coefficient converges only under the Fourier-decay
@@ -429,14 +431,15 @@
       $1.300596$ and leading-constant ratio $1.000240$. The example also emphasizes that zero spectral mass at
       frequency zero is an observable-level averaging condition: atoms at nonzero frequencies need not disappear.</p>
     <p>The same pure-point construction at the endpoint puts mass $n^{-3}$ at $1/n$. Then
-      $F(x)\sim x^2/2$, so the critical theorem predicts
-      $2\varepsilon^2\log(1/\varepsilon)$ at $T=1$. The direct Fej&eacute;r sum and an independently refined
+      $F(x)\sim x^2/2$; the certificate compares its variance with
+      $2\varepsilon^2\log(1/\varepsilon)$ at $T=1$, without asserting a universal atomic endpoint theorem.
+      The direct Fej&eacute;r sum and an independently refined
       Hurwitz-zeta tail agree within $2.71\times10^{-20}$.</p>
     <p>Regressing
       $\operatorname{Var}A_\varepsilon/\varepsilon^2$ against $\log(1/\varepsilon)$ gives slope $1.966971$
-      against the limiting value $2$; at the smallest tested $\varepsilon=2^{-20}$ the leading-term ratio is
-      $1.025526$. The deliberately slow logarithmic convergence distinguishes this endpoint from the power-law
-      cases.</p>
+      against the reference value $2$; at the smallest tested $\varepsilon=2^{-20}$ the leading-term ratio is
+      $1.025526$. These numerical observations for one spectrum do not establish an all-horizon asymptotic
+      for general cumulative spectral laws.</p>
     <p>A separate joint-scale certificate evaluates the Gamma spectral benchmark along three paths with the same
       $R=T_\varepsilon/\varepsilon$: fixed maturity, $T_\varepsilon=R^{-1/2}\downarrow0$, and
       $T_\varepsilon=R^{1/2}\uparrow\infty$. After division by $T_\varepsilon^2$, all three exact variances agree
@@ -553,7 +556,8 @@
       =1-\cos R_\varepsilon.$$
     <p>The normalized coefficient equals zero on $R_\varepsilon=2\pi n$ and two on
       $R_\varepsilon=(2n+1)\pi$. Thus a nonzero-frequency atom can survive at leading order at the saturated
-      boundary even though it is negligible in the divergent $0&lt;\alpha\leq2$ regimes. For comparison, if
+      boundary even though each fixed remote atom is negligible under the divergent variance laws proved above.
+      For comparison, if
       $\nu(d\omega)=e^{-\omega}d\omega$ (equivalently
       $\mu(d\omega)=\omega^2e^{-\omega}d\omega$), then</p>
     $$\frac{\operatorname{Var}A_\varepsilon(T_\varepsilon)}{2\varepsilon^2}

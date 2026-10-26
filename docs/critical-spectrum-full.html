@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The critical spectral endpoint: density and resonance · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./mixing-scale.html">&larr; summary</a> &middot;
+      <a href="./mixing-scale-full.html">homogenization-scale full note</a></p>
+    <h1>The critical spectral endpoint</h1>
+    <p class="subtitle">Cumulative spectral mass does not control resonant phases at index two.</p>
+    <p class="lead">Let $X$ be centered and stationary, with finite one-sided spectral measure $\mu$ and
+      $\mu(\{0\})=0$. Write $F(x)=\mu((0,x])$ and</p>
+    $$V(R)=\operatorname{Var}\!\left(\int_0^R X_tdt\right)
+      =2\int_{(0,\infty)}\frac{1-\cos(R\omega)}{\omega^2}\mu(d\omega).$$
+    <p>The implication $F(x)\sim bx^2L(1/x)\Rightarrow V(R)\sim4bH(R)$, where
+      $H(R)=\int_1^R L(s)ds/s\to\infty$, is false without further assumptions.
+      A local density repairs the pointwise law; maturity-window averaging restores it without a density.</p>
+
+    <h2>An exact atomic counterexample</h2>
+    <p>For integers $k\ge0$, define</p>
+    $$d_k=\max\{1,\lceil\tfrac14\log_2(k+1)\rceil\},\quad
+      N_k=k+d_k,\quad M_k=2^{d_k},\quad h_k=2^{-N_k}.$$
+    <p>In the annulus $(2^{-k-1},2^{-k}]$, place atoms</p>
+    $$\omega_{k,l}=lh_k,\qquad w_{k,l}=(2l-1)h_k^2,
+      \qquad l=M_k/2+1,\ldots,M_k.$$
+    <p>These are right-endpoint increments of the square function. The block mass is
+      $(3/4)4^{-k}$, and all blocks together have mass one.</p>
+    <p>For $2^{-k-1}&lt;x\le2^{-k}$, the complete lower blocks have mass $4^{-(k+1)}$, hence</p>
+    $$F(x)=h_k^2\lfloor x/h_k\rfloor^2,\qquad
+      (1-2/M_k)^2\le\frac{F(x)}{x^2}\le1.$$
+    <p>Since $M_k\to\infty$, this proves $F(x)\sim x^2$. The measure has no atom at zero and gives a valid
+      centered stationary real Gaussian process by Bochner&apos;s representation; Gaussianity does not remove
+      spectral resonance. No ergodicity is claimed for this atomic Gaussian process.</p>
+    <p>The integers $N_k$ increase. At the horizons $R_j=2\pi\,2^{N_j}$, every atom in blocks $k\le j$
+      has $R_j\omega_{k,l}\in2\pi\mathbb Z$ and contributes exactly zero to $V(R_j)$.</p>
+    <p>The remaining mass is $4^{-(j+1)}$. Therefore $2(1-\cos u)\le u^2$ gives</p>
+    $$0\le V(R_j)\le R_j^2\,4^{-(j+1)}=4\pi^2\,2^{2(d_j-1)}.$$
+    <p>Take $j_n=16^n-1$ for $n\ge1$, so $d_{j_n}=n$. Then</p>
+    <div class="equation-card">
+    $$0\le\frac{V(R_{j_n})}{4\log R_{j_n}}
+      \le\frac{\pi^2 4^n}{4\{\log(2\pi)+(16^n+n-1)\log2\}}
+      \longrightarrow0.$$
+    </div>
+    <p>This contradicts the asserted limit one with $b=L=1$. Equivalently, at $T=1$ and
+      $\varepsilon_n=1/R_{j_n}$, the ratio of $\operatorname{Var}A_{\varepsilon_n}(1)$ to
+      $4\varepsilon_n^2\log(1/\varepsilon_n)$ tends to zero.</p>
+
+    <h2>A sufficient density theorem</h2>
+    <p>Suppose instead that $\mu$ is absolutely continuous in a neighborhood of zero, with</p>
+    $$f(\omega)\sim2b\omega L(1/\omega),\qquad b&gt;0,\qquad
+      H(R)=\int_1^R L(s)\frac{ds}{s}\longrightarrow\infty,$$
+    <p>where $L$ is positive and slowly varying. The spectrum away from zero may be any finite measure.</p>
+    <div class="equation-card">
+    $$V(R)\sim4bH(R),\qquad
+      \operatorname{Var}A_\varepsilon(T_\varepsilon)
+      \sim4b\varepsilon^2H(T_\varepsilon/\varepsilon)
+      \quad(T_\varepsilon/\varepsilon\to\infty).$$
+    </div>
+    <p>Here is the oscillatory estimate missing from a cumulative-mass argument. Set
+      $I(R)=V(R)/2$ and fix a small $\eta&gt;0$ inside the density neighborhood.</p>
+    <p>The part below $R^{-1}$ is $O(L(R))$ by the quadratic cosine bound and Karamata integration;
+      the part above $\eta$ is $O(1)$ by finiteness of $\mu$. The nonoscillatory middle integral is</p>
+    $$\int_{R^{-1}}^\eta\frac{f(\omega)}{\omega^2}d\omega\sim2bH(R).$$
+    <p>For the middle cosine integral, replacing $f(\omega)/\omega^2$ by
+      $2bL(1/\omega)/\omega$ costs at most $o_\eta(1)H(R)$ in absolute value.
+      On dyadic bands $[x,2x]$ with $x=2^r/R$, uniform slow variation similarly permits freezing
+      $L(1/\omega)$ at $L(1/x)$, at total cost $o_\eta(1)H(R)$.</p>
+    <p>Integration by parts gives $|\int_x^{2x}\cos(R\omega)d\omega/\omega|\le C/(Rx)$,
+      including the final partial band. For any fixed $0&lt;\delta&lt;1$, Potter bounds therefore give</p>
+    $$\sum_{r\ge0:\,2^r/R&lt;\eta}2^{-r}L(R/2^r)
+      \le C_\delta L(R)\sum_{r\ge0}2^{-(1-\delta)r}=O(L(R)).$$
+    <p>Thus the cosine integral is $O(L(R))+o_\eta(1)H(R)$.
+      Since $L(R)=o(H(R))$, taking $R\to\infty$ and then $\eta\downarrow0$ proves
+      $I(R)\sim2bH(R)$ and the displayed theorem.</p>
+    <p>Cumulative regular variation alone cannot justify this bandwise freezing of spectral mass.
+      The atomic construction puts the entire mass on zeros of the oscillatory kernel at selected horizons.</p>
+
+    <h2>A density-free law after maturity-window averaging</h2>
+    <p>Return to the weaker assumption $F(x)\sim bx^2L(1/x)$ with $H(R)\to\infty$.
+      For $0\le a&lt;c&lt;\infty$, define the average of variances, not the variance of an averaged path, by</p>
+    $$\overline V_{a,c}(R)=\frac1{c-a}\int_a^c V(Ru)du,\qquad
+      J(R)=\int_{(R^{-1},\infty)}\omega^{-2}\mu(d\omega).$$
+    <p>For every $R&gt;0$, Fubini and integration of the cosine give</p>
+    $$\overline V_{a,c}(R)=2\int_{(0,\infty)}\left\{1-
+      \frac{\sin(cR\omega)-\sin(aR\omega)}{(c-a)R\omega}\right\}
+      \omega^{-2}\mu(d\omega).$$
+    <p>Put $m_2=(a^2+ac+c^2)/3$, the second moment of a uniform variable on $[a,c]$.
+      The quadratic cosine bound below $R^{-1}$ and the bounded sine difference above it yield the explicit bound</p>
+    <div class="equation-card">
+    $$\left|\overline V_{a,c}(R)-2J(R)\right|
+      \le m_2R^2F(R^{-1})+
+      \frac4{(c-a)R}\int_{(R^{-1},\infty)}\omega^{-3}\mu(d\omega).$$
+    </div>
+    <p>Stieltjes integration by parts, including possible atoms at the cutoff, gives for fixed $\eta&gt;0$</p>
+    $$J(R)=-R^2F(R^{-1})+2\int_{R^{-1}}^\eta\frac{F(x)}{x^3}dx+O(1)
+      \sim2bH(R).$$
+    <p>The same identity for the inverse third moment, followed by Karamata integration, gives</p>
+    $$R^{-1}\int_{(R^{-1},\infty)}\omega^{-3}\mu(d\omega)\sim2bL(R).$$
+    <p>Thus for each fixed nondegenerate window, $\overline V_{a,c}(R)=2J(R)+O(L(R))\sim4bH(R)$.
+      This includes ordinary Ces&agrave;ro averaging, $a=0,c=1$, even for the resonant atomic example.</p>
+    <h3>Any bounded-variation maturity density</h3>
+    <p>The uniform law is not special. Let $g$ be a probability density supported on $[0,B]$, extend it by zero
+      to the real line, and suppose the extension has total variation $C_g&lt;\infty$.</p>
+    <p>Write $m_2=\int u^2g(u)du$, $\widehat g(t)=\int e^{itu}g(u)du$, and randomize the maturity to $RU$ with
+      density $g$. Fubini and Stieltjes integration by parts give</p>
+    $$\overline V_g(R)=2\int_{(0,\infty)}{1-\operatorname{Re}\widehat g(R\omega)}
+      \omega^{-2}\mu(d\omega),\qquad
+      |\widehat g(t)|\le\frac{C_g}{|t|}.$$
+    <p>The same low/high-frequency split therefore yields the all-$R$ bound</p>
+    <div class="equation-card">
+    $$\left|\overline V_g(R)-2J(R)\right|
+      \le m_2R^2F(R^{-1})+
+      \frac{2C_g}{R}\int_{(R^{-1},\infty)}\omega^{-3}\mu(d\omega).$$
+    </div>
+    <p>Hence every fixed compactly supported bounded-variation density gives
+      $\overline V_g(R)\sim4bH(R)$. For a family $g_R$, it is enough that $m_{2,R}$ remain bounded and
+      $C_{g_R}L(R)/H(R)\to0$.</p>
+    <p>The uniform density on $[a,c]$ has $C_g=2/(c-a)$ and recovers the preceding bound exactly.
+      This formulation also permits triangular and other nonuniform maturity jitter without changing the critical
+      equivalent.</p>
+    <p>The finite bound also permits shrinking windows: if $0\le a_R&lt;c_R\le B$ and
+      $\Delta_R=c_R-a_R$ satisfies $L(R)/(\Delta_R H(R))\to0$, the same equivalent holds.
+      For $L=1$, relative maturity jitter with $\Delta_R\log R\to\infty$ suffices; this is a sufficient
+      condition, not a necessary or sharp threshold.</p>
+    <p>Equivalently, independently randomizing the horizon to $RU$, with $U$ uniform on the specified window,
+      gives unconditional integrated variance $\overline V_{a,c}(R)$ because each conditional mean is zero.
+      It does not restore a fixed-horizon asymptotic or a Gaussian functional limit.</p>
+    <p>This is a direct smoothing consequence of the exact spectral identity and
+      <a href="https://doi.org/10.24033/bsmf.1196">Karamata&apos;s regular-variation theory (1933)</a>,
+      not an extension of the index range in Deligiannidis&ndash;Utev&apos;s theorem.</p>
+
+    <h2>Scope and certificate</h2>
+    <p>The density-free theorem for $0&lt;\alpha&lt;2$ is unchanged. The primary discrete-time result of
+      <a href="./bibliography.html#DeligiannidisUtev2013">Deligiannidis and Utev (2013), Theorem 1.1</a>,
+      assumes a variance index strictly between zero and two and does not include this zero-index endpoint.</p>
+    <p>The Gaussian-dust and no-c&agrave;dl&agrave;g-limit arguments in the full note require directly that $V$
+      diverges and is slowly varying. The density theorem supplies this hypothesis; the cumulative law alone
+      does not.</p>
+    <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/long-memory/verify_critical_resonance.py">The certificate</a>
+      checks exact integer block masses, cumulative-mass bounds, and resonant phases before evaluating only the
+      remaining blocks. At $n=4$ and $n=8$, the variance ratios are respectively
+      $9.561889\times10^{-5}$ and $2.436520\times10^{-9}$.</p>
+    <p>It truncates after block $K=j_n+n+30$, whose omitted variance is bounded by
+      $4\pi^2 2^{-62}=8.560517\times10^{-18}$, separately from floating-point roundoff.
+      The infinite-sequence contradiction is proved by the analytic upper bound, not extrapolated from the
+      finite numerical samples.</p>
+    <p>At the same $n=8$ resonant horizon, averaging over either $[0,R]$ or $[R,2R]$ gives a ratio
+      $0.993989358$ to $4\log R$, in contrast with the pointwise ratio above.
+      The certificate aggregates old blocks by their exact depth counts and reports an omitted $[R,2R]$
+      averaged-variance bound of $1.997454\times10^{-17}$, separately from scale-aware roundoff.</p>
+    <p>Fifteen independent finite-spectrum quadratures check the window identity and finite bound, including
+      a narrow window. Another fifteen checks cover three nonuniform bounded-variation densities and the general
+      bound; all are reported by the certificate.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
