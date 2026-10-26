@@ -62,6 +62,16 @@
   "annotation": "Derives inverse-norm bounds for Vandermonde and confluent Vandermonde matrices; the finite-atomic moment Jacobian is exactly a weighted confluent Vandermonde matrix."
  },
  {
+  "key": "FanPall1957",
+  "authors": "Fan, K. and Pall, G.",
+  "year": 1957,
+  "title": "Imbedding Conditions for Hermitian and Normal Matrices",
+  "venue": "Canadian Journal of Mathematics 9:298-304",
+  "doi": "10.4153/CJM-1957-036-1",
+  "url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/AA7ACF7F360A1D44FE4B83007198F57C/S0008414X00044655a.pdf/imbedding_conditions_for_hermitian_and_normal_matrices.pdf",
+  "annotation": "Characterizes eigenvalues of Hermitian compressions. The overlapping-cycle note uses only the necessary interlacing direction to bound the second feature-level skew frequency by the second full intrinsic frequency."
+ },
+ {
   "key": "Rebolledo1980",
   "authors": "Rebolledo, R.",
   "year": 1980,
@@ -69,5 +79,41 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Varadhan1995",
+  "authors": "Varadhan, S. R. S.",
+  "year": 1995,
+  "title": "Self Diffusion of a Tagged Particle in Equilibrium for Asymmetric Mean Zero Random Walk with Simple Exclusion",
+  "venue": "Annales de l'Institut Henri Poincaré, Probabilités et Statistiques 31(1):273-285",
+  "url": "https://www.numdam.org/item/AIHPB_1995__31_1_273_0/",
+  "annotation": "Introduces the strong sector condition for controlling the antisymmetric part of a Markov generator by its symmetric Dirichlet form. The triangle-mixture theorem computes its sharp finite-state constant and proves closure under flow addition."
+ },
+ {
+  "key": "DeLeenheer2020",
+  "authors": "De Leenheer, P.",
+  "year": 2020,
+  "title": "An Elementary Proof of a Matrix Tree Theorem for Directed Graphs",
+  "venue": "SIAM Review 62(3):716-726",
+  "doi": "10.1137/19M1265193",
+  "annotation": "Proves the weighted directed matrix-tree theorem through incidence-matrix factorization. The six-state obstruction applies that cofactor expansion to a balanced interpolation between a flow Laplacian and its transpose, then adds a new coefficient injection."
+ },
+ {
+  "key": "GaoYuan2026",
+  "authors": "Gao, Y. and Yuan, T.",
+  "year": 2026,
+  "title": "Log-concavity of flat arrangement polynomials",
+  "venue": "Preprint, arXiv:2609.33651v1",
+  "url": "https://arxiv.org/abs/2609.33651",
+  "annotation": "Proves coefficient inequalities for weighted spanning-tree polynomials of connected digraphs carrying positive circulation weights. The eight-state obstruction applies its log-concavity and rank-dependent quadratic inequality to the balanced stationary-flow tree polynomial."
+ },
+ {
+  "key": "WangMaoChenQiu2023",
+  "authors": "Wang, D., Mao, X., Chen, W. and Qiu, L.",
+  "year": 2023,
+  "title": "On the Phases of a Semi-Sectorial Matrix and the Essential Phase of a Laplacian",
+  "venue": "Linear Algebra and its Applications 676:441-458",
+  "doi": "10.1016/j.laa.2023.07.014",
+  "annotation": "Develops phases for singular semi-sectorial matrices and characterizes balanced graph Laplacians as quasi-sectorial. The two-phase product inequality used here is a separate consequence of the directed-tree coefficient injection."
  }
 ]

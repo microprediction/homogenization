@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Six- through eight-state Green–Kubo obstructions · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_phase_product.py">six-state product certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_seven_state_phase_barrier.py">seven-state barrier certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_eight_state_log_concavity.py">eight-state log-concavity certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_six_state_overlap_cone.py">sparse-cycle certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_triangle_sector.py">triangle-sector certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_bounded_cycle_sector.py">bounded-cycle certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_slices.py">four-cycle slice certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_one_four_cycle_cone.py">four-weight cone certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_rank_collapse.py">four-cycle rank certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_equal_four_cycles.py">equal four-cycle certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_alternating_slice.py">alternating-weight certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_second_orbit.py">second-orbit certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_third_orbit.py">third-orbit certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_four_cycle_fourth_orbit_slice.py">fourth-orbit certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_sector_multiplicity.py">equality certificate</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_two_five_cycle_gap.py">two-cycle gap certificate</a></span></p>
+    <h1>Six- through eight-state Green&ndash;Kubo obstructions</h1>
+    <p class="subtitle">Unrestricted tree-coefficient barriers, with sharper bounds for sparse six-state mixtures and reversible attachments.</p>
+    <p class="muted">Research note, 23 October 2026. Weighted-circulation log-concavity closes the unrestricted eight-state case and makes the nine-state construction minimal.</p>
+
+    <h2>Result</h2>
+    <p>Every connected balanced stationary flow on six states obeys the unrestricted product bound</p>
+    <div class="equation-card">
+    $$\sigma_1\sigma_2\le1.$$
+    </div>
+    <p>Equivalently, its two positive matrix phases satisfy
+      $\arctan\sigma_1+\arctan\sigma_2\le\pi/2$. The target has both frequencies
+      $\kappa=\cot(\pi/5)$, hence product $\kappa^2=1+2/\sqrt5&gt;1$, so no six-state flow realizes it.</p>
+    <p>A sharper theorem holds when the flow is the sum of at most three genuinely directed simple cycles and an arbitrary nonnegative reversible stationary flow. Only the final support, not the directed base, is assumed connected.</p>
+    <p>Let
+      $\sigma_1\ge\sigma_2\ge0$ be its two intrinsic energy-normalized skew frequencies. Then</p>
+    <div class="equation-card">
+    $$\sigma_2\le\sqrt{\frac35}.$$
+    </div>
+    <p>For two cycles the bound is attained at equal weights by, for example,</p>
+    $$c_A=(0,5,2,3,4,1),\qquad c_B=(0,3,4,5,2,1),$$
+    <p>whose union is neither a cactus nor translation invariant. Within this cone equality holds exactly when $a=b&gt;0$, and then both frequencies equal $\sqrt{3/5}$.</p>
+    <p>Up to state relabeling and simultaneous reversal of all directed cycles, the equal-weight theorem has a unique equality-support orbit, represented by</p>
+    $$c_A=(0,1,2,3),\qquad c_B=(0,1,4,5),\qquad c_C=(2,3,4,5).$$
+    <p>Every support in this orbit permits arbitrary positive weights. Equality within each such weight cone occurs exactly when the three weights agree; its normalized pencil is then $t(t^2+3/5)^2$. A one-cycle irreducible flow must itself be Hamiltonian and also satisfies the bound.</p>
+    <p>The three-directed-cycle attachment class obeys the same sharp bound without counting or restricting its reversible edges. In particular, reversible two-cycles do not consume the three genuinely directed-cycle slots. The one-directed-cycle subclass obeys the stronger bound
+      $\sigma_2\le1/\sqrt3&lt;\sqrt{3/5}$.</p>
+    <p>The three-triangle class is rigid rather than merely bounded: every connected positive mixture has $\sigma_1=\sigma_2=1/\sqrt3$, independently of its three weights.</p>
+    <p>More generally, on any finite state space, a nonnegative mixture of directed cycles of lengths at most $L$, plus arbitrary reversible stationary flow, has every intrinsic skew frequency at most $\cot(\pi/L)$. The constant is sharp, and the triangle theorem is the case $L=3$.</p>
+    <p>If the sharp value $\cot(\pi/L)$ occurs in $r$ positive modes, then at least $1+r(L-1)$ states are necessary. Thus a flow decomposable into cycles of lengths at most five needs at least nine states to carry two target modes, and the shared-hub pair of five-cycles attains nine.</p>
+    <p>More quantitatively, two five-cycles sharing at least two states, with arbitrary positive weights and reversible attachments, satisfy the sharp gap $\sigma_2\le1$.</p>
+    <p>Consequently no six-, seven- or eight-state four-feature compression realizes
+      $I_4+\cot(\pi/5)\operatorname{diag}(J,J)$, where
+      $J=\left(\begin{smallmatrix}0&amp;1\\-1&amp;0\end{smallmatrix}\right)$. The unrestricted minimum is exactly nine, attained by two directed five-cycles sharing one state.</p>
+
+    <h2>Stationary-flow coordinates</h2>
+    <p>Any prescribed positive stationary law $\pi$ gives a generator through
+      $q_{ij}=W_{ij}/\pi_i$ for $i\ne j$. Thus varying holding times or $\pi$ changes the generator but not the stationary-flow Laplacian</p>
+    $$C=\operatorname{diag}(W{\bf1})-W.$$
+    <p>Delete one row and column and write the grounded form as
+      $\bar C=H+D$, with $H=(\bar C+\bar C^\top)/2$ and
+      $D=(\bar C-\bar C^\top)/2$. Irreducibility makes $H$ positive definite.</p>
+    <p>The eigenvalues of $H^{-1/2}DH^{-1/2}$ are
+      $\{\pm i\sigma_1,\pm i\sigma_2,0\}$. Hence</p>
+    $$\frac{\det(tH-D)}{\det H}=t(t^2+\sigma_1^2)(t^2+\sigma_2^2).$$
+
+    <h2>Unrestricted six-state phase-product obstruction</h2>
+    <p>For $0\le x\le1$, set
+      $C_x=xC+(1-x)C^\top$. Balance makes $C_x$ another Laplacian, and transposition gives the same grounded cofactor at $x$ and $1-x$.</p>
+    <p>The directed matrix-tree theorem expands that cofactor uniquely as</p>
+    $$P(x)=\sum_{k=0}^5 B_kx^k(1-x)^{5-k},\qquad B_k\ge0,\qquad B_k=B_{5-k}.$$
+    <p>Here $B_k$ sums rooted tree terms in which exactly $k$ edges use their forward flow and the other $5-k$ use their reverse flow. All root cofactors, and therefore all $B_k$, agree because every $C_x$ is balanced.</p>
+    <p>After summing over all roots, there is a weight-preserving injection from the objects counted by $B_0$ to those counted by $B_1$. Start with an out-arborescence rooted at $r$, choose one child $s$ of $r$, and reroot the same tree at $s$.</p>
+    <p>The edge $r\to s$ is then the unique edge pointing toward the new root, while every other edge points away from it. Choosing the least-labeled child makes the map injective, since the image tree, new root and exceptional edge recover $r$.</p>
+    <p>Thus $B_1\ge B_0$. On writing $z=2x-1$, the same determinant is</p>
+    $$P(x)=\det(H+zD)=\det H\{1+(\sigma_1^2+\sigma_2^2)z^2+\sigma_1^2\sigma_2^2z^4\}.$$
+    <p>Exact conversion of the symmetric Bernstein basis gives</p>
+    <div class="equation-card">
+    $$\det H\,(1-\sigma_1^2\sigma_2^2)=\frac{B_1-B_0}{4}\ge0.$$
+    </div>
+    <p>This proves the product bound for every connected balanced six-state flow, with no cycle-count or support restriction. A directed six-cycle has normalized polynomial $1+(10/3)z^2+z^4$ and attains equality in the product bound.</p>
+    <p>The dependency-free certificate checks the injection on all $6^4=1{,}296$ labeled trees and all $7{,}776$ rootings, verifies the exact basis identity, and recovers the directed-cycle equality polynomial.</p>
+    <p>The cofactor expansion is the weighted directed matrix-tree theorem of
+      <a href="./bibliography.html#DeLeenheer2020">De Leenheer (2020)</a>. The phase terminology follows the semi-sectorial framework of
+      <a href="./bibliography.html#WangMaoChenQiu2023">Wang, Mao, Chen and Qiu (2023)</a>; the coefficient injection and resulting product obstruction are proved directly above.</p>
+
+    <h2>Unrestricted seven-state tree barrier</h2>
+    <p>On seven states the grounded skew operator has three positive frequencies $\sigma_1\ge\sigma_2\ge\sigma_3\ge0$. Put $s_j=\sigma_j^2$ and</p>
+    $$e_1=s_1+s_2+s_3,\qquad e_2=s_1s_2+s_1s_3+s_2s_3,\qquad e_3=s_1s_2s_3.$$
+    <p>The same balanced interpolation and rerooting injection now give a symmetric degree-six tree expansion</p>
+    $$P(x)=\sum_{k=0}^6B_kx^k(1-x)^{6-k},\qquad B_k=B_{6-k},\qquad B_1\ge B_0.$$
+    <p>With $z=2x-1$, its spectral form is</p>
+    $$P(x)=\det H\{1+e_1z^2+e_2z^4+e_3z^6\}.$$
+    <p>Exact conversion from the symmetric Bernstein basis gives the new unrestricted barrier</p>
+    <div class="equation-card">
+    $$\det H\,(5+e_1-3e_2-7e_3)=B_1-B_0\ge0.$$
+    </div>
+    <p>A directed seven-cycle has normalized polynomial $1+5z^2+3z^4+z^6/7$ and attains equality, so the coefficient inequality itself is sharp.</p>
+    <p>Now suppose a four-dimensional feature compression had both target frequencies $\kappa=\cot(\pi/5)$. Hermitian compression interlacing forces the two largest full frequencies to obey $\sigma_1,\sigma_2\ge\kappa$.</p>
+    <p>Write $r=\kappa^2=1+2/\sqrt5$ and $(x,y,z)=(s_1,s_2,s_3)$. The barrier polynomial</p>
+    $$\Phi(x,y,z)=5+x+y+z-3xy-3xz-3yz-7xyz$$
+    <p>is strictly decreasing in each variable when $x,y\ge r&gt;1$ and $z\ge0$. Its largest possible value on that region is therefore</p>
+    $$\Phi(r,r,0)=5+2r-3r^2=\frac85-\frac8{\sqrt5}&lt;0,$$
+    <p>contradicting the tree barrier. Hence seven states are impossible without any support, cycle-count or translation-invariance assumption, and the unrestricted bracket improves to</p>
+    <div class="equation-card">
+    $$8\le N_{\min}\le9.$$
+    </div>
+    <p>The dependency-free certificate checks the rerooting injection on all $7^5=16{,}807$ labeled trees and all $117{,}649$ rootings, verifies the exact basis identity, and recovers the seven-cycle equality polynomial. Interlacing is applied only to this fixed-flow, fixed-feature compression; it makes no claim about rank after integrating maturity-dependent loadings.</p>
+
+    <h2>Unrestricted eight-state log-concavity obstruction</h2>
+    <p>On eight states the grounded skew operator has three positive frequencies $\sigma_1\ge\sigma_2\ge\sigma_3\ge0$. With $s_j=\sigma_j^2$ and $e_1,e_2,e_3$ the elementary symmetric functions of the $s_j$, the balanced tree polynomial has degree seven:</p>
+    $$P(u)=\sum_{k=0}^7B_ku^k(1-u)^{7-k}=\det H\{1+e_1(2u-1)^2+e_2(2u-1)^4+e_3(2u-1)^6\}.$$
+    <p>Palindromicity gives $B_k=B_{7-k}$. Exact Bernstein conversion gives</p>
+    <div class="equation-card">
+    $$\frac1{\det H}\begin{pmatrix}B_0\\B_1\\B_2\\B_3\end{pmatrix}=
+      \begin{pmatrix}1+e_1+e_2+e_3\\7+3e_1-e_2-5e_3\\21+e_1-3e_2+9e_3\\35-5e_1+3e_2-5e_3\end{pmatrix}.$$
+    </div>
+    <p>Regard every positive arc $e$ of the stationary flow as a labeled edge of a weighted digraph $D$, with weight $w_e$. If $\kappa_r(T)$ is the number of arcs of a labeled spanning tree $T$ that must be reversed to point toward root $r$, the directed matrix-tree theorem gives the exact bridge</p>
+    $$P(u)=\sum_T\left(\prod_{e\in T}w_e\right)u^{7-\kappa_r(T)}(1-u)^{\kappa_r(T)}.$$
+    <p>Thus $B_{7-i}$ is the coefficient $c_i(D,w)$ of the weighted Murasugi&ndash;Stoimenow tree polynomial. Merging arcs with the same ordered endpoints preserves this polynomial, because a tree uses at most one member of any parallel class and their weights add; anti-parallel arcs remain distinct.</p>
+    <p>The support is connected and the positive weights form a circulation. After the permitted same-orientation merges, $\beta=m_{\mathrm{red}}-7$ satisfies $1\le\beta\le49$, since a nontrivial positive circulation has at least eight arcs and a loopless simple directed graph on eight vertices has at most 56.</p>
+    <p>Theorem 7.7 of <a href="./bibliography.html#GaoYuan2026">Gao and Yuan (2026)</a> now applies with no change of normalization. It makes the coefficients positive, palindromic and log-concave, and gives at each internal index</p>
+    $$Q_i^{(\beta)}=\beta B_i^2-B_i(B_{i-1}+B_{i+1})-(\beta-2)B_{i-1}B_{i+1}\ge0.$$
+    <p>Since $\beta\le49$ and log-concavity gives $B_i^2\ge B_{i-1}B_{i+1}$, it follows that $Q_i^{(49)}\ge0$. This upper-rank replacement is deliberately weaker than the cited theorem and therefore applies uniformly to every eight-state support.</p>
+    <p>Now write $(x,y,z)=(s_1,s_2,s_3)$. If $y\ge7/4$, palindromic log-concavity first gives $B_1\ge B_0$, hence</p>
+    $$3+x+y-xy-z(x+y+3xy-1)\ge0.$$
+    <p>Because $x\ge y\ge7/4$, this forces the compact rational bounds</p>
+    $$\frac74\le y\le3,\qquad y\le x\le\frac{19}{3},\qquad0\le z\le\frac3{10}.$$
+    <p>The first two bounds follow from $xy\le3+x+y$. For the last, $z\le R(x,y)=(3+x+y-xy)/(x+y+3xy-1)$, and the two derivative numerators of $R$ are $-4(y+1)^2$ and $-4(x+1)^2$; hence $R(x,y)\le R(7/4,7/4)=55/187&lt;3/10$.</p>
+    <p>On this box, exact rational interval arithmetic proves that every point with $x\ge y$ and $B_1\ge B_0$ has either $Q_1^{(49)}&lt;0$ or $Q_2^{(49)}&lt;0$. The certificate uses 5,576 terminal boxes, reaches depth 42, and verifies the Bernstein identities before the cover.</p>
+    <p>Thus every connected balanced eight-state flow obeys the strict bound</p>
+    <div class="equation-card">
+    $$\sigma_2^2&lt;\frac74.$$
+    </div>
+    <p>This rational cutoff is nearly sharp for the coefficient relaxation, rather than an arbitrary loose box. At the exact point $x=y=1749/1000$, $z=33241/250000$, the four independent $B_i$ are positive and strictly increasing and every internal $Q_i^{(49)}$ inequality is strict; thus these universal coefficient inequalities alone permit $\sigma_2^2=1.749$, only $1/1000$ below $7/4$.</p>
+    <p>The relaxation witness is not claimed to come from a balanced graph. Improving the universal graph bound below $1.749$ would therefore require additional realizability information, not just the Gao&ndash;Yuan coefficient inequalities used here.</p>
+    <p>Graph realizability nevertheless does not preserve the complete Fourier ladder of one directed cycle. Give
+    the directed eight-cycle $(0\,5\,6\,1\,2\,3\,7\,4)$ weight one and the directed six-cycle
+    $(0\,5\,7\,6\,1\,4)$ weight $2/5$. Their sum is a connected balanced eight-state flow, and exact grounding
+    gives</p>
+    $$\frac{\det(H+uD)}{\det H}
+      =1+\frac{14057}{4541}u^2+\frac{10791}{4541}u^4+\frac{1187}{4541}u^6.$$
+    <p>Its squared intrinsic frequencies are the three roots of</p>
+    $$q(s)=4541s^3-14057s^2+10791s-1187.$$
+    <p>Exact sign evaluations put one root in each of
+    $(13/100,14/100)$, $(51/50,103/100)$ and $(19/10,2)$. Therefore the middle root obeys</p>
+    <div class="equation-card">
+    $$\frac{51}{50}<\sigma_2^2<\frac{103}{100}.$$
+    </div>
+    <p>A single directed eight-cycle has $\sigma_2^2=\cot^2(\pi/4)=1$, so the overlapping shorter cycle raises
+    the second mode. Thus the single-cycle bounds $\sigma_j\leq\cot(j\pi/8)$ do not extend mode by mode to
+    arbitrary balanced flows, even to a mixture of two cycles. The example is a graph-realizable lower bound,
+    not a claim that the unrestricted $7/4$ upper cutoff is sharp.</p>
+    <p>The whole two-cycle ray is exactly optimizable. If the six-cycle has weight $t&gt;0$, its squared
+    frequencies are the roots in $s$ of</p>
+    $$\begin{aligned}
+    Q(t,s)={}&amp;(9s^3-33s^2+19s-3)t^4+(43s^3-95s^2+49s-5)t^3\\
+      &amp;+(63s^3-119s^2+69s-5)t^2+(30s^3-90s^2+66s-6)t\\
+      &amp;+4s^3-28s^2+28s-4.
+    \end{aligned}$$
+    <p>The cubic discriminant is positive for every $t&gt;0$, while signs at $0$, $1/3$ and $4/3$ isolate the
+    middle root in $(1/3,4/3)$. Exact elimination of $Q=\partial_tQ=0$ and Sturm isolation leave one stationary
+    pair, so the endpoint limits $1$ and $1/3$ make it the unique global maximum:</p>
+    <div class="equation-card">
+    $$1.02374&lt;\max_{t&gt;0}\sigma_2^2(t)&lt;1.02375,
+      \qquad \frac25&lt;t_*&lt;\frac{41}{100}.$$
+    </div>
+    <p>The simple rational choice $t=2/5$ already lies within $1/20000$ of this optimum. Thus this
+    support family gives a sharp graph-realizable lower frontier, while remaining far below the universal
+    coefficient cutoff.</p>
+    <p>A different support shows that this first ray is not globally extremal among two-cycle mixtures. Give the
+    standard directed eight-cycle unit weight and the directed seven-cycle $(1\,2\,6\,7\,3\,4\,5)$ weight $4/7$;
+    exact grounding makes the squared frequencies the roots of</p>
+    $$336889s^3-915719s^2+661087s-66833=0.$$
+    <p>Rational sign evaluations isolate those roots in $(3/25,13/100)$,
+    $(1.1057315,1.1057316)$ and $(149/100,3/2)$. Therefore this connected balanced flow proves the stronger
+    graph-realizable lower bound</p>
+    <div class="equation-card">
+    $$1.1057&lt;\sigma_2^2&lt;1.1058.$$
+    </div>
+    <p>This support ray is also exactly optimizable. If the seven-cycle has weight $t&gt;0$, the cubic discriminant
+    is positive for every $t$, so its three frequency branches never meet.</p>
+    <p>On $0\leq t\leq1$, exact Bernstein signs at $s=2/3$ and $s=6/5$ isolate the middle branch. For $t\geq1$,
+    signs at $s=1/2$ and $s=1$ put that branch below one.</p>
+    <p>Eliminating $s$ from $Q=\partial_tQ=0$ leaves a degree-seventeen factor with exactly two roots in $(0,1)$.
+    Exact linear-subresultant enclosures put one stationary frequency above $6/5$, on the upper branch, and the
+    other on the middle branch; hence the latter is its unique global maximum:</p>
+    <div class="equation-card">
+    $$1.105738&lt;\max_{t&gt;0}\sigma_2^2(t)&lt;1.105739,
+      \qquad 0.56915550&lt;t_*&lt;0.56915552.$$
+    </div>
+    <p>The rational $t=4/7$ witness is within $10^{-5}$ of this maximum. The comparison below makes this ray
+    optimal among additions of one simple cycle to the fixed unit eight-cycle, not among all balanced
+    eight-state flows; it remains below the unrestricted $7/4$ upper cutoff.</p>
+    <h3>Why this support improves only at second order</h3>
+    <p>Start instead from the unit directed eight-cycle and add weight $t$ on any one simple directed cycle $C$
+    on the same eight labeled states. The middle squared frequency $s_C(t)$ is analytic near zero because
+    $s_C(0)=1$ is a simple root, by classical analytic perturbation theory
+    (<a href="./bibliography.html#Kato1949">Kato, 1949</a>).</p>
+    <p>Write
+      $\det\{H(t)+uD(t)\}=\sum_{k=0}^3a_k(t)u^{2k}$ and
+      $Q(t,s)=a_0(t)s^3-a_1(t)s^2+a_2(t)s-a_3(t)$.
+      For $M(t)=M_0+tM_1$, the exact identity</p>
+    $$\det M(t)=\det M_0\left[1+t\,\operatorname{tr}A+
+      \frac{t^2}{2}\{(\operatorname{tr}A)^2-\operatorname{tr}(A^2)\}+
+      \frac{t^3}{6}\{(\operatorname{tr}A)^3-3\operatorname{tr}A\operatorname{tr}(A^2)
+      +2\operatorname{tr}(A^3)\}\right]+O(t^4),
+      \qquad A=M_0^{-1}M_1,$$
+    <p>evaluated at $u=0,1,2,3$, recovers the first three derivatives of every $a_k$ by rational interpolation.
+    Implicit differentiation of $Q\{t,s_C(t)\}=0$ then gives the first three derivatives of $s_C$ exactly.</p>
+    <p>Exhausting all 16,064 simple directed cycles, reduced to 2,025 rotation orbits, gives</p>
+    <table class="data-table">
+      <thead><tr><th>$s_C'(0)$</th><th>$0$</th><th>$-1/2$</th><th>$-1$</th><th>$-3/2$</th><th>$-2$</th><th>$-5/2$</th><th>$-3$</th><th>$-7/2$</th><th>$-4$</th></tr></thead>
+      <tbody><tr><td>cycle count</td><td>268</td><td>704</td><td>1,880</td><td>3,200</td><td>4,724</td><td>2,752</td><td>1,936</td><td>512</td><td>88</td></tr></tbody>
+    </table>
+    <p>Thus no added simple cycle improves the middle mode at first order. Among the 268 neutral cycles,
+      $s_C''(0)$ equals $-2,-1,0,1,2$ with respective counts $24,32,156,32,24$.</p>
+    <p>The maximum curvature two is attained by sixteen seven-cycles and eight eight-cycles. At third order the
+    seven-cycles have $s_C'''(0)=-12$, whereas the eight-cycles have $s_C'''(0)=-18$; hence every seven-cycle
+    maximizer is strictly better than every eight-cycle maximizer for all sufficiently small positive $t$.</p>
+    <p>The displayed seven-cycle is one of the locally selected directions, with
+      $\sigma_2^2(t)=1+t^2-2t^3+\frac72t^4-7t^5+O(t^6)$.</p>
+    <p>The sixteen seven-cycles still tie through fourth order. At fifth order they split into two rotation
+    classes of eight: the displayed class has coefficient $-7$, while the other has coefficient $-8$; thus
+    the displayed class is locally best among all 16,064 simple-cycle additions.</p>
+    <h3>An exact finite-weight comparison</h3>
+    <p>Set $R=21/20$. For each cycle $C$, the exact polynomial $q_C(t)=Q_C(t,R)$ has degree at most seven.
+    Sturm isolation finds every positive root, and the sign of $Q_s(t,R)$ distinguishes an extreme-frequency
+    crossing (positive) from a middle-frequency crossing (negative); a zero would be a collision.</p>
+    <table class="data-table">
+      <thead><tr><th>signs at positive roots</th><th>rotation orbits</th><th>labeled cycles</th></tr></thead>
+      <tbody>
+        <tr><td>none</td><td>828</td><td>6,593</td></tr>
+        <tr><td>$+$</td><td>58</td><td>440</td></tr>
+        <tr><td>$+,+$</td><td>1,138</td><td>9,023</td></tr>
+        <tr><td>$-,-$</td><td>1</td><td>8</td></tr>
+      </tbody>
+    </table>
+    <p>There are no positive collision roots, and the sole negative-sign orbit is the displayed seven-cycle.
+    Every other middle branch starts at $1&lt;R$ and never meets $R$, so it stays below $21/20$ for all $t&gt;0$.</p>
+    <p>Because the displayed ray reaches more than $1.105738&gt;21/20$, it is the unique maximizing rotation
+    orbit among all 16,064 additions of one simple directed cycle to the unit standard eight-cycle. This is a
+    finite-weight support theorem, but it does not optimize over arbitrary balanced eight-state flows.</p>
+    <p>The same exact test at $R=26/25$ leaves only two negative-sign orbits: the winner and the seven-cycle
+    $(0\,1\,5\,2\,7\,3\,4)$. Every other orbit stays below $26/25$ for every positive weight.</p>
+    <p>For the second orbit, an exact stationary resultant has four positive roots. Rational root boxes and
+    interval bounds on $Q_t$ assign only the first and third to the middle branch; its endpoint limits and the
+    two stationary-value boxes then prove a unique global maximum. The maximizing weight and value satisfy
+    $$0.2983948320&lt;t_*&lt;0.2983948321,\qquad
+      1.04456313&lt;\max_{t\ge0}\sigma_2^2(t)&lt;1.04456314.$$
+    It is therefore the unique runner-up rotation orbit in this fixed-base family.</p>
+    <p>The next two rotation orbits tie. At $R=1023/1000$, the middle branch crosses only for the winner,
+    runner-up and the six-cycles $(0\,1\,2\,6\,7\,3)$ and $(0\,1\,2\,7\,3\,4)$; at $R=128/125$ only the
+    first two remain. The six-cycle rays have identical cubics under reflection and global edge reversal, and
+    relabel to the optimized eight-/six-cycle family above, so both have maximum in $(1.02374,1.02375)$ and
+    are tied for third place; every other orbit stays below $1.023$.</p>
+    <p>The next two orbits are the Hamilton cycles $(0\,1\,3\,6\,7\,2\,4\,5)$ and
+    $(0\,1\,5\,2\,6\,7\,3\,4)$. Six orbits cross $R=101697/100000$, but only the top four cross
+    $R=101699/100000$; swapping the unit and added Hamilton cycles and relabeling exchanges the pair, with
+    $t\mapsto1/t$. They therefore tie for fifth place with maximum in $(1.01697,1.01699)$, while every
+    remaining orbit stays below $1.01697$.</p>
+    <p>The next orbit is uniquely represented by the six-cycle $(0\,1\,5\,6\,2\,3)$. Seven orbits cross
+    $R=101605/100000$, whereas only the preceding six cross $R=101607/100000$, so its maximum lies in
+    $(1.01605,1.01607)$ and every remaining orbit stays below $1.01605$.</p>
+    <p>The following orbit is uniquely represented by the six-cycle $(0\,1\,5\,2\,7\,4)$. Eight orbits
+    cross $R=100514/100000$, but only the preceding seven cross $R=100516/100000$, placing its maximum in
+    $(1.00514,1.00516)$ and every lower-ranked orbit below $1.00514$.</p>
+    <p>The ninth orbit is uniquely represented by the six-cycle $(0\,1\,5\,6\,2\,4)$. Nine orbits cross
+    $R=100478/100000$, whereas only the preceding eight cross $R=100480/100000$, so its maximum lies in
+    $(1.00478,1.00480)$ and every lower-ranked orbit stays below $1.00478$.</p>
+    <p>The classification closes exactly at the base value. Seven orbits start above one; every other
+    non-pinned ray starts below. After removing the universal $t=0$ factor from $Q(t,1)$, the only additional
+    middle-root contacts belong to the nine orbits above and the Hamilton cycle
+    $(0\,1\,2\,5\,6\,7\,3\,4)$, for which
+    $$Q(t,1)=-\frac18t(t-1)^2(t+1)^3\le0,\qquad Q_s(t,1)&lt;0.$$</p>
+    <p>Nine further rays have a squared frequency pinned identically at one. On each, the exact coefficients
+    satisfy $a_0(t)-a_3(t)\ge0$, so the product of the other two squared frequencies is at most one and the
+    ordered middle frequency cannot exceed one.</p>
+    <p>There are no other level-one middle contacts or collisions. Thus exactly nine of the 2,025 rotation
+    orbits, representing 72 of the 16,064 labeled cycles, improve strictly; every other orbit has supremum
+    exactly one as $t\downarrow0$. This remains a classification only for additions to the fixed unit
+    eight-cycle.</p>
+    <p>For the target, $\kappa^2=1+2/\sqrt5&gt;7/4$ because $8^2&gt;5\cdot3^2$. Hermitian compression interlacing would require the full $\sigma_2\ge\kappa$, which is impossible; the shared-hub nine-state construction therefore proves</p>
+    <div class="equation-card">
+    $$N_{\min}=9.$$
+    </div>
+    <p>This use of interlacing concerns one fixed flow and one fixed four-feature compression. It does not turn ranks obtained after integrating different maturity loadings into state-count bounds.</p>
+
+    <h2>Exact pencil calculation</h2>
+    <p>Direct expansion of the five-dimensional determinant gives</p>
+    $$\frac{\det(tH-D)}{\det H}=t\{t^4+S(a,b)t^2+P(a,b)\},$$
+    $$S(a,b)=\frac{2(5a^4+12a^3b+11a^2b^2+12ab^3+5b^4)}{3(a^2+3ab+b^2)^2},$$
+    $$P(a,b)=\left(\frac{a^2+ab+b^2}{a^2+3ab+b^2}\right)^2.$$
+    <p>Put $x=ab/(a+b)^2\in[0,1/4]$. Then</p>
+    $$S(x)=\frac{2(5-8x-3x^2)}{3(1+x)^2},\qquad
+      P(x)=\left(\frac{1-x}{1+x}\right)^2.$$
+    <p>The squared frequencies are the roots of $f_x(z)=z^2-S(x)z+P(x)$. At the proposed sharp value,</p>
+    <div class="equation-card">
+    $$f_x(3/5)=\frac{16(4x-1)}{25(1+x)}\le0.$$
+    </div>
+    <p>Since $f_x$ is monic with two nonnegative real roots, $3/5$ lies between them. Therefore $\sigma_2^2\le3/5$.</p>
+    <p>Equality requires $x=1/4$, equivalently $a=b&gt;0$. Substitution gives
+      $t(t^2+3/5)^2$, proving both equality and multiplicity without a floating search.</p>
+
+    <h2>Arbitrary weights on two cycles</h2>
+    <p>There are 409 simple directed cycles on six labeled states, counted up to cyclic rotation. Relabel the first cycle canonically according to its length, from two through six; retaining connected unions leaves 1,372 relative pairs and 133 distinct exact coefficient triples.</p>
+    <p>For each pencil write $r=b/a=s/(1-s)$ with $0\le s\le1$, and let
+      $f(z)=z^2-Sz+P$ be its squared-frequency polynomial. Exact rational arithmetic covers $[0,1]$ by at most six dyadic intervals, on each of which Bernstein coefficients certify either</p>
+    $$S\le\frac65\qquad\text{or}\qquad f(3/5)\le0.$$
+    <p>The first inequality gives $\sigma_2^2\le S/2\le3/5$. In the second case $3/5$ lies between the two nonnegative roots, so again $\sigma_2^2\le3/5$.</p>
+
+    <h2>Equal weights on three cycles</h2>
+    <p>If a cycle is repeated, its copies merge and the preceding arbitrary-weight result applies. For three distinct cycles, fixing the first cycle canonically by its length and leaving the other two unordered gives 382,466 connected representatives.</p>
+    <p>For each representative, integer arithmetic evaluates $\det(t(2H)-2D)$ at $t=1,2,3$ and recovers its coefficients
+      $a_5t^5+a_3t^3+a_1t$. The cases reduce to 3,207 normalized pairs $(S,P)=(a_3/a_5,a_1/a_5)$.</p>
+    <p>Every pair satisfies at least one of $S\le6/5$ or
+      $P-(3/5)S+9/25\le0$. The same root argument proves the bound.</p>
+    <p>Exactly four first-cycle-normalized representatives attain equality. Explicit relabeling and simultaneous-reversal maps reduce all four to the displayed triple, so they form one support orbit rather than four distinct architectures.</p>
+
+    <h2>Arbitrary weights on the extremal support orbit</h2>
+    <p>Give the displayed cycles weights $a,b,c&gt;0$, and put</p>
+    $$e_1=a+b+c,\qquad e_2=ab+ac+bc,\qquad e_3=abc.$$
+    <p>Writing the exact pencil as
+      $\det(tH-D)=a_5t^5+a_3t^3+a_1t$, direct polynomial expansion gives</p>
+    $$8a_5=e_2(3e_1e_2-2e_3),\qquad
+      4a_3=e_2(2e_1e_2-3e_3),\qquad
+      8a_1=e_1e_2^2.$$
+    <p>For $f(z)=z^2-(a_3/a_5)z+a_1/a_5$, the root barrier at $3/5$ therefore factors as</p>
+    <div class="equation-card">
+    $$f(3/5)=-\frac{e_2(e_1e_2-9e_3)}{25a_5}\le0.$$
+    </div>
+    <p>Indeed $e_1\ge3e_3^{1/3}$ and $e_2\ge3e_3^{2/3}$ by AM&ndash;GM, so $e_1e_2\ge9e_3$. Equality holds only when $a=b=c$. Thus $3/5$ lies between the two nonnegative squared frequencies, proving the bound throughout this two-dimensional positive weight cone and identifying its unique weight ratio for equality.</p>
+    <p>A state relabeling conjugates both $H$ and $D$, while simultaneous reversal leaves $H$ unchanged and sends $D$ to $-D$. Either operation preserves the singular frequencies and merely permutes the three weights. The calculation therefore covers every support in the unique extremal orbit, with equality exactly at equal weights.</p>
+
+    <h2>Adding a fourth cycle at the sharp triple</h2>
+    <p>Let $W_0$ be the equal-weight flow on the displayed extremal triple, let $C$ be any simple directed cycle on the six states, and put $W_\varepsilon=W_0+\varepsilon C$. Write $z_-(\varepsilon)=\sigma_2(\varepsilon)^2$ for the smaller squared intrinsic frequency, so $z_-(0)=3/5$.</p>
+    <p>The entire nonnegative ray, not just its tangent, obeys the sharp ceiling:</p>
+    <div class="equation-card">
+    $$z_-(\varepsilon)\le\frac35\qquad(\varepsilon\ge0).$$
+    </div>
+    <p>Indeed, write the exact pencil as $a_5t^5+a_3t^3+a_1t$ and set</p>
+    $$A=5a_3-6a_5,\qquad B=9a_5-15a_3+25a_1.$$
+    <p>The leading coefficient $a_5$ is positive. If $A\le0$, the sum of the two squared frequencies is at most $6/5$, so the smaller is at most $3/5$. If $B\le0$, their monic quadratic is nonpositive at $3/5$, which places $3/5$ between its roots.</p>
+    <p>Exact interpolation in $\varepsilon$ reduces all 409 choices of $C$ to 50 polynomial pairs $(A,B)$. Sturm isolation gives at most two positive zeros of $AB$, hence at most three open sign cells, and an exact rational sample in every cell verifies $A\le0$ or $B\le0$. At a cell boundary one barrier vanishes, so the conclusion also holds there.</p>
+    <p>Exact enumeration of all 409 cycle directions gives the one-sided tangent bound</p>
+    <div class="equation-card">
+    $$\lim_{\varepsilon\downarrow0}
+      \frac{z_-(\varepsilon)-3/5}{\varepsilon}\le-\frac4{25}.$$
+    </div>
+    <p>Equality holds only when $C$ repeats one of the three base cycles. Thus every genuinely new fourth cycle leaves the sharp point strictly downward at first order.</p>
+    <p>For the proof, expand $S=a_3/a_5$ and $P=a_1/a_5$ through second order in $\varepsilon$. At the double root, the linear term of $\Delta=S^2-4P$ vanishes exactly, and</p>
+    $$z_-'(0+)=\frac{S'(0)-\sqrt{[\varepsilon^2]\Delta}}2.$$
+    <p>The certificate reduces the 409 directions to 48 exact rational pairs $(S'(0),[\varepsilon^2]\Delta)$ and checks the displayed derivative bound by a sign test followed, only when necessary, by squaring nonnegative rational quantities. The ray theorem keeps the three base weights equal and varies only the coefficient of $C$; it does not cover arbitrary independent perturbations of all four weights or a general four-cycle cone.</p>
+
+    <h3>Two-parameter imbalance slices</h3>
+    <p>The ray theorem extends when two base weights move oppositely. For any permutation $(i,j,k)$ of the three displayed base cycles, any simple cycle $C$, and</p>
+    $$W_{u,v}=(1+u)C_i+(1-u)C_j+C_k+vC,
+      \qquad -1\le u\le1,\quad v\ge0,$$
+    <p>the same sharp bound $\sigma_2(W_{u,v})^2\le3/5$ holds. Up to common scaling, these are precisely the three slices on which one base weight is the arithmetic mean of the other two.</p>
+    <p>The exact proof reconstructs both degree-five barriers as bivariate polynomials in $(u,v)$. Compactifying with $u=2x-1$ and $v=y/(1-y)$ reduces the unbounded domain to the unit square. The 1,227 cycle-and-imbalance incidences collapse to 223 exact polynomial types, whose ordinary tensor Bernstein covers use 12,922 cells and terminate by depth eight.</p>
+    <p>Ordinary subdivision stalls only at $(u,v)=(0,0)$. The local box $|u|\le3/64$, $0\le v\le1/64$ splits into the central wedge $|u|\le3v$ and the two outer wedges $v\le|u|/3$. The substitutions $u=v(-3+6x)$, $v=y/64$ centrally and $u=\pm3x/64$, $v=xy/64$ outside remove the positive vanishing scales.</p>
+    <p>Exact Bernstein alternatives then close all 223 types with 1,005 local cells, at most 22 per patch.</p>
+    <p>This remains a slice theorem: it imposes one linear relation on the three base weights. It does not establish the bound throughout any unrestricted four-weight cone.</p>
+
+    <h3>Every unrestricted four-weight cone from the sharp triple</h3>
+    <p>Keep the displayed base cycles $C_1=(0,1,2,3)$, $C_2=(0,1,4,5)$ and $C_3=(2,3,4,5)$. The state relabelings, optionally followed by simultaneous reversal, that preserve this unordered triple form 12 exact symmetry operations.</p>
+    <p>The 391 genuinely new choices of a fourth directed cycle split into 46 orbits. Their size histogram is three orbits of size two, one of size three, one of size four, 19 of size six and 22 of size 12. For every such choice of $C_4$, every connected weighting</p>
+    $$W=aC_1+bC_2+cC_3+dC_4,\qquad a,b,c,d\ge0,$$
+    <p>satisfies $\sigma_2(W)^2\le3/5$. The four weights are independent; this is a full three-dimensional projective cone, not one of the preceding arithmetic-mean slices.</p>
+    <p>If $C_4$ is genuinely new, equality throughout the connected closed cone occurs exactly on the original face $d=0$ at $a=b=c&gt;0$. In particular, the inequality is strict when all four weights are positive and on the positive interior of every replacement three-cycle face.</p>
+    <p>For each representative the global certificate normalizes $a+b+c=3$, writes $a=3x$, $b=3(1-x)y$, $c=3(1-x)(1-y)$ and compactifies $d=z/(1-z)$. Exact tensor Bernstein subdivision proves $A\le0$ or $B\le0$ on 27,586 boxes outside the equality neighborhoods, reaching depth 39.</p>
+    <p>Near equality put $(a,b,c,d)=(1+p,1+q,1-p-q,v)$ and set $R=p^2+q^2$, $S=p^2+pq+q^2$. For 45 representatives, covering 389 cycles, the local barriers have the common form</p>
+    $$A=-\alpha_Cv+144S+\cdots,\qquad
+      B=-576S+\beta_Cpv+\gamma_Cqv+\delta_Cv^2+\cdots,$$
+    <p>with $\alpha_C\ge480$. On $v\ge R$, exact coefficient bounds give a positive sum-barrier margin of at least $16{,}521/64$; on $v\le R$, they give a positive root-barrier margin of at least $1{,}973{,}697/8{,}192$. The largest absolute coefficient sums used for the two remainders are respectively $23{,}624$ and $45{,}888$.</p>
+    <p>The remaining Hamilton representative $(0,1,2,3,4,5)$ has an identically vanishing linear term. Instead, the negative matrix of the root barrier's quadratic part minus $64I$ has leading principal minors $512$, $179{,}200$ and $160{,}563{,}200$. Its higher-order coefficient sum is $14{,}400$, so on $|p|,|q|,v\le1/1024$ the remainder is smaller than the quadratic margin.</p>
+    <p>The parabolic regions $v\ge R$ and $v\le R$ exhaust each of their local cubes; 354 terminal boxes lie wholly in these or the Hamilton quadratic neighborhood. When $v&gt;0$, the central estimate is strictly negative in $v$, the outer estimate is strictly negative in $R\ge v$, and the Hamilton quadratic is strict because $(p,q,v)\ne0$.</p>
+    <p>To classify equality on the boundary, the certificate recursively checks every coordinate face of each weak global box. No genuine single-zero face is deferred: the only codimension-one coordinate deferrals are $x=1$, which redundantly parameterizes the edge $b=c=0$, and $z=1$, which redundantly parameterizes the pure-$C_4$ limit.</p>
+    <p>The 46 cycle representatives have 138 base&ndash;new pair incidences, of which 97 represent connected edges. Exact univariate Bernstein subdivision closes every such edge strictly, using at most five intervals and depth four; symmetry covers all 774 connected labeled base&ndash;new edges among the 1,173 labeled incidences.</p>
+    <p>The three original base&ndash;base edges are strict by the displayed AM&ndash;GM factorization, while a connected one-cycle boundary is Hamiltonian and has $\sigma_2^2=1/3$. Consequently all 391 genuinely new choices and every connected nonnegative weighting are strict except for $d=0$, $a=b=c&gt;0$.</p>
+
+    <h3>All four-cycle cones with exact rank collapse</h3>
+    <p>There is an exact finite classification behind the first rank-collapse example. For a grounded $5\times5$ skew form, rank at most two is equivalent to the vanishing of its five principal $4\times4$ Pfaffians.</p>
+    <p>Each Pfaffian is quadratic in the cycle weights, and its pure terms vanish for an individual four-cycle. Thus a family has rank at most two for every weighting if and only if every pair of generators has zero polarized Pfaffians.</p>
+    <p>There is also a direct combinatorial form of this test. Put $x_{ij}=e_i-e_j$; then every directed four-cycle satisfies the exact exterior-product identity</p>
+    $$2D_{(i,j,k,l)}=x_{ik}\wedge x_{lj}.$$
+    <p>Ignoring orientation, a cycle is therefore a two-edge matching: its two opposite vertex pairs. Two such generators are compatible exactly when their matchings share an edge or their union is an alternating four-cycle, since incidence vectors indexed by a forest are linearly independent.</p>
+    <p>On the 90 labeled directed four-cycles, this compatibility relation has 1,125 edges and is 25-regular. Its four-cliques are exactly the four-component rank-collapse supports: there are 7,830 in total, of which 6,705 are connected on all six states. State relabeling and simultaneous reversal reduce them to 21 support orbits, 16 connected.</p>
+    <p>The 45 maximal compatible families have three explicit architectures, each with 15 labeled instances:</p>
+    <ul>
+      <li>choose an opposite pair $\{p,q\}$ and take all 12 cycles $(p,r,q,s)$ with ordered distinct $r,s$ among the other four states;</li>
+      <li>choose a perfect matching of the six states and, for each two matched pairs, take both alternating orientations, giving six cycles;</li>
+      <li>choose four states and take all six directed four-cycles on that face, a family disconnected on six states before any reversible attachments.</li>
+    </ul>
+    <p>The list is exhaustive without matrix calculation. If a clique of two-edge matchings has a common edge it lies in the first family; otherwise a pair sharing an edge forces the three two-edge subsets of one perfect matching, while a pair sharing no edge forces the three perfect matchings of one four-state set. Maximality then includes both orientations of every matching.</p>
+    <p>The rank bound is equally direct. In the opposite-pair family every weighted sum factors as</p>
+    $$2D=x_{pq}\wedge\sum_{r\ne s}w_{rs}x_{sr}.$$
+    <p>For a perfect-matching family, all forms lie in $\bigwedge^2U$ where $U$ is spanned by its three pair-difference vectors. For a four-state face, take $U$ to be the three-dimensional zero-sum space on that face; in either case every skew form on $U$ has rank at most two.</p>
+    <p>Every rank-collapse support is contained in one of these maximal families. Their full cones, not merely their four-generator subcones, therefore have skew rank at most two for arbitrary nonnegative weights. For continuity, the previously isolated representative is</p>
+    $$\{(0123),(0124),(0325),(0524)\}$$
+    <p>with positive weights $(a,b,c,d)$. In the grounded coordinates $0,\ldots,4$, its integer skew form factors exactly as</p>
+    $$2D=uv^\top-vu^\top,\qquad
+      u=(1,0,-1,0,0)^\top,\qquad
+      v=(0,-a-b,0,a-c,b+d)^\top.$$
+    <p>Since $a+b&gt;0$, the vectors are independent and $D$ has rank two. The union is connected, so whitening by $H^{-1/2}$ preserves rank and leaves exactly one positive intrinsic frequency:</p>
+    <div class="equation-card">
+    $$\sigma_2=0.$$
+    </div>
+    <p>This representative has an orbit of 360 labeled supports and is one of the 16 connected classes. Arbitrary reversible attachments preserve $D$ and therefore preserve the rank conclusion whenever the final flow is connected; they can also connect a four-state face family without changing its skew rank. This is a fixed-flow Green&ndash;Kubo rank statement; it does not constrain rank obtained after integrating different maturity-dependent loadings.</p>
+
+    <h3>Equal weights on four distinct four-cycles</h3>
+    <p>A separate exact theorem covers arbitrary supports when all four components are distinct directed four-cycles and have equal weight. Every connected such mixture obeys the stronger bound</p>
+    <div class="equation-card">
+    $$\sigma_2^2\le\frac13.$$
+    </div>
+    <p>There are 90 labeled directed four-cycles and $\binom{90}{4}=2{,}555{,}190$ unordered supports. Exactly 2,390,985 are connected; the other 164,205 have zero leading grounded determinant, do not define an irreducible six-state flow and are excluded from this theorem.</p>
+    <p>For the equal-weight pencil $a_5t^5+a_3t^3+a_1t$, put</p>
+    $$A_{1/3}=3a_3-2a_5,\qquad
+      B_{1/3}=a_5-3a_3+9a_1.$$
+    <p>If $A_{1/3}\le0$, the sum of the squared frequencies is at most $2/3$. If $B_{1/3}\le0$, their monic quadratic is nonpositive at $1/3$, so $1/3$ lies between its roots.</p>
+    <p>Exact integer determinants certify the first alternative on 2,144,115 connected supports and the second, with the first unavailable, on the remaining 246,870. Thus no floating spectral comparison enters the proof.</p>
+    <p>Equality occurs for 1,980 labeled supports in four orbits under state relabeling and simultaneous reversal. Below, $(0123)$ abbreviates the directed cycle $(0,1,2,3)$; orbit representatives are</p>
+    $$\begin{aligned}
+    &\{(0123),(0124),(0351),(0354)\},\\
+    &\{(0123),(0124),(0354),(2354)\},\\
+    &\{(0123),(0132),(2345),(2453)\},\\
+    &\{(0123),(0134),(0142),(2345)\}.
+    \end{aligned}$$
+    <p>Their orbit sizes are respectively $720,360,180,720$, and their coefficient triples $(a_5,a_3,a_1)$ are $(1104,800,144)$, $(1152,1152,256)$, $(864,576,96)$ and $(1008,696,120)$. In every case one squared frequency is $1/3$; the other is respectively $9/23$, $2/3$, $1/3$ and $5/14$.</p>
+    <p>This is an equal-weight theorem, not an arbitrary-weight four-support theorem. Indeed an unequal fourth weight can tend to zero on the sharp three-cycle face, where the lower squared frequency tends to $3/5$ rather than $1/3$.</p>
+
+    <h3>An exact alternating-weight instability</h3>
+    <p>The first equality orbit already loses the $1/3$ ceiling under an arbitrarily small imbalance that keeps all four weights positive. On the representative</p>
+    $$\{(0123),(0124),(0351),(0354)\},$$
+    <p>give the cycles alternating weights $(x,y,x,y)$ with $x,y&gt;0$. Exact determinant factorization makes the two squared frequencies</p>
+    $$z_1=\frac{y}{2x+y},\qquad
+      z_2=\frac{(2x+y)^2}{8x^2+12xy+3y^2}.$$
+    <p>Thus $y&gt;x$ implies both $z_1,z_2&gt;1/3$. For example, weights $(5,6,5,6)$ give the exact frequencies $3/8$ and $64/167$, so the lower one is $3/8&gt;1/3$.</p>
+    <p>This slice also has a closed-form optimum. With $r=y/x$, $z_1$ is strictly increasing, $z_2$ is strictly decreasing, and</p>
+    $$\operatorname{sign}(z_1-z_2)
+      =\operatorname{sign}(r^2+2r-4).$$
+    <p>They cross at $r=\sqrt5-1$, where both equal $(3-\sqrt5)/2$. Consequently</p>
+    <div class="equation-card">
+    $$\max_{x,y&gt;0}\min(z_1,z_2)=\frac{3-\sqrt5}{2}.$$
+    </div>
+    <p>The conclusion is confined to this one-dimensional projective slice of one equality orbit. It disproves persistence of the equal-weight $1/3$ ceiling, but it neither finds a violation of the general $3/5$ ceiling nor proves that ceiling for arbitrary four-four-cycle supports.</p>
+
+    <h3>A full-cone crossing test on the second orbit</h3>
+    <p>The next equality orbit admits an exact classification for every positive weighting, not just a slice. Order its representative as</p>
+    $$C_0=(0123),\quad C_1=(0124),\quad
+      C_2=(0354),\quad C_3=(2354),$$
+    <p>and give these cycles weights $w_0,w_1,w_2,w_3&gt;0$. Put</p>
+    $$s=w_0+w_1,\quad t=w_2+w_3,\qquad
+      p=w_0w_1,\quad q=w_2w_3.$$
+    <p>For the pencil $a_5z^2-a_3z+a_1$, exact expansion gives</p>
+    $$3a_3-2a_5=8stE&gt;0,\qquad
+      a_5-3a_3+9a_1=-32st(p-q)(s-t),$$
+    <p>where $E=2ps+2qt+3s^2t+3st^2-5pt-5sq$ expands with only strictly positive monomial coefficients. The first identity says that the squared-frequency sum is strictly greater than $2/3$.</p>
+    <p>The second barrier equals $9a_5(1/3-z_1)(1/3-z_2)$. Since the two roots cannot both lie below $1/3$, the smaller squared frequency satisfies the complete trichotomy</p>
+    $$\begin{aligned}
+      z_-&gt;1/3&\iff (p-q)(s-t)&lt;0,\\
+      z_-=1/3&\iff (p-q)(s-t)&=0,\\
+      z_-&lt;1/3&\iff (p-q)(s-t)&gt;0.
+    \end{aligned}$$
+    <p>Thus the $1/3$ equality set is the union of the equal-sum surface $s=t$ and the equal-product surface $p=q$. As an exact interior witness, weights $(9,1,4,4)$ have squared frequencies</p>
+    $$\frac{771-3\sqrt{9489}}{1414},\qquad
+      \frac{771+3\sqrt{9489}}{1414},$$
+    <p>and the lower value is strictly above $1/3$. This classifies the $1/3$ crossing on one full equality-support cone; it still does not establish the separate $3/5$ ceiling for arbitrary four-cycle supports.</p>
+
+    <h3>A pinned root on the third full cone</h3>
+    <p>The third equality orbit is rigid in its lower mode for every positive weighting. Order its representative as</p>
+    $$C_0=(0123),\quad C_1=(0132),\quad
+      C_2=(2345),\quad C_3=(2453),$$
+    <p>give the cycles weights $w_0,w_1,w_2,w_3&gt;0$, and put $s=w_0+w_1$ and $t=w_2+w_3$. Exact expansion of the pencil $a_5z^2-a_3z+a_1$ gives</p>
+    $$a_5-3a_3+9a_1=0,$$
+    $$3a_3-2a_5=24stE,\qquad
+      E=t(w_0-w_1)^2+s(w_2-w_3)^2.$$
+    <p>The first identity makes $1/3$ a squared-frequency root throughout the cone. If the other root is $z_+$, the second identity and $a_5&gt;0$ give</p>
+    $$z_+-\frac13=\frac{8stE}{a_5}\ge0.$$
+    <div class="equation-card">
+    $$\sigma_2^2=\frac13\qquad\text{for every }w_0,w_1,w_2,w_3&gt;0.$$
+    </div>
+    <p>The two roots coincide exactly when $w_0=w_1$ and $w_2=w_3$, so the double-root locus is a full projective line rather than only the equal-weight point. As a nonsymmetric exact witness, weights $(2,1,3,1)$ give pencil coefficients $(a_5,a_3,a_1)=(13320,10416,1992)$ and squared frequencies $1/3$ and $83/185$.</p>
+    <p>This pins one mode on a second full equality-support cone. It does not extend the $1/3$ bound to the other equality orbits or to arbitrary four-cycle supports.</p>
+
+    <h3>A full-cone crossing theorem on the fourth orbit</h3>
+    <p>The last equality orbit admits an exact $1/3$ classification throughout its positive weight cone. Order its representative as</p>
+    $$C_0=(0123),\quad C_1=(0134),\quad
+      C_2=(0142),\quad C_3=(2345),$$
+    <p>give the cycles weights $(a,b,c,d)&gt;0$, and put $S=a+b+c$, $e_2=ab+ac+bc$ and $e_3=abc$. For the root barrier $B=a_5-3a_3+9a_1$, exact factorization gives</p>
+    $$B=-32d\{U+dS(a-c)(b-c)\},\qquad
+      U=S^2e_2-e_2^2-6Se_3,$$
+    $$2U=\sum_{\rm cyc}(a-b)^2\{2c(a+b)+c^2\}.$$
+    <p>Thus $U\ge0$, with equality exactly when $a=b=c$. If $c$ does not lie strictly between $a$ and $b$, and the first three weights are not all equal, then $B&lt;0$ and the lower squared frequency is strictly below $1/3$.</p>
+    <p>If $c$ lies strictly between $a$ and $b$, define the positive threshold</p>
+    $$d_*=\frac{U}{S(a-c)(c-b)}.$$
+    <p>An exact positive-coefficient expansion proves that the sum barrier $3a_3-2a_5$ is positive at $d_*$; its remaining quadratic factor is strictly increasing for $d&gt;0$. Consequently the complete crossing law is</p>
+    $$\sigma_2^2
+      \begin{cases}
+      &lt;1/3,&d&lt;d_*,\\
+      =1/3,&d=d_*,\\
+      &gt;1/3,&d&gt;d_*.
+      \end{cases}$$
+    <p>The exceptional line $a=b=c=x$ has $B=0$ for every $d$. Its two squared frequencies are</p>
+    $$\frac13,\qquad
+      \frac{(x+3d)(3x+2d)}{(5x+2d)(5x+3d)}.$$
+    <p>The second root increases through $1/3$ at $d/x=(\sqrt{13}-1)/3$. Hence the lower squared frequency is below $1/3$ before that point and equals $1/3$ from the threshold onward; the off-line weights $(3,1,2,10)$ lie in the strict-above region.</p>
+    <p>This classifies the $1/3$ crossing on the final equality-support cone. It does not establish the separate $3/5$ ceiling for arbitrary four-cycle supports.</p>
+
+    <h2>Arbitrary weights on every Hamilton triple</h2>
+    <p>Call a pair of Hamilton cycles extremal when its equal-weight mixture attains the two-cycle bound $\sqrt{3/5}$. Exact enumeration gives 120 labeled extremal pairs, and every Hamilton cycle belongs to exactly two of them.</p>
+    <p>Fixing the first Hamilton cycle canonically leaves 7,021 unordered triple supports. Every nonnegative weighting of every such support, not identically zero, satisfies</p>
+    $$\sigma_2\le\sqrt{3/5}.$$
+    <p>Write $\det(tH-D)=a_5t^5+a_3t^3+a_1t$ and regard each coefficient as a homogeneous degree-five polynomial in the three cycle weights. Values at the 21 integer barycentric nodes recover those polynomials exactly. For the 6,670 supports containing no extremal pair, midpoint subdivision of the weight simplex gives, on every subtriangle, one of the exact Bernstein-coefficient inequalities</p>
+    $$5a_3-6a_5\le0$$
+    <p>or</p>
+    $$9a_5-15a_3+25a_1\le0.$$
+    <p>The first says that the sum of the squared frequencies is at most $6/5$; the second places $3/5$ between them. Either proves the bound. Across all 6,670 supports, the largest certificate uses 76 triangles and subdivision depth five.</p>
+    <p>The remaining 351 supports meet an equality point on a two-cycle boundary, where ordinary subdivision alone does not terminate. Normalize an extremal pair's weights as $1+u,1-u$ and call the third weight $v$. The 354 extremal-pair incidences reduce, up to $u\mapsto-u$, to 18 exact polynomial types.</p>
+    <p>On the local box $|u|\le3/64$, $0\le v\le1/64$, split into the central wedge $|u|\le3v$ and the two outer wedges $v\le|u|/3$. In the central wedge substitute $u=v(-3+6x)$, $v=y/64$: the sum barrier has a positive factor $v$, and every tensor-product Bernstein control of its quotient is negative on $0\le x,y\le1$.</p>
+    <p>In each outer wedge substitute $u=\pm3x/64$, $v=xy/64$. The root barrier has a positive factor $u^2$, and again every exact Bernstein control of the quotient is negative. The largest control over all 18 types is $-45/16$, so these local certificates are strict.</p>
+    <p>Outside those boxes, ordinary midpoint subdivision terminates. Among the 351 boundary supports the largest cover has 166 triangles at depth eight; 1,122 terminal cells invoke the local blow-up certificate. Together with the nonextremal covers, this proves the theorem for all 7,021 normalized Hamilton-triple supports, including zero-weight boundaries.</p>
+
+    <h2>Two Hamilton cycles and any third simple cycle</h2>
+    <p>The same sharp bound holds for every connected, nonnegative, nonzero weighting of any support containing two Hamilton cycles and one five-cycle. Repeated Hamilton cycles merge, so the two-cycle theorem covers that case. Otherwise fix one Hamilton cycle canonically; choosing the other Hamilton cycle and the five-cycle gives $119\cdot144=17{,}136$ normalized supports.</p>
+    <p>Exact equal-weight pair classification finds no extremal Hamilton&ndash;five-cycle pair. Thus 16,848 supports have no extremal boundary pair, and the same 21-node interpolation and midpoint argument certifies all of them. The largest cover again uses 76 triangles at depth five.</p>
+    <p>The remaining 288 supports have an extremal Hamilton&ndash;Hamilton boundary pair. With its weights normalized as $1+u,1-u$ and the five-cycle weight denoted by $v$, their local barriers reduce, up to $u\mapsto-u$, to 12 exact polynomial types, each occurring 24 times. The same box $|u|\le3/64$, $0\le v\le1/64$ and the same central/outer wedge substitutions apply.</p>
+    <p>Every quotient has strictly negative tensor-product Bernstein controls; the largest is</p>
+    $$-\frac{148074017}{134217728}<0.$$
+    <p>Outside the local boxes, the largest boundary cover has 103 triangles at depth eight, and 816 terminal cells invoke a local certificate. Hence all 17,136 normalized mixed supports satisfy $\sigma_2\le\sqrt{3/5}$ for every connected weighting, including connected zero-weight boundaries. The certificate also covers the disconnected pure-five-cycle corner algebraically, but that corner is not an irreducible six-state flow.</p>
+    <p>For a four-cycle third component there are $119\cdot90=10{,}710$ normalized supports, again with no extremal Hamilton&ndash;short-cycle pair. Of these, 10,530 have no extremal boundary pair; their largest exact cover has 97 triangles at depth five. The remaining 180 supports meet equality only on their Hamilton&ndash;Hamilton edge and reduce to 12 local polynomial types.</p>
+    <p>Eleven types retain a negative term linear in the four-cycle weight and use the preceding central sum-barrier and outer root-barrier wedges. The exceptional type, occurring in six incidences, instead has the negative-definite leading root barrier</p>
+    $$-3840u^2-192v^2.$$
+    <p>On its central wedge the root barrier has a factor $v^2$. Splitting the ratio coordinate at $u=0$ gives two exact Bernstein patches; the outer wedges retain the factor $u^2$. The largest exceptional control is $-3/64$, while the largest control over the regular types is $-180285485/33554432$.</p>
+    <p>The complementary boundary covers use at most 103 triangles at depth nine, with 414 local terminal cells. Thus every connected weighting on all 10,710 normalized two-Hamilton/one-four-cycle supports also satisfies the sharp bound. As with the five-cycle class, a disconnected pure-short-cycle corner is only an algebraic limiting case.</p>
+    <p>For a three-cycle third component there are $119\cdot40=4{,}760$ normalized supports. Again no Hamilton&ndash;short-cycle pair is extremal; 4,680 supports have no extremal Hamilton pair, while 80 meet equality only on their Hamilton&ndash;Hamilton edge. Those 80 reduce to four edge-polynomial types, with largest exact local Bernstein control</p>
+    $$-\frac{79125745}{33554432}<0.$$
+    <p>A new issue appears at the pure three-cycle corner: its symmetric form has rank two on the centered space, so both degree-five barriers vanish to cubic order. Normalize the three-cycle weight to one, write the two Hamilton weights as $sx$ and $s(1-x)$, and restrict to $0\le s\le1/64$.</p>
+    <p>The 4,760 corner polynomials reduce, up to swapping the Hamilton weights, to 230 types with 19 leading cubic types. Splitting $x\in[0,1]$ into 16 equal rational intervals gives 3,680 exact patches. On 3,392 the cubic-factored sum barrier is certified; on 288 the cubic-factored root barrier is certified.</p>
+    <p>Every chosen Bernstein control is strictly negative, with largest value</p>
+    $$-\frac{82072901}{4398046511104}<0.$$
+    <p>Complementary midpoint covers use at most 481 triangles at depth ten, with 10,440 corner-local cells and 112 Hamilton-edge cells. Hence every connected weighting on all 4,760 two-Hamilton/one-three-cycle supports obeys the bound. The pure three-cycle corner itself is disconnected on six states and is only an algebraic limit.</p>
+    <p>Lengths three, four, five and six are now covered directly; a two-cycle third component is a reversible attachment and repeated cycles merge. Therefore every connected nonnegative mixture of two Hamilton cycles and any third simple directed cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
+    <h2>One Hamilton cycle and two five-cycles</h2>
+    <p>Fixing the Hamilton cycle canonically leaves $\binom{144}{2}=10{,}296$ unordered distinct five-cycle pairs, of which 8,640 have different missing states.</p>
+    <p>For each of the 8,640 different-missing-state supports, the 21 barycentric determinant values recover both homogeneous degree-five barriers exactly. Midpoint subdivision certifies one barrier on every terminal triangle; the largest cover has 64 triangles at depth five, and all covers together have 228,339 terminal triangles.</p>
+    <p>The other 1,656 pairs omit the same state, so their pure two-cycle edge lies on a singular five-state face and the six-state determinant pencil vanishes there. Consequently both degree-five barriers have the Hamilton weight as an exact factor.</p>
+    <p>Dividing out that positive weight leaves homogeneous degree-four barriers. Ordinary midpoint subdivision now certifies every same-face support with at most 55 triangles at depth five and 41,490 terminal triangles in total.</p>
+    <p>Consequently every connected, nonnegative, nonzero weighting of one Hamilton cycle and any two five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Repeated five-cycles merge and reduce to the two-cycle theorem; zero-weight boundaries are included whenever the resulting flow remains connected.</p>
+
+    <h2>One Hamilton cycle and two four-cycles</h2>
+    <p>There are $\binom{90}{2}=4{,}005$ unordered distinct four-cycle pairs. Their support unions occupy four, five and six states in respectively 225, 2,160 and 1,620 cases.</p>
+    <p>The 1,620 six-state pairs have positive leading determinants. Exact degree-five simplex covers use at most 133 triangles per support at depth five and 58,455 terminal triangles in total.</p>
+    <p>For every four- or five-state pair, the pure short-cycle pencil is singular and both barriers have the Hamilton weight as a factor. Dividing it out gives degree-four quotients; their exact covers use at most 49 triangles at depth four and 43,425 terminal triangles in total.</p>
+    <p>Thus every connected, nonnegative, nonzero weighting of one Hamilton cycle and any two four-cycles also satisfies $\sigma_2\le\sqrt{3/5}$. Repeated four-cycles merge into the arbitrary-weight two-cycle theorem.</p>
+
+    <h2>One Hamilton cycle, one four-cycle and one five-cycle</h2>
+    <p>There are $90\cdot144=12{,}960$ labeled four-/five-cycle pairs. Their support unions occupy five states in 4,320 cases and all six states in the other 8,640 cases.</p>
+    <p>The 8,640 six-state pairs have positive leading determinants. Exact degree-five simplex covers use at most 85 triangles per support at depth five and 262,998 terminal triangles in total.</p>
+    <p>Every five-state pair lies on a common face, so both barriers have the Hamilton weight as an exact factor. Dividing it out gives degree-four quotients; their exact covers use at most 58 triangles per support at depth four and 94,536 terminal triangles in total.</p>
+    <p>Therefore every connected, nonnegative, nonzero mixture of one Hamilton cycle, one four-cycle and one five-cycle satisfies $\sigma_2\le\sqrt{3/5}$. Together with the two common-length cases, this covers any two short-cycle lengths in $\{4,5\}$.</p>
+
+    <h2>One Hamilton cycle, one three-cycle and one five-cycle</h2>
+    <p>There are $40\cdot144=5{,}760$ labeled three-/five-cycle pairs, split evenly between 2,880 common-face unions on five states and 2,880 unions visiting all six states. No nonsingular pair is an equality case of the sharp two-cycle theorem.</p>
+    <p>For the six-state pairs, both degree-five barriers vanish to cubic order at the pure-three-cycle corner. Normalizing the three-cycle weight to one and splitting the Hamilton/five-cycle ratio into 16 rational patches reduces the corners to 256 exact polynomial types and 16 leading cubic types.</p>
+    <p>The sum barrier certifies 3,636 patches and the root barrier certifies 460. The largest selected Bernstein control is</p>
+    $$-\frac{173013241}{8796093022208}<0.$$
+    <p>Complementary covers use at most 475 triangles at depth ten and 409,194 terminal triangles in total, including 7,992 corner-local cells.</p>
+    <p>For every common-face pair, both degree-five barriers contain the Hamilton weight. After division, the degree-four quotients have 236 corner types; their selected barriers all contain the squared corner scale and have largest Bernstein control $-13/8192$.</p>
+    <p>The quotient covers use at most 202 triangles at depth nine and 159,012 terminal triangles in total, including 2,316 corner-local cells. Hence every connected nonnegative mixture of one Hamilton cycle, one three-cycle and one five-cycle also satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
+    <h2>One Hamilton cycle, one three-cycle and one four-cycle</h2>
+    <p>There are $40\cdot90=3{,}600$ labeled three-/four-cycle pairs. Their unions occupy four, five and six states in respectively 720, 2,160 and 720 cases, and no six-state boundary pair is extremal.</p>
+    <p>For the six-state pairs, the pure-three-cycle corner again vanishes cubically. Sixteen rational ratio patches reduce the proof to 62 corner polynomial types and eight leading cubic types; 806 patches use the sum barrier and 186 use the root barrier.</p>
+    <p>The largest selected Bernstein control is</p>
+    $$-\frac{2914375259}{140737488355328}<0.$$
+    <p>Complementary covers use at most 520 triangles at depth ten and 175,914 terminal triangles, including 3,132 corner-local cells.</p>
+    <p>For the 2,880 four- and five-state pairs, both barriers contain the Hamilton weight. Their degree-four quotients reduce to 232 corner types and have a squared corner scale.</p>
+    <p>Of the 3,712 rational quotient patches, 60 close nonstrictly with largest Bernstein control zero; all controls of the selected sum barrier are then nonpositive. The remaining patches are strict, with largest selected control $-89/131072$.</p>
+    <p>Complementary quotient covers use at most 193 triangles at depth nine and 130,356 terminal triangles, including 2,028 corner-local cells. Thus this last mixed-length class also satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+    <p>Combining the mixed and common-length results, the two-Hamilton theorem, reversible two-cycle contraction and merging repeated cycles leaves only the case of two distinct three-cycles alongside one Hamilton cycle.</p>
+
+    <h2>One Hamilton cycle and two distinct three-cycles</h2>
+    <p>There are $\binom{40}{2}=780$ unordered pairs of distinct three-cycles. Their unions occupy three, four, five and six states in respectively 20, 360, 360 and 40 cases.</p>
+    <p>Every pure pair has an identically zero five-dimensional pencil. In particular, each six-state union is two disconnected triangles, so both degree-five barriers have the Hamilton weight as an exact factor.</p>
+    <p>After division, orienting each pair both ways gives 126 corner types and explicitly certifies both pure-three-cycle vertices. Sixteen rational patches per type give 2,016 corner certificates: 1,844 use the sum barrier and 172 use the root barrier.</p>
+    <p>Of these patches, 66 close nonstrictly with top Bernstein control zero; all controls of the selected barrier are nonpositive. The remaining patches are strict, with largest selected control $-1/32768$.</p>
+    <p>Complementary degree-four quotient covers use at most 313 triangles at depth nine and 46,788 terminal triangles, including 906 corner-local cells. Therefore every connected nonnegative mixture of three simple directed cycles containing a Hamilton cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
+    <h2>Bounded cycle lengths</h2>
+    <p>The triangle result extends sharply to cycles of any bounded length. For one directed cycle of length $\ell$ and weight $w$, the nonconstant Fourier mode with angle $\theta_k=2\pi k/\ell$ has symmetric and skew eigenvalues $w(1-\cos\theta_k)$ and $-iw\sin\theta_k$.</p>
+    <p>Its intrinsic skew frequencies are therefore</p>
+    $$\left|\frac{\sin\theta_k}{1-\cos\theta_k}\right|
+      =\left|\cot\frac{\pi k}{\ell}\right|,
+      \qquad k=1,\ldots,\ell-1.$$
+    <p>The largest is $c_\ell=\cot(\pi/\ell)$. Equivalently, after embedding the cycle in any finite state space, its two forms obey</p>
+    $$|x^\top D_\ell y|
+      \le c_\ell
+      \sqrt{x^\top H_\ell x}
+      \sqrt{y^\top H_\ell y}.$$
+    <p>Suppose a balanced flow admits a nonnegative decomposition into directed cycles with lengths $\ell_\alpha\le L$. Summing the component inequalities, then applying Cauchy&ndash;Schwarz, gives</p>
+    $$|x^\top Dy|
+      \le\cot(\pi/L)
+      \sqrt{x^\top H_0x}
+      \sqrt{y^\top H_0y},
+      \qquad H_0=\sum_\alpha H_{\ell_\alpha}.$$
+    <p>Adding arbitrary reversible stationary flow replaces $H_0$ by $H=H_0+R\succeq H_0$ and leaves $D$ unchanged. If the final support is connected, substitution of $x=H^{-1/2}u$ and $y=H^{-1/2}v$ proves the sharp strong-sector bound</p>
+    <div class="equation-card">
+    $$\left\lVert H^{-1/2}DH^{-1/2}\right\rVert_2
+      \le\cot\frac{\pi}{L}.$$
+    </div>
+    <p>A single directed $L$-cycle attains the constant. This is a finite-dimensional strong sector condition in the terminology introduced by <a href="./bibliography.html#Varadhan1995">Varadhan (1995)</a>; for $L=3$ it recovers the exact $1/\sqrt3$ triangle bound above.</p>
+    <p>In particular, any number of directed cycles of lengths at most four, with arbitrary reversible attachments, has every intrinsic frequency at most one and cannot realize the target $\cot(\pi/5)&gt;1$. At $L=5$ the bound equals the target frequency, so this norm argument alone does not exclude two repeated maximal modes.</p>
+    <p>After separating the reversible remainder, all remaining stationary flow must be represented by the bounded-length cycles. The hypothesis cannot be inferred from the final undirected support alone.</p>
+
+    <h2>Multiplicity at the sharp sector</h2>
+    <p>The equality case supplies a stronger state-count obstruction. Fix an integer $q\ge3$, put $c_q=\cot(\pi/q)$, and suppose the directed remainder is decomposed into cycles of lengths at most $q$.</p>
+    <p>On the full complexified state space, let</p>
+    $$E=\ker(c_qH-iD).$$
+    <p>Connectivity leaves constants in $E$, while every additional complex dimension is a positive intrinsic mode equal to $c_q$. Thus if that maximal frequency has multiplicity $r$, then $\dim_{\mathbb C}E=r+1$.</p>
+    <p>For each cycle component, $c_qH_\ell-iD_\ell$ is positive semidefinite, as is $c_qR$ for the reversible remainder. Their sum is $c_qH-iD$, so a vector lies in $E$ only if it lies in every component kernel.</p>
+    <p>When $\ell&lt;q$, the component inequality is strict off constants, and every vector in $E$ is constant on that cycle. On a directed $q$-cycle, the kernel consists exactly of</p>
+    $$f_j=a+b\zeta^j,\qquad j=0,\ldots,q-1,$$
+    <p>where $\zeta$ is the oriented first $q$th root of unity. Two distinct vertex values determine $a$ and $b$ because the powers of $\zeta$ are distinct.</p>
+    <p>Identify vertices on which every vector in $E$ agrees. Reversible edges and shorter cycles collapse under this identification. A surviving $q$-cycle either also collapses or becomes a $q$-vertex hyperedge carrying the displayed affine Fourier form; the surviving hypergraph is connected.</p>
+    <p>Order its hyperedges so that every new one meets the preceding union. The first has at most two complex degrees of freedom. A new hyperedge meeting the old union in one vertex introduces at most one more degree of freedom and costs $q-1$ new vertices; if it meets in at least two vertices, its two affine parameters are already fixed and it introduces none.</p>
+    <p>If $k$ hyperedges meet the preceding union in exactly one vertex, then</p>
+    $$\dim_{\mathbb C}E\le2+k,
+      \qquad N\ge q+k(q-1).$$
+    <p>Eliminating $k$ proves the sharp multiplicity bound</p>
+    <div class="equation-card">
+    $$N\ge1+r(q-1).$$
+    </div>
+    <p>A bouquet of $r$ directed $q$-cycles sharing one hub attains equality. For $q=5$ and $r=2$, this gives the exact minimum $N=9$ within the entire bounded-five-cycle decomposition class, including overlapping noncactus supports.</p>
+    <p>This does not settle the unrestricted six-, seven- or eight-state cases, because their stationary-flow decompositions may require cycles longer than five. It is a fixed-parameter spectral multiplicity statement, not a rank inference after integrating maturity-dependent loadings.</p>
+
+    <h2>A sharp two-five-cycle gap below nine states</h2>
+    <p>The qualitative state obstruction has a quantitative two-cycle refinement. Let the genuinely directed remainder be a positive mixture of two directed five-cycles that share at least two vertices, so their union has at most eight states. Then, even after adding arbitrary nonnegative reversible stationary flow,</p>
+    <div class="equation-card">
+    $$\sigma_2\le1<\cot\frac\pi5.$$
+    </div>
+    <p>To prove the bound, scale the cycle weights to $1$ and $r&gt;0$ and put $B(r)=iD-H$ on a grounded space. The positive inertia of $B(r)$ counts the signed generalized eigenvalues of $(iD,H)$ above one. Thus $\sigma_2&gt1$ would require at least two positive eigenvalues of $B(r)$.</p>
+    <p>Fix the first cycle as $(0,1,2,3,4)$. There are 624 relative placements of the second cycle with overlap two through five, partitioned as $240,240,120,24$. Exact Faddeev&ndash;LeVerrier expansion reduces their characteristic polynomials $\det(xI-2B(r))$ to 70 types.</p>
+    <p>For each type, the square-free product of its nonzero coefficient polynomials has at most six positive roots. Exact Sturm isolation therefore leaves at most seven open weight-ratio cells.</p>
+    <p>On one rational point in every cell, the coefficient sequence has at most one sign variation. Descartes&apos; rule gives at most one positive eigenvalue throughout that cell; continuity covers the isolated boundaries. Adding reversible flow replaces $B$ by $B-R\preceq B$, so its positive inertia cannot increase.</p>
+    <p>The ceiling is attained. At equal weights the two cycles</p>
+    $$ (0,1,2,3,4),\qquad(0,5,7,6,4) $$
+    <p>share the directed edge $4\to0$ and have normalized pencil</p>
+    $$\frac{\det(tH-iD)}{\det H}
+      =t(t^2-1)\left(t^4-2t^2+\frac15\right).$$
+    <p>The positive frequencies are therefore $\cot(\pi/5)$, $1$, and $\cot(2\pi/5)$, proving sharpness. This is again a fixed-parameter statement: it controls the intrinsic rank at one generator and does not turn rank accumulated from different maturity loadings into a regime count.</p>
+    <p>The exact overlap size gives sharper ceilings, still with arbitrary reversible attachments. If the two cycles share exactly three states, then $\sigma_2\le1/\sqrt2$; if they share exactly four, then $\sigma_2\le1/\sqrt3$. Both constants are attained at equal weights.</p>
+    <p>For these refinements, write the grounded pencil as a polynomial in $y=t^2$, whose real nonnegative roots are the squared positive frequencies. Substituting $y=z+1/2$ or $y=z+1/3$ turns a violation into two positive $z$-roots. Exact expansion gives 16 types for the 240 overlap-three placements and 13 types for the 120 overlap-four placements; their coefficient breakpoints number at most two and three respectively, and the same Sturm&ndash;Descartes argument leaves at most one positive root.</p>
+    <p>Sharp representatives have normalized pencils</p>
+    $$t^2(t^2-1)(t^2-1/2),\qquad
+      t(t^2-1/2)(t^2-1/3),$$
+    <p>for overlaps three and four respectively. The all-five-state stratum has a different algebraic sharp constant.</p>
+    <p>When both cycles use the same five states, the 24 relative placements reduce to eight exact squared-frequency types. Six satisfy the stronger rational bound $\sigma_2^2\le1/7$; the remaining two are interchanged by replacing the weight ratio $r$ with $1/r$.</p>
+    <p>For the representative pair $(0,1,2,3,4)$ and $(0,2,4,1,3)$, put</p>
+    $$A=r^4+r^2+2r+1,\qquad F=r^4-r^3-2r^2-2r-1,\qquad d=r^2+3r+1.$$
+    <p>The squared frequencies are exactly</p>
+    $$y_\pm(r)=\frac{A(r)\pm(2/\sqrt5)|F(r)|}{d(r)^2}.$$
+    <p>Write $D=d^2$, $U=A'D-AD'$ and $W=F'D-FD'$. The certificate factors</p>
+    $$U=2d(3r^4+r^3-3r^2-4r-2),\qquad
+      W=d(7r^4+5r^3+3r^2+6r+4)&gt;0,$$
+    <p>and verifies the exact identity</p>
+    $$5U^2-4W^2=-16(r^2+r-1)(r^2+3r+1)^5,$$
+    <p>together with $W&gt;0$, shows that $y_-$ decreases on $(0,(\sqrt5-1)/2)$, increases until the unique positive root $\rho&gt;2$ of $F$, and decreases thereafter.</p>
+    <p>At $r=\rho$ the two frequencies collide, giving the sharp ceiling</p>
+    $$\sigma_2\le\sqrt\gamma=0.473753\ldots,\qquad
+      \gamma=\frac{\rho^4+\rho^2+2\rho+1}{(\rho^2+3\rho+1)^2}.$$
+    <p>Equivalently, $\gamma$ is the smaller positive root of $125\gamma^4-100\gamma^3+6\gamma^2-20\gamma+5=0$. The inverse type attains the same ceiling at $r=1/\rho$, and arbitrary reversible attachments cannot increase it.</p>
+
+    <h2>Three directed triangles: rigidity</h2>
+    <p>There are 40 labeled directed triangles and $\binom{40}{3}=9{,}880$ unordered triples. Exactly 3,840 triples have connected six-state support.</p>
+    <p>Give a connected triple positive weights $a,b,c$. Every two-triangle boundary has zero five-dimensional pencil, so each coefficient of $\det(tH-D)$ contains the factor $abc$.</p>
+    <p>Exact interpolation leaves only four ordered quadratic types. In every case there is an
+      $M\in\{ab+ac,ab+bc,ac+bc,ab+ac+bc\}$, hence $M&gt;0$, such that the three pencil coefficients are proportional to</p>
+    $$a_5:a_3:a_1=18M:12M:2M.$$
+    <p>Since $M&gt;0$, normalization by $a_5=\det H$ gives the identity</p>
+    <div class="equation-card">
+    $$\frac{\det(tH-D)}{\det H}=t\left(t^2+\frac13\right)^2.$$
+    </div>
+    <p>Thus both intrinsic frequencies equal $1/\sqrt3$ for every positive weight ratio. The result is exact and stronger than the general $\sqrt{3/5}$ obstruction.</p>
+
+    <h2>One directed four-cycle and two directed triangles</h2>
+    <p>There are $90\binom{40}{2}=70{,}200$ labeled supports with one four-cycle and two distinct triangles. Exactly 38,520 have connected six-state support.</p>
+    <p>If the four-cycle weight is zero, the two-triangle pencil vanishes identically. Both degree-five barriers therefore contain the four-cycle weight; after division, all connected supports reduce to only 18 exact degree-four quotient types, up to exchanging the triangles.</p>
+    <p>Orienting those types both ways gives 27 corner types. Across the rational corner patches, 371 use the sum barrier and 61 use the root barrier.</p>
+    <p>Twenty-five patches close nonstrictly with top Bernstein control zero. Every other selected control is strictly negative, with largest value $-1/32768$.</p>
+    <p>The complementary quotient covers use at most 232 triangles at depth nine. They comprise 1,479 terminal triangles across the 18 types, or 2,656,440 after expanding type multiplicities; 57,600 expanded cells lie in the proved corner boxes.</p>
+    <p>Hence every connected nonnegative mixture of one directed four-cycle and two directed triangles satisfies $\sigma_2\le\sqrt{3/5}$. Zero-weight boundaries either reduce to the two-cycle theorem or fail to connect all six states.</p>
+
+    <h2>One directed five-cycle and two directed triangles</h2>
+    <p>There are $144\binom{40}{2}=112{,}320$ labeled supports with one five-cycle and two distinct triangles. Exactly 84,960 have connected six-state support.</p>
+    <p>The two-triangle boundary is again a zero pencil, so the five-cycle weight divides both degree-five barriers. The connected degree-four quotients reduce to 41 exact types, up to exchanging the triangles.</p>
+    <p>Orienting those types both ways gives 71 corner types. Across the rational corner patches, 1,028 use the sum barrier and 108 use the root barrier.</p>
+    <p>Fifty-three selected patches close nonstrictly with top Bernstein control zero. Every other selected control is strictly negative, with largest value $-1/32768$.</p>
+    <p>The complementary covers use at most 316 triangles at depth nine. They comprise 2,399 terminal triangles across the 41 quotient types, or 4,679,280 after expanding multiplicities; 108,720 expanded cells lie in the proved corner boxes.</p>
+    <p>Thus every connected nonnegative mixture of one directed five-cycle and two directed triangles also satisfies $\sigma_2\le\sqrt{3/5}$. Its connected zero-weight boundaries again reduce to the two-cycle theorem.</p>
+
+    <h2>One directed triangle and two directed four-cycles</h2>
+    <p>There are $40\binom{90}{2}=160{,}200$ labeled supports with one triangle and two distinct four-cycles. Exactly 109,800 have connected six-state support.</p>
+    <p>In 64,800 connected cases the two-four-cycle boundary already spans all six states. These reduce to 42 exact degree-five types; their pure-triangle corners give 672 rational patches, of which 605 use the sum barrier and 67 use the root barrier.</p>
+    <p>Sixty-five selected patches close nonstrictly at zero. Every other selected control is negative, with largest value $-89/134217728$; complementary covers use at most 238 triangles at depth nine and 2,298 terminal triangles across the 42 types.</p>
+    <p>For the other 45,000 connected supports the two-four-cycle boundary occupies only four or five states. Both degree-five barriers then contain the triangle weight, and division leaves 22 exact degree-four quotient types.</p>
+    <p>The quotient has three singular vertices. Their 66 oriented incidences reduce to 54 corner types and 864 rational patches: 314 use the sum barrier and 550 use the root barrier, while 44 selected patches close nonstrictly at zero and the largest strict control is $-89/8388608$.</p>
+    <p>Complementary quotient covers use at most 577 triangles at depth ten and 3,196 terminal triangles across the 22 types. Hence every connected nonnegative mixture of one directed triangle and two directed four-cycles satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
+    <h2>One triangle, one four-cycle and one five-cycle</h2>
+    <p>There are 518,400 labeled supports in the mixed $(3,4,5)$ class. Exactly 432,000 have connected six-state support.</p>
+    <p>In 345,600 connected cases the four/five-cycle boundary already spans all six states. These reduce to 240 exact degree-five types and 3,840 cubic corner patches: 3,496 use the sum barrier and 344 use the root barrier.</p>
+    <p>Of the selected patches, 309 close nonstrictly at zero. Every other selected control is negative, with largest value $-89/134217728$; complementary covers use at most 517 triangles at depth ten and 15,177 terminal triangles across the 240 types.</p>
+    <p>For the other 86,400 connected supports the four/five-cycle boundary lies on a common five-state face. Both barriers then contain the triangle weight, and division leaves 30 exact degree-four quotient types.</p>
+    <p>Orienting all three quotient vertices gives 90 corner types and 1,440 rational patches: 430 use the sum barrier and 1,010 use the root barrier. Thirty-eight selected patches close nonstrictly at zero, and the largest strict control is $-89/8388608$.</p>
+    <p>Complementary quotient covers use at most 508 triangles at depth ten and 3,858 terminal triangles across the 30 types. Hence every connected nonnegative mixture of one triangle, one four-cycle and one five-cycle satisfies $\sigma_2\le\sqrt{3/5}$.</p>
+
+    <h2>One directed triangle and two directed five-cycles</h2>
+    <p>There are $40\binom{144}{2}=411{,}840$ labeled supports with one triangle and two distinct five-cycles. Exactly 378,720 have connected six-state support.</p>
+    <p>In 345,600 connected cases the two-five-cycle boundary spans all six states. These reduce to 251 degree-five types and 4,016 cubic corner patches: 3,670 use the sum barrier and 346 use the root barrier.</p>
+    <p>Of the selected patches, 249 close nonstrictly at zero. Every other selected control is negative, with largest value $-89/8388608$; complementary covers use at most 457 triangles at depth ten and 18,617 terminal triangles across the 251 types.</p>
+    <p>The other 33,120 connected supports have both five-cycles on a common five-state face. Factoring the triangle weight leaves 22 degree-four quotient types whose 66 oriented corner incidences reduce to 52 types.</p>
+    <p>All 832 quotient corner patches are strict: 302 use the sum barrier and 530 use the root barrier, with largest control $-5657/268435456$. Complementary quotient covers use at most 451 triangles at depth ten and 3,673 terminal triangles across the 22 types.</p>
+    <p>Hence every connected nonnegative mixture of one triangle and two five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Together with the preceding cases, this covers every simple-cycle triple containing a directed triangle.</p>
+
+    <h2>Three directed four-cycles</h2>
+    <p>There are $\binom{90}{3}=117{,}480$ labeled supports with three distinct four-cycles. Exactly 93,420 have connected six-state support.</p>
+    <p>Of these, 120 form the unique equality-support orbit already covered by the symbolic AM&ndash;GM proof. Under all six permutations of the weights, their barrier pair has one exact polynomial type.</p>
+    <p>The other 93,300 supports reduce to 85 exact polynomial types. Ordinary midpoint-simplex covers use at most 223 triangles at depth five, with 1,813 terminal triangles across the types and 1,890,060 after expanding their multiplicities.</p>
+    <p>Thus every connected nonnegative mixture of three four-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Repeated cycles and connected zero-weight boundaries reduce to the two-cycle theorem.</p>
+
+    <h2>Two four-cycles and one five-cycle</h2>
+    <p>There are $\binom{90}{2}144=576{,}720$ labeled supports with two distinct four-cycles and one five-cycle. Exactly 514,080 have connected six-state support, and none is an equal-weight equality case.</p>
+    <p>Exchanging the two four-cycle weights is the only length-preserving weight symmetry. Quotienting by it leaves 372 exact barrier-polynomial types.</p>
+    <p>Ordinary midpoint-simplex covers close every type with at most 115 triangles at depth five. The covers contain 7,710 terminal triangles at type level and 10,525,680 after expanding multiplicities; no boundary-local certificate is needed.</p>
+    <p>Hence every connected nonnegative mixture of two four-cycles and one five-cycle satisfies $\sigma_2\le\sqrt{3/5}$. Repeated cycles and connected zero-weight boundaries reduce to the two-cycle theorem.</p>
+
+    <h2>One four-cycle and two five-cycles</h2>
+    <p>There are $90\binom{144}{2}=926{,}640$ labeled supports with one four-cycle and two distinct five-cycles. Exactly 876,960 have connected six-state support, and none is an equal-weight equality case.</p>
+    <p>Exchanging the two five-cycle weights is the only length-preserving weight symmetry. Quotienting by it leaves 647 exact barrier-polynomial types.</p>
+    <p>Ordinary midpoint-simplex covers close every type with at most 79 triangles at depth four. The covers contain 13,439 terminal triangles at type level and 18,350,280 after expanding multiplicities; no boundary-local certificate is needed.</p>
+    <p>Hence every connected nonnegative mixture of one four-cycle and two five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Repeated cycles and connected zero-weight boundaries reduce to the two-cycle theorem.</p>
+
+    <h2>Three directed five-cycles</h2>
+    <p>There are $\binom{144}{3}=487{,}344$ supports with three distinct five-cycles. Exactly 475,200 have connected six-state support, and none is an equal-weight equality case.</p>
+    <p>All six weight permutations preserve the architecture. Quotienting by them leaves 368 exact barrier-polynomial types.</p>
+    <p>Ordinary midpoint-simplex covers close every type with at most 46 triangles at depth four. The covers contain 6,905 terminal triangles at type level and 8,945,280 after expanding multiplicities; no boundary-local certificate is needed.</p>
+    <p>Hence every connected nonnegative mixture of three five-cycles satisfies $\sigma_2\le\sqrt{3/5}$. Together with the preceding cases, repeated-cycle merging and connected zero-weight boundaries, this completes every mixture of at most three simple directed cycles.</p>
+
+    <h2>Seven arbitrary-weight Hamilton-triple orbits</h2>
+    <p>There is a second exact three-cycle extension. Up to state relabeling, simultaneous reversal and permutation of the three cycles, consider the following seven representatives:</p>
+    <ol>
+      <li>$(012345),(012354),(012453)$;</li>
+      <li>$(012345),(012354),(012435)$;</li>
+      <li>$(012345),(012354),(013245)$;</li>
+      <li>$(012345),(012354),(014235)$;</li>
+      <li>$(012345),(012453),(014235)$;</li>
+      <li>$(012345),(012354),(021345)$;</li>
+      <li>$(012345),(012453),(012534)$.</li>
+    </ol>
+    <p>Here $(012345)$ abbreviates the directed cycle $(0,1,2,3,4,5)$. Fixing the first Hamilton cycle canonically, these disjoint orbits contain respectively $36,18,18,18,18,9,6$ supports, hence 123 normalized supports in total.</p>
+    <p>Normalize the first weight to one and call the others $r,s&gt;0$. For every listed representative, exact determinant expansion shows that every coefficient of</p>
+    $$9a_5(r,s)-15a_3(r,s)+25a_1(r,s)$$
+    <p>is nonpositive, with at least one strictly negative coefficient. The expression is therefore negative throughout the positive quadrant. Equivalently $f(3/5)&lt;0$, so $3/5$ lies strictly between the two squared frequencies and</p>
+    $$\sigma_2&lt;\sqrt{3/5}.$$
+    <p>This is an arbitrary-weight result for those seven support orbits. It is not inferred from the finite imbalance grid. Equality can only be approached on a boundary where one weight vanishes and the flow reduces to the two-cycle theorem.</p>
+
+    <h2>Reversible attachments cannot amplify skew</h2>
+    <p>This extension is not limited by the number of reversible two-cycles. Let $H_0,D$ be the grounded symmetric and skew forms of any balanced directed component, and add an arbitrary reversible stationary flow with grounded form $R\succeq0$. Then $D$ is unchanged and $H=H_0+R$.</p>
+    <p>Assume $H$ is positive definite and $\ker H_0\subseteq\ker D$, as holds for a directed cycle on any subset of the states.</p>
+    <p>Using the Moore&ndash;Penrose inverse on the range of $H_0$, put</p>
+    $$K_0=H_0^{\dagger/2}DH_0^{\dagger/2},\qquad
+      C=H^{-1/2}H_0^{1/2}.$$
+    <p>The kernel condition gives $D=H_0^{1/2}K_0H_0^{1/2}$, while $H_0\preceq H$ gives $CC^\top\preceq I$. Therefore</p>
+    $$H^{-1/2}DH^{-1/2}=CK_0C^\top,\qquad
+      s_j(CK_0C^\top)\le\lVert C\rVert^2s_j(K_0)\le s_j(K_0).$$
+    <p>Thus every intrinsic skew frequency contracts under reversible attachments. A directed cycle of length $\ell$ has positive Fourier frequencies</p>
+    $$\cot\frac{\pi}{\ell},\ \cot\frac{2\pi}{\ell},\ldots,
+      \cot\frac{\lfloor(\ell-1)/2\rfloor\pi}{\ell}.$$
+    <p>No connectivity assumption on the directed component is needed. If its active support is connected and has six states, the exact classification above gives $s_2(K_0)\le\sqrt{3/5}$.</p>
+    <p>On five active states the certificate enumerates all $\binom{84}{3}=95{,}284$ distinct-cycle triples, identifies 89,584 connected supports and reduces their quartic barriers to 461 exact types. Ordinary rational simplex covers close every type, using at most 106 triangles at depth five; no connected support is an equal-weight equality case.</p>
+    <p>Writing the four-dimensional pencil as $a_4t^4+a_2t^2+a_0$, every terminal cell certifies either $5a_2-6a_4\le0$ or $9a_4-15a_2+25a_0\le0$. The same sum-or-root argument therefore gives $s_2^2\le3/5$ over the entire nonnegative weight simplex.</p>
+    <p>On at most four active states the centered space has dimension at most three, so there is at most one positive skew frequency. If a base with at most three genuinely directed cycles is disconnected, each nontrivial directed component uses at least three states; the only two-mode split is therefore $3+3$.</p>
+    <p>On three states, opposite triangle orientations decompose into one net directed triangle plus a reversible attachment. Each component frequency is consequently at most $\cot(\pi/3)=1/\sqrt3$, so the disconnected base also lies below $\sqrt{3/5}$.</p>
+    <p>Thus every base with at most three genuinely directed cycles has $s_2(K_0)\le\sqrt{3/5}$, and contraction proves the bound after adding an arbitrary reversible stationary flow. Reversible two-cycles do not consume the directed-cycle slots.</p>
+    <p>There is a stronger specialization when the directed component is just one cycle. For $\ell\le6$, its second frequency is zero for $\ell\le4$, equals $\cot(2\pi/5)$ for $\ell=5$, and equals $\cot(\pi/3)=1/\sqrt3$ for $\ell=6$. Hence any connected six-state flow with only one genuinely directed cycle, plus any number and arrangement of reversible edges, satisfies the claimed stronger bound, even when those edges are needed to connect a shorter cycle to the remaining states.</p>
+
+    <h2>Why feature choice cannot evade the bound</h2>
+    <p>Let $U$ collect any four independent Poisson potentials and normalize their symmetric energy. The resulting feature skew matrix is the compression</p>
+    $$X^\top(iH^{-1/2}DH^{-1/2})X,\qquad X^\top X=I_4.$$
+    <p>Hermitian compression interlacing, in the form proved by
+      <a href="./bibliography.html#FanPall1957">Fan and Pall (1957)</a>, bounds its second positive eigenvalue by $\sigma_2$. This is a necessary condition for a fixed-parameter Green&ndash;Kubo block; it is not a rank claim after integrating different maturity loadings.</p>
+    <p>The target has symmetric part $I_4$ and two positive skew frequencies equal to $\cot(\pi/5)$. The strict comparison above therefore excludes every generator in any stated sparse-cycle class, for every positive stationary law and every four-feature embedding.</p>
+
+    <h2>Certificate and scope</h2>
+    <p>The certificate enumerates all 409 simple cycles, 1,372 first-cycle-normalized connected pairs and 382,466 connected distinct equal-weight triples. It constructs 133 exact two-cycle coefficient triples and 3,207 normalized three-cycle coefficient pairs, then proves the alternatives above by rational Bernstein bounds and integer determinants.</p>
+    <p>It verifies that the four normalized equality representatives form one orbit by explicit relabeling and simultaneous-reversal maps. It also expands the displayed unequal-weight three-cycle pencil symbolically and verifies all three coefficient identities as exact bivariate polynomials.</p>
+    <p>The fourth-cycle certificate evaluates all 409 simple-cycle perturbations of the sharp triple, including 394 genuinely directed cycles and 15 reversible two-cycles. Globally along each nonnegative ray it reduces the barriers to 50 exact types, with at most two positive sign breakpoints and three open cells per type, and proves $z_-\le3/5$. At the origin it reduces them to 48 exact tangent types and proves the universal $-4/25$ derivative bound; only the three repeated base cycles attain equality, so the other 406 simple-cycle directions, including all 391 genuinely new directed ones, are strict.</p>
+    <p>The two-parameter fourth-cycle certificate checks all 1,227 choices of an imbalance pair and a fourth cycle. It reduces them to 223 exact bivariate barrier types, closes the three rational blow-up patches around equality with 1,005 cells, and closes the compactified global domains with 12,922 cells at maximum depth eight.</p>
+    <p>The unrestricted four-weight certificate enumerates the 12 exact sharp-triple symmetries and all 46 representative cones covering the 391 genuinely new fourth cycles. It closes their compactified complements with 27,586 boxes through depth 39; 25,564 boxes are uniformly strict, while a recursive exact check resolves every internal face of the other 2,022 and defers only outer-cube faces.</p>
+    <p>The 354 local boxes use either the Hamilton negative-definite quadratic root barrier or an exact parabolic split at $v=p^2+q^2$. Together these checks prove strictness whenever all four weights are positive.</p>
+    <p>The four-cycle rank certificate verifies the displayed Pl&uuml;cker identity for all 90 cycles and proves that Pfaffian compatibility is exactly the shared-edge-or-alternating-four-cycle matching rule. It then constructs the 25-regular graph, enumerates all 7,830 four-cliques and their 6,705 connected members, reduces them to 21 total and 16 connected symmetry orbits, and checks that its 45 maximal cliques are precisely the three displayed 15-family architectures.</p>
+    <p>The equal-four-cycle certificate enumerates all 2,555,190 supports of four distinct directed four-cycles. It uses exact batched integer determinants, verifies the $1/3$ barrier alternatives on all 2,390,985 connected supports, and reduces the 1,980 equality supports to four explicit symmetry orbits.</p>
+    <p>For the Hamilton-triple extension it verifies seven bivariate root-barrier polynomials coefficient by coefficient, generates their relabeling and reversal orbits, and checks that the orbit sizes are $36,18,18,18,18,9,6$ with 123 distinct normalized supports.</p>
+    <p>For the broader Hamilton theorem it identifies the 120 labeled extremal pairs, checks their degree-two incidence, and interpolates both homogeneous barrier polynomials from 21 integer nodes. It verifies exact simplex covers for all 6,670 nonextremal supports, then reduces the 354 boundary incidences to 18 blow-up types and closes all 351 remaining supports with strict local Bernstein certificates plus global covers.</p>
+    <p>For the mixed theorem it enumerates all 17,136 normalized two-Hamilton/one-five-cycle supports and proves exactly that no Hamilton&ndash;five-cycle pair is extremal. It closes 16,848 supports by global simplex covers and the remaining 288 by 12 strict local blow-up types plus complementary covers.</p>
+    <p>It similarly enumerates all 10,710 normalized two-Hamilton/one-four-cycle supports and proves that no Hamilton&ndash;four-cycle pair is extremal. It closes 10,530 supports globally and the remaining 180 with 11 regular local types and one split-root exceptional type.</p>
+    <p>For a three-cycle third component it enumerates all 4,760 normalized supports and proves that no Hamilton&ndash;three-cycle pair is extremal. It reduces the singular pure-three-cycle corner to 230 exact polynomial types and 19 leading cubic types, certifies 16 rational ratio patches per type, closes four Hamilton-edge types, and verifies complementary covers through depth ten.</p>
+    <p>For the one-Hamilton/two-five-cycle theorem it reconstructs both barriers for all 8,640 different-missing-state supports and verifies 228,339 terminal triangles, with at most 64 per support and depth five. For all 1,656 same-face supports it verifies the Hamilton-weight factor, divides it out, and closes the degree-four quotients with 41,490 terminal triangles, at most 55 per support and depth five.</p>
+    <p>For the one-Hamilton/two-four-cycle theorem it classifies all 4,005 pairs by active support size. It closes 1,620 six-state supports with degree-five covers and the remaining 2,385 supports after factoring the Hamilton weight, using respectively 58,455 and 43,425 terminal triangles.</p>
+    <p>For the mixed four-/five-cycle theorem it classifies all 12,960 pairs by active support size. It closes 8,640 six-state supports with degree-five covers and all 4,320 common-face supports after factoring the Hamilton weight, using respectively 262,998 and 94,536 terminal triangles.</p>
+    <p>For the mixed three-/five-cycle theorem it classifies all 5,760 pairs by active support size and proves that none of the nonsingular boundary pairs is extremal. It closes the 2,880 six-state supports with cubic corner patches and 409,194 terminal triangles, then factors the Hamilton weight on the 2,880 common-face supports and closes their degree-four quotients with quadratic corner patches and 159,012 terminal triangles.</p>
+    <p>For the mixed three-/four-cycle theorem it classifies all 3,600 pairs by active support size. It closes the 720 six-state supports with cubic corner patches and 175,914 terminal triangles, then factors the Hamilton weight on the other 2,880 supports and closes their degree-four quotients with quadratic corner patches and 130,356 terminal triangles.</p>
+    <p>For one Hamilton cycle and two distinct three-cycles it classifies all 780 unordered pairs and verifies that every pure pair has a zero five-dimensional pencil. It factors the Hamilton weight, certifies both vertices through 126 oriented corner types, and closes the degree-four quotients with 46,788 terminal triangles.</p>
+    <p>For three directed triangles it enumerates all 9,880 unordered triples, identifies the 3,840 connected supports, factors $abc$ from the pencil and verifies the four quadratic quotient types. All four give the normalized pencil $t(t^2+1/3)^2$.</p>
+    <p>For one four-cycle and two distinct triangles it enumerates all 70,200 supports and identifies the 38,520 connected cases. Factoring the four-cycle weight reduces them to 18 degree-four quotient types; 27 oriented corner types and 1,479 type-level terminal triangles complete the exact certificate.</p>
+    <p>For one five-cycle and two distinct triangles it enumerates all 112,320 supports and identifies the 84,960 connected cases. Factoring the five-cycle weight leaves 41 quotient types; 71 oriented corner types and 2,399 type-level terminal triangles complete the certificate.</p>
+    <p>For one triangle and two distinct four-cycles it enumerates all 160,200 supports and identifies the 109,800 connected cases. The nonsingular-boundary stratum reduces to 42 degree-five types and 2,298 type-level cells; factoring the triangle weight on the remaining stratum leaves 22 degree-four types and 3,196 type-level cells.</p>
+    <p>For one triangle, one four-cycle and one five-cycle it streams all 518,400 supports and identifies the 432,000 connected cases. The nonsingular-boundary stratum reduces to 240 degree-five types and 15,177 type-level cells; factoring the triangle weight on the common-face stratum leaves 30 degree-four types and 3,858 type-level cells.</p>
+    <p>For one triangle and two distinct five-cycles it streams all 411,840 supports and identifies the 378,720 connected cases. The nonsingular-boundary stratum reduces to 251 degree-five types and 18,617 type-level cells; factoring the triangle weight on the common-face stratum leaves 22 degree-four types and 3,673 type-level cells.</p>
+    <p>For three distinct four-cycles it enumerates all 117,480 supports and identifies 93,420 connected cases. The 120 equality-orbit supports retain their symbolic proof; the other 93,300 supports reduce to 85 types and 1,813 type-level terminal triangles.</p>
+    <p>For two distinct four-cycles and one five-cycle it streams all 576,720 supports and identifies 514,080 connected cases. The exact barriers have no equal-weight equality support and reduce to 372 types with 7,710 type-level terminal triangles.</p>
+    <p>For one four-cycle and two distinct five-cycles it streams all 926,640 supports and identifies 876,960 connected cases. The exact barriers have no equal-weight equality support and reduce to 647 types with 13,439 type-level terminal triangles.</p>
+    <p>For three distinct five-cycles it enumerates all 487,344 supports and identifies 475,200 connected cases. The exact barriers have no equal-weight equality support and reduce to 368 types with 6,905 type-level terminal triangles.</p>
+    <p>For connected five-state three-cycle bases it enumerates all 95,284 distinct-cycle supports and identifies 89,584 connected cases. Their quartic barriers have no equal-weight equality support and reduce to 461 types with 5,093 type-level terminal triangles.</p>
+    <p>A focused triangle-sector certificate verifies the exact $2\times2$ identity for $L=3$, enumerates all 91,390 four-triangle supports on six states and identifies 63,360 connected cases. It checks every connected equal-weight support and 500 independently weighted mixtures with arbitrary reversible edges against the $1/\sqrt3$ ceiling.</p>
+    <p>A separate bounded-cycle certificate checks the single-cycle Fourier constant for lengths three through nine. On six states it independently recovers the cycle counts $15,40,90,144,120$ for lengths two through six and tests 600 weighted mixtures, with reversible flow, against the appropriate $\cot(\pi/L)$ ceiling.</p>
+    <p>The equality certificate enumerates 744 relative pairs of five-cycles: 120, 240, 240, 120 and 24 pairs with overlap sizes one through five. Their maximal Hermitian kernel dimensions are respectively $3,2,2,2,2$, and the nine-state shared-hub pair has four largest singular values equal to $\cot(\pi/5)$.</p>
+    <p>The exact two-cycle gap certificate enumerates the 624 six-state pairs with overlap at least two and reduces them to 70 characteristic types. Exact Sturm isolation uses at most six positive coefficient breakpoints and seven open weight-ratio cells per type, proves $\sigma_2\le1$, and verifies the displayed sharp pencil. It separately reduces the overlap-three and overlap-four strata to 16 and 13 squared-frequency types, proving the sharp $1/\sqrt2$ and $1/\sqrt3$ refinements.</p>
+    <p>The eight-state certificates construct both displayed two-cycle mixtures, verify their grounded determinants exactly and isolate every squared frequency by rational sign changes. They optimize both support rays by exact resultants, classify all 16,064 one-cycle perturbations, and show why the six-state two-cycle ceiling cannot be silently transferred to eight states.</p>
+    <p>It separately verifies the displayed two-cycle extremal formula and checks 300 independently chosen rates and stationary laws against the full whitened skew spectrum. Four directed-cycle Fourier spectra, 240 one-cycle attachments, 240 two-cycle attachments and 120 disconnected-base attachments check the contraction theorem's implementation.</p>
+    <p>The portable assertion ceilings are $2\times10^{-11}$ for the spectrum formula and $2\times10^{-10}$ for stationarity. These floating checks test the implementation; the architecture-wide inequality is the analytic determinant argument above.</p>
+    <p>This result does not prove that $\sqrt{3/5}$ is the largest repeated frequency among all six-state balanced flows. Mixtures of at most three genuinely directed cycles, every unrestricted four-weight cone obtained by adding one cycle to the sharp triple, and all 6,705 connected four-four-cycle rank-collapse supports are covered; the 45 maximal compatible families also give rank collapse for their larger subcones. Other six-state mixtures of four or more cycles remain outside that sharper $\sqrt{3/5}$ theorem, even though the weaker unrestricted obstruction now fixes the state minimum at nine.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
