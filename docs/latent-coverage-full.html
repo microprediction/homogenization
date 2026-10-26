@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conditional coverage behind exact randomized ranks · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent conformal pooling</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a></span></p>
+    <h1>Conditional coverage behind exact randomized ranks</h1>
+    <p class="subtitle">A latent iid representation preserves marginal ranks, but replaces the iid beta coverage law by a conditional-expectation contraction.</p>
+
+    <h2>Specify the information being conditioned on</h2>
+    <p>Given a latent variable $U$, let calibration scores $S_1,\ldots,S_N$ be iid with a random continuous CDF $G_U$.
+      Assume the test score is independent of this panel given $U$, with conditional CDF</p>
+    $$F_{{\rm test}\mid U}=(1-\delta)G_U+\delta B_U,\qquad0\le\delta&lt;1,$$
+    <p>where $B_U$ is a genuine CDF and $\delta$ is deterministic.
+      Write $Q_k$ for the $k$th calibration order statistic, $p=k/(N+1)$, and</p>
+    $$\mathcal D=\sigma(S_1,\ldots,S_N),\qquad
+      C=\Pr(S_{\rm test}\le Q_k\mid\mathcal D).$$
+    <p>The score map and rank are fixed before seeing the panel.
+      For randomized-age calibration, the labels here are the independent unsorted age labels: $\mathcal D$ excludes ages and the chronological sorting permutation.
+      The same conclusions hold when conditioning only on $Q_k$.</p>
+
+    <h2>Beta contraction, not an exact beta law</h2>
+    <p>The conditional probability integral transform gives
+      $Z=G_U(Q_k)\sim\operatorname{Beta}(k,N+1-k)$, even after averaging over $U$.
+      Conditional test independence and the tower property give</p>
+    $$C=(1-\delta)M+\delta R,\qquad
+      M=\mathbb E[Z\mid\mathcal D],\qquad
+      R=\mathbb E[B_U(Q_k)\mid\mathcal D]\in[0,1].$$
+    <p>For every convex function $\psi$ for which the expectations exist, conditional Jensen gives
+      $\mathbb E\psi(M)\le\mathbb E\psi(Z)$.
+      This is convex-order domination, which does not order individual lower-tail probabilities.</p>
+    <p>In particular, if $\delta=0$, the marginal coverage is exactly $p$ and</p>
+    $$\mathbb E C=p,\qquad
+      \operatorname{Var}(C)\le\frac{p(1-p)}{N+2}.$$
+    <p>The variance cannot exceed the iid beta variance, yet $C$ need not itself be beta.
+      No analogous variance assertion is made for $\delta&gt;0$.</p>
+
+    <h2>Repeated use: exact marginal law, dependent conditional errors</h2>
+    <p>Now set $\delta=0$ and suppose that, given $U$ and the panel, $L$ future scores are iid from $G_U$. Put $I_\ell=\mathbf1_{\{S_{N+\ell}\le Q_k\}}$, $K_L=\sum_{\ell=1}^L I_\ell$, and
+      $V_{\mathcal D}=\operatorname{Var}(Z\mid\mathcal D)$.</p>
+    <p>Conditionally on the realized score panel, posterior uncertainty about $U$ creates the exact decomposition</p>
+    $$\mathbb E[K_L\mid\mathcal D]=LM,\qquad
+      \operatorname{Var}(K_L\mid\mathcal D)
+      =LM(1-M)+L(L-1)V_{\mathcal D},$$
+    $$\operatorname{Cov}(I_\ell,I_r\mid\mathcal D)=V_{\mathcal D},
+      \qquad \ell\ne r.$$
+    <p>Marginally, $Z$ is beta and $K_L$ is beta-binomial, so</p>
+    $$\operatorname{Var}(K_L)=Lp(1-p)\frac{N+1+L}{N+2},\qquad
+      \operatorname{Var}(M)+\mathbb E V_{\mathcal D}
+      =\frac{p(1-p)}{N+2}.$$
+    <p>The second identity splits the universal beta variability into between-panel coverage variability and within-panel posterior latent uncertainty.
+      It does not make the realized-panel coverage beta or future errors conditionally independent.</p>
+    <p>In the $N=k=9$ stationary witness below, $\mathbb E V_{\mathcal D}=0.000921316035$.
+      For $L=20$, the mean conditional variance is $2.004890050279$, the between-panel component is $2.904200858812$, and their sum is the beta-binomial variance $4.909090909091$.</p>
+
+    <h2>A valid finite-sample lower-tail budget</h2>
+    <p>For $Z\sim\operatorname{Beta}(a,b)$, with $a=k$, $b=N+1-k$ and $p=a/(a+b)$, define the stop-loss function</p>
+    $$L_{a,b}(t)=\mathbb E(t-Z)_+
+      =t I_t(a,b)-p I_t(a+1,b),\qquad0\le t\le1,$$
+    <p>where $I_t$ is the regularized incomplete beta function.
+      For $0&lt;x&lt;(1-\delta)p$, set $y=x/(1-\delta)$; then</p>
+    $$\boxed{\Pr(C\le x)\le
+      \inf_{y&lt;t\le1}\frac{L_{a,b}(t)}{t-y}.}$$
+    <p>Indeed, $C\ge(1-\delta)M$ and
+      $(t-y)\mathbf1_{\{M\le y\}}\le(t-M)_+$.
+      Taking expectations and using conditional Jensen proves the bound.</p>
+    <p>For the maximum calibration score, $k=N$, the beta stop-loss is $t^{N+1}/(N+1)$.
+      Minimization at $t=y/p$ gives the explicit budget</p>
+    $$\Pr(C\le x)\le\left(\frac{x}{(1-\delta)p}\right)^N,
+      \qquad0&lt;x&lt;(1-\delta)p,\quad p=\frac N{N+1}.$$
+    <p>At $N=k=9$ and $x=0.8$, the iid beta failure probability is $0.134217728000$, while this latent-model bound is $0.346439416115$.
+      With finite-history boundary weight $\delta=e^{-10}$ it is $0.346581003179$.
+      These are valid envelopes, not a claim of optimality over conformal models.</p>
+
+    <h2>An exact counterexample to the beta-tail shortcut</h2>
+    <p>Choose a latent regime once, with probability $q=1/50$ for regime zero, and keep it constant for all time.
+      Emit independent scores uniform on $[0,1]$ in regime zero and on $[0,25/18]$ otherwise.
+      This is a bounded stationary binary one-contrast model; its scores are exchangeable but not iid after marginalizing the regime.</p>
+    <p>Put $r=18/25$, $w=q+(1-q)r^N$ and $a=[q+(1-q)r^{N+1}]/w$.
+      Bayes' formula, using the full calibration panel, shows that coverage conditional on that panel is $C=aQ_N$ if $Q_N\le1$, and $C=rQ_N$ otherwise.
+      Consequently, for $0\le x\le1$,</p>
+    $$\Pr(C\le x)=w\min\{x/a,1\}^N+(1-q)(x^N-r^N)_+.$$
+    <p>At $N=k=9$, $a=0.798919119391&lt;0.8$, so</p>
+    $$\Pr(C\le0.8)=q+(1-q)0.8^9
+      =\frac{14798181}{97656250}=0.151533373440
+      &gt;0.8^9=0.134217728000.$$
+    <p>The marginal mean remains exactly $0.9$.
+      Its conditional-coverage variance is $0.007260502147$, smaller than the iid value $0.008181818182$, despite the larger failure probability at $0.8$.
+      This does not contradict the beta law for a fixed iid score distribution.</p>
+
+    <h2>Application to exponential ages and finite history</h2>
+    <p>Let $X_t$ be a bounded, jointly measurable, strictly stationary real signal with mean zero and fixed genuine continuous emission CDFs $\bar F+X_tH$.
+      Assume emissions independent conditional on the full signal and times, and independently draw labeled ages iid $\operatorname{Exp}(\beta)$ truncated to $[0,L]$.
+      For $\delta=e^{-\beta L}$, define</p>
+    $$U_t=\frac{\beta}{1-\delta}\int_0^L e^{-\beta a}X_{t-a}\,da.$$
+    <p>Its absolutely continuous drift is proportional to $X_t-\delta X_{t-L}-(1-\delta)U_t$.
+      For every continuously differentiable $\varphi$ and $T&gt;0$, the integrated chain rule, bounded Fubini and joint stationarity give</p>
+    $$0=\mathbb E[\varphi(U_T)-\varphi(U_0)]
+      =\frac{\beta T}{1-\delta}\mathbb E[\varphi'(U_0)
+        \{X_0-\delta X_{-L}-(1-\delta)U_0\}].$$
+    <p>Every continuous function on the compact range of $U_0$ is such a derivative, so</p>
+    $$\mathbb E[X_0\mid U_0]=(1-\delta)U_0+\delta\mathbb E[X_{-L}\mid U_0].$$
+    <p>Given the signal, the calibration joint law depends only on $U_0$, with CDF $G_U=\bar F+U_0H$.
+      The test CDF given $U_0$ is $(1-\delta)G_U+\delta B_U$, where
+      $B_U=\bar F+\mathbb E[X_{-L}\mid U_0]H$ is a genuine boundary mixture, proving the abstract hypotheses above.</p>
+    <p>For untruncated ages, use $U_t=\beta\int_0^\infty e^{-\beta a}X_{t-a}da$.
+      The drift is $\beta(X_t-U_t)$, the same chain-rule argument gives $\mathbb E[X_0\mid U_0]=U_0$, and $\delta=0$.
+      Neither argument requires mixing, Markov dynamics or a stationary filter density.</p>
+    <p>These bounds concern coverage conditional on the specified score-only information, not on realized times, chronological order, the full observed history, features or current regime.
+      They do not cover adaptive rank selection, panel-fitted scores, overlapping path emissions or repeated-panel anytime guarantees.</p>
+
+    <h2>Certificate and classical context</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
+      checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
+      It also checks 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+    <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
+      <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
+    <p>Conditional Jensen and the beta order-statistic law are classical.
+      The argument here supplies their latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
