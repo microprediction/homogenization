@@ -5,9 +5,11 @@ For total hazard d and stationary time reversal Q*, put
     R = (diag(d) - Q)^-1,  R* = (diag(d) - Q*)^-1,
     w_d = (R* - R) 1.
 
-Then p_r(Q) - p_r(Q*) = <w_d, h_r>_pi exactly.  The witness is
-orthogonal to both 1 and d.  Consequently every hazard affine in d is
-blind, while four or more regimes also admit non-affine blind hazards.
+Then p_r(Q) - p_r(Q*) = <w_d, h_r>_pi exactly for every number of
+competing channels.  The witness is orthogonal to both 1 and d.
+Consequently every hazard affine in d is blind, while four or more
+regimes also admit non-affine blind hazards.  If d is constant then the
+witness vanishes and every allocation is blind.
 """
 import numpy as np
 
@@ -81,6 +83,45 @@ def main():
         identity_error = max(identity_error, abs(direct_gap - witness_gap))
     assert identity_error < ROUND_TOL
 
+    # The same one-witness identity holds for any number of channels, and
+    # the reversal gaps sum to zero because the channel hazards sum to d.
+    raw = rng.uniform(0.1, 1.0, (5, len(total)))
+    many_hazards = total * raw / raw.sum(axis=0)
+    many_gaps = np.array([
+        first_arrival_probability(Q, many_hazards, winner=index)
+        - first_arrival_probability(reversed_Q, many_hazards, winner=index)
+        for index in range(len(many_hazards))
+    ])
+    many_witness_gaps = np.array([
+        inner(pi, w_d, hazard) for hazard in many_hazards
+    ])
+    many_error = np.max(abs(many_gaps - many_witness_gaps))
+    assert many_error < ROUND_TOL
+    assert abs(many_gaps.sum()) < ROUND_TOL
+
+    # Constant total killing makes R 1 = R* 1 = 1/c, so every split and
+    # every number of channels is exactly blind even for a nonreversible Q.
+    constant_total = np.full(len(total), 0.11)
+    _, constant_reversed_Q, _, _, constant_witness = witness(
+        Q, constant_total
+    )
+    constant_raw = rng.uniform(0.1, 1.0, (5, len(total)))
+    constant_hazards = (
+        constant_total * constant_raw / constant_raw.sum(axis=0)
+    )
+    constant_gaps = np.array([
+        first_arrival_probability(Q, constant_hazards, winner=index)
+        - first_arrival_probability(
+            constant_reversed_Q, constant_hazards, winner=index
+        )
+        for index in range(len(constant_hazards))
+    ])
+    constant_error = max(
+        np.max(abs(constant_witness)) / max(1.0, 1.0 / constant_total[0]),
+        np.max(abs(constant_gaps)),
+    )
+    assert constant_error < ROUND_TOL
+
     # A visible positive allocation: move from d/2 in the witness direction.
     visible_first = total / 2 + 0.02 * w_d / np.max(abs(w_d))
     visible_hazards = np.array([visible_first, total - visible_first])
@@ -126,6 +167,7 @@ def main():
     print(
         "resolvent identity:",
         f"64 allocations, max error {identity_error:.3e};",
+        f"five-channel error {many_error:.3e};",
         f"adjoint error {adjoint_error:.3e}",
     )
     print(
@@ -139,8 +181,13 @@ def main():
         f"non-affine gap {blind_gap:.3e};",
         f"non-affine residual {nonaffine_residual:.6f}",
     )
+    print(
+        "constant total hazard:",
+        f"five-channel max scaled error {constant_error:.3e}",
+    )
     print("PASS")
 
 
 if __name__ == "__main__":
     main()
+

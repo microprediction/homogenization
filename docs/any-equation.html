@@ -292,10 +292,18 @@
     $$w_d=(R^\leftarrow-R)\mathbf 1.$$
     <p>Adjointness in $L^2(\pi)$ gives the exact identity</p>
     $$p_r(Q)-p_r(Q^\leftarrow)=\langle w_d,h_r\rangle_\pi.$$
+    <p>The same identity holds for any number of competing names, with $d=\sum_r h_r$. The vector of
+    first-arrival-label probabilities is direction-blind exactly when every pairing
+    $\langle w_d,h_r\rangle_\pi$ vanishes; the gaps sum to zero because
+    $\sum_r h_r=d$.</p>
     <p>Thus a two-name race reveals direction exactly when this pairing is nonzero. The identities
     $R d=R^\leftarrow d=\mathbf1$ imply
     $\langle w_d,\mathbf1\rangle_\pi=\langle w_d,d\rangle_\pi=0$, so every allocation
     $h_r=a\mathbf1+bd$ is exactly blind at every switching speed.</p>
+    <p>In particular, if $d=c\mathbf1$ is constant across regimes, then
+    $R\mathbf1=R^\leftarrow\mathbf1=c^{-1}\mathbf1$, so $w_d=0$: every allocation and every number of
+    competing names is direction-blind. A varying total hazard is therefore necessary, though not sufficient,
+    for the first-arrival label to reveal time direction.</p>
     <p>For three regimes, nonconstant $d$ and $w_d\ne0$, these affine allocations exhaust the blind hyperplane.
     From four regimes onward the hyperplane is larger, and positive non-affine blind allocations exist. The
     <a href="https://kinetics.microprediction.org/">kinetics site</a> studies related races.</p>
