@@ -39,9 +39,11 @@ def symbolic():
     s = sp.Matrix([[u[n][j]-u[n][3] for j in range(3)] for n in range(2, 6)])
     s = s.subs({kap: 1, d: 1, x: 2})
     frob_bound = sum(sum(abs(c)*3**p[0] for p, c in sp.Poly(a, y).terms())**2 for a in s)
+    frob_bound3 = sum(sum(abs(c)*3**p[0] for p, c in sp.Poly(a, y).terms())**2
+                      for a in s[:3, :])
     # |C4|>=1/36 outside |y-2|<1/4; C5>=7/96>1/36 inside.
     check(sp.Rational(7, 96) > sp.Rational(1, 36))
-    return 1/(18*frob_bound)
+    return 1/(18*frob_bound), 1/(18*frob_bound3)
 
 
 def response(eps, eta, order=34, nodes=(1, 2, 3)):
@@ -90,8 +92,43 @@ def four_quotes(gamma, branch_eta):
         print(f"Three checks inside the proved uniform range: epsilon={float(eps):.6e}; remainder/bound max {float(residual):.3e}")
 
 
+def three_quotes_separated(gamma):
+    nodes = (1, 2, 3)
+    w = sp.Matrix([[t**n for n in range(2, 5)] for t in nodes])
+    check(w.det() == 72)
+    # sigma_min(W)>=det(W)/||W||_F^2>=det(W)/(sum|W_ij|)^2.
+    alpha = gamma*w.det()/sum(abs(a) for a in w)**2
+    # Radius one: M<=exp(5+e)<3^8 and the 3-by-3 tail factor is 12.
+    beta = sp.Integer(12)*3**8*3**5
+    to_mp = lambda a: mp.mpf(int(a.p))/int(a.q)
+    alpha, beta = to_mp(alpha), to_mp(beta)
+    recovery, minimum, residual = mp.mpf(0), mp.inf, mp.mpf(0)
+    prior = [mp.mpf(j)/10 for j in (1, 2, 3, 4)]
+    rates = (1, mp.mpf('1.5'), mp.mpf('1.75'), mp.mpf('2.25'), mp.mpf('2.5'), 3)
+    for denominator in (128, 256, 512, 1024):
+        eps = mp.mpf(1)/denominator
+        for y in rates:
+            h, values = response(eps, (y-2)/eps, nodes=nodes)
+            short, _ = response(eps, (y-2)/eps, order=4, nodes=nodes)
+            residual = max(residual, mp.sqrt(sum(abs(a)**2 for a in h-short))/(beta*eps**5))
+            minimum = min(minimum, mp.svd(h, compute_uv=False)[2]/eps**4)
+            observed = mp.matrix([sum(p*v for p, v in zip(prior, a))-a[3] for a in values])
+            fitted = list(mp.lu_solve(h, observed)); fitted.append(1-sum(fitted))
+            recovery = max(recovery, max(abs(a-b) for a, b in zip(prior, fitted)))
+    check(residual <= 1+mp.mpf('1e-12') and recovery < mp.mpf('1e-12'))
+    print(f"24 separated-rate three-quote recoveries: prior error {float(recovery):.3e}; min sigma_min/epsilon^4 {float(minimum):.6e}")
+    print(f"Separated-rate exact constants: alpha={float(alpha):.6e}, beta={float(beta):.0f}")
+    with mp.workdps(150):
+        eps = alpha/(4*beta)
+        check(eps < mp.mpf(1)/8)
+        for y in (1, mp.mpf('1.75'), mp.mpf('2.25'), 3):
+            h, _ = response(eps, (y-2)/eps, nodes=nodes)
+            check(mp.svd(h, compute_uv=False)[2]/eps**4 >= alpha/2)
+        print(f"Four separated-rate checks inside the proved uniform range: epsilon={float(eps):.6e}; remainder/bound max {float(residual):.3e}")
+
+
 def main():
-    gamma = symbolic()
+    gamma, gamma3 = symbolic()
     mp.mp.dps = 90
     errors, etas = [], []
     for denominator in (128, 256, 512, 1024):
@@ -126,6 +163,7 @@ def main():
     check(ode_error < mp.mpf('1e-12'))
     print(f"Independent ODE amplitude discrepancy {float(ode_error):.3e}; eta convergence order {float(mp.log(errors[-2]/errors[-1])/mp.log(2)):.6f}")
     check(errors[-1] < errors[0] and errors[-1] < mp.mpf('.1'))
+    three_quotes_separated(gamma3)
     four_quotes(gamma, etas[-1])
     print("PASS")
 

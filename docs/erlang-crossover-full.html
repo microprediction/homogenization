@@ -101,7 +101,7 @@
       <span><a href="./papers.html">papers</a> &middot;
       <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a></span></p>
     <h1>Three short bond quotes can alias an Erlang-stage prior</h1>
-    <p class="subtitle">Three quotes can lose rank near equal stage rates; a fourth gives a uniform short-maturity bound.</p>
+    <p class="subtitle">Three quotes are uniformly stable away from equal stage rates but can lose rank nearby; a fourth crosses the singularity uniformly.</p>
 
     <h2>Result and quantifiers</h2>
     <p>Consider two alternating regimes with two exponential stages each, stage rates $x,y&gt;0$, known Vasicek parameters $\kappa&gt;0$, $\theta_1\ne\theta_2$, common $\sigma\ge0$ and known current short rate $r$.
@@ -156,6 +156,26 @@
       Therefore $\det C_4\ne0$: the augmented jets distinguish all four weights, and the full curves cannot coincide for distinct priors.
       Other sufficiently short quote designs for this fixed model do identify them.</p>
 
+    <h2>Three quotes are uniform away from equal rates</h2>
+    <p>Fix the same three nodes and a compact parameter set
+      $K_\delta\subset\{(\kappa,d,x,y):\kappa,x,y&gt;0,\ d\ne0,\ |x-y|\ge\delta\}$ for some $\delta&gt;0$.
+      Let $S_3$ be the three-by-three matrix with entries $(S_3)_{p\ell}=(u_p)_\ell-(u_p)_4$ for $p=2,3,4$ and $\ell=1,2,3$.</p>
+    <p>Its determinant is $-\det C_4$, hence it is nonsingular throughout $K_\delta$.
+      Compactness gives $\gamma_3=\min_{K_\delta}\sigma_{\min}(S_3)&gt;0$; the node matrix $W_3=(t_j^p)_{j=1,2,3;\ p=2,3,4}$ is also nonsingular.
+      Put $\alpha_3=\sigma_{\min}(W_3)\gamma_3$.</p>
+    <p>Using the radius $R$, parameter bounds and $M_R$ defined below, Cauchy&apos;s estimate through degree four gives</p>
+    $$H_3=W_3\operatorname{diag}(\varepsilon^2,\varepsilon^3,\varepsilon^4)S_3+E_3,
+      \qquad\|E_3\|_2\le\beta_3\varepsilon^5,\qquad
+      \beta_3=12M_R(t_3/R)^5.$$
+    <p>Therefore, whenever $0&lt;\varepsilon\le\min\{1,R/(2t_3)\}$,</p>
+    $$\sigma_{\min}(H_3)\ge\varepsilon^4(\alpha_3-\beta_3\varepsilon),\qquad
+      \varepsilon\le\frac{\alpha_3}{2\beta_3}
+      \ \Longrightarrow\ \|H_3^{-1}\|_2\le\frac2{\alpha_3\varepsilon^4}.$$
+    <p>A normalized quote error $e$ consequently gives full four-weight error at most
+      $4\|e\|_2/(\alpha_3\varepsilon^4)$.
+      The power four is sharp at every fixed unequal-rate parameter: the displayed leading matrix has a nonzero fourth-jet direction, giving matching upper and lower orders for its weakest singular value.
+      Thus the need for a fourth quote is localized to uniformity across rate coalescence, not to separated compact classes.</p>
+
     <h2>A fourth quote restores a uniform threshold</h2>
     <p>Fix four nodes $0&lt;t_1&lt;t_2&lt;t_3&lt;t_4$ and a compact parameter set
       $K\subset\{(\kappa,d,x,y):\kappa,x,y&gt;0,\ d\ne0\}$.
@@ -202,7 +222,7 @@
       At $\varepsilon=1/1024$, the numerical branch estimate is $\eta=4.798382900402$, $y=2.004685920801$; independent ODE amplitudes agree with the Taylor evaluation within $3.43\times10^{-64}$.
       Rounded rates do not themselves define an exact alias: the analytic root above does.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/erlang/verify_quote_crossover.py">certificate</a> proves the limiting and rank-minor identities symbolically, checks four branch approximations and constructs positive numerical prior pairs.
-      It also checks four-quote recovery and the explicit remainder bound, including near-alias designs and points inside the rigorously sufficient uniform range.
+      It also checks the separated-rate three-quote and all-rate four-quote recovery bounds, including points inside both rigorously sufficient uniform ranges.
       Its final line is literal PASS and its assertions use portable tolerances; high-precision roots and ODE checks are not outward-rounded interval certificates.</p>
   </main>
 
