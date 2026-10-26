@@ -91,17 +91,11 @@ def four_quotes(gamma, branch_eta):
             check(mp.svd(h, compute_uv=False)[2]/eps**5 >= alpha/2)
         print(f"Three checks inside the proved uniform range: epsilon={float(eps):.6e}; remainder/bound max {float(residual):.3e}")
 
-
 def three_quotes_separated(gamma):
-    nodes = (1, 2, 3)
-    w = sp.Matrix([[t**n for n in range(2, 5)] for t in nodes])
-    check(w.det() == 72)
-    # sigma_min(W)>=det(W)/||W||_F^2>=det(W)/(sum|W_ij|)^2.
-    alpha = gamma*w.det()/sum(abs(a) for a in w)**2
-    # Radius one: M<=exp(5+e)<3^8 and the 3-by-3 tail factor is 12.
-    beta = sp.Integer(12)*3**8*3**5
-    to_mp = lambda a: mp.mpf(int(a.p))/int(a.q)
-    alpha, beta = to_mp(alpha), to_mp(beta)
+    nodes = (1, 2, 3); w = sp.Matrix([[t**n for n in range(2, 5)] for t in nodes])
+    check(w.det() == 72); alpha = gamma*w.det()/sum(abs(a) for a in w)**2
+    alpha = mp.mpf(int(alpha.p))/int(alpha.q)
+    beta = mp.mpf(12*3**8*3**5)
     recovery, minimum, residual = mp.mpf(0), mp.inf, mp.mpf(0)
     prior = [mp.mpf(j)/10 for j in (1, 2, 3, 4)]
     rates = (1, mp.mpf('1.5'), mp.mpf('1.75'), mp.mpf('2.25'), mp.mpf('2.5'), 3)
@@ -110,8 +104,7 @@ def three_quotes_separated(gamma):
         for y in rates:
             h, values = response(eps, (y-2)/eps, nodes=nodes)
             short, _ = response(eps, (y-2)/eps, order=4, nodes=nodes)
-            residual = max(residual, mp.sqrt(sum(abs(a)**2 for a in h-short))/(beta*eps**5))
-            minimum = min(minimum, mp.svd(h, compute_uv=False)[2]/eps**4)
+            residual = max(residual, mp.sqrt(sum(abs(a)**2 for a in h-short))/(beta*eps**5)); minimum = min(minimum, mp.svd(h, compute_uv=False)[2]/eps**4)
             observed = mp.matrix([sum(p*v for p, v in zip(prior, a))-a[3] for a in values])
             fitted = list(mp.lu_solve(h, observed)); fitted.append(1-sum(fitted))
             recovery = max(recovery, max(abs(a-b) for a, b in zip(prior, fitted)))
@@ -119,11 +112,9 @@ def three_quotes_separated(gamma):
     print(f"24 separated-rate three-quote recoveries: prior error {float(recovery):.3e}; min sigma_min/epsilon^4 {float(minimum):.6e}")
     print(f"Separated-rate exact constants: alpha={float(alpha):.6e}, beta={float(beta):.0f}")
     with mp.workdps(150):
-        eps = alpha/(4*beta)
-        check(eps < mp.mpf(1)/8)
+        eps = alpha/(4*beta); check(eps < mp.mpf(1)/8)
         for y in (1, mp.mpf('1.75'), mp.mpf('2.25'), 3):
-            h, _ = response(eps, (y-2)/eps, nodes=nodes)
-            check(mp.svd(h, compute_uv=False)[2]/eps**4 >= alpha/2)
+            h, _ = response(eps, (y-2)/eps, nodes=nodes); check(mp.svd(h, compute_uv=False)[2]/eps**4 >= alpha/2)
         print(f"Four separated-rate checks inside the proved uniform range: epsilon={float(eps):.6e}; remainder/bound max {float(residual):.3e}")
 
 
