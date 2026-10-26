@@ -35,8 +35,7 @@
       No analogous variance assertion is made for $\delta&gt;0$.</p>
 
     <h2>Repeated use: exact marginal law, dependent conditional errors</h2>
-    <p>Now set $\delta=0$ and suppose that, given $U$ and the panel, $L$ future scores are iid from $G_U$.
-      Put $I_\ell=\mathbf1_{\{S_{N+\ell}\le Q_k\}}$, $K_L=\sum_{\ell=1}^L I_\ell$, and
+    <p>Now set $\delta=0$ and suppose that, given $U$ and the panel, $L$ future scores are iid from $G_U$. Put $I_\ell=\mathbf1_{\{S_{N+\ell}\le Q_k\}}$, $K_L=\sum_{\ell=1}^L I_\ell$, and
       $V_{\mathcal D}=\operatorname{Var}(Z\mid\mathcal D)$.</p>
     <p>Conditionally on the realized score panel, posterior uncertainty about $U$ creates the exact decomposition</p>
     $$\mathbb E[K_L\mid\mathcal D]=LM,\qquad
@@ -112,7 +111,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 105 exact beta-binomial laws and 162 exact latent variance decompositions; independent quadrature checks 162 nested-CDF integrals and 105 general beta stop-loss integrals.</p>
+      It also checks 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

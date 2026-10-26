@@ -1,7 +1,6 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
 from itertools import product
-from math import comb
 
 import numpy as np
 from scipy.integrate import quad
@@ -37,23 +36,9 @@ def beta_stoploss(t, a, b):
     return t*betainc(a, b, t)-a/(a+b)*betainc(a+1, b, t)
 
 
-def rising(a, j):
-    value = 1
-    for offset in range(j):
-        value *= a+offset
-    return value
-
-
-def beta_binomial_law(length, a, b):
-    denominator = rising(a+b, length)
-    return [F(comb(length, j)*rising(a, j)*rising(b, length-j),
-              denominator) for j in range(length+1)]
-
-
 def latent_posterior_variance(n, prior, r):
     weight = prior+(1-prior)*r**n
-    first = (prior+(1-prior)*r**(n+1))/weight
-    second = (prior+(1-prior)*r**(n+2))/weight
+    first, second = ((prior+(1-prior)*r**(n+j))/weight for j in (1, 2))
     return F(n, n+2)*weight*(second-first*first)
 
 
@@ -70,8 +55,7 @@ def main():
         posterior_variance = latent_posterior_variance(n, prior, r)
         check(moments[1]-p*p+posterior_variance == p*(1-p)/(n+2))
         for future in (2, 5, 11):
-            within = (future*(p-moments[1])
-                      + future*(future-1)*posterior_variance)
+            within = future*(p-moments[1])+future*(future-1)*posterior_variance
             between = future**2*(moments[1]-p*p)
             target = future*p*(1-p)*F(n+1+future, n+2)
             check(within+between == target)
@@ -97,7 +81,6 @@ def main():
             check(error < 2e-9)
             integrated += 1
     beta_checks = 0
-    repeated_checks = 0
     for n in (2, 5, 9, 19):
         for k in range(1, n+1):
             a, b, p = k, n+1-k, k/(n+1)
@@ -115,16 +98,6 @@ def main():
             check(abs(result.fun-betainc(a, b, root)) < 2e-7)
             if k == n:
                 check(abs(result.fun-(x/p)**n) < 2e-7)
-            for future in (2, 5, 11):
-                law = beta_binomial_law(future, a, b)
-                check(sum(law) == 1)
-                mean = sum(F(j)*law[j] for j in range(future+1))
-                variance = sum((F(j)-mean)**2*law[j]
-                               for j in range(future+1))
-                check(mean == future*F(k, n+1))
-                check(variance == future*F(k, n+1)*F(n+1-k, n+1)
-                      * F(n+1+future, n+2))
-                repeated_checks += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -133,13 +106,12 @@ def main():
     check(cdf(x) == prior+(1-prior)*x**n > x**n)
     posterior_variance = latent_posterior_variance(n, prior, r)
     future = 20
-    within = (future*(moments[0]-moments[1])
-              + future*(future-1)*posterior_variance)
+    within = future*(moments[0]-moments[1])+future*(future-1)*posterior_variance
     between = future**2*(moments[1]-moments[0]**2)
     print(f"Nested-uniform exact stop-loss/tail checks: {exact}; mean/variance cases: 54")
     print(f"Independent nested-CDF integrals: {integrated}; beta-integral checks: {beta_checks}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
-    print(f"Repeated-future beta-binomial laws: {repeated_checks}; latent variance decompositions: {latent_decompositions}")
+    print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
     print(f"Witness: prior {prior}, wide support [0,{1/r}], low-branch slope {float(slope):.12f}")
     print(f"N=k=9, threshold .8: actual failure {cdf(x)} = {float(cdf(x)):.12f}")
