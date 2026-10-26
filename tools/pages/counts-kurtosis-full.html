@@ -31,6 +31,24 @@
     <p>In the middle range, $T_*=q^{-1}(w)/r$ is the unique crossing.
       Equal switching rates have $p=1/2$, $w=1/4$ and recover the strictly negative symmetric result.
       Boundedness alone determines none of these signs.</p>
+    <h2>How the crossing meets the two thresholds</h2>
+    <p>Let $x_*=rT_*$ and first approach the lower threshold with
+      $\delta=w-1/6\downarrow0$.
+      Direct Taylor expansion and series inversion give</p>
+    $$q(x)=\frac16+\frac{x}{90}-\frac{x^2}{540}+\frac{x^3}{6300}+O(x^4),$$
+    $$x_*=90\delta+1350\delta^2+\frac{210600}{7}\delta^3+O(\delta^4).$$
+    <p>The crossing therefore emerges linearly from zero maturity.</p>
+    <p>At the upper threshold, let $\eta=1/5-w\downarrow0$.
+      Removing the exponentially small terms from $B$ and $C$ gives</p>
+    $$q_0(x)=\frac{x-3}{5x-29/2},\qquad
+      \frac15-q_0(x)=\frac{1}{50x-145},\qquad
+      q(x)-q_0(x)=O(xe^{-x}).$$
+    <p>Inverting this relation yields the sharp divergent scale</p>
+    $$x_*=\frac{1}{50\eta}+\frac{29}{10}
+      +O\!\left(\eta^{-3}e^{-1/(50\eta)}\right),\qquad T_*=\frac{x_*}{r}.$$
+    <p>Thus the single crossing moves to infinity reciprocally as $w$ approaches $1/5$ from below.
+      These are endpoint statements for the stationary two-state crossing, not maturity-uniform
+      approximations for other initial laws or larger chains.</p>
     <h2>Derivation from ordered correlations</h2>
     <p>Write $f_t=\mathbf1_{\{Y_t=1\}}-p$ and $J_T=\int_0^T f_t\,dt$.
       Then $\mathbb E(f_{t+s}\mid Y_t)=e^{-rs}f_t$ and
@@ -74,7 +92,7 @@
       $-0.0068086443$ and $0.2656789881$.</p>
     <p><a href="https://github.com/microprediction/homogenization/blob/main/papers/cumulants/verify_unequal_fourth_sign.py">verify_unequal_fourth_sign.py</a>
       checks 243 cases against an independent triangular moment system, 300 points of the threshold curve,
-      the symmetric reduction, the crossing and the factorial-cumulant transfer from count probabilities.
+      the symmetric reduction, both crossing endpoint expansions and the factorial-cumulant transfer from count probabilities.
       Its final line is literal <code>PASS</code>.</p>
     <p>Two-state occupation-time laws are classical; see
       <a href="./bibliography.html#Pedler1971">Pedler (1971)</a>.
@@ -83,3 +101,4 @@
       No analogous sign assertion is made for arbitrary initial priors or larger chains.
       If $\Delta=0$, the integrated intensity is deterministic and every fourth factorial cumulant is zero.</p>
   </main>
+

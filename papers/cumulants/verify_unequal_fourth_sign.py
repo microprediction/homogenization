@@ -24,6 +24,26 @@ def threshold(x):
     return b/(4*b+c)
 
 
+def threshold_mp(x):
+    b = x-3+(x*x/2+2*x+3)*mp.exp(-x)
+    c = x-mp.mpf("2.5")+2*(x+1)*mp.exp(-x)+mp.exp(-2*x)/2
+    return b/(4*b+c)
+
+
+def crossing_mp(w, guess):
+    lo = mp.mpf("1e-5")
+    hi = max(mp.mpf(1), 2*guess)
+    while threshold_mp(hi) < w:
+        hi *= 2
+    for _ in range(240):
+        mid = (lo+hi)/2
+        if threshold_mp(mid) < w:
+            lo = mid
+        else:
+            hi = mid
+    return (lo+hi)/2
+
+
 def fourth(p, speed, horizon):
     w = p*(1-p)
     b, c = shapes(speed*horizon)
@@ -64,6 +84,26 @@ def main():
     crossing = brentq(lambda x: threshold(x)-w, .01, 100., xtol=1e-12)
     assert abs(threshold(crossing)-w) <= ROUND_TOL
     assert fourth(p, 1., crossing/2) < 0 < fourth(p, 1., crossing*2)
+    small_relative_error = 0.
+    for delta_text in [".001", ".0005", ".0002", ".0001", ".00005"]:
+        delta = mp.mpf(delta_text)
+        root = crossing_mp(mp.mpf(1)/6+delta, 90*delta)
+        cubic = 90*delta+1350*delta**2+mp.mpf(210600)/7*delta**3
+        fourth_coefficient = (root-cubic)/delta**4
+        small_relative_error = max(
+            small_relative_error, abs(float(fourth_coefficient/729000-1)))
+        assert abs(float(threshold_mp(root)-(mp.mpf(1)/6+delta))) <= 1e-12
+    assert small_relative_error <= .03
+    upper_scaled_error = 0.
+    for eta_text in [".01", ".005", ".002", ".001", ".0005"]:
+        eta = mp.mpf(eta_text)
+        rational_center = 1/(50*eta)+mp.mpf(29)/10
+        root = crossing_mp(mp.mpf(1)/5-eta, rational_center)
+        scale = eta**-3*mp.exp(-1/(50*eta))
+        upper_scaled_error = max(
+            upper_scaled_error, abs(float((root-rational_center)/scale)))
+        assert abs(float(threshold_mp(root)-(mp.mpf(1)/5-eta))) <= 1e-12
+    assert upper_scaled_error <= 1e-4
     print("stationary two-state phase diagram: 0<w<=1/6 positive; 1/6<w<1/5 one crossing; 1/5<=w<=1/4 negative")
     print("threshold strictly increases from 1/6 to 1/5; numerical grid points", len(xs))
     print("p=0.25, covariance decay rate 1, unique crossing horizon", f"{crossing:.10f}")
@@ -97,9 +137,12 @@ def main():
     print("maximum scaled matrix discrepancy", f"{matrix_error:.3e}")
     print("maximum scaled count factorial-cumulant discrepancy", f"{count_error:.3e}")
     print("maximum factorial-cumulant truncation/alias budget", f"{tail_budget:.3e}")
+    print("maximum relative lower-end fourth-coefficient discrepancy", f"{small_relative_error:.3e}")
+    print("maximum scaled upper-end crossing remainder", f"{upper_scaled_error:.3e}")
     print("matrix and count tolerances", f"{ROUND_TOL:.3e}", f"{COUNT_TOL:.3e}")
     print("PASS")
 
 
 if __name__ == "__main__":
     main()
+
