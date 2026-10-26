@@ -104,6 +104,47 @@ def check_window_bound():
     return max(errors)
 
 
+def check_bv_smoothing():
+    """Check three nonuniform BV maturity laws and the general finite-R bound."""
+    from scipy.integrate import quad
+    atoms = ((0.03, 0.7), (0.7, 0.2), (2.1, 0.1))
+    densities = (
+        (0.0, 1.0, lambda u: 2 * (1 - u), Fraction(1, 6), 4.0),
+        (0.0, 2.0, lambda u: u if u <= 1 else 2 - u, Fraction(7, 6), 2.0),
+        (0.0, 1.0, lambda u: 6 * u * (1 - u), Fraction(3, 10), 3.0),
+    )
+    errors = []
+    for a, c, density, exact_m2, variation in densities:
+        mass, mass_error = quad(density, a, c, epsabs=1e-11, epsrel=1e-11)
+        m2, m2_error = quad(lambda u: u * u * density(u), a, c,
+                            epsabs=1e-11, epsrel=1e-11)
+        assert abs(mass - 1) <= 1e-12 + mass_error
+        assert abs(m2 - float(exact_m2)) <= 1e-12 + m2_error
+        for scale in (0.25, 1, 4, 16, 64):
+            value, value_error = quad(lambda u: density(u) * math.fsum(
+                4 * w / x ** 2 * math.sin(u * scale * x / 2) ** 2
+                for x, w in atoms), a, c, epsabs=1e-9, epsrel=1e-11)
+            spectral_terms = []
+            spectral_error = 0.0
+            for x, w in atoms:
+                cosine, cosine_error = quad(
+                    lambda u: density(u) * math.cos(scale * x * u),
+                    a, c, epsabs=1e-11, epsrel=1e-11)
+                spectral_terms.append(2 * w / x ** 2 * (1 - cosine))
+                spectral_error += 2 * w / x ** 2 * cosine_error
+            spectral = math.fsum(spectral_terms)
+            errors.append(abs(value - spectral))
+            budget = 65536 * sys.float_info.epsilon * max(1, value, spectral)
+            assert errors[-1] <= budget + value_error + spectral_error
+            cut_moment = math.fsum(w / x ** 2 for x, w in atoms if x > 1 / scale)
+            bound = (m2 * scale ** 2
+                     * math.fsum(w for x, w in atoms if x <= 1 / scale)
+                     + 2 * variation / scale
+                     * math.fsum(w / x ** 3 for x, w in atoms if x > 1 / scale))
+            assert abs(value - 2 * cut_moment) <= bound + budget + value_error
+    return max(errors)
+
+
 def main():
     cases = check_blocks()
     print(f"exact CDF bound checks: {cases}; total spectral mass: 1")
@@ -123,6 +164,7 @@ def main():
         print(f"{n} {j} {value:.12f} {ratio:.9e} {upper:.9e}")
     print(f"omitted variance bound after K=j+n+30: {tail_bound(8, 30):.9e}")
     print(f"15 window identity/bound checks; quadrature error: {check_window_bound():.3e}")
+    print(f"15 nonuniform BV smoothing checks; quadrature error: {check_bv_smoothing():.3e}")
     print("n averaged ratios for U uniform on [0,1] and [1,2]")
     for n in range(1, 9):
         denominator = 4 * (math.log(2 * math.pi) + (16 ** n + n - 1) * math.log(2))
@@ -145,3 +187,4 @@ if __name__ == "__main__":
     except Exception:
         print("FAIL")
         raise
+

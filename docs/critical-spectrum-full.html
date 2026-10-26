@@ -191,6 +191,26 @@
     $$R^{-1}\int_{(R^{-1},\infty)}\omega^{-3}\mu(d\omega)\sim2bL(R).$$
     <p>Thus for each fixed nondegenerate window, $\overline V_{a,c}(R)=2J(R)+O(L(R))\sim4bH(R)$.
       This includes ordinary Ces&agrave;ro averaging, $a=0,c=1$, even for the resonant atomic example.</p>
+    <h3>Any bounded-variation maturity density</h3>
+    <p>The uniform law is not special. Let $g$ be a probability density supported on $[0,B]$, extend it by zero
+      to the real line, and suppose the extension has total variation $C_g&lt;\infty$.</p>
+    <p>Write $m_2=\int u^2g(u)du$, $\widehat g(t)=\int e^{itu}g(u)du$, and randomize the maturity to $RU$ with
+      density $g$. Fubini and Stieltjes integration by parts give</p>
+    $$\overline V_g(R)=2\int_{(0,\infty)}{1-\operatorname{Re}\widehat g(R\omega)}
+      \omega^{-2}\mu(d\omega),\qquad
+      |\widehat g(t)|\le\frac{C_g}{|t|}.$$
+    <p>The same low/high-frequency split therefore yields the all-$R$ bound</p>
+    <div class="equation-card">
+    $$\left|\overline V_g(R)-2J(R)\right|
+      \le m_2R^2F(R^{-1})+
+      \frac{2C_g}{R}\int_{(R^{-1},\infty)}\omega^{-3}\mu(d\omega).$$
+    </div>
+    <p>Hence every fixed compactly supported bounded-variation density gives
+      $\overline V_g(R)\sim4bH(R)$. For a family $g_R$, it is enough that $m_{2,R}$ remain bounded and
+      $C_{g_R}L(R)/H(R)\to0$.</p>
+    <p>The uniform density on $[a,c]$ has $C_g=2/(c-a)$ and recovers the preceding bound exactly.
+      This formulation also permits triangular and other nonuniform maturity jitter without changing the critical
+      equivalent.</p>
     <p>The finite bound also permits shrinking windows: if $0\le a_R&lt;c_R\le B$ and
       $\Delta_R=c_R-a_R$ satisfies $L(R)/(\Delta_R H(R))\to0$, the same equivalent holds.
       For $L=1$, relative maturity jitter with $\Delta_R\log R\to\infty$ suffices; this is a sufficient
@@ -222,7 +242,8 @@
       The certificate aggregates old blocks by their exact depth counts and reports an omitted $[R,2R]$
       averaged-variance bound of $1.997454\times10^{-17}$, separately from scale-aware roundoff.</p>
     <p>Fifteen independent finite-spectrum quadratures check the window identity and finite bound, including
-      a narrow window. Their maximum identity discrepancy is $1.15\times10^{-12}$.</p>
+      a narrow window. Another fifteen checks cover three nonuniform bounded-variation densities and the general
+      bound; all are reported by the certificate.</p>
   </main>
 
   <footer>
