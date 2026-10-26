@@ -1,0 +1,116 @@
+<!-- title: Finite Poisson tags cannot identify arbitrary clocks · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identifiability</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a></span></p>
+    <h1>Finite Poisson tags cannot identify arbitrary clocks</h1>
+    <p class="subtitle">A local population alias, even with known clock moments and complete endpoint labels.</p>
+
+    <h2>Setup and result</h2>
+    <p>Let $P=\mathbf1\mathbf1^\top/2$ and $Q_c=c(P-I)$, $c&gt;0$, on two known labeled states, with the same uniform starting law.
+      Draw $T&gt;0$ independently of the whole chain and an independent Poisson process $N$ of known physical-time rate $s&gt;0$.
+      Retain only $(Y_0,Y_T,J)$, where $J=\min(N_T,M)$ for a fixed finite integer $M\ge1$.</p>
+    <p>Fix an integer $r\ge0$, a baseline speed $c_0\ne s$, and any baseline density $f_0$ positive almost everywhere on an open interval inside $(0,\infty)$, with finite raw moments through $r$.
+      For every $c$ in a sufficiently small neighborhood of $c_0$, there is a positive density $f_c$ giving exactly the same full endpoint/tag law and the same raw moments through $r$ as $(c_0,f_0)$.
+      Moreover $f_c=f_0$ outside a fixed compact interval and $\|f_c/f_0-1\|_\infty=O(|c-c_0|)$ on its support.</p>
+    <p>Thus no finite cap universally identifies even the speed of a reversible two-state chain when the clock family is unrestricted.
+      The alias exists arbitrarily close to every Gamma density at $c_0\ne s$, not merely between exotic atomic clocks.
+      Positivity means that the density ratio stays positive wherever $f_0$ is positive; no new support is required.</p>
+    <p>For $r\ge1$ the mean duration is preserved too, so this is not just an unknown choice of physical time unit.</p>
+
+    <h2>What the record law fixes</h2>
+    <p>Write $w_j(t)=e^{-st}(st)^j/j!$ for $j&lt;M$, and $w_M(t)=1-\sum_{j&lt;M}w_j(t)$.
+      Since $e^{tQ_c}=P+e^{-ct}(I-P)$, the joint subprobability matrix for tag $j$ is</p>
+    $$R_j=p_jP+v_j(I-P),\qquad
+      p_j=\int w_j(t)f(t)\,dt,\quad v_j=\int e^{-ct}w_j(t)f(t)\,dt.$$
+    <p>Hence the entire law, including the capped tail, is fixed by integrals against the following vector $\Phi_c$:
+      normalization and the optional known moments are included explicitly.</p>
+    $$\Phi_c(t)=\big(1,t,\ldots,t^r;\ (t^je^{-st})_{j=0}^{M-1};\ e^{-ct};
+      (t^je^{-(s+c)t})_{j=0}^{M-1}\big)^\top.$$
+    <p>The vector has $d=r+2M+2$ components.
+      Matching it preserves the lower-tag values $p_j,v_j$ and also the two tail values, because $\sum p_j=1$ and $\sum v_j=\int e^{-ct}f(t)dt$.
+      No within-tag normalization or conditional independence of $T$ and $J$ is assumed.</p>
+
+    <h2>A constructive local proof</h2>
+    <p>The components of $\Phi_{c_0}$ are linearly independent on every open interval.
+      Indeed they are exponential polynomials with distinct decay rates $0,s,c_0,s+c_0$; an identity on an interval extends analytically, and letting $t\to\infty$ successively removes the polynomial at each ordered decay rate.
+      The exclusion $c_0=s$ is necessary for this argument and for the conclusion below.</p>
+    <p>Choose a bounded nonnegative smooth bump $b$ with compact support in the positive-density interval and $b&gt;0$ on a smaller interval.
+      Put $u=\Phi_{c_0}$ and define</p>
+    $$A(c)=\int \Phi_c(t)u(t)^\top b(t)f_0(t)\,dt,\quad
+      m(c)=\int\Phi_c(t)f_0(t)\,dt,\quad
+      \theta(c)=A(c)^{-1}\{m(c_0)-m(c)\}.$$
+    <p>The matrix $A(c_0)$ is a positive definite Gram matrix: a zero quadratic form would make a nonzero exponential polynomial vanish on an interval.
+      All integrals are finite and continuously differentiable near $c_0$; the polynomial moments are constant in $c$, while derivatives of the decaying terms are bounded on the positive axis.
+      Consequently $A(c)$ remains invertible locally and $\theta(c)=O(|c-c_0|)$.</p>
+    $$f_c(t)=f_0(t)\{1+b(t)u(t)^\top\theta(c)\},\qquad
+      \int\Phi_c(t)f_c(t)\,dt=m(c_0).$$
+    <p>The compactly supported factor $bu$ is bounded, so for sufficiently small $|c-c_0|$ its relative perturbation is less than one.
+      This proves positivity, unit mass, equality of the required integrals and the stated density-ratio bound.
+      If $f_0$ is smooth, the same construction gives smooth $f_c$.</p>
+    <p>A quantitative sufficient test uses $D=\sup_t\|b(t)u(t)\|_2$ and $\eta(c)=\|A(c_0)^{-1}\{A(c)-A(c_0)\}\|_2$.
+      If $\eta(c)&lt;1$, the Neumann bound gives</p>
+    $$\left\|\frac{f_c}{f_0}-1\right\|_\infty\le
+      \rho(c):=\frac{D\|A(c_0)^{-1}\|_2\|m(c_0)-m(c)\|_2}{1-\eta(c)}.$$
+    <p>Thus $\rho(c)&lt;1$ certifies positivity and $\|f_c-f_0\|_{\rm TV}\le\rho(c)/2$.
+      Here the density ratio is interpreted on $\{f_0&gt;0\}$; $\rho(c)=O(|c-c_0|)$ for fixed baseline, cap, moments and bump.</p>
+    <p>For $c\ne c_0$, the clock really changes: keeping $f_0$ would change $\int e^{-ct}f_0(t)dt$, which is strictly decreasing for $T&gt;0$.
+      Starting from a Gamma density, $f_c$ cannot be another Gamma density, since it agrees with $f_0$ on an entire tail but is not equal everywhere.
+      The construction therefore does not contradict inversion within a stipulated Gamma family.</p>
+
+    <h2>The rate collision and the scope</h2>
+    <p>At $c_0=s$ the conclusion fails for the speed.
+      The observed equality $\sum_jv_j=p_0$ says $L(c)=L(s)$ for the candidate clock&apos;s Laplace transform $L$.
+      Strict decrease of $L$ forces $c=s$, whatever the positive clock law.</p>
+    <p>This is one independently sampled duration per record, with a fresh auxiliary counter, not a record of every tick, intermediate states or shared durations across multiple transitions.
+      It is an exact population ambiguity, not a claim about finite-sample error or an alias for every possible finite tag design.
+      The finite-cap proof does not cover an infinite collection of known clock moments.</p>
+    <p>For the fixed centered feature $h=(1,-1)^\top$, the one-sided symmetric Green&ndash;Kubo value is
+      $\mathcal K_c(h,h)=\int_0^\infty e^{-ct}dt=1/c$, so the aliased speeds have different strengths but the same fixed-feature rank.
+      No regime-count statement is inferred from integrating different maturity loadings.</p>
+    <p>Finite generalized-moment constraints are classical; <a href="./bibliography.html#Winkler1988">Winkler (1988)</a> studies the extreme points of such moment sets.
+      Only the publisher&apos;s abstract and bibliographic metadata were checked here; the local moving-speed construction is proved above rather than imported from that paper.</p>
+
+    <h2>An uncapped count recovers timestamp information in population</h2>
+    <p>Now retain $N_T$ itself, with no cap, for any finite generator $Q$ on a complete known labeled space and any independent clock law $\mu$ on $(0,\infty)$.
+      The initial law is independent of the clock and has full support; the known tick rate is $s&gt;0$.
+      No density, duration-moment assumption, irreducibility or diagonalizability is needed.</p>
+    <p>The population law of $(Y_0,Y_T,N_T)$ identifies exactly the same clock and semigroup information as $(Y_0,Y_T,T)$.
+      This means equality of the two count-record laws is equivalent to equality of the two timestamp-record laws, not that an individual count reveals its duration.
+      To prove it, divide by the observed initial probabilities and form the joint count matrices</p>
+    $$R_k=\int e^{-st}\frac{(st)^k}{k!}e^{tQ}\,\mu(dt),\qquad
+      H(z)=\sum_{k=0}^\infty z^kR_k
+      =\int e^{-s(1-z)t}e^{tQ}\,\mu(dt),\quad 0&lt;z&lt;1.$$
+    <p>Knowing $s$ is essential for recovery in physical time.
+      If $s$ is unknown, put $U=sT$, $G=Q/s$ and let $\nu$ be the law of $U$; then</p>
+    $$H(z)=\int e^{-(1-z)u}e^{uG}\,\nu(du).$$
+    <p>The record identifies $\nu$ and its matrix measures $(e^{uG})_{ij}\nu(du)$; under the same grid-free support condition below it identifies $G$.
+      It cannot separate the physical scale: for every $a&gt;0$, replacing $(s,Q,T)$ by $(as,aQ,T/a)$ leaves the entire labeled count law unchanged.
+      Thus, under grid-free support, an unknown tick rate identifies exactly the dimensionless pair $(Q/s,\operatorname{Law}(sT))$, not $s$, $Q$ and the duration law separately; on a grid, the generator alias below remains.</p>
+    <p>Row sums of $H(z)$ give the clock&apos;s Laplace transform on $(0,s)$.
+      Uniqueness of that transform identifies $\mu$; entrywise uniqueness then identifies every finite measure $(e^{tQ})_{ij}\mu(dt)$.
+      These are precisely the timestamp joint measures, while the reverse implication follows by adding the known conditional Poisson counter.</p>
+    <p>For completeness, a finite signed measure with Laplace transform zero on an open positive interval has transform zero on the entire right half-plane by analyticity.
+      Its pushforward under $x=e^{-t}$ therefore has every nonnegative integer moment zero, including mass by dominated convergence as the Laplace argument decreases to zero.
+      Polynomial density in $C[0,1]$ forces that measure to vanish, proving the uniqueness used here without any raw duration moments.</p>
+    <p>If $\operatorname{supp}\mu$ is not contained in $h\mathbb Z$ for any $h&gt;0$, the uncapped law identifies $Q$ as well.
+      Indeed continuity extends equality of candidate semigroups to the support, and $\{t\in\mathbb R:e^{tQ}=e^{tG}\}$ is a closed additive subgroup: equality is preserved under differences by matrix inversion.
+      A proper such subgroup is a grid or $\{0\}$; the stated support excludes both, so differentiation at zero gives $Q=G$.</p>
+    <p>The grid exception is genuine, even for an uncapped counter.
+      On three states put $P_3=\mathbf1\mathbf1^\top/3$, $E_3=I-P_3$ and</p>
+    $$J_3=\frac1{\sqrt3}\begin{pmatrix}0&amp;1&amp;-1\\-1&amp;0&amp;1\\1&amp;-1&amp;0\end{pmatrix},\qquad
+      Q_0=-\frac{4\pi}hE_3,\quad Q_1=Q_0+\frac{2\pi}hJ_3.$$
+    <p>Both have strictly positive off-diagonal rates and $e^{khQ_0}=e^{khQ_1}$ for every integer $k$, since $J_3^2=-E_3$ and its rotation completes a full turn at $h$.
+      Every clock supported on $h\mathbb Z$ consequently gives identical timestamp and uncapped-count laws for this pair.
+      This is failure of universal identification over classes including three states, not ambiguity at every grid-sampled generator or a two-state converse.</p>
+    <p>Count-mixture identification is classical; <a href="./bibliography.html#Teicher1961">Teicher (1961)</a> gives an identification theorem for one-parameter additively closed families.
+      Its publisher abstract and metadata were checked, not the full text; the matrix-measure extension and grid argument above are self-contained.</p>
+    <p>Equivalence concerns the entire infinite count distribution, not finitely many observed count frequencies or stable analytic continuation.
+      Even for the reset family with one fixed known clock, the full uncapped record laws satisfy
+      $\|\mathcal L(Q_c)-\mathcal L(Q_{2c})\|_{\rm TV}=\{L(c)-L(2c)\}/2\to0$ while $\|Q_c-Q_{2c}\|_\infty=c$.</p>
+    <p>For each count the contrast coefficient decreases with $c$; summing its nonnegative differences gives the displayed identity.
+      Thus neither uncapping nor population identification supplies a uniform inverse-continuity or finite-sample guarantee.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_finite_poisson_tags.py">certificate</a> constructs compact density tilts around a Gamma clock and checks both signs of speed change, moment preservation, positivity bounds and every endpoint/tag probability by independent quadrature.
+      It also checks uncapped matrix generating functions, exact physical-time rescaling, an infinite-mean clock and the grid alias, with explicit omitted-count bounds.
+      These are high-precision floating checks, not outward-rounded existence certificates; the Gram argument supplies existence for every finite cap.</p>
+  </main>
