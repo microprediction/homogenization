@@ -48,6 +48,23 @@ def ramp_budget(q, c):
     return threshold, constant
 
 
+def three_cycle_factorization():
+    """Check the exact orientation/Vandermonde formula, including both blind cases."""
+    cases = 0
+    for p, q in ((1, 2), (2, 5), (5, 1), (2, 2)):
+        generator = sp.Matrix([[-p-q, p, q], [q, -p-q, p], [p, q, -p-q]])
+        inverse = (generator+sp.ones(3)/3).inv()-sp.ones(3)/3
+        for values in ((-1, 0, 1), (-2, 1, 1), (3, -4, 1)):
+            c = sp.Matrix(values); diagonal = sp.diag(*values)
+            delta = ((c.T*inverse**2*diagonal*inverse*c)[0]
+                     -(c.T*inverse*diagonal*inverse**2*c)[0])/3
+            vandermonde = (c[0]-c[1])*(c[1]-c[2])*(c[2]-c[0])
+            target = -sp.Rational(p-q, 27)*vandermonde/(p*p+p*q+q*q)**2
+            assert sp.factor(delta-target) == 0
+            cases += 1
+    return cases
+
+
 def main():
     q = np.array([[-1.,1.,0.],[0.,-1.,1.],[1.,0.,-1.]])
     c = np.array([-1.,0.,1.])
@@ -63,6 +80,7 @@ def main():
     sd = sp.diag(-1,0,1)
     u, v = (spi*sd*ss*ss*sd*ss*sc)[0], (spi*sd*ss*sd*ss*ss*sc)[0]
     assert (u,v,u-v,(u-v)/3) == (-sp.Rational(1,27),sp.Rational(1,27),-sp.Rational(2,27),-sp.Rational(2,81))
+    factor_cases = three_cycle_factorization()
     time, eps = sp.symbols('t eps')
     bt = time+time**2/5+sp.I*time**3/10
     z1 = -bt*ss*sc
@@ -83,6 +101,7 @@ def main():
             assert np.max(abs(forward[[0,1,2,3,6]]-backward[[0,1,2,3,6]])) < 3e-10
             assert np.max(abs(forward[[4,5]]-backward[[5,4]])) < 3e-10
     print('9 exact outer-recursion identities and 32 random-chain adjoint checks: PASS')
+    print(f'{factor_cases} exact three-cycle orientation/Vandermonde factorizations: PASS')
     print(f'Exact cycle: Q={q.tolist()}, pi=(1,1,1)/3, c=(-1,0,1), U={u}, V={v}, Delta={u-v}, coefficient={(u-v)/3}')
     thresholds, budgets = zip(ramp_budget(q,c),ramp_budget(reverse,c))
     m0, budget, coefficient = max(thresholds), sum(budgets), float((u-v)/3)
