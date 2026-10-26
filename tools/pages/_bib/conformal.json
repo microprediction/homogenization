@@ -1,5 +1,15 @@
 [
  {
+  "key": "LeiGsellRinaldoTibshiraniWasserman2018",
+  "authors": "Lei, J., G'Sell, M., Rinaldo, A., Tibshirani, R. J. and Wasserman, L.",
+  "year": 2018,
+  "title": "Distribution-Free Predictive Inference for Regression",
+  "venue": "Journal of the American Statistical Association 113(523):1094-1111",
+  "doi": "10.1080/01621459.2017.1307116",
+  "url": "https://www.stat.cmu.edu/~ryantibs/papers/conformal.pdf",
+  "annotation": "Theorem 2.2 gives marginal split-conformal validity; Remark 2.3 distinguishes marginal from conditional coverage. The odd-score theorem keeps this distinction while transferring the exact beta rank law uniformly over panel sizes and noise."
+ },
+ {
   "key": "BarberCandesRamdasTibshirani2021",
   "authors": "Barber, R. F., Candès, E. J., Ramdas, A. and Tibshirani, R. J.",
   "year": 2021,

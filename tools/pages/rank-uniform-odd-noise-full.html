@@ -1,0 +1,100 @@
+<!-- title: Odd-score calibration uniformly in panel size · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./papers.html">&larr; papers</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_rank_uniform_odd_noise.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./path-conformal.html">&larr; path-dependent pooling</a></p>
+    <h1>Odd-score calibration uniformly in panel size</h1>
+    <p class="subtitle">A probability-coordinate profile bound removes the calibration-size factor, including at extreme ranks.</p>
+    <h2>Model and result</h2>
+    <p>Fix a finite irreducible row generator $Q$, stationary row $\pi$, nonconstant real $f$ with $\pi f=0$, and a fixed odd integer $d\ge1$.
+      Write $h=Q^\#f$, $\Gamma=-2\pi(fh)&gt;0$, $b_i=h_i/\sqrt\Gamma$ and</p>
+    $$A_c={1\over c}\int_0^c f(Y_t)dt,\quad X_c=\sqrt{c/\Gamma}A_c,\quad
+      S_c=\mu A_c^d+\sigma Z,\quad \lambda={c^{d/2}\sigma\over\mu\Gamma^{d/2}},\qquad \mu&gt;0,\quad\sigma\ge0.$$
+    <p>Use $N$ independent stationary calibration paths and an independent test path starting in state $i$, with independent standard Gaussian noises.
+      Let $C_i(c,N,k,\lambda)$ be the probability that the test score is below the $k$th calibration score, averaged over the panel, for $1\le k\le N$.
+      At zero noise order pairs $(S,V)$ lexicographically with independent uniform tie variables for every calibration and test observation.</p>
+    <p>The exact marginal baseline is $p_N=k/(N+1)$, so $\sum_i\pi_i C_i=p_N$.
+      Define the reference profile, with independent standard Gaussians $G,Z$, by</p>
+    $$P_d(t)=\phi(\operatorname{sgn}(t)|t|^{1/d}),\quad
+      K_{i,\lambda}(t)=b_i\mathbb E P_d(t-\lambda Z),\quad
+      \mathcal K_i^{N,k}(\lambda)=\mathbb E_U K_{i,\lambda}(t_U(\lambda)),$$
+    <p>where $U\sim\operatorname{Beta}(k,N+1-k)$ and $t_u(\lambda)$ is the $u$ quantile of $G^d+\lambda Z$.
+      For this fixed model and degree,</p>
+    $$\boxed{C_i-p_N={\mathcal K_i^{N,k}(\lambda)\over\sqrt c}+R_{i,c,N,k}(\lambda),\qquad
+      \sup_{N\ge1,\,1\le k\le N,\,i,\,\lambda\ge0}\sqrt c(1+\lambda)|R_{i,c,N,k}(\lambda)|\longrightarrow0.}$$
+    <p>In particular $N=N_c$ may grow arbitrarily fast and the rank may be extreme.
+      This is an absolute remainder statement, not a relative error bound when the leading coefficient vanishes.
+      It strengthens the sufficient growth condition in <a href="https://github.com/microprediction/homogenization/pull/249">the sample-coupling bound</a>; that earlier bound is not incorrect.</p>
+    <h2>A finite bound with no panel-size term</h2>
+    <p>Let $F_{i,c}$ and $F_{\pi,c}$ be the state and stationary CDFs of $X_c$, and set</p>
+    $$D_c=\|F_{\pi,c}-\Phi\|_\infty,\quad E_{i,c}(x)=\sqrt c(F_{i,c}(x)-F_{\pi,c}(x))-b_i\phi(x),$$
+    $$U_{i,c}=\|E_{i,c}\|_\infty,\quad L_{i,d,c}=d\int |x|^{d-1}|E_{i,c}(x)|dx,\quad
+      m_r=\mathbb E|G|^r,\quad M_{d,p}=2d(m_{p(d-1)}m_p)^{1/p}.$$
+    <p>For any even integer $p\ge2$ and every finite $c,N$,</p>
+    $$\boxed{\sqrt c(1+\lambda)|R_{i,c,N,k}(\lambda)|
+      \le(1+\lambda)\min\left(U_{i,c},{L_{i,d,c}\over\lambda\sqrt{2\pi}}\right)
+      +|b_i|M_{d,p}D_c^{1-1/p}.}$$
+    <p>At $\lambda=0$ omit the second entry of the minimum.
+      Here $m_0=1$ and $m_{2r}=(2r-1)!!$, so $M_{d,2}=2d\sqrt{(2d-3)!!}$ with $(-1)!!=1$.
+      This inequality is also an abstract transfer theorem for any family of laws with the displayed finite errors.</p>
+    <h2>Gaussian profile in probability coordinates</h2>
+    <p>Put $\rho=\lambda/(1+\lambda)$, $s=1-\rho$, and let $F_\rho$ be the CDF of $Y_\rho=sG^d+\rho Z$.
+      This CDF is continuous and strictly increasing, including at $\rho=0,1$.
+      For $\rho&lt;1$ define</p>
+    $$H_\rho(t)={1\over s}\mathbb E P_d((t-\rho Z)/s),\qquad H_1(t)=d!!\phi(t).$$
+    <p>Thus $(1+\lambda)K_{i,\lambda}((1+\lambda)t)=b_iH_\rho(t)$.
+      For $x&lt;y$, $\delta=F_\rho(y)-F_\rho(x)$ and $a=1-1/p$, the key bound is</p>
+    $$\boxed{|H_\rho(y)-H_\rho(x)|\le M_{d,p}\delta^a\qquad(0\le\rho\le1).}$$
+    <p>For $\rho\le1/2$, the truncated-normal identity gives
+      $H_\rho(t)=-s^{-1}\mathbb E[G\mathbf1_{\{Y_\rho\le t\}}]$.
+      For $B=\{x&lt;Y_\rho\le y\}$, H&ouml;lder therefore bounds the increment by $2m_p^{1/p}\mathbb P(B)^a\le M_{d,p}\delta^a$.</p>
+    <p>For $\rho\ge1/2$, Gaussian integration by parts in $G$ gives
+      $H_\rho(t)=(d/\rho)\mathbb E[G^{d-1}\phi((t-sG^d)/\rho)]$, also valid at $\rho=1$.
+      Integrating its derivative from $x$ to $y$ gives</p>
+    $$H_\rho(y)-H_\rho(x)=-{d\over\rho}\mathbb E[G^{d-1}Z\mathbf1_B].$$
+    <p>H&ouml;lder and independence bound this by $2d(m_{p(d-1)}m_p)^{1/p}\delta^a$.
+      All differentiations and integrations are justified by finite Gaussian moments.
+      The bound needs no interior-quantile restriction or positive lower density.</p>
+    <h2>Transfer the randomized probability, not the sample</h2>
+    <p>Let $\widehat F_c$ be the stationary CDF of $sX_c^d+\rho Z$.
+      Conditioning on $Z$ and using the increasing odd root proves $\|\widehat F_c-F_\rho\|_\infty\le D_c$.
+      For the actual $k$th augmented calibration pair $(q,V)$, its distributional transform is</p>
+    $$U=\widehat F_c(q-)+V[\widehat F_c(q)-\widehat F_c(q-)]\sim\operatorname{Beta}(k,N+1-k).$$
+    <p>Both CDF endpoints are within $D_c$ of the continuous reference $F_\rho(q)$, hence $|F_\rho(q)-U|\le D_c$ even at atoms.
+      The profile lemma gives the pointwise bound $|H_\rho(q)-H_\rho(F_\rho^{-1}(U))|\le M_{d,p}D_c^a$.
+      Averaging over any beta law introduces no factor depending on $N$ or $k$.</p>
+    <p>The state-minus-pooled CDF error at the actual threshold is at most
+      $\min(U_{i,c},L_{i,d,c}/(\lambda\sqrt{2\pi}))$ in the original $X_c^d+\lambda Z$ coordinate.
+      This follows from supremum contraction and the Gaussian density bound after the odd-root substitution.
+      At a zero-noise atom its augmented contrast is a convex combination of the left and right contrasts; continuity of the profile preserves the same bound.</p>
+    <p>Subtract the exact pooled rank baseline, average this contrast, and apply the probability-coordinate transfer to obtain the finite inequality.
+      Independence of the test path from calibration is used here.
+      This step does not assert coverage conditional on the realized panel.</p>
+    <h2>Finite-chain input and the population limit</h2>
+    <p>For fixed finite irreducible $Q,f,d$, the inputs are $D_c=O(c^{-1/2})$, $U_{i,c}=O(c^{-1/2})$ and $L_{i,d,c}\to0$.
+      The spectral proof and computable Fourier/moment budgets are given in <a href="https://github.com/microprediction/homogenization/pull/249">the empirical all-noise note</a>; the argument is summarized here to specify the assumptions.</p>
+    <p>The simple dominant eigenvalue of $Q+z\operatorname{diag}f$ is $\Gamma z^2/2+O(z^3)$, and its spectral projector applied to $\mathbf1$ is $\mathbf1-zh+O(z^2)$.
+      Signed Fourier smoothing through cubic order gives an $O(c^{-1})$ CDF remainder, with the same stationary skewness term in every state, which cancels in the contrast.</p>
+    <p>The Dirichlet form excludes imaginary-axis eigenvalues of $Q+i\theta\operatorname{diag}f$ for $\theta\ne0$.
+      At large $|\theta|$, feature-level blocks are proper transient killed generators, giving a uniform spectral gap; unitary Schur bounds handle defective matrices.
+      No discrete-time nonlattice assumption is needed.</p>
+    <p>Small real tilts give uniform Chernoff tails, so truncating at a sufficiently large multiple of $\sqrt{\log c}$ turns the signed CDF estimate into $L_{i,d,c}\to0$.
+      The first term of the finite bound is at most $2\max(U_{i,c},L_{i,d,c}/\sqrt{2\pi})$, proving the asserted uniform limit.</p>
+    <p>The same probability-coordinate lemma also compares empirical and population coefficients at $p_N$, uniformly over noise:</p>
+    $$(1+\lambda)|\mathcal K_i^{N,k}(\lambda)-K_{i,\lambda}(t_{p_N}(\lambda))|
+      \le |b_i|M_{d,p}\left({p_N(1-p_N)\over N+2}\right)^{a/2}.$$
+    <p>Indeed $\mathbb E U=p_N$ and $\operatorname{Var}(U)=p_N(1-p_N)/(N+2)$; H&ouml;lder followed by Jensen proves the inequality.
+      This bound is conservative, especially at extreme ranks, but requires no truncation.</p>
+    <h2>Checks, literature and scope</h2>
+    <p>The certificate checks degrees $1,3,5$, five normalized noise levels, 90 probability-modulus inequalities, 150 pointwise transfers and 36 beta averages, including both extreme tails $N=999,k=1,999$.
+      It prints $M_{d,2}=2,10.3923048454,102.4695076596$ and $J_{9,9}=.1538752731$.
+      The linear benchmark is exact: $\mathcal K_i^{N,k}(\lambda)=b_i\mathbb E\phi(\Phi^{-1}(U))/\sqrt{1+\lambda^2}$.</p>
+    <p>Independent integration-by-parts identities, beta-order refinement with a $3\times10^{-5}$ allowance and 63 atomic-PIT endpoint comparisons check the implementation.
+      These are numerical consistency checks, not rigorous interval enclosures or a proof of uniformity over the continuum.</p>
+    <p>The randomized probability transform is classical <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>.
+      <a href="./bibliography.html#HervePene2010">Herv&eacute; and P&egrave;ne (2010), Theorem 8.1 and Lemma 8.3</a> provide spectral initial-bias background, not this continuous-time calibration theorem.
+      In <a href="./bibliography.html#LeiGsellRinaldoTibshiraniWasserman2018">Lei et al. (2018)</a>, Theorem 2.2 gives marginal split-conformal validity, while Remark 2.3 distinguishes marginal from conditional coverage.</p>
+    <p>The result keeps $Q,f,d$ fixed and requires independent calibration paths and the stated tie rule.
+      It does not cover overlapping panels, same-panel fitting, feature-conditional validity, or degenerating mixing gaps.
+      It develops <a href="https://github.com/microprediction/homogenization/issues/248">issue 248</a> without closing it.</p>
+  </main>
