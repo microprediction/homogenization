@@ -227,7 +227,8 @@
     case.</p>
     <p>This smile is known. <a href="./bibliography.html#SircarPapanicolaou1999">Sircar and Papanicolaou (1999)</a>
     derive it for a fast ergodic volatility driver whose integrated fluctuations obey a central limit theorem, as
-    a finite-state chain does. Stationarity and ergodicity alone are not enough:
+    a finite-state chain does.</p>
+    <p>Stationarity and ergodicity alone are not enough:
     <a href="./mixing-scale.html">the covariance tail sets the correction scale</a>.
     <a href="./bibliography.html#FouqueLorigSircar2016">Fouque,
     Lorig and Sircar (2016)</a> give the correlated fast-factor expansion to second order.</p>
@@ -282,18 +283,48 @@
         shows. The
         same rank property appears for races on the kinetics site.</li>
     </ul>
-    <p>Joint survival sees only the symmetric part of $K$. The order of defaults sees more.</p>
-    <p>Which name defaults first
-    is a race under a shared driver, and two names already suffice for its law to reveal the asymmetry of $K$,
-    provided the chain has at least three states and is not reversible. Races of this kind are studied on the
-    <a href="https://kinetics.microprediction.org/">kinetics site</a>.</p>
-    <p>For two names, starting from the stationary law, the probability that name 1 defaults first is</p>
-    $$p_1 = \pi^{\top}\big(\operatorname{diag}(h_1 + h_2) - Q\big)^{-1}h_1 .$$
+    <p>Joint survival sees only the symmetric part of $K$. The order of defaults can see more, but
+    nonreversibility of the hidden chain is not by itself sufficient.</p>
+    <p>For two names, starting from the stationary law, the probability that name $r$ defaults first is</p>
+    $$p_r(Q) = \pi^{\top}\big(\operatorname{diag}(h_1 + h_2) - Q\big)^{-1}h_r .$$
+    <p>Write $d=h_1+h_2$, $D=\operatorname{diag}(d)$ and let $Q^\leftarrow$ be the stationary time reversal of $Q$.
+    With $R=(D-Q)^{-1}$ and $R^\leftarrow=(D-Q^\leftarrow)^{-1}$, define</p>
+    $$w_d=(R^\leftarrow-R)\mathbf 1.$$
+    <p>Adjointness in $L^2(\pi)$ gives the exact identity</p>
+    $$p_r(Q)-p_r(Q^\leftarrow)=\langle w_d,h_r\rangle_\pi.$$
+    <p>The same identity holds for any number of competing names, with $d=\sum_r h_r$. The vector of
+    first-arrival-label probabilities is direction-blind exactly when every pairing
+    $\langle w_d,h_r\rangle_\pi$ vanishes; the gaps sum to zero because
+    $\sum_r h_r=d$.</p>
+    <p>Thus a two-name race reveals direction exactly when this pairing is nonzero. The identities
+    $R d=R^\leftarrow d=\mathbf1$ imply
+    $\langle w_d,\mathbf1\rangle_\pi=\langle w_d,d\rangle_\pi=0$, so every allocation
+    $h_r=a\mathbf1+bd$ is exactly blind at every switching speed.</p>
+    <p>In particular, if $d=c\mathbf1$ is constant across regimes, then
+    $R\mathbf1=R^\leftarrow\mathbf1=c^{-1}\mathbf1$, so $w_d=0$: every allocation and every number of
+    competing names is direction-blind. A varying total hazard is therefore necessary, though not sufficient,
+    for the first-arrival label to reveal time direction.</p>
+    <p>For fixed $Q,d$ and $m$ causes, the size of every possible direction signal is also exact. Put
+    $a_i=\pi_i d_iw_{d,i}$ and $A=\sum_i(a_i)_+=\tfrac12\sum_i|a_i|$. As the nonnegative hazards
+    range over all splits $\sum_rh_r=d$, their reversal-gap vectors fill precisely</p>
+    $$\left\{g\in\mathbb R^m:\ \mathbf1^\top g=0,\ \|g\|_1\leq2A\right\}.$$
+    <p>Indeed, writing $h_{r,i}=d_ix_{i,r}$ with $x_i$ in the probability simplex gives
+    $g=A(p_+-p_-)$ for two simplex points $p_+,p_-$. Conversely every vector in the displayed difference body
+    has such a representation, so the total-variation distance between the forward and reversed label laws is
+    at most $A$, sharply; strictly positive splits fill its relative interior.</p>
+    <p>The polytope has vertices $A(e_r-e_s)$ for $r\ne s$ and support function</p>
+    $$\sup_g c^\top g=A\left(\max_r c_r-\min_r c_r\right).$$
+    <p>Therefore the best allocation for any chosen scalar contrast sends every positive-witness regime to a
+    cause maximizing $c_r$ and every negative-witness regime to one minimizing it. Extra causes can distribute
+    the direction signal, but cannot improve its best scalar contrast beyond this two-cause design.</p>
+    <p>For three regimes, nonconstant $d$ and $w_d\ne0$, these affine allocations exhaust the blind hyperplane.
+    From four regimes onward the hyperplane is larger, and positive non-affine blind allocations exist. The
+    <a href="https://kinetics.microprediction.org/">kinetics site</a> studies related races.</p>
     <p>Expanding the resolvent for a fast chain, with $\bar h = \bar h_1 + \bar h_2$,</p>
     $$p_1 = \frac{\bar h_1}{\bar h} + \frac{1}{\bar h}\Big(\frac{\bar h_1}{\bar h}\sum_{j,k}K_{jk} - K_{11} - K_{21}\Big)
       + O(\varepsilon^2) .$$
-    <p>The entry $K_{21}$ appears without $K_{12}$. Reversing the direction of the cycle transposes $K$, and moves
-    $p_1$ by</p>
+    <p>The entry $K_{21}$ appears without $K_{12}$. To first order, reversing the direction of the cycle transposes
+    $K$ and moves $p_1$ by</p>
     $$\frac{K_{12} - K_{21}}{\bar h} .$$
     <p>An example: a three-state cycle with rate 2 one way round and 0.1 the other, hazards $h_1 = (0.07, 0.01, 0.01)$
       and $h_2 = (0.01, 0.07, 0.01)$, and the generator multiplied by 10. Name 1 defaults first with probability
@@ -350,7 +381,12 @@
       <li>When the payoff depends on the regime at expiry, an <a href="./layers.html">initial layer</a> enters at
         order zero, as on the <a href="./bond-options.html">bond options</a> page.</li>
     </ul>
-    <p class="muted">Certificate: <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">verify_general.py</a>.</p>
+    <p class="muted">Certificates:
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_general.py">verify_general.py</a> and
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/general/verify_first_arrival_visibility.py">verify_first_arrival_visibility.py</a>.
+      The resolvent argument uses stationary time reversal as in
+      <a href="./bibliography.html#Nagasawa1964">Nagasawa (1964)</a> and
+      <a href="./bibliography.html#Kelly1976">Kelly (1976)</a>.</p>
   </main>
 
   <footer>
