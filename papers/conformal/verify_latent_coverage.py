@@ -293,6 +293,38 @@ def atomic_quantile_segment(support, probabilities, left, right):
     return mass, first
 
 
+def rounded_atomic_band_witness(support, probabilities,
+                                lower_envelope, upper_envelope):
+    """Round the randomized quantile-band witness to whole atoms."""
+    check(tuple(support) == tuple(sorted(support)))
+    randomized = min(F(1), lower_envelope+upper_envelope)
+    lower_cut = (lower_envelope if lower_envelope+upper_envelope <= 1
+                 else 1-upper_envelope)
+    upper_cut = 1-upper_envelope
+    cumulative = F(0)
+    low_mass = low_first = high_mass = high_first = F(0)
+    boundary_atoms = set()
+    for j, (z, probability) in enumerate(zip(support, probabilities)):
+        start, end = cumulative, cumulative+probability
+        if end <= lower_cut:
+            low_mass += probability
+            low_first += z*probability
+        if start >= upper_cut:
+            high_mass += probability
+            high_first += z*probability
+        if start < lower_cut < end or start < upper_cut < end:
+            boundary_atoms.add(j)
+        cumulative = end
+    check(cumulative == 1)
+    rounded = low_mass+high_mass
+    loss = randomized-rounded
+    boundary_mass = sum(probabilities[j] for j in boundary_atoms)
+    check(0 <= loss <= boundary_mass)
+    check(len(boundary_atoms) <= 2)
+    return (rounded, loss, boundary_mass,
+            low_mass, low_first, high_mass, high_first)
+
+
 def convex_order_below(left_support, left_probabilities,
                        right_support, right_probabilities):
     """Certify finite-law convex order through exact call transforms."""
@@ -420,6 +452,7 @@ def main():
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
+    band_gap_bound_checks = band_shared_cut_checks = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -516,6 +549,23 @@ def main():
                     support, probabilities, lower, upper,
                 ))
                 check(deterministic <= witness)
+                (rounded, loss, boundary_mass,
+                 rounded_low_mass, rounded_low_first,
+                 rounded_high_mass, rounded_high_first) = (
+                    rounded_atomic_band_witness(
+                        support, probabilities, lower_mass, upper_mass,
+                    )
+                )
+                check(rounded_low_first <= lower*rounded_low_mass)
+                check(rounded_high_first >= upper*rounded_high_mass)
+                check(rounded <= deterministic)
+                check(witness-deterministic <= loss <= boundary_mass)
+                two_largest = sum(sorted(probabilities, reverse=True)[:2])
+                check(boundary_mass <= two_largest)
+                if lower_mass+upper_mass > 1:
+                    check(boundary_mass <= max(probabilities))
+                    band_shared_cut_checks += 1
+                band_gap_bound_checks += 1
                 deterministic_band_checks += 1
                 strict_band_relaxations += int(deterministic < witness)
                 atomic_two_sided += 1
@@ -534,6 +584,34 @@ def main():
         check(fractional-deterministic <= cutoff_split <= cutoff_mass)
         check(cutoff_mass <= max(probabilities))
         gap_bound_checks += 1
+    for probabilities, lower, upper in (
+        ((F(1, 10), F(1, 5), F(1, 5), F(1, 2)), F(1, 10), F(9, 10)),
+        ((F(1, 10), F(1, 5), F(1, 5), F(1, 2)), F(2, 5), F(4, 5)),
+    ):
+        lower_mass = sharp_atomic_envelope(
+            tie_support, probabilities, lower, True,
+        )[0]
+        upper_mass = sharp_atomic_envelope(
+            tie_support, probabilities, upper, False,
+        )[0]
+        randomized = min(F(1), lower_mass+upper_mass)
+        deterministic = brute_deterministic_band_mass(
+            tie_support, probabilities, lower, upper,
+        )
+        (rounded, loss, boundary_mass,
+         rounded_low_mass, rounded_low_first,
+         rounded_high_mass, rounded_high_first) = rounded_atomic_band_witness(
+            tie_support, probabilities, lower_mass, upper_mass,
+        )
+        check(rounded_low_first <= lower*rounded_low_mass)
+        check(rounded_high_first >= upper*rounded_high_mass)
+        check(rounded <= deterministic <= randomized)
+        check(randomized-deterministic <= loss <= boundary_mass)
+        check(boundary_mass <= sum(sorted(probabilities, reverse=True)[:2]))
+        if lower_mass+upper_mass > 1:
+            check(boundary_mass <= max(probabilities))
+            band_shared_cut_checks += 1
+        band_gap_bound_checks += 1
     approximation_support = tuple(map(
         F, (0, F(1, 7), F(2, 7), F(4, 7), F(5, 7), 1),
     ))
@@ -653,6 +731,8 @@ def main():
           f"sharp Bernoulli equalities: {sharp_gap_equalities}")
     print(f"Exact fixed-space two-sided optima: {deterministic_band_checks}; "
           f"strict randomized gaps: {strict_band_relaxations}")
+    print(f"Two-sided boundary-atom gap bounds: {band_gap_bound_checks}; "
+          f"shared-cut bounds: {band_shared_cut_checks}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")

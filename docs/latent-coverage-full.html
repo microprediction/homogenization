@@ -358,6 +358,19 @@
     <p>Thus the simultaneous two-sided formula also survives arbitrary atoms when independent tie randomization is allowed.
       This is a law-level extremum over randomized contractions, not conditional coverage given observed features.</p>
 
+    <h2>Two boundary atoms control the two-sided randomization gain</h2>
+    <p>Round the preceding quantile construction inward to whole canonical atoms. In the disjoint case delete the
+      split atoms at $q_-$ and $1-q_+$; in the overlapping case there is only the shared cut $1-q_+$, so delete its
+      single split atom.</p>
+    <p>Deleting an upper endpoint from the lower prefix cannot raise its mean, and deleting a lower endpoint from the
+      upper suffix cannot lower its mean. The remaining whole atoms therefore give a feasible fixed-space assignment.
+      If $B$ is the set of deleted boundary atoms and $d_B$ is the randomized event mass deleted, then</p>
+    $$0\le q_{\rm rand}^{(2)}-q_{\rm det}^{(2)}
+      \le d_B\le\sum_{j\in B}w_j\le w_{(1)}+w_{(2)},\qquad |B|\le2,$$
+    <p>where $w_{(1)},w_{(2)}$ are the two largest canonical atom masses, with a missing second mass interpreted as
+      zero. When $q_-+q_+&gt;1$, the shared-cut construction has $|B|\le1$, giving the sharper bound
+      $q_{\rm rand}^{(2)}-q_{\rm det}^{(2)}\le\max_j w_j$.</p>
+
     <h2>Randomized contractions are the convex-order lower set</h2>
     <p>Let $\nu$ be the law of an integrable $Z$, and let $\mathcal C(\nu)$ contain every law of
       $M=\mathbb E[Z'\mid\mathcal D]$ formed on an arbitrary probability-space extension with $Z'\sim\nu$.
@@ -416,7 +429,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 cutoff-atom gap bounds, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
