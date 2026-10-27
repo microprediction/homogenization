@@ -30,6 +30,16 @@
   "annotation": "Establishes the classical NP-completeness framework and includes the knapsack form of SUBSET SUM. The latent-coverage note gives a direct polynomial reduction from it to exact fixed-space conditional-mean tails."
  },
  {
+  "key": "IbarraKim1975",
+  "authors": "Ibarra, O. H. and Kim, C. E.",
+  "year": 1975,
+  "title": "Fast Approximation Algorithms for the Knapsack and Sum of Subset Problems",
+  "venue": "Journal of the ACM 22(4):463-468",
+  "doi": "10.1145/321906.321909",
+  "url": "",
+  "annotation": "Gives the classical fully polynomial approximation framework for 0-1 knapsack and subset sum. The latent-coverage note reduces its fixed-space one-sided tail problem to ordinary knapsack and proves a direct profit-scaling guarantee."
+ },
+ {
   "key": "Vovk2012",
   "authors": "Vovk, V.",
   "year": 2012,

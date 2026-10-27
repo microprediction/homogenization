@@ -201,6 +201,23 @@
     <p><a href="./bibliography.html#Karp1972">Karp (1972)</a> is the primary complexity source for SUBSET SUM;
       the embedding into conditional-mean tails is the direct construction above.</p>
 
+    <h2>The one-sided problem is ordinary knapsack and admits an FPTAS</h2>
+    <p>For a general lower threshold $y&lt;p$, every atom with $z_j\le y$ belongs to some optimum: adding it increases
+      mass and weakly decreases the signed constraint. Write</p>
+    $$W_0=\sum_{z_j\le y}w_j,\qquad B=\sum_{z_j\le y}w_j(y-z_j).$$
+    <p>The remaining atoms have costs $c_j=w_j(z_j-y)&gt;0$ and profits $v_j=w_j$.
+      Hence the exact deterministic envelope is $q_{\rm det}^-(y)=W_0+V^*$, where $V^*$ is the ordinary
+      $0$&ndash;$1$ knapsack optimum $\max\{\sum_{j\in S}v_j:\sum_{j\in S}c_j\le B\}$.</p>
+    <p>Discard items with $c_j&gt;B$ and let $n$ be the number left. If $n=0$, then $W_0$ is exact; otherwise put
+      $K=\varepsilon v_{\max}/n$ for $0&lt;\varepsilon&lt;1$. Dynamic programming over rounded profits
+      $\lfloor v_j/K\rfloor$ uses $O(n^3/\varepsilon)$ time and $O(n^2/\varepsilon)$ states.</p>
+    <p>If $\widehat V$ is the selected exact profit, rounding loses less than $nK=\varepsilon v_{\max}\le
+      \varepsilon V^*$. Therefore the returned tail mass obeys the explicit guarantee</p>
+    $$ (1-\varepsilon)q_{\rm det}^-(y)\le W_0+\widehat V\le q_{\rm det}^-(y). $$
+    <p>The upper-tail result follows by replacing $Z$ with $1-Z$. Thus weak NP-hardness coexists with a fully
+      polynomial approximation scheme; it is not an approximation-hardness claim.
+      <a href="./bibliography.html#IbarraKim1975">Ibarra and Kim (1975)</a> is the primary FPTAS source.</p>
+
     <h2>Fixed-space two-sided bands are a three-way selection</h2>
     <p>For $\ell&lt;p&lt;u$, the exact deterministic two-sided envelope on the same finite space is</p>
     $$\sup_{\mathcal D}\Pr\{M\le\ell\ \text{or}\ M\ge u\}
@@ -291,7 +308,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 18 fixed-space dynamic programs, 169 SUBSET SUM reductions, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
