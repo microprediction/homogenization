@@ -306,6 +306,78 @@ def two_budget_band_mass(support, probabilities, lower, upper):
     return base+max(states.values())
 
 
+def band_saturates_by_one_budget(support, probabilities, lower, upper):
+    """Decide exact full saturation by one low-budget knapsack."""
+    low = tuple(j for j, z in enumerate(support) if z <= lower)
+    high = tuple(j for j, z in enumerate(support) if z >= upper)
+    middle = tuple(j for j, z in enumerate(support) if lower < z < upper)
+    low_capacity = sum(
+        probabilities[j]*(lower-support[j]) for j in low
+    )
+    high_capacity = sum(
+        probabilities[j]*(support[j]-upper) for j in high
+    )
+    low_costs = tuple(
+        probabilities[j]*(support[j]-lower) for j in middle
+    )
+    high_costs = tuple(
+        probabilities[j]*(upper-support[j]) for j in middle
+    )
+    scale = 1
+    for value in (low_capacity, high_capacity)+low_costs+high_costs:
+        scale = lcm(scale, value.denominator)
+    low_limit = int(low_capacity*scale)
+    high_limit = int(high_capacity*scale)
+    low_costs = tuple(int(value*scale) for value in low_costs)
+    high_costs = tuple(int(value*scale) for value in high_costs)
+    states = [-1]*(low_limit+1)
+    states[0] = 0
+    for low_cost, high_reward in zip(low_costs, high_costs):
+        updated = states.copy()
+        for used_low, old_reward in enumerate(states):
+            if old_reward >= 0 and used_low+low_cost <= low_limit:
+                updated[used_low+low_cost] = max(
+                    updated[used_low+low_cost], old_reward+high_reward,
+                )
+        states = updated
+    return max(states) >= sum(high_costs)-high_limit
+
+
+def certify_band_saturation_reduction(values, target):
+    """Reduce one SUBSET SUM instance to symmetric band saturation."""
+    total = sum(values)
+    check(0 < target < total)
+    augmented = values+(2*total-target, total+target)
+    augmented_total = sum(augmented)
+    check(augmented_total == 4*total)
+    support = (F(0),)+(F(1, 2),)*len(augmented)+(F(1),)
+    probabilities = ((F(1, 4),)+
+                     tuple(F(value, 2*augmented_total) for value in augmented)+
+                     (F(1, 4),))
+    lower, upper = F(1, 4), F(3, 4)
+    check(sum(probabilities) == 1)
+    check(sum(z*q for z, q in zip(support, probabilities)) == F(1, 2))
+    reachable = {0}
+    for value in values:
+        reachable |= {subtotal+value for subtotal in tuple(reachable)}
+    augmented_reachable = {0}
+    for value in augmented:
+        augmented_reachable |= {
+            subtotal+value for subtotal in tuple(augmented_reachable)
+        }
+    attainable = target in reachable
+    check((2*total in augmented_reachable) == attainable)
+    check(band_saturates_by_one_budget(
+        support, probabilities, lower, upper,
+    ) == attainable)
+    exhaustive = len(values) == 4
+    if exhaustive:
+        check((brute_deterministic_band_mass(
+            support, probabilities, lower, upper,
+        ) == 1) == attainable)
+    return attainable, exhaustive
+
+
 def brute_partition_band_mass(support, probabilities, lower, upper):
     """Independent exhaustive enumeration of every information partition."""
     best, size = F(0), len(support)
@@ -496,6 +568,7 @@ def main():
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
     band_gap_bound_checks = band_shared_cut_checks = band_dp_checks = 0
+    band_saturation_checks = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -592,6 +665,10 @@ def main():
                     support, probabilities, lower, upper,
                 ))
                 band_dp_checks += 1
+                check((deterministic == 1) == band_saturates_by_one_budget(
+                    support, probabilities, lower, upper,
+                ))
+                band_saturation_checks += 1
                 check(deterministic == brute_partition_band_mass(
                     support, probabilities, lower, upper,
                 ))
@@ -649,6 +726,10 @@ def main():
             tie_support, probabilities, lower, upper,
         ))
         band_dp_checks += 1
+        check((deterministic == 1) == band_saturates_by_one_budget(
+            tie_support, probabilities, lower, upper,
+        ))
+        band_saturation_checks += 1
         (rounded, loss, boundary_mass,
          rounded_low_mass, rounded_low_first,
          rounded_high_mass, rounded_high_first) = rounded_atomic_band_witness(
@@ -697,11 +778,18 @@ def main():
     knapsack_form_checks += 1
     fptas_checks += 1
     subset_sum_checks = subset_sum_equalities = 0
+    saturation_checks = saturation_equalities = saturation_exhaustive = 0
     for values in ((2, 3, 7, 8, 10), (1, 4, 6, 13),
                    (3, 5, 9, 12, 17), (2, 6, 11, 15, 18, 21)):
         for target in range(1, sum(values)):
             subset_sum_equalities += certify_subset_sum_reduction(values, target)
             subset_sum_checks += 1
+            attainable, exhaustive = certify_band_saturation_reduction(
+                values, target,
+            )
+            saturation_equalities += attainable
+            saturation_exhaustive += exhaustive
+            saturation_checks += 1
     # On the canonical Bernoulli space, only the trivial and full sigma-fields
     # are available.  Enlarging the space splits an atom and strictly improves
     # each one-sided envelope.
@@ -784,7 +872,11 @@ def main():
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Two-sided boundary-atom gap bounds: {band_gap_bound_checks}; "
           f"shared-cut bounds: {band_shared_cut_checks}")
-    print(f"Exact two-budget band dynamic programs: {band_dp_checks}")
+    print(f"Exact two-budget band dynamic programs: {band_dp_checks}; "
+          f"one-budget saturation decisions: {band_saturation_checks}")
+    print(f"Two-sided saturation reductions: {saturation_checks} "
+          f"({saturation_equalities} attainable; "
+          f"{saturation_exhaustive} exhaustive assignment checks)")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
