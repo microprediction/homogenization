@@ -1,5 +1,15 @@
 [
  {
+  "key": "Strassen1965",
+  "authors": "Strassen, V.",
+  "year": 1965,
+  "title": "The existence of probability measures with given marginals",
+  "venue": "The Annals of Mathematical Statistics 36(2):423-439",
+  "doi": "10.1214/aoms/1177700153",
+  "url": "",
+  "annotation": "Establishes the classical martingale-coupling characterization behind convex order. The latent-coverage note proves its sharp one- and two-sided conditional-mean partition envelopes directly."
+ },
+ {
   "key": "Vovk2012",
   "authors": "Vovk, V.",
   "year": 2012,

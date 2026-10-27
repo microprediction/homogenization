@@ -5,7 +5,7 @@ from itertools import product
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, minimize_scalar
-from scipy.special import betainc, beta
+from scipy.special import betainc, betaincc, beta
 
 
 def check(condition):
@@ -40,6 +40,36 @@ def latent_posterior_variance(n, prior, r):
     weight = prior+(1-prior)*r**n
     first, second = ((prior+(1-prior)*r**(n+j))/weight for j in (1, 2))
     return F(n, n+2)*weight*(second-first*first)
+
+
+def sharp_beta_lower_contraction(a, b, y):
+    """Return the sharp lower-tail envelope and its two-cell witness."""
+    p = a/(a+b)
+    root = brentq(
+        lambda t: p*betainc(a+1, b, t)-y*betainc(a, b, t),
+        y, 1,
+    )
+    lower_mass = betainc(a, b, root)
+    lower_first = p*betainc(a+1, b, root)
+    lower_mean = lower_first/lower_mass
+    upper_mean = (p-lower_first)/(1-lower_mass)
+    stoploss_ratio = (root*lower_mass-lower_first)/(root-y)
+    return root, lower_mass, lower_mean, upper_mean, stoploss_ratio
+
+
+def sharp_beta_upper_contraction(a, b, y):
+    """Return the sharp upper-tail envelope and its two-cell witness."""
+    p = a/(a+b)
+    root = brentq(
+        lambda t: p*betaincc(a+1, b, t)-y*betaincc(a, b, t),
+        0, y,
+    )
+    upper_mass = betaincc(a, b, root)
+    upper_first = p*betaincc(a+1, b, root)
+    upper_mean = upper_first/upper_mass
+    lower_mean = (p-upper_first)/(1-upper_mass)
+    stoploss_ratio = (upper_first-root*upper_mass)/(y-root)
+    return root, upper_mass, lower_mean, upper_mean, stoploss_ratio
 
 
 def main():
@@ -80,7 +110,8 @@ def main():
             max_error = max(max_error, error)
             check(error < 2e-9)
             integrated += 1
-    beta_checks = 0
+    beta_checks, lower_sharp_checks, upper_sharp_checks = 0, 0, 0
+    two_sided_checks, disjoint_checks, overlap_checks = 0, 0, 0
     for n in (2, 5, 9, 19):
         for k in range(1, n+1):
             a, b, p = k, n+1-k, k/(n+1)
@@ -98,6 +129,52 @@ def main():
             check(abs(result.fun-betainc(a, b, root)) < 2e-7)
             if k == n:
                 check(abs(result.fun-(x/p)**n) < 2e-7)
+            for fraction in (0.2, 0.5, 0.8):
+                y = fraction*p
+                cut, envelope, low, high, ratio = sharp_beta_lower_contraction(a, b, y)
+                check(y < cut < 1)
+                check(abs(low-y) < 2e-12)
+                check(high > y)
+                check(abs(ratio-envelope) < 2e-12)
+                if k == n:
+                    check(abs(cut-y/p) < 2e-12)
+                    check(abs(envelope-(y/p)**n) < 2e-12)
+                lower_sharp_checks += 1
+                y = p+fraction*(1-p)
+                cut, envelope, low, high, ratio = sharp_beta_upper_contraction(a, b, y)
+                check(0 < cut < y)
+                check(low < y)
+                check(abs(high-y) < 2e-12)
+                check(abs(ratio-envelope) < 2e-12)
+                if k == 1:
+                    check(abs(cut-(y-p)/(1-p)) < 2e-12)
+                    check(abs(envelope-((1-y)/(1-p))**n) < 2e-12)
+                upper_sharp_checks += 1
+            for lower_fraction in (0.2, 0.5, 0.8):
+                lower = lower_fraction*p
+                lower_cut, lower_mass, _, _, _ = sharp_beta_lower_contraction(a, b, lower)
+                for upper_fraction in (0.2, 0.5, 0.8):
+                    upper = p+upper_fraction*(1-p)
+                    upper_cut, upper_mass, _, _, _ = sharp_beta_upper_contraction(a, b, upper)
+                    envelope = min(1.0, lower_mass+upper_mass)
+                    if lower_cut < upper_cut:
+                        middle_mass = betainc(a, b, upper_cut)-betainc(a, b, lower_cut)
+                        middle_first = p*(betainc(a+1, b, upper_cut)-betainc(a+1, b, lower_cut))
+                        middle_mean = middle_first/middle_mass
+                        check(lower < middle_mean < upper)
+                        check(abs(envelope-(lower_mass+upper_mass)) < 2e-12)
+                        disjoint_checks += 1
+                    else:
+                        witness_cut = (lower_cut+upper_cut)/2
+                        witness_mass = betainc(a, b, witness_cut)
+                        witness_first = p*betainc(a+1, b, witness_cut)
+                        witness_lower_mean = witness_first/witness_mass
+                        witness_upper_mean = (p-witness_first)/(1-witness_mass)
+                        check(witness_lower_mean <= lower+2e-12)
+                        check(witness_upper_mean >= upper-2e-12)
+                        check(envelope == 1.0)
+                        overlap_checks += 1
+                    two_sided_checks += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -110,6 +187,9 @@ def main():
     between = future**2*(moments[1]-moments[0]**2)
     print(f"Nested-uniform exact stop-loss/tail checks: {exact}; mean/variance cases: 54")
     print(f"Independent nested-CDF integrals: {integrated}; beta-integral checks: {beta_checks}")
+    print(f"Sharp lower/upper beta-contraction envelopes: {lower_sharp_checks}/{upper_sharp_checks}")
+    print(f"Sharp two-sided beta partitions: {two_sided_checks} "
+          f"({disjoint_checks} disjoint, {overlap_checks} overlapping)")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")

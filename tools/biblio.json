@@ -3207,5 +3207,16 @@
   "doi": "",
   "url": "https://proceedings.mlr.press/v329/r-ramos26a.html",
   "annotation": "Treats the law of calibration-conditional coverage as the primary object and quantifies deviations from the iid beta benchmark in Wasserstein distance. The latent-coverage note instead gives an exact convex-order contraction and repeated-use variance decomposition for a shared latent model."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Strassen1965",
+  "authors": "Strassen, V.",
+  "year": 1965,
+  "title": "The existence of probability measures with given marginals",
+  "venue": "The Annals of Mathematical Statistics 36(2):423-439",
+  "doi": "10.1214/aoms/1177700153",
+  "url": "https://doi.org/10.1214/aoms/1177700153",
+  "annotation": "Establishes the classical martingale-coupling characterization behind convex order. The latent-coverage note proves its sharp one- and two-sided conditional-mean partition envelopes directly."
  }
 ]
