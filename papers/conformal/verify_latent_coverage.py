@@ -227,6 +227,7 @@ def main():
                     two_sided_checks += 1
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
+    bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
@@ -274,6 +275,28 @@ def main():
                     atomic_overlap += 1
                 check(witness == min(F(1), lower_mass+upper_mass))
                 atomic_two_sided += 1
+    # On the canonical Bernoulli space, only the trivial and full sigma-fields
+    # are available.  Enlarging the space splits an atom and strictly improves
+    # each one-sided envelope.
+    for mean in (F(1, 5), F(1, 3), F(1, 2), F(2, 3), F(4, 5)):
+        for fraction in (F(1, 4), F(1, 2), F(3, 4)):
+            lower = fraction*mean
+            randomized = (1-mean)/(1-lower)
+            deterministic = 1-mean
+            split = lower*(1-mean)/(1-lower)
+            check(0 < split < mean)
+            check(randomized == deterministic+split > deterministic)
+            check(randomized-deterministic == (1-mean)*lower/(1-lower))
+            bernoulli_lower += 1
+
+            upper = mean+fraction*(1-mean)
+            randomized = mean/upper
+            deterministic = mean
+            split = mean*(1-upper)/upper
+            check(0 < split < 1-mean)
+            check(randomized == deterministic+split > deterministic)
+            check(randomized-deterministic == mean*(1-upper)/upper)
+            bernoulli_upper += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -293,6 +316,8 @@ def main():
           f"fractional cutoff splits: {fractional_splits}")
     print(f"Exact atomic two-sided partitions: {atomic_two_sided} "
           f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
+    print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
+          f"{bernoulli_upper} upper")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
