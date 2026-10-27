@@ -263,6 +263,49 @@ def brute_deterministic_band_mass(support, probabilities, lower, upper):
     return best
 
 
+def two_budget_band_mass(support, probabilities, lower, upper):
+    """Exact two-capacity recursion after assigning the outer atoms."""
+    low = tuple(j for j, z in enumerate(support) if z <= lower)
+    high = tuple(j for j, z in enumerate(support) if z >= upper)
+    middle = tuple(j for j, z in enumerate(support) if lower < z < upper)
+    base = sum(probabilities[j] for j in low+high)
+    low_capacity = sum(
+        probabilities[j]*(lower-support[j]) for j in low
+    )
+    high_capacity = sum(
+        probabilities[j]*(support[j]-upper) for j in high
+    )
+    low_costs = tuple(
+        probabilities[j]*(support[j]-lower) for j in middle
+    )
+    high_costs = tuple(
+        probabilities[j]*(upper-support[j]) for j in middle
+    )
+    scale = 1
+    for value in (low_capacity, high_capacity)+low_costs+high_costs:
+        scale = lcm(scale, value.denominator)
+    low_limit = int(low_capacity*scale)
+    high_limit = int(high_capacity*scale)
+    low_costs = tuple(int(value*scale) for value in low_costs)
+    high_costs = tuple(int(value*scale) for value in high_costs)
+    states = {(0, 0): F(0)}
+    for j, low_cost, high_cost in zip(middle, low_costs, high_costs):
+        updated = states.copy()
+        for (used_low, used_high), reward in states.items():
+            if used_low+low_cost <= low_limit:
+                state = (used_low+low_cost, used_high)
+                updated[state] = max(
+                    updated.get(state, F(0)), reward+probabilities[j],
+                )
+            if used_high+high_cost <= high_limit:
+                state = (used_low, used_high+high_cost)
+                updated[state] = max(
+                    updated.get(state, F(0)), reward+probabilities[j],
+                )
+        states = updated
+    return base+max(states.values())
+
+
 def brute_partition_band_mass(support, probabilities, lower, upper):
     """Independent exhaustive enumeration of every information partition."""
     best, size = F(0), len(support)
@@ -452,7 +495,7 @@ def main():
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
-    band_gap_bound_checks = band_shared_cut_checks = 0
+    band_gap_bound_checks = band_shared_cut_checks = band_dp_checks = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -545,6 +588,10 @@ def main():
                 deterministic = brute_deterministic_band_mass(
                     support, probabilities, lower, upper,
                 )
+                check(deterministic == two_budget_band_mass(
+                    support, probabilities, lower, upper,
+                ))
+                band_dp_checks += 1
                 check(deterministic == brute_partition_band_mass(
                     support, probabilities, lower, upper,
                 ))
@@ -598,6 +645,10 @@ def main():
         deterministic = brute_deterministic_band_mass(
             tie_support, probabilities, lower, upper,
         )
+        check(deterministic == two_budget_band_mass(
+            tie_support, probabilities, lower, upper,
+        ))
+        band_dp_checks += 1
         (rounded, loss, boundary_mass,
          rounded_low_mass, rounded_low_first,
          rounded_high_mass, rounded_high_first) = rounded_atomic_band_witness(
@@ -733,6 +784,7 @@ def main():
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Two-sided boundary-atom gap bounds: {band_gap_bound_checks}; "
           f"shared-cut bounds: {band_shared_cut_checks}")
+    print(f"Exact two-budget band dynamic programs: {band_dp_checks}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")

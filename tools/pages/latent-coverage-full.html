@@ -245,6 +245,29 @@
     <p><a href="./bibliography.html#Dantzig1957">Dantzig (1957)</a> supplies historical context for discrete-variable
       extremum problems and their linear-programming relaxations; the probability-space equality above is proved directly.</p>
 
+    <h2>The fixed-space two-sided problem has an exact two-budget recursion</h2>
+    <p>Some optimum assigns every atom with $z_j\le\ell$ to the lower cell and every atom with $z_j\ge u$ to the
+      upper cell. Adding an unassigned outer atom improves its natural constraint, while moving an outer atom from
+      the wrong tail to its natural tail improves both constraints without changing event mass.</p>
+    <p>Let $W_0$ be the total outer mass and define the two slack budgets</p>
+    $$C_L=\sum_{z_j\le\ell}w_j(\ell-z_j),\qquad
+      C_U=\sum_{z_j\ge u}w_j(z_j-u).$$
+    <p>Each middle atom $\ell&lt;z_j&lt;u$ now has three choices: unused; lower with cost
+      $a_j=w_j(z_j-\ell)$; or upper with cost $b_j=w_j(u-z_j)$. Either selected choice earns profit $w_j$, so the
+      remaining optimization is a two-budget multiple-choice knapsack.</p>
+    $$q_{\rm det}^{(2)}=W_0+
+      \max_{\substack{S_L\cap S_U=\varnothing\\
+      \sum_{j\in S_L}a_j\le C_L,\ \sum_{j\in S_U}b_j\le C_U}}
+      \sum_{j\in S_L\cup S_U}w_j.$$
+    <p>After multiplying rational inputs by a common denominator, let $\widehat C_L,\widehat C_U$ be the integer
+      capacities. Dynamic programming over used-capacity pairs, updating each state by the unused, lower and upper
+      choices, returns the exact value in</p>
+    $$O\!\left(m(\widehat C_L+1)(\widehat C_U+1)\right)\ \text{time},\qquad
+      O\!\left((\widehat C_L+1)(\widehat C_U+1)\right)\ \text{memory},$$
+    <p>where $m$ is the number of middle atoms. This is pseudo-polynomial in the scaled capacities, not a
+      strongly polynomial bound or an approximation theorem.
+      <a href="./bibliography.html#IbarakiHasegawaTeranakaIwase1978">Ibaraki et al. (1978)</a> supplies classical multiple-choice knapsack context; the reduction and recursion here are direct.</p>
+
     <h2>Atomic two-sided bands remain sharp</h2>
     <p>For $0&lt;\ell&lt;p&lt;u&lt;1$, let $q_-$ and $q_+$ be the sharp atomic lower- and upper-tail envelope masses.
       On the randomized distributional-transform coordinate $V\sim\operatorname{Unif}(0,1)$, write $Z=Q(V)$ with
@@ -332,7 +355,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed and 56 two-budget dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

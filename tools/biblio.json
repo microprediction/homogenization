@@ -3251,5 +3251,16 @@
   "doi": "10.1145/321906.321909",
   "url": "https://doi.org/10.1145/321906.321909",
   "annotation": "Gives the classical fully polynomial approximation framework for 0-1 knapsack and subset sum. The latent-coverage note reduces its fixed-space one-sided tail problem to ordinary knapsack and proves a direct profit-scaling guarantee."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "IbarakiHasegawaTeranakaIwase1978",
+  "authors": "Ibaraki, T., Hasegawa, T., Teranaka, K. and Iwase, J.",
+  "year": 1978,
+  "title": "The Multiple-Choice Knapsack Problem",
+  "venue": "Journal of the Operations Research Society of Japan 21(1):59-95",
+  "doi": "10.15807/jorsj.21.59",
+  "url": "https://doi.org/10.15807/jorsj.21.59",
+  "annotation": "Develops classical multiple-choice knapsack formulations and algorithms. The latent-coverage note's two-budget three-choice reduction is a specialized exact construction proved directly from its conditional-mean constraints."
  }
 ]
