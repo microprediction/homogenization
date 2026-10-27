@@ -235,6 +235,25 @@
     <p>The certificate exhausts all such subsets in the same 1,308 feasible orthants. It checks 29,058 faces,
     19 distinct $f$-vectors, the Euler relation, and the binomial $f$-vector for every certified simplicial cone.</p>
 
+    <h2>A run-length generating function counts every face</h2>
+    <p>The subset formula has a compact exact evaluator. Let the sign word have alternating run lengths
+    $n_0,\ldots,n_v$ and put $W_j(x)=(1+x)^{n_j}-1$, the generating polynomial for a nonempty selection from run $j$.</p>
+    <p>Starting from $E=O=0$, process the runs in order. For an even-indexed run update</p>
+    $$E\leftarrow E+W_j(x)\{1+E+yO\},$$
+    <p>and for an odd-indexed run update</p>
+    $$O\leftarrow O+W_j(x)\{1+O+yE\}.$$
+    <p>The unchanged polynomial is carried through each update. In
+    $\Phi_\sigma(x,y)=1+E+O$, the coefficient $[x^my^q]\Phi_\sigma$ is exactly the number of $m$-element supports whose restricted sign word has $q$ changes.</p>
+    <p>This follows by induction on the processed runs. A support either skips the new run, starts there, extends a
+    support ending with the same parity without a new change, or extends one ending with the opposite parity and gains the factor $y$.</p>
+    <p>Therefore the complete face polynomial is</p>
+    <div class="equation-card">
+    $$\mathcal F_\sigma(t)=1+
+      \sum_{k=1}^{N-p}t^k\sum_{q\ge p}[x^{p+k}y^q]\Phi_\sigma(x,y).$$
+    </div>
+    <p>This computes the $f$-vector from the run lengths without enumerating all $2^N$ supports. Its coefficient of $t$ counts the compatible alternating circuits, and when $v=p$ it reduces to the critical ray count $\prod_jn_j$.</p>
+    <p>The exact certificate evaluates the recurrence with integer binomial weights and matches every face dimension in all 1,308 feasible orthants against independent subset enumeration.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
