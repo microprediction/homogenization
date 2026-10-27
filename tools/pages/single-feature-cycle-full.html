@@ -24,13 +24,31 @@
       If $\Delta b(T)^3\ne0$, the cubic order is sharp; neither irreversibility alone nor one selected feature guarantees a signal.</p>
 
     <h2>The exact three-cycle visibility criterion</h2>
-    <p>For clockwise rate $p&gt;0$, counterclockwise rate $q&gt;0$, and uniform $\pi$, put</p>
+    <p>For clockwise rate $p\ge0$, counterclockwise rate $q\ge0$, $p+q&gt;0$, and uniform $\pi$, put</p>
     $$Q_{p,q}=\begin{pmatrix}-p-q&amp;p&amp;q\\q&amp;-p-q&amp;p\\p&amp;q&amp;-p-q\end{pmatrix}.$$
     <p>Direct inversion of $S=Q_{p,q}^\#$ gives the factorization</p>
     $$\Delta=-{(p-q)(c_1-c_2)(c_2-c_3)(c_3-c_1)
       \over27(p^2+pq+q^2)^2}.$$
     <p>Thus a nonreversible three-cycle has a nonzero cubic signal exactly when the centered scalar feature separates all three states.
       Reversal changes the orientation factor&apos;s sign, while relabeling the feature values changes the Vandermonde sign; this criterion concerns the cubic coefficient and still requires $b(T)\ne0$.</p>
+
+    <h2>The sharp normalized signal</h2>
+    <p>Normalize the feature by $\frac13\sum_i c_i^2=1$ and fix the total jump rate $s=p+q$.
+      Then the factorization has the sharp bound</p>
+    <div class="equation-card">
+    $$|\Delta|\le {\sqrt{3/2}\over9s^3}.$$
+    </div>
+    <p>For centered levels, the cubic discriminant identity is</p>
+    $$\{(c_1-c_2)(c_2-c_3)(c_3-c_1)\}^2
+      ={1\over2}\Big(\sum_i c_i^2\Big)^3-27(c_1c_2c_3)^2.$$
+    <p>It makes the feature factor largest exactly when the three values are an evenly spaced permutation of
+      $\sqrt{3/2}(-1,0,1)$. For the rate factor,</p>
+    $$\begin{aligned}
+      (p^2+pq+q^2)^2-(p-q)(p+q)^3&amp;=q^2(3p^2+4pq+2q^2),\\
+      (p^2+pq+q^2)^2+(p-q)(p+q)^3&amp;=p^2(2p^2+4pq+3q^2).
+    \end{aligned}$$
+    <p>Therefore equality holds exactly for a one-way cycle, $pq=0$, and those evenly spaced levels.
+      Every genuinely bidirectional cycle has a strictly smaller normalized cubic signal.</p>
 
     <h2>Outer coefficients</h2>
     <p>Set $D=D_c$, $\ell=\pi D$, $L=(I-\mathbf1\pi)D$ and write $f=A(\mathbf1+z)$, $\pi z=0$.
