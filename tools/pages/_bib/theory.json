@@ -78,5 +78,14 @@
   "venue": "Bulletin of the American Mathematical Society 59(3):199-230",
   "doi": "10.1090/S0002-9904-1953-09695-1",
   "annotation": "Surveys smoothing transformations through total positivity and variation diminution. The call-crossing note proves its specialized two-integration signed-measure bound directly."
+ },
+ {
+  "key": "Cover1965",
+  "authors": "Cover, T. M.",
+  "year": 1965,
+  "title": "Geometrical and Statistical Properties of Systems of Linear Inequalities with Applications in Pattern Recognition",
+  "venue": "IEEE Transactions on Electronic Computers EC-14(3):326-334",
+  "doi": "10.1109/PGEC.1965.264137",
+  "annotation": "Counts homogeneously linearly separable dichotomies of points in general position. The complementary sign-word count in the call-crossing cone census agrees with Cover's binomial formula."
  }
 ]

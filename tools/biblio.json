@@ -3207,5 +3207,16 @@
   "doi": "10.1111/j.1467-9965.2009.00379.x",
   "url": "https://doi.org/10.1111/j.1467-9965.2009.00379.x",
   "annotation": "Develops stock-numeraire put-call symmetry and its extensions. The call-crossing note uses the elementary one-period dual-law identity to show that symmetric transform nodes produce reciprocal crossing strikes."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Cover1965",
+  "authors": "Cover, T. M.",
+  "year": 1965,
+  "title": "Geometrical and Statistical Properties of Systems of Linear Inequalities with Applications in Pattern Recognition",
+  "venue": "IEEE Transactions on Electronic Computers EC-14(3):326-334",
+  "doi": "10.1109/pgec.1965.264137",
+  "url": "https://doi.org/10.1109/pgec.1965.264137",
+  "annotation": "Counts homogeneously linearly separable dichotomies of points in general position. The complementary sign-word count in the call-crossing cone census agrees with Cover's binomial formula."
  }
 ]

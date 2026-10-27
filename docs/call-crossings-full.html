@@ -351,6 +351,28 @@
     <p>This computes the $f$-vector from the run lengths without enumerating all $2^N$ supports. Its coefficient of $t$ counts the compatible alternating circuits, and when $v=p$ it reduces to the critical ray count $\prod_jn_j$.</p>
     <p>The exact certificate evaluates the recurrence with integer binomial weights and matches every face dimension in all 1,308 feasible orthants against independent subset enumeration.</p>
 
+    <h2>The census over every orthant is closed form</h2>
+    <p>Identify a sign word with its global reversal: the two cones are negatives of one another and have the same
+    face lattice. The number of feasible sign orbits on $N$ coordinates is</p>
+    <div class="equation-card">
+    $$F(N,p)=\sum_{q=p}^{N-1}\binom{N-1}{q}.$$
+    </div>
+    <p>More generally, the total number of $k$-face incidences across all feasible sign orbits is</p>
+    <div class="equation-card">
+    $$I_k(N,p)=2^{N-p-k}\binom{N}{p+k}
+      \sum_{q=p}^{p+k-1}\binom{p+k-1}{q},
+      \qquad 1\leq k\leq N-p,$$
+    $$I_0(N,p)=F(N,p).$$
+    </div>
+    <p>Indeed, choose the support of size $m=p+k$. Its restricted word has $q$ changes in
+    $2\binom{m-1}{q}$ ways, the other $N-m$ signs are free, and quotienting by global reversal removes the factor two.</p>
+    <p>In particular, the total extreme-ray incidence is
+    $I_1(N,p)=2^{N-p-1}\binom{N}{p+1}$. The complementary count
+    $2\sum_{q=0}^{p-1}\binom{N-1}{q}$ before quotienting is Cover's classical number of homogeneously separable
+    dichotomies for points in general position; see <a href="./bibliography.html#Cover1965">Cover (1965)</a>.</p>
+    <p>Across the 24 certified $(N,p)$ pairs, these formulas recover exactly all 1,308 feasible sign orbits,
+    8,560 extreme-ray incidences and 29,058 faces, including one zero face per feasible cone.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
