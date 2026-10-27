@@ -72,6 +72,43 @@ def sharp_beta_upper_contraction(a, b, y):
     return root, upper_mass, lower_mean, upper_mean, stoploss_ratio
 
 
+def sharp_atomic_envelope(support, probabilities, y, lower):
+    """Return the exact stop-loss envelope and randomized cutoff witness."""
+    candidates = [z for z in support if (z > y if lower else z < y)]
+    if lower:
+        objective = lambda t: sum(q*max(t-z, 0) for z, q in zip(support, probabilities))/(t-y)
+    else:
+        objective = lambda t: sum(q*max(z-t, 0) for z, q in zip(support, probabilities))/(y-t)
+    cut = min(candidates, key=objective)
+    envelope = objective(cut)
+    strict = [(z, q) for z, q in zip(support, probabilities)
+              if (z < cut if lower else z > cut)]
+    mass = sum(q for _, q in strict)
+    first = sum(z*q for z, q in strict)
+    atom = sum(q for z, q in zip(support, probabilities) if z == cut)
+    split = ((y*mass-first)/(cut-y) if lower
+             else (first-y*mass)/(y-cut))
+    check(0 <= split <= atom)
+    check(first+cut*split == y*(mass+split))
+    check(mass+split == envelope)
+    return envelope, split, atom
+
+
+def brute_atomic_cell_mass(support, probabilities, y):
+    """Independent vertex enumeration for the largest cell with mean y."""
+    best = F(0)
+    for pivot in range(len(support)):
+        others = [j for j in range(len(support)) if j != pivot]
+        for mask in range(1 << len(others)):
+            chosen = [probabilities[j] if mask & (1 << h) else F(0)
+                      for h, j in enumerate(others)]
+            imbalance = sum(q*(support[j]-y) for q, j in zip(chosen, others))
+            pivot_mass = -imbalance/(support[pivot]-y)
+            if 0 <= pivot_mass <= probabilities[pivot]:
+                best = max(best, sum(chosen)+pivot_mass)
+    return best
+
+
 def main():
     exact, integrated, boundary_checks, latent_decompositions = 0, 0, 0, 0
     max_error = 0.0
@@ -175,6 +212,27 @@ def main():
                         check(envelope == 1.0)
                         overlap_checks += 1
                     two_sided_checks += 1
+    support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
+    atomic_checks, fractional_splits = 0, 0
+    weight_patterns = (
+        (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
+        (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
+    )
+    for weights in weight_patterns:
+        total = sum(weights)
+        probabilities = tuple(F(w, total) for w in weights)
+        mean = sum(z*q for z, q in zip(support, probabilities))
+        for fraction in (F(2, 7), F(4, 7), F(6, 7)):
+            for y, lower in ((fraction*mean, True),
+                             (mean+fraction*(1-mean), False)):
+                if y in support:
+                    continue
+                envelope, split, atom = sharp_atomic_envelope(
+                    support, probabilities, y, lower,
+                )
+                check(envelope == brute_atomic_cell_mass(support, probabilities, y))
+                fractional_splits += int(0 < split < atom)
+                atomic_checks += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -190,6 +248,8 @@ def main():
     print(f"Sharp lower/upper beta-contraction envelopes: {lower_sharp_checks}/{upper_sharp_checks}")
     print(f"Sharp two-sided beta partitions: {two_sided_checks} "
           f"({disjoint_checks} disjoint, {overlap_checks} overlapping)")
+    print(f"Exact atomic envelope/LP checks: {atomic_checks}; "
+          f"fractional cutoff splits: {fractional_splits}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
