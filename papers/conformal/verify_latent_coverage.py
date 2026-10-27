@@ -95,6 +95,43 @@ def sharp_atomic_envelope(support, probabilities, y, lower):
     return envelope, split, atom
 
 
+def fractional_tail_rounding(support, probabilities, y, lower):
+    """Greedy fractional optimum and its rounded-down canonical witness."""
+    if lower:
+        full = tuple(j for j, z in enumerate(support) if z <= y)
+        candidates = sorted(
+            (j for j, z in enumerate(support) if z > y),
+            key=lambda j: support[j],
+        )
+        budget = sum(probabilities[j]*(y-support[j]) for j in full)
+        unit_cost = lambda j: support[j]-y
+    else:
+        full = tuple(j for j, z in enumerate(support) if z >= y)
+        candidates = sorted(
+            (j for j, z in enumerate(support) if z < y),
+            key=lambda j: support[j], reverse=True,
+        )
+        budget = sum(probabilities[j]*(support[j]-y) for j in full)
+        unit_cost = lambda j: y-support[j]
+    mass = rounded = sum(probabilities[j] for j in full)
+    split = cutoff_mass = F(0)
+    for j in candidates:
+        cost = probabilities[j]*unit_cost(j)
+        if cost <= budget:
+            mass += probabilities[j]
+            rounded += probabilities[j]
+            budget -= cost
+        elif budget > 0:
+            split = budget/unit_cost(j)
+            cutoff_mass = probabilities[j]
+            mass += split
+            budget = F(0)
+            break
+        else:
+            break
+    return mass, rounded, split, cutoff_mass
+
+
 def brute_atomic_cell_mass(support, probabilities, y):
     """Independent vertex enumeration for the largest cell with mean y."""
     best = F(0)
@@ -375,7 +412,8 @@ def main():
                         overlap_checks += 1
                     two_sided_checks += 1
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
-    atomic_checks, fractional_splits = 0, 0
+    atomic_checks = fractional_splits = gap_bound_checks = 0
+    sharp_gap_equalities = 0
     convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
     dynamic_tail_checks = knapsack_form_checks = fptas_checks = 0
     strict_fptas_cases = 0
@@ -403,6 +441,16 @@ def main():
                 deterministic = brute_deterministic_tail_mass(
                     support, probabilities, y, lower,
                 )
+                fractional, rounded, cutoff_split, cutoff_mass = (
+                    fractional_tail_rounding(
+                        support, probabilities, y, lower,
+                    )
+                )
+                check(fractional == envelope)
+                check(rounded == fractional-cutoff_split <= deterministic)
+                check(envelope-deterministic <= cutoff_split <= cutoff_mass)
+                check(cutoff_mass <= max(probabilities))
+                gap_bound_checks += 1
                 if lower:
                     check(deterministic == dynamic_lower_tail_mass(
                         support, probabilities, y,
@@ -471,6 +519,21 @@ def main():
                 deterministic_band_checks += 1
                 strict_band_relaxations += int(deterministic < witness)
                 atomic_two_sided += 1
+    tie_support = (F(0), F(1, 2), F(1, 2), F(1))
+    for probabilities, y, lower in (
+        ((F(1, 20), F(1, 10), F(1, 5), F(13, 20)), F(2, 5), True),
+        ((F(13, 20), F(1, 5), F(1, 10), F(1, 20)), F(3, 5), False),
+    ):
+        deterministic = brute_deterministic_tail_mass(
+            tie_support, probabilities, y, lower,
+        )
+        fractional, rounded, cutoff_split, cutoff_mass = fractional_tail_rounding(
+            tie_support, probabilities, y, lower,
+        )
+        check(rounded <= deterministic <= fractional)
+        check(fractional-deterministic <= cutoff_split <= cutoff_mass)
+        check(cutoff_mass <= max(probabilities))
+        gap_bound_checks += 1
     approximation_support = tuple(map(
         F, (0, F(1, 7), F(2, 7), F(4, 7), F(5, 7), 1),
     ))
@@ -522,6 +585,13 @@ def main():
             check(0 < split < mean)
             check(randomized == deterministic+split > deterministic)
             check(randomized-deterministic == (1-mean)*lower/(1-lower))
+            fractional, rounded, cutoff_split, cutoff_mass = fractional_tail_rounding(
+                (F(0), F(1)), (1-mean, mean), lower, True,
+            )
+            check(fractional == randomized)
+            check(rounded == deterministic)
+            check(randomized-deterministic == cutoff_split <= cutoff_mass)
+            sharp_gap_equalities += 1
             convex_order_below(
                 (lower, F(1)), (randomized, 1-randomized),
                 (F(0), F(1)), (1-mean, mean),
@@ -536,6 +606,13 @@ def main():
             check(0 < split < 1-mean)
             check(randomized == deterministic+split > deterministic)
             check(randomized-deterministic == mean*(1-upper)/upper)
+            fractional, rounded, cutoff_split, cutoff_mass = fractional_tail_rounding(
+                (F(0), F(1)), (1-mean, mean), upper, False,
+            )
+            check(fractional == randomized)
+            check(rounded == deterministic)
+            check(randomized-deterministic == cutoff_split <= cutoff_mass)
+            sharp_gap_equalities += 1
             convex_order_below(
                 (F(0), upper), (1-randomized, randomized),
                 (F(0), F(1)), (1-mean, mean),
@@ -572,6 +649,8 @@ def main():
     print(f"Ordinary-knapsack reductions: {knapsack_form_checks}; "
           f"profit-scaled FPTAS checks: {fptas_checks} "
           f"({strict_fptas_cases} nonexact approximations)")
+    print(f"Cutoff-atom integrality-gap bounds: {gap_bound_checks}; "
+          f"sharp Bernoulli equalities: {sharp_gap_equalities}")
     print(f"Exact fixed-space two-sided optima: {deterministic_band_checks}; "
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")

@@ -184,6 +184,17 @@
       Allowing independent atom splitting replaces each indicator $\mathbf1_{\{j\in A\}}$ by a fraction in $[0,1]$,
       so the sharp randomized stop-loss envelope is exactly the fractional relaxation of this 0&ndash;1 problem.</p>
 
+    <h2>One cutoff atom bounds the randomization gain</h2>
+    <p>The one-sided fractional relaxation is continuous knapsack: order eligible atoms by profit per unit signed
+      cost, breaking ties arbitrarily. It has an optimum that selects every canonical atom either fully or not at
+      all, except possibly one cutoff atom $k$ from which it selects mass $r\in(0,w_k)$.</p>
+    <p>Deleting that fractional piece preserves feasibility and gives a deterministic event of mass
+      $q_{\rm rand}-r$. Consequently, for either the lower or upper tail,</p>
+    $$0\le q_{\rm rand}-q_{\rm det}\le r\le w_k\le \max_j w_j.$$
+    <p>If no atom is fractional, take $r=0$ and the two envelopes agree. The Bernoulli calculations above attain
+      $q_{\rm rand}-q_{\rm det}=r$ for every admissible threshold, so the data-dependent cutoff bound is sharp.
+      <a href="./bibliography.html#Dantzig1957">Dantzig (1957)</a> supplies the primary continuous-knapsack context.</p>
+
     <h2>Exact fixed-space tails already contain SUBSET SUM</h2>
     <p>Take positive integers $a_1,\ldots,a_m$, a target $0&lt;C&lt;A=\sum_i a_i$, and threshold $y=1/2$.
       Give one anchor atom mass $w_0=1/2$ and score $z_0=1/2-C/(4A)$; give item $i$ mass
@@ -308,7 +319,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 cutoff-atom gap bounds, 18 signed dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
