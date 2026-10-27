@@ -286,8 +286,8 @@
     <div class="equation-card">
     $$B_n(h)=\frac{n^n}{2^n h^h(n-h)^{n-h}},$$
     </div>
-    <p>with $0^0=1$. Markov's inequality applied to $e^{tQ}$ and minimized at
-    $e^t=h/(n-h)$ gives $\mathbb P\{Q\geq h\}\leq B_n(h)$ directly.</p>
+    <p>with $0^0=1$. For $h&lt;n$, Markov's inequality applied to $e^{tQ}$ and minimized at
+    $e^t=h/(n-h)$ gives $\mathbb P\{Q\geq h\}\leq B_n(h)$ directly; the endpoint $h=n$ follows by taking $t\to\infty$.</p>
     <p>Consequently, if $p&gt;n/2$ then
     $\varphi_{N,p}\leq B_n(p)\leq\exp\{-2n(p/n-1/2)^2\}$, while if $p\leq n/2$ then</p>
     <div class="equation-card">
