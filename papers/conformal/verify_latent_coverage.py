@@ -109,6 +109,19 @@ def brute_atomic_cell_mass(support, probabilities, y):
     return best
 
 
+def atomic_quantile_segment(support, probabilities, left, right):
+    """Exact mass and first moment on a randomized quantile segment."""
+    cumulative = F(0)
+    mass = first = F(0)
+    for z, probability in zip(support, probabilities):
+        overlap = max(F(0), min(right, cumulative+probability)-max(left, cumulative))
+        mass += overlap
+        first += z*overlap
+        cumulative += probability
+    check(mass == right-left)
+    return mass, first
+
+
 def main():
     exact, integrated, boundary_checks, latent_decompositions = 0, 0, 0, 0
     max_error = 0.0
@@ -214,6 +227,7 @@ def main():
                     two_sided_checks += 1
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
+    atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -222,6 +236,7 @@ def main():
         total = sum(weights)
         probabilities = tuple(F(w, total) for w in weights)
         mean = sum(z*q for z, q in zip(support, probabilities))
+        lower_envelopes, upper_envelopes = [], []
         for fraction in (F(2, 7), F(4, 7), F(6, 7)):
             for y, lower in ((fraction*mean, True),
                              (mean+fraction*(1-mean), False)):
@@ -231,8 +246,34 @@ def main():
                     support, probabilities, y, lower,
                 )
                 check(envelope == brute_atomic_cell_mass(support, probabilities, y))
+                (lower_envelopes if lower else upper_envelopes).append((y, envelope))
                 fractional_splits += int(0 < split < atom)
                 atomic_checks += 1
+        for lower, lower_mass in lower_envelopes:
+            for upper, upper_mass in upper_envelopes:
+                if lower_mass+upper_mass <= 1:
+                    lm, lf = atomic_quantile_segment(
+                        support, probabilities, F(0), lower_mass,
+                    )
+                    um, uf = atomic_quantile_segment(
+                        support, probabilities, 1-upper_mass, F(1),
+                    )
+                    check(lf == lower*lm and uf == upper*um)
+                    witness = lower_mass+upper_mass
+                    atomic_disjoint += 1
+                else:
+                    cut = 1-upper_mass
+                    lm, lf = atomic_quantile_segment(
+                        support, probabilities, F(0), cut,
+                    )
+                    um, uf = atomic_quantile_segment(
+                        support, probabilities, cut, F(1),
+                    )
+                    check(lf <= lower*lm and uf == upper*um)
+                    witness = F(1)
+                    atomic_overlap += 1
+                check(witness == min(F(1), lower_mass+upper_mass))
+                atomic_two_sided += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -250,6 +291,8 @@ def main():
           f"({disjoint_checks} disjoint, {overlap_checks} overlapping)")
     print(f"Exact atomic envelope/LP checks: {atomic_checks}; "
           f"fractional cutoff splits: {fractional_splits}")
+    print(f"Exact atomic two-sided partitions: {atomic_two_sided} "
+          f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
