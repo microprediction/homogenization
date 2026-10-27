@@ -236,6 +236,81 @@
       $x_-&lt;(1-\delta)p$ and $x_+&gt;\delta+(1-\delta)p$, and set
       $\ell=x_-/(1-\delta)$ and $u=(x_+-\delta)/(1-\delta)$.
       The same envelope is sharp over the abstract class by taking $R=0$ on the lower and middle cells and $R=1$ on the upper cell.</p>
+
+    <h2>Atoms require a randomized cutoff split</h2>
+    <p>Continuity is needed only to make the optimizing cells deterministic. For an arbitrary law on $[0,1]$,
+      the same lower stop-loss infimum is sharp whenever a minimizing cut $t_*&gt;y$ is used with an independent
+      uniform tie-breaker at the atom $\{Z=t_*\}$.</p>
+    <p>Write $m_- =\Pr(Z&lt;t_*)$, $z_- =\mathbb E[Z\mathbf1_{\{Z&lt;t_*\}}]$ and
+      $h=\Pr(Z=t_*)$. Optimality puts</p>
+    $$r=\frac{ym_- -z_-}{t_*-y}\in[0,h].$$
+    <p>Include all $Z&lt;t_*$ and, when $h&gt;0$, a fraction $r/h$ of the cutoff atom; when $h=0$, optimality gives
+      $r=0$. The resulting cell has mean $y$ and mass</p>
+    $$m_-+r=\frac{\mathbb E(t_*-Z)_+}{t_*-y},$$
+    <p>so it attains the lower envelope exactly. The upper construction is dual: at a minimizing $s_*&lt;y$, put
+      $m_+=\Pr(Z&gt;s_*)$ and $z_+=\mathbb E[Z\mathbf1_{\{Z&gt;s_*\}}]$, then include all $Z&gt;s_*$ and mass
+      $r=[z_+-ym_+]/(y-s_*)$ from the atom at $s_*$.</p>
+    <p>If the minimizer is the endpoint $t_*=y$ or $s_*=y$, the corresponding one-sided limit gives the result.
+      Thus score atoms do not invalidate either one-sided envelope, but deterministic tie handling can fail to attain it.</p>
+
+    <h2>Without atom splitting, the gap is explicit</h2>
+    <p>The auxiliary randomization is essential, not merely a proof device. On the canonical two-point space let
+      $Z\sim\operatorname{Bernoulli}(p)$; its only sub-$\sigma$-fields are the trivial and full ones.</p>
+    <p>For $0&lt;y&lt;p$, these two choices give
+      $\sup_{\mathcal D\subseteq\sigma(Z)}\Pr\{\mathbb E[Z\mid\mathcal D]\le y\}=1-p$.
+      Splitting the atom at one gives the larger randomized envelope</p>
+    $$q_-(y)=\frac{1-p}{1-y},\qquad
+      q_-(y)-(1-p)=\frac{(1-p)y}{1-y}&gt;0.$$
+    <p>Indeed, the optimal lower cell contains the entire zero atom and mass $y(1-p)/(1-y)$ from the one atom.
+      Dually, for $p&lt;y&lt;1$, deterministic information gives upper-tail mass $p$, while splitting the zero atom gives</p>
+    $$q_+(y)=\frac p y,\qquad q_+(y)-p=\frac{p(1-y)}y&gt;0.$$
+    <p>Thus the atomic theorem is sharp on an enlarged space carrying an independent tie-breaker, but need not be
+      attainable on a fixed atomic probability space. This distinction is separate from marginal versus
+      feature-conditional conformal coverage.</p>
+
+    <h2>The fixed-space problem is an exact 0&ndash;1 selection</h2>
+    <p>On a canonical finite space with atom masses $w_j$, values $z_j$ and mean $p$, no atom can be split.
+      For $y&lt;p$, every information partition therefore satisfies</p>
+    $$\sup_{\mathcal D}\Pr\{\mathbb E[Z\mid\mathcal D]\le y\}
+      =\max_{A\subseteq[m]}\left\{\sum_{j\in A}w_j:
+      \sum_{j\in A}w_j(z_j-y)\le0\right\}.$$
+    <p>Indeed, the union $A$ of all low-mean cells is feasible and has exactly the tail-event mass. Conversely, any
+      feasible $A$ and its complement form a two-cell partition; since the total mean exceeds $y$, the complement
+      mean is greater than $y$.</p>
+    <p>For $y&gt;p$, the upper-tail formula is the same maximum with the final inequality reversed.
+      Allowing independent atom splitting replaces each indicator $\mathbf1_{\{j\in A\}}$ by a fraction in $[0,1]$,
+      so the sharp randomized stop-loss envelope is exactly the fractional relaxation of this 0&ndash;1 problem.</p>
+
+    <h2>Atomic two-sided bands remain sharp</h2>
+    <p>For $0&lt;\ell&lt;p&lt;u&lt;1$, let $q_-$ and $q_+$ be the sharp atomic lower- and upper-tail envelope masses.
+      On the randomized distributional-transform coordinate $V\sim\operatorname{Unif}(0,1)$, write $Z=Q(V)$ with
+      nondecreasing quantile $Q$.</p>
+    <p>The lower optimizer is the prefix $[0,q_-]$ and the upper optimizer is the suffix $[1-q_+,1]$, including
+      fractional endpoint atoms when necessary. If $q_-+q_+\le1$, these cells are disjoint and attain total mass
+      $q_-+q_+$.</p>
+    <p>If $q_-+q_+&gt;1$, cut instead at $1-q_+$. The suffix has mean $u$, while monotonicity of prefix averages and
+      $1-q_+&lt;q_-$ make the prefix mean at most $\ell$, so every cell is in one of the two tails.</p>
+    <div class="equation-card">
+    $$\sup_{\mathcal D}\Pr\{M\le\ell\ \text{or}\ M\ge u\}
+      =\min\{1,q_-+q_+\}$$
+    </div>
+    <p>Thus the simultaneous two-sided formula also survives arbitrary atoms when independent tie randomization is allowed.
+      This is a law-level extremum over randomized contractions, not conditional coverage given observed features.</p>
+
+    <h2>Randomized contractions are the convex-order lower set</h2>
+    <p>Let $\nu$ be the law of an integrable $Z$, and let $\mathcal C(\nu)$ contain every law of
+      $M=\mathbb E[Z'\mid\mathcal D]$ formed on an arbitrary probability-space extension with $Z'\sim\nu$.
+      Then</p>
+    <div class="equation-card">
+    $$\mathcal C(\nu)=\{\mu:\mu\preceq_{\mathrm{cx}}\nu\}.$$
+    </div>
+    <p>For the forward inclusion, the tower property gives $\mathbb E[Z'\mid M]=M$, and conditional Jensen gives
+      $\mathbb E\varphi(M)\le\mathbb E\varphi(Z')$ for every integrable convex $\varphi$.
+      Conversely, Strassen's theorem couples any $\mu\preceq_{\mathrm{cx}}\nu$ as $(M,Z')$ with
+      $\mathbb E[Z'\mid M]=M$; taking $\mathcal D=\sigma(M)$ realizes that law.</p>
+    <p>Consequently, the sharp one- and two-sided formulas above optimize over the entire convex-order lower set, not
+      merely over partitions of one convenient representation. This law-level equivalence does not imply attainability
+      on a fixed original space, as the Bernoulli gap shows, or feature-conditional conformal coverage.</p>
     <p>At $N=k=9$ and $x=0.8$, the iid beta failure probability is $0.134217728000$, while this latent-model bound is $0.346439416115$.
       With finite-history boundary weight $\delta=e^{-10}$ it is $0.346581003179$.
       These are exact contraction envelopes, not a claim of optimality over conformal models.</p>
@@ -280,12 +355,14 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 two-sided partition witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 36 fixed-space 0&ndash;1 optima with strict fractional gaps, 66 finite-law convex-order witnesses, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
-      The <a href="./bibliography.html#Strassen1965">Strassen martingale-coupling characterization</a> places conditional means in convex order; the sharp one- and two-sided partition optimizers are proved directly here.
-      The note supplies the latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
+      The <a href="./bibliography.html#Strassen1965">Strassen martingale-coupling characterization</a> places conditional means in convex order, while the <a href="./bibliography.html#Ruschendorf2009">randomized distributional transform</a> supplies the standard tie-breaking device.
+      The sharp partition and atom-splitting optimizers are proved directly here.</p>
+    <p>The convex-order equivalence is Strassen's classical theorem. The note supplies the direct sharp tail optimizers,
+      latent-model and finite-boundary specializations, and the realized-panel variance decomposition.</p>
   </main>
 
   <footer>

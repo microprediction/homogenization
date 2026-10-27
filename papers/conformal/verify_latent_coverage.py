@@ -72,6 +72,84 @@ def sharp_beta_upper_contraction(a, b, y):
     return root, upper_mass, lower_mean, upper_mean, stoploss_ratio
 
 
+def sharp_atomic_envelope(support, probabilities, y, lower):
+    """Return the exact stop-loss envelope and randomized cutoff witness."""
+    candidates = [z for z in support if (z > y if lower else z < y)]
+    if lower:
+        objective = lambda t: sum(q*max(t-z, 0) for z, q in zip(support, probabilities))/(t-y)
+    else:
+        objective = lambda t: sum(q*max(z-t, 0) for z, q in zip(support, probabilities))/(y-t)
+    cut = min(candidates, key=objective)
+    envelope = objective(cut)
+    strict = [(z, q) for z, q in zip(support, probabilities)
+              if (z < cut if lower else z > cut)]
+    mass = sum(q for _, q in strict)
+    first = sum(z*q for z, q in strict)
+    atom = sum(q for z, q in zip(support, probabilities) if z == cut)
+    split = ((y*mass-first)/(cut-y) if lower
+             else (first-y*mass)/(y-cut))
+    check(0 <= split <= atom)
+    check(first+cut*split == y*(mass+split))
+    check(mass+split == envelope)
+    return envelope, split, atom
+
+
+def brute_atomic_cell_mass(support, probabilities, y):
+    """Independent vertex enumeration for the largest cell with mean y."""
+    best = F(0)
+    for pivot in range(len(support)):
+        others = [j for j in range(len(support)) if j != pivot]
+        for mask in range(1 << len(others)):
+            chosen = [probabilities[j] if mask & (1 << h) else F(0)
+                      for h, j in enumerate(others)]
+            imbalance = sum(q*(support[j]-y) for q, j in zip(chosen, others))
+            pivot_mass = -imbalance/(support[pivot]-y)
+            if 0 <= pivot_mass <= probabilities[pivot]:
+                best = max(best, sum(chosen)+pivot_mass)
+    return best
+
+
+def brute_deterministic_tail_mass(support, probabilities, y, lower):
+    """Largest tail event when the original atoms cannot be split."""
+    best = F(0)
+    for mask in range(1 << len(support)):
+        chosen = [q for j, q in enumerate(probabilities) if mask & (1 << j)]
+        imbalance = sum(probabilities[j]*(support[j]-y)
+                        for j in range(len(support)) if mask & (1 << j))
+        feasible = imbalance <= 0 if lower else imbalance >= 0
+        if feasible:
+            best = max(best, sum(chosen))
+    return best
+
+
+def atomic_quantile_segment(support, probabilities, left, right):
+    """Exact mass and first moment on a randomized quantile segment."""
+    cumulative = F(0)
+    mass = first = F(0)
+    for z, probability in zip(support, probabilities):
+        overlap = max(F(0), min(right, cumulative+probability)-max(left, cumulative))
+        mass += overlap
+        first += z*overlap
+        cumulative += probability
+    check(mass == right-left)
+    return mass, first
+
+
+def convex_order_below(left_support, left_probabilities,
+                       right_support, right_probabilities):
+    """Certify finite-law convex order through exact call transforms."""
+    check(sum(left_probabilities) == sum(right_probabilities) == 1)
+    check(sum(z*q for z, q in zip(left_support, left_probabilities)) ==
+          sum(z*q for z, q in zip(right_support, right_probabilities)))
+    strikes = sorted(set(left_support+right_support))
+    for strike in strikes:
+        left_call = sum(q*max(z-strike, 0)
+                        for z, q in zip(left_support, left_probabilities))
+        right_call = sum(q*max(z-strike, 0)
+                         for z, q in zip(right_support, right_probabilities))
+        check(left_call <= right_call)
+
+
 def main():
     exact, integrated, boundary_checks, latent_decompositions = 0, 0, 0, 0
     max_error = 0.0
@@ -175,6 +253,107 @@ def main():
                         check(envelope == 1.0)
                         overlap_checks += 1
                     two_sided_checks += 1
+    support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
+    atomic_checks, fractional_splits = 0, 0
+    convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
+    bernoulli_lower = bernoulli_upper = 0
+    atomic_two_sided = atomic_disjoint = atomic_overlap = 0
+    weight_patterns = (
+        (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
+        (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
+    )
+    for weights in weight_patterns:
+        total = sum(weights)
+        probabilities = tuple(F(w, total) for w in weights)
+        mean = sum(z*q for z, q in zip(support, probabilities))
+        lower_envelopes, upper_envelopes = [], []
+        for fraction in (F(2, 7), F(4, 7), F(6, 7)):
+            for y, lower in ((fraction*mean, True),
+                             (mean+fraction*(1-mean), False)):
+                if y in support:
+                    continue
+                envelope, split, atom = sharp_atomic_envelope(
+                    support, probabilities, y, lower,
+                )
+                check(envelope == brute_atomic_cell_mass(support, probabilities, y))
+                deterministic = brute_deterministic_tail_mass(
+                    support, probabilities, y, lower,
+                )
+                check(deterministic <= envelope)
+                deterministic_tail_checks += 1
+                strict_relaxations += int(deterministic < envelope)
+                other_mean = (mean-y*envelope)/(1-envelope)
+                if lower:
+                    contraction_support = (y, other_mean)
+                    contraction_probabilities = (envelope, 1-envelope)
+                else:
+                    contraction_support = (other_mean, y)
+                    contraction_probabilities = (1-envelope, envelope)
+                convex_order_below(
+                    contraction_support, contraction_probabilities,
+                    support, probabilities,
+                )
+                convex_order_witnesses += 1
+                (lower_envelopes if lower else upper_envelopes).append((y, envelope))
+                fractional_splits += int(0 < split < atom)
+                atomic_checks += 1
+        for lower, lower_mass in lower_envelopes:
+            for upper, upper_mass in upper_envelopes:
+                if lower_mass+upper_mass <= 1:
+                    lm, lf = atomic_quantile_segment(
+                        support, probabilities, F(0), lower_mass,
+                    )
+                    um, uf = atomic_quantile_segment(
+                        support, probabilities, 1-upper_mass, F(1),
+                    )
+                    check(lf == lower*lm and uf == upper*um)
+                    witness = lower_mass+upper_mass
+                    atomic_disjoint += 1
+                else:
+                    cut = 1-upper_mass
+                    lm, lf = atomic_quantile_segment(
+                        support, probabilities, F(0), cut,
+                    )
+                    um, uf = atomic_quantile_segment(
+                        support, probabilities, cut, F(1),
+                    )
+                    check(lf <= lower*lm and uf == upper*um)
+                    witness = F(1)
+                    atomic_overlap += 1
+                check(witness == min(F(1), lower_mass+upper_mass))
+                atomic_two_sided += 1
+    # On the canonical Bernoulli space, only the trivial and full sigma-fields
+    # are available.  Enlarging the space splits an atom and strictly improves
+    # each one-sided envelope.
+    for mean in (F(1, 5), F(1, 3), F(1, 2), F(2, 3), F(4, 5)):
+        for fraction in (F(1, 4), F(1, 2), F(3, 4)):
+            lower = fraction*mean
+            randomized = (1-mean)/(1-lower)
+            deterministic = 1-mean
+            split = lower*(1-mean)/(1-lower)
+            check(0 < split < mean)
+            check(randomized == deterministic+split > deterministic)
+            check(randomized-deterministic == (1-mean)*lower/(1-lower))
+            convex_order_below(
+                (lower, F(1)), (randomized, 1-randomized),
+                (F(0), F(1)), (1-mean, mean),
+            )
+            convex_order_witnesses += 1
+            bernoulli_lower += 1
+
+            upper = mean+fraction*(1-mean)
+            randomized = mean/upper
+            deterministic = mean
+            split = mean*(1-upper)/upper
+            check(0 < split < 1-mean)
+            check(randomized == deterministic+split > deterministic)
+            check(randomized-deterministic == mean*(1-upper)/upper)
+            convex_order_below(
+                (F(0), upper), (1-randomized, randomized),
+                (F(0), F(1)), (1-mean, mean),
+            )
+            convex_order_witnesses += 1
+            bernoulli_upper += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -190,6 +369,15 @@ def main():
     print(f"Sharp lower/upper beta-contraction envelopes: {lower_sharp_checks}/{upper_sharp_checks}")
     print(f"Sharp two-sided beta partitions: {two_sided_checks} "
           f"({disjoint_checks} disjoint, {overlap_checks} overlapping)")
+    print(f"Exact atomic envelope/LP checks: {atomic_checks}; "
+          f"fractional cutoff splits: {fractional_splits}")
+    print(f"Exact atomic two-sided partitions: {atomic_two_sided} "
+          f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
+    print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
+          f"{bernoulli_upper} upper")
+    print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
+    print(f"Exact fixed-space 0-1 tail optima: {deterministic_tail_checks}; "
+          f"strict fractional relaxations: {strict_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
