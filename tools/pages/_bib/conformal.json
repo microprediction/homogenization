@@ -20,6 +20,16 @@
   "annotation": "Provides historical context for discrete-variable extremum problems and their linear-programming relaxations. The fixed-space one- and two-sided selection equalities in the latent-coverage note are proved directly."
  },
  {
+  "key": "IbarakiHasegawaTeranakaIwase1978",
+  "authors": "Ibaraki, T., Hasegawa, T., Teranaka, K. and Iwase, J.",
+  "year": 1978,
+  "title": "The Multiple-Choice Knapsack Problem",
+  "venue": "Journal of the Operations Research Society of Japan 21(1):59-95",
+  "doi": "10.15807/jorsj.21.59",
+  "url": "",
+  "annotation": "Develops classical multiple-choice knapsack formulations and algorithms. The latent-coverage note's two-budget three-choice reduction is a specialized exact construction proved directly from its conditional-mean constraints."
+ },
+ {
   "key": "Karp1972",
   "authors": "Karp, R. M.",
   "year": 1972,
