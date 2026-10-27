@@ -66,6 +66,39 @@
     <p>Thus distinguishing a nearly pure cycle from a pure one is only square-root stable in the cubic coefficient.
       This identifies rates from the asymptotic coefficient under the stated known-feature and known-$s$ assumptions; it is not a finite-sample estimator claim.</p>
 
+    <h2>What finite switching speed certifies</h2>
+    <p>Let $G_m=\log A_{m,Q}(T)-\log A_{m,Q^\leftarrow}(T)$, let
+      $C_\leftrightarrow=C_Q+C_{Q^\leftarrow}$ be the explicit directional remainder constant below, and take $m$ above both displayed thresholds.
+      Assume also that $b(T)$ is real and nonzero, and define
+      </p>
+    $$\widehat\Delta_m={3m^3G_m\over b(T)^3},\qquad
+      E_{\Delta,m}={3C_\leftrightarrow\over m|b(T)|^3}.$$
+    <p>The fourth-order log-transform bound gives the finite-speed certificate</p>
+    $$|\widehat\Delta_m-\Delta|\le E_{\Delta,m}.$$
+    <p>Write $V_c=(c_1-c_2)(c_2-c_3)(c_3-c_1)$ and suppose $V_c\ne0$.
+      The normalized estimate and its error radius are</p>
+    $$\widehat\rho_m={27s^3|\widehat\Delta_m|\over|V_c|},\qquad
+      \epsilon_m={81s^3C_\leftrightarrow\over m|b(T)|^3|V_c|},$$
+    <p>so $|\widehat\rho_m-\rho|\le\epsilon_m$.
+      With $R(\theta)=16\theta/(3+\theta^2)^2$, monotonicity gives the exact enclosure</p>
+    $$\theta\in\left[
+      R^{-1}\{(\widehat\rho_m-\epsilon_m)_+\},
+      R^{-1}\{\min(1,\widehat\rho_m+\epsilon_m)\}
+      \right].$$
+    <p>If $|\widehat\Delta_m|&gt;E_{\Delta,m}$, its sign is also certified and the orientation formula above identifies the sign of $p-q$.
+      The enclosure is deterministic transform error, not a sampling-confidence interval.</p>
+    <p>Away from the pure-cycle boundary, if both admissible imbalances are at most $\bar\theta&lt;1$, the mean-value theorem yields</p>
+    $$|\widetilde\theta-\theta|\le
+      {(3+\bar\theta^2)^3\over48(1-\bar\theta^2)}
+      |\widetilde\rho-\rho|.$$
+    <p>There is also a global square-root bound.
+      Since $R$ is concave on $[0,1]$ and</p>
+    $$1-R(\theta)={(1-\theta)^2(\theta^2+2\theta+9)\over(3+\theta^2)^2}
+      \ge {3\over4}(1-\theta)^2,$$
+    <p>any two admissible values satisfy
+      $|\widetilde\theta-\theta|\le2|\widetilde\rho-\rho|^{1/2}/\sqrt3$.
+      Thus the finite-speed coefficient error is $O(m^{-1})$, giving $O(m^{-1})$ rate recovery on compact subsets of $[0,1)$ but only the uniform $O(m^{-1/2})$ guarantee at a pure cycle.</p>
+
     <h2>Outer coefficients</h2>
     <p>Set $D=D_c$, $\ell=\pi D$, $L=(I-\mathbf1\pi)D$ and write $f=A(\mathbf1+z)$, $\pi z=0$.
       Then $A'/A=b\ell z$ and</p>

@@ -5,6 +5,7 @@ import numpy as np
 import sympy as sp
 from scipy.integrate import solve_ivp
 from scipy.linalg import expm
+from scipy.optimize import brentq
 
 
 def data(q, c):
@@ -121,6 +122,33 @@ def three_cycle_response_curve():
     return cases
 
 
+def finite_speed_inversion_intervals():
+    """Check exact conditioning bounds and finite-error inversion intervals."""
+    theta = sp.symbols('theta', nonnegative=True)
+    response = 16*theta/(3+theta**2)**2
+    assert sp.factor(1-response-(1-theta)**2*(theta**2+2*theta+9)/(3+theta**2)**2) == 0
+    assert sp.factor(sp.diff(response, theta, 2)-192*theta*(theta**2-3)/(theta**2+3)**4) == 0
+    slack = sp.factor(1-response-sp.Rational(3, 4)*(1-theta)**2)
+    target = -(theta-1)**3*(3*theta**3+3*theta**2+17*theta+9)/(4*(theta**2+3)**2)
+    assert sp.factor(slack-target) == 0
+
+    curve = lambda value: 16*value/(3+value*value)**2
+    inverse = lambda value: (0. if value <= 0 else 1. if value >= 1 else
+                             brentq(lambda trial: curve(trial)-value, 0., 1., xtol=1e-14))
+    epsilon = .01
+    max_width = 0.
+    for truth in (0., .25, .5, .75, 1.):
+        rho = curve(truth)
+        lower = inverse(max(0., rho-epsilon))
+        upper = inverse(min(1., rho+epsilon))
+        assert lower <= truth+3e-13 and truth <= upper+3e-13
+        for endpoint in (lower, upper):
+            difference = abs(curve(endpoint)-rho)
+            assert abs(endpoint-truth) <= 2/math.sqrt(3)*math.sqrt(difference)+3e-13
+        max_width = max(max_width, upper-lower)
+    return 5, max_width
+
+
 def main():
     q = np.array([[-1.,1.,0.],[0.,-1.,1.],[1.,0.,-1.]])
     c = np.array([-1.,0.,1.])
@@ -138,6 +166,7 @@ def main():
     assert (u,v,u-v,(u-v)/3) == (-sp.Rational(1,27),sp.Rational(1,27),-sp.Rational(2,27),-sp.Rational(2,81))
     factor_cases, equality_cases = three_cycle_factorization()
     response_cases = three_cycle_response_curve()
+    interval_cases, interval_width = finite_speed_inversion_intervals()
     time, eps = sp.symbols('t eps')
     bt = time+time**2/5+sp.I*time**3/10
     z1 = -bt*ss*sc
@@ -161,6 +190,7 @@ def main():
     print(f'{factor_cases} exact three-cycle orientation/Vandermonde factorizations: PASS')
     print(f'Sharp unit-variance design bound, including {equality_cases} equality cases: PASS')
     print(f'Exact imbalance-response curve, including {response_cases} recovery cases: PASS')
+    print(f'Finite-error inversion: {interval_cases} intervals; maximum width at rho error .01 = {interval_width:.9g}: PASS')
     print(f'Exact cycle: Q={q.tolist()}, pi=(1,1,1)/3, c=(-1,0,1), U={u}, V={v}, Delta={u-v}, coefficient={(u-v)/3}')
     thresholds, budgets = zip(ramp_budget(q,c),ramp_budget(reverse,c))
     m0, budget, coefficient = max(thresholds), sum(budgets), float((u-v)/3)
