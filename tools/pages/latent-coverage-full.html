@@ -171,6 +171,19 @@
       attainable on a fixed atomic probability space. This distinction is separate from marginal versus
       feature-conditional conformal coverage.</p>
 
+    <h2>The fixed-space problem is an exact 0&ndash;1 selection</h2>
+    <p>On a canonical finite space with atom masses $w_j$, values $z_j$ and mean $p$, no atom can be split.
+      For $y&lt;p$, every information partition therefore satisfies</p>
+    $$\sup_{\mathcal D}\Pr\{\mathbb E[Z\mid\mathcal D]\le y\}
+      =\max_{A\subseteq[m]}\left\{\sum_{j\in A}w_j:
+      \sum_{j\in A}w_j(z_j-y)\le0\right\}.$$
+    <p>Indeed, the union $A$ of all low-mean cells is feasible and has exactly the tail-event mass. Conversely, any
+      feasible $A$ and its complement form a two-cell partition; since the total mean exceeds $y$, the complement
+      mean is greater than $y$.</p>
+    <p>For $y&gt;p$, the upper-tail formula is the same maximum with the final inequality reversed.
+      Allowing independent atom splitting replaces each indicator $\mathbf1_{\{j\in A\}}$ by a fraction in $[0,1]$,
+      so the sharp randomized stop-loss envelope is exactly the fractional relaxation of this 0&ndash;1 problem.</p>
+
     <h2>Atomic two-sided bands remain sharp</h2>
     <p>For $0&lt;\ell&lt;p&lt;u&lt;1$, let $q_-$ and $q_+$ be the sharp atomic lower- and upper-tail envelope masses.
       On the randomized distributional-transform coordinate $V\sim\operatorname{Unif}(0,1)$, write $Z=Q(V)$ with
@@ -245,7 +258,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 66 finite-law convex-order witnesses, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 36 fixed-space 0&ndash;1 optima with strict fractional gaps, 66 finite-law convex-order witnesses, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

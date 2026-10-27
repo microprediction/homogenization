@@ -109,6 +109,19 @@ def brute_atomic_cell_mass(support, probabilities, y):
     return best
 
 
+def brute_deterministic_tail_mass(support, probabilities, y, lower):
+    """Largest tail event when the original atoms cannot be split."""
+    best = F(0)
+    for mask in range(1 << len(support)):
+        chosen = [q for j, q in enumerate(probabilities) if mask & (1 << j)]
+        imbalance = sum(probabilities[j]*(support[j]-y)
+                        for j in range(len(support)) if mask & (1 << j))
+        feasible = imbalance <= 0 if lower else imbalance >= 0
+        if feasible:
+            best = max(best, sum(chosen))
+    return best
+
+
 def atomic_quantile_segment(support, probabilities, left, right):
     """Exact mass and first moment on a randomized quantile segment."""
     cumulative = F(0)
@@ -242,7 +255,7 @@ def main():
                     two_sided_checks += 1
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
-    convex_order_witnesses = 0
+    convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     weight_patterns = (
@@ -263,6 +276,12 @@ def main():
                     support, probabilities, y, lower,
                 )
                 check(envelope == brute_atomic_cell_mass(support, probabilities, y))
+                deterministic = brute_deterministic_tail_mass(
+                    support, probabilities, y, lower,
+                )
+                check(deterministic <= envelope)
+                deterministic_tail_checks += 1
+                strict_relaxations += int(deterministic < envelope)
                 other_mean = (mean-y*envelope)/(1-envelope)
                 if lower:
                     contraction_support = (y, other_mean)
@@ -357,6 +376,8 @@ def main():
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
+    print(f"Exact fixed-space 0-1 tail optima: {deterministic_tail_checks}; "
+          f"strict fractional relaxations: {strict_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
