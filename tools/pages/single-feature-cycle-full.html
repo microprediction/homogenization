@@ -99,6 +99,34 @@
       $|\widetilde\theta-\theta|\le2|\widetilde\rho-\rho|^{1/2}/\sqrt3$.
       Thus the finite-speed coefficient error is $O(m^{-1})$, giving $O(m^{-1})$ rate recovery on compact subsets of $[0,1)$ but only the uniform $O(m^{-1/2})$ guarantee at a pure cycle.</p>
 
+    <h2>The same coefficient identifies entropy production</h2>
+    <p>For $p,q&gt;0$, the stationary entropy-production rate of the three-cycle is</p>
+    <div class="equation-card">
+    $$\dot S=\sum_{i\ne j}\pi_iq_{ij}\log{\pi_iq_{ij}\over\pi_jq_{ji}}
+      =(p-q)\log{p\over q}
+      =s\theta\log{1+\theta\over1-\theta}.$$
+    </div>
+    <p>This is the stationary path-reversal dissipation of
+      <a href="./bibliography.html#Schnakenberg1976">Schnakenberg's network theory</a>.
+      It is zero at reversibility, strictly increasing in $\theta$, and infinite for a one-way cycle under the usual extended-value convention.</p>
+    <p>Consequently the cubic response identifies the dissipation through</p>
+    <div class="equation-card">
+    $$\dot S(\rho)=sR^{-1}(\rho)
+      \log{1+R^{-1}(\rho)\over1-R^{-1}(\rho)},
+      \qquad R(\theta)={16\theta\over(3+\theta^2)^2}.$$
+    </div>
+    <p>If the finite-speed enclosure above is $\theta\in[\theta_-,\theta_+]$, monotonicity gives the exact image interval
+      $\dot S\in[\dot S(\theta_-),\dot S(\theta_+)]$; its upper endpoint is infinite when $\theta_+=1$.
+      This remains a deterministic transform-error interval, not a statistical confidence interval.</p>
+    <p>The two identification boundaries have different thermodynamic scales:</p>
+    <div class="equation-card">
+    $$\dot S={81s\over128}\rho^2+O(\rho^4),\qquad \rho\downarrow0,$$
+    $$\dot S={s\over2}\log{3\over1-\rho}
+      +o\!\left(\log{1\over1-\rho}\right),\qquad \rho\uparrow1.$$
+    </div>
+    <p>Thus weak directional response corresponds to quadratic dissipation near detailed balance, whereas a response indistinguishable from one can conceal an unbounded dissipation rate near a pure cycle.
+      The certificate checks both endpoint equivalents and five finite-error image intervals.</p>
+
     <h2>Outer coefficients</h2>
     <p>Set $D=D_c$, $\ell=\pi D$, $L=(I-\mathbf1\pi)D$ and write $f=A(\mathbf1+z)$, $\pi z=0$.
       Then $A'/A=b\ell z$ and</p>

@@ -149,6 +149,42 @@ def finite_speed_inversion_intervals():
     return 5, max_width
 
 
+def three_cycle_entropy_production():
+    """Check entropy production and its finite-speed image intervals."""
+    theta, total = sp.symbols('theta total', positive=True)
+    forward = total*(1+theta)/2
+    backward = total*(1-theta)/2
+    entropy = (forward-backward)*sp.log(forward/backward)
+    closed = total*theta*sp.log((1+theta)/(1-theta))
+    assert sp.simplify(entropy-closed) == 0
+    derivative = total*(sp.log((1+theta)/(1-theta))+2*theta/(1-theta**2))
+    assert sp.simplify(sp.diff(closed, theta)-derivative) == 0
+    assert sp.series(closed, theta, 0, 8) == \
+        2*total*theta**2+2*total*theta**4/3+2*total*theta**6/5+sp.Order(theta**8)
+
+    eta = sp.symbols('eta', positive=True)
+    response = 16*theta/(3+theta**2)**2
+    assert sp.limit(closed.subs(theta, 1-eta)/total-sp.log(2/eta), eta, 0, dir='+') == 0
+    assert sp.limit((1-response.subs(theta, 1-eta))/eta**2, eta, 0, dir='+') == sp.Rational(3, 4)
+
+    curve = lambda value: 16*value/(3+value*value)**2
+    inverse = lambda value: (0. if value <= 0 else 1. if value >= 1 else
+                             brentq(lambda trial: curve(trial)-value, 0., 1., xtol=1e-14))
+    dissipation = lambda value: (0. if value <= 0 else math.inf if value >= 1 else
+                                 value*math.log((1+value)/(1-value)))
+    epsilon = .01
+    cases = 0
+    for truth in (.05, .25, .5, .75, .95):
+        rho = curve(truth)
+        lower = inverse(max(0., rho-epsilon))
+        upper = inverse(min(1., rho+epsilon))
+        actual = dissipation(truth)
+        assert dissipation(lower) <= actual+3e-13
+        assert actual <= dissipation(upper)+3e-13
+        cases += 1
+    return cases
+
+
 def main():
     q = np.array([[-1.,1.,0.],[0.,-1.,1.],[1.,0.,-1.]])
     c = np.array([-1.,0.,1.])
@@ -167,6 +203,7 @@ def main():
     factor_cases, equality_cases = three_cycle_factorization()
     response_cases = three_cycle_response_curve()
     interval_cases, interval_width = finite_speed_inversion_intervals()
+    entropy_cases = three_cycle_entropy_production()
     time, eps = sp.symbols('t eps')
     bt = time+time**2/5+sp.I*time**3/10
     z1 = -bt*ss*sc
@@ -191,6 +228,7 @@ def main():
     print(f'Sharp unit-variance design bound, including {equality_cases} equality cases: PASS')
     print(f'Exact imbalance-response curve, including {response_cases} recovery cases: PASS')
     print(f'Finite-error inversion: {interval_cases} intervals; maximum width at rho error .01 = {interval_width:.9g}: PASS')
+    print(f'Entropy-production recovery: exact formula, endpoint asymptotics, and {entropy_cases} finite-error intervals: PASS')
     print(f'Exact cycle: Q={q.tolist()}, pi=(1,1,1)/3, c=(-1,0,1), U={u}, V={v}, Delta={u-v}, coefficient={(u-v)/3}')
     thresholds, budgets = zip(ramp_budget(q,c),ramp_budget(reverse,c))
     m0, budget, coefficient = max(thresholds), sum(budgets), float((u-v)/3)

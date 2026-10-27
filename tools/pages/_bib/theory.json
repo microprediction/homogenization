@@ -69,5 +69,14 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "Schnakenberg1976",
+  "authors": "Schnakenberg, J.",
+  "year": 1976,
+  "title": "Network theory of microscopic and macroscopic behavior of master equation systems",
+  "venue": "Reviews of Modern Physics 48(4):571-585",
+  "doi": "10.1103/RevModPhys.48.571",
+  "annotation": "Develops cycle affinities, stationary currents and entropy production for master-equation networks. The three-cycle cubic-response note uses its standard stationary path-reversal dissipation."
  }
 ]
