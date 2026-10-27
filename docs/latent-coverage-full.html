@@ -165,7 +165,7 @@
     $$\Pr(C\le x)\le\left(\frac{x}{(1-\delta)p}\right)^N,
       \qquad0&lt;x&lt;(1-\delta)p,\quad p=\frac N{N+1}.$$
 
-    <h2>The contraction envelope is sharp</h2>
+    <h2>Both contraction envelopes are sharp</h2>
     <p>The stop-loss bound is exact over all conditional-mean contractions of the beta variable.
       More generally, let $Z$ have a continuous positive density on $(0,1)$ and mean $p$, put
       $M=\mathbb E[Z\mid\mathcal D]$, and fix $0&lt;y&lt;p$.</p>
@@ -191,6 +191,30 @@
       $C=(1-\delta)M+\delta R$, $0\le R\le1$, by taking $R=0$.
       This is an extremal statement over beta contractions, not a claim that every extremizer is realizable by a
       specified latent calibration mechanism.</p>
+    <p>The upper tail has an exact dual statement. For $p&lt;y&lt;1$, the upper-truncated mean is continuous and
+      strictly increasing from $p$ to one, so there is a unique $s_y\in(0,y)$ satisfying</p>
+    $$\mathbb E[Z\mid Z\ge s_y]=y.$$
+    <p>For every $0\le t&lt;y$, conditional Jensen and
+      $(M-t)_+\ge(y-t)\mathbf1_{\{M\ge y\}}$ give
+      $\Pr(M\ge y)\le\mathbb E(Z-t)_+/(y-t)$.</p>
+    <p>With $U(t)=\mathbb E(Z-t)_+$, differentiation gives</p>
+    $$\frac{d}{dt}\frac{U(t)}{y-t}
+      =\frac{\Pr(Z\ge t)\{\mathbb E[Z\mid Z\ge t]-y\}}{(y-t)^2}.$$
+    <p>The ratio decreases before $s_y$ and increases after it. The two-cell information
+      $\sigma\{Z\ge s_y\}$ attains the resulting bound because its upper-cell conditional mean is exactly $y$.</p>
+    <div class="equation-card">
+    $$\sup_{\mathcal D}\Pr\{\mathbb E[Z\mid\mathcal D]\ge y\}
+      =\inf_{0\le t&lt;y}\frac{\mathbb E(Z-t)_+}{y-t}
+      =\Pr(Z\ge s_y).$$
+    </div>
+    <p>For $Z\sim\operatorname{Beta}(a,b)$, the cut solves
+      $p\{1-I_s(a+1,b)\}=y\{1-I_s(a,b)\}$ and the envelope is $1-I_{s_y}(a,b)$.
+      When $a=1,b=N$, it reduces to</p>
+    $$s_y=\frac{y-p}{1-p},\qquad
+      \Pr(Z\ge s_y)=\left(\frac{1-y}{1-p}\right)^N.$$
+    <p>For $C=(1-\delta)M+\delta R$, $C\le(1-\delta)M+\delta$.
+      Thus for $x&gt;\delta+(1-\delta)p$, put $y=(x-\delta)/(1-\delta)$ and use the upper envelope; it is sharp over
+      the abstract class by taking $R=1$.</p>
     <p>At $N=k=9$ and $x=0.8$, the iid beta failure probability is $0.134217728000$, while this latent-model bound is $0.346439416115$.
       With finite-history boundary weight $\delta=e^{-10}$ it is $0.346581003179$.
       These are exact contraction envelopes, not a claim of optimality over conformal models.</p>
@@ -235,11 +259,11 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp lower/upper beta contractions and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
-      The convex-order placement is classical; the two-cell sharp-tail optimizer is proved directly here.
+      The convex-order placement is classical; the two sharp two-cell tail optimizers are proved directly here.
       The note supplies the latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
   </main>
 

@@ -5,7 +5,7 @@ from itertools import product
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, minimize_scalar
-from scipy.special import betainc, beta
+from scipy.special import betainc, betaincc, beta
 
 
 def check(condition):
@@ -42,7 +42,7 @@ def latent_posterior_variance(n, prior, r):
     return F(n, n+2)*weight*(second-first*first)
 
 
-def sharp_beta_contraction(a, b, y):
+def sharp_beta_lower_contraction(a, b, y):
     """Return the sharp lower-tail envelope and its two-cell witness."""
     p = a/(a+b)
     root = brentq(
@@ -55,6 +55,21 @@ def sharp_beta_contraction(a, b, y):
     upper_mean = (p-lower_first)/(1-lower_mass)
     stoploss_ratio = (root*lower_mass-lower_first)/(root-y)
     return root, lower_mass, lower_mean, upper_mean, stoploss_ratio
+
+
+def sharp_beta_upper_contraction(a, b, y):
+    """Return the sharp upper-tail envelope and its two-cell witness."""
+    p = a/(a+b)
+    root = brentq(
+        lambda t: p*betaincc(a+1, b, t)-y*betaincc(a, b, t),
+        0, y,
+    )
+    upper_mass = betaincc(a, b, root)
+    upper_first = p*betaincc(a+1, b, root)
+    upper_mean = upper_first/upper_mass
+    lower_mean = (p-upper_first)/(1-upper_mass)
+    stoploss_ratio = (upper_first-root*upper_mass)/(y-root)
+    return root, upper_mass, lower_mean, upper_mean, stoploss_ratio
 
 
 def main():
@@ -95,7 +110,7 @@ def main():
             max_error = max(max_error, error)
             check(error < 2e-9)
             integrated += 1
-    beta_checks, sharp_checks = 0, 0
+    beta_checks, lower_sharp_checks, upper_sharp_checks = 0, 0, 0
     for n in (2, 5, 9, 19):
         for k in range(1, n+1):
             a, b, p = k, n+1-k, k/(n+1)
@@ -115,7 +130,7 @@ def main():
                 check(abs(result.fun-(x/p)**n) < 2e-7)
             for fraction in (0.2, 0.5, 0.8):
                 y = fraction*p
-                cut, envelope, low, high, ratio = sharp_beta_contraction(a, b, y)
+                cut, envelope, low, high, ratio = sharp_beta_lower_contraction(a, b, y)
                 check(y < cut < 1)
                 check(abs(low-y) < 2e-12)
                 check(high > y)
@@ -123,7 +138,17 @@ def main():
                 if k == n:
                     check(abs(cut-y/p) < 2e-12)
                     check(abs(envelope-(y/p)**n) < 2e-12)
-                sharp_checks += 1
+                lower_sharp_checks += 1
+                y = p+fraction*(1-p)
+                cut, envelope, low, high, ratio = sharp_beta_upper_contraction(a, b, y)
+                check(0 < cut < y)
+                check(low < y)
+                check(abs(high-y) < 2e-12)
+                check(abs(ratio-envelope) < 2e-12)
+                if k == 1:
+                    check(abs(cut-(y-p)/(1-p)) < 2e-12)
+                    check(abs(envelope-((1-y)/(1-p))**n) < 2e-12)
+                upper_sharp_checks += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
     check(r < slope < x < F(9, 10))
@@ -136,7 +161,7 @@ def main():
     between = future**2*(moments[1]-moments[0]**2)
     print(f"Nested-uniform exact stop-loss/tail checks: {exact}; mean/variance cases: 54")
     print(f"Independent nested-CDF integrals: {integrated}; beta-integral checks: {beta_checks}")
-    print(f"Sharp beta-contraction envelopes and two-cell witnesses: {sharp_checks}")
+    print(f"Sharp lower/upper beta-contraction envelopes: {lower_sharp_checks}/{upper_sharp_checks}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
