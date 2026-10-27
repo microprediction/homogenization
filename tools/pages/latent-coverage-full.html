@@ -186,6 +186,21 @@
     </div>
     <p>Thus the simultaneous two-sided formula also survives arbitrary atoms when independent tie randomization is allowed.
       This is a law-level extremum over randomized contractions, not conditional coverage given observed features.</p>
+
+    <h2>Randomized contractions are the convex-order lower set</h2>
+    <p>Let $\nu$ be the law of an integrable $Z$, and let $\mathcal C(\nu)$ contain every law of
+      $M=\mathbb E[Z'\mid\mathcal D]$ formed on an arbitrary probability-space extension with $Z'\sim\nu$.
+      Then</p>
+    <div class="equation-card">
+    $$\mathcal C(\nu)=\{\mu:\mu\preceq_{\mathrm{cx}}\nu\}.$$
+    </div>
+    <p>For the forward inclusion, the tower property gives $\mathbb E[Z'\mid M]=M$, and conditional Jensen gives
+      $\mathbb E\varphi(M)\le\mathbb E\varphi(Z')$ for every integrable convex $\varphi$.
+      Conversely, Strassen's theorem couples any $\mu\preceq_{\mathrm{cx}}\nu$ as $(M,Z')$ with
+      $\mathbb E[Z'\mid M]=M$; taking $\mathcal D=\sigma(M)$ realizes that law.</p>
+    <p>Consequently, the sharp one- and two-sided formulas above optimize over the entire convex-order lower set, not
+      merely over partitions of one convenient representation. This law-level equivalence does not imply attainability
+      on a fixed original space, as the Bernoulli gap shows, or feature-conditional conformal coverage.</p>
     <p>At $N=k=9$ and $x=0.8$, the iid beta failure probability is $0.134217728000$, while this latent-model bound is $0.346439416115$.
       With finite-history boundary weight $\delta=e^{-10}$ it is $0.346581003179$.
       These are exact contraction envelopes, not a claim of optimality over conformal models.</p>
@@ -230,11 +245,12 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 66 finite-law convex-order witnesses, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
       The <a href="./bibliography.html#Strassen1965">Strassen martingale-coupling characterization</a> places conditional means in convex order, while the <a href="./bibliography.html#Ruschendorf2009">randomized distributional transform</a> supplies the standard tie-breaking device.
       The sharp partition and atom-splitting optimizers are proved directly here.</p>
-    <p>The note supplies the latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
+    <p>The convex-order equivalence is Strassen's classical theorem. The note supplies the direct sharp tail optimizers,
+      latent-model and finite-boundary specializations, and the realized-panel variance decomposition.</p>
   </main>

@@ -122,6 +122,21 @@ def atomic_quantile_segment(support, probabilities, left, right):
     return mass, first
 
 
+def convex_order_below(left_support, left_probabilities,
+                       right_support, right_probabilities):
+    """Certify finite-law convex order through exact call transforms."""
+    check(sum(left_probabilities) == sum(right_probabilities) == 1)
+    check(sum(z*q for z, q in zip(left_support, left_probabilities)) ==
+          sum(z*q for z, q in zip(right_support, right_probabilities)))
+    strikes = sorted(set(left_support+right_support))
+    for strike in strikes:
+        left_call = sum(q*max(z-strike, 0)
+                        for z, q in zip(left_support, left_probabilities))
+        right_call = sum(q*max(z-strike, 0)
+                         for z, q in zip(right_support, right_probabilities))
+        check(left_call <= right_call)
+
+
 def main():
     exact, integrated, boundary_checks, latent_decompositions = 0, 0, 0, 0
     max_error = 0.0
@@ -227,6 +242,7 @@ def main():
                     two_sided_checks += 1
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
+    convex_order_witnesses = 0
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     weight_patterns = (
@@ -247,6 +263,18 @@ def main():
                     support, probabilities, y, lower,
                 )
                 check(envelope == brute_atomic_cell_mass(support, probabilities, y))
+                other_mean = (mean-y*envelope)/(1-envelope)
+                if lower:
+                    contraction_support = (y, other_mean)
+                    contraction_probabilities = (envelope, 1-envelope)
+                else:
+                    contraction_support = (other_mean, y)
+                    contraction_probabilities = (1-envelope, envelope)
+                convex_order_below(
+                    contraction_support, contraction_probabilities,
+                    support, probabilities,
+                )
+                convex_order_witnesses += 1
                 (lower_envelopes if lower else upper_envelopes).append((y, envelope))
                 fractional_splits += int(0 < split < atom)
                 atomic_checks += 1
@@ -287,6 +315,11 @@ def main():
             check(0 < split < mean)
             check(randomized == deterministic+split > deterministic)
             check(randomized-deterministic == (1-mean)*lower/(1-lower))
+            convex_order_below(
+                (lower, F(1)), (randomized, 1-randomized),
+                (F(0), F(1)), (1-mean, mean),
+            )
+            convex_order_witnesses += 1
             bernoulli_lower += 1
 
             upper = mean+fraction*(1-mean)
@@ -296,6 +329,11 @@ def main():
             check(0 < split < 1-mean)
             check(randomized == deterministic+split > deterministic)
             check(randomized-deterministic == mean*(1-upper)/upper)
+            convex_order_below(
+                (F(0), upper), (1-randomized, randomized),
+                (F(0), F(1)), (1-mean, mean),
+            )
+            convex_order_witnesses += 1
             bernoulli_upper += 1
     n, x, prior, r = 9, F(4, 5), F(1, 50), F(18, 25)
     slope, cdf, _, moments = nested(n, prior, r)
@@ -318,6 +356,7 @@ def main():
           f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
+    print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")
