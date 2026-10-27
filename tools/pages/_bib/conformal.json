@@ -30,6 +30,16 @@
   "annotation": "Develops classical multiple-choice knapsack formulations and algorithms. The latent-coverage note's two-budget three-choice reduction is a specialized exact construction proved directly from its conditional-mean constraints."
  },
  {
+  "key": "FriezeClarke1984",
+  "authors": "Frieze, A. M. and Clarke, M. R. B.",
+  "year": 1984,
+  "title": "Approximation algorithms for the m-dimensional 0-1 knapsack problem: Worst-case and probabilistic analyses",
+  "venue": "European Journal of Operational Research 15(1):100-109",
+  "doi": "10.1016/0377-2217(84)90053-5",
+  "url": "",
+  "annotation": "Gives a classical polynomial approximation scheme for fixed-dimensional knapsack using linear-programming enumeration and rounding. The latent-coverage note proves a specialized additive scheme for its two-budget three-choice conditional-mean problem."
+ },
+ {
   "key": "Karp1972",
   "authors": "Karp, R. M.",
   "year": 1972,
