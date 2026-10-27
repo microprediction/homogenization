@@ -147,6 +147,22 @@
     <p>Therefore equality holds exactly for a one-way cycle, $pq=0$, and those evenly spaced levels.
       Every genuinely bidirectional cycle has a strictly smaller normalized cubic signal.</p>
 
+    <h2>Recovering the directional imbalance</h2>
+    <p>Suppose the distinct feature levels and $s=p+q$ are known, and put
+      $\theta=|p-q|/s$. Relative to the same feature&apos;s one-way coefficient, the observed cubic magnitude is</p>
+    $$\rho={27s^3|\Delta|\over|(c_1-c_2)(c_2-c_3)(c_3-c_1)|}
+      ={16\theta\over(3+\theta^2)^2}.$$
+    <p>This response increases strictly from zero to one because</p>
+    $$\rho'(\theta)={48(1-\theta^2)\over(3+\theta^2)^3}.$$
+    <p>Hence $\theta$ is the unique root in $[0,1]$ of
+      $\rho\theta^4+6\rho\theta^2-16\theta+9\rho=0$.
+      The sign of $p-q$ is $-\operatorname{sign}\{\Delta(c_1-c_2)(c_2-c_3)(c_3-c_1)\}$, so $p$ and $q$ are identified separately.</p>
+    <p>The inversion is regular near reversibility but not near a pure cycle:</p>
+    $$\rho={16\over9}\theta-{32\over27}\theta^3+O(\theta^5),\qquad
+      \rho=1-{3\over4}(1-\theta)^2-{1\over2}(1-\theta)^3+O((1-\theta)^5).$$
+    <p>Thus distinguishing a nearly pure cycle from a pure one is only square-root stable in the cubic coefficient.
+      This identifies rates from the asymptotic coefficient under the stated known-feature and known-$s$ assumptions; it is not a finite-sample estimator claim.</p>
+
     <h2>Outer coefficients</h2>
     <p>Set $D=D_c$, $\ell=\pi D$, $L=(I-\mathbf1\pi)D$ and write $f=A(\mathbf1+z)$, $\pi z=0$.
       Then $A'/A=b\ell z$ and</p>
