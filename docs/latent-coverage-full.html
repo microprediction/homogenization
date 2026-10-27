@@ -164,9 +164,36 @@
       Minimization at $t=y/p$ gives the explicit budget</p>
     $$\Pr(C\le x)\le\left(\frac{x}{(1-\delta)p}\right)^N,
       \qquad0&lt;x&lt;(1-\delta)p,\quad p=\frac N{N+1}.$$
+
+    <h2>The contraction envelope is sharp</h2>
+    <p>The stop-loss bound is exact over all conditional-mean contractions of the beta variable.
+      More generally, let $Z$ have a continuous positive density on $(0,1)$ and mean $p$, put
+      $M=\mathbb E[Z\mid\mathcal D]$, and fix $0&lt;y&lt;p$.</p>
+    <p>The lower-truncated mean is continuous and strictly increasing from zero to $p$.
+      Hence there is a unique $t_y\in(y,1)$ satisfying</p>
+    $$\mathbb E[Z\mid Z\le t_y]=y.$$
+    <p>For $L(t)=\mathbb E(t-Z)_+$, differentiation gives</p>
+    $$\frac{d}{dt}\frac{L(t)}{t-y}
+      =\frac{\Pr(Z\le t)\{\mathbb E[Z\mid Z\le t]-y\}}{(t-y)^2}.$$
+    <p>Hence the ratio decreases before $t_y$, increases after it, and its minimum is
+      $\Pr(Z\le t_y)$. This value is attained by the two-cell information
+      $\mathcal D_y=\sigma\{Z\le t_y\}$: the conditional mean equals $y$ on the lower cell and is strictly
+      greater than $y$ on its complement.</p>
+    <div class="equation-card">
+    $$\sup_{\mathcal D}\Pr\{\mathbb E[Z\mid\mathcal D]\le y\}
+      =\inf_{y&lt;t\le1}\frac{\mathbb E(t-Z)_+}{t-y}
+      =\Pr(Z\le t_y).$$
+    </div>
+    <p>For $Z\sim\operatorname{Beta}(a,b)$, the cut is the unique root of
+      $pI_t(a+1,b)=yI_t(a,b)$ and the exact envelope is $I_{t_y}(a,b)$.
+      When $a=N,b=1$, this reduces to $t_y=y/p$ and $(y/p)^N$.</p>
+    <p>Thus the displayed finite-boundary budget is also sharp over the abstract class
+      $C=(1-\delta)M+\delta R$, $0\le R\le1$, by taking $R=0$.
+      This is an extremal statement over beta contractions, not a claim that every extremizer is realizable by a
+      specified latent calibration mechanism.</p>
     <p>At $N=k=9$ and $x=0.8$, the iid beta failure probability is $0.134217728000$, while this latent-model bound is $0.346439416115$.
       With finite-history boundary weight $\delta=e^{-10}$ it is $0.346581003179$.
-      These are valid envelopes, not a claim of optimality over conformal models.</p>
+      These are exact contraction envelopes, not a claim of optimality over conformal models.</p>
 
     <h2>An exact counterexample to the beta-tail shortcut</h2>
     <p>Choose a latent regime once, with probability $q=1/50$ for regime zero, and keep it constant for all time.
@@ -212,7 +239,8 @@
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
-      The argument here supplies their latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
+      The convex-order placement is classical; the two-cell sharp-tail optimizer is proved directly here.
+      The note supplies the latent-model and finite-boundary specialization and the realized-panel variance decomposition, without claiming a new general convex-order principle.</p>
   </main>
 
   <footer>
