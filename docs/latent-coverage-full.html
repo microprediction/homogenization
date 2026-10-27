@@ -281,6 +281,23 @@
       Allowing independent atom splitting replaces each indicator $\mathbf1_{\{j\in A\}}$ by a fraction in $[0,1]$,
       so the sharp randomized stop-loss envelope is exactly the fractional relaxation of this 0&ndash;1 problem.</p>
 
+    <h2>Exact fixed-space tails already contain SUBSET SUM</h2>
+    <p>Take positive integers $a_1,\ldots,a_m$, a target $0&lt;C&lt;A=\sum_i a_i$, and threshold $y=1/2$.
+      Give one anchor atom mass $w_0=1/2$ and score $z_0=1/2-C/(4A)$; give item $i$ mass
+      $w_i=a_i/(2A)$ and the common score $z_i=3/4$.</p>
+    <p>The total mean is $p=5/8-C/(8A)&gt;y$. Every nonempty feasible lower-tail selection contains the anchor, and
+      an item set $S$ is feasible exactly when $\sum_{i\in S}a_i\le C$, so</p>
+    $$q_{\rm det}^-(1/2)=\frac12+\frac1{2A}
+      \max\left\{\sum_{i\in S}a_i:\sum_{i\in S}a_i\le C\right\}.$$
+    <p>The fractional relaxation always fills the budget exactly and has value $1/2+C/(2A)$.
+      Hence deterministic and randomized envelopes agree if and only if the SUBSET SUM target $C$ is attainable;
+      on this restricted family, deciding equality is NP-complete, and exact fixed-space optimization is weakly NP-hard.</p>
+    <p>After rational inputs are cleared to integer deviations $d_j$ and masses $c_j$, a signed-knapsack recursion
+      retaining the largest mass at each deviation computes the answer in $O(mD)$ time, where
+      $D=\sum_j|d_j|$. This is a pseudo-polynomial bound, consistent with weak NP-hardness.</p>
+    <p><a href="./bibliography.html#Karp1972">Karp (1972)</a> is the primary complexity source for SUBSET SUM;
+      the embedding into conditional-mean tails is the direct construction above.</p>
+
     <h2>Fixed-space two-sided bands are a three-way selection</h2>
     <p>For $\ell&lt;p&lt;u$, the exact deterministic two-sided envelope on the same finite space is</p>
     $$\sup_{\mathcal D}\Pr\{M\le\ell\ \text{or}\ M\ge u\}
@@ -371,7 +388,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 36 fixed-space one-sided and 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses, exact rational atomic-law linear programs and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 18 fixed-space dynamic programs, 169 SUBSET SUM reductions, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

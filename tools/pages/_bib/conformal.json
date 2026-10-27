@@ -20,6 +20,16 @@
   "annotation": "Provides historical context for discrete-variable extremum problems and their linear-programming relaxations. The fixed-space one- and two-sided selection equalities in the latent-coverage note are proved directly."
  },
  {
+  "key": "Karp1972",
+  "authors": "Karp, R. M.",
+  "year": 1972,
+  "title": "Reducibility among Combinatorial Problems",
+  "venue": "Complexity of Computer Computations, pp. 85-103",
+  "doi": "10.1007/978-1-4684-2001-2_9",
+  "url": "",
+  "annotation": "Establishes the classical NP-completeness framework and includes the knapsack form of SUBSET SUM. The latent-coverage note gives a direct polynomial reduction from it to exact fixed-space conditional-mean tails."
+ },
+ {
   "key": "Vovk2012",
   "authors": "Vovk, V.",
   "year": 2012,

@@ -1,6 +1,7 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
 from itertools import product
+from math import lcm
 
 import numpy as np
 from scipy.integrate import quad
@@ -120,6 +121,47 @@ def brute_deterministic_tail_mass(support, probabilities, y, lower):
         if feasible:
             best = max(best, sum(chosen))
     return best
+
+
+def dynamic_lower_tail_mass(support, probabilities, y):
+    """Exact pseudo-polynomial signed-knapsack recursion."""
+    gaps = tuple(q*(z-y) for z, q in zip(support, probabilities))
+    scale = 1
+    for value in tuple(probabilities)+gaps:
+        scale = lcm(scale, value.denominator)
+    costs = tuple(int(gap*scale) for gap in gaps)
+    rewards = tuple(int(q*scale) for q in probabilities)
+    states = {0: 0}
+    for cost, reward in zip(costs, rewards):
+        updated = states.copy()
+        for gap, mass in states.items():
+            updated[gap+cost] = max(updated.get(gap+cost, 0), mass+reward)
+        states = updated
+    return F(max(mass for gap, mass in states.items() if gap <= 0), scale)
+
+
+def certify_subset_sum_reduction(values, target):
+    """Embed one SUBSET SUM instance in a fixed-space lower tail."""
+    total = sum(values)
+    check(0 < target < total)
+    support = (F(1, 2)-F(target, 4*total),)+(F(3, 4),)*len(values)
+    probabilities = (F(1, 2),)+tuple(F(value, 2*total) for value in values)
+    mean = sum(z*q for z, q in zip(support, probabilities))
+    check(mean == F(5, 8)-F(target, 8*total) > F(1, 2))
+    deterministic = brute_deterministic_tail_mass(
+        support, probabilities, F(1, 2), True,
+    )
+    reachable = {0}
+    for value in values:
+        reachable |= {subtotal+value for subtotal in tuple(reachable)}
+    best = max(subtotal for subtotal in reachable if subtotal <= target)
+    randomized = F(1, 2)+F(target, 2*total)
+    check(deterministic == F(1, 2)+F(best, 2*total))
+    check(deterministic == dynamic_lower_tail_mass(
+        support, probabilities, F(1, 2),
+    ))
+    check((deterministic == randomized) == (target in reachable))
+    return target in reachable
 
 
 def brute_deterministic_band_mass(support, probabilities, lower, upper):
@@ -287,6 +329,7 @@ def main():
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
     convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
+    dynamic_tail_checks = 0
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
@@ -311,6 +354,11 @@ def main():
                 deterministic = brute_deterministic_tail_mass(
                     support, probabilities, y, lower,
                 )
+                if lower:
+                    check(deterministic == dynamic_lower_tail_mass(
+                        support, probabilities, y,
+                    ))
+                    dynamic_tail_checks += 1
                 check(deterministic <= envelope)
                 deterministic_tail_checks += 1
                 strict_relaxations += int(deterministic < envelope)
@@ -363,6 +411,12 @@ def main():
                 deterministic_band_checks += 1
                 strict_band_relaxations += int(deterministic < witness)
                 atomic_two_sided += 1
+    subset_sum_checks = subset_sum_equalities = 0
+    for values in ((2, 3, 7, 8, 10), (1, 4, 6, 13),
+                   (3, 5, 9, 12, 17), (2, 6, 11, 15, 18, 21)):
+        for target in range(1, sum(values)):
+            subset_sum_equalities += certify_subset_sum_reduction(values, target)
+            subset_sum_checks += 1
     # On the canonical Bernoulli space, only the trivial and full sigma-fields
     # are available.  Enlarging the space splits an atom and strictly improves
     # each one-sided envelope.
@@ -419,6 +473,9 @@ def main():
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
     print(f"Exact fixed-space 0-1 tail optima: {deterministic_tail_checks}; "
           f"strict fractional relaxations: {strict_relaxations}")
+    print(f"Exact signed-knapsack dynamic programs: {dynamic_tail_checks}; "
+          f"SUBSET SUM reductions: {subset_sum_checks} "
+          f"({subset_sum_equalities} attainable targets)")
     print(f"Exact fixed-space two-sided optima: {deterministic_band_checks}; "
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
