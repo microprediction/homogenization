@@ -122,6 +122,37 @@ def brute_deterministic_tail_mass(support, probabilities, y, lower):
     return best
 
 
+def brute_deterministic_band_mass(support, probabilities, lower, upper):
+    """Three-way atom assignment for the largest two-sided tail event."""
+    best = F(0)
+    for assignment in product((0, 1, 2), repeat=len(support)):
+        low_gap = sum(q*(z-lower) for z, q, cell in
+                      zip(support, probabilities, assignment) if cell == 1)
+        high_gap = sum(q*(z-upper) for z, q, cell in
+                       zip(support, probabilities, assignment) if cell == 2)
+        if low_gap <= 0 and high_gap >= 0:
+            best = max(best, sum(q for q, cell in
+                                 zip(probabilities, assignment) if cell))
+    return best
+
+
+def brute_partition_band_mass(support, probabilities, lower, upper):
+    """Independent exhaustive enumeration of every information partition."""
+    best, size = F(0), len(support)
+    for labels in product(range(size), repeat=size):
+        if labels[0] or any(labels[j] > 1+max(labels[:j]) for j in range(1, size)):
+            continue
+        event = F(0)
+        for label in range(1+max(labels)):
+            members = [j for j in range(size) if labels[j] == label]
+            mass = sum(probabilities[j] for j in members)
+            first = sum(probabilities[j]*support[j] for j in members)
+            if first <= lower*mass or first >= upper*mass:
+                event += mass
+        best = max(best, event)
+    return best
+
+
 def atomic_quantile_segment(support, probabilities, left, right):
     """Exact mass and first moment on a randomized quantile segment."""
     cumulative = F(0)
@@ -258,6 +289,7 @@ def main():
     convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
+    deterministic_band_checks = strict_band_relaxations = 0
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -321,6 +353,15 @@ def main():
                     witness = F(1)
                     atomic_overlap += 1
                 check(witness == min(F(1), lower_mass+upper_mass))
+                deterministic = brute_deterministic_band_mass(
+                    support, probabilities, lower, upper,
+                )
+                check(deterministic == brute_partition_band_mass(
+                    support, probabilities, lower, upper,
+                ))
+                check(deterministic <= witness)
+                deterministic_band_checks += 1
+                strict_band_relaxations += int(deterministic < witness)
                 atomic_two_sided += 1
     # On the canonical Bernoulli space, only the trivial and full sigma-fields
     # are available.  Enlarging the space splits an atom and strictly improves
@@ -378,6 +419,8 @@ def main():
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
     print(f"Exact fixed-space 0-1 tail optima: {deterministic_tail_checks}; "
           f"strict fractional relaxations: {strict_relaxations}")
+    print(f"Exact fixed-space two-sided optima: {deterministic_band_checks}; "
+          f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
     print(f"Exact latent repeated-future variance decompositions: {latent_decompositions}")
     print(f"Maximum integration discrepancy: {max_error:.3e}; tolerance 2e-9")

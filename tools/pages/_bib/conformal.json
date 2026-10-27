@@ -10,6 +10,16 @@
   "annotation": "Establishes the classical martingale-coupling characterization behind convex order. The latent-coverage note proves its sharp one- and two-sided conditional-mean partition envelopes directly."
  },
  {
+  "key": "Dantzig1957",
+  "authors": "Dantzig, G. B.",
+  "year": 1957,
+  "title": "Discrete-Variable Extremum Problems",
+  "venue": "Operations Research 5(2):266-288",
+  "doi": "10.1287/opre.5.2.266",
+  "url": "",
+  "annotation": "Provides historical context for discrete-variable extremum problems and their linear-programming relaxations. The fixed-space one- and two-sided selection equalities in the latent-coverage note are proved directly."
+ },
+ {
   "key": "Vovk2012",
   "authors": "Vovk, V.",
   "year": 2012,
