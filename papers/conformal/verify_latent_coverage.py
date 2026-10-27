@@ -440,6 +440,68 @@ def rounded_atomic_band_witness(support, probabilities,
             low_mass, low_first, high_mass, high_first)
 
 
+def certify_two_sided_gap_sharpness():
+    """Exact extremizers for the one- and two-boundary gap constants."""
+    shared_checks = 0
+    for central_mass in (F(1, 3), F(2, 5), F(1, 2), F(3, 5), F(4, 5)):
+        outer_mass = (1-central_mass)/2
+        support = (F(0), F(1, 2), F(1))
+        probabilities = (outer_mass, central_mass, outer_mass)
+        lower, upper = central_mass/2, 1-central_mass/2
+        check(lower < F(1, 2) < upper)
+        lower_mass = sharp_atomic_envelope(
+            support, probabilities, lower, True,
+        )[0]
+        upper_mass = sharp_atomic_envelope(
+            support, probabilities, upper, False,
+        )[0]
+        deterministic = brute_deterministic_band_mass(
+            support, probabilities, lower, upper,
+        )
+        check(lower_mass == upper_mass == F(1, 2))
+        check(deterministic == 1-central_mass)
+        check(1-deterministic == central_mass == max(probabilities))
+        rounded, loss, boundary_mass, *_ = rounded_atomic_band_witness(
+            support, probabilities, lower_mass, upper_mass,
+        )
+        check(rounded == deterministic)
+        check(loss == boundary_mass == central_mass)
+        shared_checks += 1
+
+    outer_mass, boundary_mass, boundary_score = F(1, 5), F(3, 10), F(1, 3)
+    support = (F(0), boundary_score, 1-boundary_score, F(1))
+    probabilities = (outer_mass, boundary_mass, boundary_mass, outer_mass)
+    disjoint_checks, ratios = 0, []
+    for eta in (F(1, 2), F(1, 4), F(1, 10), F(1, 20), F(1, 100)):
+        split_mass = (1-eta)*boundary_mass
+        lower = split_mass*boundary_score/(outer_mass+split_mass)
+        upper = 1-lower
+        lower_mass = sharp_atomic_envelope(
+            support, probabilities, lower, True,
+        )[0]
+        upper_mass = sharp_atomic_envelope(
+            support, probabilities, upper, False,
+        )[0]
+        randomized = lower_mass+upper_mass
+        deterministic = brute_deterministic_band_mass(
+            support, probabilities, lower, upper,
+        )
+        check(lower_mass == upper_mass == outer_mass+split_mass)
+        check(randomized < 1)
+        check(deterministic == 2*outer_mass)
+        ratio = (randomized-deterministic)/(2*boundary_mass)
+        check(ratio == 1-eta)
+        rounded, loss, deleted_mass, *_ = rounded_atomic_band_witness(
+            support, probabilities, lower_mass, upper_mass,
+        )
+        check(rounded == deterministic)
+        check(loss == randomized-deterministic)
+        check(deleted_mass == 2*boundary_mass)
+        ratios.append(ratio)
+        disjoint_checks += 1
+    return shared_checks, disjoint_checks, max(ratios)
+
+
 def convex_order_below(left_support, left_probabilities,
                        right_support, right_probabilities):
     """Certify finite-law convex order through exact call transforms."""
@@ -569,6 +631,9 @@ def main():
     deterministic_band_checks = strict_band_relaxations = 0
     band_gap_bound_checks = band_shared_cut_checks = band_dp_checks = 0
     band_saturation_checks = 0
+    shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
+        certify_two_sided_gap_sharpness()
+    )
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -872,6 +937,10 @@ def main():
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Two-sided boundary-atom gap bounds: {band_gap_bound_checks}; "
           f"shared-cut bounds: {band_shared_cut_checks}")
+    print(f"Sharp two-sided gap constructions: {shared_gap_equalities} "
+          f"shared-cut equalities; {disjoint_gap_limits} disjoint limits; "
+          f"shared b in [1/3,1); disjoint masses 1/5,3/10,3/10,1/5 "
+          f"at 0,1/3,2/3,1; largest boundary-mass ratio {largest_gap_ratio}")
     print(f"Exact two-budget band dynamic programs: {band_dp_checks}; "
           f"one-budget saturation decisions: {band_saturation_checks}")
     print(f"Two-sided saturation reductions: {saturation_checks} "

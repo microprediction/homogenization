@@ -321,6 +321,27 @@
       zero. When $q_-+q_+&gt;1$, the shared-cut construction has $|B|\le1$, giving the sharper bound
       $q_{\rm rand}^{(2)}-q_{\rm det}^{(2)}\le\max_j w_j$.</p>
 
+    <h2>Both two-sided atom bounds are sharp</h2>
+    <p>For the shared-cut case, fix $1/3\le b&lt;1$ and put mass $(1-b)/2,b,(1-b)/2$ at scores
+      $0,1/2,1$. With $\ell=b/2$ and $u=1-b/2$, splitting the middle atom equally gives two cells of mass
+      $1/2$ and means $\ell,u$, so $q_{\rm rand}^{(2)}=1$.</p>
+    <p>The middle atom cannot enter either deterministic tail: its mean with the lower endpoint is
+      $b/(1+b)&gt;b/2$, and the upper calculation is symmetric. Thus
+      $q_{\rm det}^{(2)}=1-b$ and</p>
+    $$q_{\rm rand}^{(2)}-q_{\rm det}^{(2)}=b=\max_j w_j.$$
+    <p>The one-boundary constant is therefore attained exactly. For the disjoint case, put masses
+      $1/5,3/10,3/10,1/5$ at scores $0,1/3,2/3,1$, choose any $0&lt;\eta&lt;1$, and set</p>
+    $$r=(1-\eta)\frac3{10},\qquad
+      \ell=\frac{r/3}{1/5+r},\qquad u=1-\ell.$$
+    <p>The randomized prefix and suffix each have mass $1/5+r$, while neither middle atom can enter a deterministic
+      tail because the cheapest full inclusion already has mean $1/5&gt;\ell$. Consequently</p>
+    $$q_{\rm rand}^{(2)}-q_{\rm det}^{(2)}=2r
+      =(1-\eta)(w_{(1)}+w_{(2)}).$$
+    <p>Letting $\eta\downarrow0$ proves that the coefficient of the two-largest-atom bound cannot be reduced.
+      The certificate checks five exact shared-cut equalities and five disjoint instances, reaching the exact ratio
+      $99/100$. <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a> supplies the independent
+      randomized quantile coordinate; the sharpness constructions themselves are direct.</p>
+
     <h2>Randomized contractions are the convex-order lower set</h2>
     <p>Let $\nu$ be the law of an integrable $Z$, and let $\mathcal C(\nu)$ contain every law of
       $M=\mathbb E[Z'\mid\mathcal D]$ formed on an arbitrary probability-space extension with $Z'\sim\nu$.
@@ -379,7 +400,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed and 56 two-budget dynamic programs, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
