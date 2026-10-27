@@ -5,7 +5,7 @@ from math import lcm
 
 import numpy as np
 from scipy.integrate import quad
-from scipy.optimize import brentq, minimize_scalar
+from scipy.optimize import brentq, linprog, minimize_scalar
 from scipy.special import betainc, betaincc, beta
 
 
@@ -304,6 +304,110 @@ def two_budget_band_mass(support, probabilities, lower, upper):
                 )
         states = updated
     return base+max(states.values())
+
+
+def approximate_two_budget_band_mass(support, probabilities, lower, upper,
+                                     epsilon):
+    """Heavy-atom enumeration plus LP-vertex rounding for a band."""
+    low = tuple(j for j, z in enumerate(support) if z <= lower)
+    high = tuple(j for j, z in enumerate(support) if z >= upper)
+    middle = tuple(j for j, z in enumerate(support) if lower < z < upper)
+    base = sum(probabilities[j] for j in low+high)
+    low_capacity = sum(
+        probabilities[j]*(lower-support[j]) for j in low
+    )
+    high_capacity = sum(
+        probabilities[j]*(support[j]-upper) for j in high
+    )
+    cutoff = epsilon/2
+    heavy = tuple(j for j in middle if probabilities[j] > cutoff)
+    light = tuple(j for j in middle if probabilities[j] <= cutoff)
+    best, largest_fractional_count = base, 0
+    tolerance = 1e-8
+    for assignment in product((0, 1, 2), repeat=len(heavy)):
+        low_used = sum(
+            probabilities[j]*(support[j]-lower)
+            for j, cell in zip(heavy, assignment) if cell == 1
+        )
+        high_used = sum(
+            probabilities[j]*(upper-support[j])
+            for j, cell in zip(heavy, assignment) if cell == 2
+        )
+        if low_used > low_capacity or high_used > high_capacity:
+            continue
+        heavy_reward = sum(
+            probabilities[j] for j, cell in zip(heavy, assignment) if cell
+        )
+        if not light:
+            best = max(best, base+heavy_reward)
+            continue
+        size = len(light)
+        low_costs = [float(probabilities[j]*(support[j]-lower)) for j in light]
+        high_costs = [float(probabilities[j]*(upper-support[j])) for j in light]
+        objective = [-float(probabilities[j]) for j in light]*2
+        constraints = [low_costs+[0.0]*size, [0.0]*size+high_costs]
+        bounds = [float(low_capacity-low_used), float(high_capacity-high_used)]
+        for h in range(size):
+            row = [0.0]*(2*size)
+            row[h] = row[size+h] = 1.0
+            constraints.append(row)
+            bounds.append(1.0)
+        solution = linprog(
+            objective, A_ub=constraints, b_ub=bounds,
+            bounds=(0.0, 1.0), method="highs",
+        )
+        check(solution.success)
+        selected_low, selected_high, fractional = [], [], 0
+        for h, j in enumerate(light):
+            x, y = solution.x[h], solution.x[size+h]
+            if x >= 1-tolerance and y <= tolerance:
+                selected_low.append(j)
+            elif y >= 1-tolerance and x <= tolerance:
+                selected_high.append(j)
+            elif x > tolerance or y > tolerance:
+                fractional += 1
+        check(fractional <= 2)
+        largest_fractional_count = max(largest_fractional_count, fractional)
+        exact_low = low_used+sum(
+            probabilities[j]*(support[j]-lower) for j in selected_low
+        )
+        exact_high = high_used+sum(
+            probabilities[j]*(upper-support[j]) for j in selected_high
+        )
+        check(exact_low <= low_capacity and exact_high <= high_capacity)
+        reward = heavy_reward+sum(
+            probabilities[j] for j in selected_low+selected_high
+        )
+        best = max(best, base+reward)
+    return best, len(heavy), largest_fractional_count
+
+
+def certify_two_sided_additive_scheme():
+    """Numerical LP certificate for the additive two-budget scheme."""
+    support = (F(0), F(1, 5), F(1, 2), F(4, 5), F(1))
+    weight_patterns = (
+        (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
+        (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
+    )
+    checks = strict = largest_heavy = largest_fractional = 0
+    for weights in weight_patterns:
+        probabilities = tuple(F(w, sum(weights)) for w in weights)
+        mean = sum(z*q for z, q in zip(support, probabilities))
+        lower, upper = mean/2, (1+mean)/2
+        exact = brute_deterministic_band_mass(
+            support, probabilities, lower, upper,
+        )
+        for epsilon in (F(1, 2), F(1, 3)):
+            approximate, heavy, fractional = approximate_two_budget_band_mass(
+                support, probabilities, lower, upper, epsilon,
+            )
+            check(exact-epsilon <= approximate <= exact)
+            strict += int(approximate < exact)
+            largest_heavy = max(largest_heavy, heavy)
+            largest_fractional = max(largest_fractional, fractional)
+            checks += 1
+    check(strict > 0)
+    return checks, strict, largest_heavy, largest_fractional
 
 
 def band_saturates_by_one_budget(support, probabilities, lower, upper):
@@ -634,6 +738,10 @@ def main():
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
     )
+    (additive_scheme_checks, strict_additive_approximations,
+     largest_heavy_set, largest_lp_fractional_set) = (
+        certify_two_sided_additive_scheme()
+    )
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -943,6 +1051,10 @@ def main():
           f"at 0,1/3,2/3,1; largest boundary-mass ratio {largest_gap_ratio}")
     print(f"Exact two-budget band dynamic programs: {band_dp_checks}; "
           f"one-budget saturation decisions: {band_saturation_checks}")
+    print(f"Two-sided additive approximation checks: {additive_scheme_checks}; "
+          f"strict approximations: {strict_additive_approximations}; "
+          f"largest heavy set: {largest_heavy_set}; "
+          f"largest fractional LP set: {largest_lp_fractional_set}")
     print(f"Two-sided saturation reductions: {saturation_checks} "
           f"({saturation_equalities} attainable; "
           f"{saturation_exhaustive} exhaustive assignment checks)")

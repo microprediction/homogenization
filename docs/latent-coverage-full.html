@@ -365,6 +365,27 @@
       strongly polynomial bound or an approximation theorem.
       <a href="./bibliography.html#IbarakiHasegawaTeranakaIwase1978">Ibaraki et al. (1978)</a> supplies classical multiple-choice knapsack context; the reduction and recursion here are direct.</p>
 
+    <h2>Two-sided bands admit an additive approximation scheme</h2>
+    <p>Fix $0&lt;\varepsilon&lt;1$ and call a middle atom heavy when $w_j&gt;\varepsilon/2$.
+      There are fewer than $2/\varepsilon$ heavy atoms, so enumerate their unused, lower and upper choices and
+      discard infeasible branches.</p>
+    <p>For the light atoms in each surviving branch, solve the linear relaxation with variables
+      $x_j,y_j\ge0$, $x_j+y_j\le1$, and the two residual budget constraints. Choose a vertex optimum and delete
+      every atom block $(x_j,y_j)$ that is not one of $(0,0),(1,0),(0,1)$.</p>
+    <p>At a vertex, at most two atom blocks are nonintegral. Indeed, $k$ nonvertex blocks supply at most
+      $2m-k$ independent active local constraints, while the two budgets add rank at most two; vertex rank $2m$
+      therefore forces $k\le2$.</p>
+    <p>Deleting those blocks preserves feasibility and loses at most $2(\varepsilon/2)=\varepsilon$ mass.
+      In the branch matching an exact optimum's heavy choices, the relaxed light value dominates its remaining
+      integer value, so the best returned assignment satisfies</p>
+    $$q_{\rm det}^{(2)}-\varepsilon\le\widehat q\le q_{\rm det}^{(2)}.$$
+    <p>The algorithm solves at most $3^{\lceil2/\varepsilon\rceil}$ linear programs of polynomial size.
+      This is an additive fixed-$\varepsilon$ scheme, not a relative FPTAS and not an approximation-hardness result;
+      the error is probability mass and is uniform in the rational capacity magnitudes.</p>
+    <p><a href="./bibliography.html#FriezeClarke1984">Frieze and Clarke (1984)</a> gives primary context for
+      fixed-dimensional knapsack approximation by LP enumeration and rounding. The specialized three-choice proof
+      above is direct.</p>
+
     <h2>Full two-sided saturation has a one-budget test</h2>
     <p>For every middle atom write $a_j=w_j(z_j-\ell)$ and $b_j=w_j(u-z_j)$, and put
       $B_M=\sum_j b_j$. Full event mass is attainable exactly when the middle atoms can be partitioned into a
@@ -497,7 +518,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
