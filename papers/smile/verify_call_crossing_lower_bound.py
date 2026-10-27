@@ -597,6 +597,80 @@ def check_larger_support_circuit_cones(max_r=7):
     return decomposition_count, circuit_count
 
 
+def run_face_vector(signs, row_count):
+    """Count faces by a run-length dynamic program.
+
+    A state records the selected support size, the sign of the last selected
+    run, and its restricted sign variation.  Choosing a nonempty subset of a
+    run of length n has binomial weight C(n,j); only a change from the last
+    selected sign increments the variation.
+    """
+    lengths = run_lengths(signs)
+    first_sign = signs[0]
+    states = {(0, None, 0): 1}
+    for run_index, length in enumerate(lengths):
+        sign = first_sign if run_index % 2 == 0 else -first_sign
+        updated = dict(states)
+        for (size, last_sign, variation), count in states.items():
+            change = int(last_sign is not None and last_sign != sign)
+            for chosen in range(1, length + 1):
+                key = (size + chosen, sign, variation + change)
+                updated[key] = updated.get(key, 0) + count * comb(length, chosen)
+        states = updated
+
+    dimension = len(signs) - row_count
+    result = [1] + [0] * dimension
+    for (size, last_sign, variation), count in states.items():
+        if last_sign is not None and size >= row_count + 1 and variation >= row_count:
+            result[size - row_count] += count
+    return result
+
+
+def closed_orthant_face_census(column_count, row_count):
+    """Count feasible sign orbits and face incidences without enumeration."""
+    dimension = column_count - row_count
+    feasible_orbits = sum(comb(column_count - 1, changes)
+                          for changes in range(row_count, column_count))
+    incidences = [feasible_orbits]
+    for face_dimension in range(1, dimension + 1):
+        support_size = row_count + face_dimension
+        restricted_words = sum(comb(support_size - 1, changes)
+                               for changes in range(row_count, support_size))
+        incidences.append(comb(column_count, support_size)
+                          * 2 ** (column_count - support_size)
+                          * restricted_words)
+    return feasible_orbits, incidences
+
+
+def check_binomial_orthant_transition(max_trials=64):
+    """Check the exact binomial-tail census and rational Chernoff bound."""
+    symmetry_checks = 0
+    tail_bounds = 0
+    for trials in range(1, max_trials + 1):
+        total = 2 ** trials
+        for threshold in range(1, trials + 1):
+            upper = sum(comb(trials, changes)
+                        for changes in range(threshold, trials + 1))
+            reflected = sum(comb(trials, changes)
+                            for changes in range(trials - threshold + 1,
+                                                 trials + 1))
+            assert upper + reflected == total
+            symmetry_checks += 1
+
+        # Optimizing the Bernoulli moment-generating-function bound gives
+        # this exact rational entropy bound for every strict upper tail.
+        for threshold in range(trials // 2 + 1, trials + 1):
+            tail = sum(comb(trials, changes)
+                       for changes in range(threshold, trials + 1))
+            complement = trials - threshold
+            entropy_bound = F(trials ** trials,
+                              2 ** trials * threshold ** threshold
+                              * (complement ** complement if complement else 1))
+            assert F(tail, total) <= entropy_bound
+            tail_bounds += 1
+    return symmetry_checks, tail_bounds
+
+
 def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
     """Enumerate exact orthant feasibility, rays and face lattices."""
     orthant_count = 0
@@ -605,10 +679,15 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
     simplicial_count = 0
     face_count = 0
     face_vectors = set()
+    run_enumerator_checks = 0
+    closed_census_checks = 0
     for row_count in range(4, max_row_count + 1):
         for excess in range(max_excess + 1):
             column_count = row_count + 1 + excess
+            dimension = column_count - row_count
             subsets = list(combinations(range(column_count), row_count + 1))
+            case_feasible = 0
+            case_face_incidences = [0] * (dimension + 1)
 
             # A rational Vandermonde representative independently checks
             # that every circuit has the predicted alternating orientation.
@@ -638,6 +717,7 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                     continue
 
                 feasible_count += 1
+                case_feasible += 1
                 ray_count += len(compatible)
                 covered = {column for columns in compatible for column in columns}
                 assert len(covered) == column_count
@@ -649,7 +729,6 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                 # restricted sign word has at least row_count changes.
                 # Its dimension is |S|-row_count.  This exhausts the face
                 # lattice, including the zero face in position zero.
-                dimension = column_count - row_count
                 f_vector = [1] + [0] * dimension
                 for size in range(row_count + 1, column_count + 1):
                     face_dimension = size - row_count
@@ -657,11 +736,15 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                         restricted = [signs[column] for column in support]
                         if sign_changes(restricted) >= row_count:
                             f_vector[face_dimension] += 1
+                assert run_face_vector(signs, row_count) == f_vector
+                run_enumerator_checks += 1
                 assert f_vector[1] == len(compatible)
                 assert f_vector[dimension] == 1
                 assert sum((-1) ** k * count
                            for k, count in enumerate(f_vector)) == 0
                 face_count += sum(f_vector)
+                case_face_incidences = [left + right for left, right
+                                        in zip(case_face_incidences, f_vector)]
                 face_vectors.add(tuple(f_vector))
 
                 if variation == row_count:
@@ -677,8 +760,14 @@ def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
                         assert f_vector == [comb(dimension, k)
                                             for k in range(dimension + 1)]
                     simplicial_count += is_simplicial
+            closed_feasible, closed_incidences = \
+                closed_orthant_face_census(column_count, row_count)
+            assert case_feasible == closed_feasible
+            assert case_face_incidences == closed_incidences
+            closed_census_checks += 1
     return (orthant_count, feasible_count, ray_count, simplicial_count,
-            face_count, len(face_vectors))
+            face_count, len(face_vectors), run_enumerator_checks,
+            closed_census_checks)
 
 
 def check_measure_blurs(max_r=10):
@@ -752,8 +841,9 @@ def main():
     rigidity_cases = check_minimal_support_rigidity()
     cone_cases, cone_circuits = check_larger_support_circuit_cones()
     (orthants, feasible_orthants, extreme_rays, simplicial,
-     faces, face_vectors) = \
+     faces, face_vectors, run_enumerators, closed_censuses) = \
         check_orthant_circuit_combinatorics()
+    binomial_symmetries, rational_tail_bounds = check_binomial_orthant_transition()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
@@ -768,6 +858,10 @@ def main():
           f"{simplicial} critical simplicial cones")
     print(f"complete orthant face lattices: {faces} faces, "
           f"{face_vectors} distinct f-vectors")
+    print(f"run-length face enumerators: {run_enumerators} exact f-vector matches")
+    print(f"closed orthant face censuses: {closed_censuses} exact incidence matches")
+    print(f"binomial orthant transition: {binomial_symmetries} exact symmetries, "
+          f"{rational_tail_bounds} rational tail bounds")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

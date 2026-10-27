@@ -332,6 +332,77 @@
     <p>The certificate exhausts all such subsets in the same 1,308 feasible orthants. It checks 29,058 faces,
     19 distinct $f$-vectors, the Euler relation, and the binomial $f$-vector for every certified simplicial cone.</p>
 
+    <h2>A run-length generating function counts every face</h2>
+    <p>The subset formula has a compact exact evaluator. Let the sign word have alternating run lengths
+    $n_0,\ldots,n_v$ and put $W_j(x)=(1+x)^{n_j}-1$, the generating polynomial for a nonempty selection from run $j$.</p>
+    <p>Starting from $E=O=0$, process the runs in order. For an even-indexed run update</p>
+    $$E\leftarrow E+W_j(x)\{1+E+yO\},$$
+    <p>and for an odd-indexed run update</p>
+    $$O\leftarrow O+W_j(x)\{1+O+yE\}.$$
+    <p>The unchanged polynomial is carried through each update. In
+    $\Phi_\sigma(x,y)=1+E+O$, the coefficient $[x^my^q]\Phi_\sigma$ is exactly the number of $m$-element supports whose restricted sign word has $q$ changes.</p>
+    <p>This follows by induction on the processed runs. A support either skips the new run, starts there, extends a
+    support ending with the same parity without a new change, or extends one ending with the opposite parity and gains the factor $y$.</p>
+    <p>Therefore the complete face polynomial is</p>
+    <div class="equation-card">
+    $$\mathcal F_\sigma(t)=1+
+      \sum_{k=1}^{N-p}t^k\sum_{q\ge p}[x^{p+k}y^q]\Phi_\sigma(x,y).$$
+    </div>
+    <p>This computes the $f$-vector from the run lengths without enumerating all $2^N$ supports. Its coefficient of $t$ counts the compatible alternating circuits, and when $v=p$ it reduces to the critical ray count $\prod_jn_j$.</p>
+    <p>The exact certificate evaluates the recurrence with integer binomial weights and matches every face dimension in all 1,308 feasible orthants against independent subset enumeration.</p>
+
+    <h2>The census over every orthant is closed form</h2>
+    <p>Identify a sign word with its global reversal: the two cones are negatives of one another and have the same
+    face lattice. The number of feasible sign orbits on $N$ coordinates is</p>
+    <div class="equation-card">
+    $$F(N,p)=\sum_{q=p}^{N-1}\binom{N-1}{q}.$$
+    </div>
+    <p>More generally, the total number of $k$-face incidences across all feasible sign orbits is</p>
+    <div class="equation-card">
+    $$I_k(N,p)=2^{N-p-k}\binom{N}{p+k}
+      \sum_{q=p}^{p+k-1}\binom{p+k-1}{q},
+      \qquad 1\leq k\leq N-p,$$
+    $$I_0(N,p)=F(N,p).$$
+    </div>
+    <p>Indeed, choose the support of size $m=p+k$. Its restricted word has $q$ changes in
+    $2\binom{m-1}{q}$ ways, the other $N-m$ signs are free, and quotienting by global reversal removes the factor two.</p>
+    <p>In particular, the total extreme-ray incidence is
+    $I_1(N,p)=2^{N-p-1}\binom{N}{p+1}$. The complementary count
+    $2\sum_{q=0}^{p-1}\binom{N-1}{q}$ before quotienting is Cover's classical number of homogeneously separable
+    dichotomies for points in general position; see <a href="./bibliography.html#Cover1965">Cover (1965)</a>.</p>
+    <p>Across the 24 certified $(N,p)$ pairs, these formulas recover exactly all 1,308 feasible sign orbits,
+    8,560 extreme-ray incidences and 29,058 faces, including one zero face per feasible cone.</p>
+
+    <h2>Feasible orthants have an exponential finite-size transition</h2>
+    <p>Choose a sign orbit uniformly by fixing its first sign, set $n=N-1$, and let $Q$ be its number of changes.
+    Then $Q\sim\operatorname{Bin}(n,1/2)$, so the feasible fraction is exactly</p>
+    <div class="equation-card">
+    $$\varphi_{N,p}=\frac{F(N,p)}{2^{N-1}}=\mathbb P\{Q\geq p\}.$$
+    </div>
+    <p>For an integer $h&gt;n/2$, define the rational entropy bound</p>
+    <div class="equation-card">
+    $$B_n(h)=\frac{n^n}{2^n h^h(n-h)^{n-h}},$$
+    </div>
+    <p>with $0^0=1$. For $h&lt;n$, Markov's inequality applied to $e^{tQ}$ and minimized at
+    $e^t=h/(n-h)$ gives $\mathbb P\{Q\geq h\}\leq B_n(h)$ directly; the endpoint $h=n$ follows by taking $t\to\infty$.</p>
+    <p>Consequently, if $p&gt;n/2$ then
+    $\varphi_{N,p}\leq B_n(p)\leq\exp\{-2n(p/n-1/2)^2\}$, while if $p\leq n/2$ then</p>
+    <div class="equation-card">
+    $$1-\varphi_{N,p}\leq B_n(n-p+1)
+      \leq\exp\{-2n(1/2-(p-1)/n)^2\}.$$
+    </div>
+    <p>The final inequalities are the Bernoulli specialization of
+    <a href="./bibliography.html#Hoeffding1963">Hoeffding's bound</a>. Thus any fixed fractional separation of
+    $p/(N-1)$ from one half makes one side exponentially rare, without invoking an asymptotic approximation.</p>
+    <p>The exact reflection identity
+    $F(N,p)+F(N,N-p)=2^{N-1}$ locates the transition at one half. Conditional on feasibility, the mean face numbers are also closed form:</p>
+    <div class="equation-card">
+    $$\mathbb E[f_k\mid Q\geq p]=\frac{I_k(N,p)}{F(N,p)},
+      \qquad 0\leq k\leq N-p.$$
+    </div>
+    <p>The certificate checks 2,080 exact reflection identities and 1,056 exact rational entropy bounds through
+    $n=64$; the latter compare the full integer binomial tail with $B_n(h)$ and use no floating-point tolerance.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
