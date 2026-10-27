@@ -49,9 +49,9 @@ def ramp_budget(q, c):
 
 
 def three_cycle_factorization():
-    """Check the exact orientation/Vandermonde formula, including both blind cases."""
+    """Check the exact factorization and the sharp normalized design bound."""
     cases = 0
-    for p, q in ((1, 2), (2, 5), (5, 1), (2, 2)):
+    for p, q in ((1, 2), (2, 5), (5, 1), (2, 2), (1, 0), (0, 1)):
         generator = sp.Matrix([[-p-q, p, q], [q, -p-q, p], [p, q, -p-q]])
         inverse = (generator+sp.ones(3)/3).inv()-sp.ones(3)/3
         for values in ((-1, 0, 1), (-2, 1, 1), (3, -4, 1)):
@@ -62,7 +62,36 @@ def three_cycle_factorization():
             target = -sp.Rational(p-q, 27)*vandermonde/(p*p+p*q+q*q)**2
             assert sp.factor(delta-target) == 0
             cases += 1
-    return cases
+
+    # For centered levels, the cubic discriminant identity gives the sharp
+    # Vandermonde bound at unit stationary variance.
+    x, y = sp.symbols('x y', real=True)
+    z = -x-y
+    levels = (x, y, z)
+    vandermonde = (x-y)*(y-z)*(z-x)
+    sum_squares = sum(value**2 for value in levels)
+    assert sp.factor(vandermonde**2+27*(x*y*z)**2-sum_squares**3/2) == 0
+
+    # At fixed s=p+q, the rate factor is at most s^{-3}.  These two
+    # factorizations cover p>=q and q>=p, including the equality cases.
+    p, q = sp.symbols('p q', nonnegative=True)
+    denominator = p*p+p*q+q*q
+    assert sp.factor(denominator**2-(p-q)*(p+q)**3) == q**2*(3*p**2+4*p*q+2*q**2)
+    assert sp.factor(denominator**2+(p-q)*(p+q)**3) == p**2*(2*p**2+4*p*q+3*q**2)
+
+    scale = sp.sqrt(sp.Rational(3, 2))
+    equality_cases = 0
+    for rates in ((1, 0), (0, 1)):
+        p0, q0 = rates
+        generator = sp.Matrix([[-p0-q0, p0, q0], [q0, -p0-q0, p0], [p0, q0, -p0-q0]])
+        inverse = (generator+sp.ones(3)/3).inv()-sp.ones(3)/3
+        for values in sp.utilities.iterables.multiset_permutations((-scale, 0, scale)):
+            c = sp.Matrix(values); diagonal = sp.diag(*values)
+            delta = ((c.T*inverse**2*diagonal*inverse*c)[0]
+                     -(c.T*inverse*diagonal*inverse**2*c)[0])/3
+            assert sp.factor(delta**2-sp.Rational(1, 54)) == 0
+            equality_cases += 1
+    return cases, equality_cases
 
 
 def main():
@@ -80,7 +109,7 @@ def main():
     sd = sp.diag(-1,0,1)
     u, v = (spi*sd*ss*ss*sd*ss*sc)[0], (spi*sd*ss*sd*ss*ss*sc)[0]
     assert (u,v,u-v,(u-v)/3) == (-sp.Rational(1,27),sp.Rational(1,27),-sp.Rational(2,27),-sp.Rational(2,81))
-    factor_cases = three_cycle_factorization()
+    factor_cases, equality_cases = three_cycle_factorization()
     time, eps = sp.symbols('t eps')
     bt = time+time**2/5+sp.I*time**3/10
     z1 = -bt*ss*sc
@@ -102,6 +131,7 @@ def main():
             assert np.max(abs(forward[[4,5]]-backward[[5,4]])) < 3e-10
     print('9 exact outer-recursion identities and 32 random-chain adjoint checks: PASS')
     print(f'{factor_cases} exact three-cycle orientation/Vandermonde factorizations: PASS')
+    print(f'Sharp unit-variance design bound, including {equality_cases} equality cases: PASS')
     print(f'Exact cycle: Q={q.tolist()}, pi=(1,1,1)/3, c=(-1,0,1), U={u}, V={v}, Delta={u-v}, coefficient={(u-v)/3}')
     thresholds, budgets = zip(ramp_budget(q,c),ramp_budget(reverse,c))
     m0, budget, coefficient = max(thresholds), sum(budgets), float((u-v)/3)
