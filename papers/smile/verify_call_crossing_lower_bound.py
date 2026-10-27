@@ -642,6 +642,35 @@ def closed_orthant_face_census(column_count, row_count):
     return feasible_orbits, incidences
 
 
+def check_binomial_orthant_transition(max_trials=64):
+    """Check the exact binomial-tail census and rational Chernoff bound."""
+    symmetry_checks = 0
+    tail_bounds = 0
+    for trials in range(1, max_trials + 1):
+        total = 2 ** trials
+        for threshold in range(1, trials + 1):
+            upper = sum(comb(trials, changes)
+                        for changes in range(threshold, trials + 1))
+            reflected = sum(comb(trials, changes)
+                            for changes in range(trials - threshold + 1,
+                                                 trials + 1))
+            assert upper + reflected == total
+            symmetry_checks += 1
+
+        # Optimizing the Bernoulli moment-generating-function bound gives
+        # this exact rational entropy bound for every strict upper tail.
+        for threshold in range(trials // 2 + 1, trials + 1):
+            tail = sum(comb(trials, changes)
+                       for changes in range(threshold, trials + 1))
+            complement = trials - threshold
+            entropy_bound = F(trials ** trials,
+                              2 ** trials * threshold ** threshold
+                              * (complement ** complement if complement else 1))
+            assert F(tail, total) <= entropy_bound
+            tail_bounds += 1
+    return symmetry_checks, tail_bounds
+
+
 def check_orthant_circuit_combinatorics(max_row_count=9, max_excess=3):
     """Enumerate exact orthant feasibility, rays and face lattices."""
     orthant_count = 0
@@ -814,6 +843,7 @@ def main():
     (orthants, feasible_orthants, extreme_rays, simplicial,
      faces, face_vectors, run_enumerators, closed_censuses) = \
         check_orthant_circuit_combinatorics()
+    binomial_symmetries, rational_tail_bounds = check_binomial_orthant_transition()
     blur_cases = check_measure_blurs()
     roots3 = check_three_crossings()
     roots = check_two_crossings()
@@ -830,6 +860,8 @@ def main():
           f"{face_vectors} distinct f-vectors")
     print(f"run-length face enumerators: {run_enumerators} exact f-vector matches")
     print(f"closed orthant face censuses: {closed_censuses} exact incidence matches")
+    print(f"binomial orthant transition: {binomial_symmetries} exact symmetries, "
+          f"{rational_tail_bounds} rational tail bounds")
     print(f"exact finite atom-variation cases: {variation_cases}")
     print(f"exact continuous/mixed-blur sharpness cases: {blur_cases}/{blur_cases}")
     print("three-moment sharp roots:", ", ".join(str(x) for x in roots3))

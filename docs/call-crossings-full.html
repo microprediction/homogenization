@@ -373,6 +373,36 @@
     <p>Across the 24 certified $(N,p)$ pairs, these formulas recover exactly all 1,308 feasible sign orbits,
     8,560 extreme-ray incidences and 29,058 faces, including one zero face per feasible cone.</p>
 
+    <h2>Feasible orthants have an exponential finite-size transition</h2>
+    <p>Choose a sign orbit uniformly by fixing its first sign, set $n=N-1$, and let $Q$ be its number of changes.
+    Then $Q\sim\operatorname{Bin}(n,1/2)$, so the feasible fraction is exactly</p>
+    <div class="equation-card">
+    $$\varphi_{N,p}=\frac{F(N,p)}{2^{N-1}}=\mathbb P\{Q\geq p\}.$$
+    </div>
+    <p>For an integer $h&gt;n/2$, define the rational entropy bound</p>
+    <div class="equation-card">
+    $$B_n(h)=\frac{n^n}{2^n h^h(n-h)^{n-h}},$$
+    </div>
+    <p>with $0^0=1$. Markov's inequality applied to $e^{tQ}$ and minimized at
+    $e^t=h/(n-h)$ gives $\mathbb P\{Q\geq h\}\leq B_n(h)$ directly.</p>
+    <p>Consequently, if $p&gt;n/2$ then
+    $\varphi_{N,p}\leq B_n(p)\leq\exp\{-2n(p/n-1/2)^2\}$, while if $p\leq n/2$ then</p>
+    <div class="equation-card">
+    $$1-\varphi_{N,p}\leq B_n(n-p+1)
+      \leq\exp\{-2n(1/2-(p-1)/n)^2\}.$$
+    </div>
+    <p>The final inequalities are the Bernoulli specialization of
+    <a href="./bibliography.html#Hoeffding1963">Hoeffding's bound</a>. Thus any fixed fractional separation of
+    $p/(N-1)$ from one half makes one side exponentially rare, without invoking an asymptotic approximation.</p>
+    <p>The exact reflection identity
+    $F(N,p)+F(N,N-p)=2^{N-1}$ locates the transition at one half. Conditional on feasibility, the mean face numbers are also closed form:</p>
+    <div class="equation-card">
+    $$\mathbb E[f_k\mid Q\geq p]=\frac{I_k(N,p)}{F(N,p)},
+      \qquad 0\leq k\leq N-p.$$
+    </div>
+    <p>The certificate checks 2,080 exact reflection identities and 1,056 exact rational entropy bounds through
+    $n=64$; the latter compare the full integer binomial tail with $B_n(h)$ and use no floating-point tolerance.</p>
+
     <h2>Symmetric transform nodes give reciprocal strike crossings</h2>
     <p>Suppose the prescribed node multiset is invariant under $s\mapsto1-s$, including multiplicities, and put
     $n=r+2$. The roots of $P$ are then invariant under $z\mapsto b/z$, so</p>
