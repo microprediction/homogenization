@@ -140,6 +140,54 @@ def dynamic_lower_tail_mass(support, probabilities, y):
     return F(max(mass for gap, mass in states.items() if gap <= 0), scale)
 
 
+def ordinary_knapsack_lower_tail_mass(support, probabilities, y):
+    """Exact lower tail after including every atom at or below y."""
+    low = tuple(j for j, z in enumerate(support) if z <= y)
+    high = tuple(j for j, z in enumerate(support) if z > y)
+    base = sum(probabilities[j] for j in low)
+    budget = sum(probabilities[j]*(y-support[j]) for j in low)
+    best = F(0)
+    for mask in range(1 << len(high)):
+        cost = sum(probabilities[j]*(support[j]-y)
+                   for h, j in enumerate(high) if mask & (1 << h))
+        profit = sum(probabilities[j]
+                     for h, j in enumerate(high) if mask & (1 << h))
+        if cost <= budget:
+            best = max(best, profit)
+    return base+best
+
+
+def approximate_lower_tail_mass(support, probabilities, y, epsilon):
+    """Profit-scaled knapsack FPTAS, retaining exact rational arithmetic."""
+    check(F(0) < epsilon < F(1))
+    low = tuple(j for j, z in enumerate(support) if z <= y)
+    base = sum(probabilities[j] for j in low)
+    budget = sum(probabilities[j]*(y-support[j]) for j in low)
+    items = tuple((probabilities[j]*(support[j]-y), probabilities[j])
+                  for j, z in enumerate(support)
+                  if z > y and probabilities[j]*(z-y) <= budget)
+    if not items:
+        return base
+    profit_max = max(profit for _, profit in items)
+    unit = epsilon*profit_max/len(items)
+    # rounded profit -> (least exact cost, exact profit of that witness)
+    states = {0: (F(0), F(0))}
+    for cost, profit in items:
+        rounded = int(profit/unit)
+        updated = states.copy()
+        for score, (old_cost, old_profit) in states.items():
+            new_cost, new_score = old_cost+cost, score+rounded
+            if new_cost > budget:
+                continue
+            candidate = (new_cost, old_profit+profit)
+            incumbent = updated.get(new_score)
+            if (incumbent is None or candidate[0] < incumbent[0] or
+                    (candidate[0] == incumbent[0] and candidate[1] > incumbent[1])):
+                updated[new_score] = candidate
+        states = updated
+    return base+states[max(states)][1]
+
+
 def certify_subset_sum_reduction(values, target):
     """Embed one SUBSET SUM instance in a fixed-space lower tail."""
     total = sum(values)
@@ -329,7 +377,8 @@ def main():
     support = tuple(map(F, (0, F(1, 5), F(1, 2), F(4, 5), 1)))
     atomic_checks, fractional_splits = 0, 0
     convex_order_witnesses = deterministic_tail_checks = strict_relaxations = 0
-    dynamic_tail_checks = 0
+    dynamic_tail_checks = knapsack_form_checks = fptas_checks = 0
+    strict_fptas_cases = 0
     bernoulli_lower = bernoulli_upper = 0
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
@@ -358,7 +407,18 @@ def main():
                     check(deterministic == dynamic_lower_tail_mass(
                         support, probabilities, y,
                     ))
+                    check(deterministic == ordinary_knapsack_lower_tail_mass(
+                        support, probabilities, y,
+                    ))
                     dynamic_tail_checks += 1
+                    knapsack_form_checks += 1
+                    for epsilon in (F(1, 2), F(1, 3), F(1, 4), F(1, 5), F(1, 10)):
+                        approximate = approximate_lower_tail_mass(
+                            support, probabilities, y, epsilon,
+                        )
+                        check((1-epsilon)*deterministic <= approximate <= deterministic)
+                        strict_fptas_cases += int(approximate < deterministic)
+                        fptas_checks += 1
                 check(deterministic <= envelope)
                 deterministic_tail_checks += 1
                 strict_relaxations += int(deterministic < envelope)
@@ -411,6 +471,39 @@ def main():
                 deterministic_band_checks += 1
                 strict_band_relaxations += int(deterministic < witness)
                 atomic_two_sided += 1
+    approximation_support = tuple(map(
+        F, (0, F(1, 7), F(2, 7), F(4, 7), F(5, 7), 1),
+    ))
+    for weights in ((1, 1, 1, 1, 5, 4), (1, 1, 1, 1, 5, 5),
+                    (1, 1, 1, 1, 5, 6), (1, 1, 1, 1, 6, 4),
+                    (1, 1, 1, 1, 6, 5)):
+        probabilities = tuple(F(w, sum(weights)) for w in weights)
+        mean = sum(z*q for z, q in zip(approximation_support, probabilities))
+        y = F(4, 5)*mean
+        deterministic = brute_deterministic_tail_mass(
+            approximation_support, probabilities, y, True,
+        )
+        check(deterministic == ordinary_knapsack_lower_tail_mass(
+            approximation_support, probabilities, y,
+        ))
+        approximate = approximate_lower_tail_mass(
+            approximation_support, probabilities, y, F(1, 2),
+        )
+        check(F(1, 2)*deterministic <= approximate < deterministic)
+        knapsack_form_checks += 1
+        fptas_checks += 1
+        strict_fptas_cases += 1
+    edge_support, edge_probabilities, edge_y = (F(0), F(1)), (F(1, 2), F(1, 2)), F(1, 4)
+    edge_exact = brute_deterministic_tail_mass(
+        edge_support, edge_probabilities, edge_y, True,
+    )
+    check(edge_exact == ordinary_knapsack_lower_tail_mass(
+        edge_support, edge_probabilities, edge_y,
+    ) == approximate_lower_tail_mass(
+        edge_support, edge_probabilities, edge_y, F(1, 2),
+    ) == F(1, 2))
+    knapsack_form_checks += 1
+    fptas_checks += 1
     subset_sum_checks = subset_sum_equalities = 0
     for values in ((2, 3, 7, 8, 10), (1, 4, 6, 13),
                    (3, 5, 9, 12, 17), (2, 6, 11, 15, 18, 21)):
@@ -476,6 +569,9 @@ def main():
     print(f"Exact signed-knapsack dynamic programs: {dynamic_tail_checks}; "
           f"SUBSET SUM reductions: {subset_sum_checks} "
           f"({subset_sum_equalities} attainable targets)")
+    print(f"Ordinary-knapsack reductions: {knapsack_form_checks}; "
+          f"profit-scaled FPTAS checks: {fptas_checks} "
+          f"({strict_fptas_cases} nonexact approximations)")
     print(f"Exact fixed-space two-sided optima: {deterministic_band_checks}; "
           f"strict randomized gaps: {strict_band_relaxations}")
     print(f"Finite-boundary comparisons: {boundary_checks}; independent beta minimizer checks: 35")
