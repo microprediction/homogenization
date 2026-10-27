@@ -365,6 +365,30 @@
       strongly polynomial bound or an approximation theorem.
       <a href="./bibliography.html#IbarakiHasegawaTeranakaIwase1978">Ibaraki et al. (1978)</a> supplies classical multiple-choice knapsack context; the reduction and recursion here are direct.</p>
 
+    <h2>Full two-sided saturation has a one-budget test</h2>
+    <p>For every middle atom write $a_j=w_j(z_j-\ell)$ and $b_j=w_j(u-z_j)$, and put
+      $B_M=\sum_j b_j$. Full event mass is attainable exactly when the middle atoms can be partitioned into a
+      lower set $S$ and its upper complement, or equivalently when</p>
+    $$\sum_{j\in S}a_j\le C_L,\qquad
+      \sum_{j\in S}b_j\ge B_M-C_U.$$
+    <p>After integer scaling, a one-budget $0$&ndash;$1$ recursion retains the largest $b$-sum at each used
+      $a$-capacity. It decides saturation in $O(m(\widehat C_L+1))$ time and $O(\widehat C_L+1)$ memory, even though
+      optimizing a nonsaturated event uses both budgets.</p>
+    <p>A restricted symmetric form of this decision problem is weakly NP-complete. Given a SUBSET SUM instance
+      $a_1,\ldots,a_m,C$ with $A=\sum_i a_i$, augment the integers by $2A-C$ and $A+C$; the augmented total is
+      $4A$, and a subset sums to $2A$ if and only if the original instance has a subset summing to $C$.</p>
+    <p>Put mass $1/4$ at each of $0$ and $1$, and for every augmented integer $d_j$ put mass
+      $d_j/(8A)$ at $1/2$. At $\ell=1/4$ and $u=3/4$, both slack budgets are $1/16$, both assignment costs of
+      middle atom $j$ are $d_j/(32A)$, and the mean is $1/2$.</p>
+    <p>Therefore deterministic event mass one is possible exactly when the augmented integers split equally,
+      which is exactly the original SUBSET SUM decision. Membership in NP is immediate from the lower/upper atom
+      assignment, while the one-budget recursion is pseudo-polynomial on this common-denominator family.</p>
+    <p>Thus general rational saturation is NP-complete, and the symmetric restriction is weakly NP-complete.
+      This reduction proves only weak hardness; it neither rules out a stronger lower bound for general inputs nor
+      establishes approximation hardness.</p>
+    <p><a href="./bibliography.html#Karp1972">Karp (1972)</a> supplies the primary exact-sum complexity source.
+      The two-number transformation and the symmetric probability-law embedding are proved directly above.</p>
+
     <h2>Atomic two-sided bands remain sharp</h2>
     <p>For $0&lt;\ell&lt;p&lt;u&lt;1$, let $q_-$ and $q_+$ be the sharp atomic lower- and upper-tail envelope masses.
       On the randomized distributional-transform coordinate $V\sim\operatorname{Unif}(0,1)$, write $Z=Q(V)$ with
@@ -452,7 +476,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed and 56 two-budget dynamic programs, 169 SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, 18 signed and 56 two-budget dynamic programs, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
