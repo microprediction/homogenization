@@ -1014,8 +1014,8 @@ def certify_bounded_quantization_rate():
 
 
 def certify_bounded_atomic_rate_obstruction():
-    """A Bernoulli jump prevents a universal bounded-support rate limit."""
-    cases = 0
+    """Finite quantile jumps prevent a bounded-support rate limit."""
+    bernoulli_cases = 0
     for cells in range(2, 18):
         error = equal_mass_quantization(
             (F(0), F(1)), (F(1, 2), F(1, 2)), cells,
@@ -1023,8 +1023,35 @@ def certify_bounded_atomic_rate_obstruction():
         expected = F(0) if cells % 2 == 0 else F(1, 2*cells)
         check(error == expected)
         check(cells*error == (F(0) if cells % 2 == 0 else F(1, 2)))
-        cases += 1
-    return cases, F(0), F(1, 2)
+        bernoulli_cases += 1
+
+    points = (F(-2), F(0), F(3), F(7))
+    masses = (F(1, 6), F(1, 3), F(1, 4), F(1, 4))
+
+    def scaled_formula(cells):
+        cumulative = F(0)
+        total = F(0)
+        for jump in range(1, len(points)):
+            cumulative += masses[jump-1]
+            fractional = (cells*cumulative) % 1
+            total += (2*(points[jump]-points[jump-1])
+                      * fractional*(1-fractional))
+        return total
+
+    finite_cases = 0
+    for cells in range(5, 37):
+        error = equal_mass_quantization(points, masses, cells)
+        check(cells*error == scaled_formula(cells))
+        finite_cases += 1
+    period = 12
+    check(all(scaled_formula(cells) == scaled_formula(cells+period)
+              for cells in range(5, 17)))
+    check(scaled_formula(period) == 0)
+    period_maximum = max(scaled_formula(cells)
+                         for cells in range(5, 17))
+    check(period_maximum == 4)
+    return (bernoulli_cases, finite_cases, period, period_maximum,
+            F(0), F(1, 2))
 
 
 def exponential_equal_mass_error(cells):
@@ -1808,8 +1835,11 @@ def main():
     (bounded_rate_cases, bounded_rate_quadrature_error,
      bounded_rate_error_128, bounded_rate_error_65536,
      bounded_rate_ratio_65536) = certify_bounded_quantization_rate()
-    (bounded_atomic_cases, bounded_atomic_even_ratio,
-     bounded_atomic_odd_ratio) = certify_bounded_atomic_rate_obstruction()
+    (bounded_atomic_bernoulli_cases, bounded_atomic_finite_cases,
+     bounded_atomic_period, bounded_atomic_period_maximum,
+     bounded_atomic_even_ratio, bounded_atomic_odd_ratio) = (
+        certify_bounded_atomic_rate_obstruction()
+    )
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
@@ -2178,9 +2208,12 @@ def main():
           f"at N=128: {bounded_rate_error_128:.15f}; W1 at N=65536: "
           f"{bounded_rate_error_65536:.15f}; sharp-rate ratio: "
           f"{bounded_rate_ratio_65536:.12f}")
-    print(f"Bounded atomic rate obstructions: {bounded_atomic_cases}; "
-          f"even/odd scaled errors: {bounded_atomic_even_ratio}/"
-          f"{bounded_atomic_odd_ratio}")
+    print(f"Bounded atomic rate obstructions: "
+          f"{bounded_atomic_bernoulli_cases} Bernoulli and "
+          f"{bounded_atomic_finite_cases} finite-law formula checks; "
+          f"period/maximum: {bounded_atomic_period}/"
+          f"{bounded_atomic_period_maximum}; even/odd Bernoulli scaled "
+          f"errors: {bounded_atomic_even_ratio}/{bounded_atomic_odd_ratio}")
     print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
           f"largest quadrature discrepancy: "
           f"{exponential_quadrature_error:.3e}; W1 at N=128: "
