@@ -3339,5 +3339,16 @@
   "doi": "10.30757/alea.v19-01",
   "url": "https://doi.org/10.30757/ALEA.V19-01",
   "annotation": "Develops primal and dual quantizations that preserve convex order and relates their errors to martingale couplings. The latent-coverage note uses elementary conditional-mean quantization to prove Wasserstein density of attainable contraction laws on a nonatomic base."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BlackwellDubins1983",
+  "authors": "Blackwell, D. and Dubins, L. E.",
+  "year": 1983,
+  "title": "An extension of Skorohod's almost sure representation theorem",
+  "venue": "Proceedings of the American Mathematical Society 89(4):691-692",
+  "doi": "10.1090/s0002-9939-1983-0718998-0",
+  "url": "https://doi.org/10.1090/S0002-9939-1983-0718998-0",
+  "annotation": "Provides classical measurable distribution-sampling context on a fixed standard probability space. The latent-coverage note needs only the elementary real-valued inverse-CDF sampler, which it applies to a Strassen conditional kernel using an internal independent uniform coordinate."
  }
 ]

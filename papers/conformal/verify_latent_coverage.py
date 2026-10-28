@@ -882,6 +882,38 @@ def certify_wasserstein_dense_mixed_contractions():
     return cases, largest_support, smallest_error, target_variance, source_variance
 
 
+def certify_internal_randomizer_mixed_contraction():
+    """An exact continuous contraction using a uniform independent of Z."""
+    # Source: 1/2 delta_0 + 1/2 Uniform[0,1].  With U independent of Z,
+    # set M=Z/2 off the atom and M=U/2 on the atom.  Both branches put
+    # density one on [0,1/2], and only the positive branch contributes Z.
+    cells = 16
+    total_mass = total_first = F(0)
+    for cell in range(cells):
+        left = F(cell, 2*cells)
+        right = F(cell+1, 2*cells)
+        atomic_branch_mass = right-left
+        positive_branch_mass = right-left
+        target_mass = 2*(right-left)
+        target_first = right**2-left**2
+
+        check(atomic_branch_mass == F(1, 2*cells))
+        check(positive_branch_mass == F(1, 2*cells))
+        check(target_mass == F(1, cells))
+        check(target_first == target_mass*(left+right)/2)
+        total_mass += target_mass
+        total_first += target_first
+
+    target_variance = F(1, 2)**2/F(12)
+    source_variance = F(1, 2)*F(1, 3)-F(1, 4)**2
+    check(total_mass == 1)
+    check(total_first == F(1, 4))
+    check(target_variance == F(1, 48))
+    check(source_variance == F(5, 48))
+    check(target_variance/source_variance == F(1, 5))
+    return cells, target_variance, source_variance, F(1, 5)
+
+
 def symmetric_beta_coefficients(shape):
     """Polynomial coefficients of the Beta(shape, shape) density."""
     normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
@@ -1247,6 +1279,10 @@ def main():
      dense_target_variance, dense_source_variance) = (
         certify_wasserstein_dense_mixed_contractions()
     )
+    (internal_randomizer_cells, internal_randomizer_target_variance,
+     internal_randomizer_source_variance, internal_randomizer_ratio) = (
+        certify_internal_randomizer_mixed_contraction()
+    )
     (continuous_monge_maps, largest_monge_multiplicity,
      smallest_monge_variance) = certify_continuous_backward_monge_maps()
     (atomic_fiber_targets, atomic_fiber_cell_identities,
@@ -1583,6 +1619,11 @@ def main():
           f"smallest exact W1 error: {dense_smallest_error}; "
           f"target/source variances: {dense_target_variance}/"
           f"{dense_source_variance}")
+    print(f"Exact internal-randomizer mixed contraction: "
+          f"{internal_randomizer_cells} cell identities; "
+          f"target/source variances: {internal_randomizer_target_variance}/"
+          f"{internal_randomizer_source_variance}; "
+          f"variance ratio: {internal_randomizer_ratio}")
     print(f"Exact continuous backward-Monge maps: {continuous_monge_maps}; "
           f"largest preimage multiplicity: {largest_monge_multiplicity}; "
           f"smallest target variance: {smallest_monge_variance}; "
