@@ -3416,5 +3416,16 @@
   "doi": "10.1112/plms/s2-47.1.1",
   "url": "https://doi.org/10.1112/plms/s2-47.1.1",
   "annotation": "Introduces the global comparison bound now called Potter's bound. The regularly varying tail-profile theorem uses it to dominate the rescaled unbounded quantile cell and justify passage to the power-law profile."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BelikLuskin2003",
+  "authors": "Bělík, P. and Luskin, M.",
+  "year": 2003,
+  "title": "Approximation by Piecewise Constant Functions in a BV Metric",
+  "venue": "Mathematical Models and Methods in Applied Sciences 13:373-393",
+  "doi": "10.1142/s0218202503002556",
+  "url": "https://doi.org/10.1142/S0218202503002556",
+  "annotation": "Gives primary piecewise-constant approximation results in bounded-variation metrics. The SBV contraction note derives its one-dimensional coefficient and jump-phase decomposition directly."
  }
 ]
