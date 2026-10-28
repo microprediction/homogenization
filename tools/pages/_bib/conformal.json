@@ -40,6 +40,16 @@
   "annotation": "Gives a classical polynomial approximation scheme for fixed-dimensional knapsack using linear-programming enumeration and rounding. The latent-coverage note proves a specialized additive scheme for its two-budget three-choice conditional-mean problem."
  },
  {
+  "key": "ChandraHirschbergWong1976",
+  "authors": "Chandra, A. K., Hirschberg, D. S. and Wong, C. K.",
+  "year": 1976,
+  "title": "Approximate algorithms for some generalized knapsack problems",
+  "venue": "Theoretical Computer Science 3(3):293-304",
+  "doi": "10.1016/0304-3975(76)90048-7",
+  "url": "",
+  "annotation": "Develops polynomial approximation algorithms for integer and binary multiple-choice knapsack and multidimensional knapsack. The latent-coverage note proves a relative PTAS for its specialized two-budget three-choice conditional-mean problem."
+ },
+ {
   "key": "Karp1972",
   "authors": "Karp, R. M.",
   "year": 1972,

@@ -1,6 +1,6 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
-from itertools import product
+from itertools import combinations, product
 from math import lcm
 
 import numpy as np
@@ -306,6 +306,49 @@ def two_budget_band_mass(support, probabilities, lower, upper):
     return base+max(states.values())
 
 
+def rounded_residual_band_lp(support, probabilities, middle, lower, upper,
+                             low_capacity, high_capacity):
+    """Round a vertex of the residual two-budget LP inward."""
+    if not middle:
+        return F(0), 0
+    tolerance = 1e-8
+    size = len(middle)
+    low_costs = [float(probabilities[j]*(support[j]-lower)) for j in middle]
+    high_costs = [float(probabilities[j]*(upper-support[j])) for j in middle]
+    objective = [-float(probabilities[j]) for j in middle]*2
+    constraints = [low_costs+[0.0]*size, [0.0]*size+high_costs]
+    bounds = [float(low_capacity), float(high_capacity)]
+    for h in range(size):
+        row = [0.0]*(2*size)
+        row[h] = row[size+h] = 1.0
+        constraints.append(row)
+        bounds.append(1.0)
+    solution = linprog(
+        objective, A_ub=constraints, b_ub=bounds,
+        bounds=(0.0, 1.0), method="highs",
+    )
+    check(solution.success)
+    selected_low, selected_high, fractional = [], [], 0
+    for h, j in enumerate(middle):
+        x, y = solution.x[h], solution.x[size+h]
+        if x >= 1-tolerance and y <= tolerance:
+            selected_low.append(j)
+        elif y >= 1-tolerance and x <= tolerance:
+            selected_high.append(j)
+        elif x > tolerance or y > tolerance:
+            fractional += 1
+    check(fractional <= 2)
+    exact_low = sum(
+        probabilities[j]*(support[j]-lower) for j in selected_low
+    )
+    exact_high = sum(
+        probabilities[j]*(upper-support[j]) for j in selected_high
+    )
+    check(exact_low <= low_capacity and exact_high <= high_capacity)
+    reward = sum(probabilities[j] for j in selected_low+selected_high)
+    return reward, fractional
+
+
 def approximate_two_budget_band_mass(support, probabilities, lower, upper,
                                      epsilon):
     """Heavy-atom enumeration plus LP-vertex rounding for a band."""
@@ -323,7 +366,6 @@ def approximate_two_budget_band_mass(support, probabilities, lower, upper,
     heavy = tuple(j for j in middle if probabilities[j] > cutoff)
     light = tuple(j for j in middle if probabilities[j] <= cutoff)
     best, largest_fractional_count = base, 0
-    tolerance = 1e-8
     for assignment in product((0, 1, 2), repeat=len(heavy)):
         low_used = sum(
             probabilities[j]*(support[j]-lower)
@@ -338,48 +380,62 @@ def approximate_two_budget_band_mass(support, probabilities, lower, upper,
         heavy_reward = sum(
             probabilities[j] for j, cell in zip(heavy, assignment) if cell
         )
-        if not light:
-            best = max(best, base+heavy_reward)
-            continue
-        size = len(light)
-        low_costs = [float(probabilities[j]*(support[j]-lower)) for j in light]
-        high_costs = [float(probabilities[j]*(upper-support[j])) for j in light]
-        objective = [-float(probabilities[j]) for j in light]*2
-        constraints = [low_costs+[0.0]*size, [0.0]*size+high_costs]
-        bounds = [float(low_capacity-low_used), float(high_capacity-high_used)]
-        for h in range(size):
-            row = [0.0]*(2*size)
-            row[h] = row[size+h] = 1.0
-            constraints.append(row)
-            bounds.append(1.0)
-        solution = linprog(
-            objective, A_ub=constraints, b_ub=bounds,
-            bounds=(0.0, 1.0), method="highs",
+        light_reward, fractional = rounded_residual_band_lp(
+            support, probabilities, light, lower, upper,
+            low_capacity-low_used, high_capacity-high_used,
         )
-        check(solution.success)
-        selected_low, selected_high, fractional = [], [], 0
-        for h, j in enumerate(light):
-            x, y = solution.x[h], solution.x[size+h]
-            if x >= 1-tolerance and y <= tolerance:
-                selected_low.append(j)
-            elif y >= 1-tolerance and x <= tolerance:
-                selected_high.append(j)
-            elif x > tolerance or y > tolerance:
-                fractional += 1
-        check(fractional <= 2)
         largest_fractional_count = max(largest_fractional_count, fractional)
-        exact_low = low_used+sum(
-            probabilities[j]*(support[j]-lower) for j in selected_low
-        )
-        exact_high = high_used+sum(
-            probabilities[j]*(upper-support[j]) for j in selected_high
-        )
-        check(exact_low <= low_capacity and exact_high <= high_capacity)
-        reward = heavy_reward+sum(
-            probabilities[j] for j in selected_low+selected_high
-        )
-        best = max(best, base+reward)
+        best = max(best, base+heavy_reward+light_reward)
     return best, len(heavy), largest_fractional_count
+
+
+def relative_two_budget_band_mass(support, probabilities, lower, upper,
+                                  epsilon):
+    """Enumerate high-profit atoms and LP-round the residual problem."""
+    low = tuple(j for j, z in enumerate(support) if z <= lower)
+    high = tuple(j for j, z in enumerate(support) if z >= upper)
+    middle = tuple(j for j, z in enumerate(support) if lower < z < upper)
+    base = sum(probabilities[j] for j in low+high)
+    low_capacity = sum(
+        probabilities[j]*(lower-support[j]) for j in low
+    )
+    high_capacity = sum(
+        probabilities[j]*(support[j]-upper) for j in high
+    )
+    heavy_count = (2*epsilon.denominator+epsilon.numerator-1)//epsilon.numerator
+    best, largest_fractional_count = base, 0
+    for count in range(min(heavy_count, len(middle))+1):
+        for selected in combinations(middle, count):
+            selected_set = set(selected)
+            for assignment in product((1, 2), repeat=count):
+                low_used = sum(
+                    probabilities[j]*(support[j]-lower)
+                    for j, cell in zip(selected, assignment) if cell == 1
+                )
+                high_used = sum(
+                    probabilities[j]*(upper-support[j])
+                    for j, cell in zip(selected, assignment) if cell == 2
+                )
+                if low_used > low_capacity or high_used > high_capacity:
+                    continue
+                reward = sum(probabilities[j] for j in selected)
+                candidate = base+reward
+                if count == heavy_count:
+                    cutoff = min(probabilities[j] for j in selected)
+                    residual = tuple(
+                        j for j in middle
+                        if j not in selected_set and probabilities[j] <= cutoff
+                    )
+                    residual_reward, fractional = rounded_residual_band_lp(
+                        support, probabilities, residual, lower, upper,
+                        low_capacity-low_used, high_capacity-high_used,
+                    )
+                    candidate += residual_reward
+                    largest_fractional_count = max(
+                        largest_fractional_count, fractional,
+                    )
+                best = max(best, candidate)
+    return best, heavy_count, largest_fractional_count
 
 
 def certify_two_sided_additive_scheme():
@@ -408,6 +464,40 @@ def certify_two_sided_additive_scheme():
             checks += 1
     check(strict > 0)
     return checks, strict, largest_heavy, largest_fractional
+
+
+def certify_two_sided_relative_scheme():
+    """LP certificate for the relative two-budget approximation scheme."""
+    support = tuple(F(j, 9) for j in range(10))
+    weight_patterns = (
+        (9, 8, 2, 9, 5, 9, 4, 4, 7, 2),
+        (2, 7, 4, 4, 9, 5, 9, 2, 8, 9),
+        (1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+        (2, 5, 1, 8, 3, 7, 4, 9, 6, 2),
+    )
+    checks = strict = largest_fractional = 0
+    epsilon = F(2, 3)
+    for h, weights in enumerate(weight_patterns):
+        probabilities = tuple(F(w, sum(weights)) for w in weights)
+        mean = sum(z*q for z, q in zip(support, probabilities))
+        if h == 0:
+            lower, upper = F(115, 354), F(1823, 2124)
+        else:
+            lower, upper = mean/2, (1+mean)/2
+        check(lower < mean < upper)
+        exact = brute_deterministic_band_mass(
+            support, probabilities, lower, upper,
+        )
+        approximate, enumerated, fractional = relative_two_budget_band_mass(
+            support, probabilities, lower, upper, epsilon,
+        )
+        check(enumerated == 3)
+        check((1-epsilon)*exact <= approximate <= exact)
+        strict += int(approximate < exact)
+        largest_fractional = max(largest_fractional, fractional)
+        checks += 1
+    check(strict == 2 and largest_fractional == 2)
+    return checks, strict, largest_fractional
 
 
 def band_saturates_by_one_budget(support, probabilities, lower, upper):
@@ -742,6 +832,8 @@ def main():
      largest_heavy_set, largest_lp_fractional_set) = (
         certify_two_sided_additive_scheme()
     )
+    (relative_scheme_checks, strict_relative_approximations,
+     largest_relative_fractional_set) = certify_two_sided_relative_scheme()
     weight_patterns = (
         (1, 1, 1, 1, 1), (1, 2, 3, 4, 5), (5, 4, 3, 2, 1),
         (2, 5, 1, 4, 3), (3, 1, 5, 2, 4), (4, 2, 1, 5, 3),
@@ -1055,6 +1147,10 @@ def main():
           f"strict approximations: {strict_additive_approximations}; "
           f"largest heavy set: {largest_heavy_set}; "
           f"largest fractional LP set: {largest_lp_fractional_set}")
+    print(f"Two-sided relative PTAS checks: {relative_scheme_checks}; "
+          f"strict approximations: {strict_relative_approximations}; "
+          f"enumerated atoms: 3; largest fractional LP set: "
+          f"{largest_relative_fractional_set}")
     print(f"Two-sided saturation reductions: {saturation_checks} "
           f"({saturation_equalities} attainable; "
           f"{saturation_exhaustive} exhaustive assignment checks)")
