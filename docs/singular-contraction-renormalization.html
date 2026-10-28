@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Exact renormalization for singular staircase contractions · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./sbv-contraction-rate.html">&larr; special-BV rates</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renormalization.py">certificate</a></span></p>
+    <h1>Exact renormalization for singular staircase contractions</h1>
+    <p class="subtitle">Self-similarity preserves every base-grid quantization phase along an infinite geometric subsequence.</p>
+
+    <h2>Equal-scale singular staircases</h2>
+    <p>Fix integers $b&gt;d\ge2$ and active digits
+      $0=a_0&lt;\cdots&lt;a_{d-1}=b-1$. There is a unique continuous nondecreasing $C:[0,1]\to[0,1]$ that is constant on inactive base-$b$ intervals and satisfies</p>
+    $$C(x)=\frac{r}{d}+\frac1d C(bx-a_r),
+      \qquad \frac{a_r}{b}\le x\le\frac{a_r+1}{b}.$$
+    <p>The level-$k$ active set consists of $d^k$ intervals of length $b^{-k}$.
+      Their total length $(d/b)^k$ tends to zero, so $C'=0$ almost everywhere although $C$ is continuous and rises from zero to one.</p>
+    <p>Let $mu$ be the law of $C(U)$ for a uniform $U$. Its quantile is $C$, while the plateau values carry all of $mu$; thus this is a countably atomic target represented by a continuous singular quantile.</p>
+
+    <h2>Exact finite-grid identity</h2>
+    <p>Let $P_NC$ be the mean of $C$ on each of the $N$ uniform cells and put
+      $E_N=\|C-P_NC\|_1=W_1(\mu_N,\mu)$. Then for every pair of integers $m\ge1$ and $k\ge0$,</p>
+    <div class="equation-card">
+    $$\boxed{E_{mb^k}=b^{-k}E_m,
+      \qquad (mb^k)E_{mb^k}=mE_m.}$$
+    </div>
+    <p>In particular, the entire scaled sequence is exactly invariant under multiplication of the cell count by $b$:</p>
+    $$bN E_{bN}=NE_N.$$
+    <p>This is a finite-$N$ identity, not an asymptotic expansion or a statement along an unspecified subsequence.</p>
+
+    <h2>Proof by cylinder decomposition</h2>
+    <p>Every level-$k$ active cylinder begins and ends on the grid with $mb^k$ cells. It contains exactly $m$ cells, and on that cylinder $C$ is an affine vertical copy of itself with horizontal scale $b^{-k}$ and vertical scale $d^{-k}$.</p>
+    <p>The $L^1$ projection error on one active cylinder is therefore
+      $b^{-k}d^{-k}E_m$. All inactive cells are plateaus and contribute zero.</p>
+    <p>Summing over the $d^k$ active cylinders gives $E_{mb^k}=b^{-k}E_m$.
+      The cancellation of $d^k$ is why the identity does not depend on the number of active branches.</p>
+
+    <h2>Persistent phases and failure of a coefficient</h2>
+    <p>Write $c_m=mE_m$. The identity says $c_{mb^k}=c_m$ for every $k$, so every base value is repeated at arbitrarily fine resolution.</p>
+    <p>If $c_m\ne c_n$ for any two positive integers, $NW_1(mu_N,mu)$ cannot converge.
+      More precisely, its set of subsequential limits contains the closure of ${c_m:m\ge1}$.</p>
+    <p>For the middle-thirds Cantor staircase, $c_1=1/6$ and $c_2=4/15$.
+      The earlier two subsequences are the cases $m=1,2$; the theorem now preserves every $m$-cell phase along $N=m3^k$.</p>
+
+    <h2>Relation to the special-BV theorem</h2>
+    <p>The derivative measure of $C$ is singular continuous: it has neither an absolutely continuous part nor jumps.
+      Hence the special-BV phase formula does not apply.</p>
+    <p>The exact renormalization identifies what replaces the special-BV coefficient in this lattice self-similar class.
+      No claim is made for nonlattice self-similar scales or for arbitrary singular-continuous quantiles.</p>
+
+    <h2>Certificate and primary context</h2>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renormalization.py">exact rational certificate</a>
+      checks 32 finite-stage identities for the ternary and quinary two-branch staircases. The largest direct grids have $324$ and $2500$ cells.</p>
+    <p>At stage ten, the ternary constants are $0.166666666667$ and $0.266666669607$, with rigorous scaled-error enclosure radii $0.001953125000$ and $0.003906250000$.
+      The quinary controls are $0.100000000000$ and $0.242424242464$.</p>
+    <p><a href="./bibliography.html#BergKruppel1998">Berg and Kr&uuml;ppel (1998)</a> gives primary functional-equation context for Cantor sets and their singular functions.
+      The projection renormalization identity is proved directly here.</p>
+    <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

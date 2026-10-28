@@ -1,5 +1,15 @@
 [
  {
+  "key": "BergKruppel1998",
+  "authors": "Berg, L. and Kr\u00fcppel, M.",
+  "year": 1998,
+  "title": "Cantor Sets and Integral-Functional Equations",
+  "venue": "Zeitschrift f\u00fcr Analysis und ihre Anwendungen 17(4):997-1020",
+  "doi": "10.4171/ZAA/863",
+  "url": "https://doi.org/10.4171/ZAA/863",
+  "annotation": "Studies functional equations connected with Cantor sets and singular functions. The singular-contraction note proves a separate exact renormalization identity for equal-grid cell-average projections."
+ },
+ {
   "key": "BelikLuskin2003",
   "authors": "B\u011bl\u00edk, P. and Luskin, M.",
   "year": 2003,

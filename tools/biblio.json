@@ -3427,5 +3427,16 @@
   "doi": "10.1142/s0218202503002556",
   "url": "https://doi.org/10.1142/S0218202503002556",
   "annotation": "Gives primary piecewise-constant approximation results in bounded-variation metrics. The SBV contraction note derives its one-dimensional coefficient and jump-phase decomposition directly."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BergKruppel1998",
+  "authors": "Berg, L. and Krüppel, M.",
+  "year": 1998,
+  "title": "Cantor Sets and Integral-Functional Equations",
+  "venue": "Zeitschrift für Analysis und ihre Anwendungen 17(4):997-1020",
+  "doi": "10.4171/zaa/863",
+  "url": "https://doi.org/10.4171/ZAA/863",
+  "annotation": "Studies functional equations connected with Cantor sets and singular functions. The singular-contraction note proves a separate exact renormalization identity for equal-grid cell-average projections."
  }
 ]
