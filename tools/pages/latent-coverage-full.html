@@ -280,10 +280,28 @@
       suffix cells work when $q_-+q_+\le1$; a shared cut works otherwise, giving</p>
     $$\sup_{\mathcal D\subseteq\mathcal F}\Pr\{\mathbb E[Z\mid\mathcal D]\le\ell
       \text{ or }\mathbb E[Z\mid\mathcal D]\ge u\}=\min\{1,q_-+q_+\}.$$
-    <p>This extension realizes the sharp tail witnesses, not every convex-order contraction on an arbitrary fixed
-      representation. The certificate checks ten exact mixed-law quantile partitions on $[0,1]$, including eight
+    <p>This direct construction realizes the sharp tail witnesses; the next result treats arbitrary finite-support
+      contraction laws. The certificate checks ten exact mixed-law quantile partitions on $[0,1]$, including eight
       cutoff splits inside score atoms; <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>
       supplies the general-distribution quantile coordinate.</p>
+
+    <h2>Every finite-support contraction is attainable on a nonatomic base</h2>
+    <p>The preceding conclusion extends beyond tails. Let $Z\in L^1$ live on a nonatomic original space, let $\nu$
+      be its law, and let $\mu=\sum_{i=1}^kp_i\delta_{m_i}\preceq_{\rm cx}\nu$ have finite support.</p>
+    <p>Strassen's theorem supplies a martingale coupling $(M,Z')$ with these marginals. If
+      $\eta_i(z)=\Pr\{M=m_i\mid Z'=z\}$, then on the original space</p>
+    $$\mathbb E\eta_i(Z)=p_i,\qquad \mathbb E[Z\eta_i(Z)]=p_im_i.$$
+    <p>The finite-action purification theorem of
+      <a href="./bibliography.html#DvoretzkyWaldWolfowitz1951">Dvoretzky, Wald and Wolfowitz (1951)</a> replaces the
+      randomized weights $\eta_i$ by a measurable partition $A_1,\ldots,A_k$ while preserving all $2k$ displayed
+      mass and first-moment integrals.</p>
+    <p>For $\mathcal D=\sigma(A_1,\ldots,A_k)$, the conditional mean equals $m_i$ on $A_i$. Therefore</p>
+    $$\boxed{\mu\preceq_{\rm cx}\nu,\quad |\operatorname{supp}\mu|&lt;\infty
+      \quad\Longrightarrow\quad
+      \mu=\mathcal L(\mathbb E[Z\mid\mathcal D])\ \text{for some }\mathcal D\subseteq\mathcal F.}$$
+    <p>This is exact finite-support attainability, not a claim for arbitrary continuously supported $\mu$; purification
+      with infinitely many actions needs additional hypotheses. The certificate checks four exact three-action
+      purifications of genuinely randomized kernels for a uniform score, with randomized share as large as $3/4$.</p>
 
     <h2>The fixed-space two-sided problem has an exact two-budget recursion</h2>
     <p>Some optimum assigns every atom with $z_j\le\ell$ to the lower cell and every atom with $z_j\ge u$ to the
@@ -481,7 +499,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements and ten mixed-law nonatomic witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses and four finite-action purifications, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

@@ -693,6 +693,75 @@ def certify_mixed_nonatomic_quantile_witnesses():
     return len(disjoint_pairs), len(shared_cuts), plateau_cuts, mean
 
 
+def certify_finite_action_purifications():
+    """Purify three-action kernels for a continuous uniform score."""
+    interval_mass = lambda left, right: right-left
+    interval_first = lambda left, right: (right**2-left**2)/2
+    thirds = (
+        ((F(0), F(1, 3)),),
+        ((F(1, 3), F(2, 3)),),
+        ((F(2, 3), F(1)),),
+    )
+    base_first = tuple(
+        sum(interval_first(left, right) for left, right in cells)
+        for cells in thirds
+    )
+    check(base_first == (F(1, 18), F(1, 6), F(5, 18)))
+
+    checks, largest_randomized_share = 0, F(0)
+    for swap in (F(1, 18), F(1, 12), F(1, 9), F(1, 6)):
+        randomized_share = 3*swap+9*swap**2
+        check(0 < randomized_share < 1)
+        randomized_masses = tuple(
+            (1-randomized_share)*F(1, 3)+randomized_share*F(1, 3)
+            for _ in thirds
+        )
+        randomized_first = tuple(
+            (1-randomized_share)*first+randomized_share*F(1, 6)
+            for first in base_first
+        )
+
+        pure_cells = (
+            ((F(0), F(1, 3)-swap), (F(2, 3), F(2, 3)+swap)),
+            ((F(1, 3), F(2, 3)),),
+            ((F(1, 3)-swap, F(1, 3)), (F(2, 3)+swap, F(1))),
+        )
+        pure_masses = tuple(
+            sum(interval_mass(left, right) for left, right in cells)
+            for cells in pure_cells
+        )
+        pure_first = tuple(
+            sum(interval_first(left, right) for left, right in cells)
+            for cells in pure_cells
+        )
+        check(pure_masses == randomized_masses == (F(1, 3),)*3)
+        check(pure_first == randomized_first)
+        means = tuple(first/mass for first, mass in zip(pure_first, pure_masses))
+        check(means[0] < means[1] < means[2])
+        check(sum(mass*mean for mass, mean in zip(pure_masses, means)) == F(1, 2))
+        breakpoints = (F(0),)+means+(F(1),)
+        for left, right in zip(breakpoints, breakpoints[1:]):
+            midpoint = (left+right)/2
+            active_mass = sum(
+                mass for mass, mean in zip(pure_masses, means)
+                if mean > midpoint
+            )
+            candidates = [left, right]
+            stationary = 1-active_mass
+            if left <= stationary <= right:
+                candidates.append(stationary)
+            for strike in candidates:
+                target_call = sum(
+                    mass*max(mean-strike, 0)
+                    for mass, mean in zip(pure_masses, means)
+                )
+                uniform_call = (1-strike)**2/2
+                check(target_call <= uniform_call)
+        checks += 1
+        largest_randomized_share = max(largest_randomized_share, randomized_share)
+    return checks, largest_randomized_share
+
+
 def rounded_atomic_band_witness(support, probabilities,
                                 lower_envelope, upper_envelope):
     """Round the randomized quantile-band witness to whole atoms."""
@@ -919,6 +988,9 @@ def main():
     (mixed_disjoint_witnesses, mixed_shared_witnesses,
      mixed_plateau_cuts, mixed_quantile_mean) = (
         certify_mixed_nonatomic_quantile_witnesses()
+    )
+    finite_action_purifications, largest_randomized_share = (
+        certify_finite_action_purifications()
     )
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
@@ -1233,6 +1305,9 @@ def main():
           f"{mixed_shared_witnesses} shared-cut); "
           f"plateau-cut splits: {mixed_plateau_cuts}; "
           f"mean: {mixed_quantile_mean}")
+    print(f"Exact three-action nonatomic purifications: "
+          f"{finite_action_purifications}; largest randomized share: "
+          f"{largest_randomized_share}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
