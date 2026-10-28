@@ -30,6 +30,16 @@
   "annotation": "Proves finite-action purification under finitely many atomless measures. The latent-coverage note applies it to mass and first-moment measures to realize every finite-support convex-order contraction on a nonatomic original space."
  },
  {
+  "key": "NutzWangZhang2024",
+  "authors": "Nutz, M., Wang, R. and Zhang, Z.",
+  "year": 2024,
+  "title": "Martingale Transports and Monge Maps",
+  "venue": "The Annals of Applied Probability 34(6):5556-5577",
+  "doi": "10.1214/24-AAP2099",
+  "url": "https://doi.org/10.1214/24-AAP2099",
+  "annotation": "Proves that every convex-order pair with atomless terminal marginal admits a backward-Monge martingale coupling. The latent-coverage note uses this result to realize the full convex-order lower set on the original score representation when its law is atomless."
+ },
+ {
   "key": "Dantzig1957",
   "authors": "Dantzig, G. B.",
   "year": 1957,

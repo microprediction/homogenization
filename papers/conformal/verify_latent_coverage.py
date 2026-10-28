@@ -762,6 +762,44 @@ def certify_finite_action_purifications():
     return checks, largest_randomized_share
 
 
+def certify_continuous_backward_monge_maps():
+    """Exact non-finite contractions of a uniform score."""
+    maps, largest_multiplicity = 0, 0
+    smallest_variance = F(1, 12)
+    for blocks in range(2, 7):
+        left = F(blocks-1, 2*blocks)
+        right = F(blocks+1, 2*blocks)
+        target_variance = F(1, 12*blocks**2)
+        check((left+right)/2 == F(1, 2))
+        check(target_variance < F(1, 12))
+
+        # For m=u+left, the k preimages are u+j/k and have mean m.
+        for sample in range(12):
+            u = F(sample, 12*blocks)
+            preimages = tuple(u+F(j, blocks) for j in range(blocks))
+            image = u+left
+            check(sum(preimages, F(0))/blocks == image)
+            check(all(
+                y-F(min(int(y*blocks), blocks-1), blocks)+left == image
+                for y in preimages
+            ))
+
+        # Complete stop-loss check. Outside [left,right] it is immediate;
+        # inside, source-call minus target-call is concave, so its minimum
+        # is at an endpoint.
+        source_call = lambda strike: (1-strike)**2/2
+        target_call = lambda strike: blocks*(right-strike)**2/2
+        check(1-blocks < 0)
+        check(source_call(left) >= F(1, 2)-left)
+        check(source_call(left) >= target_call(left))
+        check(source_call(right) >= target_call(right) == 0)
+
+        maps += 1
+        largest_multiplicity = blocks
+        smallest_variance = min(smallest_variance, target_variance)
+    return maps, largest_multiplicity, smallest_variance
+
+
 def rounded_atomic_band_witness(support, probabilities,
                                 lower_envelope, upper_envelope):
     """Round the randomized quantile-band witness to whole atoms."""
@@ -992,6 +1030,8 @@ def main():
     finite_action_purifications, largest_randomized_share = (
         certify_finite_action_purifications()
     )
+    (continuous_monge_maps, largest_monge_multiplicity,
+     smallest_monge_variance) = certify_continuous_backward_monge_maps()
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
     )
@@ -1308,6 +1348,10 @@ def main():
     print(f"Exact three-action nonatomic purifications: "
           f"{finite_action_purifications}; largest randomized share: "
           f"{largest_randomized_share}")
+    print(f"Exact continuous backward-Monge maps: {continuous_monge_maps}; "
+          f"largest preimage multiplicity: {largest_monge_multiplicity}; "
+          f"smallest target variance: {smallest_monge_variance}; "
+          f"variance ratio: {12*smallest_monge_variance}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
