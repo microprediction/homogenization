@@ -462,6 +462,37 @@
       $R=\theta\log N$. The exact formula identifies the sharp leading constant for this equal-mass
       conditional-mean scheme; it does not claim optimality among all $N$-point quantizers.</p>
 
+    <h2>The exact Gaussian rate</h2>
+    <p>Let $X\sim N(\mu_0,\sigma^2)$, write $\phi$ and $\overline\Phi$ for the standard-normal density and upper
+      tail, and take even $N$. For $0\le r&lt;N/2$, set</p>
+    $$x_{r,N}=\overline\Phi^{-1}(r/N),\qquad
+      m_{r,N}=N\{\phi(x_{r+1,N})-\phi(x_{r,N})\},$$
+    <p>where $x_{0,N}=\infty$ and $\phi(\infty)=0$. Symmetry and direct integration around the upper-cell
+      barycenters give the exact identity</p>
+    $$\boxed{W_1(\mu_N,\mu)=4\sigma\sum_{r=0}^{N/2-1}
+      \left[\phi(m_{r,N})-\phi(x_{r,N})
+      -m_{r,N}\left\{\overline\Phi(m_{r,N})-\frac rN\right\}\right].}$$
+    <p>Put $a_N=\overline\Phi^{-1}(1/N)$. As even $N\to\infty$,</p>
+    $$\boxed{W_1(\mu_N,\mu)\sim\frac{\sigma a_N}{2N}
+      \sim\frac{\sigma\sqrt{2\log N}}{2N}.}$$
+    <p>For the leading constant, take $k_N=\lceil(\log N)^2\rceil$ and omit the outer $k_N$ cells on each
+      side. On every remaining upper cell, Mills' inequality gives</p>
+    $$0\le\log\frac{|Q'(r/N)|}{|Q'((r+1)/N)|}
+      \le\log\left(1+\frac1r\right)\le\frac1{k_N}.$$
+    <p>Thus each retained cell has one quarter of its quantile oscillation times $1/N$, uniformly up to
+      $1+o(1)$. Telescoping over both halves gives
+      $W_1=(2N)^{-1}\overline\Phi^{-1}(k_N/N)\{1+o(1)\}$.</p>
+    <p>The bounded outer cells contribute at most
+      $N^{-1}\{a_N-\overline\Phi^{-1}(k_N/N)\}$, apart from the two unbounded cells, whose combined error is
+      $O(1/(Na_N))$. Standard Mills bounds give
+      $\overline\Phi^{-1}(k_N/N)/a_N\to1$ and $a_N\sim\sqrt{2\log N}$, proving the result.</p>
+    <p><a href="./bibliography.html#Gordon1941">Gordon (1941)</a> gives the classical normal-tail bounds used
+      above. As with the exponential and Pareto calculations, this is the exact rate of the equal-mass
+      convex-order-preserving scheme, not an optimal scalar-quantization claim.</p>
+    <p><a href="./bibliography.html#Zador1982">Zador's classical theorem</a> gives order $N^{-1}$ for unrestricted
+      optimal scalar Gaussian quantization. The extra $\sqrt{\log N}$ factor here is therefore a cost of the
+      equal-probability-cell construction, not a claim about the optimal Gaussian rate.</p>
+
     <h2>The exact Pareto boundary rate</h2>
     <p>Let $X$ have the Pareto law with scale $x_0&gt;0$ and index $\alpha&gt;1$, so
       $Q(u)=x_0(1-u)^{-1/\alpha}$. Put $\beta=1-1/\alpha$ and, for $r\ge0$, define</p>
@@ -497,6 +528,9 @@
     <p>For the exponential benchmark, seven independent quadratures through $N=128$ verify the exact formula;
       $W_1=0.015194348932545$ at $N=128$. At $N=16384$ the error is $0.000192741941190$ and
       $NW_1/\log N=0.325418823944$, illustrating the slow convergence to $1/4$.</p>
+    <p>For the Gaussian benchmark, seven independent normal-density quadratures through $N=128$ have largest
+      formula discrepancy $1.051\times10^{-15}$. At $N=65536$, $W_1=0.000036572747974$ and
+      $NW_1/\sqrt{2\log N}=0.508920334756$, decreasing toward $1/2$.</p>
     <p>For the Pareto benchmark, 24 regularized quadratures cover indices $5/4,3/2,2,3$ and sizes through $N=64$.
       The largest formula discrepancy is $3.997\times10^{-15}$; the certificate also verifies 1,024 exact
       $\alpha=2$ radical reductions and the displayed constant enclosure.</p>
@@ -788,7 +822,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

@@ -1,13 +1,13 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
 from itertools import combinations, product
-from math import comb, exp, factorial, lcm, log1p
+from math import comb, exp, factorial, inf, lcm, log, log1p, pi, sqrt
 
 import mpmath as mp
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, linprog, minimize_scalar
-from scipy.special import betainc, betaincc, beta
+from scipy.special import betainc, betaincc, beta, ndtr, ndtri
 
 
 def check(condition):
@@ -1019,6 +1019,83 @@ def certify_exponential_quantization_rate():
             error_at_16384, ratio_at_16384)
 
 
+def normal_pdf(x):
+    """Standard normal density, including the value at infinity."""
+    return 0.0 if x == inf else exp(-x*x/2)/sqrt(2*pi)
+
+
+def gaussian_equal_mass_error(cells):
+    """Exact W1 formula for even-cell standard-normal barycenters."""
+    check(cells >= 2 and cells % 2 == 0)
+    half_error = 0.0
+    for r in range(cells//2):
+        upper = inf if r == 0 else -ndtri(r/cells)
+        lower = -ndtri((r+1)/cells)
+        upper_density = normal_pdf(upper)
+        mean = cells*(normal_pdf(lower)-upper_density)
+        check(lower < mean < upper)
+        half_error += (normal_pdf(mean)-upper_density
+                       - mean*(ndtr(-mean)-r/cells))
+    return 4*half_error
+
+
+def direct_gaussian_equal_mass_error(cells):
+    """Independent normal-density quadrature of the same construction."""
+    check(cells >= 2 and cells % 2 == 0)
+    half_error = 0.0
+    for r in range(cells//2):
+        upper = inf if r == 0 else -ndtri(r/cells)
+        lower = -ndtri((r+1)/cells)
+        first = quad(
+            lambda x: x*normal_pdf(x), lower, upper,
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+        mean = cells*first
+        half_error += quad(
+            lambda x: (mean-x)*normal_pdf(x), lower, mean,
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+        half_error += quad(
+            lambda x: (x-mean)*normal_pdf(x), mean, upper,
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+    return 2*half_error
+
+
+def certify_gaussian_quantization_rate():
+    """Exact Gaussian formula and its square-root-logarithmic rate."""
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    error_at_128 = None
+    for cells in (2, 4, 8, 16, 32, 64, 128):
+        closed = gaussian_equal_mass_error(cells)
+        direct = direct_gaussian_equal_mass_error(cells)
+        discrepancy = abs(closed-direct)
+        check(discrepancy < 2e-12)
+        largest_quadrature_error = max(
+            largest_quadrature_error, discrepancy,
+        )
+        formula_cases += 1
+        if cells == 128:
+            error_at_128 = closed
+
+    normalized_ratios = []
+    quantile_ratios = []
+    for cells in (256, 1024, 4096, 16384, 65536):
+        error = gaussian_equal_mass_error(cells)
+        normalized_ratios.append(cells*error/sqrt(2*log(cells)))
+        quantile_ratios.append(2*cells*error/(-ndtri(1/cells)))
+    check(all(normalized_ratios[j+1] < normalized_ratios[j]
+              for j in range(len(normalized_ratios)-1)))
+    check(all(quantile_ratios[j+1] < quantile_ratios[j]
+              for j in range(len(quantile_ratios)-1)))
+    check(normalized_ratios[-1] > 0.5)
+    check(quantile_ratios[-1] > 1.0)
+    return (formula_cases, largest_quadrature_error, error_at_128,
+            gaussian_equal_mass_error(65536), normalized_ratios[-1],
+            quantile_ratios[-1])
+
+
 def pareto_cell_term(r, alpha):
     """Dimensionless cell error for a unit-scale Pareto law."""
     alpha = mp.mpf(alpha)
@@ -1502,6 +1579,11 @@ def main():
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
+    (gaussian_formula_cases, gaussian_quadrature_error,
+     gaussian_error_128, gaussian_error_65536,
+     gaussian_log_ratio_65536, gaussian_quantile_ratio_65536) = (
+        certify_gaussian_quantization_rate()
+    )
     (pareto_formula_cases, pareto_quadrature_error,
      pareto_partial_constant, pareto_constant_lower,
      pareto_constant_upper) = certify_pareto_quantization_rate()
@@ -1856,6 +1938,12 @@ def main():
           f"{exponential_error_128:.15f}; W1 at N=16384: "
           f"{float(exponential_error_16384):.15f}; normalized ratio: "
           f"{float(exponential_ratio_16384):.12f}")
+    print(f"Gaussian equal-mass formula checks: {gaussian_formula_cases}; "
+          f"largest quadrature discrepancy: {gaussian_quadrature_error:.3e}; "
+          f"W1 at N=128: {gaussian_error_128:.15f}; "
+          f"W1 at N=65536: {gaussian_error_65536:.15f}; "
+          f"sqrt-log ratio: {gaussian_log_ratio_65536:.12f}; "
+          f"quantile ratio: {gaussian_quantile_ratio_65536:.12f}")
     print(f"Pareto equal-mass formula checks: {pareto_formula_cases}; "
           f"largest quadrature discrepancy: {pareto_quadrature_error:.3e}; "
           f"alpha=2 scaled error at N=16384: "
