@@ -1019,6 +1019,85 @@ def certify_exponential_quantization_rate():
             error_at_16384, ratio_at_16384)
 
 
+def pareto_cell_term(r, alpha):
+    """Dimensionless cell error for a unit-scale Pareto law."""
+    alpha = mp.mpf(alpha)
+    check(alpha > 1)
+    beta = 1-1/alpha
+    rr = mp.mpf(r)
+    increment = ((rr+1)**beta-rr**beta)/beta
+    return ((1-beta)/beta*increment**(-(alpha-1))
+            - rr**beta/beta+rr*increment)
+
+
+def pareto_equal_mass_error(cells, alpha):
+    """Closed-form W1 error for unit-scale Pareto barycenters."""
+    alpha = mp.mpf(alpha)
+    check(cells >= 2 and alpha > 1)
+    beta = 1-1/alpha
+    total = mp.fsum(pareto_cell_term(r, alpha) for r in range(cells))
+    return 2*cells**(-beta)*total
+
+
+def direct_pareto_equal_mass_error(cells, alpha):
+    """Independent regularized quadrature of the Pareto construction."""
+    beta = 1-1/alpha
+    power = 1/beta
+    exponent = 1/(alpha-1)
+    total = 0.0
+    for cell in range(cells):
+        left = (cell/cells)**beta
+        right = ((cell+1)/cells)**beta
+        mean = cells*power*(right-left)
+        crossing = mean**(-(alpha-1))
+        check(left < crossing < right)
+        total += quad(
+            lambda y: power*abs(1-mean*y**exponent), left, right,
+            points=[crossing], epsabs=1e-13, epsrel=1e-13,
+        )[0]
+    return total
+
+
+def certify_pareto_quantization_rate():
+    """Exact Pareto formula and its boundary-moment asymptotic rate."""
+    mp.mp.dps = 60
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    for alpha in (1.25, 1.5, 2.0, 3.0):
+        for cells in (2, 4, 8, 16, 32, 64):
+            closed = float(pareto_equal_mass_error(cells, alpha))
+            direct = direct_pareto_equal_mass_error(cells, alpha)
+            discrepancy = abs(closed-direct)
+            check(discrepancy < 2e-12)
+            largest_quadrature_error = max(
+                largest_quadrature_error, discrepancy,
+            )
+            formula_cases += 1
+
+    # At alpha=2 the twice-cell term collapses to one simple radical.
+    for r in range(1024):
+        rr = mp.mpf(r)
+        radical_term = 1/(mp.sqrt(rr+1)+mp.sqrt(rr))**3
+        check(abs(2*pareto_cell_term(r, 2)-radical_term) < 2e-14)
+
+    cells = 16384
+    partial_constant = mp.fsum(
+        1/(mp.sqrt(r+1)+mp.sqrt(r))**3 for r in range(cells)
+    )
+    scaled_error = mp.sqrt(cells)*pareto_equal_mass_error(cells, 2)
+    check(abs(partial_constant-scaled_error) < 2e-14)
+
+    # The radical summand lies between 1/[8(r+1)^(3/2)] and
+    # 1/[8r^(3/2)].  Integral comparison gives this rigorous tail bracket.
+    constant_lower = partial_constant+1/(4*mp.sqrt(cells+1))
+    constant_upper = (partial_constant+1/(4*mp.sqrt(cells))
+                      + 1/(8*cells**mp.mpf("1.5")))
+    check(constant_lower < constant_upper)
+    check(constant_upper-constant_lower < mp.mpf("1.2e-7"))
+    return (formula_cases, largest_quadrature_error, partial_constant,
+            constant_lower, constant_upper)
+
+
 def certify_internal_randomizer_mixed_contraction():
     """An exact continuous contraction using a uniform independent of Z."""
     # Source: 1/2 delta_0 + 1/2 Uniform[0,1].  With U independent of Z,
@@ -1423,6 +1502,9 @@ def main():
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
+    (pareto_formula_cases, pareto_quadrature_error,
+     pareto_partial_constant, pareto_constant_lower,
+     pareto_constant_upper) = certify_pareto_quantization_rate()
     (internal_randomizer_cells, internal_randomizer_target_variance,
      internal_randomizer_source_variance, internal_randomizer_ratio) = (
         certify_internal_randomizer_mixed_contraction()
@@ -1774,6 +1856,12 @@ def main():
           f"{exponential_error_128:.15f}; W1 at N=16384: "
           f"{float(exponential_error_16384):.15f}; normalized ratio: "
           f"{float(exponential_ratio_16384):.12f}")
+    print(f"Pareto equal-mass formula checks: {pareto_formula_cases}; "
+          f"largest quadrature discrepancy: {pareto_quadrature_error:.3e}; "
+          f"alpha=2 scaled error at N=16384: "
+          f"{float(pareto_partial_constant):.15f}; limiting-constant bracket: "
+          f"[{float(pareto_constant_lower):.15f}, "
+          f"{float(pareto_constant_upper):.15f}]")
     print(f"Exact internal-randomizer mixed contraction: "
           f"{internal_randomizer_cells} cell identities; "
           f"target/source variances: {internal_randomizer_target_variance}/"

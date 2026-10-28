@@ -3371,6 +3371,6 @@
   "venue": "Journal of Computational and Applied Mathematics 146(2):253-275",
   "doi": "10.1016/s0377-0427(02)00359-x",
   "url": "https://doi.org/10.1016/S0377-0427(02)00359-X",
-  "annotation": "Derives semi-closed forms and asymptotics for optimal scalar quantizers, including exponential laws. The latent-coverage note instead computes the exact error of equal-probability conditional-mean cells, which preserve convex order but are not claimed to be optimal quantizers."
+  "annotation": "Derives semi-closed forms and asymptotics for optimal scalar quantizers, including exponential and inverse-power laws. The latent-coverage note instead computes the exact error of equal-probability conditional-mean cells, which preserve convex order but are not claimed to be optimal quantizers."
  }
 ]
