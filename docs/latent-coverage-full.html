@@ -386,6 +386,26 @@
       fixed-dimensional knapsack approximation by LP enumeration and rounding. The specialized three-choice proof
       above is direct.</p>
 
+    <h2>Top-profit enumeration gives a relative PTAS</h2>
+    <p>Relative accuracy follows from a different enumeration. Put $h=\lceil2/\varepsilon\rceil$ and enumerate
+      every feasible lower/upper assignment of at most $h$ middle atoms; branches with fewer than $h$ selected
+      atoms are already integral candidates.</p>
+    <p>For a branch with exactly $h$ selected atoms, let $\tau$ be their smallest mass. Remove every unenumerated
+      atom with mass greater than $\tau$, solve the residual two-budget relaxation, and delete its at most two
+      nonintegral atom blocks.</p>
+    <p>If an optimum selects fewer than $h$ middle atoms, one enumerated branch is exact. Otherwise choose its $h$
+      largest selected atoms: every remaining optimal atom survives the cutoff, the relaxation dominates the
+      remaining optimum, and $h\tau\le V^*$ for the optimal middle-atom profit $V^*$.</p>
+    <p>Rounding therefore loses at most $2\tau\le2V^*/h\le\varepsilon V^*$. Including the fixed natural-tail
+      mass $W_0$, the returned feasible assignment obeys</p>
+    $$(1-\varepsilon)q_{\rm det}^{(2)}\le\widehat q\le q_{\rm det}^{(2)}.$$
+    <p>The number of branches is at most
+      $\sum_{r=0}^{\min(h,m)}2^r\binom mr=m^{O(1/\varepsilon)}$, with one polynomial-size LP per size-$h$ branch.
+      This is a relative PTAS, not an FPTAS or EPTAS; its exponent depends on $1/\varepsilon$.</p>
+    <p><a href="./bibliography.html#ChandraHirschbergWong1976">Chandra, Hirschberg and Wong (1976)</a> gives
+      primary multiple-choice and multidimensional knapsack approximation context. The guarantee above uses the
+      special equal-profit lower/upper choices and is proved directly.</p>
+
     <h2>Full two-sided saturation has a one-budget test</h2>
     <p>For every middle atom write $a_j=w_j(z_j-\ell)$ and $b_j=w_j(u-z_j)$, and put
       $B_M=\sum_j b_j$. Full event mass is attainable exactly when the middle atoms can be partitioned into a
@@ -518,7 +538,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
