@@ -800,6 +800,42 @@ def certify_continuous_backward_monge_maps():
     return maps, largest_multiplicity, smallest_variance
 
 
+def certify_countable_support_mixed_contraction():
+    """A countably infinite target that mixes score atoms and continuum."""
+    # The source is 1/2 delta_0 + 1/2 Uniform[0,1].  Cell n takes mass
+    # 2^(-n-1) from each source component.  On the continuous component
+    # it uses the dyadic interval (2^-n, 2^(-n+1)].
+    checked_atoms = 12
+    prefix_mass = prefix_first = F(0)
+    for n in range(1, checked_atoms+1):
+        continuous_left = F(1, 2**n)
+        continuous_right = F(1, 2**(n-1))
+        atomic_mass = F(1, 2**(n+1))
+        continuous_mass = (continuous_right-continuous_left)/2
+        continuous_first = (continuous_right**2-continuous_left**2)/4
+        target_mass = F(1, 2**n)
+        target_value = F(3, 2**(n+2))
+        check(atomic_mass == continuous_mass)
+        check(atomic_mass+continuous_mass == target_mass)
+        check(continuous_first == target_mass*target_value)
+        prefix_mass += target_mass
+        prefix_first += continuous_first
+
+    tail_mass = F(1, 2**checked_atoms)
+    tail_first = F(1, 4**(checked_atoms+1))
+    check(prefix_mass+tail_mass == 1)
+    check(prefix_first+tail_first == F(1, 4))
+
+    # Infinite geometric sums: E[M^2]=9/16 sum_{n>=1} 8^-n.
+    target_second = F(9, 16)*F(1, 7)
+    target_variance = target_second-F(1, 4)**2
+    source_variance = F(1, 2)*F(1, 3)-F(1, 4)**2
+    check(target_variance == F(1, 56))
+    check(source_variance == F(5, 48))
+    check(target_variance/source_variance == F(6, 35))
+    return checked_atoms, tail_mass, target_variance, target_variance/source_variance
+
+
 def symmetric_beta_coefficients(shape):
     """Polynomial coefficients of the Beta(shape, shape) density."""
     normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
@@ -1157,6 +1193,10 @@ def main():
     finite_action_purifications, largest_randomized_share = (
         certify_finite_action_purifications()
     )
+    (countable_support_atoms, countable_support_tail_mass,
+     countable_support_variance, countable_support_ratio) = (
+        certify_countable_support_mixed_contraction()
+    )
     (continuous_monge_maps, largest_monge_multiplicity,
      smallest_monge_variance) = certify_continuous_backward_monge_maps()
     (atomic_fiber_targets, atomic_fiber_cell_identities,
@@ -1483,6 +1523,11 @@ def main():
     print(f"Exact three-action nonatomic purifications: "
           f"{finite_action_purifications}; largest randomized share: "
           f"{largest_randomized_share}")
+    print(f"Exact countable-support mixed contraction: "
+          f"{countable_support_atoms} leading atom identities; "
+          f"symbolic tail mass: {countable_support_tail_mass}; "
+          f"target variance: {countable_support_variance}; "
+          f"source-variance ratio: {countable_support_ratio}")
     print(f"Exact continuous backward-Monge maps: {continuous_monge_maps}; "
           f"largest preimage multiplicity: {largest_monge_multiplicity}; "
           f"smallest target variance: {smallest_monge_variance}; "
