@@ -1013,6 +1013,20 @@ def certify_bounded_quantization_rate():
             singular_ratios[-1])
 
 
+def certify_bounded_atomic_rate_obstruction():
+    """A Bernoulli jump prevents a universal bounded-support rate limit."""
+    cases = 0
+    for cells in range(2, 18):
+        error = equal_mass_quantization(
+            (F(0), F(1)), (F(1, 2), F(1, 2)), cells,
+        )
+        expected = F(0) if cells % 2 == 0 else F(1, 2*cells)
+        check(error == expected)
+        check(cells*error == (F(0) if cells % 2 == 0 else F(1, 2)))
+        cases += 1
+    return cases, F(0), F(1, 2)
+
+
 def exponential_equal_mass_error(cells):
     """Closed-form W1 error for unit-exponential equal-mass barycenters."""
     check(cells >= 2)
@@ -1794,6 +1808,8 @@ def main():
     (bounded_rate_cases, bounded_rate_quadrature_error,
      bounded_rate_error_128, bounded_rate_error_65536,
      bounded_rate_ratio_65536) = certify_bounded_quantization_rate()
+    (bounded_atomic_cases, bounded_atomic_even_ratio,
+     bounded_atomic_odd_ratio) = certify_bounded_atomic_rate_obstruction()
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
@@ -2162,6 +2178,9 @@ def main():
           f"at N=128: {bounded_rate_error_128:.15f}; W1 at N=65536: "
           f"{bounded_rate_error_65536:.15f}; sharp-rate ratio: "
           f"{bounded_rate_ratio_65536:.12f}")
+    print(f"Bounded atomic rate obstructions: {bounded_atomic_cases}; "
+          f"even/odd scaled errors: {bounded_atomic_even_ratio}/"
+          f"{bounded_atomic_odd_ratio}")
     print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
           f"largest quadrature discrepancy: "
           f"{exponential_quadrature_error:.3e}; W1 at N=128: "
