@@ -80,6 +80,26 @@
   "annotation": "Derives semi-closed forms and asymptotics for optimal scalar quantizers, including exponential and inverse-power laws. The latent-coverage note instead computes the exact error of equal-probability conditional-mean cells, which preserve convex order but are not claimed to be optimal quantizers."
  },
  {
+  "key": "Gordon1941",
+  "authors": "Gordon, R. D.",
+  "year": 1941,
+  "title": "Values of Mills' Ratio of Area to Bounding Ordinate and of the Normal Probability Integral for Large Values of the Argument",
+  "venue": "The Annals of Mathematical Statistics 12(3):364-366",
+  "doi": "10.1214/aoms/1177731721",
+  "url": "https://doi.org/10.1214/aoms/1177731721",
+  "annotation": "Gives classical bounds for the standard-normal Mills ratio. The Gaussian equal-mass quantization proof uses these bounds to control derivative variation across interior quantile cells and the two unbounded tail cells."
+ },
+ {
+  "key": "Zador1982",
+  "authors": "Zador, P. L.",
+  "year": 1982,
+  "title": "Asymptotic quantization error of continuous signals and the quantization dimension",
+  "venue": "IEEE Transactions on Information Theory 28(2):139-149",
+  "doi": "10.1109/TIT.1982.1056490",
+  "url": "https://doi.org/10.1109/TIT.1982.1056490",
+  "annotation": "Proves the classical asymptotic distortion formula for optimal quantization of regular densities. For a scalar Gaussian under absolute-error distortion it gives order N^{-1}, whereas the equal-probability conditional-mean construction in the latent-coverage note has the slower square-root-logarithmic factor."
+ },
+ {
   "key": "NutzWangZhang2024",
   "authors": "Nutz, M., Wang, R. and Zhang, Z.",
   "year": 2024,
