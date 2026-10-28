@@ -362,6 +362,26 @@
     <p><a href="./bibliography.html#Liapounoff1940">Liapounoff's 1940 convexity theorem</a> gives the classical
       nonatomic measure-range result; scalar measure divisibility is the only part used here.</p>
 
+    <h2>Sharp tails need no finite-valued assumption on a nonatomic base</h2>
+    <p>Let $Z$ now be any integrable score on a nonatomic original space and let $Q$ be its nondecreasing quantile.
+      For $0&lt;q&lt;1$, put $c=Q(q)$, take all of $\{Z&lt;c\}$, and add enough of $\{Z=c\}$ to obtain mass $q$; the endpoints are trivial.</p>
+    <p>The level set $\{Z=c\}$ is nonatomic whenever it has positive mass, so this subset exists. Its first moment is
+      exactly $\int_0^qQ(v)\,dv$; the dual construction realizes every upper quantile suffix.</p>
+    <p>Apply these constructions at the sharp one-sided masses $q_-(\ell)$ and $q_+(u)$ defined by the stop-loss
+      envelopes above. The randomized prefix and suffix witnesses therefore live on the original space, and</p>
+    $$\sup_{\mathcal D\subseteq\mathcal F}\Pr\{\mathbb E[Z\mid\mathcal D]\le\ell\}=q_-(\ell),\qquad
+      \sup_{\mathcal D\subseteq\mathcal F}\Pr\{\mathbb E[Z\mid\mathcal D]\ge u\}=q_+(u),$$
+    <p>where $\ell&lt;\mathbb EZ&lt;u$. These equalities follow because the law-level stop-loss bounds remain upper
+      bounds for every fixed-space information partition.</p>
+    <p>For $\ell&lt;\mathbb EZ&lt;u$, split the finitely many cutoff level sets simultaneously. Disjoint prefix and
+      suffix cells work when $q_-+q_+\le1$; a shared cut works otherwise, giving</p>
+    $$\sup_{\mathcal D\subseteq\mathcal F}\Pr\{\mathbb E[Z\mid\mathcal D]\le\ell
+      \text{ or }\mathbb E[Z\mid\mathcal D]\ge u\}=\min\{1,q_-+q_+\}.$$
+    <p>This extension realizes the sharp tail witnesses, not every convex-order contraction on an arbitrary fixed
+      representation. The certificate checks ten exact mixed-law quantile partitions on $[0,1]$, including eight
+      cutoff splits inside score atoms; <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>
+      supplies the general-distribution quantile coordinate.</p>
+
     <h2>The fixed-space two-sided problem has an exact two-budget recursion</h2>
     <p>Some optimum assigns every atom with $z_j\le\ell$ to the lower cell and every atom with $z_j\ge u$ to the
       upper cell. Adding an unassigned outer atom improves its natural constraint, while moving an outer atom from
@@ -558,7 +578,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact nonatomic refinements, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements and ten mixed-law nonatomic witnesses, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

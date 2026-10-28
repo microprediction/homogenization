@@ -622,6 +622,77 @@ def refine_atomic_space_at_quantile_cuts(support, probabilities, cuts):
     return tuple(refined_support), tuple(refined_probabilities)
 
 
+def piecewise_linear_quantile_integral(knots, values, left, right):
+    """Integrate a continuous piecewise-linear quantile exactly."""
+    check(F(0) <= left <= right <= F(1))
+    first = F(0)
+    for start, end, low, high in zip(knots, knots[1:], values, values[1:]):
+        segment_left, segment_right = max(left, start), min(right, end)
+        if segment_left >= segment_right:
+            continue
+        slope = (high-low)/(end-start)
+        first += low*(segment_right-segment_left)
+        first += slope*((segment_right-start)**2-(segment_left-start)**2)/2
+    return first
+
+
+def piecewise_linear_quantile_value(knots, values, probability):
+    """Evaluate the same exact quantile, including plateau interiors."""
+    check(F(0) <= probability <= F(1))
+    if probability == 1:
+        return values[-1]
+    for start, end, low, high in zip(knots, knots[1:], values, values[1:]):
+        if start <= probability < end:
+            return low+(high-low)*(probability-start)/(end-start)
+    raise AssertionError("quantile coordinate not covered")
+
+
+def certify_mixed_nonatomic_quantile_witnesses():
+    """Exact tail witnesses for a nonatomic base with mixed score law."""
+    knots = tuple(map(F, (0, F(1, 5), F(2, 5), F(3, 5), F(4, 5), 1)))
+    values = tuple(map(F, (0, 0, F(1, 3), F(1, 3), 1, 1)))
+    integral = lambda left, right: piecewise_linear_quantile_integral(
+        knots, values, left, right,
+    )
+    value = lambda probability: piecewise_linear_quantile_value(
+        knots, values, probability,
+    )
+    mean = integral(F(0), F(1))
+    check(mean == F(13, 30))
+
+    plateau_cuts = 0
+    is_plateau_cut = lambda cut: any(
+        start < cut < end and low == high
+        for start, end, low, high in zip(knots, knots[1:], values, values[1:])
+    )
+    disjoint_pairs = (
+        (F(1, 4), F(11, 20)), (F(1, 4), F(13, 20)),
+        (F(1, 4), F(3, 4)), (F(1, 2), F(11, 20)),
+        (F(1, 2), F(13, 20)), (F(1, 2), F(3, 4)),
+        (F(13, 20), F(3, 4)),
+    )
+    for lower_cut, upper_cut in disjoint_pairs:
+        lower = integral(F(0), lower_cut)/lower_cut
+        upper = integral(upper_cut, F(1))/(1-upper_cut)
+        check(lower < mean < upper)
+        check(value(lower_cut) > lower)
+        check(value(upper_cut) < upper)
+        check(lower_cut <= upper_cut)
+        middle = integral(lower_cut, upper_cut)/(upper_cut-lower_cut)
+        check(lower < middle < upper)
+        plateau_cuts += is_plateau_cut(lower_cut)+is_plateau_cut(upper_cut)
+
+    shared_cuts = (F(9, 20), F(1, 2), F(11, 20))
+    for cut in shared_cuts:
+        lower = integral(F(0), cut)/cut
+        upper = integral(cut, F(1))/(1-cut)
+        check(lower < mean < upper)
+        check(value(cut) > lower and value(cut) < upper)
+        check(is_plateau_cut(cut))
+        plateau_cuts += 1
+    return len(disjoint_pairs), len(shared_cuts), plateau_cuts, mean
+
+
 def rounded_atomic_band_witness(support, probabilities,
                                 lower_envelope, upper_envelope):
     """Round the randomized quantile-band witness to whole atoms."""
@@ -845,6 +916,10 @@ def main():
     deterministic_band_checks = strict_band_relaxations = 0
     band_gap_bound_checks = band_shared_cut_checks = band_dp_checks = 0
     band_saturation_checks = nonatomic_refinement_checks = 0
+    (mixed_disjoint_witnesses, mixed_shared_witnesses,
+     mixed_plateau_cuts, mixed_quantile_mean) = (
+        certify_mixed_nonatomic_quantile_witnesses()
+    )
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
     )
@@ -1152,6 +1227,12 @@ def main():
     print(f"Exact atomic two-sided partitions: {atomic_two_sided} "
           f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
     print(f"Exact nonatomic-space refinements: {nonatomic_refinement_checks}")
+    print(f"Exact mixed-law nonatomic quantile witnesses: "
+          f"{mixed_disjoint_witnesses+mixed_shared_witnesses} "
+          f"({mixed_disjoint_witnesses} disjoint, "
+          f"{mixed_shared_witnesses} shared-cut); "
+          f"plateau-cut splits: {mixed_plateau_cuts}; "
+          f"mean: {mixed_quantile_mean}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
