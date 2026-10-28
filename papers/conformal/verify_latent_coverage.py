@@ -602,6 +602,26 @@ def atomic_quantile_segment(support, probabilities, left, right):
     return mass, first
 
 
+def refine_atomic_space_at_quantile_cuts(support, probabilities, cuts):
+    """Split canonical atoms at prescribed randomized-quantile cuts."""
+    refined_support, refined_probabilities = [], []
+    cumulative = F(0)
+    for z, probability in zip(support, probabilities):
+        endpoints = [cumulative]
+        endpoints.extend(
+            cut for cut in cuts if cumulative < cut < cumulative+probability
+        )
+        endpoints.append(cumulative+probability)
+        endpoints.sort()
+        for left, right in zip(endpoints, endpoints[1:]):
+            refined_support.append(z)
+            refined_probabilities.append(right-left)
+        cumulative += probability
+    check(cumulative == 1)
+    check(sum(refined_probabilities) == 1)
+    return tuple(refined_support), tuple(refined_probabilities)
+
+
 def rounded_atomic_band_witness(support, probabilities,
                                 lower_envelope, upper_envelope):
     """Round the randomized quantile-band witness to whole atoms."""
@@ -824,7 +844,7 @@ def main():
     atomic_two_sided = atomic_disjoint = atomic_overlap = 0
     deterministic_band_checks = strict_band_relaxations = 0
     band_gap_bound_checks = band_shared_cut_checks = band_dp_checks = 0
-    band_saturation_checks = 0
+    band_saturation_checks = nonatomic_refinement_checks = 0
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
     )
@@ -923,6 +943,17 @@ def main():
                     witness = F(1)
                     atomic_overlap += 1
                 check(witness == min(F(1), lower_mass+upper_mass))
+                cuts = ((lower_mass, 1-upper_mass)
+                        if lower_mass+upper_mass <= 1 else (1-upper_mass,))
+                refined_support, refined_probabilities = (
+                    refine_atomic_space_at_quantile_cuts(
+                        support, probabilities, tuple(set(cuts)),
+                    )
+                )
+                check(brute_deterministic_band_mass(
+                    refined_support, refined_probabilities, lower, upper,
+                ) == witness)
+                nonatomic_refinement_checks += 1
                 deterministic = brute_deterministic_band_mass(
                     support, probabilities, lower, upper,
                 )
@@ -1120,6 +1151,7 @@ def main():
           f"fractional cutoff splits: {fractional_splits}")
     print(f"Exact atomic two-sided partitions: {atomic_two_sided} "
           f"({atomic_disjoint} disjoint, {atomic_overlap} overlapping)")
+    print(f"Exact nonatomic-space refinements: {nonatomic_refinement_checks}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")

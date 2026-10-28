@@ -3284,5 +3284,16 @@
   "doi": "10.1016/0304-3975(76)90048-7",
   "url": "https://doi.org/10.1016/0304-3975(76)90048-7",
   "annotation": "Develops polynomial approximation algorithms for integer and binary multiple-choice knapsack and multidimensional knapsack. The latent-coverage note proves a relative PTAS for its specialized two-budget three-choice conditional-mean problem."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Liapounoff1940",
+  "authors": "Liapounoff, A. A.",
+  "year": 1940,
+  "title": "Sur les fonctions-vecteurs complètement additives",
+  "venue": "Izvestiya Akademii Nauk SSSR, Seriya Matematicheskaya 4(6):465-478",
+  "doi": "",
+  "url": "https://www.mathnet.ru/eng/im3907",
+  "annotation": "Proves convexity of the range of a nonatomic finite-dimensional vector measure. The latent-coverage note uses its scalar measure-divisibility consequence to realize fractional score-atom assignments on a nonatomic original space."
  }
 ]
