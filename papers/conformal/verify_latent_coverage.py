@@ -882,6 +882,74 @@ def certify_wasserstein_dense_mixed_contractions():
     return cases, largest_support, smallest_error, target_variance, source_variance
 
 
+def equal_mass_quantization(points, masses, cells):
+    """Exact W1 error of scalar equal-mass conditional-mean quantization."""
+    check(tuple(points) == tuple(sorted(points)))
+    check(sum(masses, F(0)) == 1)
+    intervals = []
+    cumulative = F(0)
+    for point, mass in zip(points, masses):
+        intervals.append((point, cumulative, cumulative+mass))
+        cumulative += mass
+
+    cell_means = []
+    for cell in range(cells):
+        left, right = F(cell, cells), F(cell+1, cells)
+        first = F(0)
+        for point, atom_left, atom_right in intervals:
+            overlap = max(F(0), min(right, atom_right)-max(left, atom_left))
+            first += overlap*point
+        cell_means.append(cells*first)
+
+    error = F(0)
+    for cell, cell_mean in enumerate(cell_means):
+        left, right = F(cell, cells), F(cell+1, cells)
+        for point, atom_left, atom_right in intervals:
+            overlap = max(F(0), min(right, atom_right)-max(left, atom_left))
+            error += overlap*abs(point-cell_mean)
+    return error
+
+
+def certify_unbounded_quantization_rate():
+    """The p=2 moment rate and failure of a uniform L1-only rate."""
+    fixtures = (
+        ((F(-3), F(-1), F(2), F(7)),
+         (F(1, 8), F(3, 8), F(1, 4), F(1, 4))),
+        ((F(0), F(1), F(10)), (F(3, 4), F(1, 8), F(1, 8))),
+        ((F(-8), F(-2), F(0), F(1), F(9)),
+         (F(1, 16), F(3, 16), F(1, 2), F(1, 8), F(1, 8))),
+        ((F(-5), F(3)), (F(2, 3), F(1, 3))),
+    )
+    moment_cases = 0
+    largest_squared_ratio = F(0)
+    for points, masses in fixtures:
+        mean = sum((mass*point for point, mass in zip(points, masses)), F(0))
+        variance = sum((mass*(point-mean)**2
+                        for point, mass in zip(points, masses)), F(0))
+        check(variance > 0)
+        for cells in (2, 4, 8, 16):
+            error = equal_mass_quantization(points, masses, cells)
+            squared_ratio = cells*error**2/(4*variance)
+            check(squared_ratio <= 1)
+            largest_squared_ratio = max(largest_squared_ratio, squared_ratio)
+            moment_cases += 1
+
+    l1_cases = 0
+    largest_l1_error = F(0)
+    for cells in (2, 4, 8, 16, 32):
+        epsilon = F(1, cells**3)
+        points = (F(0), F(cells**3))
+        masses = (1-epsilon, epsilon)
+        error = equal_mass_quantization(points, masses, cells)
+        check(sum((mass*abs(point)
+                   for point, mass in zip(points, masses)), F(0)) == 1)
+        check(error == 2*(1-F(1, cells**2)))
+        largest_l1_error = max(largest_l1_error, error)
+        l1_cases += 1
+    check(largest_l1_error == F(1023, 512))
+    return moment_cases, largest_squared_ratio, l1_cases, largest_l1_error
+
+
 def certify_internal_randomizer_mixed_contraction():
     """An exact continuous contraction using a uniform independent of Z."""
     # Source: 1/2 delta_0 + 1/2 Uniform[0,1].  With U independent of Z,
@@ -1279,6 +1347,10 @@ def main():
      dense_target_variance, dense_source_variance) = (
         certify_wasserstein_dense_mixed_contractions()
     )
+    (moment_rate_cases, largest_moment_squared_ratio,
+     l1_rate_counterexamples, largest_l1_rate_error) = (
+        certify_unbounded_quantization_rate()
+    )
     (internal_randomizer_cells, internal_randomizer_target_variance,
      internal_randomizer_source_variance, internal_randomizer_ratio) = (
         certify_internal_randomizer_mixed_contraction()
@@ -1619,6 +1691,11 @@ def main():
           f"smallest exact W1 error: {dense_smallest_error}; "
           f"target/source variances: {dense_target_variance}/"
           f"{dense_source_variance}")
+    print(f"Unbounded quantization moment-rate cases: {moment_rate_cases}; "
+          f"largest squared p=2 bound ratio: "
+          f"{largest_moment_squared_ratio}; L1 rate counterexamples: "
+          f"{l1_rate_counterexamples}; largest exact error: "
+          f"{largest_l1_rate_error}")
     print(f"Exact internal-randomizer mixed contraction: "
           f"{internal_randomizer_cells} cell identities; "
           f"target/source variances: {internal_randomizer_target_variance}/"

@@ -426,13 +426,30 @@
     <p>If $\mu$ is supported in $[a,b]$, $N$ equal-probability quantile cells give the explicit bound
       $W_1(\mu_N,\mu)\le(b-a)/N$. Indeed, monotonicity of $Q_\mu$ makes the sum of the $N$ within-cell oscillations
       at most $b-a$.</p>
+    <p>There is also an explicit unbounded-support rate. If $\mu\in\mathcal P_p(\mathbb R)$ for some $p&gt;1$, set</p>
+    $$s_p(\mu)=\inf_{a\in\mathbb R}\left(\int|x-a|^p\,\mu(dx)\right)^{1/p}.$$
+    <p>The same $N$ equal-mass conditional-mean contraction is exactly attainable by the preceding purification
+      theorem and satisfies</p>
+    $$\boxed{W_1(\mu_N,\mu)\le2s_p(\mu)N^{-(p-1)/p}.}$$
+    <p>To prove it, center at $a$, clip $X$ to $[a-R,a+R]$, and use contraction of conditional expectation in
+      $L^1$. The bounded-support estimate then gives</p>
+    $$\mathbb E|X-X_N|\le2\mathbb E(|X-a|-R)_++\frac{2R}{N}.$$
+    <p>For $c_p=(p-1)^{p-1}/p^p$, the pointwise inequality
+      $(x-R)_+\le c_px^p/R^{p-1}$ holds for $x\ge0$. Optimizing at
+      $R^p=(p-1)c_pN\mathbb E|X-a|^p$ gives the displayed constant two; for $p=2$ this is
+      $W_1(\mu_N,\mu)\le2\operatorname{sd}(\mu)/\sqrt N$.</p>
+    <p>No distribution-uniform decaying rate can depend only on the first absolute moment. For
+      $\rho_N=(1-N^{-3})\delta_0+N^{-3}\delta_{N^3}$, one has $\int|x|\,d\rho_N=1$, but its $N$-cell equal-mass
+      conditional-mean quantization has exact error $2(1-N^{-2})$.</p>
     <p><a href="./bibliography.html#JourdainPages2022">Jourdain and Pag&egrave;s (2022)</a> gives the primary
-      convex-order-preserving quantization context. The fixed-space closure statement and the displayed rate are the
-      direct argument above.</p>
+      convex-order-preserving context, while <a href="./bibliography.html#Pierce1970">Pierce (1970)</a> gives the
+      classical unbounded-law moment context. The fixed-space closure statement and both displayed bounds are the
+      direct arguments above.</p>
     <p>The quantization certificate takes the mixed source
       $\tfrac12\delta_0+\tfrac12\operatorname{Unif}[0,1]$ and the noncomponentwise continuous target
       $\operatorname{Unif}[0,1/2]$. Its $N$-point midpoint contraction has exact error $W_1=1/(8N)$; six dyadic
-      sizes through $N=64$ give smallest error $1/512$.</p>
+      sizes through $N=64$ give smallest error $1/512$. It also checks 16 exact $p=2$ moment-rate cases and five
+      first-moment counterexamples through $N=32$, where the largest error is $1023/512$.</p>
 
     <h2>An internal uniform coordinate makes every contraction exact</h2>
     <p>Suppose the original space carries $U\sim\operatorname{Unif}[0,1]$ independent of the integrable score $Z$.
@@ -721,7 +738,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases and five first-moment rate counterexamples, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

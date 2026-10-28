@@ -3350,5 +3350,16 @@
   "doi": "10.1090/s0002-9939-1983-0718998-0",
   "url": "https://doi.org/10.1090/S0002-9939-1983-0718998-0",
   "annotation": "Provides classical measurable distribution-sampling context on a fixed standard probability space. The latent-coverage note needs only the elementary real-valued inverse-CDF sampler, which it applies to a Strassen conditional kernel using an internal independent uniform coordinate."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Pierce1970",
+  "authors": "Pierce, J. N.",
+  "year": 1970,
+  "title": "Asymptotic quantizing error for unbounded random variables",
+  "venue": "IEEE Transactions on Information Theory 16(1):81-83",
+  "doi": "10.1109/tit.1970.1054400",
+  "url": "https://doi.org/10.1109/TIT.1970.1054400",
+  "annotation": "Introduces the classical moment-based control now known as Pierce's lemma for quantization of unbounded laws. The latent-coverage note proves a separate explicit bound for equal-probability conditional-mean quantization by clipping and optimizing the clipping radius."
  }
 ]
