@@ -3295,5 +3295,16 @@
   "doi": "",
   "url": "https://www.mathnet.ru/eng/im3907",
   "annotation": "Proves convexity of the range of a nonatomic finite-dimensional vector measure. The latent-coverage note uses its scalar measure-divisibility consequence to realize fractional score-atom assignments on a nonatomic original space."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "DvoretzkyWaldWolfowitz1951",
+  "authors": "Dvoretzky, A., Wald, A. and Wolfowitz, J.",
+  "year": 1951,
+  "title": "Elimination of Randomization in Certain Statistical Decision Procedures and Zero-Sum Two-Person Games",
+  "venue": "The Annals of Mathematical Statistics 22(1):1-21",
+  "doi": "10.1214/aoms/1177729689",
+  "url": "https://doi.org/10.1214/aoms/1177729689",
+  "annotation": "Proves finite-action purification under finitely many atomless measures. The latent-coverage note applies it to mass and first-moment measures to realize every finite-support convex-order contraction on a nonatomic original space."
  }
 ]
