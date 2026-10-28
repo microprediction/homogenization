@@ -280,31 +280,38 @@
       suffix cells work when $q_-+q_+\le1$; a shared cut works otherwise, giving</p>
     $$\sup_{\mathcal D\subseteq\mathcal F}\Pr\{\mathbb E[Z\mid\mathcal D]\le\ell
       \text{ or }\mathbb E[Z\mid\mathcal D]\ge u\}=\min\{1,q_-+q_+\}.$$
-    <p>This direct construction realizes the sharp tail witnesses; the next result treats arbitrary finite-support
+    <p>This direct construction realizes the sharp tail witnesses; the next result treats arbitrary countably supported
       contraction laws. The certificate checks ten exact mixed-law quantile partitions on $[0,1]$, including eight
       cutoff splits inside score atoms; <a href="./bibliography.html#Ruschendorf2009">R&uuml;schendorf (2009)</a>
       supplies the general-distribution quantile coordinate.</p>
 
-    <h2>Every finite-support contraction is attainable on a nonatomic base</h2>
+    <h2>Every countably supported contraction is attainable on a nonatomic base</h2>
     <p>The preceding conclusion extends beyond tails. Let $Z\in L^1$ live on a nonatomic original space, let $\nu$
-      be its law, and let $\mu=\sum_{i=1}^kp_i\delta_{m_i}\preceq_{\rm cx}\nu$ have finite support.</p>
+      be its law, and let $\mu=\sum_{i\ge1}p_i\delta_{m_i}\preceq_{\rm cx}\nu$ have finite or countably infinite
+      support.</p>
     <p>Strassen's theorem supplies a martingale coupling $(M,Z')$ with these marginals. If
       $\eta_i(z)=\Pr\{M=m_i\mid Z'=z\}$, then on the original space</p>
     $$\mathbb E\eta_i(Z)=p_i,\qquad \mathbb E[Z\eta_i(Z)]=p_im_i.$$
-    <p>The finite-action purification theorem of
-      <a href="./bibliography.html#DvoretzkyWaldWolfowitz1951">Dvoretzky, Wald and Wolfowitz (1951)</a> replaces the
-      randomized weights $\eta_i$ by a measurable partition $A_1,\ldots,A_k$ while preserving all $2k$ displayed
-      mass and first-moment integrals.</p>
-    <p>For $\mathcal D=\sigma(A_1,\ldots,A_k)$, the conditional mean equals $m_i$ on $A_i$. Therefore</p>
-    $$\boxed{\mu\preceq_{\rm cx}\nu,\quad |\operatorname{supp}\mu|&lt;\infty
+    <p>Define the atomless vector measure $\Lambda(B)=(\Pr(B),\mathbb E[Z\mathbf1_B])\in\mathbb R^2$. The
+      countable-partition extension of Dvoretzky-Wald-Wolfowitz due to
+      <a href="./bibliography.html#Edwards1987">Edwards (1987, Theorem 6.4)</a> replaces the partition of unity
+      $(\eta_i)_{i\ge1}$ by a measurable partition $(A_i)_{i\ge1}$ satisfying
+      $\Lambda(A_i)=\int\eta_i\,d\Lambda=(p_i,p_im_i)$ for every $i$.</p>
+    <p>For $\mathcal D=\sigma(A_i:i\ge1)$, the conditional mean equals $m_i$ on $A_i$. Therefore</p>
+    $$\boxed{\mu\preceq_{\rm cx}\nu,\quad |\operatorname{supp}\mu|\le\aleph_0
       \quad\Longrightarrow\quad
       \mu=\mathcal L(\mathbb E[Z\mid\mathcal D])\ \text{for some }\mathcal D\subseteq\mathcal F.}$$
-    <p>This is exact finite-support attainability, not a claim for arbitrary continuously supported $\mu$; purification
-      with infinitely many actions needs additional hypotheses. The certificate checks four exact three-action
-      purifications of genuinely randomized kernels for a uniform score, with randomized share as large as $3/4$.</p>
+    <p>This exact result includes finite support but does not cover arbitrary uncountable target support for a mixed
+      score law; purification over uncountable action spaces generally needs stronger base-space hypotheses.</p>
+    <p>The certificate uses the genuinely mixed source law $\nu=\tfrac12\delta_0+\tfrac12\operatorname{Unif}[0,1]$.
+      Every target atom combines equal mass from the score-zero fiber and a dyadic continuous-score interval, giving
+      $p_n=2^{-n}$ and $m_n=3\cdot2^{-(n+2)}$ for all $n\ge1$.</p>
+    <p>It checks the first 12 barycenter identities and the infinite remainder by exact geometric sums. The remaining
+      mass is $1/4096$, the target variance is $1/56$, and its ratio to source variance is $6/35$; this target is not
+      covered by the componentwise theorem below because it has no atom at zero.</p>
 
     <h2>Atomless score laws attain the full convex-order lower set</h2>
-    <p>A different hypothesis removes the finite-support restriction. Suppose the score law $\nu$ itself is atomless
+    <p>A different hypothesis removes the countable-support restriction. Suppose the score law $\nu$ itself is atomless
       and let $\mu\preceq_{\rm cx}\nu$ be arbitrary, with no restriction on its support.</p>
     <p>The backward-Monge martingale theorem of
       <a href="./bibliography.html#NutzWangZhang2024">Nutz, Wang and Zhang (2024)</a> gives a Borel map $h$ such that,
@@ -313,7 +320,7 @@
     $$\boxed{\nu\ \text{atomless}\quad\Longrightarrow\quad
       \{\mathcal L(\mathbb E[Z\mid\mathcal D]):\mathcal D\subseteq\mathcal F\}
       =\{\mu:\mu\preceq_{\rm cx}\nu\}.}$$
-    <p>This condition concerns the score law, whereas the preceding finite-support theorem assumes only that the
+    <p>This condition concerns the score law, whereas the preceding countable-support theorem assumes only that the
       original probability space is nonatomic and therefore still permits score atoms. Atomlessness of $\nu$ is a
       sufficient condition here, not a claimed necessity.</p>
     <p>For an exact continuous check, if $Y\sim\operatorname{Unif}[0,1]$ and $k\ge2$, set
@@ -565,7 +572,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

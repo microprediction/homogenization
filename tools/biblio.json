@@ -3317,5 +3317,16 @@
   "doi": "10.1214/24-aap2099",
   "url": "https://doi.org/10.1214/24-AAP2099",
   "annotation": "Proves that every convex-order pair with atomless terminal marginal admits a backward-Monge martingale coupling. The latent-coverage note uses this result to realize the full convex-order lower set on the original score representation when its law is atomless."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Edwards1987",
+  "authors": "Edwards, D. A.",
+  "year": 1987,
+  "title": "On a theorem of Dvoretsky, Wald, and Wolfowitz concerning Liapounov measures",
+  "venue": "Glasgow Mathematical Journal 29(2):205-220",
+  "doi": "10.1017/s0017089500006856",
+  "url": "https://doi.org/10.1017/S0017089500006856",
+  "annotation": "Extends Dvoretzky-Wald-Wolfowitz purification to countably infinite measurable partitions. The latent-coverage note applies the finite-dimensional version to mass and first-moment measures, realizing every countably supported convex-order contraction on a nonatomic original space."
  }
 ]

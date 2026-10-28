@@ -30,6 +30,16 @@
   "annotation": "Proves finite-action purification under finitely many atomless measures. The latent-coverage note applies it to mass and first-moment measures to realize every finite-support convex-order contraction on a nonatomic original space."
  },
  {
+  "key": "Edwards1987",
+  "authors": "Edwards, D. A.",
+  "year": 1987,
+  "title": "On a theorem of Dvoretsky, Wald, and Wolfowitz concerning Liapounov measures",
+  "venue": "Glasgow Mathematical Journal 29(2):205-220",
+  "doi": "10.1017/S0017089500006856",
+  "url": "https://doi.org/10.1017/S0017089500006856",
+  "annotation": "Extends Dvoretzky-Wald-Wolfowitz purification to countably infinite measurable partitions. The latent-coverage note applies the finite-dimensional version to mass and first-moment measures, realizing every countably supported convex-order contraction on a nonatomic original space."
+ },
+ {
   "key": "NutzWangZhang2024",
   "authors": "Nutz, M., Wang, R. and Zhang, Z.",
   "year": 2024,
