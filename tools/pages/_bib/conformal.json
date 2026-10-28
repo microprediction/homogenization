@@ -10,6 +10,16 @@
   "annotation": "Establishes the classical martingale-coupling characterization behind convex order. The latent-coverage note proves its sharp one- and two-sided conditional-mean partition envelopes directly."
  },
  {
+  "key": "Liapounoff1940",
+  "authors": "Liapounoff, A. A.",
+  "year": 1940,
+  "title": "Sur les fonctions-vecteurs complètement additives",
+  "venue": "Izvestiya Akademii Nauk SSSR, Seriya Matematicheskaya 4(6):465-478",
+  "doi": "",
+  "url": "https://www.mathnet.ru/eng/im3907",
+  "annotation": "Proves convexity of the range of a nonatomic finite-dimensional vector measure. The latent-coverage note uses its scalar measure-divisibility consequence to realize fractional score-atom assignments on a nonatomic original space."
+ },
+ {
   "key": "Dantzig1957",
   "authors": "Dantzig, G. B.",
   "year": 1957,
