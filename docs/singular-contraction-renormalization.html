@@ -103,14 +103,15 @@
     <h1>Exact renormalization for singular staircase contractions</h1>
     <p class="subtitle">Self-similarity preserves every base-grid quantization phase along an infinite geometric subsequence.</p>
 
-    <h2>Equal-scale singular staircases</h2>
+    <h2>Equal-horizontal-scale singular staircases</h2>
     <p>Fix integers $b&gt;d\ge2$ and active digits
-      $0=a_0&lt;\cdots&lt;a_{d-1}=b-1$. There is a unique continuous nondecreasing $C:[0,1]\to[0,1]$ that is constant on inactive base-$b$ intervals and satisfies</p>
-    $$C(x)=\frac{r}{d}+\frac1d C(bx-a_r),
+      $0=a_0&lt;\cdots&lt;a_{d-1}=b-1$. Choose positive vertical weights $w_0,\ldots,w_{d-1}$ with sum one and put $W_r=\sum_{j&lt;r}w_j$.</p>
+    <p>There is a unique continuous nondecreasing $C:[0,1]\to[0,1]$ that is constant on inactive base-$b$ intervals and satisfies</p>
+    $$C(x)=W_r+w_r C(bx-a_r),
       \qquad \frac{a_r}{b}\le x\le\frac{a_r+1}{b}.$$
     <p>The level-$k$ active set consists of $d^k$ intervals of length $b^{-k}$.
       Their total length $(d/b)^k$ tends to zero, so $C'=0$ almost everywhere although $C$ is continuous and rises from zero to one.</p>
-    <p>Let $mu$ be the law of $C(U)$ for a uniform $U$. Its quantile is $C$, while the plateau values carry all of $mu$; thus this is a countably atomic target represented by a continuous singular quantile.</p>
+    <p>Let $\mu$ be the law of $C(U)$ for a uniform $U$. Its quantile is $C$, while the plateau values carry all of $\mu$; thus this is a countably atomic target represented by a continuous singular quantile.</p>
 
     <h2>Exact finite-grid identity</h2>
     <p>Let $P_NC$ be the mean of $C$ on each of the $N$ uniform cells and put
@@ -124,16 +125,15 @@
     <p>This is a finite-$N$ identity, not an asymptotic expansion or a statement along an unspecified subsequence.</p>
 
     <h2>Proof by cylinder decomposition</h2>
-    <p>Every level-$k$ active cylinder begins and ends on the grid with $mb^k$ cells. It contains exactly $m$ cells, and on that cylinder $C$ is an affine vertical copy of itself with horizontal scale $b^{-k}$ and vertical scale $d^{-k}$.</p>
-    <p>The $L^1$ projection error on one active cylinder is therefore
-      $b^{-k}d^{-k}E_m$. All inactive cells are plateaus and contribute zero.</p>
-    <p>Summing over the $d^k$ active cylinders gives $E_{mb^k}=b^{-k}E_m$.
-      The cancellation of $d^k$ is why the identity does not depend on the number of active branches.</p>
+    <p>Every level-$k$ active cylinder begins and ends on the grid with $mb^k$ cells. It contains exactly $m$ cells, and a word $\omega=(r_1,\ldots,r_k)$ gives a copy of $C$ with horizontal scale $b^{-k}$ and vertical scale $w_\omega=\prod_{j=1}^k w_{r_j}$.</p>
+    <p>The $L^1$ projection error on that cylinder is $b^{-k}w_\omega E_m$. All inactive cells are plateaus and contribute zero.</p>
+    <p>Summing over all words gives $\sum_\omega w_\omega=(\sum_r w_r)^k=1$, hence $E_{mb^k}=b^{-k}E_m$.
+      Equal vertical weights are unnecessary; the common horizontal ratio is the essential lattice assumption.</p>
 
     <h2>Persistent phases and failure of a coefficient</h2>
     <p>Write $c_m=mE_m$. The identity says $c_{mb^k}=c_m$ for every $k$, so every base value is repeated at arbitrarily fine resolution.</p>
-    <p>If $c_m\ne c_n$ for any two positive integers, $NW_1(mu_N,mu)$ cannot converge.
-      More precisely, its set of subsequential limits contains the closure of ${c_m:m\ge1}$.</p>
+    <p>If $c_m\ne c_n$ for any two positive integers, $NW_1(\mu_N,\mu)$ cannot converge.
+      More precisely, its set of subsequential limits contains the closure of $\{c_m:m\ge1\}$.</p>
     <p>For the middle-thirds Cantor staircase, $c_1=1/6$ and $c_2=4/15$.
       The earlier two subsequences are the cases $m=1,2$; the theorem now preserves every $m$-cell phase along $N=m3^k$.</p>
 
@@ -145,11 +145,10 @@
 
     <h2>Certificate and primary context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renormalization.py">exact rational certificate</a>
-      checks 32 finite-stage identities for the ternary and quinary two-branch staircases. The largest direct grids have $324$ and $2500$ cells.</p>
+      checks 64 finite-stage identities for ternary and quinary two-branch staircases, split equally between equal and unequal vertical weights. The largest direct grids have $324$ and $2500$ cells.</p>
     <p>At stage ten, the ternary constants are $0.166666666667$ and $0.266666669607$, with rigorous scaled-error enclosure radii $0.001953125000$ and $0.003906250000$.
       The quinary controls are $0.100000000000$ and $0.242424242464$.</p>
-    <p><a href="./bibliography.html#BergKruppel1998">Berg and Kr&uuml;ppel (1998)</a> gives primary functional-equation context for Cantor sets and their singular functions.
-      The projection renormalization identity is proved directly here.</p>
+    <p><a href="./bibliography.html#Hutchinson1981">Hutchinson (1981)</a> gives the classical invariant-measure framework with arbitrary probability weights, while <a href="./bibliography.html#BergKruppel1998">Berg and Kr&uuml;ppel (1998)</a> gives functional-equation context for Cantor singular functions. The projection renormalization identity is proved directly here.</p>
     <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
   </main>
 

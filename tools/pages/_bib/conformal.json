@@ -1,5 +1,15 @@
 [
  {
+  "key": "Hutchinson1981",
+  "authors": "Hutchinson, J. E.",
+  "year": 1981,
+  "title": "Fractals and Self-Similarity",
+  "venue": "Indiana University Mathematics Journal 30(5):713-747",
+  "doi": "10.1512/iumj.1981.30.30055",
+  "url": "https://doi.org/10.1512/iumj.1981.30.30055",
+  "annotation": "Establishes existence and uniqueness for invariant self-similar measures with arbitrary probability weights. The singular-contraction note proves an exact equal-grid projection renormalization for their equal-horizontal-scale staircase distribution functions."
+ },
+ {
   "key": "BergKruppel1998",
   "authors": "Berg, L. and Kr\u00fcppel, M.",
   "year": 1998,

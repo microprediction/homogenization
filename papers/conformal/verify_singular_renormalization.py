@@ -3,18 +3,19 @@
 from fractions import Fraction as F
 
 
-def refine(segments, base, digits):
-    count = len(digits)
+def refine(segments, base, digits, weights):
     result = []
-    for rank, digit in enumerate(digits):
+    cumulative = F(0)
+    for rank, (digit, weight) in enumerate(zip(digits, weights)):
         for left, right, slope, intercept in segments:
             result.append((F(digit, base) + left / base,
                            F(digit, base) + right / base,
-                           slope * base / count,
-                           F(rank, count) + (intercept - slope * digit) / count))
-        if rank + 1 < count and digit + 1 < digits[rank + 1]:
+                           slope * base * weight,
+                           cumulative + weight * (intercept - slope * digit)))
+        cumulative += weight
+        if rank + 1 < len(digits) and digit + 1 < digits[rank + 1]:
             result.append((F(digit + 1, base), F(digits[rank + 1], base),
-                           F(0), F(rank + 1, count)))
+                           F(0), cumulative))
     return result
 
 
@@ -53,15 +54,18 @@ def projection_error(segments, cells):
     return total
 
 
-def stage_family(base, digits, maximum_level):
+def stage_family(base, digits, weights, maximum_level):
+    assert len(digits) == len(weights)
+    assert all(weight > 0 for weight in weights)
+    assert sum(weights, F(0)) == 1
     levels = [[(F(0), F(1), F(1), F(0))]]
     for _ in range(maximum_level):
-        levels.append(refine(levels[-1], base, digits))
+        levels.append(refine(levels[-1], base, digits, weights))
     return levels
 
 
-def check_family(base, digits):
-    levels = stage_family(base, digits, 10)
+def check_family(base, digits, weights):
+    levels = stage_family(base, digits, weights, 10)
     checks = 0
     largest_cells = 0
     for multiplier in range(1, 5):
@@ -77,8 +81,11 @@ def check_family(base, digits):
 
 
 def main():
-    checks3, cells3, ternary = check_family(3, (0, 2))
-    checks5, cells5, quinary = check_family(5, (0, 4))
+    equal = (F(1, 2), F(1, 2))
+    checks3, cells3, ternary = check_family(3, (0, 2), equal)
+    checks5, cells5, quinary = check_family(5, (0, 4), equal)
+    unequal3, _, _ = check_family(3, (0, 2), (F(1, 3), F(2, 3)))
+    unequal5, _, _ = check_family(5, (0, 4), (F(2, 5), F(3, 5)))
 
     # The finite stages converge uniformly at rate 2^-L. These exact checks
     # independently enclose the two known ternary base constants.
@@ -92,7 +99,9 @@ def main():
     q2 = 2 * projection_error(quinary[level], 2)
     assert abs(q1 - F(1, 10)) <= F(2, 2 ** level)
 
-    print(f"exact finite-stage renormalization checks: {checks3 + checks5}")
+    total_checks = checks3 + checks5 + unequal3 + unequal5
+    print(f"exact finite-stage renormalization checks: {total_checks}")
+    print(f"equal/unequal vertical-weight checks: {checks3 + checks5}/{unequal3 + unequal5}")
     print(f"largest ternary/quinary cell counts: {cells3}/{cells5}")
     print(f"ternary base constants at stage {level}: {float(c1):.12f}/{float(c2):.12f}")
     print(f"quinary base constants at stage {level}: {float(q1):.12f}/{float(q2):.12f}")
