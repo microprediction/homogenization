@@ -790,7 +790,7 @@ def certify_continuous_backward_monge_maps():
         source_call = lambda strike: (1-strike)**2/2
         target_call = lambda strike: blocks*(right-strike)**2/2
         check(1-blocks < 0)
-        check(source_call(left) >= F(1, 2)-left)
+        check(target_call(left) == F(1, 2)-left)
         check(source_call(left) >= target_call(left))
         check(source_call(right) >= target_call(right) == 0)
 
