@@ -345,6 +345,24 @@
       $\rho_N=(1-N^{-3})\delta_0+N^{-3}\delta_{N^3}$, one has $\int|x|\,d\rho_N=1$, but its $N$-cell equal-mass
       conditional-mean quantization has exact error $2(1-N^{-2})$.</p>
 
+    <h2>A universal slowly varying tail rate</h2>
+    <p>Let $Q$ be a continuous quantile and put $R(t)=Q(1-t)-Q(t)$. Suppose $R(t)\to\infty$ as $t\downarrow0$,
+      and at each unbounded endpoint the distance $q(t)$ from a fixed interior quantile is slowly varying:</p>
+    $$\frac{q(ct)}{q(t)}\longrightarrow1\qquad(c&gt;0).$$
+    <p>Assume also that $q$ is eventually differentiable and $d(t)=|q'(t)|$ is regularly varying with index
+      $-1$, so $d(ct)/d(t)\to c^{-1}$. No condition is needed at a finite endpoint.</p>
+    <p>Then the equal-mass conditional-mean contraction has the universal trimmed-range asymptotic</p>
+    $$\boxed{W_1(\mu_N,\mu)\sim\frac{R(1/N)}{4N}.}$$
+    <p>Indeed, <a href="./bibliography.html#Karamata1933">Karamata's theorem</a> gives
+      $\int_0^h q(t)dt\sim hq(h)$, so an unbounded outer cell contributes $o(hq(h))$. Slow variation permits a
+      diagonal $k_N\to\infty$ with $q(k_Nh)\sim q(h)$, where $h=1/N$.</p>
+    <p>Regular variation of $d$ makes its ratio across every retained tail cell tend uniformly to one, while any
+      fixed central quantile range contributes only $O(h)$. Each retained tail cell therefore contributes $h/4$
+      times its quantile oscillation, up to $1+o(1)$; telescoping and the outer-cell bound give the result.</p>
+    <p>For an exponential law, $R(1/N)\sim\theta\log N$; for a Gaussian law it is
+      $2\sigma\overline\Phi^{-1}(1/N)$; and for a logistic law of scale $s$ it is $2s\log(N-1)$. A Pareto
+      quantile is not slowly varying, so its separate series constant below is not replaced by this theorem.</p>
+
     <h2>An exact exponential benchmark</h2>
     <p>Let $X$ have the exponential law with scale $\theta$, so $Q(u)=-\theta\log(1-u)$, and use the same $N$
       equal-probability quantile cells. The cell barycenters are increasing, so their quantile coupling with $X$
@@ -434,6 +452,9 @@
     <p>For the Gaussian benchmark, seven independent normal-density quadratures through $N=128$ have largest
       formula discrepancy $1.051\times10^{-15}$. At $N=65536$, $W_1=0.000036572747974$ and
       $NW_1/\sqrt{2\log N}=0.508920334756$, decreasing toward $1/2$.</p>
+    <p>Seven independent logistic quadratures have largest formula discrepancy $2.869\times10^{-15}$. At
+      $N=65536$, $W_1=0.000106947548256$ and the trimmed-range ratio
+      $4NW_1/R(1/N)=1.263967517012$, decreasing toward one.</p>
     <p>For the Pareto benchmark, 24 regularized quadratures cover indices $5/4,3/2,2,3$ and sizes through $N=64$.
       The largest formula discrepancy is $3.997\times10^{-15}$; the certificate also verifies 1,024 exact
       $\alpha=2$ radical reductions and the displayed constant enclosure.</p>
@@ -725,7 +746,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven logistic, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

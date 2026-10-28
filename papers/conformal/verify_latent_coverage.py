@@ -7,7 +7,7 @@ import mpmath as mp
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, linprog, minimize_scalar
-from scipy.special import betainc, betaincc, beta, ndtr, ndtri
+from scipy.special import betainc, betaincc, beta, expit, ndtr, ndtri
 
 
 def check(condition):
@@ -1096,6 +1096,76 @@ def certify_gaussian_quantization_rate():
             quantile_ratios[-1])
 
 
+def logistic_quantile_antiderivative(u):
+    """Antiderivative of log(u/(1-u)), continuously extended."""
+    if u == 0.0 or u == 1.0:
+        return 0.0
+    return u*log(u)+(1-u)*log1p(-u)
+
+
+def logistic_equal_mass_error(cells):
+    """Exact W1 error for unit-scale logistic barycenters."""
+    check(cells >= 2)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*(logistic_quantile_antiderivative(right)
+                      - logistic_quantile_antiderivative(left))
+        crossing = expit(mean)
+        check(left < crossing < right)
+        total += 2*(logistic_quantile_antiderivative(right)
+                    - logistic_quantile_antiderivative(crossing)
+                    - mean*(right-crossing))
+    return total
+
+
+def direct_logistic_equal_mass_error(cells):
+    """Independent quadrature of the logistic quantile construction."""
+    check(cells >= 2)
+    total = 0.0
+    quantile = lambda u: log(u)-log1p(-u)
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*quad(
+            quantile, left, right,
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+        crossing = expit(mean)
+        total += quad(
+            lambda u: abs(quantile(u)-mean), left, right,
+            points=[crossing], epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+    return total
+
+
+def certify_slow_tail_quantization_rate():
+    """Logistic certificate for the slowly varying trimmed-range theorem."""
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    error_at_128 = None
+    for cells in (2, 4, 8, 16, 32, 64, 128):
+        closed = logistic_equal_mass_error(cells)
+        direct = direct_logistic_equal_mass_error(cells)
+        discrepancy = abs(closed-direct)
+        check(discrepancy < 2e-12)
+        largest_quadrature_error = max(
+            largest_quadrature_error, discrepancy,
+        )
+        formula_cases += 1
+        if cells == 128:
+            error_at_128 = closed
+
+    normalized_ratios = []
+    for cells in (256, 1024, 4096, 16384, 65536):
+        error = logistic_equal_mass_error(cells)
+        normalized_ratios.append(2*cells*error/log(cells-1))
+    check(all(normalized_ratios[j+1] < normalized_ratios[j]
+              for j in range(len(normalized_ratios)-1)))
+    check(normalized_ratios[-1] > 1.0)
+    return (formula_cases, largest_quadrature_error, error_at_128,
+            logistic_equal_mass_error(65536), normalized_ratios[-1])
+
+
 def pareto_cell_term(r, alpha):
     """Dimensionless cell error for a unit-scale Pareto law."""
     alpha = mp.mpf(alpha)
@@ -1584,6 +1654,9 @@ def main():
      gaussian_log_ratio_65536, gaussian_quantile_ratio_65536) = (
         certify_gaussian_quantization_rate()
     )
+    (slow_tail_formula_cases, slow_tail_quadrature_error,
+     slow_tail_error_128, slow_tail_error_65536,
+     slow_tail_ratio_65536) = certify_slow_tail_quantization_rate()
     (pareto_formula_cases, pareto_quadrature_error,
      pareto_partial_constant, pareto_constant_lower,
      pareto_constant_upper) = certify_pareto_quantization_rate()
@@ -1944,6 +2017,11 @@ def main():
           f"W1 at N=65536: {gaussian_error_65536:.15f}; "
           f"sqrt-log ratio: {gaussian_log_ratio_65536:.12f}; "
           f"quantile ratio: {gaussian_quantile_ratio_65536:.12f}")
+    print(f"Slow-tail logistic formula checks: {slow_tail_formula_cases}; "
+          f"largest quadrature discrepancy: {slow_tail_quadrature_error:.3e}; "
+          f"W1 at N=128: {slow_tail_error_128:.15f}; "
+          f"W1 at N=65536: {slow_tail_error_65536:.15f}; "
+          f"trimmed-range ratio: {slow_tail_ratio_65536:.12f}")
     print(f"Pareto equal-mass formula checks: {pareto_formula_cases}; "
           f"largest quadrature discrepancy: {pareto_quadrature_error:.3e}; "
           f"alpha=2 scaled error at N=16384: "
