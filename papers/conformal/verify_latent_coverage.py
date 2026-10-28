@@ -1,7 +1,7 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
 from itertools import combinations, product
-from math import lcm
+from math import comb, factorial, lcm
 
 import numpy as np
 from scipy.integrate import quad
@@ -800,6 +800,54 @@ def certify_continuous_backward_monge_maps():
     return maps, largest_multiplicity, smallest_variance
 
 
+def certify_atomic_fiber_continuous_contractions():
+    """Continuous beta targets obtained by splitting Bernoulli score fibers."""
+    def beta_coefficients(shape):
+        normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
+        return {
+            shape-1+j: normalizer*(-1)**j*comb(shape-1, j)
+            for j in range(shape)
+        }
+
+    def integrate(coefficients, left, right, extra_power=0):
+        return sum(
+            coefficient*(right**(degree+extra_power+1)
+                         - left**(degree+extra_power+1))
+            / (degree+extra_power+1)
+            for degree, coefficient in coefficients.items()
+        )
+
+    targets = cell_identities = 0
+    smallest_variance = F(1, 4)
+    for shape in range(1, 6):
+        coefficients = beta_coefficients(shape)
+        target_mass = integrate(coefficients, F(0), F(1))
+        target_first = integrate(coefficients, F(0), F(1), 1)
+        target_second = integrate(coefficients, F(0), F(1), 2)
+        target_variance = target_second-target_first**2
+        check(target_mass == 1)
+        check(target_first == F(1, 2))
+        check(target_variance == F(1, 4*(2*shape+1)))
+
+        low_total = high_total = F(0)
+        for cell in range(12):
+            left, right = F(cell, 12), F(cell+1, 12)
+            mass = integrate(coefficients, left, right)
+            first = integrate(coefficients, left, right, 1)
+            high_joint = first
+            low_joint = mass-first
+            check(low_joint >= 0 and high_joint >= 0)
+            check(low_joint+high_joint == mass)
+            check(high_joint == first)
+            low_total += low_joint
+            high_total += high_joint
+            cell_identities += 1
+        check(low_total == high_total == F(1, 2))
+        targets += 1
+        smallest_variance = min(smallest_variance, target_variance)
+    return targets, cell_identities, smallest_variance
+
+
 def rounded_atomic_band_witness(support, probabilities,
                                 lower_envelope, upper_envelope):
     """Round the randomized quantile-band witness to whole atoms."""
@@ -1032,6 +1080,10 @@ def main():
     )
     (continuous_monge_maps, largest_monge_multiplicity,
      smallest_monge_variance) = certify_continuous_backward_monge_maps()
+    (atomic_fiber_targets, atomic_fiber_cell_identities,
+     smallest_atomic_fiber_variance) = (
+        certify_atomic_fiber_continuous_contractions()
+    )
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
     )
@@ -1352,6 +1404,10 @@ def main():
           f"largest preimage multiplicity: {largest_monge_multiplicity}; "
           f"smallest target variance: {smallest_monge_variance}; "
           f"variance ratio: {12*smallest_monge_variance}")
+    print(f"Exact atomic-fiber continuous contractions: {atomic_fiber_targets}; "
+          f"interval barycenter identities: {atomic_fiber_cell_identities}; "
+          f"smallest target variance: {smallest_atomic_fiber_variance}; "
+          f"Bernoulli variance ratio: {4*smallest_atomic_fiber_variance}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
