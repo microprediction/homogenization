@@ -303,6 +303,26 @@
       with infinitely many actions needs additional hypotheses. The certificate checks four exact three-action
       purifications of genuinely randomized kernels for a uniform score, with randomized share as large as $3/4$.</p>
 
+    <h2>Atomless score laws attain the full convex-order lower set</h2>
+    <p>A different hypothesis removes the finite-support restriction. Suppose the score law $\nu$ itself is atomless
+      and let $\mu\preceq_{\rm cx}\nu$ be arbitrary, with no restriction on its support.</p>
+    <p>The backward-Monge martingale theorem of
+      <a href="./bibliography.html#NutzWangZhang2024">Nutz, Wang and Zhang (2024)</a> gives a Borel map $h$ such that,
+      for $Y\sim\nu$, $h(Y)\sim\mu$ and $\mathbb E[Y\mid h(Y)]=h(Y)$. Applying the same map to the original score,
+      $M=h(Z)$ and $\mathcal D=\sigma(M)$ give $\mathbb E[Z\mid\mathcal D]=M$.</p>
+    $$\boxed{\nu\ \text{atomless}\quad\Longrightarrow\quad
+      \{\mathcal L(\mathbb E[Z\mid\mathcal D]):\mathcal D\subseteq\mathcal F\}
+      =\{\mu:\mu\preceq_{\rm cx}\nu\}.}$$
+    <p>This condition concerns the score law, whereas the preceding finite-support theorem assumes only that the
+      original probability space is nonatomic and therefore still permits score atoms. Atomlessness of $\nu$ is a
+      sufficient condition here, not a claimed necessity.</p>
+    <p>For an exact continuous check, if $Y\sim\operatorname{Unif}[0,1]$ and $k\ge2$, set
+      $h_k(y)=(y\bmod 1/k)+(k-1)/(2k)$. Each image point has $k$ equally weighted preimages whose mean equals that
+      point, and $h_k(Y)$ is uniform on $[(k-1)/(2k),(k+1)/(2k)]$.</p>
+    <p>The certificate checks $k=2,\ldots,6$ with rational arithmetic, including the complete stop-loss inequalities.
+      The smallest target variance is $1/432$, or $1/36$ of the source variance. These are marginal conditional-mean
+      realizations and do not assert feature-conditional conformal coverage.</p>
+
     <h2>The fixed-space two-sided problem has an exact two-budget recursion</h2>
     <p>Some optimum assigns every atom with $z_j\le\ell$ to the lower cell and every atom with $z_j\ge u$ to the
       upper cell. Adding an unassigned outer atom improves its natural constraint, while moving an outer atom from
@@ -499,7 +519,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses and four finite-action purifications, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications and five continuous backward-Monge maps, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
