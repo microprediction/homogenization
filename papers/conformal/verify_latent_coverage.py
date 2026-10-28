@@ -800,30 +800,34 @@ def certify_continuous_backward_monge_maps():
     return maps, largest_multiplicity, smallest_variance
 
 
+def symmetric_beta_coefficients(shape):
+    """Polynomial coefficients of the Beta(shape, shape) density."""
+    normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
+    return {
+        shape-1+j: normalizer*(-1)**j*comb(shape-1, j)
+        for j in range(shape)
+    }
+
+
+def integrate_polynomial(coefficients, left, right, extra_power=0):
+    return sum(
+        coefficient*(right**(degree+extra_power+1)
+                     - left**(degree+extra_power+1))
+        / (degree+extra_power+1)
+        for degree, coefficient in coefficients.items()
+    )
+
+
 def certify_atomic_fiber_continuous_contractions():
     """Continuous beta targets obtained by splitting Bernoulli score fibers."""
-    def beta_coefficients(shape):
-        normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
-        return {
-            shape-1+j: normalizer*(-1)**j*comb(shape-1, j)
-            for j in range(shape)
-        }
-
-    def integrate(coefficients, left, right, extra_power=0):
-        return sum(
-            coefficient*(right**(degree+extra_power+1)
-                         - left**(degree+extra_power+1))
-            / (degree+extra_power+1)
-            for degree, coefficient in coefficients.items()
-        )
 
     targets = cell_identities = 0
     smallest_variance = F(1, 4)
     for shape in range(1, 6):
-        coefficients = beta_coefficients(shape)
-        target_mass = integrate(coefficients, F(0), F(1))
-        target_first = integrate(coefficients, F(0), F(1), 1)
-        target_second = integrate(coefficients, F(0), F(1), 2)
+        coefficients = symmetric_beta_coefficients(shape)
+        target_mass = integrate_polynomial(coefficients, F(0), F(1))
+        target_first = integrate_polynomial(coefficients, F(0), F(1), 1)
+        target_second = integrate_polynomial(coefficients, F(0), F(1), 2)
         target_variance = target_second-target_first**2
         check(target_mass == 1)
         check(target_first == F(1, 2))
@@ -832,8 +836,8 @@ def certify_atomic_fiber_continuous_contractions():
         low_total = high_total = F(0)
         for cell in range(12):
             left, right = F(cell, 12), F(cell+1, 12)
-            mass = integrate(coefficients, left, right)
-            first = integrate(coefficients, left, right, 1)
+            mass = integrate_polynomial(coefficients, left, right)
+            first = integrate_polynomial(coefficients, left, right, 1)
             high_joint = first
             low_joint = mass-first
             check(low_joint >= 0 and high_joint >= 0)
@@ -846,6 +850,81 @@ def certify_atomic_fiber_continuous_contractions():
         targets += 1
         smallest_variance = min(smallest_variance, target_variance)
     return targets, cell_identities, smallest_variance
+
+
+def certify_mixed_componentwise_contractions():
+    """Paste atomless and atomic-fiber martingales in a mixed score law."""
+    fixtures = (
+        (2, 2, F(1, 3)),
+        (3, 3, F(1, 2)),
+        (4, 4, F(2, 3)),
+        (5, 5, F(3, 4)),
+    )
+    cases = interval_identities = 0
+    smallest_variance = smallest_ratio = F(1)
+    for blocks, shape, continuous_weight in fixtures:
+        left = F(blocks-1, 2*blocks)
+        right = F(blocks+1, 2*blocks)
+        beta_coefficients = symmetric_beta_coefficients(shape)
+        target_mass = target_first = target_second = F(0)
+        for cell in range(12):
+            cell_left, cell_right = F(cell, 12), F(cell+1, 12)
+            overlap_left = max(cell_left, left)
+            overlap_right = min(cell_right, right)
+            uniform_mass = (blocks*(overlap_right-overlap_left)
+                            if overlap_left < overlap_right else F(0))
+            uniform_first = (blocks*(overlap_right**2-overlap_left**2)/2
+                             if overlap_left < overlap_right else F(0))
+            uniform_second = (blocks*(overlap_right**3-overlap_left**3)/3
+                              if overlap_left < overlap_right else F(0))
+            coordinate_left = max(cell_left-left, F(0))
+            coordinate_right = min(cell_right-left, F(1, blocks))
+            continuous_score_first = (
+                sum(
+                    (coordinate_right**2-coordinate_left**2)/2
+                    + F(j, blocks)*(coordinate_right-coordinate_left)
+                    for j in range(blocks)
+                ) if coordinate_left < coordinate_right else F(0)
+            )
+            beta_mass = integrate_polynomial(
+                beta_coefficients, cell_left, cell_right,
+            )
+            beta_first = integrate_polynomial(
+                beta_coefficients, cell_left, cell_right, 1,
+            )
+            beta_second = integrate_polynomial(
+                beta_coefficients, cell_left, cell_right, 2,
+            )
+            mass = (continuous_weight*uniform_mass
+                    + (1-continuous_weight)*beta_mass)
+            first = (continuous_weight*uniform_first
+                     + (1-continuous_weight)*beta_first)
+            second = (continuous_weight*uniform_second
+                      + (1-continuous_weight)*beta_second)
+            # Each component is a martingale coupling, so its score-first
+            # measure equals its target first-moment measure on every cell.
+            check(continuous_score_first == uniform_first)
+            score_first = (continuous_weight*continuous_score_first
+                           + (1-continuous_weight)*beta_first)
+            check(score_first == first)
+            check(mass >= 0)
+            target_mass += mass
+            target_first += first
+            target_second += second
+            interval_identities += 1
+        target_variance = target_second-target_first**2
+        source_variance = (continuous_weight*F(1, 12)
+                           + (1-continuous_weight)*F(1, 4))
+        expected_variance = (
+            continuous_weight*F(1, 12*blocks**2)
+            + (1-continuous_weight)*F(1, 4*(2*shape+1))
+        )
+        check(target_mass == 1 and target_first == F(1, 2))
+        check(target_variance == expected_variance < source_variance)
+        smallest_variance = min(smallest_variance, target_variance)
+        smallest_ratio = min(smallest_ratio, target_variance/source_variance)
+        cases += 1
+    return cases, interval_identities, smallest_variance, smallest_ratio
 
 
 def rounded_atomic_band_witness(support, probabilities,
@@ -1083,6 +1162,10 @@ def main():
     (atomic_fiber_targets, atomic_fiber_cell_identities,
      smallest_atomic_fiber_variance) = (
         certify_atomic_fiber_continuous_contractions()
+    )
+    (mixed_componentwise_targets, mixed_componentwise_identities,
+     smallest_mixed_variance, smallest_mixed_ratio) = (
+        certify_mixed_componentwise_contractions()
     )
     shared_gap_equalities, disjoint_gap_limits, largest_gap_ratio = (
         certify_two_sided_gap_sharpness()
@@ -1408,6 +1491,10 @@ def main():
           f"interval barycenter identities: {atomic_fiber_cell_identities}; "
           f"smallest target variance: {smallest_atomic_fiber_variance}; "
           f"Bernoulli variance ratio: {4*smallest_atomic_fiber_variance}")
+    print(f"Exact mixed componentwise contractions: {mixed_componentwise_targets}; "
+          f"interval barycenter identities: {mixed_componentwise_identities}; "
+          f"smallest target variance: {smallest_mixed_variance}; "
+          f"smallest source-variance ratio: {smallest_mixed_ratio}")
     print(f"Exact Bernoulli no-split gaps: {bernoulli_lower} lower, "
           f"{bernoulli_upper} upper")
     print(f"Exact finite-law convex-order witnesses: {convex_order_witnesses}")
