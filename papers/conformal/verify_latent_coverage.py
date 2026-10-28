@@ -7,7 +7,8 @@ import mpmath as mp
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, linprog, minimize_scalar
-from scipy.special import betainc, betaincc, beta, expit, ndtr, ndtri
+from scipy.special import betainc, betaincc, beta, expit, gammaln, ndtr, ndtri
+from scipy.special import stdtr, stdtrit
 
 
 def check(condition):
@@ -1245,6 +1246,89 @@ def certify_pareto_quantization_rate():
             constant_lower, constant_upper)
 
 
+def student_pdf(x, degrees):
+    """Student density, including its value at either infinity."""
+    if abs(x) == inf:
+        return 0.0
+    log_constant = (gammaln((degrees+1)/2)-gammaln(degrees/2)
+                    - 0.5*log(degrees*pi))
+    return exp(log_constant-(degrees+1)/2*log1p(x*x/degrees))
+
+
+def student_first_antiderivative(x, degrees):
+    """Antiderivative of x times the Student density for degrees > 1."""
+    if abs(x) == inf:
+        return 0.0
+    return -(degrees+x*x)*student_pdf(x, degrees)/(degrees-1)
+
+
+def student_equal_mass_error(cells, degrees=2.0):
+    """Exact W1 formula for Student equal-mass barycenters."""
+    check(cells >= 2 and degrees > 1)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        lower = -inf if cell == 0 else stdtrit(degrees, left)
+        upper = inf if cell+1 == cells else stdtrit(degrees, right)
+        mean = cells*(student_first_antiderivative(upper, degrees)
+                      - student_first_antiderivative(lower, degrees))
+        crossing = stdtr(degrees, mean)
+        check(left < crossing < right)
+        total += 2*(student_first_antiderivative(upper, degrees)
+                    - student_first_antiderivative(mean, degrees)
+                    - mean*(right-crossing))
+    return total
+
+
+def direct_student_equal_mass_error(cells, degrees=2.0):
+    """Independent density quadrature of the Student construction."""
+    check(cells >= 2 and degrees > 1)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        lower = -inf if cell == 0 else stdtrit(degrees, left)
+        upper = inf if cell+1 == cells else stdtrit(degrees, right)
+        mean = cells*quad(
+            lambda x: x*student_pdf(x, degrees), lower, upper,
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+        total += quad(
+            lambda x: abs(x-mean)*student_pdf(x, degrees), lower, upper,
+            points=None if abs(lower) == inf or abs(upper) == inf else [mean],
+            epsabs=2e-13, epsrel=2e-13, limit=100,
+        )[0]
+    return total
+
+
+def certify_regular_tail_quantization_rate():
+    """Student-t certificate for the regular-variation profile theorem."""
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    error_at_128 = None
+    for cells in (2, 4, 8, 16, 32, 64, 128):
+        closed = student_equal_mass_error(cells)
+        direct = direct_student_equal_mass_error(cells)
+        discrepancy = abs(closed-direct)
+        check(discrepancy < 2e-12)
+        largest_quadrature_error = max(
+            largest_quadrature_error, discrepancy,
+        )
+        formula_cases += 1
+        if cells == 128:
+            error_at_128 = closed
+
+    normalized_ratios = []
+    for cells in (256, 1024, 4096, 16384, 65536):
+        error = student_equal_mass_error(cells)
+        tail_quantile = stdtrit(2.0, 1-1/cells)
+        normalized_ratios.append(cells*error/(2*tail_quantile))
+    check(all(normalized_ratios[j+1] < normalized_ratios[j]
+              for j in range(len(normalized_ratios)-1)))
+    check(1.2473 < normalized_ratios[-1] < 1.2474)
+    return (formula_cases, largest_quadrature_error, error_at_128,
+            student_equal_mass_error(65536), normalized_ratios[-1])
+
+
 def certify_internal_randomizer_mixed_contraction():
     """An exact continuous contraction using a uniform independent of Z."""
     # Source: 1/2 delta_0 + 1/2 Uniform[0,1].  With U independent of Z,
@@ -1660,6 +1744,9 @@ def main():
     (pareto_formula_cases, pareto_quadrature_error,
      pareto_partial_constant, pareto_constant_lower,
      pareto_constant_upper) = certify_pareto_quantization_rate()
+    (regular_tail_formula_cases, regular_tail_quadrature_error,
+     regular_tail_error_128, regular_tail_error_65536,
+     regular_tail_ratio_65536) = certify_regular_tail_quantization_rate()
     (internal_randomizer_cells, internal_randomizer_target_variance,
      internal_randomizer_source_variance, internal_randomizer_ratio) = (
         certify_internal_randomizer_mixed_contraction()
@@ -2028,6 +2115,12 @@ def main():
           f"{float(pareto_partial_constant):.15f}; limiting-constant bracket: "
           f"[{float(pareto_constant_lower):.15f}, "
           f"{float(pareto_constant_upper):.15f}]")
+    print(f"Regular-tail Student formula checks: "
+          f"{regular_tail_formula_cases}; largest quadrature discrepancy: "
+          f"{regular_tail_quadrature_error:.3e}; W1 at N=128: "
+          f"{regular_tail_error_128:.15f}; W1 at N=65536: "
+          f"{regular_tail_error_65536:.15f}; profile ratio: "
+          f"{regular_tail_ratio_65536:.12f}")
     print(f"Exact internal-randomizer mixed contraction: "
           f"{internal_randomizer_cells} cell identities; "
           f"target/source variances: {internal_randomizer_target_variance}/"

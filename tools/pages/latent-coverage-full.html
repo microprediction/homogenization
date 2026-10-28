@@ -363,6 +363,28 @@
       $2\sigma\overline\Phi^{-1}(1/N)$; and for a logistic law of scale $s$ it is $2s\log(N-1)$. A Pareto
       quantile is not slowly varying, so its separate series constant below is not replaced by this theorem.</p>
 
+    <h2>A universal regularly varying tail profile</h2>
+    <p>For each unbounded endpoint put $q_+(t)=Q(1-t)-Q(1/2)$ or
+      $q_-(t)=Q(1/2)-Q(t)$. Suppose its tail distance is regularly varying with index $-1/\alpha_\pm$ for some
+      $\alpha_\pm&gt;1$.</p>
+    <p>For $\alpha&gt;1$, define</p>
+    $$d_{\alpha,r}=\int_r^{r+1}s^{-1/\alpha}ds,\qquad
+      \kappa_{\alpha,r}=\int_r^{r+1}|s^{-1/\alpha}-d_{\alpha,r}|ds,\qquad
+      K_\alpha=\sum_{r=0}^\infty\kappa_{\alpha,r}.$$
+    <p>Then, summing only over unbounded endpoints,</p>
+    $$\boxed{W_1(\mu_N,\mu)\sim\frac1N
+      \left\{K_{\alpha_+}q_+(1/N)+K_{\alpha_-}q_-(1/N)\right\}.}$$
+    <p>For each fixed tail cell $r$, regular variation and
+      <a href="./bibliography.html#Potter1942">Potter domination</a> make the rescaled quantile and its cell mean
+      converge to $s^{-1/\alpha}$ and $d_{\alpha,r}$, including the unbounded first cell.</p>
+    <p>The remaining cells after $r=R$ are bounded by $N^{-1}$ times a telescoping endpoint oscillation. After
+      division by $N^{-1}q(1/N)$, that remainder has limit superior at most $R^{-1/\alpha}$; now let
+      $R\to\infty$.</p>
+    <p>The fixed central range is $O(N^{-1})$, and no derivative assumption is needed.</p>
+    <p>The Pareto constant below is exactly this $K_\alpha$. A symmetric Student law with $\nu&gt;1$ degrees of
+      freedom has two tails of index $\nu$, hence
+      $W_1\sim2K_\nu Q(1-1/N)/N$ after centering at its median.</p>
+
     <h2>An exact exponential benchmark</h2>
     <p>Let $X$ have the exponential law with scale $\theta$, so $Q(u)=-\theta\log(1-u)$, and use the same $N$
       equal-probability quantile cells. The cell barycenters are increasing, so their quantile coupling with $X$
@@ -458,6 +480,9 @@
     <p>For the Pareto benchmark, 24 regularized quadratures cover indices $5/4,3/2,2,3$ and sizes through $N=64$.
       The largest formula discrepancy is $3.997\times10^{-15}$; the certificate also verifies 1,024 exact
       $\alpha=2$ radical reductions and the displayed constant enclosure.</p>
+    <p>Seven independent Student-$t_2$ density quadratures have largest discrepancy $3.175\times10^{-14}$. At
+      $N=65536$, $W_1=0.006890509230462$ and
+      $NW_1/\{2Q(1-1/N)\}=1.247343955107$, decreasing toward $K_2$.</p>
 
     <h2>An internal uniform coordinate makes every contraction exact</h2>
     <p>Suppose the original space carries $U\sim\operatorname{Unif}[0,1]$ independent of the integrable score $Z$.
@@ -746,7 +771,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven logistic, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven Student, seven logistic, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

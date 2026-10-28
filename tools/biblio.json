@@ -3405,5 +3405,16 @@
   "doi": "10.24033/bsmf.1196",
   "url": "https://doi.org/10.24033/bsmf.1196",
   "annotation": "Establishes the fundamental integration and uniformity results for regularly varying functions. The latent-coverage note uses the index-zero integral asymptotic and index-minus-one local derivative control to derive a universal trimmed-range rate for equal-mass conditional-mean quantization."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Potter1942",
+  "authors": "Potter, H. S. A.",
+  "year": 1942,
+  "title": "The Mean Values of Certain Dirichlet Series, II",
+  "venue": "Proceedings of the London Mathematical Society s2-47(1):1-19",
+  "doi": "10.1112/plms/s2-47.1.1",
+  "url": "https://doi.org/10.1112/plms/s2-47.1.1",
+  "annotation": "Introduces the global comparison bound now called Potter's bound. The regularly varying tail-profile theorem uses it to dominate the rescaled unbounded quantile cell and justify passage to the power-law profile."
  }
 ]
