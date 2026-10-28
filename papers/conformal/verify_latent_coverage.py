@@ -952,6 +952,143 @@ def certify_unbounded_quantization_rate():
     return moment_cases, largest_squared_ratio, l1_cases, largest_l1_error
 
 
+def power_quantile_equal_mass_error(cells, power):
+    """Exact W1 error for Q(u)=u**power and equal-mass barycenters."""
+    check(cells >= 2 and power > 0)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*(right**(power+1)-left**(power+1))/(power+1)
+        crossing = mean**(1/power)
+        check(left < crossing < right)
+        total += 2*((right**(power+1)-crossing**(power+1))/(power+1)
+                    - mean*(right-crossing))
+    return total
+
+
+def direct_power_quantile_equal_mass_error(cells, power):
+    """Independent quadrature of the bounded power-quantile example."""
+    check(cells >= 2 and power > 0)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*quad(
+            lambda u: u**power, left, right,
+            epsabs=2e-13, epsrel=2e-13,
+        )[0]
+        crossing = mean**(1/power)
+        total += quad(
+            lambda u: abs(u**power-mean), left, right,
+            points=[crossing], epsabs=2e-13, epsrel=2e-13,
+        )[0]
+    return total
+
+
+def certify_bounded_quantization_rate():
+    """Sharp one-quarter rate for bounded Sobolev quantiles."""
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    for power in (0.5, 1.0, 2.0):
+        for cells in (2, 4, 8, 16, 32, 64, 128):
+            closed = power_quantile_equal_mass_error(cells, power)
+            direct = direct_power_quantile_equal_mass_error(cells, power)
+            discrepancy = abs(closed-direct)
+            check(discrepancy < 2e-12)
+            largest_quadrature_error = max(
+                largest_quadrature_error, discrepancy,
+            )
+            formula_cases += 1
+
+    singular_ratios = []
+    for cells in (256, 1024, 4096, 16384, 65536):
+        error = power_quantile_equal_mass_error(cells, 0.5)
+        singular_ratios.append(cells*error)
+    check(all(singular_ratios[j+1] > singular_ratios[j]
+              for j in range(len(singular_ratios)-1)))
+    check(0.2497 < singular_ratios[-1] < 0.25)
+    check(abs(power_quantile_equal_mass_error(128, 1.0)-1/512) < 2e-14)
+    return (formula_cases, largest_quadrature_error,
+            power_quantile_equal_mass_error(128, 0.5),
+            power_quantile_equal_mass_error(65536, 0.5),
+            singular_ratios[-1])
+
+
+def certify_bounded_atomic_rate_obstruction():
+    """Finite quantile jumps prevent a bounded-support rate limit."""
+    bernoulli_cases = 0
+    for cells in range(2, 18):
+        error = equal_mass_quantization(
+            (F(0), F(1)), (F(1, 2), F(1, 2)), cells,
+        )
+        expected = F(0) if cells % 2 == 0 else F(1, 2*cells)
+        check(error == expected)
+        check(cells*error == (F(0) if cells % 2 == 0 else F(1, 2)))
+        bernoulli_cases += 1
+
+    points = (F(-2), F(0), F(3), F(7))
+    masses = (F(1, 6), F(1, 3), F(1, 4), F(1, 4))
+
+    def scaled_formula(cells):
+        cumulative = F(0)
+        total = F(0)
+        for jump in range(1, len(points)):
+            cumulative += masses[jump-1]
+            fractional = (cells*cumulative) % 1
+            total += (2*(points[jump]-points[jump-1])
+                      * fractional*(1-fractional))
+        return total
+
+    finite_cases = 0
+    for cells in range(5, 37):
+        error = equal_mass_quantization(points, masses, cells)
+        check(cells*error == scaled_formula(cells))
+        finite_cases += 1
+    period = 12
+    check(all(scaled_formula(cells) == scaled_formula(cells+period)
+              for cells in range(5, 17)))
+    check(scaled_formula(period) == 0)
+    period_maximum = max(scaled_formula(cells)
+                         for cells in range(5, 17))
+    check(period_maximum == 4)
+    return (bernoulli_cases, finite_cases, period, period_maximum,
+            F(0), F(1, 2))
+
+
+def certify_cantor_atomic_rate_obstruction():
+    """Two exact subsequences for the Cantor-staircase quantile."""
+    mean = F(1, 2)
+    check(mean == (mean/2+F(1, 2)+F(1, 2)+mean/2)/3)
+    base_error = (F(1, 2)*(1-mean)+F(1, 2)*mean)/3
+    check(base_error == F(1, 6))
+
+    integral_quarter = F(1, 20)
+    check(integral_quarter == (F(1, 4)+integral_quarter)/6)
+    two_cell_error = 4*(F(1, 12)-integral_quarter)
+    check(two_cell_error == F(2, 15))
+
+    cases = 0
+    for depth in range(1, 9):
+        triadic_cells = 3**depth
+        active = 0
+        for cell in range(triadic_cells):
+            digits = []
+            index = cell
+            for _ in range(depth):
+                digits.append(index % 3)
+                index //= 3
+            active += int(1 not in digits)
+        check(active == 2**depth)
+
+        error = (active*F(1, triadic_cells)
+                 * F(1, 2**depth)*base_error)
+        check(triadic_cells*error == F(1, 6))
+        split_error = (active*F(1, triadic_cells)
+                       * F(1, 2**depth)*two_cell_error)
+        check(2*triadic_cells*split_error == F(4, 15))
+        cases += 2
+    return cases, F(1, 6), F(4, 15), 2*3**8
+
+
 def exponential_equal_mass_error(cells):
     """Closed-form W1 error for unit-exponential equal-mass barycenters."""
     check(cells >= 2)
@@ -1730,6 +1867,18 @@ def main():
      l1_rate_counterexamples, largest_l1_rate_error) = (
         certify_unbounded_quantization_rate()
     )
+    (bounded_rate_cases, bounded_rate_quadrature_error,
+     bounded_rate_error_128, bounded_rate_error_65536,
+     bounded_rate_ratio_65536) = certify_bounded_quantization_rate()
+    (bounded_atomic_bernoulli_cases, bounded_atomic_finite_cases,
+     bounded_atomic_period, bounded_atomic_period_maximum,
+     bounded_atomic_even_ratio, bounded_atomic_odd_ratio) = (
+        certify_bounded_atomic_rate_obstruction()
+    )
+    (bounded_cantor_cases, bounded_cantor_triadic_ratio,
+     bounded_cantor_split_ratio, bounded_cantor_largest_cells) = (
+        certify_cantor_atomic_rate_obstruction()
+    )
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
@@ -2092,6 +2241,22 @@ def main():
           f"{largest_moment_squared_ratio}; L1 rate counterexamples: "
           f"{l1_rate_counterexamples}; largest exact error: "
           f"{largest_l1_rate_error}")
+    print(f"Bounded quantization formula checks: {bounded_rate_cases}; "
+          f"largest quadrature discrepancy: "
+          f"{bounded_rate_quadrature_error:.3e}; square-root-quantile W1 "
+          f"at N=128: {bounded_rate_error_128:.15f}; W1 at N=65536: "
+          f"{bounded_rate_error_65536:.15f}; sharp-rate ratio: "
+          f"{bounded_rate_ratio_65536:.12f}")
+    print(f"Bounded atomic rate obstructions: "
+          f"{bounded_atomic_bernoulli_cases} Bernoulli and "
+          f"{bounded_atomic_finite_cases} finite-law formula checks; "
+          f"period/maximum: {bounded_atomic_period}/"
+          f"{bounded_atomic_period_maximum}; even/odd Bernoulli scaled "
+          f"errors: {bounded_atomic_even_ratio}/{bounded_atomic_odd_ratio}")
+    print(f"Cantor-staircase atomic obstructions: {bounded_cantor_cases}; "
+          f"scaled 3^k/(2*3^k) errors: {bounded_cantor_triadic_ratio}/"
+          f"{bounded_cantor_split_ratio}; largest cells: "
+          f"{bounded_cantor_largest_cells}")
     print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
           f"largest quadrature discrepancy: "
           f"{exponential_quadrature_error:.3e}; W1 at N=128: "
