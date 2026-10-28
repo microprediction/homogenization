@@ -323,6 +323,32 @@
       The smallest target variance is $1/432$, or $1/36$ of the source variance. These are marginal conditional-mean
       realizations and do not assert feature-conditional conformal coverage.</p>
 
+    <h2>Purely atomic score laws attain the full set on nonatomic bases</h2>
+    <p>There is a complementary route to arbitrary target support. Suppose the original probability space is
+      nonatomic and the score law is purely atomic,
+      $\nu=\sum_{j\ge1}p_j\delta_{z_j}$, while $\mu\preceq_{\rm cx}\nu$ is arbitrary.</p>
+    <p>Let $\gamma$ be the martingale coupling supplied by
+      <a href="./bibliography.html#Strassen1965">Strassen's theorem</a> and define the subprobability measures
+      $\alpha_j(B)=\gamma(B\times\{z_j\})$. The score fiber $A_j=\{Z=z_j\}$ is nonatomic, so scalar measure
+      divisibility constructs a uniform coordinate there; applying the quantile map of $\alpha_j/p_j$ gives a
+      measurable $M_j$ on $A_j$ with that law.</p>
+    <p>Paste the $M_j$ over the countably many fibers. Then
+      $\Pr\{M\in B,Z=z_j\}=\alpha_j(B)$, so $(M,Z)$ has law $\gamma$, $M\sim\mu$, and
+      $\mathbb E[Z\mid M]=M$.</p>
+    $$\boxed{\Omega\ \text{nonatomic},\quad\nu\ \text{purely atomic}
+      \quad\Longrightarrow\quad
+      \{\mathcal L(\mathbb E[Z\mid\mathcal D]):\mathcal D\subseteq\mathcal F\}
+      =\{\mu:\mu\preceq_{\rm cx}\nu\}.}$$
+    <p>The base-space assumption matters: on the canonical finite atomic representation, every conditional mean still
+      has finite support. The atomless-law result above and this purely atomic-law result do not by themselves settle
+      score laws having both atomic and continuous parts.</p>
+    <p>For a concrete continuous target, take a Bernoulli$(1/2)$ score and a uniform coordinate $U$ on each of its two
+      nonatomic fibers. Use $M=\sqrt U$ on the score-one fiber and $M=1-\sqrt{1-U}$ on the score-zero fiber; the
+      resulting target is uniform and $\Pr\{Z=1\mid M=m\}=m$.</p>
+    <p>The exact certificate checks five symmetric beta target laws using 60 rational interval identities. Its smallest
+      target variance is $1/44$, or $1/11$ of the Bernoulli source variance. This is again a marginal conditional-mean
+      statement, not feature-conditional coverage.</p>
+
     <h2>The fixed-space two-sided problem has an exact two-budget recursion</h2>
     <p>Some optimum assigns every atom with $z_j\le\ell$ to the lower cell and every atom with $z_j\ge u$ to the
       upper cell. Adding an unassigned outer atom improves its natural constraint, while moving an outer atom from
@@ -519,7 +545,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications and five continuous backward-Monge maps, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, five continuous backward-Monge maps and five continuous atomic-fiber contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.
