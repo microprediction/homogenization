@@ -1054,6 +1054,41 @@ def certify_bounded_atomic_rate_obstruction():
             F(0), F(1, 2))
 
 
+def certify_cantor_atomic_rate_obstruction():
+    """Two exact subsequences for the Cantor-staircase quantile."""
+    mean = F(1, 2)
+    check(mean == (mean/2+F(1, 2)+F(1, 2)+mean/2)/3)
+    base_error = (F(1, 2)*(1-mean)+F(1, 2)*mean)/3
+    check(base_error == F(1, 6))
+
+    integral_quarter = F(1, 20)
+    check(integral_quarter == (F(1, 4)+integral_quarter)/6)
+    two_cell_error = 4*(F(1, 12)-integral_quarter)
+    check(two_cell_error == F(2, 15))
+
+    cases = 0
+    for depth in range(1, 9):
+        triadic_cells = 3**depth
+        active = 0
+        for cell in range(triadic_cells):
+            digits = []
+            index = cell
+            for _ in range(depth):
+                digits.append(index % 3)
+                index //= 3
+            active += int(1 not in digits)
+        check(active == 2**depth)
+
+        error = (active*F(1, triadic_cells)
+                 * F(1, 2**depth)*base_error)
+        check(triadic_cells*error == F(1, 6))
+        split_error = (active*F(1, triadic_cells)
+                       * F(1, 2**depth)*two_cell_error)
+        check(2*triadic_cells*split_error == F(4, 15))
+        cases += 2
+    return cases, F(1, 6), F(4, 15), 2*3**8
+
+
 def exponential_equal_mass_error(cells):
     """Closed-form W1 error for unit-exponential equal-mass barycenters."""
     check(cells >= 2)
@@ -1840,6 +1875,10 @@ def main():
      bounded_atomic_even_ratio, bounded_atomic_odd_ratio) = (
         certify_bounded_atomic_rate_obstruction()
     )
+    (bounded_cantor_cases, bounded_cantor_triadic_ratio,
+     bounded_cantor_split_ratio, bounded_cantor_largest_cells) = (
+        certify_cantor_atomic_rate_obstruction()
+    )
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
@@ -2214,6 +2253,10 @@ def main():
           f"period/maximum: {bounded_atomic_period}/"
           f"{bounded_atomic_period_maximum}; even/odd Bernoulli scaled "
           f"errors: {bounded_atomic_even_ratio}/{bounded_atomic_odd_ratio}")
+    print(f"Cantor-staircase atomic obstructions: {bounded_cantor_cases}; "
+          f"scaled 3^k/(2*3^k) errors: {bounded_cantor_triadic_ratio}/"
+          f"{bounded_cantor_split_ratio}; largest cells: "
+          f"{bounded_cantor_largest_cells}")
     print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
           f"largest quadrature discrepancy: "
           f"{exponential_quadrature_error:.3e}; W1 at N=128: "
