@@ -326,9 +326,18 @@
       as $\mathcal L(\mathbb E[Z\mid\mathcal D_n])$ on the original space. For the reverse inclusion, $W_1$
       convergence preserves the mean and every call expectation $\int(x-t)_+\,d\mu$, so conditional Jensen's
       convex-order inequalities pass to the limit.</p>
-    <p>If $\mu$ is supported in $[a,b]$, $N$ equal-probability quantile cells give the explicit bound
+    <p>If the essential endpoints $a=Q_\mu(0)$ and $b=Q_\mu(1)$ are finite, $N$ equal-probability quantile cells
+      give the explicit bound
       $W_1(\mu_N,\mu)\le(b-a)/N$. Indeed, monotonicity of $Q_\mu$ makes the sum of the $N$ within-cell oscillations
       at most $b-a$.</p>
+    <p>If, moreover, $Q_\mu$ is absolutely continuous with $Q_\mu'\in L^1(0,1)$, the sharp asymptotic is</p>
+    $$\boxed{NW_1(\mu_N,\mu)\longrightarrow
+      \frac14\int_0^1|Q_\mu'(u)|du=\frac{b-a}{4}.}$$
+    <p>Let $P_NQ$ be the mean of $Q$ on each cell. For smooth $Q$, a uniform cellwise Taylor expansion gives
+      $N\|Q-P_NQ\|_1\to\frac14\|Q'\|_1$.</p>
+    <p>The cellwise $L^1$ Poincar&eacute; bound gives
+      $N\|(I-P_N)(Q-g)\|_1\le\|Q'-g'\|_1$. Smooth density in $W^{1,1}$ therefore proves the result and covers
+      integrable endpoint singularities of $Q'$.</p>
     <p>There is also an explicit unbounded-support rate. If $\mu\in\mathcal P_p(\mathbb R)$ for some $p&gt;1$, set</p>
     $$s_p(\mu)=\inf_{a\in\mathbb R}\left(\int|x-a|^p\,\mu(dx)\right)^{1/p}.$$
     <p>The same $N$ equal-mass conditional-mean contraction is exactly attainable by the preceding purification
@@ -483,6 +492,9 @@
     <p>Seven independent Student-$t_2$ density quadratures have largest discrepancy $3.175\times10^{-14}$. At
       $N=65536$, $W_1=0.006890509230462$ and
       $NW_1/\{2Q(1-1/N)\}=1.247343955107$, decreasing toward $K_2$.</p>
+    <p>Twenty-one bounded power-quantile checks have largest quadrature discrepancy $5.081\times10^{-16}$. For
+      $Q(u)=\sqrt u$, $W_1=0.000003811505676$ at $N=65536$ and
+      $NW_1=0.249790835960$, increasing toward $1/4$.</p>
 
     <h2>An internal uniform coordinate makes every contraction exact</h2>
     <p>Suppose the original space carries $U\sim\operatorname{Unif}[0,1]$ independent of the integrable score $Z$.
@@ -771,7 +783,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 16 exact moment-rate cases, five first-moment rate counterexamples, seven Student, seven logistic, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, 21 bounded and 16 moment-rate cases, five first-moment rate counterexamples, seven Student, seven logistic, seven Gaussian, seven exponential and 24 Pareto formula quadratures, one exact internal-randomizer mixed contraction with 16 cell identities, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

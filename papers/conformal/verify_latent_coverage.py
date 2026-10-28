@@ -952,6 +952,67 @@ def certify_unbounded_quantization_rate():
     return moment_cases, largest_squared_ratio, l1_cases, largest_l1_error
 
 
+def power_quantile_equal_mass_error(cells, power):
+    """Exact W1 error for Q(u)=u**power and equal-mass barycenters."""
+    check(cells >= 2 and power > 0)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*(right**(power+1)-left**(power+1))/(power+1)
+        crossing = mean**(1/power)
+        check(left < crossing < right)
+        total += 2*((right**(power+1)-crossing**(power+1))/(power+1)
+                    - mean*(right-crossing))
+    return total
+
+
+def direct_power_quantile_equal_mass_error(cells, power):
+    """Independent quadrature of the bounded power-quantile example."""
+    check(cells >= 2 and power > 0)
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*quad(
+            lambda u: u**power, left, right,
+            epsabs=2e-13, epsrel=2e-13,
+        )[0]
+        crossing = mean**(1/power)
+        total += quad(
+            lambda u: abs(u**power-mean), left, right,
+            points=[crossing], epsabs=2e-13, epsrel=2e-13,
+        )[0]
+    return total
+
+
+def certify_bounded_quantization_rate():
+    """Sharp one-quarter rate for bounded Sobolev quantiles."""
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    for power in (0.5, 1.0, 2.0):
+        for cells in (2, 4, 8, 16, 32, 64, 128):
+            closed = power_quantile_equal_mass_error(cells, power)
+            direct = direct_power_quantile_equal_mass_error(cells, power)
+            discrepancy = abs(closed-direct)
+            check(discrepancy < 2e-12)
+            largest_quadrature_error = max(
+                largest_quadrature_error, discrepancy,
+            )
+            formula_cases += 1
+
+    singular_ratios = []
+    for cells in (256, 1024, 4096, 16384, 65536):
+        error = power_quantile_equal_mass_error(cells, 0.5)
+        singular_ratios.append(cells*error)
+    check(all(singular_ratios[j+1] > singular_ratios[j]
+              for j in range(len(singular_ratios)-1)))
+    check(0.2497 < singular_ratios[-1] < 0.25)
+    check(abs(power_quantile_equal_mass_error(128, 1.0)-1/512) < 2e-14)
+    return (formula_cases, largest_quadrature_error,
+            power_quantile_equal_mass_error(128, 0.5),
+            power_quantile_equal_mass_error(65536, 0.5),
+            singular_ratios[-1])
+
+
 def exponential_equal_mass_error(cells):
     """Closed-form W1 error for unit-exponential equal-mass barycenters."""
     check(cells >= 2)
@@ -1730,6 +1791,9 @@ def main():
      l1_rate_counterexamples, largest_l1_rate_error) = (
         certify_unbounded_quantization_rate()
     )
+    (bounded_rate_cases, bounded_rate_quadrature_error,
+     bounded_rate_error_128, bounded_rate_error_65536,
+     bounded_rate_ratio_65536) = certify_bounded_quantization_rate()
     (exponential_formula_cases, exponential_quadrature_error,
      exponential_error_128, exponential_error_16384,
      exponential_ratio_16384) = certify_exponential_quantization_rate()
@@ -2092,6 +2156,12 @@ def main():
           f"{largest_moment_squared_ratio}; L1 rate counterexamples: "
           f"{l1_rate_counterexamples}; largest exact error: "
           f"{largest_l1_rate_error}")
+    print(f"Bounded quantization formula checks: {bounded_rate_cases}; "
+          f"largest quadrature discrepancy: "
+          f"{bounded_rate_quadrature_error:.3e}; square-root-quantile W1 "
+          f"at N=128: {bounded_rate_error_128:.15f}; W1 at N=65536: "
+          f"{bounded_rate_error_65536:.15f}; sharp-rate ratio: "
+          f"{bounded_rate_ratio_65536:.12f}")
     print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
           f"largest quadrature discrepancy: "
           f"{exponential_quadrature_error:.3e}; W1 at N=128: "
