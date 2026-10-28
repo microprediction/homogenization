@@ -60,6 +60,16 @@
   "annotation": "Develops primal and dual quantizations that preserve convex order and relates their errors to martingale couplings. The latent-coverage note uses elementary conditional-mean quantization to prove Wasserstein density of attainable contraction laws on a nonatomic base."
  },
  {
+  "key": "Pierce1970",
+  "authors": "Pierce, J. N.",
+  "year": 1970,
+  "title": "Asymptotic quantizing error for unbounded random variables",
+  "venue": "IEEE Transactions on Information Theory 16(1):81-83",
+  "doi": "10.1109/TIT.1970.1054400",
+  "url": "https://doi.org/10.1109/TIT.1970.1054400",
+  "annotation": "Introduces the classical moment-based control now known as Pierce's lemma for quantization of unbounded laws. The latent-coverage note proves a separate explicit bound for equal-probability conditional-mean quantization by clipping and optimizing the clipping radius."
+ },
+ {
   "key": "NutzWangZhang2024",
   "authors": "Nutz, M., Wang, R. and Zhang, Z.",
   "year": 2024,
