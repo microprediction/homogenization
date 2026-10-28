@@ -407,6 +407,33 @@
       mass is $1/4096$, the target variance is $1/56$, and its ratio to source variance is $6/35$; this target is not
       covered by the componentwise theorem below because it has no atom at zero.</p>
 
+    <h2>All contractions are Wasserstein limits on nonatomic bases</h2>
+    <p>Exact attainability of an uncountably supported target remains open for a genuinely mixed score law, but there
+      is no $W_1$ approximation gap. Write
+      $\mathfrak A(Z)=\{\mathcal L(\mathbb E[Z\mid\mathcal D]):\mathcal D\subseteq\mathcal F\}$.</p>
+    $$\boxed{\overline{\mathfrak A(Z)}^{W_1}
+      =\{\mu\in\mathcal P_1(\mathbb R):\mu\preceq_{\rm cx}\mathcal L(Z)\}}
+      \qquad(\Omega\ \text{nonatomic}).$$
+    <p>For the nontrivial inclusion, fix $\mu\preceq_{\rm cx}\mathcal L(Z)$, take
+      $X=Q_\mu(U)$ for $U\sim\operatorname{Unif}[0,1]$, and let $X_n=\mathbb E[X\mid\mathcal P_n]$ for the dyadic
+      quantile partition $\mathcal P_n$. Then $\mu_n=\mathcal L(X_n)$ has finite support and
+      $\mu_n\preceq_{\rm cx}\mu$ by conditional Jensen.</p>
+    <p>The martingale convergence theorem gives $\mathbb E|X_n-X|\to0$, hence
+      $W_1(\mu_n,\mu)\le\mathbb E|X_n-X|\to0$. The preceding purification theorem realizes every $\mu_n$ exactly
+      as $\mathcal L(\mathbb E[Z\mid\mathcal D_n])$ on the original space. For the reverse inclusion, $W_1$
+      convergence preserves the mean and every call expectation $\int(x-t)_+\,d\mu$, so conditional Jensen's
+      convex-order inequalities pass to the limit.</p>
+    <p>If $\mu$ is supported in $[a,b]$, $N$ equal-probability quantile cells give the explicit bound
+      $W_1(\mu_N,\mu)\le(b-a)/N$. Indeed, monotonicity of $Q_\mu$ makes the sum of the $N$ within-cell oscillations
+      at most $b-a$.</p>
+    <p><a href="./bibliography.html#JourdainPages2022">Jourdain and Pag&egrave;s (2022)</a> gives the primary
+      convex-order-preserving quantization context. The fixed-space closure statement and the displayed rate are the
+      direct argument above.</p>
+    <p>The exact certificate takes the mixed source
+      $\tfrac12\delta_0+\tfrac12\operatorname{Unif}[0,1]$ and the noncomponentwise continuous target
+      $\operatorname{Unif}[0,1/2]$. Its $N$-point midpoint contraction has exact error $W_1=1/(8N)$; six dyadic
+      sizes through $N=64$ give smallest error $1/512$.</p>
+
     <h2>Atomless score laws attain the full convex-order lower set</h2>
     <p>A different hypothesis removes the countable-support restriction. Suppose the score law $\nu$ itself is atomless
       and let $\mu\preceq_{\rm cx}\nu$ be arbitrary, with no restriction on its support.</p>
@@ -669,7 +696,7 @@
     <h2>Certificate and classical context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_latent_coverage.py">certificate</a>
       checks 1,026 exact rational stop-loss/tail comparisons and 54 mean/variance cases for nested uniform emission laws.
-      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
+      It also checks 210 sharp one-sided beta contractions, 315 continuous and 54 atomic two-sided partition witnesses, 54 exact finite-law refinements, ten mixed-law nonatomic witnesses, four finite-action purifications, one countable-support mixed contraction, six Wasserstein approximants, five continuous backward-Monge maps, five continuous atomic-fiber contractions and four mixed componentwise contractions, 30 exact Bernoulli no-split gaps, 38 one-sided and 56 two-sided atom-gap bounds, five shared-cut equalities and five disjoint sharpness limits, 18 signed and 56 two-budget dynamic programs, 12 additive and four relative two-sided approximations, 56 one-budget saturation decisions, 169 one-sided and 169 two-sided SUBSET SUM reductions, 24 ordinary-knapsack reductions, 96 FPTAS guarantees, 54 fixed-space two-sided optima, 66 finite-law convex-order witnesses and 162 exact latent variance decompositions; the full crossover regression independently checks the beta-binomial benchmark.</p>
     <p><a href="./bibliography.html#Vovk2012">Vovk (2012), Section 3 and Proposition 2b</a>, gives the classical iid calibration-conditional PAC calculation and explicitly separates it from exchangeable marginal validity.
       <a href="./bibliography.html#MarquesF2023">Marques F. (2023)</a> derives the repeated-future beta-binomial law under exchangeability, while <a href="./bibliography.html#RamosGraziadeiCabezas2026">Ramos, Graziadei and Cabezas (2026)</a> studies departures of calibration-conditional coverage from the beta benchmark through Wasserstein transport.</p>
     <p>Conditional Jensen and the beta order-statistic law are classical.

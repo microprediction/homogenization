@@ -40,6 +40,16 @@
   "annotation": "Extends Dvoretzky-Wald-Wolfowitz purification to countably infinite measurable partitions. The latent-coverage note applies the finite-dimensional version to mass and first-moment measures, realizing every countably supported convex-order contraction on a nonatomic original space."
  },
  {
+  "key": "JourdainPages2022",
+  "authors": "Jourdain, B. and Pag\u00e8s, G.",
+  "year": 2022,
+  "title": "Quantization and martingale couplings",
+  "venue": "ALEA, Latin American Journal of Probability and Mathematical Statistics 19(1):1-22",
+  "doi": "10.30757/ALEA.V19-01",
+  "url": "https://doi.org/10.30757/ALEA.V19-01",
+  "annotation": "Develops primal and dual quantizations that preserve convex order and relates their errors to martingale couplings. The latent-coverage note uses elementary conditional-mean quantization to prove Wasserstein density of attainable contraction laws on a nonatomic base."
+ },
+ {
   "key": "NutzWangZhang2024",
   "authors": "Nutz, M., Wang, R. and Zhang, Z.",
   "year": 2024,

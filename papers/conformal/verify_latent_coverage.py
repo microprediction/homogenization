@@ -836,6 +836,52 @@ def certify_countable_support_mixed_contraction():
     return checked_atoms, tail_mass, target_variance, target_variance/source_variance
 
 
+def certify_wasserstein_dense_mixed_contractions():
+    """Finite contractions converging to a noncomponentwise mixed-law target."""
+    # Source: 1/2 delta_0 + 1/2 Uniform[0,1].
+    # Target: Uniform[0,1/2].  Its call is below the source call because
+    # the gap on [0,1/2] is t(2-3t)/4 and on [1/2,1] is (1-t)^2/4.
+    check(F(0)*(2-3*F(0))/4 == 0)
+    check(F(1, 2)*(2-3*F(1, 2))/4 == F(1, 16) > 0)
+    check(-F(3, 2) < 0)  # concavity of the first gap polynomial
+    check((1-F(1, 2))**2/4 == F(1, 16))
+    check((1-F(1))**2/4 == 0)
+
+    cases = largest_support = 0
+    smallest_error = F(1)
+    target_variance = F(1, 2)**2/F(12)
+    source_variance = F(1, 2)*F(1, 3)-F(1, 4)**2
+    check(target_variance == F(1, 48))
+    check(source_variance == F(5, 48))
+    for support_size in (2, 4, 8, 16, 32, 64):
+        target_points = tuple(
+            F(2*k+1, 4*support_size) for k in range(support_size)
+        )
+        probability = F(1, support_size)
+        mean = sum(target_points, F(0))*probability
+        second = sum(x*x for x in target_points)*probability
+        variance = second-mean**2
+        wasserstein_error = F(1, 8*support_size)
+
+        check(mean == F(1, 4))
+        check(variance == F(support_size**2-1,
+                            48*support_size**2))
+        check(target_variance-variance == F(1, 48*support_size**2))
+
+        # Each point is the barycenter of one equal-probability target cell.
+        for k, point in enumerate(target_points):
+            left = F(k, 2*support_size)
+            right = F(k+1, 2*support_size)
+            check(2*(right-left) == probability)
+            check((right**2-left**2) == probability*point)
+
+        cases += 1
+        largest_support = support_size
+        smallest_error = min(smallest_error, wasserstein_error)
+    check(smallest_error == F(1, 512))
+    return cases, largest_support, smallest_error, target_variance, source_variance
+
+
 def symmetric_beta_coefficients(shape):
     """Polynomial coefficients of the Beta(shape, shape) density."""
     normalizer = F(factorial(2*shape-1), factorial(shape-1)**2)
@@ -1197,6 +1243,10 @@ def main():
      countable_support_variance, countable_support_ratio) = (
         certify_countable_support_mixed_contraction()
     )
+    (dense_contraction_cases, dense_largest_support, dense_smallest_error,
+     dense_target_variance, dense_source_variance) = (
+        certify_wasserstein_dense_mixed_contractions()
+    )
     (continuous_monge_maps, largest_monge_multiplicity,
      smallest_monge_variance) = certify_continuous_backward_monge_maps()
     (atomic_fiber_targets, atomic_fiber_cell_identities,
@@ -1528,6 +1578,11 @@ def main():
           f"symbolic tail mass: {countable_support_tail_mass}; "
           f"target variance: {countable_support_variance}; "
           f"source-variance ratio: {countable_support_ratio}")
+    print(f"Wasserstein-dense mixed contractions: {dense_contraction_cases}; "
+          f"largest support: {dense_largest_support}; "
+          f"smallest exact W1 error: {dense_smallest_error}; "
+          f"target/source variances: {dense_target_variance}/"
+          f"{dense_source_variance}")
     print(f"Exact continuous backward-Monge maps: {continuous_monge_maps}; "
           f"largest preimage multiplicity: {largest_monge_multiplicity}; "
           f"smallest target variance: {smallest_monge_variance}; "
