@@ -1,8 +1,9 @@
 """Posterior coverage is a beta mean contraction, not generally beta."""
 from fractions import Fraction as F
 from itertools import combinations, product
-from math import comb, factorial, lcm
+from math import comb, exp, factorial, lcm, log1p
 
+import mpmath as mp
 import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import brentq, linprog, minimize_scalar
@@ -950,6 +951,74 @@ def certify_unbounded_quantization_rate():
     return moment_cases, largest_squared_ratio, l1_cases, largest_l1_error
 
 
+def exponential_equal_mass_error(cells):
+    """Closed-form W1 error for unit-exponential equal-mass barycenters."""
+    check(cells >= 2)
+    total = 1/mp.e
+    for r in range(1, cells):
+        rr = mp.mpf(r)
+        total += ((rr+1)*mp.exp(rr*mp.log1p(1/rr)-1)
+                  - rr*(rr+1)*mp.log1p(1/rr))
+    return 2*total/cells
+
+
+def direct_exponential_equal_mass_error(cells):
+    """Independent quadrature of the same conditional-mean construction."""
+    total = 0.0
+    for cell in range(cells):
+        left, right = cell/cells, (cell+1)/cells
+        mean = cells*quad(
+            lambda u: -log1p(-u), left, right,
+            epsabs=1e-13, epsrel=1e-13, limit=100,
+        )[0]
+        crossing = 1-exp(-mean)
+        total += quad(
+            lambda u: abs(-log1p(-u)-mean), left, right,
+            points=[crossing], epsabs=1e-13, epsrel=1e-13, limit=100,
+        )[0]
+    return total
+
+
+def certify_exponential_quantization_rate():
+    """Exact formula and logarithmic-over-linear exponential benchmark."""
+    mp.mp.dps = 60
+    formula_cases = 0
+    largest_quadrature_error = 0.0
+    error_at_128 = None
+    for cells in (2, 4, 8, 16, 32, 64, 128):
+        closed = float(exponential_equal_mass_error(cells))
+        direct = direct_exponential_equal_mass_error(cells)
+        discrepancy = abs(closed-direct)
+        check(discrepancy < 2e-12)
+        largest_quadrature_error = max(largest_quadrature_error, discrepancy)
+        formula_cases += 1
+        if cells == 128:
+            error_at_128 = closed
+
+    # The cell summand is 1/(8r)-1/(16r^2)+O(r^-3).  These finite
+    # checks supplement, but do not replace, the analytic expansion.
+    remainders = []
+    for r in (32, 64, 128, 256, 512, 1024, 2048, 4096):
+        rr = mp.mpf(r)
+        term = ((rr+1)*mp.exp(rr*mp.log1p(1/rr)-1)
+                - rr*(rr+1)*mp.log1p(1/rr))
+        remainders.append(abs(rr**2*(term-1/(8*rr))+mp.mpf(1)/16))
+    check(all(remainders[j+1] < remainders[j]
+              for j in range(len(remainders)-1)))
+
+    normalized_ratios = []
+    for cells in (256, 1024, 4096, 16384):
+        error = exponential_equal_mass_error(cells)
+        normalized_ratios.append(cells*error/mp.log(cells))
+    check(all(normalized_ratios[j+1] < normalized_ratios[j]
+              for j in range(len(normalized_ratios)-1)))
+    check(normalized_ratios[-1] > mp.mpf(1)/4)
+    error_at_16384 = exponential_equal_mass_error(16384)
+    ratio_at_16384 = normalized_ratios[-1]
+    return (formula_cases, largest_quadrature_error, error_at_128,
+            error_at_16384, ratio_at_16384)
+
+
 def certify_internal_randomizer_mixed_contraction():
     """An exact continuous contraction using a uniform independent of Z."""
     # Source: 1/2 delta_0 + 1/2 Uniform[0,1].  With U independent of Z,
@@ -1351,6 +1420,9 @@ def main():
      l1_rate_counterexamples, largest_l1_rate_error) = (
         certify_unbounded_quantization_rate()
     )
+    (exponential_formula_cases, exponential_quadrature_error,
+     exponential_error_128, exponential_error_16384,
+     exponential_ratio_16384) = certify_exponential_quantization_rate()
     (internal_randomizer_cells, internal_randomizer_target_variance,
      internal_randomizer_source_variance, internal_randomizer_ratio) = (
         certify_internal_randomizer_mixed_contraction()
@@ -1696,6 +1768,12 @@ def main():
           f"{largest_moment_squared_ratio}; L1 rate counterexamples: "
           f"{l1_rate_counterexamples}; largest exact error: "
           f"{largest_l1_rate_error}")
+    print(f"Exponential equal-mass formula checks: {exponential_formula_cases}; "
+          f"largest quadrature discrepancy: "
+          f"{exponential_quadrature_error:.3e}; W1 at N=128: "
+          f"{exponential_error_128:.15f}; W1 at N=16384: "
+          f"{float(exponential_error_16384):.15f}; normalized ratio: "
+          f"{float(exponential_ratio_16384):.12f}")
     print(f"Exact internal-randomizer mixed contraction: "
           f"{internal_randomizer_cells} cell identities; "
           f"target/source variances: {internal_randomizer_target_variance}/"

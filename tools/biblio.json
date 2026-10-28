@@ -3361,5 +3361,16 @@
   "doi": "10.1109/tit.1970.1054400",
   "url": "https://doi.org/10.1109/TIT.1970.1054400",
   "annotation": "Introduces the classical moment-based control now known as Pierce's lemma for quantization of unbounded laws. The latent-coverage note proves a separate explicit bound for equal-probability conditional-mean quantization by clipping and optimizing the clipping radius."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "FortPages2002",
+  "authors": "Fort, J.-C. and Pagès, G.",
+  "year": 2002,
+  "title": "Asymptotics of optimal quantizers for some scalar distributions",
+  "venue": "Journal of Computational and Applied Mathematics 146(2):253-275",
+  "doi": "10.1016/s0377-0427(02)00359-x",
+  "url": "https://doi.org/10.1016/S0377-0427(02)00359-X",
+  "annotation": "Derives semi-closed forms and asymptotics for optimal scalar quantizers, including exponential laws. The latent-coverage note instead computes the exact error of equal-probability conditional-mean cells, which preserve convex order but are not claimed to be optimal quantizers."
  }
 ]
