@@ -106,6 +106,54 @@ def residue_limits(initial, weights):
     return span, limits
 
 
+def matrix_product(left, right):
+    size = len(left)
+    return [[sum((left[i][k] * right[k][j] for k in range(size)), F(0))
+             for j in range(size)] for i in range(size)]
+
+
+def companion_contraction(weights):
+    span = 0
+    for power in weights:
+        span = gcd(span, power)
+    reduced = {power // span: weight for power, weight in weights.items()}
+    size = max(reduced)
+    matrix = [[F(0) for _ in range(size)] for _ in range(size)]
+    matrix[0] = [reduced.get(index + 1, F(0)) for index in range(size)]
+    for index in range(1, size):
+        matrix[index][index - 1] = 1
+    power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+    for block in range(1, size * size + 2):
+        power_matrix = matrix_product(power_matrix, matrix)
+        floor = min(min(row) for row in power_matrix)
+        if floor > 0:
+            contraction = 1 - size * floor
+            assert F(0) <= contraction < 1
+            return span, size, block, floor, contraction
+    raise AssertionError("primitive companion power not found")
+
+
+def recurrence_contraction_checks(initial, weights, limit_power=60):
+    span, size, block, floor, contraction = companion_contraction(weights)
+    reduced = {power // span: weight for power, weight in weights.items()}
+    limits = residue_limits(initial, weights)[1]
+    bounds = []
+    checks = 0
+    for residue in range(span):
+        values = [initial[residue + span * q] for q in range(size)]
+        oscillation = max(values) - min(values)
+        for q in range(size, limit_power // span + 1):
+            values.append(sum((weight * values[q - lag]
+                               for lag, weight in reduced.items()), F(0)))
+        for q in range(size - 1, len(values)):
+            exponent = (q - size + 1) // block
+            bound = contraction ** exponent * oscillation
+            assert abs(values[q] - limits[residue]) <= bound
+            checks += 1
+        bounds.append((oscillation, (limit_power // span - size + 1) // block))
+    return span, size, block, floor, contraction, checks, bounds
+
+
 def coefficient_radius(base, branches, stage, multiplier=1):
     lengths, _ = recurrence_data(base, branches)
     largest_weight = max(weight for _, _, weight in branches)
@@ -150,7 +198,13 @@ def check_family(base, branches):
                              for length, weight in weights.items()), F(0)))
     residual = max(abs(sequence[power] - limits[power % span])
                    for power in range(60 - span + 1, 61))
-    return checks, largest_cells, span, limits, residual
+    contraction = recurrence_contraction_checks(initial, weights)
+    return checks, largest_cells, span, limits, residual, contraction
+
+
+def true_recurrence_bound(contraction_data, coefficient_error, residue):
+    oscillation, exponent = contraction_data[6][residue]
+    return contraction_data[4] ** exponent * (oscillation + 2 * coefficient_error)
 
 
 def main():
@@ -166,6 +220,12 @@ def main():
     assert a[4] < F(1, 10 ** 10)
     assert p[4] < F(1, 10 ** 9)
     assert p[3][0] + p_radius < p[3][1] - p_radius
+    assert a[5][1:5] == (2, 2, F(1, 4), F(1, 2))
+    assert p[5][1:5] == (2, 2, F(1, 4), F(1, 2))
+    finite_checks = a[5][5] + p[5][5]
+    a_finite_bound = true_recurrence_bound(a[5], a_radius, 0)
+    p_even_bound = true_recurrence_bound(p[5], p_radius, 0)
+    p_odd_bound = true_recurrence_bound(p[5], p_radius, 1)
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -174,6 +234,11 @@ def main():
     print("periodic even/odd true-limit enclosures: "
           f"{interval_text(p[3][0], p_radius)} / {interval_text(p[3][1], p_radius)}")
     print(f"largest power-60 recurrence residual: {float(max(a[4], p[4])):.3e}")
+    print(f"exact finite-power contraction checks: {finite_checks}")
+    print("companion block/minimum/contraction: "
+          f"{a[5][2]}/{float(a[5][3]):.6f}/{float(a[5][4]):.6f}")
+    print("true recurrence-to-limit bounds at powers 60/60/61: "
+          f"{float(a_finite_bound):.3e}/{float(p_even_bound):.3e}/{float(p_odd_bound):.3e}")
     print("PASS")
 
 
