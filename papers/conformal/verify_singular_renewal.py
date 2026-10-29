@@ -1,5 +1,6 @@
 """Exact checks for unequal-scale singular-staircase renewal laws."""
 
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
 from fractions import Fraction as F
 from math import gcd
 
@@ -105,6 +106,25 @@ def residue_limits(initial, weights):
     return span, limits
 
 
+def coefficient_radius(base, branches, stage, multiplier=1):
+    lengths, _ = recurrence_data(base, branches)
+    largest_weight = max(weight for _, _, weight in branches)
+    return 2 * multiplier * base ** (max(lengths) - 1) * largest_weight ** stage
+
+
+def decimal_bound(value, rounding, places=12):
+    with localcontext() as context:
+        context.prec = 50
+        number = Decimal(value.numerator) / Decimal(value.denominator)
+        unit = Decimal(1).scaleb(-places)
+        return format(number.quantize(unit, rounding=rounding), "f")
+
+
+def interval_text(center, radius):
+    return (f"[{decimal_bound(center - radius, ROUND_FLOOR)}, "
+            f"{decimal_bound(center + radius, ROUND_CEILING)}]")
+
+
 def check_family(base, branches):
     lengths, weights = recurrence_data(base, branches)
     maximum = max(lengths)
@@ -134,23 +154,25 @@ def check_family(base, branches):
 
 
 def main():
-    aperiodic = ((F(0), F(1, 2), F(1, 3)),
-                 (F(3, 4), F(1, 4), F(2, 3)))
-    periodic = ((F(0), F(1, 4), F(1, 3)),
-                (F(15, 16), F(1, 16), F(2, 3)))
+    aperiodic = ((F(0), F(1, 2), F(1, 2)),
+                 (F(3, 4), F(1, 4), F(1, 2)))
+    periodic = ((F(0), F(1, 4), F(1, 2)),
+                (F(15, 16), F(1, 16), F(1, 2)))
     a = check_family(2, aperiodic)
     p = check_family(2, periodic)
+    a_radius = coefficient_radius(2, aperiodic, 10)
+    p_radius = coefficient_radius(2, periodic, 10)
     assert a[2] == 1 and p[2] == 2
     assert a[4] < F(1, 10 ** 10)
-    assert p[4] < F(1, 10 ** 5)
-    assert p[3][0] != p[3][1]
+    assert p[4] < F(1, 10 ** 9)
+    assert p[3][0] + p_radius < p[3][1] - p_radius
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
     print(f"horizontal lattice spans: {a[2]}/{p[2]}")
-    print(f"stage-ten aperiodic renewal limit: {float(a[3][0]):.12f}")
-    print("stage-ten periodic even/odd renewal limits: "
-          f"{float(p[3][0]):.12f}/{float(p[3][1]):.12f}")
+    print(f"aperiodic true-limit enclosure: {interval_text(a[3][0], a_radius)}")
+    print("periodic even/odd true-limit enclosures: "
+          f"{interval_text(p[3][0], p_radius)} / {interval_text(p[3][1], p_radius)}")
     print(f"largest power-60 recurrence residual: {float(max(a[4], p[4])):.3e}")
     print("PASS")
 

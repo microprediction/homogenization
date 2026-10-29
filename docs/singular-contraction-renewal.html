@@ -131,7 +131,9 @@
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
-      checks 90 finite-stage recurrences for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells, and the largest power-60 recurrence residual is $2.742\times10^{-8}$.</p>
+      checks 90 finite-stage recurrences for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
+    <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
+    <p>At stage ten this gives the actual aperiodic limit enclosure $[0.205672438933,0.213484938934]$. The periodic even and odd limits lie respectively in $[0.114151007537,0.145401007538]$ and $[0.186351699947,0.217601699948]$, proving that the phase split is genuine.</p>
     <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. Here the finite-support recurrence and its boundary coefficient are derived directly from the cell projection.</p>
     <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
   </main>
