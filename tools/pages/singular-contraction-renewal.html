@@ -34,21 +34,21 @@
     <h2>A computable finite-power bound</h2>
     <p>For $\bar L\ge2$, form the row-stochastic companion matrix
       $P$ whose first row is $(\bar p_1,\ldots,\bar p_{\bar L})$ and whose remaining rows shift one coordinate to the right. Coprimality makes $P$ primitive, so one can compute an $M$ for which every entry of $P^M$ is positive.</p>
-    <p>For every $n\ge0$, use the exact row overlap
-      $\eta_n=\min_{i,k}\sum_j\min\{(P^n)_{ij},(P^n)_{kj}\}$ and put
-      $\delta_n=1-\eta_n$. Equivalently,
-      $\delta_n=\frac12\max_{i,k}\sum_j|(P^n)_{ij}-(P^n)_{kj}|$. Then, for every $q\ge\bar L-1$, with $n=q-\bar L+1$,</p>
+    <p>Let $\pi^\top P=\pi^\top$ be the invariant row and, for $n\ge0$, put
+      $\beta_n=\frac12\sum_j|(P^n)_{1j}-\pi_j|$. Then, for every $q\ge\bar L-1$, with $n=q-\bar L+1$,</p>
     <div class="equation-card">
     $$\boxed{|a_q-C_s|\le
-      \delta_{q-\bar L+1}
+      \beta_{q-\bar L+1}
       \left(\max_{0\le t&lt;\bar L}a_t-\min_{0\le t&lt;\bar L}a_t\right).}$$
     </div>
-    <p>The overlap decomposition of any two rows proves
-      $\operatorname{osc}(P^nx)\le\delta_n\operatorname{osc}(x)$. The invariant boundary average $C_s$ stays between the current coordinate minimum and maximum, which proves the bound without estimating complex roots.</p>
-    <p>For a reusable geometric bound, choose any $M$ with $\delta_M&lt;1$. Submultiplicativity gives
-      $\delta_n\le\delta_M^{\lfloor n/M\rfloor}$; the entrywise floor gives the further bound
+    <p>Indeed, if $x_0=(a_{\bar L-1},\ldots,a_0)^\top$, then
+      $a_q-C_s=(e_1^\top P^n-\pi^\top)x_0$. Total-variation duality gives the displayed bound, and choosing $x_{0,j}=1$ on the positive part of $(P^n)_{1j}-\pi_j$ shows that $\beta_n$ is the exact operator constant for the selected coordinate.</p>
+    <p>The worst-row Dobrushin coefficient
+      $\delta_n=\frac12\max_{i,k}\sum_j|(P^n)_{ij}-(P^n)_{kj}|$ satisfies $\beta_n\le\delta_n$. For a reusable geometric bound, submultiplicativity gives
+      $\delta_n\le\delta_M^{\lfloor n/M\rfloor}$ whenever $\delta_M&lt;1$, and
       $\delta_M\le1-\bar L\min_{i,j}(P^M)_{ij}$.</p>
-    <p>For both certificate recurrences, $P^2$ has minimum entry $1/4$ and $\delta_2=1/4$, while in fact $\delta_n=2^{-n}$. Using the full power rather than discarding the remainder transition bounds the true recurrence error by $3.390\times10^{-20}$ at aperiodic power 60, and by $1.103\times10^{-10}$ and $9.619\times10^{-11}$ at periodic powers 60 and 61.</p>
+    <p>For both certificate recurrences, $\pi=(2/3,1/3)$,
+      $\delta_n=2^{-n}$, and $\beta_n=2^{-n}/3$. The selected-row coefficient bounds the true recurrence error by $1.130\times10^{-20}$ at aperiodic power 60, and by $3.678\times10^{-11}$ and $3.206\times10^{-11}$ at periodic powers 60 and 61.</p>
 
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>

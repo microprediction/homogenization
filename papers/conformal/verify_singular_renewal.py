@@ -121,6 +121,28 @@ def dobrushin_contraction(matrix):
     return overlap, 1 - overlap
 
 
+def row_matrix_product(row, matrix):
+    return [sum((row[k] * matrix[k][j] for k in range(len(row))), F(0))
+            for j in range(len(row))]
+
+
+def invariant_row(reduced):
+    size = max(reduced)
+    mean = sum((lag * weight for lag, weight in reduced.items()), F(0))
+    row = [sum((weight for lag, weight in reduced.items() if lag > index), F(0)) / mean
+           for index in range(size)]
+    return row
+
+
+def target_row_contraction(row, invariant):
+    difference = [left - right for left, right in zip(row, invariant)]
+    coefficient = sum((abs(value) for value in difference), F(0)) / 2
+    witness = [F(int(value > 0)) for value in difference]
+    attained = abs(sum((value * test for value, test in zip(difference, witness)), F(0)))
+    assert attained == coefficient
+    return coefficient
+
+
 def companion_matrix(weights):
     span = 0
     for power in weights:
@@ -155,6 +177,9 @@ def recurrence_contraction_checks(initial, weights, limit_power=60):
      coarse_contraction) = companion_contraction(weights)
     matrix_span, reduced, matrix = companion_matrix(weights)
     assert matrix_span == span
+    invariant = invariant_row(reduced)
+    assert sum(invariant, F(0)) == 1
+    assert row_matrix_product(invariant, matrix) == invariant
     limits = residue_limits(initial, weights)[1]
     bounds = []
     checks = 0
@@ -166,17 +191,19 @@ def recurrence_contraction_checks(initial, weights, limit_power=60):
                                for lag, weight in reduced.items()), F(0)))
         power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
         exact_contraction = F(1)
+        selected_contraction = F(1)
         for q in range(size - 1, len(values)):
             exponent = (q - size + 1) // block
             _, exact_contraction = dobrushin_contraction(power_matrix)
+            selected_contraction = target_row_contraction(power_matrix[0], invariant)
             block_bound = contraction ** exponent
-            assert exact_contraction <= block_bound
-            bound = exact_contraction * oscillation
+            assert selected_contraction <= exact_contraction <= block_bound
+            bound = selected_contraction * oscillation
             assert abs(values[q] - limits[residue]) <= bound
             checks += 1
             power_matrix = matrix_product(power_matrix, matrix)
         bounds.append((oscillation, (limit_power // span - size + 1) // block,
-                       exact_contraction))
+                       exact_contraction, selected_contraction))
     return (span, size, block, floor, overlap, contraction,
             coarse_contraction, checks, bounds)
 
@@ -230,8 +257,8 @@ def check_family(base, branches):
 
 
 def true_recurrence_bound(contraction_data, coefficient_error, residue):
-    oscillation, _, exact_contraction = contraction_data[8][residue]
-    return exact_contraction * (oscillation + 2 * coefficient_error)
+    oscillation, _, _, selected_contraction = contraction_data[8][residue]
+    return selected_contraction * (oscillation + 2 * coefficient_error)
 
 
 def main():
@@ -250,9 +277,14 @@ def main():
     expected = (2, 2, F(1, 4), F(3, 4), F(1, 4), F(1, 2))
     assert a[5][1:7] == expected
     assert p[5][1:7] == expected
+    fixture_invariant = invariant_row({1: F(1, 2), 2: F(1, 2)})
+    assert fixture_invariant == [F(2, 3), F(1, 3)]
     assert a[5][8][0][2] == F(1, 2) ** 59
     assert p[5][8][0][2] == F(1, 2) ** 29
     assert p[5][8][1][2] == F(1, 2) ** 29
+    assert a[5][8][0][3] == F(1, 3) * F(1, 2) ** 59
+    assert p[5][8][0][3] == F(1, 3) * F(1, 2) ** 29
+    assert p[5][8][1][3] == F(1, 3) * F(1, 2) ** 29
     finite_checks = a[5][7] + p[5][7]
     a_finite_bound = true_recurrence_bound(a[5], a_radius, 0)
     p_even_bound = true_recurrence_bound(p[5], p_radius, 0)
@@ -269,8 +301,11 @@ def main():
     print("companion block/minimum/overlap/exact/coarse contraction: "
           f"{a[5][2]}/{float(a[5][3]):.6f}/{float(a[5][4]):.6f}/"
           f"{float(a[5][5]):.6f}/{float(a[5][6]):.6f}")
+    print("fixture invariant row: 2/3,1/3")
     print("exact full-power contractions at powers 60/60/61: "
           f"2^-59/2^-29/2^-29")
+    print("selected-row contractions at powers 60/60/61: "
+          f"2^-59/3/2^-29/3/2^-29/3")
     print("true recurrence-to-limit bounds at powers 60/60/61: "
           f"{float(a_finite_bound):.3e}/{float(p_even_bound):.3e}/{float(p_odd_bound):.3e}")
     print("PASS")
