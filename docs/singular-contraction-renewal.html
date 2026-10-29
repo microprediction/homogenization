@@ -131,14 +131,20 @@
     <h2>A computable finite-power bound</h2>
     <p>For $\bar L\ge2$, form the row-stochastic companion matrix
       $P$ whose first row is $(\bar p_1,\ldots,\bar p_{\bar L})$ and whose remaining rows shift one coordinate to the right. Coprimality makes $P$ primitive, so one can compute an $M$ for which every entry of $P^M$ is positive.</p>
-    <p>Put $\epsilon_M=\min_{i,j}(P^M)_{ij}$ and $\rho_M=1-\bar L\epsilon_M&lt;1$. Then, for every $q\ge\bar L-1$,</p>
+    <p>Use the exact row overlap
+      $\eta_M=\min_{i,k}\sum_j\min\{(P^M)_{ij},(P^M)_{kj}\}$ and put
+      $\delta_M=1-\eta_M&lt;1$. Equivalently,
+      $\delta_M=\frac12\max_{i,k}\sum_j|(P^M)_{ij}-(P^M)_{kj}|$. Then, for every $q\ge\bar L-1$,</p>
     <div class="equation-card">
     $$\boxed{|a_q-C_s|\le
-      \rho_M^{\left\lfloor(q-\bar L+1)/M\right\rfloor}
+      \delta_M^{\left\lfloor(q-\bar L+1)/M\right\rfloor}
       \left(\max_{0\le t&lt;\bar L}a_t-\min_{0\le t&lt;\bar L}a_t\right).}$$
     </div>
-    <p>Every row of $P^M$ assigns at least $\epsilon_M$ to every boundary coordinate, so one block contracts the coordinate oscillation by $\rho_M$. The invariant boundary average $C_s$ stays between the current coordinate minimum and maximum, which proves the bound without estimating complex roots.</p>
-    <p>For both certificate recurrences, $P^2$ has minimum entry $1/4$, hence $\rho_2=1/2$. Combining this contraction with the stage-ten staircase error bounds the true recurrence error by $3.640\times10^{-11}$ at aperiodic power 60, and by $3.616\times10^{-6}$ and $3.152\times10^{-6}$ at periodic powers 60 and 61.</p>
+    <p>The overlap decomposition of any two rows proves
+      $\operatorname{osc}(P^Mx)\le\delta_M\operatorname{osc}(x)$. The invariant boundary average $C_s$ stays between the current coordinate minimum and maximum, which proves the bound without estimating complex roots.</p>
+    <p>The entrywise floor gives the valid but weaker coefficient
+      $1-\bar L\min_{i,j}(P^M)_{ij}$ because $\eta_M\ge\bar L\min_{i,j}(P^M)_{ij}$. For both certificate recurrences, $P^2$ has minimum entry $1/4$ but exact overlap $3/4$, improving the contraction from $1/2$ to $1/4$.</p>
+    <p>Combining the exact coefficient with the stage-ten staircase error bounds the true recurrence error by $6.781\times10^{-20}$ at aperiodic power 60, and by $2.207\times10^{-10}$ and $1.924\times10^{-10}$ at periodic powers 60 and 61.</p>
 
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>

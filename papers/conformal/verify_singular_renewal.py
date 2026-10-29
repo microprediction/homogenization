@@ -127,14 +127,22 @@ def companion_contraction(weights):
         power_matrix = matrix_product(power_matrix, matrix)
         floor = min(min(row) for row in power_matrix)
         if floor > 0:
-            contraction = 1 - size * floor
-            assert F(0) <= contraction < 1
-            return span, size, block, floor, contraction
+            overlap = min(
+                sum((min(power_matrix[i][j], power_matrix[k][j])
+                     for j in range(size)), F(0))
+                for i in range(size) for k in range(size)
+            )
+            contraction = 1 - overlap
+            coarse_contraction = 1 - size * floor
+            assert F(0) <= contraction <= coarse_contraction < 1
+            return (span, size, block, floor, overlap, contraction,
+                    coarse_contraction)
     raise AssertionError("primitive companion power not found")
 
 
 def recurrence_contraction_checks(initial, weights, limit_power=60):
-    span, size, block, floor, contraction = companion_contraction(weights)
+    (span, size, block, floor, overlap, contraction,
+     coarse_contraction) = companion_contraction(weights)
     reduced = {power // span: weight for power, weight in weights.items()}
     limits = residue_limits(initial, weights)[1]
     bounds = []
@@ -151,7 +159,8 @@ def recurrence_contraction_checks(initial, weights, limit_power=60):
             assert abs(values[q] - limits[residue]) <= bound
             checks += 1
         bounds.append((oscillation, (limit_power // span - size + 1) // block))
-    return span, size, block, floor, contraction, checks, bounds
+    return (span, size, block, floor, overlap, contraction,
+            coarse_contraction, checks, bounds)
 
 
 def coefficient_radius(base, branches, stage, multiplier=1):
@@ -203,8 +212,8 @@ def check_family(base, branches):
 
 
 def true_recurrence_bound(contraction_data, coefficient_error, residue):
-    oscillation, exponent = contraction_data[6][residue]
-    return contraction_data[4] ** exponent * (oscillation + 2 * coefficient_error)
+    oscillation, exponent = contraction_data[8][residue]
+    return contraction_data[5] ** exponent * (oscillation + 2 * coefficient_error)
 
 
 def main():
@@ -220,9 +229,10 @@ def main():
     assert a[4] < F(1, 10 ** 10)
     assert p[4] < F(1, 10 ** 9)
     assert p[3][0] + p_radius < p[3][1] - p_radius
-    assert a[5][1:5] == (2, 2, F(1, 4), F(1, 2))
-    assert p[5][1:5] == (2, 2, F(1, 4), F(1, 2))
-    finite_checks = a[5][5] + p[5][5]
+    expected = (2, 2, F(1, 4), F(3, 4), F(1, 4), F(1, 2))
+    assert a[5][1:7] == expected
+    assert p[5][1:7] == expected
+    finite_checks = a[5][7] + p[5][7]
     a_finite_bound = true_recurrence_bound(a[5], a_radius, 0)
     p_even_bound = true_recurrence_bound(p[5], p_radius, 0)
     p_odd_bound = true_recurrence_bound(p[5], p_radius, 1)
@@ -235,8 +245,9 @@ def main():
           f"{interval_text(p[3][0], p_radius)} / {interval_text(p[3][1], p_radius)}")
     print(f"largest power-60 recurrence residual: {float(max(a[4], p[4])):.3e}")
     print(f"exact finite-power contraction checks: {finite_checks}")
-    print("companion block/minimum/contraction: "
-          f"{a[5][2]}/{float(a[5][3]):.6f}/{float(a[5][4]):.6f}")
+    print("companion block/minimum/overlap/exact/coarse contraction: "
+          f"{a[5][2]}/{float(a[5][3]):.6f}/{float(a[5][4]):.6f}/"
+          f"{float(a[5][5]):.6f}/{float(a[5][6]):.6f}")
     print("true recurrence-to-limit bounds at powers 60/60/61: "
           f"{float(a_finite_bound):.3e}/{float(p_even_bound):.3e}/{float(p_odd_bound):.3e}")
     print("PASS")
