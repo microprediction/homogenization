@@ -112,13 +112,13 @@
 
     <h2>The phase distribution of the rescaled error</h2>
     <p>The second-order phases themselves have an empirical law. Put
-      $Z_T=T,W_1(\nu_T,\nu_\infty)$,
+      $Z_T=T\,W_1(\nu_T,\nu_\infty)$,
       $\rho_M=M^{-1}\sum_{T=1}^{M}\delta_{Z_T}$, and
       $\rho_\infty=g^{-1}\sum_{r=0}^{g-1}\delta_{L_r}$.</p>
     <p>Let $d_T=|Z_T-L_{T\bmod g}|$ and $\Delta_L=\max_rL_r-\min_rL_r$. The computable tail estimate above makes $\Gamma=\sum_{T=1}^{\infty}d_T$ finite, and a termwise coupling followed by the residue-count correction gives, for $M=gQ+r$,</p>
     <div class="equation-card">
     $$\boxed{W_1(\rho_M,\rho_\infty)\le
-      \frac{\Gamma}{M}+\frac{\Delta_L,r(g-r)}{gM}.}$$
+      \frac{\Gamma}{M}+\frac{\Delta_L\,r(g-r)}{gM}.}$$
     </div>
     <p>Hence $\rho_M\Rightarrow\rho_\infty$ with an explicit $O(M^{-1})$ Wasserstein rate. The first term couples each $Z_T$ to its own residue limit; the second moves the slightly unbalanced finite residue counts to uniform weights.</p>
     <p>To see that $\Gamma$ is computable, use
