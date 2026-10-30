@@ -1,6 +1,7 @@
 """Exact checks for the SBV equal-mass contraction-rate decomposition."""
 
 from fractions import Fraction as F
+from math import lcm
 
 
 SLOPE = F(2)
@@ -78,6 +79,20 @@ def main():
     adjacent_phase = phase_term(106)
     adjacent_residual = abs(adjacent - adjacent_phase)
 
+    # The rational phase vector has a finite compact-group orbit.
+    period = 1
+    for site, _ in JUMPS:
+        period = lcm(period, site.denominator)
+    assert period == 105
+    phase_values = tuple(phase_term(n) for n in range(period))
+    for n, value in enumerate(phase_values):
+        assert phase_term(n + period) == value
+        checks += 1
+    assert min(phase_values) == SLOPE / 4
+    assert max(phase_values) == F(22153, 22050)
+    assert len(set(phase_values)) == 24
+    checks += 3
+
     print(f"exact SBV checks: {checks}")
     print(f"largest scaled residual: {float(largest_residual):.12f}")
     print(f"largest residual/bound: {float(largest_ratio):.12f}")
@@ -85,6 +100,10 @@ def main():
     print(f"N=106 scaled error: {float(adjacent):.12f}")
     print(f"N=106 phase prediction: {float(adjacent_phase):.12f}")
     print(f"N=106 scaled residual: {float(adjacent_residual):.12f}")
+    print(f"phase period: {period}")
+    print(f"distinct cluster values: {len(set(phase_values))}")
+    print(f"cluster minimum: {float(min(phase_values)):.12f}")
+    print(f"cluster maximum: {float(max(phase_values)):.12f}")
     print("PASS")
 
 
