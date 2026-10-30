@@ -170,6 +170,7 @@ def main():
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
     print(f"horizontal lattice spans: {a[2]}/{p[2]}")
+    print("certified true cluster cardinalities: 1/2")
     print(f"aperiodic true-limit enclosure: {interval_text(a[3][0], a_radius)}")
     print("periodic even/odd true-limit enclosures: "
           f"{interval_text(p[3][0], p_radius)} / {interval_text(p[3][1], p_radius)}")
