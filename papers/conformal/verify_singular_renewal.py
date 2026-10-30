@@ -2,7 +2,7 @@
 
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
 from fractions import Fraction as F
-from math import gcd
+from math import comb, gcd
 
 
 APPROXIMATION_STAGE = 18
@@ -261,6 +261,109 @@ def scaled_empirical_error(initial, weights, limits, horizon):
     )
 
 
+def empirical_rescaling(sequence, phase_centers, horizon):
+    span = len(phase_centers)
+    assert len(sequence) >= horizon and span >= 1
+    return horizon * atom_wasserstein(
+        [(value, F(1, horizon)) for value in sequence[:horizon]],
+        [(center, F(1, span)) for center in phase_centers],
+    )
+
+
+def signed_empirical_rescaling_identity(sequence, phase_centers, horizon):
+    span = len(phase_centers)
+    exact = empirical_rescaling(sequence, phase_centers, horizon)
+    counts = [sum(time % span == residue for time in range(1, horizon + 1))
+              for residue in range(span)]
+    atoms = []
+    for time, value in enumerate(sequence[:horizon], 1):
+        atoms.extend(((value, F(1)), (phase_centers[time % span], F(-1))))
+    for residue, count in enumerate(counts):
+        atoms.append((phase_centers[residue], F(count) - F(horizon, span)))
+    assert signed_kr_norm(atoms) == exact
+    return exact
+
+
+def tail_operator(sequence):
+    return [sum(sequence[index + 1:], F(0))
+            for index in range(len(sequence))]
+
+
+def iterated_tail_sharpness_check():
+    """Check equality in the moment-budget theorem for a one-phase fixture."""
+    perturbation = [F(1, n + 1) for n in range(1, 10)]
+    center = F(3, 7)
+    sequence = [center + value for value in perturbation]
+    residual = perturbation
+    identities = 0
+    for depth in range(1, 5):
+        transformed = [empirical_rescaling(sequence, [center], horizon)
+                       for horizon in range(1, len(sequence) + 1)]
+        next_center = sum(residual, F(0))
+        next_residual = tail_operator(residual)
+        assert [next_center - value for value in transformed] == next_residual
+        assert next_residual == [
+            sum((F(comb(n - horizon - 1, depth - 1)) * perturbation[n - 1]
+                 for n in range(horizon + 1, len(perturbation) + 1)
+                 if n - horizon - 1 >= depth - 1), F(0))
+            for horizon in range(1, len(perturbation) + 1)
+        ]
+        assert next_center == sum(
+            (F(comb(n - 1, depth - 1)) * perturbation[n - 1]
+             for n in range(1, len(perturbation) + 1)), F(0)
+        )
+        identities += len(sequence)
+        sequence, center, residual = transformed, next_center, next_residual
+    return identities
+
+
+def integer_product(values):
+    result = 1
+    for value in values:
+        result *= value
+    return result
+
+
+def critical_tail_residual(rank, depth, horizon):
+    assert rank >= 1 and 0 <= depth <= rank and horizon >= 0
+    falling = integer_product(range(rank - depth + 1, rank + 1))
+    rising = integer_product(
+        range(horizon + depth, horizon + rank + 1)
+    )
+    return F(1, falling * rising)
+
+
+def critical_tail_stopping_check(rank=4, horizon=12):
+    """Exact hierarchy that stops when its residual becomes harmonic."""
+    center = F(3, 7)
+    sequence = [
+        center + critical_tail_residual(rank, 0, time)
+        for time in range(1, horizon + 1)
+    ]
+    identities = 0
+    for depth in range(1, rank + 1):
+        transformed = [
+            empirical_rescaling(sequence, [center], time)
+            for time in range(1, horizon + 1)
+        ]
+        next_center = critical_tail_residual(rank, depth, 0)
+        expected = [
+            critical_tail_residual(rank, depth, time)
+            for time in range(1, horizon + 1)
+        ]
+        assert [next_center - value for value in transformed] == expected
+        identities += horizon
+        sequence, center = transformed, next_center
+
+    factorial = integer_product(range(1, rank + 1))
+    assert [
+        critical_tail_residual(rank, rank, time)
+        for time in range(1, horizon + 1)
+    ] == [F(1, factorial * (time + rank))
+          for time in range(1, horizon + 1)]
+    return identities, rank, rank + 1
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -295,6 +398,23 @@ def second_order_phase_distribution_check(initial, weights, limits, horizon,
         + (diameter + 2 * max(radii)) * imbalance
     )
     return exact_to_centers, true_phase_bound, phase_controls
+
+
+def rescaled_phase_second_order_identity(initial, weights, limits, horizon,
+                                         reference_start=120,
+                                         phase_centers=None):
+    span, _, _ = companion_matrix(weights)
+    if phase_centers is None:
+        phase_centers = []
+        for residue in range(span):
+            reference = reference_start + (residue - reference_start) % span
+            phase_centers.append(
+                empirical_second_order_check(initial, weights, limits, reference)[0]
+            )
+
+    scaled = [scaled_empirical_error(initial, weights, limits, time)
+              for time in range(1, horizon + 1)]
+    return signed_empirical_rescaling_identity(scaled, phase_centers, horizon)
 
 
 def selected_tail_bound(weights, first_power):
@@ -506,12 +626,44 @@ def main():
                        - p_even_second[0] - p_even_second_radius)
     assert phase_gap_lower > 0
     phase_distribution_checks = 0
+    rescaled_second_order_identities = 0
+    rescaled_third_order_identities = 0
+    iterated_tail_identities = iterated_tail_sharpness_check()
+    critical_tail = critical_tail_stopping_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
     for horizon in range(4, 62):
         second_order_phase_distribution_check(p[6], p[7], p[3], horizon)
         phase_distribution_checks += 1
+    a_phase_centers = [a_second[0]]
+    p_phase_centers = [p_even_second[0], p_odd_second[0]]
+    for horizon in range(1, 62):
+        rescaled_phase_second_order_identity(
+            a[6], a[7], a[3], horizon, phase_centers=a_phase_centers
+        )
+        rescaled_phase_second_order_identity(
+            p[6], p[7], p[3], horizon, phase_centers=p_phase_centers
+        )
+        rescaled_second_order_identities += 2
+    a_scaled = [scaled_empirical_error(a[6], a[7], a[3], horizon)
+                for horizon in range(1, 121)]
+    p_scaled = [scaled_empirical_error(p[6], p[7], p[3], horizon)
+                for horizon in range(1, 122)]
+    a_second_sequence = [empirical_rescaling(a_scaled, a_phase_centers, horizon)
+                         for horizon in range(1, 121)]
+    p_second_sequence = [empirical_rescaling(p_scaled, p_phase_centers, horizon)
+                         for horizon in range(1, 122)]
+    a_third_centers = [a_second_sequence[119]]
+    p_third_centers = [p_second_sequence[119], p_second_sequence[120]]
+    for horizon in range(1, 62):
+        signed_empirical_rescaling_identity(
+            a_second_sequence, a_third_centers, horizon
+        )
+        signed_empirical_rescaling_identity(
+            p_second_sequence, p_third_centers, horizon
+        )
+        rescaled_third_order_identities += 2
     a_phase_distribution = second_order_phase_distribution_check(
         a[6], a[7], a[3], 61
     )
@@ -572,6 +724,16 @@ def main():
     print("true-staircase rescaled phase-distribution bounds at horizon 61: "
           f"{float(a_true_phase_distribution_bound):.12f}/"
           f"{float(p_true_phase_distribution_bound):.12f}")
+    print("exact second-layer rescaled signed-KR identities: "
+          f"{rescaled_second_order_identities}")
+    print("exact third-layer rescaled signed-KR identities: "
+          f"{rescaled_third_order_identities}")
+    print("exact sharp iterated-tail identities: "
+          f"{iterated_tail_identities}")
+    print("exact critical rational-tail identities: "
+          f"{critical_tail[0]}")
+    print("critical fixture finite/divergent phase depths: "
+          f"{critical_tail[1]}/{critical_tail[2]}")
     print("PASS")
 
 
