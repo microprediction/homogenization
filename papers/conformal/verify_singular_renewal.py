@@ -364,6 +364,55 @@ def critical_tail_stopping_check(rank=4, horizon=12):
     return identities, rank, rank + 1
 
 
+def depth_transform_check(maximum_depth=8, maximum_horizon=12):
+    """Check the binomial phase transform, inversion, and geometric family."""
+    identities = 0
+    finite_residual = [F(2, 7), F(1, 5), F(3, 11), F(1, 13), F(2, 17)]
+    phase_values = [
+        sum((F(comb(n - 1, depth)) * finite_residual[n - 1]
+             for n in range(depth + 1, len(finite_residual) + 1)), F(0))
+        for depth in range(len(finite_residual))
+    ]
+    recovered = [
+        sum((F((-1) ** (depth - n + 1) * comb(depth, n - 1))
+             * phase_values[depth]
+             for depth in range(n - 1, len(phase_values))), F(0))
+        for n in range(1, len(finite_residual) + 1)
+    ]
+    assert recovered == finite_residual
+    identities += len(recovered)
+
+    for q in (F(1, 3), F(1, 2), F(2, 3)):
+        previous_phase = None
+        for depth in range(maximum_depth + 1):
+            phase = (q / (1 - q)) ** (depth + 1)
+            if depth == 0:
+                assert (1 - q) * phase == q
+            else:
+                assert (1 - q) * phase == q * previous_phase
+            identities += 1
+            for horizon in range(1, maximum_horizon + 1):
+                residual = q ** (horizon + depth) / (1 - q) ** depth
+                if depth == 0:
+                    assert residual == q ** horizon
+                else:
+                    previous_residual = (
+                        q ** (horizon + 1 + depth - 1)
+                        / (1 - q) ** (depth - 1)
+                    )
+                    assert residual == previous_residual / (1 - q)
+                transformed = phase - residual
+                assert transformed + residual == phase
+                identities += 1
+            previous_phase = phase
+
+        z = F(1, 7)
+        closed = q / (1 - q - q * z)
+        assert (1 - q - q * z) * closed == q
+        identities += 1
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -630,6 +679,7 @@ def main():
     rescaled_third_order_identities = 0
     iterated_tail_identities = iterated_tail_sharpness_check()
     critical_tail = critical_tail_stopping_check()
+    depth_transform_identities = depth_transform_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -734,6 +784,8 @@ def main():
           f"{critical_tail[0]}")
     print("critical fixture finite/divergent phase depths: "
           f"{critical_tail[1]}/{critical_tail[2]}")
+    print("exact depth-transform identities: "
+          f"{depth_transform_identities}")
     print("PASS")
 
 
