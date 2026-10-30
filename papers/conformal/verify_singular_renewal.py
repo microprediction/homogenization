@@ -5,6 +5,9 @@ from fractions import Fraction as F
 from math import gcd
 
 
+APPROXIMATION_STAGE = 16
+
+
 def refine(segments, branches):
     result = []
     cumulative = F(0)
@@ -222,7 +225,7 @@ def empirical_phase_check(initial, weights, limits, horizon):
 
 
 def empirical_second_order_check(initial, weights, limits, horizon):
-    span, reduced, matrix = companion_matrix(weights)
+    span, _, matrix = companion_matrix(weights)
     size = len(matrix)
     values = extend_recurrence(initial, weights, horizon)
     counts = [len(range(residue, horizon, span)) for residue in range(span)]
@@ -240,22 +243,49 @@ def empirical_second_order_check(initial, weights, limits, horizon):
         atoms.append((limits[residue], F(count) - F(horizon, span)))
     assert signed_kr_norm(atoms) == exact
 
-    _, _, block, _, _, contraction, _ = companion_contraction(weights)
-    invariant = invariant_row(reduced)
     tail_bound = F(0)
     for residue, count in enumerate(counts):
         boundary = [initial[residue + span * q] for q in range(size)]
         oscillation = max(boundary) - min(boundary)
         first_power = count - size + 1
-        power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
-        for _ in range(first_power):
-            power_matrix = matrix_product(power_matrix, matrix)
-        block_sum = F(0)
-        for _ in range(block):
-            block_sum += target_row_contraction(power_matrix[0], invariant)
-            power_matrix = matrix_product(power_matrix, matrix)
-        tail_bound += oscillation * block_sum / (1 - contraction)
+        tail_bound += oscillation * selected_tail_bound(weights, first_power)
     return exact, tail_bound
+
+
+def selected_tail_bound(weights, first_power):
+    span, reduced, matrix = companion_matrix(weights)
+    assert span >= 1 and first_power >= 0
+    size = len(matrix)
+    invariant = invariant_row(reduced)
+    _, _, block, _, _, contraction, _ = companion_contraction(weights)
+    power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+    for _ in range(first_power):
+        power_matrix = matrix_product(power_matrix, matrix)
+    block_sum = F(0)
+    for _ in range(block):
+        block_sum += target_row_contraction(power_matrix[0], invariant)
+        power_matrix = matrix_product(power_matrix, matrix)
+    return block_sum / (1 - contraction)
+
+
+def second_order_stability(initial, weights, coefficient_error, remainder):
+    span, _, matrix = companion_matrix(weights)
+    size = len(matrix)
+    total = F(2 * remainder * (span - remainder), span) * coefficient_error
+    choices = []
+    for residue in range(span):
+        boundary = [initial[residue + span * q] for q in range(size)]
+        oscillation = max(boundary) - min(boundary)
+        amplitude = 2 * oscillation + 2 * coefficient_error
+        candidates = [
+            2 * coefficient_error * cutoff
+            + amplitude * selected_tail_bound(weights, cutoff)
+            for cutoff in range(80)
+        ]
+        cutoff = min(range(len(candidates)), key=candidates.__getitem__)
+        total += 2 * coefficient_error * (size - 1) + candidates[cutoff]
+        choices.append(cutoff)
+    return total, choices
 
 
 def companion_matrix(weights):
@@ -342,10 +372,10 @@ def interval_text(center, radius, places=12):
             f"{decimal_bound(center + radius, ROUND_CEILING, places)}]")
 
 
-def check_family(base, branches):
+def check_family(base, branches, approximation_stage=APPROXIMATION_STAGE):
     lengths, weights = recurrence_data(base, branches)
     maximum = max(lengths)
-    levels = stage_family(branches, 10)
+    levels = stage_family(branches, approximation_stage)
     checks = 0
     largest_cells = 0
     for stage in range(6, 9):
@@ -359,7 +389,8 @@ def check_family(base, branches):
                 checks += 1
                 largest_cells = max(largest_cells, multiplier * base ** power)
 
-    initial = [scaled_error(levels[10], base, 1, power) for power in range(maximum)]
+    initial = [scaled_error(levels[approximation_stage], base, 1, power)
+               for power in range(maximum)]
     span, limits = residue_limits(initial, weights)
     sequence = extend_recurrence(initial, weights, 61)
     residual = max(abs(sequence[power] - limits[power % span])
@@ -380,8 +411,8 @@ def main():
                 (F(15, 16), F(1, 16), F(1, 2)))
     a = check_family(2, aperiodic)
     p = check_family(2, periodic)
-    a_radius = coefficient_radius(2, aperiodic, 10)
-    p_radius = coefficient_radius(2, periodic, 10)
+    a_radius = coefficient_radius(2, aperiodic, APPROXIMATION_STAGE)
+    p_radius = coefficient_radius(2, periodic, APPROXIMATION_STAGE)
     assert a[2] == 1 and p[2] == 2
     assert a[4] < F(1, 10 ** 10)
     assert p[4] < F(1, 10 ** 9)
@@ -420,7 +451,14 @@ def main():
     a_second = empirical_second_order_check(a[6], a[7], a[3], 61)
     p_even_second = empirical_second_order_check(p[6], p[7], p[3], 120)
     p_odd_second = empirical_second_order_check(p[6], p[7], p[3], 121)
-    assert p_even_second[0] + p_even_second[1] < p_odd_second[0] - p_odd_second[1]
+    a_stability = second_order_stability(a[6], a[7], a_radius, 0)
+    p_even_stability = second_order_stability(p[6], p[7], p_radius, 0)
+    p_odd_stability = second_order_stability(p[6], p[7], p_radius, 1)
+    a_second_radius = a_second[1] + a_stability[0]
+    p_even_second_radius = p_even_second[1] + p_even_stability[0]
+    p_odd_second_radius = p_odd_second[1] + p_odd_stability[0]
+    assert (p_even_second[0] + p_even_second_radius
+            < p_odd_second[0] - p_odd_second_radius)
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -442,17 +480,22 @@ def main():
     print("true recurrence-to-limit bounds at powers 60/60/61: "
           f"{float(a_finite_bound):.3e}/{float(p_even_bound):.3e}/{float(p_odd_bound):.3e}")
     print(f"exact finite empirical-phase inequalities: {empirical_checks}")
-    print("stage-10 empirical W1 at horizon 61 (aperiodic/periodic): "
+    print(f"stage-{APPROXIMATION_STAGE} empirical W1 at horizon 61 "
+          "(aperiodic/periodic): "
           f"{float(a_empirical[0]):.12f}/{float(p_empirical[0]):.12f}")
     print("finite empirical phase bounds at horizon 61: "
           f"{float(a_empirical[1]):.12f}/{float(p_empirical[1]):.12f}")
     print("true-staircase empirical phase bounds at horizon 61: "
           f"{float(a_true_empirical_bound):.12f}/{float(p_true_empirical_bound):.12f}")
     print(f"exact scaled empirical KR identities: {second_order_identities}")
-    print("stage-10 second-order limit enclosures (aperiodic/even/odd): "
-          f"{interval_text(a_second[0], a_second[1], 15)} / "
-          f"{interval_text(p_even_second[0], p_even_second[1], 15)} / "
-          f"{interval_text(p_odd_second[0], p_odd_second[1], 15)}")
+    print(f"stage-{APPROXIMATION_STAGE} staircase radii (aperiodic/periodic): "
+          f"{float(a_radius):.14f}/{float(p_radius):.14f}")
+    print("second-order stability cutoffs (aperiodic/even/odd): "
+          f"{a_stability[1]}/{p_even_stability[1]}/{p_odd_stability[1]}")
+    print("true-staircase second-order enclosures (aperiodic/even/odd): "
+          f"{interval_text(a_second[0], a_second_radius)} / "
+          f"{interval_text(p_even_second[0], p_even_second_radius)} / "
+          f"{interval_text(p_odd_second[0], p_odd_second_radius)}")
     print("PASS")
 
 

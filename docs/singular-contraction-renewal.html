@@ -160,7 +160,7 @@
       $\delta_n\le\delta_M^{\lfloor n/M\rfloor}$ whenever $\delta_M&lt;1$, and
       $\delta_M\le1-\bar L\min_{i,j}(P^M)_{ij}$.</p>
     <p>For both certificate recurrences, $\pi=(2/3,1/3)$,
-      $\delta_n=2^{-n}$, and $\beta_n=2^{-n}/3$. The selected-row coefficient bounds the true recurrence error by $1.130\times10^{-20}$ at aperiodic power 60, and by $3.678\times10^{-11}$ and $3.206\times10^{-11}$ at periodic powers 60 and 61.</p>
+      $\delta_n=2^{-n}$, and $\beta_n=2^{-n}/3$. The selected-row coefficient bounds the true recurrence error by $6.853\times10^{-21}$ at aperiodic power 60, and by $1.768\times10^{-11}$ and $1.296\times10^{-11}$ at periodic powers 60 and 61.</p>
 
     <h2>A finite empirical phase-law bound</h2>
     <p>Put $\nu_T=T^{-1}\sum_{K=0}^{T-1}\delta_{c_K^{(m)}}$ and
@@ -175,7 +175,7 @@
     </div>
     <p>A sum with upper index below zero is empty. Couple each $c_{s+gq}^{(m)}$ to $C_s$ and use the selected-row bound; the last term moves the empirical residue frequencies to the uniform phase weights, whose total-variation distance is exactly $r(g-r)/(gT)$.</p>
     <p>Because the primitive companion chain makes $\sum_n\beta_n$ finite, the displayed estimate is $O(T^{-1})$. It is computable from the same boundary values and matrix powers as the pointwise theorem, without a spectral-root search.</p>
-    <p>At horizon $T=61$, the stage-ten exact $W_1$ errors are $0.000256418857$ and $0.001496458847$ for the aperiodic and period-two fixtures. The finite bounds are $0.000256418857$ and $0.001649428906$; after adding both staircase-enclosure errors, the corresponding true-staircase bounds are $0.008068918857$ and $0.032899428906$.</p>
+    <p>At horizon $T=61$, the stage-sixteen exact $W_1$ errors are $0.000256397987$ and $0.001496458896$ for the aperiodic and period-two fixtures. The finite bounds are $0.000256397987$ and $0.001649428961$; after adding both staircase-enclosure errors, the corresponding true-staircase bounds are $0.000378468300$ and $0.002137710211$.</p>
 
     <h2>The second-order empirical phase law</h2>
     <p>The $O(T^{-1})$ rate has its own exact phase classification. Write $a_{s,q}=c_{s+gq}^{(m)}$, let $\|\cdot\|_{\mathrm{KR}}$ denote the Kantorovich&ndash;Rubinstein norm of a zero-mass signed measure, and define the convergent KR series</p>
@@ -195,14 +195,23 @@
       \sum_{s=0}^{g-1}O_s\sum_{n=N_s}^{\infty}\beta_n
       \le\sum_{s=0}^{g-1}\frac{O_s}{1-\delta_M}
       \sum_{j=0}^{M-1}\beta_{N_s+j}.$$
-    <p>For the exact stage-ten recurrences, this encloses the aperiodic constant in $[0.015641550285425,0.015641550285426]$. The period-two constants lie in $[0.064514817108825,0.064514817108826]$ for even $T$ and $[0.091283989714093,0.091283989714094]$ for odd $T$, proving a second layer of phase oscillation.</p>
+    <p>These finite-stage constants can be transferred to the limiting staircase. If every boundary coefficient and phase limit changes by at most $\varepsilon$, convexity of the recurrence gives the same bound at every later power.</p>
+    <p>Put $S_N=\sum_{n=N}^{\infty}\beta_n$ and define, using the stage approximation's boundary oscillation $O_s$,</p>
+    $$R_s(\varepsilon)=2\varepsilon(\bar L-1)+
+      \inf_{N\ge0}\left\{2\varepsilon N+(2O_s+2\varepsilon)S_N\right\}.$$
+    <p>An elementary dipole $\delta_a-\delta_C$ changes in KR norm by at most
+      $\min\{2\varepsilon,|a-C|+|\widetilde a-\widetilde C|\}$. Splitting the series at $N$ and applying the selected-row bound therefore gives</p>
+    $$|L_r-\widetilde L_r|\le
+      \sum_{s=0}^{g-1}R_s(\varepsilon)
+      +\frac{2r(g-r)}g\varepsilon.$$
+    <p>At stage sixteen, $\varepsilon=0.00006103515625$ for the aperiodic fixture and $0.000244140625$ for the period-two fixture. The actual staircase constants lie in $[0.014540889287,0.016739665185]$, and in $[0.056719015471,0.072310625076]$ for even $T$ versus $[0.083244047289,0.099323938145]$ for odd $T$; the disjoint intervals prove true second-order phase oscillation.</p>
 
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
       checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, and 118 exact scaled signed-measure identities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
     <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
-    <p>At stage ten this gives the actual aperiodic limit enclosure $[0.205672438933,0.213484938934]$. The periodic even and odd limits lie respectively in $[0.114151007537,0.145401007538]$ and $[0.186351699947,0.217601699948]$, proving that its true cluster set has exactly two points.</p>
+    <p>At stage sixteen this gives the actual aperiodic limit enclosure $[0.209518629751,0.209640700065]$. The periodic even and odd limits lie respectively in $[0.129531868086,0.130020149337]$ and $[0.201732560820,0.202220842071]$, proving that its true cluster set has exactly two points.</p>
     <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="./bibliography.html#KantorovichRubinstein1958">Kantorovich and Rubinstein (1958)</a> supplies the signed-measure transport norm, while <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used in the computable tails.</p>
     <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
   </main>
