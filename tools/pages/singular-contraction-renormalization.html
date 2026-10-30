@@ -33,10 +33,19 @@
     <p>Summing over all words gives $\sum_\omega w_\omega=(\sum_r w_r)^k=1$, hence $E_{mb^k}=b^{-k}E_m$.
       Equal vertical weights are unnecessary; the common horizontal ratio is the essential lattice assumption.</p>
 
-    <h2>Persistent phases and failure of a coefficient</h2>
-    <p>Write $c_m=mE_m$. The identity says $c_{mb^k}=c_m$ for every $k$, so every base value is repeated at arbitrarily fine resolution.</p>
-    <p>If $c_m\ne c_n$ for any two positive integers, $NW_1(\mu_N,\mu)$ cannot converge.
-      More precisely, its set of subsequential limits contains the closure of $\{c_m:m\ge1\}$.</p>
+    <h2>The exact cluster set</h2>
+    <p>Write $c_N=NE_N$, let $\nu_b(N)=\max\{k:b^k\mid N\}$, and put
+      $N^\circ=N/b^{\nu_b(N)}$, so $b\nmid N^\circ$. Iterating the identity gives $c_N=c_{N^\circ}$.</p>
+    <div class="equation-card">
+    $$\boxed{\quad
+      \operatorname{Cluster}(c_N)
+      =\overline{\{c_m:m\ge1,\ b\nmid m\}}
+      =\overline{\{c_m:m\ge1\}}.
+      \quad}$$
+    </div>
+    <p>Every displayed base value is a subsequential limit because $c_{mb^k}=c_m$ as $k\to\infty$. Conversely, every sequence value reduces to a $b$-free index, while any limit of base values can be realized along indices tending to infinity by multiplying those indices by sufficiently large powers of $b$.</p>
+    <p>Thus $NW_1(\mu_N,\mu)$ converges if and only if all the base values $c_m$ agree.
+      In particular, two unequal base values prove nonconvergence.</p>
     <p>For the middle-thirds Cantor staircase, $c_1=1/6$ and $c_2=4/15$.
       The earlier two subsequences are the cases $m=1,2$; the theorem now preserves every $m$-cell phase along $N=m3^k$.</p>
 
