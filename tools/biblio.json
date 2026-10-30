@@ -3427,5 +3427,27 @@
   "doi": "10.1142/s0218202503002556",
   "url": "https://doi.org/10.1142/S0218202503002556",
   "annotation": "Gives primary piecewise-constant approximation results in bounded-variation metrics. The SBV contraction note derives its one-dimensional coefficient and jump-phase decomposition directly."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "BergKruppel1998",
+  "authors": "Berg, L. and Krüppel, M.",
+  "year": 1998,
+  "title": "Cantor Sets and Integral-Functional Equations",
+  "venue": "Zeitschrift für Analysis und ihre Anwendungen 17(4):997-1020",
+  "doi": "10.4171/zaa/863",
+  "url": "https://doi.org/10.4171/ZAA/863",
+  "annotation": "Studies functional equations connected with Cantor sets and singular functions. The singular-contraction note proves a separate exact renormalization identity for equal-grid cell-average projections."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "Hutchinson1981",
+  "authors": "Hutchinson, J. E.",
+  "year": 1981,
+  "title": "Fractals and Self-Similarity",
+  "venue": "Indiana University Mathematics Journal 30(5):713-747",
+  "doi": "10.1512/iumj.1981.30.30055",
+  "url": "https://doi.org/10.1512/iumj.1981.30.30055",
+  "annotation": "Establishes existence and uniqueness for invariant self-similar measures with arbitrary probability weights. The singular-contraction note proves an exact equal-grid projection renormalization for their equal-horizontal-scale staircase distribution functions."
  }
 ]
