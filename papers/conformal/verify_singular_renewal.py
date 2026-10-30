@@ -2,7 +2,7 @@
 
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
 from fractions import Fraction as F
-from math import gcd
+from math import comb, gcd
 
 
 APPROXIMATION_STAGE = 18
@@ -284,6 +284,39 @@ def signed_empirical_rescaling_identity(sequence, phase_centers, horizon):
     return exact
 
 
+def tail_operator(sequence):
+    return [sum(sequence[index + 1:], F(0))
+            for index in range(len(sequence))]
+
+
+def iterated_tail_sharpness_check():
+    """Check equality in the moment-budget theorem for a one-phase fixture."""
+    perturbation = [F(1, n + 1) for n in range(1, 10)]
+    center = F(3, 7)
+    sequence = [center + value for value in perturbation]
+    residual = perturbation
+    identities = 0
+    for depth in range(1, 5):
+        transformed = [empirical_rescaling(sequence, [center], horizon)
+                       for horizon in range(1, len(sequence) + 1)]
+        next_center = sum(residual, F(0))
+        next_residual = tail_operator(residual)
+        assert [next_center - value for value in transformed] == next_residual
+        assert next_residual == [
+            sum((F(comb(n - horizon - 1, depth - 1)) * perturbation[n - 1]
+                 for n in range(horizon + 1, len(perturbation) + 1)
+                 if n - horizon - 1 >= depth - 1), F(0))
+            for horizon in range(1, len(perturbation) + 1)
+        ]
+        assert next_center == sum(
+            (F(comb(n - 1, depth - 1)) * perturbation[n - 1]
+             for n in range(1, len(perturbation) + 1)), F(0)
+        )
+        identities += len(sequence)
+        sequence, center, residual = transformed, next_center, next_residual
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -548,6 +581,7 @@ def main():
     phase_distribution_checks = 0
     rescaled_second_order_identities = 0
     rescaled_third_order_identities = 0
+    iterated_tail_identities = iterated_tail_sharpness_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -646,6 +680,8 @@ def main():
           f"{rescaled_second_order_identities}")
     print("exact third-layer rescaled signed-KR identities: "
           f"{rescaled_third_order_identities}")
+    print("exact sharp iterated-tail identities: "
+          f"{iterated_tail_identities}")
     print("PASS")
 
 
