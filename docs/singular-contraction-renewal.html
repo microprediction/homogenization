@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Renewal limits for unequal-scale singular staircase contractions · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./singular-contraction-renormalization.html">&larr; equal-scale renormalization</a>
+      <span><a href="./papers.html">papers</a> &middot;
+      <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">certificate</a></span></p>
+    <h1>Renewal limits for unequal-scale staircase contractions</h1>
+    <p class="subtitle">Commensurable horizontal scales turn exact phase invariance into a finite renewal equation.</p>
+
+    <h2>Unequal base-power branches</h2>
+    <p>Fix a base $b\ge2$ and ordered active intervals
+      $I_r=[\alpha_r,\alpha_r+b^{-\ell_r}]$, where the positive integers $\ell_r$ have maximum $L$. Assume the intervals have endpoints on the $b^{-L}$ grid, the first starts at zero, the last ends at one, and their total length is less than one.</p>
+    <p>Choose weights $w_r&gt;0$ with sum one and put $W_r=\sum_{j&lt;r}w_j$. The corresponding continuous singular staircase is constant on the gaps and satisfies</p>
+    $$C(x)=W_r+w_r C\!\left(b^{\ell_r}(x-\alpha_r)\right),\qquad x\in I_r.$$
+    <p>For $\mu=\mathcal L(C(U))$ and the equal-mass cell-average projection $P_N$, write
+      $E_N=\|C-P_NC\|_1=W_1(\mu_N,\mu)$ and $c_K^{(m)}=mb^K E_{mb^K}$.</p>
+
+    <h2>Exact renewal equation</h2>
+    <p>Aggregate weights by horizontal exponent, $p_j=\sum_{r:\ell_r=j}w_r$. For every fixed $m\ge1$ and every $K\ge L$,</p>
+    <div class="equation-card">
+    $$\boxed{c_K^{(m)}=\sum_{j=1}^{L}p_j c_{K-j}^{(m)}.}$$
+    </div>
+    <p>Indeed, branch $r$ is grid-aligned, contains $mb^{K-\ell_r}$ cells, and contributes $b^{-\ell_r}w_rE_{mb^{K-\ell_r}}$. Multiplication by $mb^K$ gives the displayed recurrence.</p>
+    <p>The equal-horizontal-scale identity is the special case $p_1=1$, when $c_K^{(m)}$ is exactly constant.</p>
+
+    <h2>Limit and lattice phases</h2>
+    <p>Let $g=\gcd\{j:p_j&gt;0\}$ and $\mu_\ell=\sum_jjp_j$. For a residue $s\in\{0,\ldots,g-1\}$, put $a_q=c_{s+gq}^{(m)}$, $\bar p_j=p_{gj}$, $\bar L=L/g$, and $\bar\mu=\mu_\ell/g$.</p>
+    <p>Define the finite boundary forcing
+      $r_{s,q}=a_q-\sum_{j=1}^{q}\bar p_j a_{q-j}$ for $0\le q&lt;\bar L$. Then</p>
+    $$a_q=C_s+O(\theta^q),\qquad
+      C_s=\frac1{\bar\mu}\sum_{q=0}^{\bar L-1}r_{s,q},$$
+    <p>Let $R&gt;1$ be the smallest modulus of any other zero of $1-\sum_j\bar p_jz^j$, with $R=\infty$ if there is none. The remainder holds for every fixed $\theta\in(R^{-1},1)$; thus $g=1$ gives one scaled coefficient along $N=mb^K$, while $g&gt;1$ gives one limit per residue class.</p>
+    <p>The proof uses the boundary polynomial divided by $1-\sum_j\bar p_jz^j$. Coprimality leaves $z=1$ as the only unit-circle root, giving the coefficient and the stated root-gap error on every residue class.</p>
+
+    <h2>Exact cluster and phase laws</h2>
+    <p>The complete set of subsequential limits along the fixed-$m$ geometric grid is</p>
+    <div class="equation-card">
+    $$\boxed{\operatorname{Cluster}_{K\to\infty}\!\left(c_K^{(m)}\right)
+      =\{C_0,\ldots,C_{g-1}\}.}$$
+    </div>
+    <p>Every residue sequence converges to its $C_s$, so each displayed value is attained. Conversely, among finitely many residues every subsequence has a constant-residue subsubsequence, which rules out any other cluster value.</p>
+    <p>Consequently,</p>
+    $$\liminf_{K\to\infty}c_K^{(m)}=\min_s C_s,\qquad
+      \limsup_{K\to\infty}c_K^{(m)}=\max_s C_s,$$
+    <p>and the full sequence converges exactly when all $C_s$ agree. The asymptotic frequency of the lattice phases is also exact:</p>
+    $$\frac1M\sum_{K=0}^{M-1}\delta_{c_K^{(m)}}
+      \Longrightarrow \frac1g\sum_{s=0}^{g-1}\delta_{C_s}.$$
+    <p>Indeed, split the empirical average into the $g$ residue classes and test against any bounded continuous function. Each class has asymptotic density $1/g$ and its function values converge to the corresponding phase value; coincident $C_s$ combine their masses automatically.</p>
+
+    <h2>Scope and certificate</h2>
+    <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
+    <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
+      checks 90 finite-stage recurrences for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
+    <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
+    <p>At stage ten this gives the actual aperiodic limit enclosure $[0.205672438933,0.213484938934]$. The periodic even and odd limits lie respectively in $[0.114151007537,0.145401007538]$ and $[0.186351699947,0.217601699948]$, proving that its true cluster set has exactly two points.</p>
+    <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. Here the finite-support recurrence and its boundary coefficient are derived directly from the cell projection.</p>
+    <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

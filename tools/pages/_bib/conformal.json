@@ -1,5 +1,15 @@
 [
  {
+  "key": "ErdosFellerPollard1949",
+  "authors": "Erd\u0151s, P., Feller, W. and Pollard, H.",
+  "year": 1949,
+  "title": "A Property of Power Series with Positive Coefficients",
+  "venue": "Bulletin of the American Mathematical Society 55:201-204",
+  "doi": "10.1090/S0002-9904-1949-09203-0",
+  "url": "https://doi.org/10.1090/S0002-9904-1949-09203-0",
+  "annotation": "Proves the arithmetic renewal limit for aperiodic probability generating functions. The unequal-scale singular-contraction note applies the finite-support renewal equation after deriving it exactly from aligned cell-average projections."
+ },
+ {
   "key": "Hutchinson1981",
   "authors": "Hutchinson, J. E.",
   "year": 1981,

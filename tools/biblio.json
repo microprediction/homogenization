@@ -3449,5 +3449,16 @@
   "doi": "10.1512/iumj.1981.30.30055",
   "url": "https://doi.org/10.1512/iumj.1981.30.30055",
   "annotation": "Establishes existence and uniqueness for invariant self-similar measures with arbitrary probability weights. The singular-contraction note proves an exact equal-grid projection renormalization for their equal-horizontal-scale staircase distribution functions."
+ },
+ {
+  "role": "survey_conformal",
+  "key": "ErdosFellerPollard1949",
+  "authors": "Erdős, P., Feller, W. and Pollard, H.",
+  "year": 1949,
+  "title": "A Property of Power Series with Positive Coefficients",
+  "venue": "Bulletin of the American Mathematical Society 55:201-204",
+  "doi": "10.1090/s0002-9904-1949-09203-0",
+  "url": "https://doi.org/10.1090/S0002-9904-1949-09203-0",
+  "annotation": "Proves the arithmetic renewal limit for aperiodic probability generating functions. The unequal-scale singular-contraction note applies the finite-support renewal equation after deriving it exactly from aligned cell-average projections."
  }
 ]
