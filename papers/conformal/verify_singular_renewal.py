@@ -106,6 +106,172 @@ def residue_limits(initial, weights):
     return span, limits
 
 
+def matrix_product(left, right):
+    size = len(left)
+    return [[sum((left[i][k] * right[k][j] for k in range(size)), F(0))
+             for j in range(size)] for i in range(size)]
+
+
+def dobrushin_contraction(matrix):
+    size = len(matrix)
+    overlap = min(
+        sum((min(matrix[i][j], matrix[k][j]) for j in range(size)), F(0))
+        for i in range(size) for k in range(size)
+    )
+    return overlap, 1 - overlap
+
+
+def row_matrix_product(row, matrix):
+    return [sum((row[k] * matrix[k][j] for k in range(len(row))), F(0))
+            for j in range(len(row))]
+
+
+def invariant_row(reduced):
+    size = max(reduced)
+    mean = sum((lag * weight for lag, weight in reduced.items()), F(0))
+    row = [sum((weight for lag, weight in reduced.items() if lag > index), F(0)) / mean
+           for index in range(size)]
+    return row
+
+
+def target_row_contraction(row, invariant):
+    difference = [left - right for left, right in zip(row, invariant)]
+    coefficient = sum((abs(value) for value in difference), F(0)) / 2
+    witness = [F(int(value > 0)) for value in difference]
+    attained = abs(sum((value * test for value, test in zip(difference, witness)), F(0)))
+    assert attained == coefficient
+    return coefficient
+
+
+def atom_wasserstein(left_atoms, right_atoms):
+    left = [[value, weight] for value, weight in sorted(left_atoms)]
+    right = [[value, weight] for value, weight in sorted(right_atoms)]
+    assert sum((weight for _, weight in left), F(0)) == 1
+    assert sum((weight for _, weight in right), F(0)) == 1
+    total = F(0)
+    i = j = 0
+    while i < len(left) and j < len(right):
+        mass = min(left[i][1], right[j][1])
+        total += mass * abs(left[i][0] - right[j][0])
+        left[i][1] -= mass
+        right[j][1] -= mass
+        if left[i][1] == 0:
+            i += 1
+        if right[j][1] == 0:
+            j += 1
+    assert i == len(left) and j == len(right)
+    return total
+
+
+def extend_recurrence(initial, weights, horizon):
+    values = initial[:horizon]
+    for power in range(len(values), horizon):
+        values.append(sum((weight * values[power - lag]
+                           for lag, weight in weights.items()), F(0)))
+    return values
+
+
+def empirical_phase_check(initial, weights, limits, horizon):
+    span, reduced, matrix = companion_matrix(weights)
+    size = len(matrix)
+    invariant = invariant_row(reduced)
+    values = extend_recurrence(initial, weights, horizon)
+    counts = [len(range(residue, horizon, span)) for residue in range(span)]
+    maximum_n = max(counts) - size
+    coefficients = []
+    power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+    for _ in range(max(0, maximum_n + 1)):
+        coefficients.append(target_row_contraction(power_matrix[0], invariant))
+        power_matrix = matrix_product(power_matrix, matrix)
+
+    dynamic_bound = F(0)
+    for residue, count in enumerate(counts):
+        residue_values = [values[residue + span * q] for q in range(count)]
+        boundary = [initial[residue + span * q] for q in range(size)]
+        early_count = min(count, size - 1)
+        dynamic_bound += sum((abs(residue_values[q] - limits[residue])
+                              for q in range(early_count)), F(0))
+        if count >= size:
+            oscillation = max(boundary) - min(boundary)
+            dynamic_bound += oscillation * sum(coefficients[:count - size + 1], F(0))
+
+    remainder = horizon % span
+    diameter = max(limits) - min(limits)
+    count_bound = diameter * remainder * (span - remainder) / (span * horizon)
+    bound = dynamic_bound / horizon + count_bound
+    exact = atom_wasserstein(
+        [(value, F(1, horizon)) for value in values],
+        [(limit, F(1, span)) for limit in limits],
+    )
+    assert exact <= bound
+    return exact, bound, count_bound
+
+
+def companion_matrix(weights):
+    span = 0
+    for power in weights:
+        span = gcd(span, power)
+    reduced = {power // span: weight for power, weight in weights.items()}
+    size = max(reduced)
+    matrix = [[F(0) for _ in range(size)] for _ in range(size)]
+    matrix[0] = [reduced.get(index + 1, F(0)) for index in range(size)]
+    for index in range(1, size):
+        matrix[index][index - 1] = 1
+    return span, reduced, matrix
+
+
+def companion_contraction(weights):
+    span, _, matrix = companion_matrix(weights)
+    size = len(matrix)
+    power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+    for block in range(1, size * size + 2):
+        power_matrix = matrix_product(power_matrix, matrix)
+        floor = min(min(row) for row in power_matrix)
+        if floor > 0:
+            overlap, contraction = dobrushin_contraction(power_matrix)
+            coarse_contraction = 1 - size * floor
+            assert F(0) <= contraction <= coarse_contraction < 1
+            return (span, size, block, floor, overlap, contraction,
+                    coarse_contraction)
+    raise AssertionError("primitive companion power not found")
+
+
+def recurrence_contraction_checks(initial, weights, limit_power=60):
+    (span, size, block, floor, overlap, contraction,
+     coarse_contraction) = companion_contraction(weights)
+    matrix_span, reduced, matrix = companion_matrix(weights)
+    assert matrix_span == span
+    invariant = invariant_row(reduced)
+    assert sum(invariant, F(0)) == 1
+    assert row_matrix_product(invariant, matrix) == invariant
+    limits = residue_limits(initial, weights)[1]
+    bounds = []
+    checks = 0
+    for residue in range(span):
+        values = [initial[residue + span * q] for q in range(size)]
+        oscillation = max(values) - min(values)
+        for q in range(size, limit_power // span + 1):
+            values.append(sum((weight * values[q - lag]
+                               for lag, weight in reduced.items()), F(0)))
+        power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+        exact_contraction = F(1)
+        selected_contraction = F(1)
+        for q in range(size - 1, len(values)):
+            exponent = (q - size + 1) // block
+            _, exact_contraction = dobrushin_contraction(power_matrix)
+            selected_contraction = target_row_contraction(power_matrix[0], invariant)
+            block_bound = contraction ** exponent
+            assert selected_contraction <= exact_contraction <= block_bound
+            bound = selected_contraction * oscillation
+            assert abs(values[q] - limits[residue]) <= bound
+            checks += 1
+            power_matrix = matrix_product(power_matrix, matrix)
+        bounds.append((oscillation, (limit_power // span - size + 1) // block,
+                       exact_contraction, selected_contraction))
+    return (span, size, block, floor, overlap, contraction,
+            coarse_contraction, checks, bounds)
+
+
 def coefficient_radius(base, branches, stage, multiplier=1):
     lengths, _ = recurrence_data(base, branches)
     largest_weight = max(weight for _, _, weight in branches)
@@ -144,13 +310,16 @@ def check_family(base, branches):
 
     initial = [scaled_error(levels[10], base, 1, power) for power in range(maximum)]
     span, limits = residue_limits(initial, weights)
-    sequence = initial[:]
-    for power in range(maximum, 61):
-        sequence.append(sum((weight * sequence[power - length]
-                             for length, weight in weights.items()), F(0)))
+    sequence = extend_recurrence(initial, weights, 61)
     residual = max(abs(sequence[power] - limits[power % span])
                    for power in range(60 - span + 1, 61))
-    return checks, largest_cells, span, limits, residual
+    contraction = recurrence_contraction_checks(initial, weights)
+    return checks, largest_cells, span, limits, residual, contraction, initial, weights
+
+
+def true_recurrence_bound(contraction_data, coefficient_error, residue):
+    oscillation, _, _, selected_contraction = contraction_data[8][residue]
+    return selected_contraction * (oscillation + 2 * coefficient_error)
 
 
 def main():
@@ -166,6 +335,30 @@ def main():
     assert a[4] < F(1, 10 ** 10)
     assert p[4] < F(1, 10 ** 9)
     assert p[3][0] + p_radius < p[3][1] - p_radius
+    expected = (2, 2, F(1, 4), F(3, 4), F(1, 4), F(1, 2))
+    assert a[5][1:7] == expected
+    assert p[5][1:7] == expected
+    fixture_invariant = invariant_row({1: F(1, 2), 2: F(1, 2)})
+    assert fixture_invariant == [F(2, 3), F(1, 3)]
+    assert a[5][8][0][2] == F(1, 2) ** 59
+    assert p[5][8][0][2] == F(1, 2) ** 29
+    assert p[5][8][1][2] == F(1, 2) ** 29
+    assert a[5][8][0][3] == F(1, 3) * F(1, 2) ** 59
+    assert p[5][8][0][3] == F(1, 3) * F(1, 2) ** 29
+    assert p[5][8][1][3] == F(1, 3) * F(1, 2) ** 29
+    finite_checks = a[5][7] + p[5][7]
+    a_finite_bound = true_recurrence_bound(a[5], a_radius, 0)
+    p_even_bound = true_recurrence_bound(p[5], p_radius, 0)
+    p_odd_bound = true_recurrence_bound(p[5], p_radius, 1)
+    empirical_checks = 0
+    for horizon in range(1, 62):
+        empirical_phase_check(a[6], a[7], a[3], horizon)
+        empirical_phase_check(p[6], p[7], p[3], horizon)
+        empirical_checks += 2
+    a_empirical = empirical_phase_check(a[6], a[7], a[3], 61)
+    p_empirical = empirical_phase_check(p[6], p[7], p[3], 61)
+    a_true_empirical_bound = a_empirical[1] + 2 * a_radius
+    p_true_empirical_bound = p_empirical[1] + 2 * p_radius
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -175,6 +368,24 @@ def main():
     print("periodic even/odd true-limit enclosures: "
           f"{interval_text(p[3][0], p_radius)} / {interval_text(p[3][1], p_radius)}")
     print(f"largest power-60 recurrence residual: {float(max(a[4], p[4])):.3e}")
+    print(f"exact finite-power contraction checks: {finite_checks}")
+    print("companion block/minimum/overlap/exact/coarse contraction: "
+          f"{a[5][2]}/{float(a[5][3]):.6f}/{float(a[5][4]):.6f}/"
+          f"{float(a[5][5]):.6f}/{float(a[5][6]):.6f}")
+    print("fixture invariant row: 2/3,1/3")
+    print("exact full-power contractions at powers 60/60/61: "
+          f"2^-59/2^-29/2^-29")
+    print("selected-row contractions at powers 60/60/61: "
+          f"2^-59/3/2^-29/3/2^-29/3")
+    print("true recurrence-to-limit bounds at powers 60/60/61: "
+          f"{float(a_finite_bound):.3e}/{float(p_even_bound):.3e}/{float(p_odd_bound):.3e}")
+    print(f"exact finite empirical-phase inequalities: {empirical_checks}")
+    print("stage-10 empirical W1 at horizon 61 (aperiodic/periodic): "
+          f"{float(a_empirical[0]):.12f}/{float(p_empirical[0]):.12f}")
+    print("finite empirical phase bounds at horizon 61: "
+          f"{float(a_empirical[1]):.12f}/{float(p_empirical[1]):.12f}")
+    print("true-staircase empirical phase bounds at horizon 61: "
+          f"{float(a_true_empirical_bound):.12f}/{float(p_true_empirical_bound):.12f}")
     print("PASS")
 
 

@@ -143,13 +143,47 @@
       \Longrightarrow \frac1g\sum_{s=0}^{g-1}\delta_{C_s}.$$
     <p>Indeed, split the empirical average into the $g$ residue classes and test against any bounded continuous function. Each class has asymptotic density $1/g$ and its function values converge to the corresponding phase value; coincident $C_s$ combine their masses automatically.</p>
 
+    <h2>A computable finite-power bound</h2>
+    <p>For $\bar L\ge2$, form the row-stochastic companion matrix
+      $P$ whose first row is $(\bar p_1,\ldots,\bar p_{\bar L})$ and whose remaining rows shift one coordinate to the right. Coprimality makes $P$ primitive, so one can compute an $M$ for which every entry of $P^M$ is positive.</p>
+    <p>Let $\pi^\top P=\pi^\top$ be the invariant row and, for $n\ge0$, put
+      $\beta_n=\frac12\sum_j|(P^n)_{1j}-\pi_j|$. Then, for every $q\ge\bar L-1$, with $n=q-\bar L+1$,</p>
+    <div class="equation-card">
+    $$\boxed{|a_q-C_s|\le
+      \beta_{q-\bar L+1}
+      \left(\max_{0\le t&lt;\bar L}a_t-\min_{0\le t&lt;\bar L}a_t\right).}$$
+    </div>
+    <p>Indeed, if $x_0=(a_{\bar L-1},\ldots,a_0)^\top$, then
+      $a_q-C_s=(e_1^\top P^n-\pi^\top)x_0$. Total-variation duality gives the displayed bound, and choosing $x_{0,j}=1$ on the positive part of $(P^n)_{1j}-\pi_j$ shows that $\beta_n$ is the exact operator constant for the selected coordinate.</p>
+    <p>The worst-row Dobrushin coefficient
+      $\delta_n=\frac12\max_{i,k}\sum_j|(P^n)_{ij}-(P^n)_{kj}|$ satisfies $\beta_n\le\delta_n$. For a reusable geometric bound, submultiplicativity gives
+      $\delta_n\le\delta_M^{\lfloor n/M\rfloor}$ whenever $\delta_M&lt;1$, and
+      $\delta_M\le1-\bar L\min_{i,j}(P^M)_{ij}$.</p>
+    <p>For both certificate recurrences, $\pi=(2/3,1/3)$,
+      $\delta_n=2^{-n}$, and $\beta_n=2^{-n}/3$. The selected-row coefficient bounds the true recurrence error by $1.130\times10^{-20}$ at aperiodic power 60, and by $3.678\times10^{-11}$ and $3.206\times10^{-11}$ at periodic powers 60 and 61.</p>
+
+    <h2>A finite empirical phase-law bound</h2>
+    <p>Put $\nu_T=T^{-1}\sum_{K=0}^{T-1}\delta_{c_K^{(m)}}$ and
+      $\nu_\infty=g^{-1}\sum_{s=0}^{g-1}\delta_{C_s}$. Write $T=gQ+r$ with $0\le r&lt;g$, let $n_s(T)$ count the integers $K&lt;T$ congruent to $s$ modulo $g$, and set $D=\max_sC_s-\min_sC_s$.</p>
+    <p>For $O_s=\max_{t&lt;\bar L}a_t-\min_{t&lt;\bar L}a_t$ and
+      $B_s(T)=\sum_{q=0}^{\min\{n_s(T),\bar L-1\}-1}|a_q-C_s|$,</p>
+    <div class="equation-card">
+    $$\boxed{W_1(\nu_T,\nu_\infty)\le
+      \frac1T\sum_{s=0}^{g-1}\!\left[B_s(T)+O_s
+      \sum_{n=0}^{n_s(T)-\bar L}\beta_n\right]
+      +\frac{D\,r(g-r)}{gT}.}$$
+    </div>
+    <p>A sum with upper index below zero is empty. Couple each $c_{s+gq}^{(m)}$ to $C_s$ and use the selected-row bound; the last term moves the empirical residue frequencies to the uniform phase weights, whose total-variation distance is exactly $r(g-r)/(gT)$.</p>
+    <p>Because the primitive companion chain makes $\sum_n\beta_n$ finite, the displayed estimate is $O(T^{-1})$. It is computable from the same boundary values and matrix powers as the pointwise theorem, without a spectral-root search.</p>
+    <p>At horizon $T=61$, the stage-ten exact $W_1$ errors are $0.000256418857$ and $0.001496458847$ for the aperiodic and period-two fixtures. The finite bounds are $0.000256418857$ and $0.001649428906$; after adding both staircase-enclosure errors, the corresponding true-staircase bounds are $0.008068918857$ and $0.032899428906$.</p>
+
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
-      checks 90 finite-stage recurrences for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
+      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, and 122 finite empirical-phase inequalities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
     <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
     <p>At stage ten this gives the actual aperiodic limit enclosure $[0.205672438933,0.213484938934]$. The periodic even and odd limits lie respectively in $[0.114151007537,0.145401007538]$ and $[0.186351699947,0.217601699948]$, proving that its true cluster set has exactly two points.</p>
-    <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. Here the finite-support recurrence and its boundary coefficient are derived directly from the cell projection.</p>
+    <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used here; the displayed finite bound is also proved directly by decomposing the rows of $P^M$.</p>
     <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
   </main>
 
