@@ -80,12 +80,32 @@
     <p>Because the primitive companion chain makes $\sum_n\beta_n$ finite, the displayed estimate is $O(T^{-1})$. It is computable from the same boundary values and matrix powers as the pointwise theorem, without a spectral-root search.</p>
     <p>At horizon $T=61$, the stage-ten exact $W_1$ errors are $0.000256418857$ and $0.001496458847$ for the aperiodic and period-two fixtures. The finite bounds are $0.000256418857$ and $0.001649428906$; after adding both staircase-enclosure errors, the corresponding true-staircase bounds are $0.008068918857$ and $0.032899428906$.</p>
 
+    <h2>The second-order empirical phase law</h2>
+    <p>The $O(T^{-1})$ rate has its own exact phase classification. Write $a_{s,q}=c_{s+gq}^{(m)}$, let $\|\cdot\|_{\mathrm{KR}}$ denote the Kantorovich&ndash;Rubinstein norm of a zero-mass signed measure, and define the convergent KR series</p>
+    $$\eta_s=\sum_{q=0}^{\infty}\left(\delta_{a_{s,q}}-\delta_{C_s}\right),\qquad
+      \xi_r=\sum_{s=0}^{g-1}\left(\mathbf1_{\{s&lt;r\}}-\frac rg\right)\delta_{C_s}.$$
+    <p>The series converges because its $q$th summand has KR norm $|a_{s,q}-C_s|$ and the finite-power theorem makes these distances summable. For $r=0,\ldots,g-1$, put</p>
+    <div class="equation-card">
+    $$\boxed{L_r=\left\|\sum_{s=0}^{g-1}\eta_s+\xi_r\right\|_{\mathrm{KR}},\qquad
+      T\,W_1(\nu_T,\nu_\infty)\longrightarrow L_r\quad(T\to\infty,\ T\equiv r\!\!\pmod g).}$$
+    </div>
+    <p>Indeed, if $T=gQ+r$, then the number $n_s(T)$ of observations in residue $s$ is $Q+\mathbf1_{\{s&lt;r\}}$, and exactly</p>
+    $$T(\nu_T-\nu_\infty)=\sum_{s=0}^{g-1}\sum_{q&lt;n_s(T)}
+      \left(\delta_{a_{s,q}}-\delta_{C_s}\right)+\xi_r.$$
+    <p>Taking KR norms and passing to the summable limit proves the theorem. Thus the complete cluster set of $T\,W_1(\nu_T,\nu_\infty)$ is $\{L_0,\ldots,L_{g-1}\}$, and the scaled empirical error converges exactly when these constants agree.</p>
+    <p>The convergence is itself computable. If $N_s=n_s(T)-\bar L+1\ge0$ and $\delta_M&lt;1$, then</p>
+    $$\left|T\,W_1(\nu_T,\nu_\infty)-L_r\right|\le
+      \sum_{s=0}^{g-1}O_s\sum_{n=N_s}^{\infty}\beta_n
+      \le\sum_{s=0}^{g-1}\frac{O_s}{1-\delta_M}
+      \sum_{j=0}^{M-1}\beta_{N_s+j}.$$
+    <p>For the exact stage-ten recurrences, this encloses the aperiodic constant in $[0.015641550285425,0.015641550285426]$. The period-two constants lie in $[0.064514817108825,0.064514817108826]$ for even $T$ and $[0.091283989714093,0.091283989714094]$ for odd $T$, proving a second layer of phase oscillation.</p>
+
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
-      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, and 122 finite empirical-phase inequalities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
+      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, and 118 exact scaled signed-measure identities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
     <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
     <p>At stage ten this gives the actual aperiodic limit enclosure $[0.205672438933,0.213484938934]$. The periodic even and odd limits lie respectively in $[0.114151007537,0.145401007538]$ and $[0.186351699947,0.217601699948]$, proving that its true cluster set has exactly two points.</p>
-    <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used here; the displayed finite bound is also proved directly by decomposing the rows of $P^M$.</p>
+    <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="./bibliography.html#KantorovichRubinstein1958">Kantorovich and Rubinstein (1958)</a> supplies the signed-measure transport norm, while <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used in the computable tails.</p>
     <p>This remains a marginal conditional-mean approximation statement. It is not feature-conditional conformal coverage, unrestricted optimal quantization, or a maturity-integrated rank claim.</p>
   </main>

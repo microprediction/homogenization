@@ -163,6 +163,20 @@ def atom_wasserstein(left_atoms, right_atoms):
     return total
 
 
+def signed_kr_norm(atoms):
+    masses = {}
+    for value, mass in atoms:
+        masses[value] = masses.get(value, F(0)) + mass
+    ordered = sorted((value, mass) for value, mass in masses.items() if mass)
+    assert sum((mass for _, mass in ordered), F(0)) == 0
+    total = F(0)
+    cumulative = F(0)
+    for (left, mass), (right, _) in zip(ordered, ordered[1:]):
+        cumulative += mass
+        total += abs(cumulative) * (right - left)
+    return total
+
+
 def extend_recurrence(initial, weights, horizon):
     values = initial[:horizon]
     for power in range(len(values), horizon):
@@ -205,6 +219,43 @@ def empirical_phase_check(initial, weights, limits, horizon):
     )
     assert exact <= bound
     return exact, bound, count_bound
+
+
+def empirical_second_order_check(initial, weights, limits, horizon):
+    span, reduced, matrix = companion_matrix(weights)
+    size = len(matrix)
+    values = extend_recurrence(initial, weights, horizon)
+    counts = [len(range(residue, horizon, span)) for residue in range(span)]
+    assert min(counts) >= size
+
+    exact = horizon * atom_wasserstein(
+        [(value, F(1, horizon)) for value in values],
+        [(limit, F(1, span)) for limit in limits],
+    )
+    atoms = []
+    for residue, count in enumerate(counts):
+        residue_values = [values[residue + span * q] for q in range(count)]
+        for value in residue_values:
+            atoms.extend(((value, F(1)), (limits[residue], F(-1))))
+        atoms.append((limits[residue], F(count) - F(horizon, span)))
+    assert signed_kr_norm(atoms) == exact
+
+    _, _, block, _, _, contraction, _ = companion_contraction(weights)
+    invariant = invariant_row(reduced)
+    tail_bound = F(0)
+    for residue, count in enumerate(counts):
+        boundary = [initial[residue + span * q] for q in range(size)]
+        oscillation = max(boundary) - min(boundary)
+        first_power = count - size + 1
+        power_matrix = [[F(int(i == j)) for j in range(size)] for i in range(size)]
+        for _ in range(first_power):
+            power_matrix = matrix_product(power_matrix, matrix)
+        block_sum = F(0)
+        for _ in range(block):
+            block_sum += target_row_contraction(power_matrix[0], invariant)
+            power_matrix = matrix_product(power_matrix, matrix)
+        tail_bound += oscillation * block_sum / (1 - contraction)
+    return exact, tail_bound
 
 
 def companion_matrix(weights):
@@ -286,9 +337,9 @@ def decimal_bound(value, rounding, places=12):
         return format(number.quantize(unit, rounding=rounding), "f")
 
 
-def interval_text(center, radius):
-    return (f"[{decimal_bound(center - radius, ROUND_FLOOR)}, "
-            f"{decimal_bound(center + radius, ROUND_CEILING)}]")
+def interval_text(center, radius, places=12):
+    return (f"[{decimal_bound(center - radius, ROUND_FLOOR, places)}, "
+            f"{decimal_bound(center + radius, ROUND_CEILING, places)}]")
 
 
 def check_family(base, branches):
@@ -351,14 +402,25 @@ def main():
     p_even_bound = true_recurrence_bound(p[5], p_radius, 0)
     p_odd_bound = true_recurrence_bound(p[5], p_radius, 1)
     empirical_checks = 0
+    second_order_identities = 0
     for horizon in range(1, 62):
         empirical_phase_check(a[6], a[7], a[3], horizon)
         empirical_phase_check(p[6], p[7], p[3], horizon)
         empirical_checks += 2
+        if horizon >= 2:
+            empirical_second_order_check(a[6], a[7], a[3], horizon)
+            second_order_identities += 1
+        if horizon >= 4:
+            empirical_second_order_check(p[6], p[7], p[3], horizon)
+            second_order_identities += 1
     a_empirical = empirical_phase_check(a[6], a[7], a[3], 61)
     p_empirical = empirical_phase_check(p[6], p[7], p[3], 61)
     a_true_empirical_bound = a_empirical[1] + 2 * a_radius
     p_true_empirical_bound = p_empirical[1] + 2 * p_radius
+    a_second = empirical_second_order_check(a[6], a[7], a[3], 61)
+    p_even_second = empirical_second_order_check(p[6], p[7], p[3], 120)
+    p_odd_second = empirical_second_order_check(p[6], p[7], p[3], 121)
+    assert p_even_second[0] + p_even_second[1] < p_odd_second[0] - p_odd_second[1]
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -386,6 +448,11 @@ def main():
           f"{float(a_empirical[1]):.12f}/{float(p_empirical[1]):.12f}")
     print("true-staircase empirical phase bounds at horizon 61: "
           f"{float(a_true_empirical_bound):.12f}/{float(p_true_empirical_bound):.12f}")
+    print(f"exact scaled empirical KR identities: {second_order_identities}")
+    print("stage-10 second-order limit enclosures (aperiodic/even/odd): "
+          f"{interval_text(a_second[0], a_second[1], 15)} / "
+          f"{interval_text(p_even_second[0], p_even_second[1], 15)} / "
+          f"{interval_text(p_odd_second[0], p_odd_second[1], 15)}")
     print("PASS")
 
 
