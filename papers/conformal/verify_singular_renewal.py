@@ -317,6 +317,53 @@ def iterated_tail_sharpness_check():
     return identities
 
 
+def integer_product(values):
+    result = 1
+    for value in values:
+        result *= value
+    return result
+
+
+def critical_tail_residual(rank, depth, horizon):
+    assert rank >= 1 and 0 <= depth <= rank and horizon >= 0
+    falling = integer_product(range(rank - depth + 1, rank + 1))
+    rising = integer_product(
+        range(horizon + depth, horizon + rank + 1)
+    )
+    return F(1, falling * rising)
+
+
+def critical_tail_stopping_check(rank=4, horizon=12):
+    """Exact hierarchy that stops when its residual becomes harmonic."""
+    center = F(3, 7)
+    sequence = [
+        center + critical_tail_residual(rank, 0, time)
+        for time in range(1, horizon + 1)
+    ]
+    identities = 0
+    for depth in range(1, rank + 1):
+        transformed = [
+            empirical_rescaling(sequence, [center], time)
+            for time in range(1, horizon + 1)
+        ]
+        next_center = critical_tail_residual(rank, depth, 0)
+        expected = [
+            critical_tail_residual(rank, depth, time)
+            for time in range(1, horizon + 1)
+        ]
+        assert [next_center - value for value in transformed] == expected
+        identities += horizon
+        sequence, center = transformed, next_center
+
+    factorial = integer_product(range(1, rank + 1))
+    assert [
+        critical_tail_residual(rank, rank, time)
+        for time in range(1, horizon + 1)
+    ] == [F(1, factorial * (time + rank))
+          for time in range(1, horizon + 1)]
+    return identities, rank, rank + 1
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -582,6 +629,7 @@ def main():
     rescaled_second_order_identities = 0
     rescaled_third_order_identities = 0
     iterated_tail_identities = iterated_tail_sharpness_check()
+    critical_tail = critical_tail_stopping_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -682,6 +730,10 @@ def main():
           f"{rescaled_third_order_identities}")
     print("exact sharp iterated-tail identities: "
           f"{iterated_tail_identities}")
+    print("exact critical rational-tail identities: "
+          f"{critical_tail[0]}")
+    print("critical fixture finite/divergent phase depths: "
+          f"{critical_tail[1]}/{critical_tail[2]}")
     print("PASS")
 
 

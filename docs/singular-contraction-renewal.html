@@ -279,10 +279,25 @@
     <p>This moment budget is sharp for the abstract theorem. For $g=1$ and $x^{(0)}_n=a+d_n$ with $d_n\ge0$, every displayed inequality is an equality: the layer-$j$ residual is exactly $\mathsf T^jd$, so the phase at depth $J+1$ is finite exactly when $\sum_n\binom{n-1}{J}d_n&lt;\infty$.</p>
     <p>Thus a polynomially decaying residual can support only finitely many layers even though an exponentially decaying renewal residual supports every fixed layer. This is a depth-by-depth statement and supplies no limit uniform in depth.</p>
 
+    <h2>A summable sequence whose hierarchy stops</h2>
+    <p>The obstruction has an exact rational family. For an integer $r\ge1$, use the rising factorial $(n)_k=n(n+1)\cdots(n+k-1)$ and set</p>
+    $$d_n=\frac1{(n)_{r+1}}.$$
+    <p>The elementary telescoping identity</p>
+    $$\frac1{(n)_k}-\frac1{(n+1)_k}=\frac{k}{(n)_{k+1}}$$
+    <p>gives, for $0\le j\le r$, with the empty product interpreted as one,</p>
+    <div class="equation-card">
+    $$\boxed{(\mathsf T^jd)_M=
+      \frac1{r(r-1)\cdots(r-j+1)\,(M+j)_{r+1-j}}.}$$
+    </div>
+    <p>In the one-phase construction above, $d\in\ell^1$, so the first phase exists. The phases remain finite through depth $r$, but the depth-$r$ residual is</p>
+    $$(\mathsf T^rd)_M=\frac1{r!\,(M+r)},$$
+    <p>whose sum diverges. Hence the phase at depth $r+1$ does not exist: summable initial phase error alone cannot support arbitrary finite iteration.</p>
+    <p>The family also shows exactly how polynomial decay is spent. Since $d_n\sim n^{-(r+1)}$, each layer loses one power, and the final admissible residual is the harmonic boundary case.</p>
+
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
-      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, 118 exact scaled signed-measure identities, 118 rescaled phase-distribution inequalities, 122 exact signed-KR identities at each of the next two empirical-rescaling layers, and 36 sharp iterated-tail identities. Direct grids reach 768 cells.</p>
+      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, 118 exact scaled signed-measure identities, 118 rescaled phase-distribution inequalities, 122 exact signed-KR identities at each of the next two empirical-rescaling layers, 36 sharp finite-support tail identities, and 48 exact critical rational-tail identities. Direct grids reach 768 cells.</p>
     <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
     <p>At stage eighteen this gives the actual aperiodic limit enclosure $[0.209564408470,0.209594926049]$. The periodic even and odd limits lie respectively in $[0.129714973555,0.129837043869]$ and $[0.201915666289,0.202037736602]$, proving that its true cluster set has exactly two points.</p>
     <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="./bibliography.html#KantorovichRubinstein1958">Kantorovich and Rubinstein (1958)</a> supplies the signed-measure transport norm, while <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used in the computable tails.</p>
