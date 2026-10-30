@@ -5,7 +5,7 @@ from fractions import Fraction as F
 from math import gcd
 
 
-APPROXIMATION_STAGE = 16
+APPROXIMATION_STAGE = 18
 
 
 def refine(segments, branches):
@@ -457,8 +457,9 @@ def main():
     a_second_radius = a_second[1] + a_stability[0]
     p_even_second_radius = p_even_second[1] + p_even_stability[0]
     p_odd_second_radius = p_odd_second[1] + p_odd_stability[0]
-    assert (p_even_second[0] + p_even_second_radius
-            < p_odd_second[0] - p_odd_second_radius)
+    phase_gap_lower = (p_odd_second[0] - p_odd_second_radius
+                       - p_even_second[0] - p_even_second_radius)
+    assert phase_gap_lower > 0
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -496,6 +497,8 @@ def main():
           f"{interval_text(a_second[0], a_second_radius)} / "
           f"{interval_text(p_even_second[0], p_even_second_radius)} / "
           f"{interval_text(p_odd_second[0], p_odd_second_radius)}")
+    print("certified periodic second-order phase-gap lower bound: "
+          f"{decimal_bound(phase_gap_lower, ROUND_FLOOR)}")
     print("PASS")
 
 
