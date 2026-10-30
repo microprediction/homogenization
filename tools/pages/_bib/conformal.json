@@ -1,5 +1,15 @@
 [
  {
+  "key": "BelikLuskin2003",
+  "authors": "B\u011bl\u00edk, P. and Luskin, M.",
+  "year": 2003,
+  "title": "Approximation by Piecewise Constant Functions in a BV Metric",
+  "venue": "Mathematical Models and Methods in Applied Sciences 13:373-393",
+  "doi": "10.1142/S0218202503002556",
+  "url": "https://doi.org/10.1142/S0218202503002556",
+  "annotation": "Gives primary piecewise-constant approximation results in bounded-variation metrics. The SBV contraction note derives its one-dimensional coefficient and jump-phase decomposition directly."
+ },
+ {
   "key": "Strassen1965",
   "authors": "Strassen, V.",
   "year": 1965,
