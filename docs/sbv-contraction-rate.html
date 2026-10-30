@@ -105,22 +105,22 @@
 
     <h2>Equal-mass conditional-mean contraction</h2>
     <p>Let $Q$ be a bounded nondecreasing quantile on $(0,1)$ and let $P_NQ$ be its mean on each interval
-      $[(k-1)/N,k/N)$. The law $mu_N$ of $P_NQ(U)$ is an $N$-point conditional-mean contraction of the law
-      $mu$ of $Q(U)$.</p>
+      $[(k-1)/N,k/N)$. The law $\mu_N$ of $P_NQ(U)$ is an $N$-point conditional-mean contraction of the law
+      $\mu$ of $Q(U)$.</p>
     <p>Both quantiles are nondecreasing, so their common-uniform coupling is optimal and</p>
-    $$W_1(mu_N,mu)=\|Q-P_NQ\|_{L^1(0,1)}.$$
+    $$W_1(\mu_N,\mu)=\|Q-P_NQ\|_{L^1(0,1)}.$$
     <p>This is an equal-probability barycentric scheme. It is not unrestricted optimal scalar quantization.</p>
 
     <h2>The special-BV decomposition</h2>
     <p>Assume that $Q$ has no singular-continuous derivative. Then it has the special-BV representation</p>
     $$Q(u)=g(u)+\sum_{j\ge1}\Delta_j\mathbf1_{[s_j,1]}(u),
       \qquad g\in W^{1,1}(0,1),$$
-    <p>where $0&lt;s_j&lt;1$, $Delta_j&gt;0$, $g'\ge0$ almost everywhere, and
-      $\sum_j\Delta_j&lt;\infty$. Put $A=\int_0^1g'(u),du$ and
+    <p>where $0&lt;s_j&lt;1$, $\Delta_j&gt;0$, $g'\ge0$ almost everywhere, and
+      $\sum_j\Delta_j&lt;\infty$. Put $A=\int_0^1g'(u)\,du$ and
       $\varphi(x)=x(1-x)$.</p>
     <div class="equation-card">
     $$\boxed{
-      NW_1(\mu_N,mu)
+      NW_1(\mu_N,\mu)
       =\frac A4+2\sum_{j\ge1}\Delta_j
         \varphi\!\left(\{Ns_j\}\right)+o(1).
       }$$
@@ -153,12 +153,21 @@
       $\frac12\sum_{j&gt;M}\Delta_j$.
       Both bounds vanish as $M\to\infty$, so the finite-jump result passes to countably many jumps without interchanging an uncontrolled limit and series.</p>
 
+    <h2>The exact cluster set</h2>
+    <p>Write $\mathbb T=\mathbb R/\mathbb Z$, $s=(s_j)_{j\ge1}\in\mathbb T^{\mathbb N}$, and let
+      $H=\overline{\{ns:n\in\mathbb Z\}}$ be its compact orbit closure. Positive multiples have the same closure by recurrence in the compact group.</p>
+    <p>The uniformly convergent series</p>
+    $$\Phi(x)=2\sum_{j\ge1}\Delta_j\varphi(x_j)$$
+    <p>defines a continuous function on $H$. The full set of subsequential limits is exactly</p>
+    $$\boxed{\quad \frac A4+\Phi(H).\quad}$$
+    <p>Indeed, density of the orbit gives every value in this image, compactness gives a convergent phase subsequence from every integer subsequence, and the asymptotic remainder vanishes along the full sequence.</p>
+
     <h2>Exactly when the scaled limit exists</h2>
-    <p>Simultaneous recurrence on a finite-dimensional torus supplies integers tending to infinity for which the first
-      $M$ phases approach zero. The jump tail is uniformly small, hence</p>
-    $$\liminf_{N\to\infty}NW_1(\mu_N,mu)=\frac A4.$$
-    <p>If any jump is present, its rational residue class or irrational rotation supplies infinitely many phases bounded away from both zero and one. All phase terms are nonnegative, so</p>
-    $$\limsup_{N\to\infty}NW_1(\mu_N,mu)&gt;\frac A4.$$
+    <p>Because $0\in H$ and $\Phi\ge0$, the minimum of the cluster set is $A/4$.
+      If a jump is present, the corresponding coordinate projection of $H$ is nontrivial because $0&lt;s_j&lt;1$, so $\max_H\Phi&gt;0$.</p>
+    $$\liminf_{N\to\infty}NW_1(\mu_N,\mu)=\frac A4,
+      \qquad
+      \limsup_{N\to\infty}NW_1(\mu_N,\mu)=\frac A4+\max_H\Phi.$$
     <p>Therefore, within bounded nondecreasing special-BV quantiles, the scaled error has a limit if and only if $Q$ has no jumps. In that case the limit is $(Q(1-)-Q(0+))/4$.</p>
 
     <h2>Why the special-BV scope matters</h2>
@@ -168,9 +177,11 @@
     <h2>Exact certificate and literature context</h2>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_sbv_contraction.py">exact rational certificate</a>
       uses slope $2$ and jumps $(s_j,\Delta_j)=(1/3,1/2),(2/5,1/3),(5/7,1/4)$.
-      It checks 16 cases, including the pure-step identity and the finite-$N$ residual bound.</p>
+      It checks 124 exact identities, including the pure-step identity, the finite-$N$ residual bound, and the complete period-$105$ phase orbit.</p>
     <p>The largest scaled residual is $0.011462585034$, or $0.110219198791$ of its proved bound.
       At $N=105$ the scaled error is exactly $0.5$; at $N=106$ it is $0.982683865999$, against phase prediction $0.984263038549$ with residual $0.001579172550$.</p>
+    <p>The rational fixture has 24 distinct cluster values, minimum $1/2$, and exact maximum
+      $22153/22050=1.004671201814\ldots$. These finite-orbit checks illustrate the compact-group theorem; they do not replace its proof.</p>
     <p><a href="./bibliography.html#BelikLuskin2003">B&#283;l&iacute;k and Luskin (2003)</a> gives primary piecewise-constant approximation context in bounded-variation metrics.
       The exact quarter coefficient, countable jump-phase decomposition and limit classification above are proved directly here.</p>
     <p>Every probability statement remains marginal. No feature-conditional conformal coverage, optimal-quantizer rate, or singular-continuous classification is claimed.</p>
