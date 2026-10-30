@@ -261,6 +261,29 @@ def scaled_empirical_error(initial, weights, limits, horizon):
     )
 
 
+def empirical_rescaling(sequence, phase_centers, horizon):
+    span = len(phase_centers)
+    assert len(sequence) >= horizon and span >= 1
+    return horizon * atom_wasserstein(
+        [(value, F(1, horizon)) for value in sequence[:horizon]],
+        [(center, F(1, span)) for center in phase_centers],
+    )
+
+
+def signed_empirical_rescaling_identity(sequence, phase_centers, horizon):
+    span = len(phase_centers)
+    exact = empirical_rescaling(sequence, phase_centers, horizon)
+    counts = [sum(time % span == residue for time in range(1, horizon + 1))
+              for residue in range(span)]
+    atoms = []
+    for time, value in enumerate(sequence[:horizon], 1):
+        atoms.extend(((value, F(1)), (phase_centers[time % span], F(-1))))
+    for residue, count in enumerate(counts):
+        atoms.append((phase_centers[residue], F(count) - F(horizon, span)))
+    assert signed_kr_norm(atoms) == exact
+    return exact
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -311,19 +334,7 @@ def rescaled_phase_second_order_identity(initial, weights, limits, horizon,
 
     scaled = [scaled_empirical_error(initial, weights, limits, time)
               for time in range(1, horizon + 1)]
-    exact = horizon * atom_wasserstein(
-        [(value, F(1, horizon)) for value in scaled],
-        [(center, F(1, span)) for center in phase_centers],
-    )
-    counts = [sum(time % span == residue for time in range(1, horizon + 1))
-              for residue in range(span)]
-    atoms = []
-    for time, value in enumerate(scaled, 1):
-        atoms.extend(((value, F(1)), (phase_centers[time % span], F(-1))))
-    for residue, count in enumerate(counts):
-        atoms.append((phase_centers[residue], F(count) - F(horizon, span)))
-    assert signed_kr_norm(atoms) == exact
-    return exact
+    return signed_empirical_rescaling_identity(scaled, phase_centers, horizon)
 
 
 def selected_tail_bound(weights, first_power):
@@ -536,6 +547,7 @@ def main():
     assert phase_gap_lower > 0
     phase_distribution_checks = 0
     rescaled_second_order_identities = 0
+    rescaled_third_order_identities = 0
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -552,6 +564,24 @@ def main():
             p[6], p[7], p[3], horizon, phase_centers=p_phase_centers
         )
         rescaled_second_order_identities += 2
+    a_scaled = [scaled_empirical_error(a[6], a[7], a[3], horizon)
+                for horizon in range(1, 121)]
+    p_scaled = [scaled_empirical_error(p[6], p[7], p[3], horizon)
+                for horizon in range(1, 122)]
+    a_second_sequence = [empirical_rescaling(a_scaled, a_phase_centers, horizon)
+                         for horizon in range(1, 121)]
+    p_second_sequence = [empirical_rescaling(p_scaled, p_phase_centers, horizon)
+                         for horizon in range(1, 122)]
+    a_third_centers = [a_second_sequence[119]]
+    p_third_centers = [p_second_sequence[119], p_second_sequence[120]]
+    for horizon in range(1, 62):
+        signed_empirical_rescaling_identity(
+            a_second_sequence, a_third_centers, horizon
+        )
+        signed_empirical_rescaling_identity(
+            p_second_sequence, p_third_centers, horizon
+        )
+        rescaled_third_order_identities += 2
     a_phase_distribution = second_order_phase_distribution_check(
         a[6], a[7], a[3], 61
     )
@@ -614,6 +644,8 @@ def main():
           f"{float(p_true_phase_distribution_bound):.12f}")
     print("exact second-layer rescaled signed-KR identities: "
           f"{rescaled_second_order_identities}")
+    print("exact third-layer rescaled signed-KR identities: "
+          f"{rescaled_third_order_identities}")
     print("PASS")
 
 
