@@ -252,6 +252,51 @@ def empirical_second_order_check(initial, weights, limits, horizon):
     return exact, tail_bound
 
 
+def scaled_empirical_error(initial, weights, limits, horizon):
+    span, _, _ = companion_matrix(weights)
+    values = extend_recurrence(initial, weights, horizon)
+    return horizon * atom_wasserstein(
+        [(value, F(1, horizon)) for value in values],
+        [(limit, F(1, span)) for limit in limits],
+    )
+
+
+def second_order_phase_distribution_check(initial, weights, limits, horizon,
+                                          reference_start=120):
+    span, _, matrix = companion_matrix(weights)
+    size = len(matrix)
+    assert horizon >= span * size
+    phase_controls = []
+    for residue in range(span):
+        reference = reference_start + (residue - reference_start) % span
+        phase_controls.append(
+            empirical_second_order_check(initial, weights, limits, reference)
+        )
+
+    scaled = [scaled_empirical_error(initial, weights, limits, time)
+              for time in range(1, horizon + 1)]
+    centers = [control[0] for control in phase_controls]
+    radii = [control[1] for control in phase_controls]
+    exact_to_centers = atom_wasserstein(
+        [(value, F(1, horizon)) for value in scaled],
+        [(center, F(1, span)) for center in centers],
+    )
+    coupling = sum((abs(value - centers[time % span])
+                    for time, value in enumerate(scaled, 1)), F(0)) / horizon
+    remainder = horizon % span
+    imbalance = F(remainder * (span - remainder), span * horizon)
+    diameter = max(centers) - min(centers)
+    center_bound = coupling + diameter * imbalance
+    assert exact_to_centers <= center_bound
+
+    true_phase_bound = (
+        sum((abs(value - centers[time % span]) + radii[time % span]
+             for time, value in enumerate(scaled, 1)), F(0)) / horizon
+        + (diameter + 2 * max(radii)) * imbalance
+    )
+    return exact_to_centers, true_phase_bound, phase_controls
+
+
 def selected_tail_bound(weights, first_power):
     span, reduced, matrix = companion_matrix(weights)
     assert span >= 1 and first_power >= 0
@@ -460,6 +505,26 @@ def main():
     phase_gap_lower = (p_odd_second[0] - p_odd_second_radius
                        - p_even_second[0] - p_even_second_radius)
     assert phase_gap_lower > 0
+    phase_distribution_checks = 0
+    for horizon in range(2, 62):
+        second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
+        phase_distribution_checks += 1
+    for horizon in range(4, 62):
+        second_order_phase_distribution_check(p[6], p[7], p[3], horizon)
+        phase_distribution_checks += 1
+    a_phase_distribution = second_order_phase_distribution_check(
+        a[6], a[7], a[3], 61
+    )
+    p_phase_distribution = second_order_phase_distribution_check(
+        p[6], p[7], p[3], 61
+    )
+    a_true_phase_distribution_bound = (
+        a_phase_distribution[1] + 62 * a_radius + a_stability[0]
+    )
+    p_true_phase_distribution_bound = (
+        p_phase_distribution[1] + 62 * p_radius
+        + (p_even_stability[0] + p_odd_stability[0]) / 2
+    )
 
     print(f"exact finite-stage renewal checks: {a[0] + p[0]}")
     print(f"largest aperiodic/periodic cell counts: {a[1]}/{p[1]}")
@@ -499,6 +564,14 @@ def main():
           f"{interval_text(p_odd_second[0], p_odd_second_radius)}")
     print("certified periodic second-order phase-gap lower bound: "
           f"{decimal_bound(phase_gap_lower, ROUND_FLOOR)}")
+    print(f"exact rescaled phase-distribution inequalities: {phase_distribution_checks}")
+    print("stage-18 rescaled phase-distribution W1 at horizon 61 "
+          "(aperiodic/periodic): "
+          f"{float(a_phase_distribution[0]):.12f}/"
+          f"{float(p_phase_distribution[0]):.12f}")
+    print("true-staircase rescaled phase-distribution bounds at horizon 61: "
+          f"{float(a_true_phase_distribution_bound):.12f}/"
+          f"{float(p_true_phase_distribution_bound):.12f}")
     print("PASS")
 
 
