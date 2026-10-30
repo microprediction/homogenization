@@ -297,6 +297,35 @@ def second_order_phase_distribution_check(initial, weights, limits, horizon,
     return exact_to_centers, true_phase_bound, phase_controls
 
 
+def rescaled_phase_second_order_identity(initial, weights, limits, horizon,
+                                         reference_start=120,
+                                         phase_centers=None):
+    span, _, _ = companion_matrix(weights)
+    if phase_centers is None:
+        phase_centers = []
+        for residue in range(span):
+            reference = reference_start + (residue - reference_start) % span
+            phase_centers.append(
+                empirical_second_order_check(initial, weights, limits, reference)[0]
+            )
+
+    scaled = [scaled_empirical_error(initial, weights, limits, time)
+              for time in range(1, horizon + 1)]
+    exact = horizon * atom_wasserstein(
+        [(value, F(1, horizon)) for value in scaled],
+        [(center, F(1, span)) for center in phase_centers],
+    )
+    counts = [sum(time % span == residue for time in range(1, horizon + 1))
+              for residue in range(span)]
+    atoms = []
+    for time, value in enumerate(scaled, 1):
+        atoms.extend(((value, F(1)), (phase_centers[time % span], F(-1))))
+    for residue, count in enumerate(counts):
+        atoms.append((phase_centers[residue], F(count) - F(horizon, span)))
+    assert signed_kr_norm(atoms) == exact
+    return exact
+
+
 def selected_tail_bound(weights, first_power):
     span, reduced, matrix = companion_matrix(weights)
     assert span >= 1 and first_power >= 0
@@ -506,12 +535,23 @@ def main():
                        - p_even_second[0] - p_even_second_radius)
     assert phase_gap_lower > 0
     phase_distribution_checks = 0
+    rescaled_second_order_identities = 0
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
     for horizon in range(4, 62):
         second_order_phase_distribution_check(p[6], p[7], p[3], horizon)
         phase_distribution_checks += 1
+    a_phase_centers = [a_second[0]]
+    p_phase_centers = [p_even_second[0], p_odd_second[0]]
+    for horizon in range(1, 62):
+        rescaled_phase_second_order_identity(
+            a[6], a[7], a[3], horizon, phase_centers=a_phase_centers
+        )
+        rescaled_phase_second_order_identity(
+            p[6], p[7], p[3], horizon, phase_centers=p_phase_centers
+        )
+        rescaled_second_order_identities += 2
     a_phase_distribution = second_order_phase_distribution_check(
         a[6], a[7], a[3], 61
     )
@@ -572,6 +612,8 @@ def main():
     print("true-staircase rescaled phase-distribution bounds at horizon 61: "
           f"{float(a_true_phase_distribution_bound):.12f}/"
           f"{float(p_true_phase_distribution_bound):.12f}")
+    print("exact second-layer rescaled signed-KR identities: "
+          f"{rescaled_second_order_identities}")
     print("PASS")
 
 

@@ -223,10 +223,32 @@
       $\sum_N S_N=\sum_n(n+1)\beta_n$ finite with a geometric bound.</p>
     <p>The exact certificate checks 118 finite-horizon distribution inequalities. At $M=61$, the stage-eighteen Wasserstein distances are $0.000256397938$ and $0.002188590244$ for the aperiodic and period-two fixtures, while the corresponding limiting-staircase bounds are $0.001538205788$ and $0.008876497830$.</p>
 
+    <h2>The second layer of rescaled phases</h2>
+    <p>The $O(M^{-1})$ distributional rate also has exact residue limits. Define the convergent signed-measure series and the finite residue imbalance</p>
+    $$\Theta=\sum_{T=1}^{\infty}\left(\delta_{Z_T}-\delta_{L_{T\bmod g}}\right),\qquad
+      \zeta_q=\sum_{s=0}^{g-1}\left(\mathbf1_{\{1\le s\le q\}}-\frac qg\right)\delta_{L_s}.$$
+    <p>The series converges in KR norm because its $T$th dipole has norm $d_T$ and $\sum_Td_T&lt;\infty$. Put $H_q=\|\Theta+\zeta_q\|_{\mathrm{KR}}$ for $q=0,\ldots,g-1$.</p>
+    <div class="equation-card">
+    $$\boxed{M\,W_1(\rho_M,\rho_\infty)\longrightarrow H_q
+      \quad(M\to\infty,\ M\equiv q\!\!\pmod g).}$$
+    </div>
+    <p>Indeed, the residues represented among $T=1,\ldots,M$ are counted $Q+1$ times for $1\le s\le q$ and $Q$ times otherwise when $M=gQ+q$. Therefore the exact signed-measure identity is</p>
+    $$M(\rho_M-\rho_\infty)=
+      \sum_{T=1}^{M}\left(\delta_{Z_T}-\delta_{L_{T\bmod g}}\right)+\zeta_q.$$
+    <p>Taking KR norms and comparing the finite dipole sum with $\Theta$ gives the computable remainder</p>
+    $$\left|M\,W_1(\rho_M,\rho_\infty)-H_q\right|
+      \le\sum_{T&gt;M}d_T.$$
+    <p>Consequently the complete cluster set is $\{H_0,\ldots,H_{g-1}\}$, and the twice-rescaled error converges exactly when these constants agree. Once all lower indices are nonnegative, summing the selected-row tails gives</p>
+    $$\sum_{T&gt;M}d_T\le
+      g\sum_{s=0}^{g-1}O_s
+      \sum_{N\ge n_s(M+1)-\bar L+1}S_N,\qquad
+      S_N=\sum_{n\ge N}\beta_n.$$
+    <p>Indeed, for each fixed residue $s$, every $S_N$ occurs at most $g$ times as $T$ varies. The same block-Dobrushin contraction used above bounds the final double tail geometrically.</p>
+
     <h2>Scope and certificate</h2>
     <p>This is an exact statement for a fixed multiplier $m$ and commensurable base-power horizontal scales. It does not describe arbitrary cell counts, nonlattice contraction ratios, or all singular-continuous quantiles.</p>
     <p>The <a href="https://github.com/microprediction/homogenization/blob/main/papers/conformal/verify_singular_renewal.py">exact rational certificate</a>
-      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, 118 exact scaled signed-measure identities, and 118 rescaled phase-distribution inequalities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
+      checks 90 finite-stage recurrences, 120 selected-coordinate finite-power inequalities, 122 finite empirical-phase inequalities, 118 exact scaled signed-measure identities, 118 rescaled phase-distribution inequalities, and 122 exact second-layer signed-KR identities for aperiodic and period-two dyadic staircases. Direct grids reach 768 cells.</p>
     <p>The cell-error functional obeys $|E_N(f)-E_N(h)|\le2\|f-h\|_\infty$, while the staircase iterates satisfy $\|C-C_n\|_\infty\le w_*^n$ for $w_*=\max_rw_r$. Since each limit coefficient is a convex combination of its boundary values, its stage-$n$ approximation has rigorous error at most $2mb^{L-1}w_*^n$.</p>
     <p>At stage eighteen this gives the actual aperiodic limit enclosure $[0.209564408470,0.209594926049]$. The periodic even and odd limits lie respectively in $[0.129714973555,0.129837043869]$ and $[0.201915666289,0.202037736602]$, proving that its true cluster set has exactly two points.</p>
     <p><a href="./bibliography.html#ErdosFellerPollard1949">Erdős, Feller and Pollard (1949)</a> proves the classical arithmetic renewal coefficient for positive power series. <a href="./bibliography.html#KantorovichRubinstein1958">Kantorovich and Rubinstein (1958)</a> supplies the signed-measure transport norm, while <a href="https://doi.org/10.1137/1101006">Dobrushin (1956)</a> introduces the stochastic-kernel overlap coefficient used in the computable tails.</p>
