@@ -92,6 +92,42 @@
     <p>This is covariance under a change of coordinates, not a new source of latent directions. It does not change
     fixed-feature Green&ndash;Kubo rank and makes no claim about rank after integrating maturity-dependent loadings.</p>
 
+    <h3>Projection and redundant coordinates</h3>
+    <p>The same conclusion does not require a square or invertible map. For any $A\in\mathbb R^{d\times k}$, put
+    $f'=fA+\mathbf1c^\top$ and let $D$ be a payoff on $\mathbb R^k$. Computing the expansion for $D$ in the mapped
+    coordinates gives exactly the expansion for $C(x)=D(A^\top x+c)$ in the original coordinates.</p>
+    <p>Each cumulant-tensor index is multiplied by $A$, while the chain rule multiplies each derivative index by the
+    same $A$, so the contractions agree without an inverse. This covers projection to fewer observables and embedding
+    into redundant coordinates.</p>
+    <p>In particular $\Gamma'=A^\top\Gamma A$ and
+    $\operatorname{rank}\Gamma'\le\operatorname{rank}\Gamma$. Adding redundant coordinates cannot increase the
+    fixed-feature rank; this remains separate from integrating different maturity loadings.</p>
+
+    <h3>Exact reduction to the feature rank</h3>
+    <p>Let $g=f-\mathbf1\bar f^\top$ have rank $r$. Choose a centered full-column-rank matrix
+    $U\in\mathbb R^{n\times r}$ and a full-column-rank matrix $R\in\mathbb R^{d\times r}$ such that
+    $g=UR^\top$. For every path, its averaged feature vector has the form $X_m=\bar f+RZ_m$, where $Z_m$ is the
+    corresponding average of $U$.</p>
+    <p>Therefore an arbitrary payoff $C$ on the original $d$ coordinates reduces exactly to
+    $D(z)=C(\bar f+Rz)$ on $r$ coordinates. The exact prices agree pathwise, and the rectangular-map theorem shows
+    that every term of the second-order expansion agrees as well. If $r=0$, the path is constant and the price is
+    simply $C(\bar f)$.</p>
+    <p>The fixed-feature theorem gives $\Gamma_U\succ0$ and
+    $\Gamma_f=R\Gamma_UR^\top$, hence $\operatorname{rank}\Gamma_f=r$. This is a minimal-coordinate statement for
+    one fixed feature family, not a claim about rank after maturity-dependent loading integration.</p>
+
+    <h3>Affine maps are the exact boundary</h3>
+    <p>Let $K$ be the convex hull of the state vectors and let $\psi:K\to\mathbb R^k$. The identity</p>
+    $$\psi\!\left(\sum_i p_if_i\right)=\sum_i p_i\psi(f_i)
+      \qquad\text{for every probability vector }p$$
+    <p>holds if and only if $\psi$ is affine on $K$. Indeed the identity applied to convex combinations of two
+    barycentric representations makes $\psi$ Jensen-affine on every segment of $K$; the converse is immediate.</p>
+    <p>For an irreducible finite chain, attainable occupation vectors are dense in the probability simplex. Hence a
+    continuous transformation commuting with every path average must be affine on $K$.</p>
+    <p>Nonlinear preprocessing changes the statistic at leading order: as switching accelerates, the average of
+    $\psi(f(Y_t))$ converges to $\pi\psi(f)$, whereas applying $\psi$ after averaging converges to $\psi(\pi f)$.
+    Their generally nonzero Jensen gap is order one, not another term in the fixed-maturity $1/m$ expansion.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -154,6 +190,15 @@
     <p>Three non-orthogonal affine coordinate changes, five priors and five speeds preserve the complete vector
     approximation with maximum discrepancy $2.60\times10^{-18}$. This tests the mean, boundary, covariance, skew and fourth-pairing
     transformation laws simultaneously.</p>
+    <p>A one-dimensional projection and a rank-two embedding into three redundant coordinates preserve nonlinear
+    degree-four prices with maximum discrepancy $1.11\times10^{-16}$. The projected and embedded tests use all five
+    priors and speeds.</p>
+    <p>The same cases reproduce the Green&ndash;Kubo congruence with maximum discrepancy $1.11\times10^{-16}$ and
+    mapped ranks one and two. Thus the certificate checks both the nonlinear price reduction and its fixed-feature
+    rank statement.</p>
+    <p>For $\psi(x,y)=(x^2,xy)$ on the certificate&apos;s three state vectors, the stationary Jensen gap is exactly
+    $(5227/16900,-17/130)$. The rational-vector check has binary64 discrepancy $5.55\times10^{-17}$ and
+    shows that nonlinear state preprocessing fails before any finite-rate correction is considered.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -171,6 +216,9 @@
     <p>The tensor moment partitions are an elementary instance of the classical semi-invariant calculus of
     <a href="./bibliography.html#LeonovShiryaev1959">Leonov and Shiryaev</a>. The multivariate price contraction is
     derived directly here, with no priority claim for moment-cumulant identities.</p>
+    <p>The sharp affine boundary is the equality form of the barycentric identity underlying
+    <a href="./bibliography.html#Jensen1906">Jensen&apos;s original convexity paper</a>. Its application to finite-state
+    occupation averages is proved directly above.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
