@@ -170,6 +170,27 @@
     see <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>.</p>
 
+    <h3>The complete first-order price correction</h3>
+    <p>Speed the displayed rates to $(ma,mb)$, keep $T&gt;0$ fixed, put $r=a+b$,
+    $\Delta\rho=\rho_{\mathrm{crisis}}-\rho_{\mathrm{calm}}$ and
+    $K_{\rho\rho}=\pi_0\pi_1(\Delta\rho)^2/r$, and define</p>
+    $$b_m(\eta)=\Delta\rho(\eta-\pi_1)\frac{1-e^{-mrT}}{mrT}.$$
+    <p>If $C$ has four continuous derivatives on the correlation interval, then</p>
+    <div class="equation-card">
+    $$\boxed{\mathbb E_\eta C(\hat\rho_T)=C(\bar\rho)
+      +\frac{K_{\rho\rho}}{mT}C''(\bar\rho)
+      +b_m(\eta)C'(\bar\rho)+O_{T,C}(m^{-2}).}$$
+    </div>
+    <p>For the proof, write $Z_m=\hat\rho_T-\bar\rho$. The exact two-state occupation cumulants give
+    $\mathbb E_\eta Z_m=b_m(\eta)$, $\mathbb E_\eta Z_m^2=2K_{\rho\rho}/(mT)+O(m^{-2})$, and
+    $\mathbb E_\eta Z_m^3,\mathbb E_\eta Z_m^4=O(m^{-2})$.</p>
+    <p>Taylor expansion through the cubic term, with the fourth derivative controlling the remainder, proves the
+    formula. Its constant may depend on fixed $T$, the rates, the two correlations, and derivative bounds for $C$;
+    the statement is not uniform as maturity tends to zero or infinity.</p>
+    <p>For Margrabe&apos;s price, $C'(\bar\rho)=-2\sigma_1\sigma_2T\,\partial_V C$. Across priors
+    $0,0.1,0.7,1$, all nine displayed strikes, and speeds through $64$, the certificate measures a last-doubling
+    error rate of $2.001580$ with this term, versus $1.001221$ without it.</p>
+
     <h2>The first-order rule</h2>
     <p>For the stationary-start example, differentiating a constant-correlation price in $\rho$ brings down the operator that $\rho$ multiplies, for the
     whole time $T$:</p>

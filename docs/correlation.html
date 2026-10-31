@@ -159,6 +159,19 @@
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and by
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>.</p>
 
+    <p>The price expansion can retain this prior effect. For fixed $T&gt;0$, let $r=a+b$,
+    $\Delta\rho=\rho_{\mathrm{crisis}}-\rho_{\mathrm{calm}}$,
+    $K_{\rho\rho}=\pi_0\pi_1(\Delta\rho)^2/r$, and speed the displayed rates to $(ma,mb)$.</p>
+    $$b_m(\eta)=\Delta\rho(\eta-\pi_1)\frac{1-e^{-mrT}}{mrT}.$$
+    <div class="equation-card">
+    $$\boxed{\mathbb E_\eta C(\hat\rho_T)=C(\bar\rho)
+      +\frac{K_{\rho\rho}}{mT}C''(\bar\rho)
+      +b_m(\eta)C'(\bar\rho)+O_{T,C}(m^{-2}).}$$
+    </div>
+    <p>The vega boundary term vanishes for the stationary prior. Across four priors and all nine displayed exchange
+    strikes, its measured last-doubling error rate is $2.001580$, versus $1.001221$ if the stationary formula is used
+    without the boundary term.</p>
+
     <h2>The first-order rule</h2>
     <p>For the stationary-start example, differentiating a constant-correlation price in $\rho$ brings down the operator that $\rho$ multiplies, so
     $\partial_\rho^2 C_\rho = T^2 A^2 C_\rho$. The <a href="./any-equation.html">rule</a> adds the correction
