@@ -3207,5 +3207,16 @@
   "doi": "10.1007/bf02418571",
   "url": "https://doi.org/10.1007/bf02418571",
   "annotation": "Introduces the convex-combination inequality whose equality identity gives the sharp affine boundary for transformations that commute with every occupation average."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "VanDerVaart1998",
+  "authors": "van der Vaart, A. W.",
+  "year": 1998,
+  "title": "Asymptotic Statistics",
+  "venue": "Cambridge University Press, Chapter 3, 25-34",
+  "doi": "10.1017/cbo9780511802256.004",
+  "url": "https://doi.org/10.1017/cbo9780511802256.004",
+  "annotation": "Presents the multivariate delta method and its Jacobian covariance transformation, the classical context for the nonlinear post-averaging tangent covariance used here."
  }
 ]

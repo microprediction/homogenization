@@ -7,6 +7,7 @@ compared with the scalar theorem.  Ends with PASS or FAIL.
 import math
 import os
 import sys
+from itertools import product
 
 import numpy as np
 from scipy.linalg import expm
@@ -183,6 +184,54 @@ def exact_mixed_polynomial_price(initial, speed):
     return float(initial @ target[block] / MATURITY ** 4)
 
 
+def exact_vector_moments(initial, speed, maximum_powers=(4, 2)):
+    """Exact raw moments of the averaged feature vector."""
+    indices = list(product(*[range(power + 1)
+                             for power in maximum_powers]))
+    states = len(Q)
+    system = np.zeros((len(indices) * states,) * 2)
+    for row, alpha in enumerate(indices):
+        block = slice(row * states, (row + 1) * states)
+        system[block, block] = speed * Q
+        for field, exponent in enumerate(alpha):
+            if exponent:
+                beta = list(alpha)
+                beta[field] -= 1
+                column = indices.index(tuple(beta))
+                source = slice(column * states, (column + 1) * states)
+                system[block, source] = exponent * np.diag(VALUES[:, field])
+    initial_moments = np.zeros(len(indices) * states)
+    initial_moments[:states] = 1.0
+    target = expm(MATURITY * system) @ initial_moments
+    return {
+        alpha: float(initial @ target[row * states:(row + 1) * states]
+                     / MATURITY ** sum(alpha))
+        for row, alpha in enumerate(indices)
+    }
+
+
+def exact_critical_transform_moments(initial, speed, center):
+    """Mean and covariance of ((X[0]-center)**2, X[1])."""
+    moment = exact_vector_moments(initial, speed)
+    transformed_mean = np.array([
+        moment[(2, 0)] - 2 * center * moment[(1, 0)] + center ** 2,
+        moment[(0, 1)],
+    ])
+    transformed_second = np.array([
+        [moment[(4, 0)] - 4 * center * moment[(3, 0)]
+         + 6 * center ** 2 * moment[(2, 0)]
+         - 4 * center ** 3 * moment[(1, 0)] + center ** 4,
+         moment[(2, 1)] - 2 * center * moment[(1, 1)]
+         + center ** 2 * moment[(0, 1)]],
+        [0.0, moment[(0, 2)]],
+    ])
+    transformed_second[1, 0] = transformed_second[0, 1]
+    covariance = transformed_second - np.outer(
+        transformed_mean, transformed_mean
+    )
+    return transformed_mean, covariance
+
+
 def main():
     ok = True
     pi = stationary(Q)
@@ -196,6 +245,8 @@ def main():
     rectangular_error = 0.0
     rank_map_error = 0.0
     mapped_ranks = []
+    nonlinear_mean_errors = []
+    nonlinear_covariance_errors = []
     base_covariance = green_kubo_covariance(VALUES)
     for matrix, shift, _ in RECTANGULAR_MAPS:
         mapped_values = VALUES @ matrix + shift
@@ -268,8 +319,36 @@ def main():
                     rectangular_error, abs(mapped - pulled)
                 )
         mixed_errors.append(mixed_maximum)
+        nonlinear_mean_error = 0.0
+        nonlinear_covariance_error = 0.0
+        tangent_covariance = np.array([
+            [0.0, 0.0],
+            [0.0, base_covariance[1, 1] / (speed * MATURITY)],
+        ])
+        for initial in priors:
+            transformed_mean, transformed_covariance = (
+                exact_critical_transform_moments(initial, speed, mean[0])
+            )
+            tangent_mean = np.array([
+                base_covariance[0, 0] / (speed * MATURITY),
+                transformed_mean[1],
+            ])
+            nonlinear_mean_error = max(
+                nonlinear_mean_error,
+                float(np.max(np.abs(transformed_mean - tangent_mean)))
+            )
+            nonlinear_covariance_error = max(
+                nonlinear_covariance_error,
+                float(np.max(np.abs(
+                    transformed_covariance - tangent_covariance
+                )))
+            )
+        nonlinear_mean_errors.append(nonlinear_mean_error)
+        nonlinear_covariance_errors.append(nonlinear_covariance_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
+        print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
+              f"tangent-covariance error {nonlinear_covariance_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -281,6 +360,14 @@ def main():
           + " ".join(map(str, mapped_ranks)))
     print("nonlinear stationary Jensen gap [5227/16900, -17/130]; "
           f"rational-check error {nonlinear_gap_error:.2e}")
+    nonlinear_mean_order = math.log(
+        nonlinear_mean_errors[-2] / nonlinear_mean_errors[-1], 2
+    )
+    nonlinear_covariance_order = math.log(
+        nonlinear_covariance_errors[-2] / nonlinear_covariance_errors[-1], 2
+    )
+    print(f"nonlinear delta mean/covariance orders "
+          f"{nonlinear_mean_order:.6f} {nonlinear_covariance_order:.6f}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -291,6 +378,10 @@ def main():
     ok &= rank_map_error < 2.0e-12
     ok &= mapped_ranks == [1, 2]
     ok &= nonlinear_gap_error < 2.0e-14
+    ok &= nonlinear_mean_order > 1.98
+    ok &= nonlinear_covariance_order > 1.98
+    ok &= nonlinear_mean_errors[-1] < 3.0e-5
+    ok &= nonlinear_covariance_errors[-1] < 2.0e-5
 
     print("PASS" if ok else "FAIL")
 
