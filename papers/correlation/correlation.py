@@ -439,6 +439,91 @@ def occupation_third_cumulant_rate(Q):
     return tensor
 
 
+def finite_rate_mean_correction(Q, values, initial, maturity, speed):
+    """Exact mean correction for an accelerated integrated state field.
+
+    If ``A = integral_0^maturity values[Y_t] dt`` and the chain generator is
+    ``speed * Q``, return ``E_initial[A] - maturity * pi[values]``.  The
+    group-inverse formula keeps the exponentially small initial layer exact.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    if values.shape != (states,):
+        raise ValueError("values must be a scalar field with one value per state")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    if maturity <= 0 or speed <= 0:
+        raise ValueError("maturity and speed must be positive")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    projection = np.outer(np.ones(states), pi)
+    group_inverse = np.linalg.inv(Q - projection) + projection
+    centered = values - pi @ values
+    return float(
+        initial @ (expm(speed * maturity * Q) - np.eye(states))
+        @ group_inverse @ centered / speed
+    )
+
+
+def scalar_observable_price_expansion(Q, values, initial, maturity, speed,
+                                      derivatives):
+    """Second-order price expansion for a fast-chain scalar average.
+
+    ``derivatives[j]`` is the j-th derivative at ``pi[values]`` of a scalar
+    payoff applied to ``maturity**(-1) * integral values[Y_t] dt``.  The
+    returned approximation keeps the mean initial layer exact and has a
+    fixed-positive-maturity ``O(speed**-3)`` remainder, uniformly over the
+    initial probability vector when ``Q``, ``values`` and the payoff are fixed.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    derivatives = np.asarray(derivatives, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    if values.shape != (states,):
+        raise ValueError("values must be a scalar field with one value per state")
+    if derivatives.shape != (5,):
+        raise ValueError("derivatives must contain orders zero through four")
+    if maturity <= 0 or speed <= 0:
+        raise ValueError("maturity and speed must be positive")
+    pi = np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+    contrasts = values[1:] - values[0]
+    covariance_rate = occupation_covariance_rate(Q)
+    third_rate = occupation_third_cumulant_rate(Q)
+    lambda2 = float(contrasts @ covariance_rate @ contrasts)
+    lambda3 = float(np.einsum(
+        'a,b,c,abc', contrasts, contrasts, contrasts, third_rate
+    ))
+    b1 = float(initial_layer_coefficient(Q, values, initial))
+    b2 = float(initial_covariance_boundary(Q, values, initial))
+    mean = finite_rate_mean_correction(
+        Q, values, initial, maturity, speed
+    )
+    c0, c1, c2, c3, c4 = derivatives
+    second_order = (
+        0.5 * (b2 + b1 * b1) * c2
+        + (lambda3 + 3.0 * lambda2 * b1) * c3 / 6.0
+        + lambda2 * lambda2 * c4 / 8.0
+    )
+    return float(
+        c0 + mean * c1 / maturity
+        + lambda2 * c2 / (2.0 * speed * maturity)
+        + second_order / (speed * speed * maturity * maturity)
+    )
+
+
 def gaussian_vector_occupation_cumulant(indices, T, baseline_mean,
                                         baseline_covariance, mean_contrasts,
                                         covariance_contrasts, occupation):
