@@ -247,6 +247,7 @@ def main():
     mapped_ranks = []
     nonlinear_mean_errors = []
     nonlinear_covariance_errors = []
+    critical_variance_errors = []
     base_covariance = green_kubo_covariance(VALUES)
     for matrix, shift, _ in RECTANGULAR_MAPS:
         mapped_values = VALUES @ matrix + shift
@@ -321,6 +322,7 @@ def main():
         mixed_errors.append(mixed_maximum)
         nonlinear_mean_error = 0.0
         nonlinear_covariance_error = 0.0
+        critical_variance_error = 0.0
         tangent_covariance = np.array([
             [0.0, 0.0],
             [0.0, base_covariance[1, 1] / (speed * MATURITY)],
@@ -343,12 +345,23 @@ def main():
                     transformed_covariance - tangent_covariance
                 )))
             )
+            critical_variance = (
+                2 * base_covariance[0, 0] ** 2
+                / (speed ** 2 * MATURITY ** 2)
+            )
+            critical_variance_error = max(
+                critical_variance_error,
+                abs(transformed_covariance[0, 0] - critical_variance)
+            )
         nonlinear_mean_errors.append(nonlinear_mean_error)
         nonlinear_covariance_errors.append(nonlinear_covariance_error)
+        critical_variance_errors.append(critical_variance_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
         print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
               f"tangent-covariance error {nonlinear_covariance_error:.8e}")
+        print(f"            critical quadratic-variance error "
+              f"{critical_variance_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -368,6 +381,10 @@ def main():
     )
     print(f"nonlinear delta mean/covariance orders "
           f"{nonlinear_mean_order:.6f} {nonlinear_covariance_order:.6f}")
+    critical_variance_order = math.log(
+        critical_variance_errors[-2] / critical_variance_errors[-1], 2
+    )
+    print(f"critical quadratic-variance order {critical_variance_order:.6f}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -382,6 +399,8 @@ def main():
     ok &= nonlinear_covariance_order > 1.98
     ok &= nonlinear_mean_errors[-1] < 3.0e-5
     ok &= nonlinear_covariance_errors[-1] < 2.0e-5
+    ok &= critical_variance_order > 2.98
+    ok &= critical_variance_errors[-1] < 5.0e-7
 
     print("PASS" if ok else "FAIL")
 

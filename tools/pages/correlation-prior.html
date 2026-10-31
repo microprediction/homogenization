@@ -147,6 +147,18 @@
     covariance only at order $m^{-2}$. This local delta-method rank is neither the exact fixed-feature
     Green&ndash;Kubo rank nor a rank obtained by integrating maturity-dependent loadings.</p>
 
+    <h3>The critical-map covariance</h3>
+    <p>When $J=0$, the first nonzero covariance coefficient is explicit. With the same fixed-parameter and
+    fixed-positive-maturity scope, uniformly over initial priors,</p>
+    $$\operatorname{Cov}(Z_m)_{ij}
+      =\frac{H^i_{ab}\Gamma_{ac}\Gamma_{bd}H^j_{cd}}{2m^2T^2}+O(m^{-3}).$$
+    <p>Covariance is unchanged by subtracting $\psi(\bar f)$, after which each transformed component begins with
+    the quadratic form $H^i_{ab}(X_m-\bar f)_a(X_m-\bar f)_b/2$. The fourth-moment pairings in the vector price
+    theorem give the displayed coefficient, while subtracting the component means removes the disconnected pairing.</p>
+    <p>The coefficient is the covariance of Gaussian quadratic forms and is positive semidefinite. Its rank is a
+    second-order property of the chosen critical statistic, not the fixed-feature Green&ndash;Kubo rank and not a
+    maturity-integrated loading rank.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -221,6 +233,9 @@
     <p>For the post-averaging map $\psi(x,y)=((x-\bar x)^2,y)$, whose Jacobian has rank one, the exact joint-moment ODE gives mean errors
     $5.01528999\times10^{-3}$ and $1.95909768\times10^{-5}$ at speeds $4$ and $64$. The corresponding tangent-covariance
     errors fall from $2.87245875\times10^{-3}$ to $1.28871522\times10^{-5}$, with last-doubling orders $2.000000$ and $1.987508$.</p>
+    <p>For its critical first component $(x-\bar x)^2$, the predicted variance is
+    $2\Gamma_{11}^2/(m^2T^2)$. The exact variance error falls from $1.07961924\times10^{-3}$ at speed $4$ to
+    $2.98170334\times10^{-7}$ at speed $64$, with last-doubling order $2.988799$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -244,6 +259,9 @@
     <p>The transformed covariance $J\Gamma J^\top$ is the standard multivariate delta-method covariance; see
     <a href="./bibliography.html#VanDerVaart1998">van der Vaart, Chapter 3</a>. The curvature bias and uniform
     finite-chain remainder stated here follow directly from the spectral price theorem above.</p>
+    <p>The critical coefficient uses the classical covariance identity for Gaussian quadratic forms; see
+    <a href="./bibliography.html#Magnus1978">Magnus (1978)</a>. The finite-chain $O(m^{-3})$ remainder and its
+    uniformity over starting priors are proved here rather than imported from that Gaussian calculation.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
