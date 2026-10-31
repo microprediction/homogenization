@@ -189,6 +189,17 @@
     <p>This is covariance under a change of coordinates, not a new source of latent directions. It does not change
     fixed-feature Green&ndash;Kubo rank and makes no claim about rank after integrating maturity-dependent loadings.</p>
 
+    <h3>Projection and redundant coordinates</h3>
+    <p>The same conclusion does not require a square or invertible map. For any $A\in\mathbb R^{d\times k}$, put
+    $f'=fA+\mathbf1c^\top$ and let $D$ be a payoff on $\mathbb R^k$. Computing the expansion for $D$ in the mapped
+    coordinates gives exactly the expansion for $C(x)=D(A^\top x+c)$ in the original coordinates.</p>
+    <p>Each cumulant-tensor index is multiplied by $A$, while the chain rule multiplies each derivative index by the
+    same $A$, so the contractions agree without an inverse. This covers projection to fewer observables and embedding
+    into redundant coordinates.</p>
+    <p>In particular $\Gamma'=A^\top\Gamma A$ and
+    $\operatorname{rank}\Gamma'\le\operatorname{rank}\Gamma$. Adding redundant coordinates cannot increase the
+    fixed-feature rank; this remains separate from integrating different maturity loadings.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -251,6 +262,9 @@
     <p>Three non-orthogonal affine coordinate changes, five priors and five speeds preserve the complete vector
     approximation with maximum discrepancy $2.60\times10^{-18}$. This tests the mean, boundary, covariance, skew and fourth-pairing
     transformation laws simultaneously.</p>
+    <p>A one-dimensional projection and a rank-two embedding into three redundant coordinates preserve nonlinear
+    degree-four prices with maximum discrepancy $1.11\times10^{-16}$. The projected and embedded tests use all five
+    priors and speeds.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
