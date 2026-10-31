@@ -22,6 +22,7 @@ Part 2, physical measure (drifts, volatilities and correlation co-switch; bear r
 Writes results.json for the page. Ends with PASS or FAIL.
 """
 import json, math, os, sys
+import mpmath as mp
 import numpy as np
 from scipy.linalg import expm
 
@@ -29,8 +30,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'fast-switching'))
 sys.path.insert(0, os.path.join(HERE, '..', 'general'))
-from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, margrabe, margrabe_greeks, exch_var,
-                         margrabe_first_order, margrabe_first_order_prior,
+from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, margrabe, margrabe_greeks,
+                         margrabe_variance_derivatives, exch_var,
+                         margrabe_first_order, margrabe_first_order_prior, margrabe_second_order_prior,
                          implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
@@ -194,6 +196,54 @@ def main():
           f"complete {complete_prior_rate:.6f}")
     ok &= 0.9 < stationary_prior_rate < 1.1
     ok &= 1.9 < complete_prior_rate < 2.1
+
+    print("1e. second-order arbitrary-prior price correction")
+    derivative_error = 0.0
+    for q in QS:
+        qS2 = q * S2
+        variance = exch_var(SIG1, SIG2, float(pi2(A, B) @ RHO)) * T
+        def margrabe_mp(value):
+            root = mp.sqrt(value)
+            d1 = (mp.log(S1 / qS2) + value / 2) / root
+            d2 = d1 - root
+            normal = lambda x: mp.erfc(-x / mp.sqrt(2)) / 2
+            return S1 * normal(d1) - qS2 * normal(d2)
+        analytic = margrabe_variance_derivatives(S1, qS2, variance)
+        numerical = tuple(
+            float(mp.diff(margrabe_mp, mp.mpf(variance), order))
+            for order in range(1, 5)
+        )
+        derivative_error = max(
+            derivative_error,
+            *(abs(x - y) / max(1.0, abs(y))
+              for x, y in zip(analytic, numerical))
+        )
+    print(f"   maximum normalized variance-derivative error {derivative_error:.2e}")
+    second_order_errors = []
+    dense_initials = np.linspace(0.0, 1.0, 21)
+    for m in prior_speeds:
+        a, b = m * A, m * B
+        maximum_error = 0.0
+        for initial_p1 in dense_initials:
+            v, w = occupation_nodes(T, a, b, n=120,
+                                    initial_p1=initial_p1)
+            rho_hat = RHO[0] + (RHO[1] - RHO[0]) * v / T
+            for q in QS:
+                exact = float(w @ margrabe(
+                    S1, q * S2, exch_var(SIG1, SIG2, rho_hat) * T
+                ))
+                second_order = margrabe_second_order_prior(
+                    S1, q * S2, T, SIG1, SIG2, RHO,
+                    a, b, initial_p1
+                )
+                maximum_error = max(maximum_error,
+                                    abs(exact - second_order))
+        second_order_errors.append(maximum_error)
+        print(f"   m={m:2d}: maximum error {maximum_error:.8e}")
+    second_order_prior_rate = rate(second_order_errors)
+    print(f"   last-doubling rate {second_order_prior_rate:.6f}")
+    ok &= derivative_error < 5e-12
+    ok &= 2.85 < second_order_prior_rate < 3.15
 
     print("2. exchange option (S1 - q S2)^+")
     out['exchange'] = {'speeds': SPEEDS, 'q': QS, 'rows': []}

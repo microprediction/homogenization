@@ -1,0 +1,78 @@
+<!-- title: Arbitrary-prior correlation prices · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation.html">&larr; switching correlation</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_correlation.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./correlation-full.html">full correlation note</a></p>
+    <h1>Second-order arbitrary-prior correlation prices</h1>
+    <p class="subtitle">The mean boundary, occupation skew and Gaussian kurtosis produce a uniform third-order remainder.</p>
+
+    <p class="lead">A nonstationary initial regime changes a fast-switching option price at first order. Keeping that
+    exact mean boundary and the next occupation moments gives a second-order price formula whose remainder is
+    $O(m^{-3})$, uniformly over every initial regime prior at fixed positive maturity.</p>
+
+    <h2>The theorem</h2>
+    <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
+    $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
+      u=p_0p_1,\quad d=p_0-p_1,\quad
+      \delta=\eta-p_1,\quad \Delta\rho=\rho_1-\rho_0,$$
+    <p>where $\eta=\mathbb P(Y_0=1)$ and $\bar\rho=p_0\rho_0+p_1\rho_1$. Define the exact mean boundary</p>
+    $$b_m(\eta)=\Delta\rho\,\delta\frac{1-e^{-mrT}}{mrT}.$$
+    <p>If $T&gt;0$ is fixed and $C$ has six continuous derivatives on the interval between $\rho_0$ and $\rho_1$, then,
+    uniformly over $\eta\in[0,1]$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E_\eta C(\hat\rho_T)={}&C(\bar\rho)+b_m(\eta)C'(\bar\rho)
+      +\frac{u(\Delta\rho)^2}{mrT}C''(\bar\rho)\\
+      &+\frac{1}{m^2r^2T^2}\Big[(\Delta\rho)^2(\delta d-u)C''(\bar\rho)
+      +u(\Delta\rho)^3(d+\delta)C'''(\bar\rho)\\
+      &\hspace{43mm}+\tfrac12u^2(\Delta\rho)^4C''''(\bar\rho)\Big]
+      +O_{T,C}(m^{-3}).
+    \end{aligned}$$
+    </div>
+    <p>The bound is uniform even for a prior $\eta=eta_m$ that changes with speed. It is not uniform as maturity tends
+    to zero or infinity, and it is a two-state scalar-correlation result rather than a general finite-chain formula.</p>
+
+    <h2>Proof</h2>
+    <p>Write $A_m=\int_0^T(\mathbf1_{\{Y_t=1\}}-p_1)dt$, so
+    $\hat\rho_T-\bar\rho=\Delta\rho A_m/T$. The exact arbitrary-start occupation cumulants give, uniformly in $\eta$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E A_m&=\delta\frac{1-e^{-mrT}}{mr},\\
+    \mathbb E A_m^2&=\frac{2uT}{mr}+\frac{2(\delta d-u)}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^3&=\frac{6u(d+\delta)T}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^4&=\frac{12u^2T^2}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^5&=O(m^{-3}),\qquad \mathbb E A_m^6=O(m^{-3}).
+    \end{aligned}$$
+    </div>
+    <p>The second line combines the stationary covariance integral with its exact endpoint correction. In the third line,
+    the $d$ term is the stationary third occupation cumulant and the $\delta$ term is the product of the leading variance
+    and mean boundary; the fourth line is the three-pair contribution $3(2uT/(mr))^2$.</p>
+    <p>The finite-state spectral cumulant expansion controls orders five and six uniformly because the initial-prior
+    coefficients are continuous on the compact simplex; analyticity follows from
+    <a href="./bibliography.html#Kato1995">Kato&apos;s spectral projection perturbation theory</a>. Taylor expansion of
+    $C(\bar\rho+\Delta\rho A_m/T)$ through degree five, with the sixth derivative bounding the remainder, gives the theorem.</p>
+
+    <h2>Exchange-option implementation</h2>
+    <p>For Margrabe&apos;s price $M(V)$, let $k=\log(S_1/(qS_2))$ and</p>
+    $$h(V)=\frac{k^2}{2V^2}-\frac1{2V}-\frac18.$$
+    <p>Starting from $M'(V)=S_1\phi(d_1)/(2\sqrt V)$, repeated differentiation gives</p>
+    $$M''=hM',\qquad M'''=(h^2+h')M',\qquad
+      M''''=(h^3+3hh'+h'')M'.$$
+    <p>Since $V(\rho)$ is affine, $C^{(j)}(\rho)=(-2\sigma_1\sigma_2T)^jM^{(j)}(V(\rho))$. This supplies the variance,
+    skew and kurtosis terms without numerical differentiation.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate uses 21 equally spaced initial priors, all nine displayed exchange strikes, and speeds
+    $m=4,8,16,32,64$. The maximum error falls from $5.36315810\times10^{-5}$ to
+    $1.22709523\times10^{-8}$, with last-doubling order $3.006199$.</p>
+    <p>Independent arbitrary-precision differentiation checks the first four variance derivatives with maximum normalized
+    error $2.59\times10^{-14}$. The observed order supports the implementation; the moment argument above proves the
+    fixed-maturity rate.</p>
+
+    <h2>Literature boundary</h2>
+    <p>The atom-plus-Bessel occupation law is classical; see
+    <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
+    <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
+    expansion follows directly from those occupation moments and Taylor&apos;s theorem; no priority claim is made for the
+    occupation law.</p>
+  </main>

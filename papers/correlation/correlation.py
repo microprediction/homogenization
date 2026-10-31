@@ -614,11 +614,29 @@ def margrabe(S1, qS2, V):
 
 def margrabe_greeks(S1, qS2, V):
     """dM/dV and d^2M/dV^2."""
+    return margrabe_variance_derivatives(S1, qS2, V)[:2]
+
+
+def margrabe_variance_derivatives(S1, qS2, V):
+    """First four derivatives of Margrabe's price in exchange variance."""
     sv = math.sqrt(V)
     d1 = (math.log(S1 / qS2) + V / 2) / sv
-    d2 = d1 - sv
     phi = math.exp(-d1 * d1 / 2) / math.sqrt(2 * math.pi)
-    return S1 * phi / (2 * sv), S1 * phi * (d1 * d2 - 1) / (4 * V ** 1.5)
+    first = S1 * phi / (2 * sv)
+    log_moneyness = math.log(S1 / qS2)
+    log_moneyness_squared = log_moneyness * log_moneyness
+    ratio = (
+        log_moneyness_squared / (2 * V * V)
+        - 1 / (2 * V) - 1 / 8
+    )
+    ratio_prime = -log_moneyness_squared / V ** 3 + 1 / (2 * V * V)
+    ratio_second = 3 * log_moneyness_squared / V ** 4 - 1 / V ** 3
+    return (
+        first,
+        first * ratio,
+        first * (ratio * ratio + ratio_prime),
+        first * (ratio ** 3 + 3 * ratio * ratio_prime + ratio_second),
+    )
 
 
 def exch_var(s1, s2, rho):
@@ -654,6 +672,40 @@ def margrabe_first_order_prior(S1, qS2, T, s1, s2, rhos,
         -2 * s1 * s2 * T * margrabe_vega_variance
     )
     return stationary + mean_shift * margrabe_vega_correlation
+
+
+def margrabe_second_order_prior(S1, qS2, T, s1, s2, rhos,
+                                 a, b, initial_p1):
+    """Second-order arbitrary-prior price, with fixed-maturity error O(rate^-3)."""
+    p0, p1 = pi2(a, b)
+    stationary_product = p0 * p1
+    stationary_difference = p0 - p1
+    initial_difference = initial_p1 - p1
+    correlation_difference = rhos[1] - rhos[0]
+    total_rate = a + b
+    rhobar = p0 * rhos[0] + p1 * rhos[1]
+    variance = exch_var(s1, s2, rhobar) * T
+    variance_derivatives = margrabe_variance_derivatives(S1, qS2, variance)
+    variance_rho_slope = -2 * s1 * s2 * T
+    rho_derivatives = tuple(
+        variance_rho_slope ** order * derivative
+        for order, derivative in enumerate(variance_derivatives, start=1)
+    )
+    second, third, fourth = rho_derivatives[1:]
+    coefficient = (
+        correlation_difference ** 2
+        * (initial_difference * stationary_difference - stationary_product)
+        * second
+        + correlation_difference ** 3 * stationary_product
+        * (stationary_difference + initial_difference) * third
+        + 0.5 * correlation_difference ** 4 * stationary_product ** 2 * fourth
+    )
+    return (
+        margrabe_first_order_prior(
+            S1, qS2, T, s1, s2, rhos, a, b, initial_p1
+        )
+        + coefficient / (total_rate * total_rate * T * T)
+    )
 
 
 def implied_corr_margrabe(price, S1, qS2, T, s1, s2):

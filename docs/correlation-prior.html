@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Arbitrary-prior correlation prices · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation.html">&larr; switching correlation</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_correlation.py">certificate</a></span></p>
+    <p class="demo-nav"><a href="./correlation-full.html">full correlation note</a></p>
+    <h1>Second-order arbitrary-prior correlation prices</h1>
+    <p class="subtitle">The mean boundary, occupation skew and Gaussian kurtosis produce a uniform third-order remainder.</p>
+
+    <p class="lead">A nonstationary initial regime changes a fast-switching option price at first order. Keeping that
+    exact mean boundary and the next occupation moments gives a second-order price formula whose remainder is
+    $O(m^{-3})$, uniformly over every initial regime prior at fixed positive maturity.</p>
+
+    <h2>The theorem</h2>
+    <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
+    $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
+      u=p_0p_1,\quad d=p_0-p_1,\quad
+      \delta=\eta-p_1,\quad \Delta\rho=\rho_1-\rho_0,$$
+    <p>where $\eta=\mathbb P(Y_0=1)$ and $\bar\rho=p_0\rho_0+p_1\rho_1$. Define the exact mean boundary</p>
+    $$b_m(\eta)=\Delta\rho\,\delta\frac{1-e^{-mrT}}{mrT}.$$
+    <p>If $T&gt;0$ is fixed and $C$ has six continuous derivatives on the interval between $\rho_0$ and $\rho_1$, then,
+    uniformly over $\eta\in[0,1]$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E_\eta C(\hat\rho_T)={}&C(\bar\rho)+b_m(\eta)C'(\bar\rho)
+      +\frac{u(\Delta\rho)^2}{mrT}C''(\bar\rho)\\
+      &+\frac{1}{m^2r^2T^2}\Big[(\Delta\rho)^2(\delta d-u)C''(\bar\rho)
+      +u(\Delta\rho)^3(d+\delta)C'''(\bar\rho)\\
+      &\hspace{43mm}+\tfrac12u^2(\Delta\rho)^4C''''(\bar\rho)\Big]
+      +O_{T,C}(m^{-3}).
+    \end{aligned}$$
+    </div>
+    <p>The bound is uniform even for a prior $\eta=eta_m$ that changes with speed. It is not uniform as maturity tends
+    to zero or infinity, and it is a two-state scalar-correlation result rather than a general finite-chain formula.</p>
+
+    <h2>Proof</h2>
+    <p>Write $A_m=\int_0^T(\mathbf1_{\{Y_t=1\}}-p_1)dt$, so
+    $\hat\rho_T-\bar\rho=\Delta\rho A_m/T$. The exact arbitrary-start occupation cumulants give, uniformly in $\eta$,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E A_m&=\delta\frac{1-e^{-mrT}}{mr},\\
+    \mathbb E A_m^2&=\frac{2uT}{mr}+\frac{2(\delta d-u)}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^3&=\frac{6u(d+\delta)T}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^4&=\frac{12u^2T^2}{m^2r^2}+O(m^{-3}),\\
+    \mathbb E A_m^5&=O(m^{-3}),\qquad \mathbb E A_m^6=O(m^{-3}).
+    \end{aligned}$$
+    </div>
+    <p>The second line combines the stationary covariance integral with its exact endpoint correction. In the third line,
+    the $d$ term is the stationary third occupation cumulant and the $\delta$ term is the product of the leading variance
+    and mean boundary; the fourth line is the three-pair contribution $3(2uT/(mr))^2$.</p>
+    <p>The finite-state spectral cumulant expansion controls orders five and six uniformly because the initial-prior
+    coefficients are continuous on the compact simplex; analyticity follows from
+    <a href="./bibliography.html#Kato1995">Kato&apos;s spectral projection perturbation theory</a>. Taylor expansion of
+    $C(\bar\rho+\Delta\rho A_m/T)$ through degree five, with the sixth derivative bounding the remainder, gives the theorem.</p>
+
+    <h2>Exchange-option implementation</h2>
+    <p>For Margrabe&apos;s price $M(V)$, let $k=\log(S_1/(qS_2))$ and</p>
+    $$h(V)=\frac{k^2}{2V^2}-\frac1{2V}-\frac18.$$
+    <p>Starting from $M'(V)=S_1\phi(d_1)/(2\sqrt V)$, repeated differentiation gives</p>
+    $$M''=hM',\qquad M'''=(h^2+h')M',\qquad
+      M''''=(h^3+3hh'+h'')M'.$$
+    <p>Since $V(\rho)$ is affine, $C^{(j)}(\rho)=(-2\sigma_1\sigma_2T)^jM^{(j)}(V(\rho))$. This supplies the variance,
+    skew and kurtosis terms without numerical differentiation.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate uses 21 equally spaced initial priors, all nine displayed exchange strikes, and speeds
+    $m=4,8,16,32,64$. The maximum error falls from $5.36315810\times10^{-5}$ to
+    $1.22709523\times10^{-8}$, with last-doubling order $3.006199$.</p>
+    <p>Independent arbitrary-precision differentiation checks the first four variance derivatives with maximum normalized
+    error $2.59\times10^{-14}$. The observed order supports the implementation; the moment argument above proves the
+    fixed-maturity rate.</p>
+
+    <h2>Literature boundary</h2>
+    <p>The atom-plus-Bessel occupation law is classical; see
+    <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
+    <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
+    expansion follows directly from those occupation moments and Taylor&apos;s theorem; no priority claim is made for the
+    occupation law.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
