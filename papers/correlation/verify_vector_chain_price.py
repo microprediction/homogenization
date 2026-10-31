@@ -210,26 +210,57 @@ def exact_vector_moments(initial, speed, maximum_powers=(4, 2)):
     }
 
 
+def centered_moment(moment, powers, center):
+    """Convert one bivariate raw moment to the given center."""
+    total = 0.0
+    for first in range(powers[0] + 1):
+        for second in range(powers[1] + 1):
+            coefficient = (math.comb(powers[0], first)
+                           * math.comb(powers[1], second)
+                           * (-center[0]) ** (powers[0] - first)
+                           * (-center[1]) ** (powers[1] - second))
+            total += coefficient * moment[(first, second)]
+    return total
+
+
 def exact_critical_transform_moments(initial, speed, center):
-    """Mean and covariance of ((X[0]-center)**2, X[1])."""
-    moment = exact_vector_moments(initial, speed)
+    """Moments of the old critical map and all quadratic coordinates."""
+    moment = exact_vector_moments(initial, speed, maximum_powers=(4, 4))
+    first_center = center[0]
     transformed_mean = np.array([
-        moment[(2, 0)] - 2 * center * moment[(1, 0)] + center ** 2,
+        moment[(2, 0)] - 2 * first_center * moment[(1, 0)]
+        + first_center ** 2,
         moment[(0, 1)],
     ])
     transformed_second = np.array([
-        [moment[(4, 0)] - 4 * center * moment[(3, 0)]
-         + 6 * center ** 2 * moment[(2, 0)]
-         - 4 * center ** 3 * moment[(1, 0)] + center ** 4,
-         moment[(2, 1)] - 2 * center * moment[(1, 1)]
-         + center ** 2 * moment[(0, 1)]],
+        [moment[(4, 0)] - 4 * first_center * moment[(3, 0)]
+         + 6 * first_center ** 2 * moment[(2, 0)]
+         - 4 * first_center ** 3 * moment[(1, 0)] + first_center ** 4,
+         moment[(2, 1)] - 2 * first_center * moment[(1, 1)]
+         + first_center ** 2 * moment[(0, 1)]],
         [0.0, moment[(0, 2)]],
     ])
     transformed_second[1, 0] = transformed_second[0, 1]
     covariance = transformed_second - np.outer(
         transformed_mean, transformed_mean
     )
-    return transformed_mean, covariance
+    centered = {
+        powers: centered_moment(moment, powers, center)
+        for powers in [(2, 0), (0, 2), (1, 1), (4, 0), (0, 4),
+                       (2, 2), (3, 1), (1, 3)]
+    }
+    quadratic_mean = np.array([
+        centered[(2, 0)], centered[(0, 2)], centered[(1, 1)]
+    ])
+    quadratic_second = np.array([
+        [centered[(4, 0)], centered[(2, 2)], centered[(3, 1)]],
+        [centered[(2, 2)], centered[(0, 4)], centered[(1, 3)]],
+        [centered[(3, 1)], centered[(1, 3)], centered[(2, 2)]],
+    ])
+    quadratic_covariance = quadratic_second - np.outer(
+        quadratic_mean, quadratic_mean
+    )
+    return transformed_mean, covariance, quadratic_covariance
 
 
 def main():
@@ -248,7 +279,30 @@ def main():
     nonlinear_mean_errors = []
     nonlinear_covariance_errors = []
     critical_variance_errors = []
+    critical_rank_errors = []
     base_covariance = green_kubo_covariance(VALUES)
+    critical_hessians = np.array([
+        [[2.0, 0.0], [0.0, 0.0]],
+        [[0.0, 0.0], [0.0, 2.0]],
+        [[0.0, 1.0], [1.0, 0.0]],
+    ])
+    critical_coefficient = 0.5 * np.einsum(
+        "iab,ac,bd,jcd->ij", critical_hessians, base_covariance,
+        base_covariance, critical_hessians
+    )
+    eigenvalues, eigenvectors = np.linalg.eigh(base_covariance)
+    covariance_sqrt = (eigenvectors * np.sqrt(eigenvalues)) @ eigenvectors.T
+    hessian_images = np.array([
+        covariance_sqrt @ hessian @ covariance_sqrt
+        for hessian in critical_hessians
+    ])
+    critical_gram = 0.5 * np.einsum(
+        "iab,jba->ij", hessian_images, hessian_images
+    )
+    critical_gram_error = float(np.max(np.abs(
+        critical_coefficient - critical_gram
+    )))
+    critical_rank = np.linalg.matrix_rank(critical_coefficient, tol=1e-11)
     for matrix, shift, _ in RECTANGULAR_MAPS:
         mapped_values = VALUES @ matrix + shift
         mapped_covariance = green_kubo_covariance(mapped_values)
@@ -323,13 +377,14 @@ def main():
         nonlinear_mean_error = 0.0
         nonlinear_covariance_error = 0.0
         critical_variance_error = 0.0
+        critical_rank_error = 0.0
         tangent_covariance = np.array([
             [0.0, 0.0],
             [0.0, base_covariance[1, 1] / (speed * MATURITY)],
         ])
         for initial in priors:
-            transformed_mean, transformed_covariance = (
-                exact_critical_transform_moments(initial, speed, mean[0])
+            transformed_mean, transformed_covariance, quadratic_covariance = (
+                exact_critical_transform_moments(initial, speed, mean)
             )
             tangent_mean = np.array([
                 base_covariance[0, 0] / (speed * MATURITY),
@@ -353,15 +408,27 @@ def main():
                 critical_variance_error,
                 abs(transformed_covariance[0, 0] - critical_variance)
             )
+            predicted_quadratic_covariance = (
+                critical_coefficient / (speed ** 2 * MATURITY ** 2)
+            )
+            critical_rank_error = max(
+                critical_rank_error,
+                float(np.max(np.abs(
+                    quadratic_covariance - predicted_quadratic_covariance
+                )))
+            )
         nonlinear_mean_errors.append(nonlinear_mean_error)
         nonlinear_covariance_errors.append(nonlinear_covariance_error)
         critical_variance_errors.append(critical_variance_error)
+        critical_rank_errors.append(critical_rank_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
         print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
               f"tangent-covariance error {nonlinear_covariance_error:.8e}")
         print(f"            critical quadratic-variance error "
               f"{critical_variance_error:.8e}")
+        print(f"            critical rank-three covariance error "
+              f"{critical_rank_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -385,6 +452,12 @@ def main():
         critical_variance_errors[-2] / critical_variance_errors[-1], 2
     )
     print(f"critical quadratic-variance order {critical_variance_order:.6f}")
+    critical_rank_order = math.log(
+        critical_rank_errors[-2] / critical_rank_errors[-1], 2
+    )
+    print(f"critical Hessian-Gram discrepancy {critical_gram_error:.2e}; "
+          f"coefficient rank {critical_rank}")
+    print(f"critical rank-three covariance order {critical_rank_order:.6f}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -401,6 +474,10 @@ def main():
     ok &= nonlinear_covariance_errors[-1] < 2.0e-5
     ok &= critical_variance_order > 2.98
     ok &= critical_variance_errors[-1] < 5.0e-7
+    ok &= critical_gram_error < 2.0e-12
+    ok &= critical_rank == 3
+    ok &= critical_rank_order > 2.98
+    ok &= critical_rank_errors[-1] < 2.0e-6
 
     print("PASS" if ok else "FAIL")
 
