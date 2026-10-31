@@ -176,6 +176,28 @@
     $(x_1-\bar f_1)(x_2-\bar f_2)$ can have rank-three leading covariance. This order-$m^{-2}$ local rank can exceed
     $r$ without changing the fixed-feature Green&ndash;Kubo rank, and it says nothing about maturity-integrated loadings.</p>
 
+    <h3>Higher-order degeneracy</h3>
+    <p>Work in the exact $r$-dimensional reduction $X_m=\bar f+RW_m$, so the Green&ndash;Kubo matrix
+    $\Gamma_r$ of $W_m$ is positive definite. Let $p\ge1$, let $\phi(w)=\psi(\bar f+Rw)$ be $C^{p+1}$ on a
+    neighborhood of the attainable feature polytope, and suppose $D^j\phi(0)=0$ for $1\le j&lt;p$.</p>
+    <p>For $G\sim N(0,\Gamma_r)$ define the homogeneous Gaussian polynomials
+    $P_i(G)=D^p\phi_i(0)[G^{\otimes p}]/p!$ and $K^{(p)}_{ij}=\operatorname{Cov}(P_i(G),P_j(G))$. At fixed
+    positive $T$, uniformly over initial priors,</p>
+    <div class="equation-card">
+    $$m^pT^p\operatorname{Cov}(\phi(W_m))\longrightarrow K^{(p)},\qquad
+      \operatorname{rank}K^{(p)}\le
+      \min\!\left\{k,{r+p-1\choose p}\right\}.$$
+    </div>
+    <p>The finite-chain central limit theorem and moment convergence give $\sqrt{mT}W_m\Rightarrow G$ uniformly
+    over the prior simplex. Taylor&apos;s formula then gives $(mT)^{p/2}(\phi_i(W_m)-\phi_i(0))=P_i(\sqrt{mT}W_m)+o_{L^2}(1)$;
+    the bounded finite-state rewards and exponential mixing control the remainder uniformly.</p>
+    <p>Gaussian covariance is an inner product on the space of nonconstant homogeneous degree-$p$ polynomials.
+    That space is isomorphic to the symmetric $p$-tensors and has dimension ${r+p-1\choose p}$, so $K^{(p)}$ is
+    their Gram matrix; choosing a polynomial basis attains the ceiling and proves sharpness.</p>
+    <p>The cases $p=1$ and $p=2$ recover the tangent and Hessian-Gram results. This theorem concerns one fixed map,
+    feature family and positive maturity; it gives an $o(m^{-p})$ covariance remainder, not a uniform statement as
+    $T\downarrow0$ or an $O(m^{-p-1})$ rate.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -285,6 +307,9 @@
     tangent and three are critical. The tangent error falls from $5.11717107\times10^{-3}$ to $2.00295060\times10^{-5}$
     with order $1.999782$, while the maximum null-space error falls from $1.48940666\times10^{-3}$ to
     $4.15305839\times10^{-7}$ with order $2.988002$.</p>
+    <p>For the four cubic coordinates $(x^3,x^2y,xy^2,y^3)$ in the minimal two-dimensional feature space, the
+    Gaussian coefficient attains the symmetric-cubic ceiling ${4\choose3}=4$. Across the five priors, its exact
+    covariance error falls from $4.82994875\times10^{-4}$ to $9.39162072\times10^{-9}$, with last-doubling order $3.977185$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -312,6 +337,9 @@
     <p>The critical coefficient uses the classical covariance identity for Gaussian quadratic forms; see
     <a href="./bibliography.html#Magnus1978">Magnus (1978)</a>. The finite-chain $O(m^{-3})$ remainder and its
     uniformity over starting priors are proved here rather than imported from that Gaussian calculation.</p>
+    <p>The arbitrary-order Gaussian coefficient is evaluated with the product-moment formula of
+    <a href="./bibliography.html#Isserlis1918">Isserlis (1918)</a>. The uniform finite-chain delta limit and the sharp
+    symmetric-tensor rank ceiling are derived directly here.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
