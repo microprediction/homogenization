@@ -176,6 +176,31 @@
     $(x_1-\bar f_1)(x_2-\bar f_2)$ can have rank-three leading covariance. This order-$m^{-2}$ local rank can exceed
     $r$ without changing the fixed-feature Green&ndash;Kubo rank, and it says nothing about maturity-integrated loadings.</p>
 
+    <h3>Two covariance scales</h3>
+    <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
+    positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
+    $A=D\phi(0)$ and $s=\operatorname{rank}A$.</p>
+    <p>Choose an orthogonal output basis $U=(U_1,U_0)$ whose columns $U_0$ span $\ker A^\top$, set
+    $A_1=U_1^\top A$, and let $K_0$ be the critical Hessian-Gram coefficient for $U_0^\top\phi$. Uniformly over
+    initial priors, at fixed positive maturity,</p>
+    <div class="equation-card">
+    $$U^\top\operatorname{Cov}(\phi(W_m))U=
+      \begin{pmatrix}
+      \dfrac{A_1\Gamma_rA_1^\top}{mT}+O(m^{-2})&O(m^{-2})\\[2mm]
+      O(m^{-2})&\dfrac{K_0}{m^2T^2}+O(m^{-3})
+      \end{pmatrix}.$$
+    </div>
+    <p>If $a_1,\ldots,a_s$ are the positive eigenvalues of $A\Gamma_rA^\top$ and
+    $\kappa_1,\ldots,\kappa_{k-s}$ are those of $K_0$, both in decreasing order, then the covariance eigenvalues obey</p>
+    $$\lambda_j=\frac{a_j}{mT}+O(m^{-2}),\qquad
+      \lambda_{s+j}=\frac{\kappa_j}{m^2T^2}+O(m^{-3}).$$
+    <p>The upper block follows from the ordinary delta covariance, the lower block from the critical theorem, and the
+    cross block is $O(m^{-2})$. In the small-eigenvalue Schur complement its contribution is only $O(m^{-3})$ because
+    the inverse upper block is $O(m)$.</p>
+    <p>Thus $s$ tangent directions appear at order $m^{-1}$ and
+    $q=\operatorname{rank}K_0\le\min\{k-s,r(r+1)/2\}$ further directions can appear at order $m^{-2}$. These are
+    asymptotic covariance scales for one fixed feature family, not exact Green&ndash;Kubo or maturity-integrated ranks.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -256,6 +281,10 @@
     <p>For all three critical quadratic coordinates, the Hessian-Gram identity has maximum discrepancy
     $2.08\times10^{-17}$ and its coefficient has rank three. Across the same five priors, the maximum exact covariance
     error falls from $1.07961924\times10^{-3}$ to $2.98170334\times10^{-7}$, with last-doubling order $2.988799$.</p>
+    <p>For the mixed-scale map $(x-\bar x,(x-\bar x)^2,(y-\bar y)^2,(x-\bar x)(y-\bar y))$, one eigenvalue is
+    tangent and three are critical. The tangent error falls from $5.11717107\times10^{-3}$ to $2.00295060\times10^{-5}$
+    with order $1.999782$, while the maximum null-space error falls from $1.48940666\times10^{-3}$ to
+    $4.15305839\times10^{-7}$ with order $2.988002$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -268,8 +297,9 @@
 
     <h2>Literature boundary</h2>
     <p><a href="./bibliography.html#Kato1995">Kato&apos;s perturbation theory</a> supplies the analytic eigenvalue and
-    spectral-projection expansion. <a href="./bibliography.html#YinZhang2013">Yin and Zhang</a> give the broader
-    two-time-scale finite-chain framework; the displayed scalar price coefficients are derived directly here.</p>
+    spectral-projection expansion, including the finite-dimensional eigenvalue context for the two covariance scales.
+    <a href="./bibliography.html#YinZhang2013">Yin and Zhang</a> give the broader two-time-scale finite-chain framework;
+    the displayed scalar price coefficients are derived directly here.</p>
     <p>The tensor moment partitions are an elementary instance of the classical semi-invariant calculus of
     <a href="./bibliography.html#LeonovShiryaev1959">Leonov and Shiryaev</a>. The multivariate price contraction is
     derived directly here, with no priority claim for moment-cumulant identities.</p>

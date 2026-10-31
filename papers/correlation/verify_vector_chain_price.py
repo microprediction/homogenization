@@ -246,8 +246,9 @@ def exact_critical_transform_moments(initial, speed, center):
     )
     centered = {
         powers: centered_moment(moment, powers, center)
-        for powers in [(2, 0), (0, 2), (1, 1), (4, 0), (0, 4),
-                       (2, 2), (3, 1), (1, 3)]
+        for powers in [(1, 0), (2, 0), (0, 2), (1, 1), (3, 0),
+                       (1, 2), (2, 1), (4, 0), (0, 4), (2, 2),
+                       (3, 1), (1, 3)]
     }
     quadratic_mean = np.array([
         centered[(2, 0)], centered[(0, 2)], centered[(1, 1)]
@@ -260,7 +261,22 @@ def exact_critical_transform_moments(initial, speed, center):
     quadratic_covariance = quadratic_second - np.outer(
         quadratic_mean, quadratic_mean
     )
-    return transformed_mean, covariance, quadratic_covariance
+    mixed_scale_mean = np.r_[centered[(1, 0)], quadratic_mean]
+    mixed_scale_second = np.array([
+        [centered[(2, 0)], centered[(3, 0)], centered[(1, 2)],
+         centered[(2, 1)]],
+        [centered[(3, 0)], centered[(4, 0)], centered[(2, 2)],
+         centered[(3, 1)]],
+        [centered[(1, 2)], centered[(2, 2)], centered[(0, 4)],
+         centered[(1, 3)]],
+        [centered[(2, 1)], centered[(3, 1)], centered[(1, 3)],
+         centered[(2, 2)]],
+    ])
+    mixed_scale_covariance = mixed_scale_second - np.outer(
+        mixed_scale_mean, mixed_scale_mean
+    )
+    return (transformed_mean, covariance, quadratic_covariance,
+            mixed_scale_covariance)
 
 
 def main():
@@ -280,6 +296,8 @@ def main():
     nonlinear_covariance_errors = []
     critical_variance_errors = []
     critical_rank_errors = []
+    tangent_eigenvalue_errors = []
+    null_eigenvalue_errors = []
     base_covariance = green_kubo_covariance(VALUES)
     critical_hessians = np.array([
         [[2.0, 0.0], [0.0, 0.0]],
@@ -303,6 +321,7 @@ def main():
         critical_coefficient - critical_gram
     )))
     critical_rank = np.linalg.matrix_rank(critical_coefficient, tol=1e-11)
+    critical_eigenvalues = np.linalg.eigvalsh(critical_coefficient)[::-1]
     for matrix, shift, _ in RECTANGULAR_MAPS:
         mapped_values = VALUES @ matrix + shift
         mapped_covariance = green_kubo_covariance(mapped_values)
@@ -378,14 +397,17 @@ def main():
         nonlinear_covariance_error = 0.0
         critical_variance_error = 0.0
         critical_rank_error = 0.0
+        tangent_eigenvalue_error = 0.0
+        null_eigenvalue_error = 0.0
         tangent_covariance = np.array([
             [0.0, 0.0],
             [0.0, base_covariance[1, 1] / (speed * MATURITY)],
         ])
         for initial in priors:
-            transformed_mean, transformed_covariance, quadratic_covariance = (
-                exact_critical_transform_moments(initial, speed, mean)
-            )
+            (transformed_mean, transformed_covariance,
+             quadratic_covariance, mixed_scale_covariance) = (
+                 exact_critical_transform_moments(initial, speed, mean)
+             )
             tangent_mean = np.array([
                 base_covariance[0, 0] / (speed * MATURITY),
                 transformed_mean[1],
@@ -417,10 +439,27 @@ def main():
                     quadratic_covariance - predicted_quadratic_covariance
                 )))
             )
+            exact_eigenvalues = np.linalg.eigvalsh(
+                mixed_scale_covariance
+            )[::-1]
+            tangent_eigenvalue_error = max(
+                tangent_eigenvalue_error,
+                abs(exact_eigenvalues[0] - base_covariance[0, 0]
+                    / (speed * MATURITY))
+            )
+            null_eigenvalue_error = max(
+                null_eigenvalue_error,
+                float(np.max(np.abs(
+                    exact_eigenvalues[1:] - critical_eigenvalues
+                    / (speed ** 2 * MATURITY ** 2)
+                )))
+            )
         nonlinear_mean_errors.append(nonlinear_mean_error)
         nonlinear_covariance_errors.append(nonlinear_covariance_error)
         critical_variance_errors.append(critical_variance_error)
         critical_rank_errors.append(critical_rank_error)
+        tangent_eigenvalue_errors.append(tangent_eigenvalue_error)
+        null_eigenvalue_errors.append(null_eigenvalue_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
         print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
@@ -429,6 +468,9 @@ def main():
               f"{critical_variance_error:.8e}")
         print(f"            critical rank-three covariance error "
               f"{critical_rank_error:.8e}")
+        print(f"            tangent/null eigenvalue errors "
+              f"{tangent_eigenvalue_error:.8e} "
+              f"{null_eigenvalue_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -457,7 +499,17 @@ def main():
     )
     print(f"critical Hessian-Gram discrepancy {critical_gram_error:.2e}; "
           f"coefficient rank {critical_rank}")
+    print("critical null-space coefficients "
+          + " ".join(f"{value:.8f}" for value in critical_eigenvalues))
     print(f"critical rank-three covariance order {critical_rank_order:.6f}")
+    tangent_eigenvalue_order = math.log(
+        tangent_eigenvalue_errors[-2] / tangent_eigenvalue_errors[-1], 2
+    )
+    null_eigenvalue_order = math.log(
+        null_eigenvalue_errors[-2] / null_eigenvalue_errors[-1], 2
+    )
+    print(f"two-scale tangent/null eigenvalue orders "
+          f"{tangent_eigenvalue_order:.6f} {null_eigenvalue_order:.6f}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -478,6 +530,10 @@ def main():
     ok &= critical_rank == 3
     ok &= critical_rank_order > 2.98
     ok &= critical_rank_errors[-1] < 2.0e-6
+    ok &= tangent_eigenvalue_order > 1.98
+    ok &= tangent_eigenvalue_errors[-1] < 3.0e-5
+    ok &= null_eigenvalue_order > 2.98
+    ok &= null_eigenvalue_errors[-1] < 7.0e-7
 
     print("PASS" if ok else "FAIL")
 
