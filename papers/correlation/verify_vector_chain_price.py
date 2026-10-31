@@ -60,6 +60,13 @@ def green_kubo_covariance(values):
     return one_sided + one_sided.T
 
 
+def nonlinear_feature_map(values):
+    """A nonlinear map used to delimit affine covariance."""
+    values = np.asarray(values)
+    return np.stack([values[..., 0] ** 2,
+                     values[..., 0] * values[..., 1]], axis=-1)
+
+
 def tensor_power(vector, order):
     result = np.asarray(vector, float)
     for _ in range(1, order):
@@ -200,6 +207,12 @@ def main():
             )))
         )
         mapped_ranks.append(np.linalg.matrix_rank(mapped_covariance, tol=1e-11))
+    nonlinear_gap = (pi @ nonlinear_feature_map(VALUES)
+                     - nonlinear_feature_map(pi @ VALUES))
+    expected_nonlinear_gap = np.array([5227 / 16900, -17 / 130])
+    nonlinear_gap_error = float(np.max(np.abs(
+        nonlinear_gap - expected_nonlinear_gap
+    )))
     for speed in SPEEDS:
         maximum = 0.0
         for initial in priors:
@@ -266,6 +279,8 @@ def main():
     print(f"rectangular-map covariance error {rectangular_error:.2e}")
     print(f"fixed-feature rank-map error {rank_map_error:.2e}; ranks "
           + " ".join(map(str, mapped_ranks)))
+    print("nonlinear stationary Jensen gap [5227/16900, -17/130]; "
+          f"rational-check error {nonlinear_gap_error:.2e}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -275,6 +290,7 @@ def main():
     ok &= rectangular_error < 2.0e-12
     ok &= rank_map_error < 2.0e-12
     ok &= mapped_ranks == [1, 2]
+    ok &= nonlinear_gap_error < 2.0e-14
 
     print("PASS" if ok else "FAIL")
 

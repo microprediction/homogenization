@@ -3196,5 +3196,16 @@
   "doi": "10.1137/1104031",
   "url": "https://doi.org/10.1137/1104031",
   "annotation": "Develops systematic moment-cumulant calculations for polynomial transformations, the classical combinatorial framework behind the tensor moment partitions used in the vector price expansion."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Jensen1906",
+  "authors": "Jensen, J. L. W. V.",
+  "year": 1906,
+  "title": "Sur les fonctions convexes et les inégalités entre les valeurs moyennes",
+  "venue": "Acta Mathematica 30(1), 175-193",
+  "doi": "10.1007/bf02418571",
+  "url": "https://doi.org/10.1007/bf02418571",
+  "annotation": "Introduces the convex-combination inequality whose equality identity gives the sharp affine boundary for transformations that commute with every occupation average."
  }
 ]
