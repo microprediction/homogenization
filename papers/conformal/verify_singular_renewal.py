@@ -413,6 +413,43 @@ def depth_transform_check(maximum_depth=8, maximum_horizon=12):
     return identities
 
 
+def finite_depth_inversion_check(maximum_depth=10):
+    """Check exact Taylor errors and an exponential-moment recovery bound."""
+    identities = 0
+    for q in (F(1, 3), F(1, 2), F(2, 3)):
+        ratio = q / (1 - q)
+        for depth in range(maximum_depth + 1):
+            estimate = sum(
+                ((-1) ** j * ratio ** (j + 1)
+                 for j in range(depth + 1)), F(0)
+            )
+            expected = q * (1 - (-ratio) ** (depth + 1))
+            assert estimate == expected
+            assert abs(q - estimate) == q * ratio ** (depth + 1)
+            identities += 2
+
+    q, radius = F(1, 4), F(3)
+    r = radius - 1
+    budget = q / (1 - q * radius)
+    ratio = q / (1 - q)
+    for n in range(1, 5):
+        k = n - 1
+        for depth in range(k, maximum_depth + 1):
+            estimate = sum(
+                (F((-1) ** (j - k) * comb(j, k))
+                 * ratio ** (j + 1)
+                 for j in range(k, depth + 1)), F(0)
+            )
+            error = abs(q ** n - estimate)
+            weight_supremum = max(
+                F(comb(j, k), r ** j)
+                for j in range(depth + 1, maximum_depth + 30)
+            )
+            assert error <= budget * weight_supremum
+            identities += 1
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -680,6 +717,7 @@ def main():
     iterated_tail_identities = iterated_tail_sharpness_check()
     critical_tail = critical_tail_stopping_check()
     depth_transform_identities = depth_transform_check()
+    finite_depth_inversion_identities = finite_depth_inversion_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -786,6 +824,8 @@ def main():
           f"{critical_tail[1]}/{critical_tail[2]}")
     print("exact depth-transform identities: "
           f"{depth_transform_identities}")
+    print("exact finite-depth inversion identities: "
+          f"{finite_depth_inversion_identities}")
     print("PASS")
 
 
