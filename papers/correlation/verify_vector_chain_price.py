@@ -1,8 +1,8 @@
-"""Certificate for the vector finite-chain second-order price expansion.
+"""Certificate for vector finite-chain prices and delta covariances.
 
 The exact benchmarks are matrix exponentials for exponential payoffs and the
-genuinely mixed payoff x[0]^2*x[1]^2.  Directional contractions are also
-compared with the scalar theorem.  Ends with PASS or FAIL.
+genuinely mixed payoff x[0]^2*x[1]^2.  Exact joint moments also test quadratic,
+mixed-scale, and cubic post-averaging covariances.  Ends with PASS or FAIL.
 """
 import math
 import os
@@ -223,9 +223,24 @@ def centered_moment(moment, powers, center):
     return total
 
 
+def gaussian_moment(covariance, indices):
+    """Centered Gaussian moment from Isserlis pairings."""
+    if not indices:
+        return 1.0
+    if len(indices) % 2:
+        return 0.0
+    first = indices[0]
+    return sum(
+        covariance[first, indices[position]] * gaussian_moment(
+            covariance, indices[1:position] + indices[position + 1:]
+        )
+        for position in range(1, len(indices))
+    )
+
+
 def exact_critical_transform_moments(initial, speed, center):
-    """Moments of the old critical map and all quadratic coordinates."""
-    moment = exact_vector_moments(initial, speed, maximum_powers=(4, 4))
+    """Moments of the old critical map and quadratic/cubic coordinates."""
+    moment = exact_vector_moments(initial, speed, maximum_powers=(6, 6))
     first_center = center[0]
     transformed_mean = np.array([
         moment[(2, 0)] - 2 * first_center * moment[(1, 0)]
@@ -247,8 +262,9 @@ def exact_critical_transform_moments(initial, speed, center):
     centered = {
         powers: centered_moment(moment, powers, center)
         for powers in [(1, 0), (2, 0), (0, 2), (1, 1), (3, 0),
-                       (1, 2), (2, 1), (4, 0), (0, 4), (2, 2),
-                       (3, 1), (1, 3)]
+                       (1, 2), (2, 1), (0, 3), (4, 0), (0, 4),
+                       (2, 2), (3, 1), (1, 3), (6, 0), (5, 1),
+                       (4, 2), (3, 3), (2, 4), (1, 5), (0, 6)]
     }
     quadratic_mean = np.array([
         centered[(2, 0)], centered[(0, 2)], centered[(1, 1)]
@@ -275,8 +291,16 @@ def exact_critical_transform_moments(initial, speed, center):
     mixed_scale_covariance = mixed_scale_second - np.outer(
         mixed_scale_mean, mixed_scale_mean
     )
+    cubic_powers = [(3, 0), (2, 1), (1, 2), (0, 3)]
+    cubic_mean = np.array([centered[powers] for powers in cubic_powers])
+    cubic_second = np.array([
+        [centered[(left[0] + right[0], left[1] + right[1])]
+         for right in cubic_powers]
+        for left in cubic_powers
+    ])
+    cubic_covariance = cubic_second - np.outer(cubic_mean, cubic_mean)
     return (transformed_mean, covariance, quadratic_covariance,
-            mixed_scale_covariance)
+            mixed_scale_covariance, cubic_covariance)
 
 
 def main():
@@ -298,7 +322,20 @@ def main():
     critical_rank_errors = []
     tangent_eigenvalue_errors = []
     null_eigenvalue_errors = []
+    cubic_covariance_errors = []
     base_covariance = green_kubo_covariance(VALUES)
+    cubic_powers = [(3, 0), (2, 1), (1, 2), (0, 3)]
+    cubic_coefficient = np.array([
+        [gaussian_moment(
+            base_covariance,
+            [field for field, exponent in enumerate(left)
+             for _ in range(exponent)]
+            + [field for field, exponent in enumerate(right)
+               for _ in range(exponent)]
+        ) for right in cubic_powers]
+        for left in cubic_powers
+    ])
+    cubic_rank = np.linalg.matrix_rank(cubic_coefficient, tol=1e-11)
     critical_hessians = np.array([
         [[2.0, 0.0], [0.0, 0.0]],
         [[0.0, 0.0], [0.0, 2.0]],
@@ -399,13 +436,15 @@ def main():
         critical_rank_error = 0.0
         tangent_eigenvalue_error = 0.0
         null_eigenvalue_error = 0.0
+        cubic_covariance_error = 0.0
         tangent_covariance = np.array([
             [0.0, 0.0],
             [0.0, base_covariance[1, 1] / (speed * MATURITY)],
         ])
         for initial in priors:
             (transformed_mean, transformed_covariance,
-             quadratic_covariance, mixed_scale_covariance) = (
+             quadratic_covariance, mixed_scale_covariance,
+             cubic_covariance) = (
                  exact_critical_transform_moments(initial, speed, mean)
              )
             tangent_mean = np.array([
@@ -454,12 +493,22 @@ def main():
                     / (speed ** 2 * MATURITY ** 2)
                 )))
             )
+            predicted_cubic_covariance = (
+                cubic_coefficient / (speed ** 3 * MATURITY ** 3)
+            )
+            cubic_covariance_error = max(
+                cubic_covariance_error,
+                float(np.max(np.abs(
+                    cubic_covariance - predicted_cubic_covariance
+                )))
+            )
         nonlinear_mean_errors.append(nonlinear_mean_error)
         nonlinear_covariance_errors.append(nonlinear_covariance_error)
         critical_variance_errors.append(critical_variance_error)
         critical_rank_errors.append(critical_rank_error)
         tangent_eigenvalue_errors.append(tangent_eigenvalue_error)
         null_eigenvalue_errors.append(null_eigenvalue_error)
+        cubic_covariance_errors.append(cubic_covariance_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
         print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
@@ -471,6 +520,8 @@ def main():
         print(f"            tangent/null eigenvalue errors "
               f"{tangent_eigenvalue_error:.8e} "
               f"{null_eigenvalue_error:.8e}")
+        print(f"            critical cubic covariance error "
+              f"{cubic_covariance_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -510,6 +561,14 @@ def main():
     )
     print(f"two-scale tangent/null eigenvalue orders "
           f"{tangent_eigenvalue_order:.6f} {null_eigenvalue_order:.6f}")
+    cubic_covariance_order = math.log(
+        cubic_covariance_errors[-2] / cubic_covariance_errors[-1], 2
+    )
+    feature_rank = np.linalg.matrix_rank(base_covariance, tol=1e-11)
+    cubic_ceiling = math.comb(feature_rank + 2, 3)
+    print(f"critical cubic coefficient rank {cubic_rank}; "
+          f"symmetric-tensor ceiling {cubic_ceiling}")
+    print(f"critical cubic covariance order {cubic_covariance_order:.6f}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -534,6 +593,9 @@ def main():
     ok &= tangent_eigenvalue_errors[-1] < 3.0e-5
     ok &= null_eigenvalue_order > 2.98
     ok &= null_eigenvalue_errors[-1] < 7.0e-7
+    ok &= cubic_rank == cubic_ceiling == 4
+    ok &= cubic_covariance_order > 3.95
+    ok &= cubic_covariance_errors[-1] < 3.0e-8
 
     print("PASS" if ok else "FAIL")
 
