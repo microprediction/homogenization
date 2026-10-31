@@ -3251,5 +3251,16 @@
   "doi": "10.2969/jmsj/00310157",
   "url": "https://doi.org/10.2969/jmsj/00310157",
   "annotation": "Constructs orthogonal Gaussian chaoses and their Hermite-polynomial representation, clarifying why raw homogeneous terms of different degrees require orthogonalization."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Varadhan1966",
+  "authors": "Varadhan, S. R. S.",
+  "year": 1966,
+  "title": "Asymptotic probabilities and differential equations",
+  "venue": "Communications on Pure and Applied Mathematics 19(3), 261-286",
+  "doi": "10.1002/cpa.3160190303",
+  "url": "https://doi.org/10.1002/cpa.3160190303",
+  "annotation": "Develops the classical asymptotic-probability framework behind Laplace-principle calculations; the flat-map constants here are derived directly from the exact telegraph density."
  }
 ]

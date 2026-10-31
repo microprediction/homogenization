@@ -350,6 +350,26 @@
     post-averaging phenomenon for a fixed smooth map; the underlying scalar feature still has nonzero fixed-feature
     Green&ndash;Kubo variance, and no maturity-integrated rank claim is involved.</p>
 
+    <h3>A continuum of flat-map scales</h3>
+    <p>The example is not isolated. For any $\alpha&gt;0$, replace the flat map by
+    $\phi_\alpha(w)=\exp(-1/|w|^\alpha)$ away from zero and set $\phi_\alpha(0)=0$. This extension is $C^\infty$, and
+    the same exact telegraph law gives</p>
+    <div class="equation-card">
+    $$\lim_{m\to\infty}-\frac{1}{m^{\alpha/(\alpha+2)}}
+      \log\mathbb E\phi_\alpha(W_m)^q
+      =C_{\alpha,q},\qquad
+      C_{\alpha,q}=\frac{\alpha+2}{2}\alpha^{-\alpha/(\alpha+2)}q^{2/(\alpha+2)}.$$
+    </div>
+    <p>Indeed the rescaling $w=m^{-1/(\alpha+2)}y$ leaves the cost
+    $m^{\alpha/(\alpha+2)}\{q/y^\alpha+y^2/2\}$, whose unique minimum is $C_{\alpha,q}$. The Bessel prefactor is
+    subexponential on this scale, while fixed nonzero occupations and the endpoint atoms cost order $m$.</p>
+    <p>Since $2C_{\alpha,1}&gt;C_{\alpha,2}$, the second moment dominates the squared mean and</p>
+    $$\lim_{m\to\infty}-\frac{1}{m^{\alpha/(\alpha+2)}}
+      \log\operatorname{Var}(\phi_\alpha(W_m))=C_{\alpha,2}.$$
+    <p>As $\alpha$ ranges over $(0,\infty)$, the power $\alpha/(\alpha+2)$ ranges over $(0,1)$. Smooth flat
+    post-averaging maps therefore realize every stretched-exponential covariance power, beyond the finite derivative
+    flag but without changing the fixed-feature Green&ndash;Kubo rank.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -469,6 +489,9 @@
     <p>The exact symmetric-telegraph density tests the flat map above. From speeds $16$ to $4096$, its variance falls
     from $1.94608100\times10^{-4}$ to $1.56009960\times10^{-56}$, while
     $-\log\operatorname{Var}(\phi(W_m))/\sqrt m$ falls from $2.136131$ to $2.007813$, approaching the proved limit $2$.</p>
+    <p>At speed $262144$, the generalized flat powers $\alpha=1,2,4$ have normalized variance log rates
+    $2.378939$, $2.000977$ and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their respective
+    stretched-exponential powers are $0.333333$, $0.500000$ and $0.666667$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -507,6 +530,9 @@
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
     expansion and the smooth-flat counterexample follow directly from that law; no priority claim is made for the
     occupation density.</p>
+    <p>The logarithmic minimization is a direct one-dimensional Laplace argument. Its large-deviation context goes
+    back to <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a>; the constants here are derived from the
+    exact telegraph density rather than imported from a general principle.</p>
   </main>
 
   <footer>
