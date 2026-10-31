@@ -50,6 +50,16 @@ def stationary(Q):
     )
 
 
+def green_kubo_covariance(values):
+    """Two-sided covariance rate for a finite-chain feature matrix."""
+    pi = stationary(Q)
+    projection = np.outer(np.ones(len(Q)), pi)
+    group_inverse = np.linalg.inv(Q + projection) - projection
+    centered = values - pi @ values
+    one_sided = -centered.T @ np.diag(pi) @ group_inverse @ centered
+    return one_sided + one_sided.T
+
+
 def tensor_power(vector, order):
     result = np.asarray(vector, float)
     for _ in range(1, order):
@@ -177,6 +187,19 @@ def main():
     reduction_error = 0.0
     affine_error = 0.0
     rectangular_error = 0.0
+    rank_map_error = 0.0
+    mapped_ranks = []
+    base_covariance = green_kubo_covariance(VALUES)
+    for matrix, shift, _ in RECTANGULAR_MAPS:
+        mapped_values = VALUES @ matrix + shift
+        mapped_covariance = green_kubo_covariance(mapped_values)
+        rank_map_error = max(
+            rank_map_error,
+            float(np.max(np.abs(
+                mapped_covariance - matrix.T @ base_covariance @ matrix
+            )))
+        )
+        mapped_ranks.append(np.linalg.matrix_rank(mapped_covariance, tol=1e-11))
     for speed in SPEEDS:
         maximum = 0.0
         for initial in priors:
@@ -241,6 +264,8 @@ def main():
     print(f"directional scalar-reduction error {reduction_error:.2e}")
     print(f"affine-coordinate covariance error {affine_error:.2e}")
     print(f"rectangular-map covariance error {rectangular_error:.2e}")
+    print(f"fixed-feature rank-map error {rank_map_error:.2e}; ranks "
+          + " ".join(map(str, mapped_ranks)))
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -248,6 +273,8 @@ def main():
     ok &= reduction_error < 3.0e-13
     ok &= affine_error < 2.0e-12
     ok &= rectangular_error < 2.0e-12
+    ok &= rank_map_error < 2.0e-12
+    ok &= mapped_ranks == [1, 2]
 
     print("PASS" if ok else "FAIL")
 

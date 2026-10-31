@@ -200,6 +200,19 @@
     $\operatorname{rank}\Gamma'\le\operatorname{rank}\Gamma$. Adding redundant coordinates cannot increase the
     fixed-feature rank; this remains separate from integrating different maturity loadings.</p>
 
+    <h3>Exact reduction to the feature rank</h3>
+    <p>Let $g=f-\mathbf1\bar f^\top$ have rank $r$. Choose a centered full-column-rank matrix
+    $U\in\mathbb R^{n\times r}$ and a full-column-rank matrix $R\in\mathbb R^{d\times r}$ such that
+    $g=UR^\top$. For every path, its averaged feature vector has the form $X_m=\bar f+RZ_m$, where $Z_m$ is the
+    corresponding average of $U$.</p>
+    <p>Therefore an arbitrary payoff $C$ on the original $d$ coordinates reduces exactly to
+    $D(z)=C(\bar f+Rz)$ on $r$ coordinates. The exact prices agree pathwise, and the rectangular-map theorem shows
+    that every term of the second-order expansion agrees as well. If $r=0$, the path is constant and the price is
+    simply $C(\bar f)$.</p>
+    <p>The fixed-feature theorem gives $\Gamma_U\succ0$ and
+    $\Gamma_f=R\Gamma_UR^\top$, hence $\operatorname{rank}\Gamma_f=r$. This is a minimal-coordinate statement for
+    one fixed feature family, not a claim about rank after maturity-dependent loading integration.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -265,6 +278,9 @@
     <p>A one-dimensional projection and a rank-two embedding into three redundant coordinates preserve nonlinear
     degree-four prices with maximum discrepancy $1.11\times10^{-16}$. The projected and embedded tests use all five
     priors and speeds.</p>
+    <p>The same cases reproduce the Green&ndash;Kubo congruence with maximum discrepancy $1.11\times10^{-16}$ and
+    mapped ranks one and two. Thus the certificate checks both the nonlinear price reduction and its fixed-feature
+    rank statement.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
