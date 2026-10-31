@@ -29,6 +29,11 @@ THETAS = [np.array([-1.2, 0.4]),
           np.array([0.7, -0.8]),
           np.array([1.1, 0.9]),
           np.array([-0.4, -1.3])]
+AFFINE_MAPS = [
+    (np.array([[1.7, -0.4], [0.3, 0.8]]), np.array([0.2, -0.6])),
+    (np.array([[0.6, 1.1], [-0.9, 0.7]]), np.array([-0.5, 0.4])),
+    (np.array([[2.0, 0.3], [0.1, 0.45]]), np.array([1.2, -0.8])),
+]
 
 
 def stationary(Q):
@@ -85,6 +90,21 @@ def mixed_polynomial_derivatives(point):
     return derivatives
 
 
+def affine_derivatives(derivatives, matrix):
+    """Pull derivative tensors back under y = matrix.T @ x + shift."""
+    inverse_jacobian = np.linalg.inv(matrix).T
+    transformed = [derivatives[0]]
+    for order in range(1, 5):
+        old = "abcd"[:order]
+        new = "ijkl"[:order]
+        rule = ",".join([old] + [a + i for a, i in zip(old, new)])
+        transformed.append(np.einsum(
+            rule + "->" + new, derivatives[order],
+            *([inverse_jacobian] * order)
+        ))
+    return transformed
+
+
 def exact_mixed_polynomial_price(initial, speed):
     """Exact E[X[0]^2 X[1]^2] from the joint raw-moment ODE."""
     indices = list(np.ndindex(3, 3))
@@ -117,6 +137,7 @@ def main():
     errors = []
     mixed_errors = []
     reduction_error = 0.0
+    affine_error = 0.0
     for speed in SPEEDS:
         maximum = 0.0
         for initial in priors:
@@ -147,6 +168,14 @@ def main():
             )
             exact = exact_mixed_polynomial_price(initial, speed)
             mixed_maximum = max(mixed_maximum, abs(exact - approximate))
+            for matrix, shift in AFFINE_MAPS:
+                transformed = vector_observable_price_expansion(
+                    Q, VALUES @ matrix + shift, initial, MATURITY, speed,
+                    affine_derivatives(derivatives, matrix)
+                )
+                affine_error = max(
+                    affine_error, abs(transformed - approximate)
+                )
         mixed_errors.append(mixed_maximum)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
@@ -155,11 +184,13 @@ def main():
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
     print(f"last-doubling mixed-polynomial order {mixed_order:.6f}")
     print(f"directional scalar-reduction error {reduction_error:.2e}")
+    print(f"affine-coordinate covariance error {affine_error:.2e}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
     ok &= mixed_errors[-1] < 2.0e-7
     ok &= reduction_error < 3.0e-13
+    ok &= affine_error < 2.0e-12
 
     print("PASS" if ok else "FAIL")
 

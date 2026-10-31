@@ -178,6 +178,17 @@
     <p>All payoff derivatives are evaluated at $\bar f=\pi f$. The proof is the same cumulant-to-moment partition as in
     the scalar case; the tensor formula reduces exactly to that theorem along every direction in observable space.</p>
 
+    <h3>Affine-coordinate covariance</h3>
+    <p>Let $A$ be nonsingular, $c$ be constant, and change observable coordinates by
+    $f'=fA+\mathbf1c^\top$, so $x'=A^\top x+c$. If
+    $C'(x')=C(A^{-\top}(x'-c))$, then the exact price and every displayed asymptotic term are unchanged.</p>
+    <p>Indeed $\mu'_m=A^\top\mu_m$, $\Gamma'=A^\top\Gamma A$, $\beta'=A^\top\beta$,
+    $B'=A^\top BA$, and
+    $\Lambda'_{ijk}=A_{ai}A_{bj}A_{ck}\Lambda_{abc}$. The inverse Jacobian in each payoff-derivative index cancels
+    these factors term by term, including all three fourth-moment pairings.</p>
+    <p>This is covariance under a change of coordinates, not a new source of latent directions. It does not change
+    fixed-feature Green&ndash;Kubo rank and makes no claim about rank after integrating maturity-dependent loadings.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -237,6 +248,9 @@
     <p>An independent joint-moment ODE tests the genuinely mixed payoff $C(x,y)=x^2y^2$. Its maximum error falls from
     $4.52863079\times10^{-4}$ at speed $4$ to $1.25201763\times10^{-7}$ at speed $64$, with last-doubling order
     $2.988710$.</p>
+    <p>Three non-orthogonal affine coordinate changes, five priors and five speeds preserve the complete vector
+    approximation with maximum discrepancy $2.60\times10^{-18}$. This tests the mean, boundary, covariance, skew and fourth-pairing
+    transformation laws simultaneously.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
