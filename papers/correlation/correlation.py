@@ -631,6 +631,31 @@ def margrabe_first_order(S1, qS2, T, s1, s2, rhobar, Krr):
     return float(margrabe(S1, qS2, V)) + T * Kss * margrabe_greeks(S1, qS2, V)[1]
 
 
+def margrabe_first_order_prior(S1, qS2, T, s1, s2, rhos,
+                                a, b, initial_p1):
+    """First-order price including the exact two-state mean initial layer.
+
+    ``a`` and ``b`` are the actual switching rates.  The stationary volga
+    term uses their Green--Kubo coefficient; the vega term uses the exact
+    finite-rate displacement of the mean time-averaged correlation.
+    """
+    p = pi2(a, b)
+    rhobar = float(p @ rhos)
+    stationary = margrabe_first_order(
+        S1, qS2, T, s1, s2, rhobar, K2(rhos, rhos, a, b)
+    )
+    mean_shift = (
+        (rhos[1] - rhos[0]) * (initial_p1 - p[1])
+        * (-math.expm1(-(a + b) * T)) / ((a + b) * T)
+    )
+    V = exch_var(s1, s2, rhobar) * T
+    margrabe_vega_variance = margrabe_greeks(S1, qS2, V)[0]
+    margrabe_vega_correlation = (
+        -2 * s1 * s2 * T * margrabe_vega_variance
+    )
+    return stationary + mean_shift * margrabe_vega_correlation
+
+
 def implied_corr_margrabe(price, S1, qS2, T, s1, s2):
     f = lambda r: float(margrabe(S1, qS2, exch_var(s1, s2, r) * T)) - price
     return brentq(f, -0.999, 0.999, xtol=1e-14)
