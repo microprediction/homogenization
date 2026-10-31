@@ -11,8 +11,10 @@
     <p>Two log prices $x_1, x_2$ follow Black&ndash;Scholes dynamics under the pricing measure, with fixed volatilities
     and a correlation set by a hidden regime $y_t$:</p>
     $$dx_j = \big(r - \tfrac12\sigma_j^2\big)\,dt + \sigma_j\,dW_j, \qquad d\langle W_1, W_2\rangle_t = \rho_{y_t}\,dt .$$
-    <p>The regime is calm or crisis. It moves from calm to crisis at rate $a$ and back at rate $b$, and starts from its
-    stationary law because it cannot be observed. The checks speed the chain up by a factor $m$.</p>
+    <p>The regime is calm or crisis. It moves from calm to crisis at rate $a$ and back at rate $b$.</p>
+    <p>For the displayed
+    example we assume that it starts from its stationary law; hiddenness by itself does not determine the initial prior.
+    The checks speed the chain up by a factor $m$.</p>
     <p class="muted">Parameters: $\rho = (0.2,\ 0.8)$ in (calm, crisis); $a = 4/3$ and $b = 4$ per year, so crises last three
     months and take a quarter of the time; $\sigma_1 = 0.30$, $\sigma_2 = 0.20$, $S_1 = S_2 = 100$, $r = 2\%$, $T = 1$.</p>
 
@@ -39,8 +41,28 @@
     <p>For two regimes the law of $\hat\rho_T$ is explicit, and quadrature over it gives the numerical solution used in
     the checks.</p>
 
+    <h2>The initial regime prior matters at finite rate</h2>
+    <p>Let $\eta=\mathbb P(y_0=\mathrm{crisis})$ and $\pi_1=a/(a+b)$. The two-state semigroup gives the exact mean</p>
+    <div class="equation-card">
+    $$\mathbb E_\eta[\hat\rho_T]=\bar\rho+
+      (\rho_{\mathrm{crisis}}-\rho_{\mathrm{calm}})(\eta-\pi_1)
+      \frac{1-e^{-(a+b)T}}{(a+b)T}.$$
+    </div>
+    <p>Thus a nonstationary or filtered prior creates an $O((a+b)^{-1})$ initial layer under fast switching. It changes
+    the full occupation-time mixture as well as its mean, so the option price is not obtained by merely inserting the
+    displayed mean correlation into a constant-correlation formula.</p>
+    <p>At the unscaled rates, the exact occupation mixture gives the following at-the-money exchange-option values:</p>
+    <div class="table-wrap"><table class="impl"><thead><tr><th>initial crisis probability $\eta$</th><th>$\mathbb E[\hat\rho_T]$</th><th>exact price</th><th>implied correlation</th></tr></thead><tbody>
+    <tr><td>0</td><td>0.32201079</td><td>11.96262099</td><td>0.32837128</td></tr>
+    <tr><td>0.25 (stationary)</td><td>0.35000000</td><td>11.72581353</td><td>0.35818088</td></tr>
+    <tr><td>1</td><td>0.43396764</td><td>11.01539112</td><td>0.44393457</td></tr>
+    </tbody></table></div>
+    <p>The atom-plus-Bessel occupation law used for these values is the classical two-state law studied by
+    <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and by
+    <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>.</p>
+
     <h2>The first-order rule</h2>
-    <p>Differentiating a constant-correlation price in $\rho$ brings down the operator that $\rho$ multiplies, so
+    <p>For the stationary-start example, differentiating a constant-correlation price in $\rho$ brings down the operator that $\rho$ multiplies, so
     $\partial_\rho^2 C_\rho = T^2 A^2 C_\rho$. The <a href="./any-equation.html">rule</a> adds the correction
     $K_{\rho\rho}A^2$ to the averaged operator, and because $A$ commutes with $\bar{\mathcal L}$ the result is</p>
     <div class="equation-card">

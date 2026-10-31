@@ -122,6 +122,38 @@ def main():
     out['nonstationary'] = {'rows': nonstationary, 'relabel_error': relabel_error,
                             'frozen_error': frozen_error, 'frozen': frozen}
 
+    print("1c. finite-rate exchange prices under three initial priors")
+    prior_targets = {
+        0.0: (0.3220107860935765, 11.9626209928677, 0.328371284831584),
+        0.25: (0.35, 11.7258135254450, 0.358180877949732),
+        1.0: (0.4339676417192705, 11.0153911231769, 0.443934570765659),
+    }
+    prior_rows = []
+    p1 = A / (A + B)
+    mean_factor = -math.expm1(-(A + B) * T) / ((A + B) * T)
+    for initial_p1, targets in prior_targets.items():
+        v, w = occupation_nodes(T, A, B, initial_p1=initial_p1)
+        rho_hat = RHO[0] + (RHO[1] - RHO[0]) * v / T
+        mean_rho = float(w @ rho_hat)
+        mean_rho_closed = (
+            pi2(A, B) @ RHO
+            + (RHO[1] - RHO[0]) * (initial_p1 - p1) * mean_factor
+        )
+        price = float(w @ margrabe(
+            S1, S2, exch_var(SIG1, SIG2, rho_hat) * T
+        ))
+        implied = implied_corr_margrabe(price, S1, S2, T, SIG1, SIG2)
+        error = max(abs(mean_rho - mean_rho_closed),
+                    abs(mean_rho - targets[0]),
+                    abs(price - targets[1]),
+                    abs(implied - targets[2]))
+        prior_rows.append((initial_p1, mean_rho, price, implied, error))
+        print(f"   eta={initial_p1:.2f}: mean rho {mean_rho:.8f}; "
+              f"price {price:.8f}; implied rho {implied:.8f}")
+    prior_error = max(row[-1] for row in prior_rows)
+    print(f"   maximum closed-form/table error {prior_error:.2e}")
+    ok &= prior_error < 5e-13
+
     print("2. exchange option (S1 - q S2)^+")
     out['exchange'] = {'speeds': SPEEDS, 'q': QS, 'rows': []}
     errs, errs0 = [], []
