@@ -3218,5 +3218,16 @@
   "doi": "10.1017/cbo9780511802256.004",
   "url": "https://doi.org/10.1017/cbo9780511802256.004",
   "annotation": "Presents the multivariate delta method and its Jacobian covariance transformation, the classical context for the nonlinear post-averaging tangent covariance used here."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Magnus1978",
+  "authors": "Magnus, J. R.",
+  "year": 1978,
+  "title": "The moments of products of quadratic forms in normal variables",
+  "venue": "Statistica Neerlandica 32(4), 201-210",
+  "doi": "10.1111/j.1467-9574.1978.tb01399.x",
+  "url": "https://doi.org/10.1111/j.1467-9574.1978.tb01399.x",
+  "annotation": "Derives moments of products of Gaussian quadratic forms, the classical identity underlying the critical-map covariance coefficient."
  }
 ]
