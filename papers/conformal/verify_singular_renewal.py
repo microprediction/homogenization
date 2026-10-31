@@ -542,10 +542,10 @@ def two_phase_minimax_check():
 
 
 def two_phase_third_coordinate_check():
-    """Check the sharp third-coordinate witness and dual certificate."""
+    """Check the high-radius third-coordinate witness and dual certificate."""
     identities = 0
     budget = F(7, 5)
-    for radius in map(F, range(2, 11)):
+    for radius in (F(7, 4), F(9, 5), *map(F, range(2, 11))):
         denominator = radius * (radius + 1) ** 2
         separation = budget * (radius + 2) / denominator
         positive = [budget / (radius + 1) ** 2, F(0), separation, F(0)]
@@ -596,6 +596,45 @@ def two_phase_third_coordinate_check():
         identities += 2
         first_tail_increment = (1 - weight) * (radius - 1) * radius ** 3 + slope
         assert first_tail_increment == radius * (2 * radius + 1) / (radius + 2)
+        identities += 1
+    return identities
+
+
+def two_phase_third_coordinate_low_radius_check():
+    """Check the low-radius third-coordinate witness and chord dual."""
+    identities = 0
+    budget = F(7, 5)
+    for radius in (F(11, 10), F(6, 5), F(3, 2), F(5, 3)):
+        separation = 2 * budget / (radius * (1 + radius ** 2))
+        positive = [F(0), F(0), separation, F(0)]
+        negative = [F(0), separation / 2, F(0), separation / 2]
+        assert sum(positive, F(0)) == sum(negative, F(0))
+        assert sum((k * value for k, value in enumerate(positive)), F(0)) == sum(
+            (k * value for k, value in enumerate(negative)), F(0)
+        )
+        assert sum(
+            (value * radius ** k for k, value in enumerate(positive)), F(0)
+        ) <= budget
+        assert sum(
+            (value * radius ** k for k, value in enumerate(negative)), F(0)
+        ) == budget
+        risk = separation / 2
+        assert positive[2] - negative[2] == 2 * risk
+        assert risk > budget / (2 * (1 + radius ** 2))
+        identities += 6
+
+        slope = (radius ** 3 - radius) / 2
+        intercept = radius - slope
+        for k in (0, 1, *range(3, 21)):
+            affine = intercept + slope * k
+            assert 0 <= affine <= radius ** k
+            identities += 1
+        assert intercept + slope == radius
+        assert intercept + 3 * slope == radius ** 3
+        identities += 2
+        assert intercept + 2 * slope == (radius + radius ** 3) / 2
+        identities += 1
+        assert (radius - 1) * radius ** 3 - slope > 0
         identities += 1
     return identities
 
@@ -871,6 +910,9 @@ def main():
     finite_depth_lower_bound_identities = finite_depth_lower_bound_check()
     two_phase_minimax_identities = two_phase_minimax_check()
     two_phase_third_coordinate_identities = two_phase_third_coordinate_check()
+    low_radius_third_coordinate_identities = (
+        two_phase_third_coordinate_low_radius_check()
+    )
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -985,6 +1027,8 @@ def main():
           f"{two_phase_minimax_identities}")
     print("exact two-phase third-coordinate identities: "
           f"{two_phase_third_coordinate_identities}")
+    print("exact low-radius third-coordinate identities: "
+          f"{low_radius_third_coordinate_identities}")
     print("PASS")
 
 
