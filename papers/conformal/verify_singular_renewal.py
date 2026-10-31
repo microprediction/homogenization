@@ -541,6 +541,65 @@ def two_phase_minimax_check():
     return identities
 
 
+def two_phase_third_coordinate_check():
+    """Check the sharp third-coordinate witness and dual certificate."""
+    identities = 0
+    budget = F(7, 5)
+    for radius in map(F, range(2, 11)):
+        denominator = radius * (radius + 1) ** 2
+        separation = budget * (radius + 2) / denominator
+        positive = [budget / (radius + 1) ** 2, F(0), separation, F(0)]
+        negative = [
+            F(0),
+            budget * (2 * radius + 1) / denominator,
+            F(0),
+            budget / denominator,
+        ]
+        assert sum(positive, F(0)) == sum(negative, F(0))
+        assert sum((k * value for k, value in enumerate(positive)), F(0)) == sum(
+            (k * value for k, value in enumerate(negative)), F(0)
+        )
+        assert sum(
+            (value * radius ** k for k, value in enumerate(positive)), F(0)
+        ) == budget
+        assert sum(
+            (value * radius ** k for k, value in enumerate(negative)), F(0)
+        ) == budget
+        risk = separation / 2
+        assert positive[2] - negative[2] == 2 * risk
+        previous_lower_bound = budget / (2 * (1 + radius ** 2))
+        assert risk > previous_lower_bound
+        identities += 6
+
+        weight = radius * (radius ** 2 - 3) / (
+            (radius - 1) ** 2 * (radius + 2)
+        )
+        slope = -radius * (radius + 1) / ((radius - 1) * (radius + 2))
+        assert 0 <= weight <= 1
+        identities += 1
+        for k in (0, 1, *range(3, 21)):
+            affine = weight + slope * k
+            positive_coefficient = weight * radius ** k - affine
+            negative_coefficient = (1 - weight) * radius ** k + affine
+            assert positive_coefficient >= 0 and negative_coefficient >= 0
+            identities += 1
+        target_coefficient = weight * radius ** 2 - (weight + 2 * slope)
+        assert target_coefficient == radius * (radius + 1) ** 2 / (radius + 2)
+        identities += 1
+        excluded_coefficient = (
+            (1 - weight) * radius ** 2 + weight + 2 * slope
+        )
+        assert excluded_coefficient == -radius / (radius + 2)
+        identities += 1
+        assert (1 - weight) * radius + weight + slope == 0
+        assert (1 - weight) * radius ** 3 + weight + 3 * slope == 0
+        identities += 2
+        first_tail_increment = (1 - weight) * (radius - 1) * radius ** 3 + slope
+        assert first_tail_increment == radius * (2 * radius + 1) / (radius + 2)
+        identities += 1
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -811,6 +870,7 @@ def main():
     finite_depth_inversion_identities = finite_depth_inversion_check()
     finite_depth_lower_bound_identities = finite_depth_lower_bound_check()
     two_phase_minimax_identities = two_phase_minimax_check()
+    two_phase_third_coordinate_identities = two_phase_third_coordinate_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -923,6 +983,8 @@ def main():
           f"{finite_depth_lower_bound_identities}")
     print("exact two-phase minimax identities: "
           f"{two_phase_minimax_identities}")
+    print("exact two-phase third-coordinate identities: "
+          f"{two_phase_third_coordinate_identities}")
     print("PASS")
 
 
