@@ -1,9 +1,8 @@
 """Certificate for the vector finite-chain second-order price expansion.
 
-The exact benchmark is a matrix exponential for exponential payoffs of two
-time-averaged observables on a nonreversible three-state chain.  Directional
-contractions are also compared with the scalar theorem.  Ends with PASS or
-FAIL.
+The exact benchmarks are matrix exponentials for exponential payoffs and the
+genuinely mixed payoff x[0]^2*x[1]^2.  Directional contractions are also
+compared with the scalar theorem.  Ends with PASS or FAIL.
 """
 import math
 import os
@@ -67,6 +66,48 @@ def exact_exponential_price(initial, speed, theta):
     )
 
 
+def mixed_polynomial_derivatives(point):
+    """Derivatives through order four of C(x, y) = x^2 y^2."""
+    x, y = point
+    derivatives = [x * x * y * y,
+                   np.array([2 * x * y * y, 2 * x * x * y]),
+                   np.array([[2 * y * y, 4 * x * y],
+                             [4 * x * y, 2 * x * x]]),
+                   np.zeros((2, 2, 2)), np.zeros((2, 2, 2, 2))]
+    for indices in np.ndindex(derivatives[3].shape):
+        if sum(indices) == 1:
+            derivatives[3][indices] = 4 * y
+        elif sum(indices) == 2:
+            derivatives[3][indices] = 4 * x
+    for indices in np.ndindex(derivatives[4].shape):
+        if sum(indices) == 2:
+            derivatives[4][indices] = 4.0
+    return derivatives
+
+
+def exact_mixed_polynomial_price(initial, speed):
+    """Exact E[X[0]^2 X[1]^2] from the joint raw-moment ODE."""
+    indices = list(np.ndindex(3, 3))
+    states = len(Q)
+    system = np.zeros((len(indices) * states,) * 2)
+    for row, alpha in enumerate(indices):
+        block = slice(row * states, (row + 1) * states)
+        system[block, block] = speed * Q
+        for field in range(2):
+            if alpha[field]:
+                beta = list(alpha)
+                beta[field] -= 1
+                column = indices.index(tuple(beta))
+                source = slice(column * states, (column + 1) * states)
+                system[block, source] = alpha[field] * np.diag(VALUES[:, field])
+    initial_moments = np.zeros(len(indices) * states)
+    initial_moments[:states] = 1.0
+    target = expm(MATURITY * system) @ initial_moments
+    block = slice(indices.index((2, 2)) * states,
+                  (indices.index((2, 2)) + 1) * states)
+    return float(initial @ target[block] / MATURITY ** 4)
+
+
 def main():
     ok = True
     pi = stationary(Q)
@@ -74,6 +115,7 @@ def main():
     priors = [np.eye(3)[j] for j in range(3)]
     priors += [pi, np.array([0.2, 0.3, 0.5])]
     errors = []
+    mixed_errors = []
     reduction_error = 0.0
     for speed in SPEEDS:
         maximum = 0.0
@@ -97,13 +139,26 @@ def main():
                     reduction_error, abs(vector_price - scalar_price)
                 )
         errors.append(maximum)
+        mixed_maximum = 0.0
+        derivatives = mixed_polynomial_derivatives(mean)
+        for initial in priors:
+            approximate = vector_observable_price_expansion(
+                Q, VALUES, initial, MATURITY, speed, derivatives
+            )
+            exact = exact_mixed_polynomial_price(initial, speed)
+            mixed_maximum = max(mixed_maximum, abs(exact - approximate))
+        mixed_errors.append(mixed_maximum)
         print(f"speed {speed:2d}: maximum vector-price error "
-              f"{maximum:.8e}")
+              f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
+    mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
+    print(f"last-doubling mixed-polynomial order {mixed_order:.6f}")
     print(f"directional scalar-reduction error {reduction_error:.2e}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
+    ok &= mixed_order > 2.98
+    ok &= mixed_errors[-1] < 2.0e-7
     ok &= reduction_error < 3.0e-13
 
     print("PASS" if ok else "FAIL")
