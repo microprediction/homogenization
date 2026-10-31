@@ -1,0 +1,168 @@
+"""Certificate for the vector finite-chain second-order price expansion.
+
+The exact benchmarks are matrix exponentials for exponential payoffs and the
+genuinely mixed payoff x[0]^2*x[1]^2.  Directional contractions are also
+compared with the scalar theorem.  Ends with PASS or FAIL.
+"""
+import math
+import os
+import sys
+
+import numpy as np
+from scipy.linalg import expm
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from correlation import (scalar_observable_price_expansion,
+                         vector_observable_price_expansion)
+
+
+Q = np.array([[-3.0, 2.0, 1.0],
+              [1.0, -4.0, 3.0],
+              [2.0, 1.0, -3.0]])
+VALUES = np.array([[-0.4, 0.7],
+                   [0.2, -0.3],
+                   [0.9, 0.1]])
+MATURITY = 0.8
+SPEEDS = [4, 8, 16, 32, 64]
+THETAS = [np.array([-1.2, 0.4]),
+          np.array([0.7, -0.8]),
+          np.array([1.1, 0.9]),
+          np.array([-0.4, -1.3])]
+
+
+def stationary(Q):
+    states = len(Q)
+    return np.linalg.solve(
+        np.vstack([Q.T[:-1], np.ones(states)]),
+        np.r_[np.zeros(states - 1), 1.0]
+    )
+
+
+def tensor_power(vector, order):
+    result = np.asarray(vector, float)
+    for _ in range(1, order):
+        result = np.multiply.outer(result, vector)
+    return result
+
+
+def exponential_derivatives(theta, point):
+    value = math.exp(float(theta @ point))
+    return [value] + [value * tensor_power(theta, order)
+                      for order in range(1, 5)]
+
+
+def exact_exponential_price(initial, speed, theta):
+    pi = stationary(Q)
+    mean = pi @ VALUES
+    centered = VALUES - mean
+    return float(
+        math.exp(float(theta @ mean))
+        * initial
+        @ expm(MATURITY * (
+            speed * Q + np.diag(centered @ theta / MATURITY)
+        ))
+        @ np.ones(len(Q))
+    )
+
+
+def mixed_polynomial_derivatives(point):
+    """Derivatives through order four of C(x, y) = x^2 y^2."""
+    x, y = point
+    derivatives = [x * x * y * y,
+                   np.array([2 * x * y * y, 2 * x * x * y]),
+                   np.array([[2 * y * y, 4 * x * y],
+                             [4 * x * y, 2 * x * x]]),
+                   np.zeros((2, 2, 2)), np.zeros((2, 2, 2, 2))]
+    for indices in np.ndindex(derivatives[3].shape):
+        if sum(indices) == 1:
+            derivatives[3][indices] = 4 * y
+        elif sum(indices) == 2:
+            derivatives[3][indices] = 4 * x
+    for indices in np.ndindex(derivatives[4].shape):
+        if sum(indices) == 2:
+            derivatives[4][indices] = 4.0
+    return derivatives
+
+
+def exact_mixed_polynomial_price(initial, speed):
+    """Exact E[X[0]^2 X[1]^2] from the joint raw-moment ODE."""
+    indices = list(np.ndindex(3, 3))
+    states = len(Q)
+    system = np.zeros((len(indices) * states,) * 2)
+    for row, alpha in enumerate(indices):
+        block = slice(row * states, (row + 1) * states)
+        system[block, block] = speed * Q
+        for field in range(2):
+            if alpha[field]:
+                beta = list(alpha)
+                beta[field] -= 1
+                column = indices.index(tuple(beta))
+                source = slice(column * states, (column + 1) * states)
+                system[block, source] = alpha[field] * np.diag(VALUES[:, field])
+    initial_moments = np.zeros(len(indices) * states)
+    initial_moments[:states] = 1.0
+    target = expm(MATURITY * system) @ initial_moments
+    block = slice(indices.index((2, 2)) * states,
+                  (indices.index((2, 2)) + 1) * states)
+    return float(initial @ target[block] / MATURITY ** 4)
+
+
+def main():
+    ok = True
+    pi = stationary(Q)
+    mean = pi @ VALUES
+    priors = [np.eye(3)[j] for j in range(3)]
+    priors += [pi, np.array([0.2, 0.3, 0.5])]
+    errors = []
+    mixed_errors = []
+    reduction_error = 0.0
+    for speed in SPEEDS:
+        maximum = 0.0
+        for initial in priors:
+            for theta in THETAS:
+                derivatives = exponential_derivatives(theta, mean)
+                vector_price = vector_observable_price_expansion(
+                    Q, VALUES, initial, MATURITY, speed, derivatives
+                )
+                exact = exact_exponential_price(initial, speed, theta)
+                maximum = max(maximum, abs(exact - vector_price))
+
+                scalar_values = VALUES @ theta
+                scalar_value = math.exp(float(pi @ scalar_values))
+                scalar_derivatives = np.full(5, scalar_value)
+                scalar_price = scalar_observable_price_expansion(
+                    Q, scalar_values, initial, MATURITY, speed,
+                    scalar_derivatives
+                )
+                reduction_error = max(
+                    reduction_error, abs(vector_price - scalar_price)
+                )
+        errors.append(maximum)
+        mixed_maximum = 0.0
+        derivatives = mixed_polynomial_derivatives(mean)
+        for initial in priors:
+            approximate = vector_observable_price_expansion(
+                Q, VALUES, initial, MATURITY, speed, derivatives
+            )
+            exact = exact_mixed_polynomial_price(initial, speed)
+            mixed_maximum = max(mixed_maximum, abs(exact - approximate))
+        mixed_errors.append(mixed_maximum)
+        print(f"speed {speed:2d}: maximum vector-price error "
+              f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
+    order = math.log(errors[-2] / errors[-1], 2)
+    print(f"last-doubling vector-price order {order:.6f}")
+    mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
+    print(f"last-doubling mixed-polynomial order {mixed_order:.6f}")
+    print(f"directional scalar-reduction error {reduction_error:.2e}")
+    ok &= order > 2.98
+    ok &= errors[-1] < 1.0e-7
+    ok &= mixed_order > 2.98
+    ok &= mixed_errors[-1] < 2.0e-7
+    ok &= reduction_error < 3.0e-13
+
+    print("PASS" if ok else "FAIL")
+
+
+if __name__ == "__main__":
+    main()

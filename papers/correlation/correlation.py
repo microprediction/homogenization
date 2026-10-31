@@ -440,10 +440,11 @@ def occupation_third_cumulant_rate(Q):
 
 
 def finite_rate_mean_correction(Q, values, initial, maturity, speed):
-    """Exact mean correction for an accelerated integrated state field.
+    """Exact mean correction for accelerated scalar or vector state fields.
 
     If ``A = integral_0^maturity values[Y_t] dt`` and the chain generator is
-    ``speed * Q``, return ``E_initial[A] - maturity * pi[values]``.  The
+    ``speed * Q``, return ``E_initial[A] - maturity * pi[values]``.  A matrix
+    of values has one field per column, and the result is then a vector.  The
     group-inverse formula keeps the exponentially small initial layer exact.
     """
     Q = np.asarray(Q, float)
@@ -452,8 +453,11 @@ def finite_rate_mean_correction(Q, values, initial, maturity, speed):
     states = len(Q)
     if Q.shape != (states, states) or states < 2:
         raise ValueError("Q must be a square generator with at least two states")
-    if values.shape != (states,):
-        raise ValueError("values must be a scalar field with one value per state")
+    scalar = values.ndim == 1
+    if scalar:
+        values = values[:, None]
+    if values.ndim != 2 or values.shape[0] != states:
+        raise ValueError("values must have one row per state")
     if (initial.shape != (states,) or np.any(initial < 0)
             or not np.isclose(initial.sum(), 1)):
         raise ValueError("initial must be a probability vector")
@@ -465,11 +469,12 @@ def finite_rate_mean_correction(Q, values, initial, maturity, speed):
     )
     projection = np.outer(np.ones(states), pi)
     group_inverse = np.linalg.inv(Q - projection) + projection
-    centered = values - pi @ values
-    return float(
+    centered = values - np.outer(np.ones(states), pi @ values)
+    correction = (
         initial @ (expm(speed * maturity * Q) - np.eye(states))
         @ group_inverse @ centered / speed
     )
+    return float(correction[0]) if scalar else correction
 
 
 def scalar_observable_price_expansion(Q, values, initial, maturity, speed,
@@ -520,6 +525,81 @@ def scalar_observable_price_expansion(Q, values, initial, maturity, speed,
     return float(
         c0 + mean * c1 / maturity
         + lambda2 * c2 / (2.0 * speed * maturity)
+        + second_order / (speed * speed * maturity * maturity)
+    )
+
+
+def vector_observable_price_expansion(Q, values, initial, maturity, speed,
+                                      derivatives):
+    """Second-order price expansion for several fast-chain averages.
+
+    ``values`` has one state per row and one observable per column.
+    ``derivatives[j]`` is the order-j derivative tensor, at ``pi @ values``,
+    of a scalar payoff of the vector of time averages.  The approximation
+    keeps the vector mean layer exact and has a fixed-positive-maturity
+    ``O(speed**-3)`` remainder uniformly over the initial probability vector.
+    """
+    Q = np.asarray(Q, float)
+    values = np.asarray(values, float)
+    initial = np.asarray(initial, float)
+    states = len(Q)
+    if Q.shape != (states, states) or states < 2:
+        raise ValueError("Q must be a square generator with at least two states")
+    if values.ndim != 2 or values.shape[0] != states:
+        raise ValueError("values must have one row per state")
+    if (initial.shape != (states,) or np.any(initial < 0)
+            or not np.isclose(initial.sum(), 1)):
+        raise ValueError("initial must be a probability vector")
+    if maturity <= 0 or speed <= 0:
+        raise ValueError("maturity and speed must be positive")
+    fields = values.shape[1]
+    if fields < 1:
+        raise ValueError("values must contain at least one observable")
+    if len(derivatives) != 5:
+        raise ValueError("derivatives must contain orders zero through four")
+    c0 = float(derivatives[0])
+    c1, c2, c3, c4 = (
+        np.asarray(derivatives[order], float) for order in range(1, 5)
+    )
+    expected_shapes = tuple((fields,) * order for order in range(1, 5))
+    if tuple(x.shape for x in (c1, c2, c3, c4)) != expected_shapes:
+        raise ValueError("each derivative tensor must match its order")
+
+    contrasts = values[1:] - values[0]
+    occupation_covariance = occupation_covariance_rate(Q)
+    occupation_third = occupation_third_cumulant_rate(Q)
+    gamma = contrasts.T @ occupation_covariance @ contrasts
+    lambda3 = np.einsum(
+        'ia,jb,kc,ijk->abc', contrasts, contrasts, contrasts,
+        occupation_third
+    )
+    b1 = np.asarray(initial_layer_coefficient(Q, values, initial), float)
+    b2 = np.asarray(initial_covariance_boundary(Q, values, initial), float)
+    mean = finite_rate_mean_correction(
+        Q, values, initial, maturity, speed
+    )
+
+    raw_second_boundary = b2 + np.outer(b1, b1)
+    raw_third = (
+        lambda3
+        + np.einsum('ab,c->abc', gamma, b1)
+        + np.einsum('ac,b->abc', gamma, b1)
+        + np.einsum('bc,a->abc', gamma, b1)
+    )
+    fourth_pairing = (
+        np.einsum('ab,cd,abcd', gamma, gamma, c4)
+        + np.einsum('ac,bd,abcd', gamma, gamma, c4)
+        + np.einsum('ad,bc,abcd', gamma, gamma, c4)
+    ) / 24.0
+    second_order = (
+        np.einsum('ab,ab', raw_second_boundary, c2) / 2.0
+        + np.einsum('abc,abc', raw_third, c3) / 6.0
+        + fourth_pairing
+    )
+    return float(
+        c0 + mean @ c1 / maturity
+        + np.einsum('ab,ab', gamma, c2)
+        / (2.0 * speed * maturity)
         + second_order / (speed * speed * maturity * maturity)
     )
 

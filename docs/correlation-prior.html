@@ -98,13 +98,14 @@
 
   <main>
     <p class="demo-nav"><a href="./correlation.html">&larr; switching correlation</a>
-    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_finite_chain_price.py">finite-chain certificate</a> &middot;
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_vector_chain_price.py">vector certificate</a> &middot;
+    <a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_finite_chain_price.py">scalar certificate</a> &middot;
     <a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_correlation.py">option certificate</a></span></p>
     <p class="demo-nav"><a href="./correlation-full.html">full correlation note</a></p>
     <h1>Second-order arbitrary-prior prices</h1>
-    <p class="subtitle">A finite chain contributes an exact mean layer and four spectral coefficients.</p>
+    <p class="subtitle">A finite chain contributes exact mean layers and spectral cumulant tensors.</p>
 
-    <p class="lead">For any scalar field on a finite irreducible chain, keeping the exact mean boundary and the next
+    <p class="lead">For one or several fields on a finite irreducible chain, keeping the exact mean boundary and the next
     occupation cumulants gives a second-order price formula whose remainder is $O(m^{-3})$. The bound is uniform over
     every initial regime prior at fixed positive maturity.</p>
 
@@ -150,6 +151,32 @@
     </div>
     <p>Taylor expansion through degree five proves the formula, with the sixth moment controlling the remainder. Compactness
     of the prior simplex makes the spectral-amplitude bounds uniform.</p>
+
+    <h2>Several observables and a joint payoff</h2>
+    <p>Let $f=(f^1,\ldots,f^d)$ be a fixed vector of state fields, put $g^a=f^a-\pi f^a$, and let $C$ be a scalar
+    $C^6$ function on a neighborhood of the convex hull of their values. For the multivariate tilt
+    $Q+\operatorname{diag}(z_ag^a)$, write</p>
+    $$\Gamma_{ab}=\partial_{ab}\lambda(0),\quad
+      \Lambda_{abc}=\partial_{abc}\lambda(0),\quad
+      \beta_a=\left.\partial_a\log\{\nu P(z)\mathbf1\}\right|_{z=0},\quad
+      B_{ab}=\left.\partial_{ab}\log\{\nu P(z)\mathbf1\}\right|_{z=0},$$
+    <p>and let
+    $\mu_m^a=\mathbb E_\nu\int_0^T(f^a(Y_t)-\pi f^a)dt$ be exact. With repeated indices summed,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E_\nu C(X_m)={}&C(\bar f)+\frac{\mu_m^a}{T}C_a
+      +\frac{\Gamma_{ab}}{2mT}C_{ab}\\
+      &+\frac1{m^2T^2}\Big[
+      \tfrac12(B_{ab}+\beta_a\beta_b)C_{ab}
+      +\tfrac16(\Lambda_{abc}+\Gamma_{ab}\beta_c+\Gamma_{ac}\beta_b
+      +\Gamma_{bc}\beta_a)C_{abc}\\
+      &\hspace{26mm}+\tfrac1{24}(\Gamma_{ab}\Gamma_{cd}
+      +\Gamma_{ac}\Gamma_{bd}+\Gamma_{ad}\Gamma_{bc})C_{abcd}\Big]
+      +O(m^{-3}).
+    \end{aligned}$$
+    </div>
+    <p>All payoff derivatives are evaluated at $\bar f=\pi f$. The proof is the same cumulant-to-moment partition as in
+    the scalar case; the tensor formula reduces exactly to that theorem along every direction in observable space.</p>
 
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
@@ -204,6 +231,12 @@
     skew and kurtosis terms without numerical differentiation.</p>
 
     <h2>Numerical certificate</h2>
+    <p>For two observables on the same nonreversible three-state chain, five priors and four joint exponential payoffs,
+    the maximum error falls from $2.88061785\times10^{-4}$ at speed $4$ to $6.46190448\times10^{-8}$ at speed $64$.
+    The last-doubling order is $3.008710$, and directional reduction to the scalar implementation is exact in binary64.</p>
+    <p>An independent joint-moment ODE tests the genuinely mixed payoff $C(x,y)=x^2y^2$. Its maximum error falls from
+    $4.52863079\times10^{-4}$ at speed $4$ to $1.25201763\times10^{-7}$ at speed $64$, with last-doubling order
+    $2.988710$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -218,6 +251,9 @@
     <p><a href="./bibliography.html#Kato1995">Kato&apos;s perturbation theory</a> supplies the analytic eigenvalue and
     spectral-projection expansion. <a href="./bibliography.html#YinZhang2013">Yin and Zhang</a> give the broader
     two-time-scale finite-chain framework; the displayed scalar price coefficients are derived directly here.</p>
+    <p>The tensor moment partitions are an elementary instance of the classical semi-invariant calculus of
+    <a href="./bibliography.html#LeonovShiryaev1959">Leonov and Shiryaev</a>. The multivariate price contraction is
+    derived directly here, with no priority claim for moment-cumulant identities.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
