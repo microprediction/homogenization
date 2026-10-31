@@ -225,6 +225,25 @@
     $\psi(f(Y_t))$ converges to $\pi\psi(f)$, whereas applying $\psi$ after averaging converges to $\psi(\pi f)$.
     Their generally nonzero Jensen gap is order one, not another term in the fixed-maturity $1/m$ expansion.</p>
 
+    <h3>Nonlinear maps after averaging</h3>
+    <p>There is nevertheless a precise delta formula for post-averaging transformations. Let
+    $Z_m=\psi(X_m)$ for a $C^6$ map $\psi:\mathbb R^d\to\mathbb R^k$, and write
+    $J^i_a=\partial_a\psi^i(\bar f)$ and $H^i_{ab}=\partial_{ab}\psi^i(\bar f)$.</p>
+    <p>Uniformly over every initial regime prior, at fixed positive maturity,</p>
+    <div class="equation-card">
+    $$\begin{aligned}
+    \mathbb E Z_m^i&=\psi^i(\bar f)+J^i_a\frac{\mu_m^a}{T}
+      +\frac{\Gamma_{ab}H^i_{ab}}{2mT}+O(m^{-2}),\\
+    \operatorname{Cov}(Z_m)_{ij}&=\frac{J^i_a\Gamma_{ab}J^j_b}{mT}+O(m^{-2}).
+    \end{aligned}$$
+    </div>
+    <p>The first identity is the vector price theorem applied componentwise. Applying it to
+    $\psi^i\psi^j$ and subtracting the two component means cancels the mean-layer and curvature terms, leaving
+    $J\Gamma J^\top$ at first order.</p>
+    <p>Consequently a singular Jacobian can lower the tangent covariance rank, and a critical map with $J=0$ has
+    covariance only at order $m^{-2}$. This local delta-method rank is neither the exact fixed-feature
+    Green&ndash;Kubo rank nor a rank obtained by integrating maturity-dependent loadings.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -296,6 +315,9 @@
     <p>For $\psi(x,y)=(x^2,xy)$ on the certificate&apos;s three state vectors, the stationary Jensen gap is exactly
     $(5227/16900,-17/130)$. The rational-vector check has binary64 discrepancy $5.55\times10^{-17}$ and
     shows that nonlinear state preprocessing fails before any finite-rate correction is considered.</p>
+    <p>For the post-averaging map $\psi(x,y)=((x-\bar x)^2,y)$, whose Jacobian has rank one, the exact joint-moment ODE gives mean errors
+    $5.01528999\times10^{-3}$ and $1.95909768\times10^{-5}$ at speeds $4$ and $64$. The corresponding tangent-covariance
+    errors fall from $2.87245875\times10^{-3}$ to $1.28871522\times10^{-5}$, with last-doubling orders $2.000000$ and $1.987508$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -316,6 +338,9 @@
     <p>The sharp affine boundary is the equality form of the barycentric identity underlying
     <a href="./bibliography.html#Jensen1906">Jensen&apos;s original convexity paper</a>. Its application to finite-state
     occupation averages is proved directly above.</p>
+    <p>The transformed covariance $J\Gamma J^\top$ is the standard multivariate delta-method covariance; see
+    <a href="./bibliography.html#VanDerVaart1998">van der Vaart, Chapter 3</a>. The curvature bias and uniform
+    finite-chain remainder stated here follow directly from the spectral price theorem above.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
