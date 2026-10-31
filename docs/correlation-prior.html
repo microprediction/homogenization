@@ -256,6 +256,23 @@
     second-order property of the chosen critical statistic, not the fixed-feature Green&ndash;Kubo rank and not a
     maturity-integrated loading rank.</p>
 
+    <h3>The sharp critical rank ceiling</h3>
+    <p>Let $r=\operatorname{rank}\Gamma$ and restrict $\Gamma$ to its range. For
+    $S_i=\Gamma^{1/2}H^i\Gamma^{1/2}$, the critical coefficient $K$ is the Gram matrix</p>
+    <div class="equation-card">
+    $$K_{ij}=\tfrac12\operatorname{tr}(S_iS_j),\qquad
+      \operatorname{rank}K=\dim\operatorname{span}\{S_1,\ldots,S_k\}
+      \le \min\!\left\{k,\frac{r(r+1)}2\right\}.$$
+    </div>
+    <p>This bound is sharp for fixed $\Gamma$. Equip the $r(r+1)/2$-dimensional space of symmetric matrices with
+    inner product $\langle A,B\rangle=\operatorname{tr}(AB)/2$; any positive-semidefinite target Gram matrix of
+    admissible rank gives matrices $S_i$, and $H^i=\Gamma^{+1/2}S_i\Gamma^{+1/2}$ on the range realizes them. Here
+    $\Gamma^{+1/2}$ denotes the Moore&ndash;Penrose inverse square root.</p>
+    <p>In particular, when $r=2$, the three critical coordinates
+    $(x_1-\bar f_1)^2$, $(x_2-\bar f_2)^2$ and
+    $(x_1-\bar f_1)(x_2-\bar f_2)$ can have rank-three leading covariance. This order-$m^{-2}$ local rank can exceed
+    $r$ without changing the fixed-feature Green&ndash;Kubo rank, and it says nothing about maturity-integrated loadings.</p>
+
     <h2>The two-state correlation reduction</h2>
     <p>Let the calm-to-crisis and crisis-to-calm rates be $ma$ and $mb$. Put</p>
     $$r=a+b,\quad p_1=\frac ar,\quad p_0=\frac br,\quad
@@ -333,6 +350,9 @@
     <p>For its critical first component $(x-\bar x)^2$, the predicted variance is
     $2\Gamma_{11}^2/(m^2T^2)$. The exact variance error falls from $1.07961924\times10^{-3}$ at speed $4$ to
     $2.98170334\times10^{-7}$ at speed $64$, with last-doubling order $2.988799$.</p>
+    <p>For all three critical quadratic coordinates, the Hessian-Gram identity has maximum discrepancy
+    $2.08\times10^{-17}$ and its coefficient has rank three. Across the same five priors, the maximum exact covariance
+    error falls from $1.07961924\times10^{-3}$ to $2.98170334\times10^{-7}$, with last-doubling order $2.988799$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
