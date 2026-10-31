@@ -450,6 +450,50 @@ def finite_depth_inversion_check(maximum_depth=10):
     return identities
 
 
+def finite_depth_lower_bound_check(maximum_depth=8):
+    """Check indistinguishable finite-support pairs for the lower bound."""
+    identities = 0
+    for radius in (F(2), F(3), F(4)):
+        for depth in range(maximum_depth + 1):
+            coefficients = [
+                F((-1) ** (depth + 1 - k) * comb(depth + 1, k))
+                for k in range(depth + 2)
+            ]
+            positive = [max(value, F(0)) for value in coefficients]
+            negative = [max(-value, F(0)) for value in coefficients]
+            positive_budget = sum(
+                (value * radius ** k for k, value in enumerate(positive)), F(0)
+            )
+            negative_budget = sum(
+                (value * radius ** k for k, value in enumerate(negative)), F(0)
+            )
+            assert positive_budget + negative_budget == (radius + 1) ** (depth + 1)
+            assert positive_budget - negative_budget == (radius - 1) ** (depth + 1)
+            scale = 1 / positive_budget
+            for order in range(depth + 1):
+                positive_phase = scale * sum(
+                    (F(comb(k, order)) * positive[k]
+                     for k in range(order, depth + 2)), F(0)
+                )
+                negative_phase = scale * sum(
+                    (F(comb(k, order)) * negative[k]
+                     for k in range(order, depth + 2)), F(0)
+                )
+                assert positive_phase == negative_phase
+                identities += 1
+            assert scale * positive_budget == 1
+            assert scale * negative_budget <= 1
+            identities += 2
+            denominator = ((radius + 1) ** (depth + 1)
+                           + (radius - 1) ** (depth + 1))
+            for n in range(1, depth + 3):
+                separation = scale * abs(coefficients[n - 1])
+                lower_bound = F(comb(depth + 1, n - 1), denominator)
+                assert separation == 2 * lower_bound
+                identities += 1
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -718,6 +762,7 @@ def main():
     critical_tail = critical_tail_stopping_check()
     depth_transform_identities = depth_transform_check()
     finite_depth_inversion_identities = finite_depth_inversion_check()
+    finite_depth_lower_bound_identities = finite_depth_lower_bound_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -826,6 +871,8 @@ def main():
           f"{depth_transform_identities}")
     print("exact finite-depth inversion identities: "
           f"{finite_depth_inversion_identities}")
+    print("exact finite-depth lower-bound identities: "
+          f"{finite_depth_lower_bound_identities}")
     print("PASS")
 
 
