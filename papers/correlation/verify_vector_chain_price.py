@@ -261,7 +261,7 @@ def exact_critical_transform_moments(initial, speed, center):
     )
     centered = {
         powers: centered_moment(moment, powers, center)
-        for powers in [(1, 0), (2, 0), (0, 2), (1, 1), (3, 0),
+        for powers in [(1, 0), (0, 1), (2, 0), (0, 2), (1, 1), (3, 0),
                        (1, 2), (2, 1), (0, 3), (4, 0), (0, 4),
                        (2, 2), (3, 1), (1, 3), (6, 0), (5, 1),
                        (4, 2), (3, 3), (2, 4), (1, 5), (0, 6)]
@@ -299,8 +299,16 @@ def exact_critical_transform_moments(initial, speed, center):
         for left in cubic_powers
     ])
     cubic_covariance = cubic_second - np.outer(cubic_mean, cubic_mean)
+    odd_powers = [(1, 0), (0, 1)] + cubic_powers
+    odd_mean = np.array([centered[powers] for powers in odd_powers])
+    odd_second = np.array([
+        [centered[(left[0] + right[0], left[1] + right[1])]
+         for right in odd_powers]
+        for left in odd_powers
+    ])
+    odd_scale_covariance = odd_second - np.outer(odd_mean, odd_mean)
     return (transformed_mean, covariance, quadratic_covariance,
-            mixed_scale_covariance, cubic_covariance)
+            mixed_scale_covariance, cubic_covariance, odd_scale_covariance)
 
 
 def main():
@@ -323,6 +331,8 @@ def main():
     tangent_eigenvalue_errors = []
     null_eigenvalue_errors = []
     cubic_covariance_errors = []
+    odd_tangent_eigenvalue_errors = []
+    odd_cubic_eigenvalue_errors = []
     base_covariance = green_kubo_covariance(VALUES)
     cubic_powers = [(3, 0), (2, 1), (1, 2), (0, 3)]
     cubic_coefficient = np.array([
@@ -336,6 +346,26 @@ def main():
         for left in cubic_powers
     ])
     cubic_rank = np.linalg.matrix_rank(cubic_coefficient, tol=1e-11)
+    odd_powers = [(1, 0), (0, 1)] + cubic_powers
+    odd_gram = np.array([
+        [gaussian_moment(
+            base_covariance,
+            [field for field, exponent in enumerate(left)
+             for _ in range(exponent)]
+            + [field for field, exponent in enumerate(right)
+               for _ in range(exponent)]
+        ) for right in odd_powers]
+        for left in odd_powers
+    ])
+    odd_cross = odd_gram[:2, 2:]
+    odd_cubic_schur = (odd_gram[2:, 2:]
+                       - odd_cross.T
+                       @ np.linalg.solve(base_covariance, odd_cross))
+    odd_cubic_schur = 0.5 * (odd_cubic_schur + odd_cubic_schur.T)
+    odd_gram_rank = np.linalg.matrix_rank(odd_gram, tol=1e-11)
+    odd_schur_rank = np.linalg.matrix_rank(odd_cubic_schur, tol=1e-11)
+    odd_tangent_coefficients = np.linalg.eigvalsh(base_covariance)[::-1]
+    odd_cubic_coefficients = np.linalg.eigvalsh(odd_cubic_schur)[::-1]
     critical_hessians = np.array([
         [[2.0, 0.0], [0.0, 0.0]],
         [[0.0, 0.0], [0.0, 2.0]],
@@ -437,6 +467,8 @@ def main():
         tangent_eigenvalue_error = 0.0
         null_eigenvalue_error = 0.0
         cubic_covariance_error = 0.0
+        odd_tangent_eigenvalue_error = 0.0
+        odd_cubic_eigenvalue_error = 0.0
         tangent_covariance = np.array([
             [0.0, 0.0],
             [0.0, base_covariance[1, 1] / (speed * MATURITY)],
@@ -444,7 +476,7 @@ def main():
         for initial in priors:
             (transformed_mean, transformed_covariance,
              quadratic_covariance, mixed_scale_covariance,
-             cubic_covariance) = (
+             cubic_covariance, odd_scale_covariance) = (
                  exact_critical_transform_moments(initial, speed, mean)
              )
             tangent_mean = np.array([
@@ -502,6 +534,21 @@ def main():
                     cubic_covariance - predicted_cubic_covariance
                 )))
             )
+            odd_eigenvalues = np.linalg.eigvalsh(odd_scale_covariance)[::-1]
+            odd_tangent_eigenvalue_error = max(
+                odd_tangent_eigenvalue_error,
+                float(np.max(np.abs(
+                    odd_eigenvalues[:2] - odd_tangent_coefficients
+                    / (speed * MATURITY)
+                )))
+            )
+            odd_cubic_eigenvalue_error = max(
+                odd_cubic_eigenvalue_error,
+                float(np.max(np.abs(
+                    odd_eigenvalues[2:] - odd_cubic_coefficients
+                    / (speed ** 3 * MATURITY ** 3)
+                )))
+            )
         nonlinear_mean_errors.append(nonlinear_mean_error)
         nonlinear_covariance_errors.append(nonlinear_covariance_error)
         critical_variance_errors.append(critical_variance_error)
@@ -509,6 +556,8 @@ def main():
         tangent_eigenvalue_errors.append(tangent_eigenvalue_error)
         null_eigenvalue_errors.append(null_eigenvalue_error)
         cubic_covariance_errors.append(cubic_covariance_error)
+        odd_tangent_eigenvalue_errors.append(odd_tangent_eigenvalue_error)
+        odd_cubic_eigenvalue_errors.append(odd_cubic_eigenvalue_error)
         print(f"speed {speed:2d}: maximum vector-price error "
               f"{maximum:.8e}; mixed-polynomial error {mixed_maximum:.8e}")
         print(f"            nonlinear mean error {nonlinear_mean_error:.8e}; "
@@ -522,6 +571,9 @@ def main():
               f"{null_eigenvalue_error:.8e}")
         print(f"            critical cubic covariance error "
               f"{cubic_covariance_error:.8e}")
+        print(f"            odd tangent/cubic eigenvalue errors "
+              f"{odd_tangent_eigenvalue_error:.8e} "
+              f"{odd_cubic_eigenvalue_error:.8e}")
     order = math.log(errors[-2] / errors[-1], 2)
     print(f"last-doubling vector-price order {order:.6f}")
     mixed_order = math.log(mixed_errors[-2] / mixed_errors[-1], 2)
@@ -569,6 +621,18 @@ def main():
     print(f"critical cubic coefficient rank {cubic_rank}; "
           f"symmetric-tensor ceiling {cubic_ceiling}")
     print(f"critical cubic covariance order {cubic_covariance_order:.6f}")
+    odd_tangent_order = math.log(
+        odd_tangent_eigenvalue_errors[-2]
+        / odd_tangent_eigenvalue_errors[-1], 2
+    )
+    odd_cubic_order = math.log(
+        odd_cubic_eigenvalue_errors[-2]
+        / odd_cubic_eigenvalue_errors[-1], 2
+    )
+    print(f"odd derivative-flag tangent/cubic eigenvalue orders "
+          f"{odd_tangent_order:.6f} {odd_cubic_order:.6f}")
+    print(f"odd derivative-flag multiplicities 2 4; Gram/Schur ranks "
+          f"{odd_gram_rank} {odd_schur_rank}")
     ok &= order > 2.98
     ok &= errors[-1] < 1.0e-7
     ok &= mixed_order > 2.98
@@ -596,6 +660,12 @@ def main():
     ok &= cubic_rank == cubic_ceiling == 4
     ok &= cubic_covariance_order > 3.95
     ok &= cubic_covariance_errors[-1] < 3.0e-8
+    ok &= odd_tangent_order > 1.98
+    ok &= odd_tangent_eigenvalue_errors[-1] < 4.0e-5
+    ok &= odd_cubic_order > 3.94
+    ok &= odd_cubic_eigenvalue_errors[-1] < 1.0e-8
+    ok &= odd_gram_rank == 6
+    ok &= odd_schur_rank == 4
 
     print("PASS" if ok else "FAIL")
 
