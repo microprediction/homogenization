@@ -317,6 +317,39 @@
     <p>These are local post-averaging covariance scales for one fixed map and feature family at fixed positive
     maturity. They do not alter exact fixed-feature Green&ndash;Kubo rank and make no maturity-integrated rank claim.</p>
 
+    <h3>Analytic completeness and the smooth flat boundary</h3>
+    <p>Suppose now that $\phi$ is real analytic on a connected open set containing the attainable feature polytope,
+    and put $V_\infty=\bigcap_{p\ge1}V_p$. Then</p>
+    <div class="equation-card">
+    $$V_\infty=\{a\in\mathbb R^k:a^\top\phi\text{ is constant on the attainable polytope}\}.$$
+    </div>
+    <p>Indeed $a\in V_\infty$ exactly when every positive-order derivative of $a^\top\phi$ vanishes at zero. Its
+    Taylor series is therefore constant near zero, and the analytic identity theorem extends that constant to the
+    connected domain.</p>
+    <p>On $V_\infty^\perp$ the descending finite-dimensional flag has zero intersection, so it reaches zero after
+    finitely many orders. Thus the derivative-flag theorem exhausts every nonzero covariance eigenvalue of an analytic
+    map; directions in $V_\infty$ have exactly zero covariance.</p>
+    <p>This conclusion fails for a merely smooth map. Let a stationary symmetric telegraph chain take values
+    $\pm1$, switch at rate $m$, and set $W_m=\int_0^1Y_t\,dt$ and</p>
+    $$\phi(w)=\begin{cases}\exp(-1/w^2),&w\ne0,\\0,&w=0.\end{cases}$$
+    <p>The map is $C^\infty$ and every derivative at zero vanishes, although it is not locally constant. The exact
+    occupation law has atoms $e^{-m}/2$ at $\pm1$ and density</p>
+    $$f_m(w)=\frac{me^{-m}}2\left[I_0\!\left(m\sqrt{1-w^2}\right)
+      +\frac{I_1\!\left(m\sqrt{1-w^2}\right)}{\sqrt{1-w^2}}\right],
+      \qquad |w|&lt;1.$$
+    <p>Its Bessel asymptotics give, for every $q&gt;0$,</p>
+    <div class="equation-card">
+    $$\lim_{m\to\infty}-\frac{1}{\sqrt m}\log\mathbb E\phi(W_m)^q=\sqrt{2q},
+      \qquad
+      \lim_{m\to\infty}-\frac{1}{\sqrt m}\log\operatorname{Var}(\phi(W_m))=2.$$
+    </div>
+    <p>For the first limit, insert the Bessel density and rescale $w=m^{-1/4}y$. Its exponential cost becomes
+    $\sqrt m\{q/y^2+y^2/2}+O(1)$, whose minimum is $\sqrt{2qm}$; the endpoint atoms cost order $m$ and are negligible.
+    The variance follows because the squared mean has rate $2\sqrt2&gt;2$.</p>
+    <p>Hence the covariance is stretched exponential, smaller than every $m^{-p}$ but not zero. This is a local
+    post-averaging phenomenon for a fixed smooth map; the underlying scalar feature still has nonzero fixed-feature
+    Green&ndash;Kubo variance, and no maturity-integrated rank claim is involved.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -433,6 +466,9 @@
     scale $m^{-3}$. After the cubic Schur correction, the tangent residual falls from $6.24219819\times10^{-3}$ to
     $2.59332968\times10^{-5}$ with order $1.990170$, while the cubic residual falls from $2.92062989\times10^{-4}$
     to $5.92285779\times10^{-9}$ with order $3.974466$.</p>
+    <p>The exact symmetric-telegraph density tests the flat map above. From speeds $16$ to $4096$, its variance falls
+    from $1.94608100\times10^{-4}$ to $1.56009960\times10^{-56}$, while
+    $-\log\operatorname{Var}(\phi(W_m))/\sqrt m$ falls from $2.136131$ to $2.007813$, approaching the proved limit $2$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -469,8 +505,8 @@
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
-    expansion follows directly from those occupation moments and Taylor&apos;s theorem; no priority claim is made for the
-    occupation law.</p>
+    expansion and the smooth-flat counterexample follow directly from that law; no priority claim is made for the
+    occupation density.</p>
   </main>
 
   <footer>
