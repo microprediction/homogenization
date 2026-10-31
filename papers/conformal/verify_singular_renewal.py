@@ -494,6 +494,34 @@ def finite_depth_lower_bound_check(maximum_depth=8):
     return identities
 
 
+def two_phase_minimax_check():
+    """Check the sharp first-coordinate minimax pair and upper inequality."""
+    identities = 0
+    budget = F(7, 5)
+    for radius in map(F, range(2, 11)):
+        scale = budget / (1 + radius ** 2)
+        positive = [scale, F(0), scale]
+        negative = [F(0), 2 * scale, F(0)]
+        assert sum(positive, F(0)) == sum(negative, F(0))
+        assert sum((k * value for k, value in enumerate(positive)), F(0)) == sum(
+            (k * value for k, value in enumerate(negative)), F(0)
+        )
+        assert sum(
+            (value * radius ** k for k, value in enumerate(positive)), F(0)
+        ) == budget
+        assert sum(
+            (value * radius ** k for k, value in enumerate(negative)), F(0)
+        ) <= budget
+        assert positive[0] - negative[0] == 2 * budget / (
+            2 * (1 + radius ** 2)
+        )
+        identities += 5
+        for k in range(2, 21):
+            assert radius ** k >= radius ** 2 * (k - 1)
+            identities += 1
+    return identities
+
+
 def second_order_phase_distribution_check(initial, weights, limits, horizon,
                                           reference_start=120):
     span, _, matrix = companion_matrix(weights)
@@ -763,6 +791,7 @@ def main():
     depth_transform_identities = depth_transform_check()
     finite_depth_inversion_identities = finite_depth_inversion_check()
     finite_depth_lower_bound_identities = finite_depth_lower_bound_check()
+    two_phase_minimax_identities = two_phase_minimax_check()
     for horizon in range(2, 62):
         second_order_phase_distribution_check(a[6], a[7], a[3], horizon)
         phase_distribution_checks += 1
@@ -873,6 +902,8 @@ def main():
           f"{finite_depth_inversion_identities}")
     print("exact finite-depth lower-bound identities: "
           f"{finite_depth_lower_bound_identities}")
+    print("exact two-phase minimax identities: "
+          f"{two_phase_minimax_identities}")
     print("PASS")
 
 
