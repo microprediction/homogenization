@@ -495,7 +495,7 @@ def finite_depth_lower_bound_check(maximum_depth=8):
 
 
 def two_phase_minimax_check():
-    """Check the sharp first-coordinate minimax pair and upper inequality."""
+    """Check the sharp two-phase coordinate pairs and upper inequalities."""
     identities = 0
     budget = F(7, 5)
     for radius in map(F, range(2, 11)):
@@ -518,6 +518,25 @@ def two_phase_minimax_check():
         identities += 5
         for k in range(2, 21):
             assert radius ** k >= radius ** 2 * (k - 1)
+            identities += 1
+
+        positive = [F(0), 2 * scale, F(0)]
+        negative = [scale, F(0), scale]
+        assert sum(positive, F(0)) == sum(negative, F(0))
+        assert sum((k * value for k, value in enumerate(positive)), F(0)) == sum(
+            (k * value for k, value in enumerate(negative)), F(0)
+        )
+        assert sum(
+            (value * radius ** k for k, value in enumerate(positive)), F(0)
+        ) <= budget
+        assert sum(
+            (value * radius ** k for k, value in enumerate(negative)), F(0)
+        ) == budget
+        assert positive[1] - negative[1] == 2 * budget / (1 + radius ** 2)
+        identities += 5
+        for k in (0, *range(2, 20)):
+            affine_minorant = 1 + (radius ** 2 - 1) * F(k, 2)
+            assert 0 <= affine_minorant <= radius ** k
             identities += 1
     return identities
 
