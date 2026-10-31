@@ -198,6 +198,28 @@
     feature family and positive maturity; it gives an $o(m^{-p})$ covariance remainder, not a uniform statement as
     $T\downarrow0$ or an $O(m^{-p-1})$ rate.</p>
 
+    <h3>The derivative flag and all covariance scales</h3>
+    <p>A $C^{P+1}$ vector map can first vary at different orders in different output directions. For $1\le p\le P+1$ define
+    $V_p=\{a\in\mathbb R^k:a^\top D^j\phi(0)=0\text{ for }1\le j&lt;p\}$ and
+    $d_p=\dim V_p-\dim V_{p+1}$, and suppose $V_{P+1}=\{0\}$.</p>
+    <p>Choose an orthonormal output basis adapted to this descending flag. For each basis vector $e_{p,a}$ of
+    $V_p\ominus V_{p+1}$ put $P_{p,a}(G)=e_{p,a}^\top D^p\phi(0)[G^{\otimes p}]/p!$, let $K$ be the covariance
+    Gram matrix of all these polynomials, and set</p>
+    $$D_m=\operatorname{diag}\big((mT)^{-p/2}I_{d_p}:1\le p\le P\big).$$
+    <p>Uniformly over initial priors, in that adapted basis,</p>
+    <div class="equation-card">
+    $$\operatorname{Cov}(\phi(W_m))=D_m\{K+o(1)\}D_m,\qquad
+      \lambda_{d_1+\cdots+d_{p-1}+a}=\Theta((mT)^{-p}),\quad 1\le a\le d_p.$$
+    </div>
+    <p>The leading polynomials are linearly independent: within one degree this follows from the definition of
+    $V_{p+1}$, and across degrees from homogeneity. Thus $K\succ0$; a block Cholesky factorization has uniformly
+    bounded triangular factors after conjugation by $D_m$, which proves the eigenvalue orders.</p>
+    <p>Each multiplicity satisfies $d_p\le {r+p-1\choose p}$. Nested Schur complements of $K$ give the leading
+    coefficients; raw degrees of the same parity need not be orthogonal, so replacing those complements by diagonal
+    blocks is generally wrong.</p>
+    <p>These are local post-averaging covariance scales for one fixed map and feature family at fixed positive
+    maturity. They do not alter exact fixed-feature Green&ndash;Kubo rank and make no maturity-integrated rank claim.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -310,6 +332,10 @@
     <p>For the four cubic coordinates $(x^3,x^2y,xy^2,y^3)$ in the minimal two-dimensional feature space, the
     Gaussian coefficient attains the symmetric-cubic ceiling ${4\choose3}=4$. Across the five priors, its exact
     covariance error falls from $4.82994875\times10^{-4}$ to $9.39162072\times10^{-9}$, with last-doubling order $3.977185$.</p>
+    <p>For the derivative-flag map $(x,y,x^3,x^2y,xy^2,y^3)$, two eigenvalues have scale $m^{-1}$ and four have
+    scale $m^{-3}$. After the cubic Schur correction, the tangent residual falls from $6.24219819\times10^{-3}$ to
+    $2.59332968\times10^{-5}$ with order $1.990170$, while the cubic residual falls from $2.92062989\times10^{-4}$
+    to $5.92285779\times10^{-9}$ with order $3.974466$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -340,6 +366,9 @@
     <p>The arbitrary-order Gaussian coefficient is evaluated with the product-moment formula of
     <a href="./bibliography.html#Isserlis1918">Isserlis (1918)</a>. The uniform finite-chain delta limit and the sharp
     symmetric-tensor rank ceiling are derived directly here.</p>
+    <p><a href="./bibliography.html#Ito1951">It&ocirc;&apos;s multiple-integral construction</a> supplies the classical
+    orthogonal Gaussian-chaos decomposition. The derivative flag here is kept in raw homogeneous coordinates, where
+    same-parity degrees can correlate and the displayed Schur complements are necessary.</p>
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
