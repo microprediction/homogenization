@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oscillatory-slope covariance · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-divergent-slope-flat.html">&larr; divergent-slope covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_oscillatory_slope_flat.py">certificate</a></span></p>
+    <h1>Oscillatory-slope covariance</h1>
+    <p class="subtitle">A bounded adiabatic slope produces a moving Gaussian constant, not necessarily a limit.</p>
+
+    <p class="lead">Finite logarithmic slope need not converge. If it changes negligibly on bounded windows, the
+    normalized covariance tracks the Gaussian constant at the current slope; an oscillating slope can therefore
+    make that covariance alternate forever between distinct subsequential limits.</p>
+
+    <h2>The moving-constant theorem</h2>
+    <p>Use the fixed-maturity finite-chain and tangent-gauge setup of the
+    <a href="./correlation-critical-slope-flat.html">constant-slope theorem</a>. Put $n=mT$,
+    $L_n=\tfrac12\log n$, $d_n=h'(L_n)$, and let $G\sim N(0,\Gamma)$ on $\operatorname{Ran}\Gamma$.</p>
+    <p>Suppose $h$ is eventually $C^2$ and increasing, and for some fixed constants</p>
+    $$0&lt;c_-\le h'(x)\le c_+&lt;\infty,\qquad h''(x)\longrightarrow0.$$
+    <p>Then for $p=1,2$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$e^{p h(L_n)}\mathbb E\Psi_{h,r}(W_{m,T})^p
+      -\mathbb E\rho(G)^{p d_n}\longrightarrow0.$$
+    </div>
+    <p>Consequently, writing $V_{c,\rho,\Gamma}=\operatorname{Var}\{\rho(G)^c\}$,</p>
+    $$e^{2h(L_n)}\operatorname{Var}(\Psi_{h,r}(W_{m,T}))
+      -V_{d_n,\rho,\Gamma}\longrightarrow0.$$
+    <p>If $d_n\to c$, this reduces to the constant in the critical-slope theorem. Without convergence of $d_n$,
+    replacing the moving constant by one fixed number is generally false.</p>
+
+    <h2>Proof and error scope</h2>
+    <p>For fixed $z$ away from zero, tangent homogeneity and Taylor&apos;s theorem give</p>
+    $$h(L_n)-h(L_n-\log\rho(z)+o(1))=d_n\log\rho(z)+o(1).$$
+    <p>More precisely, on $|\log\rho(z)|\le R$, the profile remainder is bounded by
+    $\tfrac12R^2\sup_{|u-L_n|\le R+o(1)}|h''(u)|+o(1)$. This tends to zero uniformly for each fixed $R$.</p>
+    <p>The lower slope bound controls the origin, while the upper bound gives a common polynomial envelope.
+    The finite-chain spectral tail bound supplies uniform integrability, so the uniform central limit theorem passes
+    the first two moments to the varying functions $\rho(G)^{p d_n}$.</p>
+    <p>The displayed covariance approximation has additive error $o(1)$ after multiplication by $e^{2h(L_n)}$.
+    Under only $h''\to0$, no universal rate is claimed: a rate also requires quantitative curvature, tangent-gauge
+    and finite-chain tail moduli.</p>
+
+    <h2>An explicit nonconvergent example</h2>
+    <p>Let $u=\sqrt{1+t}$ and</p>
+    $$h(t)=t+\frac{1-u\cos(3(u-1))}{3}+\frac{\sin(3(u-1))}{9}.$$
+    <p>Then $h(0)=0$ and</p>
+    $$h'(t)=1+\frac12\sin(3(\sqrt{1+t}-1)),\qquad
+      h''(t)=\frac{3\cos(3(\sqrt{1+t}-1))}{4\sqrt{1+t}}.$$
+    <p>Thus $h'$ stays in $[1/2,3/2]$, has no limit, and satisfies the theorem. Along its alternating minimum and
+    maximum phases, the scalar Gaussian constants are</p>
+    $$V_{1/2,|\cdot|,1}=0.121906320736,\qquad
+      V_{3/2,|\cdot|,1}=0.856100341809,$$
+    <p>so the normalized variance has at least two distinct subsequential limits.</p>
+
+    <h2>Exact telegraph certificate</h2>
+    <p>The finite-profile column compares its Gaussian variance with the moving constant. The exact column then
+    compares the atom-plus-Bessel telegraph variance with that finite-profile Gaussian variance.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>phase</th><th>$L_n$</th><th>$d_n$</th><th>profile / moving</th><th>exact / profile</th></tr></thead>
+      <tbody>
+        <tr><td>minimum</td><td>5.608993754</td><td>.5</td><td>1.158000330</td><td>.999993332</td></tr>
+        <tr><td>maximum</td><td>12.089879701</td><td>1.5</td><td>.980402350</td><td>1.000000000</td></tr>
+        <tr><td>minimum</td><td>20.764011071</td><td>.5</td><td>1.061273839</td><td>1.000000000</td></tr>
+        <tr><td>maximum</td><td>31.631387863</td><td>1.5</td><td>.992135333</td><td>1.000000000</td></tr>
+        <tr><td>minimum</td><td>44.692010078</td><td>.5</td><td>1.031803321</td><td>1.000000000</td></tr>
+        <tr><td>maximum</td><td>59.945877715</td><td>1.5</td><td>.995788627</td><td>1.000000000</td></tr>
+      </tbody>
+    </table></div>
+    <p>The alternating profile ratios approach one from opposite sides. Finite-rate error is already below
+    $6.7\times10^{-6}$ at the first displayed phase.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#NeyNummelin1987I">Ney and Nummelin (1987, Part I)</a> provide the spectral
+    Markov-additive limit theory. <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
+    Nir (2010)</a> derive the Bessel occupation densities used by the certificate; the moving-constant result is
+    derived here.</p>
+    <p>This is a fixed-feature, fixed-positive-maturity scalar variance theorem. Singular $\Gamma$ is handled on its
+    support, and no covariance-rank statement after integrating distinct maturity loadings is made.</p>
+    <p>If the slope tends to zero, the leading Gaussian functional becomes deterministic and a different normalization
+    is needed. The <a href="./correlation-vanishing-slope-flat.html">vanishing-slope theorem</a> identifies that phase.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
