@@ -3284,5 +3284,16 @@
   "doi": "10.24033/bsmf.1196",
   "url": "https://doi.org/10.24033/bsmf.1196",
   "annotation": "Establishes the foundational theory of regular variation used to parameterize arbitrarily slowly diverging flat-map profiles."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Lezaud2001",
+  "authors": "Lezaud, P.",
+  "year": 2001,
+  "title": "Chernoff and Berry-Esseen inequalities for Markov processes",
+  "venue": "ESAIM: Probability and Statistics 5, 183-201",
+  "doi": "",
+  "url": "https://www.numdam.org/item/PS_2001__5__183_0/",
+  "annotation": "Gives spectral-gap concentration bounds for empirical means of ergodic Markov processes, including the exponential tail control used for the smooth flat-block estimate."
  }
 ]
