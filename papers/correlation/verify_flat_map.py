@@ -17,6 +17,7 @@ SPEEDS = [16, 64, 256, 1024, 4096]
 FAMILY_SPEED = 262144
 FLAT_POWERS = [1.0, 2.0, 4.0]
 LOG_FLAT_SPEEDS = [1e8, 1e32, 1e128, 1e256]
+BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -107,10 +108,10 @@ def slow_flat_saddle(speed, gamma, power):
     return radius_log, cost
 
 
-def log_slow_flat_moment(speed, gamma, power):
-    """Exact-law log moment for the smooth log-flat family."""
-    radius_log, shift = slow_flat_saddle(speed, gamma, power)
-    optimizer = math.sqrt(power * gamma) * radius_log ** ((gamma - 1.0) / 2.0)
+def log_profile_moment(speed, power, profile, profile_derivative, saddle):
+    """Exact-law log moment for a profile of log(e/|X_m|)."""
+    radius_log, shift = saddle(speed, power)
+    optimizer = math.sqrt(power * profile_derivative(radius_log))
     upper = max(30.0, 5.0 * optimizer + 20.0)
 
     def integrand(rescaled_position):
@@ -121,7 +122,7 @@ def log_slow_flat_moment(speed, gamma, power):
         argument = speed * radius
         log_radius = math.log(math.e / position)
         exponent = (
-            -power * log_radius ** gamma + shift
+            -power * profile(log_radius) + shift
             - rescaled_position ** 2 / (1.0 + radius)
         )
         return (
@@ -133,8 +134,55 @@ def log_slow_flat_moment(speed, gamma, power):
         integrand, 0.0, upper, epsabs=1e-12, epsrel=2e-11,
         limit=400, points=[optimizer],
     )
-    scaled_atoms = math.exp(-speed - power + shift)
+    scaled_atoms = math.exp(-speed - power * profile(1.0) + shift)
     return math.log(2.0 * value + scaled_atoms) - shift
+
+
+def log_slow_flat_moment(speed, gamma, power):
+    """Exact-law log moment for the log-power flat family."""
+    return log_profile_moment(
+        speed,
+        power,
+        lambda radius_log: radius_log ** gamma,
+        lambda radius_log: gamma * radius_log ** (gamma - 1.0),
+        lambda local_speed, local_power: slow_flat_saddle(
+            local_speed, gamma, local_power
+        ),
+    )
+
+
+def borderline_saddle(speed, power):
+    """Saddle for the profile H(r)=r log(r)**2."""
+    right_side = math.log(speed) + 2.0 - math.log(power)
+
+    def equation(radius_log):
+        log_radius = math.log(radius_log)
+        derivative = log_radius ** 2 + 2.0 * log_radius
+        return (
+            2.0 * radius_log + math.log(derivative)
+            - right_side
+        )
+
+    radius_log = brentq(equation, 1.01, right_side)
+    log_radius = math.log(radius_log)
+    derivative = log_radius ** 2 + 2.0 * log_radius
+    cost = power * (
+        radius_log * log_radius ** 2 + 0.5 * derivative
+    )
+    return radius_log, cost
+
+
+def log_borderline_moment(speed, power):
+    """Exact-law log moment for H(r)=r log(r)**2."""
+    return log_profile_moment(
+        speed,
+        power,
+        lambda radius_log: radius_log * math.log(radius_log) ** 2,
+        lambda radius_log: (
+            math.log(radius_log) ** 2 + 2.0 * math.log(radius_log)
+        ),
+        borderline_saddle,
+    )
 
 
 def polynomial_moment(speed, power):
@@ -237,6 +285,41 @@ def main():
         )
     print(f"maximum log-flat saddle error {max(saddle_errors):.6f}")
 
+    borderline_rates = []
+    borderline_separations = []
+    borderline_saddle_errors = []
+    for speed in BORDERLINE_SPEEDS:
+        log_speed = math.log(speed)
+        profile_log = math.log(0.5 * log_speed)
+        profile_derivative = profile_log ** 2 + 2.0 * profile_log
+        log_mean = log_borderline_moment(speed, 1.0)
+        log_second = log_borderline_moment(speed, 2.0)
+        log_variance = log_second + math.log1p(
+            -math.exp(2.0 * log_mean - log_second)
+        )
+        observed = -log_variance / (log_speed * profile_log ** 2)
+        separation = (
+            (-2.0 * log_mean + log_second) / profile_derivative
+        )
+        _, mean_cost = borderline_saddle(speed, 1.0)
+        _, second_cost = borderline_saddle(speed, 2.0)
+        saddle_error = max(
+            abs(-log_mean - mean_cost), abs(-log_second - second_cost)
+        )
+        borderline_rates.append(observed)
+        borderline_separations.append(separation)
+        borderline_saddle_errors.append(saddle_error)
+        print(
+            f"borderline log-flat at speed {speed:.0e}: "
+            f"variance log rate {observed:.6f}; target 1.000000; "
+            f"separation {separation:.6f}; target {math.log(2.0):.6f}; "
+            f"saddle error {saddle_error:.6f}"
+        )
+    print(
+        "maximum borderline saddle error "
+        f"{max(borderline_saddle_errors):.6f}"
+    )
+
     ok &= maximum_mass_error < 2e-12
     ok &= maximum_second_error < 2e-12
     ok &= all(left > right for left, right in zip(mean_rates, mean_rates[1:]))
@@ -250,6 +333,9 @@ def main():
     ok &= abs(slow_rates[-1] - 0.5) < 0.01
     ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01
     ok &= max(saddle_errors) < 0.5
+    ok &= abs(borderline_rates[-1] - 1.0) < 0.02
+    ok &= abs(borderline_separations[-1] - math.log(2.0)) < 0.02
+    ok &= max(borderline_saddle_errors) < 0.5
 
     print("PASS" if ok else "FAIL")
 

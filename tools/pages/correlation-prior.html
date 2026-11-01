@@ -306,6 +306,36 @@
     <p>This covariance is faster than every polynomial and slower than $\exp(-m^\beta)$ for every $\beta&gt;0$.
     It remains a fixed-map post-averaging scale, not a fixed-feature or maturity-integrated rank statement.</p>
 
+    <h3>Arbitrarily slow super-polynomial scales</h3>
+    <p>The log-power family is still not a lower boundary. Let $\ell$ be positive, smooth and slowly varying at
+    infinity, with $\ell(r)\to\infty$ and
+    $r^j\ell^{(j)}(r)/\ell(r)\to0$ for every $j\ge1$, and put $H(r)=r\ell(r)$.</p>
+    <p>Define $\chi_\ell(w)=\exp\{-H(\log(e/|w|))\}$ away from zero and $\chi_\ell(0)=0$. Then $\chi_\ell$ is
+    smooth and flat at zero, and for $L=\log m$ the exact telegraph law gives</p>
+    <div class="equation-card">
+    $$-\log\mathbb E\chi_\ell(W_m)^q\sim qH(L/2),\qquad
+      -\log\frac{(\mathbb E\chi_\ell(W_m))^2}{\mathbb E\chi_\ell(W_m)^2}
+      \sim(\log2)H'(L/2),$$
+    $$-\log\operatorname{Var}(\chi_\ell(W_m))
+      \sim2H(L/2)=L\ell(L/2).$$
+    </div>
+    <p>For the proof, let $r_q$ solve $2r_q+\log(qH'(r_q))=L+2$. Uniform Bessel asymptotics on the saddle window
+    and direct Laplace bounds give</p>
+    $$-\log\mathbb E\chi_\ell(W_m)^q
+      =q\{H(r_q)+H'(r_q)/2\}+o(H'(r_q)).$$
+    <p>Smooth slow variation implies $r_q\sim L/2$, $H(r_q)\sim H(L/2)$ and
+    $r_2-r_1=-(\log2)/2+o(1)$. Expanding the two saddle costs proves the mean-separation formula, so the squared mean
+    is negligible and the second moment supplies the variance scale.</p>
+    <p>Because a slowly varying function can diverge arbitrarily slowly, there is no slowest nonzero smooth-flat
+    covariance scale above polynomial decay. For example, $\ell(r)=\log r$ gives
+    $-\log\operatorname{Var}\sim L\log(L/2)$; iterated logarithms move still closer to a power law.</p>
+    <p>The certificate uses $\ell(r)=(\log r)^2$. At speed $10^{256}$, the variance rate normalized by
+    $L\{\log(L/2)\}^2$ is $0.996613$ against $1$, while mean separation normalized by $H'(L/2)$ is $0.684524$
+    against $\log2=0.693147$; the maximum saddle-cost error over four speeds is $0.345358$.</p>
+    <p>This regular-variation step follows the framework introduced by
+    <a href="./bibliography.html#Karamata1933">Karamata (1933)</a> and the Laplace-transform refinement of
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a>. The exact telegraph constants are derived here.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -472,4 +502,7 @@
     <p>The slower log-flat example uses the slowly oscillating Laplace-transform framework of
     <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a> as literature context. Its leading and
     mean-separation constants are derived directly from the exact density.</p>
+    <p>The arbitrary slowly varying extension uses the regular-variation foundation of
+    <a href="./bibliography.html#Karamata1933">Karamata (1933)</a>. The derivative conditions stated above select
+    a smooth subclass for which the direct saddle expansion is uniform.</p>
   </main>
