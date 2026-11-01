@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Regular Gevrey covariance · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-gevrey-gauge-flat.html">&larr; Gevrey-gauge covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_regular_gevrey_flat.py">certificate</a></span></p>
+    <h1>Regular Gevrey covariance</h1>
+    <p class="subtitle">A slowly varying factor changes the scale, not the gauge contraction.</p>
+
+    <p class="lead">Pure Gevrey powers are not essential to fractional-power flat covariance. A regularly varying
+    penalty has a sharp inverse scale and the same local Green&ndash;Kubo geometry.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain and tangent-gauge setup of the <a href="./correlation-gevrey-gauge-flat.html">preceding
+    theorem</a>. Let $F:(0,\infty)\to(0,\infty)$ be continuous, strictly increasing and regularly varying with
+    index $q&gt;0$, and define</p>
+    $$\Upsilon_{F,r}(w)=\exp\{-F(1/r(w))\},\qquad w\ne0,
+      \qquad \Upsilon_{F,r}(0)=0.$$
+    <p>Write $B$ for the inverse of $x\mapsto x^2F(x)$. For $n=mT\to\infty$, uniformly over arbitrary initial
+    priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Upsilon_{F,r}(W_{m,T}))
+      \sim C_{q,2}\,F(B(n)),$$
+    $$C_{q,p}=\frac{q+2}{2},p^{2/(q+2)}
+      [q\Lambda_\rho(\Gamma)]^{-q/(q+2)}.$$
+    </div>
+    <p>Here $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$. For
+    $F(x)=bx^q$, the formula reduces exactly to the fractional-power theorem.</p>
+
+    <h2>Inverse-scale contraction</h2>
+    <p>Put $a_n=B(n)$ and $v_n=n/a_n^2=F(a_n)$. Because $B$ is regularly varying with index
+    $1/(q+2)$, $a_n\to\infty$, $a_n=o(\sqrt n)$ and the spectral moderate-deviation principle applies at speed
+    $v_n$.</p>
+    <p>For fixed $y\ne0$, regular variation and the tangent relation give</p>
+    $$\frac{F(1/r(y/a_n))}{F(a_n)}\longrightarrow\rho(y)^{-q}.$$
+    <p>After truncating the singularity at zero and the coercive tails, the $p$th moment contracts to</p>
+    $$\inf_y\left\{\frac{p}{\rho(y)^q}
+      +\frac12y^\top\Gamma^+y\right\}=C_{q,p}.$$
+    <p>Since $C_{q,2}&lt;2C_{q,1}$, the squared mean is exponentially negligible and the second moment supplies the
+    variance constant.</p>
+
+    <h2>Non-power certificate</h2>
+    <p>The certificate takes $F(x)=x^2\log(1+x)$ and uses the nonreversible three-state chain with the asymmetric
+    gauge constant $\Lambda_\rho(\Gamma)=4.604379006$. The limiting variance constant is $C_{2,2}=0.932061272$.</p>
+    <p>Convergence of the slowly varying profile is deliberately separated from the exact finite-chain contraction:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$mT$</th><th>$B(mT)$</th><th>profile / limit</th><th>exact / profile</th></tr></thead>
+      <tbody>
+        <tr><td>$10^6$</td><td>23.635788</td><td>.892394794</td><td>1.001408448</td></tr>
+        <tr><td>$10^{10}$</td><td>208.001785</td><td>.932091039</td><td>1.000148976</td></tr>
+        <tr><td>$10^{14}$</td><td>1907.458169</td><td>.951717407</td><td>1.000015959</td></tr>
+        <tr><td>$10^{18}$</td><td>17876.798512</td><td>.962743602</td><td>1.000001294</td></tr>
+      </tbody>
+    </table></div>
+    <p>At the final speed, the separately normalized mean-separation ratio is $.999999203$. The table shows why a
+    raw power-law fit converges slowly even though the exact Markov contraction is already accurate.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> supplies the regular-variation framework,
+    <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a> the Laplace principle, and
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> the spectral Markov large-deviation principle.</p>
+    <p>This remains a fixed-feature, fixed-maturity scalar variance statement. It makes no nonlinear-rank or
+    maturity-integrated identification claim.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

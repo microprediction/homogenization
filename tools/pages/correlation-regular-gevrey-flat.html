@@ -1,0 +1,62 @@
+<!-- title: Regular Gevrey covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-gevrey-gauge-flat.html">&larr; Gevrey-gauge covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_regular_gevrey_flat.py">certificate</a></span></p>
+    <h1>Regular Gevrey covariance</h1>
+    <p class="subtitle">A slowly varying factor changes the scale, not the gauge contraction.</p>
+
+    <p class="lead">Pure Gevrey powers are not essential to fractional-power flat covariance. A regularly varying
+    penalty has a sharp inverse scale and the same local Green&ndash;Kubo geometry.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain and tangent-gauge setup of the <a href="./correlation-gevrey-gauge-flat.html">preceding
+    theorem</a>. Let $F:(0,\infty)\to(0,\infty)$ be continuous, strictly increasing and regularly varying with
+    index $q&gt;0$, and define</p>
+    $$\Upsilon_{F,r}(w)=\exp\{-F(1/r(w))\},\qquad w\ne0,
+      \qquad \Upsilon_{F,r}(0)=0.$$
+    <p>Write $B$ for the inverse of $x\mapsto x^2F(x)$. For $n=mT\to\infty$, uniformly over arbitrary initial
+    priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Upsilon_{F,r}(W_{m,T}))
+      \sim C_{q,2}\,F(B(n)),$$
+    $$C_{q,p}=\frac{q+2}{2},p^{2/(q+2)}
+      [q\Lambda_\rho(\Gamma)]^{-q/(q+2)}.$$
+    </div>
+    <p>Here $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$. For
+    $F(x)=bx^q$, the formula reduces exactly to the fractional-power theorem.</p>
+
+    <h2>Inverse-scale contraction</h2>
+    <p>Put $a_n=B(n)$ and $v_n=n/a_n^2=F(a_n)$. Because $B$ is regularly varying with index
+    $1/(q+2)$, $a_n\to\infty$, $a_n=o(\sqrt n)$ and the spectral moderate-deviation principle applies at speed
+    $v_n$.</p>
+    <p>For fixed $y\ne0$, regular variation and the tangent relation give</p>
+    $$\frac{F(1/r(y/a_n))}{F(a_n)}\longrightarrow\rho(y)^{-q}.$$
+    <p>After truncating the singularity at zero and the coercive tails, the $p$th moment contracts to</p>
+    $$\inf_y\left\{\frac{p}{\rho(y)^q}
+      +\frac12y^\top\Gamma^+y\right\}=C_{q,p}.$$
+    <p>Since $C_{q,2}&lt;2C_{q,1}$, the squared mean is exponentially negligible and the second moment supplies the
+    variance constant.</p>
+
+    <h2>Non-power certificate</h2>
+    <p>The certificate takes $F(x)=x^2\log(1+x)$ and uses the nonreversible three-state chain with the asymmetric
+    gauge constant $\Lambda_\rho(\Gamma)=4.604379006$. The limiting variance constant is $C_{2,2}=0.932061272$.</p>
+    <p>Convergence of the slowly varying profile is deliberately separated from the exact finite-chain contraction:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$mT$</th><th>$B(mT)$</th><th>profile / limit</th><th>exact / profile</th></tr></thead>
+      <tbody>
+        <tr><td>$10^6$</td><td>23.635788</td><td>.892394794</td><td>1.001408448</td></tr>
+        <tr><td>$10^{10}$</td><td>208.001785</td><td>.932091039</td><td>1.000148976</td></tr>
+        <tr><td>$10^{14}$</td><td>1907.458169</td><td>.951717407</td><td>1.000015959</td></tr>
+        <tr><td>$10^{18}$</td><td>17876.798512</td><td>.962743602</td><td>1.000001294</td></tr>
+      </tbody>
+    </table></div>
+    <p>At the final speed, the separately normalized mean-separation ratio is $.999999203$. The table shows why a
+    raw power-law fit converges slowly even though the exact Markov contraction is already accurate.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> supplies the regular-variation framework,
+    <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a> the Laplace principle, and
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> the spectral Markov large-deviation principle.</p>
+    <p>This remains a fixed-feature, fixed-maturity scalar variance statement. It makes no nonlinear-rank or
+    maturity-integrated identification claim.</p>
+  </main>
