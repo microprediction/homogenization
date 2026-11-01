@@ -273,6 +273,39 @@
     post-averaging maps therefore realize every stretched-exponential covariance power, beyond the finite derivative
     flag but without changing the fixed-feature Green&ndash;Kubo rank.</p>
 
+    <h3>A slower log-flat scale</h3>
+    <p>Even the stretched-exponential continuum is not the boundary. For $\gamma&gt;1$ define, on $|w|\le1$,</p>
+    $$\psi_\gamma(w)=\begin{cases}
+      \exp\{-\log(e/|w|)^\gamma\},&w\ne0,\\
+      0,&w=0.
+    \end{cases}$$
+    <p>This is $C^\infty$ and flat at zero because $\log(e/|w|)^\gamma$ dominates every fixed multiple of
+    $\log(1/|w|)$. For the same telegraph average and every $q&gt;0$,</p>
+    <div class="equation-card">
+    $$\lim_{m\to\infty}-\frac{\log\mathbb E\psi_\gamma(W_m)^q}{(\log m)^\gamma}
+      =\frac{q}{2^\gamma},\qquad
+      \lim_{m\to\infty}-\frac{\log\{(\mathbb E\psi_\gamma(W_m))^2/
+        \mathbb E\psi_\gamma(W_m)^2\}}{(\log m)^{\gamma-1}}
+      =\frac{\gamma\log2}{2^{\gamma-1}}.$$
+    </div>
+    <p>The second limit is essential: the first-order moment exponents tie, but the squared mean is still negligible.
+    Consequently</p>
+    $$\lim_{m\to\infty}-\frac{\log\operatorname{Var}(\psi_\gamma(W_m))}{(\log m)^\gamma}
+      =2^{1-\gamma}.$$
+    <p>To prove both limits, let $r_q$ solve
+    $2r_q+(\gamma-1)\log r_q=\log m+2-\log(q\gamma)$. The exact Bessel density, after $x=\sqrt{m}\,w$, is Gaussian
+    uniformly on the polylogarithmic saddle window, and one-dimensional Laplace bounds give</p>
+    $$-\log\mathbb E\psi_\gamma(W_m)^q
+      =q\left(r_q^\gamma+\frac{\gamma}{2}r_q^{\gamma-1}\right)+O(\log\log m).$$
+    <p>Now $r_q\sim(\log m)/2$ and $r_2=r_1-(\log2)/2+o(1)$. Substitution gives the two displayed constants;
+    this is the slowly varying saddle mechanism studied classically by
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a>, specialized here directly to the exact telegraph law.</p>
+    <p>For $\gamma=2$ at speed $10^{256}$, exact log-domain quadrature gives variance rate $0.493127$ against $0.5$
+    and mean-separation rate $0.687013$ against $\log2=0.693147$. The maximum absolute saddle-cost error over the
+    four tested speeds is $0.345647$.</p>
+    <p>This covariance is faster than every polynomial and slower than $\exp(-m^\beta)$ for every $\beta&gt;0$.
+    It remains a fixed-map post-averaging scale, not a fixed-feature or maturity-integrated rank statement.</p>
+
     <h3>Two covariance scales</h3>
     <p>Use the exact minimal reduction above to write $X_m=\bar f+RW_m$, where $W_m$ is $r$-dimensional and has
     positive-definite Green&ndash;Kubo matrix $\Gamma_r$. Put $\phi(w)=\psi(\bar f+Rw)$,
@@ -436,4 +469,7 @@
     <p>The logarithmic minimization is a direct one-dimensional Laplace argument. Its large-deviation context goes
     back to <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a>; the constants here are derived from the
     exact telegraph density rather than imported from a general principle.</p>
+    <p>The slower log-flat example uses the slowly oscillating Laplace-transform framework of
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a> as literature context. Its leading and
+    mean-separation constants are derived directly from the exact density.</p>
   </main>

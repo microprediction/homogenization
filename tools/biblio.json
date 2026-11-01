@@ -3262,5 +3262,16 @@
   "doi": "10.1002/cpa.3160190303",
   "url": "https://doi.org/10.1002/cpa.3160190303",
   "annotation": "Develops the classical asymptotic-probability framework behind Laplace-principle calculations; the flat-map constants here are derived directly from the exact telegraph density."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "DeBruijn1959",
+  "authors": "de Bruijn, N. G.",
+  "year": 1959,
+  "title": "Pairs of slowly oscillating functions occurring in asymptotic problems concerning the Laplace transform",
+  "venue": "Nieuw Archief voor Wiskunde (3) 7, 20-26",
+  "doi": "",
+  "url": "",
+  "annotation": "Develops slowly oscillating conjugate pairs for Laplace-transform asymptotics, the classical context for the log-flat saddle calculation."
  }
 ]
