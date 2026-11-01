@@ -3273,5 +3273,16 @@
   "doi": "",
   "url": "",
   "annotation": "Develops slowly oscillating conjugate pairs for Laplace-transform asymptotics, the classical context for the log-flat saddle calculation."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Karamata1933",
+  "authors": "Karamata, J.",
+  "year": 1933,
+  "title": "Sur un mode de croissance régulière. Théorèmes fondamentaux",
+  "venue": "Bulletin de la Société Mathématique de France 61, 55-62",
+  "doi": "10.24033/bsmf.1196",
+  "url": "https://doi.org/10.24033/bsmf.1196",
+  "annotation": "Establishes the foundational theory of regular variation used to parameterize arbitrarily slowly diverging flat-map profiles."
  }
 ]
