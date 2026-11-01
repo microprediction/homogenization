@@ -1,0 +1,65 @@
+<!-- title: Gevrey-gauge covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-regular-profile-flat.html">&larr; regular-profile covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_gevrey_gauge_flat.py">certificate</a></span></p>
+    <h1>Gevrey-gauge covariance</h1>
+    <p class="subtitle">The index-zero profile boundary has a fractional-power rate.</p>
+
+    <p class="lead">The positive-index inverse-profile theorem stops sharply at index zero. A logarithmic profile
+    produces an ordinary Gevrey-flat map and a new fractional power of the switching speed.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-tangent-gauge-flat.html">tangent-gauge theorem</a>.
+    Let $r(w)/\rho(w)\to1$ as $w\to0$, where $\rho$ is a continuous positive homogeneous gauge, and define</p>
+    $$\Xi_{q,b,r}(w)=\exp\{-b/r(w)^q\},\qquad w\ne0,
+      \qquad \Xi_{q,b,r}(0)=0,$$
+    <p>for $q,b&gt;0$. For $n=mT\to\infty$, uniformly over arbitrary initial priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Xi_{q,b,r}(W_{m,T}))
+      \sim K_{q,b,\rho,\Gamma},n^{q/(q+2)},$$
+    $$K_{q,b,\rho,\Gamma}
+      =\frac{q+2}{2q}(2qb)^{2/(q+2)}
+       \Lambda_\rho(\Gamma)^{-q/(q+2)}.$$
+    </div>
+    <p>Here $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$. This is a fixed-feature,
+    fixed-maturity result; it makes no nonlinear-rank or maturity-integrated identification claim.</p>
+
+    <h2>Moderate-deviation contraction</h2>
+    <p>Put $a_n=n^{1/(q+2)}$ and $v_n=n/a_n^2=n^{q/(q+2)}$. The spectral moderate-deviation principle for
+    $a_nW_{m,T}$ has speed $v_n$ and quadratic rate $y^\top\Gamma^+y/2$ on the range of $\Gamma$.</p>
+    <p>For the $p$th moment, homogeneity and the tangent relation reduce the limiting contraction to</p>
+    $$C_p=\inf_y\left\{\frac{pb}{\rho(y)^q}
+      +\frac12y^\top\Gamma^+y\right\}.
+    $$
+    <p>At fixed $s=\rho(y)$, the quadratic cost is $s^2/(2\Lambda_\rho(\Gamma))$. Minimizing over $s&gt;0$ gives</p>
+    $$C_p=\frac{q+2}{2q}(qpb)^{2/(q+2)}
+      \Lambda_\rho(\Gamma)^{-q/(q+2)}.$$
+    <p>Because $C_p$ is proportional to $p^{2/(q+2)}$, $C_2&lt;2C_1$. The second moment therefore dominates the
+    squared mean, and the variance constant is $K_{q,b,\rho,\Gamma}=C_2$.</p>
+
+    <h2>The profile phase boundary</h2>
+    <p>Writing $H(x)=\log b+q\log x$ gives
+    $\exp{-\exp(H(1/r))\}=\Xi_{q,b,r}$. This $H$ is regularly varying with index zero, after an immaterial
+    bounded-range extension, so the positive-index hypothesis in the inverse-profile theorem cannot be dropped.</p>
+    <p>The earlier scalar telegraph result is the one-dimensional symmetric specialization. The theorem above adds
+    arbitrary finite chains, vector features, asymmetric gauges and tangent-equivalent local scales.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate uses the nonreversible three-state chain and asymmetric gauge from the preceding notes, with
+    $q=2$, $b=1$ and $\Lambda_\rho(\Gamma)=4.604379006$. It predicts exponent $.5$ and variance constant</p>
+    $$K_{2,1,\rho,\Gamma}=0.932061272.$$
+    <div class="table-wrap"><table>
+      <thead><tr><th>$mT$</th><th>exact saddle radius</th><th>variance rate</th><th>mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>$10^4$</td><td>.206620686</td><td>1.003357360</td><td>1.001351389</td></tr>
+        <tr><td>$10^6$</td><td>.065461485</td><td>1.000975810</td><td>1.000427698</td></tr>
+        <tr><td>$10^8$</td><td>.020711378</td><td>1.000300049</td><td>1.000135260</td></tr>
+        <tr><td>$10^{10}$</td><td>.006550557</td><td>1.000094033</td><td>1.000042773</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a> supplies the classical Laplace-principle
+    framework, while <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral Markov
+    large-deviation principle. The singular homogeneous contraction and its gauge constant are derived above.</p>
+  </main>
