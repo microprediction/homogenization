@@ -54,6 +54,17 @@ def flat_moment(speed, power):
     return continuous + atoms
 
 
+def flat_second_weighted_moment(speed):
+    """Return E[X_m^2 exp(-1 / X_m^2)]."""
+    def weight(position):
+        if position == 0.0:
+            return 0.0
+        return position ** 2 * math.exp(-1.0 / position ** 2)
+
+    continuous = continuous_integral(speed, weight, absolute_tolerance=0.0)
+    return continuous + math.exp(-speed - 1.0)
+
+
 def logarithmic_constant(alpha, power):
     """Laplace exponent for E exp(-power / |X_m|**alpha)."""
     return (
@@ -200,6 +211,9 @@ def main():
     variances = []
     mean_rates = []
     variance_rates = []
+    linear_scales = []
+    quadratic_scales = []
+    flat_schur_rates = []
 
     for speed in SPEEDS:
         mass = polynomial_moment(speed, 0)
@@ -208,9 +222,17 @@ def main():
             - (1.0 - math.exp(-2.0 * speed)) / (2.0 * speed ** 2)
         )
         second = polynomial_moment(speed, 2)
+        fourth = polynomial_moment(speed, 4)
         mean = flat_moment(speed, 1)
         second_flat = flat_moment(speed, 2)
         variance = second_flat - mean ** 2
+        square_variance = fourth - second ** 2
+        square_flat_covariance = (
+            flat_second_weighted_moment(speed) - second * mean
+        )
+        flat_schur = (
+            variance - square_flat_covariance ** 2 / square_variance
+        )
         mean_rate = -math.log(mean) / math.sqrt(speed)
         variance_rate = -math.log(variance) / math.sqrt(speed)
 
@@ -219,6 +241,9 @@ def main():
         variances.append(variance)
         mean_rates.append(mean_rate)
         variance_rates.append(variance_rate)
+        linear_scales.append(speed * second)
+        quadratic_scales.append(speed ** 2 * square_variance)
+        flat_schur_rates.append(-math.log(flat_schur) / math.sqrt(speed))
 
         print(
             f"speed {speed:4d}: flat mean {mean:.8e}; "
@@ -234,6 +259,13 @@ def main():
         "limiting log rates sqrt(2) and 2; final errors "
         f"{abs(mean_rates[-1] - math.sqrt(2.0)):.6f} "
         f"{abs(variance_rates[-1] - 2.0):.6f}"
+    )
+    print(
+        f"mixed spectrum at speed {SPEEDS[-1]}: "
+        f"m Var(X) {linear_scales[-1]:.6f}; "
+        f"m^2 Var(X^2) {quadratic_scales[-1]:.6f}; "
+        f"flat Schur log rate {flat_schur_rates[-1]:.6f}; "
+        "constant variance 0.000000"
     )
 
     family_errors = []
@@ -328,6 +360,9 @@ def main():
     ))
     ok &= abs(mean_rates[-1] - math.sqrt(2.0)) < 0.005
     ok &= abs(variance_rates[-1] - 2.0) < 0.01
+    ok &= abs(linear_scales[-1] - 1.0) < 0.001
+    ok &= abs(quadratic_scales[-1] - 2.0) < 0.002
+    ok &= abs(flat_schur_rates[-1] - 2.0) < 0.01
     ok &= variances[-1] < 2e-56
     ok &= max(family_errors) < 0.01
     ok &= abs(slow_rates[-1] - 0.5) < 0.01

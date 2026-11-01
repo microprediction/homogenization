@@ -317,6 +317,37 @@
     <p>These are local post-averaging covariance scales for one fixed map and feature family at fixed positive
     maturity. They do not alter exact fixed-feature Green&ndash;Kubo rank and make no maturity-integrated rank claim.</p>
 
+    <h3>The complete smooth spectrum trichotomy</h3>
+    <p>For a $C^\infty$ map let $V_\infty=\bigcap_{p\ge1}V_p$ and let
+    $C=\{a\in\mathbb R^k:a^\top\phi\text{ is constant on the attainable polytope}\}$. Write
+    $q=\dim V_\infty$ and $c=\dim C$; always $C\subseteq V_\infty$.</p>
+    <p>The derivative flag restricted to $V_\infty^\perp$ reaches zero after finitely many orders. If the covariance
+    eigenvalues are decreasing and $d_p=\dim V_p-\dim V_{p+1}$ before stabilization, then the polynomial part remains</p>
+    $$\lambda_{d_1+\cdots+d_{p-1}+a}=\Theta((mT)^{-p}),\qquad 1\le a\le d_p.$$
+    <p>The remaining spectrum has a sharp qualitative classification: uniformly over initial priors, for every fixed
+    $N$ and fixed $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\lambda_{k-q+1},\ldots,\lambda_{k-c}=o((mT)^{-N}),\qquad
+      \lambda_{k-c+1}=\cdots=\lambda_k=0.$$
+    </div>
+    <p>An empty index range is omitted. Thus a smooth covariance direction is polynomial at a finite derivative order,
+    positive but faster than every power because it is flat, or exactly zero because the map is constant in that
+    output direction.</p>
+    <p>To prove the super-polynomial bound, let $P_\infty$ project onto $V_\infty$. Taylor&apos;s theorem gives, for
+    every $L$, $\|P_\infty\{\phi(w)-\phi(0)\}\|\le C_L\|w\|^L$ near zero. Finite-state additive-functional
+    moments and spectral-gap concentration give, uniformly over priors,</p>
+    $$\mathbb E\|W_m\|^{2L}=O((mT)^{-L}),\qquad
+      \mathbb P(\|W_m\|&gt;\delta)\le C_\delta e^{-c_\delta mT}.$$
+    <p>Choosing $L&gt;N$ proves
+    $\|P_\infty\operatorname{Cov}(\phi(W_m))P_\infty\|=o((mT)^{-N})$. Cauchy&ndash;Schwarz gives the same
+    super-polynomial control on the cross block, so the finite derivative block keeps its polynomial eigenvalues.</p>
+    <p>For an irreducible finite chain, every initial state gives the full attainable occupation polytope as support at
+    positive time. Hence the covariance null space is exactly $C$: the $c$ constant directions are zero and the other
+    $q-c$ flat eigenvalues are positive at every finite speed, though no common lower asymptotic rate is claimed.</p>
+    <p>The spectral concentration input is classical; see
+    <a href="./bibliography.html#Lezaud2001">Lezaud (2001)</a>. The trichotomy is local to a fixed post-averaging map
+    and fixed positive maturity, not a change in fixed-feature Green&ndash;Kubo rank or a maturity-integrated rank claim.</p>
+
     <h3>Analytic completeness and the smooth flat boundary</h3>
     <p>Suppose now that $\phi$ is real analytic on a connected open set containing the attainable feature polytope,
     and put $V_\infty=\bigcap_{p\ge1}V_p$. Then</p>
@@ -552,6 +583,9 @@
     <p>The exact symmetric-telegraph density tests the flat map above. From speeds $16$ to $4096$, its variance falls
     from $1.94608100\times10^{-4}$ to $1.56009960\times10^{-56}$, while
     $-\log\operatorname{Var}(\phi(W_m))/\sqrt m$ falls from $2.136131$ to $2.007813$, approaching the proved limit $2$.</p>
+    <p>For the mixed map $(W_m,W_m^2,\phi(W_m),1)$ at speed $4096$, the scaled polynomial variances are
+    $m\operatorname{Var}(W_m)=0.999878$ and $m^2\operatorname{Var}(W_m^2)=1.998780$. After eliminating the quadratic
+    coordinate, the flat Schur-complement log rate is $2.007813$, while the constant coordinate has exactly zero variance.</p>
     <p>At speed $262144$, the generalized flat powers $\alpha=1,2,4$ have normalized variance log rates
     $2.378939$, $2.000977$ and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their respective
     stretched-exponential powers are $0.333333$, $0.500000$ and $0.666667$.</p>
@@ -602,6 +636,9 @@
     <p>The arbitrary slowly varying extension uses the regular-variation foundation of
     <a href="./bibliography.html#Karamata1933">Karamata (1933)</a>. The derivative conditions stated above select
     a smooth subclass for which the direct saddle expansion is uniform.</p>
+    <p><a href="./bibliography.html#Lezaud2001">Lezaud&apos;s spectral-gap concentration bound</a> supplies the classical
+    exponential tail control for finite-state Markov additive functionals. Combined with all-order Taylor remainders,
+    it yields the super-polynomial flat-block estimate in the smooth spectrum trichotomy.</p>
   </main>
 
   <footer>
