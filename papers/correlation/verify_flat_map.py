@@ -22,6 +22,8 @@ BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
 ASSOCIATED_SCALE = 4096
 LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
 DOUBLE_EXP_LOG_SPEEDS = [128.0, 512.0, 2048.0, 8192.0]
+BANG_TAIL_INDICES = [64, 1024, 16384, 262144]
+BANG_TAIL_BLOCK = 200000
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -130,6 +132,35 @@ def double_exponential_saddle(log_speed, sigma, power):
         + 0.5 * profile ** (-2.0 * beta)
     )
     return profile, cost_over_speed
+
+
+def bang_tail_bounds(index, sigma=2.0):
+    """Integral bounds for the logarithmic quotient tail.
+
+    For M_n/M_(n-1)=n log(e+n)**sigma, Bang's distance scale is
+    sum_{n>=index} M_n/M_(n+1).  Monotonicity bounds the unsummed
+    remainder between two improper integrals.
+    """
+    stop = index + BANG_TAIL_BLOCK
+    partial = sum(
+        1.0 / (n * math.log(math.e + n) ** sigma)
+        for n in range(index + 1, stop + 1)
+    )
+
+    def logarithmic_coordinate(profile):
+        return profile + math.log1p(math.exp(1.0 - profile))
+
+    def integral_tail(start):
+        value, _ = quad(
+            lambda profile: logarithmic_coordinate(profile) ** (-sigma),
+            math.log(start), math.inf,
+            epsabs=2e-13, epsrel=2e-13, limit=300,
+        )
+        return value
+
+    lower = partial + integral_tail(stop + 1.0)
+    upper = partial + integral_tail(float(stop))
+    return lower, upper
 
 
 def log_flat_moment(speed, alpha, power):
@@ -371,6 +402,23 @@ def main():
             f"mean-separation rate {normalized_separation:.6f}"
         )
 
+    bang_tail_lower = []
+    bang_tail_upper = []
+    sigma = 2.0
+    for index in BANG_TAIL_INDICES:
+        lower, upper = bang_tail_bounds(index, sigma)
+        normalization = (
+            (sigma - 1.0) * math.log(index) ** (sigma - 1.0)
+        )
+        normalized_lower = normalization * lower
+        normalized_upper = normalization * upper
+        bang_tail_lower.append(normalized_lower)
+        bang_tail_upper.append(normalized_upper)
+        print(
+            f"Bang tail index {index}: normalized interval "
+            f"[{normalized_lower:.9f}, {normalized_upper:.9f}]"
+        )
+
     family_errors = []
     for alpha in FLAT_POWERS:
         exponent = alpha / (alpha + 2.0)
@@ -492,6 +540,13 @@ def main():
     )
     ok &= abs(double_exponential_rates[-1] - 1.0) < 0.01
     ok &= abs(double_exponential_separations[-1] - 1.0) < 0.01
+    ok &= all(
+        left < right
+        for left, right in zip(bang_tail_lower, bang_tail_lower[1:])
+    )
+    ok &= abs(1.0 - bang_tail_lower[-1]) < 1e-6
+    ok &= abs(1.0 - bang_tail_upper[-1]) < 1e-6
+    ok &= bang_tail_upper[-1] - bang_tail_lower[-1] < 1e-6
     ok &= max(family_errors) < 0.01
     ok &= abs(slow_rates[-1] - 0.5) < 0.01
     ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01

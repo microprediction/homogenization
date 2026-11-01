@@ -435,6 +435,36 @@
     under strong regularity. The normalized sequence here fails the strong nonquasianalytic tail condition by one
     logarithm, so that theorem does not supply this example; the direct Cauchy estimate above does.</p>
 
+    <h3>The fixed-map logarithmic power is sharp</h3>
+    <p>The associated-function envelope is uniform once the derivative constants are fixed, but it is not the best
+    eventual estimate for one fixed flat function. The quotient-defined sequence above is exponentially equivalent to
+    the simpler sequence $\widetilde M_n=n![\log(e+n)]^{\sigma n}$:</p>
+    $$C^{-n}\widetilde M_n\le M_n\le\widetilde M_n.$$
+    <p>Let $f$ be a fixed scalar member of this class on $[-1,1]$, with every derivative of $f-f(0)$ zero at the
+    origin. Specializing <a href="./bibliography.html#Bang1953">Bang&apos;s fixed-function estimate</a> gives constants
+    $c_f,C_f,\delta_f&gt;0$ such that</p>
+    $$|f(w)-f(0)|\le C_f\exp\{-\exp(c_f|w|^{-1/(\sigma-1)})\},
+      \qquad0&lt;|w|&lt;\delta_f.$$
+    <p>Indeed, the distance tail in Bang&apos;s argument is</p>
+    $$S_p=\sum_{n\ge p}\frac{M_n}{M_{n+1}}
+      \sim\frac{1}{(\sigma-1)(\log p)^{\sigma-1}}.$$
+    <p>His propagation inequality gives $|w|\lesssim S_p\Rightarrow|f(w)-f(0)|\lesssim e^{-p}$; inversion yields
+    the displayed double exponential. The endpoint formulation follows locally by multiplying by a same-class cutoff
+    equal to one near zero, which exists because $\sigma&gt;1$ is nonquasianalytic.</p>
+    <p>For the unit-time symmetric telegraph average under any initial prior, split at
+    $r_m\asymp(\log m)^{-(\sigma-1)}$. The fixed-function bound controls the inner event and the telegraph
+    concentration bound controls its complement, giving</p>
+    <div class="equation-card">
+    $$\operatorname{Var}(f(W_m))
+      \le C\exp\left\{-\frac{c\,m}{(\log m)^{2(\sigma-1)}}\right\}.$$
+    </div>
+    <p>The explicit map above has the matching log-asymptotic power, so $2(\sigma-1)$ is sharp for fixed scalar maps
+    in this class; the constants are not universal. The constants and valid neighborhood in Bang&apos;s estimate depend
+    on the particular function, so this does not replace the uniform class extremal by the stronger scale.</p>
+    <p><a href="./bibliography.html#GaisinGaisin2023">Gaisin and Gaisin (2023)</a> emphasize precisely this distinction:
+    the fixed-function estimate has exponent $1/(\sigma-1)$, whereas promoting it to the extremal $J_M$ is invalid.
+    This reconciles the stronger fixed-map covariance rate with the one-sided associated envelope above.</p>
+
     <h3>Gevrey regularity gives a sharp flat rate</h3>
     <p>The general envelope becomes explicit when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
     of the attainable polytope that, for constants $A,B$,</p>
@@ -705,6 +735,9 @@
     <p>For the explicit logarithmic-class map with $\sigma=2$, at log speed $8192$ the normalized second-moment
     saddle rate is $1.007048$ and the normalized separation from the squared mean is $1.006706$, both approaching
     the proved limit $1$.</p>
+    <p>For $\sigma=2$, the normalized Bang tail
+    $(\sigma-1)S_p(\log p)^{\sigma-1}$ at $p=262144$ lies in the certified interval
+    $[0.999999659,0.999999818]$, confirming the tail inversion behind the fixed-map exponent.</p>
     <p>At speed $262144$, Gevrey orders $s=2,1.5,1.25$ have normalized variance log rates $2.378939$, $2.000977$
     and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their sharp powers $1/(2s-1)$ are
     $0.333333$, $0.500000$ and $0.666667$.</p>
@@ -764,6 +797,9 @@
     <p><a href="./bibliography.html#Thilliez2003">Thilliez&apos;s flat-function construction</a> gives sharp associated
     rates for strongly regular ultradifferentiable classes. The logarithmic sequence treated here lies outside its
     strong nonquasianalytic hypothesis, and the displayed double-exponential realization is proved directly.</p>
+    <p><a href="./bibliography.html#Bang1953">Bang&apos;s metric method</a> supplies the sharper eventual bound for each
+    fixed flat function. <a href="./bibliography.html#GaisinGaisin2023">Gaisin and Gaisin</a> solve the related extremal
+    problem and document why fixed-function constants cannot be silently made uniform over the class.</p>
   </main>
 
   <footer>

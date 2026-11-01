@@ -3339,5 +3339,27 @@
   "doi": "10.1007/bf03322923",
   "url": "https://doi.org/10.1007/bf03322923",
   "annotation": "Constructs flat functions with sharp associated-function rates under strong regularity; the logarithmic class treated here falls outside the strong nonquasianalytic hypothesis."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Bang1953",
+  "authors": "Bang, T.",
+  "year": 1953,
+  "title": "The theory of metric spaces applied to infinitely differentiable functions",
+  "venue": "Mathematica Scandinavica 1, 137-152",
+  "doi": "10.7146/math.scand.a-10374",
+  "url": "https://doi.org/10.7146/math.scand.a-10374",
+  "annotation": "Develops the metric propagation estimate that sharpens the eventual decay of each fixed flat function beyond its Taylor associated-function bound."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "GaisinGaisin2023",
+  "authors": "Gaisin, A. M. and Gaisin, R. A.",
+  "year": 2023,
+  "title": "Levinson-type theorem and Dyn'kin problems",
+  "venue": "Sbornik: Mathematics 214(5), 676-702",
+  "doi": "10.4213/sm9802e",
+  "url": "https://doi.org/10.4213/sm9802e",
+  "annotation": "Solves the related extremal problem and distinguishes Bang's stronger fixed-function logarithmic estimate from bounds uniform over a normalized Carleman class."
  }
 ]
