@@ -5,15 +5,15 @@ at rate m on [0, 1].  Its integrated position has the classical atom-plus-
 Bessel law.  We apply C-infinity flat maps with value zero at the origin and
 verify both stretched-exponential and slower log-flat covariance scales.  We
 also check the associated-function optimization behind the general
-Denjoy--Carleman envelope and the full asymmetric two-state occupation-rate
-saddle.  Ends with PASS or FAIL.
+Denjoy--Carleman envelope, scalar finite-chain constants and the radial
+two-feature saddle.  Ends with PASS or FAIL.
 """
 import math
 
 import numpy as np
 from scipy.integrate import quad
 from scipy.linalg import eig
-from scipy.optimize import brentq, minimize_scalar
+from scipy.optimize import brentq, minimize_scalar, root
 from scipy.special import expi, i0e, i1e, ive
 
 
@@ -27,10 +27,13 @@ LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
 DOUBLE_EXP_LOG_SPEEDS = [128.0, 512.0, 2048.0, 8192.0]
 ASYMMETRIC_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
 FINITE_CHAIN_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
+VECTOR_CHAIN_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
+VECTOR_RADII = [0.05, 0.02, 0.01, 0.005]
 ASYMMETRIC_JUMP_UP = 1.0
 ASYMMETRIC_JUMP_DOWN = 3.0
 ASYMMETRIC_FLAT_SCALE = 2.0
 FINITE_CHAIN_FLAT_SCALE = 1.5
+VECTOR_CHAIN_FLAT_SCALE = 1.5
 BANG_TAIL_INDICES = [64, 1024, 16384, 262144]
 BANG_TAIL_BLOCK = 200000
 
@@ -275,6 +278,111 @@ def finite_chain_double_exponential_saddle(
         flat_scale ** (2.0 * beta) / (2.0 * green_kubo)
     )
     return profile, cost, sign, leading_constant
+
+
+def vector_chain_data():
+    """Return a nonreversible chain and its two-feature Green--Kubo matrix."""
+    generator = np.array([
+        [-4.0, 3.0, 1.0],
+        [1.0, -5.0, 4.0],
+        [2.0, 1.0, -3.0],
+    ])
+    raw_scores = np.array([
+        [-1.0, 0.3],
+        [0.5, -1.2],
+        [2.0, 1.5],
+    ])
+    values, vectors = np.linalg.eig(generator.T)
+    stationary = np.real(vectors[:, np.argmin(np.abs(values))])
+    stationary /= np.sum(stationary)
+    scores = raw_scores - np.ones((3, 1)) * (stationary @ raw_scores)
+    stationary_projection = np.ones((3, 1)) * stationary[None, :]
+    poisson_solution = np.linalg.solve(
+        -generator + stationary_projection, scores
+    )
+    one_sided = scores.T @ (stationary[:, None] * poisson_solution)
+    green_kubo = one_sided + one_sided.T
+    return generator, scores, stationary, green_kubo
+
+
+def vector_chain_scgf(generator, scores, tilt):
+    """Principal eigenvalue and gradient for a two-feature tilt."""
+    values, left, right = eig(
+        generator + np.diag(scores @ tilt), left=True, right=True
+    )
+    index = int(np.argmax(np.real(values)))
+    left_vector = left[:, index]
+    right_vector = right[:, index]
+    denominator = np.vdot(left_vector, right_vector)
+    gradient = np.array([
+        np.vdot(left_vector, scores[:, j] * right_vector) / denominator
+        for j in range(scores.shape[1])
+    ])
+    return float(np.real(values[index])), np.real(gradient)
+
+
+def vector_chain_rate(generator, scores, green_kubo, value):
+    """Legendre transform of the exact two-feature principal eigenvalue."""
+    initial_tilt = np.linalg.solve(green_kubo, value)
+    solution = root(
+        lambda tilt: vector_chain_scgf(generator, scores, tilt)[1] - value,
+        initial_tilt,
+        tol=1e-10,
+    )
+    residual = np.linalg.norm(solution.fun)
+    if residual > 1e-9:
+        raise RuntimeError(f"vector tilt solve residual {residual:.3e}")
+    eigenvalue, _ = vector_chain_scgf(generator, scores, solution.x)
+    return float(solution.x @ value - eigenvalue)
+
+
+def vector_radial_rate(generator, scores, green_kubo, radius):
+    """Contract the exact two-feature rate over a Euclidean circle."""
+    def angular_rate(angle):
+        direction = np.array([math.cos(angle), math.sin(angle)])
+        return vector_chain_rate(
+            generator, scores, green_kubo, radius * direction
+        )
+
+    angle_grid = np.linspace(0.0, 2.0 * math.pi, 25)[:-1]
+    grid_values = [angular_rate(angle) for angle in angle_grid]
+    index = int(np.argmin(grid_values))
+    half_width = 2.0 * math.pi / 24.0
+    result = minimize_scalar(
+        angular_rate,
+        bounds=(angle_grid[index] - half_width,
+                angle_grid[index] + half_width),
+        method="bounded",
+        options={"xatol": 1e-9},
+    )
+    return float(result.fun), float(result.x % (2.0 * math.pi))
+
+
+def vector_radial_double_exponential_saddle(
+    log_speed, power, generator, scores, green_kubo,
+    sigma=2.0, flat_scale=1.5,
+):
+    """Full radial flat-map saddle using the exact contracted vector rate."""
+    beta = sigma - 1.0
+
+    def objective(profile):
+        radius = flat_scale ** beta * profile ** (-beta)
+        radial_rate, _ = vector_radial_rate(
+            generator, scores, green_kubo, radius
+        )
+        return power * math.exp(profile - log_speed) + radial_rate
+
+    result = minimize_scalar(
+        objective,
+        bounds=(10.0, log_speed),
+        method="bounded",
+        options={"xatol": 1e-7},
+    )
+    largest_eigenvalue = np.linalg.eigvalsh(green_kubo)[-1]
+    leading_constant = (
+        flat_scale ** (2.0 * beta) / (2.0 * largest_eigenvalue)
+    )
+    return float(result.x), float(result.fun), float(leading_constant)
 
 
 def bang_tail_bounds(index, sigma=2.0):
@@ -635,6 +743,75 @@ def main():
             f"target constant {leading:.6f}"
         )
 
+    (vector_generator, vector_scores, vector_stationary,
+     vector_green_kubo) = vector_chain_data()
+    vector_eigenvalues = np.linalg.eigvalsh(vector_green_kubo)
+    vector_hessian_step = 3e-4
+    coordinate_vectors = np.eye(2)
+    vector_spectral_hessian = np.column_stack([
+        (
+            vector_chain_scgf(
+                vector_generator, vector_scores,
+                vector_hessian_step * coordinate_vectors[j],
+            )[1]
+            - vector_chain_scgf(
+                vector_generator, vector_scores,
+                -vector_hessian_step * coordinate_vectors[j],
+            )[1]
+        ) / (2.0 * vector_hessian_step)
+        for j in range(2)
+    ])
+    vector_hessian_error = np.max(np.abs(
+        vector_spectral_hessian - vector_green_kubo
+    ))
+    print(
+        "vector Green--Kubo eigenvalues "
+        + " ".join(f"{value:.9f}" for value in vector_eigenvalues)
+        + f"; spectral Hessian error {vector_hessian_error:.3e}; "
+        f"flat scale {VECTOR_CHAIN_FLAT_SCALE:.1f}"
+    )
+
+    vector_radial_rates = []
+    for radius in VECTOR_RADII:
+        radial_rate, angle = vector_radial_rate(
+            vector_generator, vector_scores, vector_green_kubo, radius
+        )
+        normalized_rate = (
+            2.0 * vector_eigenvalues[-1] * radial_rate / radius ** 2
+        )
+        vector_radial_rates.append(normalized_rate)
+        print(
+            f"vector contracted rate radius {radius:.3f}: "
+            f"normalized rate {normalized_rate:.9f}; "
+            f"minimizing angle {angle:.9f}"
+        )
+
+    vector_flat_rates = []
+    vector_flat_separations = []
+    for log_speed in VECTOR_CHAIN_LOG_SPEEDS:
+        _, mean_cost, leading = vector_radial_double_exponential_saddle(
+            log_speed, 1.0, vector_generator, vector_scores,
+            vector_green_kubo, flat_scale=VECTOR_CHAIN_FLAT_SCALE,
+        )
+        second_profile, second_cost, _ = (
+            vector_radial_double_exponential_saddle(
+                log_speed, 2.0, vector_generator, vector_scores,
+                vector_green_kubo, flat_scale=VECTOR_CHAIN_FLAT_SCALE,
+            )
+        )
+        scale = log_speed ** 2 / leading
+        normalized_rate = scale * second_cost
+        normalized_separation = scale * (2.0 * mean_cost - second_cost)
+        vector_flat_rates.append(normalized_rate)
+        vector_flat_separations.append(normalized_separation)
+        print(
+            f"vector radial flat map log speed {log_speed:.0f}: "
+            f"second saddle {second_profile:.6f}; "
+            f"normalized rate {normalized_rate:.6f}; "
+            f"mean-separation rate {normalized_separation:.6f}; "
+            f"target constant {leading:.6f}"
+        )
+
     bang_tail_lower = []
     bang_tail_upper = []
     sigma = 2.0
@@ -800,6 +977,27 @@ def main():
     ok &= abs(finite_chain_rates[-1] - 1.0) < 0.01
     ok &= abs(finite_chain_separations[-1] - 1.0) < 0.01
     ok &= all(side in [-1, 1] for side in finite_chain_sides)
+    ok &= vector_hessian_error < 1e-7
+    ok &= vector_eigenvalues[0] > 0.0
+    ok &= all(
+        left > right
+        for left, right in zip(
+            vector_radial_rates, vector_radial_rates[1:]
+        )
+    )
+    ok &= abs(vector_radial_rates[-1] - 1.0) < 0.001
+    ok &= all(
+        left > right
+        for left, right in zip(vector_flat_rates, vector_flat_rates[1:])
+    )
+    ok &= all(
+        left > right
+        for left, right in zip(
+            vector_flat_separations, vector_flat_separations[1:]
+        )
+    )
+    ok &= abs(vector_flat_rates[-1] - 1.0) < 0.01
+    ok &= abs(vector_flat_separations[-1] - 1.0) < 0.01
     ok &= all(
         left < right
         for left, right in zip(bang_tail_lower, bang_tail_lower[1:])
