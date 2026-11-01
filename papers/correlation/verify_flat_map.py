@@ -5,12 +5,13 @@ at rate m on [0, 1].  Its integrated position has the classical atom-plus-
 Bessel law.  We apply C-infinity flat maps with value zero at the origin and
 verify both stretched-exponential and slower log-flat covariance scales.  We
 also check the associated-function optimization behind the general
-Denjoy--Carleman envelope.  Ends with PASS or FAIL.
+Denjoy--Carleman envelope and the full asymmetric two-state occupation-rate
+saddle.  Ends with PASS or FAIL.
 """
 import math
 
 from scipy.integrate import quad
-from scipy.optimize import brentq
+from scipy.optimize import brentq, minimize_scalar
 from scipy.special import expi, i0e, i1e, ive
 
 
@@ -22,6 +23,7 @@ BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
 ASSOCIATED_SCALE = 4096
 LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
 DOUBLE_EXP_LOG_SPEEDS = [128.0, 512.0, 2048.0, 8192.0]
+ASYMMETRIC_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
 BANG_TAIL_INDICES = [64, 1024, 16384, 262144]
 BANG_TAIL_BLOCK = 200000
 
@@ -132,6 +134,51 @@ def double_exponential_saddle(log_speed, sigma, power):
         + 0.5 * profile ** (-2.0 * beta)
     )
     return profile, cost_over_speed
+
+
+def asymmetric_double_exponential_saddle(
+    log_speed, power, sigma=2.0, flat_scale=2.0,
+    jump_up=1.0, jump_down=3.0,
+):
+    """Full two-state occupation-rate saddle on both sides of equilibrium."""
+    beta = sigma - 1.0
+    equilibrium = jump_up / (jump_up + jump_down)
+
+    def occupation_rate(fraction):
+        return (
+            math.sqrt(jump_up * (1.0 - fraction))
+            - math.sqrt(jump_down * fraction)
+        ) ** 2
+
+    candidates = []
+    for sign in [-1.0, 1.0]:
+        room = equilibrium if sign < 0.0 else 1.0 - equilibrium
+        lower = (flat_scale ** beta / room) ** (1.0 / beta)
+        lower *= 1.0 + 1e-10
+
+        def objective(profile):
+            displacement = flat_scale ** beta * profile ** (-beta)
+            fraction = equilibrium + sign * displacement
+            return (
+                power * math.exp(profile - log_speed)
+                + occupation_rate(fraction)
+            )
+
+        result = minimize_scalar(
+            objective,
+            bounds=(max(1.0, lower), log_speed),
+            method="bounded",
+            options={"xatol": 1e-11},
+        )
+        candidates.append((float(result.fun), float(result.x), int(sign)))
+
+    cost, profile, sign = min(candidates)
+    curvature = (
+        (jump_up + jump_down) ** 3
+        / (4.0 * jump_up * jump_down)
+    )
+    leading_constant = curvature * flat_scale ** (2.0 * beta)
+    return profile, cost, sign, leading_constant
 
 
 def bang_tail_bounds(index, sigma=2.0):
@@ -402,6 +449,30 @@ def main():
             f"mean-separation rate {normalized_separation:.6f}"
         )
 
+    asymmetric_rates = []
+    asymmetric_separations = []
+    asymmetric_sides = []
+    for log_speed in ASYMMETRIC_LOG_SPEEDS:
+        _, mean_cost, mean_side, leading = (
+            asymmetric_double_exponential_saddle(log_speed, 1.0)
+        )
+        second_profile, second_cost, second_side, _ = (
+            asymmetric_double_exponential_saddle(log_speed, 2.0)
+        )
+        scale = log_speed ** 2 / leading
+        normalized_rate = scale * second_cost
+        normalized_separation = scale * (2.0 * mean_cost - second_cost)
+        asymmetric_rates.append(normalized_rate)
+        asymmetric_separations.append(normalized_separation)
+        asymmetric_sides.extend([mean_side, second_side])
+        print(
+            f"asymmetric double-exponential log speed {log_speed:.0f}: "
+            f"second saddle {second_profile:.6f} on side {second_side:+d}; "
+            f"normalized rate {normalized_rate:.6f}; "
+            f"mean-separation rate {normalized_separation:.6f}; "
+            f"target constant {leading:.6f}"
+        )
+
     bang_tail_lower = []
     bang_tail_upper = []
     sigma = 2.0
@@ -540,6 +611,19 @@ def main():
     )
     ok &= abs(double_exponential_rates[-1] - 1.0) < 0.01
     ok &= abs(double_exponential_separations[-1] - 1.0) < 0.01
+    ok &= all(
+        left > right
+        for left, right in zip(asymmetric_rates, asymmetric_rates[1:])
+    )
+    ok &= all(
+        left > right
+        for left, right in zip(
+            asymmetric_separations, asymmetric_separations[1:]
+        )
+    )
+    ok &= abs(asymmetric_rates[-1] - 1.0) < 0.01
+    ok &= abs(asymmetric_separations[-1] - 1.0) < 0.01
+    ok &= all(side in [-1, 1] for side in asymmetric_sides)
     ok &= all(
         left < right
         for left, right in zip(bang_tail_lower, bang_tail_lower[1:])
