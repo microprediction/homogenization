@@ -1,0 +1,69 @@
+<!-- title: Regular-profile covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-tangent-gauge-flat.html">&larr; tangent-gauge covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_regular_profile_flat.py">certificate</a></span></p>
+    <h1>Regular-profile covariance</h1>
+    <p class="subtitle">The inverse flatness profile replaces the fixed power of the logarithm.</p>
+
+    <p class="lead">Power profiles are not essential to logarithmic flat covariance. Any increasing regularly
+    varying profile of positive index gives a sharp scale through its asymptotic inverse.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-tangent-gauge-flat.html">tangent-gauge theorem</a>.
+    Let $r(w)/\rho(w)\to1$ as $w\to0$, where $\rho$ is a continuous positive homogeneous gauge, and let
+    $H:(0,\infty)\to(0,\infty)$ be continuous, strictly increasing and regularly varying with index
+    $\alpha&gt;0$:</p>
+    $$\frac{H(cx)}{H(x)}\longrightarrow c^\alpha\qquad(x\to\infty).$$
+    <p>Write $A=H^{-1}$ and define, for $w\ne0$,</p>
+    $$\Theta_{H,r}(w)=\exp\{-\exp(H(1/r(w)))\},
+      \qquad \Theta_{H,r}(0)=0.$$
+    <p>For $n=mT\to\infty$ and
+    $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$, uniformly over arbitrary initial priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Theta_{H,r}(W_{m,T}))
+      \sim\frac{mT}{2\Lambda_\rho(\Gamma)[A(\log(mT))]^2}.$$
+    </div>
+
+    <h2>Profile contraction</h2>
+    <p>Put $a_n=A(\log n)$. Regular variation gives $a_n\to\infty$, $a_n=o(\sqrt n)$ and</p>
+    $$\frac{H(a_n/c)}{\log n}\longrightarrow c^{-\alpha}.$$
+    <p>Thus the flat penalty is overwhelming for $\rho(a_nW_{m,T})&lt;1$ and negligible at the
+    $n/a_n^2$ moderate-deviation scale for $\rho(a_nW_{m,T})&gt;1$. The transition boundary converges to
+    $\rho(y)=1$.</p>
+    <p>Contracting the quadratic Green&ndash;Kubo rate over that boundary gives
+    $1/(2\Lambda_\rho(\Gamma))$. The tangent-gauge sandwich handles $r/\rho\to1$, while the first- and
+    second-moment boundaries coincide to leading order and give the variance asymptotic.</p>
+
+    <h2>Power profiles are a special case</h2>
+    <p>Taking $H(x)=bx^{1/(\sigma-1)}$ gives
+    $A(u)=(u/b)^{\sigma-1}$. The theorem becomes</p>
+    $$-\log\operatorname{Var}
+      \sim\frac{b^{2(\sigma-1)}}{2\Lambda_\rho(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}},$$
+    <p>which recovers the preceding gauge results exactly.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate uses the asymmetric gauge from the preceding notes and the non-power profile
+    $H(x)=x\log(1+x)$, whose regular-variation index is one. At $\log(mT)=8192$,</p>
+    $$A(8192)=1160.724521816,$$
+    <p>and the exact contracted boundary rate is $1.000024635$ times its quadratic prediction.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>$A(\log(mT))$</th><th>variance rate</th><th>mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>35.564631</td><td>1.219777</td><td>1.196980</td></tr>
+        <tr><td>512</td><td>108.938086</td><td>1.064475</td><td>1.059571</td></tr>
+        <tr><td>2,048</td><td>349.522378</td><td>1.019302</td><td>1.018112</td></tr>
+        <tr><td>8,192</td><td>1160.724522</td><td>1.005711</td><td>1.005412</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> gives the primary regular-variation framework.
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> and
+    <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> supply the spectral Markov
+    large-deviation framework; the inverse-profile contraction is derived above.</p>
+
+    <h2>Scope</h2>
+    <p>This remains a fixed-feature, fixed-maturity scalar variance result. It makes no nonlinear-rank or
+    maturity-integrated identification claim.</p>
+  </main>
