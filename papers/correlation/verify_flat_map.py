@@ -3,8 +3,9 @@
 The stationary symmetric telegraph process has velocities +/-1 and switches
 at rate m on [0, 1].  Its integrated position has the classical atom-plus-
 Bessel law.  We apply C-infinity flat maps with value zero at the origin and
-verify both stretched-exponential and slower log-flat covariance scales.  Ends
-with PASS or FAIL.
+verify both stretched-exponential and slower log-flat covariance scales.  We
+also check the associated-function optimization behind the general
+Denjoy--Carleman envelope.  Ends with PASS or FAIL.
 """
 import math
 
@@ -18,6 +19,7 @@ FAMILY_SPEED = 262144
 FLAT_POWERS = [1.0, 2.0, 4.0]
 LOG_FLAT_SPEEDS = [1e8, 1e32, 1e128, 1e256]
 BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
+ASSOCIATED_SCALE = 4096
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -72,6 +74,21 @@ def logarithmic_constant(alpha, power):
         * alpha ** (-alpha / (alpha + 2.0))
         * power ** (2.0 / (alpha + 2.0))
     )
+
+
+def gevrey_associated_envelope(order, scale):
+    """Return the discrete optimizer and normalized cost of h_M.
+
+    Here M_n=(n!)**order and t=scale**(-(order-1)), so Stirling's
+    formula predicts an optimizer n~scale and -log h_M(t)/scale~order-1.
+    """
+    log_t = -(order - 1.0) * math.log(scale)
+    log_terms = [
+        n * log_t + (order - 1.0) * math.lgamma(n + 1.0)
+        for n in range(2 * scale + 1)
+    ]
+    optimizer = min(range(len(log_terms)), key=log_terms.__getitem__)
+    return optimizer, -log_terms[optimizer] / scale
 
 
 def log_flat_moment(speed, alpha, power):
@@ -268,6 +285,19 @@ def main():
         "constant variance 0.000000"
     )
 
+    associated_errors = []
+    for order in [2.0, 1.5, 1.25]:
+        optimizer, normalized_cost = gevrey_associated_envelope(
+            order, ASSOCIATED_SCALE
+        )
+        target = order - 1.0
+        associated_errors.append(abs(normalized_cost - target))
+        print(
+            f"associated Gevrey order {order:.2f}: "
+            f"optimizer {optimizer}; normalized cost {normalized_cost:.6f}; "
+            f"target {target:.6f}"
+        )
+
     family_errors = []
     for alpha in FLAT_POWERS:
         exponent = alpha / (alpha + 2.0)
@@ -368,6 +398,7 @@ def main():
     ok &= abs(quadratic_scales[-1] - 2.0) < 0.002
     ok &= abs(flat_schur_rates[-1] - 2.0) < 0.01
     ok &= variances[-1] < 2e-56
+    ok &= max(associated_errors) < 0.002
     ok &= max(family_errors) < 0.01
     ok &= abs(slow_rates[-1] - 0.5) < 0.01
     ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01

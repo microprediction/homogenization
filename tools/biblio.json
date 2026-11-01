@@ -3306,5 +3306,27 @@
   "doi": "10.24033/asens.706",
   "url": "https://doi.org/10.24033/asens.706",
   "annotation": "Introduces the derivative-growth regularity classes between analytic and smooth functions used here to quantify flat covariance decay."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Denjoy1921",
+  "authors": "Denjoy, A.",
+  "year": 1921,
+  "title": "Sur les fonctions quasi-analytiques de variable réelle",
+  "venue": "Comptes rendus hebdomadaires des séances de l'Académie des sciences 173, 1329-1331",
+  "doi": "",
+  "url": "https://gallica.bnf.fr/ark:/12148/bpt6k3128d/f1333.item",
+  "annotation": "Initiates the derivative-growth conditions under which a function is determined by all derivatives at one point."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Carleman1926",
+  "authors": "Carleman, T.",
+  "year": 1926,
+  "title": "Les fonctions quasi analytiques: leçons professées au Collège de France",
+  "venue": "Paris: Gauthier-Villars",
+  "doi": "",
+  "url": "https://books.google.com/books?id=gbwynQAACAAJ",
+  "annotation": "Completes the quasianalyticity characterization used to separate constant flat directions from nontrivial flat classes."
  }
 ]

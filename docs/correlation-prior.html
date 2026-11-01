@@ -348,11 +348,36 @@
     <a href="./bibliography.html#Lezaud2001">Lezaud (2001)</a>. The trichotomy is local to a fixed post-averaging map
     and fixed positive maturity, not a change in fixed-feature Green&ndash;Kubo rank or a maturity-integrated rank claim.</p>
 
+    <h3>The Denjoy&ndash;Carleman boundary and envelope</h3>
+    <p>Let $M_0=1$ and let $(M_n)$ be a positive log-convex sequence. Suppose a smooth map on a connected
+    neighborhood of the attainable polytope satisfies $\sup_w\|D^n\phi(w)\|\le AB^nM_n$, and define its normalized
+    associated flat envelope by</p>
+    $$h_M(t)=\inf_{n\ge0}\frac{t^nM_n}{n!}.$$
+    <p>Every positive-order derivative of $P_\infty\phi$ vanishes at zero. The integral Taylor remainder at arbitrary
+    order therefore gives $\|P_\infty\{\phi(w)-\phi(0)\}\|\le C h_M(B\|w\|)$ near zero.</p>
+    <p>Splitting at $\|W_m\|\le r$ and applying finite-chain concentration proves, uniformly over initial priors and
+    for each fixed $T&gt;0$,</p>
+    <div class="equation-card">
+    $$\|P_\infty\operatorname{Cov}(\phi(W_m))P_\infty\|
+      \le C\inf_{0&lt;r&lt;r_0}\left\{h_M(Br)^2+e^{-c mTr^2}\right\}.$$
+    </div>
+    <p>The constants and the admissible radius depend on the fixed map and chain. This is an upper envelope, not a
+    claim that every sequence or map attains the bound.</p>
+    <p>The Denjoy&ndash;Carleman theorem makes the regularity boundary exact: this class is quasianalytic precisely when</p>
+    $$\sum_{n\ge1}\frac{M_{n-1}}{M_n}=\infty.$$
+    <p>In that case a scalar projection flat at one point is constant on the connected neighborhood, so
+    $V_\infty=C$ and every nonzero covariance eigenvalue occurs at a finite derivative order. When the series
+    converges, the class admits nonzero compactly supported, hence flat, functions; nonconstant flat covariance is
+    then possible, with its rate controlled by $h_M$ rather than by convergence alone.</p>
+    <p><a href="./bibliography.html#Denjoy1921">Denjoy (1921)</a> initiated the quasianalytic criterion, and
+    <a href="./bibliography.html#Carleman1926">Carleman (1926)</a> completed the characterization. In this convention
+    $M_n=n!$ gives the divergent harmonic series, while $M_n=(n!)^s$ is nonquasianalytic for $s&gt;1$.</p>
+
     <h3>Gevrey regularity gives a sharp flat rate</h3>
-    <p>The smooth trichotomy becomes quantitative when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
+    <p>The general envelope becomes explicit when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
     of the attainable polytope that, for constants $A,B$,</p>
     $$\sup_w\|D^n\phi(w)\|\le AB^n(n!)^s,\qquad n\ge0.$$
-    <p>If $P_\infty$ projects onto the flat output space $V_\infty$, optimizing the all-order Taylor remainder gives</p>
+    <p>Here $M_n=(n!)^s$, so $h_M(t)=\inf_n t^n(n!)^{s-1}$. Stirling optimization in the general envelope gives</p>
     $$\|P_\infty\{\phi(w)-\phi(0)\}\|
       \le C\exp\{-c\|w\|^{-1/(s-1)}\}.$$
     <p>Split according to $\|W_m\|\le r$ and use the finite-chain concentration bound
