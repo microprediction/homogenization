@@ -364,6 +364,29 @@
     logarithmic power is stable. This remains a scalar post-averaging statement and makes no Green&ndash;Kubo or
     maturity-integrated rank claim.</p>
 
+    <h3>Green&ndash;Kubo variance sets the finite-chain constant</h3>
+    <p>Let $Q$ be any irreducible finite-state generator with stationary law $\pi$, and let $g$ be a nonconstant
+    centered scalar observable. Its fixed-feature Green&ndash;Kubo variance is</p>
+    $$\Gamma_g=2\int_0^\infty\operatorname{Cov}_\pi(g(X_0),g(X_t))\,dt
+      =-2\langle g,Q^\#g\rangle_\pi&gt;0.$$
+    <p>For the speed-$m$ chain, set $W_{m,T}=T^{-1}\int_0^Tg(X_{mt})\,dt$. The same logarithmic flat map satisfies,
+    uniformly over initial priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\phi_{\sigma,b}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\Gamma_g}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+    <p>Indeed, the principal eigenvalue $\Lambda(\theta)$ of $Q+\theta\operatorname{diag}(g)$ obeys
+    $\Lambda(\theta)=\Gamma_g\theta^2/2+O(\theta^3)$. With $L=mT$ and
+    $Y_L=(\log L)^{\sigma-1}W_{m,T}/b^{\sigma-1}$, spectral
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner&ndash;Ellis bounds</a> give speed
+    $L/(\log L)^{2(\sigma-1)}$ and rate $b^{2(\sigma-1)}y^2/(2\Gamma_g)$.</p>
+    <p>The flat penalty becomes $\exp\{-L^{|Y_L|^{-1/(\sigma-1)}}\}$. It is superexponential inside
+    $|Y_L|&lt;1$ and subexponential outside, so both moment bounds meet at $|Y_L|=1$; the squared mean again has
+    twice the second-moment cost.</p>
+    <p>Here Green&ndash;Kubo variance supplies one scalar rate constant only. The result neither identifies the rank of
+    a transformed covariance matrix nor combines different maturity loadings.</p>
+
     <h3>The fixed-map logarithmic power is sharp</h3>
     <p>The associated-function envelope is uniform once the derivative constants are fixed, but it is not the best
     eventual estimate for one fixed flat function. The quotient-defined sequence above is exponentially equivalent to
@@ -667,6 +690,9 @@
     <p>For asymmetric jump rates $(\alpha,\beta)=(1,3)$ and $b=2$, the exact occupation-rate curvature gives the
     leading constant $21.333333$. At log speed $8192$, the full-rate saddle normalizes to $1.005794$, and the
     squared-mean separation normalizes to $1.005453$.</p>
+    <p>For the nonreversible three-state chain certificate, $\Gamma_g=0.575375419$ and $b=1.5$ give the finite-chain
+    constant $1.955245$. At log speed $8192$, the exact principal-eigenvalue saddle gives normalized variance and
+    mean-separation rates $1.006691$ and $1.006350$.</p>
     <p>For $\sigma=2$, the normalized Bang tail
     $(\sigma-1)S_p(\log p)^{\sigma-1}$ at $p=262144$ lies in the certified interval
     $[0.999999659,0.999999818]$, confirming the tail inversion behind the fixed-map exponent.</p>
@@ -720,6 +746,9 @@
     <p>The arbitrary slowly varying extension uses the regular-variation foundation of
     <a href="./bibliography.html#Karamata1933">Karamata (1933)</a>. The derivative conditions stated above select
     a smooth subclass for which the direct saddle expansion is uniform.</p>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner&apos;s original large-deviation theorem</a> supplies the
+    spectral moderate-deviation step for the finite-chain extension. The shrinking flat-penalty boundary and its
+    Green&ndash;Kubo constant are derived directly above.</p>
     <p><a href="./bibliography.html#Lezaud2001">Lezaud&apos;s spectral-gap concentration bound</a> supplies the classical
     exponential tail control for finite-state Markov additive functionals. Combined with all-order Taylor remainders,
     it yields the super-polynomial flat-block estimate in the smooth spectrum trichotomy.</p>

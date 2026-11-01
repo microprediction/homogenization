@@ -10,7 +10,9 @@ saddle.  Ends with PASS or FAIL.
 """
 import math
 
+import numpy as np
 from scipy.integrate import quad
+from scipy.linalg import eig
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import expi, i0e, i1e, ive
 
@@ -24,6 +26,11 @@ ASSOCIATED_SCALE = 4096
 LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
 DOUBLE_EXP_LOG_SPEEDS = [128.0, 512.0, 2048.0, 8192.0]
 ASYMMETRIC_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
+FINITE_CHAIN_LOG_SPEEDS = DOUBLE_EXP_LOG_SPEEDS
+ASYMMETRIC_JUMP_UP = 1.0
+ASYMMETRIC_JUMP_DOWN = 3.0
+ASYMMETRIC_FLAT_SCALE = 2.0
+FINITE_CHAIN_FLAT_SCALE = 1.5
 BANG_TAIL_INDICES = [64, 1024, 16384, 262144]
 BANG_TAIL_BLOCK = 200000
 
@@ -178,6 +185,95 @@ def asymmetric_double_exponential_saddle(
         / (4.0 * jump_up * jump_down)
     )
     leading_constant = curvature * flat_scale ** (2.0 * beta)
+    return profile, cost, sign, leading_constant
+
+
+def finite_chain_data():
+    """Return a nonreversible chain, centered score and Green--Kubo variance."""
+    generator = np.array([
+        [-4.0, 3.0, 1.0],
+        [1.0, -5.0, 4.0],
+        [2.0, 1.0, -3.0],
+    ])
+    raw_score = np.array([-1.0, 0.5, 2.0])
+    values, vectors = np.linalg.eig(generator.T)
+    stationary = np.real(vectors[:, np.argmin(np.abs(values))])
+    stationary /= np.sum(stationary)
+    score = raw_score - stationary @ raw_score
+    stationary_projection = np.ones((3, 1)) * stationary[None, :]
+    poisson_solution = np.linalg.solve(
+        -generator + stationary_projection, score
+    )
+    green_kubo = 2.0 * np.dot(
+        stationary, score * poisson_solution
+    )
+    return generator, score, stationary, float(green_kubo)
+
+
+def finite_chain_scgf(generator, score, tilt):
+    """Principal eigenvalue and derivative of Q+tilt*diag(score)."""
+    values, left, right = eig(
+        generator + tilt * np.diag(score), left=True, right=True
+    )
+    index = int(np.argmax(np.real(values)))
+    left_vector = left[:, index]
+    right_vector = right[:, index]
+    denominator = np.vdot(left_vector, right_vector)
+    derivative = np.vdot(
+        left_vector, score * right_vector
+    ) / denominator
+    return float(np.real(values[index])), float(np.real(derivative))
+
+
+def finite_chain_rate(generator, score, value):
+    """Legendre transform of the exact finite-chain principal eigenvalue."""
+    def derivative_gap(tilt):
+        return finite_chain_scgf(generator, score, tilt)[1] - value
+
+    lower = -0.1
+    upper = 0.1
+    while derivative_gap(lower) > 0.0:
+        lower *= 2.0
+    while derivative_gap(upper) < 0.0:
+        upper *= 2.0
+    tilt = brentq(derivative_gap, lower, upper, xtol=1e-14)
+    eigenvalue, _ = finite_chain_scgf(generator, score, tilt)
+    return tilt * value - eigenvalue
+
+
+def finite_chain_double_exponential_saddle(
+    log_speed, power, generator, score, green_kubo,
+    sigma=2.0, flat_scale=1.5,
+):
+    """Full finite-chain Legendre saddle on both sides of the mean."""
+    beta = sigma - 1.0
+    candidates = []
+    for sign in [-1.0, 1.0]:
+        room = -np.min(score) if sign < 0.0 else np.max(score)
+        lower = (flat_scale ** beta / room) ** (1.0 / beta)
+        lower *= 1.0 + 1e-10
+
+        def objective(profile):
+            displacement = (
+                sign * flat_scale ** beta * profile ** (-beta)
+            )
+            return (
+                power * math.exp(profile - log_speed)
+                + finite_chain_rate(generator, score, displacement)
+            )
+
+        result = minimize_scalar(
+            objective,
+            bounds=(max(1.0, lower), log_speed),
+            method="bounded",
+            options={"xatol": 1e-10},
+        )
+        candidates.append((float(result.fun), float(result.x), int(sign)))
+
+    cost, profile, sign = min(candidates)
+    leading_constant = (
+        flat_scale ** (2.0 * beta) / (2.0 * green_kubo)
+    )
     return profile, cost, sign, leading_constant
 
 
@@ -452,12 +548,27 @@ def main():
     asymmetric_rates = []
     asymmetric_separations = []
     asymmetric_sides = []
+    print(
+        "asymmetric configuration: jump rates "
+        f"{ASYMMETRIC_JUMP_UP:.1f} {ASYMMETRIC_JUMP_DOWN:.1f}; "
+        f"flat scale {ASYMMETRIC_FLAT_SCALE:.1f}"
+    )
     for log_speed in ASYMMETRIC_LOG_SPEEDS:
         _, mean_cost, mean_side, leading = (
-            asymmetric_double_exponential_saddle(log_speed, 1.0)
+            asymmetric_double_exponential_saddle(
+                log_speed, 1.0,
+                flat_scale=ASYMMETRIC_FLAT_SCALE,
+                jump_up=ASYMMETRIC_JUMP_UP,
+                jump_down=ASYMMETRIC_JUMP_DOWN,
+            )
         )
         second_profile, second_cost, second_side, _ = (
-            asymmetric_double_exponential_saddle(log_speed, 2.0)
+            asymmetric_double_exponential_saddle(
+                log_speed, 2.0,
+                flat_scale=ASYMMETRIC_FLAT_SCALE,
+                jump_up=ASYMMETRIC_JUMP_UP,
+                jump_down=ASYMMETRIC_JUMP_DOWN,
+            )
         )
         scale = log_speed ** 2 / leading
         normalized_rate = scale * second_cost
@@ -468,6 +579,57 @@ def main():
         print(
             f"asymmetric double-exponential log speed {log_speed:.0f}: "
             f"second saddle {second_profile:.6f} on side {second_side:+d}; "
+            f"normalized rate {normalized_rate:.6f}; "
+            f"mean-separation rate {normalized_separation:.6f}; "
+            f"target constant {leading:.6f}"
+        )
+
+    generator, score, stationary, green_kubo = finite_chain_data()
+    curvature_step = 1e-4
+    positive_eigenvalue, _ = finite_chain_scgf(
+        generator, score, curvature_step
+    )
+    negative_eigenvalue, _ = finite_chain_scgf(
+        generator, score, -curvature_step
+    )
+    spectral_curvature = (
+        (positive_eigenvalue + negative_eigenvalue)
+        / curvature_step ** 2
+    )
+    print(
+        "finite-chain Green--Kubo variance "
+        f"{green_kubo:.9f}; spectral curvature "
+        f"{spectral_curvature:.9f}; stationary law "
+        + " ".join(f"{weight:.9f}" for weight in stationary)
+        + f"; flat scale {FINITE_CHAIN_FLAT_SCALE:.1f}"
+    )
+
+    finite_chain_rates = []
+    finite_chain_separations = []
+    finite_chain_sides = []
+    for log_speed in FINITE_CHAIN_LOG_SPEEDS:
+        _, mean_cost, mean_side, leading = (
+            finite_chain_double_exponential_saddle(
+                log_speed, 1.0, generator, score, green_kubo,
+                flat_scale=FINITE_CHAIN_FLAT_SCALE,
+            )
+        )
+        second_profile, second_cost, second_side, _ = (
+            finite_chain_double_exponential_saddle(
+                log_speed, 2.0, generator, score, green_kubo,
+                flat_scale=FINITE_CHAIN_FLAT_SCALE,
+            )
+        )
+        scale = log_speed ** 2 / leading
+        normalized_rate = scale * second_cost
+        normalized_separation = scale * (2.0 * mean_cost - second_cost)
+        finite_chain_rates.append(normalized_rate)
+        finite_chain_separations.append(normalized_separation)
+        finite_chain_sides.extend([mean_side, second_side])
+        print(
+            f"finite-chain double-exponential log speed "
+            f"{log_speed:.0f}: second saddle {second_profile:.6f} "
+            f"on side {second_side:+d}; "
             f"normalized rate {normalized_rate:.6f}; "
             f"mean-separation rate {normalized_separation:.6f}; "
             f"target constant {leading:.6f}"
@@ -624,6 +786,20 @@ def main():
     ok &= abs(asymmetric_rates[-1] - 1.0) < 0.01
     ok &= abs(asymmetric_separations[-1] - 1.0) < 0.01
     ok &= all(side in [-1, 1] for side in asymmetric_sides)
+    ok &= abs(spectral_curvature - green_kubo) < 1e-6
+    ok &= all(
+        left > right
+        for left, right in zip(finite_chain_rates, finite_chain_rates[1:])
+    )
+    ok &= all(
+        left > right
+        for left, right in zip(
+            finite_chain_separations, finite_chain_separations[1:]
+        )
+    )
+    ok &= abs(finite_chain_rates[-1] - 1.0) < 0.01
+    ok &= abs(finite_chain_separations[-1] - 1.0) < 0.01
+    ok &= all(side in [-1, 1] for side in finite_chain_sides)
     ok &= all(
         left < right
         for left, right in zip(bang_tail_lower, bang_tail_lower[1:])
