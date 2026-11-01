@@ -1,0 +1,80 @@
+<!-- title: Norm-flat covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-elliptic-flat.html">&larr; ellipsoidal flat covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_norm_flat.py">certificate</a></span></p>
+    <h1>Norm-flat covariance</h1>
+    <p class="subtitle">A dual-norm Green&ndash;Kubo maximum gives the universal geometric constant.</p>
+
+    <p class="lead">The radial and ellipsoidal flat-map constants extend to every fixed norm, including non-smooth
+    polyhedral norms. The theorem depends on a dual quadratic maximum, not on Green&ndash;Kubo rank alone.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-flat.html">radial theorem</a>, with centered
+    $g:\mathsf S\to\mathbb R^d$, fixed $T&gt;0$, occupation average $W_{m,T}$, and nonzero symmetric
+    Green&ndash;Kubo matrix $\Gamma$. Let $N$ be any norm on $\mathbb R^d$, with dual norm</p>
+    $$N_*(\ell)=\sup_{N(w)\le1}\ell^\top w.$$
+    <p>Define the dual Green&ndash;Kubo magnitude</p>
+    $$\Lambda_N(\Gamma)
+      =\sup_{N_*(\ell)\le1}\ell^\top\Gamma\ell
+      =\|\Gamma^{1/2}\|_{2\to N}^2&gt;0.$$
+    <p>For $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, put</p>
+    $$\Phi_{\sigma,b,N}(w)=\exp\{-\exp(bN(w)^{-1/(\sigma-1)})\},
+      \qquad \Phi_{\sigma,b,N}(0)=0.$$
+    <p>At every fixed $T&gt;0$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Phi_{\sigma,b,N}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\Lambda_N(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Norm boundary contraction</h2>
+    <p>Put $\beta=\sigma-1$ and $H=\operatorname{range}\Gamma$. The moderate-deviation rate on $H$ is
+    $J(y)=b^{2\beta}y^\top\Gamma^+y/2$.</p>
+    <p>Writing $y=\Gamma^{1/2}z$ on $H$ turns the norm boundary into</p>
+    $$\min_{y\in H:\,N(y)=1}J(y)
+      =\frac{b^{2\beta}}2
+       \min_{z\in H:\,N(\Gamma^{1/2}z)=1}\|z\|_2^2
+      =\frac{b^{2\beta}}{2\|\Gamma^{1/2}\|_{2\to N}^2}.$$
+    <p>Operator-norm duality gives the displayed formula for $\Lambda_N(\Gamma)$. The shrinking-boundary and
+    variance-separation arguments then follow the radial proof; differentiability or strict convexity of $N$ is not
+    required.</p>
+
+    <h2>Useful special cases</h2>
+    <p>For the Euclidean norm, $\Lambda_N(\Gamma)=\lambda_{\max}(\Gamma)$. For
+    $N(w)=(w^\top A w)^{1/2}$, it is
+    $\lambda_{\max}(\Gamma^{1/2}A\Gamma^{1/2})$, recovering the
+    <a href="./correlation-elliptic-flat.html">ellipsoidal theorem</a>.</p>
+    <p>For $N=\|\cdot\|_\infty$, duality and positive semidefiniteness give
+    $\Lambda_N(\Gamma)=\max_i\Gamma_{ii}$. For $N=\|\cdot\|_1$,</p>
+    $$\Lambda_N(\Gamma)=\max_{s\in\{-1,1\}^d}s^\top\Gamma s.$$
+
+    <h2>Coordinate and rank scope</h2>
+    <p>Under $w'=Rw$, transport the norm as $N'(w')=N(R^{-1}w')$ and take
+    $\Gamma'=R\Gamma R^\top$. Its dual obeys $N'_*(\ell')=N_*(R^\top\ell')$, so
+    $\Lambda_{N'}(\Gamma')=\Lambda_N(\Gamma)$.</p>
+    <p>This is a fixed-feature geometric magnitude. It neither identifies a post-averaging nonlinear covariance
+    rank nor combines maturity-dependent loadings; $\operatorname{rank}\Gamma$ still records only the active linear
+    feature space.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>For the nonreversible three-state two-feature chain used in the radial checks, take $N=\|\cdot\|_1$,
+    $\sigma=2$ and $b=1.5$. The certificate finds
+    $\Lambda_N(\Gamma)=1.508362735$ at sign $(-1,-1)$ and predicted constant $0.745841815$.</p>
+    <p>The exact two-dimensional Legendre rate is contracted over the non-smooth $\ell_1$ diamond. At norm radius
+    $.005$, its quadratic normalization is $.999690067$; transporting the norm through a non-orthogonal coordinate
+    map changes the dual constant by less than the printed precision.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.292951</td><td>1.262203</td></tr>
+        <tr><td>512</td><td>1.082276</td><td>1.076228</td></tr>
+        <tr><td>2,048</td><td>1.023943</td><td>1.022543</td></tr>
+        <tr><td>8,192</td><td>1.006937</td><td>1.006596</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle,
+    and <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> treat Markov additive processes.
+    The arbitrary-norm contraction and dual formula are derived above.</p>
+  </main>
