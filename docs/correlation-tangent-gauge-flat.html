@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tangent-gauge covariance · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-gauge-flat.html">&larr; gauge-flat covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_tangent_gauge_flat.py">certificate</a></span></p>
+    <h1>Tangent-gauge covariance</h1>
+    <p class="subtitle">Only the local homogeneous tangent determines the logarithmic constant.</p>
+
+    <p class="lead">Exact homogeneity is unnecessary for the gauge-flat variance law. Smooth or non-smooth
+    perturbations away from the origin may change finite-speed saddles without changing the leading Green&ndash;Kubo
+    constant.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-gauge-flat.html">gauge theorem</a>, with centered
+    $g:\mathsf S\to\mathbb R^d$, fixed $T&gt;0$, occupation average $W_{m,T}$, and nonzero symmetric
+    Green&ndash;Kubo matrix $\Gamma$. Let $\rho$ be a continuous positive homogeneous gauge and let $r$ be continuous,
+    positive away from zero, with</p>
+    $$\frac{r(w)}{\rho(w)}\longrightarrow1\qquad(w\to0).$$
+    <p>For $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, define</p>
+    $$\Psi_{\sigma,b,r}(w)=\exp\{-\exp(br(w)^{-1/(\sigma-1)})\},
+      \qquad \Psi_{\sigma,b,r}(0)=0.$$
+    <p>With $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$, every fixed $T&gt;0$ obeys, uniformly
+    over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Psi_{\sigma,b,r}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\Lambda_\rho(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Shrinking-boundary sandwich</h2>
+    <p>For every $\varepsilon&gt;0$, a neighborhood of zero satisfies
+    $(1-\varepsilon)\rho(w)\le r(w)\le(1+\varepsilon)\rho(w)$. The relevant level sets shrink at scale
+    $[\log(mT)]^{-(\sigma-1)}$.</p>
+    <p>Their quadratic contraction costs therefore lie between the two homogeneous costs obtained by replacing
+    $\rho$ with $(1-\varepsilon)\rho$ and $(1+\varepsilon)\rho$. Letting $\varepsilon\downarrow0$ gives the displayed
+    constant.</p>
+    <p>Excursions outside the local neighborhood have a fixed positive large-deviation cost of order $mT$. They are
+    negligible beside $mT/[\log(mT)]^{2(\sigma-1)}$, so no global comparison between $r$ and $\rho$ is needed.</p>
+
+    <h2>Coordinate and rank scope</h2>
+    <p>Under $w'=Rw$, transport both scales by $r'(w')=r(R^{-1}w')$ and
+    $\rho'(w')=\rho(R^{-1}w')$, with $\Gamma'=R\Gamma R^\top$. The tangent relation and
+    $\Lambda_\rho$ are invariant.</p>
+    <p>This remains a fixed-feature, fixed-maturity scalar variance statement. It neither identifies nonlinear
+    covariance rank nor integrates maturity-dependent loadings.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate perturbs the asymmetric gauge from the preceding note by</p>
+    $$r(w)=\rho(w)(1+.8\|w\|_2).$$
+    <p>This changes the finite-level boundary while leaving the tangent gauge unchanged. At level $.005$, the exact
+    Legendre contraction has normalized cost $.996879139$ and its minimizing direction differs from the tangent
+    direction by $.000138556$ radians.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.308629</td><td>1.277326</td></tr>
+        <tr><td>512</td><td>1.085312</td><td>1.079239</td></tr>
+        <tr><td>2,048</td><td>1.024643</td><td>1.023242</td></tr>
+        <tr><td>8,192</td><td>1.007108</td><td>1.006766</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle,
+    and <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> treat Markov additive processes.
+    The tangent-gauge stability argument is the shrinking-boundary sandwich above.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

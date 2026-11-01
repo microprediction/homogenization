@@ -1,0 +1,66 @@
+<!-- title: Tangent-gauge covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-gauge-flat.html">&larr; gauge-flat covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_tangent_gauge_flat.py">certificate</a></span></p>
+    <h1>Tangent-gauge covariance</h1>
+    <p class="subtitle">Only the local homogeneous tangent determines the logarithmic constant.</p>
+
+    <p class="lead">Exact homogeneity is unnecessary for the gauge-flat variance law. Smooth or non-smooth
+    perturbations away from the origin may change finite-speed saddles without changing the leading Green&ndash;Kubo
+    constant.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-gauge-flat.html">gauge theorem</a>, with centered
+    $g:\mathsf S\to\mathbb R^d$, fixed $T&gt;0$, occupation average $W_{m,T}$, and nonzero symmetric
+    Green&ndash;Kubo matrix $\Gamma$. Let $\rho$ be a continuous positive homogeneous gauge and let $r$ be continuous,
+    positive away from zero, with</p>
+    $$\frac{r(w)}{\rho(w)}\longrightarrow1\qquad(w\to0).$$
+    <p>For $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, define</p>
+    $$\Psi_{\sigma,b,r}(w)=\exp\{-\exp(br(w)^{-1/(\sigma-1)})\},
+      \qquad \Psi_{\sigma,b,r}(0)=0.$$
+    <p>With $\Lambda_\rho(\Gamma)=\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2$, every fixed $T&gt;0$ obeys, uniformly
+    over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Psi_{\sigma,b,r}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\Lambda_\rho(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Shrinking-boundary sandwich</h2>
+    <p>For every $\varepsilon&gt;0$, a neighborhood of zero satisfies
+    $(1-\varepsilon)\rho(w)\le r(w)\le(1+\varepsilon)\rho(w)$. The relevant level sets shrink at scale
+    $[\log(mT)]^{-(\sigma-1)}$.</p>
+    <p>Their quadratic contraction costs therefore lie between the two homogeneous costs obtained by replacing
+    $\rho$ with $(1-\varepsilon)\rho$ and $(1+\varepsilon)\rho$. Letting $\varepsilon\downarrow0$ gives the displayed
+    constant.</p>
+    <p>Excursions outside the local neighborhood have a fixed positive large-deviation cost of order $mT$. They are
+    negligible beside $mT/[\log(mT)]^{2(\sigma-1)}$, so no global comparison between $r$ and $\rho$ is needed.</p>
+
+    <h2>Coordinate and rank scope</h2>
+    <p>Under $w'=Rw$, transport both scales by $r'(w')=r(R^{-1}w')$ and
+    $\rho'(w')=\rho(R^{-1}w')$, with $\Gamma'=R\Gamma R^\top$. The tangent relation and
+    $\Lambda_\rho$ are invariant.</p>
+    <p>This remains a fixed-feature, fixed-maturity scalar variance statement. It neither identifies nonlinear
+    covariance rank nor integrates maturity-dependent loadings.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>The certificate perturbs the asymmetric gauge from the preceding note by</p>
+    $$r(w)=\rho(w)(1+.8\|w\|_2).$$
+    <p>This changes the finite-level boundary while leaving the tangent gauge unchanged. At level $.005$, the exact
+    Legendre contraction has normalized cost $.996879139$ and its minimizing direction differs from the tangent
+    direction by $.000138556$ radians.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.308629</td><td>1.277326</td></tr>
+        <tr><td>512</td><td>1.085312</td><td>1.079239</td></tr>
+        <tr><td>2,048</td><td>1.024643</td><td>1.023242</td></tr>
+        <tr><td>8,192</td><td>1.007108</td><td>1.006766</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle,
+    and <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> treat Markov additive processes.
+    The tangent-gauge stability argument is the shrinking-boundary sandwich above.</p>
+  </main>
