@@ -21,6 +21,7 @@ LOG_FLAT_SPEEDS = [1e8, 1e32, 1e128, 1e256]
 BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
 ASSOCIATED_SCALE = 4096
 LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
+DOUBLE_EXP_LOG_SPEEDS = [128.0, 512.0, 2048.0, 8192.0]
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -109,6 +110,26 @@ def logarithmic_carleman_envelope(scale, sigma=2.0):
             optimizer = n
     target = sigma * expi(math.log(optimizer))
     return optimizer, -minimum / target
+
+
+def double_exponential_saddle(log_speed, sigma, power):
+    """Quadratic-rate saddle for exp(-power exp(|X_m|**-a)).
+
+    Here a=1/(sigma-1).  All costs are divided by m, so log_speed can
+    greatly exceed the floating-point overflow threshold.
+    """
+    beta = sigma - 1.0
+    right_side = log_speed + math.log(beta) - math.log(power)
+
+    def equation(profile):
+        return profile + (2.0 * sigma - 1.0) * math.log(profile) - right_side
+
+    profile = brentq(equation, 1.0, log_speed)
+    cost_over_speed = (
+        power * math.exp(profile - log_speed)
+        + 0.5 * profile ** (-2.0 * beta)
+    )
+    return profile, cost_over_speed
 
 
 def log_flat_moment(speed, alpha, power):
@@ -327,6 +348,29 @@ def main():
             f"cost / (sigma li(optimizer)) {normalized_cost:.6f}"
         )
 
+    double_exponential_rates = []
+    double_exponential_separations = []
+    sigma = 2.0
+    beta = sigma - 1.0
+    for log_speed in DOUBLE_EXP_LOG_SPEEDS:
+        mean_profile, mean_cost = double_exponential_saddle(
+            log_speed, sigma, 1.0
+        )
+        second_profile, second_cost = double_exponential_saddle(
+            log_speed, sigma, 2.0
+        )
+        scale = 2.0 * log_speed ** (2.0 * beta)
+        normalized_rate = scale * second_cost
+        normalized_separation = scale * (2.0 * mean_cost - second_cost)
+        double_exponential_rates.append(normalized_rate)
+        double_exponential_separations.append(normalized_separation)
+        print(
+            f"double-exponential log speed {log_speed:.0f}: "
+            f"second saddle {second_profile:.6f}; "
+            f"normalized rate {normalized_rate:.6f}; "
+            f"mean-separation rate {normalized_separation:.6f}"
+        )
+
     family_errors = []
     for alpha in FLAT_POWERS:
         exponent = alpha / (alpha + 2.0)
@@ -433,6 +477,21 @@ def main():
         for left, right in zip(logarithmic_ratios, logarithmic_ratios[1:])
     )
     ok &= abs(logarithmic_ratios[-1] - 1.0) < 0.001
+    ok &= all(
+        left > right
+        for left, right in zip(
+            double_exponential_rates, double_exponential_rates[1:]
+        )
+    )
+    ok &= all(
+        left > right
+        for left, right in zip(
+            double_exponential_separations,
+            double_exponential_separations[1:],
+        )
+    )
+    ok &= abs(double_exponential_rates[-1] - 1.0) < 0.01
+    ok &= abs(double_exponential_separations[-1] - 1.0) < 0.01
     ok &= max(family_errors) < 0.01
     ok &= abs(slow_rates[-1] - 0.5) < 0.01
     ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01
