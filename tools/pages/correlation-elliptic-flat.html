@@ -1,0 +1,72 @@
+<!-- title: Ellipsoidal flat covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-flat.html">&larr; radial flat covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_elliptic_flat.py">certificate</a></span></p>
+    <h1>Ellipsoidal flat covariance</h1>
+    <p class="subtitle">The coordinate-covariant constant is a generalized Green&ndash;Kubo eigenvalue.</p>
+
+    <p class="lead">A positive quadratic metric turns the radial flat-map theorem into a coordinate-covariant result.
+    The selected direction maximizes metric size per unit Green&ndash;Kubo moderate-deviation cost.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-flat.html">radial theorem</a>, with centered
+    $g:\mathsf S\to\mathbb R^d$, fixed $T&gt;0$, occupation average $W_{m,T}$, and nonzero symmetric
+    Green&ndash;Kubo matrix $\Gamma$. Fix a symmetric positive-definite matrix $A$ and write
+    $\|w\|_A=(w^\top A w)^{1/2}$.</p>
+    <p>For $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, put</p>
+    $$\Phi_{\sigma,b,A}(w)=\exp\{-\exp(b\|w\|_A^{-1/(\sigma-1)})\},
+      \qquad \Phi_{\sigma,b,A}(0)=0.$$
+    <p>Let</p>
+    $$\lambda_A=\lambda_{\max}(\Gamma^{1/2}A\Gamma^{1/2})&gt;0.$$
+    <p>At every fixed $T&gt;0$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Phi_{\sigma,b,A}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\lambda_A}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Boundary contraction</h2>
+    <p>Put $\beta=\sigma-1$ and $H=\operatorname{range}\Gamma$. The moderate-deviation rate on $H$ is</p>
+    $$J(y)=\frac{b^{2\beta}}2y^\top\Gamma^+y.$$
+    <p>The flat penalty changes at the ellipsoid $y^\top A y=1$. Writing $y=\Gamma^{1/2}z$ on $H$ reduces the
+    boundary contraction to the Rayleigh problem</p>
+    $$\min_{y\in H:\,y^\top Ay=1}J(y)
+      =\frac{b^{2\beta}}2
+       \min_{z\in H:\,z^\top\Gamma^{1/2}A\Gamma^{1/2}z=1}\|z\|^2
+      =\frac{b^{2\beta}}{2\lambda_A}.$$
+    <p>The shrinking-boundary argument and variance separation are otherwise unchanged from the radial proof. Every
+    fixed positive moment power has this leading cost, so the squared mean is exponentially negligible relative to
+    the second moment.</p>
+
+    <h2>Coordinate and rank scope</h2>
+    <p>For an invertible coordinate change $w'=Rw$, transform
+    $\Gamma'=R\Gamma R^\top$ and $A'=R^{-\top}AR^{-1}$. Then
+    $\|w'\|_{A'}=\|w\|_A$, while $\Gamma'A'=R\Gamma A R^{-1}$, so $\lambda_A$ is unchanged.</p>
+    <p>Keeping $A=I$ after a non-orthogonal coordinate change instead changes the map; that is the coordinate
+    dependence noted in the radial theorem. The ellipsoidal result supplies the metric transformation needed for
+    covariance.</p>
+    <p>The constant uses one generalized spectral magnitude at fixed features. It neither identifies nonlinear
+    transformed-covariance rank nor integrates different maturity loadings; $\operatorname{rank}\Gamma$ remains only
+    the dimension of the active linear feature space.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>For the same nonreversible three-state chain as the radial check, take
+    $A=\left(\begin{smallmatrix}3&.8\\.8&1\end{smallmatrix}\right)$. The certificate finds
+    $\lambda_A=2.417014149$ and, at $\sigma=2$, $b=1.5$, the predicted constant $0.465450316$.</p>
+    <p>The exact two-dimensional Legendre rate is contracted over each metric ellipse and then used in the full
+    double-exponential saddle. At metric radius $.005$, its quadratic normalization is $1.000083063$.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.304899</td><td>1.273729</td></tr>
+        <tr><td>512</td><td>1.084599</td><td>1.078532</td></tr>
+        <tr><td>2,048</td><td>1.024479</td><td>1.023078</td></tr>
+        <tr><td>8,192</td><td>1.007068</td><td>1.006726</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle,
+    and <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> treat Markov additive functionals.
+    The ellipsoidal contraction and its coordinate-covariant constant are derived above.</p>
+  </main>
