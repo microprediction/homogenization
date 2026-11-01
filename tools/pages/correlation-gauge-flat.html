@@ -1,0 +1,79 @@
+<!-- title: Gauge-flat covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-norm-flat.html">&larr; norm-flat covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_gauge_flat.py">certificate</a></span></p>
+    <h1>Gauge-flat covariance</h1>
+    <p class="subtitle">Directional asymmetry changes the Green&ndash;Kubo constant, not the logarithmic power.</p>
+
+    <p class="lead">Norm symmetry is unnecessary for the flat-map variance law. A continuous positive homogeneous
+    gauge can penalize positive and negative excursions differently, and its easiest moderate-deviation direction
+    still determines the leading constant.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain setup of the <a href="./correlation-norm-flat.html">norm theorem</a>, with centered
+    $g:\mathsf S\to\mathbb R^d$, fixed $T&gt;0$, occupation average $W_{m,T}$, and nonzero symmetric
+    Green&ndash;Kubo matrix $\Gamma$. Let $\rho$ be continuous, positive away from zero, and satisfy
+    $\rho(cw)=c\rho(w)$ for $c&gt;0$.</p>
+    <p>Define</p>
+    $$\Lambda_\rho(\Gamma)
+      =\max_{\|z\|_2=1}\rho(\Gamma^{1/2}z)^2&gt;0,$$
+    <p>and, for $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, put</p>
+    $$\Phi_{\sigma,b,\rho}(w)=\exp\{-\exp(b\rho(w)^{-1/(\sigma-1)})\},
+      \qquad \Phi_{\sigma,b,\rho}(0)=0.$$
+    <p>At every fixed $T&gt;0$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Phi_{\sigma,b,\rho}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\Lambda_\rho(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Why symmetry is absent</h2>
+    <p>Put $\beta=\sigma-1$ and $H=\operatorname{range}\Gamma$. The moderate-deviation rate is
+    $J(y)=b^{2\beta}y^\top\Gamma^+y/2$ on $H$.</p>
+    <p>Positive homogeneity alone gives</p>
+    $$\min_{y\in H:\,\rho(y)=1}J(y)
+      =\frac{b^{2\beta}}2
+       \min_{z\in H:\,\rho(\Gamma^{1/2}z)=1}\|z\|_2^2
+      =\frac{b^{2\beta}}{2\Lambda_\rho(\Gamma)}.$$
+    <p>Compactness supplies the maximizing direction. The shrinking-boundary and variance-separation arguments
+    use only this contraction, so neither convexity nor the identity $\rho(-w)=\rho(w)$ is required.</p>
+
+    <h2>Convex gauges and the polar formula</h2>
+    <p>If $\rho$ is convex, let
+    $\rho^\circ(\ell)=\sup_{\rho(w)\le1}\ell^\top w$. Bipolar duality gives
+    $\rho(w)=\sup_{\rho^\circ(\ell)\le1}\ell^\top w$, hence</p>
+    $$\Lambda_\rho(\Gamma)
+      =\sup_{\rho^\circ(\ell)\le1}\ell^\top\Gamma\ell.$$
+    <p>For
+    $\rho(w)=\sum_i(a_i^+w_i^++a_i^-w_i^-)$, the polar unit ball is the asymmetric box
+    $\prod_i[-a_i^-,a_i^+]$. The maximum of the positive-semidefinite quadratic occurs at a box vertex.</p>
+
+    <h2>Coordinate and rank scope</h2>
+    <p>Under $w'=Rw$, transport the gauge as $\rho'(w')=\rho(R^{-1}w')$ and take
+    $\Gamma'=R\Gamma R^\top$. Then $\Lambda_{\rho'}(\Gamma')=\Lambda_\rho(\Gamma)$.</p>
+    <p>This is a fixed-feature directional magnitude. It neither identifies a post-averaging nonlinear covariance
+    rank nor combines maturity-dependent loadings; $\operatorname{rank}\Gamma$ remains only the active linear
+    feature dimension.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>For the nonreversible three-state two-feature chain, the certificate uses
+    $a^+=(1,.7)$ and $a^-=(2,1.4)$. It finds $\Lambda_\rho(\Gamma)=4.604379006$ at the polar vertex
+    $(-2,-1.4)$ and predicted constant $.244332623$.</p>
+    <p>The exact two-dimensional Legendre rate is contracted over the asymmetric gauge boundary. At gauge radius
+    $.005$, its quadratic normalization is $1.000143409$, while a non-orthogonal coordinate transport preserves the
+    polar maximum to the printed precision.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.319850</td><td>1.288149</td></tr>
+        <tr><td>512</td><td>1.087471</td><td>1.081380</td></tr>
+        <tr><td>2,048</td><td>1.025140</td><td>1.023738</td></tr>
+        <tr><td>8,192</td><td>1.007229</td><td>1.006887</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle,
+    and <a href="./bibliography.html#NeyNummelin1987">Ney and Nummelin (1987)</a> treat Markov additive processes.
+    The asymmetric-gauge contraction and polar specialization are derived above.</p>
+  </main>
