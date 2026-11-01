@@ -11,7 +11,7 @@ import math
 
 from scipy.integrate import quad
 from scipy.optimize import brentq
-from scipy.special import i0e, i1e, ive
+from scipy.special import expi, i0e, i1e, ive
 
 
 SPEEDS = [16, 64, 256, 1024, 4096]
@@ -20,6 +20,7 @@ FLAT_POWERS = [1.0, 2.0, 4.0]
 LOG_FLAT_SPEEDS = [1e8, 1e32, 1e128, 1e256]
 BORDERLINE_SPEEDS = LOG_FLAT_SPEEDS
 ASSOCIATED_SCALE = 4096
+LOG_CARLEMAN_SCALES = [4096, 65536, 1048576]
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -89,6 +90,25 @@ def gevrey_associated_envelope(order, scale):
     ]
     optimizer = min(range(len(log_terms)), key=log_terms.__getitem__)
     return optimizer, -log_terms[optimizer] / scale
+
+
+def logarithmic_carleman_envelope(scale, sigma=2.0):
+    """Check h_M for M_n/M_(n-1)=n log(e+n)**sigma.
+
+    At t=log(e+scale)**(-sigma), the discrete optimizer is scale up to
+    one index.  Summation by parts predicts -log h_M~sigma*li(scale).
+    """
+    log_t = -sigma * math.log(math.log(math.e + scale))
+    running = 0.0
+    minimum = 0.0
+    optimizer = 0
+    for n in range(1, scale + 2):
+        running += log_t + sigma * math.log(math.log(math.e + n))
+        if running < minimum:
+            minimum = running
+            optimizer = n
+    target = sigma * expi(math.log(optimizer))
+    return optimizer, -minimum / target
 
 
 def log_flat_moment(speed, alpha, power):
@@ -298,6 +318,15 @@ def main():
             f"target {target:.6f}"
         )
 
+    logarithmic_ratios = []
+    for scale in LOG_CARLEMAN_SCALES:
+        optimizer, normalized_cost = logarithmic_carleman_envelope(scale)
+        logarithmic_ratios.append(normalized_cost)
+        print(
+            f"logarithmic Carleman scale {scale}: optimizer {optimizer}; "
+            f"cost / (sigma li(optimizer)) {normalized_cost:.6f}"
+        )
+
     family_errors = []
     for alpha in FLAT_POWERS:
         exponent = alpha / (alpha + 2.0)
@@ -399,6 +428,11 @@ def main():
     ok &= abs(flat_schur_rates[-1] - 2.0) < 0.01
     ok &= variances[-1] < 2e-56
     ok &= max(associated_errors) < 0.002
+    ok &= all(
+        left < right
+        for left, right in zip(logarithmic_ratios, logarithmic_ratios[1:])
+    )
+    ok &= abs(logarithmic_ratios[-1] - 1.0) < 0.001
     ok &= max(family_errors) < 0.01
     ok &= abs(slow_rates[-1] - 0.5) < 0.01
     ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01

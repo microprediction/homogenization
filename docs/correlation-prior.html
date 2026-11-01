@@ -373,6 +373,32 @@
     <a href="./bibliography.html#Carleman1926">Carleman (1926)</a> completed the characterization. In this convention
     $M_n=n!$ gives the divergent harmonic series, while $M_n=(n!)^s$ is nonquasianalytic for $s&gt;1$.</p>
 
+    <h3>A logarithmic class reaches the near-analytic edge</h3>
+    <p>A concrete sequence resolves how abruptly nonconstant flat covariance can appear. For $\sigma&gt;0$, set
+    $M_0=1$ and define the increasing quotients</p>
+    $$\frac{M_n}{M_{n-1}}=n[\log(e+n)]^\sigma.$$
+    <p>The sequence is log-convex, and the Denjoy&ndash;Carleman series becomes
+    $\sum_{n\ge1}\{n[\log(e+n)]^\sigma\}^{-1}$. It diverges exactly for $0&lt;\sigma\le1$, when every flat
+    direction is constant, and converges for $\sigma&gt;1$, when nonconstant flat functions are permitted.</p>
+    <p>Write $m_n=M_n/n!$. Since $m_n/m_{n-1}=[\log(e+n)]^\sigma$, the consecutive terms in
+    $h_M(t)=\inf_n t^nm_n$ have ratio $t[\log(e+n)]^\sigma$. The minimizing index and cost therefore satisfy</p>
+    $$n_t\sim\exp(t^{-1/\sigma}),\qquad
+      -\log h_M(t)\sim\sigma t^{1/\sigma}\exp(t^{-1/\sigma}).$$
+    <p>Indeed, at the minimizer the logarithmic sum is asymptotic to $-\sigma\operatorname{li}(n_t)$; the last
+    display follows from $\operatorname{li}(x)\sim x/\log x$. Taking
+    $r=B^{-1}[\log(mT)]^{-\sigma}$ in the general envelope gives, for $\sigma&gt;1$ and all sufficiently large $mT$,</p>
+    <div class="equation-card">
+    $$\|P_\infty\operatorname{Cov}(\phi(W_m))P_\infty\|
+      \le C\exp\left\{-\frac{c\,mT}{[\log(mT)]^{2\sigma}}\right\}.$$
+    </div>
+    <p>This upper bound is faster than $e^{-c_\beta(mT)^\beta}$ for every fixed $\beta&lt;1$, but it is not claimed
+    sharp. Thus the first nonquasianalytic logarithmic classes sit strictly between the Gevrey powers and analytic
+    collapse; the constants still depend on the fixed map, chain and positive maturity. This is not a fixed-feature
+    Green&ndash;Kubo rank or maturity-integrated rank statement.</p>
+    <p>The logarithmic derivative classes already appear in
+    <a href="./bibliography.html#Denjoy1921">Denjoy&apos;s original note</a>. The associated-function asymptotic and
+    covariance specialization above are derived here from the quotient sequence.</p>
+
     <h3>Gevrey regularity gives a sharp flat rate</h3>
     <p>The general envelope becomes explicit when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
     of the attainable polytope that, for constants $A,B$,</p>
@@ -638,6 +664,8 @@
     <p>For the mixed map $(W_m,W_m^2,\phi(W_m),1)$ at speed $4096$, the scaled polynomial variances are
     $m\operatorname{Var}(W_m)=0.999878$ and $m^2\operatorname{Var}(W_m^2)=1.998780$. After eliminating the quadratic
     coordinate, the flat Schur-complement log rate is $2.007813$, while the constant coordinate has exactly zero variance.</p>
+    <p>For the logarithmic quotient class, target optimizers $4096$, $65536$ and $1048576$ give associated costs
+    normalized by $\sigma\operatorname{li}(n)$ of $0.985722$, $0.998592$ and $0.999878$.</p>
     <p>At speed $262144$, Gevrey orders $s=2,1.5,1.25$ have normalized variance log rates $2.378939$, $2.000977$
     and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their sharp powers $1/(2s-1)$ are
     $0.333333$, $0.500000$ and $0.666667$.</p>
