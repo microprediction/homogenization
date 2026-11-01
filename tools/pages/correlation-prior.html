@@ -338,6 +338,32 @@
     under strong regularity. The normalized sequence here fails the strong nonquasianalytic tail condition by one
     logarithm, so that theorem does not supply this example; the direct Cauchy estimate above does.</p>
 
+    <h3>Asymmetry changes the constant, not the logarithmic power</h3>
+    <p>Let a two-state chain jump from $0$ to $1$ at rate $m\alpha$ and back at rate $m\beta$, and put</p>
+    $$P_{m,T}=\frac1T\int_0^T\mathbf1_{\{Y_t=1\}}\,dt,\qquad
+      p_* =\frac{\alpha}{\alpha+\beta},\qquad Z_{m,T}=P_{m,T}-p_*.$$
+    <p>For $b&gt;0$, replace the preceding map by
+    $\phi_{\sigma,b}(z)=\exp\{-\exp(b|z|^{-1/(\sigma-1)})\}$ away from zero and set its value at zero to zero.
+    This rescaling remains in the same logarithmic Denjoy&ndash;Carleman class.</p>
+    <p>Writing $L=mT$, the exact two-state occupation density has interior rate</p>
+    $$I(p)=\left(\sqrt{\alpha(1-p)}-\sqrt{\beta p}\right)^2,\qquad
+      I(p_*+z)=\frac{(\alpha+\beta)^3}{4\alpha\beta}z^2+O(z^3).$$
+    <p>For every fixed $q&gt;0$, set $u=b|z|^{-1/(\sigma-1)}$. The two moment saddles minimize</p>
+    $$q e^u+L I\!\left(p_*\mathbin{\pm}b^{\sigma-1}u^{-(\sigma-1)}\right).$$
+    <p>The minimizing $u$ satisfies $u/\log L\to1$. The quadratic rate therefore supplies the leading cost, while
+    the cubic remainder is smaller by a factor $(\log L)^{-(\sigma-1)}$; the exact Bessel prefactor is subexponential
+    on this scale.</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\phi_{\sigma,b}(Z_{m,T}))
+      \sim \frac{(\alpha+\beta)^3b^{2(\sigma-1)}}{4\alpha\beta}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+    <p>The squared mean has twice the displayed leading cost. The result is uniform over the initial two-state prior:
+    each starting-state density has the same interior exponential rate, and arbitrary priors are their mixtures.</p>
+    <p>Thus asymmetry and the flat-map scale $b$ can change the leading constant arbitrarily, while the class-sharp
+    logarithmic power is stable. This remains a scalar post-averaging statement and makes no Green&ndash;Kubo or
+    maturity-integrated rank claim.</p>
+
     <h3>The fixed-map logarithmic power is sharp</h3>
     <p>The associated-function envelope is uniform once the derivative constants are fixed, but it is not the best
     eventual estimate for one fixed flat function. The quotient-defined sequence above is exponentially equivalent to
@@ -638,6 +664,9 @@
     <p>For the explicit logarithmic-class map with $\sigma=2$, at log speed $8192$ the normalized second-moment
     saddle rate is $1.007048$ and the normalized separation from the squared mean is $1.006706$, both approaching
     the proved limit $1$.</p>
+    <p>For asymmetric jump rates $(\alpha,\beta)=(1,3)$ and $b=2$, the exact occupation-rate curvature gives the
+    leading constant $21.333333$. At log speed $8192$, the full-rate saddle normalizes to $1.005794$, and the
+    squared-mean separation normalizes to $1.005453$.</p>
     <p>For $\sigma=2$, the normalized Bang tail
     $(\sigma-1)S_p(\log p)^{\sigma-1}$ at $p=262144$ lies in the certified interval
     $[0.999999659,0.999999818]$, confirming the tail inversion behind the fixed-map exponent.</p>
@@ -680,8 +709,8 @@
     <p>The atom-plus-Bessel occupation law is classical; see
     <a href="./bibliography.html#Pedler1971">Pedler (1971)</a> and
     <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a>. The displayed price
-    expansion and the smooth-flat counterexample follow directly from that law; no priority claim is made for the
-    occupation density.</p>
+    expansion, smooth-flat counterexample and asymmetric logarithmic constant follow directly from that law; no
+    priority claim is made for the occupation density.</p>
     <p>The logarithmic minimization is a direct one-dimensional Laplace argument. Its large-deviation context goes
     back to <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a>; the constants here are derived from the
     exact telegraph density rather than imported from a general principle.</p>
