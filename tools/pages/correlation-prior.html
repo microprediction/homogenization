@@ -251,6 +251,33 @@
     <a href="./bibliography.html#Lezaud2001">Lezaud (2001)</a>. The trichotomy is local to a fixed post-averaging map
     and fixed positive maturity, not a change in fixed-feature Green&ndash;Kubo rank or a maturity-integrated rank claim.</p>
 
+    <h3>Gevrey regularity gives a sharp flat rate</h3>
+    <p>The smooth trichotomy becomes quantitative when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
+    of the attainable polytope that, for constants $A,B$,</p>
+    $$\sup_w\|D^n\phi(w)\|\le AB^n(n!)^s,\qquad n\ge0.$$
+    <p>If $P_\infty$ projects onto the flat output space $V_\infty$, optimizing the all-order Taylor remainder gives</p>
+    $$\|P_\infty\{\phi(w)-\phi(0)\}\|
+      \le C\exp\{-c\|w\|^{-1/(s-1)}\}.$$
+    <p>Split according to $\|W_m\|\le r$ and use the finite-chain concentration bound
+    $\mathbb P(\|W_m\|&gt;r)\le C_0e^{-c_0mTr^2}$. Balancing the two exponents at
+    $r\asymp(mT)^{-(s-1)/(2s-1)}$ proves, uniformly over initial priors,</p>
+    <div class="equation-card">
+    $$\|P_\infty\operatorname{Cov}(\phi(W_m))P_\infty\|
+      \le C_1\exp\{-c_1(mT)^{1/(2s-1)}\}.$$
+    </div>
+    <p>Only the exponent is universal; the constants depend on the map and chain. The exponent is sharp: with
+    $\alpha=1/(s-1)$, the scalar map $\phi_s(w)=e^{-1/|w|^\alpha}$ away from zero and $\phi_s(0)=0$ is Gevrey-$s$,
+    and the exact telegraph law gives</p>
+    $$-\log\operatorname{Var}(\phi_s(W_m))\sim
+      C_{\alpha,2}m^{\alpha/(\alpha+2)}
+      =C_{\alpha,2}m^{1/(2s-1)}.$$
+    <p>A Cauchy estimate on a complex disk of radius proportional to $|w|$ proves the Gevrey derivative bound for
+    this example; optimizing in $|w|$ gives $(n!)^{1+1/\alpha}$. The class and terminology originate with
+    <a href="./bibliography.html#Gevrey1918">Gevrey (1918)</a>.</p>
+    <p>Thus $s\downarrow1$ approaches the analytic boundary, where nonconstant flat directions disappear, while
+    $s\to\infty$ loses a positive universal exponent, consistently with the arbitrarily slow $C^\infty$ scales above.
+    This remains a fixed-map, fixed-positive-maturity statement.</p>
+
     <h3>Analytic completeness and the smooth flat boundary</h3>
     <p>Suppose now that $\phi$ is real analytic on a connected open set containing the attainable feature polytope,
     and put $V_\infty=\bigcap_{p\ge1}V_p$. Then</p>
@@ -489,9 +516,9 @@
     <p>For the mixed map $(W_m,W_m^2,\phi(W_m),1)$ at speed $4096$, the scaled polynomial variances are
     $m\operatorname{Var}(W_m)=0.999878$ and $m^2\operatorname{Var}(W_m^2)=1.998780$. After eliminating the quadratic
     coordinate, the flat Schur-complement log rate is $2.007813$, while the constant coordinate has exactly zero variance.</p>
-    <p>At speed $262144$, the generalized flat powers $\alpha=1,2,4$ have normalized variance log rates
-    $2.378939$, $2.000977$ and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their respective
-    stretched-exponential powers are $0.333333$, $0.500000$ and $0.666667$.</p>
+    <p>At speed $262144$, Gevrey orders $s=2,1.5,1.25$ have normalized variance log rates $2.378939$, $2.000977$
+    and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their sharp powers $1/(2s-1)$ are
+    $0.333333$, $0.500000$ and $0.666667$.</p>
     <p>On a nonreversible three-state chain, five priors and four exponential payoffs, the matrix-exponential benchmark has
     maximum errors $4.25236975\times10^{-4}$, $5.50834536\times10^{-5}$, $6.99926229\times10^{-6}$,
     $8.81798420\times10^{-7}$ and $1.10648302\times10^{-7}$ at speeds $4,8,16,32,64$. The last-doubling order is $2.994468$.</p>
@@ -542,4 +569,7 @@
     <p><a href="./bibliography.html#Lezaud2001">Lezaud&apos;s spectral-gap concentration bound</a> supplies the classical
     exponential tail control for finite-state Markov additive functionals. Combined with all-order Taylor remainders,
     it yields the super-polynomial flat-block estimate in the smooth spectrum trichotomy.</p>
+    <p><a href="./bibliography.html#Gevrey1918">Gevrey&apos;s original paper</a> introduced the derivative-growth classes
+    between analytic and smooth functions. The covariance exponent and its sharp telegraph realization are derived
+    here from Taylor optimization and the exact occupation law.</p>
   </main>

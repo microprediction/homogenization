@@ -271,6 +271,8 @@ def main():
     family_errors = []
     for alpha in FLAT_POWERS:
         exponent = alpha / (alpha + 2.0)
+        gevrey_order = 1.0 + 1.0 / alpha
+        gevrey_exponent = 1.0 / (2.0 * gevrey_order - 1.0)
         log_mean = log_flat_moment(FAMILY_SPEED, alpha, 1.0)
         log_second = log_flat_moment(FAMILY_SPEED, alpha, 2.0)
         log_variance = log_second + math.log1p(
@@ -282,7 +284,9 @@ def main():
         family_errors.append(error)
         print(
             f"flat power {alpha:.0f} at speed {FAMILY_SPEED}: "
-            f"stretch exponent {exponent:.6f}; "
+            f"Gevrey order {gevrey_order:.6f}; "
+            f"stretch exponent {exponent:.6f} "
+            f"(Gevrey prediction {gevrey_exponent:.6f}); "
             f"variance log rate {observed:.6f}; target {target:.6f}"
         )
 
