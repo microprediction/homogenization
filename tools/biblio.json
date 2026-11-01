@@ -3295,5 +3295,16 @@
   "doi": "",
   "url": "https://www.numdam.org/item/PS_2001__5__183_0/",
   "annotation": "Gives spectral-gap concentration bounds for empirical means of ergodic Markov processes, including the exponential tail control used for the smooth flat-block estimate."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Gevrey1918",
+  "authors": "Gevrey, M.",
+  "year": 1918,
+  "title": "Sur la nature analytique des solutions des équations aux dérivées partielles. Premier mémoire",
+  "venue": "Annales scientifiques de l'École Normale Supérieure, Série 3, 35, 129-190",
+  "doi": "10.24033/asens.706",
+  "url": "https://doi.org/10.24033/asens.706",
+  "annotation": "Introduces the derivative-growth regularity classes between analytic and smooth functions used here to quantify flat covariance decay."
  }
 ]
