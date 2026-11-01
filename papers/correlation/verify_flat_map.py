@@ -2,19 +2,21 @@
 
 The stationary symmetric telegraph process has velocities +/-1 and switches
 at rate m on [0, 1].  Its integrated position has the classical atom-plus-
-Bessel law.  We apply the C-infinity flat map exp(-1/x^2), with value zero at
-the origin, and verify its stretched-exponential covariance scale.  Ends with
-PASS or FAIL.
+Bessel law.  We apply C-infinity flat maps with value zero at the origin and
+verify both stretched-exponential and slower log-flat covariance scales.  Ends
+with PASS or FAIL.
 """
 import math
 
 from scipy.integrate import quad
-from scipy.special import ive
+from scipy.optimize import brentq
+from scipy.special import i0e, i1e, ive
 
 
 SPEEDS = [16, 64, 256, 1024, 4096]
 FAMILY_SPEED = 262144
 FLAT_POWERS = [1.0, 2.0, 4.0]
+LOG_FLAT_SPEEDS = [1e8, 1e32, 1e128, 1e256]
 
 
 def continuous_integral(speed, weight, absolute_tolerance=1e-13):
@@ -90,6 +92,51 @@ def log_flat_moment(speed, alpha, power):
     return math.log(2.0 * value + scaled_atoms) - shift
 
 
+def slow_flat_saddle(speed, gamma, power):
+    """Quadratic-rate saddle for exp(-power log(e/|X_m|)**gamma)."""
+    right_side = math.log(speed) + 2.0 - math.log(power * gamma)
+
+    def equation(radius_log):
+        return 2.0 * radius_log + (gamma - 1.0) * math.log(radius_log) - right_side
+
+    radius_log = brentq(equation, 0.5, right_side)
+    cost = power * (
+        radius_log ** gamma
+        + 0.5 * gamma * radius_log ** (gamma - 1.0)
+    )
+    return radius_log, cost
+
+
+def log_slow_flat_moment(speed, gamma, power):
+    """Exact-law log moment for the smooth log-flat family."""
+    radius_log, shift = slow_flat_saddle(speed, gamma, power)
+    optimizer = math.sqrt(power * gamma) * radius_log ** ((gamma - 1.0) / 2.0)
+    upper = max(30.0, 5.0 * optimizer + 20.0)
+
+    def integrand(rescaled_position):
+        if rescaled_position == 0.0:
+            return 0.0
+        position = rescaled_position / math.sqrt(speed)
+        radius = math.sqrt(1.0 - position ** 2)
+        argument = speed * radius
+        log_radius = math.log(math.e / position)
+        exponent = (
+            -power * log_radius ** gamma + shift
+            - rescaled_position ** 2 / (1.0 + radius)
+        )
+        return (
+            math.exp(exponent) * 0.5 * math.sqrt(speed)
+            * (i0e(argument) + i1e(argument) / radius)
+        )
+
+    value, _ = quad(
+        integrand, 0.0, upper, epsabs=1e-12, epsrel=2e-11,
+        limit=400, points=[optimizer],
+    )
+    scaled_atoms = math.exp(-speed - power + shift)
+    return math.log(2.0 * value + scaled_atoms) - shift
+
+
 def polynomial_moment(speed, power):
     """Return an ordinary even moment, including the two endpoint atoms."""
     continuous = continuous_integral(
@@ -159,6 +206,37 @@ def main():
             f"variance log rate {observed:.6f}; target {target:.6f}"
         )
 
+    slow_rates = []
+    separation_rates = []
+    saddle_errors = []
+    gamma = 2.0
+    for speed in LOG_FLAT_SPEEDS:
+        log_speed = math.log(speed)
+        log_mean = log_slow_flat_moment(speed, gamma, 1.0)
+        log_second = log_slow_flat_moment(speed, gamma, 2.0)
+        log_variance = log_second + math.log1p(
+            -math.exp(2.0 * log_mean - log_second)
+        )
+        target = 2.0 ** (1.0 - gamma)
+        observed = -log_variance / log_speed ** gamma
+        separation = (-2.0 * log_mean + log_second) / log_speed
+        separation_target = gamma * math.log(2.0) / 2.0 ** (gamma - 1.0)
+        _, mean_cost = slow_flat_saddle(speed, gamma, 1.0)
+        _, second_cost = slow_flat_saddle(speed, gamma, 2.0)
+        saddle_error = max(
+            abs(-log_mean - mean_cost), abs(-log_second - second_cost)
+        )
+        slow_rates.append(observed)
+        separation_rates.append(separation)
+        saddle_errors.append(saddle_error)
+        print(
+            f"log-flat power {gamma:.0f} at speed {speed:.0e}: "
+            f"variance log rate {observed:.6f}; target {target:.6f}; "
+            f"separation {separation:.6f}; target {separation_target:.6f}; "
+            f"saddle error {saddle_error:.6f}"
+        )
+    print(f"maximum log-flat saddle error {max(saddle_errors):.6f}")
+
     ok &= maximum_mass_error < 2e-12
     ok &= maximum_second_error < 2e-12
     ok &= all(left > right for left, right in zip(mean_rates, mean_rates[1:]))
@@ -169,6 +247,9 @@ def main():
     ok &= abs(variance_rates[-1] - 2.0) < 0.01
     ok &= variances[-1] < 2e-56
     ok &= max(family_errors) < 0.01
+    ok &= abs(slow_rates[-1] - 0.5) < 0.01
+    ok &= abs(separation_rates[-1] - math.log(2.0)) < 0.01
+    ok &= max(saddle_errors) < 0.5
 
     print("PASS" if ok else "FAIL")
 
