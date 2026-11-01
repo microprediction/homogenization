@@ -1,0 +1,78 @@
+<!-- title: Radial flat covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-prior.html">&larr; arbitrary-prior correlation note</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_flat_map.py">certificate</a></span></p>
+    <h1>Radial flat covariance</h1>
+    <p class="subtitle">The largest Green&ndash;Kubo eigenvalue sets the logarithmic constant.</p>
+
+    <p class="lead">For a vector of finite-chain observables, a radial logarithmic flat map selects the easiest
+    moderate-deviation direction. Its leading constant depends on the largest eigenvalue of the fixed-feature
+    Green&ndash;Kubo matrix, not merely on that matrix&apos;s rank.</p>
+
+    <h2>The theorem</h2>
+    <p>Let $Q$ be an irreducible finite-state generator with stationary law $\pi$, and let
+    $g:\mathsf S\to\mathbb R^d$ be centered and nonzero. Write $C(t)=\mathbb E_\pi[g(X_0)g(X_t)^\top]$ and define the
+    symmetric Green&ndash;Kubo matrix</p>
+    $$\Gamma=\int_0^\infty\{C(t)+C(t)^\top\}\,dt.$$
+    <p>This matrix is positive semidefinite. Let $\lambda_{\max}(\Gamma)&gt;0$ denote its largest eigenvalue, and for
+    the speed-$m$ chain set</p>
+    $$W_{m,T}=\frac1T\int_0^Tg(X_{mt})\,dt.$$
+    <p>For $\sigma&gt;1$, $b&gt;0$ and $w\ne0$, put</p>
+    $$\Phi_{\sigma,b}(w)=\exp\{-\exp(b\|w\|^{-1/(\sigma-1)})\},
+      \qquad \Phi_{\sigma,b}(0)=0.$$
+    <p>At every fixed $T&gt;0$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Phi_{\sigma,b}(W_{m,T}))
+      \sim\frac{b^{2(\sigma-1)}}{2\lambda_{\max}(\Gamma)}
+      \frac{mT}{[\log(mT)]^{2(\sigma-1)}}.$$
+    </div>
+
+    <h2>Why the top eigenvalue appears</h2>
+    <p>Let $\Lambda(\theta)$ be the principal eigenvalue of
+    $Q+\operatorname{diag}(\theta^\top g)$. Analytic spectral perturbation gives</p>
+    $$\Lambda(\theta)=\tfrac12\theta^\top\Gamma\theta+O(\|\theta\|^3).$$
+    <p>Put $L=mT$, $\beta=\sigma-1$ and
+    $Y_L=(\log L)^\beta W_{m,T}/b^\beta$. On the active feature space
+    $H=\operatorname{range}\Gamma$, the spectral moderate-deviation principle has speed
+    $L/(\log L)^{2\beta}$ and rate</p>
+    $$J(y)=\frac{b^{2\beta}}2y^\top\Gamma^+y,\qquad y\in H,$$
+    <p>with infinite rate off $H$. The flat penalty becomes
+    $\exp\{-L^{\|Y_L\|^{-1/\beta}}\}$, so shrinking inner and outer bounds meet on the sphere $\|y\|=1$.</p>
+    <p>The Rayleigh quotient gives</p>
+    $$\min_{y\in H:\,\|y\|=1}J(y)
+      =\frac{b^{2\beta}}{2\lambda_{\max}(\Gamma)}.$$
+    <p>The same leading cost holds for every fixed positive moment power. Therefore the squared first moment has twice
+    the second-moment cost and is negligible in the variance subtraction; finite-state Perron prefactors make the
+    argument uniform over the initial-prior simplex.</p>
+
+    <h2>Coordinate and rank scope</h2>
+    <p>The Euclidean norm is part of the fixed map, so a non-orthogonal change of observable coordinates changes both
+    the map and $\lambda_{\max}$. Orthogonal changes preserve the theorem exactly.</p>
+    <p>Only the largest eigenvalue controls this radial tail. The rank of $\Gamma$ records the number of active linear
+    feature directions, while post-averaging nonlinear covariance can have a different rank.</p>
+    <p>No maturity-dependent loadings are integrated here. The result therefore makes no claim about rank after
+    pooling different maturities.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>For a nonreversible three-state chain with two centered features, the Poisson equation gives Green&ndash;Kubo
+    eigenvalues $0.171265094$ and $0.772547415$. A finite-difference Hessian of the tilted principal eigenvalue differs
+    from the Poisson matrix by $3.022\times10^{-9}$.</p>
+    <p>With $\sigma=2$ and $b=1.5$, the predicted constant is $1.456221$. The exact two-dimensional Legendre rate is
+    contracted over each Euclidean circle and then used in the full radial saddle.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$\log(mT)$</th><th>normalized variance rate</th><th>normalized mean separation</th></tr></thead>
+      <tbody>
+        <tr><td>128</td><td>1.280295</td><td>1.249993</td></tr>
+        <tr><td>512</td><td>1.079788</td><td>1.073762</td></tr>
+        <tr><td>2,048</td><td>1.023367</td><td>1.021968</td></tr>
+        <tr><td>8,192</td><td>1.006797</td><td>1.006455</td></tr>
+      </tbody>
+    </table></div>
+    <p>Both columns converge monotonically to one. At radius $0.005$, the exact contracted quadratic rate normalizes
+    to $1.000350930$, independently checking the eigenvalue selection before the flat-map saddle.</p>
+
+    <h2>Literature boundary</h2>
+    <p><a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> supplies the spectral large-deviation principle
+    for Markov additive functionals. The radial boundary contraction, top-eigenvalue constant and variance-separation
+    step are derived above.</p>
+  </main>
