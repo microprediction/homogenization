@@ -3328,5 +3328,16 @@
   "doi": "",
   "url": "https://books.google.com/books?id=gbwynQAACAAJ",
   "annotation": "Completes the quasianalyticity characterization used to separate constant flat directions from nontrivial flat classes."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Thilliez2003",
+  "authors": "Thilliez, V.",
+  "year": 2003,
+  "title": "Division by flat ultradifferentiable functions and sectorial extensions",
+  "venue": "Results in Mathematics 44(1-2), 169-188",
+  "doi": "10.1007/bf03322923",
+  "url": "https://doi.org/10.1007/bf03322923",
+  "annotation": "Constructs flat functions with sharp associated-function rates under strong regularity; the logarithmic class treated here falls outside the strong nonquasianalytic hypothesis."
  }
 ]

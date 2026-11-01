@@ -302,6 +302,42 @@
     <a href="./bibliography.html#Denjoy1921">Denjoy&apos;s original note</a>. The associated-function asymptotic and
     covariance specialization above are derived here from the quotient sequence.</p>
 
+    <h3>An explicit logarithmic-class flat map</h3>
+    <p>The preceding upper envelope need not be attained by a particular map. For $\sigma&gt;1$, put
+    $a=1/(\sigma-1)$ and define</p>
+    $$\phi_\sigma(w)=
+      \begin{cases}\exp\{-\exp(|w|^{-a})\},&amp;w\ne0,\\0,&amp;w=0.\end{cases}$$
+    <p>This is a nonconstant flat member of the logarithmic class above: there are $A,B&lt;\infty$ such that</p>
+    $$\sup_{|w|\le1}|\phi_\sigma^{(n)}(w)|\le AB^nM_n,
+      \qquad \frac{M_n}{M_{n-1}}=n[\log(e+n)]^\sigma.$$
+    <p>For small positive $w$, write $u=w^{-a}$. On a complex disk of radius $c\,w/u$, the real part of
+    $\exp(z^{-a})$ is at least $c_0e^u$, so Cauchy&apos;s estimate bounds the $n$th derivative by</p>
+    $$n!C^n u^{\sigma n}e^{-c_0e^u}
+      \le n!C_1^n[\log(e+n)]^{\sigma n}\le C_2^nM_n.$$
+    <p>The last comparison follows because
+    $n\log\log(e+n)-\sum_{j\le n}\log\log(e+j)=O(n/\log(e+n))$; compact sets away from zero are analytic.
+    Reflection handles negative $w$, while the double exponential makes the extension at zero flat.</p>
+    <p>Let $W_m$ be the unit-time average of the stationary symmetric telegraph chain switching at rate $m$.
+    Its exact atom-plus-Bessel law has local rate $m\{1-\sqrt{1-w^2}\}=mw^2/2+O(mw^4)$, and for each fixed
+    $q&gt;0$ the moment saddle is</p>
+    $$q e^u+\frac m2u^{-2(\sigma-1)},\qquad
+      q e^u=m(\sigma-1)u^{-(2\sigma-1)}.$$
+    <p>Thus $u/\log m\to1$ and the first term is smaller than the second by the factor
+    $2(\sigma-1)/u$. Direct Laplace bounds from the exact density give</p>
+    $$-\log\mathbb E[\phi_\sigma(W_m)^q]
+      \sim\frac{m}{2(\log m)^{2(\sigma-1)}}.$$
+    <p>The squared mean has twice this leading log cost and is negligible beside the second moment. Consequently,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\phi_\sigma(W_m))
+      \sim\frac{m}{2(\log m)^{2(\sigma-1)}}.$$
+    </div>
+    <p>This explicit rate is faster than the general $m/[\log m]^{2\sigma}$ envelope, so it does not establish
+    sharpness of that envelope. It instead realizes nonconstant flat covariance with a near-exponential decay
+    throughout the nonquasianalytic logarithmic range.</p>
+    <p><a href="./bibliography.html#Thilliez2003">Thilliez (2003)</a> constructs sharp associated-rate flat functions
+    under strong regularity. The normalized sequence here fails the strong nonquasianalytic tail condition by one
+    logarithm, so that theorem does not supply this example; the direct Cauchy estimate above does.</p>
+
     <h3>Gevrey regularity gives a sharp flat rate</h3>
     <p>The general envelope becomes explicit when $\phi$ is Gevrey of order $s&gt;1$. Suppose on a neighborhood
     of the attainable polytope that, for constants $A,B$,</p>
@@ -569,6 +605,9 @@
     coordinate, the flat Schur-complement log rate is $2.007813$, while the constant coordinate has exactly zero variance.</p>
     <p>For the logarithmic quotient class, target optimizers $4096$, $65536$ and $1048576$ give associated costs
     normalized by $\sigma\operatorname{li}(n)$ of $0.985722$, $0.998592$ and $0.999878$.</p>
+    <p>For the explicit logarithmic-class map with $\sigma=2$, at log speed $8192$ the normalized second-moment
+    saddle rate is $1.007048$ and the normalized separation from the squared mean is $1.006706$, both approaching
+    the proved limit $1$.</p>
     <p>At speed $262144$, Gevrey orders $s=2,1.5,1.25$ have normalized variance log rates $2.378939$, $2.000977$
     and $1.508063$, against the exact limits $2.381102$, $2$ and $1.5$. Their sharp powers $1/(2s-1)$ are
     $0.333333$, $0.500000$ and $0.666667$.</p>
@@ -625,4 +664,7 @@
     <p><a href="./bibliography.html#Gevrey1918">Gevrey&apos;s original paper</a> introduced the derivative-growth classes
     between analytic and smooth functions. The covariance exponent and its sharp telegraph realization are derived
     here from Taylor optimization and the exact occupation law.</p>
+    <p><a href="./bibliography.html#Thilliez2003">Thilliez&apos;s flat-function construction</a> gives sharp associated
+    rates for strongly regular ultradifferentiable classes. The logarithmic sequence treated here lies outside its
+    strong nonquasianalytic hypothesis, and the displayed double-exponential realization is proved directly.</p>
   </main>
