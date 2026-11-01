@@ -1,0 +1,81 @@
+<!-- title: Divergent-slope covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-slow-profile-flat.html">&larr; slow-profile covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_divergent_slope_flat.py">certificate</a></span></p>
+    <h1>Divergent-slope covariance</h1>
+    <p class="subtitle">A logarithmically stable slope is enough for the Green&ndash;Kubo correction.</p>
+
+    <p class="lead">Regular variation of the full profile is unnecessary in the steep slow-profile phase. The same
+    second-order covariance law holds whenever the derivative diverges but changes negligibly across its logarithmic
+    saddle window, including the previously missing index-one profiles.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the fixed-maturity finite-chain and tangent-gauge setup of the
+    <a href="./correlation-slow-profile-flat.html">slow-profile theorem</a>. Let $h$ be eventually increasing and
+    $C^2$, put $d=h'$, and assume</p>
+    $$d(x)\to\infty,\qquad \log d(x)=o(x),$$
+    <p>together with the logarithmic saddle-window condition: for every fixed $C&gt;0$,</p>
+    <div class="equation-card">
+    $$[\log d(x)]^2\sup_{|u-x|\le C\log d(x)}
+      \left|\frac{h''(u)}{h'(u)}\right|\longrightarrow0.$$
+    </div>
+    <p>Put $n=mT$, $L_n=\tfrac12\log n$ and $d_n=d(L_n)$. For every fixed $p&gt;0$, uniformly over initial priors,</p>
+    $$-\log\mathbb E\Psi_{h,r}(W_{m,T})^p
+      =p h(L_n)-\frac p2d_n\{\log[p\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n).$$
+    <p>Consequently,</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}(\Psi_{h,r}(W_{m,T}))
+      =2h(L_n)-d_n\{\log[2\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n),$$
+    </div>
+    $$-\log\frac{(\mathbb E\Psi_{h,r})^2}{\mathbb E\Psi_{h,r}^2}
+      =d_n\log2+o(d_n).$$
+
+    <h2>Why the condition matches the saddle</h2>
+    <p>At the moment saddle, write $W_{m,T}=\sqrt{d_n/n}\,y$. The finite-chain moderate-deviation principle has
+    speed $d_n$, while the tangent gauge gives</p>
+    $$\log\frac1{r(W_{m,T})}
+      =L_n-\frac12\log d_n-\log\rho(y)+o(1).$$
+    <p>The shift from $L_n$ is therefore $O(\log d_n)$. The saddle-window condition makes the Taylor remainder
+    $o(d_n)$ uniformly on the compact sets used in the contraction, so</p>
+    $$h(\log(1/r(W_{m,T})))
+      =h(L_n)-d_n\{\tfrac12\log d_n+\log\rho(y)\}+o(d_n).$$
+    <p>Contracting against $y^\top\Gamma^+y/2$ on $\operatorname{Ran}\Gamma$ gives the stated moment formula.
+    The separation $d_n\log2\to\infty$ then makes the squared mean negligible relative to the second moment.</p>
+
+    <h2>The missing index-one family</h2>
+    <p>The assumptions include the regular-variation profiles of the preceding theorem, but also
+    $h(x)=x\ell(x)$ when $\ell$ is a sufficiently smooth, slowly varying function with $\ell(x)\to\infty$. Thus
+    arbitrary finite chains and gauges inherit the scalar telegraph leading laws from the prior note.</p>
+    <p>For the concrete profile $h(x)=x\log(1+x)$,</p>
+    $$d(x)=\log(1+x)+\frac{x}{1+x},$$
+    <p>and the variance expansion becomes</p>
+    $$-\log\operatorname{Var}=2L_n\log(1+L_n)
+      -d_n\{\log[2\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n).$$
+    <p>This gives the Green&ndash;Kubo correction that a leading equivalence
+    $-\log\operatorname{Var}\sim2L_n\log(1+L_n)$ cannot identify.</p>
+
+    <h2>Exact telegraph certificate</h2>
+    <p>The certificate uses the symmetric telegraph chain, $\Lambda_\rho(\Gamma)=1$, and integrates its exact
+    atom-plus-Bessel occupation law. It separates the profile expansion from the finite-rate law and the subtraction
+    of the squared mean.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$L_n$</th><th>profile / expansion</th><th>exact second / profile</th><th>variance / expansion</th><th>separation / leading</th></tr></thead>
+      <tbody>
+        <tr><td>4</td><td>1.013016370</td><td>.974534355</td><td>1.015183871</td><td>.773161977</td></tr>
+        <tr><td>8</td><td>1.003187148</td><td>.990182622</td><td>.999016154</td><td>.830864767</td></tr>
+        <tr><td>16</td><td>1.000742317</td><td>.996190081</td><td>.998186299</td><td>.867514850</td></tr>
+        <tr><td>32</td><td>1.000172673</td><td>.998465044</td><td>.998937225</td><td>.891042727</td></tr>
+        <tr><td>64</td><td>1.000040517</td><td>.999359734</td><td>.999475715</td><td>.906981500</td></tr>
+      </tbody>
+    </table></div>
+    <p>The slowest convergence is the exact mean separation, as expected because $d_n$ grows only logarithmically.
+    The variance expansion is already within $.000525$ of one at the final scale.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> and
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a> supply the slow-variation and Laplace context.
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> and
+    <a href="./bibliography.html#NeyNummelin1987I">Ney and Nummelin (1987)</a> supply the spectral Markov framework.</p>
+    <p>This remains a fixed-feature, fixed-positive-maturity scalar variance result. Singular $\Gamma$ is restricted
+    to its range, and no rank after integrating distinct maturity loadings is claimed.</p>
+  </main>
