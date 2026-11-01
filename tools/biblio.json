@@ -3372,5 +3372,16 @@
   "doi": "10.1137/1122003",
   "url": "https://doi.org/10.1137/1122003",
   "annotation": "Provides the spectral large-deviation principle whose local quadratic specialization links the flat-map rate constant to Green-Kubo variance."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "NeyNummelin1987I",
+  "authors": "Ney, P. and Nummelin, E.",
+  "year": 1987,
+  "title": "Markov Additive Processes I: Eigenvalue Properties and Limit Theorems",
+  "venue": "The Annals of Probability 15(2), 561-592",
+  "doi": "10.1214/aop/1176992159",
+  "url": "https://doi.org/10.1214/aop/1176992159",
+  "annotation": "Develops limit theory for vector Markov-additive functionals through eigenvalues and eigenfunctions of generating kernels, the spectral central-limit framework used at the finite-slope boundary."
  }
 ]
