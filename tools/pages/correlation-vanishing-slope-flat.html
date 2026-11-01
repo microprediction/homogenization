@@ -1,0 +1,75 @@
+<!-- title: Vanishing-slope covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-critical-slope-flat.html">&larr; critical-slope covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_vanishing_slope_flat.py">certificate</a></span></p>
+    <h1>Vanishing-slope covariance</h1>
+    <p class="subtitle">Below the power boundary, the Gaussian log-radius supplies the first random term.</p>
+
+    <p class="lead">When the logarithmic profile has slope tending to zero, its normalized value converges to one.
+    The covariance is smaller by the square of that slope, and the exact constant is the variance of a Gaussian
+    log-gauge rather than a moderate-deviation contraction.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the fixed-maturity finite-chain and tangent-gauge setup of the
+    <a href="./correlation-critical-slope-flat.html">critical-slope theorem</a>. Put $n=mT$,
+    $L_n=\tfrac12\log n$, $Z_n=\sqrt nW_{m,T}$, and let $G\sim N(0,\Gamma)$ on
+    $\operatorname{Ran}\Gamma$, where $\Gamma\ne0$.</p>
+    <p>Assume the central limit theorem is uniform over initial priors. Also assume a uniform logarithmic
+    small-ball bound: for some $a,C,\kappa&gt;0$ and $0&lt;u&lt;1$,</p>
+    $$\sup_\nu\Pr_\nu\{0&lt;\rho(Z_n)\le u\}\le Cu^a+Ce^{-\kappa n},\qquad
+      \sup_\nu\Pr_\nu\{Z_n=0\}=o(d_n^2).$$
+    <p>The first condition is the local-limit input needed at the logarithmic singularity; it is not implied by a
+    weak central limit theorem alone. Standard spectral concentration supplies the corresponding upper-tail
+    uniform integrability for bounded finite-state features.</p>
+    <p>Let $h(x)\to\infty$ be eventually $C^2$, with</p>
+    $$d(x)=h'(x)&gt;0,\qquad d(x)\to0,\qquad \frac{h''(x)}{h'(x)}\to0,$$
+    <p>and write $d_n=d(L_n)$. For
+    $\Psi_{h,r}(w)=\exp\{-h(\log(1/r(w)))\}$ near zero, with $\Psi_{h,r}(0)=0$,</p>
+    <div class="equation-card">
+    $$\frac{e^{h(L_n)}\Psi_{h,r}(W_{m,T})-1}{d_n}
+      \longrightarrow\log\rho(G)\qquad\text{in }L^2,$$
+    </div>
+    <p>uniformly over initial priors. Therefore, with
+    $V_{\log,\rho,\Gamma}=\operatorname{Var}\{\log\rho(G)\}&gt;0$,</p>
+    $$e^{2h(L_n)}d_n^{-2}\operatorname{Var}(\Psi_{h,r}(W_{m,T}))
+      \longrightarrow V_{\log,\rho,\Gamma},$$
+    $$-\log\operatorname{Var}=2h(L_n)-2\log d_n
+      -\log V_{\log,\rho,\Gamma}+o(1).$$
+
+    <h2>Proof mechanism</h2>
+    <p>For fixed $y$, the derivative condition gives
+    $h'(L_n-s)/h'(L_n)\to1$ uniformly on bounded $s$. The tangent relation $r/\rho\to1$ then yields</p>
+    $$\frac{\exp\{h(L_n)-h(L_n-\log\rho(y)+o(1))\}-1}{d_n}
+      \longrightarrow\log\rho(y).$$
+    <p>The uniform central limit theorem gives convergence in distribution. The small-ball estimate makes
+    $|\log\rho(Z_n)|^2$ uniformly integrable near zero, while spectral concentration handles large radii.</p>
+    <p>The atom condition removes the value $-1/d_n$ created by $Z_n=0$. Truncation followed by the displayed
+    local expansion proves $L^2$ convergence, and taking centered second moments proves the variance formula.</p>
+
+    <h2>Subpower specialization</h2>
+    <p>For $h(t)=t^\gamma$ with $0&lt;\gamma&lt;1$, the exact expansion is</p>
+    <div class="equation-card">
+    $$-\log\operatorname{Var}=2L_n^\gamma+2(1-\gamma)\log L_n
+      -2\log\gamma-\log V_{\log,\rho,\Gamma}+o(1).$$
+    </div>
+    <p>These maps are continuous at zero but decay more slowly than every positive power: this is a sub-H&ouml;lder boundary,
+    not another smooth-flat phase. Multiplying $\rho$ or $\Gamma^{1/2}$ by a scalar only adds a constant to
+    $\log\rho(G)$, so $V_{\log,\rho,\Gamma}$ sees shape and angular geometry but not overall scale.</p>
+
+    <h2>Numerical certificate</h2>
+    <p>For $h(t)=\sqrt t$, the symmetric telegraph chain and $\rho(x)=|x|$,</p>
+    $$\mathbb E\log|G|=-0.635181422731,\qquad
+      V_{\log,|\cdot|,1}=\frac{\pi^2}{8}=1.233700550136.$$
+    <p>At $L_n=32,512,8192$, the normalized Gaussian-profile variance is respectively
+    $.761918509$, $.935328501$, and $.983619760$. The exact telegraph variance divided by the finite-profile
+    Gaussian prediction is $.991478755$ at speed $64$ and $.999994874$ at speed $65{,}536$.</p>
+    <p>The two comparisons separate profile linearization from the finite-chain central limit approximation. The
+    certificate evaluates the exact atom-plus-Bessel law rather than simulating paths.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#NeyNummelin1987I">Ney and Nummelin (1987, Part I)</a> provide spectral limit
+    theory for Markov additive processes. <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov,
+    Meredith and Nir (2010)</a> give the telegraph occupation density used by the certificate.</p>
+    <p>This is a fixed-feature, fixed-positive-maturity scalar variance theorem. Singular $\Gamma$ is allowed through
+    its Gaussian support, but the result makes no claim about rank after integrating distinct maturity loadings.</p>
+  </main>
