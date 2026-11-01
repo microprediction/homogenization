@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slow-profile covariance · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-regular-gevrey-flat.html">&larr; regular Gevrey covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_slow_profile_flat.py">certificate</a></span></p>
+    <h1>Slow-profile covariance</h1>
+    <p class="subtitle">Green&ndash;Kubo geometry moves from leading order to the logarithmic correction.</p>
+
+    <p class="lead">At regular-variation index zero, the leading covariance rate no longer sees the chain or gauge.
+    Their geometry returns one order later, where it also proves that the squared mean is negligible.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain and tangent-gauge setup of the preceding notes. Let $h$ be eventually positive,
+    increasing and twice continuously differentiable, regularly varying with index $\gamma&gt;1$, and suppose</p>
+    $$\frac{x h'(x)}{h(x)}\to\gamma,\qquad
+      \frac{x h''(x)}{h'(x)}\to\gamma-1.$$
+    <p>Near zero define</p>
+    $$\Psi_{h,r}(w)=\exp\{-h(\log(1/r(w)))\},\qquad \Psi_{h,r}(0)=0,$$
+    <p>with any fixed continuous bounded extension away from the local region. Put
+    $n=mT$, $L_n=\tfrac12\log n$ and $d_n=h'(L_n)$. For every fixed $p&gt;0$, uniformly over arbitrary initial priors,</p>
+    <div class="equation-card">
+    $$-\log\mathbb E\Psi_{h,r}(W_{m,T})^p
+      =p h(L_n)-\frac p2d_n
+       \{\log[p\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n).$$
+    </div>
+    <p>Consequently,</p>
+    $$-\log\operatorname{Var}(\Psi_{h,r}(W_{m,T}))
+      =2h(L_n)-d_n\{\log[2\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n),$$
+    $$-\log\frac{(\mathbb E\Psi_{h,r})^2}{\mathbb E\Psi_{h,r}^2}
+      =d_n\log2+o(d_n).$$
+    <p>The leading variance law is therefore $-\log\operatorname{Var}\sim2h(\tfrac12\log n)$, independent of
+    $\Gamma$ and $\rho$. This remains a fixed-feature, fixed-maturity scalar statement.</p>
+
+    <h2>Why geometry moves down one order</h2>
+    <p>Scale the occupation average as $W_{m,T}=d_n^{1/2}y/n^{1/2}$. Its spectral moderate-deviation speed is
+    $d_n$, while smooth regular variation gives, uniformly on compact sets away from zero,</p>
+    $$h(\log(1/r(W_{m,T})))
+      =h(L_n)-d_n\{\tfrac12\log d_n+\log\rho(y)\}+o(d_n).$$
+    <p>After removing the common $p h(L_n)$ term, the remaining contraction is</p>
+    $$\inf_{y\in\operatorname{Ran}\Gamma}\left\{\frac12y^\top\Gamma^+y-p\log\rho(y)\right\}
+      =\frac p2\{1-\log[p\Lambda_\rho(\Gamma)]\}.$$
+    <p>The range restriction is essential when the fixed-feature Green&ndash;Kubo matrix is singular. Substitution
+    gives the moment expansion; the difference between twice the first-moment cost and the
+    second-moment cost is $d_n\log2+o(d_n)\to\infty$, which resolves the leading-order tie and yields the variance.</p>
+
+    <h2>Quadratic log-profile certificate</h2>
+    <p>The certificate takes $h(t)=t^2$ and the nonreversible three-state asymmetric-gauge benchmark, with
+    $\Lambda_\rho(\Gamma)=4.604379006$. It separates finite-$L_n$ profile convergence from the exact Markov rate:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$mT$</th><th>profile / expansion</th><th>exact / profile</th><th>separation / leading</th></tr></thead>
+      <tbody>
+        <tr><td>$10^4$</td><td>1.814489484</td><td>1.000570852</td><td>.609343720</td></tr>
+        <tr><td>$10^6$</td><td>1.256596699</td><td>1.000047001</td><td>.700139766</td></tr>
+        <tr><td>$10^8$</td><td>1.132957995</td><td>1.000004105</td><td>.755361559</td></tr>
+        <tr><td>$10^{10}$</td><td>1.083159429</td><td>1.000000310</td><td>.792511608</td></tr>
+      </tbody>
+    </table></div>
+    <p>At the final speed, the exact mean-separation ratio relative to its finite-profile contraction is $.999997648$.
+    The slow approach to the displayed expansion is a log-profile effect, not an error in the quadratic chain rate.</p>
+
+    <h2>Power-log specialization and literature</h2>
+    <p>For $h(t)=t^\gamma$, the leading law is
+    $2^{1-\gamma}[\log(mT)]^\gamma$. This recovers the scalar telegraph constant while adding arbitrary finite chains,
+    vector features, asymmetric gauges and the geometry-sensitive second-order term.</p>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> supplies regular variation,
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a> the classical slow-profile Laplace setting,
+    <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a> the Laplace principle, and
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> the spectral Markov large-deviation framework.</p>
+    <p>No fixed-parameter covariance-rank or maturity-integrated identification claim is made.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

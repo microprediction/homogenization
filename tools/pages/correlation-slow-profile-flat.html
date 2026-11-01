@@ -1,0 +1,69 @@
+<!-- title: Slow-profile covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-regular-gevrey-flat.html">&larr; regular Gevrey covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_slow_profile_flat.py">certificate</a></span></p>
+    <h1>Slow-profile covariance</h1>
+    <p class="subtitle">Green&ndash;Kubo geometry moves from leading order to the logarithmic correction.</p>
+
+    <p class="lead">At regular-variation index zero, the leading covariance rate no longer sees the chain or gauge.
+    Their geometry returns one order later, where it also proves that the squared mean is negligible.</p>
+
+    <h2>The theorem</h2>
+    <p>Use the finite-chain and tangent-gauge setup of the preceding notes. Let $h$ be eventually positive,
+    increasing and twice continuously differentiable, regularly varying with index $\gamma&gt;1$, and suppose</p>
+    $$\frac{x h'(x)}{h(x)}\to\gamma,\qquad
+      \frac{x h''(x)}{h'(x)}\to\gamma-1.$$
+    <p>Near zero define</p>
+    $$\Psi_{h,r}(w)=\exp\{-h(\log(1/r(w)))\},\qquad \Psi_{h,r}(0)=0,$$
+    <p>with any fixed continuous bounded extension away from the local region. Put
+    $n=mT$, $L_n=\tfrac12\log n$ and $d_n=h'(L_n)$. For every fixed $p&gt;0$, uniformly over arbitrary initial priors,</p>
+    <div class="equation-card">
+    $$-\log\mathbb E\Psi_{h,r}(W_{m,T})^p
+      =p h(L_n)-\frac p2d_n
+       \{\log[p\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n).$$
+    </div>
+    <p>Consequently,</p>
+    $$-\log\operatorname{Var}(\Psi_{h,r}(W_{m,T}))
+      =2h(L_n)-d_n\{\log[2\Lambda_\rho(\Gamma)d_n]-1\}+o(d_n),$$
+    $$-\log\frac{(\mathbb E\Psi_{h,r})^2}{\mathbb E\Psi_{h,r}^2}
+      =d_n\log2+o(d_n).$$
+    <p>The leading variance law is therefore $-\log\operatorname{Var}\sim2h(\tfrac12\log n)$, independent of
+    $\Gamma$ and $\rho$. This remains a fixed-feature, fixed-maturity scalar statement.</p>
+
+    <h2>Why geometry moves down one order</h2>
+    <p>Scale the occupation average as $W_{m,T}=d_n^{1/2}y/n^{1/2}$. Its spectral moderate-deviation speed is
+    $d_n$, while smooth regular variation gives, uniformly on compact sets away from zero,</p>
+    $$h(\log(1/r(W_{m,T})))
+      =h(L_n)-d_n\{\tfrac12\log d_n+\log\rho(y)\}+o(d_n).$$
+    <p>After removing the common $p h(L_n)$ term, the remaining contraction is</p>
+    $$\inf_{y\in\operatorname{Ran}\Gamma}\left\{\frac12y^\top\Gamma^+y-p\log\rho(y)\right\}
+      =\frac p2\{1-\log[p\Lambda_\rho(\Gamma)]\}.$$
+    <p>The range restriction is essential when the fixed-feature Green&ndash;Kubo matrix is singular. Substitution
+    gives the moment expansion; the difference between twice the first-moment cost and the
+    second-moment cost is $d_n\log2+o(d_n)\to\infty$, which resolves the leading-order tie and yields the variance.</p>
+
+    <h2>Quadratic log-profile certificate</h2>
+    <p>The certificate takes $h(t)=t^2$ and the nonreversible three-state asymmetric-gauge benchmark, with
+    $\Lambda_\rho(\Gamma)=4.604379006$. It separates finite-$L_n$ profile convergence from the exact Markov rate:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>$mT$</th><th>profile / expansion</th><th>exact / profile</th><th>separation / leading</th></tr></thead>
+      <tbody>
+        <tr><td>$10^4$</td><td>1.814489484</td><td>1.000570852</td><td>.609343720</td></tr>
+        <tr><td>$10^6$</td><td>1.256596699</td><td>1.000047001</td><td>.700139766</td></tr>
+        <tr><td>$10^8$</td><td>1.132957995</td><td>1.000004105</td><td>.755361559</td></tr>
+        <tr><td>$10^{10}$</td><td>1.083159429</td><td>1.000000310</td><td>.792511608</td></tr>
+      </tbody>
+    </table></div>
+    <p>At the final speed, the exact mean-separation ratio relative to its finite-profile contraction is $.999997648$.
+    The slow approach to the displayed expansion is a log-profile effect, not an error in the quadratic chain rate.</p>
+
+    <h2>Power-log specialization and literature</h2>
+    <p>For $h(t)=t^\gamma$, the leading law is
+    $2^{1-\gamma}[\log(mT)]^\gamma$. This recovers the scalar telegraph constant while adding arbitrary finite chains,
+    vector features, asymmetric gauges and the geometry-sensitive second-order term.</p>
+    <p><a href="./bibliography.html#Karamata1933">Karamata (1933)</a> supplies regular variation,
+    <a href="./bibliography.html#DeBruijn1959">de Bruijn (1959)</a> the classical slow-profile Laplace setting,
+    <a href="./bibliography.html#Varadhan1966">Varadhan (1966)</a> the Laplace principle, and
+    <a href="./bibliography.html#Gartner1977">G&auml;rtner (1977)</a> the spectral Markov large-deviation framework.</p>
+    <p>No fixed-parameter covariance-rank or maturity-integrated identification claim is made.</p>
+  </main>
