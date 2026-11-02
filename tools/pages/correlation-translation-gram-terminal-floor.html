@@ -1,0 +1,69 @@
+<!-- title: Finite output dimension ends the rare-tail Gram staircase · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-interlacing-staircase.html">&larr; open intervals</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_terminal_floor.py">certificate</a></span></p>
+    <h1>Finite output dimension ends the rare-tail Gram staircase</h1>
+    <p class="subtitle">At the last boundary, two mechanisms share one direction and their coefficients add.</p>
+
+    <p class="lead">Interior tail/Gaussian collisions make rank-two blocks. At the spectral floor there is only one
+    output direction left, so the final collision is scalar and smaller tail separation becomes invisible.</p>
+
+    <h2>Terminal-floor theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-3$, a slope $\tau&gt;0$, and
+    weights $q_1,q_2&gt;0$. Put $d=k-r-2$, $Q=q_1+q_2$, $\gamma_1=-q_2/Q$, and $\gamma_2=q_1/Q$.</p>
+    <p>Use the Gaussian-plus-two-atom triangular law</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$. Assume
+    $\delta_n/\varepsilon_n^d\to\rho\in[0,\infty)$.</p>
+
+    <p>Write $\phi_a=(x_j^a/a!)_j$, $v=(e^{\tau x_j})_j$, and
+    $\dot v=(x_je^{\tau x_j})_j$. Let $P$ project orthogonally away from the $(k-1)$-dimensional space</p>
+    $$L=\operatorname{span}\{\phi_0,\ldots,\phi_{k-3},v\},$$
+    <p>and put $g=P\phi_{k-2}$ and $b=P\dot v$. For centered
+    $Z_j=|G|^c(\log|G|)^j$, let $h_j$ be its residual variance after projection onto
+    $Z_0,\ldots,Z_{j-1}$.</p>
+
+    <p>The $d-1$ earlier post-tail Gaussian modes retain the staircase coefficients from the interior theorem.
+    The last eigenvalue satisfies</p>
+    <div class="equation-card">
+    $$\lambda_k(K_n)=\left(
+      h_{k-2}\|g\|^2+\frac{q_1q_2}{Q}\rho^2\|b\|^2
+      \right)\varepsilon_n^{2(k-2)}
+      +o(\varepsilon_n^{2(k-2)}).$$
+    </div>
+    <p>For $\rho=0$, the tail is below the finite-dimensional spectral floor and only
+    $h_{k-2}\|g\|^2$ remains. There is no additional eigenvalue in which the tail contribution can appear.</p>
+
+    <h2>Why the final block has rank one</h2>
+    <p>The space $L$ has dimension $k-1$, so its orthogonal complement is one-dimensional. Both $g$ and $b$ are
+    nonzero by the extended Chebyshev independence of the polynomial/exponential evaluation systems, hence they
+    are collinear.</p>
+    <p>Gaussian Gram&ndash;Schmidt contributes
+    $\varepsilon_n^{k-2}\sqrt{h_{k-2}}\,g$. Weighted tail-label centering contributes
+    $\varepsilon_n^r\delta_n\sqrt{q_1q_2/Q}\,b$, which has the same order when
+    $\delta_n/\varepsilon_n^d\to\rho$.</p>
+    <p>The two latent coordinates are orthogonal but their output directions coincide. Their rank-one covariance
+    coefficients therefore add, while higher Gaussian and tail-confluence features are smaller.</p>
+
+    <h2>Six-output certificate</h2>
+    <p>Take $k=6$, $r=1$, $d=3$, $c=\tau=q_1=1$, $q_2=2$,
+    $x=(-3,-2,-1,0,1,2)$, $\rho=3/2$, and $\varepsilon_n=1/n$. The Gaussian floor and critical tail increment are</p>
+    $$(0.000363463895283,\ 0.002341309123101),$$
+    <p>giving the terminal coefficient $0.002704773018385$. At $n=4096$, the exact critical ratio is
+    $0.999878778575$.</p>
+    <p>For the sub-floor sequence $\delta_n=\varepsilon_n^{7/2}$, the exact ratio to the pure Gaussian floor is
+    $1.001697464827$. The 240-digit certificate also checks both evaluation ranks, the two earlier Gaussian scales,
+    monotone convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws at one fixed positive maturity. It covers
+    fixed finite $\rho$, including zero; it gives no finite-$n$ error bound or uniformity in $k$, $r$, or moving
+    $\rho$.</p>
+    <p>The result concerns the nonlinear output covariance Gram. It changes neither fixed-feature
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies the column-confluence geometry,
+    <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional asymptotic perturbation theory,
+    and <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the zero-count argument.</p>
+  </main>
