@@ -1,0 +1,63 @@
+<!-- title: Multi-tail confluence creates a collision cascade · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-double-collision.html">&larr; three-tail case</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_collision_cascade.py">certificate</a></span></p>
+    <h1>Multi-tail confluence creates a collision cascade</h1>
+    <p class="subtitle">On the diagonal scale, every tail derivative meets its matching Gaussian residual.</p>
+
+    <p class="lead">The two blocks in the three-tail example are the first nontrivial instance of a complete
+    pattern. With $s$ coalescing tails and $\delta_n$ proportional to $\varepsilon_n$, there are $s-1$ successive
+    rank-two collisions.</p>
+
+    <h2>Diagonal collision-cascade theorem</h2>
+    <p>Use the $s$-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Assume
+    $s\ge2$, $1\le r\le k-2s$, and</p>
+    $$\frac{\delta_n}{\varepsilon_n}\longrightarrow\rho\in(0,\infty).$$
+    <p>The first $r$ Gaussian modes and the two primary modes remain those of the common-slope theorem.</p>
+
+    <p>For $1\le j\le s-1$, let $P_j$ project away from</p>
+    $$L_j=\operatorname{span}\{\phi_0,\ldots,\phi_{r+j-1},v_0,\ldots,v_{j-1}\},$$
+    <p>set $g_j=P_j\phi_{r+j}$ and $b_j=P_jv_j$, and define</p>
+    $$M_j=h_{r+j}g_jg_j^\top+\eta_j\rho^{2j}b_jb_j^\top.$$
+    <p>This matrix has rank two. If $\nu_{j,1}\ge\nu_{j,2}&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+2j+a}(K_n)=\nu_{j,a}\varepsilon_n^{2(r+j)}
+      +o(\varepsilon_n^{2(r+j)}),\qquad a=1,2.$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+s-1)})$.</p>
+
+    <h2>Why the cascade is complete</h2>
+    <p>The $j$th weighted-label residual has amplitude $\varepsilon_n^r\delta_n^j$, while the matching Gaussian
+    residual has amplitude $\varepsilon_n^{r+j}$. Their ratio tends to $\rho^j$, giving the coefficient
+    $\eta_j\rho^{2j}$ at covariance scale.</p>
+    <p>After each complete domain and output pair is removed, the same argument repeats one order later. The final
+    extended-Chebyshev system contains the polynomial columns through $x^{r+s-1}$ and exponential columns through
+    $x^{s-1}e^{\tau x}$.</p>
+    <p>It has $r+2s$ functions, so the condition $k\ge r+2s$ makes every projected pair independent and every
+    $M_j$ rank two. Once all $s-1$ label residuals are used, only smaller Gaussian features remain.</p>
+
+    <h2>Four-tail certificate</h2>
+    <p>Take $s=4$, $k=9$, $r=1$, $c=\tau=1$, weights $(1,2,3,4)$, centered offsets
+    $(-2,-1,0,1)$, nodes $(-4,-3,-2,-1,0,1,2,3,4)$, $\rho=5/4$, and
+    $\delta_n=\rho\varepsilon_n$.</p>
+    <p>The three pairs of collision coefficients are</p>
+    $$(2323.618616766171272,0.166908704432684),$$
+    $$(40.386754915255587,0.002700798513326),$$
+    $$(0.055286932164863,0.000004257341527).$$
+    <p>At $n=2048$, their exact normalized ratios are</p>
+    $$(0.995208746790,1.000160327261,0.995151921100,$$
+    $$1.001101070337,0.995771614089,1.003392086245).$$
+    <p>The 260-digit certificate also checks centered offsets, exact rare weights, primary modes, full confluent
+    rank, positivity, convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,k,r,q,\gamma,$ and $\rho$ at one fixed positive maturity. It
+    gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, tail counts, offsets,
+    or boundary ratios.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
