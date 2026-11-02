@@ -1,0 +1,73 @@
+<!-- title: Coalescing rare tails split a Gram mode quadratically · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-multi-tail-rank.html">&larr; distinct tail slopes</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_coalescing_tails.py">certificate</a></span></p>
+    <h1>Coalescing rare tails split a Gram mode quadratically</h1>
+    <p class="subtitle">The direction lost when two tail slopes merge reappears at the square of their separation.</p>
+
+    <p class="lead">Distinct rare-tail slopes promote distinct Gram modes at one scale. When two slopes approach
+    each other, their second mode does not disappear abruptly: a confluent exponential derivative determines its
+    smaller eigenvalue and exact coefficient.</p>
+
+    <h2>Two-scale splitting theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-3$, a slope $\tau&gt;0$, and
+    weights $q_1,q_2&gt;0$. Put $Q=q_1+q_2$ and</p>
+    $$\gamma_1=-\frac{q_2}{Q},\qquad \gamma_2=\frac{q_1}{Q}.$$
+    <p>For sequences $\varepsilon_n,\delta_n\downarrow0$ satisfying $\varepsilon_n/\delta_n\to0$, define</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and let $X_n$ have law
+    $(1-p_{1n}-p_{2n})\mathcal L(G)+p_{1n}\delta_{A_{1n}}+p_{2n}\delta_{A_{2n}}$, where
+    $G\sim N(0,1)$. Let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$.</p>
+
+    <p>With $\phi_a=(x_j^a/a!)_j$, let $P_r$ project onto
+    $\operatorname{span}\{\phi_0,\ldots,\phi_{r-1}\}^\perp$, and set</p>
+    $$a=\frac{P_r\phi_r}{\|P_r\phi_r\|_2},\qquad
+      w=P_r(e^{\tau x_j})_j,\qquad d=P_r(x_je^{\tau x_j})_j.$$
+    <p>Let $R$ project orthogonally away from $\operatorname{span}\{a,w\}$. If
+    $\mu_1\ge\mu_2&gt;0$ are the two positive eigenvalues of</p>
+    $$M_0=c_{r+1}aa^\top+Qww^\top,$$
+    <p>then, for the decreasing eigenvalues of $K_n$,</p>
+    <div class="equation-card">
+    $$\lambda_{r+j}(K_n)=\mu_j\varepsilon_n^{2r}+o(\varepsilon_n^{2r}),\qquad j=1,2,$$
+    $$\lambda_{r+3}(K_n)=\frac{q_1q_2}{Q}\|Rd\|_2^2
+      \varepsilon_n^{2r}\delta_n^2+o(\varepsilon_n^{2r}\delta_n^2).$$
+    </div>
+    <p>Every remaining eigenvalue, when present, is $o(\varepsilon_n^{2r}\delta_n^2)$.</p>
+    <p>The first $r$ Gaussian eigenvalue coefficients are unchanged. Thus two distinct tails still supply two
+    additional directions, but the second promoted direction moves down by the quadratic factor $\delta_n^2$.</p>
+
+    <h2>Why the coefficient is positive</h2>
+    <p>The weighted centering $q_1\gamma_1+q_2\gamma_2=0$ cancels the first-order change in
+    $\sum_\ell q_\ell w(\tau+\gamma_\ell\delta_n)w(\tau+\gamma_\ell\delta_n)^\top$.
+    Its compression away from $\operatorname{span}\{a,w\}$ is</p>
+    $$\delta_n^2\left(\sum_{\ell=1}^2q_\ell\gamma_\ell^2\right)(Rd)(Rd)^\top
+      +o(\delta_n^2),\qquad
+      \sum_{\ell=1}^2q_\ell\gamma_\ell^2=\frac{q_1q_2}{Q}.$$
+    <p>The vector $Rd$ is nonzero. Otherwise a nontrivial combination of
+    $1,x,\ldots,x^r,e^{\tau x},xe^{\tau x}$ would vanish at the $k\ge r+3$ nodes, contrary to the extended
+    Chebyshev property.</p>
+    <p>Schur-complement elimination gives the displayed small eigenvalue. The next Gaussian block is smaller by
+    $\varepsilon_n^2/\delta_n^2=o(1)$, while rare-weight cross terms are exponentially smaller; this is exactly
+    where the rate condition $\varepsilon_n/\delta_n\to0$ is used.</p>
+
+    <h2>Six-output certificate</h2>
+    <p>Take $c=\tau=q_1=1$, $q_2=2$, $x=(-5,-3,-1,1,3,5)/2$, $r=2$,
+    $\varepsilon_n=1/n$, and $\delta_n=n^{-1/2}$. The coefficient is</p>
+    $$\frac23\|Rd\|_2^2=0.114633532958465.$$
+    <p>At $n=4096$, the exact fifth eigenvalue divided by
+    $\varepsilon_n^4\delta_n^2$ is $0.109502136454$, a ratio $0.955236514380$. The certificate also checks the
+    two primary fourth-order modes and full rank of the concrete confluent evaluation matrix.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws and nonlinear outputs at one fixed positive
+    maturity. It is not uniform over arbitrary slope arrays, and it claims no finite-$n$ error bound beyond the
+    stated little-$o$ remainder.</p>
+    <p>If $\delta_n$ is comparable to or smaller than $\varepsilon_n$, the next Gaussian block interacts with the
+    split tail mode and the coefficient above is not asserted. The result changes neither fixed-feature
+    Green&ndash;Kubo rank nor rank after integrating distinct maturity loadings.</p>
+    <p><a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended Chebyshev
+    zero-count argument. <a href="./bibliography.html#Gautschi1978">Gautschi</a> treats confluent-Vandermonde
+    geometry, and <a href="./bibliography.html#Kato1995">Kato</a> supplies the spectral perturbation framework.</p>
+  </main>
