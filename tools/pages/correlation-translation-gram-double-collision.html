@@ -1,0 +1,68 @@
+<!-- title: Three tails create two successive Gaussian collision blocks · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-final-tail-interlacing.html">&larr; open window</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_double_collision.py">certificate</a></span></p>
+    <h1>Three tails create two successive Gaussian collision blocks</h1>
+    <p class="subtitle">At the next boundary, two tail derivatives meet two Gaussian modes at different scales.</p>
+
+    <p class="lead">The first open window ends when the first tail derivative catches the first post-primary
+    Gaussian feature. For three tails, the second derivative then meets the following Gaussian feature one order
+    later, producing two distinct rank-two limits.</p>
+
+    <h2>Double-collision theorem</h2>
+    <p>Use the three-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Assume
+    $1\le r\le k-6$ and</p>
+    $$\frac{\delta_n}{\varepsilon_n}\longrightarrow\rho\in(0,\infty).$$
+
+    <p>Let $P_1$ project away from
+    $L_1=\operatorname{span}\{\phi_0,\ldots,\phi_r,v_0\}$ and set
+    $g_1=P_1\phi_{r+1}$ and $b_1=P_1v_1$. Define</p>
+    $$M_1=h_{r+1}g_1g_1^\top+\eta_1\rho^2b_1b_1^\top.$$
+    <p>If $\alpha_1\ge\alpha_2&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+2+j}(K_n)=\alpha_j\varepsilon_n^{2(r+1)}
+      +o(\varepsilon_n^{2(r+1)}),\qquad j=1,2.$$
+    </div>
+
+    <p>Next let $P_2$ project away from
+    $L_2=\operatorname{span}\{\phi_0,\ldots,\phi_{r+1},v_0,v_1\}$ and set
+    $g_2=P_2\phi_{r+2}$ and $b_2=P_2v_2$. Define</p>
+    $$M_2=h_{r+2}g_2g_2^\top+\eta_2\rho^4b_2b_2^\top.$$
+    <p>If $\beta_1\ge\beta_2&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+4+j}(K_n)=\beta_j\varepsilon_n^{2(r+2)}
+      +o(\varepsilon_n^{2(r+2)}),\qquad j=1,2.$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+2)})$.</p>
+
+    <h2>Why there are two blocks</h2>
+    <p>The first tail feature has amplitude $\varepsilon_n^r\delta_n$, matching
+    $\varepsilon_n^{r+1}$. Its orthogonal label coordinate and the Gaussian residual contribute the two summands
+    of $M_1$.</p>
+    <p>After their complete domain and output spans are removed, the remaining tail feature has amplitude
+    $\varepsilon_n^r\delta_n^2$, matching $\varepsilon_n^{r+2}$. The label residual contributes $\eta_2\rho^4$
+    at covariance scale.</p>
+    <p>Both matrices have rank two because the polynomial/exponential evaluation system through
+    $x^{r+2}$ and $x^2e^{\tau x}$ is extended Chebyshev at the $k\ge r+6$ distinct nodes.</p>
+
+    <h2>Seven-output certificate</h2>
+    <p>Take $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2,3)$, $\rho=3/2$, and
+    $\delta_n=\rho\varepsilon_n$.</p>
+    <p>The first collision coefficients are $(82.878648476347436,0.017345179990531)$ and the second are
+    $(0.259769760019158,0.000032854891863)$. At $n=4096$, their exact normalized ratios are</p>
+    $$(0.998218744222,0.999874455440,0.998076359749,1.000465647028).$$
+    <p>The 260-digit certificate also checks the primary block, exact rare weights, full confluent rank,
+    positivity, convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for three tails and fixed $k,r,q,\gamma,$ and $\rho$ at one fixed positive
+    maturity. It gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, offsets,
+    or boundary ratios.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
