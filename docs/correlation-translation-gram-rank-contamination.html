@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Arbitrary-rank rare contamination · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-contamination.html">&larr; two outputs</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_rank_contamination.py">certificate</a></span></p>
+    <h1>Arbitrary-rank rare contamination</h1>
+    <p class="subtitle">A vanishing atom reaches the last confluent direction through one divided difference.</p>
+
+    <p class="lead">For any number of coalescing power outputs, the rare-tail boundary has an exact coefficient.
+    The two-output hyperbolic-cosine term is the first case of a normalized barycentric divided difference.</p>
+
+    <h2>Rank-$k$ boundary theorem</h2>
+    <p>Fix $c&gt;0$, an integer $k\ge2$, and distinct real nodes $x_1,\ldots,x_k$. Let $G$ be standard Gaussian and</p>
+    $$P_n=(1-p_n)\mathcal L(G)+p_n\delta_{A_n},\qquad
+      \varepsilon_n\downarrow0,\quad A_n\longrightarrow\infty,\quad p_n\longrightarrow0.$$
+    <p>Suppose, for finite $\tau,q\ge0$, that</p>
+    $$\varepsilon_n\log A_n\longrightarrow\tau,\qquad
+      \frac{p_nA_n^{2c}}{\varepsilon_n^{2(k-1)}}\longrightarrow q.$$
+    <p>Let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$ under $P_n$. Define
+    $w_j=\{\prod_{\ell\ne j}(x_j-x_\ell)\}^{-1}$, $u=w/\|w\|_2$, and
+    $v_\tau=(e^{\tau x_1},\ldots,e^{\tau x_k})^\top$.</p>
+    <p>Let $(H_c)_{rs}=\operatorname{Cov}(|G|^c(\log|G|)^r,
+    |G|^c(\log|G|)^s)$ for $0\le r,s&lt;k$. Write $H_c=R_cR_c^\top$ and
+    $V_xV_x^\top=L_xL_x^\top$ for their Cholesky factorizations, where
+    $(V_x)_{rj}=x_j^r/r!$.</p>
+    <div class="equation-card">
+    $$\frac{\lambda_{\min}(K_n)}{\varepsilon_n^{2(k-1)}}\longrightarrow
+      \{(R_c)_{kk}(L_x)_{kk}\}^2+q(u^\top v_\tau)^2.$$
+    </div>
+    <p>For $k=2$ and $x=(-1/2,1/2)$, the second term is
+    $q\{\cosh(\tau)-1\}$. Thus the earlier two-output formula is recovered exactly.</p>
+
+    <h2>Why barycentric weights appear</h2>
+    <p>The weights satisfy $\sum_jw_jx_j^r=0$ for $0\le r&lt;k-1$. Hence $u$ is the unique unit direction
+    annihilated by the first $k-1$ rows of the confluent Vandermonde matrix.</p>
+    <p>The projection $w^\top v_\tau$ is exactly the exponential divided difference at the nodes. It vanishes at
+    $\tau=0$ and is nonzero for $\tau&gt;0$ because the relevant derivative of the exponential is positive.</p>
+
+    <h2>Proof</h2>
+    <p>Set $M_a=\mathbb E|G|^a$. For exponents $a_i=c+\varepsilon_nx_i$, the exact mixture identity is</p>
+    $$K_n=(1-p_n)K_n^G+p_n(1-p_n)(A_n^{a_i}-M_{a_i})_{i}
+      (A_n^{a_j}-M_{a_j})_{j}^{\top}.$$
+    <p>After division by $\varepsilon_n^{2(k-1)}$, the second term converges to $qv_\tau v_\tau^\top$.
+    Every cross term containing a Gaussian moment vanishes because $A_n^c\to\infty$.</p>
+    <p>The Gaussian Gram has successive eigenvalue orders $1,\varepsilon_n^2,\ldots,
+    \varepsilon_n^{2(k-1)}$. Its last unit eigenvector converges to $u$, while the preceding eigenvalue is of order
+    $\varepsilon_n^{2(k-2)}$.</p>
+    <p>This spectral separation reduces the last-scale perturbation to its Rayleigh quotient on $u$. The Gaussian
+    coefficient is $\{(R_c)_{kk}(L_x)_{kk}\}^2$ and the rare atom adds
+    $q\,u^\top v_\tau v_\tau^\top u$, proving the claim.</p>
+
+    <h2>Four-output certificate</h2>
+    <p>Take $c=1$, $x=(0,1,2,3)$, $\varepsilon_n=1/n$, $A_n=e^n$, and
+    $p_n=e^{-2n}/n^6$. The Gaussian coefficient is $0.002603117321985$, while</p>
+    $$q(u^\top v_1)^2=\frac{(e-1)^6}{20}=1.286875071194561.$$
+    <p>The contaminated limit is $1.289478188516545$, or $495.359228578087$ times the Gaussian prediction.
+    The exact coefficient at $n=1024$ is $1.285213007165$, which is $0.996692319894$ of that limit.</p>
+    <p>Here the excess fixed $2c$ moment is only $n^{-6}$. In the derivative Gram, the rare contribution has order
+    $n^{r+s-6}$, so it survives only in the top $(3,3)$ entry and therefore exactly at the fourth-output scale.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This theorem concerns triangular laws and nonlinear outputs at one fixed positive maturity. It neither
+    changes fixed-feature Green&ndash;Kubo rank nor creates rank by integrating different maturity loadings.</p>
+    <p>The sequence violates the <a href="./correlation-translation-gram-moment-buffer.html">strict moment buffer</a>:
+    every higher power moment eventually explodes. The result is asymptotic and gives no finite-$n$ error rate
+    without quantitative convergence rates in the three displayed hypotheses.</p>
+    <p><a href="./bibliography.html#BerrutTrefethen2004">Berrut and Trefethen (2004)</a> review barycentric
+    interpolation and divided differences. <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a> treats
+    inverse confluent-Vandermonde geometry; the contamination coefficient above is derived here.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
