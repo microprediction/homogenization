@@ -1,0 +1,70 @@
+<!-- title: The final tail derivative collides with the next Gaussian mode · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-multitail-confluence.html">&larr; derivative ladder</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_final_tail_collision.py">certificate</a></span></p>
+    <h1>The final tail derivative collides with the next Gaussian mode</h1>
+    <p class="subtitle">At the sharp boundary of the multi-tail ladder, two independent directions form a rank-two block.</p>
+
+    <p class="lead">The derivative ladder stays wholly above the next Gaussian feature only while
+    $\varepsilon_n/\delta_n^{s-1}\to0$. At a finite nonzero boundary ratio, its last mode and that Gaussian feature
+    interact.</p>
+
+    <h2>Final-tail collision theorem</h2>
+    <p>Use the $s$-tail triangular law, weights, centered distinct offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Assume
+    $s\ge2$, $1\le r\le k-s-2$, and</p>
+    $$\frac{\delta_n^{s-1}}{\varepsilon_n}\longrightarrow\rho\in(0,\infty).$$
+
+    <p>Let $\zeta_j=(\gamma_\ell^j)_\ell$ and let $\eta_j$ be the squared weighted norm of its residual after
+    projection onto $\zeta_0,\ldots,\zeta_{j-1}$. Write</p>
+    $$\phi_a=(x_i^a/a!)_i,\qquad v_j=(x_i^je^{\tau x_i}/j!)_i.$$
+    <p>The first $r$ Gaussian modes, the two primary modes, and the first $s-2$ tail modes retain their separated
+    coefficients. Thus, for $1\le j\le s-2$,</p>
+    $$\lambda_{r+2+j}(K_n)=
+      \eta_j\|R_jv_j\|_2^2\varepsilon_n^{2r}\delta_n^{2j}
+      +o(\varepsilon_n^{2r}\delta_n^{2j}).$$
+
+    <p>Let $P$ project orthogonally away from</p>
+    $$L=\operatorname{span}\{\phi_0,\ldots,\phi_r,v_0,\ldots,v_{s-2}\},$$
+    <p>and put $g=P\phi_{r+1}$ and $b=Pv_{s-1}$. For
+    $Z_a=|G|^c(\log|G|)^a$, let $h_{r+1}$ be the residual variance of $Z_{r+1}$ after projection onto
+    $Z_0,\ldots,Z_r$, and define</p>
+    $$M_\rho=h_{r+1}gg^\top+\eta_{s-1}\rho^2bb^\top.$$
+    <p>This matrix has rank two. If $\nu_1\ge\nu_2&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+s+j}(K_n)=
+      \nu_j\varepsilon_n^{2(r+1)}
+      +o(\varepsilon_n^{2(r+1)}),\qquad j=1,2.$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+1)})$.</p>
+
+    <h2>Why the block has rank two</h2>
+    <p>After the earlier Schur complements, Gaussian Gram&ndash;Schmidt leaves
+    $\varepsilon_n^{r+1}\sqrt{h_{r+1}}\,g$. Weighted label Gram&ndash;Schmidt leaves
+    $\varepsilon_n^r\delta_n^{s-1}\sqrt{\eta_{s-1}}\,b$.</p>
+    <p>Their ratio tends to $\rho$, and their latent coordinates are orthogonal, so their covariance contributions
+    add. The vectors $g$ and $b$ are independent because</p>
+    $$1,x,\ldots,x^{r+1},e^{\tau x},xe^{\tau x},\ldots,x^{s-1}e^{\tau x}$$
+    <p>is an extended Chebyshev system at the $k\ge r+s+2$ distinct nodes. Higher Gaussian and tail Taylor features
+    are smaller by $\varepsilon_n$ and $\delta_n$, respectively.</p>
+
+    <h2>Three-tail certificate</h2>
+    <p>Take $s=3$, $k=6$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2)$, $\rho=3/2$, and
+    $\delta_n=\sqrt{\rho\varepsilon_n}$.</p>
+    <p>The separated first-tail coefficient is $3.038546555413267$. The two critical coefficients are</p>
+    $$(0.115976752655168,\ 0.000092873239250).$$
+    <p>At $n=65536$, their exact normalized ratios are $(0.991633879726,0.991897573456)$. The 260-digit certificate
+    also checks the primary block, first tail scale, full confluent rank, monotone convergence, and literal
+    <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,k,r,q,\gamma,$ and $\rho$ at one fixed positive maturity. It
+    gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, offsets, or boundary
+    ratios.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
