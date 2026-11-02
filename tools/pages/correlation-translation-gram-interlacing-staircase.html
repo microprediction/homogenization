@@ -1,0 +1,77 @@
+<!-- title: Rare-tail Gram modes interlace at every staircase level · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-collision-staircase.html">&larr; collision boundaries</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_interlacing_staircase.py">certificate</a></span></p>
+    <h1>Rare-tail Gram modes interlace at every staircase level</h1>
+    <p class="subtitle">Between consecutive collision powers, Gaussian modes separate before the tail contrast.</p>
+
+    <p class="lead">The integer boundaries form rank-two collision blocks. Every open interval between them has a
+    complementary ordering: finitely many Gaussian modes, then one tail mode, with explicit coefficients.</p>
+
+    <h2>Interlacing-staircase theorem</h2>
+    <p>Fix an integer $m\ge0$, $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-m-3$,
+    a slope $\tau&gt;0$, and weights $q_1,q_2&gt;0$. Put $Q=q_1+q_2$,
+    $\gamma_1=-q_2/Q$, and $\gamma_2=q_1/Q$.</p>
+    <p>Let $\varepsilon_n,\delta_n\downarrow0$ satisfy</p>
+    $$\frac{\delta_n}{\varepsilon_n^m}\longrightarrow0,
+      \qquad \frac{\varepsilon_n^{m+1}}{\delta_n}\longrightarrow0.$$
+    <p>Thus $\varepsilon_n^{m+1}\ll\delta_n\ll\varepsilon_n^m$. Use the Gaussian-plus-two-atom law</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$.</p>
+
+    <p>Write $\phi_a=(x_j^a/a!)_j$, $v=(e^{\tau x_j})_j$, and
+    $\dot v=(x_je^{\tau x_j})_j$. For $s\ge0$, let $P_s$ project orthogonally away from</p>
+    $$L_s=\operatorname{span}\{\phi_0,\ldots,\phi_{r+s},v\}.$$
+    <p>For $G\sim N(0,1)$, center $Z_j=|G|^c(\log|G|)^j$ and let $h_j$ be the residual variance of
+    $Z_j$ after projection onto $Z_0,\ldots,Z_{j-1}$.</p>
+
+    <p>Exactly $m$ post-tail Gaussian modes occur above the tail scale:</p>
+    <div class="equation-card">
+    $$\lambda_{r+2+a}(K_n)
+      =h_{r+a}\|P_{a-1}\phi_{r+a}\|^2\varepsilon_n^{2(r+a)}
+      +o(\varepsilon_n^{2(r+a)}),\qquad 1\le a\le m.$$
+    </div>
+    <p>The statement is empty when $m=0$. After these modes, put $b_m=P_m\dot v$. Then</p>
+    <div class="equation-card">
+    $$\lambda_{r+m+3}(K_n)=\frac{q_1q_2}{Q}\|b_m\|^2
+      \varepsilon_n^{2r}\delta_n^2
+      +o(\varepsilon_n^{2r}\delta_n^2).$$
+    </div>
+    <p>The first $r$ Gaussian coefficients and two primary order-$\varepsilon_n^{2r}$ coefficients are unchanged.
+    Every remaining eigenvalue is $o(\varepsilon_n^{2r}\delta_n^2)$.</p>
+
+    <h2>Why the ordering is complete</h2>
+    <p>Successive Schur complements remove $L_0,\ldots,L_m$. At step $a\le m$, Gaussian
+    Gram&ndash;Schmidt leaves a feature of size $\varepsilon_n^{r+a}$, while the tail contrast has size
+    $\varepsilon_n^r\delta_n$.</p>
+    <p>The tail/Gaussian ratio is $\delta_n/\varepsilon_n^a$. It vanishes for every $a\le m$ because
+    $\delta_n/\varepsilon_n^m\to0$, proving the separated Gaussian limits.</p>
+    <p>After $L_m$ is removed, weighted tail-label centering leaves
+    $\varepsilon_n^r\delta_n\sqrt{q_1q_2/Q}\,b_m$. The next Gaussian feature is smaller by
+    $\varepsilon_n^{m+1}/\delta_n\to0$, and higher tail-confluence features are smaller by $\delta_n\to0$.</p>
+    <p>Finite-dimensional spectral perturbation now gives the tail limit and the remainder. The coefficient is
+    positive because the evaluations of $1,x,\ldots,x^{r+m},e^{\tau x},xe^{\tau x}$ are independent at
+    $k\ge r+m+3$ distinct nodes by the extended Chebyshev property.</p>
+
+    <h2>First new interval</h2>
+    <p>Take $m=2$, $r=1$, $c=\tau=q_1=1$, $q_2=2$, $x=(-3,-2,-1,0,1,2,3)$,
+    $\varepsilon_n=1/n$, and $\delta_n=\varepsilon_n^{5/2}$. The certificate resolves fourth- and sixth-order
+    Gaussian modes, the seventh-order tail mode, and the smaller eighth-order remainder.</p>
+    <p>The Gaussian coefficients are $(0.158456045596511,0.030054217288597)$ and the tail coefficient is
+    $0.042089419114059$. At $n=4096$, their exact normalized ratios are
+    $(1.000054109718,1.006570038903,0.993565034524)$.</p>
+    <p>The next eigenvalue divided by the tail scale is $0.000000020372$. Every number comes from exact Gaussian
+    moments and exact two-atom mixture algebra evaluated at 240 digits.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws at one fixed positive maturity. It treats
+    each fixed $m$ and the two stated limiting ratios; it gives neither a finite-$n$ bound nor uniformity in $m$ or
+    over a moving separation window.</p>
+    <p>The result concerns the nonlinear output covariance Gram. It changes neither fixed-feature
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies the column-confluence geometry,
+    <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional asymptotic perturbation theory,
+    and <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the zero-count argument.</p>
+  </main>
