@@ -3427,5 +3427,16 @@
   "doi": "10.1214/aoms/1177700055",
   "url": "https://doi.org/10.1214/aoms/1177700055",
   "annotation": "Studies convergence and rates for moments under the central limit theorem. The translation-Gram moment-buffer note uses the same higher-moment principle for log-weighted power derivatives."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "BerrutTrefethen2004",
+  "authors": "Berrut, J.-P. and Trefethen, L. N.",
+  "year": 2004,
+  "title": "Barycentric Lagrange Interpolation",
+  "venue": "SIAM Review 46(3), 501-517",
+  "doi": "10.1137/s0036144502417715",
+  "url": "https://doi.org/10.1137/s0036144502417715",
+  "annotation": "Reviews barycentric interpolation formulas and their relation to divided differences. The arbitrary-rank contamination coefficient is the squared projection of an exponential vector on normalized barycentric weights."
  }
 ]
