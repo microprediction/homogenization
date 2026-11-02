@@ -3394,5 +3394,16 @@
   "doi": "10.1007/bf01209156",
   "url": "https://doi.org/10.1007/bf01209156",
   "annotation": "Develops the compact-translate characterization of almost-periodic functions, the classical context for the periodic translation hull used in the bounded-slope counterexample."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Halperin1962",
+  "authors": "Halperin, I.",
+  "year": 1962,
+  "title": "On the Gram Matrix",
+  "venue": "Canadian Mathematical Bulletin 5(3), 265-280",
+  "doi": "10.4153/cmb-1962-027-1",
+  "url": "https://doi.org/10.4153/cmb-1962-027-1",
+  "annotation": "Records the Hilbert-space geometry of Gram matrices. The translation-hull covariance note uses the covariance inner product to turn normalized nonlinear outputs into an exact rank criterion."
  }
 ]
