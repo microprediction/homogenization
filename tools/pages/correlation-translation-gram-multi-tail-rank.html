@@ -1,0 +1,70 @@
+<!-- title: Multiple rare tails promote multiple Gram modes · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-spectral-staircase.html">&larr; one rare tail</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_multi_tail_rank.py">certificate</a></span></p>
+    <h1>Multiple rare tails promote multiple Gram modes</h1>
+    <p class="subtitle">The number of distinct tail slopes is the number of extra eigenvalues lifted at one scale.</p>
+
+    <p class="lead">A single rare atom adds one direction to the coalescing Gram staircase. Several atoms with
+    distinct logarithmic slopes add independent directions, so the rank promoted at one scale can be counted
+    exactly.</p>
+
+    <h2>Multi-tail rank theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-2$, and
+    $1\le s\le k-r-1$. Let</p>
+    $$P_n=\left(1-\sum_{\ell=1}^s p_{\ell n}\right)\mathcal L(G)
+      +\sum_{\ell=1}^s p_{\ell n}\delta_{A_{\ell n}},\qquad G\sim N(0,1).$$
+    <p>Suppose $\varepsilon_n\downarrow0$, every $p_{\ell n}\to0$, and, for distinct
+    $0&lt;\tau_1&lt;\cdots&lt;\tau_s$ and positive $q_\ell$,</p>
+    $$\varepsilon_n\log A_{\ell n}\longrightarrow\tau_\ell,\qquad
+      \frac{p_{\ell n}A_{\ell n}^{2c}}{\varepsilon_n^{2r}}\longrightarrow q_\ell.$$
+    <p>Let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$. With
+    $\phi_a=(x_j^a/a!)_j$, define</p>
+    $$E_r=\operatorname{span}\{\phi_0,\ldots,\phi_{r-1}\},\quad
+      N_r=E_r^\perp,\quad
+      a_r=\frac{P_r\phi_r}{\|P_r\phi_r\|_2},$$
+    <p>where $P_r$ projects onto $N_r$. For $v_\tau=(e^{\tau x_j})_j$, set
+    $w_\ell=P_rv_{\tau_\ell}$ and</p>
+    $$M_r=c_{r+1}a_ra_r^\top+\sum_{\ell=1}^s q_\ell w_\ell w_\ell^\top,$$
+    <p>where $c_{r+1}$ is the Gaussian coefficient from the exact coalescing-Gram theorem. If
+    $\mu_1\ge\cdots\ge\mu_{s+1}&gt;0$ are the nonzero eigenvalues of $M_r$, then</p>
+    <div class="equation-card">
+    $$\frac{\lambda_j(K_n)}{\varepsilon_n^{2(j-1)}}\longrightarrow c_j\quad(1\le j\le r),$$
+    $$\lambda_{r+j}(K_n)=\mu_j\varepsilon_n^{2r}
+      +o(\varepsilon_n^{2r}),\qquad 1\le j\le s+1.$$
+    </div>
+    <p>Thus $s$ distinct rare-tail slopes promote exactly $s$ additional eigenvalues to order
+    $\varepsilon_n^{2r}$. Any remaining trailing eigenvalues are $o(\varepsilon_n^{2r})$.</p>
+
+    <h2>Proof</h2>
+    <p>Schur-complement elimination of $E_r$ leaves the Gaussian block
+    $c_{r+1}a_ra_r^\top$ after division by $\varepsilon_n^{2r}$. The mixture covariance contributes
+    $\sum_\ell q_\ell w_\ell w_\ell^\top$.</p>
+    <p>Terms involving two rare-component weights vanish at this scale. After division by
+    $\varepsilon_n^{2r}$, their self and cross pieces are bounded by a constant times
+    $p_{\ell n}+p_{mn}+\sqrt{p_{\ell n}p_{mn}}$, which tends to zero.</p>
+    <p>The vectors $a_r,w_1,\ldots,w_s$ are independent. Otherwise a nonzero combination of
+    $1,x,\ldots,x^r,e^{\tau_1x},\ldots,e^{\tau_sx}$ would vanish at the $k\ge r+s+1$ distinct nodes, contradicting
+    the extended Chebyshev property of exponential polynomials.</p>
+    <p>Hence $M_r$ has rank $s+1$. Weyl's inequality preserves the first $r$ coefficients, while spectral
+    separation identifies the next $s+1$ eigenvalues with the positive spectrum of $M_r$.</p>
+
+    <h2>Six-output, two-tail certificate</h2>
+    <p>Take $c=1$, $x=(-5,-3,-1,1,3,5)/2$, $r=2$, $(\tau_1,\tau_2)=(1/2,1)$, $q_1=q_2=1$, and
+    $\varepsilon_n=1/n$. The three predicted fourth-order coefficients are</p>
+    $$(\mu_1,\mu_2,\mu_3)
+      =(32.259604734011018,0.072074279055711,0.000326948154050).$$
+    <p>At $n=1024$, the exact coefficient ratios are
+    $(0.997059926274,0.998576960229,0.996738769007)$. The certificate also checks the rank-three limiting block,
+    the two untouched leading coefficients, and full rank of the concrete Chebyshev evaluation matrix.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a triangular-law theorem for nonlinear outputs at one fixed positive maturity. It changes neither
+    fixed-feature Green&ndash;Kubo rank nor rank obtained by integrating distinct maturity loadings.</p>
+    <p>The remainders are pointwise along the stated sequences; no finite-$n$ rate is claimed without quantitative
+    convergence rates. Coincident tail slopes merge into one direction and are outside the distinct-slope rank
+    count.</p>
+    <p><a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> develop the extended Chebyshev
+    theory used for independence. <a href="./bibliography.html#Kato1995">Kato</a> supplies the self-adjoint
+    perturbation framework.</p>
+  </main>

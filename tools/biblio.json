@@ -3438,5 +3438,16 @@
   "doi": "10.1137/s0036144502417715",
   "url": "https://doi.org/10.1137/s0036144502417715",
   "annotation": "Reviews barycentric interpolation formulas and their relation to divided differences. The arbitrary-rank contamination coefficient is the squared projection of an exponential vector on normalized barycentric weights."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "KarlinStudden1966",
+  "authors": "Karlin, S. and Studden, W. J.",
+  "year": 1966,
+  "title": "Tchebycheff Systems: With Applications in Analysis and Statistics",
+  "venue": "Pure and Applied Mathematics 15, Interscience, New York",
+  "doi": "",
+  "url": "https://catalogue.library.cern/literature/c0xd6-has73",
+  "annotation": "Develops extended Chebyshev systems and their zero-count characterization. The multi-tail Gram theorem uses the resulting independence of polynomial and distinct real-exponential evaluation vectors."
  }
 ]
