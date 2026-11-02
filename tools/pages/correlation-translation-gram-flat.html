@@ -1,0 +1,77 @@
+<!-- title: Translation-hull covariance Gram · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-hull-flat.html">&larr; translation-hull covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_flat.py">certificate</a></span></p>
+    <h1>Translation-hull covariance Gram</h1>
+    <p class="subtitle">Several normalized nonlinear outputs form a Gaussian-function Gram matrix.</p>
+
+    <p class="lead">The scalar translation-hull theorem extends jointly. Its limiting covariance rank is the number
+    of centered Gaussian functions that remain linearly independent, not the rank of the Green&ndash;Kubo matrix.</p>
+
+    <h2>The joint theorem</h2>
+    <p>Use the fixed-positive-maturity finite-chain setup of the
+    <a href="./correlation-translation-hull-flat.html">scalar theorem</a>. For $j=1,\ldots,k$, let $r_j$ be tangent
+    to a positive homogeneous gauge $\rho_j$ on the Gaussian support, and assume</p>
+    $$0&lt;c_{j,-}\le h_j'(x)\le c_{j,+}&lt;\infty.$$
+    <p>For $n_\ell=m_\ell T\to\infty$, put $L_\ell=\tfrac12\log n_\ell$ and suppose, locally uniformly,</p>
+    $$h_j(L_\ell+s)-h_j(L_\ell)\longrightarrow q_j(s).$$
+    <p>Define $A_j(0)=0$ and, for $z\ne0$,</p>
+    $$A_j(z)=\exp\{-q_j(-\log\rho_j(z))\}.$$
+    <p>Let $\Psi=(\Psi_1,\ldots,\Psi_k)^\top$, where near zero</p>
+    $$\Psi_j(w)=\exp\{-h_j(\log(1/r_j(w)))\},$$
+    <p>and set</p>
+    $$D_\ell=\operatorname{diag}\{e^{h_1(L_\ell)},\ldots,e^{h_k(L_\ell)}\}.$$
+    <p>Uniformly over arbitrary initial regime priors, with $G\sim N(0,\Gamma)$ on its support,</p>
+    <div class="equation-card">
+    $$D_\ell\operatorname{Cov}\{\Psi(W_{m_\ell,T})\}D_\ell
+      \longrightarrow K,\qquad K_{ij}=\operatorname{Cov}\{A_i(G),A_j(G)\}.$$
+    </div>
+
+    <h2>Proof and exact rank criterion</h2>
+    <p>The scalar argument passes each first moment. Applied to $\Psi_i\Psi_j$, the same compact-window convergence
+    and polynomial envelope pass every mixed second moment, which proves the matrix limit.</p>
+    <p>The limit is the $L^2$ Gram matrix of $A_j(G)-\mathbb EA_j(G)$. Therefore</p>
+    <div class="equation-card">
+    $$\ker K=\left\{a\in\mathbb R^k:\sum_j a_jA_j(G)
+      \text{ is constant almost surely}\right\},$$
+    $$\operatorname{rank}K=\dim\operatorname{span}\bigl\{A_j-\mathbb EA_j:1\le j\le k\bigr\}.$$
+    </div>
+    <p>In particular, $K\succ0$ exactly when no nonzero linear combination of the hull functions is Gaussian-almost-surely
+    constant. Then the finite-speed covariance is full rank for all sufficiently large speeds.</p>
+
+    <h2>Arbitrary output rank from one feature</h2>
+    <p>Let $G\sim N(0,1)$, use $\rho_j(z)=|z|$, and take $q_j(s)=c_js$ for distinct $c_j&gt;0$. Then</p>
+    $$A_j(G)=|G|^{c_j},\qquad
+      K_{ij}=M_{c_i+c_j}-M_{c_i}M_{c_j},$$
+    $$M_p=\mathbb E|G|^p=
+      \frac{2^{p/2}\Gamma((p+1)/2)}{\sqrt\pi}.$$
+    <p>The functions $1,x^{c_1},\ldots,x^{c_k}$ are linearly independent on $(0,\infty)$: after $x=e^t$ they
+    are exponentials with distinct exponents. Hence $K\succ0$ for every finite $k$, although $\Gamma$ has rank one.</p>
+    <p>For $c=(1,2)$,</p>
+    $$K=\begin{pmatrix}1-2/\pi&\sqrt{2/\pi}\\
+      \sqrt{2/\pi}&2\end{pmatrix},\qquad
+      \det K=2-6/\pi=0.090140682897.$$
+
+    <h2>Exact telegraph certificate</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>speed</th><th>largest relative entry error</th><th>smallest eigenvalue / limit</th><th>determinant / limit</th></tr></thead>
+      <tbody>
+        <tr><td>64</td><td>.123253512</td><td>.884001171</td><td>.632562539</td></tr>
+        <tr><td>256</td><td>.032228043</td><td>.970228900</td><td>.892973173</td></tr>
+        <tr><td>1,024</td><td>.008148105</td><td>.992510031</td><td>.972176802</td></tr>
+        <tr><td>4,096</td><td>.002042762</td><td>.998124574</td><td>.992975533</td></tr>
+      </tbody>
+    </table></div>
+    <p>The certificate uses $c=(1,2,3,4)$ and integrates the exact atom-plus-Bessel telegraph law. Its limiting
+    four-by-four Gram determinant is $0.007583917699$, with smallest eigenvalue $0.001214146170$.</p>
+
+    <h2>Error and identification scope</h2>
+    <p>On a joint compact log-radius window, the mixed $(i,j)$ integrand error is bounded by
+    $\exp(\delta_{i,\ell,R}+\delta_{j,\ell,R})-1$, plus the tangent-gauge errors. Truncation gives additive $o(1)$
+    matrix error; no eigenvalue rate is claimed without quantitative translation, CLT and tail moduli.</p>
+    <p>This is a componentwise-normalized, fixed-feature, fixed-positive-maturity nonlinear-output Gram theorem.
+    It does not raise the fixed-feature Green&ndash;Kubo rank, and it does not integrate different maturity loadings.</p>
+    <p><a href="./bibliography.html#Halperin1962">Halperin (1962)</a> records the Hilbert-space Gram framework;
+    <a href="./bibliography.html#NeyNummelin1987I">Ney and Nummelin (1987)</a> supply the Markov-additive limit theory.
+    The translation-hull Gram and arbitrary-rank construction are derived here.</p>
+  </main>
