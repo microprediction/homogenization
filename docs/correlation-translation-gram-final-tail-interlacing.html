@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A Gaussian mode interlaces the final tail derivative · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-final-tail-collision.html">&larr; boundary collision</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_final_tail_interlacing.py">certificate</a></span></p>
+    <h1>A Gaussian mode interlaces the final tail derivative</h1>
+    <p class="subtitle">Below the last collision, the next Gaussian feature separates between two tail scales.</p>
+
+    <p class="lead">At the critical boundary, the final tail derivative and next Gaussian feature share one scale.
+    In the adjacent open window, the Gaussian mode moves ahead of that last derivative but remains behind every
+    earlier tail mode.</p>
+
+    <h2>Final-tail interlacing theorem</h2>
+    <p>Use the $s$-tail triangular law, weights, centered distinct offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Assume
+    $s\ge3$, $1\le r\le k-s-2$, and</p>
+    $$\frac{\delta_n^{s-1}}{\varepsilon_n}\longrightarrow0,
+      \qquad
+      \frac{\varepsilon_n}{\delta_n^{s-2}}\longrightarrow0.$$
+    <p>Equivalently, $\delta_n^{s-1}\ll\varepsilon_n\ll\delta_n^{s-2}$.</p>
+
+    <p>For $1\le j\le s-2$, the earlier tail modes retain their ladder coefficients:</p>
+    $$\lambda_{r+2+j}(K_n)=
+      \eta_j\|R_jv_j\|_2^2\varepsilon_n^{2r}\delta_n^{2j}
+      +o(\varepsilon_n^{2r}\delta_n^{2j}).$$
+
+    <p>Let $P_G$ project orthogonally away from</p>
+    $$L_G=\operatorname{span}\{\phi_0,\ldots,\phi_r,v_0,\ldots,v_{s-2}\},$$
+    <p>and set $g=P_G\phi_{r+1}$. If $h_{r+1}$ is the residual variance of
+    $Z_{r+1}=|G|^c(\log|G|)^{r+1}$ after projection onto $Z_0,\ldots,Z_r$, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+s+1}(K_n)=
+      h_{r+1}\|g\|_2^2\varepsilon_n^{2(r+1)}
+      +o(\varepsilon_n^{2(r+1)}).$$
+    </div>
+
+    <p>Let $P_T$ project away from
+    $L_T=\operatorname{span}\{\phi_0,\ldots,\phi_{r+1},v_0,\ldots,v_{s-2}\}$ and set
+    $b=P_Tv_{s-1}$. The final tail mode is</p>
+    <div class="equation-card">
+    $$\lambda_{r+s+2}(K_n)=
+      \eta_{s-1}\|b\|_2^2\varepsilon_n^{2r}\delta_n^{2(s-1)}
+      +o(\varepsilon_n^{2r}\delta_n^{2(s-1)}).$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2r}\delta_n^{2(s-1)})$.</p>
+
+    <h2>Why the order separates</h2>
+    <p>The first condition makes the final tail feature smaller than the Gaussian feature:
+    $\varepsilon_n^r\delta_n^{s-1}\ll\varepsilon_n^{r+1}$. The second makes every earlier tail feature larger.</p>
+    <p>After the earlier Schur complements, Gaussian Gram&ndash;Schmidt leaves
+    $\varepsilon_n^{r+1}\sqrt{h_{r+1}}\,g$. Removing that direction leaves the final weighted label coordinate
+    $\varepsilon_n^r\delta_n^{s-1}\sqrt{\eta_{s-1}}\,b$.</p>
+    <p>Both vectors are nonzero by the extended-Chebyshev independence of the corresponding polynomial/exponential
+    evaluation systems. The next Gaussian feature is smaller because
+    $\varepsilon_n^2/\delta_n^{s-1}\to0$ under the two displayed assumptions.</p>
+
+    <h2>Three-tail certificate</h2>
+    <p>Take $s=3$, $k=6$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2)$, and $\delta_n=\varepsilon_n^{2/3}$.</p>
+    <p>The first-tail, interlaced-Gaussian, and last-tail coefficients are</p>
+    $$(3.038546555413267,\ 0.003619140256121,\ 0.001322737315070).$$
+    <p>At $n=262144$, their exact normalized ratios are
+    $(0.999482786612,1.003103317250,0.996063092098)$. The 260-digit certificate also checks the primary block,
+    full confluent rank, monotone convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,k,r,q,$ and $\gamma$ at one fixed positive maturity. It gives
+    little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, offsets, or separation
+    windows.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

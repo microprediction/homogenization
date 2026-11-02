@@ -1,0 +1,74 @@
+<!-- title: A Gaussian mode interlaces the final tail derivative · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-final-tail-collision.html">&larr; boundary collision</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_final_tail_interlacing.py">certificate</a></span></p>
+    <h1>A Gaussian mode interlaces the final tail derivative</h1>
+    <p class="subtitle">Below the last collision, the next Gaussian feature separates between two tail scales.</p>
+
+    <p class="lead">At the critical boundary, the final tail derivative and next Gaussian feature share one scale.
+    In the adjacent open window, the Gaussian mode moves ahead of that last derivative but remains behind every
+    earlier tail mode.</p>
+
+    <h2>Final-tail interlacing theorem</h2>
+    <p>Use the $s$-tail triangular law, weights, centered distinct offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Assume
+    $s\ge3$, $1\le r\le k-s-2$, and</p>
+    $$\frac{\delta_n^{s-1}}{\varepsilon_n}\longrightarrow0,
+      \qquad
+      \frac{\varepsilon_n}{\delta_n^{s-2}}\longrightarrow0.$$
+    <p>Equivalently, $\delta_n^{s-1}\ll\varepsilon_n\ll\delta_n^{s-2}$.</p>
+
+    <p>For $1\le j\le s-2$, the earlier tail modes retain their ladder coefficients:</p>
+    $$\lambda_{r+2+j}(K_n)=
+      \eta_j\|R_jv_j\|_2^2\varepsilon_n^{2r}\delta_n^{2j}
+      +o(\varepsilon_n^{2r}\delta_n^{2j}).$$
+
+    <p>Let $P_G$ project orthogonally away from</p>
+    $$L_G=\operatorname{span}\{\phi_0,\ldots,\phi_r,v_0,\ldots,v_{s-2}\},$$
+    <p>and set $g=P_G\phi_{r+1}$. If $h_{r+1}$ is the residual variance of
+    $Z_{r+1}=|G|^c(\log|G|)^{r+1}$ after projection onto $Z_0,\ldots,Z_r$, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+s+1}(K_n)=
+      h_{r+1}\|g\|_2^2\varepsilon_n^{2(r+1)}
+      +o(\varepsilon_n^{2(r+1)}).$$
+    </div>
+
+    <p>Let $P_T$ project away from
+    $L_T=\operatorname{span}\{\phi_0,\ldots,\phi_{r+1},v_0,\ldots,v_{s-2}\}$ and set
+    $b=P_Tv_{s-1}$. The final tail mode is</p>
+    <div class="equation-card">
+    $$\lambda_{r+s+2}(K_n)=
+      \eta_{s-1}\|b\|_2^2\varepsilon_n^{2r}\delta_n^{2(s-1)}
+      +o(\varepsilon_n^{2r}\delta_n^{2(s-1)}).$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2r}\delta_n^{2(s-1)})$.</p>
+
+    <h2>Why the order separates</h2>
+    <p>The first condition makes the final tail feature smaller than the Gaussian feature:
+    $\varepsilon_n^r\delta_n^{s-1}\ll\varepsilon_n^{r+1}$. The second makes every earlier tail feature larger.</p>
+    <p>After the earlier Schur complements, Gaussian Gram&ndash;Schmidt leaves
+    $\varepsilon_n^{r+1}\sqrt{h_{r+1}}\,g$. Removing that direction leaves the final weighted label coordinate
+    $\varepsilon_n^r\delta_n^{s-1}\sqrt{\eta_{s-1}}\,b$.</p>
+    <p>Both vectors are nonzero by the extended-Chebyshev independence of the corresponding polynomial/exponential
+    evaluation systems. The next Gaussian feature is smaller because
+    $\varepsilon_n^2/\delta_n^{s-1}\to0$ under the two displayed assumptions.</p>
+
+    <h2>Three-tail certificate</h2>
+    <p>Take $s=3$, $k=6$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2)$, and $\delta_n=\varepsilon_n^{2/3}$.</p>
+    <p>The first-tail, interlaced-Gaussian, and last-tail coefficients are</p>
+    $$(3.038546555413267,\ 0.003619140256121,\ 0.001322737315070).$$
+    <p>At $n=262144$, their exact normalized ratios are
+    $(0.999482786612,1.003103317250,0.996063092098)$. The 260-digit certificate also checks the primary block,
+    full confluent rank, monotone convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,k,r,q,$ and $\gamma$ at one fixed positive maturity. It gives
+    little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, offsets, or separation
+    windows.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
