@@ -1,0 +1,67 @@
+<!-- title: Rare contamination and translation-Gram limits · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-conditioning.html">&larr; Gram conditioning</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_contamination.py">certificate</a></span></p>
+    <h1>Rare contamination and translation-Gram limits</h1>
+    <p class="subtitle">Weak convergence and one fixed moment do not control a coalescing nonlinear-output Gram.</p>
+
+    <p class="lead">A vanishing atom can disappear from the limiting law and from the covariance at one exponent,
+    yet survive exactly on the smallest-eigenvalue scale when two exponents coalesce. This gives a sharp obstruction
+    to replacing local uniform integrability by fixed-exponent convergence.</p>
+
+    <h2>Contamination theorem</h2>
+    <p>Fix $c&gt;0$. Let $G$ be standard Gaussian and let $X_n$ have law</p>
+    $$P_n=(1-p_n)\mathcal L(G)+p_n\delta_{A_n},\qquad A_n\longrightarrow\infty,\quad p_n\longrightarrow0.$$
+    <p>Take $\varepsilon_n\downarrow0$ and suppose, for finite $\tau,q\ge0$, that</p>
+    $$\varepsilon_n\log A_n\longrightarrow\tau,\qquad
+      \frac{p_nA_n^{2c}}{\varepsilon_n^2}\longrightarrow q.$$
+    <p>Let $K_n$ be the covariance Gram of the symmetric power pair
+    $|X_n|^{c-\varepsilon_n/2}$ and $|X_n|^{c+\varepsilon_n/2}$. Define</p>
+    $$V_c=\operatorname{Var}(|G|^c),\qquad
+      D_c=\det\operatorname{Gram}\left(|G|^c-M_c,\ |G|^c\log|G|-M_c'\right).$$
+    <p>Then</p>
+    <div class="equation-card">
+    $$\frac{\lambda_{\min}(K_n)}{\varepsilon_n^2}\longrightarrow
+      \frac{D_c}{2V_c}+q\{\cosh(\tau)-1\}.$$
+    </div>
+    <p>The Gaussian coefficient is recovered only when $q=0$ or $\tau=0$. Total variation convergence
+    $\|P_n-\mathcal L(G)\|_{\mathrm{TV}}\le p_n\to0$ therefore does not determine the joint coalescing limit.</p>
+
+    <h2>A fixed-moment counterexample</h2>
+    <p>Set $\varepsilon_n=1/n$, $A_n=e^n$, and $p_n=e^{-2cn}/n^2$. Then $\tau=q=1$ and</p>
+    $$X_n\Rightarrow G,\qquad
+      \mathbb E|X_n|^{2c}-\mathbb E|G|^{2c}=n^{-2}+o(n^{-2}).$$
+    <p>Thus the fixed-$c$ covariance converges, even with its second moment, while the coalescing coefficient is not
+    Gaussian. At $c=1$ the Gaussian term, contamination increment, and resulting coefficient are</p>
+    $$(0.034370195591,\ 0.543080634815,\ 0.577450830406).$$
+    <p>The exact mixture certificate gives $0.576932644247$ at $n=2048$, which is $0.999102631546$ of the
+    contaminated limit but $16.7858411721$ times the Gaussian prediction.</p>
+
+    <h2>Proof</h2>
+    <p>For arbitrary exponents $a,b$, the mixture covariance has the exact decomposition</p>
+    $$\operatorname{Cov}_{P_n}(|X_n|^a,|X_n|^b)
+      =(1-p_n)K_G(a,b)+p_n(1-p_n)(A_n^a-M_a)(A_n^b-M_b).$$
+    <p>At $a_i=c+\varepsilon_nx_i$, $x=(-1/2,1/2)$, the second term divided by $\varepsilon_n^2$ converges to
+    $qvv^\top$, where $v=(e^{-\tau/2},e^{\tau/2})^\top$. Terms containing a Gaussian moment vanish because
+    $A_n^c\to\infty$.</p>
+    <p>The leading Gaussian Gram is $V_c\mathbf1\mathbf1^\top$, whose null unit vector is
+    $u=(1,-1)^\top/\sqrt2$. The Gaussian second-order eigenvalue coefficient is $D_c/(2V_c)$, and the added
+    coefficient is</p>
+    $$q\,u^\top vv^\top u=\frac q2(e^{\tau/2}-e^{-\tau/2})^2=q\{\cosh(\tau)-1\}.$$
+    <p>This proves the theorem by the two-dimensional symmetric eigenvalue formula, or equivalently by continuous
+    perturbation of its simple zero eigenvalue.</p>
+
+    <h2>Which hypothesis fails</h2>
+    <p>For the concrete sequence, the rare-atom contributions to the derivative Gram of the centered map
+    $a\mapsto |X_n|^a-\mathbb E|X_n|^a$ have orders $n^{-2}$, $n^{-1}$, and $1$ in entries $(0,0)$, $(0,1)$,
+    and $(1,1)$. Hence the value covariance converges but the derivative Gram does not.</p>
+    <p>The uniform $L^2$ Taylor bound also fails: every fixed neighborhood to the right of $c$ sees exponentially
+    growing rare-atom derivatives. The joint theorem's local derivative-Gram and Taylor assumptions exclude exactly
+    this boundary-layer contamination.</p>
+
+    <h2>Scope</h2>
+    <p>This is a triangular-law counterexample for nonlinear outputs at one fixed positive maturity. It neither
+    changes fixed-feature Green&ndash;Kubo rank nor creates rank by integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Huber1964">Huber (1964)</a> introduced the classical Gaussian contamination
+    model. The coalescing spectral boundary and its exact coefficient are derived here.</p>
+  </main>
