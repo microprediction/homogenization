@@ -59,6 +59,17 @@ def vandermonde(nodes):
     return product
 
 
+def vandermonde_matrix(nodes):
+    """Return the factorial-scaled square Vandermonde matrix."""
+    return mp.matrix([
+        [
+            nodes[column] ** row / mp.factorial(row)
+            for column in range(len(nodes))
+        ]
+        for row in range(len(nodes))
+    ])
+
+
 def descending_eigenvalues(matrix):
     """Return symmetric eigenvalues in descending order."""
     return list(reversed(list(mp.eigsy(matrix, eigvals_only=True))))
@@ -90,6 +101,14 @@ def main():
         mp.det(four_derivatives)
         * (vandermonde(nodes) / factorial_product) ** 2
     )
+    derivative_cholesky = mp.cholesky(four_derivatives)
+    node_matrix = vandermonde_matrix(nodes)
+    node_cholesky = mp.cholesky(node_matrix * node_matrix.T)
+    eigenvalue_coefficients = [
+        (derivative_cholesky[index, index]
+         * node_cholesky[index, index]) ** 2
+        for index in range(4)
+    ]
 
     determinant_rows = []
     for epsilon in map(mp.mpf, ("0.05", "0.025", "0.0125", "0.00625", "0.003125")):
@@ -112,6 +131,11 @@ def main():
         mp.log(coarse_eigenvalues[index] / fine_eigenvalues[index], 2)
         for index in range(4)
     ]
+    eigenvalue_ratios = [
+        fine_eigenvalues[index]
+        / (eigenvalue_coefficients[index] * fine ** (2 * index))
+        for index in range(4)
+    ]
 
     print("Coalescing translation-hull Gram conditioning certificate")
     print(f"c=1 variance {float(variance):.12f}")
@@ -126,6 +150,10 @@ def main():
             f"{float(condition_ratio):.9f}"
         )
     print(f"four-output leading coefficient {float(four_coefficient):.15f}")
+    print("four-output eigenvalue coefficients " + " ".join(
+        f"{float(coefficient):.12f}"
+        for coefficient in eigenvalue_coefficients
+    ))
     for epsilon, determinant_ratio in determinant_rows:
         print(
             f"epsilon {float(epsilon):.6f}: determinant ratio "
@@ -133,6 +161,9 @@ def main():
         )
     print("four-output eigenvalue exponents " + " ".join(
         f"{float(exponent):.6f}" for exponent in eigenvalue_exponents
+    ))
+    print("four-output eigenvalue coefficient ratios " + " ".join(
+        f"{float(ratio):.9f}" for ratio in eigenvalue_ratios
     ))
 
     ok = True
@@ -148,6 +179,9 @@ def main():
     ok &= abs(pair_rows[-1][2] - 1) < mp.mpf("0.0004")
     ok &= abs(pair_rows[-1][3] - 1) < mp.mpf("0.0006")
     ok &= four_coefficient > mp.mpf("0.00005")
+    ok &= abs(
+        mp.fprod(eigenvalue_coefficients) - four_coefficient
+    ) < mp.mpf("1e-14")
     ok &= all(
         abs(determinant_rows[index][1] - 1)
         < abs(determinant_rows[index - 1][1] - 1)
@@ -159,6 +193,7 @@ def main():
         abs(eigenvalue_exponents[index] - 2 * index)
         for index in range(1, 4)
     ) < mp.mpf("0.01")
+    ok &= max(abs(ratio - 1) for ratio in eigenvalue_ratios) < mp.mpf("0.01")
     print("PASS" if ok else "FAIL")
     if not ok:
         raise SystemExit(1)
