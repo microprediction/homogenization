@@ -3416,5 +3416,16 @@
   "doi": "10.1214/aoms/1177703732",
   "url": "https://doi.org/10.1214/aoms/1177703732",
   "annotation": "Introduces Gaussian gross-error contamination neighborhoods. The translation-Gram counterexample uses a vanishing triangular contamination to isolate the missing local moment control."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "VonBahr1965",
+  "authors": "von Bahr, B.",
+  "year": 1965,
+  "title": "On the convergence of moments in the central limit theorem",
+  "venue": "The Annals of Mathematical Statistics 36(3), 808-818",
+  "doi": "10.1214/aoms/1177700055",
+  "url": "https://doi.org/10.1214/aoms/1177700055",
+  "annotation": "Studies convergence and rates for moments under the central limit theorem. The translation-Gram moment-buffer note uses the same higher-moment principle for log-weighted power derivatives."
  }
 ]
