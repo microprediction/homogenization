@@ -3383,5 +3383,16 @@
   "doi": "10.1214/aop/1176992159",
   "url": "https://doi.org/10.1214/aop/1176992159",
   "annotation": "Develops limit theory for vector Markov-additive functionals through eigenvalues and eigenfunctions of generating kernels, the spectral central-limit framework used at the finite-slope boundary."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Bochner1927",
+  "authors": "Bochner, S.",
+  "year": 1927,
+  "title": "Beiträge zur Theorie der fastperiodischen Funktionen",
+  "venue": "Mathematische Annalen 96, 119-147",
+  "doi": "10.1007/bf01209156",
+  "url": "https://doi.org/10.1007/bf01209156",
+  "annotation": "Develops the compact-translate characterization of almost-periodic functions, the classical context for the periodic translation hull used in the bounded-slope counterexample."
  }
 ]
