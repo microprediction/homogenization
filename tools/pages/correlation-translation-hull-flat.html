@@ -1,0 +1,83 @@
+<!-- title: Translation-hull covariance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-oscillatory-slope-flat.html">&larr; oscillatory-slope covariance</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_hull_flat.py">certificate</a></span></p>
+    <h1>Translation-hull covariance</h1>
+    <p class="subtitle">Without adiabaticity, the whole local profile replaces the instantaneous logarithmic slope.</p>
+
+    <p class="lead">A bounded positive slope always has compact local translates, but those translates need not become
+    linear. Each limiting translate produces its own Gaussian functional, which characterizes every subsequential
+    covariance constant and shows exactly why one derivative value can be insufficient.</p>
+
+    <h2>The subsequence theorem</h2>
+    <p>Use the fixed-maturity finite-chain and tangent-gauge setup of the
+    <a href="./correlation-oscillatory-slope-flat.html">adiabatic theorem</a>. Assume only that $h$ is eventually
+    $C^1$ and, for fixed constants,</p>
+    $$0&lt;c_-\le h'(x)\le c_+&lt;\infty.$$
+    <p>For a sequence $n_k=m_kT\to\infty$, put $L_k=\tfrac12\log n_k$ and</p>
+    $$q_k(s)=h(L_k+s)-h(L_k).$$
+    <p>Suppose $q_k\to q$ locally uniformly on $\mathbb R$. Define</p>
+    $$A_q(z)=\begin{cases}
+      \exp\{-q(-\log\rho(z))\},&z\ne0,\\
+      0,&z=0.
+    \end{cases}$$
+    <p>Then for $p=1,2$, uniformly over arbitrary initial regime priors,</p>
+    <div class="equation-card">
+    $$e^{p h(L_k)}\mathbb E\Psi_{h,r}(W_{m_k,T})^p
+      \longrightarrow\mathbb E A_q(G)^p,\qquad G\sim N(0,\Gamma).$$
+    </div>
+    <p>Consequently,</p>
+    $$e^{2h(L_k)}\operatorname{Var}(\Psi_{h,r}(W_{m_k,T}))
+      \longrightarrow\operatorname{Var}\{A_q(G)\}.$$
+
+    <h2>Why this is complete</h2>
+    <p>The functions $q_k$ vanish at zero and are equi-Lipschitz. Arzel&agrave;&ndash;Ascoli and a diagonal argument
+    therefore give a locally uniform limit along a further subsequence of every sequence $L_k\to\infty$.</p>
+    <p>Every limit satisfies
+    $c_-(s-t)\le q(s)-q(t)\le c_+(s-t)$ for $s\ge t$. This bounds $A_q$ between fixed powers near zero and infinity,
+    so spectral concentration gives uniform integrability and the finite-chain central limit theorem passes both moments.</p>
+    <p>Thus every covariance subsequence has a further limit of the displayed form, and every attainable translation-hull
+    element supplies one. When $h''\to0$, each hull element is linear, $q(s)=cs$, recovering the moving power constant
+    in the preceding theorem.</p>
+
+    <h2>Error scope</h2>
+    <p>Let $\delta_{k,R}=\sup_{|s|\le R}|q_k(s)-q(s)|$. On the annulus
+    $e^{-R}\le\rho(z)\le e^R$, the normalized $p$th-power integrands differ multiplicatively by at most</p>
+    $$\exp(p\delta_{k,R})-1.$$
+    <p>The global statement has additive $o(1)$ error after normalization. A numerical rate requires rates for
+    $\delta_{k,R}$, tangent-gauge convergence, the finite-chain central limit approximation and both truncated tails;
+    none is hidden in the qualitative theorem.</p>
+
+    <h2>A same-slope counterexample</h2>
+    <p>Take $h(t)=t+0.8\sin t$, so $0.2\le h'(t)\le1.8$. Along $L_k=2\pi k+\theta$,</p>
+    $$q_\theta(s)=s+0.8\{\sin(\theta+s)-\sin\theta\},$$
+    $$A_\theta(z)=\rho(z)\exp\{0.8[\sin\theta-\sin(\theta-\log\rho(z))]\}.$$
+    <p>The phases $\theta=\pi/2$ and $3\pi/2$ both have instantaneous slope $h'(L_k)=1$, but for the scalar
+    Gaussian gauge their variance constants are respectively</p>
+    $$0.487847157924\qquad\text{and}\qquad0.291381213425.$$
+    <p>The power-law constant from the instantaneous slope alone would be
+    $1-2/\pi=0.363380227632$. The equal-slope phase gap is $0.196465944499$, proving that the adiabatic hypothesis
+    in the preceding theorem cannot simply be dropped.</p>
+
+    <h2>Exact telegraph certificate</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>phase</th><th>cycle</th><th>$L_k$</th><th>exact / hull profile</th></tr></thead>
+      <tbody>
+        <tr><td>$\pi/2$</td><td>1</td><td>7.853981634</td><td>.999999675</td></tr>
+        <tr><td>$\pi/2$</td><td>2</td><td>14.137166941</td><td>1.000000000</td></tr>
+        <tr><td>$3\pi/2$</td><td>0</td><td>4.712388980</td><td>.999973084</td></tr>
+        <tr><td>$3\pi/2$</td><td>1</td><td>10.995574288</td><td>1.000000000</td></tr>
+      </tbody>
+    </table></div>
+    <p>The certificate integrates the exact atom-plus-Bessel telegraph law. It independently reproduces each
+    phase-specific Gaussian constant rather than substituting an instantaneous power.</p>
+
+    <h2>Literature and scope</h2>
+    <p><a href="./bibliography.html#Bochner1927">Bochner (1927)</a> gives the classical compact-translate context for
+    almost-periodic functions; compactness here follows directly from Arzel&agrave;&ndash;Ascoli.
+    <a href="./bibliography.html#NeyNummelin1987I">Ney and Nummelin (1987)</a> supply the spectral Markov limit theory.</p>
+    <p><a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and Nir (2010)</a> derive the
+    Bessel occupation density used by the certificate. The translation-hull covariance theorem is derived here.</p>
+    <p>This is a fixed-feature, fixed-positive-maturity scalar variance theorem. Singular $\Gamma$ is handled on its
+    support, and no covariance-rank statement after integrating distinct maturity loadings is made.</p>
+  </main>
