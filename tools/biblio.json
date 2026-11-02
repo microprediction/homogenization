@@ -3405,5 +3405,16 @@
   "doi": "10.4153/cmb-1962-027-1",
   "url": "https://doi.org/10.4153/cmb-1962-027-1",
   "annotation": "Records the Hilbert-space geometry of Gram matrices. The translation-hull covariance note uses the covariance inner product to turn normalized nonlinear outputs into an exact rank criterion."
+ },
+ {
+  "role": "survey_correlation",
+  "key": "Huber1964",
+  "authors": "Huber, P. J.",
+  "year": 1964,
+  "title": "Robust estimation of a location parameter",
+  "venue": "The Annals of Mathematical Statistics 35(1), 73-101",
+  "doi": "10.1214/aoms/1177703732",
+  "url": "https://doi.org/10.1214/aoms/1177703732",
+  "annotation": "Introduces Gaussian gross-error contamination neighborhoods. The translation-Gram counterexample uses a vanishing triangular contamination to isolate the missing local moment control."
  }
 ]
