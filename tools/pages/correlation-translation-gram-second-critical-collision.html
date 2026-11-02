@@ -1,0 +1,72 @@
+<!-- title: Rare-tail Gram modes collide again at the next scale · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-subcritical-interlacing.html">&larr; interlacing window</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_second_critical_collision.py">certificate</a></span></p>
+    <h1>Rare-tail Gram modes collide again at the next scale</h1>
+    <p class="subtitle">At tail separation of order $\varepsilon^2$, the contrast meets the following Gaussian mode.</p>
+
+    <p class="lead">Between the first two collision scales, a Gaussian mode precedes the coalescing-tail contrast.
+    At the lower boundary they have equal size and form another explicit rank-two covariance block.</p>
+
+    <h2>Second-collision theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-5$, a slope $\tau&gt;0$, and
+    weights $q_1,q_2&gt;0$. Put $Q=q_1+q_2$, $\gamma_1=-q_2/Q$, and $\gamma_2=q_1/Q$.</p>
+    <p>Let $\varepsilon_n,\delta_n\downarrow0$ satisfy $\delta_n/\varepsilon_n^2\to\rho\in(0,\infty)$.
+    Use the same Gaussian-plus-two-atom triangular law as in the preceding results, with</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$.</p>
+
+    <p>Write $\phi_a=(x_j^a/a!)_j$, $v=(e^{\tau x_j})_j$, and $\dot v=(x_je^{\tau x_j})_j$. Let $P_1$
+    project orthogonally away from</p>
+    $$L_1=\operatorname{span}\{\phi_0,\ldots,\phi_{r+1},v\},$$
+    <p>and put $a=P_1\phi_{r+2}$ and $b=P_1\dot v$.</p>
+
+    <p>For $G\sim N(0,1)$, center $Z_j=|G|^c(\log|G|)^j$ and define</p>
+    $$h_{r+2}=\left\|Z_{r+2}
+      -\operatorname{proj}_{\operatorname{span}\{Z_0,\ldots,Z_{r+1}\}}Z_{r+2}\right\|_{L^2}^2.$$
+    <p>The second critical matrix is</p>
+    $$M_\rho=h_{r+2}aa^\top+\frac{q_1q_2}{Q}\rho^2bb^\top.$$
+    <p>It has rank two. If $\nu_1\ge\nu_2&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+3+j}(K_n)=\nu_j\varepsilon_n^{2r+4}
+      +o(\varepsilon_n^{2r+4}),\qquad j=1,2.$$
+    </div>
+    <p>The intervening eigenvalue remains</p>
+    $$\lambda_{r+3}(K_n)=h_{r+1}\|P_0\phi_{r+1}\|^2\varepsilon_n^{2r+2}
+      +o(\varepsilon_n^{2r+2}),$$
+    <p>where $P_0$ projects away from $\operatorname{span}\{\phi_0,\ldots,\phi_r,v\}$. Every remaining
+    eigenvalue is $o(\varepsilon_n^{2r+4})$.</p>
+
+    <h2>Proof</h2>
+    <p>The preceding Schur complement removes $L_1$, including the order-$\varepsilon_n^{r+1}$ Gaussian feature.
+    Gaussian Gram&ndash;Schmidt next leaves
+    $\varepsilon_n^{r+2}\sqrt{h_{r+2}}\,a$.</p>
+    <p>Weighted centering of the two tail labels leaves
+    $\varepsilon_n^r\delta_n\sqrt{q_1q_2/Q}\,b$. Division by $\varepsilon_n^{r+2}$ makes this feature converge
+    to $\rho\sqrt{q_1q_2/Q}\,b$.</p>
+    <p>The latent Gaussian and label-contrast features are orthogonal, so their covariance matrices add. The
+    scaled Schur complement therefore converges to $M_\rho$, and finite-dimensional spectral perturbation gives
+    the displayed eigenvalue limits.</p>
+    <p>The vectors $a$ and $b$ are independent. Otherwise a nonzero combination of
+    $1,x,\ldots,x^{r+2},e^{\tau x},xe^{\tau x}$ would vanish at $k\ge r+5$ distinct nodes, contradicting the
+    extended Chebyshev property.</p>
+
+    <h2>Seven-output certificate</h2>
+    <p>Take $c=\tau=q_1=1$, $q_2=2$, $x=(-3,-2,-1,0,1,2,3)$, $r=2$, $\rho=3/2$, and
+    $\varepsilon_n=1/n$. The two predicted eighth-order coefficients are</p>
+    $$(\nu_1,\nu_2)=(0.098789647380103,0.000079884359623).$$
+    <p>At $n=2048$, the exact coefficient ratios are $(0.999478273903,1.002655309467)$. The 240-digit certificate
+    also checks the earlier fourth- and sixth-order modes, monotone convergence, positivity, and full confluent rank.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws and nonlinear outputs at one fixed positive
+    maturity. It gives a limiting block for fixed $\rho$, not a finite-$n$ error bound or a uniform statement over
+    moving $\rho$.</p>
+    <p>The result concerns the output covariance Gram. It changes neither fixed-feature Green&ndash;Kubo rank nor rank
+    obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies the classical column-confluence geometry,
+    <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional self-adjoint perturbation theory,
+    and <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the zero-count argument.</p>
+  </main>
