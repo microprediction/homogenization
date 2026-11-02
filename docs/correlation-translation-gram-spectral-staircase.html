@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rare tails create a Gram spectral staircase · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-order-lift.html">&larr; penultimate scale</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_spectral_staircase.py">certificate</a></span></p>
+    <h1>Rare tails create a Gram spectral staircase</h1>
+    <p class="subtitle">At every intermediate scale, one rare direction promotes exactly one extra eigenvalue.</p>
+
+    <p class="lead">The penultimate-scale order lift is one step of a complete hierarchy. A rank-one tail at scale
+    $\varepsilon^{2r}$ leaves the first $r$ eigenvalue coefficients intact, but makes both of the next two
+    eigenvalues live at that scale.</p>
+
+    <h2>Intermediate-scale theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, and an integer $1\le r\le k-2$. Let $G$ be standard
+    Gaussian and</p>
+    $$P_n=(1-p_n)\mathcal L(G)+p_n\delta_{A_n},\qquad
+      \varepsilon_n\downarrow0,\quad A_n\longrightarrow\infty,\quad p_n\longrightarrow0.$$
+    <p>Suppose, for finite $\tau&gt;0$ and $q&gt;0$, that</p>
+    $$\varepsilon_n\log A_n\longrightarrow\tau,\qquad
+      \frac{p_nA_n^{2c}}{\varepsilon_n^{2r}}\longrightarrow q.$$
+    <p>Let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$. Put
+    $\phi_s=(x_j^s/s!)_{j=1}^k$,</p>
+    $$E_r=\operatorname{span}\{\phi_0,\ldots,\phi_{r-1}\},\qquad
+      N_r=E_r^\perp,$$
+    <p>and let $P_r$ be orthogonal projection onto $N_r$. Define</p>
+    $$a_r=\frac{P_r\phi_r}{\|P_r\phi_r\|_2},\qquad
+      w_r=P_rv_\tau,\qquad v_\tau=(e^{\tau x_j})_{j=1}^k.$$
+    <p>Let $c_j=\{(R_c)_{jj}(L_x)_{jj}\}^2$ be the Gaussian spectral constants, with one-based indices, from the
+    exact coalescing-Gram theorem. Set $\alpha_r=a_r^\top w_r$, $\beta_r^2=\|w_r\|_2^2-\alpha_r^2$, and</p>
+    $$T_r=c_{r+1}+q\|w_r\|_2^2,\qquad
+      \mu_{r,\pm}=\frac{T_r\pm\sqrt{T_r^2-4qc_{r+1}\beta_r^2}}2.$$
+    <div class="equation-card">
+    $$\frac{\lambda_j(K_n)}{\varepsilon_n^{2(j-1)}}\longrightarrow c_j\quad(1\le j\le r),$$
+    $$\lambda_{r+1}(K_n)=\mu_{r,+}\varepsilon_n^{2r}+o(\varepsilon_n^{2r}),\qquad
+      \lambda_{r+2}(K_n)=\mu_{r,-}\varepsilon_n^{2r}+o(\varepsilon_n^{2r}).$$
+    </div>
+    <p>Eigenvalues are ordered decreasingly. Exponential divided differences give $\beta_r^2&gt;0$, so the Gaussian
+    order $\varepsilon_n^{2(r+1)}$ of $\lambda_{r+2}$ is promoted to $\varepsilon_n^{2r}$.</p>
+
+    <h2>Why the staircase has two steps at one level</h2>
+    <p>Eliminate $E_r$ by a Schur complement. After division by $\varepsilon_n^{2r}$, the Gaussian effective block
+    on $N_r$ converges to $c_{r+1}a_ra_r^\top$.</p>
+    <p>The exact mixture covariance identity adds $q w_rw_r^\top$; every coupling through $E_r$ is
+    $o(\varepsilon_n^{2r})$. The limiting effective matrix is therefore</p>
+    $$M_r=c_{r+1}a_ra_r^\top+qw_rw_r^\top.$$
+    <p>Its only nonzero eigenvalues are $\mu_{r,+}$ and $\mu_{r,-}$. They are both positive because $w_r$ is not
+    collinear with $a_r$: otherwise the exponential data at the distinct nodes would agree with a polynomial of
+    degree at most $r$, contradicting positivity of the next divided difference.</p>
+    <p>Weyl's inequality preserves the first $r$ Gaussian coefficients because the rare block has norm
+    $O(\varepsilon_n^{2r})$. Spectral separation and finite-dimensional self-adjoint perturbation then give the
+    displayed limits.</p>
+
+    <h2>Five-output middle-step certificate</h2>
+    <p>Take $c=1$, $x=(-2,-1,0,1,2)$, $r=2$, $\varepsilon_n=1/n$, $A_n=e^n$, and
+    $p_n=e^{-2n}/n^4$. Here</p>
+    $$a_2=\frac{(2,-1,-2,-1,2)}{\sqrt{14}},\qquad c_3=0.146137136435956.$$
+    <p>The predicted coefficients for the third and fourth eigenvalues are</p>
+    $$(\mu_{2,+},\mu_{2,-})=(7.894885176600677, 0.012431942202026).$$
+    <p>At $n=1024$, exact division by $\varepsilon_n^4$ gives
+    $(7.872514362209916,0.012434054561630)$, or ratios $(0.997166416751,1.000169913885)$ to the theorem.</p>
+    <p>The excess fixed $2c$ moment is $n^{-4}+o(n^{-4})$. Repeating the construction for
+    $r=1,\ldots,k-2$ places the order lift at any chosen step of the coalescing spectrum.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a triangular-law theorem for nonlinear outputs at one fixed positive maturity. It changes neither
+    fixed-feature Green&ndash;Kubo rank nor rank obtained by integrating different maturity loadings.</p>
+    <p>Every remainder is pointwise along sequences satisfying the two displayed convergence assumptions. No
+    finite-$n$ rate is asserted without quantitative rates for those assumptions.</p>
+    <p><a href="./bibliography.html#Kato1995">Kato</a> supplies the self-adjoint perturbation framework, and
+    <a href="./bibliography.html#Gautschi1978">Gautschi</a> treats confluent-Vandermonde geometry. The
+    intermediate rare-tail staircase is derived here.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
