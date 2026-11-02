@@ -1,0 +1,66 @@
+<!-- title: Tail and Gaussian Gram modes collide at one critical scale · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-coalescing-tails.html">&larr; separated scales</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_critical_tail_collision.py">certificate</a></span></p>
+    <h1>Tail and Gaussian Gram modes collide at one critical scale</h1>
+    <p class="subtitle">When tail separation is proportional to exponent spacing, two mechanisms form one rank-two block.</p>
+
+    <p class="lead">A coalescing rare-tail mode dominates the next Gaussian mode when its slope separation is much
+    larger than the exponent spacing. At comparable scales neither coefficient survives alone: the two projected
+    derivative directions combine in an explicit positive matrix.</p>
+
+    <h2>Critical-collision theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-4$, a slope $\tau&gt;0$, and
+    weights $q_1,q_2&gt;0$. Put $Q=q_1+q_2$, $\gamma_1=-q_2/Q$, and $\gamma_2=q_1/Q$.</p>
+    <p>For $\varepsilon_n,\delta_n\downarrow0$ with $\delta_n/\varepsilon_n\to\rho\in(0,\infty)$, define</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and use the Gaussian-plus-two-atom law from the separated-scale theorem. Let $K_n$ be the covariance Gram
+    of $|X_n|^{c+\varepsilon_nx_j}$.</p>
+
+    <p>Write $\phi_a=(x_j^a/a!)_j$, $v=(e^{\tau x_j})_j$, and $\dot v=(x_je^{\tau x_j})_j$. Let
+    $P$ project orthogonally away from</p>
+    $$L=\operatorname{span}\{\phi_0,\ldots,\phi_r,v\},\qquad
+      g=P\phi_{r+1},\qquad b=P\dot v.$$
+    <p>For $G\sim N(0,1)$, center $Z_a=|G|^c(\log|G|)^a$ and define the positive Gaussian residual variance</p>
+    $$h_{r+1}=\left\|Z_{r+1}-\operatorname{proj}_{\operatorname{span}\{Z_0,\ldots,Z_r\}}Z_{r+1}\right\|_{L^2}^2.$$
+    <p>The critical matrix is</p>
+    $$N_\rho=h_{r+1}gg^\top+\frac{q_1q_2}{Q}\rho^2bb^\top.$$
+    <p>It has rank two. If $\nu_1\ge\nu_2&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+2+j}(K_n)=\nu_j\varepsilon_n^{2(r+1)}
+      +o(\varepsilon_n^{2(r+1)}),\qquad j=1,2.$$
+    </div>
+    <p>The first $r$ Gaussian coefficients and the two primary order-$\varepsilon_n^{2r}$ coefficients remain those
+    of the preceding theorem. Every remaining eigenvalue is $o(\varepsilon_n^{2(r+1)})$.</p>
+
+    <h2>Proof</h2>
+    <p>Gram&ndash;Schmidt expansion of the centered Gaussian powers leaves, after the leading space $L$ is removed,
+    the feature $\varepsilon_n^{r+1}\sqrt{h_{r+1}},g$. Its covariance contribution is the first term of
+    $N_\rho$.</p>
+    <p>Weighted centering cancels the common tail derivative. The orthogonal label contrast leaves
+    $\varepsilon_n^r\delta_n\sqrt{q_1q_2/Q},b$, whose covariance converges after division by
+    $\varepsilon_n^{2(r+1)}$ to the second term of $N_\rho$.</p>
+    <p>The two latent features are orthogonal in the asymptotic Gram factorization, so their covariance matrices add.
+    The vectors $g$ and $b$ are independent: otherwise a combination of
+    $1,x,\ldots,x^{r+1},e^{\tau x},xe^{\tau x}$ would vanish at $k\ge r+4$ nodes, contradicting the extended
+    Chebyshev property.</p>
+
+    <h2>Six-output certificate</h2>
+    <p>Take $c=\tau=q_1=1$, $q_2=2$, $x=(-5,-3,-1,1,3,5)/2$, $r=2$, $\rho=3/2$, and
+    $\varepsilon_n=1/n$. The two critical sixth-order coefficients are</p>
+    $$(\nu_1,\nu_2)=(0.263605382159052,0.000140525839569).$$
+    <p>At $n=2048$, the exact coefficient ratios are $(0.997043033331,1.000968037032)$. The certificate also
+    checks both primary fourth-order modes and full rank of the concrete confluent evaluation matrix.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws at one fixed positive maturity. It gives a
+    limiting critical block, not a finite-$n$ error bound or a uniform statement over moving $\rho$.</p>
+    <p>The regimes $\delta_n/\varepsilon_n\to\infty$ and $\rho\in(0,\infty)$ are now separated. The theorem does
+    not address $\delta_n/\varepsilon_n\to0$, and it changes neither fixed-feature Green&ndash;Kubo rank nor rank after
+    integrating distinct maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1978">Gautschi</a> treats confluent-Vandermonde geometry, and
+    <a href="./bibliography.html#Kato1995">Kato</a> supplies the finite-dimensional self-adjoint perturbation
+    framework. <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the zero-count argument.</p>
+  </main>
