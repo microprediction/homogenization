@@ -1,0 +1,79 @@
+<!-- title: Rare-tail Gram modes interlace below the collision scale · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-critical-tail-collision.html">&larr; critical scale</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_subcritical_interlacing.py">certificate</a></span></p>
+    <h1>Rare-tail Gram modes interlace below the collision scale</h1>
+    <p class="subtitle">A Gaussian mode appears first, then the coalescing-tail contrast, before the next Gaussian mode.</p>
+
+    <p class="lead">At the critical scale, the next Gaussian mode and a rare-tail contrast form one rank-two block.
+    If tail separation lies strictly between exponent spacing and its square, those mechanisms instead occupy two
+    consecutive spectral scales with explicit coefficients.</p>
+
+    <h2>Subcritical-interlacing theorem</h2>
+    <p>Fix $c&gt;0$, distinct real nodes $x_1,\ldots,x_k$, $1\le r\le k-4$, a slope $\tau&gt;0$, and
+    weights $q_1,q_2&gt;0$. Put $Q=q_1+q_2$, $\gamma_1=-q_2/Q$, and $\gamma_2=q_1/Q$.</p>
+    <p>Let $\varepsilon_n,\delta_n\downarrow0$ satisfy</p>
+    $$\frac{\delta_n}{\varepsilon_n}\longrightarrow0,
+      \qquad \frac{\varepsilon_n^2}{\delta_n}\longrightarrow0.$$
+    <p>Thus $\varepsilon_n^2\ll\delta_n\ll\varepsilon_n$. Define the same Gaussian-plus-two-atom triangular law as
+    in the critical theorem, with</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c},$$
+    <p>and let $K_n$ be the covariance Gram of $|X_n|^{c+\varepsilon_nx_j}$.</p>
+
+    <p>Write $\phi_a=(x_j^a/a!)_j$, $v=(e^{\tau x_j})_j$, and $\dot v=(x_je^{\tau x_j})_j$. Let
+    $P_0$ and $P_1$ project orthogonally away from</p>
+    $$L_0=\operatorname{span}\{\phi_0,\ldots,\phi_r,v\},$$
+    $$L_1=\operatorname{span}\{\phi_0,\ldots,\phi_{r+1},v\},$$
+    <p>and put $g=P_0\phi_{r+1}$ and $b_1=P_1\dot v$.</p>
+
+    <p>For $G\sim N(0,1)$, center $Z_a=|G|^c(\log|G|)^a$ and define</p>
+    $$h_{r+1}=\left\|Z_{r+1}
+      -\operatorname{proj}_{\operatorname{span}\{Z_0,\ldots,Z_r\}}Z_{r+1}\right\|_{L^2}^2.$$
+    <p>Then the two consecutive small eigenvalues satisfy</p>
+    <div class="equation-card">
+    $$\lambda_{r+3}(K_n)=h_{r+1}\|g\|^2\varepsilon_n^{2r+2}
+      +o(\varepsilon_n^{2r+2}),$$
+    $$\lambda_{r+4}(K_n)=\frac{q_1q_2}{Q}\|b_1\|^2
+      \varepsilon_n^{2r}\delta_n^2
+      +o(\varepsilon_n^{2r}\delta_n^2).$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2r}\delta_n^2)$. The first $r$ Gaussian coefficients and
+    the two primary order-$\varepsilon_n^{2r}$ coefficients are unchanged from the preceding results.</p>
+
+    <h2>Why the modes separate</h2>
+    <p>After $L_0$ is removed, Gaussian Gram&ndash;Schmidt leaves
+    $\varepsilon_n^{r+1}\sqrt{h_{r+1}}\,g$. The tail contrast has feature size
+    $\varepsilon_n^r\delta_n$ and is smaller because $\delta_n/\varepsilon_n\to0$; the min&ndash;max principle gives
+    the first displayed limit.</p>
+    <p>For the next Schur complement, removing the Gaussian direction enlarges the leading space from $L_0$ to
+    $L_1$. Weighted centering of the two tail labels then leaves
+    $\varepsilon_n^r\delta_n\sqrt{q_1q_2/Q}\,b_1$, which gives the second coefficient.</p>
+    <p>The next Gaussian covariance scale is $\varepsilon_n^{2r+4}$. It is negligible relative to
+    $\varepsilon_n^{2r}\delta_n^2$ exactly because $\varepsilon_n^2/\delta_n\to0$; higher tail-confluence terms are
+    smaller by another factor $\delta_n^2$. Dividing that Schur complement by
+    $\varepsilon_n^{2r}\delta_n^2$ therefore leaves only $(q_1q_2/Q)b_1b_1^\top$, proving the second limit and
+    the remainder claim.</p>
+    <p>The coefficients are positive. The extended Chebyshev property makes the evaluations of
+    $1,x,\ldots,x^{r+1},e^{\tau x},xe^{\tau x}$ independent at $k\ge r+4$ distinct nodes, so neither projected
+    direction vanishes.</p>
+
+    <h2>Six-output certificate</h2>
+    <p>Take $c=\tau=q_1=1$, $q_2=2$, $x=(-5,-3,-1,1,3,5)/2$, $r=2$,
+    $\varepsilon_n=1/n$, and $\delta_n=\varepsilon_n^{3/2}$. The predicted coefficients are</p>
+    $$(h_3\|g\|^2,\ (q_1q_2/Q)\|b_1\|^2)
+      =(0.005820458842075,\ 0.002828594686281).$$
+    <p>At $n=2048$, the exact coefficient ratios are $(1.010095756755,0.990174721327)$. The 220-digit certificate
+    also checks both primary fourth-order modes, monotone convergence, positivity, and full confluent rank.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws and nonlinear outputs at one fixed positive
+    maturity. It asserts the stated little-$o$ remainders, not a finite-$n$ error bound or uniformity over all
+    separations between the two boundary scales.</p>
+    <p>The result concerns the output covariance Gram at fixed maturity. It changes neither fixed-feature
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> gives the classical column-confluence operation,
+    <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional self-adjoint perturbation theory,
+    and <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the zero-count argument.</p>
+  </main>
