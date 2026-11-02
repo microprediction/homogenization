@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conditioning of the translation-hull Gram · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-flat.html">&larr; translation-hull Gram</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_conditioning.py">certificate</a></span></p>
+    <h1>Conditioning of the translation-hull Gram</h1>
+    <p class="subtitle">Distinct power outputs have full rank, but coalescing exponents lose identification at exact rates.</p>
+
+    <p class="lead">The translation-hull Gram can be positive definite and still nearly singular. For powers of one
+    Gaussian feature, a confluent-Vandermonde expansion gives the determinant and every eigenvalue scale.</p>
+
+    <h2>Coalescing-exponent theorem</h2>
+    <p>Let $G\sim N(0,1)$, fix $c&gt;0$, and take distinct real numbers $x_1,\ldots,x_k$. For sufficiently small
+    positive $\varepsilon$, define</p>
+    $$F_{\varepsilon,j}=|G|^{c+\varepsilon x_j}-M_{c+\varepsilon x_j},
+      \qquad M_p=\mathbb E|G|^p.$$
+    <p>Let $K_\varepsilon$ be their covariance Gram matrix and put</p>
+    $$Y_r=|G|^c(\log|G|)^r-M_c^{(r)},\qquad
+      H_c=(\mathbb E[Y_rY_s])_{r,s=0}^{k-1},$$
+    $$(H_c)_{rs}=M^{(r+s)}(2c)-M^{(r)}(c)M^{(s)}(c),$$
+    $$\Delta(x)=\prod_{i&lt;j}(x_j-x_i).$$
+    <p>Then $H_c\succ0$ and</p>
+    <div class="equation-card">
+    $$\det K_\varepsilon=
+      \varepsilon^{k(k-1)}
+      \left\{\frac{\Delta(x)}{\prod_{r=0}^{k-1}r!}\right\}^{\!2}
+      \det H_c\{1+O(\varepsilon)\}.$$
+    </div>
+    <p>If the eigenvalues are ordered decreasingly, then</p>
+    $$\lambda_j(K_\varepsilon)=\Theta(\varepsilon^{2(j-1)}),
+      \qquad 1\le j\le k.$$
+
+    <h2>Proof</h2>
+    <p>The centered map $f(a)=|G|^a-M_a$ is analytic into $L^2$ near $c$, with $f^{(r)}(c)=Y_r$. Thus its
+    $k$ sampled columns have the $L^2$ expansion</p>
+    $$f(c+\varepsilon x_j)=
+      \sum_{r=0}^{k-1}\frac{\varepsilon^rx_j^r}{r!}Y_r+O_{L^2}(\varepsilon^k).$$
+    <p>The leading exterior product is
+    $\varepsilon^{k(k-1)/2}\Delta(x)(\prod r!)^{-1}Y_0\wedge\cdots\wedge Y_{k-1}$.
+    Squaring its norm gives the determinant formula.</p>
+    <p>No nonzero combination of the $Y_r$ is almost surely zero: it would make
+    $z^cP(\log z)$ constant on $(0,\infty)$, and the limit at zero first makes the constant zero and then forces
+    $P=0$. Hence $H_c\succ0$.</p>
+    <p>Finally, right multiplication by the fixed inverse Vandermonde matrix reduces the sampled-column operator to
+    an invertible derivative frame times $\operatorname{diag}(1,\varepsilon,\ldots,\varepsilon^{k-1})$, plus a
+    smaller remainder. Singular-value comparison gives the displayed eigenvalue hierarchy.</p>
+
+    <h2>Sharp two-output constants</h2>
+    <p>For the symmetric pair $c-\delta/2,c+\delta/2$, write
+    $V_c=\operatorname{Var}(|G|^c)$ and</p>
+    $$D_c=\det\operatorname{Gram}
+      \left(|G|^c-M_c, |G|^c\log|G|-M_c'\right)&gt;0.$$
+    <p>Symmetry removes the odd remainder terms, so</p>
+    <div class="equation-card">
+    $$\det K_\delta=D_c\delta^2+O(\delta^4),\qquad
+      \lambda_{\min}(K_\delta)=\frac{D_c}{2V_c}\delta^2+O(\delta^4),$$
+    $$\operatorname{cond}_2K_\delta=\frac{4V_c^2}{D_c}\delta^{-2}\{1+O(\delta^2)\}.$$
+    </div>
+    <p>At $c=1$, the certificate gives</p>
+    $$V_1=0.363380227632,\qquad D_1=0.024978898995,$$
+    $$\frac{D_1}{2V_1}=0.034370195591,\qquad
+      \frac{4V_1^2}{D_1}=21.145077668713.$$
+    <p>At $\delta=0.025$, the exact determinant, smallest eigenvalue and scaled condition number are respectively
+    $0.999854950$, $0.999683519$ and $1.000488120$ times these asymptotic predictions.</p>
+
+    <h2>Four-output certificate</h2>
+    <p>For $c=1$ and $x=(0,1,2,3)$, the Vandermonde-to-factorial ratio is one. The derivative-Gram determinant,
+    hence the leading coefficient of $\det K_\varepsilon/\varepsilon^{12}$, is $0.000054298718305$.</p>
+    <p>At $\varepsilon=0.003125$, the exact determinant ratio is $1.005256943$. Between $\varepsilon=0.00625$
+    and $0.003125$, the four measured eigenvalue exponents are
+    $(0.012231,2.005936,3.998635,5.990805)$, approaching $(0,2,4,6)$.</p>
+
+    <h2>Scope</h2>
+    <p>This is conditioning of the Gaussian-function Gram after the fixed-positive-maturity fast-switching limit.
+    It neither changes fixed-feature Green&ndash;Kubo rank nor integrates distinct maturity loadings.</p>
+    <p>The expansion holds for fixed $c$, fixed distinct nodes and $\varepsilon\downarrow0$. It gives no joint
+    finite-speed/coalescing-exponent error bound: that would require the quantitative translation, central-limit and
+    tail moduli deliberately left open by the preceding theorem.</p>
+    <p><a href="./bibliography.html#Halperin1962">Halperin (1962)</a> supplies the Hilbert-space Gram identity, while
+    <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a> treats inverse conditioning of ordinary and
+    confluent Vandermonde matrices. The covariance determinant and eigenvalue hierarchy above are derived here.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
