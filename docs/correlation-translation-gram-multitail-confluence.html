@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coalescing rare tails create a derivative Gram ladder · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-coalescing-tails.html">&larr; two-tail split</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_multitail_confluence.py">certificate</a></span></p>
+    <h1>Coalescing rare tails create a derivative Gram ladder</h1>
+    <p class="subtitle">For $s$ merging slopes, the $s-1$ lost directions return at successive even powers of the separation.</p>
+
+    <p class="lead">Distinct rare-tail slopes promote several eigenvalues at one scale. When all slopes merge,
+    weighted label polynomials and exponential derivatives determine a complete smaller-scale ladder.</p>
+
+    <h2>Multi-tail confluence theorem</h2>
+    <p>Fix $c,\tau&gt;0$, distinct nodes $x_1,\ldots,x_k$, integers $s\ge2$ and $1\le r\le k-s-1$,
+    positive weights $q_1,\ldots,q_s$, and distinct real offsets $\gamma_1,\ldots,\gamma_s$ satisfying
+    $\sum_\ell q_\ell\gamma_\ell=0$.</p>
+    <p>For $\varepsilon_n,\delta_n\downarrow0$, set</p>
+    $$\tau_{\ell n}=\tau+\gamma_\ell\delta_n,\qquad
+      A_{\ell n}=\exp(\tau_{\ell n}/\varepsilon_n),\qquad
+      p_{\ell n}=q_\ell\varepsilon_n^{2r}A_{\ell n}^{-2c}.$$
+    <p>Let $X_n$ have law $(1-\sum_\ell p_{\ell n})\mathcal L(G)+
+    \sum_\ell p_{\ell n}\delta_{A_{\ell n}}$, where $G\sim N(0,1)$, and let $K_n$ be the covariance Gram of
+    $|X_n|^{c+\varepsilon_nx_i}$. Assume</p>
+    $$\frac{\varepsilon_n}{\delta_n^{s-1}}\longrightarrow0.$$
+
+    <p>Give $\mathbb R^s$ the weighted inner product
+    $\langle a,b\rangle_q=\sum_\ell q_\ell a_\ell b_\ell$. Put
+    $\zeta_j=(\gamma_\ell^j)_\ell$, let $\widehat\zeta_j$ be its residual after projection onto
+    $\zeta_0,\ldots,\zeta_{j-1}$, and set $\eta_j=\|\widehat\zeta_j\|_q^2$.</p>
+    <p>In output space write $\phi_a=(x_i^a/a!)_i$ and
+    $v_j=(x_i^je^{\tau x_i}/j!)_i$. Let $R_j$ project orthogonally away from</p>
+    $$L_j=\operatorname{span}\{\phi_0,\ldots,\phi_r,v_0,\ldots,v_{j-1}\}.$$
+    <p>The first $r$ Gaussian eigenvalues and the two order-$\varepsilon_n^{2r}$ primary eigenvalues are those of
+    the common-slope theorem, with total tail weight $Q=\sum_\ell q_\ell$. For every $1\le j\le s-1$,</p>
+    <div class="equation-card">
+    $$\lambda_{r+2+j}(K_n)=
+      \eta_j\|R_jv_j\|_2^2\varepsilon_n^{2r}\delta_n^{2j}
+      +o(\varepsilon_n^{2r}\delta_n^{2j}).$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2r}\delta_n^{2(s-1)})$.</p>
+
+    <h2>Why the ladder is complete</h2>
+    <p>Weighted Gram&ndash;Schmidt applied to the label Taylor frame
+    $e^{\gamma_\ell\delta_nx}$ produces the successive latent coordinates
+    $\delta_n^j\widehat\zeta_j$. Output Gram&ndash;Schmidt simultaneously leaves $R_jv_j$.</p>
+    <p>The label coefficient is positive because the distinct $\gamma_\ell$ give a nonsingular Vandermonde matrix.
+    The output coefficient is positive because</p>
+    $$1,x,\ldots,x^r,e^{\tau x},xe^{\tau x},\ldots,x^je^{\tau x}$$
+    <p>is an extended Chebyshev system at the $k\ge r+s+1\ge r+j+2$ distinct nodes. Successive Schur complements
+    and finite-dimensional spectral perturbation therefore give the displayed coefficients.</p>
+    <p>The next Gaussian feature has size $\varepsilon_n^{r+1}$, whereas the last tail feature has size
+    $\varepsilon_n^r\delta_n^{s-1}$. Their ratio is exactly the stated separation parameter; higher tail terms are
+    smaller by another factor $\delta_n$.</p>
+
+    <h2>Three-tail certificate</h2>
+    <p>Take $s=3$, $k=6$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2)$, and $\delta_n=\varepsilon_n^{1/3}$.</p>
+    <p>The weighted label residuals have squared norms $(6,10/3,6/5)$. The two derivative-ladder coefficients are</p>
+    $$(3.038546555413267,\ 0.049977993617021).$$
+    <p>At $n=1048576$, the exact normalized ratios are $(0.975091876995,0.982401555213)$, while the next Gaussian
+    eigenvalue divided by the last tail scale is $0.000000009128$. The 260-digit certificate also checks the primary
+    pair, full confluent rank, monotone convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for the displayed triangular laws at one fixed positive maturity, with fixed
+    $s,k,r,q,$ and $\gamma$. It gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving slope
+    arrays, dimensions, or separation rates.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
