@@ -158,6 +158,52 @@
     rank-one term has norm $\prod_{i=1}^j(R_c)_{ii}(L_x)_{ii}$; consecutive product limits give the individual
     singular-value constants, and squaring gives the eigenvalue formula.</p>
 
+    <h2>Uniform finite-law theorem</h2>
+    <p>The same constants admit a joint limit. Let $f_n:(c-\eta,c+\eta)\to\mathcal H_n$ be centered maps into
+    possibly different real Hilbert spaces, fix the nodes $x_j$, and suppose the maps are $k$ times strongly
+    differentiable with</p>
+    $$\sup_n\sup_{|a-c|\le\eta}\|f_n^{(k)}(a)\|_{\mathcal H_n}&lt;\infty.$$
+    <p>Assume also that the derivative Grams
+    $H_{n,c}=(\langle f_n^{(r)}(c),f_n^{(s)}(c)\rangle)_{r,s=0}^{k-1}$ converge to a positive-definite matrix
+    $H_c$. Write $H_{n,c}=R_{n,c}^{\top}R_{n,c}$ and retain $V_xV_x^\top=L_xL_x^\top$ from above.</p>
+    <p>For the Gram $K_{n,\varepsilon}$ of the sampled vectors $f_n(c+\varepsilon x_j)$, there are
+    $n_0,\varepsilon_0,C&gt;0$ such that, for $n\ge n_0$, $0&lt;\varepsilon&lt;\varepsilon_0$, and every $j$,</p>
+    <div class="equation-card">
+    $$\left|\frac{\lambda_j(K_{n,\varepsilon})}
+      {\{(R_{n,c})_{jj}(L_x)_{jj}\}^2\varepsilon^{2(j-1)}}-1\right|
+      \le C\varepsilon.$$
+    </div>
+    <p>Consequently, if $n_\ell\to\infty$ and $\varepsilon_\ell\downarrow0$ at arbitrary relative rates, then</p>
+    $$\frac{\lambda_j(K_{n_\ell,\varepsilon_\ell})}
+      {\varepsilon_\ell^{2(j-1)}}\longrightarrow
+      \{(R_c)_{jj}(L_x)_{jj}\}^2.$$
+
+    <h2>Why the estimate is uniform</h2>
+    <p>Uniform Hilbert-space Taylor expansion gives
+    $f_n(c+\varepsilon x_j)=\sum_{r&lt;k}\varepsilon^rx_j^rf_n^{(r)}(c)/r!+E_{n,j}$ with
+    $\|E_{n,j}\|\le C_0\varepsilon^k$. Positive definiteness of $H_c$ keeps the Cholesky factors $R_{n,c}$ in
+    a compact set of invertible upper-triangular matrices.</p>
+    <p>The exterior-power argument above is therefore uniform in $n$: its unique least-degree minor stays bounded
+    away from zero, every competing minor has at least one extra power of $\varepsilon$, and the Taylor remainder is
+    one order beyond the smallest singular scale. This proves the displayed relative $O(\varepsilon)$ bound.</p>
+
+    <h2>Exact telegraph joint certificate</h2>
+    <p>Let $W_m$ be the unit-time average of the stationary symmetric telegraph chain switching at rate $m$, and put
+    $Z_m=\sqrt m\,W_m$. Its exact moment-generating function is</p>
+    $$\mathbb E e^{tZ_m}=e^{-m}\left\{\cosh s_m+\frac{m}{s_m}\sinh s_m\right\},
+      \qquad s_m=\sqrt{m^2+mt^2}.$$
+    <p>It converges to $e^{t^2/2}$ and is bounded by $e^{t^2/2}$. Thus fixed positive moments and their log-weighted
+    derivatives are uniformly integrable, so the centered maps
+    $f_m(a)=|Z_m|^a-\mathbb E|Z_m|^a$ satisfy the theorem on compact positive exponent intervals and
+    $H_{m,c}\to H_c$.</p>
+    <p>For $c=1$, two symmetric powers, and the deliberately joint choice $\delta=m^{-1/2}$, the certificate
+    integrates the exact atom-plus-Bessel law. At $m=4096$, the finite-speed coefficient, local coalescence ratio,
+    and full Gaussian joint ratio are respectively</p>
+    $$(0.999541633, 0.999876393, 0.999418083).$$
+    <p>The last number is
+    $\lambda_{\min}(K_{m,\delta})/[\{D_1/(2V_1)\}\delta^2]$; it tests both limits simultaneously rather than
+    substituting the Gaussian law before coalescing the exponents.</p>
+
     <h2>Sharp two-output constants</h2>
     <p>For the symmetric pair $c-\delta/2,c+\delta/2$, write
     $V_c=\operatorname{Var}(|G|^c)$ and</p>
@@ -186,14 +232,17 @@
     $(0.012231,2.005936,3.998635,5.990805)$, approaching $(0,2,4,6)$.</p>
 
     <h2>Scope</h2>
-    <p>This is conditioning of the Gaussian-function Gram after the fixed-positive-maturity fast-switching limit.
-    It neither changes fixed-feature Green&ndash;Kubo rank nor integrates distinct maturity loadings.</p>
-    <p>The expansion holds for fixed $c$, fixed distinct nodes and $\varepsilon\downarrow0$. It gives no joint
-    finite-speed/coalescing-exponent error bound: that would require the quantitative translation, central-limit and
-    tail moduli deliberately left open by the preceding theorem.</p>
+    <p>This is conditioning of a nonlinear-output Gram at one fixed positive maturity. It neither changes
+    fixed-feature Green&ndash;Kubo rank nor integrates distinct maturity loadings.</p>
+    <p>The joint estimate is uniform only for families satisfying the displayed $L^2$ Taylor bound and
+    positive-definite derivative-Gram limit; weak convergence alone is insufficient. Its $O(\varepsilon)$ error is
+    relative after division by each eigenvalue's own vanishing scale, while convergence of the leading coefficient
+    is carried separately by $H_{n,c}\to H_c$.</p>
     <p><a href="./bibliography.html#Halperin1962">Halperin (1962)</a> supplies the Hilbert-space Gram identity, while
     <a href="./bibliography.html#Gautschi1978">Gautschi (1978)</a> treats inverse conditioning of ordinary and
-    confluent Vandermonde matrices. The covariance determinant and eigenvalue hierarchy above are derived here.</p>
+    confluent Vandermonde matrices. <a href="./bibliography.html#KovchegovMeredithNir2010">Kovchegov, Meredith and
+    Nir (2010)</a> give the Bessel occupation density used by the certificate; the uniform joint theorem is derived
+    here.</p>
   </main>
 
   <footer>

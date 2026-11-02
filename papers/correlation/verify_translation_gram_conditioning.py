@@ -4,6 +4,9 @@
 import math
 
 import mpmath as mp
+import numpy as np
+
+from verify_flat_map import continuous_integral
 
 
 mp.mp.dps = 120
@@ -75,6 +78,64 @@ def descending_eigenvalues(matrix):
     return list(reversed(list(mp.eigsy(matrix, eigvals_only=True))))
 
 
+def telegraph_moment_derivative(speed, power, order):
+    """Derivative in power of E|sqrt(speed) W_speed|^power."""
+    root_speed = math.sqrt(speed)
+
+    def weight(position):
+        if position == 0.0:
+            return 0.0
+        scaled = root_speed * position
+        return scaled ** power * math.log(scaled) ** order
+
+    continuous = continuous_integral(
+        speed, weight, absolute_tolerance=1e-14,
+    )
+    atom = (
+        math.exp(-speed) * root_speed ** power
+        * math.log(root_speed) ** order
+    )
+    return continuous + atom
+
+
+def telegraph_covariance(speed, left, right):
+    """Covariance of two normalized telegraph absolute powers."""
+    return (
+        telegraph_moment_derivative(speed, left + right, 0)
+        - telegraph_moment_derivative(speed, left, 0)
+        * telegraph_moment_derivative(speed, right, 0)
+    )
+
+
+def telegraph_pair_coefficient(speed):
+    """Smallest-eigenvalue coefficient for powers coalescing at one."""
+    variance = telegraph_covariance(speed, 1.0, 1.0)
+    cross = (
+        telegraph_moment_derivative(speed, 2.0, 1)
+        - telegraph_moment_derivative(speed, 1.0, 0)
+        * telegraph_moment_derivative(speed, 1.0, 1)
+    )
+    log_variance = (
+        telegraph_moment_derivative(speed, 2.0, 2)
+        - telegraph_moment_derivative(speed, 1.0, 1) ** 2
+    )
+    determinant = variance * log_variance - cross ** 2
+    return determinant / (2.0 * variance)
+
+
+def telegraph_pair_smallest_eigenvalue(speed, delta):
+    """Exact smallest covariance eigenvalue for a symmetric power pair."""
+    exponents = (1.0 - delta / 2.0, 1.0 + delta / 2.0)
+    gram = np.array([
+        [
+            telegraph_covariance(speed, left, right)
+            for right in exponents
+        ]
+        for left in exponents
+    ])
+    return np.linalg.eigvalsh(gram)[0]
+
+
 def main():
     pair_derivatives = derivative_gram(CENTER, 2)
     variance = pair_derivatives[0, 0]
@@ -137,6 +198,20 @@ def main():
         for index in range(4)
     ]
 
+    joint_rows = []
+    gaussian_pair_coefficient = float(smallest_coefficient)
+    for speed in (16.0, 64.0, 256.0, 1024.0, 4096.0):
+        delta = speed ** -0.5
+        finite_coefficient = telegraph_pair_coefficient(speed)
+        smallest = telegraph_pair_smallest_eigenvalue(speed, delta)
+        joint_rows.append((
+            speed,
+            delta,
+            finite_coefficient / gaussian_pair_coefficient,
+            smallest / (finite_coefficient * delta ** 2),
+            smallest / (gaussian_pair_coefficient * delta ** 2),
+        ))
+
     print("Coalescing translation-hull Gram conditioning certificate")
     print(f"c=1 variance {float(variance):.12f}")
     print(f"two-output determinant coefficient {float(pair_coefficient):.12f}")
@@ -165,6 +240,13 @@ def main():
     print("four-output eigenvalue coefficient ratios " + " ".join(
         f"{float(ratio):.9f}" for ratio in eigenvalue_ratios
     ))
+    print("finite-speed/coalescing pair: speed delta coefficient local joint")
+    for speed, delta, coefficient_ratio, local_ratio, joint_ratio in joint_rows:
+        print(
+            f"speed {speed:4.0f}, delta {delta:.6f}: coefficient ratio "
+            f"{coefficient_ratio:.9f}, local ratio {local_ratio:.9f}, "
+            f"joint ratio {joint_ratio:.9f}"
+        )
 
     ok = True
     ok &= variance > mp.mpf("0.36")
@@ -194,6 +276,15 @@ def main():
         for index in range(1, 4)
     ) < mp.mpf("0.01")
     ok &= max(abs(ratio - 1) for ratio in eigenvalue_ratios) < mp.mpf("0.01")
+    ok &= all(
+        joint_rows[index + 1][2] > joint_rows[index][2]
+        and joint_rows[index + 1][3] > joint_rows[index][3]
+        and joint_rows[index + 1][4] > joint_rows[index][4]
+        for index in range(len(joint_rows) - 1)
+    )
+    ok &= joint_rows[-1][2] > 0.9994
+    ok &= joint_rows[-1][3] > 0.9998
+    ok &= joint_rows[-1][4] > 0.9994
     print("PASS" if ok else "FAIL")
     if not ok:
         raise SystemExit(1)
