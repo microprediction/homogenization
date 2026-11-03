@@ -1,0 +1,67 @@
+<!-- title: A logarithmic layer resolves rational spectral resonance · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-irrational-lattice.html">&larr; fixed irrational powers</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_log_resonance.py">certificate</a></span></p>
+    <h1>A logarithmic layer resolves rational spectral resonance</h1>
+    <p class="subtitle">A power moving by $1/\log(1/\varepsilon)$ changes the collision coefficient, not the collision order.</p>
+
+    <p class="lead">The fixed-power theorems are not uniform near a rational exponent. The exact transition has
+    logarithmic width: a finite scaled displacement simply renormalizes the rational collision ratio.</p>
+
+    <h2>Moving-power resonance theorem</h2>
+    <p>Use the fixed $s$-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-rational-lattice.html">rational spectral-merge theorem</a>. Fix coprime
+    $p,q\ge1$, put $\alpha_0=p/q$, $L_n=\log(1/\varepsilon_n)$, and suppose</p>
+    $$\frac{\delta_n}{\varepsilon_n^{\alpha_n}}\longrightarrow\rho\in(0,\infty),
+      \qquad L_n(\alpha_n-\alpha_0)\longrightarrow\theta\in\mathbb R.$$
+    <p>Keep $s,p,q,k,r,c,\tau$, weights, offsets, nodes, and the positive maturity fixed, with
+    $k\ge r+\lfloor\alpha_0(s-1)\rfloor+s+1$. Then every conclusion of the rational theorem holds with</p>
+    <div class="equation-card">
+    $$\widehat\rho=\rho e^{-\theta}$$
+    </div>
+    <p>in place of $\rho$. In particular, the event order and indices are those of the rational power
+    $\alpha_0$, including every collision at $(a,j)=(p\ell,q\ell)$.</p>
+
+    <p>At such a collision, let $u_\ell,b_\ell$ be the residual directions from the rational theorem. The two
+    leading coefficients are the positive eigenvalues of</p>
+    <div class="equation-card">
+    $$M_\ell(\theta)=h_{r+p\ell}u_\ell u_\ell^\top
+      +\eta_{q\ell}(\rho e^{-\theta})^{2q\ell}b_\ell b_\ell^\top.$$
+    </div>
+    <p>Every separated tail coefficient is changed in the same way, from
+    $\eta_j\rho^{2j}\|b_j\|^2$ to $\eta_j(\rho e^{-\theta})^{2j}\|b_j\|^2$.
+    The Gaussian coefficients are unchanged.</p>
+
+    <h2>Proof and the sharp scale</h2>
+    <p>The reduction is exact at the normalization level:</p>
+    $$\frac{\delta_n}{\varepsilon_n^{\alpha_0}}
+      =\frac{\delta_n}{\varepsilon_n^{\alpha_n}}
+       \exp\{-L_n(\alpha_n-\alpha_0)\}
+      \longrightarrow\rho e^{-\theta}.$$
+    <p>The rational theorem now applies directly with effective ratio $\widehat\rho$. Thus the layer has width
+    $1/L_n$: a smaller exponent displacement is invisible at leading order, while a displacement of this size
+    produces the finite factor $e^{-\theta}$.</p>
+    <p>This argument is sequencewise for finite $\theta$. It does not assert a uniform remainder over unbounded
+    $\theta$, and it does not identify the outer crossover when $L_n(\alpha_n-\alpha_0)$ diverges.</p>
+
+    <h2>Three-tail certificate</h2>
+    <p>Take $\alpha_0=3/2$, $s=3$, $k=8$, $r=1$, $c=\tau=1$, the weights, offsets, and nodes of the rational
+    certificate, and set $\rho=3/2$, $\theta=\log(3/2)$, and
+    $\alpha_n=3/2+\theta/\log(1/\varepsilon_n)$. Then $\widehat\rho=1$ exactly.</p>
+    <p>The predicted coefficients are
+    $(0.395991167289368,7.880500958110479,0.009192895225548,0.007697443444958,0.000016326690235)$.
+    At $n=8192$, $\alpha_n=1.544997115440$ and the five normalized ratios are
+    $(1.013673056823,0.986223189321,1.000444848035,0.999983882741,1.001043373353)$.</p>
+    <p>The 260-digit calculation also checks the effective-ratio identity at every refinement, exact rare weights,
+    positivity, convergence toward all five coefficients, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>The result gives the same sequencewise little-$o$ expansions as the rational theorem, not finite-$n$ error
+    bounds. It is not uniform over moving dimensions, tail counts, nodes, offsets, maturities, boundary ratios,
+    or unbounded scaled displacement.</p>
+    <p>This concerns a nonlinear output covariance Gram at one fixed maturity. It asserts neither fixed-parameter
+    Green&ndash;Kubo rank nor rank after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
