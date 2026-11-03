@@ -1,0 +1,66 @@
+<!-- title: Irrational powers make the multi-tail spectrum simple · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-rational-lattice.html">&larr; rational spectral merge</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_irrational_lattice.py">certificate</a></span></p>
+    <h1>Irrational powers make the multi-tail spectrum simple</h1>
+    <p class="subtitle">For fixed irrational $\alpha$, Gaussian and tail exponents interlace but never collide.</p>
+
+    <p class="lead">The rational theorem locates every collision block. Its irrational complement has no blocks:
+    every post-primary mode is simple, and two floor functions give the complete ordering.</p>
+
+    <h2>Irrational spectral-merge theorem</h2>
+    <p>Use the fixed $s$-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Fix an
+    irrational $\alpha&gt;0$, put $A=\lfloor\alpha(s-1)\rfloor$, assume $k\ge r+A+s+1$, and let</p>
+    $$\frac{\delta_n}{\varepsilon_n^\alpha}\longrightarrow\rho\in(0,\infty).$$
+    <p>The first $r$ Gaussian modes and the two primary modes are unchanged.</p>
+
+    <p>For each Gaussian order $1\le a\le A$, put $J_a=\lfloor a/\alpha\rfloor$, let $P_a$ project away from</p>
+    $$\operatorname{span}\{\phi_0,\ldots,\phi_{r+a-1},v_0,\ldots,v_{J_a}\},$$
+    <p>and set $g_a=P_a\phi_{r+a}$. Then</p>
+    <div class="equation-card">
+    $$\lambda_{r+a+J_a+2}(K_n)=h_{r+a}\|g_a\|^2\varepsilon_n^{2(r+a)}
+      +o(\varepsilon_n^{2(r+a)}).$$
+    </div>
+
+    <p>For each tail derivative $1\le j\le s-1$, put $A_j=\lfloor\alpha j\rfloor$, let $R_j$ project away from</p>
+    $$\operatorname{span}\{\phi_0,\ldots,\phi_{r+A_j},v_0,\ldots,v_{j-1}\},$$
+    <p>and set $b_j=R_jv_j$. Then</p>
+    <div class="equation-card">
+    $$\lambda_{r+A_j+j+2}(K_n)=\eta_j\rho^{2j}\|b_j\|^2
+      \varepsilon_n^{2(r+\alpha j)}+o(\varepsilon_n^{2(r+\alpha j)}).$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+\alpha(s-1))})$.</p>
+
+    <h2>Why no Diophantine condition is needed</h2>
+    <p>Gaussian order $a$ has amplitude $\varepsilon_n^{r+a}$ and tail derivative $j$ has amplitude
+    $\rho^j\varepsilon_n^{r+\alpha j}$. Equality would require $\alpha=a/j$, impossible for irrational $\alpha$.</p>
+    <p>Only the finite sets $1\le a\le A$ and $1\le j\le s-1$ occur, so their exponent gaps have a positive
+    minimum for each fixed parameter set. Sorting the amplitudes and taking successive Schur complements gives
+    the displayed projectors and indices; no quantitative irrationality assumption enters.</p>
+    <p>The final evaluation system contains polynomials through degree $r+A$ and exponential derivatives through
+    $x^{s-1}e^{\tau x}$. Its $r+A+s+1$ functions form an extended-Chebyshev system, so every residual coefficient
+    is positive. Together with the rational theorem, this classifies every fixed real power $\alpha&gt;0$.</p>
+
+    <h2>Three-tail square-root certificate</h2>
+    <p>Take $\alpha=\sqrt2$, $s=3$, $k=7$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-3,-2,-1,0,1,2,3)$, $\rho=5/4$, and
+    $\delta_n=\rho\varepsilon_n^{\sqrt2}$. The event order is Gaussian $a=1$, tail $j=1$, Gaussian $a=2$,
+    then tail $j=2$.</p>
+    <p>The four predicted coefficients are
+    $(0.158456045596511,6.300139495145086,0.001568621700484,0.002623888839414)$.
+    At $n=131072$, their normalized ratios are
+    $(1.018642968388,0.981679467001,1.000022890783,1.000547196352)$.</p>
+    <p>The 260-digit certificate checks centered offsets, exact rare weights, both primary modes, full confluent
+    rank, positivity, refinement toward all four coefficients, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is sequencewise for fixed irrational $\alpha$, $s,k,r,c,\tau$, weights, offsets, nodes, and $\rho$ at
+    one fixed positive maturity. It gives little-$o$ remainders, not finite-$n$ bounds or uniformity as $\alpha$
+    moves toward a rational resonance; it makes no Diophantine-rate claim.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It asserts neither fixed-parameter
+    Green&ndash;Kubo rank nor rank after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
