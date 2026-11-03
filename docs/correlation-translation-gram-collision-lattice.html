@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Integer-power multi-tail collisions form a lattice · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-multitail-collision-cascade.html">&larr; diagonal cascade</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_collision_lattice.py">certificate</a></span></p>
+    <h1>Integer-power multi-tail collisions form a lattice</h1>
+    <p class="subtitle">At $\delta\asymp\varepsilon^m$, tail derivative $j$ meets Gaussian order $mj$.</p>
+
+    <p class="lead">The two-tail staircase and the diagonal multi-tail cascade are sections of one lattice.
+    Between its collision points, the remaining Gaussian modes stay separated with explicit coefficients.</p>
+
+    <h2>Collision-lattice theorem</h2>
+    <p>Use the $s$-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Fix
+    integers $s\ge2$, $m\ge1$, and $r\ge1$, assume $k\ge r+(m+1)(s-1)+2$, and let</p>
+    $$\frac{\delta_n}{\varepsilon_n^m}\longrightarrow\rho\in(0,\infty).$$
+    <p>The first $r$ Gaussian modes and the two primary modes remain those of the common-slope theorem.</p>
+
+    <p>For $1\le a\le m(s-1)$ with $m\nmid a$, put
+    $\ell_a=\lfloor(a-1)/m\rfloor$. Let $P_a$ project away from</p>
+    $$L_a=\operatorname{span}\{\phi_0,\ldots,\phi_{r+a-1},v_0,\ldots,v_{\ell_a}\},$$
+    <p>and set $g_a=P_a\phi_{r+a}$. Then the intervening Gaussian mode satisfies</p>
+    <div class="equation-card">
+    $$\lambda_{r+a+2+\ell_a}(K_n)=h_{r+a}\|g_a\|^2\varepsilon_n^{2(r+a)}
+      +o(\varepsilon_n^{2(r+a)}).$$
+    </div>
+
+    <p>At collision $j$, $1\le j\le s-1$, let $Q_j$ project away from</p>
+    $$C_j=\operatorname{span}\{\phi_0,\ldots,\phi_{r+mj-1},v_0,\ldots,v_{j-1}\},$$
+    <p>put $u_j=Q_j\phi_{r+mj}$ and $b_j=Q_jv_j$, and define</p>
+    $$M_j=h_{r+mj}u_ju_j^\top+\eta_j\rho^{2j}b_jb_j^\top.$$
+    <p>This matrix has rank two. If $\nu_{j,1}\ge\nu_{j,2}&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+(m+1)j+p}(K_n)=\nu_{j,p}\varepsilon_n^{2(r+mj)}
+      +o(\varepsilon_n^{2(r+mj)}),\qquad p=1,2.$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+m(s-1))})$.</p>
+
+    <h2>Why the lattice is complete</h2>
+    <p>The Gaussian feature of order $a$ has amplitude $\varepsilon_n^{r+a}$. Tail derivative $j$ has amplitude
+    $\varepsilon_n^r\delta_n^j\sim\rho^j\varepsilon_n^{r+mj}$, so equality occurs exactly at $a=mj$.</p>
+    <p>Successive Schur complements sort this finite list of amplitudes. Away from equality there is one Gaussian
+    residual; at equality the independent Gaussian and weighted-label coordinates give the two summands of $M_j$.</p>
+    <p>The final evaluation system contains polynomials through degree $r+m(s-1)$ and exponential derivatives
+    through $x^{s-1}e^{\tau x}$. Its $r+(m+1)(s-1)+2$ functions form an extended-Chebyshev system, proving every
+    displayed coefficient is positive and every collision block has rank two.</p>
+
+    <h2>Three-tail, second-power certificate</h2>
+    <p>Take $s=3$, $m=2$, $k=9$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-4,-3,-2,-1,0,1,2,3,4)$, $\rho=5/4$, and
+    $\delta_n=\rho\varepsilon_n^2$.</p>
+    <p>The separated Gaussian coefficients are $0.862684463767136$ and $0.007452000537664$. The two collision
+    pairs are</p>
+    $$(150.157054644275519,0.038304929859394),$$
+    $$(0.016006901818482,0.000015159755348).$$
+    <p>At $n=2048$, the six normalized ratios, in spectral order, are</p>
+    $$(1.000280196238,0.998517325361,1.001450643528,$$
+    $$1.002748003426,1.000982192742,1.005855340472).$$
+    <p>The 260-digit certificate also checks centered offsets, exact rare weights, primary modes, full confluent
+    rank, positivity, convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,m,k,r,c,\tau,q,\gamma,x,$ and $\rho$ at one fixed positive
+    maturity. It gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, powers,
+    tail counts, nodes, offsets, or boundary ratios.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
