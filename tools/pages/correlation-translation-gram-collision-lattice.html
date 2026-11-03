@@ -1,0 +1,70 @@
+<!-- title: Integer-power multi-tail collisions form a lattice · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./correlation-translation-gram-multitail-collision-cascade.html">&larr; diagonal cascade</a>
+    <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/correlation/verify_translation_gram_collision_lattice.py">certificate</a></span></p>
+    <h1>Integer-power multi-tail collisions form a lattice</h1>
+    <p class="subtitle">At $\delta\asymp\varepsilon^m$, tail derivative $j$ meets Gaussian order $mj$.</p>
+
+    <p class="lead">The two-tail staircase and the diagonal multi-tail cascade are sections of one lattice.
+    Between its collision points, the remaining Gaussian modes stay separated with explicit coefficients.</p>
+
+    <h2>Collision-lattice theorem</h2>
+    <p>Use the $s$-tail triangular law, positive weights, distinct centered offsets, and notation of the
+    <a href="./correlation-translation-gram-multitail-confluence.html">multi-tail confluence theorem</a>. Fix
+    integers $s\ge2$, $m\ge1$, and $r\ge1$, assume $k\ge r+(m+1)(s-1)+2$, and let</p>
+    $$\frac{\delta_n}{\varepsilon_n^m}\longrightarrow\rho\in(0,\infty).$$
+    <p>The first $r$ Gaussian modes and the two primary modes remain those of the common-slope theorem.</p>
+
+    <p>For $1\le a\le m(s-1)$ with $m\nmid a$, put
+    $\ell_a=\lfloor(a-1)/m\rfloor$. Let $P_a$ project away from</p>
+    $$L_a=\operatorname{span}\{\phi_0,\ldots,\phi_{r+a-1},v_0,\ldots,v_{\ell_a}\},$$
+    <p>and set $g_a=P_a\phi_{r+a}$. Then the intervening Gaussian mode satisfies</p>
+    <div class="equation-card">
+    $$\lambda_{r+a+2+\ell_a}(K_n)=h_{r+a}\|g_a\|^2\varepsilon_n^{2(r+a)}
+      +o(\varepsilon_n^{2(r+a)}).$$
+    </div>
+
+    <p>At collision $j$, $1\le j\le s-1$, let $Q_j$ project away from</p>
+    $$C_j=\operatorname{span}\{\phi_0,\ldots,\phi_{r+mj-1},v_0,\ldots,v_{j-1}\},$$
+    <p>put $u_j=Q_j\phi_{r+mj}$ and $b_j=Q_jv_j$, and define</p>
+    $$M_j=h_{r+mj}u_ju_j^\top+\eta_j\rho^{2j}b_jb_j^\top.$$
+    <p>This matrix has rank two. If $\nu_{j,1}\ge\nu_{j,2}&gt;0$ are its positive eigenvalues, then</p>
+    <div class="equation-card">
+    $$\lambda_{r+(m+1)j+p}(K_n)=\nu_{j,p}\varepsilon_n^{2(r+mj)}
+      +o(\varepsilon_n^{2(r+mj)}),\qquad p=1,2.$$
+    </div>
+    <p>Every remaining eigenvalue is $o(\varepsilon_n^{2(r+m(s-1))})$.</p>
+
+    <h2>Why the lattice is complete</h2>
+    <p>The Gaussian feature of order $a$ has amplitude $\varepsilon_n^{r+a}$. Tail derivative $j$ has amplitude
+    $\varepsilon_n^r\delta_n^j\sim\rho^j\varepsilon_n^{r+mj}$, so equality occurs exactly at $a=mj$.</p>
+    <p>Successive Schur complements sort this finite list of amplitudes. Away from equality there is one Gaussian
+    residual; at equality the independent Gaussian and weighted-label coordinates give the two summands of $M_j$.</p>
+    <p>The final evaluation system contains polynomials through degree $r+m(s-1)$ and exponential derivatives
+    through $x^{s-1}e^{\tau x}$. Its $r+(m+1)(s-1)+2$ functions form an extended-Chebyshev system, proving every
+    displayed coefficient is positive and every collision block has rank two.</p>
+
+    <h2>Three-tail, second-power certificate</h2>
+    <p>Take $s=3$, $m=2$, $k=9$, $r=1$, $c=\tau=1$, weights $(1,2,3)$, centered offsets
+    $(-4/3,-1/3,2/3)$, nodes $(-4,-3,-2,-1,0,1,2,3,4)$, $\rho=5/4$, and
+    $\delta_n=\rho\varepsilon_n^2$.</p>
+    <p>The separated Gaussian coefficients are $0.862684463767136$ and $0.007452000537664$. The two collision
+    pairs are</p>
+    $$(150.157054644275519,0.038304929859394),$$
+    $$(0.016006901818482,0.000015159755348).$$
+    <p>At $n=2048$, the six normalized ratios, in spectral order, are</p>
+    $$(1.000280196238,0.998517325361,1.001450643528,$$
+    $$1.002748003426,1.000982192742,1.005855340472).$$
+    <p>The 260-digit certificate also checks centered offsets, exact rare weights, primary modes, full confluent
+    rank, positivity, convergence, and literal <strong>PASS</strong>.</p>
+
+    <h2>Scope and literature</h2>
+    <p>This is a sequencewise theorem for fixed $s,m,k,r,c,\tau,q,\gamma,x,$ and $\rho$ at one fixed positive
+    maturity. It gives little-$o$ remainders, not a finite-$n$ bound or uniformity over moving dimensions, powers,
+    tail counts, nodes, offsets, or boundary ratios.</p>
+    <p>The result concerns a nonlinear output covariance Gram. It changes neither fixed-parameter
+    Green&ndash;Kubo rank nor rank obtained after integrating different maturity loadings.</p>
+    <p><a href="./bibliography.html#Gautschi1962">Gautschi</a> supplies column-confluence geometry,
+    <a href="./bibliography.html#KarlinStudden1966">Karlin and Studden</a> supply the extended-Chebyshev zero count,
+    and <a href="./bibliography.html#Kato1995">Kato</a> supplies finite-dimensional spectral perturbation.</p>
+  </main>
