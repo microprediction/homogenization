@@ -125,3 +125,5 @@ The site build needs Node for the header check. After editing a page, run
 Cotton, P. (2001). *An Analytic Approach to Ornstein–Uhlenbeck Processes with Fluctuating
 Parameters and Applications in the Modeling of Fixed Income Securities.* PhD thesis, Stanford
 University.
+
+Cotton, P. (2026). *Security and Derivative Pricing with Fast Regime Switches.* [arXiv:2611.00466](https://arxiv.org/abs/2611.00466) [q-fin.MF]. The pricing library is [regimelib](https://regimelib.org).
