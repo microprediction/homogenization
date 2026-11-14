@@ -30,7 +30,8 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'fast-switching'))
 sys.path.insert(0, os.path.join(HERE, '..', 'general'))
 from correlation import (pi2, K2, Q2, occupation_nodes, simulate_occupation, margrabe, margrabe_greeks, exch_var,
-                         margrabe_first_order, implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
+                         margrabe_first_order, margrabe_first_order_prior,
+                         implied_corr_margrabe, implied_corr_parabola, margrabe_fourier,
                          spread_price, spread_rho_derivs, implied_corr_spread, cumulants_first_order,
                          cumulants_two_state_closed, cumulants_exact, simulate_returns, cov_entries,
                          occupation_cumulants, occupation_cumulants_quadrature,
@@ -121,6 +122,78 @@ def main():
     ok &= relabel_error < 1e-13 and frozen_error < 1e-8
     out['nonstationary'] = {'rows': nonstationary, 'relabel_error': relabel_error,
                             'frozen_error': frozen_error, 'frozen': frozen}
+
+    print("1c. finite-rate exchange prices under three initial priors")
+    prior_targets = {
+        0.0: (0.3220107860935765, 11.9626209928677, 0.328371284831584),
+        0.25: (0.35, 11.7258135254450, 0.358180877949732),
+        1.0: (0.4339676417192705, 11.0153911231769, 0.443934570765659),
+    }
+    prior_rows = []
+    p1 = A / (A + B)
+    mean_factor = -math.expm1(-(A + B) * T) / ((A + B) * T)
+    for initial_p1, targets in prior_targets.items():
+        v, w = occupation_nodes(T, A, B, initial_p1=initial_p1)
+        rho_hat = RHO[0] + (RHO[1] - RHO[0]) * v / T
+        mean_rho = float(w @ rho_hat)
+        mean_rho_closed = (
+            pi2(A, B) @ RHO
+            + (RHO[1] - RHO[0]) * (initial_p1 - p1) * mean_factor
+        )
+        price = float(w @ margrabe(
+            S1, S2, exch_var(SIG1, SIG2, rho_hat) * T
+        ))
+        implied = implied_corr_margrabe(price, S1, S2, T, SIG1, SIG2)
+        error = max(abs(mean_rho - mean_rho_closed),
+                    abs(mean_rho - targets[0]),
+                    abs(price - targets[1]),
+                    abs(implied - targets[2]))
+        prior_rows.append((initial_p1, mean_rho, price, implied, error))
+        print(f"   eta={initial_p1:.2f}: mean rho {mean_rho:.8f}; "
+              f"price {price:.8f}; implied rho {implied:.8f}")
+    prior_error = max(row[-1] for row in prior_rows)
+    print(f"   maximum closed-form/table error {prior_error:.2e}")
+    ok &= prior_error < 5e-13
+
+    print("1d. complete first-order initial-prior price correction")
+    prior_speeds = (4, 8, 16, 32, 64)
+    prior_initials = (0.0, 0.1, 0.7, 1.0)
+    stationary_errors, complete_errors = [], []
+    for m in prior_speeds:
+        a, b = m * A, m * B
+        rhobar = float(pi2(a, b) @ RHO)
+        Krr = K2(RHO, RHO, a, b)
+        stationary_error = 0.0
+        complete_error = 0.0
+        for initial_p1 in prior_initials:
+            v, w = occupation_nodes(T, a, b, n=120,
+                                    initial_p1=initial_p1)
+            rho_hat = RHO[0] + (RHO[1] - RHO[0]) * v / T
+            for q in QS:
+                exact = float(w @ margrabe(
+                    S1, q * S2, exch_var(SIG1, SIG2, rho_hat) * T
+                ))
+                stationary = margrabe_first_order(
+                    S1, q * S2, T, SIG1, SIG2, rhobar, Krr
+                )
+                complete = margrabe_first_order_prior(
+                    S1, q * S2, T, SIG1, SIG2, RHO,
+                    a, b, initial_p1
+                )
+                stationary_error = max(stationary_error,
+                                       abs(exact - stationary))
+                complete_error = max(complete_error,
+                                     abs(exact - complete))
+        stationary_errors.append(stationary_error)
+        complete_errors.append(complete_error)
+        print(f"   m={m:2d}: stationary-only error {stationary_error:.8e}; "
+              f"complete error {complete_error:.8e}")
+    stationary_prior_rate = rate(stationary_errors)
+    complete_prior_rate = rate(complete_errors)
+    print(f"   last-doubling rates: stationary-only {stationary_prior_rate:.6f}; "
+          f"complete {complete_prior_rate:.6f}")
+    ok &= 0.9 < stationary_prior_rate < 1.1
+    ok &= 1.9 < complete_prior_rate < 2.1
 
     print("2. exchange option (S1 - q S2)^+")
     out['exchange'] = {'speeds': SPEEDS, 'q': QS, 'rows': []}
