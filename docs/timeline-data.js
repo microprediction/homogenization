@@ -490,7 +490,7 @@ var EVENTS = [
 "note": "Option Valuation and Hedging Strategies with Jumps in the Volatility of Asset Returns. Option valuation when volatility jumps between two levels following a Markov chain, one of the first regime-switching option pricing models."
 },
 {
-"y": 1995,
+"y": 1994,
 "lane": "finance",
 "label": "Di Masi",
 "big": false,
