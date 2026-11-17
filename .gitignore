@@ -6,6 +6,7 @@ __pycache__/
 reading/
 research/pulsar/data/
 research/epidemic-hit/data/
+research/pain-flares/data/
 .claude/
 literature/*.pdf
 literature/*.txt
