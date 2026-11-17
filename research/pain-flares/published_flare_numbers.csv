@@ -1,0 +1,19 @@
+curve,time_days,what,value,standard_error,allowance,unit,source
+lbp_episode_length,7,share of new low back pain episodes over by 1 week,0.7,0.024,0.015,share,decampos2023
+lbp_episode_length,21,over by 3 weeks,0.861,0.0179,0,share,decampos2023
+lbp_episode_length,42,over by 6 weeks,0.909,0.0148,0,share,decampos2023
+lbp_episode_length,84,over by 12 weeks,0.935,0.0128,0,share,decampos2023
+lbp_time_to_next_episode,91,share with a new episode within 3 months of study entry,0.38,0.031,0,share,dasilva2019
+lbp_time_to_next_episode,183,within 6 months,0.56,0.033,0,share,dasilva2019
+lbp_time_to_next_episode,365,within 12 months,0.69,0.031,0,share,dasilva2019
+lbp_time_to_next_episode,,median days from entry to the next episode,139,17.3,0,days,dasilva2019
+lbp_care_time_to_recovery,42,share of care-seekers recovered by 6 weeks,0.399,0.0157,0,share,henschke2008
+lbp_care_time_to_recovery,84,recovered by 12 weeks,0.582,0.0158,0,share,henschke2008
+lbp_care_time_to_recovery,365,recovered by 1 year,0.725,0.0143,0,share,henschke2008
+lbp_care_time_to_recovery,,median days from consulting to recovery,58,2.6,0,days,henschke2008
+lbp_care_time_to_recovery,456,"of those still in pain at 3 months, recovered in the next 12 months (time from consulting: 91 + 365 days)",0.42,0.025,0,share,costa2009
+migraine_daily,,chance a well day is followed by a migraine day,0.087,0.0023,0,share,barra2020
+migraine_daily,1,chance an attack goes on after its 1st day,0.42,0.0135,0,share,barra2020
+migraine_daily,2,after its 2nd day,0.453,0.021,0,share,barra2020
+migraine_daily,3,after its 3rd day,0.333,0.03,0,share,barra2020
+migraine_daily,4,after its 4th or a later day (days 4 to 9 pooled),0.4043,0.041,0,share,barra2020
