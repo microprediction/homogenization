@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ordered-window recovery without a known stationary law · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_raw_windows.py">certificate</a></span></p>
+    <h1>Recovering the stationary law as well as the generator</h1>
+    <p class="lead">With complete labeled state occupations, two raw ordered window-moment matrices identify both the stationary law and the generator.
+      A residual-aware error bound propagates uncertainty in the stationary law instead of treating its estimate as exact.
+      Raw moments retain mean information discarded by centered covariances; this does not recover an unknown law from centered covariances alone.</p>
+    <h2>Exact population inversion</h2>
+    <p>Let $Y$ be a stationary finite irreducible chain with row generator $Q$ on a known labeled state space of size $n\ge2$.
+      Fix a time unit and $T&gt;0$, and write $O_j=\int_{jT}^{(j+1)T}e_{Y_t}dt$ and $A_i=\mathbb E[O_0O_{i+1}^T]$, $i=0,1$.
+      These are raw moments, not centered covariances.</p>
+    <p>Set $D=\operatorname{diag}\pi$, $\Pi=\mathbf1\pi$, $B=\int_0^Te^{sQ}ds$, and choose any fixed $\lambda&gt;0$ with units of inverse time.
+      Integrating the ordered transition kernel gives $A_0=DB^2$ and $A_1=A_0e^{TQ}$, hence</p>
+    $$\pi^T=T^{-2}A_0\mathbf1,\quad E=A_0^{-1}A_1,\quad
+      Z=(I-E)^2A_0^{-1}D+\lambda^2\Pi=Q^2+\lambda^2\Pi,$$
+    <div class="equation-card">
+    $$\boxed{Q=\lambda\Pi-Z^{1/2}_{\rm principal}.}$$
+    </div>
+    <p>The matrix $B$ is invertible: its eigenvalue at the stationary mode is $T$, and at any nonzero eigenvalue $z$ of $Q$ it is $(e^{Tz}-1)/z\ne0$.
+      Since $Q\Pi=\Pi Q=0$, $(-Q+\lambda\Pi)^2=Z$, and $-Q+\lambda\Pi$ has spectrum strictly in the open right half-plane.
+      The principal root is therefore $-Q+\lambda\Pi$, including for defective generators.</p>
+    <h2>Deterministic certificate with stationary-law error</h2>
+    <p>Suppose $\|\widehat A_i-A_i\|_F\le\eta_i$ are supplied valid error budgets.
+      Require $\widehat A_0$ invertible and $\widehat\pi^T=T^{-2}\widehat A_0\mathbf1$ a strictly positive probability vector; otherwise abstain.
+      Put $\widehat D=\operatorname{diag}\widehat\pi$, $\widehat\Pi=\mathbf1\widehat\pi$, and</p>
+    $$\widehat C=\widehat A_0^{-1},\quad\widehat E=\widehat C\widehat A_1,\quad
+      \widehat F=I-\widehat E,\quad
+      \widehat Z=\widehat F^2\widehat C\widehat D+\lambda^2\widehat\Pi.$$
+    <p>All of the following bounds use observable quantities and the supplied budgets:</p>
+    $$k=\|\widehat C\|_2,\quad q=k\eta_0&lt;1,\quad a=k/(1-q),\quad b=ak\eta_0,$$
+    $$d=a(\eta_1+\eta_0\|\widehat E\|_2),\quad f=\|\widehat F\|_2,\quad
+      x=\sqrt n\eta_0/T^2,\quad p_-=\min_i\widehat\pi_i,\quad p_+=\min(1,\max_i\widehat\pi_i+x),$$
+    $$\Gamma=p_+\{a(2fd+d^2)+f^2b\}+(f^2k+\lambda^2\sqrt n)x.$$
+    <p>Choose any real candidate $R$ for the square root in the $\widehat D$ coordinates.
+      Supply certified bounds $\operatorname{sym}R\succeq\mu I$, $\mu&gt;0$, and
+      $\zeta\ge\|R^2-\widehat D^{1/2}\widehat Z\widehat D^{-1/2}\|_F$.</p>
+    $$\Delta=\sqrt{\max_i\widehat\pi_i/p_-}\,\Gamma+\zeta&lt;\mu^2,\quad
+      r=\frac{\Delta}{\mu+\sqrt{\mu^2-\Delta}},\quad
+      \overline Q=\lambda\widehat\Pi-\widehat D^{-1/2}R\widehat D^{1/2}.$$
+    <div class="equation-card">
+    $$\boxed{\|\widehat\pi-\pi\|_2\le x,\qquad
+      \|\widehat D^{1/2}(\overline Q-Q)\widehat D^{-1/2}\|_F
+      \le r+\lambda x/\sqrt{p_-}.}$$
+    </div>
+    <p>The generator norm uses the observed law $\widehat\pi$, not the unknown $\pi$.
+      Each entry has the corresponding bound multiplied by $\sqrt{\widehat\pi_j/\widehat\pi_i}$.
+      A passing error radius need not certify nonnegative rates, zero row sums, or $\widehat\pi\overline Q=0$; failed tests are inconclusive.</p>
+    <h2>Proof of the certificate</h2>
+    <p>Write $C=A_0^{-1}$ and $F=I-E$.
+      The Neumann bound and $E-\widehat E=C[(A_1-\widehat A_1)-(A_0-\widehat A_0)\widehat E]$ give
+      $\|C\|_2\le a$, $\|C-\widehat C\|_F\le b$, $\|E-\widehat E\|_F\le d$, and $\|F^2-\widehat F^2\|_F\le2fd+d^2$.</p>
+    <p>The row-sum identity gives $\|\widehat\pi-\pi\|_2\le x$, hence $\|D\|_2\le p_+$,
+      $\|D-\widehat D\|_F\le x$ and $\|\Pi-\widehat\Pi\|_F\le\sqrt n x$.
+      Expanding $F^2CD-\widehat F^2\widehat C\widehat D$ and the stationary-projector term proves $\|Z-\widehat Z\|_F\le\Gamma$.</p>
+    <p>Let $W=\widehat D^{1/2}(-Q+\lambda\Pi)\widehat D^{-1/2}$.
+      Similarity and the residual yield $\|W^2-R^2\|_F\le\Delta$; the Sylvester inverse
+      $Y\mapsto\int_0^\infty e^{-tR}Ye^{-tR}dt$ has Frobenius operator norm at most $1/(2\mu)$.</p>
+    <p>For $D_0=W^2-R^2$, the map $X\mapsto\mathcal S^{-1}(D_0-X^2)$ contracts the radius-$r$ Frobenius ball, since $\Delta+r^2=2\mu r$ and $r&lt;\mu$.
+      Its fixed point has $R+X$ strictly accretive and $(R+X)^2=W^2$; principal-root uniqueness gives $R+X=W$ even though $W$ need not be accretive in the estimated-law metric.</p>
+    <p>Finally, $\|\widehat D^{1/2}(\widehat\Pi-\Pi)\widehat D^{-1/2}\|_F
+      =\{\sum_i(\widehat\pi_i-\pi_i)^2/\widehat\pi_i\}^{1/2}\le x/\sqrt{p_-}$.
+      The triangle inequality separates this projector error from $\|R-W\|_F\le r$, proving the claim.</p>
+    <h2>Finite-sample use without knowing the stationary law</h2>
+    <p>For one stationary path over $[0,3NT]$, average the raw products
+      $O_{k0}O_{k,i+1}^T$, where $O_{kj}=\int_{(3k+j)T}^{(3k+j+1)T}e_{Y_t}dt$.
+      Their entries lie in $[0,T^2]$; their total mass is $T^2$, so the row-sum estimate is automatically a probability vector, possibly with zero entries.</p>
+    <p>Given a fixed certified Dobrushin bound $0\le\alpha&lt;1$ for $e^{3TQ}$, set
+      $c_0=0$, $c_{m+1}=1+\alpha c_m$, and $H_N=c_N^2+\sum_{m=0}^{N-1}(1+c_m)^2$.
+      Simultaneous valid budgets at confidence $1-\delta$ are</p>
+    $$\eta_0=\eta_1=\frac{nT^2}{N}\sqrt{\frac{H_N}{2}\log\frac{4n^2}{\delta}}.$$
+    <p>Indeed, for each entry the expected future reward has oscillation at most $T^2c_m$.
+      Revealing the initial state and successive whole blocks gives conditional martingale ranges $T^2c_N$ and $T^2(1+c_m)$, so conditional Hoeffding bounds and a union bound give the formula.
+      No centering by a known $\pi$ is used; the one-sided range also improves the generic signed-reward bound by a factor of two.</p>
+    <p>On this simultaneous event every passing reconstruction candidate has its error bound, even when selected using the same data.
+      Thus the probability of reporting an incorrect certified radius is at most $\delta$, not a coverage guarantee conditional on reporting.
+      The design and mixing bound must have independent justification; they cannot be selected from the fitted generator without additional control.</p>
+    <h2>Checks and limits</h2>
+    <p>The certificate verifies $57$ exact-input reconstructions on $19$ chains, including nonuniform, sparse and defective examples, and $342$ perturbed-input bounds with nonzero stationary-law errors and root residuals.
+      An exact rational perturbation attains the squared row-sum error factor $n$, and $96$ exact nonnegative-reward range checks support the confidence-budget constants.
+      Continuous-time input moments are computed independently with Feynman&ndash;Kac Fr&eacute;chet derivatives.</p>
+    <p>Known state labels, complete state occupations, stationary starts and the time unit remain essential.
+      This is not hidden-state recovery, a uniform conditioning result as stationary masses vanish, or a guarantee for discretized/noisy occupations.
+      Rigorous numerical use must enclose all arithmetic errors; the floating-point checks are not interval proofs.</p>
+    <p>Principal-root uniqueness and conditioning are classical; see <a href="./bibliography.html#Higham2008">Higham (2008)</a>, Chapter 6.
+      The concentration proof uses classical conditional exponential bounds as in <a href="./bibliography.html#GlynnOrmoneit2002">Glynn and Ormoneit (2002)</a>, Section 2.
+      The addition here is the raw-moment inversion and explicit propagation of stationary-law uncertainty.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
