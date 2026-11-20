@@ -3185,5 +3185,27 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Higham2008",
+  "authors": "Higham, N. J.",
+  "year": 2008,
+  "title": "Functions of Matrices: Theory and Computation",
+  "venue": "Society for Industrial and Applied Mathematics",
+  "doi": "10.1137/1.9780898717778",
+  "url": "https://doi.org/10.1137/1.9780898717778",
+  "annotation": "Classical theory and computation of matrix functions. Chapter 6 states principal square-root uniqueness and discusses conditioning and residuals; ordered-window inversion uses this machinery without a matrix logarithm."
+ },
+ {
+  "role": "survey_theory",
+  "key": "Davies2010",
+  "authors": "Davies, E. B.",
+  "year": 2010,
+  "title": "Embeddable Markov Matrices",
+  "venue": "Electronic Journal of Probability 15(47):1474-1486",
+  "doi": "10.1214/ejp.v15-733",
+  "url": "https://arxiv.org/abs/1001.1693",
+  "annotation": "Reviews embeddability, generator nonuniqueness and classical spectral branch restrictions for finite Markov matrices. The grid-window note separates this fixed-spacing information limit from the bias of treating discrete occupation sums as exact time integrals."
  }
 ]

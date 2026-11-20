@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Grid bias in ordered occupation windows · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_grid_windows.py">certificate</a></span></p>
+    <h1>Second-order grid bias, and a negative-rate trap</h1>
+    <p class="lead">Uniform-grid approximations to stationary ordered occupation moments have quadratic population bias, not the first-order error of individual path integrals.
+      Ignoring that bias can nevertheless produce negative reconstructed transition rates with no sampling noise.
+      An explicit moment budget permits honest finite-sample use; a branch condition also permits exact population correction.</p>
+    <h2>Aligned left-endpoint windows</h2>
+    <p>Let $Y$ be a stationary finite irreducible row-generator chain with known state labels and time unit.
+      Suppose a justified bound $a\ge\max_x(-Q_{xx})$ is available, and fix $h&gt;0$, an integer $m\ge1$, and $T=mh$.
+      Define exact and gridded state occupations by</p>
+    $$O_j=\int_{jT}^{(j+1)T}e_{Y_t}dt,\qquad
+      \widetilde O_j=h\sum_{b=0}^{m-1}e_{Y_{jT+bh}}.$$
+    <p>Write $A_i=\mathbb E[O_0O_{i+1}^T]$ and $G_i=\mathbb E[\widetilde O_0\widetilde O_{i+1}^T]$, $i=0,1$.
+      These are ordered raw moments, not centered covariances; rows refer to the earlier window.
+      With $D=\operatorname{diag}\pi$, $P=e^{hQ}$ and $S_m=\sum_{b=0}^{m-1}P^b$,</p>
+    $$G_0=Dh^2PS_m^2,\qquad G_1=G_0P^m,\qquad G_i\mathbf1=T^2\pi^T.$$
+    <h2>A deterministic population mesh budget</h2>
+    <div class="equation-card">
+    $$\boxed{\|G_i-A_i\|_F\le\eta_{\rm mesh}:=T^2h^2a^2/3,\qquad i=0,1.}$$
+    </div>
+    <p>This holds at every $h,m$, without a spectral branch assumption or knowing $\pi$.
+      It is a population-moment bound, not a pathwise quadrature bound.</p>
+    <p>For each pair of mesh cells the exact transition time is $\ell+v-u$, where
+      $\ell=(i+1)T+(b-c)h\ge h$ and $u,v\in[0,h]$.
+      Taylor expansion at $\ell$ has first-order integral zero, since $\int_0^h\int_0^h(v-u)dudv=0$.</p>
+    <p>All intermediate times are nonnegative, so $\|e^{tQ}\|_\infty=1$ bounds the remainder by
+      $\tfrac12\|Q\|_\infty^2(v-u)^2$.
+      Since $\int_0^h\int_0^h(v-u)^2dudv=h^4/6$, summing the $m^2$ cell pairs gives
+      $\|D^{-1}(G_i-A_i)\|_\infty\le T^2h^2\|Q\|_\infty^2/12$.</p>
+    <p>Rowwise $\ell^2\le\ell^1$ and $\|\pi\|_2\le1$ convert this to the Frobenius bound, using $\|Q\|_\infty\le2a$.
+      The symmetric two-state chain flipping at rate $1/2$, with $T=1$, has
+      $h^{-2}\|G_0-A_0\|_F\to(1-e^{-1})^2/24\approx0.016649017$, so quadratic order cannot generally be improved.</p>
+    <h2>What the uncorrected population inverse actually returns</h2>
+    <p>The raw-moment inverse recovers $\pi^T=T^{-2}G_0\mathbf1$ and $E=G_0^{-1}G_1=e^{TQ}$.
+      If these grid moments are wrongly treated as exact continuous occupations, then for any shift $\lambda&gt;0$ it forms</p>
+    $$Z_h=(I-E)^2G_0^{-1}D+\lambda^2\Pi
+      =\frac4{h^2}\sinh^2(hQ/2)+\lambda^2\Pi,\qquad \Pi=\mathbf1\pi.$$
+    <p>The identity follows from $(I-P)S_m=I-P^m$, $G_0^{-1}D=(h^2PS_m^2)^{-1}$, and commutation of these functions of $Q$.
+      The matrix $S_m$ is invertible because the nonstationary eigenvalues of $P$ have modulus less than one.</p>
+    <p>If $ha&lt;\pi$, Gershgorin's disks give $|\operatorname{Im}z|\le a$ for every eigenvalue $z$ of $Q$.
+      Therefore $-2\sinh(hQ/2)/h+\lambda\Pi$ has spectrum strictly in the open right half-plane and is the principal square root of $Z_h$.
+      The naive inverse is exactly</p>
+    <div class="equation-card">
+    $$Q_h=\lambda\Pi-(Z_h)^{1/2}_{\rm principal}=\frac2h\sinh(hQ/2),$$
+    $$\|Q_h-Q\|_\infty\le\frac2h\{\sinh(ha)-ha\}
+      \le\frac{h^2a^3}{3}\cosh(ha).$$
+    </div>
+    <p>The bound follows termwise from the odd power series and is independent of the window length $T$.
+      For the symmetric two-state chain flipping at rate $a$, $Q=-2a(I-\Pi)$ and $\|I-\Pi\|_\infty=1$, making the first inequality an equality.
+      Neither this formula nor its branch choice is asserted on arbitrarily coarse grids.</p>
+    <h2>An exact negative-rate counterexample</h2>
+    <p>Take the unit directed three-cycle $Q=C-I$, $C_{12}=C_{23}=C_{31}=1$, and $h=1/2$.
+      Then $Q^3=3C-3C^2$, so a missing reverse-edge entry of $Q_h$ equals $-h^2/8$ plus a remainder bounded by $h^4\cosh(h)/60$, using the odd power series and $\|Q\|_\infty=2$.</p>
+    <p>The elementary series bound $\cosh(1/2)\le8/7$ yields the exact enclosure</p>
+    $$-\frac{109}{3360}\le(Q_h)_{13}\le-\frac{101}{3360}&lt;-0.03.$$
+    <p>The computed entry is approximately $-0.0315429653$, regardless of the integer window size $m$.
+      More samples at this fixed grid spacing do not remove the population bias, and the uncorrected answer is not a Markov generator.</p>
+    <h2>Population correction and finite-sample use</h2>
+    <p>Under the same sufficient condition $ha&lt;\pi$, analytic matrix functional calculus gives</p>
+    $$Q=\frac2h\operatorname{arsinh}(hQ_h/2),$$
+    <p>because the principal scalar inverse satisfies $\operatorname{arsinh}(\sinh z)=z$ for $|\operatorname{Im}z|&lt;\pi/2$.
+      This identity extends to Jordan blocks; it is a population correction, not an unproved finite-sample error bound for a nonlinear inverse.</p>
+    <p>Alternatively, retain the continuous-occupation target and inflate its moment budgets.
+      For a fixed number $N\ge1$ of consecutive triple-window blocks, the grid products still lie entrywise in $[0,T^2]$, so the
+      <a href="https://github.com/microprediction/homogenization/pull/145">raw block-reward confidence proof</a> applies unchanged around $G_i$.</p>
+    <p>Given a fixed certified Dobrushin bound $0\le\alpha&lt;1$ for $e^{3TQ}$, put
+      $c_0=0$, $c_{j+1}=1+\alpha c_j$ and $H_N=c_N^2+\sum_{j=0}^{N-1}(1+c_j)^2$.
+      For a fixed $0&lt;\delta&lt;1$, valid simultaneous budgets for the exact continuous targets at confidence $1-\delta$ are</p>
+    $$\eta_0=\eta_1=\frac{nT^2}{N}\sqrt{\frac{H_N}{2}\log\frac{4n^2}{\delta}}
+      +\frac{T^2h^2a^2}{3}.$$
+    <p>The triangle inequality adds population mesh bias to sampling error; no pathwise jump-count estimate is needed.
+      These budgets can feed the residual-aware reconstruction test, including its stationary-law uncertainty, with possible abstention.
+      The probability of reporting an incorrect certified radius is at most $\delta$, not a guarantee conditional on reporting.</p>
+    <h2>Checks, literature and scope</h2>
+    <p>The certificate checks $171$ grid cases on $19$ chains, including nonuniform, sparse, reversible and defective examples.
+      Independent continuous-time Feynman&ndash;Kac moments, direct discrete lag sums, compact matrix identities, generator bias bounds and the analytic correction agree.
+      The negative entry has an exact rational Taylor-remainder enclosure; floating comparisons are not interval proofs.</p>
+    <p>The principal-root tool is classical; see <a href="./bibliography.html#Higham2008">Higham (2008)</a>, Chapter 6.
+      Fixed-spacing embedding nonuniqueness is classical too; see <a href="./bibliography.html#Davies2010">Davies (2010)</a>, Section 2.
+      Since the grid laws depend only on $P$ and $\pi$, aggregation alone cannot universally resolve snapshot aliasing without additional restrictions.</p>
+    <p>The cancellation uses stationary starts and identical, aligned uniform left-endpoint grids in both windows.
+      No arbitrary-prior, irregular-grid, noisy-label, hidden-state, optimal sampling-rate, or uniform-in-generator conditioning claim is made.
+      The grid and record length are fixed before observation; exit-rate and mixing bounds need independent justification, and arithmetic errors need their own enclosures.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
