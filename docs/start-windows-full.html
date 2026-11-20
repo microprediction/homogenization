@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Raw-window confidence budgets from any starting state · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_start_windows.py">certificate</a></span></p>
+    <h1>Raw-window confidence budgets from any start</h1>
+    <p class="lead">Stationary moment targets can be estimated from a trajectory started anywhere, with an explicit finite-record transient term.
+      This does not make nonstationary one-block moments obey stationary inversion identities.
+      The bound is model-dependent and holds for every starting state, without a burn-in period or knowing the stationary law.</p>
+    <h2>Setup and theorem</h2>
+    <p>Let $Y$ have a fixed finite irreducible row generator $Q$ on $n\ge2$ known labeled states, stationary law $\pi$, and an arbitrary initial law.
+      Fix $T&gt;0$, an integer $N\ge1$, $0&lt;\delta&lt;1$, and a certified Dobrushin upper bound $0\le\alpha&lt;1$ for $P=e^{3TQ}$ before observing the record.
+      Put</p>
+    $$O_{kj}=\int_{(3k+j)T}^{(3k+j+1)T}e_{Y_t}dt,\qquad
+      \widehat A_i=N^{-1}\sum_{k=0}^{N-1}O_{k0}O_{k,i+1}^T,\quad i=0,1.$$
+    <p>The targets $A_i=\mathbb E_\pi[O_{00}O_{0,i+1}^T]$ are the stationary raw ordered moments.
+      The data need not start in stationarity, and no fitted mean is subtracted.</p>
+    $$c_0=0,\quad c_{j+1}=1+\alpha c_j,\quad
+      H_N^\circ=\sum_{j=0}^{N-1}(1+c_j)^2,$$
+    $$\eta_{\rm samp}=\frac{nT^2}{N}\sqrt{\frac{H_N^\circ}{2}\log\frac{4n^2}{\delta}},\qquad
+      \eta_{\rm start}=\frac{\sqrt2\,T^2c_N}{N}.$$
+    <div class="equation-card">
+    $$\boxed{\inf_x\Pr_x\!\left(\|\widehat A_i-A_i\|_F\le
+      \eta_{\rm samp}+\eta_{\rm start}\text{ for both }i=0,1\right)\ge1-\delta.}$$
+    </div>
+    <p>Here $\Pr_x$ means the law conditional on $Y_0=x$ under the specified Markov model.
+      Integrating this bound covers every unknown, mixed or degenerate initial law.
+      For fixed design and confidence level the sampling term is $O(N^{-1/2})$ and the transient term is $O(N^{-1})$; the latter has no dimension factor.</p>
+    <h2>Fluctuations conditional on the initial state</h2>
+    <p>For one product entry let $Z_k\in[0,T^2]$ be its reward in block $k$, let $g(x)=\mathbb E_xZ_0$, and write $V_j=\sum_{\ell=0}^{j-1}P^\ell g$.
+      Oscillation contraction gives $\operatorname{osc}(V_j)\le T^2c_j$.</p>
+    <p>Condition on $Y_0=x$, then reveal successive complete path blocks.
+      Each Doob martingale increment for $\sum_kZ_k$ has conditional range at most $T^2(1+c_{N-k-1})$, retaining reward&ndash;endpoint dependence.
+      There is no random-initial-state increment under this conditioning.</p>
+    <p>The conditional Hoeffding lemma gives</p>
+    $$\Pr_x\!\left(\left|N^{-1}\sum_kZ_k-\mathbb E_x[N^{-1}\sum_kZ_k]\right|\ge t\right)
+      \le2\exp\{-2N^2t^2/(T^4H_N^\circ)\}.$$
+    <p>A union bound over both matrices and their $n^2$ entries gives the Frobenius sampling radius $\eta_{\rm samp}$ around the conditional mean, uniformly in $x$.
+      This step does not replace that conditional mean by the stationary target.</p>
+    <h2>A dimension-free transient term</h2>
+    <p>Let $K_i(x)=\mathbb E_x[O_{00}O_{0,i+1}^T]$.
+      Every $K_i(x)/T^2$ is a probability vector on the $n^2$ ordered state pairs: its entries are nonnegative and sum to one.
+      Consequently the map from a block's starting law to its expected matrix is a Markov kernel.</p>
+    <p>Total-variation contraction and the simplex inequality $\|p-q\|_2\le\sqrt2\,d_{\rm TV}(p,q)$ imply</p>
+    $$\left\|\mathbb E_x\widehat A_i-A_i\right\|_F
+      \le\frac{\sqrt2T^2}{N}\sum_{k=0}^{N-1}d_{\rm TV}(e_xP^k,\pi)
+      \le\frac{\sqrt2T^2c_N}{N}.$$
+    <p>Here $d_{\rm TV}(e_xP^k,\pi)\le\alpha^k$, including $k=0$.
+      Adding this deterministic mean bias to the conditional sampling bound proves the theorem.</p>
+    <h2>Exact bias coefficient and sharp order</h2>
+    <p>Flatten each $K_i(x)$ into a row, write $\Pi=\mathbf1\pi$ and $H=(I-P+\Pi)^{-1}-\Pi$.
+      The finite geometric identity gives, for any starting prior $\nu$,</p>
+    $$\mathbb E_\nu\widehat A_i-A_i
+      =\frac1N\nu(I-P^N)HK_i,\qquad
+      N(\mathbb E_\nu\widehat A_i-A_i)\longrightarrow\nu HK_i.$$
+    <p>These formulas describe the bias when a model is specified; the confidence budget does not require computing its unknown coefficient.
+      They are identities for flattened matrices, with the result reshaped back to $n\times n$.</p>
+    <p>For the symmetric two-state chain flipping at rate $1/2$, take $T=\log2$ and start in state one.
+      Since $\widehat\pi^T=T^{-2}\widehat A_0\mathbf1$,</p>
+    $$\mathbb E_1\widehat\pi-\pi
+      =\frac{2(1-8^{-N})}{7N\log2}(1,-1).$$
+    <p>Each component's nonzero limiting magnitude is $2/(7\log2)\approx0.412198583$.
+      Since taking row sums is a bounded linear map, this also proves that the full raw-moment transient bias is generally not $o(N^{-1})$.</p>
+    <h2>Reconstruction and grid observations</h2>
+    <p>The supplied budgets can feed the <a href="https://github.com/microprediction/homogenization/pull/145">stationary-target raw-moment inverse and its residual-aware error certificate</a>.
+      Stationary population targets are unchanged; the new term accounts for estimating them from a transient record.
+      A candidate may be selected from the same data, but failed sufficient tests still require abstention.</p>
+    <p>For aligned uniform left-endpoint grid occupations of spacing $h$, $T/h$ an integer, the same proof applies to their stationary grid targets: the block rewards remain nonnegative with total mass $T^2$.
+      With a separately justified exit-rate bound $a\ge\max_x(-Q_{xx})$, the <a href="https://github.com/microprediction/homogenization/pull/146">stationary population mesh bound</a> then gives budgets for the exact continuous targets</p>
+    $$\eta_i=\eta_{\rm samp}+\eta_{\rm start}+T^2h^2a^2/3,\qquad i=0,1.$$
+    <p>This decomposition does not assume that a nonstationary one-block quadrature error has the stationary quadratic cancellation.</p>
+    <h2>Checks, classical tools and scope</h2>
+    <p>The certificate checks $648$ conditional ranges and $72$ squared transient-bias inequalities exactly in a dependent three-state block model.
+      It also computes $12$ exact conditional finite laws, cross-checks their moment-generating functions, and verifies $612$ continuous-time starting-state/channel cases on $13$ chains, including sparse and defective examples.
+      Floating cross-checks are not interval proofs or empirical evidence of the confidence theorem.</p>
+    <p>Markov-chain concentration, initial-state effects and additive Poisson martingale methods are classical; see
+      <a href="./bibliography.html#GlynnOrmoneit2002">Glynn and Ormoneit (2002)</a>, Theorem 2 and Section 2.
+      This note specializes them to raw path-window matrices and separates conditional fluctuations from their dimension-free stationary-target bias.</p>
+    <p>The guarantee is model-dependent and conditional on the initial state, not distribution-free feature-conditional conformal coverage.
+      Even conditional on that state, the probability of reporting an incorrect certified reconstruction is at most $\delta$; coverage conditional on reporting is not asserted.
+      Known labels, fixed record design and independently justified mixing remain essential; adaptive stopping, hidden states, noisy occupations and arithmetic error need separate control.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

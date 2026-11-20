@@ -1,0 +1,81 @@
+<!-- title: Raw-window confidence budgets from any starting state · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_start_windows.py">certificate</a></span></p>
+    <h1>Raw-window confidence budgets from any start</h1>
+    <p class="lead">Stationary moment targets can be estimated from a trajectory started anywhere, with an explicit finite-record transient term.
+      This does not make nonstationary one-block moments obey stationary inversion identities.
+      The bound is model-dependent and holds for every starting state, without a burn-in period or knowing the stationary law.</p>
+    <h2>Setup and theorem</h2>
+    <p>Let $Y$ have a fixed finite irreducible row generator $Q$ on $n\ge2$ known labeled states, stationary law $\pi$, and an arbitrary initial law.
+      Fix $T&gt;0$, an integer $N\ge1$, $0&lt;\delta&lt;1$, and a certified Dobrushin upper bound $0\le\alpha&lt;1$ for $P=e^{3TQ}$ before observing the record.
+      Put</p>
+    $$O_{kj}=\int_{(3k+j)T}^{(3k+j+1)T}e_{Y_t}dt,\qquad
+      \widehat A_i=N^{-1}\sum_{k=0}^{N-1}O_{k0}O_{k,i+1}^T,\quad i=0,1.$$
+    <p>The targets $A_i=\mathbb E_\pi[O_{00}O_{0,i+1}^T]$ are the stationary raw ordered moments.
+      The data need not start in stationarity, and no fitted mean is subtracted.</p>
+    $$c_0=0,\quad c_{j+1}=1+\alpha c_j,\quad
+      H_N^\circ=\sum_{j=0}^{N-1}(1+c_j)^2,$$
+    $$\eta_{\rm samp}=\frac{nT^2}{N}\sqrt{\frac{H_N^\circ}{2}\log\frac{4n^2}{\delta}},\qquad
+      \eta_{\rm start}=\frac{\sqrt2\,T^2c_N}{N}.$$
+    <div class="equation-card">
+    $$\boxed{\inf_x\Pr_x\!\left(\|\widehat A_i-A_i\|_F\le
+      \eta_{\rm samp}+\eta_{\rm start}\text{ for both }i=0,1\right)\ge1-\delta.}$$
+    </div>
+    <p>Here $\Pr_x$ means the law conditional on $Y_0=x$ under the specified Markov model.
+      Integrating this bound covers every unknown, mixed or degenerate initial law.
+      For fixed design and confidence level the sampling term is $O(N^{-1/2})$ and the transient term is $O(N^{-1})$; the latter has no dimension factor.</p>
+    <h2>Fluctuations conditional on the initial state</h2>
+    <p>For one product entry let $Z_k\in[0,T^2]$ be its reward in block $k$, let $g(x)=\mathbb E_xZ_0$, and write $V_j=\sum_{\ell=0}^{j-1}P^\ell g$.
+      Oscillation contraction gives $\operatorname{osc}(V_j)\le T^2c_j$.</p>
+    <p>Condition on $Y_0=x$, then reveal successive complete path blocks.
+      Each Doob martingale increment for $\sum_kZ_k$ has conditional range at most $T^2(1+c_{N-k-1})$, retaining reward&ndash;endpoint dependence.
+      There is no random-initial-state increment under this conditioning.</p>
+    <p>The conditional Hoeffding lemma gives</p>
+    $$\Pr_x\!\left(\left|N^{-1}\sum_kZ_k-\mathbb E_x[N^{-1}\sum_kZ_k]\right|\ge t\right)
+      \le2\exp\{-2N^2t^2/(T^4H_N^\circ)\}.$$
+    <p>A union bound over both matrices and their $n^2$ entries gives the Frobenius sampling radius $\eta_{\rm samp}$ around the conditional mean, uniformly in $x$.
+      This step does not replace that conditional mean by the stationary target.</p>
+    <h2>A dimension-free transient term</h2>
+    <p>Let $K_i(x)=\mathbb E_x[O_{00}O_{0,i+1}^T]$.
+      Every $K_i(x)/T^2$ is a probability vector on the $n^2$ ordered state pairs: its entries are nonnegative and sum to one.
+      Consequently the map from a block's starting law to its expected matrix is a Markov kernel.</p>
+    <p>Total-variation contraction and the simplex inequality $\|p-q\|_2\le\sqrt2\,d_{\rm TV}(p,q)$ imply</p>
+    $$\left\|\mathbb E_x\widehat A_i-A_i\right\|_F
+      \le\frac{\sqrt2T^2}{N}\sum_{k=0}^{N-1}d_{\rm TV}(e_xP^k,\pi)
+      \le\frac{\sqrt2T^2c_N}{N}.$$
+    <p>Here $d_{\rm TV}(e_xP^k,\pi)\le\alpha^k$, including $k=0$.
+      Adding this deterministic mean bias to the conditional sampling bound proves the theorem.</p>
+    <h2>Exact bias coefficient and sharp order</h2>
+    <p>Flatten each $K_i(x)$ into a row, write $\Pi=\mathbf1\pi$ and $H=(I-P+\Pi)^{-1}-\Pi$.
+      The finite geometric identity gives, for any starting prior $\nu$,</p>
+    $$\mathbb E_\nu\widehat A_i-A_i
+      =\frac1N\nu(I-P^N)HK_i,\qquad
+      N(\mathbb E_\nu\widehat A_i-A_i)\longrightarrow\nu HK_i.$$
+    <p>These formulas describe the bias when a model is specified; the confidence budget does not require computing its unknown coefficient.
+      They are identities for flattened matrices, with the result reshaped back to $n\times n$.</p>
+    <p>For the symmetric two-state chain flipping at rate $1/2$, take $T=\log2$ and start in state one.
+      Since $\widehat\pi^T=T^{-2}\widehat A_0\mathbf1$,</p>
+    $$\mathbb E_1\widehat\pi-\pi
+      =\frac{2(1-8^{-N})}{7N\log2}(1,-1).$$
+    <p>Each component's nonzero limiting magnitude is $2/(7\log2)\approx0.412198583$.
+      Since taking row sums is a bounded linear map, this also proves that the full raw-moment transient bias is generally not $o(N^{-1})$.</p>
+    <h2>Reconstruction and grid observations</h2>
+    <p>The supplied budgets can feed the <a href="https://github.com/microprediction/homogenization/pull/145">stationary-target raw-moment inverse and its residual-aware error certificate</a>.
+      Stationary population targets are unchanged; the new term accounts for estimating them from a transient record.
+      A candidate may be selected from the same data, but failed sufficient tests still require abstention.</p>
+    <p>For aligned uniform left-endpoint grid occupations of spacing $h$, $T/h$ an integer, the same proof applies to their stationary grid targets: the block rewards remain nonnegative with total mass $T^2$.
+      With a separately justified exit-rate bound $a\ge\max_x(-Q_{xx})$, the <a href="https://github.com/microprediction/homogenization/pull/146">stationary population mesh bound</a> then gives budgets for the exact continuous targets</p>
+    $$\eta_i=\eta_{\rm samp}+\eta_{\rm start}+T^2h^2a^2/3,\qquad i=0,1.$$
+    <p>This decomposition does not assume that a nonstationary one-block quadrature error has the stationary quadratic cancellation.</p>
+    <h2>Checks, classical tools and scope</h2>
+    <p>The certificate checks $648$ conditional ranges and $72$ squared transient-bias inequalities exactly in a dependent three-state block model.
+      It also computes $12$ exact conditional finite laws, cross-checks their moment-generating functions, and verifies $612$ continuous-time starting-state/channel cases on $13$ chains, including sparse and defective examples.
+      Floating cross-checks are not interval proofs or empirical evidence of the confidence theorem.</p>
+    <p>Markov-chain concentration, initial-state effects and additive Poisson martingale methods are classical; see
+      <a href="./bibliography.html#GlynnOrmoneit2002">Glynn and Ormoneit (2002)</a>, Theorem 2 and Section 2.
+      This note specializes them to raw path-window matrices and separates conditional fluctuations from their dimension-free stationary-target bias.</p>
+    <p>The guarantee is model-dependent and conditional on the initial state, not distribution-free feature-conditional conformal coverage.
+      Even conditional on that state, the probability of reporting an incorrect certified reconstruction is at most $\delta$; coverage conditional on reporting is not asserted.
+      Known labels, fixed record design and independently justified mixing remain essential; adaptive stopping, hidden states, noisy occupations and arithmetic error need separate control.</p>
+  </main>

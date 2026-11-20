@@ -1,5 +1,15 @@
 [
  {
+  "key": "GlynnOrmoneit2002",
+  "authors": "Glynn, P. W. and Ormoneit, D.",
+  "year": 2002,
+  "title": "Hoeffding's inequality for uniformly ergodic Markov chains",
+  "venue": "Statistics & Probability Letters 56(2):143-146",
+  "doi": "10.1016/S0167-7152(01)00158-4",
+  "url": "https://web.stanford.edu/~glynn/papers/2002/GOrmoneit02.pdf",
+  "annotation": "Classical explicit concentration for bounded uniformly ergodic Markov-chain sums, proved with martingale exponential bounds. The ordered-window note supplies a finite-horizon path-block specialization retaining endpoint dependence and the initial-state increment."
+ },
+ {
   "key": "Kalman1960",
   "authors": "Kalman, R. E.",
   "year": 1960,

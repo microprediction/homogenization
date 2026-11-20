@@ -3185,5 +3185,16 @@
   "doi": "10.1090/s0002-9947-1957-0087058-6",
   "url": "https://doi.org/10.1090/s0002-9947-1957-0087058-6",
   "annotation": "Proves the projective contraction theorem with its sharp hyperbolic-tangent coefficient; the annuity-measure sensitivity bound has the same tanh(projective-diameter/4) form."
+ },
+ {
+  "role": "survey_theory",
+  "key": "GlynnOrmoneit2002",
+  "authors": "Glynn, P. W. and Ormoneit, D.",
+  "year": 2002,
+  "title": "Hoeffding's inequality for uniformly ergodic Markov chains",
+  "venue": "Statistics & Probability Letters 56(2):143-146",
+  "doi": "10.1016/s0167-7152(01)00158-4",
+  "url": "https://web.stanford.edu/~glynn/papers/2002/GOrmoneit02.pdf",
+  "annotation": "Classical explicit concentration for bounded uniformly ergodic Markov-chain sums, proved with martingale exponential bounds. The ordered-window note supplies a finite-horizon path-block specialization retaining endpoint dependence and the initial-state increment."
  }
 ]
