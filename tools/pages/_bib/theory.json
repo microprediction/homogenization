@@ -69,5 +69,25 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "GlynnOrmoneit2002",
+  "authors": "Glynn, P. W. and Ormoneit, D.",
+  "year": 2002,
+  "title": "Hoeffding's inequality for uniformly ergodic Markov chains",
+  "venue": "Statistics & Probability Letters 56(2):143-146",
+  "doi": "10.1016/S0167-7152(01)00158-4",
+  "url": "https://web.stanford.edu/~glynn/papers/2002/GOrmoneit02.pdf",
+  "annotation": "Derives concentration inequalities for bounded additive functionals through a Poisson-equation martingale decomposition. The window-moment notes specialize bounded-difference arguments to dependent path-block rewards; their explicit constants and stationary-target transient terms are derived separately."
+ },
+ {
+  "key": "HowardEtAl2021",
+  "authors": "Howard, S. R., Ramdas, A., McAuliffe, J. and Sekhon, J.",
+  "year": 2021,
+  "title": "Time-uniform, nonparametric, nonasymptotic confidence sequences",
+  "venue": "The Annals of Statistics 49(2):1055-1080",
+  "doi": "10.1214/20-AOS1991",
+  "url": "https://arxiv.org/abs/1810.08240",
+  "annotation": "Develops time-uniform confidence sequences using nonnegative supermartingales, mixtures and geometric-epoch stitching. The anytime raw-window note gives an elementary dyadic specialization after a path-block Poisson decomposition."
  }
 ]
