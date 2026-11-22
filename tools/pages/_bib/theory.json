@@ -69,5 +69,23 @@
   "venue": "Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 51:269-286",
   "doi": "10.1007/BF00587353",
   "annotation": "Gives central limit criteria for local martingales in terms of predictable quadratic variation and negligible jumps; the weighted fast-chain clock limit is a bounded-jump specialization."
+ },
+ {
+  "key": "BladtSorensen2005",
+  "authors": "Bladt, M. and Sørensen, M.",
+  "year": 2005,
+  "title": "Statistical inference for discretely observed Markov jump processes",
+  "venue": "Journal of the Royal Statistical Society, Series B 67(3):395-410",
+  "doi": "10.1111/j.1467-9868.2005.00508.x",
+  "annotation": "Section 2 records the classical complete-path likelihood in transition counts and state holding times, and its count/occupation maximum-likelihood estimator. The jump-confidence note uses only these continuous-observation identities, not the paper's discrete-observation inference claims."
+ },
+ {
+  "key": "HowardEtAl2020",
+  "authors": "Howard, S. R., Ramdas, A., McAuliffe, J. and Sekhon, J.",
+  "year": 2020,
+  "title": "Time-uniform Chernoff bounds via nonnegative supermartingales",
+  "venue": "Probability Surveys 17:257-317",
+  "doi": "10.1214/18-PS321",
+  "annotation": "Unifies time-uniform concentration through nonnegative supermartingales in discrete and continuous time. Section 2.3 states Ville's inequality, used in the gamma-mixture confidence sequence for fully observed transition rates."
  }
 ]
