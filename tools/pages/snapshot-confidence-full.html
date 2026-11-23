@@ -1,0 +1,96 @@
+<!-- title: Anytime two-state generator confidence from snapshots · homogenization | math -->
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_snapshot_confidence.py">certificate</a></span></p>
+    <h1>Anytime two-state confidence from snapshots</h1>
+    <p class="lead">Labeled snapshots of a fixed two-state continuous-time chain give simultaneous confidence bounds for its generator and stationary law, without a supplied mixing rate or jump times.
+      The bounds can become informative on observed records, but no uniform calendar-time accuracy is asserted.
+      A simple computable gate keeps the inverse away from its singular boundary.</p>
+    <h2>Observation model and exact inverse</h2>
+    <p>Let $Q=\begin{pmatrix}-q_{12}&amp;q_{12}\\q_{21}&amp;-q_{21}\end{pmatrix}$ with fixed finite $q_{12},q_{21}&gt;0$.
+      Observe $X_k=Y_{kh}$, $k\ge0$, with known labels and fixed known spacing $h&gt;0$.
+      The initial state is arbitrary, and the chain need not start in stationarity.</p>
+    $$P=e^{hQ}=\begin{pmatrix}1-a&amp;a\\b&amp;1-b\end{pmatrix},\qquad
+      a,b&gt;0,\quad s:=a+b&lt;1.$$
+    <p>Conversely every such $(a,b)$ has the unique two-state generator and stationary row law</p>
+    $$f_h(s)=\frac{-\log(1-s)}{hs},\qquad
+      q_{12}=a f_h(s),\quad q_{21}=b f_h(s),\quad
+      \pi=\left(\frac b{s},\frac a{s}\right).$$
+    <p>Indeed the nonconstant eigenvalue of $P$ is $1-s=e^{-h(q_{12}+q_{21})}$ and its off-diagonal ratio is $a/b=q_{12}/q_{21}$.
+      This inverse is valid for every fixed $h$, but becomes ill-conditioned as $s\uparrow1$.
+      It is not a general-state snapshot-identification theorem.</p>
+    <h2>A confidence sequence for each transition row</h2>
+    <p>For $i\in\{1,2\}$ and $K$ observed transitions, put
+      $V_i(K)=\sum_{k&lt;K}\mathbf1\{X_k=i\}$ and
+      $C_i(K)=\sum_{k&lt;K}\mathbf1\{X_k=i,X_{k+1}\ne i\}$.
+      Write $u_1=a,u_2=b$ and fix $0&lt;\delta&lt;1$ before seeing the data.</p>
+    $$M_{i,K}(u)=\frac{\mathrm B(C_i+1,V_i-C_i+1)}{u^{C_i}(1-u)^{V_i-C_i}},\qquad
+      \mathcal C_i(K)=\{u\in[0,1]:M_{i,K}(u)\le2/\delta\}=[l_i,r_i].$$
+    <p>Here $\mathrm B$ is the beta function; use continuous endpoint limits and $0^0=1$.
+      For an unvisited row $V_i=0$, the interval is $[0,1]$.
+      For $V_i&gt;0$, the log mixture is convex with its minimum at $C_i/V_i$, so its sublevel set is one interval.</p>
+    <p>For $C_i=0$ its upper endpoint is
+      $1-\exp[-\{\log(2/\delta)+\log(V_i+1)\}/V_i]$ and its lower endpoint is zero.
+      For $C_i=V_i$ reflect this interval about $1/2$; otherwise solve the two scalar log-mixture equations.
+      These are frequentist confidence sets, not posterior credible intervals.</p>
+    <p><strong>Proof.</strong> For fixed $v\in(0,1)$, multiply by
+      $(v/u_i)$ on an observed departure from row $i$, by $(1-v)/(1-u_i)$ on a self-transition in that row, and by one otherwise.
+      Given $\mathcal F_k=\sigma(X_0,\ldots,X_k)$, the next multiplier has conditional mean one, since row selection is already known.
+      The product is a nonnegative martingale in the full snapshot filtration.</p>
+    <p>Integrate over a fixed uniform $v\in[0,1]$ to obtain exactly $M_{i,K}(u_i)$, initially one.
+      Ville's inequality gives $\Pr(\exists K:M_{i,K}(u_i)&gt;2/\delta)\le\delta/2$.
+      A union bound over the two rows proves, conditional on each initial state,</p>
+    <div class="equation-card">
+    $$\boxed{\Pr_{Q,x}\{a\in\mathcal C_1(K),\ b\in\mathcal C_2(K)\text{ for every }K\ge0\}\ge1-\delta.}$$
+    </div>
+    <p>The alternative transition rows need not themselves be CTMC-embeddable; their valid one-step probabilities suffice for the martingale.</p>
+    <p>No row independence or conditional-binomial assertion is used.
+      In fact, with $X_0=1$ and $K=2$, conditioning on $V_1=1$ forces $C_1=1$, although $a&lt;1$.
+      Random visit totals must not be treated as fixed independent sample sizes.</p>
+    <h2>A finite, explicit generator certificate</h2>
+    <p>At any $K$, abbreviate $[l_a,r_a]=\mathcal C_1(K)$ and $[l_b,r_b]=\mathcal C_2(K)$.
+      Use the sufficient reporting gate $l_a,l_b&gt;0$ and $r_a+r_b&lt;1$; otherwise abstain from this finite generator certificate.
+      On the same simultaneous event, every passing time obeys</p>
+    $$\begin{aligned}
+      q_{12}&amp;\in[L_{12},U_{12}]=[l_a f_h(l_a+l_b),\ r_a f_h(r_a+r_b)],\\
+      q_{21}&amp;\in[L_{21},U_{21}]=[l_b f_h(l_a+l_b),\ r_b f_h(r_a+r_b)],\\
+      \pi_1&amp;\in[L_p,U_p]=\left[\frac{l_b}{r_a+l_b},\frac{r_b}{l_a+r_b}\right],\qquad\pi_2=1-\pi_1.
+    \end{aligned}$$
+    <p>These coordinate extrema are exact over the reporting rectangle, though the separate extrema need not be attained together.
+      To prove monotonicity, write $f_h(s)=h^{-1}\int_0^1(1-st)^{-1}dt$, which is positive and increasing.
+      Thus both rates increase in both arguments, while $b/(a+b)$ increases in $b$ and decreases in $a$.</p>
+    <p>For any record-dependent row generator $\bar Q$ and stationary-law estimate $(\bar p,1-\bar p)$, define
+      $d_{ij}=\max(|\bar q_{ij}-L_{ij}|,|\bar q_{ij}-U_{ij}|)$ and
+      $d_p=\max(|\bar p-L_p|,|\bar p-U_p|)$.
+      Then $\|\bar Q-Q\|_F\le\sqrt{2(d_{12}^2+d_{21}^2)}$ and
+      $\|(\bar p,1-\bar p)-\pi\|_2\le\sqrt2d_p$ at all passing times on that event.</p>
+    <p>The point estimates need not be stationary-consistent with one another for these separate bounds.
+      Data-dependent stopping or repeated reports preserve the simultaneous guarantee; coverage conditional on the event of reporting is not claimed.
+      An unvisited row cannot pass, and a box reaching $a+b=1$ does not give this finite upper-rate bound.</p>
+    <h2>Pointwise eventual usefulness, not a uniform time guarantee</h2>
+    <p>For every fixed generator in the stated class, $V_i(K)\to\infty$ and $C_i(K)/V_i(K)\to u_i$ almost surely by finite-chain ergodicity.
+      With $\widehat u=C_i/V_i$, the exact identity is
+      $\log M_{i,K}(u)=\log M_{i,K}(\widehat u)+V_i\operatorname{kl}(\widehat u,u)$.
+      Stirling's formula gives $\log M_{i,K}(\widehat u)=-\tfrac12\log V_i+O(1)$ along these paths.</p>
+    <p>The Bernoulli divergence is locally quadratic at each fixed $u_i\in(0,1)$, so the interval endpoints differ from $\widehat u$ by $O(\sqrt{\log V_i/V_i})$.
+      Consequently the reporting gate eventually passes almost surely and the rate and stationary-law interval widths tend to zero.
+      The constants depend on the fixed model and $h$; neither a uniform calendar-time rate nor an optimal iterated-logarithm width is asserted.</p>
+    <h2>Numerical record and relation to the literature</h2>
+    <p>A feasible record with $h=1$, $V=(600000,400000)$, $C=(120000,120000)$ and $\delta=.05$ gives
+      $q_{12}\in[.272670087,.281924947]$, $q_{21}\in[.409388974,.422489528]$ and
+      $\pi_1\in[.594577497,.605397323]$ (display-rounded endpoints).
+      The inverse of $(\widehat a,\widehat b)=(.2,.3)$ has generator Frobenius radius $.011432265$.</p>
+    <p>The certificate checks 168 exact rational martingale means and 84 finite-path first-crossing laws over horizons 1&ndash;14; the largest crossing probability is $.025832473$ at error budget $.2$.
+      It also checks 36 independent matrix-exponential inversions, scalar endpoint equations and 441 box points.
+      These finite checks audit the formulas; the proof, not a simulation, supplies infinite-horizon coverage.</p>
+    <p>Floating root evaluations are not outward-rounded arithmetic certificates; computational roundoff is not included in the statistical error budget.</p>
+    <p>The two-state embedding and its singular boundary are classical: see
+      <a href="./bibliography.html#BladtSorensen2005">Bladt and S&oslash;rensen (2005), Section 2.1</a>.
+      The mixture method is classical confidence-sequence machinery; see
+      <a href="./bibliography.html#HowardEtAl2021">Howard et al. (2021), Section 3.2 and Proposition 7</a>.
+      Fully empirical inference for stationary laws and gaps from one reversible discrete chain is developed by
+      <a href="./bibliography.html#HsuEtAl2019">Hsu et al. (2019), Section 4</a>.</p>
+    <p>The contribution here is the explicit time-uniform two-state CTMC rate box and reporting gate, with their observation assumptions and failure modes spelled out.
+      This does not cover hidden or noisy labels, adaptive sampling spacings, a changing generator, or replacement of continuous occupation windows by grid sums.
+      It is model-based confidence conditional on the initial state, not feature-conditional conformal coverage.</p>
+  </main>
