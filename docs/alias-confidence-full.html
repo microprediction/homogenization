@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alias-safe finite-state snapshot confidence · homogenization</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <style>.katex { white-space: nowrap; } .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">homogenization</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-guide">Guide</span><span class="drop" id="menu-guide">
+        <a href="./idea.html">Averaging by hand</a>
+        <a href="./solvability.html">Solvability</a>
+        <a href="./layers.html">Initial layers</a>
+        <a href="./regime-switching.html">The regime-switching expansion</a>
+        <a href="./survival.html">Terms adding up</a>
+        <a href="./convergence.html">Convergence orders</a>
+        <a href="./engine.html">The fast-switching engine</a>
+        <a href="./any-equation.html">Any pricing equation</a>
+        <a href="./quantlib.html">QuantLib models</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-finance">Finance</span><span class="drop" id="menu-finance">
+        <a href="https://regimelib.org/models/index.html">Pricing models, at regimelib.org</a>
+        <a href="./three-regimes.html">Three regimes</a>
+        <a href="./erlang.html">Regimes with regular durations</a>
+        <a href="./credit.html">Two-name credit</a>
+        <a href="./counts.html">Poisson counts</a>
+        <a href="./cumulants.html">Cumulants of integrated variance</a>
+        <a href="./fast-factor.html">A fast mean-reverting factor</a>
+        <a href="./yield-curve.html">Three numbers in a yield curve</a>
+        <a href="./cycle-smile.html">Cycle direction in the smile</a>
+        <a href="./likelihood.html">Likelihood of a switching rate</a>
+        <a href="./portfolio.html">Portfolio choice</a>
+        <a href="./correlation.html">Switching correlation</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-science">Science</span><span class="drop" id="menu-science">
+        <a href="./clumpy-media.html">Light through clumpy media</a>
+        <a href="./pulsars.html">Pulsar spin-down switching</a>
+        <a href="./epidemics.html">Epidemic growth</a>
+        <a href="./conformal.html">Pooled residuals in conformal prediction</a>
+      </span></span>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-expanded="false" aria-controls="menu-literature">Literature</span><span class="drop" id="menu-literature">
+        <a href="./survey.html">Survey</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./bibliography.html">Bibliography</a>
+        <a href="./map.html">Map</a>
+        <a href="./timeline.html">Timeline</a>
+      </span></span>
+      <a href="https://github.com/microprediction/homogenization">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    (function () {
+      var hdr = document.querySelector('.site-header'), menus = [].slice.call(hdr.querySelectorAll('.menu'));
+      hdr.classList.add('js-menus');
+      function label(m) { return m.querySelector('.menu-label'); }
+      function links(m) { return [].slice.call(m.querySelectorAll('.drop a')); }
+      function isOpen(m) { return m.classList.contains('open'); }
+      function set(m, open, pin) {
+        m.classList.toggle('open', open); m.pinned = open && !!pin;
+        label(m).setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) menus.forEach(function (o) { if (o !== m && isOpen(o)) set(o, false); });
+      }
+      menus.forEach(function (m) {
+        var b = label(m);
+        b.addEventListener('click', function (e) { e.stopPropagation(); set(m, !(isOpen(m) && m.pinned), true); });
+        b.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          if (e.key !== 'ArrowDown' && isOpen(m) && m.pinned) { set(m, false); return; }
+          set(m, true, true); links(m)[0].focus();
+        });
+        m.querySelector('.drop').addEventListener('keydown', function (e) {
+          var a = links(m), i = a.indexOf(document.activeElement), n = a.length;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); a[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].focus(); }
+          else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); a[e.key === 'Home' ? 0 : n - 1].focus(); }
+        });
+        m.addEventListener('mouseenter', function () { if (!isOpen(m)) set(m, true, false); });
+        m.addEventListener('mouseleave', function () { if (isOpen(m) && !m.pinned) set(m, false); });
+        m.addEventListener('focusout', function (e) { if (isOpen(m) && !m.contains(e.relatedTarget)) set(m, false); });
+      });
+      document.addEventListener('click', function (e) { menus.forEach(function (m) { if (isOpen(m) && !m.contains(e.target)) set(m, false); }); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        menus.forEach(function (m) { if (!isOpen(m)) return; var inside = m.contains(document.activeElement); set(m, false); if (inside) label(m).focus(); });
+      });
+    })();
+  </script>
+</header>
+
+  <main>
+    <p class="demo-nav"><a href="./identifiability.html">&larr; identification summary</a>
+      <span><a href="https://github.com/microprediction/homogenization/blob/main/papers/yield-curve/verify_alias_confidence.py">certificate</a></span></p>
+    <h1>Alias-safe finite-state snapshot confidence</h1>
+    <p class="lead">Labeled snapshots can certify a finite-state generator without a supplied mixing rate or speed cap, when an observable gate excludes logarithm aliases.
+      The certificate combines anytime transition-row intervals, a determinant lower bound and a finite matrix-logarithm series with an explicit tail.
+      It deliberately abstains outside a sufficient local identification region.</p>
+    <h2>Setup and the computable certificate</h2>
+    <p>Let $Q$ be a fixed finite irreducible row generator on $n\ge2$ known states, and observe $X_k=Y_{kh}$ at fixed known spacing $h&gt;0$.
+      The initial state is arbitrary, not necessarily stationary; put $P=e^{hQ}$.
+      Every norm below is the induced maximum absolute row-sum norm $\|\cdot\|_\infty$.</p>
+    <p>Fix $0&lt;\delta&lt;1$ before observing data, and suppose a stochastic estimate $\widehat P_K$ and a data-dependent budget $\eta_K$ satisfy
+      $\Pr_{Q,x}\{\|\widehat P_K-P\|_\infty\le\eta_K\text{ for all }K\ge0\}\ge1-\delta$ for every initial state $x$.
+      The transition-count construction below supplies this event without unknown model parameters.</p>
+    $$\rho_K=\|I-\widehat P_K\|_\infty,\qquad
+      d_K=\det\widehat P_K-n\eta_K,\qquad
+      \boxed{\rho_K+\eta_K&lt;1,\quad d_K&gt;e^{-\pi}.}$$
+    <p>Report only when both strict tests pass.
+      For any integer $m\ge1$, possibly chosen from the record, define</p>
+    $$L_{K,m}=-\frac1h\sum_{j=1}^m\frac{(I-\widehat P_K)^j}{j},\qquad
+      R_{K,m}=\frac{\eta_K}{h(1-\rho_K-\eta_K)}
+        +\frac{\rho_K^{m+1}}{h(m+1)(1-\rho_K)}.$$
+    <div class="equation-card">
+    $$\boxed{\|L_{K,m}-Q\|_\infty\le R_{K,m},\qquad
+      \max_i(-Q_{ii})\le-\frac{\log d_K}{h}.}$$
+    </div>
+    <p>These conclusions hold simultaneously at every passing sample count on the original confidence event.
+      $L_{K,m}$ has zero row sums but may have negative off-diagonal entries.
+      If a valid row generator $\overline Q$ is required, clip its off-diagonals to nonnegative values and reset the diagonal, then report the budget $R_{K,m}+\|\overline Q-L_{K,m}\|_\infty$.</p>
+    <h2>Why the determinant excludes aliases</h2>
+    <p>For stochastic matrices $A,B$, multilinearity telescopes $\det A-\det B$ into $n$ determinants with one row difference each.
+      All other rows have Euclidean norm at most one, while each difference row has Euclidean norm at most $\|A-B\|_\infty$.
+      Hadamard's inequality therefore gives $|\det A-\det B|\le n\|A-B\|_\infty$.</p>
+    <p>On the confidence event, $\det P\ge d_K&gt;e^{-\pi}$.
+      For any compatible row generator $G$ with $e^{hG}=P$, the real identity
+      $\det P=e^{h\operatorname{tr}G}$ implies
+      $h\sum_i(-G_{ii})=-\log\det P\le-\log d_K&lt;\pi$.</p>
+    <p>Thus $h\max_i(-G_{ii})&lt;\pi$, and Gershgorin's disks put every eigenvalue of $hG$ in the strip $|\operatorname{Im}z|&lt;\pi$.
+      The principal-logarithm uniqueness theorem gives $hG=\log P$, including repeated eigenvalues and Jordan blocks.
+      In particular the true $Q$ is the unique compatible generator, and the displayed exit-rate bound follows.</p>
+    <p>This is the classical determinant/strip argument, not a new embedding theorem.
+      See <a href="./bibliography.html#Davies2010">Davies (2010), Theorem 11</a>, and
+      <a href="./bibliography.html#Higham2008">Higham (2008), Theorem 1.31 and Chapter 11</a> for principal-logarithm uniqueness without a simple-spectrum assumption.</p>
+    <h2>The error bound does not assume commuting matrices</h2>
+    <p>Suppress $K$ and write $A=I-\widehat P$, $B=I-P$, $\beta=\rho+\eta&lt;1$.
+      The power-series logarithms converge and
+      $A^j-B^j=\sum_{r=0}^{j-1}A^r(A-B)B^{j-1-r}$ gives
+      $\|A^j-B^j\|_\infty\le j\eta\beta^{j-1}$.</p>
+    <p>Consequently $\|\log\widehat P-\log P\|_\infty\le\eta/(1-\beta)$.
+      The omitted tail at $\widehat P$ is at most
+      $\sum_{j&gt;m}\rho^j/j\le\rho^{m+1}/\{(m+1)(1-\rho)\}$.
+      Divide by $h$ and use $\log P=hQ$ to obtain $R_{K,m}$.</p>
+    <h2>Anytime transition-matrix budgets from the snapshots</h2>
+    <p>Let $V_i(K)=\sum_{k&lt;K}\mathbf1\{X_k=i\}$ and
+      $N_{ij}(K)=\sum_{k&lt;K}\mathbf1\{X_k=i,X_{k+1}=j\}$, including $j=i$.
+      For each of the $n^2$ entries, use</p>
+    $$M_{ij,K}(u)=\frac{\mathrm B(N_{ij}+1,V_i-N_{ij}+1)}{u^{N_{ij}}(1-u)^{V_i-N_{ij}}},\qquad
+      [l_{ij},r_{ij}]=\{u\in[0,1]:M_{ij,K}(u)\le n^2/\delta\}.$$
+    <p>Use continuous endpoint limits with $0^0=1$, and $[0,1]$ for an unvisited row.
+      The log mixture is convex, so the interval endpoints are scalar root solves, with explicit endpoints for zero or all successes.
+      Set $\widehat P_{ij}=N_{ij}/V_i$ when $V_i&gt;0$, and use the identity row $e_i^T$ otherwise.</p>
+    $$\eta_K=\min\left(2,\ \max_i\sum_j
+      \max\{|\widehat P_{ij}-l_{ij}|,|\widehat P_{ij}-r_{ij}|\}\right).$$
+    <p>At the true $u=P_{ij}\in(0,1)$, each fixed alternative $v\in(0,1)$ multiplies by $v/u$ when the selected row is $i$ and the next state is $j$, by $(1-v)/(1-u)$ on the other outcomes in that row, and by one otherwise.
+      The conditional mean is one in $\sigma(X_0,\ldots,X_K)$ because row selection is predictable.
+      Integrating uniformly over $v$ produces $M_{ij,K}(P_{ij})$, a nonnegative martingale initially one.</p>
+    <p>Ville's inequality and the $n^2$-entry union bound give simultaneous inclusion at all $K$ with probability at least $1-\delta$.
+      Summing entry errors yields the stated norm event; the cap two is the diameter of stochastic rows.
+      Neither row independence nor a binomial law conditional on the random visit count is assumed.</p>
+    <p>This specializes classical mixture confidence sequences; see <a href="./bibliography.html#HowardEtAl2021">Howard et al. (2021), Section 3.2 and Proposition 7</a>.
+      The mixing distribution is fixed in advance and is not a prior on the true transition probabilities.</p>
+    <h2>Usefulness, checks and limits</h2>
+    <p>For a fixed model with $\|I-P\|_\infty&lt;1$ and $\det P&gt;e^{-\pi}$, ergodicity gives $V_i\to\infty$ and $N_{ij}/V_i\to P_{ij}$ almost surely.
+      For $\widehat u=N_{ij}/V_i$, the identity $\log M(u)=\log M(\widehat u)+V_i\operatorname{kl}(\widehat u,u)$ and Stirling's formula
+      $\log M(\widehat u)=-\tfrac12\log V_i+O(1)$ give interval widths $O(\sqrt{\log V_i/V_i})$, so $\eta_K\to0$ and the gate eventually passes almost surely.
+      Choosing $m\to\infty$ then makes the reported generator radius tend to zero, including the clipping cost.</p>
+    <p>Every fixed finite generator satisfies those strict population tests for sufficiently small fixed $h$.
+      No uniform time-to-accuracy claim, eventual passage at arbitrary spacing, or identification outside the gate is asserted.
+      Repeated reports and data-selected stopping are valid on the simultaneous event, not conditionally on the event of reporting.</p>
+    <p>With cyclic three-state transition counts $(900000,80000,20000)$ per row, $V_i=1000000$, $h=.2$, $\delta=.05$ and $m=24$, the certificate gives
+      $\eta=.003588796$, $\rho=.2$, $d=.714433613&gt;e^{-\pi}=.043213918$ and generator radius $.022531047$ (display-rounded).
+      The balanced count matrix is realizable by an Eulerian transition record; these are prescribed counts, not a coverage simulation.</p>
+    <p>The certificate checks 378 exact rational martingale means, 42 first-passage laws over horizons 1&ndash;7 and 48 exact determinant perturbations.
+      Its 63 matrix-logarithm checks cover seven dense, sparse nonreversible and exactly defective chains; the largest error/budget ratio is $.986121506$.
+      A three-cycle snapshot alias is also checked and rejected by the gate.</p>
+    <p>Floating evaluations are not outward-rounded arithmetic certificates; roundoff is not part of the statistical budget.
+      Known labels, the complete state space, fixed spacing and a time-homogeneous generator are essential assumptions here.
+      This is model-based initial-state-conditional confidence, not feature-conditional conformal coverage or a grid-to-continuous occupation correction.</p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/homogenization">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
